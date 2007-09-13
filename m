@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765669AbXIMG5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765374AbXIMHAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765669AbXIMG5M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 02:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759669AbXIMG45
+	id S1765374AbXIMHAn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 03:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759383AbXIMHAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 02:56:57 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:44170 "EHLO pasmtpA.tele.dk"
+	Thu, 13 Sep 2007 03:00:37 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54561 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759493AbXIMG44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 02:56:56 -0400
-Date: Thu, 13 Sep 2007 08:58:19 +0200
+	id S1754806AbXIMHAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 03:00:36 -0400
+Date: Thu, 13 Sep 2007 09:02:00 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Jeff Garzik <jeff@garzik.org>, Kees Cook <kees@ubuntu.com>,
-       linux-kernel@vger.kernel.org, Ben Collins <bcollins@ubuntu.com>,
-       Michael Wu <flamingice@sourmilk.net>
-Subject: Re: [PATCH] pci: fix unterminated pci_device_id lists
-Message-ID: <20070913065819.GA23235@uranus.ravnborg.org>
-References: <20070912064134.GO7910@outflux.net> <46E7C91D.3070001@garzik.org> <b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com> <20070912215356.GC23294@kroah.com> <20070912160827.e359a53b.akpm@linux-foundation.org> <b6fcc0a0709122334qa31fffby4afbf857c92efb89@mail.gmail.com>
+To: Frank van Maarseveen <frankvm@frankvm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22.6: still seeing section mismatch warnings
+Message-ID: <20070913070200.GA23330@uranus.ravnborg.org>
+References: <20070912160017.GA3948@janus>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b6fcc0a0709122334qa31fffby4afbf857c92efb89@mail.gmail.com>
+In-Reply-To: <20070912160017.GA3948@janus>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 10:34:02AM +0400, Alexey Dobriyan wrote:
-> [non-terminated PCI ids arrays]
+On Wed, Sep 12, 2007 at 06:00:17PM +0200, Frank van Maarseveen wrote:
+> I'm still seeing the warnings below (2.6.22 started off with lots of
+> section mismatch warning) but I have no idea if it is safe to ignore
+> these:
 > 
-> Here is compile-time hack (yep, warped and whitespace damaged :))
-> It's better than modpost-time hack. because it triggers earlier.
-> It's worse than modpost-time hack, because of tree-wide changes.
-> 
-> diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
-> index f4e4298..b895b5f 100644
-> --- a/drivers/net/8139too.c
-> +++ b/drivers/net/8139too.c
-> @@ -237,7 +237,7 @@ static const struct {
->  };
+> WARNING: arch/i386/kernel/built-in.o(.text+0xea62): Section mismatch: reference to .init.data:trampoline_end (between 'setup_trampoline' and 'cpu_coregroup_map')
+> WARNING: arch/i386/kernel/built-in.o(.text+0xea67): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
+> WARNING: arch/i386/kernel/built-in.o(.text+0xea79): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
+> WARNING: arch/i386/kernel/built-in.o(.exit.text+0x26): Section mismatch: reference to .init.text: (between 'cache_remove_dev' and 'ffh_cstate_exit')
+> WARNING: arch/i386/kernel/built-in.o(.data+0xee0): Section mismatch: reference to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
+> WARNING: kernel/built-in.o(.text+0x1b415): Section mismatch: reference to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
 > 
 > 
-> -static struct pci_device_id rtl8139_pci_tbl[] = {
-> +PCI_MODULE_DEVICE_TABLE_BEGIN(rtl8139_pci_tbl)
->  	{0x10ec, 0x8139, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
->  	{0x10ec, 0x8138, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
->  	{0x1113, 0x1211, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
-> @@ -273,10 +273,7 @@ static struct pci_device_id rtl8139_pci_tbl[] = {
->  	{PCI_ANY_ID, 0x8139, 0x10ec, 0x8139, 0, 0, RTL8139 },
->  	{PCI_ANY_ID, 0x8139, 0x1186, 0x1300, 0, 0, RTL8139 },
->  	{PCI_ANY_ID, 0x8139, 0x13d1, 0xab06, 0, 0, RTL8139 },
-> -
-> -	{0,}
-> -};
-> -MODULE_DEVICE_TABLE (pci, rtl8139_pci_tbl);
-> +PCI_MODULE_DEVICE_TABLE_END
+> gcc version 3.4.6 (Debian 3.4.6-5)
 
-Looks at bit too magic to my taste.
-And anyway deferring the check until modpost time should not cause troubles
-anyway assuming people do build their kernel after adding a device ID.
+Does not appear with an allmodconfig.
+Care to send me your .config then I may take a look.
 
-And the above requires one to use the special macro in all places
-whereas the modpost check will catch it also for new device ID users.
+The warnings are the kernel being much more anal with respect to use
+of __init sections and friends and you can for normal use ignore them.
+They usually find bugs in errorhandling which seldom trigger and
+the bugs has been there for ages in most cases - but it is onyl now
+we detect them.
 
 	Sam
