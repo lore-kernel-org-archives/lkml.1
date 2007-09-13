@@ -1,70 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbXIMNVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbXIMNYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbXIMNVp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 09:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbXIMNVi
+	id S1758030AbXIMNYw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 09:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbXIMNYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 09:21:38 -0400
-Received: from rtr.ca ([76.10.145.34]:2702 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531AbXIMNVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 09:21:36 -0400
-Message-ID: <46E9395F.2090300@rtr.ca>
-Date: Thu, 13 Sep 2007 09:21:35 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 13 Sep 2007 09:24:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36588 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753042AbXIMNYn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 09:24:43 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: pete@bluelane.com
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Matt Mackall <mpm@selenic.com>,
+       Amit Kale <amitkale@linsyssoft.com>,
+       Dave Anderson <anderson@redhat.com>, kdb@oss.sgi.com, jlan@sgi.com,
+       Vivek Goyal <vgoyal@in.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
-       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
-       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       Jakub Jelinek <jakub@redhat.com>, Jeff Dike <jdike@linux.intel.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Adrian Bunk <bunk@kernel.org>
-Subject: Re: [1/4] 2.6.23-rc6: known regressions
-References: <46E81AC6.3000306@googlemail.com> <46E8A572.7050209@rtr.ca> <20070913093651.GA5077@suse.de>
-In-Reply-To: <20070913093651.GA5077@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: My position on general ``RAS'' tool support infrastructure
+References: <46E8B06D.9080006@bluelane.com>
+Date: Thu, 13 Sep 2007 07:21:10 -0600
+In-Reply-To: <46E8B06D.9080006@bluelane.com> (pete@bluelane.com's message of
+	"Wed, 12 Sep 2007 20:37:17 -0700")
+Message-ID: <m1abrq7lbt.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Sep 12, 2007 at 10:50:26PM -0400, Mark Lord wrote:
->> Michal Piotrowski wrote:
->>> Hi all,
->>> Here is a list of some known regressions in 2.6.23-rc6.
->> ...
->>
->> Missing from the list:
->>
->> USB "autosuspend" feature (new in 2.6.23) breaks *lots* of devices.
->> Many have since been blacklisted in one-at-a-time discovery patches,
->> but that's really just the tip of the iceberg.
->>
->> This "feature" breaks a TON of user-visible things,
->> mostly USB storage devices (USB drives/pens, digicams, etc..).
->>
->> The functionality is broken for just too much stuff,
->> and needs to either be reverted or defaulted to "off" rather than "on".
-> 
-> Ok, after conferring with Oliver this morning, I think the best solution
-> here is to both revert the usb-storage suspend patch as it has some
-> basic problems that can cause data loss, _and_ add the change to the
-> kernel that by default disables autosuspend on all USB devices except
-> hubs.
+Pete/Piet Delaney <pete@bluelane.com> writes:
 
-Sounds like a sane approach.
+> Jason, Eric:
+>
+> Did you read Keith Owens suggestion on RAS tools from:
 
-Hopefully the kinks can be worked out in time for a reattempt in 2.6.24.
-I understand how important this stuff is for battery powered devices,
-but it just doesn't appear to be ready yet.
+Yes.
 
-Cheers
+There is a tension here between generality of support infrastructure,
+maintainability of the infrastructure, simplicity of the
+infrastructure and reliability of the infrastructure.
+
+The historical linux perspective is that anything that compromises
+the maintainability or the reliability of the kernel without the
+tools is unacceptable.
+
+There is also a historical perspective that using the single stepping
+mode of a debugger to diagnose problems frequently leads to symptoms
+being fixed and not the actual problems being fixed.
+
+My initial proposal in this thread was that if kdb wanted to have
+a hook point someplace where were not comfortable adding a hook
+point it could use a break point or some of the tracing
+infrastructure.  Somehow that suggestion seems to have gotten lost.
+
+On the kexec on panic path the philosophy is that the kernel is
+broken and as little as possible should be relied upon.  So in general
+I am opposed to extra code on that path.  General hooks like notifiers
+in particular, because they make adding non-paranoid code much easier
+and review of the code on a particular call path much harder.
+
+>From what I can tell the philosophy of the kdb code is that the kernel
+is mostly ok except for one or two little bugs so it is reasonable to
+rely on lots of kernel infrastructure.
+
+As I understand the problem the difference in philosophy and
+maintenance overhead is why kexec on panic has been merged and why
+it has a much larger success rate the previous crash dump
+implementation like lkcd.  I will not that in some sense it is a
+harder approach to implement as it emphasizes the challenge of
+drivers that work starting from a random hardware state, and because
+it draws a clear line between the broken kernel and the recover
+kernel.  But those things are exactly what encourage things to work
+well.
+
+I don't mind playing well with others as long as that doesn't
+compromise the implementation reliability, and maintainability.
+
+So far it is my opinion that the current kexec on panic implementation
+is insufficiently paranoid and touches the hardware and the rest of
+the kernel too much.   Which explains my rather strong reactions when
+people suggest that we trust the broken kernel more.
+
+I don't think this is an insolvable problem but I do think it is hard
+problem that must be solved with delicacy.
+
+I also get irritable that the last time something like this came up
+I had to have a several day long conversation with someone about why
+they need a patch that has already been rejected because it
+compromised the reliability of the implementation only to discover
+they were trying to make kdb and kexec on panic play nice together.
+
+So if someone who is suggesting an implementation can absorb 
+and understand the requirements of the different groups and come
+up with solutions that meet the requirements of the different projects
+I think progress can be made.  That as far as I know takes talent.
+
+If we wind up with a situation where we have to continually review
+unacceptable solutions the choices are either get negative about it
+and reject everything, or give up and let something through.  Since
+I think giving up in this situation is irresponsible and likely to
+make a worse kernel I am leaning very strongly towards NAK'ing
+everything because I have seen so many problematic proposals that did
+not look like they were on the path to something reasonable.
+
+Eric
