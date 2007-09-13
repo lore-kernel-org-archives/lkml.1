@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbXIMXuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933852AbXIMXvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932231AbXIMXuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932914AbXIMXpW
+	id S933852AbXIMXvH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932967AbXIMXpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:45:22 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:41165 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932913AbXIMXpT (ORCPT
+	Thu, 13 Sep 2007 19:45:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57156 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932937AbXIMXpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:45:19 -0400
-Date: Thu, 13 Sep 2007 16:43:45 -0700
+	Thu, 13 Sep 2007 19:45:22 -0400
+Date: Thu, 13 Sep 2007 16:44:35 -0700
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Subject: kobjects: fix up improper use of the kobject name field
-Message-ID: <20070913234345.GL10856@kroah.com>
+Subject: kobject: remove the static array for the name
+Message-ID: <20070913234435.GM10856@kroah.com>
 References: <20070913233751.GA10856@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,115 +25,168 @@ X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Due to historical reasons, struct kobject contained a static array for
+the name, and a dynamic pointer in case the name got bigger than the
+array.  That's just dumb, as people didn't always know which variable to
+reference, even with the accessor for the kobject name.
 
-A number of different drivers incorrect access the kobject name field
-directly.  This is not correct as the name might not be in the array.
-Use the proper accessor function instead.
+This patch removes the static array, potentially saving a lot of memory
+as the majority of kobjects do not have a very long name.
+
+Thanks to Kay for the idea to do this.
+
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- block/elevator.c          |    2 +-
- block/ll_rw_blk.c         |    2 +-
- drivers/acpi/bus.c        |    2 +-
- drivers/cpufreq/cpufreq.c |    2 +-
- drivers/md/md.c           |    3 +--
- fs/partitions/check.c     |   12 +++++++-----
- net/bridge/br_sysfs_br.c  |    2 +-
- 7 files changed, 13 insertions(+), 12 deletions(-)
+ include/linux/kobject.h |    7 ++--
+ lib/kobject.c           |   71 ++++++++++++++++++++++--------------------------
+ 2 files changed, 36 insertions(+), 42 deletions(-)
 
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -186,7 +186,7 @@ static elevator_t *elevator_alloc(struct
- 	eq->ops = &e->ops;
- 	eq->elevator_type = e;
- 	kobject_init(&eq->kobj);
--	snprintf(eq->kobj.name, KOBJ_NAME_LEN, "%s", "iosched");
-+	kobject_set_name(&eq->kobj, "%s", "iosched");
- 	eq->kobj.ktype = &elv_ktype;
- 	mutex_init(&eq->sysfs_lock);
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -63,7 +63,6 @@ extern const char *kobject_actions[];
  
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -1841,7 +1841,7 @@ struct request_queue *blk_alloc_queue_no
+ struct kobject {
+ 	const char		* k_name;
+-	char			name[KOBJ_NAME_LEN];
+ 	struct kref		kref;
+ 	struct list_head	entry;
+ 	struct kobject		* parent;
+@@ -188,18 +187,18 @@ extern struct kobject * kset_find_obj(st
+  * Use this when initializing an embedded kset with no other 
+  * fields to initialize.
+  */
+-#define set_kset_name(str)	.kset = { .kobj = { .name = str } }
++#define set_kset_name(str)	.kset = { .kobj = { .k_name = str } }
  
- 	init_timer(&q->unplug_timer);
  
--	snprintf(q->kobj.name, KOBJ_NAME_LEN, "%s", "queue");
-+	kobject_set_name(&q->kobj, "%s", "queue");
- 	q->kobj.ktype = &queue_ktype;
- 	kobject_init(&q->kobj);
+ #define decl_subsys(_name,_type,_uevent_ops) \
+ struct kset _name##_subsys = { \
+-	.kobj = { .name = __stringify(_name) }, \
++	.kobj = { .k_name = __stringify(_name) }, \
+ 	.ktype = _type, \
+ 	.uevent_ops =_uevent_ops, \
+ }
+ #define decl_subsys_name(_varname,_name,_type,_uevent_ops) \
+ struct kset _varname##_subsys = { \
+-	.kobj = { .name = __stringify(_name) }, \
++	.kobj = { .k_name = __stringify(_name) }, \
+ 	.ktype = _type, \
+ 	.uevent_ops =_uevent_ops, \
+ }
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -170,7 +170,7 @@ int kobject_shadow_add(struct kobject *k
+ 	if (!(kobj = kobject_get(kobj)))
+ 		return -ENOENT;
+ 	if (!kobj->k_name)
+-		kobj->k_name = kobj->name;
++		kobject_set_name(kobj, "NO_NAME");
+ 	if (!*kobj->k_name) {
+ 		pr_debug("kobject attempted to be registered with no name!\n");
+ 		WARN_ON(1);
+@@ -181,7 +181,7 @@ int kobject_shadow_add(struct kobject *k
  
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -194,7 +194,7 @@ int acpi_bus_set_power(acpi_handle handl
+ 	pr_debug("kobject %s: registering. parent: %s, set: %s\n",
+ 		 kobject_name(kobj), parent ? kobject_name(parent) : "<NULL>", 
+-		 kobj->kset ? kobj->kset->kobj.name : "<NULL>" );
++		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
  
- 	if (!device->flags.power_manageable) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device `[%s]' is not power manageable\n",
--				device->dev.kobj.name));
-+				kobject_name(&device->dev.kobj)));
- 		return -ENODEV;
+ 	if (kobj->kset) {
+ 		spin_lock(&kobj->kset->list_lock);
+@@ -255,54 +255,50 @@ int kobject_register(struct kobject * ko
+ int kobject_set_name(struct kobject * kobj, const char * fmt, ...)
+ {
+ 	int error = 0;
+-	int limit = KOBJ_NAME_LEN;
++	int limit;
+ 	int need;
+ 	va_list args;
+-	char * name;
++	char *name;
+ 
+-	/* 
+-	 * First, try the static array 
+-	 */
+-	va_start(args,fmt);
+-	need = vsnprintf(kobj->name,limit,fmt,args);
++	/* find out how big a buffer we need */
++	name = kmalloc(1024, GFP_KERNEL);
++	if (!name) {
++		error = -ENOMEM;
++		goto done;
++	}
++	va_start(args, fmt);
++	need = vsnprintf(name, 1024, fmt, args);
+ 	va_end(args);
+-	if (need < limit) 
+-		name = kobj->name;
+-	else {
+-		/* 
+-		 * Need more space? Allocate it and try again 
+-		 */
+-		limit = need + 1;
+-		name = kmalloc(limit,GFP_KERNEL);
+-		if (!name) {
+-			error = -ENOMEM;
+-			goto Done;
+-		}
+-		va_start(args,fmt);
+-		need = vsnprintf(name,limit,fmt,args);
+-		va_end(args);
+-
+-		/* Still? Give up. */
+-		if (need >= limit) {
+-			kfree(name);
+-			error = -EFAULT;
+-			goto Done;
+-		}
++	kfree(name);
++
++	/* Allocate the new space and copy the string in */
++	limit = need + 1;
++	name = kmalloc(limit, GFP_KERNEL);
++	if (!name) {
++		error = -ENOMEM;
++		goto done;
++	}
++	va_start(args, fmt);
++	need = vsnprintf(name, limit, fmt, args);
++	va_end(args);
++
++	/* something wrong with the string we copied? */
++	if (need >= limit) {
++		kfree(name);
++		error = -EFAULT;
++		goto done;
  	}
- 	/*
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -828,7 +828,7 @@ static int cpufreq_add_dev (struct sys_d
- 	/* prepare interface data */
- 	policy->kobj.parent = &sys_dev->kobj;
- 	policy->kobj.ktype = &ktype_cpufreq;
--	strlcpy(policy->kobj.name, "cpufreq", KOBJ_NAME_LEN);
-+	kobject_set_name(&policy->kobj, "cpufreq");
  
- 	ret = kobject_register(&policy->kobj);
- 	if (ret) {
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -3085,8 +3085,7 @@ static struct kobject *md_probe(dev_t de
- 	mddev->gendisk = disk;
- 	mutex_unlock(&disks_mutex);
- 	mddev->kobj.parent = &disk->kobj;
--	mddev->kobj.k_name = NULL;
--	snprintf(mddev->kobj.name, KOBJ_NAME_LEN, "%s", "md");
-+	kobject_set_name(&mddev->kobj, "%s", "md");
- 	mddev->kobj.ktype = &md_ktype;
- 	if (kobject_register(&mddev->kobj))
- 		printk(KERN_WARNING "md: cannot register %s/md - name in use\n",
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -381,10 +381,12 @@ void add_partition(struct gendisk *disk,
- 	p->partno = part;
- 	p->policy = disk->policy;
+ 	/* Free the old name, if necessary. */
+-	if (kobj->k_name && kobj->k_name != kobj->name)
+-		kfree(kobj->k_name);
++	kfree(kobj->k_name);
  
--	if (isdigit(disk->kobj.name[strlen(disk->kobj.name)-1]))
--		snprintf(p->kobj.name,KOBJ_NAME_LEN,"%sp%d",disk->kobj.name,part);
-+	if (isdigit(disk->kobj.k_name[strlen(disk->kobj.k_name)-1]))
-+		kobject_set_name(&p->kobj, "%sp%d",
-+				 kobject_name(&disk->kobj), part);
- 	else
--		snprintf(p->kobj.name,KOBJ_NAME_LEN,"%s%d",disk->kobj.name,part);
-+		kobject_set_name(&p->kobj, "%s%d",
-+				 kobject_name(&disk->kobj),part);
- 	p->kobj.parent = &disk->kobj;
- 	p->kobj.ktype = &ktype_part;
- 	kobject_init(&p->kobj);
-@@ -477,9 +479,9 @@ void register_disk(struct gendisk *disk)
- 	struct hd_struct *p;
- 	int err;
+ 	/* Now, set the new name */
+ 	kobj->k_name = name;
+- Done:
++done:
+ 	return error;
+ }
+-
+ EXPORT_SYMBOL(kobject_set_name);
  
--	strlcpy(disk->kobj.name,disk->disk_name,KOBJ_NAME_LEN);
-+	kobject_set_name(&disk->kobj, "%s", disk->disk_name);
- 	/* ewww... some of these buggers have / in name... */
--	s = strchr(disk->kobj.name, '/');
-+	s = strchr(disk->kobj.k_name, '/');
- 	if (s)
- 		*s = '!';
- 	if ((err = kobject_add(&disk->kobj)))
---- a/net/bridge/br_sysfs_br.c
-+++ b/net/bridge/br_sysfs_br.c
-@@ -435,7 +435,7 @@ int br_sysfs_addbr(struct net_device *de
- 	err = kobject_register(&br->ifobj);
- 	if (err) {
- 		pr_info("%s: can't add kobject (directory) %s/%s\n",
--			__FUNCTION__, dev->name, br->ifobj.name);
-+			__FUNCTION__, dev->name, kobject_name(&br->ifobj));
- 		goto out3;
- 	}
- 	return 0;
+-
+ /**
+  *	kobject_rename - change the name of an object
+  *	@kobj:	object in question.
+@@ -479,8 +475,7 @@ void kobject_cleanup(struct kobject * ko
+ 	struct kobject * parent = kobj->parent;
+ 
+ 	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
+-	if (kobj->k_name != kobj->name)
+-		kfree(kobj->k_name);
++	kfree(kobj->k_name);
+ 	kobj->k_name = NULL;
+ 	if (t && t->release)
+ 		t->release(kobj);
