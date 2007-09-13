@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764452AbXIMQPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764170AbXIMQQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764452AbXIMQPw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 12:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763417AbXIMQOf
+	id S1764170AbXIMQQP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 12:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763456AbXIMQOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 12:14:35 -0400
-Received: from mx1.suse.de ([195.135.220.2]:47276 "EHLO mx1.suse.de"
+	Thu, 13 Sep 2007 12:14:37 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43067 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763315AbXIMQOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763308AbXIMQOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Sep 2007 12:14:31 -0400
-Message-Id: <20070913161430.416849478@strauss.suse.de>
+Message-Id: <20070913161429.387888398@strauss.suse.de>
 References: <20070913161428.343951643@strauss.suse.de>
 User-Agent: quilt/0.46-57
-Date: Thu, 13 Sep 2007 18:14:34 +0200
+Date: Thu, 13 Sep 2007 18:14:31 +0200
 From: Bernhard Walle <bwalle@suse.de>
 To: kexec@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linuxsh-dev@lists.sourceforge.net
-Subject: [patch 6/7] Use extended crashkernel command line on sh
-Content-Disposition: inline; filename=crashkernel-sh
+       discuss@x86-64.org
+Subject: [patch 3/7] Use extended crashkernel command line on x86_64
+Content-Disposition: inline; filename=crashkernel-x86_64
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the crashkernel parsing from arch/sh/kernel/machine_kexec.c
-and calls the generic function, introduced in the generic patch, in
-setup_bootmem_allocator().
+This patch removes the crashkernel parsing from
+arch/x86_64/kernel/machine_kexec.c and calls the generic function, introduced in
+the last patch, in setup_bootmem_allocator().
 
 This is necessary because the amount of System RAM must be known in this
 function now because of the new syntax.
 
-NOTE: Due to the lack of a SH processor, this patch is untested (and
-uncompiled). Because the code in that area is quite similar as i386/x86_64
-(contrary to PPC and IA64), it should compile and work. However, if someone of
-the SH people could test for me and provide feedback, that would be very nice.
-
 
 Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
----
- arch/sh/kernel/machine_kexec.c |   21 ---------------------
- arch/sh/kernel/setup.c         |   34 +++++++++++++++++++++++++++++-----
- 2 files changed, 29 insertions(+), 26 deletions(-)
 
---- a/arch/sh/kernel/machine_kexec.c
-+++ b/arch/sh/kernel/machine_kexec.c
-@@ -104,24 +104,3 @@ NORET_TYPE void machine_kexec(struct kim
- 	(*rnk)(page_list, reboot_code_buffer, image->start, vbr_reg);
+---
+ arch/x86_64/kernel/e820.c          |    3 ++-
+ arch/x86_64/kernel/machine_kexec.c |   27 ---------------------------
+ arch/x86_64/kernel/setup.c         |   35 ++++++++++++++++++++++++++++-------
+ 3 files changed, 30 insertions(+), 35 deletions(-)
+
+--- a/arch/x86_64/kernel/e820.c
++++ b/arch/x86_64/kernel/e820.c
+@@ -226,7 +226,8 @@ void __init e820_reserve_resources(void)
+ 			request_resource(res, &code_resource);
+ 			request_resource(res, &data_resource);
+ #ifdef CONFIG_KEXEC
+-			request_resource(res, &crashk_res);
++			if (crashk_res.start != crashk_res.end)
++				request_resource(res, &crashk_res);
+ #endif
+ 		}
+ 	}
+--- a/arch/x86_64/kernel/machine_kexec.c
++++ b/arch/x86_64/kernel/machine_kexec.c
+@@ -231,33 +231,6 @@ NORET_TYPE void machine_kexec(struct kim
+ 			image->start);
  }
  
 -/* crashkernel=size@addr specifies the location to reserve for
 - * a crash kernel.  By reserving this memory we guarantee
-- * that linux never sets it up as a DMA target.
+- * that linux never set's it up as a DMA target.
 - * Useful for holding code to do something appropriate
 - * after a kernel panic.
 - */
--static int __init parse_crashkernel(char *arg)
+-static int __init setup_crashkernel(char *arg)
 -{
 -	unsigned long size, base;
--	size = memparse(arg, &arg);
--	if (*arg == '@') {
--		base = memparse(arg+1, &arg);
--		/* FIXME: Do I want a sanity check
--		 * to validate the memory range?
--		 */
+-	char *p;
+-	if (!arg)
+-		return -EINVAL;
+-	size = memparse(arg, &p);
+-	if (arg == p)
+-		return -EINVAL;
+-	if (*p == '@') {
+-		base = memparse(p+1, &p);
+-		/* FIXME: Do I want a sanity check to validate the
+-		 * memory range?  Yes you do, but it's too early for
+-		 * e820 -AK */
 -		crashk_res.start = base;
 -		crashk_res.end   = base + size - 1;
 -	}
 -	return 0;
 -}
--early_param("crashkernel", parse_crashkernel);
---- a/arch/sh/kernel/setup.c
-+++ b/arch/sh/kernel/setup.c
-@@ -121,6 +121,33 @@ static void __init register_bootmem_low_
- 	free_bootmem(PFN_PHYS(curr_pfn), PFN_PHYS(pages));
+-early_param("crashkernel", setup_crashkernel);
+-
+ void arch_crash_save_vmcoreinfo(void)
+ {
+ #ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
+--- a/arch/x86_64/kernel/setup.c
++++ b/arch/x86_64/kernel/setup.c
+@@ -196,6 +196,33 @@ static inline void copy_edd(void)
  }
+ #endif
  
 +#ifdef CONFIG_KEXEC
-+static void reserve_crashkernel(void)
++static inline void reserve_crashkernel(void)
 +{
 +	unsigned long long 	free_mem;
 +	unsigned long long 	crash_size, crash_base;
 +	int			ret;
 +
-+	free_mem = (max_low_pfn - min_low_pfn) << PAGE_SHIFT;
++	free_mem = max_low_pfn << PAGE_SHIFT;
 +
 +	ret = parse_crashkernel(boot_command_line, free_mem,
 +			&crash_size, &crash_base);
@@ -102,22 +120,23 @@ Signed-off-by: Bernhard Walle <bwalle@suse.de>
 +{}
 +#endif
 +
- void __init setup_bootmem_allocator(unsigned long free_pfn)
- {
- 	unsigned long bootmap_size;
-@@ -182,11 +209,8 @@ void __init setup_bootmem_allocator(unsi
+ #define EBDA_ADDR_POINTER 0x40E
+ 
+ unsigned __initdata ebda_addr;
+@@ -388,13 +415,7 @@ void __init setup_arch(char **cmdline_p)
  		}
  	}
  #endif
 -#ifdef CONFIG_KEXEC
--	if (crashk_res.start != crashk_res.end)
--		reserve_bootmem(crashk_res.start,
+-	if (crashk_res.start != crashk_res.end) {
+-		reserve_bootmem_generic(crashk_res.start,
 -			crashk_res.end - crashk_res.start + 1);
+-	}
 -#endif
-+
+-
 +	reserve_crashkernel();
- }
+ 	paging_init();
  
- #ifndef CONFIG_NEED_MULTIPLE_NODES
+ #ifdef CONFIG_PCI
 
 -- 
