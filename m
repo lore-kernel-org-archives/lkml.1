@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXIMBK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbXIMBPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619AbXIMBK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 21:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXIMBKV
+	id S1760034AbXIMBPX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 21:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbXIMBPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 21:10:21 -0400
-Received: from mga11.intel.com ([192.55.52.93]:37230 "EHLO mga11.intel.com"
+	Wed, 12 Sep 2007 21:15:10 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55813 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751213AbXIMBKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 21:10:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,247,1186383600"; 
-   d="scan'208";a="134770528"
-Subject: Re: [BUGFIX] x86_64: NX bit handling in change_page_attr
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <200709121535.31550.ak@suse.de>
-References: <1187328518.28497.6.camel@caritas-dev.intel.com>
-	 <20070911202332.c539f1fe.akpm@linux-foundation.org>
-	 <200709121535.31550.ak@suse.de>
-Content-Type: text/plain
+	id S1751084AbXIMBPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 21:15:09 -0400
+Message-ID: <46E88F1B.5050405@garzik.org>
+Date: Wed, 12 Sep 2007 21:15:07 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Kees Cook <kees@ubuntu.com>
+CC: linux-kernel@vger.kernel.org, Ben Collins <bcollins@ubuntu.com>
+Subject: Re: [PATCH] usb: fix unterminated usn_device_id lists
+References: <20070913004709.GL8183@outflux.net>
+In-Reply-To: <20070913004709.GL8183@outflux.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Thu, 13 Sep 2007 09:12:02 +0800
-Message-Id: <1189645922.7341.11.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 13 Sep 2007 01:10:16.0943 (UTC) FILETIME=[D884AFF0:01C7F5A2]
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-12 at 15:35 +0200, Andi Kleen wrote:
-> > > Index: linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c
-> > > ===================================================================
-> > > --- linux-2.6.23-rc2-mm2.orig/arch/x86_64/mm/pageattr.c	2007-08-17
-> > > 12:50:25.000000000 +0800 +++
-> > > linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c	2007-08-17
-> > > 12:50:48.000000000 +0800 @@ -147,6 +147,7 @@
-> > >  			split = split_large_page(address, prot, ref_prot2);
-> > >  			if (!split)
-> > >  				return -ENOMEM;
-> > > +			pgprot_val(ref_prot2) &= ~_PAGE_NX;
-> > >  			set_pte(kpte, mk_pte(split, ref_prot2));
-> > >  			kpte_page = split;
-> > >  		}
-> >
-> > What happened with this?  Still valid?
+Kees Cook wrote:
+> This patch against 2.6.23-rc6 fixes a unterminated list of USB device ids.
 > 
-> The bug is probably latent there, but I don't think it can affect anything
-> in the kernel because nothing in the kernel should change NX status
-> as far as I know.
-> 
-> Where did you see it? 
+> Signed-off-by: Kees Cook <kees@ubuntu.com>
+> ---
+>  linux-2.6.23-rc6/drivers/media/video/usbvision/usbvision-cards.c |    1 +
+>  1 file changed, 1 insertion(+)
+> ---
+> diff -urp -x '*.o' linux-2.6.23-rc6~/drivers/media/video/usbvision/usbvision-cards.c linux-2.6.23-rc6/drivers/media/video/usbvision/usbvision-cards.c
+> --- linux-2.6.23-rc6~/drivers/media/video/usbvision/usbvision-cards.c	2007-09-11 23:17:19.000000000 -0700
+> +++ linux-2.6.23-rc6/drivers/media/video/usbvision/usbvision-cards.c	2007-09-12 17:26:46.000000000 -0700
+> @@ -1081,6 +1081,7 @@ struct usb_device_id usbvision_table [] 
+>  	{ USB_DEVICE(0x2304, 0x0301), .driver_info=PINNA_LINX_VD_IN_CAB_PAL },
+>  	{ USB_DEVICE(0x2304, 0x0419), .driver_info=PINNA_PCTV_BUNGEE_PAL_FM },
+>  	{ USB_DEVICE(0x2400, 0x4200), .driver_info=HPG_WINTV },
+> +	{ 0, },
 
-I found the problem for EFI runtime service supporting. Where the EFI
-runtime code (from firmware) need to be mapped without NX bit set.
+FWIW I (and several drivers) tend to prefer the more clean version,
 
-> Anyways I would prefer to only clear the PMD NX when NX status actually 
-> changes on the PTE.Can you do that change? 
+	{ },
 
-This change is sufficient for Intel CPU. Because the NX bit of PTE is
-still there, no page will be made executable if not been set explicitly
-through PTE. For AMD CPU, will the page be made executable if the NX bit
-of PMD is cleared and the NX bit of PTE is set? If so, I will do the
-change as you said.
+or even
 
-> Anyways; it's really not very important.
+	{ },	/* terminate list */
 
-It is needed by EFI runtime service supporting.
+Regards,
 
-Best Regards,
-Huang Ying
+	Jeff
+
+
+
