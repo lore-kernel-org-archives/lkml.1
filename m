@@ -1,113 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXIMPEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759558AbXIMPFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759905AbXIMPEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbXIMPD5
+	id S1759558AbXIMPFz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 11:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXIMPFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:03:57 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36455 "EHLO e4.ny.us.ibm.com"
+	Thu, 13 Sep 2007 11:05:48 -0400
+Received: from ox.emgs.com ([194.248.190.99]:52653 "EHLO ox.emgs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753093AbXIMPD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:03:56 -0400
-Date: Thu, 13 Sep 2007 08:03:52 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Security attributes and ducumentation update.
-Message-ID: <20070913150352.GA12806@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070831160611.GA21660@2ka.mipt.ru> <20070910221445.GL11801@linux.vnet.ibm.com> <20070913122259.GA20714@2ka.mipt.ru>
+	id S1752096AbXIMPFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 11:05:48 -0400
+Message-ID: <46E951C6.1000403@pvv.org>
+Date: Thu, 13 Sep 2007 17:05:42 +0200
+From: Jon Ivar Rykkelid <jonry@pvv.org>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070913122259.GA20714@2ka.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
+Subject: Re: sata_nv issues with MCP51 SATA controller
+References: <46E8EABF.3060409@pvv.org> <46E94728.9050509@garzik.org>
+In-Reply-To: <46E94728.9050509@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 04:22:59PM +0400, Evgeniy Polyakov wrote:
-> Hi Paul.
-> 
-> On Mon, Sep 10, 2007 at 03:14:45PM -0700, Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > Further TODO list includes:
-> > > * implement optional saving of mirroring/linear information on the remote
-> > > 	nodes (simple)
-> > > * implement netlink based setup (simple)
-> > > * new redundancy algorithm (complex)
-> > > 
-> > > Homepage:
-> > > http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
-> > 
-> > A couple questions below, but otherwise looks good from an RCU viewpoint.
-> > 
-> > 							Thanx, Paul
-> 
-> Thanks for your comments, and sorry for late reply I was at KS/London
-> trip.
-> > > +	if (--num) {
-> > > +		list_for_each_entry_rcu(n, &node->shared, shared) {
-> > 
-> > This function is called under rcu_read_lock() or similar, right?
-> > (Can't tell from this patch.)  It is also OK to call it from under the
-> > update-side mutex, of course.
-> 
-> Actually not, but it does not require it, since entry can not be removed
-> during this operations since appropriate reference counter for given node is
-> being held. It should not be RCU at all.
+Jeff Garzik wrote:
+> Jon Ivar Rykkelid wrote:
+>>
+>> Hi, I'm resending (didn't see my first attempt appear on the maillist):
+>>
+>>
+>>
+>> I'm having serious disk-issues when using the on-board nvidia controller
+>> for my HDDs (My motherboard is a Gigabyte GA-N650SLI-DS4 with nvidia
+>> chipset, cpu is intel Core2Quad)
+>>
+>> excerpt from "lspci":
+>> 00:0d.0 IDE interface: nVidia Corporation MCP51 IDE (rev a1)
+>> 00:0e.0 IDE interface: nVidia Corporation MCP51 Serial ATA Controller
+>> (rev a1)
+>> 00:0f.0 IDE interface: nVidia Corporation MCP51 Serial ATA Controller
+>> (rev a1)
+>>
+>> I have a normal IDE/P-ATA-disk attached to the "IDE"-controller and that
+>> works fine (/dev/hda)
+>>
+>> However, any number of disks (I have tried 2 and 4) connected to the
+>> SATA-controller(s), will eventually fail. - See attached log (excerpt /
+>> anything relevant from /var/log/messages)
+>>
+>> At first, disks were REALLY unstable, but then I disabled S.M.A.R.T.
+>> (both in BIOS and Linux), and I updated from the CentOS5 (equivalent of
+>> RHEL5) kernel (2.6.18) to the latest (at that time) official kernel from
+>> kernel.org:
+>>
+>>  > uname -a
+>> Linux mirakel 2.6.22.5-custom_jir #2 SMP Thu Aug 30 22:06:21 CEST 2007
+>> i686 i686 i386 GNU/Linux
+>>
+>> Now it will normally take a day or two before SATA crashes, so things
+>> are better, but still rather useless.
+>>
+>> First error when sata_nv get into problems is always:
+>> "exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen"
+>> (as shown in the attached log-file.) - when this happens to one device,
+>> it'll almost instantly happen to the other disk attached to that
+>> controller as well. A couple of minutes (or so) later, the disk(s)
+>> connected to the other controller will start acting up as well (in the
+>> same manner). - I/O freezes, and nothing helps except a reboot...
+>>
+>> As I run a rather large (software / md) RAID-5 disk array on this server
+>> (I'm doing a bit of video editing), every crash means a time-consuming
+>> rebuild of the disk-array...
+>>
+>> I have given up on the sata_nv / nvidia-controllers for the time being.
+>> I now resort to some old PCI-connected sata-controllers which work fine
+>> (but slow, as they are outdated and "overloaded").
+>>
+>> So, if anyone has a good solution / suggestion / improved driver (over
+>> the one supplied with the official 2.6.22.5-kernel) I am eager to give
+>> it a go and see if the situation can be resolved.
+>
+> does adma=0 module option do anything?
+>
+>     Jeff
+Thanks for the suggestion, but sata_nv is not built modular in my 
+current kernel, so "no can do" at the moment
+(However, if some expert REALLY thinks this will fix things, I will 
+CERTAINLY recompile and give it a go)
 
-Ah!  Yes, it is OK to use _rcu in this case, but should be avoided
-unless doing so eliminates duplicate code or some such.  So, agree
-with dropping _rcu in this case.
+As I said before, it all works for some time (a day or two) before it 
+crashes with the current kernel & no "S.M.A.R.T.". With my current setup 
+I have always had the time to fully rebuild my disk-array before a new 
+crash. - In the case of 4 disks attached to the nvidia controllers 
+(disregarding the disks on other controllers), this means that the 
+sata_nv-driver / controllers alone have read at least 750GB and written 
+250GB of data before the crash (with no resets working) - soft reboot 
+fixes everything. -  I'm pretty confident that this is a driver issue.
 
-> > > +static int dst_mirror_read(struct dst_request *req)
-> > > +{
-> > > +	struct dst_node *node = req->node, *n, *min_dist_node;
-> > > +	struct dst_mirror_priv *priv = node->priv;
-> > > +	u64 dist, d;
-> > > +	int err;
-> > > +
-> > > +	req->bio_endio = &dst_mirror_read_endio;
-> > > +
-> > > +	do {
-> > > +		err = -ENODEV;
-> > > +		min_dist_node = NULL;
-> > > +		dist = -1ULL;
-> > > + 
-> > > +		/*
-> > > +		 * Reading is never performed from the node under resync.
-> > > +		 * If this will cause any troubles (like all nodes must be
-> > > +		 * resynced between each other), this check can be removed
-> > > +		 * and per-chunk dirty bit can be tested instead.
-> > > +		 */
-> > > +
-> > > +		if (!test_bit(DST_NODE_NOTSYNC, &node->flags)) {
-> > > +			priv = node->priv;
-> > > +			if (req->start > priv->last_start)
-> > > +				dist = req->start - priv->last_start;
-> > > +			else
-> > > +				dist = priv->last_start - req->start;
-> > > +			min_dist_node = req->node;
-> > > +		}
-> > > +
-> > > +		list_for_each_entry_rcu(n, &node->shared, shared) {
-> > 
-> > I see one call to this function that appears to be under the update-side
-> > mutex, but I cannot tell if the other calls are safe.  (Safe as in either
-> > under the update-side mutex or under rcu_read_lock() and friends.)
-> 
-> The same here - those processing function are called from
-> generic_make_request() from any lock on top of them. Each node is linked
-> into the list of the first added node, which reference counter is
-> increased in higher layer. Right now there is no way to add or remove
-> nodes after array was started, such functionality requires storage tree
-> lock to be taken and RCU can not be used (since it requires sleeping and
-> I did not investigate sleepable RCU for this purpose).
-> 
-> So, essentially RCU is not used in DST :)
+As Tejun Heo <htejun@gmail.com> writes "the whole controller seems to 
+have went down at once and it's not even IRQ routing problem - resets 
+are failing."
 
-Works for me!  "Use the right tool for the job!"
+The error-messages / crash-symptoms were the same with SMART enabled and 
+the original CentOS5-kernel, except that with that setup, the crashes 
+were much more frequent.
 
-> Thanks for review, Paul.
+Any help?
 
-							Thanx, Paul
+BR
+Jon Ivar
+
