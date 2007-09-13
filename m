@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933619AbXIMXrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXIMXr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933619AbXIMXrj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbXIMXpF
+	id S933212AbXIMXr6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXIMXpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:45:05 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:41161 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765186AbXIMXpD (ORCPT
+	Thu, 13 Sep 2007 19:45:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57150 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932384AbXIMXpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:45:03 -0400
-Date: Thu, 13 Sep 2007 16:40:32 -0700
+	Thu, 13 Sep 2007 19:45:05 -0400
+Date: Thu, 13 Sep 2007 16:40:51 -0700
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Subject: Driver core: remove subsys_put()
-Message-ID: <20070913234032.GF10856@kroah.com>
+Subject: Driver core: remove subsys_set_kset
+Message-ID: <20070913234051.GG10856@kroah.com>
 References: <20070913233751.GA10856@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,62 +25,60 @@ X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are no more subsystems, it's a kset now so remove the function and
-the only two users, which are in the driver core.
+This macro is only used by the driver core and is held over from when we
+had subsystems.  It is not needed anymore.
 
 
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- drivers/base/bus.c      |    2 +-
+ drivers/base/bus.c      |    3 ++-
  drivers/base/class.c    |    2 +-
- include/linux/kobject.h |    5 -----
- lib/kobject.c           |    2 +-
- 4 files changed, 3 insertions(+), 8 deletions(-)
+ include/linux/kobject.h |   13 -------------
+ 3 files changed, 3 insertions(+), 15 deletions(-)
 
 --- a/drivers/base/bus.c
 +++ b/drivers/base/bus.c
-@@ -734,7 +734,7 @@ struct bus_type *get_bus(struct bus_type
+@@ -823,7 +823,8 @@ int bus_register(struct bus_type * bus)
+ 	if (retval)
+ 		goto out;
  
- void put_bus(struct bus_type * bus)
- {
--	subsys_put(&bus->subsys);
-+	kset_put(&bus->subsys);
- }
- 
- 
+-	subsys_set_kset(bus, bus_subsys);
++	bus->subsys.kobj.kset = &bus_subsys;
++
+ 	retval = subsystem_register(&bus->subsys);
+ 	if (retval)
+ 		goto out;
 --- a/drivers/base/class.c
 +++ b/drivers/base/class.c
-@@ -100,7 +100,7 @@ static struct class *class_get(struct cl
- static void class_put(struct class * cls)
- {
- 	if (cls)
--		subsys_put(&cls->subsys);
-+		kset_put(&cls->subsys);
- }
+@@ -149,7 +149,7 @@ int class_register(struct class * cls)
+ 	if (error)
+ 		return error;
  
+-	subsys_set_kset(cls, class_subsys);
++	cls->subsys.kobj.kset = &class_subsys;
  
+ 	error = subsystem_register(&cls->subsys);
+ 	if (!error) {
 --- a/include/linux/kobject.h
 +++ b/include/linux/kobject.h
-@@ -238,11 +238,6 @@ static inline struct kset *subsys_get(st
- 	return NULL;
- }
+@@ -241,19 +241,6 @@ extern struct kset hypervisor_subsys;
+ #define kset_set_kset_s(obj,subsys) \
+ 	(obj)->kset.kobj.kset = &(subsys)
  
--static inline void subsys_put(struct kset *s)
--{
--	kset_put(s);
--}
+-/**
+- *	subsys_set_kset(obj,subsys) - set kset for subsystem
+- *	@obj:		ptr to some object type.
+- *	@_subsys:	a subsystem object (not a ptr).
+- *
+- *	Can be used for any object type with an embedded ->subsys.
+- *	Sets the kset of @obj's kobject to @subsys.kset. This makes
+- *	the object a member of that kset.
+- */
 -
- struct subsys_attribute {
- 	struct attribute attr;
- 	ssize_t (*show)(struct kset *, char *);
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -681,7 +681,7 @@ int subsys_create_file(struct kset *s, s
- 
- 	if (subsys_get(s)) {
- 		error = sysfs_create_file(&s->kobj, &a->attr);
--		subsys_put(s);
-+		kset_put(s);
- 	}
- 	return error;
- }
+-#define subsys_set_kset(obj,_subsys) \
+-	(obj)->subsys.kobj.kset = &(_subsys)
+-
+ extern void subsystem_init(struct kset *);
+ extern int __must_check subsystem_register(struct kset *);
+ extern void subsystem_unregister(struct kset *);
