@@ -1,65 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbXIMITI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbXIMITf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754366AbXIMITI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 04:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbXIMISy
+	id S1756588AbXIMITf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 04:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbXIMITU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 04:18:54 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52264 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751517AbXIMISx (ORCPT
+	Thu, 13 Sep 2007 04:19:20 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:13063 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755141AbXIMITQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 04:18:53 -0400
-Date: Thu, 13 Sep 2007 02:18:52 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Bryan Wu <bryan.wu@analog.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] Blackfin arch: add some missing syscall
-Message-ID: <20070913081852.GC17367@parisc-linux.org>
-References: <1189670203.30686.15.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1189670203.30686.15.camel@roc-desktop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 13 Sep 2007 04:19:16 -0400
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Daniel Phillips <phillips@phunq.net>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0709121540370.4067@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com>
+	 <200709050220.53801.phillips@phunq.net>
+	 <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+	 <20070905114242.GA19938@wotan.suse.de>
+	 <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+	 <1189594373.21778.114.camel@twins>
+	 <Pine.LNX.4.64.0709121540370.4067@schroedinger.engr.sgi.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-oIcS5OoZ2KDnbyFjKL+l"
+Date: Thu, 13 Sep 2007 10:19:12 +0200
+Message-Id: <1189671552.21778.158.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 03:56:43PM +0800, Bryan Wu wrote:
-> +/* Not relevant on no-mmu */
 
-I thought this list seemed a little long, so I investigated a couple
-of them.  mbind makes sense (it's only implemented for NUMA ... a NUMA
-embedded platform?  not the kind which runs applications that use mbind),
-but mremap doesn't -- there's even an implementation in mm/nommu.c.
-Could you check the rest of these over to see if they truly don't need
-to be implemented for no-mmu?  I think you'll want the *robust_list
-syscalls too.
+--=-oIcS5OoZ2KDnbyFjKL+l
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> +#define __IGNORE_swapon
-> +#define __IGNORE_swapoff
-> +#define __IGNORE_msync
-> +#define __IGNORE_mlock
-> +#define __IGNORE_munlock
-> +#define __IGNORE_mlockall
-> +#define __IGNORE_munlockall
-> +#define __IGNORE_mremap
-> +#define __IGNORE_mincore
-> +#define __IGNORE_madvise
-> +#define __IGNORE_remap_file_pages
-> +#define __IGNORE_mbind
-> +#define __IGNORE_get_mempolicy
-> +#define __IGNORE_set_mempolicy
-> +#define __IGNORE_migrate_pages
-> +#define __IGNORE_set_robust_list
-> +#define __IGNORE_get_robust_list
-> +#define __IGNORE_move_pages
-> +#define __IGNORE_getcpu
+On Wed, 2007-09-12 at 15:47 -0700, Christoph Lameter wrote:
+> On Wed, 12 Sep 2007, Peter Zijlstra wrote:
+>=20
+> > > assumes single critical user of memory. There are other consumers of=20
+> > > memory and if you have a load that depends on other things than netwo=
+rking=20
+> > > then you should not kill the other things that want memory.
+> >=20
+> > The VM is a _critical_ user of memory. And I dare say it is the _most_
+> > important user.=20
+>=20
+> The users of memory are various subsystems. The VM itself of course also=20
+> uses memory to manage memory but the important thing is that the VM=20
+> provides services to other subsystems
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Exactly, and because it services every other subsystem and userspace,
+its the most important one, if it doesn't work, nothing else will.
+
+> > Every user of memory relies on the VM, and we only get into trouble if
+> > the VM in turn relies on one of these users. Traditionally that has onl=
+y
+> > been the block layer, and we special cased that using mempools and
+> > PF_MEMALLOC.
+> >=20
+> > Why do you object to me doing a similar thing for networking?
+>=20
+> I have not seen you using mempools for the networking layer. I would not=20
+> object to such a solution. It already exists for other subsystems.
+
+Dude, listen, how often do I have to say this: I cannot use mempools for
+the network subsystem because its build on kmalloc! What I've done is
+build a replacement for mempools - a reserve system - that does work
+similar to mempools but also provides the flexibility of kmalloc.
+
+That is all, no more, no less.
+
+> > The problem of circular dependancies on and with the VM is rather
+> > limited to kernel IO subsystems, and we only have a limited amount of
+> > them.=20
+>=20
+> The kernel has to use the filesystems and other subsystems for I/O. These=
+=20
+> subsystems compete for memory in order to make progress. I would not=20
+> consider strictly them part of the VM. The kernel reclaim may trigger I/O=
+=20
+> in multiple I/O subsystems simultaneously.
+
+I'm confused by this, I've never claimed part of, or such a thing. All
+I'm saying is that because of the circular dependency between the VM and
+the IO subsystem used for swap (not file backed paging [*], just swap)
+you have to do something special to avoid deadlocks.
+
+[*] the dirty limit along with 'atomic' swap ensures that file backed
+paging does not get into this tight spot.
+
+> > You talk about something generic, do you mean an approach that is
+> > generic across all these subsystems?
+>=20
+> Yes an approach that is fair and does not allow one single subsystem to=20
+> hog all of memory.
+
+I do no such thing! My reserve system works much like mempools, you
+reserve a certain amount of pages and use no more.
+
+> > If so, my approach would be it, I can replace mempools as we have them
+> > with the reserve system I introduce.
+>=20
+> Replacing the mempools for the block layer sounds pretty good. But how do=
+=20
+> these various subsystems that may live in different portions of the syste=
+m=20
+> for various devices avoid global serialization and livelock through your=20
+> system?=20
+
+The reserves are spread over all kernel mapped zones, the slab allocator
+is still per cpu, the page allocator tries to get pages from the nearest
+node.
+
+> And how is fairness addresses? I may want to run a fileserver on=20
+> some nodes and a HPC application that relies on a fiberchannel connection=
+=20
+> on other nodes. How do we guarantee that the HPC application is not=20
+> impacted if the network services of the fileserver flood the system with=20
+> messages and exhaust memory?
+
+The network system reserves A pages, the block layer reserves B pages,
+once they start getting pages from the reserves they go bean counting,
+once they reach their respective limit they stop.
+
+The serialisation impact of the bean counting depends on how
+fine-grained you place them, currently I only have a machine wide
+network bean counter because the network subsystem is machine wide -
+initially I tried to do something per net-device but that doesn't work
+out. If someone more skilled in this area comes along and sees a better
+way to place the bean counters they are free to do so.
+
+But do notice that the bean counting is only done once we hit the
+reserves, the normal mode of operation is not penalised by the extra
+overhead thereof.
+
+Also note that mempools also serialise their access once the backing
+allocator fails, so I don't differ from them in that respect either.
+
+
+--=-oIcS5OoZ2KDnbyFjKL+l
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG6PKAXA2jU0ANEf4RAq9FAJsF2vaDMgEDvpFvBlzDnAPanCNtGwCdFXRT
+EM6Zs4YnikuU2BYr+v0c4KI=
+=Gngz
+-----END PGP SIGNATURE-----
+
+--=-oIcS5OoZ2KDnbyFjKL+l--
+
