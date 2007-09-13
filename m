@@ -1,51 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbXIMPCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXIMPEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758881AbXIMPCa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbXIMPCX
+	id S1759905AbXIMPEM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 11:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbXIMPD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:02:23 -0400
-Received: from ns1.suse.de ([195.135.220.2]:41857 "EHLO mx1.suse.de"
+	Thu, 13 Sep 2007 11:03:57 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:36455 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751197AbXIMPCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:02:22 -0400
-Date: Thu, 13 Sep 2007 17:02:20 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: kexec@lists.infradead.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/5] Add extended crashkernel command line syntax
-Message-ID: <20070913150220.GM26903@suse.de>
-Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
-	kexec@lists.infradead.org, linux-arch@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20070909083914.065380136@strauss.suse.de> <20070911060913.GC5053@in.ibm.com>
+	id S1753093AbXIMPD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 11:03:56 -0400
+Date: Thu, 13 Sep 2007 08:03:52 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Security attributes and ducumentation update.
+Message-ID: <20070913150352.GA12806@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070831160611.GA21660@2ka.mipt.ru> <20070910221445.GL11801@linux.vnet.ibm.com> <20070913122259.GA20714@2ka.mipt.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070911060913.GC5053@in.ibm.com>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20070913122259.GA20714@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@in.ibm.com> [2007-09-11 08:09]:
+On Thu, Sep 13, 2007 at 04:22:59PM +0400, Evgeniy Polyakov wrote:
+> Hi Paul.
 > 
-> How often does this scenario happen? Anyway, if you run into these issues
-> and if it helps, I don't mind additional command line syntax for crashkernel=
-
-Of course, I agree, this is a rare case.
-
-> > This series implements this change for i386, x86_64 and IA64. However, if
-> > the patch is accepted, I can also add all other architectures that support
-> > Kdump (when my grepping was correct, this is only PPC64 and SH in addition).
-> > The "simple" syntax is of course still supported.
+> On Mon, Sep 10, 2007 at 03:14:45PM -0700, Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > Further TODO list includes:
+> > > * implement optional saving of mirroring/linear information on the remote
+> > > 	nodes (simple)
+> > > * implement netlink based setup (simple)
+> > > * new redundancy algorithm (complex)
+> > > 
+> > > Homepage:
+> > > http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
+> > 
+> > A couple questions below, but otherwise looks good from an RCU viewpoint.
+> > 
+> > 							Thanx, Paul
 > 
-> Please make the changes for ppc64 and sh too.
+> Thanks for your comments, and sorry for late reply I was at KS/London
+> trip.
+> > > +	if (--num) {
+> > > +		list_for_each_entry_rcu(n, &node->shared, shared) {
+> > 
+> > This function is called under rcu_read_lock() or similar, right?
+> > (Can't tell from this patch.)  It is also OK to call it from under the
+> > update-side mutex, of course.
+> 
+> Actually not, but it does not require it, since entry can not be removed
+> during this operations since appropriate reference counter for given node is
+> being held. It should not be RCU at all.
 
-Thanks, done now. Patchset follows. It should address all issues
-mentioned by you and others.
+Ah!  Yes, it is OK to use _rcu in this case, but should be avoided
+unless doing so eliminates duplicate code or some such.  So, agree
+with dropping _rcu in this case.
 
+> > > +static int dst_mirror_read(struct dst_request *req)
+> > > +{
+> > > +	struct dst_node *node = req->node, *n, *min_dist_node;
+> > > +	struct dst_mirror_priv *priv = node->priv;
+> > > +	u64 dist, d;
+> > > +	int err;
+> > > +
+> > > +	req->bio_endio = &dst_mirror_read_endio;
+> > > +
+> > > +	do {
+> > > +		err = -ENODEV;
+> > > +		min_dist_node = NULL;
+> > > +		dist = -1ULL;
+> > > + 
+> > > +		/*
+> > > +		 * Reading is never performed from the node under resync.
+> > > +		 * If this will cause any troubles (like all nodes must be
+> > > +		 * resynced between each other), this check can be removed
+> > > +		 * and per-chunk dirty bit can be tested instead.
+> > > +		 */
+> > > +
+> > > +		if (!test_bit(DST_NODE_NOTSYNC, &node->flags)) {
+> > > +			priv = node->priv;
+> > > +			if (req->start > priv->last_start)
+> > > +				dist = req->start - priv->last_start;
+> > > +			else
+> > > +				dist = priv->last_start - req->start;
+> > > +			min_dist_node = req->node;
+> > > +		}
+> > > +
+> > > +		list_for_each_entry_rcu(n, &node->shared, shared) {
+> > 
+> > I see one call to this function that appears to be under the update-side
+> > mutex, but I cannot tell if the other calls are safe.  (Safe as in either
+> > under the update-side mutex or under rcu_read_lock() and friends.)
+> 
+> The same here - those processing function are called from
+> generic_make_request() from any lock on top of them. Each node is linked
+> into the list of the first added node, which reference counter is
+> increased in higher layer. Right now there is no way to add or remove
+> nodes after array was started, such functionality requires storage tree
+> lock to be taken and RCU can not be used (since it requires sleeping and
+> I did not investigate sleepable RCU for this purpose).
+> 
+> So, essentially RCU is not used in DST :)
 
-Thanks,
-   Bernhard
+Works for me!  "Use the right tool for the job!"
+
+> Thanks for review, Paul.
+
+							Thanx, Paul
