@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbXIMLro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbXIMLsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbXIMLro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 07:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbXIMLrg
+	id S1754219AbXIMLsm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 07:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXIMLse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 07:47:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42693 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751291AbXIMLrg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 07:47:36 -0400
-Date: Thu, 13 Sep 2007 04:47:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-mm@kvack.org,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc4-mm1: deadlock while mmaping video device
-Message-Id: <20070913044726.1aa48f45.akpm@linux-foundation.org>
-In-Reply-To: <46E9226F.9010700@gmail.com>
-References: <46E9226F.9010700@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Sep 2007 07:48:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51515 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402AbXIMLse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 07:48:34 -0400
+Date: Thu, 13 Sep 2007 13:48:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rob Hussey <robjhussey@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [announce] CFS-devel, performance improvements
+Message-ID: <20070913114828.GA28339@elte.hu>
+References: <20070911200459.GA6974@elte.hu> <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com> <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com> <20070913090655.GA28505@elte.hu> <6b8cef970709130224t2f8d28d4mdfbf22ba10b42497@mail.gmail.com> <20070913093137.GA31923@elte.hu> <6b8cef970709130236o48e4d923ofe4ad862c749f2da@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6b8cef970709130236o48e4d923ofe4ad862c749f2da@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007 13:43:43 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
 
-> Hi,
-> 
-> I have this circular lock dependency on 2.6.23-rc4-mm1 when opening
-> /dev/video0 and mmaping it. the v4l driver is stk11xx:
-> http://www.fi.muni.cz/~xslaby/sklad/panics/mm-deadlock.png
-> 
-> Using slub on x86_64 if that matters.
-> 
-> For now, I'm unable to set up a netconsole, so only the picture linked above
-> is the best I have.
-> 
+* Rob Hussey <robjhussey@gmail.com> wrote:
 
-oop, I think you'll want this:
+> Well, I was going over my config myself after you asked for me to post
+> it, and I thought to do the same thing. Except, disabling sched_debug
+> caused the same error as before:
+> In file included from kernel/sched.c:794:
+> kernel/sched_fair.c: In function 'task_new_fair':
+> kernel/sched_fair.c:857: error: 'sysctl_sched_child_runs_first'
+> undeclared (first use in this function)
+> kernel/sched_fair.c:857: error: (Each undeclared identifier is
+> reported only once
+> kernel/sched_fair.c:857: error: for each function it appears in.)
+> make[1]: *** [kernel/sched.o] Error 1
+> make: *** [kernel] Error 2
+> 
+> It only happens with sched_debug=y. I take it back, it wasn't my fault :)
+> 
+> As for everything else, I'd be happy to.
 
---- a/mm/memory.c~memory-controller-memory-accounting-v7-fix
-+++ a/mm/memory.c
-@@ -1135,7 +1135,7 @@ static int insert_page(struct mm_struct 
- {
- 	int retval;
- 	pte_t *pte;
--	spinlock_t *ptl;  
-+	spinlock_t *ptl;
- 
- 	retval = mem_container_charge(page, mm);
- 	if (retval)
-@@ -1160,6 +1160,7 @@ static int insert_page(struct mm_struct 
- 	set_pte_at(mm, addr, pte, mk_pte(page, prot));
- 
- 	retval = 0;
-+	pte_unmap_unlock(pte, ptl);
- 	return retval;
- out_unlock:
- 	pte_unmap_unlock(pte, ptl);
-@@ -2184,8 +2185,8 @@ static int do_anonymous_page(struct mm_s
- 	if (!page)
- 		goto oom;
- 
--		if (mem_container_charge(page, mm))
--			goto oom_free_page;
-+	if (mem_container_charge(page, mm))
-+		goto oom_free_page;
- 
- 	entry = mk_pte(page, vma->vm_page_prot);
- 	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-_
+are you sure this is happening with the latest iteration of the patch 
+too? (with the combo-3.patch?) You can pick it up from here:
 
+   http://people.redhat.com/mingo/cfs-scheduler/devel/sched-cfs-v2.6.23-rc6-v21-combo-3.patch
+
+I tried your config and it builds fine here.
+
+	Ingo
