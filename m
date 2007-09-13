@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbXIMM7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbXIMNAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbXIMM7U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 08:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXIMM7M
+	id S1756805AbXIMNAu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 09:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXIMNAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 08:59:12 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:5709 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbXIMM7L convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 08:59:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KmvampRNm4Ls9PgvsKpE6KcLQOdAJ52A7afhLbvffnKHzmSFEPn+USlSKNpccN7nl5K495i3pFZH93hlxWbsKC+rETcnDoiIlqzGb2rsGzsZkasgLjp0kqd9vNtgtiCrRGCAULU4qGuUpZlxOz4GABXCj5shCp8e+27ezgdpwZ4=
-Message-ID: <6101e8c40709130559l69b87211k763c70a90d3d8221@mail.gmail.com>
-Date: Thu, 13 Sep 2007 14:59:09 +0200
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [Sparc64 BUG] hangup under booting 2.6.22.X whith Sparc64
-Cc: kovedi@gmail.com, linux-kernel@vger.kernel.org, "Greg KH" <gregkh@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20070912.011103.41643890.davem@davemloft.net>
+	Thu, 13 Sep 2007 09:00:42 -0400
+Received: from mx2.suse.de ([195.135.220.15]:59445 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752859AbXIMNAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 09:00:42 -0400
+Date: Thu, 13 Sep 2007 05:00:19 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matthew Wilcox <matthew@wil.cx>, Shaohua Li <shaohua.li@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+Message-ID: <20070913120019.GA24792@suse.de>
+References: <1189664467.17835.1.camel@sli10-conroe.sh.intel.com> <20070913073140.GA17367@parisc-linux.org> <1189668286.18361.3.camel@sli10-conroe.sh.intel.com> <20070913075536.GB17367@parisc-linux.org> <20070913095313.GA745@suse.de> <20070913151637.A1679@jurassic.park.msu.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <406fe6c90709102233m2472e6c4h7d329a3f64692645@mail.gmail.com>
-	 <20070911.083823.15264559.davem@davemloft.net>
-	 <406fe6c90709120047g1cf0a995r391e9fe1fbac7101@mail.gmail.com>
-	 <20070912.011103.41643890.davem@davemloft.net>
+In-Reply-To: <20070913151637.A1679@jurassic.park.msu.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David!
+On Thu, Sep 13, 2007 at 03:16:37PM +0400, Ivan Kokshaysky wrote:
+> On Thu, Sep 13, 2007 at 02:53:13AM -0700, Greg KH wrote:
+> > On Thu, Sep 13, 2007 at 01:55:36AM -0600, Matthew Wilcox wrote:
+> > > Unfortunately if this patch does cause any machine to break, these will
+> > > be machines that worked fine up until this point, so that would be a
+> > > regression, which is worse.  Life sucks.
+> > 
+> > If, after a while, you think the change should go into the -stable tree,
+> > I have no objection.
+> 
+> I think it shouldn't - this change will almost certainly cause a regression.
+> There is a lot of system devices besides the host bridges that shouldn't be
+> disabled during BAR probe, like interrupt controllers, power management
+> controllers and so on.
 
-On 9/12/07, David Miller <davem@davemloft.net> wrote:
-> From: "Kövedi_Krisztián" <kovedi@gmail.com>
-> Date: Wed, 12 Sep 2007 09:47:45 +0200
->
-> > The patch work fine the kernel booting up without error messages.
->
-> Thanks for testing.
+Well, if it's going to cause a regression with machines that currently
+work properly, I'll just drop it entirely.  I would much rather not have
+a machine work at all with Linux, than break other people's working
+machines.
 
-this patch releated for 2.6.22.y too.
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2cc7345ff71b27b5ac99e49ad7de39360042f601
-we (Krisz and me) tested with 2.6.22.6, the server works and no errors
-become for now.
+> We need a more sophisticated fix - I'm thinking of introducing "probe" field
+> in struct pci_dev which can be set by "early" quirk routines.
 
--- 
-Thanks,
-Oliver
+That might work out well.  Matthew, want to look into this for a
+possible way to get your fix into the tree in a way that will not affect
+others?
+
+thanks,
+
+greg k-h
