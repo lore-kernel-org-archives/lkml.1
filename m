@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759791AbXIMP7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbXIMQFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759791AbXIMP7t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXIMP7k
+	id S1760395AbXIMQFq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 12:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbXIMQFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:59:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56290 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751623AbXIMP7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:59:40 -0400
-Message-ID: <46E95E5D.2050305@redhat.com>
-Date: Thu, 13 Sep 2007 11:59:25 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 13 Sep 2007 12:05:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37041 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757637AbXIMQFa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 12:05:30 -0400
+Date: Thu, 13 Sep 2007 11:05:28 -0500 (CDT)
+From: Brent Casavant <bcasavan@sgi.com>
+Reply-To: Brent Casavant <bcasavan@sgi.com>
+To: Gabor Gombas <gombasg@sztaki.hu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: O_NOLINK for open()
+In-Reply-To: <20070913100803.GG11567@boogie.lpds.sztaki.hu>
+Message-ID: <20070913104609.K41932@pkunk.americas.sgi.com>
+References: <20070912144128.D5573@pkunk.americas.sgi.com>
+ <20070913100803.GG11567@boogie.lpds.sztaki.hu>
+Organization: Silicon Graphics, Inc.
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-CC: Mikael Pettersson <mikpe@it.uu.se>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Possible hang inside interrupt handler on sata_promise.
-References: <20070912131904.GW14474@lnx-holt.americas.sgi.com>
-In-Reply-To: <20070912131904.GW14474@lnx-holt.americas.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/12/2007 09:19 AM, Robin Holt wrote:
-> I have been experiencing hangs on a newly setup machine.  Unfortunately,
-> it appears to be hanging inside the interrupt handler as sysrq and
-> caps-lock led seem to stop working when the event occurs.  I am guessing
-> it is related to the sata_promise driver, but that is only a guess as
-> I don't get much for output.  I am running the debian unstable kernel
-> (2.6.22-1-686), but the problem also occurs with the debian stable kernel
-> (2.6.18-4-686).  I do need to boot with the acpi=off option, but am
-> not sure if that is related.  Unfortunately, I do not know much about
-> troubleshooting i386 when problems occur inside the interrupt handlers.
+On Thu, 13 Sep 2007, Gabor Gombas wrote:
 
-There is a list of kernel options you can try, including:
+> On Wed, Sep 12, 2007 at 03:37:44PM -0500, Brent Casavant wrote:
+> 
+> > System V shmem is right out because the IPC key is publicly
+> > visible and there is no combination of permissions which
+> > will allow sharing the segment with just one other process
+> > (or at least just one other user).  To my knowledge Linux's
+> > implementation doesn't provide ACLs for SysV shmem.  SGI's
+> > proposed XPMEM suffers from the same problems for my purposes.
+> 
+> SYSV shared memory has the concept of separate creator and owner ID's,
+> so you can share the shmem segment between exactly two users. Just use
+> IPC_SET and set shm_perm.uid to the user ID of the peer process.
 
-  noapic
-  nolapic
-  pci=nomsi,nommconf
-  pci=noacpi
+Hmm.  This will work as long as the peer process is running setuid
+to it's own unique user.  Excellent idea!  Since I need to make the
+program setuid to avoid non-priveleged ptrace attacks, this is a
+terrific solution.
 
+> I think your worries about permissions has been cleared by the other
+> posts, but there is still a problem: the client may call ftruncate() on
+> the file descriptor, and then your daemon will get a nice SIGBUS when it
+> tries to access the shared memory. Handling that gracefully may not be
+> trivial esp. if your daemon is multi-threaded. SYSV shmem is _much_
+> nicer when you want shared memory between unrelated/untrusted processes.
+
+I'm actually not so concerned about the client -- that code will be
+trusted as well.  The problem I'm trying to solve is preventing any
+non-priveleged code except the server and client from gaining access
+to their shared memory area.  With the feedback I've received from
+this thread I think a solid design is emerging, some of which will
+need to be solved by system configuration by the sysadmin.
+
+Thanks,
+Brent
+
+-- 
+Brent Casavant                          All music is folk music.  I ain't
+bcasavan@sgi.com                        never heard a horse sing a song.
+Silicon Graphics, Inc.                    -- Louis Armstrong
