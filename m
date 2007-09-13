@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762507AbXIMC37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763285AbXIMCeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762507AbXIMC37 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 22:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbXIMC3w
+	id S1763285AbXIMCeH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 22:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbXIMCdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 22:29:52 -0400
-Received: from rtr.ca ([76.10.145.34]:2175 "EHLO mail.rtr.ca"
+	Wed, 12 Sep 2007 22:33:55 -0400
+Received: from rtr.ca ([76.10.145.34]:3636 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbXIMC3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 22:29:51 -0400
-Message-ID: <46E8A09C.4080800@rtr.ca>
-Date: Wed, 12 Sep 2007 22:29:48 -0400
+	id S1757433AbXIMCdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 22:33:54 -0400
+Message-ID: <46E8A18C.8080607@rtr.ca>
+Date: Wed, 12 Sep 2007 22:33:48 -0400
 From: Mark Lord <lkml@rtr.ca>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
@@ -31,63 +31,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Greg KH wrote:
-> On Wed, Sep 12, 2007 at 06:14:04PM -0400, Mark Lord wrote:
->> Oliver Neukum wrote:
->>> Am Dienstag 14 August 2007 schrieb Paolo Ornati:
->>>> On Tue, 14 Aug 2007 17:46:16 +0200
->>>> Oliver Neukum <oliver@neukum.org> wrote:
->>>>
->>>>> Am Dienstag 14 August 2007 schrieb Paolo Ornati:
->>>>>> Hewlett-Packard PhotoSmart 720 / PhotoSmart 935 (storage)  
->>>>> Please try this patch.
->>>> Tried on -rc3 but it doesn't work, dmesg attached.
->>>>
->>>> However I've found that if "hald" is running the problems doesn't
->>>> happen (I think it's just hidden by the fact that hald do some polling
->>>> on it preventing autosuspend to trigger).
->>> Exactly. This is not reliable. It needs to be done in kernel. This patch
->>> should do it.
->>> 	Regards
->>> 		Oliver
->>> ---
->>> --- a/drivers/usb/core/quirks.c	2007-08-14 17:42:22.000000000 +0200
->>> +++ b/drivers/usb/core/quirks.c	2007-08-14 20:30:28.000000000 +0200
->>> @@ -30,6 +30,8 @@
->>>  static const struct usb_device_id usb_quirk_list[] = {
->>>  	/* HP 5300/5370C scanner */
->>>  	{ USB_DEVICE(0x03f0, 0x0701), .driver_info = USB_QUIRK_STRING_FETCH_255 
->>> },
->>> +	/* Hewlett-Packard PhotoSmart 720 / PhotoSmart 935 (storage) */
->>> +	{ USB_DEVICE(0x03f0, 0x4002), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
->>>  	/* Acer Peripherals Inc. (now BenQ Corp.) Prisa 640BU */
->>>  	{ USB_DEVICE(0x04a5, 0x207e), .driver_info = USB_QUIRK_NO_AUTOSUSPEND },
->>>  	/* Benq S2W 3300U */
->>> -
->> I believe the offending commit needs to be reverted.
->> It just breaks too much stuff, including my Sandisk USB sticks.
->>
->>> with "CONFIG_USB_SUSPEND=y", since commit:
->>> 8dfe4b14869fd185ca25ee88b02ada58a3005eaf
->>>     usb-storage: implement autosuspend
->>>         This patch (as930) implements autosuspend for usb-storage.  It is
->>>     adapted from a patch by Oliver Neukum.  Autosuspend is allowed except
->>>     during LUN scanning, resets, and command execution.
->>> my USB photo-camera gets automagically disconnected before I can do
->>> anything with it  ;) 
->> Ditto for several other devices that are being slowly special-cased,
->> and many that have yet to be tested.  This commit is (unfortunately)
->> a disaster with many regressions.
-> 
+>
 > There are many regressions right now, _ONLY_ if you enable
 > CONFIG_USB_SUSPEND.  If you disable that, your problems will go away,
 > right?
-> 
-> This option is a new option, and we have found out the hard way that
-> a very large class of hardware really does not like working with usb
-> suspend at all.
+..
+> Oh, and currently no distro will enable this option due to the hardware
+> problems, so the only people that could get hit by this are those who
+> build their own kernels, and they can easily disable the option.
 
-CONFIG_USB_SUSPEND is *not* a new config option.
-It's been around for quite some time now, and I also had it
-enabled in 2.6.22 without any troubles.  Definite regression here, folks!
+Ubuntu has CONFIG_USB_SUSPEND=y
 
-Cheers
+There are probably lots of other distros that use it as well.
+
+This new behaviour (failed operation of USB flash keys) is a *new* regression
+in 2.6.23, and we still have time to fix it by either reverting the changed
+functionality, or by changing the code to default OFF.
+
+Here's my patch for 2.6.23-rc6+ :
+
+Fix USB Storage failures.
+
+Signed-Off-By:  Mark Lord <mlord@pobox.com>
+---
+
+--- linux/drivers/usb/storage/usb.c.orig	2007-09-11 11:52:14.000000000 -0400
++++ linux/drivers/usb/storage/usb.c	2007-09-12 18:18:35.000000000 -0400
+@@ -1065,7 +1065,7 @@
+ 	.pre_reset =	storage_pre_reset,
+ 	.post_reset =	storage_post_reset,
+ 	.id_table =	storage_usb_ids,
+-	.supports_autosuspend = 1,
++	.supports_autosuspend = 0,
+ };
+ 
+ static int __init usb_stor_init(void)
