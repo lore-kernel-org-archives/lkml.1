@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbXIMOtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbXIMOve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755767AbXIMOtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 10:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbXIMOtd
+	id S1758814AbXIMOve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 10:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbXIMOvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 10:49:33 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:58721 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016AbXIMOtc (ORCPT
+	Thu, 13 Sep 2007 10:51:25 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:49781 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbXIMOvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 10:49:32 -0400
-Date: Thu, 13 Sep 2007 09:49:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-Cc: dan.j.williams@intel.com, paulus@samba.org, shannon.nelson@intel.com,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xxprocessors.
-Message-ID: <20070913144919.GB32043@ld0162-tx32.am.freescale.net>
-References: <11891624582950-git-send-email-wei.zhang@freescale.com> <20070907223553.GA18599@freescale.com> <46B96294322F7D458F9648B60E15112C85D8A5@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 13 Sep 2007 10:51:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=MnkEP1QkTIfgJNXtoKqUWZyUeqGtENMSReA2ILZvi+We7F5EH89qKOWxHs0YqCuVvYjqH8MG3lz1g1ypfdhwjgo7nYHa7WXWKUg7pcuHmN+gV6nK3TC6W9rspu3X0ZWza6o0L0iMNlFuYrtSSQQI+uoNNGVyhcOWbkb64l5Cp7M=
+Message-ID: <f158dc670709130751s2f6046beje5401ec6c56051dd@mail.gmail.com>
+Date: Thu, 13 Sep 2007 08:51:21 -0600
+From: "Latchesar Ionkov" <lucho@ionkov.net>
+To: "Eric Van Hensbergen" <ericvh@gmail.com>
+Subject: Re: [PATCH] 9p: rename uid and gid parameters
+Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <a4e6962a0709130638v384c2708y76167d4e92cbac56@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46B96294322F7D458F9648B60E15112C85D8A5@zch01exm26.fsl.freescale.net>
-User-Agent: Mutt/1.4.1i
+References: <20070913044718.GB2675@ionkov.net>
+	 <a4e6962a0709130638v384c2708y76167d4e92cbac56@mail.gmail.com>
+X-Google-Sender-Auth: 446c38e28937dc47
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 03:13:06AM -0700, Zhang Wei-r63237 wrote:
-> > After dropping the lock, you can no longer assume that your 
-> > iterator is
-> > still valid; you need to work off of the list head.
-> > 
-> 
-> list_for_each_entry_safe() is used here. I think the safe should be ok.
-> :P
+Zero was the value that was used before, even though it wasn't defined
+explicitly. I just defined a macro so we can see and eventually change
+it to something better. I don't know if there is a good default value.
+Is nfsnobody the same on all Linux distributions?
 
-Nope.  The safety is against the particular item you're iterating on
-being removed; it doesn't protect against the *next* entry being removed
-when you drop the lock.
+Thanks,
+    Lucho
 
-> > Why not use an array of channels?
-> 
-> The list is used in dma engine core file. And it's possible that there
-> are not all channel listed in dts and array.
-
-I'm not sure I understand what you mean by the latter comment...
-
-> > You could have the features be part of the match struct, so 
-> > you don't have
-> > to do extra strcmps.
-> > 
-> 
-> Can I use the data field of struct of_device_id?
-
-Yes, that's what it's there for. :-)
-
-> > > +static struct of_device_id of_fsl_dma_ids[] = {
-> > > +	{ .compatible = "fsl,dma", },
-> > > +};
-> > 
-> > Why do we need to bind to the parent node at all?
-> 
-> Yes, the MPC83xx should get interrupt source from DMA device register.
-
-You don't need to bind to it for that, though -- just call of_get_parent
-from the channel probe.  Though it might be easier to bind to the parent
-to ensure that you only register the IRQ once.
-
--Scott
+On 9/13/07, Eric Van Hensbergen <ericvh@gmail.com> wrote:
+> On 9/12/07, Latchesar Ionkov <lucho@ionkov.net> wrote:
+> > Change the names of 'uid' and 'gid' parameters to the more appropriate
+> > 'dfltuid' and 'dfltgid'.
+> >
+>
+> ...
+>
+> >         strcpy(v9ses->name, V9FS_DEFUSER);
+> >         strcpy(v9ses->remotename, V9FS_DEFANAME);
+> > +       v9ses->dfltuid = V9FS_DEFUID;
+> > +       v9ses->dfltgid = V9FS_DEFGID;
+> >
+> ...
+> > +#define V9FS_DEFUID    (0)
+> > +#define V9FS_DEFGID    (0)
+>
+> I'm not sure if there is a good solution here, but I'm uncomfortable
+> with using uid=0 as the default.  I'm not sure if there is a default
+> uid for nobody, but anything is probably better than 0.  Looks like
+> nfsnobody is 65534, we could use that - even if only as a marker for
+> the server to map it to nobody on the target system?  What do you
+> think?
+>
+> Particularly with attach-per-user, we probably need to look at
+> interacting with idmapd or create our own variant real soon.
+>
+>               -eric
+>
