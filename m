@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763840AbXIMQ0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbXIMQch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763840AbXIMQ0P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 12:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXIMQ0A
+	id S1761782AbXIMQch (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 12:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbXIMQca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 12:26:00 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:50223 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbXIMQZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 12:25:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=HB+vOuy/bwd3Oafd6Vr+pPAjI3QIvkleUyySreYpEv6Kd+n96fssPlE2V/RfFPnHnQDIWMsCXWna/W5nfrdWp0qiPuA40XG4au1yBLL2b/6z22USTpjvsAz7akCk7fiUQFSsodC5vbkcCKfasGdoRrkco5H6QceaIO18JH06tW4=
-Message-ID: <e9c3a7c20709130925s2234d652ne43bf44e204ac4e8@mail.gmail.com>
-Date: Thu, 13 Sep 2007 09:25:57 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xxprocessors.
-Cc: "Wood Scott-B07421" <scottwood@freescale.com>, paulus@samba.org,
-       shannon.nelson@intel.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46B96294322F7D458F9648B60E15112C85D8A5@zch01exm26.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Sep 2007 12:32:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39217 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752334AbXIMQc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 12:32:29 -0400
+Date: Thu, 13 Sep 2007 12:31:56 -0400
+From: Alan Cox <alan@redhat.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Tony Breeds <tony@bakeyournoodle.com>,
+       Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>,
+       davem@davemloft.net, heiko.carstens@de.ibm.com, hskinnemoen@atmel.com,
+       dhowells@redhat.com
+Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
+Message-ID: <20070913163156.GA29118@devserv.devel.redhat.com>
+References: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <11891624582950-git-send-email-wei.zhang@freescale.com>
-	 <20070907223553.GA18599@freescale.com>
-	 <46B96294322F7D458F9648B60E15112C85D8A5@zch01exm26.fsl.freescale.net>
-X-Google-Sender-Auth: 303d0a360e1eb95a
+In-Reply-To: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/13/07, Zhang Wei-r63237 <Wei.Zhang@freescale.com> wrote:
-> Hi,
->
-> > > +static void fsl_dma_set_src(dma_addr_t addr,
-> > > +                           struct dma_async_tx_descriptor
-> > *tx, int index)
-> > > +{
-> >
-> > What is index supposed to mean?  It's not used, or documented
-> > anywhere than
-> > I can see.
->
-> I've also got more document here. Hi, Dan, could you give me some
-> explanation about this API? :)
->
-The index field gets used for multi-source (or multi-dest) operations.
- XOR, for example, is a multi-source operation.  I am preparing a
-documentation patch.
+On Thu, Sep 13, 2007 at 01:16:31AM +1000, Paul Mackerras wrote:
+> asm-generic/termios.h).
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-[..]
-
---
-Dan
+Acked-by: Alan Cox <alan@redhat.com>
