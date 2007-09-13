@@ -1,35 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760911AbXIMJnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbXIMJtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760911AbXIMJnd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758484AbXIMJnX
+	id S1757486AbXIMJtS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbXIMJtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:43:23 -0400
-Received: from mail.suse.de ([195.135.220.2]:49382 "EHLO mx1.suse.de"
+	Thu, 13 Sep 2007 05:49:10 -0400
+Received: from mx2.suse.de ([195.135.220.15]:48838 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758296AbXIMJnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:43:22 -0400
-To: Reza Roboubi <reza@parvan.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: TCP_LINGER2 TIME_WAIT
-References: <46E8B491.2080107@parvan.net>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 13 Sep 2007 11:43:18 +0200
-In-Reply-To: <46E8B491.2080107@parvan.net>
-Message-ID: <p73ir6eyk7d.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1751340AbXIMJtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 05:49:07 -0400
+From: Andi Kleen <ak@suse.de>
+To: Yinghai Lu <Yinghai.Lu@sun.com>
+Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used
+Date: Thu, 13 Sep 2007 11:47:42 +0200
+User-Agent: KMail/1.9.1
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
+       Greg KH <greg@kroah.com>, Martin Mares <mj@ucw.cz>,
+       dean gaudet <dean@arctic.org>, Robert Richter <robert.richter@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200709121921.43950.yinghai.lu@sun.com>
+In-Reply-To: <200709121921.43950.yinghai.lu@sun.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709131147.43446.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reza Roboubi <reza@parvan.net> writes:
+On Thursday 13 September 2007 04:21, Yinghai Lu wrote:
+> [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used.
+>
+> reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
 
-> man 7 tcp says TCP_LINGER2 sets the lifetime of orphaned FIN_WAIT2 state
-> sockets.  What about wanting to forcibly kill a "rotten" TCP socket in
-> any other "WAIT" state like TIME_WAIT?
-
-The whole point of TIME-WAIT is catching old packets still in network.
-Killing it early would avoid its purpose.
+I just rejected a similar patch -- this should be done using MMCONFIG
 
 -Andi
