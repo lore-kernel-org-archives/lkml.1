@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbXIMPU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbXIMPVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760965AbXIMPU5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbXIMPUt
+	id S1761808AbXIMPVX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 11:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757095AbXIMPVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:20:49 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:48458 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756203AbXIMPUs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:20:48 -0400
-Date: Thu, 13 Sep 2007 11:20:42 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Adrian Bunk <bunk@kernel.org>
-cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       Oliver Neukum <oneukum@suse.de>
-Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
-In-Reply-To: <20070913145207.GF3563@stusta.de>
-Message-ID: <Pine.LNX.4.44L0.0709131111460.3619-100000@iolanthe.rowland.org>
+	Thu, 13 Sep 2007 11:21:11 -0400
+Received: from rtr.ca ([76.10.145.34]:1390 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756335AbXIMPVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 11:21:09 -0400
+Message-ID: <46E95563.5020704@rtr.ca>
+Date: Thu, 13 Sep 2007 11:21:07 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Niels <zorglub_olsen@hotmail.com>,
+       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] Problems with USB disk [solved]
+References: <Pine.LNX.4.44L0.0709131105250.3619-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0709131105250.3619-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007, Adrian Bunk wrote:
-
-> > These two patches address the need today to have users machines still
-> > work, even if they might draw more power than they possibly could (which
-> > is not any more than they did in 2.6.22.)
-> > 
-> > These patches do two things:
-> >   - disable USB autosuspend on all devices except for USB hubs.  This
-> >     can be easily overridden by userspace to turn on autosuspend for
-> >     devices that a user wants to.  HAL will use a whitelist in the
-> >     future for these types of devices.
-> >...
+Alan Stern wrote:
+> On Thu, 13 Sep 2007, Mark Lord wrote:
+..
+>> What happens is, there's a nice little LED on the Cruzer stick,
+>> that is "lit" when the stick itself is not in a "power suspend" state
+>> (or whatever you USB folks call it).
 > 
-> Not related to the patch for 2.6.23, but I have a gut feeling that 
-> something might be done the wrong way later:
+> We call it "suspended".  (Wasn't there an episode of Classic Trek where 
+> Mr. Spock explained to somebody, "I call them `ears'."?)
 > 
-> If I understand you correctly, you are saying that I will have to 
-> install HAL for getting a whitelist for in-kernel functionality?
+>> On 2.6.22, that little LED stays "on" normally, and flickers off/on
+>> when data is being transfered.
+>>
+>> The new "USB autosuspend" logic in 2.6.23 now causes that little LED
+>> to turn off after a few seconds of inactivity.
+>>
+>> Once that happens, the USB stick is not accessible until after a longish
+>> timeout (~30s I think), followed by a USB reset.  Then it is usable again
+>> until the next inactivity timeout and autosuspend (a few seconds).
+> 
+> So this _isn't_ the regression described above -- to wit, that the 
+> drive gets spun down and then won't work without first being spun back 
+> up.  You wrote:
+> 
+>>>> My Sandisk Cruzer Micro 1GB USB sticks suffer from this regression.
+> 
+> But it doesn't.  It suffers from a different regression.
 
-Your meaning isn't entirely clear.  Presumably HAL will contain such a 
-whitelist.  But there's nothing to stop you from setting up your own 
-whitelist via udev scripts, or even turning autosuspend on or off by 
-hand.
+Perhaps, but that doesn't necessarily follow from the above.
+>From this observer's point of view (and being an expert on disk technologies),
+the same "spin up" issue for rotating media could be the culprit here too.
 
-> It is a good thing if userspace can add currently missing devices to
-> whitelists, but the whitelist itself should be in the kernel.
+A reset to a disk drive usually (not always) causes it to spin up.
 
-It's not clear that this sort of approach will turn out to be workable.  
-Whitelists/blacklists do okay in the kernel when they refer to a 
-relatively small subset of devices.  However in this case I have the 
-impression that we're talking about roughly a 50/50 split.  Keeping an 
-in-kernel list with even 10% of all existing USB devices simply isn't 
-feasible.
+Regardless, Greg has acknowledged the regression and is planning to revert things.
 
-Besides, is it really that much harder for userspace to modify device
-settings as the devices are detected than for it to modify an in-kernel
-whitelist just once?  Don't forget about possible races: Devices may
-already have been detected and configured before userspace was able to
-modify the whitelist.
-
-Alan Stern
-
+Cheers
