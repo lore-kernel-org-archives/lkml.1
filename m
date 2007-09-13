@@ -1,68 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763285AbXIMCeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbXIMCkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763285AbXIMCeH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 22:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbXIMCdz
+	id S1760288AbXIMCkt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 22:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbXIMCkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 22:33:55 -0400
-Received: from rtr.ca ([76.10.145.34]:3636 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757433AbXIMCdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 22:33:54 -0400
-Message-ID: <46E8A18C.8080607@rtr.ca>
-Date: Wed, 12 Sep 2007 22:33:48 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: Oliver Neukum <oliver@neukum.org>, Paolo Ornati <ornati@fastwebnet.it>,
-       linux-usb-devel@lists.sourceforge.net,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [linux-usb-devel] spontaneous disconnect with "usb-storage:	implement
- autosuspend"
-References: <20070814131557.5653d991@localhost> <200708141746.16958.oliver@neukum.org> <20070814183857.28997de1@localhost> <200708142033.23158.oliver@neukum.org> <46E864AC.1020000@rtr.ca> <20070912234016.GA455@kroah.com>
-In-Reply-To: <20070912234016.GA455@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 12 Sep 2007 22:40:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48640 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758133AbXIMCkk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 22:40:40 -0400
+Date: Wed, 12 Sep 2007 19:39:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Michael Kerrisk" <mtk-manpages@gmx.net>
+Cc: corbet@lwn.net, jengelh@computergmbh.de, hch@lst.de, stable@kernel.org,
+       drepper@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, rdunlap@xenotime.net,
+       vda.linux@googlemail.com, davidel@xmailserver.org
+Subject: Re: timerfd redux
+Message-Id: <20070912193920.441cf901.akpm@linux-foundation.org>
+In-Reply-To: <20070905153201.236690@gmx.net>
+References: <20070825064114.107820@gmx.net>
+	<20070904011800.762523a4.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0709040805490.6887@alien.or.mcafeemobile.com>
+	<200709051312.21873.vda.linux@googlemail.com>
+	<20070905153201.236690@gmx.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
->
-> There are many regressions right now, _ONLY_ if you enable
-> CONFIG_USB_SUSPEND.  If you disable that, your problems will go away,
-> right?
-..
-> Oh, and currently no distro will enable this option due to the hardware
-> problems, so the only people that could get hit by this are those who
-> build their own kernels, and they can easily disable the option.
+On Wed, 05 Sep 2007 17:32:01 +0200 "Michael Kerrisk" <mtk-manpages@gmx.net> wrote:
 
-Ubuntu has CONFIG_USB_SUSPEND=y
+> [Was: Re: [PATCH] Revised timerfd() interface]
+> 
+> > Michael, could you please refresh our memories with a brief,
+> > from-scratch summary of what the current interface is, followed
+> > by a summary of what you believe to be the shortcomings to be? 
+> 
+> Andrew,
+> 
+> I'll break this up into parts:
+> 
+> 1. the existing timerfd interface
+> 2. timerfd limitations
+> 3. possible solutions
+>      a) Add an argument
+>      b) Create an interface similar to POSIX timers
+>      c) Integrate timerfd with POSIX timers
+> 
+> Cheers,
+> 
+> Michael
+> 
+> 
+> 1: the existing timerfd interface
+> =================================
+> 
+> In 2.6.22, Davide added timerfd() with the following interface:
+> 
+> returned_fd = timerfd(int fd, int clockid, int flags,
+>                       struct itimerspec *utimer);
+> 
+> If fd is -1, a new timer is created and started.  The syscall
+> returns a file descriptor for the timer. 'utimer' specifies
+> the initial expiration and interval of the timer.
+> 'clockid' is CLOCK_REALTIME or CLOCK_REALTIME.  The 'utimer'
+> value is relative, unless TFD_TIMER_ABSTIME is specified in
+> 'flags', in which case the initial expiration is specified
+> absolutely.
+> 
+> If 'fd' is not -1, then the call modifies the existing timer
+> referred to by the file descriptor 'fd'.  The 'clockid', 'flags',
+> and 'utimer' can all be modified.  The return value is 'fd'.
+> 
+> The key feature of timerfd() is that the caller can use
+> select/poll/epoll to wait on traditional file descriptors and
+> one or more timers.
+> 
+> read() from a timerfd file descriptor (should) return a 4-byte
+> integer that is the number of timer expirations since the last
+> read.  (If no expiration has so far occurred, read() will block.)
+> 
+> IMPORTANT POINT: as implemented in 2.6.22, timerfd was broken:
+> only a single byte of info was returned by read().  I regard
+> this as a virtue: it gives us something closer to a blank slate
+> for fixing the problems described below; furthermore,
+> arguably at this point we could buy ourselves time by
+> pulling timerfd() from 2.6.23, and taking more time to get
+> things right in 2.6.24.
+> 
+> (More details on timerfd() can be found here: 
+> http://lwn.net/Articles/245533/)
 
-There are probably lots of other distros that use it as well.
+OK.
 
-This new behaviour (failed operation of USB flash keys) is a *new* regression
-in 2.6.23, and we still have time to fix it by either reverting the changed
-functionality, or by changing the code to default OFF.
+> 2. timerfd limitations
+> ======================
+> 
+> Unix has two older timer interfaces:
+> 
+> * setitimer/getitimer and
+> 
+> * POSIX timers (timer_create/timer_settime/timer_gettime).
+> 
+> timerfd() lacks two features that are present in the older
+> interfaces:
+> 
+> * Retrieve the previous setting of an existing timer when
+>   setting a new value for the timer.
+> 
+> * Non-destructively fetch the timer remaining until the
+>   next expiration of the timer.
+> 
+> The fact that this functionality is present in both older APIs
+> strongly suggests that various applications really need both
+> functionalities.  
 
-Here's my patch for 2.6.23-rc6+ :
+Yes, I can imagine applications wanting to do those things.
 
-Fix USB Storage failures.
+> (Davide has argued that timerfd() doesn't need the
+> get-while-setting functionality because we can create multiple
+> timerfd timers.  However, POSIX timers also allow multiple
+> timer instances, but nevertheless provide get-while-setting.
+> I would estimate that this functionality would be useful for
+> libraries that want to create and control a (single) timerfd
+> file descriptor that is returned to the caller.)
 
-Signed-Off-By:  Mark Lord <mlord@pobox.com>
----
+Sure.  If you're implementing a timeout and you want to reset it, you might
+indeed want to know how close the old one was to expiring.
 
---- linux/drivers/usb/storage/usb.c.orig	2007-09-11 11:52:14.000000000 -0400
-+++ linux/drivers/usb/storage/usb.c	2007-09-12 18:18:35.000000000 -0400
-@@ -1065,7 +1065,7 @@
- 	.pre_reset =	storage_pre_reset,
- 	.post_reset =	storage_post_reset,
- 	.id_table =	storage_usb_ids,
--	.supports_autosuspend = 1,
-+	.supports_autosuspend = 0,
- };
- 
- static int __init usb_stor_init(void)
+Davide's proposal sounds like an awkward workaround for missing
+functionality.
+
+
+Does Davide have a proposal for the non-destructive fetch?
+
+
+> 3. possible solutions
+
+I don't think we'll have this settled and coded in time for 2.6.23.  So I
+think the prudent thing to do is to push this back to 2.6.24 and not offer
+sys_timerfd() in 2.6.23.
+
