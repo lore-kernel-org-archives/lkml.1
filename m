@@ -1,155 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765482AbXIMFd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764055AbXIMFkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765482AbXIMFd2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 01:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbXIMFdT
+	id S1764055AbXIMFkT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 01:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbXIMFkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 01:33:19 -0400
-Received: from [212.12.190.184] ([212.12.190.184]:32839 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751082AbXIMFdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 01:33:18 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: hooanon05@yahoo.co.jp, Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [RFC] Union Mount: Readdir approaches
-Date: Thu, 13 Sep 2007 08:32:09 +0300
-User-Agent: KMail/1.5
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, hch@infradead.org,
-       Jan Blunck <jblunck@suse.de>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-References: <20070907054618.GD1692@in.ibm.com> <Pine.LNX.4.64.0709122024500.22467@fbirervta.pbzchgretzou.qr> <E1IVeEx-0000rJ-1R@jroun>
-In-Reply-To: <E1IVeEx-0000rJ-1R@jroun>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 13 Sep 2007 01:40:07 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:24857 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbXIMFkF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 01:40:05 -0400
+Date: Wed, 12 Sep 2007 22:21:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: crashme fault
+Message-Id: <20070912222151.70d1fc7d.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709130832.09330.a1426z@gawab.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hooanon05@yahoo.co.jp wrote:
-> Jan Engelhardt:
-> > On Sep 12 2007 13:46, Al Boldi wrote:
-> > >This is way too complicated, but I tried it anyway, only to find it
-> > > doesn't compile:
-> >
-> > cvs up -D 2007-08-07
-> >
-> > that one works ;-)
->
-> Jan, do you mean that only the one month old version could be compiled?
-> It it rather surprise since I know some users compiled the newer
-> versions. Won't you tell me how did you 'make' it? I think a personal
-> mail for me is pereferable to ML.
->
-> To Al Boldi,
-> Will you send me directly the message which is quoted by Jan? Since it
-> was not delivered to me.
->
-> Thanks in advance.
-> Junjiro Okajima
+I run almost-daily kernel testing.  I haven't seen 'crashme' cause a
+kernel fault until today, and now I've seen it twice on 2.6.23-rc6-git2,
+x86_64.  After the first fault, I ran 'crashme' about 10 more times
+to get the second fault (usually for 10 minutes, one time for 30
+minutes).
 
-It turns out that the problem was this in dentry.c:
+[This is gjc-crashme, not Dave's scrashme replacement:
+http://people.delphiforums.com/gjc/crashme.html]
 
-627-            if (unlikely(do_udba
-628-                         && !is_root
-629-                         && (unhashed != d_unhashed(h_dentry)
-630://#if 1
-631-                             || name->len != h_dentry->d_name.len
-632-                             || memcmp(name->name, h_dentry->d_name.name,
-633-                                       name->len)
-634-//#endif
-635-                                 ))) {
-636-                    LKTRTrace("unhash 0x%x 0x%x, %.*s %.*s\n",
-637-                              unhashed, d_unhashed(h_dentry),
-638-                              DLNPair(dentry), DLNPair(h_dentry));
-639-                    goto err;
-640-            }
+There is very little helpful info.  RIP is strange, e.g.: 000000000051b446
+The call stack is not printed.  No kernel symbols are printed,
+even though I have CONFIG_KALLSYMS{_ALL}=y.
 
-Commenting the #if block makes it compile now.
+Here are the 2 kernel message logs of the faults.
+Any ideas/suggestions?  I suppose I will try to log the syscall
+parameters that crashme is using.
 
-Works great too.  Even performance wise.  Needs more testing though.
+~~~~~~~~~~~~~~~~~~~~ 1. ~~~~~~~~~~~~~~~~~~~~~~~
 
-You really need to post a cleaned up version for review and possible 
-inclusion into mainline.  It definitely looks solid.
+[ 7487.208128] Unable to handle kernel paging request at 00000000ff019b53 RIP:
+[ 7487.212752]  [<0000000000510eea>]
+[ 7487.218537] PGD 10c1a2067 PUD 0
+[ 7487.221811] Oops: 0000 [1] SMP
+[ 7487.224989] CPU 2
+[ 7487.227024] Modules linked in: loop
+[ 7487.230550] Pid: 19139, comm: crashme Not tainted 2.6.23-rc6-git2 #1
+[ 7487.236896] RIP: 0033:[<0000000000510eea>]  [<0000000000510eea>]
+[ 7487.242925] RSP: 002b:00007fffc9a8ec10  EFLAGS: 00010e83
+[ 7487.248234] RAX: 00000000ffff8c4a RBX: 00000000004014f1 RCX: 00002b20e11c8b37
+[ 7487.255361] RDX: 0000000000510ee0 RSI: 0000000000000000 RDI: 000000000000000a
+[ 7487.262489] RBP: 00007fffc9a8ec10 R08: 00007fffc9a8eb60 R09: 0000000000000000
+[ 7487.269616] R10: 0000000000000008 R11: 0000000000000612 R12: 0000000000000000
+[ 7487.276743] R13: 00007fffc9a8ee00 R14: 0000000000000000 R15: 0000000000000000
+[ 7487.283871] FS:  00002b20e13676d0(0000) GS:ffff81011fc75840(0000) knlGS:0000000000000000
+[ 7487.291952] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[ 7487.297693] CR2: 00000000ff019b53 CR3: 000000005be6b000 CR4: 00000000000006e0
+[ 7487.304821] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 7487.311949] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[ 7487.319076] Process crashme (pid: 19139, threadinfo ffff810106830000, task ffff810102cf5040)
+[ 7487.327511]
+[ 7487.329009] RIP  [<0000000000510eea>]
+[ 7487.332690]  RSP <00007fffc9a8ec10>
+[ 7487.336180] CR2: 00000000ff019b53
+[ 7487.339810] Kernel panic - not syncing: Fatal exception
 
+~~~~~~~~~~~~~~~~~~~ 2. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Thanks!
-
---
-Al
-
-----------  Original Message  ----------
-
-Subject: Re: [RFC] Union Mount: Readdir approaches
-Date: Wednesday 12 September 2007 01:46 pm
-From: Al Boldi <a1426z@gawab.com>
-To: hooanon05@yahoo.co.jp
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, 
-linux-fsdevel@vger.kernel.org, hch@infradead.org, Jan Blunck 
-<jblunck@suse.de>, "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-
-hooanon05@yahoo.co.jp wrote:
-> But if you really want to read or try it, you can get all source files
-> from sourceforge. Read http://aufs.sf.net and try,
-> $ cvs -d:pserver:anonymous@aufs.cvs.sourceforge.net:/cvsroot/aufs login
-> (CVS password is empty)
-> $ cvs -z3 -d:pserver:anonymous@aufs.cvs.sourceforge.net:/cvsroot/aufs co
-> aufs
-
-This is way too complicated, but I tried it anyway, only to find it doesn't
-compile:
-
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CC      fs/aufs/dentry.o
-fs/aufs/dentry.c:630:1: directives may not be used inside a macro argument
-fs/aufs/dentry.c:629:65: unterminated argument list invoking macro
- "unlikely" fs/aufs/dentry.c: In function `h_d_revalidate':
-fs/aufs/dentry.c:631: `unlikely' undeclared (first use in this function)
-fs/aufs/dentry.c:631: (Each undeclared identifier is reported only once
-fs/aufs/dentry.c:631: for each function it appears in.)
-fs/aufs/dentry.c:635: parse error before ')' token
-fs/aufs/dentry.c:571: warning: unused variable `h_plus'
-fs/aufs/dentry.c:571: warning: unused variable `is_nfs'
-fs/aufs/dentry.c:572: warning: unused variable `p'
-fs/aufs/dentry.c:575: warning: unused variable `h_inode'
-fs/aufs/dentry.c:575: warning: unused variable `h_cached_inode'
-fs/aufs/dentry.c:576: warning: unused variable `h_mode'
-fs/aufs/dentry.c:578: warning: unused variable `reval'
-fs/aufs/dentry.c:639: label `err' used but not defined
-fs/aufs/dentry.c: At top level:
-fs/aufs/dentry.c:642: warning: type defaults to `int' in declaration of
-`reval'
-fs/aufs/dentry.c:642: warning: initialization makes integer from pointer
-without a cast
-fs/aufs/dentry.c:642: warning: data definition has no type or storage class
-fs/aufs/dentry.c:643: parse error before "if"
-fs/aufs/dentry.c:649: warning: type defaults to `int' in declaration of
- `err' fs/aufs/dentry.c:649: `h_dentry' undeclared here (not in a function)
- fs/aufs/dentry.c:649: `p' undeclared here (not in a function)
-fs/aufs/dentry.c:649: called object is not a function
-fs/aufs/dentry.c:649: warning: data definition has no type or storage class
-fs/aufs/dentry.c:650: parse error before "if"
-fs/aufs/dentry.c:653: warning: type defaults to `int' in declaration of
-`fake_dm_release'
-fs/aufs/dentry.c:653: warning: parameter names (without types) in function
-declaration
-fs/aufs/dentry.c:653: conflicting types for `fake_dm_release'
-
-...and more...
+[16625.590976] Unable to handle kernel paging request at 00000000ff019f05 RIP: 
+[16625.595604]  [<000000000051b446>]
+[16625.601397] PGD d9af2067 PUD 0 
+[16625.604577] Oops: 0000 [1] SMP 
+[16625.607754] CPU 1 
+[16625.609789] Modules linked in: loop
+[16625.613315] Pid: 23057, comm: crashme Not tainted 2.6.23-rc6-git2 #1
+[16625.619662] RIP: 0033:[<000000000051b446>]  [<000000000051b446>]
+[16625.625689] RSP: 002b:00007fff7b5851f0  EFLAGS: 00010603
+[16625.630998] RAX: 0000000000000000 RBX: 00002b672f63ec00 RCX: 00002b672f6d1b37
+[16625.638127] RDX: 0000000000401476 RSI: 0000000000000000 RDI: 000000000000000a
+[16625.645254] RBP: 00007fff7b5851f0 R08: 00007fff7b585140 R09: 0000000000000000
+[16625.652381] R10: 0000000000000008 R11: 0000000000000612 R12: 0000000000000000
+[16625.659508] R13: 00007fff7b5853e0 R14: 0000000000000000 R15: 0000000000000000
+[16625.666637] FS:  00002b672f8706d0(0000) GS:ffff81011fc75e40(0000) knlGS:0000000000000000
+[16625.674717] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[16625.680458] CR2: 00000000ff019f05 CR3: 00000000d942b000 CR4: 00000000000006e0
+[16625.687587] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[16625.694714] DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
+[16625.701841] Process crashme (pid: 23057, threadinfo ffff8100d9bfe000, task ffff81011e83a040)
+[16625.710267] 
+[16625.711765] RIP  [<000000000051b446>]
+[16625.715446]  RSP <00007fff7b5851f0>
+[16625.718937] CR2: 00000000ff019f05
+[16625.722553] Kernel panic - not syncing: Fatal exception
 
 
-It would make matters much easier if you could just publish a link to a
-combo-patch against at least the latest stable kernel, like 2.6.22.
-
-
-Thanks!
-
---
-Al
-
+---
+~Randy
