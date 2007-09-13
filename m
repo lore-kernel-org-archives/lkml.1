@@ -1,90 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbXIMPWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbXIMPdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761569AbXIMPWt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbXIMPWj
+	id S1758576AbXIMPdn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 11:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbXIMPdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:22:39 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:28659 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756203AbXIMPWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:22:38 -0400
-Date: Thu, 13 Sep 2007 17:22:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       orgis@agnld.uni-potsdam.de, arekm@maven.pl, ed.lin@promise.com,
-       Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com
-Subject: Re: [PATCH] Fix race with shared tag queue maps
-Message-ID: <20070913152222.GS25592@kernel.dk>
-References: <20070913122652.GK25592@kernel.dk> <alpine.LFD.0.999.0709130813220.16478@woody.linux-foundation.org>
+	Thu, 13 Sep 2007 11:33:31 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:48314 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754240AbXIMPda (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 11:33:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lWT4tOX9Z3K2qM2X+ITdX2ZOc++RrHv1eH8b/JKYS8+lntwkY/bDRV0Rg7O1NpdIDdgjjPwfdtZ8WLWtPSYuKArtx/ErdR7cIXG/0fwGV3vACMIIWzYX5M4eaFj3mz41JgKwG72VUbgpz1jn335kYexOq4NxW52vwBzckzucWJY=
+Message-ID: <8bd0f97a0709130833g7873ed03m2eff4318a0e4a3e2@mail.gmail.com>
+Date: Thu, 13 Sep 2007 11:33:02 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: [patch] add some Blackfin specific checks to checkpatch.pl
+Cc: "Mike Frysinger" <vapier@gentoo.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, bryan.wu@analog.com
+In-Reply-To: <20070913115521.GB5146@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709130813220.16478@woody.linux-foundation.org>
+References: <200708211829.59975.vapier@gentoo.org>
+	 <20070913115521.GB5146@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13 2007, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 13 Sep 2007, Jens Axboe wrote:
-> > +
-> > +	/*
-> > +	 * Ensure ordering with tag section
-> > +	 */
-> > +	smp_mb__before_clear_bit();
-> > +
-> > +	if (unlikely(!test_and_clear_bit(tag, bqt->tag_map))) {
-> 
-> You don't need the "smp_mb__before_clear_bit()" there.
-> 
-> The regular "clear_bit()" needs it, but the "test_and_xxx()" versions are 
-> architecturally defined to be memory barriers, exactly because they are 
-> regularly used for locking.
-> 
-> This is even documented - see Documentation/atomic_ops.txt.
+On 9/13/07, Andy Whitcroft <apw@shadowen.org> wrote:
+> On Tue, Aug 21, 2007 at 06:29:59PM -0400, Mike Frysinger wrote:
+> > Check for a few common errors in Blackfin-specific code wrt MMR loading in
+> > assembly and doing core/system syncs.
+>
+> If we are going to pull arch specific things into checkpatch I think we
+> need to make sure we are pretty specific about where we apply them.  I
+> am assuming these checks only make sense againt some files in the arch
+> tree?
 
-My bad, I think I added the smp_mb__before_clear_bit() when it was
-__test_and_set_bit() like in the first hunk.
+ive restricted the .S check to arch/blackfin/, but the other check
+should be run on all .c files since Blackfin drivers may live anywhere
+in the tree, not just in arch/ ... i really doubt that'd be a problem
+unless another architecture starts implementing functions with
+"__builtin_bfin_ssync" in its name ...
 
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index a15845c..dfc9f22 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -1075,12 +1075,6 @@ void blk_queue_end_tag(struct request_queue *q, struct request *rq)
- 		 */
- 		return;
- 
--	if (unlikely(!__test_and_clear_bit(tag, bqt->tag_map))) {
--		printk(KERN_ERR "%s: attempt to clear non-busy tag (%d)\n",
--		       __FUNCTION__, tag);
--		return;
--	}
--
- 	list_del_init(&rq->queuelist);
- 	rq->cmd_flags &= ~REQ_QUEUED;
- 	rq->tag = -1;
-@@ -1090,6 +1084,18 @@ void blk_queue_end_tag(struct request_queue *q, struct request *rq)
- 		       __FUNCTION__, tag);
- 
- 	bqt->tag_index[tag] = NULL;
-+
-+	if (unlikely(!test_and_clear_bit(tag, bqt->tag_map))) {
-+		printk(KERN_ERR "%s: attempt to clear non-busy tag (%d)\n",
-+		       __FUNCTION__, tag);
-+		return;
-+	}
-+
-+	/*
-+	 * Ensure ordering between ->tag_index[tag] clear and tag clear
-+	 */
-+	smp_mb__after_clear_bit();
-+
- 	bqt->busy--;
- }
- 
-
--- 
-Jens Axboe
-
+side note, Joe pointed out that arch/blackfin regex should be m@...@, not s@...@
+-mike
