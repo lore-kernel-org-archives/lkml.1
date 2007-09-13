@@ -1,70 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbXIMO1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632AbXIMO2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757956AbXIMO1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 10:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbXIMO1I
+	id S1757632AbXIMO2z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 10:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbXIMO2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 10:27:08 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:5058 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbXIMO1H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 10:27:07 -0400
-In-Reply-To: <adaps0nmbfa.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
+	Thu, 13 Sep 2007 10:28:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50018 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751600AbXIMO2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 10:28:46 -0400
+Date: Thu, 13 Sep 2007 16:28:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] CFS-devel, performance improvements
+Message-ID: <20070913142842.GA26016@elte.hu>
+References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home> <20070913075258.GA9173@elte.hu> <Pine.LNX.4.64.0709131419170.1817@scrub.home>
 MIME-Version: 1.0
-Subject: Re: [PATCH] IB/ehca: Make sure user pages are from hugetlb before using MR
- large pages
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OF2FF112E2.22D1AA53-ONC1257355.00360D85-C1257355.004F61C6@de.ibm.com>
-Date: Thu, 13 Sep 2007 16:27:03 +0200
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 13/09/2007 16:27:04,
-	Serialize complete at 13/09/2007 16:27:04
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709131419170.1817@scrub.home>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier <rdreier@cisco.com> wrote on 13.09.2007 06:33:45:
 
->  > -#define HCA_CAP_MR_PGSIZE_4K  1
->  > -#define HCA_CAP_MR_PGSIZE_64K 2
->  > -#define HCA_CAP_MR_PGSIZE_1M  4
->  > -#define HCA_CAP_MR_PGSIZE_16M 8
->  > +#define HCA_CAP_MR_PGSIZE_4K  0x80000000
->  > +#define HCA_CAP_MR_PGSIZE_64K 0x40000000
->  > +#define HCA_CAP_MR_PGSIZE_1M  0x20000000
->  > +#define HCA_CAP_MR_PGSIZE_16M 0x10000000
-> 
-> Not sure I understand what this has to do with things... is this an
-> unrelated fix?
+* Roman Zippel <zippel@linux-m68k.org> wrote:
 
-Kinda. I can put it into its own patch if you want.
- 
-> I would suggest extending ib_umem_get() to check the vmas and adding a
-> member to struct ib_umem to say whether the memory is entirely covered
-> by hugetlb pages or not.
+> Then you had the time to reimplement the very things you've just asked 
+> me about and what do I get credit for - "two cleanups from RFS".
 
-I like that approach - one patch coming right up! =)
- 
->  > +      default: /* out of mem */
->  > +         ib_mr = ERR_PTR(-ENOMEM);
->  > +         goto reg_user_mr_exit1;
-> 
-> It seems like it would be better to just assume the memory is not from
-> a hugetlb is ehca_is_mem_hugetlb() fails its memory allocation and
-> fall back to the PAGE_SIZE case rather than failing entirely.
+i'm sorry to say this, but you must be reading some other email list and 
+a different git tree than what i am reading.
 
-If ehca_is_mem_hugetlb() runs out of memory, ehca_reg_mr() is rather 
-unlikely to get the memory, but it's worth a try, I'll give you that. I'll 
-make the umem patch work that way.
+Firstly, about communications - in the past 3 months i've written you 40 
+emails regarding CFS - and that's more emails than my wife (or any 
+member of my family) got in that timeframe :-( I just ran a quick 
+script: i sent more CFS related emails to you than to any other person 
+on this planet. I bent backwards trying to somehow get you to cooperate 
+with us (and i still havent given up on that!) - instead of you 
+disparaging CFS and me frequently :-(
 
-Joachim
+Secondly, i prominently credited you as early as in the second sentence 
+of our announcement:
+
+ | fresh back from the Kernel Summit, Peter Zijlstra and me are pleased 
+ | to announce the latest iteration of the CFS scheduler development 
+ | tree. Our main focus has been on simplifications and performance - 
+ | and as part of that we've also picked up some ideas from Roman 
+ | Zippel's 'Really Fair Scheduler' patch as well and integrated them 
+ | into CFS. We'd like to ask people go give these patches a good 
+ | workout, especially with an eye on any interactivity regressions.
+
+   http://lkml.org/lkml/2007/9/11/395
+
+And you are duly credited in 3 patches:
+
+   ------------------->
+
+   Subject: sched: introduce se->vruntime
+
+   introduce se->vruntime as a sum of weighted delta-exec's, and use 
+   that as the key into the tree.
+
+   the idea to use absolute virtual time as the basic metric of 
+   scheduling has been first raised by William Lee Irwin, advanced by 
+   Tong Li and first prototyped by Roman Zippel in the "Really Fair 
+   Scheduler" (RFS) patchset.
+
+   also see:
+
+      http://lkml.org/lkml/2007/9/2/76
+
+   for a simpler variant of this patch.
+
+   ------------------->
+
+   Subject: sched: track cfs_rq->curr on !group-scheduling too
+
+   Noticed by Roman Zippel: use cfs_rq->curr in the !group-scheduling 
+   case too. Small micro-optimization and cleanup effect:
+
+   ------------------->
+
+   Subject: sched: uninline __enqueue_entity()/__dequeue_entity()
+
+   suggested by Roman Zippel: uninline __enqueue_entity() and 
+   __dequeue_entity().
+
+   ------------------->
+
+We could not add you as the author, because you unfortunately did not 
+make your changes applicable to CFS. I've asked you _three_ separate 
+times to send a nicely split up series so that we can apply your code:
+
+  " it's far easier to review and merge stuff if it's nicely split up. "
+
+   http://lkml.org/lkml/2007/9/2/38
+
+  " I also think that the core math changes should be split from the 
+    Breshenham optimizations. "
+
+   http://lkml.org/lkml/2007/9/2/43
+
+   " That's also why i've asked for a split-up patch series - it makes 
+     it far easier to review and test the code and it makes it far 
+     easier to quickly apply the obviously correct bits. "
+
+   http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg204094.html
+
+You never directly replied to these pretty explicit requests, all you 
+did was this side remark 5 days later in one of your patch 
+announcements:
+
+   " For a split version I'm still waiting for some more explanation
+     about the CFS tuning parameter. "
+
+     http://lkml.org/lkml/2007/9/7/87
+
+You are an experienced kernel hacker. How you can credibly claim that 
+while you were capable of writing a new scheduler along with a series of 
+25 complex mathematical equations that few if any lkml readers are able 
+to understand (and which scheduler came in one intermixed patch that 
+added no new comments at all!), and that you are able to maintain the 
+m68k Linux architecture code, but that at the same time some supposed 
+missing explanation from _me_ makes you magically incapable to split up 
+_your own fine code_? This is really beyond me.
+
+I even gave you the first baby step of the split-up by sending this:
+
+    http://lkml.org/lkml/2007/9/2/76
+
+And your reaction to this was dismissive:
+
+  " It simplifies the math too much, the nice level weighting is an 
+    essential part of the math and without it one can't really 
+    understand the problem I'm trying to solve. "
+
+    http://lkml.org/lkml/2007/9/3/174
+
+So we advanced this whole issue by trying the vruntime concept in CFS 
+and adding the 2 cleanups from RFS (we couldnt actually use any code 
+from you, due to the way you shaped your patch - but we'd certainly be 
+glad to!). You've seen the earliest iteration of that at:
+
+    http://lkml.org/lkml/2007/9/2/76
+
+So far you've sent 3 updates of your patch without addressing any of the 
+structural feedback we gave. We virtually begged you to make your code 
+finegrained and applicable - but you did not do that.
+
+And please understand, splitting up patches is paramount when 
+cooperating with others: we are not against adding code that makes sense 
+(to the contrary and we do that every day), but it has to be done 
+gradually, in order of utility and impact, so please do send finegrained 
+patches if you wish to contribute. (but plain verbal feedback is useful 
+too - whichever you prefer.)
+
+I asked you to send a split-up queue repeatedly and finally we ended up 
+extracting _one_ concept from your patch (which concept was suggested by 
+others months ago already, in the CFS discussions) and two cleanups. You 
+are credited for that in the patches. Please send us your other changes 
+as a finegrained series and if they are applied you are (of course) 
+credited as the author. Does this sound good to you?
+
+	Ingo
