@@ -1,114 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758254AbXIMK4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759720AbXIMLD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758254AbXIMK4x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 06:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbXIMK4q
+	id S1759720AbXIMLD4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 07:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbXIMLDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 06:56:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37877 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753618AbXIMK4p (ORCPT
+	Thu, 13 Sep 2007 07:03:48 -0400
+Received: from mailout04.sul.t-online.de ([194.25.134.18]:50764 "EHLO
+	mailout04.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751958AbXIMLDr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 06:56:45 -0400
-Date: Thu, 13 Sep 2007 03:55:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Michael Neuling <mikey@neuling.org>, Jan Dittmer <jdi@l4x.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tony Breeds <tony@bakeyournoodle.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>,
-       davem@davemloft.net, heiko.carstens@de.ibm.com, hskinnemoen@atmel.com,
-       dhowells@redhat.com
-Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
-Message-Id: <20070913035506.b599e84f.akpm@linux-foundation.org>
-In-Reply-To: <20070913095346.GA28194@linux-sh.org>
-References: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
-	<46E8DF49.7090402@l4x.org>
-	<5058.1189668156@neuling.org>
-	<20070913095346.GA28194@linux-sh.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Sep 2007 07:03:47 -0400
+Message-ID: <46E918FD.3070607@t-online.de>
+Date: Thu, 13 Sep 2007 13:03:25 +0200
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070810)
+MIME-Version: 1.0
+To: bryan.wu@analog.com
+CC: Mike Frysinger <vapier.adi@gmail.com>, bernd.schmidt@analog.com,
+       linux-arch@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Uclinux-dist-devel] Re: [PATCH] Blackfin arch: add some missing
+ syscall
+References: <1189670203.30686.15.camel@roc-desktop>	<20070913081852.GC17367@parisc-linux.org>	<8bd0f97a0709130137l55977c28w95cf8527ae8b9e24@mail.gmail.com> <1189673849.30686.28.camel@roc-desktop>
+In-Reply-To: <1189673849.30686.28.camel@roc-desktop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ID: bjc5b-Z-Zed34kqo0iJBvvhDanl4csD5VroZUrLZAsLivhK8wu8Rgv
+X-TOI-MSGID: bbaf52c6-f934-48f5-bdd6-17574dc0866b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007 18:53:46 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
+Bryan Wu wrote:
+>>> but mremap doesn't -- there's even an implementation in mm/nommu.c.
+>>> Could you check the rest of these over to see if they truly don't need
+>>> to be implemented for no-mmu?
+>> you're right we want mremap, my fault
+>>
+> 
+> Yes, I do think so, both sys_mremap and sys_munmap are implemented in
+> mm/nommu.c. How do think of this, Bernd?
 
-> On Thu, Sep 13, 2007 at 05:22:36PM +1000, Michael Neuling wrote:
-> > > > Commit f629307c857c030d5a3dd777fee37c8bb395e171 introduced uses of
-> > > > kernel_termios_to_user_termios_1 and user_termios_to_kernel_termios_1
-> > > > on all architectures.  However, powerpc, s390, avr32 and frv don't
-> > > > currently define those functions since their termios struct didn't
-> > > > need to be changed when the arbitrary baud rate stuff was added, and
-> > > > thus the kernel won't currently build on those architectures.
-> > > 
-> > > alpha, parisc, sh, sparc{64,}, xtensa are still broken with this error...
-> > 
-> > They need to include <asm-generic/termios.h> in asm-<arch>/termios.h
-> > like in powerpc.
-> > 
-> > Alternatively tonyb's patch should fix them.  Could also do that?
-> > 
-> Is there a consensus for this? It's a bit annoying to have this stuff
-> broken this late in 2.6.23. If Tony's patch gets applied, then this stuff
-> will work itself out. Otherwise everything has to be patched for
-> asm-generic/termios.h. In which case.. here's the patch to define them on
-> sh and sh64.
-
-I think we need to go with Tony's patch.  sparc32 and sparc64 are
-presently broken too, and the patch which converts sparc to use the
-new interfaces introduces a few build errors.
+There's a mremap in nommu.c, but it doesn't do a lot that is useful. 
+With some further mm changes in our tree, it's little more than a fancy 
+way of saying munmap, and uClibc does not use it, so there's no 
+compelling need to have it in userspace.
 
 
-From: Tony Breeds <tony@bakeyournoodle.com>
-
-Add Guards around TIOCSLCKTRMIOS and TIOCGLCKTRMIOS.
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/char/tty_ioctl.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff -puN drivers/char/tty_ioctl.c~sparc64-and-others-fix-tty_ioctlc-build drivers/char/tty_ioctl.c
---- a/drivers/char/tty_ioctl.c~sparc64-and-others-fix-tty_ioctlc-build
-+++ a/drivers/char/tty_ioctl.c
-@@ -795,6 +795,19 @@ int n_tty_ioctl(struct tty_struct * tty,
- 			if (L_ICANON(tty))
- 				retval = inq_canon(tty);
- 			return put_user(retval, (unsigned int __user *) arg);
-+#ifndef TCGETS2
-+		case TIOCGLCKTRMIOS:
-+			if (kernel_termios_to_user_termios((struct termios __user *)arg, real_tty->termios_locked))
-+				return -EFAULT;
-+			return 0;
-+
-+		case TIOCSLCKTRMIOS:
-+			if (!capable(CAP_SYS_ADMIN))
-+				return -EPERM;
-+			if (user_termios_to_kernel_termios(real_tty->termios_locked, (struct termios __user *) arg))
-+				return -EFAULT;
-+			return 0;
-+#else
- 		case TIOCGLCKTRMIOS:
- 			if (kernel_termios_to_user_termios_1((struct termios __user *)arg, real_tty->termios_locked))
- 				return -EFAULT;
-@@ -806,6 +819,7 @@ int n_tty_ioctl(struct tty_struct * tty,
- 			if (user_termios_to_kernel_termios_1(real_tty->termios_locked, (struct termios __user *) arg))
- 				return -EFAULT;
- 			return 0;
-+#endif
- 
- 		case TIOCPKT:
- 		{
-_
-
+Bernd
+-- 
+This footer brought to you by insane German lawmakers.
+Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
+Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
