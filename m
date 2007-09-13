@@ -1,77 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764226AbXIMWR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbXIMW0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764226AbXIMWR5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 18:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXIMWRu
+	id S1760194AbXIMW0I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 18:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXIMWZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 18:17:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53963 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753177AbXIMWRt (ORCPT
+	Thu, 13 Sep 2007 18:25:56 -0400
+Received: from mail-in-06.arcor-online.net ([151.189.21.46]:55139 "EHLO
+	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752618AbXIMWZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 18:17:49 -0400
-Date: Thu, 13 Sep 2007 15:17:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc4-mm1 compile error for ppc 32
-Message-Id: <20070913151738.4462fdf2.akpm@linux-foundation.org>
-In-Reply-To: <1189269730.5972.163.camel@localhost.localdomain>
-References: <20070906184011.GA1776@Krystal>
-	<20070906160009.fa52e8d2.akpm@linux-foundation.org>
-	<200709081136.46605.nickpiggin@yahoo.com.au>
-	<1189269730.5972.163.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Sep 2007 18:25:56 -0400
+Date: Fri, 14 Sep 2007 00:27:17 +0200
+From: Andreas Herrmann <aherrman@arcor.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, linux-usb-devel@lists.sourceforge.net,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Luca Risolia <luca.risolia@studio.unibo.it>
+Subject: [PATCH] v4l: fix build error for et61x251 driver
+Message-ID: <20070913222717.GC5764@devil>
+References: <20070913123627.GD10348@devil> <200709131707.16666.luca.risolia@studio.unibo.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709131707.16666.luca.risolia@studio.unibo.it>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 08 Sep 2007 18:42:10 +0200
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+This fixes a kernel build problem and
+should make it into 2.6.23, I think.
 
-> 
-> > > If so, the finger points at this:
-> > >
-> > > static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long
-> > > *addr) {
-> > > 	__asm__ __volatile__(LWSYNC_ON_SMP ::: "memory");
-> > > 	__clear_bit(nr, addr);
-> > > }
-> > >
-> > > which was added by Nick's powerpc-lock-bitops.patch.  I am suspecting that
-> > > this isn't pp32 code?
-> > 
-> > Hmm, when LWSYNC_ON_SMP is a noop, it seems like it should probably
-> > be an empty string instead of nothing? ("") That should make behaviour
-> > more consistent I think.
-> 
-> The wormhole is arch/ppc's hack to get to include/asm-powerpc...
-> 
-> As for having LWSYNC_ON_SMP be "" ... that might be the best way but I'd
-> rather not take chances right now and go for the quick fix of making
-> __clear_bit_unlock() do
-> 
-> 	LWSYNC_ON_SMP ""
-> 
-> instead.
-> 
 
-Like this?
+Regards,
 
---- a/include/asm-powerpc/bitops.h~powerpc-lock-bitops-fix
-+++ a/include/asm-powerpc/bitops.h
-@@ -226,7 +226,7 @@ static __inline__ void set_bits(unsigned
+Andreas
+
+--
+
+Get rid of some v4l1 remainders to avoid kernel build errors if
+V4L1_COMPAT is not selected:
+
+  drivers/media/video/et61x251/et61x251_core.c: In et61x251_show_:
+  drivers/media/video/et61x251/et61x251_core.c:718: error: implicit
+    declaration of to_video_device
+
+Fix as suggested by  Luca Risolia <luca.risolia@studio.unibo.it>
+
+Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
+---
+ drivers/media/video/et61x251/et61x251_core.c |   24 ++++++++++++++++--------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/media/video/et61x251/et61x251_core.c b/drivers/media/video/et61x251/et61x251_core.c
+index 585bd1f..a3ee968 100644
+--- a/drivers/media/video/et61x251/et61x251_core.c
++++ b/drivers/media/video/et61x251/et61x251_core.c
+@@ -715,7 +715,8 @@ static ssize_t et61x251_show_reg(struct class_device* cd, char* buf)
+ 	if (mutex_lock_interruptible(&et61x251_sysfs_lock))
+ 		return -ERESTARTSYS;
  
- static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long *addr)
- {
--	__asm__ __volatile__(LWSYNC_ON_SMP ::: "memory");
-+	__asm__ __volatile__(LWSYNC_ON_SMP "" ::: "memory");
- 	__clear_bit(nr, addr);
- }
+-	cam = video_get_drvdata(to_video_device(cd));
++	cam = video_get_drvdata(container_of(cd, struct video_device,
++					     class_dev));
+ 	if (!cam) {
+ 		mutex_unlock(&et61x251_sysfs_lock);
+ 		return -ENODEV;
+@@ -739,7 +740,8 @@ et61x251_store_reg(struct class_device* cd, const char* buf, size_t len)
+ 	if (mutex_lock_interruptible(&et61x251_sysfs_lock))
+ 		return -ERESTARTSYS;
  
-_
+-	cam = video_get_drvdata(to_video_device(cd));
++	cam = video_get_drvdata(container_of(cd, struct video_device,
++					     class_dev));
+ 	if (!cam) {
+ 		mutex_unlock(&et61x251_sysfs_lock);
+ 		return -ENODEV;
+@@ -771,7 +773,8 @@ static ssize_t et61x251_show_val(struct class_device* cd, char* buf)
+ 	if (mutex_lock_interruptible(&et61x251_sysfs_lock))
+ 		return -ERESTARTSYS;
+ 
+-	cam = video_get_drvdata(to_video_device(cd));
++	cam = video_get_drvdata(container_of(cd, struct video_device,
++					     class_dev));
+ 	if (!cam) {
+ 		mutex_unlock(&et61x251_sysfs_lock);
+ 		return -ENODEV;
+@@ -803,7 +806,8 @@ et61x251_store_val(struct class_device* cd, const char* buf, size_t len)
+ 	if (mutex_lock_interruptible(&et61x251_sysfs_lock))
+ 		return -ERESTARTSYS;
+ 
+-	cam = video_get_drvdata(to_video_device(cd));
++	cam = video_get_drvdata(container_of(cd, struct video_device,
++					     class_dev));
+ 	if (!cam) {
+ 		mutex_unlock(&et61x251_sysfs_lock);
+ 		return -ENODEV;
+@@ -839,7 +843,8 @@ static ssize_t et61x251_show_i2c_reg(struct class_device* cd, char* buf)
+ 	if (mutex_lock_interruptible(&et61x251_sysfs_lock))
+ 		return -ERESTARTSYS;
+ 
+-	cam = video_get_drvdata(to_video_device(cd));
++	cam = video_get_drvdata(container_of(cd, struct video_device,
++					     class_dev));
+ 	if (!cam) {
+ 		mutex_unlock(&et61x251_sysfs_lock);
+ 		return -ENODEV;
+@@ -865,7 +870,8 @@ et61x251_store_i2c_reg(struct class_device* cd, const char* buf, size_t len)
+ 	if (mutex_lock_interruptible(&et61x251_sysfs_lock))
+ 		return -ERESTARTSYS;
+ 
+-	cam = video_get_drvdata(to_video_device(cd));
++	cam = video_get_drvdata(container_of(cd, struct video_device,
++					     class_dev));
+ 	if (!cam) {
+ 		mutex_unlock(&et61x251_sysfs_lock);
+ 		return -ENODEV;
+@@ -897,7 +903,8 @@ static ssize_t et61x251_show_i2c_val(struct class_device* cd, char* buf)
+ 	if (mutex_lock_interruptible(&et61x251_sysfs_lock))
+ 		return -ERESTARTSYS;
+ 
+-	cam = video_get_drvdata(to_video_device(cd));
++	cam = video_get_drvdata(container_of(cd, struct video_device,
++					     class_dev));
+ 	if (!cam) {
+ 		mutex_unlock(&et61x251_sysfs_lock);
+ 		return -ENODEV;
+@@ -934,7 +941,8 @@ et61x251_store_i2c_val(struct class_device* cd, const char* buf, size_t len)
+ 	if (mutex_lock_interruptible(&et61x251_sysfs_lock))
+ 		return -ERESTARTSYS;
+ 
+-	cam = video_get_drvdata(to_video_device(cd));
++	cam = video_get_drvdata(container_of(cd, struct video_device,
++					     class_dev));
+ 	if (!cam) {
+ 		mutex_unlock(&et61x251_sysfs_lock);
+ 		return -ENODEV;
+-- 
+1.5.3
+
 
