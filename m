@@ -1,86 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763260AbXIMXJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762400AbXIMXQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763260AbXIMXJy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbXIMXJq
+	id S1762400AbXIMXQO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbXIMXP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:09:46 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:49457 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754768AbXIMXJp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:09:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qvHHlxvamP0NT6J1AQwMcQPQ5NySIQaileJQ5L+wDx+MIUNzzue1FlSrFYpmyjcGC7eMWZP0Jl66RcR/70xWr/fprcgoAg/P/jukwN3QVDv3cYgJ8LzF33qLeEUwJ4l8dbvq37mv0hQk6wOFFEwE8RLwW+X1mQOVXY/EvPA8zV4=
-Message-ID: <625fc13d0709131609t94b9fcbtc66c87ebe6e8f1e0@mail.gmail.com>
-Date: Thu, 13 Sep 2007 18:09:39 -0500
-From: "Josh Boyer" <jwboyer@gmail.com>
-To: "Robin Getz" <rgetz@blackfin.uclinux.org>
-Subject: Re: [patch] update CFI URI n mtd kconfig
-Cc: "Mike Frysinger" <vapier@gentoo.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
-In-Reply-To: <200709131631.56867.rgetz@blackfin.uclinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Sep 2007 19:15:58 -0400
+Received: from ozlabs.org ([203.10.76.45]:57535 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750812AbXIMXP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 19:15:58 -0400
+Subject: Re: [patch 1/8] Immediate Values - Global Modules List and Module
+	Mutex
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20070913212107.GA15826@Krystal>
+References: <20070906200228.086651361@polymtl.ca>
+	 <20070906200314.079453533@polymtl.ca>
+	 <20070908072811.GB1819@martell.zuzino.mipt.ru>
+	 <1189468414.8023.66.camel@localhost.localdomain>
+	 <20070911004541.GA4360@Krystal>
+	 <1189487938.20631.53.camel@localhost.localdomain>
+	 <20070911142733.GA7850@Krystal>
+	 <1189662432.32322.1.camel@localhost.localdomain>
+	 <20070913212107.GA15826@Krystal>
+Content-Type: text/plain
+Date: Fri, 14 Sep 2007 09:15:17 +1000
+Message-Id: <1189725317.7262.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200709122339.55267.vapier@gentoo.org>
-	 <625fc13d0709131128m5a606b6ewe729c1e72f73f9d9@mail.gmail.com>
-	 <200709131631.56867.rgetz@blackfin.uclinux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/13/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> On Thu 13 Sep 2007 14:28, Josh Boyer pondered:
-> > On 9/12/07, Mike Frysinger <vapier@gentoo.org> wrote:
-> > > Since AMD shunted its flash memory division, the URI in the mtd Kconfig is now
-> > > broken, so the attached patch points people to Wikipedia.
-> > >
-> > > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> > > ---
-> > > diff --git a/drivers/mtd/chips/Kconfig b/drivers/mtd/chips/Kconfig
-> > > index 479d32b..980117a 100644
-> > > --- a/drivers/mtd/chips/Kconfig
-> > > +++ b/drivers/mtd/chips/Kconfig
-> > > @@ -11,8 +11,8 @@ config MTD_CFI
-> > >           AMD and other flash manufactures that provides a universal method
->
-> Even on the Intel page, it gives "Intel, AMD, Sharp, and Fujitsu" credit - why
-> limit Sharp, and Fujitsu to "others"? (I would just take out everyone's name).
+On Thu, 2007-09-13 at 17:21 -0400, Mathieu Desnoyers wrote:
+> * Rusty Russell (rusty@rustcorp.com.au) wrote:
+> > Sure, but why is that the caller's problem?  immediate_set() isn't
+> > fastpath, so why not make it do an "if (early_boot)" internally?
+> 
+> I see two reasons:
+> 1 - early_boot, or anything that looks like this, does not exist
+> currently (and the following reason might show why).
+> 2 - If we use this, we cannot declare the early code with __init, so it
+> will have to stay there forever insteaf of being removable once boot is
+> over.
+> 
+> Therefore, I think it's better to stick to an immediate_set_early
+> version.
 
-He wasn't changing that part of the option.  I'm fairly certain that
-description has been there for years.  If you want to change it to be
-a bit more "fair", feel free.
+My problem is that I don't know when to use immediate_set_early!  You
+say "early boot": what does that mean?  Is it arch-specific?  And why is
+it my problem anyway?
 
-> > >           for probing the capabilities of flash devices. If you wish to
-> > >           support any device that is CFI-compliant, you need to enable this
-> > > -         option. Visit <http://www.amd.com/products/nvd/overview/cfi.html>
-> > > -         for more information on CFI.
-> > > +         option. For more information on CFI, visit:
-> > > +         <http://wikipedia.org/wiki/Common_Flash_Memory_Interface>
-> >
-> > Erm, I'd rather not point to wikipedia.  Can you change it to point to:
-> >
-> > http://www.intel.com/design/flash/swb/cfi.htm
->
-> Why not from the place that you can get the standard? http://jedec.org/
->
-> or http://www.jedec.org/download/search/jesd68-01.pdf
->
-> There isn't any point to pick one vendor - unless you work there, own
-> stock, or one provides outstanding support (free hardware) for driver
-> development. :)
+Since arch_immediate_update_early() is a memcpy, I don't really buy the
+bloat argument (it has some silly-looking optimization, but that should
+be removed anyway).  I'd really rather see arch_immediate_update()
+examine an internal flag and do the memcpy if it's too early for the
+full algorithm.  That's the only place which really knows, after all.
+You may need some external hook to update that internal "too early"
+flag, of course.
 
-I wasn't picking a vendor.  I was pointing out a well laid out webpage
-that describes what CFI is and provides the spec for it.  If you want
-to link directly to jedec, ok.
+Alternatively, if you called it "immediate_init" then the semantics
+change slightly, but are more obvious (ie. only use this when the value
+isn't being accessed yet).  But it can't be __init then anyway.
 
-And no, I don't work at Intel, own stock in it, or know of them giving
-out free hardware on a regular basis.  I do happen to like what Intel
-is doing in regards to opening their drivers, but that has nothing to
-do with this :).
+On an unrelated note, did you consider simply IPI-ing and doing the
+substitution with all CPUs stopped?  If you only updated the immediate
+references to this particular var, it should be fast enough not to upset
+the RT guys, even.
 
-josh
+> > I was thinking that we might find useful specific cases before we get
+> > GCC support, which archs can override with tricky asm if they wish.
+> > 
+> 
+> The first useful case is the Linux Kernel Markers, which really needs a
+> completely boolean if: active or inactive. That would be a good test
+> case to get gcc support.
+
+Well, you can do that in asm without gcc support.  It's a little nasty:
+since gcc will know nothing about the function call, it can't have side
+effects which are visible in this function, and you'll have to save and
+restore *all* regs if you decide to do the function call.  But it's
+possible (a 5-byte nop gets changed to a call, the call does the pushes
+and sets the args regs, calls the function, then pops everything and
+rets).
+
+Cheers,
+Rusty.
+
