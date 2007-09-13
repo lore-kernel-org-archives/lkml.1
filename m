@@ -1,136 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934068AbXIMXtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934134AbXIMXtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934068AbXIMXtQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762113AbXIMXpO
+	id S934134AbXIMXtg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763814AbXIMXpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:45:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57151 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932510AbXIMXpK (ORCPT
+	Thu, 13 Sep 2007 19:45:15 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:41164 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932842AbXIMXpN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:45:10 -0400
-Date: Thu, 13 Sep 2007 16:42:00 -0700
+	Thu, 13 Sep 2007 19:45:13 -0400
+Date: Thu, 13 Sep 2007 16:42:39 -0700
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Subject: Drivers: clean up direct setting of the name of a kset
-Message-ID: <20070913234200.GI10856@kroah.com>
+Subject: Re: [RFC] Some driver core and kobject minor patches
+Message-ID: <20070913234239.GJ10856@kroah.com>
 References: <20070913233751.GA10856@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20070913233751.GA10856@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A kset should not have its name set directly, so dynamically set the
-name at runtime.
+struct cdev does not need the kobject name to be set, as it is never
+used.  This patch fixes up the few places it is set.
 
-This is needed to remove the static array in the kobject structure which
-will be changed in a future patch.
 
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/edac/edac_mc_sysfs.c |    3 ++-
- fs/dlm/lockspace.c           |    2 +-
- fs/gfs2/locking/dlm/sysfs.c  |    2 +-
- fs/gfs2/sys.c                |    2 +-
- fs/ocfs2/cluster/masklog.c   |    3 ++-
- 5 files changed, 7 insertions(+), 5 deletions(-)
+ block/bsg.c                         |    5 +----
+ drivers/char/raw.c                  |    5 +----
+ drivers/media/dvb/dvb-core/dvbdev.c |    5 +----
+ drivers/usb/core/devio.c            |    6 ++----
+ 4 files changed, 5 insertions(+), 16 deletions(-)
 
---- a/drivers/edac/edac_mc_sysfs.c
-+++ b/drivers/edac/edac_mc_sysfs.c
-@@ -743,7 +743,7 @@ static struct kobj_type ktype_mc_set_att
-  *	/sys/devices/system/edac/mc
-  */
- static struct kset mc_kset = {
--	.kobj = {.name = "mc", .ktype = &ktype_mc_set_attribs },
-+	.kobj = {.ktype = &ktype_mc_set_attribs },
- 	.ktype = &ktype_mci,
- };
- 
-@@ -1010,6 +1010,7 @@ int edac_sysfs_setup_mc_kset(void)
- 	}
- 
- 	/* Init the MC's kobject */
-+	kobject_set_name(&mc_kset.kobj, "mc");
- 	mc_kset.kobj.parent = &edac_class->kset.kobj;
- 
- 	/* register the mc_kset */
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -167,7 +167,6 @@ static struct kobj_type dlm_ktype = {
- };
- 
- static struct kset dlm_kset = {
--	.kobj   = {.name = "dlm",},
- 	.ktype  = &dlm_ktype,
- };
- 
-@@ -228,6 +227,7 @@ int dlm_lockspace_init(void)
- 	INIT_LIST_HEAD(&lslist);
- 	spin_lock_init(&lslist_lock);
- 
-+	kobject_set_name(&dlm_kset.kobj, "dlm");
- 	kobj_set_kset_s(&dlm_kset, kernel_subsys);
- 	error = kset_register(&dlm_kset);
- 	if (error)
---- a/fs/gfs2/locking/dlm/sysfs.c
-+++ b/fs/gfs2/locking/dlm/sysfs.c
-@@ -190,7 +190,6 @@ static struct kobj_type gdlm_ktype = {
- };
- 
- static struct kset gdlm_kset = {
--	.kobj   = {.name = "lock_dlm",},
- 	.ktype  = &gdlm_ktype,
- };
- 
-@@ -224,6 +223,7 @@ int gdlm_sysfs_init(void)
- {
- 	int error;
- 
-+	kobject_set_name(&gdlm_kset, "lock_dlm");
- 	kobj_set_kset_s(&gdlm_kset, kernel_subsys);
- 	error = kset_register(&gdlm_kset);
- 	if (error)
---- a/fs/gfs2/sys.c
-+++ b/fs/gfs2/sys.c
-@@ -222,7 +222,6 @@ static struct kobj_type gfs2_ktype = {
- };
- 
- static struct kset gfs2_kset = {
--	.kobj   = {.name = "gfs2"},
- 	.ktype  = &gfs2_ktype,
- };
- 
-@@ -553,6 +552,7 @@ int gfs2_sys_init(void)
- {
- 	gfs2_sys_margs = NULL;
- 	spin_lock_init(&gfs2_sys_margs_lock);
-+	kobject_set_name(&gfs2_kset.kobj, "gfs2");
- 	kobj_set_kset_s(&gfs2_kset, fs_subsys);
- 	return kset_register(&gfs2_kset);
+--- a/block/bsg.c
++++ b/block/bsg.c
+@@ -1010,10 +1010,7 @@ unlock:
  }
---- a/fs/ocfs2/cluster/masklog.c
-+++ b/fs/ocfs2/cluster/masklog.c
-@@ -143,7 +143,7 @@ static struct kobj_type mlog_ktype = {
+ EXPORT_SYMBOL_GPL(bsg_register_queue);
+ 
+-static struct cdev bsg_cdev = {
+-	.kobj   = {.name = "bsg", },
+-	.owner  = THIS_MODULE,
+-};
++static struct cdev bsg_cdev;
+ 
+ static int __init bsg_init(void)
+ {
+--- a/drivers/char/raw.c
++++ b/drivers/char/raw.c
+@@ -255,10 +255,7 @@ static const struct file_operations raw_
+ 	.owner	=	THIS_MODULE,
  };
  
- static struct kset mlog_kset = {
--	.kobj   = {.name = "logmask", .ktype = &mlog_ktype},
-+	.kobj   = {.ktype = &mlog_ktype},
+-static struct cdev raw_cdev = {
+-	.kobj	=	{.name = "raw", },
+-	.owner	=	THIS_MODULE,
+-};
++static struct cdev raw_cdev;
+ 
+ static int __init raw_init(void)
+ {
+--- a/drivers/media/dvb/dvb-core/dvbdev.c
++++ b/drivers/media/dvb/dvb-core/dvbdev.c
+@@ -109,10 +109,7 @@ static struct file_operations dvb_device
+ 	.open =		dvb_device_open,
  };
  
- int mlog_sys_init(struct kset *o2cb_subsys)
-@@ -156,6 +156,7 @@ int mlog_sys_init(struct kset *o2cb_subs
- 	}
- 	mlog_attr_ptrs[i] = NULL;
+-static struct cdev dvb_device_cdev = {
+-	.kobj   = {.name = "dvb", },
+-	.owner  =       THIS_MODULE,
+-};
++static struct cdev dvb_device_cdev;
  
-+	kobject_set_name(&mlog_kset.kobj, "logmask");
- 	kobj_set_kset_s(&mlog_kset, *o2cb_subsys);
- 	return kset_register(&mlog_kset);
+ int dvb_generic_open(struct inode *inode, struct file *file)
+ {
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -1576,6 +1576,7 @@ static unsigned int usbdev_poll(struct f
  }
+ 
+ const struct file_operations usbdev_file_operations = {
++	.owner = 	THIS_MODULE,
+ 	.llseek =	usbdev_lseek,
+ 	.read =		usbdev_read,
+ 	.poll =		usbdev_poll,
+@@ -1625,10 +1626,7 @@ static struct notifier_block usbdev_nb =
+ };
+ #endif
+ 
+-static struct cdev usb_device_cdev = {
+-	.kobj   = {.name = "usb_device", },
+-	.owner  = THIS_MODULE,
+-};
++static struct cdev usb_device_cdev;
+ 
+ int __init usb_devio_init(void)
+ {
