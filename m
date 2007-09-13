@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934134AbXIMXtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbXIMXty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934134AbXIMXtg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763814AbXIMXpP
+	id S1761053AbXIMXty (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXIMXpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:45:15 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:41164 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932842AbXIMXpN (ORCPT
+	Thu, 13 Sep 2007 19:45:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57155 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932868AbXIMXpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:45:13 -0400
-Date: Thu, 13 Sep 2007 16:42:39 -0700
+	Thu, 13 Sep 2007 19:45:16 -0400
+Date: Thu, 13 Sep 2007 16:43:11 -0700
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Some driver core and kobject minor patches
-Message-ID: <20070913234239.GJ10856@kroah.com>
+Subject: cdev: remove unneeded setting of cdev names
+Message-ID: <20070913234311.GK10856@kroah.com>
 References: <20070913233751.GA10856@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20070913233751.GA10856@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+<resend with proper subject:>
 
 struct cdev does not need the kobject name to be set, as it is never
 used.  This patch fixes up the few places it is set.
