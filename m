@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761040AbXIMVA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763260AbXIMVBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761040AbXIMVA7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 17:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbXIMVAr
+	id S1763260AbXIMVBa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 17:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbXIMVBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 17:00:47 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:11344 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758746AbXIMVAq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 17:00:46 -0400
-X-IronPort-AV: E=Sophos;i="4.20,251,1186383600"; 
-   d="scan'208";a="217722117"
-To: Shirley Ma <xma@us.ibm.com>
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netdev-owner@vger.kernel.org
-Subject: Re: InfiniBand/RDMA merge plans for 2.6.24
-X-Message-Flag: Warning: May contain useful information
-References: <OF79F6C618.02039854-ON87257355.00646A35-88257355.0064AB34@us.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 13 Sep 2007 14:00:43 -0700
-In-Reply-To: <OF79F6C618.02039854-ON87257355.00646A35-88257355.0064AB34@us.ibm.com> (Shirley Ma's message of "Thu, 13 Sep 2007 11:22:16 -0700")
-Message-ID: <aday7fal1qc.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 13 Sep 2007 17:01:20 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:41244 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754274AbXIMVBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 17:01:19 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Subject: Re: [patch] update CFI URI n mtd kconfig
+Date: Thu, 13 Sep 2007 17:01:16 -0400
+User-Agent: KMail/1.9.7
+Cc: "Josh Boyer" <jwboyer@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
+References: <200709122339.55267.vapier@gentoo.org> <625fc13d0709131128m5a606b6ewe729c1e72f73f9d9@mail.gmail.com> <200709131631.56867.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200709131631.56867.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Sep 2007 21:00:43.0744 (UTC) FILETIME=[26359600:01C7F649]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: multipart/signed;
+  boundary="nextPart8223427.xa7bFni5AE";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709131701.17572.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- >         Since ehca can support 4K MTU, we would like to see a patch in 
- > IPoIB to allow link MTU to be up to 4K instead of current 2K for 2.6.24 
- > kernel. The idea is IPoIB link MTU will pick up a return value from SM's 
- > default broadcast MTU. This patch should be a small patch, I hope you are 
- > OK with this.
+--nextPart8223427.xa7bFni5AE
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-It's actually not small, since it turns the skb allocation into a
-4100-byte buffer, which ends up being more than 1 page usually, which
-means it fails if memory is fragmented.
+On Thursday 13 September 2007, Robin Getz wrote:
+> Why not from the place that you can get the standard? http://jedec.org/
 
-Anyway given the backlog anything substantial that hasn't been posted
-already is almost surely going to have to wait until 2.6.25.
+i found jedec.org a nightmare to navigate
+
+> or http://www.jedec.org/download/search/jesd68-01.pdf
+
+i'll add that to wikipedia ;)
+-mike
+
+--nextPart8223427.xa7bFni5AE
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.6 (GNU/Linux)
+
+iQIVAwUARumlHUFjO5/oN/WBAQJ98hAAtkvXTRNMHIaqFWaDEDmqoO904UXwY9K8
+hyGZZy/+SUXhySN3vZzgcnV4amGxBJEKAJyeUAchCG/DSZOKWEOu5M3WO2K4Q9yW
+NgtbcDyJPlsWwtOlftwWVYA8fmXxbN57U8w+80PVFlkqCmFHOF01dJtM9pCx71Rq
+CoiQXjsxKTnE0wB0WEFFrj0Nj/gMiHJId5/LUowtNDWsCCv2iVw1bRTxg0MZRWS2
+OkIhTz0BtsXpxq3BfgtxSo0m92DWwq8uWZFxkNy23Xd60V9oSKerE6h7LcxKeEUo
+MjMeS/BAVkZ8l6Iq75YyCH3I33Sra4y1csK/+8VMOJVhU0CY7v6BsR1b0/Wa3Fwf
+YdzvQZkBW0Zx2PoCsT8NQZe31KUn8jHSyw3fGJJt1HMsM3ewfVUhlF7LjsaEeQFK
+bjZw/Q4yhKgl5+7eUzPB10YYphtTyZKuNq5kQ+nRwhdOJNHy7FH4HgUrNssASE5z
+5SdR8ohWYbjcPNcmC8nbfa19pvmJK29qq40L0YRocxb6kQUxYKvzN7a9gSBVNm7i
+E3amlUyl+IwFpVUU0lawCIVf7XEoGwKpHZ0MpSBRzMlncTVWDNxQddojUxzcPbL/
+hvsxNIEAVeDtjaOM2V9vgOMP+mO+U+sGhBztBRvqcDXWBqMPi77ps4ihERCZ+JUz
+au1kSZe08Xw=
+=unV2
+-----END PGP SIGNATURE-----
+
+--nextPart8223427.xa7bFni5AE--
