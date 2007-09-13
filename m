@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbXIMKZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbXIMKp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758502AbXIMKZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 06:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXIMKZe
+	id S1758974AbXIMKp5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 06:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbXIMKpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 06:25:34 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39875 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750750AbXIMKZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 06:25:33 -0400
-Date: Thu, 13 Sep 2007 11:25:31 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Lee.Schermerhorn@hp.com, kamezawa.hiroyu@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
-Message-ID: <20070913102531.GF22778@skynet.ie>
-References: <20070912210444.31625.65810.sendpatchset@skynet.skynet.ie> <20070912210625.31625.36220.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0709121420010.3130@schroedinger.engr.sgi.com>
+	Thu, 13 Sep 2007 06:45:50 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:35676 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbXIMKpt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 06:45:49 -0400
+Date: Thu, 13 Sep 2007 03:47:04 -0700
+From: Greg KH <greg@kroah.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Yinghai Lu <Yinghai.Lu@sun.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Martin Mares <mj@ucw.cz>,
+       dean gaudet <dean@arctic.org>, Robert Richter <robert.richter@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case
+	MMCONFIG is used
+Message-ID: <20070913104704.GA3878@kroah.com>
+References: <200709121921.43950.yinghai.lu@sun.com> <200709131147.43446.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709121420010.3130@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+In-Reply-To: <200709131147.43446.ak@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (12/09/07 14:23), Christoph Lameter didst pronounce:
-> On Wed, 12 Sep 2007, Mel Gorman wrote:
+On Thu, Sep 13, 2007 at 11:47:42AM +0200, Andi Kleen wrote:
+> On Thursday 13 September 2007 04:21, Yinghai Lu wrote:
+> > [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used.
+> >
+> > reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
 > 
-> > -			z++)
-> > -		;
-> > +	if (likely(nodes == NULL))
-> > +		for (; zonelist_zone_idx(z) > highest_zoneidx;
-> > +				z++)
-> > +			;
-> > +	else
-> > +		for (; zonelist_zone_idx(z) > highest_zoneidx ||
-> > +				(z->zone && !zref_in_nodemask(z, nodes));
-> > +				z++)
-> > +			;
-> >  
-> 
-> Minor nitpick here: "for (;" should become "for ( ;" to have correct 
-> whitespace. However, it would be clearer to use a while here.
-> 
-> while (zonelist_zone_idx(z)) > highest_zoneidx)
-> 		z++;
-> 
-> etc.
+> I just rejected a similar patch -- this should be done using MMCONFIG
 
-Good point. I'll clean it up and retest. Thanks
+But what about for broken machines without the proper MMCONFIG entries?
+They still need a way to get access to this config space, so why should
+we not also work properly for them?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Until we can somehow flog all BIOS developers until they fix all of
+their bugs, we have to be able to handle things like this :(
+
+thanks,
+
+greg k-h
