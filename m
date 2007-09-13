@@ -1,96 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762511AbXIMQHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbXIMQJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762511AbXIMQHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 12:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758391AbXIMQHS
+	id S1762288AbXIMQJJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 12:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbXIMQI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 12:07:18 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54840 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752618AbXIMQHQ (ORCPT
+	Thu, 13 Sep 2007 12:08:57 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:15451 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752618AbXIMQI4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 12:07:16 -0400
-Date: Thu, 13 Sep 2007 12:07:15 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Adrian Bunk <bunk@stusta.de>
-cc: Adrian Bunk <bunk@kernel.org>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>,
-       Oliver Neukum <oneukum@suse.de>
-Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
-In-Reply-To: <20070913154019.GG3563@stusta.de>
-Message-ID: <Pine.LNX.4.44L0.0709131154240.7406-100000@iolanthe.rowland.org>
+	Thu, 13 Sep 2007 12:08:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DT5KTZpXt2ISxj7wdmoG3Td9nW/ktlxpMkzHHGq/fRaTLNhJKrW6pvq7LqPVOwRlDZm/rJaRTs0YBrI+zLMbx6DRmS7/cE0EWKN6IHRN/OcQg9ugoW1OhGxBdywgB2TW8N2pWh2zFdGWHZROb0wuCHS2hPLQu3eVv7CiidFxEXg=
+Message-ID: <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+Date: Thu, 13 Sep 2007 18:08:54 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+Cc: "Johannes Stezenbach" <js@linuxtv.org>, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       akpm@linux-foundation.org
+In-Reply-To: <46E95C54.4060502@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46C1BCC5.9090709@amd.com> <1189626560.5160.57.camel@gaivota>
+	 <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>
+	 <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
+	 <20070913131353.GB26972@linuxtv.org>
+	 <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com>
+	 <46E95C54.4060502@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007, Adrian Bunk wrote:
+On 9/13/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+>
+> > It's only a step in development, I do not intend to keep the kernel
+> > stub in the end, but I do intend to keep and use the userspace drivers
+> > with i2c-dev in the long run, this requires a v4l/dvb library at the front
+> > of everything.
+>
+> Well, this was what adq and myself did with libdvbapi and mti, (much
+> before UIO was announced at LK.) It is not tied to I2C either.
+>
 
-> > > It is a good thing if userspace can add currently missing devices to
-> > > whitelists, but the whitelist itself should be in the kernel.
-> > 
-> > It's not clear that this sort of approach will turn out to be workable.  
-> > Whitelists/blacklists do okay in the kernel when they refer to a 
-> > relatively small subset of devices.  However in this case I have the 
-> > impression that we're talking about roughly a 50/50 split.  Keeping an 
-> > in-kernel list with even 10% of all existing USB devices simply isn't 
-> > feasible.
-> 
-> What about this is not feasible?
-> 
-> The amount of work for maintaining the list is the same:
-> 
-> No matter whether it's in-kernel or in the userspace, you need a list of 
-> working devices in some machine readable format.
-> 
-> Whether this gets used by the kernel, by userspace, or both, shouldn't 
-> make any difference.
-> 
-> Kernel image size can be a problem in some cases, but an in-kernel list 
-> doesn't have to be mandatory but could be made selectable in kconfig.
+I2C is the main communication path for it, although there are callback
+mechanisms available which add the possibility for different configuration
+paths.
 
-Well, size is one problem I had in mind.  There are a _lot_ of USB 
-devices in existence.
+> But, according to your statements (with regards to i2c-dev) you can
+> handle only some I2C based devices, which is in fact a subset of a
+> subset. Also not to forget that hardly a few I2C devices are in fact
+> "truly" I2C compatible. In fact many variables to be considered.
+>
 
-But mainly it's a question of maintenance and modification.  Kernel
-developers don't really enjoy maintaining black- or whitelists of
-devices, together with all the work involved in sorting through the
-issues when somebody posts an email saying "My device doesn't work!".
+The analogue tuner core is also only for i2c only devices which most
+devices rely on.
 
-Also, modifying device lists in the kernel tends to be a slow process, 
-involving at least one kernel release cycle.  It's much easier for 
-people to maintain userspace databases.  Now I realize you proposed 
-there be a userspace interface for modifying the kernel's whitelist -- 
-but if you're going to do that, why not put the entire whitelist in 
-userspace to begin with?
+> Also there is to consider a non technical aspect, whether vendors will
+> misuse this interface for binary only, undermining the efforts put in
+> for OSS drivers.
+>
 
-Maybe you're concerned about propagating updates as painlessly as 
-possible -- if the whitelist is in the kernel then every kernel release 
-would include an update.  But in userspace it's possible to do updates 
-even more quickly and painlessly.  For example, there could be a 
-network server available for both interactive lookups and automatic 
-queries from HAL.
+What holds companies for using the current available code putting it
+into an rpm or deb package and releasing such code now?
 
-> > Besides, is it really that much harder for userspace to modify device
-> > settings as the devices are detected than for it to modify an in-kernel
-> > whitelist just once?  Don't forget about possible races: Devices may
-> > already have been detected and configured before userspace was able to
-> > modify the whitelist.
-> 
-> Above you said "there's nothing to stop you from ... even turning 
-> autosuspend on or off by hand".
-> 
-> If this will already be supported race-free, which races will still be
-> possible?
+The Avermedia example I pointed out to is a good example already.
+As from my side I won't release binary drivers.
+Although on the other side:
+* are drivers from vendors which work through several kernel versions
+that bad?
+* Why did someone duallicense videodev2 with BSD/GPL?
 
-You _can't_ change the autosuspend setting for a device that hasn't yet
-been detected; you can only do it after detection.  But you _can_
-modify a whitelist either before or after a device is detected; any
-such modifications won't affect the already-existing devices.
+I would appreciate if someone else on the list could also comment
+the reason that drivers should all be included in the linuxkernel just
+because forcing the companies to release binary drivers because
+of that. My opinion about that is if a company wants to go opensource
+they will do so, if not they will either not release a driver or release
+nothing.
 
-Does that answer your question?
-
-Alan Stern
-
+Markus
