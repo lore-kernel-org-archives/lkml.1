@@ -1,36 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759828AbXIMJc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762268AbXIMJdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759828AbXIMJc4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754959AbXIMJct
+	id S1762268AbXIMJdz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbXIMJdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:32:49 -0400
-Received: from ns1.suse.de ([195.135.220.2]:48827 "EHLO mx1.suse.de"
+	Thu, 13 Sep 2007 05:33:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47994 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753210AbXIMJcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:32:48 -0400
-To: venkatesh.pallipadi@intel.com
-Cc: ashok.raj@intel.com, akinobu.mita@gmail.com, torvalds@osdl.org,
-       patches@x86-64.org, linux-kernel@vger.kernel.org, jbeulich@novell.com
-Subject: Re: [PATCH for 2.6.23] [2/3] x86_64: Prevent doing anything from cache_remove_dev() when info setup failed.
-References: <20070911202.911586000@suse.de>
-	<20070911120211.1E25F14EEC@wotan.suse.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 13 Sep 2007 11:32:46 +0200
-In-Reply-To: <20070911120211.1E25F14EEC@wotan.suse.de>
-Message-ID: <p73myvqykox.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1753210AbXIMJdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 05:33:44 -0400
+Date: Thu, 13 Sep 2007 02:36:51 -0700
+From: Greg KH <gregkh@suse.de>
+To: Mark Lord <lkml@rtr.ca>, Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oneukum@suse.de>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
+       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
+       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       Jakub Jelinek <jakub@redhat.com>, Jeff Dike <jdike@linux.intel.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: [1/4] 2.6.23-rc6: known regressions
+Message-ID: <20070913093651.GA5077@suse.de>
+References: <46E81AC6.3000306@googlemail.com> <46E8A572.7050209@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46E8A572.7050209@rtr.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+On Wed, Sep 12, 2007 at 10:50:26PM -0400, Mark Lord wrote:
+> Michal Piotrowski wrote:
+>> Hi all,
+>> Here is a list of some known regressions in 2.6.23-rc6.
+> ...
+>
+> Missing from the list:
+>
+> USB "autosuspend" feature (new in 2.6.23) breaks *lots* of devices.
+> Many have since been blacklisted in one-at-a-time discovery patches,
+> but that's really just the tip of the iceberg.
+>
+> This "feature" breaks a TON of user-visible things,
+> mostly USB storage devices (USB drives/pens, digicams, etc..).
+>
+> The functionality is broken for just too much stuff,
+> and needs to either be reverted or defaulted to "off" rather than "on".
 
-> AK: Removed the unlikelies because gcc heuristics default to unlikely for tes
-> AK: == NULL and for negative returns.
+Ok, after conferring with Oliver this morning, I think the best solution
+here is to both revert the usb-storage suspend patch as it has some
+basic problems that can cause data loss, _and_ add the change to the
+kernel that by default disables autosuspend on all USB devices except
+hubs.
 
-This patch was actually from Jan Beulich, but somehow the attribution
-got dropped. Sorry for that.
+If anyone has any objections to this, please let me know.
 
--Andi
+thanks,
+
+greg k-h
