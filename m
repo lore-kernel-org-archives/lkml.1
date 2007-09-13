@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765154AbXIMGEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764227AbXIMGHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765154AbXIMGEn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 02:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbXIMGEf
+	id S1764227AbXIMGHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 02:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXIMGHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 02:04:35 -0400
-Received: from mga02.intel.com ([134.134.136.20]:21348 "EHLO mga02.intel.com"
+	Thu, 13 Sep 2007 02:07:30 -0400
+Received: from sacred.ru ([62.205.161.221]:53093 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752959AbXIMGEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 02:04:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,248,1186383600"; 
-   d="scan'208";a="293908772"
-Date: Wed, 12 Sep 2007 23:04:33 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       Mel Gorman <mel@skynet.ie>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: tbench regression - Why process scheduler has impact on tbench and why small per-cpu slab (SLUB) cache creates the scenario?
-Message-ID: <20070913060432.GB6078@linux-os.sc.intel.com>
-References: <1188953218.26438.34.camel@ymzhang> <200709100810.46341.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709101201140.24491@schroedinger.engr.sgi.com> <200709110117.57387.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709111314190.25781@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709111314190.25781@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.1i
+	id S1751048AbXIMGH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 02:07:29 -0400
+Message-ID: <46E8D2E0.7040507@openvz.org>
+Date: Thu, 13 Sep 2007 10:04:16 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: Re: [PATCH] Memory shortage can result in inconsistent flocks state
+References: <46E68C35.7040001@openvz.org> <20070912190653.GA13792@fieldses.org>
+In-Reply-To: <20070912190653.GA13792@fieldses.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 13 Sep 2007 10:06:45 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 01:19:30PM -0700, Christoph Lameter wrote:
-> On Tue, 11 Sep 2007, Nick Piggin wrote:
+J. Bruce Fields wrote:
+> On Tue, Sep 11, 2007 at 04:38:13PM +0400, Pavel Emelyanov wrote:
+>> This is a known feature that such "re-locking" is not atomic,
+>> but in the racy case the file should stay locked (although by
+>> some other process), but in this case the file will be unlocked.
 > 
-> > The impression I got at vm meeting was that SLUB was good to go :(
+> That's a little subtle (I assume you've never seen this actually
+> happen?), but it makes sense to me.
+
+Well, this situation is hard to notice since usually programs
+try to finish up when some error is returned from the kernel,
+but I do believe that this could happen in one of the openvz
+kernels since we limit the kernel memory usage for "containers"
+and thus -ENOMEM is a common error.
+
+>> The proposal is to prepare the lock in advance keeping no chance
+>> to fail in the future code.
 > 
-> Its not? I have had Intel test this thoroughly and they assured me that it 
-> is up to SLAB.
+> And the patch certainly looks correct.
+> 
+> I can add it to my (trivial) lock patches, if that's helpful--it'll
+> get folded into the branch -mm pulls from and I can pass it along to
+> Linus for 2.6.24.
 
-Christoph, Not sure if you are referring to me or not here. But our
-tests(atleast on with the database workloads) approx 1.5 months or so back
-showed that on ia64 slub was on par with slab and on x86_64, slub was 9% down.
-And after changing the slub min order and max order, slub perf on x86_64 is
-down approx 3.5% or so compared to slab.
+Thanks.
 
-While I don't rule out large sized allocations like PAGE_SIZE, I am mostly
-certain that the critical allocations in this workload are not PAGE_SIZE
-based.  Mostly they are in the range less than 300-500 bytes or so.
+> What I don't have that I wish I did is good regression tests for the
+> flock or lease code (for posix locks I've been using connectathon,
+> though that misses some important things too).
+> 
+> --b.
+> 
 
-Any changes in the recent slub which takes the pressure away from the page
-allocator especially for smaller page sized architectures? If so, we can
-redo some of the experiments. Looking at this thread, it doesn't sound like?
-
-thanks,
-suresh
