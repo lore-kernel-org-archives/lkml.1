@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbXIMX0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765713AbXIMX1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbXIMX0V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbXIMX0G
+	id S1765713AbXIMX1w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbXIMX1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:26:06 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:49693 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765611AbXIMX0E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:26:04 -0400
-Message-ID: <46E9C6E4.5080102@nortel.com>
-Date: Thu, 13 Sep 2007 17:25:24 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 13 Sep 2007 19:27:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38404 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754016AbXIMX1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 19:27:43 -0400
+Date: Thu, 13 Sep 2007 19:27:36 -0400
+From: Dave Jones <davej@redhat.com>
+To: Chris Wedgwood <cw@f00f.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Eric Sandeen <sandeen@sandeen.net>
+Subject: Re: [RFC PATCH] Add a 'minimal tree install' target
+Message-ID: <20070913232736.GA24962@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Chris Wedgwood <cw@f00f.org>, Sam Ravnborg <sam@ravnborg.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Eric Sandeen <sandeen@sandeen.net>
+References: <20070912232534.GA26868@puku.stupidest.org> <20070913183359.GA27146@uranus.ravnborg.org> <20070913185753.GA9259@puku.stupidest.org>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>,
-       James Bottomley <James.Bottomley@steeleye.com>, bapper@piratehaven.org,
-       aaw@google.com
-Subject: Re: RFC: bug in load_elf_binary?
-References: <46E5B6FA.7000902@nortel.com> <46E83191.5070208@nortel.com> <46E9B30E.1080402@goop.org>
-In-Reply-To: <46E9B30E.1080402@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Sep 2007 23:25:28.0152 (UTC) FILETIME=[5E851580:01C7F65D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070913185753.GA9259@puku.stupidest.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Chris Friesen wrote:
-> 
->>The elf spec says that PT_LOAD segments must be ordered by vaddr.  We
->>want to have a segment at a relatively low fixed vaddr.  The exact
->>address is not important, except that it's lower than the standard elf
->>headers and so it must be the first segment in the elf file.
-> 
-> 
-> So you want a zero mapping at a particular address?  So the vaddr and
-> the memsz are set, but offset and filesz are zero?
+On Thu, Sep 13, 2007 at 11:57:53AM -0700, Chris Wedgwood wrote:
+ 
+ 
+ > > I would like to attribute whoever made this somehow.
+ > 
+ > so would i, i assume it was davej + others so i cc'd him on this
+ > hoping for feedback
 
-I believe that's correct.  It's basically the equivalent of BSS, but 
-used for an emulated OS (the app in question is an emulator).
+90%+ of that part of the fedora specfile was Arjan's doings,
+myself, dwmw2 and Jarod Wilson have poked at it since then,
+but in mostly minor ways.
 
-> Well, you could make the p_offset the same as the first segment with a
-> non-zero filesz.  That should satisfy the elf loader, though it might
-> still confuse things.
+FWIW, I'd love to see this become a generic upstream target that
+I could just use in the Fedora specfile.
+The question I have is whether other distros do anything differently
+that might be worth taking into consideration?
 
-Interesting idea.  Worth a try.
+	Dave
 
-However, this doesn't address the kernel side of things.  Am I correct 
-in thinking that the kernel is making an invalid assumption that it can 
-find the load_addr based on the first segment?
-
-> Why can't you create this mapping at runtime?
-
-Our emulated OS wants to put stuff at fixed addresses in this range, so 
-we're trying to keep the loader from allocating stuff there before our 
-program gets a chance to start up.
-
-Chris
+-- 
+http://www.codemonkey.org.uk
