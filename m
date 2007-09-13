@@ -1,73 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764817AbXIMSEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765347AbXIMSEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764817AbXIMSEH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 14:04:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757451AbXIMSD4
+	id S1765347AbXIMSEq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 14:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbXIMSEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 14:03:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52508 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754309AbXIMSDz (ORCPT
+	Thu, 13 Sep 2007 14:04:35 -0400
+Received: from smtp.opengridcomputing.com ([71.42.183.126]:38220 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759402AbXIMSEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 14:03:55 -0400
-Date: Thu, 13 Sep 2007 11:03:53 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       Mel Gorman <mel@skynet.ie>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: tbench regression - Why process scheduler has impact on tbench
- and why small per-cpu slab (SLUB) cache creates the scenario?
-In-Reply-To: <20070913060432.GB6078@linux-os.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0709131055430.8859@schroedinger.engr.sgi.com>
-References: <1188953218.26438.34.camel@ymzhang> <200709100810.46341.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709101201140.24491@schroedinger.engr.sgi.com>
- <200709110117.57387.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709111314190.25781@schroedinger.engr.sgi.com>
- <20070913060432.GB6078@linux-os.sc.intel.com>
+	Thu, 13 Sep 2007 14:04:34 -0400
+Message-ID: <46E97BB0.9030106@opengridcomputing.com>
+Date: Thu, 13 Sep 2007 13:04:32 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roland Dreier <rdreier@cisco.com>
+CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
+References: <adahclymos8.fsf@cisco.com>
+In-Reply-To: <adahclymos8.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007, Siddha, Suresh B wrote:
+Hey Roland,
 
-> Christoph, Not sure if you are referring to me or not here. But our
-> tests(atleast on with the database workloads) approx 1.5 months or so back
-> showed that on ia64 slub was on par with slab and on x86_64, slub was 9% down.
-> And after changing the slub min order and max order, slub perf on x86_64 is
-> down approx 3.5% or so compared to slab.
+I was about to post v2 of my patch to avoid port space collisions with 
+the native stack.  Can we get that 2.6.24?  It is high priority IMO. 
+I've tried to solicit review on it, but I think folks are reluctant... ;-)
 
-No, I was referring to another talk that I had at the OLS with Corey 
-Gough. I keep getting confusing information from Intel. Last I heard was 
-that IA64 had a regression and x86_64 was fine (but they were not allowed 
-to tell me details). Would you please straighten out your story and give 
-me details?
+Steve.
 
-AFAIK the two of us discussed some issues related to object handover 
-between processors that cause cache line bouncing and I sent you a 
-patchset for testing but I did not get any feedback. The patches that were 
-discussed are now in mm.
 
-> While I don't rule out large sized allocations like PAGE_SIZE, I am mostly
-> certain that the critical allocations in this workload are not PAGE_SIZE
-> based.  Mostly they are in the range less than 300-500 bytes or so.
+
+Roland Dreier wrote:
+> With 2.6.24 probably opening in the not-too-distant future, it's
+> probably a good time to review what my plans are for when the merge
+> window opens.
 > 
-> Any changes in the recent slub which takes the pressure away from the page
-> allocator especially for smaller page sized architectures? If so, we can
-> redo some of the experiments. Looking at this thread, it doesn't sound like?
-
-Its too late for 2.6.23. But we can certainly do things for .24. Could you 
-please test the patches queued up in Andrew's tree? In particular the page 
-allocator pass through and the per cpu structures optimizations?
-
-There is more work out of tree to optimize the fastpath that is mostly 
-driven by Mathieu Desnoyers. I hope to get that into mm in the next weeks 
-but I do not think that it is going to be available before .25.
-
-The work of Matheiu also has implications for the page allocator. We may 
-be able to significantly speed up the fastpath there as well.
+> At the kernel summit, we discussed patch review (doing a web search
+> for "kernel summit" "reviewed-by:" should turn up lots of info on
+> this).  Due to an unfortunate combination of vacation and conference
+> travel, summer colds, and other inconveniences, I am very backed up on
+> reviewing.  And in any case, I've allowed too much code review to be
+> dumped on me -- when there are dozens of people working on IB and RDMA
+> stuff, it obviously doesn't work to expect me to do all the reviewing.
+> 
+> Unfortunately, due to the length of the backlog and the fact that
+> 2.6.23 seems fairly close, some of the things listed below are going
+> to miss the 2.6.24 merge window.  So, although the plan is to phase in
+> requiring "Reviewed-by:" gently, for this merge, if you can get
+> someone other than me to review your work, then the chances of it
+> being merged increase dramatically.  I'm talking about a real review--
+> ideally, someone independent (from another company would be good) who
+> is willing to provide a "Reviewed-by:" line that means the reviewer
+> has really looked at and thought about the patch.  There should be a
+> mailing list thread you can point me at where the reviewer comments on
+> the patch and a new version of that patch addressing all comments is
+> posted (or in exceptional cases, where the patch is perfect to start
+> with, where the reviewer says the patch is great).
+> 
+> For example, given the number of IPoIB changes pending, it might be a
+> good idea for the people submitting them to get together and trade
+> reviews (ie "If you review my patch, I'll review your patch").  There
+> are a few cases where getting a review may not be necessary.  First of
+> all, trivial and obvious patches don't need a review.  It's a
+> judgement call what is trivial or obvious, and it's always a good idea
+> to provide a changelog that makes it clear why a patch is trivial and
+> obviously correct.  Second, hardware driver patches may not make sense
+> to anyone outside of the company whose hardware the driver is for.
+> Still, in this case, an internal Reviewed-by: would be nice, and also
+> a changelog that explains the reason for the change always helps
+> (don't just tell me what your patch does, but also explain what the
+> patch fixes and what the impact of the current situation is).
+> 
+> Anyway, here are all the pending things that I'm aware of.  As usual,
+> if something isn't already in my tree and isn't listed below, I
+> probably missed it or dropped it by mistake.  Please remind me again
+> in that case.
+> 
+> Core:
+> 
+>  - My user_mad P_Key index support patch.  I'll test the ioctl to
+>    change to the new mode and merge this I guess, since Hal and Sean
+>    have tested this out.
+> 
+>  - A fix to the user_mad 32-bit big-endian userspace 64/32 problem
+>    with the method_mask when registering agents.  I'll write a patch
+>    to handle this in a way that doesn't change the ABI for anything
+>    other than the broken case and hope to get someone to review this
+>    so it can be merged.
+> 
+>  - Sean's QoS changes.  These look fine at first glance, and I just
+>    plan to understand the backwards compatibility story (ie how this
+>    works with an old SM) and merge.  Anyone who objects let me know.
+> 
+>  - Sean's IB CM MRA interface changes.  Don't know at this point.  It
+>    seems OK but I'm not clear on what if any real-world improvement
+>    this gives us.
+> 
+> ULPs:
+> 
+>  - Pradeep's IPoIB CM support for devices that don't have SRQs.  I
+>    think the basic approach makes sense (I don't think faking SRQs at
+>    some other layer is really feasible) and I need to find time to
+>    look at the details to see if the current patch looks workable.  I'm
+>    likely to merge this; getting an independent Reviewed-by: would
+>    certainly be appreciated too.
+> 
+>  - Moni's IPoIB bonding support.  This seems mostly an issue of
+>    getting the core bonding maintainer's attention.  However getting a
+>    Reviewed-by: for the IPoIB changes wouldn't hurt too.
+> 
+>  - Rolf's IPoIB MGID scope changes.  Certainly we want to fix this
+>    issue but the specific changes need review.
+> 
+>  - Eli and Michael's IPoIB stateless offload (checksum offload, LSO,
+>    LRO, etc).  It's a big series that makes quite a few core changes.
+>    I think it needs some careful review and is probably at risk of
+>    missing this merge window.  Sorting in order of invasiveness so we
+>    can merge at least some of it (if splitting it makes sense) might
+>    be a good idea.
+> 
+> HW specific:
+> 
+>  - I already merged patches to enable MSI-X by default for mthca and
+>    mlx4.  I hope there aren't too many systems that get hosed if a
+>    MSI-X interrupt is generated.
+> 
+>  - Jack and Michael's mlx4 FMR support.  Will merge I guess, although
+>    I do hope to have time to address the DMA API abuse that is being
+>    copied from mthca, so that mlx4 and mthca work in Xen domU.
+> 
+>  - ehca patch queue.  Will merge, pending fixes for the few minor
+>    issues I commented on.
+> 
+>  - Steve's mthca router mode support.  Would be nice to see a review
+>    from someone at Mellanox.
+> 
+>  - Arthur's mthca doorbell alignment fixes.  I will experiment with a
+>    few different approaches and post what I like (and fix mlx4 as
+>    well).  I hope Arthur can review.
+> 
+>  - Michael's mlx4 WQE shrinking patch.  Not sure yet; I'll reply to
+>    the latest patch directly.
+> 
+> Here are a few topics that I believe will not be ready in time for the
+> 2.6.24 window and will need to wait for 2.6.25:
+> 
+>  - Multiple CQ event vector support.  I haven't seen any discussions
+>    about how ULPs or userspace apps should decide which vector to use,
+>    and hence no progress has been made since we deferred this during
+>    the 2.6.23 merge window.
+> 
+>  - XRC.  Given the length of the backlog above and the fact that a
+>    first draft of this code has not been posted yet, I don't see any
+>    way that we could have something this major ready in time.
+> 
+> Here is the complete list of patches I have in my for-2.6.24 branch
+> waiting for the merge window so far.  Mostly I haven't merged anything
+> big out of my backlog, so this is essentially all
+> 
+> Ali Ayoub (1):
+>       IB/sa: Error handling thinko fix
+> 
+> Anton Blanchard (3):
+>       IB/fmr_pool: Clean up some error messages in fmr_pool.c
+>       IB/ehca: Make output clearer by removing some debug messages
+>       IB/ehca: Export module parameters in sysfs
+> 
+> Dotan Barak (1):
+>       mlx4_core: Use enum value GO_BIT_TIMEOUT_MSECS
+> 
+> Eli Cohen (2):
+>       IPoIB: Fix typo to end statement with ';' instead of ','
+>       IPoIB: Fix error path memory leak
+> 
+> Michael S. Tsirkin (2):
+>       mlx4_core: Enable MSI-X by default
+>       IB/mthca: Enable MSI-X by default
+> 
+> Peter Oruba (1):
+>       IB/mthca: Use PCI-X/PCI-Express read control interfaces
+> 
+> Roland Dreier (6):
+>       IPoIB: Make sure no receives are handled when stopping device
+>       IB: find_first_zero_bit() takes unsigned pointer
+>       mlx4_core: Don't free special QPs in QP number bitmap
+>       IB/mlx4: Use set_data_seg() in mlx4_ib_post_recv()
+>       IB/ehca: Include <linux/mutex.h> from ehca_classes.h
+>       IB/mlx4: Fix up SRQ limit_watermark endianness
+> 
+> Steve Wise (1):
+>       RDMA/cxgb3: Make the iw_cxgb3 module parameters writable
+> _______________________________________________
+> general mailing list
+> general@lists.openfabrics.org
+> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+> 
+> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
