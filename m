@@ -1,124 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765552AbXIMTwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765924AbXIMTyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765552AbXIMTwu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 15:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbXIMTwm
+	id S1765924AbXIMTyi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 15:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXIMTyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 15:52:42 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:55222 "EHLO
-	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755189AbXIMTwl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 15:52:41 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Thu, 13 Sep 2007 21:52:03 +0200
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: "Greg KH" <greg@kroah.com>, "Yinghai Lu" <Yinghai.Lu@sun.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Martin Mares" <mj@ucw.cz>,
-       "dean gaudet" <dean@arctic.org>,
-       "Robert Richter" <robert.richter@amd.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case
- MMCONFIG is used
-Message-ID: <20070913195203.GA1131@alberich.amd.com>
-References: <200709121921.43950.yinghai.lu@sun.com>
- <200709131147.43446.ak@suse.de> <20070913104704.GA3878@kroah.com>
- <200709131353.15752.ak@suse.de>
+	Thu, 13 Sep 2007 15:54:31 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34442 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757109AbXIMTya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 15:54:30 -0400
+Message-ID: <46E99572.7080400@garzik.org>
+Date: Thu, 13 Sep 2007 15:54:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-In-Reply-To: <200709131353.15752.ak@suse.de>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 13 Sep 2007 19:52:07.0203 (UTC)
- FILETIME=[908F4730:01C7F63F]
-X-WSS-ID: 6AF74B7F0X87459291-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+To: Jon Ivar Rykkelid <jonry@pvv.org>
+CC: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sata_nv issues with MCP51 SATA controller
+References: <46E8EABF.3060409@pvv.org> <46E94728.9050509@garzik.org> <46E951C6.1000403@pvv.org> <46E953D7.5070305@gmail.com> <46E97AFF.30202@pvv.org> <46E98ED1.8070109@pvv.org>
+In-Reply-To: <46E98ED1.8070109@pvv.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 01:53:15PM +0200, Andi Kleen wrote:
-> On Thursday 13 September 2007 12:47, Greg KH wrote:
-> > On Thu, Sep 13, 2007 at 11:47:42AM +0200, Andi Kleen wrote:
-> > > On Thursday 13 September 2007 04:21, Yinghai Lu wrote:
-> > > > [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is
-> > > > used.
-> > > >
-> > > > reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
-> > >
-> > > I just rejected a similar patch -- this should be done using MMCONFIG
-> >
-> > But what about for broken machines without the proper MMCONFIG entries?
-> > They still need a way to get access to this config space,
+Jon Ivar Rykkelid wrote:
+> Hi,
 > 
-> If there are any devices that need it. IBS and PCI-E error handling 
-> do, but they're quite obscure.
-> 
-> Also so far we don't know of any Fam 10h systems without MMCONFIG
-> entries. Fam10h requires a new BIOS so it's reasonable to assume
-> that the new BIOSes will do better.
+> I now tested with the adma=0 option, but if anything I got a crash 
+> quicker than before. Same error message started coming in, but this time 
+> the system hung before I was able to capture the log as well (but I saw 
+> the error, and it was the same as before, except that this time it was 
+> the ata3-channel that first started acting up..) - To remind you all 
+> what this is about, I have reattached the log that I originally captured...
 
-IMHO support for all config space access methods should be added to the kernel.
-And it should be added at a central point. Not waiting for drivers to do it
-their own way if they need to use it.
+Sounds like a hardware problem, since disabling ADMA is generally the 
+cure-all we use -- it appears to stress the hardware less.
 
-The more complicated/important question is how to decide which access method
-should be used for a device. (Something similar to the pci_mmcfg_fallback_slots
-stuff that exists already for K8 NB.)
-But that needs some more thinking.
-
-Here a summary wrt family 10h extended config space access methods.
-(Most of this stuff I verified with some patched kernels. I didn't
-eavesdropping on the physical links though ...)
-
-For family 10h we have 3 methods
-(1) "legacy" MMCONFIG access (via south bridge)
-(2) mmconfig access via CPU/NB (new with fam10h, using the new MMIO
-    config base MSR)
-(3) CF8/CFC ECS access (new with fam10h, has to be enabled in the NB_CFG MSR)
-
-- If (1) is used  and (2)+(3) are not configurred there is no way to access
-  NB config space with mmconfig accesses. Which implies that NB ECS cannot
-  be accessed.
-  So you can only access NB standard config space via "legacy" CF8/CFC.
-  This equals what we have with K8.
-  => ECS is accessible just for external devices (not the NB ECS).
-
-- If (2) is used, mmconfig accesses are translated by CPU/NB. So this will
-  result in (extended) config cycles on the link to the south bridge.
-  This works for both NB config space and config space for normal PCI(e) devices.
-  => ECS is accessible for all devices via that method.
-
-- And finally with (3) you can also access both NB config space and the config
-  space of external devices. The CPU/NB does the translation and will also
-  create (extended) config cycles here.
-  => ECS is accessible for all devices via that method.
-  (But of course not in the same "atomic" manner like with mmconfig.)
-
-Then we have different prereqs for those methods:
-- For (1) the ACPI stuff is required.
-- For (2) and (3) some MSRs have to be set up.
-
-Ah, yes in case I didn't mention that: ;-)
-Using (2) you haven't such a strict dependency on that ACPI stuff.
-Would be cool to disable MCFG at all and configure mmconfig just in
-the CPU, no?
-
-
-Regards,
-
-Andreas
-
--- 
-Operating | AMD Saxony Limited Liability Company & Co. KG,
-  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- Research | Register Court Dresden: HRA 4896, General Partner authorized
-  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
-  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+	Jeff
 
 
 
