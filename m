@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933490AbXIMXqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933650AbXIMXqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933490AbXIMXqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932123AbXIMXo4
+	id S933650AbXIMXqn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbXIMXpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:44:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57145 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765208AbXIMXoz (ORCPT
+	Thu, 13 Sep 2007 19:45:00 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:41159 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932184AbXIMXo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:44:55 -0400
-Date: Thu, 13 Sep 2007 16:39:23 -0700
+	Thu, 13 Sep 2007 19:44:58 -0400
+Date: Thu, 13 Sep 2007 16:39:47 -0700
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Subject: Driver core: remove kset_set_kset_s
-Message-ID: <20070913233923.GC10856@kroah.com>
+Subject: Driver core: remove put_bus()
+Message-ID: <20070913233947.GD10856@kroah.com>
 References: <20070913233751.GA10856@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,48 +25,133 @@ X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This macro is only used by the driver core and is held over from when we
-had subsystems.  It is not needed anymore.
+put_bus() should not be globally visable as it is not used by anything
+other than drivers/base/bus.c.  This patch removes the visability of it,
+and renames it to match all of the other *_put() functions in the
+kernel.
 
 
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- drivers/base/sys.c      |    2 +-
- include/linux/kobject.h |   14 --------------
- 2 files changed, 1 insertion(+), 15 deletions(-)
+ drivers/base/base.h |    1 -
+ drivers/base/bus.c  |   29 ++++++++++++++---------------
+ 2 files changed, 14 insertions(+), 16 deletions(-)
 
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -139,7 +139,7 @@ int sysdev_class_register(struct sysdev_
- 		 kobject_name(&cls->kset.kobj));
- 	INIT_LIST_HEAD(&cls->drivers);
- 	cls->kset.kobj.parent = &system_subsys.kobj;
--	kset_set_kset_s(cls, system_subsys);
-+	cls->kset.kobj.kset = &system_subsys;
- 	return kset_register(&cls->kset);
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -19,7 +19,6 @@ extern int bus_add_device(struct device 
+ extern void bus_attach_device(struct device * dev);
+ extern void bus_remove_device(struct device * dev);
+ extern struct bus_type *get_bus(struct bus_type * bus);
+-extern void put_bus(struct bus_type * bus);
+ 
+ extern int bus_add_driver(struct device_driver *);
+ extern void bus_remove_driver(struct device_driver *);
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -30,6 +30,11 @@
+ static int __must_check bus_rescan_devices_helper(struct device *dev,
+ 						void *data);
+ 
++static void bus_put(struct bus_type *bus)
++{
++	kset_put(&bus->subsys);
++}
++
+ static ssize_t
+ drv_attr_show(struct kobject * kobj, struct attribute * attr, char * buf)
+ {
+@@ -124,7 +129,7 @@ int bus_create_file(struct bus_type * bu
+ 	int error;
+ 	if (get_bus(bus)) {
+ 		error = sysfs_create_file(&bus->subsys.kobj, &attr->attr);
+-		put_bus(bus);
++		bus_put(bus);
+ 	} else
+ 		error = -EINVAL;
+ 	return error;
+@@ -134,7 +139,7 @@ void bus_remove_file(struct bus_type * b
+ {
+ 	if (get_bus(bus)) {
+ 		sysfs_remove_file(&bus->subsys.kobj, &attr->attr);
+-		put_bus(bus);
++		bus_put(bus);
+ 	}
  }
  
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -227,20 +227,6 @@ extern struct kset hypervisor_subsys;
- #define kobj_set_kset_s(obj,subsys) \
- 	(obj)->kobj.kset = &(subsys)
+@@ -186,7 +191,7 @@ static ssize_t driver_unbind(struct devi
+ 		err = count;
+ 	}
+ 	put_device(dev);
+-	put_bus(bus);
++	bus_put(bus);
+ 	return err;
+ }
+ static DRIVER_ATTR(unbind, S_IWUSR, NULL, driver_unbind);
+@@ -219,7 +224,7 @@ static ssize_t driver_bind(struct device
+ 			err = -ENODEV;
+ 	}
+ 	put_device(dev);
+-	put_bus(bus);
++	bus_put(bus);
+ 	return err;
+ }
+ static DRIVER_ATTR(bind, S_IWUSR, NULL, driver_bind);
+@@ -459,7 +464,7 @@ out_subsys:
+ out_id:
+ 	device_remove_attrs(bus, dev);
+ out_put:
+-	put_bus(dev->bus);
++	bus_put(dev->bus);
+ 	return error;
+ }
  
--/**
-- *	kset_set_kset_s(obj,subsys) - set kset for embedded kset.
-- *	@obj:		ptr to some object type.
-- *	@subsys:	a subsystem object (not a ptr).
-- *
-- *	Can be used for any object type with an embedded ->kset.
-- *	Sets the kset of @obj's  embedded kobject (via its embedded
-- *	kset) to @subsys.kset. This makes @obj a member of that 
-- *	kset.
-- */
+@@ -509,7 +514,7 @@ void bus_remove_device(struct device * d
+ 		}
+ 		pr_debug("bus %s: remove device %s\n", dev->bus->name, dev->bus_id);
+ 		device_release_driver(dev);
+-		put_bus(dev->bus);
++		bus_put(dev->bus);
+ 	}
+ }
+ 
+@@ -646,7 +651,7 @@ int bus_add_driver(struct device_driver 
+ out_unregister:
+ 	kobject_unregister(&drv->kobj);
+ out_put_bus:
+-	put_bus(bus);
++	bus_put(bus);
+ 	return error;
+ }
+ 
+@@ -671,7 +676,7 @@ void bus_remove_driver(struct device_dri
+ 	driver_detach(drv);
+ 	module_remove_driver(drv);
+ 	kobject_unregister(&drv->kobj);
+-	put_bus(drv->bus);
++	bus_put(drv->bus);
+ }
+ 
+ 
+@@ -732,12 +737,6 @@ struct bus_type *get_bus(struct bus_type
+ 				struct bus_type, subsys) : NULL;
+ }
+ 
+-void put_bus(struct bus_type * bus)
+-{
+-	kset_put(&bus->subsys);
+-}
 -
--#define kset_set_kset_s(obj,subsys) \
--	(obj)->kset.kobj.kset = &(subsys)
 -
- extern void subsystem_init(struct kset *);
- extern int __must_check subsystem_register(struct kset *);
- extern void subsystem_unregister(struct kset *);
+ /**
+  *	find_bus - locate bus by name.
+  *	@name:	name of bus.
+@@ -874,7 +873,7 @@ out:
+  *	@bus:	bus.
+  *
+  *	Unregister the child subsystems and the bus itself.
+- *	Finally, we call put_bus() to release the refcount
++ *	Finally, we call bus_put() to release the refcount
+  */
+ void bus_unregister(struct bus_type * bus)
+ {
