@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbXILBQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762959AbXILBSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762750AbXILBQR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 21:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758441AbXILBQG
+	id S1762959AbXILBSR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 21:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbXILBSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 21:16:06 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:49781 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751807AbXILBQF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 21:16:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hF/LWzcMcYtBO5O47PFbPS5Hy931w57G5yHMnucgWWEjuS+dwqxkcpn4lHxivtK7kcVH5X8j1i423jiyWtvDec4S47xN46G22RKj4037Xkfq3Q6uXIN+gbl31bp8QkUGHD3mq1sUIEXvg23qzZFBqTpqwuHKDtpJ8gYYPZ8lVPI=
-Message-ID: <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com>
-Date: Tue, 11 Sep 2007 21:16:03 -0400
-From: "Rob Hussey" <robjhussey@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [announce] CFS-devel, performance improvements
-Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Roman Zippel" <zippel@linux-m68k.org>
-In-Reply-To: <20070911200459.GA6974@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 21:18:04 -0400
+Received: from mga11.intel.com ([192.55.52.93]:11711 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754875AbXILBSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 21:18:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,240,1186383600"; 
+   d="scan'208";a="133320038"
+Date: Wed, 12 Sep 2007 18:29:53 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>, akpm@osdl.org,
+       Greg KH <greg@kroah.com>, muli@il.ibm.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       kristen.c.accardi@intel.com
+Subject: Re: [patch][Intel-IOMMU] Fix for IOMMU early crash
+Message-ID: <20070913012952.GA958@askeshav-devel.jf.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070908200523.GA16204@askeshav-devel.jf.intel.com> <18148.12140.21118.252581@cargo.ozlabs.ibm.com> <20070911174231.GC24627@askeshav-devel.jf.intel.com> <20070912192854.GA32610@askeshav-devel.jf.intel.com> <18150.61732.490669.269794@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070911200459.GA6974@elte.hu>
+In-Reply-To: <18150.61732.490669.269794@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Wed, Sep 12, 2007 at 05:48:52AM +1000, Paul Mackerras wrote:
+> Keshavamurthy, Anil S writes:
+> 
+> > Subject: Fix IOMMU early crash
+> > 
+> > This patch avoids copying pci_bus's->sysdata to
+> > pci_dev's->sysdata as one can easily obtain
+> > the same through pci_dev->bus->sysdata.
+> 
+> At the moment this will cause ppc64 to crash, since we rely on
+> pci_dev->sysdata pointing to some node in the firmware device tree,
+> either the device's node or the node for a parent bus.
+> 
+> We could change the ppc64 code to use pci_dev->bus->sysdata in the
+> case when pci_dev->sysdata is NULL, which would fix the problem.  I
+> think that change should be incorporated as part of this patch so that
+> we don't break git bisection.
+Can I expect the ppc64 code changes from you? 
+Once I get your, I will merge with mine and post it again.
+> 
+> In other words I don't want to see this patch applied as it stands.
+Yup, I agree with you.
 
-When compiling, I get:
-In file included from kernel/sched.c:794:
-kernel/sched_fair.c: In function 'task_new_fair':
-kernel/sched_fair.c:857: error: 'sysctl_sched_child_runs_first'
-undeclared (first use in this function)
-kernel/sched_fair.c:857: error: (Each undeclared identifier is
-reported only once
-kernel/sched_fair.c:857: error: for each function it appears in.)
-
-Presumably because sched_fair.c is being included into sched.c before
-sysctl_sched_child_runs_first is defined.
-
-Regards,
-Rob
+-Anil
