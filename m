@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbXIMPJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbXIMPKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759234AbXIMPJa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbXIMPJW
+	id S1758021AbXIMPKx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 11:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbXIMPKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:09:22 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:58103 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751452AbXIMPJV (ORCPT
+	Thu, 13 Sep 2007 11:10:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51503 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbXIMPKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:09:21 -0400
-Date: Thu, 13 Sep 2007 11:09:20 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Mark Lord <lkml@rtr.ca>
-cc: Chuck Ebbert <cebbert@redhat.com>, Niels <zorglub_olsen@hotmail.com>,
-       <linux-kernel@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] Problems with USB disk [solved]
-In-Reply-To: <46E94AC2.3030607@rtr.ca>
-Message-ID: <Pine.LNX.4.44L0.0709131105250.3619-100000@iolanthe.rowland.org>
+	Thu, 13 Sep 2007 11:10:44 -0400
+Message-ID: <46E952D8.2000203@zytor.com>
+Date: Thu, 13 Sep 2007 08:10:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Bill Nottingham <notting@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add CONFIG_VT_UNICODE
+References: <20070831201820.GF31970@nostromo.devel.redhat.com> <Pine.LNX.4.64.0709071348090.25942@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0709071348090.25942@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007, Mark Lord wrote:
-
-> Alan Stern wrote:
-> > On Wed, 12 Sep 2007, Mark Lord wrote:
-> > 
-> >> Chuck Ebbert wrote:
-> ..
-> >>> Oh, nice. The usb-storage (SCSI) disk spins itself down and we can't handle that.
-> >>> Should we be disabling auto-spindown when we connect the device, or be able to
-> >>> handle this by sending the start command when needed?
-> >> There's more to this.
-> >>
-> >> My Sandisk Cruzer Micro 1GB USB sticks suffer from this regression.
-> > 
-> > I seriously doubt that.  Are you claiming that your USB stick spins 
-> > itself down during a suspend?  And then requires to be spun back up 
-> > before it will resume proper operation?
+Jan Engelhardt wrote:
+> On Aug 31 2007 16:18, Bill Nottingham wrote:
+>> As of now, the kernel defaults to non-unicode and XLATE for the keyboard.
+>> We've been changing this in Fedora, but that requires patching the defaults
+>> in the kernel.
+>>
+>> The attached introduces CONFIG_VT_UNICODE, which sets the console in unicode
+>> mode by default on boot, including both the virtual terminal and the keyboard
+>> driver.
 > 
-> No, the machine is not being suspended at all.
+> I would prefer to:
+>  - make default_utf=1 in the source
+>  - add "default_utf8 ? VC_UNICODE : VC_XLATE" to the keyboard code
+>    as your patch does
+>  - and do away with the new CONFIG_ option, since, surprise, surprise,
+>    you can change it at runtime, so there is no need to do it
+>    at compile-time too.
 > 
-> What happens is, there's a nice little LED on the Cruzer stick,
-> that is "lit" when the stick itself is not in a "power suspend" state
-> (or whatever you USB folks call it).
 
-We call it "suspended".  (Wasn't there an episode of Classic Trek where 
-Mr. Spock explained to somebody, "I call them `ears'."?)
+I concur.
 
-> On 2.6.22, that little LED stays "on" normally, and flickers off/on
-> when data is being transfered.
-> 
-> The new "USB autosuspend" logic in 2.6.23 now causes that little LED
-> to turn off after a few seconds of inactivity.
-> 
-> Once that happens, the USB stick is not accessible until after a longish
-> timeout (~30s I think), followed by a USB reset.  Then it is usable again
-> until the next inactivity timeout and autosuspend (a few seconds).
-
-So this _isn't_ the regression described above -- to wit, that the 
-drive gets spun down and then won't work without first being spun back 
-up.  You wrote:
-
-> >> My Sandisk Cruzer Micro 1GB USB sticks suffer from this regression.
-
-But it doesn't.  It suffers from a different regression.
-
-Alan Stern
-
+	-hpa
