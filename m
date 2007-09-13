@@ -1,177 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbXIMWvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbXIMWvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbXIMWvk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 18:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbXIMWva
+	id S1752543AbXIMWvx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 18:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbXIMWvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 18:51:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:22472 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752133AbXIMWv2 (ORCPT
+	Thu, 13 Sep 2007 18:51:31 -0400
+Received: from postfix1-g20.free.fr ([212.27.60.42]:47991 "EHLO
+	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbXIMWv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Sep 2007 18:51:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Sz303ZlHkPaApgpnCe6/JunOIEi/QpSYT3CQU0gxatXQ1+DceUf2DxOaOYrBH4qlX2we0WmYmPKhYQVrYhtkkpMzIr4aRC5xAkplsCkGTLbQIdJCHZENSLSy1aGFEY0izbDg566rORs9/UvgrIb5Zh0qsVYSNwfnl1ZgCoaFyew=
-Subject: Re: [announce] CFS-devel, performance improvements
-From: dimm <dmitry.adamushko@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roman Zippel <zippel@linux-m68k.org>, Mike Galbraith <efault@gmx.de>,
-       dmitry.adamushko@gmail.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 14 Sep 2007 00:51:10 +0200
-Message-Id: <1189723870.4485.18.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Message-ID: <46E9BEB1.3060504@free.fr>
+Date: Fri, 14 Sep 2007 00:50:25 +0200
+From: Laurent Riffard <laurent.riffard@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Peter Osterlund <petero2@telia.com>
+Subject: Re: 2.6.23-rc4-mm1: git-block.patch broke pktcdvd
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <46E5A6D1.3050704@free.fr>
+In-Reply-To: <46E5A6D1.3050704@free.fr>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Le 10.09.2007 22:19, Laurent Riffard a écrit :
+> Le 01.09.2007 06:58, Andrew Morton a écrit :
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+> [...]
+> 
+> Jens,
+> 
+> git-block.patch broke pktcdvd, I've got an Oops while syncing:
+> 
+>>  [  713.014888] pktcdvd: Fixed packets, 16 blocks, Mode-1 disc
+>>  [  713.021844] pktcdvd: write speed 2770kB/s
+>>  [  718.401761] pktcdvd: 4595774kB available on disc
+>>  [  721.175644] UDF-fs INFO UDF 0.9.8.1 (2004/29/09) Mounting volume 'LinuxUDF', timestamp 2006/10/08 21:17 (1078)
+>>  [  721.213784] mount used greatest stack depth: 460 bytes left
+>>  [  752.634402] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
+>>  [  752.635711] printing eip: c017b69e *pde = 00000000 
+>>  [  752.636983] Oops: 0002 [#1] PREEMPT 
+>>  [  752.638240] last sysfs file: /devices/pci0000:00/0000:00:0d.0/modalias
+>>  [  752.639477] Modules linked in: udf binfmt_misc pktcdvd radeon drm lp nls_iso8859_1 nls_cp850 vfat fat reiser4 lzo_decompress lzo_compress eeprom w83781d hwmon_vid snd_ens1371 gameport snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm sg firewire_ohci firewire_core sr_mod cdrom crc_itu_t snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device snd 8250_pnp i2c_viapro via_agp floppy ohci1394 soundcore 8250 serial_core ata_generic uhci_hcd agpgart ne2k_pci 8390 ieee1394 snd_page_alloc rtc pcspkr via686a usbcore parport_pc parport evdev reiserfs sd_mod pata_via libata scsi_mod dm_mirror dm_mod
+>>  [  752.645759] 
+>>  [  752.646990] Pid: 3403, comm: pktcdvd0 Not tainted (2.6.23-rc4-mm1 #50)
+>>  [  752.648256] EIP: 0060:[__bio_add_page+212/355] EFLAGS: 00010246 CPU: 0
+>>  [  752.649515] EIP is at __bio_add_page+0xd4/0x163
+>>  [  752.650750] EAX: 00000000 EBX: 00000000 ECX: c26ca400 EDX: 00000000
+>>  [  752.651984] ESI: cba3cf48 EDI: c1174be0 EBP: cb01cef4 ESP: cb01cee4
+>>  [  752.653219]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+>>  [  752.654446] Process pktcdvd0 (pid: 3403, ti=cb01c000 task=c1b9cdb0 task.ti=cb01c000)
+>>  [  752.654526] Stack: c26ca400 cba3cf48 c1174be0 00000001 cb01cf10 c017b763 00000800 00000800 
+>>  [  752.655908]        00000040 cba3cf48 cb06e120 cb01cfd0 e1d94044 00000800 00000004 cb09b8a0 
+>>  [  752.657297]        c1853ce0 00000000 00000800 00000001 00000000 00000000 00000000 00000000 
+>>  [  752.658695] Call Trace:
+>>  [  752.661126]  [show_trace_log_lvl+26/47] show_trace_log_lvl+0x1a/0x2f
+>>  [  752.662383]  [show_stack_log_lvl+155/163] show_stack_log_lvl+0x9b/0xa3
+>>  [  752.663626]  [show_registers+160/482] show_registers+0xa0/0x1e2
+>>  [  752.664868]  [die+261/567] die+0x105/0x237
+>>  [  752.666072]  [do_page_fault+1127/1349] do_page_fault+0x467/0x545
+>>  [  752.667274]  [error_code+106/112] error_code+0x6a/0x70
+>>  [  752.668477]  [bio_add_page+54/61] bio_add_page+0x36/0x3d
+>>  [  752.669669]  [<e1d94044>] kcdrwd+0x5a5/0x9ba [pktcdvd]
+>>  [  752.670856]  [kthread+57/97] kthread+0x39/0x61
+>>  [  752.672024]  [kernel_thread_helper+7/16] kernel_thread_helper+0x7/0x10
+>>  [  752.673197]  =======================
+>>  [  752.674336] Code: ba 01 00 00 00 8b 4d f0 8b 46 18 66 3b 81 50 01 00 00 73 da 66 8b 46 1a 66 3b 81 52 01 00 00 73 cd 0f 
+>> b7 46 14 6b d8 0c 03 5e 2c <89> 3b 8b 45 08 89 43 04 8b 4d 0c 89 4b 08 8b 45 f0 8b 78 68 85 
+>>  [  752.677879] EIP: [__bio_add_page+212/355] __bio_add_page+0xd4/0x163 SS:ESP 0068:cb01cee4
 
-Hi,
+I dig through git-block.patch and the culprit seems to be commit
+c94f1c4ac87862675c8d70941973bc3a69aff5d8 "bio: use memset() in
+bio_init()".
 
-please find a couple of minor cleanups below (on top of sched-cfs-v2.6.23-rc6-v21-combo-3.patch):
+Maybe the real bug is a bad bio initialization in pktcdvd driver,
+which is revealed by this commit ?
 
-
-(1)
-
-Better placement of #ifdef CONFIG_SCHEDSTAT block in dequeue_entity().
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
----
-diff -upr linux-2.6.23-rc6/kernel/sched_fair.c linux-2.6.23-rc6-my/kernel/sched_fair.c
---- linux-2.6.23-rc6/kernel/sched_fair.c	2007-09-13 21:38:49.000000000 +0200
-+++ linux-2.6.23-rc6-my/kernel/sched_fair.c	2007-09-13 21:48:50.000000000 +0200
-@@ -453,8 +453,8 @@ static void
- dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int sleep)
- {
- 	update_stats_dequeue(cfs_rq, se);
--	if (sleep) {
- #ifdef CONFIG_SCHEDSTATS
-+	if (sleep) {
- 		if (entity_is_task(se)) {
- 			struct task_struct *tsk = task_of(se);
  
-@@ -463,8 +463,8 @@ dequeue_entity(struct cfs_rq *cfs_rq, st
- 			if (tsk->state & TASK_UNINTERRUPTIBLE)
- 				se->block_start = rq_of(cfs_rq)->clock;
- 		}
--#endif
- 	}
-+#endif
- 	__dequeue_entity(cfs_rq, se);
- }
- 
----
-
-
-(2)
-
-unless we are very eager to keep an additional layer of abstraction,
-'struct load_stat' is redundant now so let's get rid of it.
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
-
----
-diff -upr linux-2.6.23-rc6/kernel/sched.c linux-2.6.23-rc6-sched-dev/kernel/sched.c
---- linux-2.6.23-rc6/kernel/sched.c	2007-09-12 21:37:41.000000000 +0200
-+++ linux-2.6.23-rc6-sched-dev/kernel/sched.c	2007-09-12 21:26:10.000000000 +0200
-@@ -170,10 +170,6 @@ struct rt_prio_array {
- 	struct list_head queue[MAX_RT_PRIO];
- };
- 
--struct load_stat {
--	struct load_weight load;
--};
--
- /* CFS-related fields in a runqueue */
- struct cfs_rq {
- 	struct load_weight load;
-@@ -232,7 +228,7 @@ struct rq {
- #ifdef CONFIG_NO_HZ
- 	unsigned char in_nohz_recently;
- #endif
--	struct load_stat ls;	/* capture load from *all* tasks on this cpu */
-+	struct load_weight load;	/* capture load from *all* tasks on this cpu */
- 	unsigned long nr_load_updates;
- 	u64 nr_switches;
- 
-@@ -804,7 +800,7 @@ static int balance_tasks(struct rq *this
-  * Update delta_exec, delta_fair fields for rq.
-  *
-  * delta_fair clock advances at a rate inversely proportional to
-- * total load (rq->ls.load.weight) on the runqueue, while
-+ * total load (rq->load.weight) on the runqueue, while
-  * delta_exec advances at the same rate as wall-clock (provided
-  * cpu is not idle).
-  *
-@@ -812,17 +808,17 @@ static int balance_tasks(struct rq *this
-  * runqueue over any given interval. This (smoothened) load is used
-  * during load balance.
-  *
-- * This function is called /before/ updating rq->ls.load
-+ * This function is called /before/ updating rq->load
-  * and when switching tasks.
-  */
- static inline void inc_load(struct rq *rq, const struct task_struct *p)
- {
--	update_load_add(&rq->ls.load, p->se.load.weight);
-+	update_load_add(&rq->load, p->se.load.weight);
- }
- 
- static inline void dec_load(struct rq *rq, const struct task_struct *p)
- {
--	update_load_sub(&rq->ls.load, p->se.load.weight);
-+	update_load_sub(&rq->load, p->se.load.weight);
- }
- 
- static void inc_nr_running(struct task_struct *p, struct rq *rq)
-@@ -967,7 +963,7 @@ inline int task_curr(const struct task_s
- /* Used instead of source_load when we know the type == 0 */
- unsigned long weighted_cpuload(const int cpu)
- {
--	return cpu_rq(cpu)->ls.load.weight;
-+	return cpu_rq(cpu)->load.weight;
- }
- 
- static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
-@@ -1933,7 +1929,7 @@ unsigned long nr_active(void)
-  */
- static void update_cpu_load(struct rq *this_rq)
- {
--	unsigned long this_load = this_rq->ls.load.weight;
-+	unsigned long this_load = this_rq->load.weight;
- 	int i, scale;
- 
- 	this_rq->nr_load_updates++;
-diff -upr linux-2.6.23-rc6/kernel/sched_debug.c linux-2.6.23-rc6-sched-dev/kernel/sched_debug.c
---- linux-2.6.23-rc6/kernel/sched_debug.c	2007-09-12 21:37:41.000000000 +0200
-+++ linux-2.6.23-rc6-sched-dev/kernel/sched_debug.c	2007-09-12 21:36:04.000000000 +0200
-@@ -137,7 +137,7 @@ static void print_cpu(struct seq_file *m
- 
- 	P(nr_running);
- 	SEQ_printf(m, "  .%-30s: %lu\n", "load",
--		   rq->ls.load.weight);
-+		   rq->load.weight);
- 	P(nr_switches);
- 	P(nr_load_updates);
- 	P(nr_uninterruptible);
-diff -upr linux-2.6.23-rc6/kernel/sched_fair.c linux-2.6.23-rc6-sched-dev/kernel/sched_fair.c
---- linux-2.6.23-rc6/kernel/sched_fair.c	2007-09-12 21:37:41.000000000 +0200
-+++ linux-2.6.23-rc6-sched-dev/kernel/sched_fair.c	2007-09-12 21:35:27.000000000 +0200
-@@ -499,7 +499,7 @@ set_next_entity(struct cfs_rq *cfs_rq, s
- 	 * least twice that of our own weight (i.e. dont track it
- 	 * when there are only lesser-weight tasks around):
- 	 */
--	if (rq_of(cfs_rq)->ls.load.weight >= 2*se->load.weight) {
-+	if (rq_of(cfs_rq)->load.weight >= 2*se->load.weight) {
- 		se->slice_max = max(se->slice_max,
- 			se->sum_exec_runtime - se->prev_sum_exec_runtime);
- 	}
-
----
-
+> 2.6.23-rc4 and 2.6.23-rc3-mm1 work fine.
+> 
+> Steps to reproduce:
+> $ pktsetup /dev/pktcdvd/0 /dev/sr0
+> # put an UDF-formatted DVD-RW in the drive
+> $ mount -o noatime,nodiratime,rw /dev/pktcdvd/0 /media/pkt
+> $ sync
+> 
+> /dev/sr0 drive is a LG-branded DVD burner:
+> 	Vendor: HL-DT-ST Model: DVDRAM GSA-4165B Rev: DL03
+> 
