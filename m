@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765610AbXIMQSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763036AbXIMQWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765610AbXIMQSZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 12:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765257AbXIMQQ5
+	id S1763036AbXIMQWz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 12:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXIMQWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 12:16:57 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:54113 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763056AbXIMQQz (ORCPT
+	Thu, 13 Sep 2007 12:22:47 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:64012 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbXIMQWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 12:16:55 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 3/3] IB/ehca: Make sure user pages are from hugetlb before using MR large pages
-User-Agent: KMail/1.8.2
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200709131814.13937.fenkes@de.ibm.com>
-In-Reply-To: <200709131814.13937.fenkes@de.ibm.com>
+	Thu, 13 Sep 2007 12:22:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Jdpp1ZBm0lD+T9sGtSit8LFS3ZwkEf/ii5YVR2zWXT7URjxnwOQFf13c4UNbPKNTZELb1ordcraHC8T7fnDlct2Rwd70wAFcPwFCD4x9X34kQT7u312JRjLhZCXlck/k3FS76/O3tsoQfZJzmxvI+D/bcuAgJWNzRtH/7/Qh8Ao=
+Message-ID: <46E963CC.8010707@gmail.com>
+Date: Thu, 13 Sep 2007 20:22:36 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1866
-Date: Thu, 13 Sep 2007 18:16:20 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Markus Rechberger <mrechberger@gmail.com>
+CC: Johannes Stezenbach <js@linuxtv.org>, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       akpm@linux-foundation.org
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+References: <46C1BCC5.9090709@amd.com> <1189626560.5160.57.camel@gaivota>	 <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>	 <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>	 <20070913131353.GB26972@linuxtv.org>	 <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com>	 <46E95C54.4060502@gmail.com> <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+In-Reply-To: <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200709131816.21162.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-...because, on virtualized hardware like System p, we can't be sure that the
-physical pages behind them are contiguous.
+Markus Rechberger wrote:
+> On 9/13/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+>>> It's only a step in development, I do not intend to keep the kernel
+>>> stub in the end, but I do intend to keep and use the userspace drivers
+>>> with i2c-dev in the long run, this requires a v4l/dvb library at the front
+>>> of everything.
+>> Well, this was what adq and myself did with libdvbapi and mti, (much
+>> before UIO was announced at LK.) It is not tied to I2C either.
+>>
+> 
+> I2C is the main communication path for it, although there are callback
+> mechanisms available which add the possibility for different configuration
+> paths.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_mrmw.c |   25 +++++++++++++++----------
- 1 files changed, 15 insertions(+), 10 deletions(-)
+Sorry, i must say that what you said is wrong.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-index 4c8f3b3..4ba8b7c 100644
---- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
-+++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-@@ -51,6 +51,7 @@
- 
- #define NUM_CHUNKS(length, chunk_size) \
- 	(((length) + (chunk_size - 1)) / (chunk_size))
-+
- /* max number of rpages (per hcall register_rpages) */
- #define MAX_RPAGES 512
- 
-@@ -64,6 +65,11 @@ enum ehca_mr_pgsize {
- 	EHCA_MR_PGSIZE16M = 0x1000000L
- };
- 
-+#define EHCA_MR_PGSHIFT4K  12
-+#define EHCA_MR_PGSHIFT64K 16
-+#define EHCA_MR_PGSHIFT1M  20
-+#define EHCA_MR_PGSHIFT16M 24
-+
- static u32 ehca_encode_hwpage_size(u32 pgsize)
- {
- 	u32 idx = 0;
-@@ -347,17 +353,16 @@ struct ib_mr *ehca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
- 	/* select proper hw_pgsize */
- 	if (ehca_mr_largepage &&
- 	    (shca->hca_cap_mr_pgsize & HCA_CAP_MR_PGSIZE_16M)) {
--		if (length <= EHCA_MR_PGSIZE4K
--		    && PAGE_SIZE == EHCA_MR_PGSIZE4K)
--			hwpage_size = EHCA_MR_PGSIZE4K;
--		else if (length <= EHCA_MR_PGSIZE64K)
--			hwpage_size = EHCA_MR_PGSIZE64K;
--		else if (length <= EHCA_MR_PGSIZE1M)
--			hwpage_size = EHCA_MR_PGSIZE1M;
--		else
--			hwpage_size = EHCA_MR_PGSIZE16M;
-+		int page_shift = PAGE_SHIFT;
-+		if (e_mr->umem->hugetlb) {
-+			/* determine page_shift, clamp between 4K and 16M */
-+			page_shift = (fls64(length - 1) + 3) & ~3;
-+			page_shift = min(max(page_shift, EHCA_MR_PGSHIFT4K),
-+					 EHCA_MR_PGSHIFT16M);
-+		}
-+		hwpage_size = 1UL << page_shift;
- 	} else
--		hwpage_size = EHCA_MR_PGSIZE4K;
-+		hwpage_size = EHCA_MR_PGSIZE4K; /* ehca1 only supports 4k */
- 	ehca_dbg(pd->device, "hwpage_size=%lx", hwpage_size);
- 
- reg_user_mr_fallback:
--- 
-1.5.2
+The example implementation in libdvbapi/mti is I2C only with a STV0299
+on the TTPCI, if that was what you meant.
+But if you need examples for every possible interface, then probably you
+are out of luck.
 
+Manu
 
