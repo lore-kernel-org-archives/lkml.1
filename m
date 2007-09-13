@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932746AbXIMTbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932360AbXIMTfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932746AbXIMTbn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 15:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759105AbXIMTbf
+	id S932360AbXIMTfK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 15:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761434AbXIMTe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 15:31:35 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40788 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753302AbXIMTbe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 15:31:34 -0400
-Message-ID: <46E98FF4.4060901@zytor.com>
-Date: Thu, 13 Sep 2007 12:31:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 13 Sep 2007 15:34:59 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:56967 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757830AbXIMTe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 15:34:58 -0400
+Date: Thu, 13 Sep 2007 15:34:39 -0400
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: Re: [PATCH] Memory shortage can result in inconsistent flocks state
+Message-ID: <20070913193439.GA18052@fieldses.org>
+References: <46E68C35.7040001@openvz.org> <46E98F0C.10504@redhat.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Andi Kleen <ak@suse.de>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Martin Mares <mj@ucw.cz>,
-       dean gaudet <dean@arctic.org>, Robert Richter <robert.richter@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG
- is used
-References: <200709121921.43950.yinghai.lu@sun.com>	 <200709131147.43446.ak@suse.de> <20070913104704.GA3878@kroah.com>	 <200709131353.15752.ak@suse.de>	 <86802c440709131001w4b758921r52a23f1732a6e9c8@mail.gmail.com>	 <46E97178.2040903@zytor.com> <86802c440709131222v6e819e4ayed27430ba4e61154@mail.gmail.com>
-In-Reply-To: <86802c440709131222v6e819e4ayed27430ba4e61154@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46E98F0C.10504@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On 9/13/07, H. Peter Anvin <hpa@zytor.com> wrote:
->> Yinghai Lu wrote:
->>> BIOS guys also said that fam 10h need mmconfig via eax accessing, may
->>> need OS do sth, so it is safe to stay with MCFG entry for SB like
->>> mcp55...
->>>
->>> but latest kernel already have that workaround to make mmconfig via eax...
->>>
->> This is actually a good point.  Since the CPU vendor managed to
->> completely fuck up the operation of MMCONFIG itself on this CPU (it's a
->> *MEMORY REFERENCE*, guys!), it is actually to be expected and prudent
->> that BIOS vendors will drop the MCFG entry.  MMCONFIG doesn't actually
->> work on this CPU for any system software which doesn't already know to
->> work around this particular piece of severe braindamage;
->> standards-complicant MMCONFIG isn't supported at all.
+On Thu, Sep 13, 2007 at 03:27:08PM -0400, Chuck Ebbert wrote:
+> On 09/11/2007 08:38 AM, Pavel Emelyanov wrote:
+> > diff --git a/fs/locks.c b/fs/locks.c
+> > index 0db1a14..f59d066 100644
+> > --- a/fs/locks.c
+> > +++ b/fs/locks.c
+> > @@ -732,6 +732,14 @@ static int flock_lock_file(struct file *
+> >  	lock_kernel();
+> >  	if (request->fl_flags & FL_ACCESS)
+> >  		goto find_conflict;
+> > +
+> > +	if (request->fl_type != F_UNLCK) {
+> > +		error = -ENOMEM;
+> > +		new_fl = locks_alloc_lock();
+> > +		if (new_fl == NULL)
+> > +			goto out;
+> > +	}
+> > +
+> >  	for_each_lock(inode, before) {
+> >  		struct file_lock *fl = *before;
+> >  		if (IS_POSIX(fl))
+> > @@ -753,10 +761,6 @@ static int flock_lock_file(struct file *
+> >  		goto out;
+> >  	}
+> >  
+> > -	error = -ENOMEM;
+> > -	new_fl = locks_alloc_lock();
+> > -	if (new_fl == NULL)
+> > -		goto out;
+> >  	/*
+> >  	 * If a higher-priority process was blocked on the old file lock,
+> >  	 * give it the opportunity to lock the file.
 > 
-> if other mmconfig device on x86 is sick of accessing via eax, may need
-> to provide one fam10h_pci_mmcfg to be assigned to raw_pci_ops instead
-> and leave pci_mmcfg to default behavior ( *MEMORY REFERENCE*).
+> Doesn't that create a leak in some cases?
 > 
+> >         for_each_lock(inode, before) {
+> >                 struct file_lock *fl = *before;
+> >                 if (IS_POSIX(fl))
+> >                         break;
+> >                 if (IS_LEASE(fl))
+> >                         continue;
+> >                 if (filp != fl->fl_file)
+> >                         continue;
+> >                 if (request->fl_type == fl->fl_type)
+> >                         goto out;  <<<<<<<<<<<<<<<< LEAK?
 
-We already have the workaround.  WE do.  However, you could easily see
-why a BIOS vendor would want to leave out the MCFG ACPI info, since fam
-10h's mmconfig is broken.
+You mean, a leak of the memory allocated for new_fl?  That's freed at
+the exit labeled with "out".  It's the only exit:
 
-	-hpa
+	out:
+	        unlock_kernel();
+		if (new_fl)
+			locks_free_lock(new_fl);
+		return error;
+
+And new_fl is initially NULL, assigned only once by the allocation, then
+assigned to NULL only at the very end when we know we've succeeded.
+
+Am I missing something else?
+
+--b.
+
+> >                 found = 1;
+> >                 locks_delete_lock(before);
+> >                 break;
+> >         }
