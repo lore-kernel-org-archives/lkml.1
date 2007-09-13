@@ -1,106 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751378AbXIMJg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbXIMJjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751378AbXIMJg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXIMJgq
+	id S1754225AbXIMJjq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbXIMJji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:36:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32988 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750768AbXIMJgp (ORCPT
+	Thu, 13 Sep 2007 05:39:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41435 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbXIMJjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:36:45 -0400
-Date: Thu, 13 Sep 2007 02:35:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Marcelo Tosatti <marcelo@kvack.org>
-Subject: Re: [PATCH] timekeeping: Prevent time going backwards on resume
-Message-Id: <20070913023519.2fea026b.akpm@linux-foundation.org>
-In-Reply-To: <1189550194.5235.99.camel@chaos>
-References: <1189550194.5235.99.camel@chaos>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Sep 2007 05:39:37 -0400
+Date: Thu, 13 Sep 2007 02:40:09 -0700
+From: Greg KH <greg@kroah.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Oliver Neukum <oliver@neukum.org>, Paolo Ornati <ornati@fastwebnet.it>,
+       linux-usb-devel@lists.sourceforge.net,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [linux-usb-devel] spontaneous disconnect with "usb-storage:
+	implement autosuspend"
+Message-ID: <20070913094009.GA25070@kroah.com>
+References: <20070814131557.5653d991@localhost> <200708141746.16958.oliver@neukum.org> <20070814183857.28997de1@localhost> <200708142033.23158.oliver@neukum.org> <46E864AC.1020000@rtr.ca> <20070912234016.GA455@kroah.com> <46E8A18C.8080607@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46E8A18C.8080607@rtr.ca>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007 00:36:34 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+On Wed, Sep 12, 2007 at 10:33:48PM -0400, Mark Lord wrote:
+> Greg KH wrote:
+>>
+>> There are many regressions right now, _ONLY_ if you enable
+>> CONFIG_USB_SUSPEND.  If you disable that, your problems will go away,
+>> right?
+> ..
+>> Oh, and currently no distro will enable this option due to the hardware
+>> problems, so the only people that could get hit by this are those who
+>> build their own kernels, and they can easily disable the option.
+>
+> Ubuntu has CONFIG_USB_SUSPEND=y
 
-> Timekeeping resume adjusts xtime by adding the slept time in seconds and
-> resets the reference value of the clock source (clock->cycle_last).
-> clock->cycle last is used to calculate the delta between the last xtime
-> update and the readout of the clock source in __get_nsec_offset(). xtime
-> plus the offset is the current time. The resume code ignores the delta
-> which had already elapsed between the last xtime update and the actual
-> time of suspend. If the suspend time is short, then we can see time
-> going backwards on resume.
-> 
-> Suspend:
-> offs_s = clock->read() - clock->cycle_last;
-> now = xtime + offs_s;
-> timekeeping_suspend_time = read_rtc();
-> 
-> Resume:
-> sleep_time = read_rtc() - timekeeping_suspend_time;
-> xtime.tv_sec += sleep_time;
-> clock->cycle_last = clock->read();
-> offs_r = clock->read() - clock->cycle_last;
-> now = xtime + offs_r;
-> 
-> if sleep_time_seconds == 0 and offs_r < offs_s, then time goes
-> backwards.
-> 
-> Fix this by storing the offset from the last xtime update and add it to
-> xtime during resume, when we reset clock->cycle_last:
-> 
-> sleep_time = read_rtc() - timekeeping_suspend_time;
-> xtime.tv_sec += sleep_time;
-> xtime += offs_s;	/* Fixup xtime offset at suspend time */
-> clock->cycle_last = clock->read();
-> offs_r = clock->read() - clock->cycle_last;
-> now = xtime + offs_r;
-> 
-> Thanks to Marcelo for tracking this down on the OLPC and providing the
-> necessary details to analyze the root cause.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -280,6 +280,8 @@ void __init timekeeping_init(void)
->  static int timekeeping_suspended;
->  /* time in seconds when suspend began */
->  static unsigned long timekeeping_suspend_time;
-> +/* xtime offset when we went into suspend */
-> +static s64 timekeeping_suspend_offset;
->  
->  /**
->   * timekeeping_resume - Resumes the generic timekeeping subsystem.
-> @@ -305,6 +307,8 @@ static int timekeeping_resume(struct sys_device *dev)
->  		wall_to_monotonic.tv_sec -= sleep_length;
->  		total_sleep_time += sleep_length;
->  	}
-> +	/* Make sure that we have the correct xtime reference */
-> +	timespec_add_ns(&xtime, timekeeping_suspend_offset);
->  	/* re-base the last cycle value */
->  	clock->cycle_last = clocksource_read(clock);
->  	clock->error = 0;
-> @@ -326,6 +330,8 @@ static int timekeeping_suspend(struct sys_device *dev, pm_message_t state)
->  	unsigned long flags;
->  
->  	write_seqlock_irqsave(&xtime_lock, flags);
->  	timekeeping_suspended = 1;
-> +	/* Get the current xtime offset */
-> +	timekeeping_suspend_offset = __get_nsec_offset();
->  	timekeeping_suspend_time = read_persistent_clock();
->  	write_sequnlock_irqrestore(&xtime_lock, flags);
-> 
+They also have a patch that disables suspend automatically for all
+devices except USB hubs.  Same goes for Red Hat's rawhide kernel.
 
-kernel/time/timekeeping.c: In function 'timekeeping_suspend':
-kernel/time/timekeeping.c:335: error: implicit declaration of function '__get_nsec_offset'
+> There are probably lots of other distros that use it as well.
 
-sparc32, and presumably anything with CONFIG_GENERIC_TIME=n
+Not without the above mentioned patch they do not :)
 
+> This new behaviour (failed operation of USB flash keys) is a *new* 
+> regression
+> in 2.6.23, and we still have time to fix it by either reverting the changed
+> functionality, or by changing the code to default OFF.
 
+I now agree.
+
+> Here's my patch for 2.6.23-rc6+ :
+>
+> Fix USB Storage failures.
+>
+> Signed-Off-By:  Mark Lord <mlord@pobox.com>
+
+That's way too simple, I want to revert the whole usb-storage suspend
+logic as Oliver has found some core problems with it working properly,
+even with devices that have no problems.
+
+Is that ok for you?
+
+thanks,
+
+greg k-h
