@@ -1,55 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbXIMVaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbXIMVce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932077AbXIMVaz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 17:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbXIMVar
+	id S932346AbXIMVce (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 17:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758737AbXIMVc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 17:30:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38899 "EHLO mx1.redhat.com"
+	Thu, 13 Sep 2007 17:32:27 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:50421 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757797AbXIMVap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 17:30:45 -0400
-Message-ID: <46E9ABFF.7080200@redhat.com>
-Date: Thu, 13 Sep 2007 17:30:39 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Venkat Subbiah <venkats@cranite.com>
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: irq load balancing
-References: <3641F7C576757E49AE23AD0D820D72C434DCB8@mailnode1.cranite.com>
-In-Reply-To: <3641F7C576757E49AE23AD0D820D72C434DCB8@mailnode1.cranite.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1758454AbXIMVc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 17:32:26 -0400
+Subject: Re: [PATCH][1/2] led: add Cobalt Raq LEDs support
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070913235441.5bab3d8e.yoichi_yuasa@tripeaks.co.jp>
+References: <20070913235441.5bab3d8e.yoichi_yuasa@tripeaks.co.jp>
+Content-Type: text/plain
+Date: Thu, 13 Sep 2007 22:32:12 +0100
+Message-Id: <1189719132.6326.164.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Venkat Subbiah wrote:
-> Since most network devices have a single status register for both
-> receiver and transmit (and errors and the like), which needs a lock to
-> protect access, you will likely end up with serious thrashing of moving
-> the lock between cpus.
->> Any ways to measure the trashing of locks?
+On Thu, 2007-09-13 at 23:54 +0900, Yoichi Yuasa wrote:
+> Add Cobalt Raq LEDs support.
 > 
-> Since most network devices have a single status register for both
-> receiver and transmit (and errors and the like)
->> These register accesses will be mostly within the irq handler which I
-> plan on keeping on the same processor. The network driver is actually
-> tg3. Will looks closely into the driver.
+> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
-Why are you trying to do this, anyway?  This is a classic example of fairness 
-hurting both performance and efficiency.  Unbalanced distribution of a single 
-IRQ gives superior performance.  There are cases when this is a worthwhile 
-tradeoff, but the network stack is not one of them.  In the HPC world, people 
-generally want to squeeze maximum performance out of CPU/cache/RAM so they just 
-accept the imbalance because it performs better than balancing it, and 
-irqbalance can keep things fair over longer intervals if that's important.  In 
-the realtime world, people generally bind everything they can to one or two 
-CPUs, and bind their realtime applications to the remaining ones to minimize 
-contention.
+Not the clearest patch I've ever seen or the most helpful patch
+description. The rename could probably be split from the additional new
+driver at least...
 
-Distributing your network interrupts in a round-robin fashion will make your 
-computer do exactly one thing faster: heat up the room.
+> diff -pruN -X mips/Documentation/dontdiff mips-orig/drivers/leds/leds-cobalt-raq.c mips/drivers/leds/leds-cobalt-raq.c
+> --- mips-orig/drivers/leds/leds-cobalt-raq.c	1970-01-01 09:00:00.000000000 +0900
+> +++ mips/drivers/leds/leds-cobalt-raq.c	2007-09-12 12:04:34.021000750 +0900
+[...]
+> +static void raq_web_led_set(struct led_classdev *led_cdev,
+> +                            enum led_brightness brightness)
+> +{
+> +	spin_lock_irq(&raq_led_lock);
+> +
+> +	if (brightness)
+> +		led_value |= LED_WEB;
+> +	else
+> +		led_value &= ~LED_WEB;
+> +	writeb(led_value, led_port);
+> +
+> +	spin_unlock_irq(&raq_led_lock);
+> +}
 
-	-- Chris
+The _irq spinlock variants are not safe there or in the other brightness
+set function...
+
++static struct led_classdev raq_web_led = {
+> +	.name		= "raq-web-led",
+> +	.brightness_set	= raq_web_led_set,
+> +};
+> +
+[...]
+> +static struct led_classdev raq_power_off_led = {
+> +	.name			= "raq-power-off-led",
+> +	.brightness_set		= raq_power_off_led_set,
+> +	.default_trigger	= "power-off",
+> +};
+
+Do these really need "led" in the name?
+
+What does a power-off trigger do with an LED out of interest?
+
+> +static int __devexit cobalt_raq_led_remove(struct platform_device *pdev)
+> +{
+> +	if (led_port) {
+> +		iounmap(led_port);
+> +		led_port = NULL;
+> +	}
+> +
+> +	led_classdev_unregister(&raq_power_off_led);
+> +	led_classdev_unregister(&raq_web_led);
+> +
+> +	return 0;
+> +}
+
+You want to unregister, then iounmap...
+
+> +static int __init cobalt_raq_led_init(void)
+> +{
+> +	return platform_driver_register(&cobalt_raq_led_driver);
+> +}
+> +
+> +module_init(cobalt_raq_led_init);
+
+No module_exit in one driver for any particular reason?
+
+Some of these comments also apply to you second patch. All minor tweaks
+really though :).
+
+Cheers,
+
+Richard
+
