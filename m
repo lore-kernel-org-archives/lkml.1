@@ -1,90 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933623AbXIMUnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933420AbXIMUox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933623AbXIMUnJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 16:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761316AbXIMUmB
+	id S933420AbXIMUox (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 16:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbXIMUop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 16:42:01 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:60217 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757280AbXIMUl7 (ORCPT
+	Thu, 13 Sep 2007 16:44:45 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:44569 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757109AbXIMUoo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 16:41:59 -0400
-Date: Thu, 13 Sep 2007 16:41:11 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 2/3] UML - Remove called-once function
-Message-ID: <20070913204111.GA9986@c2.user-mode-linux.org>
-Mime-Version: 1.0
+	Thu, 13 Sep 2007 16:44:44 -0400
+Date: Thu, 13 Sep 2007 16:44:43 -0400
+To: Venkat Subbiah <venkats@cranite.com>
+Cc: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: irq load balancing
+Message-ID: <20070913204443.GB5386@csclub.uwaterloo.ca>
+References: <46E85DDA.7010209@redhat.com> <3641F7C576757E49AE23AD0D820D72C434DCB3@mailnode1.cranite.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <3641F7C576757E49AE23AD0D820D72C434DCB3@mailnode1.cranite.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-init_irq_signals doesn't need to be called from the context of a new
-process.  It initializes handlers, which are useless in process
-context.  With that call gone, init_irq_signals has only one caller,
-so it can be inlined into init_new_thread_signals.
+On Thu, Sep 13, 2007 at 01:31:39PM -0700, Venkat Subbiah wrote:
+> Doing it in a round-robin fashion will be disastrous for performance.
+> Your cache miss rate will go through the roof and you'll hit the slow
+> paths in the network stack most of the time.
+> > Most of the work in my system is spent in enrypt/decrypting traffic.
+> Right now all this is done in a tasklet within the softirqd and hence
+> all landing up on the same CPU.
+> On the receive side it'a packet handler that handles the traffic. On the
+> tx side it's done within the transmit path of the packet. So would
+> re-architecting this to move the rx packet handler to a different kernel
+> thread(with smp affinity to one CPU) and tx to a different kernel
+> thread(with SMP affinity to a different CPU) be advisable. 
+> What's the impact on cache miss and slowpath/fastpath in network stack.
 
-Index: linux-2.6.22/arch/um/include/os.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/os.h	2007-09-12 16:45:28.000000000 -0400
-+++ linux-2.6.22/arch/um/include/os.h	2007-09-13 10:46:34.000000000 -0400
-@@ -299,7 +299,6 @@ extern void os_free_irq_later(struct irq
- extern int os_get_pollfd(int i);
- extern void os_set_pollfd(int i, int fd);
- extern void os_set_ioignore(void);
--extern void init_irq_signals(int on_sigstack);
- 
- /* sigio.c */
- extern int add_sigio_fd(int fd);
-Index: linux-2.6.22/arch/um/os-Linux/irq.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/irq.c	2007-09-12 16:44:34.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/irq.c	2007-09-13 10:47:13.000000000 -0400
-@@ -138,14 +138,3 @@ void os_set_ioignore(void)
- {
- 	signal(SIGIO, SIG_IGN);
- }
--
--void init_irq_signals(int on_sigstack)
--{
--	int flags;
--
--	flags = on_sigstack ? SA_ONSTACK : 0;
--
--	set_handler(SIGIO, (__sighandler_t) sig_handler, flags | SA_RESTART,
--		    SIGUSR1, SIGIO, SIGWINCH, SIGVTALRM, -1);
--	signal(SIGWINCH, SIG_IGN);
--}
-Index: linux-2.6.22/arch/um/os-Linux/process.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/process.c	2007-09-12 16:44:34.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/process.c	2007-09-13 10:46:34.000000000 -0400
-@@ -249,7 +249,10 @@ void init_new_thread_signals(void)
- 		    SIGUSR1, SIGIO, SIGWINCH, SIGVTALRM, -1);
- 	signal(SIGHUP, SIG_IGN);
- 
--	init_irq_signals(1);
-+	set_handler(SIGIO, (__sighandler_t) sig_handler,
-+		    SA_ONSTACK | SA_RESTART, SIGUSR1, SIGIO, SIGWINCH, SIGALRM,
-+		    SIGVTALRM, -1);
-+	signal(SIGWINCH, SIG_IGN);
- }
- 
- int run_kernel_thread(int (*fn)(void *), void *arg, jmp_buf **jmp_ptr)
-Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-09-13 10:45:15.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-09-13 10:46:34.000000000 -0400
-@@ -177,7 +177,6 @@ static int userspace_tramp(void *stack)
- 
- 	ptrace(PTRACE_TRACEME, 0, 0, 0);
- 
--	init_new_thread_signals();
- 	err = set_interval();
- 	if (err)
- 		panic("userspace_tramp - setting timer failed, errno = %d\n",
+Since most network devices have a single status register for both
+receiver and transmit (and errors and the like), which needs a lock to
+protect access, you will likely end up with serious thrashing of moving
+the lock between cpus.
+
+--
+Len Sorensen
