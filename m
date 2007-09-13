@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763739AbXIMRUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764262AbXIMRVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763739AbXIMRUy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 13:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbXIMRUr
+	id S1764262AbXIMRVQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 13:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763964AbXIMRU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 13:20:47 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45018 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751282AbXIMRUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 13:20:46 -0400
-Date: Thu, 13 Sep 2007 19:22:10 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thorsten Leemhuis <fedora@leemhuis.info>
-Cc: Bernd Petrovitsch <bernd@firmix.at>,
-       Dan Stromberg <dstromberglists@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Building a kernel-source RPM (not a kernel RPM)?
-Message-ID: <20070913172210.GA26864@uranus.ravnborg.org>
-References: <pan.2007.09.12.16.13.41.195991@gmail.com> <1189616966.31502.75.camel@tara.firmix.at> <pan.2007.09.12.17.30.59.597440@gmail.com> <1189620186.31502.96.camel@tara.firmix.at> <46E84208.1050903@leemhuis.info> <20070912200348.GA19434@uranus.ravnborg.org> <46E96EBE.8030108@leemhuis.info>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46E96EBE.8030108@leemhuis.info>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 13 Sep 2007 13:20:59 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:54055 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbXIMRU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 13:20:58 -0400
+Date: Thu, 13 Sep 2007 18:20:45 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Robin Holt <holt@sgi.com>
+cc: Chuck Ebbert <cebbert@redhat.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: Possible hang inside interrupt handler on sata_promise.
+In-Reply-To: <20070913171349.GD26213@lnx-holt.americas.sgi.com>
+Message-ID: <Pine.LNX.4.64N.0709131818180.31069@blysk.ds.pg.gda.pl>
+References: <20070912131904.GW14474@lnx-holt.americas.sgi.com>
+ <46E95E5D.2050305@redhat.com> <20070913171349.GD26213@lnx-holt.americas.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 07:09:18PM +0200, Thorsten Leemhuis wrote:
-> Hi Sam!
-> 
-> On 12.09.2007 22:03, Sam Ravnborg wrote:
-> >> I think the Fedora approach has many benefits -- I always wondered why
-> >> it never went upstream like a "make install_develstuff" that install all
-> >> the needed bits to
-> >>   /lib/modules/$(uname -r)/build/
-> > Last time I saw the patch is was to ugly to consider.
-> 
-> Do you have a pointer to that patch?
-See: http://lkml.org/lkml/2007/9/12/331
+On Thu, 13 Sep 2007, Robin Holt wrote:
 
-Chris Wedgwood posted it today.
+> Is there any way on typical motherboards to send an NMI?  On Altix boxes,
+> we can use the system controller to send an NMI.  I have found some
+> motherboards appear to have an NMI line.  Is there anything like that
+> on i386?  Maybe I am missing the issue entirely.  Does deadlock inside
+> an IRQ handler seem plausible?
 
-	Sam
+ There are various ways possible to send an NMI on a typical i386 box of 
+these days; the easiest is probably the NMI watchdog -- see the 
+"nmi_watchdog" kernel option.
+
+  Maciej
