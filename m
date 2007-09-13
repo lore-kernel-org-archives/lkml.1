@@ -1,65 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbXIMRnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760619AbXIMRwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760297AbXIMRnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 13:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbXIMRna
+	id S1760619AbXIMRwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 13:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbXIMRwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 13:43:30 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:42067 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753176AbXIMRn3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 13:43:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=QusiLbK3Dk24btAMnd/OgsL21kMM8EqNNPw/4jJCPINxOXFdTHwFI2J4vA+zkUXVZZrpAuiGQoH/aVM2YNz2VssIi7kCSpCX0IvhPcyGjV+Fhqlc3KHgSDf8Mt3OMfKWIGBA//ZhbFxngzUQ1Qitz362KjJlaOtgrbvl7wXwhdg=  ;
-X-YMail-OSG: mTGmbakVM1mtctFqpHhJA6D1XYGzVTbRPlBuTCAl5AZbl..f7ZT8m9.5F.ufkPQm1QTT9hylzA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Date: Thu, 13 Sep 2007 12:01:45 +1000
-User-Agent: KMail/1.9.5
-Cc: Mel Gorman <mel@skynet.ie>, Christoph Lameter <clameter@sgi.com>,
-       andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-References: <20070911060349.993975297@sgi.com> <200709130323.22534.nickpiggin@yahoo.com.au> <20070913130342.GT734179@sgi.com>
-In-Reply-To: <20070913130342.GT734179@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709131201.46720.nickpiggin@yahoo.com.au>
+	Thu, 13 Sep 2007 13:52:06 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:50593 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754302AbXIMRwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 13:52:05 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee.Schermerhorn@hp.com
+Cc: Lee.Schermerhorn@hp.com, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
+Message-Id: <20070913175202.20770.72989.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/6] Use one zonelist per node instead of multiple zonelists v7
+Date: Thu, 13 Sep 2007 18:52:02 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 September 2007 23:03, David Chinner wrote:
-> On Thu, Sep 13, 2007 at 03:23:21AM +1000, Nick Piggin wrote:
+Hi Lee,
 
-> > Well, it may not be easy to _fix_, but it's easy to try a few
-> > improvements ;)
-> >
-> > How do I make an image and run a workload that will coerce XFS into
-> > doing a significant number of vmaps?
->
-> # mkfs.xfs -n size=16384 <dev>
->
-> to create a filesystem with a 16k directory block size on a 4k page
-> machine.
->
-> Then just do operations on directories with lots of files in them
-> (tens of thousands). Every directory operation will require at
-> least one vmap in this situation - e.g. a traversal will result in
-> lots and lots of blocks being read that will require vmap() for every
-> directory block read from disk and an unmap almost immediately
-> afterwards when the reference is dropped....
+This is the patchset I would like tested. It has Kamezawa-sans approach for
+using a structure instead of pointer packing. While it consumes more cache
+like Christoph pointed out, it should an easier starting point to optimise
+once workloads are identified that can show performance gains/regressions. The
+pointer packing is a potential optimisation but once in place, it's difficult
+to alter again.
 
-Ah, wow, thanks: I can reproduce it.
+Please let me know how it works out for you.
+
+Changelog since V7
+  o Fix build bug in relation to memory controller combined with one-zonelist
+  o Use while() instead of a stupid looking for()
+
+Changelog since V6
+  o Instead of encoding zone index information in a pointer, this version
+    introduces a structure that stores a zone pointer and its index 
+
+Changelog since V5
+  o Rebase to 2.6.23-rc4-mm1
+  o Drop patch that replaces inline functions with macros
+
+Changelog since V4
+  o Rebase to -mm kernel. Host of memoryless patches collisions dealt with
+  o Do not call wakeup_kswapd() for every zone in a zonelist
+  o Dropped the FASTCALL removal
+  o Have cursor in iterator advance earlier
+  o Use nodes_and in cpuset_nodes_valid_mems_allowed()
+  o Use defines instead of inlines, noticably better performance on gcc-3.4
+    No difference on later compilers such as gcc 4.1
+  o Dropped gfp_skip patch until it is proven to be of benefit. Tests are
+    currently inconclusive but it definitly consumes at least one cache
+    line
+
+Changelog since V3
+  o Fix compile error in the parisc change
+  o Calculate gfp_zone only once in __alloc_pages
+  o Calculate classzone_idx properly in get_page_from_freelist
+  o Alter check so that zone id embedded may still be used on UP
+  o Use Kamezawa-sans suggestion for skipping zones in zonelist
+  o Add __alloc_pages_nodemask() to filter zonelist based on a nodemask. This
+    removes the need for MPOL_BIND to have a custom zonelist
+  o Move zonelist iterators and helpers to mm.h
+  o Change _zones from struct zone * to unsigned long
+  
+Changelog since V2
+  o shrink_zones() uses zonelist instead of zonelist->zones
+  o hugetlb uses zonelist iterator
+  o zone_idx information is embedded in zonelist pointers
+  o replace NODE_DATA(nid)->node_zonelist with node_zonelist(nid)
+
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
+
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists. As a bonus, the patchset reduces the cache
+footprint of the kernel and should improve performance in a number of cases.
+
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist. The second patch introduces
+a helper function node_zonelist() for looking up the appropriate zonelist
+for a GFP mask which simplifies patches later in the set.
+
+The third patch replaces multiple zonelists with two zonelists that are
+filtered. The two zonelists are due to the fact that the memoryless patchset
+introduces a second set of zonelists for __GFP_THISNODE.
+
+The fourth patch introduces filtering of the zonelists based on a nodemask.
+
+The final patch replaces the two zonelists with one zonelist. A nodemask is
+created when __GFP_THISNODE is specified to filter the list. The nodelists
+could be pre-allocated with one-per-node but it's not clear that __GFP_THISNODE
+is used often enough to be worth the effort.
+
+Performance results varied depending on the machine configuration but were
+usually small performance gains. In real workloads the gain/loss will depend
+on how much the userspace portion of the benchmark benefits from having more
+cache available due to reduced referencing of zonelists.
+
+These are the range of performance losses/gains when running against
+2.6.23-rc3-mm1. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
+
+Total CPU time on Kernbench: -0.67% to  3.05%
+Elapsed   time on Kernbench: -0.25% to  2.96%
+page_test from aim9:         -6.98% to  5.60%
+brk_test  from aim9:         -3.94% to  4.11%
+fork_test from aim9:         -5.72% to  4.14%
+exec_test from aim9:         -1.02% to  1.56%
+
+The TBench figures were too variable between runs to draw conclusions from but
+there didn't appear to be any regressions there. The hackbench results for both
+sockets and pipes were within noise.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
