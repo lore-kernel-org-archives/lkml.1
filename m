@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbXIMOve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbXIMOwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbXIMOve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 10:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbXIMOvZ
+	id S1759717AbXIMOwP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 10:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbXIMOv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 10:51:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:49781 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbXIMOvY (ORCPT
+	Thu, 13 Sep 2007 10:51:59 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47221 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754769AbXIMOv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 10:51:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=MnkEP1QkTIfgJNXtoKqUWZyUeqGtENMSReA2ILZvi+We7F5EH89qKOWxHs0YqCuVvYjqH8MG3lz1g1ypfdhwjgo7nYHa7WXWKUg7pcuHmN+gV6nK3TC6W9rspu3X0ZWza6o0L0iMNlFuYrtSSQQI+uoNNGVyhcOWbkb64l5Cp7M=
-Message-ID: <f158dc670709130751s2f6046beje5401ec6c56051dd@mail.gmail.com>
-Date: Thu, 13 Sep 2007 08:51:21 -0600
-From: "Latchesar Ionkov" <lucho@ionkov.net>
-To: "Eric Van Hensbergen" <ericvh@gmail.com>
-Subject: Re: [PATCH] 9p: rename uid and gid parameters
-Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <a4e6962a0709130638v384c2708y76167d4e92cbac56@mail.gmail.com>
+	Thu, 13 Sep 2007 10:51:58 -0400
+Date: Thu, 13 Sep 2007 16:52:07 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+       Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>
+Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
+Message-ID: <20070913145207.GF3563@stusta.de>
+References: <20070913133321.GA6362@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20070913044718.GB2675@ionkov.net>
-	 <a4e6962a0709130638v384c2708y76167d4e92cbac56@mail.gmail.com>
-X-Google-Sender-Auth: 446c38e28937dc47
+In-Reply-To: <20070913133321.GA6362@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zero was the value that was used before, even though it wasn't defined
-explicitly. I just defined a macro so we can see and eventually change
-it to something better. I don't know if there is a good default value.
-Is nfsnobody the same on all Linux distributions?
+On Thu, Sep 13, 2007 at 06:33:21AM -0700, Greg KH wrote:
+> It turns out that USB devices suck when it comes to powermanagement
+> issues :(
+> 
+> A number of patches have been submitted near the end of this kernel
+> release cycle that add new device ids to the quirk table in the kernel
+> to disable autosuspend for specific devices.  However, a number of
+> developers are very worried that even with the testing that has been
+> done, once 2.6.23 is released, we are going to get a whole raft of angry
+> users when their devices break in nasty ways.
+> 
+> As an example, it seems that almost 2/3 of all USB printers just can not
+> handle autosuspend.  And there's a _lot_ of USB printers out there...
+> 
+> When researching how other operating systems handle this, it was found
+> out that they use a whitelist of devices that are able to properly
+> suspend.  So, in the future, that is how we are going to handle this.
+> 
+> These two patches address the need today to have users machines still
+> work, even if they might draw more power than they possibly could (which
+> is not any more than they did in 2.6.22.)
+> 
+> These patches do two things:
+>   - disable USB autosuspend on all devices except for USB hubs.  This
+>     can be easily overridden by userspace to turn on autosuspend for
+>     devices that a user wants to.  HAL will use a whitelist in the
+>     future for these types of devices.
+>...
 
-Thanks,
-    Lucho
+Not related to the patch for 2.6.23, but I have a gut feeling that 
+something might be done the wrong way later:
 
-On 9/13/07, Eric Van Hensbergen <ericvh@gmail.com> wrote:
-> On 9/12/07, Latchesar Ionkov <lucho@ionkov.net> wrote:
-> > Change the names of 'uid' and 'gid' parameters to the more appropriate
-> > 'dfltuid' and 'dfltgid'.
-> >
->
-> ...
->
-> >         strcpy(v9ses->name, V9FS_DEFUSER);
-> >         strcpy(v9ses->remotename, V9FS_DEFANAME);
-> > +       v9ses->dfltuid = V9FS_DEFUID;
-> > +       v9ses->dfltgid = V9FS_DEFGID;
-> >
-> ...
-> > +#define V9FS_DEFUID    (0)
-> > +#define V9FS_DEFGID    (0)
->
-> I'm not sure if there is a good solution here, but I'm uncomfortable
-> with using uid=0 as the default.  I'm not sure if there is a default
-> uid for nobody, but anything is probably better than 0.  Looks like
-> nfsnobody is 65534, we could use that - even if only as a marker for
-> the server to map it to nobody on the target system?  What do you
-> think?
->
-> Particularly with attach-per-user, we probably need to look at
-> interacting with idmapd or create our own variant real soon.
->
->               -eric
->
+If I understand you correctly, you are saying that I will have to 
+install HAL for getting a whitelist for in-kernel functionality?
+
+It is a good thing if userspace can add currently missing devices to
+whitelists, but the whitelist itself should be in the kernel.
+
+> thanks,
+> 
+> greg k-h
+>...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
