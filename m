@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXIMKIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbXIMKLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbXIMKIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 06:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXIMKII
+	id S1758719AbXIMKLW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 06:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbXIMKLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 06:08:08 -0400
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:59228 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbXIMKIH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 06:08:07 -0400
-Date: Thu, 13 Sep 2007 12:08:03 +0200
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Brent Casavant <bcasavan@sgi.com>
+	Thu, 13 Sep 2007 06:11:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40316 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751314AbXIMKLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 06:11:14 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1/ndNJ5nyvnKP8MG/4lTjjvm20JgQzMFU6EgE9EGo
+	+rvbCtWKDQpX4H
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: davem@davemloft.net
+Subject: Re: hci_sock.c build failure
+Date: Thu, 13 Sep 2007 12:11:09 +0200
+User-Agent: KMail/1.9.7
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: O_NOLINK for open()
-Message-ID: <20070913100803.GG11567@boogie.lpds.sztaki.hu>
-References: <20070912144128.D5573@pkunk.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070912144128.D5573@pkunk.americas.sgi.com>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+Content-Type: multipart/signed;
+  boundary="nextPart2176430.HocaZGP0YN";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709131211.10950.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 03:37:44PM -0500, Brent Casavant wrote:
+--nextPart2176430.HocaZGP0YN
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> System V shmem is right out because the IPC key is publicly
-> visible and there is no combination of permissions which
-> will allow sharing the segment with just one other process
-> (or at least just one other user).  To my knowledge Linux's
-> implementation doesn't provide ACLs for SysV shmem.  SGI's
-> proposed XPMEM suffers from the same problems for my purposes.
+Hello,
 
-SYSV shared memory has the concept of separate creator and owner ID's,
-so you can share the shmem segment between exactly two users. Just use
-IPC_SET and set shm_perm.uid to the user ID of the peer process.
+I'm wondering why the build failure wasn't fixed by a patch like this:
 
-> I could mmap a temporary tmpfs file (tmpfs so that if there is a
-> machine crash no sensitive data persists) which is created with
-> permissions of 0, immediately unlink it, and pass the file
-> descriptor through an AF_UNIX socket.  This does open up a very
-> small window of vulnerability if another process is able to chmod
-> the file and open it before the unlink.
 
-I think your worries about permissions has been cleared by the other
-posts, but there is still a problem: the client may call ftruncate() on
-the file descriptor, and then your daemon will get a nice SIGBUS when it
-tries to access the shared memory. Handling that gracefully may not be
-trivial esp. if your daemon is multi-threaded. SYSV shmem is _much_
-nicer when you want shared memory between unrelated/untrusted processes.
+diff --git a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
+index 5ccea5f..85416bb 100644
+=2D-- a/net/bluetooth/hci_sock.c
++++ b/net/bluetooth/hci_sock.c
+@@ -348,8 +348,6 @@ static inline void hci_sock_cmsg(struct sock *sk, struc=
+t msghdr *msg, struct sk_
 
-Gabor
+                skb_get_timestamp(skb, &tv);
 
--- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
+=2D               data =3D &tv;
+=2D               len =3D sizeof(tv);
+ #ifdef CONFIG_COMPAT
+                if (msg->msg_flags & MSG_CMSG_COMPAT) {
+                        struct compat_timeval ctv;
+@@ -358,6 +356,9 @@ static inline void hci_sock_cmsg(struct sock *sk, struc=
+t msghdr *msg, struct sk_
+                        data =3D &ctv;
+                        len =3D sizeof(ctv);
+                }
++#else
++               data =3D &tv;
++               len =3D sizeof(tv);
+ #endif
+
+                put_cmsg(msg, SOL_HCI, HCI_CMSG_TSTAMP, len, data);
+
+
+=2D-=20
+MfG/Sincerely
+
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+
+--nextPart2176430.HocaZGP0YN
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBG6Qy9hyrlCH22naMRAm/WAJkB4yKN95w61Ja/g5a/a6MjGn7jcACePt8u
+Wi7jWIyE16OSVUJl/ypPT4A=
+=RXG7
+-----END PGP SIGNATURE-----
+
+--nextPart2176430.HocaZGP0YN--
