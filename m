@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbXIMIxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbXIMI4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758398AbXIMIxm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 04:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXIMIxf
+	id S1758398AbXIMI4s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 04:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXIMI4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 04:53:35 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:40515 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbXIMIxe (ORCPT
+	Thu, 13 Sep 2007 04:56:39 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:49426 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbXIMI4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 04:53:34 -0400
-X-IronPort-AV: i="4.20,248,1186372800"; 
-   d="scan'208"; a="39530766:sNHT70244846"
-Subject: Re: [PATCH] Blackfin BF54x NAND Flash Controller driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: bryan.wu@analog.com, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <8bd0f97a0709130151p36846690w4600463837285a2b@mail.gmail.com>
-References: <1188804323.29566.6.camel@roc-laptop>
-	 <20070913013702.d446739a.akpm@linux-foundation.org>
-	 <8bd0f97a0709130145u474ab017ocf58b004c5d69dc0@mail.gmail.com>
-	 <1189673107.30686.18.camel@roc-desktop>
-	 <8bd0f97a0709130151p36846690w4600463837285a2b@mail.gmail.com>
-Content-Type: text/plain
+	Thu, 13 Sep 2007 04:56:38 -0400
+Message-ID: <46E8F9D4.10307@aitel.hist.no>
+Date: Thu, 13 Sep 2007 10:50:28 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+References: <20070907124800.GP16806@vanheusden.com> <20070907083522.3191a4ba.randy.dunlap@oracle.com>
+In-Reply-To: <20070907083522.3191a4ba.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Thu, 13 Sep 2007 16:49:45 +0800
-Message-Id: <1189673385.30686.20.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 13 Sep 2007 08:53:30.0104 (UTC) FILETIME=[8E887F80:01C7F5E3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-13 at 04:51 -0400, Mike Frysinger wrote:
-> On 9/13/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> > On Thu, 2007-09-13 at 04:45 -0400, Mike Frysinger wrote:
-> > > On 9/13/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > On Mon, 03 Sep 2007 15:25:23 +0800 Bryan Wu <bryan.wu@analog.com> wrote:
-> > > > > This is the driver for latest Blackfin BF54x nand flash controller
-> > > > >
-> > > > >  - use nand_chip and mtd_info common nand driver interface
-> > > > >  - provide both PIO and dma operation
-> > > > >  - compiled with ezkit bf548 configuration
-> > > > >  - use hardware 1-bit ECC
-> > > > >  - tested with YAFFS2 and can mount YAFFS2 filesystem as rootfs
-> > > > >
-> > > > > ...
-> > > > >
-> > > > > +int hardware_ecc = 0;
-> > > >
-> > > > scripts/checkpatch.pl, please.
-> > >
-> > > that isnt static so checkpatch.pl wouldnt have caught it ... it should
-> > > be static though of course and then checkpatch.pl would have thrown a
-> > > static init 0 warning :)
-> >
-> > Actually, it would caught by checkpatch.pl even without static.
-> 
-> it doesnt for me, but maybe i'm just using an older version
-> -mike
+Randy Dunlap wrote:
+> On Fri, 7 Sep 2007 14:48:00 +0200 Folkert van Heusden wrote:
+>
+>   
+>> Hi,
+>>
+>> Maybe it is a nice enhancement for make menuconfig to more explicitly
+>> give a pop-up or so when someone selects for example a sata controller
+>> while no 'scsi-disk' support was selected?
+>>     
+>
+> I know that it's difficult to get people to read docs & help text,
+> and maybe it is needed in more places, but CONFIG_ATA (SATA/PATA)
+> help text says:
+>
+>   NOTE: ATA enables basic SCSI support; *however*,
+>   'SCSI disk support', 'SCSI tape support', or
+>   'SCSI CDROM support' may also be needed,
+>   depending on your hardware configuration.
+>
+>
+> A popup makes some sense, but I don't know if menuconfig knows how to
+> do popup warnings... and it needs to be done for all *configs,
+> not just menuconfig.
+>   
+A popup hardly ever makes sense - popups generally are a
+bad user interface. The user will have to dismiss the popup -
+every time - whether he needs the warning or not.
 
-Yes, should use the latest git-tree checkpatch.pl
-Thanks
--Bryan
+But feel free to print a warning somewhere, such as a
+status line. The warning itself is useful, but not something
+we will have to dismiss in order to go on with the job.
+
+Helge Hafting
+
+
+
