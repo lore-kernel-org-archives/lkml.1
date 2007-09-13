@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762175AbXIMWAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764833AbXIMWCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762175AbXIMWAt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 18:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbXIMWAl
+	id S1764833AbXIMWCc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 18:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbXIMWCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 18:00:41 -0400
-Received: from gw.goop.org ([64.81.55.164]:41353 "EHLO mail.goop.org"
+	Thu, 13 Sep 2007 18:02:22 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:4222 "EHLO mms1.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754690AbXIMWAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 18:00:41 -0400
-Message-ID: <46E9B30E.1080402@goop.org>
-Date: Thu, 13 Sep 2007 15:00:46 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1758045AbXIMWCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 18:02:21 -0400
+X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
+Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+cc: "Steve Wise" <swise@opengridcomputing.com>,
+       "netdev" <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org, anilgv@broadcom.com, uri@broadcom.com
+In-Reply-To: <adaps0ml18e.fsf@cisco.com>
+References: <adahclymos8.fsf@cisco.com>
+ <46E97BB0.9030106@opengridcomputing.com> <adaps0ml18e.fsf@cisco.com>
+Date: Thu, 13 Sep 2007 15:59:18 -0700
+Message-ID: <1189724358.9540.113.camel@dell>
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>,
-       James Bottomley <James.Bottomley@steeleye.com>, bapper@piratehaven.org,
-       aaw@google.com
-Subject: Re: RFC: bug in load_elf_binary?
-References: <46E5B6FA.7000902@nortel.com> <46E83191.5070208@nortel.com>
-In-Reply-To: <46E83191.5070208@nortel.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6AF76CE93K451238-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> The elf spec says that PT_LOAD segments must be ordered by vaddr.  We
-> want to have a segment at a relatively low fixed vaddr.  The exact
-> address is not important, except that it's lower than the standard elf
-> headers and so it must be the first segment in the elf file.
+On Thu, 2007-09-13 at 14:11 -0700, Roland Dreier wrote:
 
-So you want a zero mapping at a particular address?  So the vaddr and
-the memsz are set, but offset and filesz are zero?
+> 
+> I've been meaning to track down the bnx2 iscsi offload patch to look
+> and see if this issue is addressed, since the same problem seems to
+> exist: it seems an iscsi connection and a main stack tcp connection
+> might share the same 4-tuple unless something is done to avoid that
+> happening.
+> 
 
-> In the kernel elf loader, the p_vaddr and p_offset of the first
-> segment are used to determine the load_addr for use with the rest of
-> the segments.  In the case of this elf file, the first segment does
-> not actually have a valid p_offset.
+iSCSI does not do passive listens, only active connections to the
+target.  But you're right, the port space is still shared between iSCSI
+and the main stack.  We currently rely on user apps binding to the main
+stack to reserve certain ephemeral ports, and telling the iSCSI driver
+which ports to use.
 
-Well, you could make the p_offset the same as the first segment with a
-non-zero filesz.  That should satisfy the elf loader, though it might
-still confuse things.
-
-Why can't you create this mapping at runtime?
-
-    J
