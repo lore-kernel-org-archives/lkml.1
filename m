@@ -1,114 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbXIMTZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932335AbXIMTZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932115AbXIMTZU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 15:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbXIMTZI
+	id S932335AbXIMTZj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 15:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbXIMTZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 15:25:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41985 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753997AbXIMTZG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 15:25:06 -0400
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, Daniel Phillips <phillips@phunq.net>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0709131128050.9546@schroedinger.engr.sgi.com>
-References: <20070814142103.204771292@sgi.com>
-	 <200709050220.53801.phillips@phunq.net>
-	 <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
-	 <20070905114242.GA19938@wotan.suse.de>
-	 <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
-	 <1189594373.21778.114.camel@twins>
-	 <Pine.LNX.4.64.0709121540370.4067@schroedinger.engr.sgi.com>
-	 <1189671552.21778.158.camel@twins>
-	 <Pine.LNX.4.64.0709131128050.9546@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Thu, 13 Sep 2007 21:24:33 +0200
-Message-Id: <1189711473.5643.18.camel@lappy>
+	Thu, 13 Sep 2007 15:25:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34414 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932108AbXIMTZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 15:25:20 -0400
+Date: Thu, 13 Sep 2007 12:26:47 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Adrian Bunk <bunk@kernel.org>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oliver Neukum <oneukum@suse.de>, zaitcev@redhat.com
+Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
+Message-Id: <20070913122647.525689c2.zaitcev@redhat.com>
+In-Reply-To: <alpine.LFD.0.999.0709130912060.16478@woody.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0709131154240.7406-100000@iolanthe.rowland.org>
+	<alpine.LFD.0.999.0709130912060.16478@woody.linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.11.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 13 Sep 2007 09:43:13 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On Thu, 2007-09-13 at 11:32 -0700, Christoph Lameter wrote:
-> On Thu, 13 Sep 2007, Peter Zijlstra wrote:
-> 
-> > 
-> > > > Every user of memory relies on the VM, and we only get into trouble if
-> > > > the VM in turn relies on one of these users. Traditionally that has only
-> > > > been the block layer, and we special cased that using mempools and
-> > > > PF_MEMALLOC.
-> > > > 
-> > > > Why do you object to me doing a similar thing for networking?
-> > > 
-> > > I have not seen you using mempools for the networking layer. I would not 
-> > > object to such a solution. It already exists for other subsystems.
-> > 
-> > Dude, listen, how often do I have to say this: I cannot use mempools for
-> > the network subsystem because its build on kmalloc! What I've done is
-> > build a replacement for mempools - a reserve system - that does work
-> > similar to mempools but also provides the flexibility of kmalloc.
-> > 
-> > That is all, no more, no less.
-> 
-> Its different since it becomes a privileged player that can suck all 
-> the available memory out of the page allocator.
+> So why not make the 64 sector limit be the default? Get rid of the quirk: 
+> we already allow people to override it in /sys if they really want to, but 
+> realistically, it's probably not going to make any difference what-so-ever 
+> for *any* normal load. So we seem to have a quirk that really doesn't buy 
+> us anything but headache.
 
-No, each reserve user comes with a bean-counter that will limit the
-usage.
+Well, ub does that today. And there is a measurable performance differential
+with usb-storage when driving rotating discs, or so I heard.
 
-> > I'm confused by this, I've never claimed part of, or such a thing. All
-> > I'm saying is that because of the circular dependency between the VM and
-> > the IO subsystem used for swap (not file backed paging [*], just swap)
-> > you have to do something special to avoid deadlocks.
-> 
-> How are dirty file backed pages different? They may also be written out 
-> by the VM during reclaim.
+> Other quirks worth looking at (but likely unfixable) are:
+>  - US_FL_IGNORE_RESIDUE:
+> 	Does this really matter? Can we not just always do the 
+> 	US_FL_IGNORE_RESIDUE thing? Windows must not be doing what we're 
+> 	doing.
 
-when you have dirty file backed pages, the rest of the memory can only
-consists of clean file pages and or anonymous pages - due to the dirty
-limit. If you can guarantee that swap doesn't use memory (well, it does,
-but its PF_MEMALLOC memory that cannot be used by others) then you can
-always free memory by dropping clean pages or swapping out. And thus
-make progress for file based writeback.
+I'm afraid this is valuable. However, a number of devices only return
+garbage as residue if the transfer length is greater than 32KB. Limiting
+that would trim this blacklist, I think. The vast majority of devices
+work correctly in this regard, and ub checks the residue without any
+blacklist.
 
-This is why the dirty page tracking made mmap over NFS useable.
+>  - US_FL_FIX_CAPACITY: 
+> 	This is a generic SCSI issue, not a USB one, and maybe there are 
+> 	better solutions to it. Are we perhaps doing something wrong? Is 
+> 	there some patterns we haven't seen? Why do we need this, when 
+> 	presumably Windows does not?
 
-> > > Replacing the mempools for the block layer sounds pretty good. But how do 
-> > > these various subsystems that may live in different portions of the system 
-> > > for various devices avoid global serialization and livelock through your 
-> > > system? 
-> > 
-> > The reserves are spread over all kernel mapped zones, the slab allocator
-> > is still per cpu, the page allocator tries to get pages from the nearest
-> > node.
-> 
-> But it seems that you have unbounded allocations with PF_MEMALLOC now for 
-> the networking case? So networking can exhaust all reserves?
+It has something to do with the way our partition detection works. Linux
+tends to rely on the reported device size. Windows reads the first block
+and then goes further based on its contents. If we exterminate partitioning
+code which uses the reported device size for autodetection, then this
+problem will fix itself.
 
-No, networking will beancount all PF_MEMALLOC memory it receives, and
-stop allocating once it hits it limit. It knows that when it has than
-much memory outstanding its guaranteed memory will be freed soon.
+>  - US_FL_SINGLE_LUN:
+> 	At least a few of these seem to indicate that the real problem 
+> 	could be detected dynamically ("device reports Sub=ff") rather 
+> 	than with a quirk. Quirks are unmaintainable (and change), but 
+> 	noticing when devices return impossible values and going into a 
+> 	"safe mode" is just defensive programming.
 
-> > > And how is fairness addresses? I may want to run a fileserver on 
-> > > some nodes and a HPC application that relies on a fiberchannel connection 
-> > > on other nodes. How do we guarantee that the HPC application is not 
-> > > impacted if the network services of the fileserver flood the system with 
-> > > messages and exhaust memory?
-> > 
-> > The network system reserves A pages, the block layer reserves B pages,
-> > once they start getting pages from the reserves they go bean counting,
-> > once they reach their respective limit they stop.
-> 
-> That sounds good.
+This is being worked upon. The recent change for floppies eliminated
+a big number of those.
 
-Ok, so next time I'll post the whole series again - I know some people
-found it too much - but that way you can see the bean counter.
-
+-- Pete
