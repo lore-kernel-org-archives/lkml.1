@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbXIMIKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbXIMIMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194AbXIMIKW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 04:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbXIMIKH
+	id S1755810AbXIMIMy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 04:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXIMIMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 04:10:07 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:41771 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752421AbXIMIKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 04:10:03 -0400
-Date: Thu, 13 Sep 2007 17:09:50 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Bryan Wu <bryan.wu@analog.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] Blackfin arch: add some missing syscall
-Message-ID: <20070913080950.GA28055@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Bryan Wu <bryan.wu@analog.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	uclinux-dist-devel@blackfin.uclinux.org, linux-arch@vger.kernel.org
-References: <1189670203.30686.15.camel@roc-desktop> <20070913080701.GB27871@linux-sh.org>
+	Thu, 13 Sep 2007 04:12:42 -0400
+Received: from rzcomm22.rz.tu-bs.de ([134.169.9.68]:35246 "EHLO
+	rzcomm22.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752330AbXIMIMl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 04:12:41 -0400
+Message-ID: <46E8F106.9090508@l4x.org>
+Date: Thu, 13 Sep 2007 10:12:54 +0200
+From: Jan Dittmer <jdi@l4x.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070913080701.GB27871@linux-sh.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: bryan.wu@analog.com
+CC: LKML <linux-kernel@vger.kernel.org>,
+       uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [GIT PULL] Blackfin arch bug fixing for 2.6.23-rc6
+References: <1189662509.24063.2.camel@roc-laptop> <46E8DE8B.8070405@l4x.org> <1189666738.30686.6.camel@roc-desktop>
+In-Reply-To: <1189666738.30686.6.camel@roc-desktop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 05:07:01PM +0900, Paul Mundt wrote:
-> On Thu, Sep 13, 2007 at 03:56:43PM +0800, Bryan Wu wrote:
-> > +#define __NR_syscall		354
-> >  #define NR_syscalls		__NR_syscall
-> >  
-> Err, why did you change __NR_syscall? This is going to break the ABI for
-> anything using it, which is generally bad form.
+Bryan Wu wrote:
+> Need I disable CONFIG_BINFMT_FLAT in defconfigs for Blackfin to make the
+> compile pass?
+
+That would be a workaround, yes. Better would be of course to fix
+the bug or the Kconfig dependency.
+
+>> Full build log: http://l4x.org/k/?d=34032
 > 
-I can't read or think today, nevermind. The sys_fallocate() thing still
-stands, though.
+> Thanks again, beautiful log and which defconfigs do you using to do the
+> test and what's the toolchain version?
+
+All information is on the page:
+
+ld-version 2.17
+gcc-version 4.1.2 (adi svn)
+
+make HOSTCC=gcc-4.0 ARCH=blackfin CROSS_COMPILE=bfin-elf- CROSS32_COMPILE= 
+O=/tmp/tmp.vLOkGP3410/out/blackfin defconfig
+
+Jan
