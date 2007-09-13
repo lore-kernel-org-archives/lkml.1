@@ -1,80 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933072AbXIMXph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933306AbXIMXp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933072AbXIMXph (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762508AbXIMXov
+	id S933306AbXIMXp7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766001AbXIMXoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:44:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57142 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760875AbXIMXou (ORCPT
+	Thu, 13 Sep 2007 19:44:54 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:41155 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765059AbXIMXox (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:44:50 -0400
-Date: Thu, 13 Sep 2007 16:37:51 -0700
+	Thu, 13 Sep 2007 19:44:53 -0400
+Date: Thu, 13 Sep 2007 16:38:50 -0700
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC] Some driver core and kobject minor patches
-Message-ID: <20070913233751.GA10856@kroah.com>
+Subject: Driver core: remove get_bus()
+Message-ID: <20070913233850.GB10856@kroah.com>
+References: <20070913233751.GA10856@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070913233751.GA10856@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay pointed out to me the other day that we are dragging around 20 bytes
-in every struct kobject and in every struct device to contain a name
-string that can be dynamically allocated instead.  For small device
-names (the majority), this savings can add up, especially with a lot of
-individual devices.
+get_bus() should not be globally visable as it is not used by anything
+other than drivers/base/bus.c.  This patch removes the visability of it,
+and renames it to match all of the other *_get() functions in the
+kernel.
 
-So, I started out by getting rid of the static array in the kobject
-structure, as we already were dynamically allocating space if it was
-needed.
 
-Of course, this required a number of other minor cleanups through the
-code tree to handle places where we were incorrectly directly accessing
-the kobject name instead of using the "proper" function.  I also got
-sidetracked by a few driver core and kobject.h cleanups of macros that
-are no longer needed, or functions that no longer need to be global
-(they were never exported, so we don't have to worry about that mess...)
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/base/base.h |    1 -
+ drivers/base/bus.c  |   24 ++++++++++++------------
+ 2 files changed, 12 insertions(+), 13 deletions(-)
 
-And I added a change to trigger a warning if we add an attribute to
-sysfs that we have already had created, to help the SCSI developers out
-with their driver model reworks.
-
-So, here's a series of 11 patches that I've added to my tree, and will
-send to Linus when 2.6.24 is opened up.
-
-Any review comments are appreciated.  The full diffstat is below showing
-that overall, we did get rid of more code than was added.
-
-thanks,
-
-greg k-h
-
- block/bsg.c                         |    5 --
- block/elevator.c                    |    2 
- block/ll_rw_blk.c                   |    2 
- drivers/acpi/bus.c                  |    2 
- drivers/base/base.h                 |    2 
- drivers/base/bus.c                  |   60 ++++++++++++++--------------
- drivers/base/class.c                |    6 +-
- drivers/base/sys.c                  |    2 
- drivers/char/raw.c                  |    5 --
- drivers/cpufreq/cpufreq.c           |    2 
- drivers/edac/edac_mc_sysfs.c        |    3 -
- drivers/md/md.c                     |    3 -
- drivers/media/dvb/dvb-core/dvbdev.c |    5 --
- drivers/usb/core/devio.c            |    6 --
- fs/dlm/lockspace.c                  |    2 
- fs/gfs2/locking/dlm/sysfs.c         |    2 
- fs/gfs2/sys.c                       |    2 
- fs/ocfs2/cluster/masklog.c          |    3 -
- fs/partitions/check.c               |   12 +++--
- fs/sysfs/dir.c                      |    6 ++
- include/linux/kobject.h             |   46 +---------------------
- lib/kobject.c                       |   75 ++++++++++++++++--------------------
- net/bridge/br_sysfs_br.c            |    2 
- 23 files changed, 102 insertions(+), 153 deletions(-)
-
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -18,7 +18,6 @@ extern int attribute_container_init(void
+ extern int bus_add_device(struct device * dev);
+ extern void bus_attach_device(struct device * dev);
+ extern void bus_remove_device(struct device * dev);
+-extern struct bus_type *get_bus(struct bus_type * bus);
+ 
+ extern int bus_add_driver(struct device_driver *);
+ extern void bus_remove_driver(struct device_driver *);
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -30,6 +30,12 @@
+ static int __must_check bus_rescan_devices_helper(struct device *dev,
+ 						void *data);
+ 
++static struct bus_type *bus_get(struct bus_type *bus)
++{
++	return bus ? container_of(kset_get(&bus->subsys),
++				struct bus_type, subsys) : NULL;
++}
++
+ static void bus_put(struct bus_type *bus)
+ {
+ 	kset_put(&bus->subsys);
+@@ -127,7 +133,7 @@ static struct sysfs_ops bus_sysfs_ops = 
+ int bus_create_file(struct bus_type * bus, struct bus_attribute * attr)
+ {
+ 	int error;
+-	if (get_bus(bus)) {
++	if (bus_get(bus)) {
+ 		error = sysfs_create_file(&bus->subsys.kobj, &attr->attr);
+ 		bus_put(bus);
+ 	} else
+@@ -137,7 +143,7 @@ int bus_create_file(struct bus_type * bu
+ 
+ void bus_remove_file(struct bus_type * bus, struct bus_attribute * attr)
+ {
+-	if (get_bus(bus)) {
++	if (bus_get(bus)) {
+ 		sysfs_remove_file(&bus->subsys.kobj, &attr->attr);
+ 		bus_put(bus);
+ 	}
+@@ -177,7 +183,7 @@ static int driver_helper(struct device *
+ static ssize_t driver_unbind(struct device_driver *drv,
+ 			     const char *buf, size_t count)
+ {
+-	struct bus_type *bus = get_bus(drv->bus);
++	struct bus_type *bus = bus_get(drv->bus);
+ 	struct device *dev;
+ 	int err = -ENODEV;
+ 
+@@ -204,7 +210,7 @@ static DRIVER_ATTR(unbind, S_IWUSR, NULL
+ static ssize_t driver_bind(struct device_driver *drv,
+ 			   const char *buf, size_t count)
+ {
+-	struct bus_type *bus = get_bus(drv->bus);
++	struct bus_type *bus = bus_get(drv->bus);
+ 	struct device *dev;
+ 	int err = -ENODEV;
+ 
+@@ -435,7 +441,7 @@ static inline void remove_deprecated_bus
+  */
+ int bus_add_device(struct device * dev)
+ {
+-	struct bus_type * bus = get_bus(dev->bus);
++	struct bus_type * bus = bus_get(dev->bus);
+ 	int error = 0;
+ 
+ 	if (bus) {
+@@ -611,7 +617,7 @@ static inline void remove_probe_files(st
+  */
+ int bus_add_driver(struct device_driver *drv)
+ {
+-	struct bus_type * bus = get_bus(drv->bus);
++	struct bus_type * bus = bus_get(drv->bus);
+ 	int error = 0;
+ 
+ 	if (!bus)
+@@ -731,12 +737,6 @@ int device_reprobe(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(device_reprobe);
+ 
+-struct bus_type *get_bus(struct bus_type *bus)
+-{
+-	return bus ? container_of(kset_get(&bus->subsys),
+-				struct bus_type, subsys) : NULL;
+-}
+-
+ /**
+  *	find_bus - locate bus by name.
+  *	@name:	name of bus.
