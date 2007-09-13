@@ -1,69 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752481AbXIMJgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751378AbXIMJg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752481AbXIMJgb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbXIMJgV
+	id S1751378AbXIMJg4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXIMJgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:36:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:56001 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750836AbXIMJgU (ORCPT
+	Thu, 13 Sep 2007 05:36:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:32988 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750768AbXIMJgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:36:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DjrCLPnADcXFq3YynAmSAtdkASmyy0gQn9RZK1cEqc3yDysxj64uNUNZaHLAM+Khc1l9bI0mx/9dIJ+Y5lOU/EwIL3AYKDxmUYBXK4g7H35Q2DcTL23KiXoAxxmjF658B1DsAm7oqevLeOSs3z08zWqPxQyNGFiFSI3+igwaK88=
-Message-ID: <6b8cef970709130236o48e4d923ofe4ad862c749f2da@mail.gmail.com>
-Date: Thu, 13 Sep 2007 05:36:18 -0400
-From: "Rob Hussey" <robjhussey@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [announce] CFS-devel, performance improvements
-Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Roman Zippel" <zippel@linux-m68k.org>
-In-Reply-To: <20070913093137.GA31923@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Sep 2007 05:36:45 -0400
+Date: Thu, 13 Sep 2007 02:35:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Marcelo Tosatti <marcelo@kvack.org>
+Subject: Re: [PATCH] timekeeping: Prevent time going backwards on resume
+Message-Id: <20070913023519.2fea026b.akpm@linux-foundation.org>
+In-Reply-To: <1189550194.5235.99.camel@chaos>
+References: <1189550194.5235.99.camel@chaos>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070911200459.GA6974@elte.hu>
-	 <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com>
-	 <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com>
-	 <20070913090655.GA28505@elte.hu>
-	 <6b8cef970709130224t2f8d28d4mdfbf22ba10b42497@mail.gmail.com>
-	 <20070913093137.GA31923@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/13/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Rob Hussey <robjhussey@gmail.com> wrote:
->
-> > On 9/13/07, Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > thanks for the numbers! Could you please also post the .config you used?
-> >
-> > Sure, .config for 2.6.23-rc1 and 2.6.23-rc6 attached.
->
-> thx! If you've got some time, could you perhaps re-measure with these
-> disabled:
->
->   CONFIG_SCHED_DEBUG=y
+On Wed, 12 Sep 2007 00:36:34 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Well, I was going over my config myself after you asked for me to post
-it, and I thought to do the same thing. Except, disabling sched_debug
-caused the same error as before:
-In file included from kernel/sched.c:794:
-kernel/sched_fair.c: In function 'task_new_fair':
-kernel/sched_fair.c:857: error: 'sysctl_sched_child_runs_first'
-undeclared (first use in this function)
-kernel/sched_fair.c:857: error: (Each undeclared identifier is
-reported only once
-kernel/sched_fair.c:857: error: for each function it appears in.)
-make[1]: *** [kernel/sched.o] Error 1
-make: *** [kernel] Error 2
+> Timekeeping resume adjusts xtime by adding the slept time in seconds and
+> resets the reference value of the clock source (clock->cycle_last).
+> clock->cycle last is used to calculate the delta between the last xtime
+> update and the readout of the clock source in __get_nsec_offset(). xtime
+> plus the offset is the current time. The resume code ignores the delta
+> which had already elapsed between the last xtime update and the actual
+> time of suspend. If the suspend time is short, then we can see time
+> going backwards on resume.
+> 
+> Suspend:
+> offs_s = clock->read() - clock->cycle_last;
+> now = xtime + offs_s;
+> timekeeping_suspend_time = read_rtc();
+> 
+> Resume:
+> sleep_time = read_rtc() - timekeeping_suspend_time;
+> xtime.tv_sec += sleep_time;
+> clock->cycle_last = clock->read();
+> offs_r = clock->read() - clock->cycle_last;
+> now = xtime + offs_r;
+> 
+> if sleep_time_seconds == 0 and offs_r < offs_s, then time goes
+> backwards.
+> 
+> Fix this by storing the offset from the last xtime update and add it to
+> xtime during resume, when we reset clock->cycle_last:
+> 
+> sleep_time = read_rtc() - timekeeping_suspend_time;
+> xtime.tv_sec += sleep_time;
+> xtime += offs_s;	/* Fixup xtime offset at suspend time */
+> clock->cycle_last = clock->read();
+> offs_r = clock->read() - clock->cycle_last;
+> now = xtime + offs_r;
+> 
+> Thanks to Marcelo for tracking this down on the OLPC and providing the
+> necessary details to analyze the root cause.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -280,6 +280,8 @@ void __init timekeeping_init(void)
+>  static int timekeeping_suspended;
+>  /* time in seconds when suspend began */
+>  static unsigned long timekeeping_suspend_time;
+> +/* xtime offset when we went into suspend */
+> +static s64 timekeeping_suspend_offset;
+>  
+>  /**
+>   * timekeeping_resume - Resumes the generic timekeeping subsystem.
+> @@ -305,6 +307,8 @@ static int timekeeping_resume(struct sys_device *dev)
+>  		wall_to_monotonic.tv_sec -= sleep_length;
+>  		total_sleep_time += sleep_length;
+>  	}
+> +	/* Make sure that we have the correct xtime reference */
+> +	timespec_add_ns(&xtime, timekeeping_suspend_offset);
+>  	/* re-base the last cycle value */
+>  	clock->cycle_last = clocksource_read(clock);
+>  	clock->error = 0;
+> @@ -326,6 +330,8 @@ static int timekeeping_suspend(struct sys_device *dev, pm_message_t state)
+>  	unsigned long flags;
+>  
+>  	write_seqlock_irqsave(&xtime_lock, flags);
+>  	timekeeping_suspended = 1;
+> +	/* Get the current xtime offset */
+> +	timekeeping_suspend_offset = __get_nsec_offset();
+>  	timekeeping_suspend_time = read_persistent_clock();
+>  	write_sequnlock_irqrestore(&xtime_lock, flags);
+> 
 
-It only happens with sched_debug=y. I take it back, it wasn't my fault :)
+kernel/time/timekeeping.c: In function 'timekeeping_suspend':
+kernel/time/timekeeping.c:335: error: implicit declaration of function '__get_nsec_offset'
 
-As for everything else, I'd be happy to.
+sparc32, and presumably anything with CONFIG_GENERIC_TIME=n
+
+
