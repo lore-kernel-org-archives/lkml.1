@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762026AbXIMBoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761071AbXIMBtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762026AbXIMBoX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 21:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760602AbXIMBoL
+	id S1761071AbXIMBtw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 21:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbXIMBtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 21:44:11 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:35013 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753660AbXIMBoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 21:44:09 -0400
-Date: Thu, 13 Sep 2007 10:43:57 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Michal Januszewski <spock@gentoo.org>
-Cc: Paulo Marques <pmarques@grupopie.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] uvesafb: Don't access VGA registers directly when running on non-x86
-Message-ID: <20070913014357.GB26541@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Michal Januszewski <spock@gentoo.org>,
-	Paulo Marques <pmarques@grupopie.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20070911081752.GA19495@linux-sh.org> <46E67EFD.2040902@grupopie.com> <20070911115346.GA23493@linux-sh.org> <46E687ED.9000802@grupopie.com> <20070911123159.GA23692@linux-sh.org> <20070911230959.GA16406@spock.one.pl> <20070912004437.GA26720@linux-sh.org> <20070912194151.GA5410@spock.one.pl>
-MIME-Version: 1.0
+	Wed, 12 Sep 2007 21:49:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49395 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750814AbXIMBtm (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 21:49:42 -0400
+Date: Thu, 13 Sep 2007 11:49:05 +1000
+From: David Chinner <dgc@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: David Chinner <dgc@sgi.com>, Mel Gorman <mel@skynet.ie>,
+       Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Message-ID: <20070913014905.GV995458@sgi.com>
+References: <20070911060349.993975297@sgi.com> <200709111600.18756.nickpiggin@yahoo.com.au> <20070912014917.GJ995458@sgi.com> <200709120127.33832.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070912194151.GA5410@spock.one.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200709120127.33832.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 09:41:51PM +0200, Michal Januszewski wrote:
-> The VGA registers are only available at their legacy IO locations on
-> x86. Don't try to access them when running on other arches.
+On Wed, Sep 12, 2007 at 01:27:33AM +1000, Nick Piggin wrote:
+> > IOWs, we already play these vmap harm-minimisation games in the places
+> > where we can, but still the overhead is high and something we'd prefer
+> > to be able to avoid.
 > 
-> Note that the code accessing them directly is just an optimization
-> (limits slow BIOS function calls).  We don't lose any functionality 
-> by using BIOS calls instead of it on non-x86.
-> 
-> Signed-off-by: Michal Januszewski <spock@gentoo.org>
+> I don't think you've looked nearly far enough with all this low hanging
+> fruit.
 
-Looks fine, thanks Michal.
+Ok, so we need to hack the vm to optimise it further. When it comes to
+TLB flush code and optimising that sort of stuff, I'm out of my depth.
+
+> I just gave 4 things which combined might easily reduce xfs vmap overhead
+> by several orders of magnitude, all without changing much code at all.
+
+Patches would be greatly appreciately. You obviously understand this
+vm code much better than I do, so if it's easy to fix by adding some
+generic vmap cache thingy, please do.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
