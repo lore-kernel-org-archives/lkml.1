@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbXIMRJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbXIMRKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754409AbXIMRJu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 13:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758573AbXIMRJk
+	id S1754227AbXIMRKL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 13:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760425AbXIMRJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 13:09:40 -0400
-Received: from h3mxr02.htp-tel.de ([81.14.243.50]:21498 "EHLO
-	H3MXR02.htp-tel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752717AbXIMRJj (ORCPT
+	Thu, 13 Sep 2007 13:09:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34576 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760138AbXIMRJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 13:09:39 -0400
-Message-ID: <46E96EBE.8030108@leemhuis.info>
-Date: Thu, 13 Sep 2007 19:09:18 +0200
-From: Thorsten Leemhuis <fedora@leemhuis.info>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070910)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Bernd Petrovitsch <bernd@firmix.at>,
-       Dan Stromberg <dstromberglists@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Building a kernel-source RPM (not a kernel RPM)?
-References: <pan.2007.09.12.16.13.41.195991@gmail.com> <1189616966.31502.75.camel@tara.firmix.at> <pan.2007.09.12.17.30.59.597440@gmail.com> <1189620186.31502.96.camel@tara.firmix.at> <46E84208.1050903@leemhuis.info> <20070912200348.GA19434@uranus.ravnborg.org>
-In-Reply-To: <20070912200348.GA19434@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 13 Sep 2007 13:09:51 -0400
+Subject: Re: [announce] CFS-devel, performance improvements
+From: Peter Zijlstra <peterz@infradead.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <1189703165.21778.258.camel@twins>
+References: <20070911200459.GA6974@elte.hu>
+	 <Pine.LNX.4.64.0709120242040.1817@scrub.home>
+	 <20070913075258.GA9173@elte.hu>
+	 <Pine.LNX.4.64.0709131419170.1817@scrub.home>
+	 <20070913142842.GA26016@elte.hu>
+	 <Pine.LNX.4.64.0709131706100.1817@scrub.home>
+	 <1189703165.21778.258.camel@twins>
+Content-Type: text/plain
+Date: Thu, 13 Sep 2007 19:09:42 +0200
+Message-Id: <1189703382.21778.260.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam!
+On Thu, 2007-09-13 at 19:06 +0200, Peter Zijlstra wrote:
+> On Thu, 2007-09-13 at 18:50 +0200, Roman Zippel wrote:
+> 
+> > I never claimed to understand every detail of CFS, I can _guess_ what 
+> > _might_ have been intended, but from that it's impossible to know for 
+> > certain how important they are. Let's take this patch fragment:
+> > 
+> 
+> 	delta_fair = se->delta_fair_sleep;
+> 
+> we slept that much
+> 
+> > -       /*
+> > -        * Fix up delta_fair with the effect of us running
+> > -        * during the whole sleep period:
+> > -        */
+> > -       if (sched_feat(SLEEPER_AVG))
+> > -               delta_fair = div64_likely32((u64)delta_fair * load,
+> > -                                               load + se->load.weight);
+> 
+> if we would have ran we would not have been removed from the rq and the
+> weight would have been: rq_weight + weight
+> 
+> so compensate for us having been removed from the rq by scaling the
+> delta with: rq_weight/(rq_weight + weight)
+> 
+> > -       delta_fair = calc_weighted(delta_fair, se);
+> 
+> scale for nice levels
+> 
 
-On 12.09.2007 22:03, Sam Ravnborg wrote:
->> I think the Fedora approach has many benefits -- I always wondered why
->> it never went upstream like a "make install_develstuff" that install all
->> the needed bits to
->>   /lib/modules/$(uname -r)/build/
-> Last time I saw the patch is was to ugly to consider.
+Or at least, I think that is how to read it :-)
 
-Do you have a pointer to that patch?
-
-Note that in Fedora it seems all (most of) the logic is afaics in the
-rpm spec file itself and thus not suitable for the kernel  :-/
-
-> Now that is maybe a year ago and I would be happy to take another look
-> should someone submit it to me.
-
-Maybe I should take a closer look at it sooner or later myself...
-
-Cu
-knurd
