@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932161AbXIMUBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbXIMUCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932161AbXIMUBt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 16:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760426AbXIMUBl
+	id S932966AbXIMUCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 16:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760426AbXIMUCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 16:01:41 -0400
-Received: from www.osadl.org ([213.239.205.134]:51815 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758801AbXIMUBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 16:01:40 -0400
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
-In-Reply-To: <20070904072744.GA30474@atrey.karlin.mff.cuni.cz>
-References: <20070827104350.GA2073@elf.ucw.cz>
-	 <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com>
-	 <20070903034720.GB3655@ucw.cz> <200709031219.12846.rjw@sisk.pl>
-	 <1188822917.3406.0.camel@chaos>
-	 <20070904072744.GA30474@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain
-Date: Thu, 13 Sep 2007 22:01:35 +0200
-Message-Id: <1189713695.3974.23.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Sep 2007 16:02:10 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:54963 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762093AbXIMUCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 16:02:09 -0400
+Date: Thu, 13 Sep 2007 22:17:27 +0200
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Chris Wedgwood <cw@f00f.org>, LKML <linux-kernel@vger.kernel.org>,
+       davej@redhat.com, Eric Sandeen <sandeen@sandeen.net>
+Subject: Re: [RFC PATCH] Add a 'minimal tree install' target
+Message-ID: <20070913201727.GW475@flower.upol.cz>
+References: <20070912232534.GA26868@puku.stupidest.org> <20070913183359.GA27146@uranus.ravnborg.org> <20070913185753.GA9259@puku.stupidest.org> <20070913191938.GD27146@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070913191938.GD27146@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hallo.
 
-On Tue, 2007-09-04 at 09:27 +0200, Pavel Machek wrote:
-> > On Mon, 2007-09-03 at 12:19 +0200, Rafael J. Wysocki wrote:
-> > > > Ok, so it gets weirder. I have now machine in "hung" state; other
-> > > > consoles still work, but there are no timers -  sleep 1 hangs forever.
-> > > > 
-> > > > sysrq-t shows kstopmachine hung in hrtimer_try_to_cancel.
-> > > > 
-> > > > So I indeed suspect difference-in-kconfig to trigger this, and will
-> > > > try disabling noidlehz.
-> > > 
-> > > I would unset CONFIG_HIGH_RES_TIMERS for starters.
-> > > 
-> > > Well, I guess Thomas should know about that. ;-)
+On Thu, Sep 13, 2007 at 09:19:38PM +0200, Sam Ravnborg wrote:
+[]
 > > 
-> > What was the last known to work version ?
+> >     sed -n "s/^ALTARCH[[:space:]]:=[[:space:]]\(.*$\)\+/\1/p"
+> > 
+> > (i'm sure there is a better way though)
 > 
-> I'm afraid I only turned on HIGH_RES_TIMERS in 2.6.23-rc1
-> timeframe... so I'm not sure if it ever worked for me.
+> Oleg (added to mail) - you are quite confident in sed et al.
+> Let us know if there is a simpler way.
 > 
-> I can confirm it is working in 2.6.23-rc5 with highres disabled, and
-> broken with highres enabled. NOHZ turns "waits for keypress during
-> unplug/replug" into "just plain hangs".
+> (We want to pick i386 from include/asm-x86_64/Kbuild
+> and similar for the architectures that uses ARCHDEF).
 
-Ok, I can reproduce it and I tracked down what happens:
+That particular one-line `ALTARCH := i386' of course can be matched
+simpler, because there's only *one* (as written above) whitespace and no
+make's assignment variations, like (?=,=). I wonder, if there can be more
+options, than i386 and more occurrences of `ALTARCH' actually :) Also,
+make can have lead whitespace on line start, as well as near assignment
+sign, if that matters.
 
-When the CPU goes offline, the clock event source for this CPU (lapic)
-is removed from the clock events framework. This also clears the
-information that the CPU is using C-States which stop the local APIC
-timer.
+So, to match *one* line with *one* `ALTARCH' followed by `i386'
 
-Now you put the CPU online again and the local APIC timer is used, but
-the C-State information is not evaluated again in ACPI. This means that
-the clock events code does not know that the APIC might stop. In the
-worst case this will happen and make the CPU wait for timer interrupts
-forever.
+sed -n '/ALTARCH/{/i386/{p ; q}}' 
 
-The problem only appears when you are on battery (c3/c4 available) or on
-those broken machines, where C2 is in reality C3 (e.g. akpm's VAIO)
+is fine by me. If there are dis-assignments, so to speak, or comments
+with i386 this will not work obviously. But it's fast and must work
+with variety of make syntax. Check is "for non empty output".
 
-I have an yet untested fix, which preserves the broadcast state across
-the offline state, but Len is looking into it as well, whether we can
-just reevaluate the power states (and the broadcast flags) when a cpu
-becomes online again. If Len can do that easily for 2.6.23, I'd prefer
-that.
+Also, please take a look on man isspace(). It matches much more
+characters, than necessary for ordinary syntax whitespace. Using
+[:blank:] (i.e. tab and space, with no options) is OK. Last thing: i'm not
+sure, what that `+' is. I stick to BRE in sed, as it should be, so just
+don't know what it does.
 
-	tglx
-
-
+Hope that helps.
+____
