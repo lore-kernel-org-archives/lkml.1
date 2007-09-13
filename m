@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763107AbXIMQzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761735AbXIMRBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763107AbXIMQzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 12:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbXIMQzp
+	id S1761735AbXIMRBT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 13:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXIMRBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 12:55:45 -0400
-Received: from as1.cineca.com ([130.186.84.251]:34227 "EHLO as1.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbXIMQzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 12:55:45 -0400
-X-Greylist: delayed 6394 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Sep 2007 12:55:44 EDT
-From: Luca Risolia <luca.risolia@studio.unibo.it>
-Reply-To: luca.risolia@studio.unibo.it
-To: aherrman@arcor.de
-Subject: Re: [PATCH] v4l: Build error with et61x251, if V4L1_COMPAT is not selected
-Date: Thu, 13 Sep 2007 17:07:16 +0200
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, linux-usb-devel@lists.sourceforge.net,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-References: <20070913123627.GD10348@devil>
-In-Reply-To: <20070913123627.GD10348@devil>
+	Thu, 13 Sep 2007 13:01:11 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:42819 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752334AbXIMRBK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 13:01:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LwANbuIDlSrASCtdtiWwaQXBpAdDJRjGIlwAyv7/CKRfFSS2XtMKkXlEcCWFQkXxBsiUVw9KmpVAgjSkHOYaBhSY7uENkm4ikpS6MfZbcVfTtAU++IEoCRsadM1Txt+JhRJ8dy5KzRYUHw9vcdSHpblAnMiJ9c8a2tKX0cKKvCk=
+Message-ID: <86802c440709131001w4b758921r52a23f1732a6e9c8@mail.gmail.com>
+Date: Thu, 13 Sep 2007 10:01:09 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used
+Cc: "Greg KH" <greg@kroah.com>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Martin Mares" <mj@ucw.cz>,
+       "dean gaudet" <dean@arctic.org>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200709131353.15752.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709131707.16666.luca.risolia@studio.unibo.it>
+References: <200709121921.43950.yinghai.lu@sun.com>
+	 <200709131147.43446.ak@suse.de> <20070913104704.GA3878@kroah.com>
+	 <200709131353.15752.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 September 2007 14:36:27 aherrman@arcor.de wrote:
-> With current git tree I get an build error
-> for et61x251, if V4L1_COMPAT is not selected:
+On 9/13/07, Andi Kleen <ak@suse.de> wrote:
+> On Thursday 13 September 2007 12:47, Greg KH wrote:
+> > On Thu, Sep 13, 2007 at 11:47:42AM +0200, Andi Kleen wrote:
+> > > On Thursday 13 September 2007 04:21, Yinghai Lu wrote:
+> > > > [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is
+> > > > used.
+> > > >
+> > > > reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
+> > >
+> > > I just rejected a similar patch -- this should be done using MMCONFIG
+> >
+> > But what about for broken machines without the proper MMCONFIG entries?
+> > They still need a way to get access to this config space,
 >
-> drivers/media/video/et61x251/et61x251_core.c: In et61x251_show_:
-> drivers/media/video/et61x251/et61x251_core.c:718: error: implicit
-> declaration of to_video_device
+> If there are any devices that need it. IBS and PCI-E error handling
+> do, but they're quite obscure.
 >
-> Fix: add VIDEO_V4L1_COMPAT as a dependency for this driver.
+> Also so far we don't know of any Fam 10h systems without MMCONFIG
+> entries. Fam10h requires a new BIOS so it's reasonable to assume
+> that the new BIOSes will do better.
 
-No, wait. The driver really is V4L2 only. If you can, please fix it by 
-replacing to_video_device() with container_of() instead:
+BIOS guys also said that fam 10h need mmconfig via eax accessing, may
+need OS do sth, so it is safe to stay with MCFG entry for SB like
+mcp55...
 
-cam = video_get_drvdata(container_of(cd, struct video_device, class_dev));
+but latest kernel already have that workaround to make mmconfig via eax...
 
-Best regards
-Luca Risolia
-
->
-> Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
-> ---
->  drivers/media/video/et61x251/Kconfig |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/media/video/et61x251/Kconfig
-> b/drivers/media/video/et61x251/Kconfig index dcc1a03..9143424 100644
-> --- a/drivers/media/video/et61x251/Kconfig
-> +++ b/drivers/media/video/et61x251/Kconfig
-> @@ -1,6 +1,6 @@
->  config USB_ET61X251
->  	tristate "USB ET61X[12]51 PC Camera Controller support"
-> -	depends on VIDEO_V4L2
-> +	depends on VIDEO_V4L2 && VIDEO_V4L1_COMPAT
->  	---help---
->  	  Say Y here if you want support for cameras based on Etoms ET61X151
->  	  or ET61X251 PC Camera Controllers.
-
-
+YH
