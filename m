@@ -1,129 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765613AbXIMS3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764984AbXIMScl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765613AbXIMS3R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 14:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbXIMS3B
+	id S1764984AbXIMScl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 14:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbXIMScd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 14:29:01 -0400
-Received: from smtpoutm.mac.com ([17.148.16.75]:52039 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759432AbXIMS3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 14:29:00 -0400
-In-Reply-To: <Pine.LNX.4.64.0709131706100.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home> <20070913075258.GA9173@elte.hu> <Pine.LNX.4.64.0709131419170.1817@scrub.home> <20070913142842.GA26016@elte.hu> <Pine.LNX.4.64.0709131706100.1817@scrub.home>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D1C6ACC2-FD90-4813-84C9-A23531684B86@mac.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [announce] CFS-devel, performance improvements
-Date: Thu, 13 Sep 2007 14:28:13 -0400
-To: Roman Zippel <zippel@linux-m68k.org>
-X-Mailer: Apple Mail (2.752.2)
+	Thu, 13 Sep 2007 14:32:33 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47737 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753481AbXIMScc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 14:32:32 -0400
+Date: Thu, 13 Sep 2007 11:32:26 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Nick Piggin <npiggin@suse.de>, Daniel Phillips <phillips@phunq.net>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+In-Reply-To: <1189671552.21778.158.camel@twins>
+Message-ID: <Pine.LNX.4.64.0709131128050.9546@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com>  <200709050220.53801.phillips@phunq.net>
+  <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com> 
+ <20070905114242.GA19938@wotan.suse.de>  <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+  <1189594373.21778.114.camel@twins>  <Pine.LNX.4.64.0709121540370.4067@schroedinger.engr.sgi.com>
+ <1189671552.21778.158.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 13, 2007, at 12:50:12, Roman Zippel wrote:
-> On Thu, 13 Sep 2007, Ingo Molnar wrote:
->> And you are duly credited in 3 patches:
->
-> This needs a little perspective, as I couldn't clone the repository  
-> (and you know that), all I had was this announcement, so using the  
-> patch descriptions now as defense is unfair by you.
+On Thu, 13 Sep 2007, Peter Zijlstra wrote:
 
-How the hell is that unfair?  The fact that nobody could clone the  
-repo for about 24 hours is *totally* *irrelevant* to the whole  
-discussion as it's simply a matter of a technical glitch.  His point  
-in referencing patch descriptions is to clear up matters of credit.   
-Ingo has never in this discussion been "out to get you".  From the  
-point of view of a sideline observer it's been *you* that has been  
-demanding answers and refusing to answer questions directed at you.
+> 
+> > > Every user of memory relies on the VM, and we only get into trouble if
+> > > the VM in turn relies on one of these users. Traditionally that has only
+> > > been the block layer, and we special cased that using mempools and
+> > > PF_MEMALLOC.
+> > > 
+> > > Why do you object to me doing a similar thing for networking?
+> > 
+> > I have not seen you using mempools for the networking layer. I would not 
+> > object to such a solution. It already exists for other subsystems.
+> 
+> Dude, listen, how often do I have to say this: I cannot use mempools for
+> the network subsystem because its build on kmalloc! What I've done is
+> build a replacement for mempools - a reserve system - that does work
+> similar to mempools but also provides the flexibility of kmalloc.
+> 
+> That is all, no more, no less.
 
-The most brilliant mathematician in the world would have nothing to  
-contribute to the Linux scheduler if he couldn't describe, code, and  
-comment his algorithm in detail so that others (even code-monkeys  
-like myself) could grok at least the basic outline and be able to  
-give useful commentary and suggestions.
+Its different since it becomes a privileged player that can suck all 
+the available memory out of the page allocator.
 
+> I'm confused by this, I've never claimed part of, or such a thing. All
+> I'm saying is that because of the circular dependency between the VM and
+> the IO subsystem used for swap (not file backed paging [*], just swap)
+> you have to do something special to avoid deadlocks.
 
-> In this announcement you make relatively few references how this  
-> relates to my work.  Maybe someone else can show me how to read  
-> that announcement differently, but IMO the casual reader is likely  
-> to get the impression, that you only picked some minor cleanups  
-> from my patch, but it's rather unclear that you already  
-> reimplemented key aspects of my patch.
+How are dirty file backed pages different? They may also be written out 
+by the VM during reclaim.
 
-As a casual reader and reviewer I have yet to actually see you post  
-readable/reviewable patches in this thread.  I was basically  
-completely unable to follow the detailed math you go into (even with  
-a math minor) due to your *complete* lack of comments.  The fact that  
-you renamed files and didn't split up your patch made it useless for  
-actual practical kernel development, its only value was as a  
-comparison point.  I did however get the impression that Ingo got  
-something significantly useful out of your code despite the problems,  
-but I still haven't had time to read through his and Peter's patches  
-in detail to understand exactly what it was.  From personal  
-inspection of a fair percentage of the changes that Ingo and Peter  
-committed, they certainly appear to be deleting a lot more code than  
-they add.  More specifically they appear to describe in detail what  
-they are deleting and why, with the exception of one patch that's  
-missing a changelog entry.
+> > Replacing the mempools for the block layer sounds pretty good. But how do 
+> > these various subsystems that may live in different portions of the system 
+> > for various devices avoid global serialization and livelock through your 
+> > system? 
+> 
+> The reserves are spread over all kernel mapped zones, the slab allocator
+> is still per cpu, the page allocator tries to get pages from the nearest
+> node.
 
-So yeah, I get the impression that Ingo re-implemented some ideas  
-that you had because you refused to do so in a way that was  
-acceptable for the upstream kernel.  How exactly is this a bad  
-thing?  You came up with a great idea that worked and somebody else  
-did the ugly grunt work to get it ready to go upstream!  On the other  
-hand, given the "pleasant" attitude that you've showed Ingo during  
-this whole thing I doubt he'd be likely to do it again.
+But it seems that you have unbounded allocations with PF_MEMALLOC now for 
+the networking case? So networking can exhaust all reserves?
 
+> > And how is fairness addresses? I may want to run a fileserver on 
+> > some nodes and a HPC application that relies on a fiberchannel connection 
+> > on other nodes. How do we guarantee that the HPC application is not 
+> > impacted if the network services of the fileserver flood the system with 
+> > messages and exhaust memory?
+> 
+> The network system reserves A pages, the block layer reserves B pages,
+> once they start getting pages from the reserves they go bean counting,
+> once they reach their respective limit they stop.
 
->> You never directly replied to these pretty explicit requests, all  
->> you did was this side remark 5 days later in one of your patch  
->> announcements:
->
-> This is ridiculous, I asked you multiple times to explain to me  
-> some of the differences relative to CFS as response to the splitup  
-> requests. Not once did you react, you didn't even ask what I'd like  
-> to know specifically.
-
-How exactly is Ingo supposed to explain to YOU the differences  
-between his scheduler and your modified one?  Completely ignoring the  
-fact that you merged all your changes into a single patch and didn't  
-add a single comment, it's not *his* algorithm that I have trouble  
-understanding.  From a relatively basic scan of the source-code and  
-comments I was able to figure out how the algorithm works in general,  
-enough to ask much more specific questions than yours.  If anything,  
-Ingo should have been asking *you* how your scheduler differed from  
-the one it was based on.
-
-
-> I never claimed to understand every detail of CFS, I can _guess_  
-> what _might_ have been intended, but from that it's impossible to  
-> know for certain how important they are. Let's take this patch  
-> fragment:
-
-Oh come on, you appear to be quite knowledgeable about CPU scheduling  
-and the algorithms involved, surely as such you should have a much  
-easier time with reading the comments and asking specific questions.   
-For example, your below question specifically about the sleep  
-averaging could have been answered in fifteen minutes had you  
-actually *ASKED* that.  You'll notice that in fact Peter Zijlstra's  
-email response did come almost exactly 15 minutes after you sent this  
-email, and for a casual reader like me it seems perfectly  
-sufficient;  it does depend on you asking specific questions instead  
-of "how does it differ from my hundred-kbyte patch".
-
-As for that specific patch, it's very clear that the affected logic  
-is controlled by one of the sched-feature tweaking tools, so you  
-could very easily experiment with it yourself to see what the  
-differences are when the feature is on or off and whether or not it's  
-useful or harmful for your workloads.  Such evidence would help  
-indicate which way the scheduler feature should be hard-coded when  
-the tunable is finally removed.
-
-Cheers,
-Kyle Moffett
-
+That sounds good.
