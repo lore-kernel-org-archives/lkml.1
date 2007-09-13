@@ -1,486 +1,389 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbXIMIiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbXIMImc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbXIMIiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 04:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbXIMIiH
+	id S1756277AbXIMImc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 04:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXIMImY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 04:38:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42749 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753064AbXIMIiF (ORCPT
+	Thu, 13 Sep 2007 04:42:24 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:30900 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbXIMImX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 04:38:05 -0400
-Date: Thu, 13 Sep 2007 01:37:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: bryan.wu@analog.com
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Blackfin BF54x NAND Flash Controller driver
-Message-Id: <20070913013702.d446739a.akpm@linux-foundation.org>
-In-Reply-To: <1188804323.29566.6.camel@roc-laptop>
-References: <1188804323.29566.6.camel@roc-laptop>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Sep 2007 04:42:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=krNWOXO8N2UtzvUvltOiSIR2g/iJu5C4+bpB9CtBElh20QPvfsbeXQBu4jD8h395YveasICfufagLa1bkS7ZimGWnu5W9hOGeROx1T1PjNNL6HSfH3Y4dgVVjfdAmMKG8xi5HEJIoer15xKzehJ4b5S/kLuzX8E90xbSGFQLEX0=
+Message-ID: <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com>
+Date: Thu, 13 Sep 2007 04:42:22 -0400
+From: "Rob Hussey" <robjhussey@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [announce] CFS-devel, performance improvements
+Cc: linux-kernel@vger.kernel.org, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "Roman Zippel" <zippel@linux-m68k.org>
+In-Reply-To: <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_20191_25445057.1189672942210"
+References: <20070911200459.GA6974@elte.hu>
+	 <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 03 Sep 2007 15:25:23 +0800 Bryan Wu <bryan.wu@analog.com> wrote:
+------=_Part_20191_25445057.1189672942210
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> This is the driver for latest Blackfin BF54x nand flash controller
-> 
->  - use nand_chip and mtd_info common nand driver interface
->  - provide both PIO and dma operation
->  - compiled with ezkit bf548 configuration
->  - use hardware 1-bit ECC
->  - tested with YAFFS2 and can mount YAFFS2 filesystem as rootfs
-> 
-> ...
+On 9/11/07, Rob Hussey <robjhussey@gmail.com> wrote:
+> Hi Ingo,
 >
-> +int hardware_ecc = 0;
+> When compiling, I get:
 
-scripts/checkpatch.pl, please.
+Yeah, this was my fault :(
 
-> +#endif
-> +
-> +unsigned short bfin_nfc_pin_req[] = {P_NAND_CE, P_NAND_RB, 0};
+I've had a chance to test this now, and everything feels great. I did
+some benchmarks for 2.6.23-rc1, 2.6.23-rc6-cfs, and
+2.6.23-rc6-cfs-devel:
+lat_ctx -s 0 2:
+2.6.23-rc1	2.6.23-rc6-cfs	2.6.23-rc6-cfs-devel
+   5.15		   4.91			5.05
+   5.23		   5.18			4.85
+   5.19		   4.89			5.17
+   5.36		   5.23			4.86
+   5.35		   5.00			5.13
+   5.34		   5.05			5.12
+   5.26		   4.99			5.06
+   5.11		   5.04 		4.96
+   5.29		   5.19		  	5.18
+   5.40		   4.93		   	5.07
 
-static.  Please review whole patch for this.
+hackbench 50:
+     2.6.23-rc1	2.6.23-rc6-cfs	2.6.23-rc6-cfs-devel
+	6.301 		5.963 		5.837
+	6.417		5.961 		5.814
+	6.468 		5.965 		5.757
+	6.525 		5.926 		5.840
+	6.320 		5.929 		5.751
+	6.457 		5.909		5.825
 
-> +/*
-> + * bf54x_nand_hwcontrol
-> + *
-> + * Issue command and address cycles to the chip
-> + */
-> +static void bf54x_nand_hwcontrol(struct mtd_info *mtd, int cmd,
-> +				   unsigned int ctrl)
-> +{
-> +	if (cmd == NAND_CMD_NONE)
-> +		return;
-> +
-> +	while (bfin_read_NFC_STAT() & WB_FULL)
-> +		continue;
+pipe-test (http://redhat.com/~mingo/cfs-scheduler/tools/pipe-test.c):
+     2.6.23-rc1	 2.6.23-rc6-cfs	2.6.23-rc6-cfs-devel
+	14.29		14.03		13.89
+	14.31		14.01		14.10
+	14.27		13.99		14.15
+	14.31		14.02		14.16
+	14.53		14.02		14.14
+	14.53		14.27		14.16
+	14.51		14.36		14.12
+	14.48		14.33		14.16
+	14.52		14.36		14.17
+	14.47		14.36		14.15
 
-cpu_relax().  Please check the whole patch for this too.
+I turned the results into graphs as well. I'll attach them, but they're also at:
+http://www.healthcarelinen.com/misc/lat_ctx_benchmark.png
+http://www.healthcarelinen.com/misc/hackbench_benchmark.png
+http://www.healthcarelinen.com/misc/pipe-test_benchmark.png
 
-> +	if (ctrl & NAND_CLE)
-> +		bfin_write_NFC_CMD(cmd);
-> +	else
-> +		bfin_write_NFC_ADDR(cmd);
-> +	SSYNC();
-> +}
-> +
->
-> ...
->
-> +/*----------------------------------------------------------------------------
-> + * ECC functions
-> + *
-> + * These allow the bf54x to use the controller's ECC
-> + * generator block to ECC the data as it passes through
-> + */
-> +static inline int count_bits(uint32_t byte)
-> +{
-> +	int res = 0;
-> +
-> +	for (; byte; byte >>= 1)
-> +		res += byte & 0x01;
-> +	return res;
-> +}
+The hackbench and pipe-test numbers are very encouraging. The avg
+between the 2.6.23-rc6-cfs and 2.6.23-rc6-cfs-devel lat_ctx numbers
+are nearly identical (5.041 and 5.045 respectively).
 
-delete this, use hweight32() at its callsites.
+------=_Part_20191_25445057.1189672942210
+Content-Type: image/png; name="lat_ctx_benchmark.png"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="lat_ctx_benchmark.png"
+X-Attachment-Id: f_f6j0e3mr
 
-> +
-> +static int bf54x_nand_correct_data(struct mtd_info *mtd, u_char *dat,
-> +					u_char *read_ecc, u_char *calc_ecc)
-> +{	struct bf54x_nand_info *info = mtd_to_nand_info(mtd);
+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
+------=_Part_20191_25445057.1189672942210
+Content-Type: image/png; name="hackbench_benchmark.png"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="hackbench_benchmark.png"
+X-Attachment-Id: f_f6j0e8i0
 
-missing newline
+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
+------=_Part_20191_25445057.1189672942210
+Content-Type: image/png; name="pipe-test_benchmark.png"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="pipe-test_benchmark.png"
+X-Attachment-Id: f_f6j0ebrz
 
-> +	struct bf54x_nand_platform *plat = info->platform;
-> +	unsigned short page_size = (plat->page_size ? 512 : 256);
-> +
-> +	int ret;
-
-extraneous newline
-
-> +	ret = bf54x_nand_correct_data_256(mtd, dat, read_ecc, calc_ecc);
-> +
-> +	/* If page size is 512, correct second 256 bytes */
-> +	if (page_size == 512) {
-> +		dat += 256;
-> +		read_ecc += 8;
-> +		calc_ecc += 8;
-> +		ret = bf54x_nand_correct_data_256(mtd, dat, read_ecc, calc_ecc);
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static void bf54x_nand_enable_hwecc(struct mtd_info *mtd, int mode)
-> +{
-> +	/*
-> +	 * This register must be written before each page is
-> +	 * transferred to generate the correct ECC register
-> +	 * values.
-> +	 */
-> +	return;
-> +
-> +}
-
-comment doesn't match code.
-
-extraneous newline
-
-> +
-> +/*----------------------------------------------------------------------------
-> + * PIO mode for buffer writing and reading
-> + */
-
-remove the ------------------------------ thingy.  (whole patch)
-
-> +static void bf54x_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
-> +{
-> +	int i;
-> +	unsigned short val;
-> +
-> +	/*
-> +	 * Data reads are requested by first writing to NFC_DATA_RD
-> +	 * and then reading back from NFC_READ.
-> +	 */
-> +	for (i = 0; i < len; i++) {
-> +		while (bfin_read_NFC_STAT() & WB_FULL)
-> +			continue;
-
-cpu_relax()
-
-> +		/* Contents do not matter */
-> +		bfin_write_NFC_DATA_RD(0x0000);
-> +		SSYNC();
-> +
-> +		while ((bfin_read_NFC_IRQSTAT() & RD_RDY) != RD_RDY)
-> +			continue;
-> +
-> +		buf[i] = bfin_read_NFC_READ();
-> +
-> +		val = bfin_read_NFC_IRQSTAT();
-> +		val |= RD_RDY;
-> +		bfin_write_NFC_IRQSTAT(val);
-> +		SSYNC();
-> +	}
-> +}
-> +
-> +static uint8_t bf54x_nand_read_byte(struct mtd_info *mtd)
-> +{
-> +	uint8_t val;
-> +
-> +	bf54x_nand_read_buf(mtd, &val, 1);
-> +
-> +	return val;
-> +}
-> +
-> +static void bf54x_nand_write_buf(struct mtd_info *mtd,
-> +				const uint8_t *buf, int len)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < len; i++) {
-> +		while (bfin_read_NFC_STAT() & WB_FULL)
-> +			continue;
-
-dittoes
-
-> +		bfin_write_NFC_DATA_WR(buf[i]);
-> +		SSYNC();
-> +	}
-> +}
-> +
->
-> ...
->
-> +/*----------------------------------------------------------------------------
-> + * DMA functions for buffer writing and reading
-> + */
-> +static irqreturn_t bf54x_nand_dma_irq (int irq, void *dev_id)
-> +{
-> +	struct bf54x_nand_info *info = (struct bf54x_nand_info *) dev_id;
-
-unneeded and undesirable cast of void*
-
-> +
-> +	clear_dma_irqstat(CH_NFC);
-> +	disable_dma(CH_NFC);
-> +	complete(&info->dma_completion);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static int bf54x_nand_dma_rw(struct mtd_info *mtd,
-> +				uint8_t *buf, int is_read)
-> +{
-> +	struct bf54x_nand_info *info = mtd_to_nand_info(mtd);
-> +	struct bf54x_nand_platform *plat = info->platform;
-> +	unsigned short page_size = (plat->page_size ? 512 : 256);
-> +	unsigned short val;
-> +
-> +	dev_dbg(info->device, " mtd->%p, buf->%p, len %d, is_read %d\n",
-> +			mtd, buf, is_read);
-> +
-> +	if (is_read)
-> +		invalidate_dcache_range((unsigned int)buf,
-> +				(unsigned int)(buf + page_size));
-> +	else
-> +		flush_dcache_range((unsigned int)buf,
-> +				(unsigned int)(buf + page_size));
-
-I'd have though that the MM tricks here need a comment so readers know
-what's going on?
-
-> +	bfin_write_NFC_RST(0x1);
-> +	SSYNC();
-> +
-> +	disable_dma(CH_NFC);
-> +	clear_dma_irqstat(CH_NFC);
-> +
-> +	/* setup DMA register with Blackfin DMA API */
-> +	set_dma_config(CH_NFC, 0x0);
-> +	set_dma_start_addr(CH_NFC, (unsigned long) buf);
-> +	set_dma_x_count(CH_NFC, (page_size >> 2));
-> +	set_dma_x_modify(CH_NFC, 4);
-> +
-> +	/* setup write or read operation */
-> +	val = DI_EN | WDSIZE_32;
-> +	if (is_read)
-> +		val |= WNR;
-> +	set_dma_config(CH_NFC, val);
-> +	enable_dma(CH_NFC);
-> +
-> +	/* Start PAGE read/write operation */
-> +	if (is_read)
-> +		bfin_write_NFC_PGCTL(0x1);
-> +	else
-> +		bfin_write_NFC_PGCTL(0x2);
-> +	wait_for_completion(&info->dma_completion);
-> +
-> +	return 0;
-> +}
-> +
->
-> ...
->
-> +/*
-> + * BF54X NFC hardware initialization
-> + *  - pin mux setup
-> + *  - clear interrupt status
-> + */
-> +static int bf54x_nand_hw_init(struct bf54x_nand_info *info)
-> +{
-> +	int err = 0;
-> +	unsigned short val;
-> +	struct bf54x_nand_platform *plat = info->platform;
-> +
-> +	if (!info)
-> +		return -EINVAL;
-
-can this happen?
-
-> +	/* setup NFC_CTL register */
-> +	dev_info(info->device,
-> +		"page_size=%d, data_width=%d, wr_dly=%d, rd_dly=%d\n",
-> +		(plat->page_size ? 512 : 256),
-> +		(plat->data_width ? 16 : 8),
-> +		plat->wr_dly, plat->rd_dly);
-> +
-> +	val = (plat->page_size << NFC_PG_SIZE_OFFSET) |
-> +		(plat->data_width << NFC_NWIDTH_OFFSET) |
-> +		(plat->rd_dly << NFC_RDDLY_OFFSET) |
-> +		(plat->rd_dly << NFC_WRDLY_OFFSET);
-> +	dev_dbg(info->device, "NFC_CTL is 0x%04x\n", val);
-> +
-> +	bfin_write_NFC_CTL(val);
-> +	SSYNC();
-> +
-> +	/* clear interrupt status */
-> +	bfin_write_NFC_IRQMASK(0x0);
-> +	SSYNC();
-> +	val = bfin_read_NFC_IRQSTAT();
-> +	bfin_write_NFC_IRQSTAT(val);
-> +	SSYNC();
-> +
-> +	if (peripheral_request_list(bfin_nfc_pin_req, DRV_NAME)) {
-> +		printk(KERN_ERR DRV_NAME
-> +		": Requesting Peripherals failed\n");
-> +		return -EFAULT;
-> +	}
-> +
-> +
-
-extraneous newline
-
-> +	/* DMA initialization  */
-> +	if (bf54x_nand_dma_init(info)) {
-> +		err = -ENXIO;
-> +	}
-> +
-> +	return err;
-> +}
-> +
->
-> ...
->
-> +static int bf54x_nand_remove(struct platform_device *pdev)
-> +{
-> +	struct bf54x_nand_info *info = to_nand_info(pdev);
-> +	struct mtd_info *mtd = NULL;
-> +
-> +	platform_set_drvdata(pdev, NULL);
-> +
-> +	if (!info)
-> +		return 0;
-
-can this happen?
-
-> +	/* first thing we need to do is release all our mtds
-> +	 * and their partitions, then go through freeing the
-> +	 * resources used
-> +	 */
-> +	mtd = &info->mtd;
-> +	if (mtd) {
-> +		nand_release(mtd);
-> +		kfree(mtd);
-> +	}
-> +
-> +	peripheral_free_list(bfin_nfc_pin_req);
-> +
-> +	/* free the common resources */
-> +	kfree(info);
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * bf54x_nand_probe
-> + *
-> + * called by device layer when it finds a device matching
-> + * one our driver can handled. This code checks to see if
-> + * it can allocate all necessary resources then calls the
-> + * nand layer to look for devices
-> + */
-> +static int bf54x_nand_probe(struct platform_device *pdev)
-> +{
-> +	struct bf54x_nand_platform *plat = to_nand_plat(pdev);
-> +	struct bf54x_nand_info *info = NULL;
-> +	struct nand_chip *chip = NULL;
-> +	struct mtd_info *mtd = NULL;
-> +	int err = 0;
-> +
-> +	dev_dbg(&pdev->dev, "(%p)\n", pdev);
-> +
-> +	if (!plat) {
-> +		dev_err(&pdev->dev, "no platform specific information\n");
-> +		goto exit_error;
-
-and can this?
-
-> +	}
-> +
-> +	info = kzalloc(sizeof(*info), GFP_KERNEL);
-> +	if (info == NULL) {
-> +		dev_err(&pdev->dev, "no memory for flash info\n");
-> +		err = -ENOMEM;
-> +		goto exit_error;
-> +	}
-> +
-> +	platform_set_drvdata(pdev, info);
-> +
-> +	spin_lock_init(&info->controller.lock);
-> +	init_waitqueue_head(&info->controller.wq);
-> +
-> +	info->device     = &pdev->dev;
-> +	info->platform   = plat;
-> +
-> +	/* initialise chip data struct */
-> +	chip = &info->chip;
-> +
-> +	if (plat->data_width)
-> +		chip->options |= NAND_BUSWIDTH_16;
-> +
-> +	chip->options |= NAND_CACHEPRG | NAND_SKIP_BBTSCAN;
-> +
-> +	chip->read_buf = (plat->data_width) ?
-> +		bf54x_nand_read_buf16 : bf54x_nand_read_buf;
-> +	chip->write_buf = (plat->data_width) ?
-> +		bf54x_nand_write_buf16 : bf54x_nand_write_buf;
-> +
-> +	chip->read_byte    = bf54x_nand_read_byte;
-> +
-> +	chip->cmd_ctrl     = bf54x_nand_hwcontrol;
-> +	chip->dev_ready    = bf54x_nand_devready;
-> +
-> +	chip->priv	   = &info->mtd;
-> +	chip->controller   = &info->controller;
-> +
-> +	chip->IO_ADDR_R    = (void __iomem *) NFC_READ;
-> +	chip->IO_ADDR_W    = (void __iomem *) NFC_DATA_WR;
-> +
-> +	chip->chip_delay   = 0;
-> +
-> +	/* initialise mtd info data struct */
-> +	mtd 		= &info->mtd;
-> +	mtd->priv	= chip;
-> +	mtd->owner	= THIS_MODULE;
-> +
-> +	/* initialise the hardware */
-> +	err = bf54x_nand_hw_init(info);
-> +	if (err != 0)
-> +		goto exit_error;
-> +
-> +	/* setup hardware ECC data struct */
-> +	if (hardware_ecc) {
-> +		if (plat->page_size == NFC_PG_SIZE_256) {
-> +			chip->ecc.bytes = 3;
-> +			chip->ecc.size = 256;
-> +		} else if (mtd->writesize == NFC_PG_SIZE_512) {
-> +			chip->ecc.bytes = 6;
-> +			chip->ecc.size = 512;
-> +		}
-> +
-> +		chip->read_buf      = bf54x_nand_dma_read_buf;
-> +		chip->write_buf     = bf54x_nand_dma_write_buf;
-> +		chip->ecc.calculate = bf54x_nand_calculate_ecc;
-> +		chip->ecc.correct   = bf54x_nand_correct_data;
-> +		chip->ecc.mode	    = NAND_ECC_HW;
-> +		chip->ecc.hwctl	    = bf54x_nand_enable_hwecc;
-> +	} else {
-> +		chip->ecc.mode	    = NAND_ECC_SOFT;
-> +	}
-> +
-> +	/* scan hardware nand chip and setup mtd info data struct */
-> +	if (nand_scan(mtd, 1)) {
-> +		err = -ENXIO;
-> +		goto exit_error;
-> +	}
-> +
-> +	/* add NAND partition */
-> +	bf54x_nand_add_partition(info);
-> +
-> +	dev_dbg(&pdev->dev, "initialised ok\n");
-> +	return 0;
-> +
-> +exit_error:
-> +	bf54x_nand_remove(pdev);
-> +
-> +	if (err == 0)
-> +		err = -EINVAL;
-> +	return err;
-> +}
-> +
-> +	if (info)
-> +		bf54x_nand_hw_init(info);
-> +
-> +	return 0;
-> +}
-> +
-
+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
+AAAASUVORK5CYII=
+------=_Part_20191_25445057.1189672942210--
