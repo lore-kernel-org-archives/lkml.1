@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765374AbXIMHAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751691AbXIMHCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765374AbXIMHAn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 03:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759383AbXIMHAh
+	id S1751691AbXIMHCw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 03:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbXIMHCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 03:00:37 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:54561 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754806AbXIMHAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 03:00:36 -0400
-Date: Thu, 13 Sep 2007 09:02:00 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Frank van Maarseveen <frankvm@frankvm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22.6: still seeing section mismatch warnings
-Message-ID: <20070913070200.GA23330@uranus.ravnborg.org>
-References: <20070912160017.GA3948@janus>
+	Thu, 13 Sep 2007 03:02:44 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:20771 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbXIMHCn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 03:02:43 -0400
+X-IronPort-AV: i="4.20,248,1186372800"; 
+   d="scan'208"; a="39525276:sNHT27991173"
+Subject: Re: [GIT PULL] Blackfin arch bug fixing for 2.6.23-rc6
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Jan Dittmer <jdi@l4x.org>
+Cc: bryan.wu@analog.com, LKML <linux-kernel@vger.kernel.org>,
+       uclinux-dist-devel@blackfin.uclinux.org
+In-Reply-To: <46E8DE8B.8070405@l4x.org>
+References: <1189662509.24063.2.camel@roc-laptop> <46E8DE8B.8070405@l4x.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Organization: Analog Devices, Inc.
+Date: Thu, 13 Sep 2007 14:58:58 +0800
+Message-Id: <1189666738.30686.6.camel@roc-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070912160017.GA3948@janus>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 13 Sep 2007 07:02:42.0103 (UTC) FILETIME=[14040C70:01C7F5D4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 06:00:17PM +0200, Frank van Maarseveen wrote:
-> I'm still seeing the warnings below (2.6.22 started off with lots of
-> section mismatch warning) but I have no idea if it is safe to ignore
-> these:
+On Thu, 2007-09-13 at 08:54 +0200, Jan Dittmer wrote:
+> Bryan Wu wrote:
+> > Hi Linus,
+> > 
+> > Please pull from 'for-linus' branch of
+> > 
+> > master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git for-linus
+> > 
+> > to receive the following updates:
+> > 
+> >  arch/blackfin/mach-common/pm.c              |    6 ++
+> >  include/asm-blackfin/mach-bf561/cdefBF561.h |    4 +-
+> >  include/asm-blackfin/string.h               |  129 +++++++++++++++++----------
 > 
-> WARNING: arch/i386/kernel/built-in.o(.text+0xea62): Section mismatch: reference to .init.data:trampoline_end (between 'setup_trampoline' and 'cpu_coregroup_map')
-> WARNING: arch/i386/kernel/built-in.o(.text+0xea67): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-> WARNING: arch/i386/kernel/built-in.o(.text+0xea79): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-> WARNING: arch/i386/kernel/built-in.o(.exit.text+0x26): Section mismatch: reference to .init.text: (between 'cache_remove_dev' and 'ffh_cstate_exit')
-> WARNING: arch/i386/kernel/built-in.o(.data+0xee0): Section mismatch: reference to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
-> WARNING: kernel/built-in.o(.text+0x1b415): Section mismatch: reference to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
+> btw. what about this error?
 > 
+> fs/binfmt_flat.c:760:50: error: macro "flat_get_addr_from_rp" requires 4 
+> arguments, but only 3 given
+> fs/binfmt_flat.c:760: error: ‘flat_get_addr_from_rp’ undeclared (first use in 
+> this function)
+> fs/binfmt_flat.c:760: error: (Each undeclared identifier is reported only once
+> fs/binfmt_flat.c:760: error: for each function it appears in.)
+> make[2]: *** [fs/binfmt_flat.o] Error 1
+> make[1]: *** [fs] Error 2
+> make: *** [_all] Error 2
 > 
-> gcc version 3.4.6 (Debian 3.4.6-5)
 
-Does not appear with an allmodconfig.
-Care to send me your .config then I may take a look.
+Thanks for the testing.
 
-The warnings are the kernel being much more anal with respect to use
-of __init sections and friends and you can for normal use ignore them.
-They usually find bugs in errorhandling which seldom trigger and
-the bugs has been there for ages in most cases - but it is onyl now
-we detect them.
+> any chance to get that fixed prior to .23? (not a regression, but
+> happens approx. since blackfin was merged)
+> 
 
-	Sam
+This is because a binfmt_flat hacking patch for Blackfin arch is not
+accept by the mainline. It can be workaround by disabling
+CONFIG_BINFMT_FLAT in menuconfig.
+
+Need I disable CONFIG_BINFMT_FLAT in defconfigs for Blackfin to make the
+compile pass?
+
+> Full build log: http://l4x.org/k/?d=34032
+
+Thanks again, beautiful log and which defconfigs do you using to do the
+test and what's the toolchain version?
+
+Best Regards
+-Bryan Wu
