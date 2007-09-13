@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbXIMIpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbXIMIr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbXIMIpZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 04:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbXIMIpP
+	id S1757448AbXIMIr0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 04:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbXIMIrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 04:45:15 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:36490 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbXIMIpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 04:45:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PU9wwf+njdZufOGQeO9ZXoQX1qAKuJgs6NzF1FGVrKYaeZSWCO5Pc/fMWTVtFelG/pBAvW76DmN5roADIYJI6GbBl0gmw/slwYCQRfqNHPijT6hECkqwuig/zuNDKgT8Amn4jKZTN9qh7ZC1pdVVIXej1Fx/f6wDQ4DMCdXIa34=
-Message-ID: <8bd0f97a0709130145u474ab017ocf58b004c5d69dc0@mail.gmail.com>
-Date: Thu, 13 Sep 2007 04:45:13 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Blackfin BF54x NAND Flash Controller driver
-Cc: bryan.wu@analog.com, "David Woodhouse" <dwmw2@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070913013702.d446739a.akpm@linux-foundation.org>
+	Thu, 13 Sep 2007 04:47:18 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:51794 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbXIMIrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 04:47:17 -0400
+Date: Thu, 13 Sep 2007 17:47:03 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Bryan Wu <bryan.wu@analog.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] Blackfin arch: add some missing syscall
+Message-ID: <20070913084703.GA28094@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Matthew Wilcox <matthew@wil.cx>, Bryan Wu <bryan.wu@analog.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	uclinux-dist-devel@blackfin.uclinux.org, linux-arch@vger.kernel.org
+References: <1189670203.30686.15.camel@roc-desktop> <20070913081852.GC17367@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1188804323.29566.6.camel@roc-laptop>
-	 <20070913013702.d446739a.akpm@linux-foundation.org>
+In-Reply-To: <20070913081852.GC17367@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/13/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 03 Sep 2007 15:25:23 +0800 Bryan Wu <bryan.wu@analog.com> wrote:
-> > This is the driver for latest Blackfin BF54x nand flash controller
-> >
-> >  - use nand_chip and mtd_info common nand driver interface
-> >  - provide both PIO and dma operation
-> >  - compiled with ezkit bf548 configuration
-> >  - use hardware 1-bit ECC
-> >  - tested with YAFFS2 and can mount YAFFS2 filesystem as rootfs
-> >
-> > ...
-> >
-> > +int hardware_ecc = 0;
->
-> scripts/checkpatch.pl, please.
+On Thu, Sep 13, 2007 at 02:18:52AM -0600, Matthew Wilcox wrote:
+> On Thu, Sep 13, 2007 at 03:56:43PM +0800, Bryan Wu wrote:
+> > +/* Not relevant on no-mmu */
+> 
+> I thought this list seemed a little long, so I investigated a couple
+> of them.  mbind makes sense (it's only implemented for NUMA ... a NUMA
+> embedded platform?  not the kind which runs applications that use mbind),
 
-that isnt static so checkpatch.pl wouldnt have caught it ... it should
-be static though of course and then checkpatch.pl would have thrown a
-static init 0 warning :)
--mike
+There are embedded platforms that are using NUMA memory policies,
+including mbind() in applications for setting them. Page migration is a
+little iffier, but that can be turned off. Embedded platforms with
+multiple memories (and a different cost per memory) are quite common, and
+they're getting large enough to offset the overhead of a pgdat + bootmem
+map. We have them on nommu also, but that's not been hacked up generically yet.
