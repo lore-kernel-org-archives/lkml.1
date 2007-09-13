@@ -1,63 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764227AbXIMGHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764739AbXIMGOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764227AbXIMGHh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 02:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXIMGHa
+	id S1764739AbXIMGOh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 02:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbXIMGO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 02:07:30 -0400
-Received: from sacred.ru ([62.205.161.221]:53093 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbXIMGH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 02:07:29 -0400
-Message-ID: <46E8D2E0.7040507@openvz.org>
-Date: Thu, 13 Sep 2007 10:04:16 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 13 Sep 2007 02:14:29 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48462 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754493AbXIMGO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 02:14:28 -0400
+Cc: davidel@xmailserver.org, vda.linux@googlemail.com, rdunlap@xenotime.net,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, drepper@redhat.com, stable@kernel.org,
+       hch@lst.de, jengelh@computergmbh.de, corbet@lwn.net
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 13 Sep 2007 08:14:27 +0200
+From: "Michael Kerrisk" <mtk-manpages@gmx.net>
+In-Reply-To: <20070912193920.441cf901.akpm@linux-foundation.org>
+Message-ID: <20070913061427.321790@gmx.net>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Memory shortage can result in inconsistent flocks state
-References: <46E68C35.7040001@openvz.org> <20070912190653.GA13792@fieldses.org>
-In-Reply-To: <20070912190653.GA13792@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1
+References: <20070825064114.107820@gmx.net>
+	<20070904011800.762523a4.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0709040805490.6887@alien.or.mcafeemobile.com>
+	<200709051312.21873.vda.linux@googlemail.com>	<20070905153201.236690@gmx.net>
+ <20070912193920.441cf901.akpm@linux-foundation.org>
+Subject: Re: timerfd redux
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Authenticated: #24879014
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1/3L/BuPiT3Z/c9fOR0Fx3S8OU3QeoYgVABIdhOOE
+ gBnkkxv34D+fTiDbtlx5kwuwtwzKW9TZWZmg== 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 13 Sep 2007 10:06:45 +0400 (MSD)
+X-GMX-UID: e+fRc4gweWUoR87+CHRzRuwxU3U4Nw9T
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Tue, Sep 11, 2007 at 04:38:13PM +0400, Pavel Emelyanov wrote:
->> This is a known feature that such "re-locking" is not atomic,
->> but in the racy case the file should stay locked (although by
->> some other process), but in this case the file will be unlocked.
+> > [Was: Re: [PATCH] Revised timerfd() interface]
+> > 
+> > > Michael, could you please refresh our memories with a brief,
+> > > from-scratch summary of what the current interface is, followed
+> > > by a summary of what you believe to be the shortcomings to be? 
+> > 
+> > Andrew,
+> > 
+> > I'll break this up into parts:
+> > 
+> > 1. the existing timerfd interface
+> > 2. timerfd limitations
+> > 3. possible solutions
+> >      a) Add an argument
+> >      b) Create an interface similar to POSIX timers
+> >      c) Integrate timerfd with POSIX timers
+> > 
+> > Cheers,
+> > 
+> > Michael
+> > 
+> > 
+> > 1: the existing timerfd interface
+> > =================================
+> > 
+> > In 2.6.22, Davide added timerfd() with the following interface:
+> > 
+> > returned_fd = timerfd(int fd, int clockid, int flags,
+> >                       struct itimerspec *utimer);
+> > 
+> > If fd is -1, a new timer is created and started.  The syscall
+> > returns a file descriptor for the timer. 'utimer' specifies
+> > the initial expiration and interval of the timer.
+> > 'clockid' is CLOCK_REALTIME or CLOCK_REALTIME.  The 'utimer'
+> > value is relative, unless TFD_TIMER_ABSTIME is specified in
+> > 'flags', in which case the initial expiration is specified
+> > absolutely.
+> > 
+> > If 'fd' is not -1, then the call modifies the existing timer
+> > referred to by the file descriptor 'fd'.  The 'clockid', 'flags',
+> > and 'utimer' can all be modified.  The return value is 'fd'.
+> > 
+> > The key feature of timerfd() is that the caller can use
+> > select/poll/epoll to wait on traditional file descriptors and
+> > one or more timers.
+> > 
+> > read() from a timerfd file descriptor (should) return a 4-byte
+> > integer that is the number of timer expirations since the last
+> > read.  (If no expiration has so far occurred, read() will block.)
+> > 
+> > IMPORTANT POINT: as implemented in 2.6.22, timerfd was broken:
+> > only a single byte of info was returned by read().  I regard
+> > this as a virtue: it gives us something closer to a blank slate
+> > for fixing the problems described below; furthermore,
+> > arguably at this point we could buy ourselves time by
+> > pulling timerfd() from 2.6.23, and taking more time to get
+> > things right in 2.6.24.
+> > 
+> > (More details on timerfd() can be found here: 
+> > http://lwn.net/Articles/245533/)
 > 
-> That's a little subtle (I assume you've never seen this actually
-> happen?), but it makes sense to me.
+> OK.
+> 
+> > 2. timerfd limitations
+> > ======================
+> > 
+> > Unix has two older timer interfaces:
+> > 
+> > * setitimer/getitimer and
+> > 
+> > * POSIX timers (timer_create/timer_settime/timer_gettime).
+> > 
+> > timerfd() lacks two features that are present in the older
+> > interfaces:
+> > 
+> > * Retrieve the previous setting of an existing timer when
+> >   setting a new value for the timer.
+> > 
+> > * Non-destructively fetch the timer remaining until the
+> >   next expiration of the timer.
+> > 
+> > The fact that this functionality is present in both older APIs
+> > strongly suggests that various applications really need both
+> > functionalities.  
+> 
+> Yes, I can imagine applications wanting to do those things.
+> 
+> > (Davide has argued that timerfd() doesn't need the
+> > get-while-setting functionality because we can create multiple
+> > timerfd timers.  However, POSIX timers also allow multiple
+> > timer instances, but nevertheless provide get-while-setting.
+> > I would estimate that this functionality would be useful for
+> > libraries that want to create and control a (single) timerfd
+> > file descriptor that is returned to the caller.)
+> 
+> Sure.  If you're implementing a timeout and you want to reset it, you
+> might indeed want to know how close the old one was to expiring.
+> 
+> Davide's proposal sounds like an awkward workaround for missing
+> functionality.
 
-Well, this situation is hard to notice since usually programs
-try to finish up when some error is returned from the kernel,
-but I do believe that this could happen in one of the openvz
-kernels since we limit the kernel memory usage for "containers"
-and thus -ENOMEM is a common error.
+In the other thread I commented that the userspace solution
+starts to look pretty complex, and I doubt that it can
+be made to work in all cases.
 
->> The proposal is to prepare the lock in advance keeping no chance
->> to fail in the future code.
-> 
-> And the patch certainly looks correct.
-> 
-> I can add it to my (trivial) lock patches, if that's helpful--it'll
-> get folded into the branch -mm pulls from and I can pass it along to
-> Linus for 2.6.24.
+> Does Davide have a proposal for the non-destructive fetch?
 
-Thanks.
+I don't think so, since he disagrees about it's necessity.
 
-> What I don't have that I wish I did is good regression tests for the
-> flock or lease code (for posix locks I've been using connectathon,
-> though that misses some important things too).
+> > 3. possible solutions
 > 
-> --b.
-> 
+> I don't think we'll have this settled and coded in time for 2.6.23.  So I
+> think the prudent thing to do is to push this back to 2.6.24 and not 
+> offer sys_timerfd() in 2.6.23.
+
+I think this would be wise.  I'd like to talk with Davide some
+more about the possibilities.
+
+Cheers,
+
+Michael
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+
+Want to help with man page maintenance?  
+Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages , 
+read the HOWTOHELP file and grep the source 
+files for 'FIXME'.
 
