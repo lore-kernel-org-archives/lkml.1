@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbXIMM3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbXIMMae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792AbXIMM3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 08:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXIMM32
+	id S1756204AbXIMMae (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 08:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbXIMMa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 08:29:28 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:45597 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753181AbXIMM31 (ORCPT
+	Thu, 13 Sep 2007 08:30:26 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:45191 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752932AbXIMMa0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 08:29:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=h/uTQ/rrplw7FF0hAQpA2ZYJpIOLV2dORq6XmojMoE52mZBYvnA8/Y2f97+R4ZrNrzvEtmnHJ6SbvS1YsReG4Dx9c2uBdZtOdSBINJ9HgcTKpRlXsx7Dfe3lgV8GB0Mem8Fp8rumwrgziPjYz0XOFOE0GIYldTS7DA7hDKSsra4=
-Message-ID: <46E92D27.8050706@gmail.com>
-Date: Thu, 13 Sep 2007 14:29:27 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc4-mm1: deadlock while mmaping video device
-References: <46E9226F.9010700@gmail.com> <20070913044726.1aa48f45.akpm@linux-foundation.org>
-In-Reply-To: <20070913044726.1aa48f45.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 13 Sep 2007 08:30:26 -0400
+Subject: Re: hci_sock.c build failure
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org
+In-Reply-To: <200709131211.10950.toralf.foerster@gmx.de>
+References: <200709131211.10950.toralf.foerster@gmx.de>
+Content-Type: text/plain
+Date: Thu, 13 Sep 2007 14:29:13 +0200
+Message-Id: <1189686553.12789.80.camel@aeonflux.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
-> On Thu, 13 Sep 2007 13:43:43 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-> 
->> Hi,
->>
->> I have this circular lock dependency on 2.6.23-rc4-mm1 when opening
->> /dev/video0 and mmaping it. the v4l driver is stk11xx:
->> http://www.fi.muni.cz/~xslaby/sklad/panics/mm-deadlock.png
->>
->> Using slub on x86_64 if that matters.
->>
->> For now, I'm unable to set up a netconsole, so only the picture linked above
->> is the best I have.
->>
-> 
-> oop, I think you'll want this:
+Hi Toralf,
 
-yes, thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
+> I'm wondering why the build failure wasn't fixed by a patch like this:
+> 
+> 
+> diff --git a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
+> index 5ccea5f..85416bb 100644
+> --- a/net/bluetooth/hci_sock.c
+> +++ b/net/bluetooth/hci_sock.c
+> @@ -348,8 +348,6 @@ static inline void hci_sock_cmsg(struct sock *sk, struct msghdr *msg, struct sk_
+> 
+>                 skb_get_timestamp(skb, &tv);
+> 
+> -               data = &tv;
+> -               len = sizeof(tv);
+>  #ifdef CONFIG_COMPAT
+>                 if (msg->msg_flags & MSG_CMSG_COMPAT) {
+>                         struct compat_timeval ctv;
+> @@ -358,6 +356,9 @@ static inline void hci_sock_cmsg(struct sock *sk, struct msghdr *msg, struct sk_
+>                         data = &ctv;
+>                         len = sizeof(ctv);
+>                 }
+> +#else
+> +               data = &tv;
+> +               len = sizeof(tv);
+>  #endif
+> 
+>                 put_cmsg(msg, SOL_HCI, HCI_CMSG_TSTAMP, len, data);
+
+because that is wrong and will give you a different issue (the other way
+around actually) that the change to use compat_timeval actually tried to
+fix. Your patch actually will allow to return arbitrary kernel memory in
+case of 64-bit applications since data and len might not be initialized.
+
+In case of 64-bit kernels you can have 64-bit or 32-bit applications. In
+case of 32-bit application you have to return compat_timeval and in cas
+of 64-bit application you have to return timeval. It is checked by
+MSG_CMSG_COMPAT runtime flag and not the CONFIG_COMPAT compile option.
+
+Regards
+
+Marcel
+
+
