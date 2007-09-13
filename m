@@ -1,106 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbXIMMXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbXIMM1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755732AbXIMMXn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 08:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbXIMMX1
+	id S1755406AbXIMM1U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 08:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbXIMM1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 08:23:27 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:44390 "EHLO 2ka.mipt.ru"
+	Thu, 13 Sep 2007 08:27:10 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:11396 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754922AbXIMMXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 08:23:25 -0400
-Date: Thu, 13 Sep 2007 16:22:59 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Security attributes and ducumentation update.
-Message-ID: <20070913122259.GA20714@2ka.mipt.ru>
-References: <20070831160611.GA21660@2ka.mipt.ru> <20070910221445.GL11801@linux.vnet.ibm.com>
-Mime-Version: 1.0
+	id S1751699AbXIMM1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 08:27:08 -0400
+Date: Thu, 13 Sep 2007 14:26:53 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: orgis@agnld.uni-potsdam.de, arekm@maven.pl, ed.lin@promise.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James.Bottomley@SteelEye.com
+Subject: [PATCH] Fix race with shared tag queue maps
+Message-ID: <20070913122652.GK25592@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070910221445.GL11801@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul.
+Hi,
 
-On Mon, Sep 10, 2007 at 03:14:45PM -0700, Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > Further TODO list includes:
-> > * implement optional saving of mirroring/linear information on the remote
-> > 	nodes (simple)
-> > * implement netlink based setup (simple)
-> > * new redundancy algorithm (complex)
-> > 
-> > Homepage:
-> > http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
-> 
-> A couple questions below, but otherwise looks good from an RCU viewpoint.
-> 
-> 							Thanx, Paul
+There's a race condition in blk_queue_end_tag() for shared tag maps,
+users include stex (promise supertrak thingy) and qla2xxx. The former at
+least has reported bugs in this area, not sure why we haven't seen any
+for the latter. It could be because the window is narrow and that other
+conditions in the qla2xxx code hide this. It's a real bug, though, as
+the stex smp users can attest.
 
-Thanks for your comments, and sorry for late reply I was at KS/London
-trip.
-> > +	if (--num) {
-> > +		list_for_each_entry_rcu(n, &node->shared, shared) {
-> 
-> This function is called under rcu_read_lock() or similar, right?
-> (Can't tell from this patch.)  It is also OK to call it from under the
-> update-side mutex, of course.
+We need to ensure two things - the tag bit clearing needs to happen
+AFTER we cleared the tag pointer, as the tag bit clearing/setting is
+what protects this map. Secondly, we need to ensure that the visibility
+of the tag pointer and tag bit clear are ordered properly.
 
-Actually not, but it does not require it, since entry can not be removed
-during this operations since appropriate reference counter for given node is
-being held. It should not be RCU at all.
+This is for 2.6.23-rc6-current, but it needs to go into -stable as well
+once Linus has committed it. I'm cc'ing users that reported stex
+problems, hopefully they can test this patch and report back.
 
-> > +static int dst_mirror_read(struct dst_request *req)
-> > +{
-> > +	struct dst_node *node = req->node, *n, *min_dist_node;
-> > +	struct dst_mirror_priv *priv = node->priv;
-> > +	u64 dist, d;
-> > +	int err;
-> > +
-> > +	req->bio_endio = &dst_mirror_read_endio;
-> > +
-> > +	do {
-> > +		err = -ENODEV;
-> > +		min_dist_node = NULL;
-> > +		dist = -1ULL;
-> > + 
-> > +		/*
-> > +		 * Reading is never performed from the node under resync.
-> > +		 * If this will cause any troubles (like all nodes must be
-> > +		 * resynced between each other), this check can be removed
-> > +		 * and per-chunk dirty bit can be tested instead.
-> > +		 */
-> > +
-> > +		if (!test_bit(DST_NODE_NOTSYNC, &node->flags)) {
-> > +			priv = node->priv;
-> > +			if (req->start > priv->last_start)
-> > +				dist = req->start - priv->last_start;
-> > +			else
-> > +				dist = priv->last_start - req->start;
-> > +			min_dist_node = req->node;
-> > +		}
-> > +
-> > +		list_for_each_entry_rcu(n, &node->shared, shared) {
-> 
-> I see one call to this function that appears to be under the update-side
-> mutex, but I cannot tell if the other calls are safe.  (Safe as in either
-> under the update-side mutex or under rcu_read_lock() and friends.)
+Also see http://bugzilla.kernel.org/show_bug.cgi?id=7842
 
-The same here - those processing function are called from
-generic_make_request() from any lock on top of them. Each node is linked
-into the list of the first added node, which reference counter is
-increased in higher layer. Right now there is no way to add or remove
-nodes after array was started, such functionality requires storage tree
-lock to be taken and RCU can not be used (since it requires sleeping and
-I did not investigate sleepable RCU for this purpose).
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
-So, essentially RCU is not used in DST :)
-
-Thanks for review, Paul.
+diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+index a15845c..3d9e6a1 100644
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -1075,12 +1075,6 @@ void blk_queue_end_tag(struct request_queue *q, struct request *rq)
+ 		 */
+ 		return;
+ 
+-	if (unlikely(!__test_and_clear_bit(tag, bqt->tag_map))) {
+-		printk(KERN_ERR "%s: attempt to clear non-busy tag (%d)\n",
+-		       __FUNCTION__, tag);
+-		return;
+-	}
+-
+ 	list_del_init(&rq->queuelist);
+ 	rq->cmd_flags &= ~REQ_QUEUED;
+ 	rq->tag = -1;
+@@ -1090,6 +1084,23 @@ void blk_queue_end_tag(struct request_queue *q, struct request *rq)
+ 		       __FUNCTION__, tag);
+ 
+ 	bqt->tag_index[tag] = NULL;
++
++	/*
++	 * Ensure ordering with tag section
++	 */
++	smp_mb__before_clear_bit();
++
++	if (unlikely(!test_and_clear_bit(tag, bqt->tag_map))) {
++		printk(KERN_ERR "%s: attempt to clear non-busy tag (%d)\n",
++		       __FUNCTION__, tag);
++		return;
++	}
++
++	/*
++	 * Ensure ordering between ->tag_index[tag] clear and tag clear
++	 */
++	smp_mb__after_clear_bit();
++
+ 	bqt->busy--;
+ }
+ 
 
 -- 
-	Evgeniy Polyakov
+Jens Axboe
+
