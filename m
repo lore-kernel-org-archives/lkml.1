@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbXIMLyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbXIMLzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbXIMLyt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 07:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbXIMLyl
+	id S1754748AbXIMLzq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 07:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbXIMLzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 07:54:41 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56136 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbXIMLyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 07:54:40 -0400
-From: Andi Kleen <ak@suse.de>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used
-Date: Thu, 13 Sep 2007 13:53:15 +0200
-User-Agent: KMail/1.9.1
-Cc: Yinghai Lu <Yinghai.Lu@sun.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Martin Mares <mj@ucw.cz>,
-       dean gaudet <dean@arctic.org>, Robert Richter <robert.richter@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200709121921.43950.yinghai.lu@sun.com> <200709131147.43446.ak@suse.de> <20070913104704.GA3878@kroah.com>
-In-Reply-To: <20070913104704.GA3878@kroah.com>
+	Thu, 13 Sep 2007 07:55:39 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2569 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbXIMLzj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 07:55:39 -0400
+Date: Thu, 13 Sep 2007 12:55:21 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, bryan.wu@analog.com
+Subject: Re: [patch] add some Blackfin specific checks to checkpatch.pl
+Message-ID: <20070913115521.GB5146@shadowen.org>
+References: <200708211829.59975.vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709131353.15752.ak@suse.de>
+In-Reply-To: <200708211829.59975.vapier@gentoo.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 September 2007 12:47, Greg KH wrote:
-> On Thu, Sep 13, 2007 at 11:47:42AM +0200, Andi Kleen wrote:
-> > On Thursday 13 September 2007 04:21, Yinghai Lu wrote:
-> > > [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is
-> > > used.
-> > >
-> > > reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
-> >
-> > I just rejected a similar patch -- this should be done using MMCONFIG
->
-> But what about for broken machines without the proper MMCONFIG entries?
-> They still need a way to get access to this config space,
+On Tue, Aug 21, 2007 at 06:29:59PM -0400, Mike Frysinger wrote:
+> Check for a few common errors in Blackfin-specific code wrt MMR loading in
+> assembly and doing core/system syncs.
 
-If there are any devices that need it. IBS and PCI-E error handling 
-do, but they're quite obscure.
+If we are going to pull arch specific things into checkpatch I think we
+need to make sure we are pretty specific about where we apply them.  I
+am assuming these checks only make sense againt some files in the arch
+tree?
 
-Also so far we don't know of any Fam 10h systems without MMCONFIG
-entries. Fam10h requires a new BIOS so it's reasonable to assume
-that the new BIOSes will do better.
-
--Andi
+-apw
