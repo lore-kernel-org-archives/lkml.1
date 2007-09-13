@@ -1,58 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbXIMJwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbXIMJyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759234AbXIMJwO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXIMJv6
+	id S1762317AbXIMJyT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbXIMJyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:51:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50224 "EHLO mx1.suse.de"
+	Thu, 13 Sep 2007 05:54:06 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:55548 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750713AbXIMJv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:51:58 -0400
-Date: Thu, 13 Sep 2007 02:53:13 -0700
-From: Greg KH <gregkh@suse.de>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
-Message-ID: <20070913095313.GA745@suse.de>
-References: <1189664467.17835.1.camel@sli10-conroe.sh.intel.com> <20070913073140.GA17367@parisc-linux.org> <1189668286.18361.3.camel@sli10-conroe.sh.intel.com> <20070913075536.GB17367@parisc-linux.org>
+	id S1750768AbXIMJyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 05:54:04 -0400
+Date: Thu, 13 Sep 2007 18:53:46 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Michael Neuling <mikey@neuling.org>
+Cc: Jan Dittmer <jdi@l4x.org>, Paul Mackerras <paulus@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, Tony Breeds <tony@bakeyournoodle.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Alan Cox <alan@redhat.com>, davem@davemloft.net,
+       heiko.carstens@de.ibm.com, hskinnemoen@atmel.com, dhowells@redhat.com
+Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
+Message-ID: <20070913095346.GA28194@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Michael Neuling <mikey@neuling.org>, Jan Dittmer <jdi@l4x.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	akpm@linux-foundation.org, Tony Breeds <tony@bakeyournoodle.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Alan Cox <alan@redhat.com>, davem@davemloft.net,
+	heiko.carstens@de.ibm.com, hskinnemoen@atmel.com,
+	dhowells@redhat.com
+References: <18152.719.316280.579601@cargo.ozlabs.ibm.com> <46E8DF49.7090402@l4x.org> <5058.1189668156@neuling.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070913075536.GB17367@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <5058.1189668156@neuling.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 01:55:36AM -0600, Matthew Wilcox wrote:
-> On Thu, Sep 13, 2007 at 03:24:46PM +0800, Shaohua Li wrote:
-> > On Thu, 2007-09-13 at 01:31 -0600, Matthew Wilcox wrote:
-> > > You missed the part where we have to avoid doing this for host bridges ...
-> > > 
-> > > http://marc.info/?l=linux-kernel&m=118809338631160&w=2
-> > > 
-> > > (I believe it's now queued in Greg's tree, and possibly Andrew's tree
-> > > too)
-> > Hmm, I don't know there is already a fix for this, so waste a whole
-> > morning :(. yes, your patch looks better.
+On Thu, Sep 13, 2007 at 05:22:36PM +1000, Michael Neuling wrote:
+> > > Commit f629307c857c030d5a3dd777fee37c8bb395e171 introduced uses of
+> > > kernel_termios_to_user_termios_1 and user_termios_to_kernel_termios_1
+> > > on all architectures.  However, powerpc, s390, avr32 and frv don't
+> > > currently define those functions since their termios struct didn't
+> > > need to be changed when the arbitrary baud rate stuff was added, and
+> > > thus the kernel won't currently build on those architectures.
+> > 
+> > alpha, parisc, sh, sparc{64,}, xtensa are still broken with this error...
 > 
-> Yes, this bug is causing a lot of people to waste time.  I fielded an
-> internal request for this patch this afternoon.  I appreciate we're
-> post-rc6 at this point, but it does rather suck to be releasing a kernel
-> which freezes on boot on this class of machines.
+> They need to include <asm-generic/termios.h> in asm-<arch>/termios.h
+> like in powerpc.
+> 
+> Alternatively tonyb's patch should fix them.  Could also do that?
+> 
+Is there a consensus for this? It's a bit annoying to have this stuff
+broken this late in 2.6.23. If Tony's patch gets applied, then this stuff
+will work itself out. Otherwise everything has to be patched for
+asm-generic/termios.h. In which case.. here's the patch to define them on
+sh and sh64.
 
-But it's not like the kernel every worked on this class of machines,
-right?  This is not something that was a regression from what I can see.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-> Unfortunately if this patch does cause any machine to break, these will
-> be machines that worked fine up until this point, so that would be a
-> regression, which is worse.  Life sucks.
+--
 
-If, after a while, you think the change should go into the -stable tree,
-I have no objection.
+ include/asm-sh/termios.h   |   34 +---------------------------------
+ include/asm-sh64/termios.h |   34 +---------------------------------
+ 2 files changed, 2 insertions(+), 66 deletions(-)
 
-thanks,
-
-greg k-h
+diff --git a/include/asm-sh/termios.h b/include/asm-sh/termios.h
+index e7c8f86..c57f74e 100644
+--- a/include/asm-sh/termios.h
++++ b/include/asm-sh/termios.h
+@@ -49,39 +49,7 @@ struct termio {
+ */
+ #define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
+ 
+-/*
+- * Translate a "termio" structure into a "termios". Ugh.
+- */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	*(unsigned short *) &(termios)->x = __tmp; \
+-}
+-
+-#define user_termio_to_kernel_termios(termios, termio) \
+-({ \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
+-	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+-})
+-
+-/*
+- * Translate a "termios" structure into a "termio". Ugh.
+- */
+-#define kernel_termios_to_user_termio(termio, termios) \
+-({ \
+-	put_user((termios)->c_iflag, &(termio)->c_iflag); \
+-	put_user((termios)->c_oflag, &(termio)->c_oflag); \
+-	put_user((termios)->c_cflag, &(termio)->c_cflag); \
+-	put_user((termios)->c_lflag, &(termio)->c_lflag); \
+-	put_user((termios)->c_line,  &(termio)->c_line); \
+-	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+-})
+-
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
++#include <asm-generic/termios.h>
+ 
+ #endif	/* __KERNEL__ */
+ 
+diff --git a/include/asm-sh64/termios.h b/include/asm-sh64/termios.h
+index dc44e6e..b61ce95 100644
+--- a/include/asm-sh64/termios.h
++++ b/include/asm-sh64/termios.h
+@@ -60,39 +60,7 @@ struct termio {
+ */
+ #define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
+ 
+-/*
+- * Translate a "termio" structure into a "termios". Ugh.
+- */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	*(unsigned short *) &(termios)->x = __tmp; \
+-}
+-
+-#define user_termio_to_kernel_termios(termios, termio) \
+-({ \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
+-	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+-})
+-
+-/*
+- * Translate a "termios" structure into a "termio". Ugh.
+- */
+-#define kernel_termios_to_user_termio(termio, termios) \
+-({ \
+-	put_user((termios)->c_iflag, &(termio)->c_iflag); \
+-	put_user((termios)->c_oflag, &(termio)->c_oflag); \
+-	put_user((termios)->c_cflag, &(termio)->c_cflag); \
+-	put_user((termios)->c_lflag, &(termio)->c_lflag); \
+-	put_user((termios)->c_line,  &(termio)->c_line); \
+-	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+-})
+-
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
++#include <asm-generic/termios.h>
+ 
+ #endif	/* __KERNEL__ */
+ 
