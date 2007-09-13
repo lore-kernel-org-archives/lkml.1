@@ -1,118 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761464AbXIMQRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765497AbXIMQRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761464AbXIMQRS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 12:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763535AbXIMQOm
+	id S1765497AbXIMQRl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 12:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763421AbXIMQPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 12:14:42 -0400
-Received: from mail.suse.de ([195.135.220.2]:47272 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763322AbXIMQOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 12:14:32 -0400
-Message-Id: <20070913161430.028741111@strauss.suse.de>
-References: <20070913161428.343951643@strauss.suse.de>
-User-Agent: quilt/0.46-57
-Date: Thu, 13 Sep 2007 18:14:33 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: kexec@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [patch 5/7] Use extended crashkernel command line on ppc64
-Content-Disposition: inline; filename=crashkernel-ppc64
+	Thu, 13 Sep 2007 12:15:05 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:22358 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763388AbXIMQPC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 12:15:02 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH 1/3] IB/ehca: Fix large page HW cap defines
+Date: Thu, 13 Sep 2007 18:14:58 +0200
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+References: <200709131814.13937.fenkes@de.ibm.com>
+In-Reply-To: <200709131814.13937.fenkes@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709131814.59307.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adapts the ppc64 code to use the generic parse_crashkernel()
-function introduced in the generic patch of that series.
+From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
 
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- arch/powerpc/kernel/machine_kexec.c |   52 ++++++++++++++++++------------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_classes.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -61,45 +61,39 @@ NORET_TYPE void machine_kexec(struct kim
- 	for(;;);
- }
+diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
+index 206d4eb..c2edd4c 100644
+--- a/drivers/infiniband/hw/ehca/ehca_classes.h
++++ b/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -99,10 +99,10 @@ struct ehca_sport {
+ 	struct ehca_sma_attr saved_attr;
+ };
  
--static int __init early_parse_crashk(char *p)
-+void __init reserve_crashkernel(void)
- {
--	unsigned long size;
--
--	if (!p)
--		return 1;
--
--	size = memparse(p, &p);
-+	unsigned long long crash_size = 0, crash_base;
-+	int ret;
+-#define HCA_CAP_MR_PGSIZE_4K  1
+-#define HCA_CAP_MR_PGSIZE_64K 2
+-#define HCA_CAP_MR_PGSIZE_1M  4
+-#define HCA_CAP_MR_PGSIZE_16M 8
++#define HCA_CAP_MR_PGSIZE_4K  0x80000000
++#define HCA_CAP_MR_PGSIZE_64K 0x40000000
++#define HCA_CAP_MR_PGSIZE_1M  0x20000000
++#define HCA_CAP_MR_PGSIZE_16M 0x10000000
  
--	if (*p == '@')
--		crashk_res.start = memparse(p + 1, &p);
--	else
--		crashk_res.start = KDUMP_KERNELBASE;
--
--	crashk_res.end = crashk_res.start + size - 1;
--
--	return 0;
--}
--early_param("crashkernel", early_parse_crashk);
-+	/* this is necessary because of lmb_phys_mem_size() */
-+	lmb_analyze();
- 
--void __init reserve_crashkernel(void)
--{
--	unsigned long size;
-+	/* use common parsing */
-+	ret = parse_crashkernel(boot_command_line, lmb_phys_mem_size(),
-+			&crash_size, &crash_base);
-+	if (ret == 0 && crash_size > 0) {
-+		if (crash_base == 0)
-+			crash_base = KDUMP_KERNELBASE;
-+		crashk_res.start = crash_base;
-+	} else {
-+		/* handle the device tree */
-+		crash_size = crashk_res.end - crashk_res.start + 1;
-+	}
- 
--	if (crashk_res.start == 0)
-+	if (crash_size == 0)
- 		return;
- 
- 	/* We might have got these values via the command line or the
- 	 * device tree, either way sanitise them now. */
- 
--	size = crashk_res.end - crashk_res.start + 1;
--
- 	if (crashk_res.start != KDUMP_KERNELBASE)
- 		printk("Crash kernel location must be 0x%x\n",
- 				KDUMP_KERNELBASE);
- 
- 	crashk_res.start = KDUMP_KERNELBASE;
--	size = PAGE_ALIGN(size);
--	crashk_res.end = crashk_res.start + size - 1;
-+	crash_size = PAGE_ALIGN(crash_size);
-+	crashk_res.end = crashk_res.start + crash_size - 1;
- 
- 	/* Crash kernel trumps memory limit */
- 	if (memory_limit && memory_limit <= crashk_res.end) {
-@@ -108,7 +102,13 @@ void __init reserve_crashkernel(void)
- 				memory_limit);
- 	}
- 
--	lmb_reserve(crashk_res.start, size);
-+	printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+			"for crashkernel (System RAM: %ldMB)\n",
-+			(unsigned long)(crash_size >> 20),
-+			(unsigned long)(crashk_res.start >> 20),
-+			(unsigned long)(lmb_phys_mem_size() >> 20));
-+
-+	lmb_reserve(crashk_res.start, crash_size);
- }
- 
- int overlaps_crashkernel(unsigned long start, unsigned long size)
-
+ struct ehca_shca {
+ 	struct ib_device ib_device;
 -- 
+1.5.2
+
+
