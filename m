@@ -1,103 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbXIMVce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbXIMVd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932346AbXIMVce (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 17:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758737AbXIMVc1
+	id S932693AbXIMVd5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 17:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbXIMVdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 17:32:27 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:50421 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758454AbXIMVc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 17:32:26 -0400
-Subject: Re: [PATCH][1/2] led: add Cobalt Raq LEDs support
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070913235441.5bab3d8e.yoichi_yuasa@tripeaks.co.jp>
-References: <20070913235441.5bab3d8e.yoichi_yuasa@tripeaks.co.jp>
-Content-Type: text/plain
-Date: Thu, 13 Sep 2007 22:32:12 +0100
-Message-Id: <1189719132.6326.164.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Sep 2007 17:33:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51122 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754779AbXIMVdt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 17:33:49 -0400
+Date: Thu, 13 Sep 2007 14:33:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+cc: viro@ftp.linux.org.uk, hch@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: Credentials test patch
+In-Reply-To: <1839.1189718341@redhat.com>
+Message-ID: <alpine.LFD.0.999.0709131431060.16478@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0709131304510.16478@woody.linux-foundation.org>
+ <1577.1189713412@redhat.com> <1839.1189718341@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-13 at 23:54 +0900, Yoichi Yuasa wrote:
-> Add Cobalt Raq LEDs support.
+
+
+On Thu, 13 Sep 2007, David Howells wrote:
 > 
-> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+> > Why is it trying to make it look like a variable?
+> 
+> Like 'current' for instance?
 
-Not the clearest patch I've ever seen or the most helpful patch
-description. The rename could probably be split from the additional new
-driver at least...
+"current" has solid *historical* reasons for being that way.
 
-> diff -pruN -X mips/Documentation/dontdiff mips-orig/drivers/leds/leds-cobalt-raq.c mips/drivers/leds/leds-cobalt-raq.c
-> --- mips-orig/drivers/leds/leds-cobalt-raq.c	1970-01-01 09:00:00.000000000 +0900
-> +++ mips/drivers/leds/leds-cobalt-raq.c	2007-09-12 12:04:34.021000750 +0900
-[...]
-> +static void raq_web_led_set(struct led_classdev *led_cdev,
-> +                            enum led_brightness brightness)
-> +{
-> +	spin_lock_irq(&raq_led_lock);
-> +
-> +	if (brightness)
-> +		led_value |= LED_WEB;
-> +	else
-> +		led_value &= ~LED_WEB;
-> +	writeb(led_value, led_port);
-> +
-> +	spin_unlock_irq(&raq_led_lock);
-> +}
+Namely: it actually *was* a variable. That worked fine for UP. It got 
+changed much much later.
 
-The _irq spinlock variants are not safe there or in the other brightness
-set function...
+Also, even in modern times, "current" is optimized to hell and back, and 
+is often as cheap (or cheaper than) a global variable, so there is also no 
+subtle performance question.
 
-+static struct led_classdev raq_web_led = {
-> +	.name		= "raq-web-led",
-> +	.brightness_set	= raq_web_led_set,
-> +};
-> +
-[...]
-> +static struct led_classdev raq_power_off_led = {
-> +	.name			= "raq-power-off-led",
-> +	.brightness_set		= raq_power_off_led_set,
-> +	.default_trigger	= "power-off",
-> +};
+So using "current" as an excuse is not really valid. AT ALL.
 
-Do these really need "led" in the name?
-
-What does a power-off trigger do with an LED out of interest?
-
-> +static int __devexit cobalt_raq_led_remove(struct platform_device *pdev)
-> +{
-> +	if (led_port) {
-> +		iounmap(led_port);
-> +		led_port = NULL;
-> +	}
-> +
-> +	led_classdev_unregister(&raq_power_off_led);
-> +	led_classdev_unregister(&raq_web_led);
-> +
-> +	return 0;
-> +}
-
-You want to unregister, then iounmap...
-
-> +static int __init cobalt_raq_led_init(void)
-> +{
-> +	return platform_driver_register(&cobalt_raq_led_driver);
-> +}
-> +
-> +module_init(cobalt_raq_led_init);
-
-No module_exit in one driver for any particular reason?
-
-Some of these comments also apply to you second patch. All minor tweaks
-really though :).
-
-Cheers,
-
-Richard
-
+		Linus
