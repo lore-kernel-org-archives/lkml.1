@@ -1,198 +1,670 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765612AbXIMTN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765993AbXIMTQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765612AbXIMTN4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 15:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762090AbXIMTNs
+	id S1765993AbXIMTQc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 15:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762090AbXIMTQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 15:13:48 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56632 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1762122AbXIMTNs (ORCPT
+	Thu, 13 Sep 2007 15:16:21 -0400
+Received: from smtp.opengridcomputing.com ([71.42.183.126]:38086 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754372AbXIMTQT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 15:13:48 -0400
-Date: Thu, 13 Sep 2007 15:13:46 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Adrian Bunk <bunk@stusta.de>, Adrian Bunk <bunk@kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Oliver Neukum <oneukum@suse.de>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>
-Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
-In-Reply-To: <alpine.LFD.0.999.0709130912060.16478@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0709131421130.7406-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 13 Sep 2007 15:16:19 -0400
+From: Steve Wise <swise@opengridcomputing.com>
+Subject: [PATCH v2] iw_cxgb3: Support "iwarp-only" interfaces to avoid 4-tuple conflicts.
+Date: Thu, 13 Sep 2007 14:16:17 -0500
+To: rdreier@cisco.com, sean.hefty@intel.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Message-Id: <20070913191617.30937.95960.stgit@dell3.ogc.int>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.10
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007, Linus Torvalds wrote:
 
-> In general, I think the USB blacklist/whitelists are generally a sign of 
-> some deeper bug.
-> 
-> We used to have a lot of those things due to simply incorrect SCSI 
-> probing, causing devices to lock up because Linux probed them with bad or 
-> unexpected modepages etc. I suspect we still have old blacklist entries 
-> from those days that just never got cleaned up, because nobody ever dared 
-> remove the blacklist entry.
+iw_cxgb3: Support "iwarp-only" interfaces to avoid 4-tuple conflicts.
 
-I don't just suspect -- I know for a fact that we do.  Partly because
-of laziness and partly because of not being able to verify that an
-entry is no longer needed.
+Version 2:
 
-> We should strive to make the default behaviour be so safe that we never 
-> need a black-list (or a whitelist), and basically consider blacklists to 
-> be not a way to "fix up a device", but a way to avoid some really serious 
-> AND *RARE* error.
+- added a per-device mutex for the address and listening endpoints lists.
 
-In general I agree.  However there are some problems for which nobody 
-has been able to come up with another solution.  See below.
+- wait for all replies if sending multiple passive_open requests to rnic.
 
-> The moment you have lots of devices having the same blacklist entry, 
-> that's a sign that the blacklist is wrong, and the subsystem itself is 
-> likely doing something bad!
-> 
-> So, I would seriously suggest:
->  - look at USB quirks that have more than ten entries (and the entries 
->    aren't just the exact same device in various guises)
->  - start considering that feature to be something that is known broken, 
->    and shouldn't be done AT ALL by default.
->  - have some way to enable some extension on a device-by-device basis from 
->    the /sysfs interface, and then users can enable those things on their 
->    own with a graphical interface or something (or using whitelists in 
->    user space saying "ok, this device can actually do this")
->  - REMOVE THE DAMN QUIRK
-> 
-> It looks like the current situation now is that the latest autosuspend 
-> patches did basically everything but the last point.
+- log warning if no addresses are available when a listen is issued.
 
-Yes, none of those USB_QUIRK_NO_AUTOSUSPEND entries are needed any 
-more.  They can all be removed and handed over to the HAL people as a 
-starting point.
+- tested
 
-> Btw, this is in no way just an AUTOSUSPEND issue. The USB layer has a 
-> *lot* of these quirks. They are often called "UNUSUAL_DEV()", but the 
-> thing is, some of those things seem to be so usual that the naming is 
-> dubious, and thus calling it a "quirk" or "unusual" is pretty dubious too. 
+---
 
-You have concentrated your attention on the list for usb-storage,
-but the usbhid driver also has an impressively long quirks list.
+Design:
 
-> For example, why do we have that US_FL_MAX_SECTORS_64 at all? The fact 
-> that some USB device is broken with more than 64 sectors would seem to 
-> indicate that Windows *never* does more than 64 sectors, and that in turn 
-> means that pretty much *no* devices have ever been tested with anything 
-> bigger.
-> 
-> So why not make the 64 sector limit be the default? Get rid of the quirk: 
-> we already allow people to override it in /sys if they really want to, but 
-> realistically, it's probably not going to make any difference what-so-ever 
-> for *any* normal load. So we seem to have a quirk that really doesn't buy 
-> us anything but headache.
+The sysadmin creates "for iwarp use only" alias interfaces of the form
+"devname:iw*" where devname is the native interface name (eg eth0) for the
+iwarp netdev device.  The alias label can be anything starting with "iw".
+The "iw" immediately after the ':' is the key used by the iw_cxgb3 driver.
 
-That's true now, but it wasn't always.  Until the last year or so, 
-cdrecord wouldn't work properly with USB CD drives having a 64-sector 
-limit unless the user added a particular command-line argument.
+EG:
+	ifconfig eth0 192.168.70.123 up
+	ifconfig eth0:iw1 192.168.71.123 up
+	ifconfig eth0:iw2 192.168.72.123 up
 
-In fact, setting max_sectors down to 64 is probably overkill -- 120
-ought to be enough.  But there may have been one or two oddball devices
-that really did have a 32-KB limit, and better safe than sorry.  At one
-point an engineer from Genesys said their devices did, although they do
-seem to work perfectly well with 64-KB transfers (and that's what 
-Windows gives them).
+In the above example, 192.168.70/24 is for TCP traffic, while
+192.168.71/24 and 192.168.72/24 are for iWARP/RDMA use.
 
-> Other quirks worth looking at (but likely unfixable) are:
->  - US_FL_IGNORE_RESIDUE:
-> 	Does this really matter? Can we not just always do the 
-> 	US_FL_IGNORE_RESIDUE thing? Windows must not be doing what we're 
-> 	doing.
+The rdma-only interface must be on its own IP subnet. This allows routing
+all rdma traffic onto this interface.
 
-Windows does indeed ignore the residue field, as far as I can tell.
+The iWARP driver must translate all listens on address 0.0.0.0 to the
+set of rdma-only ip addresses for the device in question.  This prevents
+incoming connect requests to the TCP ipaddresses from going up the
+rdma stack.
 
-But this is a rather tricky thing.  The USB mass-storage spec
-specifically says that one way a device can signal a short transfer is
-to pad the data with 0s to the requested length and then set the
-residue to indicate how much of the data is valid.  If we ignore the
-residue then we run a risk of misinterpreting the 0s as valid data.
+Implementation Details:
 
-Now in practice this doesn't matter much because short transfers of
-block data (READ_10) generally involve other errors that would show up
-anyway, and for non-block data (MODE SENSE) the padding probably
-wouldn't matter.  Still it seems like a dangerous sort of thing to do,
-which is why I have resisted it.
+- The iw_cxgb3 driver registers for inetaddr events via
+register_inetaddr_notifier().  This allows tracking the iwarp-only
+addresses/subnets as they get added and deleted.  The iwarp driver
+maintains a list of the current iwarp-only addresses.
 
-(And by the way, there _definitely_ are devices which use this
-signalling method.  In fact, Linux contains a driver that does it.)
+- The iw_cxgb3 driver builds the list of iwarp-only addresses for its
+devices at module insert time.  This is needed because the inetaddr
+notifier callbacks don't "replay" address-add events when someone
+registers.  So the driver must build the initial list at module load time.
 
->  - US_FL_FIX_CAPACITY: 
-> 	This is a generic SCSI issue, not a USB one, and maybe there are 
-> 	better solutions to it. Are we perhaps doing something wrong? Is 
-> 	there some patterns we haven't seen? Why do we need this, when 
-> 	presumably Windows does not?
+- When a listen is done on address 0.0.0.0, then the iw_cxgb3 driver
+must translate that into a set of listens on the iwarp-only addresses.
+This is implemented by maintaining a list of stid/addr entries per
+listening endpoint.
 
-This is another hard case.  No, we aren't doing anything wrong.  If
-there are any patterns we haven't seen, we aren't aware of them.  :-)  
-You might think that if a device claims to have an odd number of
-sectors then it must be wrong, but this turns out not to be true.
+- When a new iwarp-only address is added or removed, the iw_cxgb3 driver
+must traverse the set of listening endpoints and update them accordingly.
+This allows an application to bind to 0.0.0.0 prior to the iwarp-only
+interfaces being configured.  It also allows changing the iwarp-only set
+of addresses and getting the expected behavior for apps already bound
+to 0.0.0.0.  This is done by maintaining a list of listening endpoints
+off the device struct.
 
-Why doesn't Windows need this?  For all we know, it does.  Has anybody
-ever tried forcing Windows to read the sector beyond the end of one of
-these buggy devices?
+- The address list, the listening endpoint list, and each list of
+stid/addrs in use per listening endpoint are all protected via a mutex
+per iw_cxgb3 device.
 
-For one reason or another, Linux supports filesystems/partitioning
-schemes which do need to access the last sector (EFI GUID, md, maybe
-others).  Some devices are so buggy that trying to read the nonexistent
-"last" sector causes them to lock up, requiring a power cycle.  
-Obviously we can't probe for this sort of behavior.  (There was one
-report of a device which _could_ read its last sector correctly, but
-only if the transfer was exactly 1 sector long!  Attempts to read two
-sectors starting from the second-to-last sector would cause it to
-crash.)
+Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+---
 
-There's a straightforward solution: Never try to use the last sector --
-in effect, assume every device has the FIX_CAPACITY flag set.  Doing 
-this universally could cause data loss, however, so again I have been 
-opposed to it.
+ drivers/infiniband/hw/cxgb3/iwch.c    |  125 ++++++++++++++++
+ drivers/infiniband/hw/cxgb3/iwch.h    |   11 +
+ drivers/infiniband/hw/cxgb3/iwch_cm.c |  259 +++++++++++++++++++++++++++------
+ drivers/infiniband/hw/cxgb3/iwch_cm.h |   15 ++
+ 4 files changed, 360 insertions(+), 50 deletions(-)
 
->  - US_FL_SINGLE_LUN:
-> 	At least a few of these seem to indicate that the real problem 
-> 	could be detected dynamically ("device reports Sub=ff") rather 
-> 	than with a quirk. Quirks are unmaintainable (and change), but 
-> 	noticing when devices return impossible values and going into a 
-> 	"safe mode" is just defensive programming.
-
-This is almost certainly a case where lots of the entries are no longer 
-needed.  But it isn't easy to tell which ones can safely be removed.
-
-The problem here isn't that the device reports impossible values -- 
-what happens is that it responds to commands for any LUN, causing the 
-kernel to think it is really multiple devices.
-
-> For a lot of these things, you probably do not need a whitelist *at*all*!
-> 
-> IOW, just default to something safe (the 64 sector example), and then 
-> perhaps allow people to explicitly play with their settings in a hardware 
-> manager. People actually tend to *like* being able to tweak meaningless 
-> things, and it makes them feel in control. So you'd have the Gentoo people 
-> who want to optimize their iPod access times by 0.2% by raising the 
-> maximum sector number - good for them! They'll feel empowered, and if it 
-> stops working, they know it was because of something *they* did.
-> 
-> So at least in some cases, I think we should "default to stupid, but give 
-> users rope".
-
-This will work in some cases, but not in others.  In particular, it 
-won't work when the values have to known at device-detection time.  
-Once the sysfs files have been set up and the user can put in the 
-correct values, it's already too late.
-
-Still, I agree that we can get rid of MAX_SECTORS_64.  Similarly,
-FIX_INQUIRY shouldn't be needed, since any device which does need it
-would fail to work under Windows.  However the really popular flags are 
-the ones which would be hardest to remove.
-
-Alan Stern
-
+diff --git a/drivers/infiniband/hw/cxgb3/iwch.c b/drivers/infiniband/hw/cxgb3/iwch.c
+index 0315c9d..296fb66 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch.c
++++ b/drivers/infiniband/hw/cxgb3/iwch.c
+@@ -63,6 +63,123 @@ struct cxgb3_client t3c_client = {
+ static LIST_HEAD(dev_list);
+ static DEFINE_MUTEX(dev_mutex);
+ 
++static void insert_ifa(struct iwch_dev *rnicp, struct in_ifaddr *ifa)
++{
++	struct iwch_addrlist *addr;
++
++	addr = kmalloc(sizeof *addr, GFP_KERNEL);
++	if (!addr) {
++		printk(KERN_ERR MOD "%s - failed to alloc memory!\n",
++		       __FUNCTION__);
++		return;
++	}
++	addr->ifa = ifa;
++	mutex_lock(&rnicp->mutex);
++	list_add_tail(&addr->entry, &rnicp->addrlist);
++	mutex_unlock(&rnicp->mutex);
++}
++
++static void remove_ifa(struct iwch_dev *rnicp, struct in_ifaddr *ifa)
++{
++	struct iwch_addrlist *addr, *tmp;
++
++	mutex_lock(&rnicp->mutex);
++	list_for_each_entry_safe(addr, tmp, &rnicp->addrlist, entry) {
++		if (addr->ifa == ifa) {
++			list_del_init(&addr->entry);
++			kfree(addr);
++			goto out;
++		}
++	}
++out:
++	mutex_unlock(&rnicp->mutex);
++}
++
++static int netdev_is_ours(struct iwch_dev *rnicp, struct net_device *netdev)
++{
++	int i;
++
++	for (i = 0; i < rnicp->rdev.port_info.nports; i++)
++		if (netdev == rnicp->rdev.port_info.lldevs[i])
++			return 1;
++	return 0;
++}
++
++static inline int is_iwarp_label(char *label)
++{
++	char *colon;
++
++	colon = strchr(label, ':');
++	if (colon && !strncmp(colon+1, "iw", 2))
++		return 1;
++	return 0;
++}
++
++static int nb_callback(struct notifier_block *self, unsigned long event,
++		       void *ctx)
++{
++	struct in_ifaddr *ifa = ctx;
++	struct iwch_dev *rnicp = container_of(self, struct iwch_dev, nb);
++
++	PDBG("%s rnicp %p event %lx\n", __FUNCTION__, rnicp, event);
++
++	switch (event) {
++	case NETDEV_UP:
++		if (netdev_is_ours(rnicp, ifa->ifa_dev->dev) &&
++		    is_iwarp_label(ifa->ifa_label)) {
++			PDBG("%s label %s addr 0x%x added\n",
++				__FUNCTION__, ifa->ifa_label, ifa->ifa_address);
++			insert_ifa(rnicp, ifa);
++			iwch_listeners_add_addr(rnicp, ifa->ifa_address);
++		}
++		break;
++	case NETDEV_DOWN:
++		if (netdev_is_ours(rnicp, ifa->ifa_dev->dev) &&
++		    is_iwarp_label(ifa->ifa_label)) {
++			PDBG("%s label %s addr 0x%x deleted\n",
++				__FUNCTION__, ifa->ifa_label, ifa->ifa_address);
++			iwch_listeners_del_addr(rnicp, ifa->ifa_address);
++			remove_ifa(rnicp, ifa);
++		}
++		break;
++	default:
++		break;
++	}
++	return 0;
++}
++
++static void delete_addrlist(struct iwch_dev *rnicp)
++{
++	struct iwch_addrlist *addr, *tmp;
++
++	mutex_lock(&rnicp->mutex);
++	list_for_each_entry_safe(addr, tmp, &rnicp->addrlist, entry) {
++		list_del_init(&addr->entry);
++		kfree(addr);
++	}
++	mutex_unlock(&rnicp->mutex);
++}
++
++static void populate_addrlist(struct iwch_dev *rnicp)
++{
++	int i;
++	struct in_device *indev;
++
++	for (i = 0; i < rnicp->rdev.port_info.nports; i++) {
++		indev = in_dev_get(rnicp->rdev.port_info.lldevs[i]);
++		if (!indev)
++			continue;
++		for_ifa(indev)
++			if (is_iwarp_label(ifa->ifa_label)) {
++				PDBG("%s label %s addr 0x%x added\n",
++				     __FUNCTION__, ifa->ifa_label,
++				     ifa->ifa_address);
++				insert_ifa(rnicp, ifa);
++			}
++		endfor_ifa(indev);
++	}
++}
++
+ static void rnic_init(struct iwch_dev *rnicp)
+ {
+ 	PDBG("%s iwch_dev %p\n", __FUNCTION__,  rnicp);
+@@ -70,6 +187,12 @@ static void rnic_init(struct iwch_dev *r
+ 	idr_init(&rnicp->qpidr);
+ 	idr_init(&rnicp->mmidr);
+ 	spin_lock_init(&rnicp->lock);
++	INIT_LIST_HEAD(&rnicp->addrlist);
++	INIT_LIST_HEAD(&rnicp->listen_eps);
++	mutex_init(&rnicp->mutex);
++	rnicp->nb.notifier_call = nb_callback;
++	populate_addrlist(rnicp);
++	register_inetaddr_notifier(&rnicp->nb);
+ 
+ 	rnicp->attr.vendor_id = 0x168;
+ 	rnicp->attr.vendor_part_id = 7;
+@@ -148,6 +271,8 @@ static void close_rnic_dev(struct t3cdev
+ 	mutex_lock(&dev_mutex);
+ 	list_for_each_entry_safe(dev, tmp, &dev_list, entry) {
+ 		if (dev->rdev.t3cdev_p == tdev) {
++			unregister_inetaddr_notifier(&dev->nb);
++			delete_addrlist(dev);
+ 			list_del(&dev->entry);
+ 			iwch_unregister_device(dev);
+ 			cxio_rdev_close(&dev->rdev);
+diff --git a/drivers/infiniband/hw/cxgb3/iwch.h b/drivers/infiniband/hw/cxgb3/iwch.h
+index caf4e60..7fa0a47 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch.h
++++ b/drivers/infiniband/hw/cxgb3/iwch.h
+@@ -36,6 +36,8 @@ #include <linux/mutex.h>
+ #include <linux/list.h>
+ #include <linux/spinlock.h>
+ #include <linux/idr.h>
++#include <linux/notifier.h>
++#include <linux/inetdevice.h>
+ 
+ #include <rdma/ib_verbs.h>
+ 
+@@ -101,6 +103,11 @@ struct iwch_rnic_attributes {
+ 	u32 cq_overflow_detection;
+ };
+ 
++struct iwch_addrlist {
++	struct list_head entry;
++	struct in_ifaddr *ifa;
++};
++
+ struct iwch_dev {
+ 	struct ib_device ibdev;
+ 	struct cxio_rdev rdev;
+@@ -111,6 +118,10 @@ struct iwch_dev {
+ 	struct idr mmidr;
+ 	spinlock_t lock;
+ 	struct list_head entry;
++	struct notifier_block nb;
++	struct list_head addrlist;
++	struct list_head listen_eps;
++	struct mutex mutex;
+ };
+ 
+ static inline struct iwch_dev *to_iwch_dev(struct ib_device *ibdev)
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
+index 1cdfcd4..954069f 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
+@@ -1127,23 +1127,149 @@ static int act_open_rpl(struct t3cdev *t
+ 	return CPL_RET_BUF_DONE;
+ }
+ 
+-static int listen_start(struct iwch_listen_ep *ep)
++static int wait_for_reply(struct iwch_ep_common *epc)
++{
++	PDBG("%s ep %p waiting\n", __FUNCTION__, epc);
++	wait_event(epc->waitq, epc->rpl_done);
++	PDBG("%s ep %p done waiting err %d\n", __FUNCTION__, epc, epc->rpl_err);
++	return epc->rpl_err;
++}
++
++static struct iwch_listen_entry *alloc_listener(struct iwch_listen_ep *ep,
++						  __be32 addr)
++{
++	struct iwch_dev *h = to_iwch_dev(ep->com.cm_id->device);
++	struct iwch_listen_entry *le;
++
++	le = kmalloc(sizeof *le, GFP_KERNEL);
++	if (!le) {
++		printk(KERN_ERR MOD "%s - failed to alloc memory!\n",
++		       __FUNCTION__);
++		return NULL;
++	}
++	le->stid = cxgb3_alloc_stid(h->rdev.t3cdev_p,
++				    &t3c_client, ep);
++	if (le->stid == -1) {
++		printk(KERN_ERR MOD "%s - cannot alloc stid.\n",
++		       __FUNCTION__);
++		kfree(le);
++		return NULL;
++	}
++	le->addr = addr;
++	PDBG("%s stid %u addr %x port %x\n", __FUNCTION__, le->stid,
++	     ntohl(le->addr), ntohs(ep->com.local_addr.sin_port));
++	return le;
++}
++
++static void dealloc_listener(struct iwch_listen_ep *ep,
++			     struct iwch_listen_entry *le)
++{
++	PDBG("%s stid %u addr %x port %x\n", __FUNCTION__, le->stid,
++	     ntohl(le->addr), ntohs(ep->com.local_addr.sin_port));
++	cxgb3_free_stid(ep->com.tdev, le->stid);
++	kfree(le);
++}
++
++static void dealloc_listener_list(struct iwch_listen_ep *ep)
++{
++	struct iwch_listen_entry *le, *tmp;
++	struct iwch_dev *h = to_iwch_dev(ep->com.cm_id->device);
++
++	mutex_lock(&h->mutex);
++	list_for_each_entry_safe(le, tmp, &ep->listeners, entry) {
++		list_del_init(&le->entry);
++		dealloc_listener(ep, le);
++	}
++	mutex_unlock(&h->mutex);
++}
++
++static int alloc_listener_list(struct iwch_listen_ep *ep)
++{
++	struct iwch_dev *h = to_iwch_dev(ep->com.cm_id->device);
++	struct iwch_addrlist *addr;
++	struct iwch_listen_entry *le;
++	int err = 0;
++	int added=0;
++	mutex_lock(&h->mutex);
++	list_for_each_entry(addr, &h->addrlist, entry) {
++		if (ep->com.local_addr.sin_addr.s_addr == 0 ||
++		    ep->com.local_addr.sin_addr.s_addr ==
++		    addr->ifa->ifa_address) {
++			le = alloc_listener(ep, addr->ifa->ifa_address);
++			if (!le)
++				break;
++			list_add_tail(&le->entry, &ep->listeners);
++			added++;
++		}
++	}
++	mutex_unlock(&h->mutex);
++	if (ep->com.local_addr.sin_addr.s_addr != 0 && !added)
++		err = -EADDRNOTAVAIL;
++	if (!err && !added)
++		printk(KERN_WARNING MOD
++		       "No RDMA interface found for device %s\n",
++		       pci_name(h->rdev.rnic_info.pdev));
++	return err;
++}
++
++static int listen_stop_one(struct iwch_listen_ep  *ep, unsigned int stid)
+ {
+ 	struct sk_buff *skb;
+-	struct cpl_pass_open_req *req;
++	struct cpl_close_listserv_req *req;
++
++	PDBG("%s stid %u\n", __FUNCTION__, stid);
++	skb = get_skb(NULL, sizeof(*req), GFP_KERNEL);
++	if (!skb) {
++		printk(KERN_ERR MOD "%s - failed to alloc skb\n", __FUNCTION__);
++		return -ENOMEM;
++	}
++	req = (struct cpl_close_listserv_req *) skb_put(skb, sizeof(*req));
++	req->wr.wr_hi = htonl(V_WR_OP(FW_WROPCODE_FORWARD));
++	req->cpu_idx = 0;
++	OPCODE_TID(req) = htonl(MK_OPCODE_TID(CPL_CLOSE_LISTSRV_REQ, stid));
++	skb->priority = 1;
++	ep->com.rpl_err = 0;
++	ep->com.rpl_done = 0;
++	cxgb3_ofld_send(ep->com.tdev, skb);
++	return wait_for_reply(&ep->com);
++}
++
++static int listen_stop(struct iwch_listen_ep *ep)
++{
++	struct iwch_listen_entry *le;
++	struct iwch_dev *h = to_iwch_dev(ep->com.cm_id->device);
++	int err = 0;
+ 
+ 	PDBG("%s ep %p\n", __FUNCTION__, ep);
++	mutex_lock(&h->mutex);
++	list_for_each_entry(le, &ep->listeners, entry) {
++		err = listen_stop_one(ep, le->stid);
++		if (err)
++			break;
++	}
++	mutex_unlock(&h->mutex);
++	return err;
++}
++
++static int listen_start_one(struct iwch_listen_ep *ep, unsigned int stid,
++			    __be32 addr, __be16 port)
++{
++	struct sk_buff *skb;
++	struct cpl_pass_open_req *req;
++
++	PDBG("%s stid %u addr %x port %x\n", __FUNCTION__, stid, ntohl(addr),
++	     ntohs(port));
+ 	skb = get_skb(NULL, sizeof(*req), GFP_KERNEL);
+ 	if (!skb) {
+-		printk(KERN_ERR MOD "t3c_listen_start failed to alloc skb!\n");
++		printk(KERN_ERR MOD "%s - failed to alloc skb\n", __FUNCTION__);
+ 		return -ENOMEM;
+ 	}
+ 
+ 	req = (struct cpl_pass_open_req *) skb_put(skb, sizeof(*req));
+ 	req->wr.wr_hi = htonl(V_WR_OP(FW_WROPCODE_FORWARD));
+-	OPCODE_TID(req) = htonl(MK_OPCODE_TID(CPL_PASS_OPEN_REQ, ep->stid));
+-	req->local_port = ep->com.local_addr.sin_port;
+-	req->local_ip = ep->com.local_addr.sin_addr.s_addr;
++	OPCODE_TID(req) = htonl(MK_OPCODE_TID(CPL_PASS_OPEN_REQ, stid));
++	req->local_port = port;
++	req->local_ip = addr;
+ 	req->peer_port = 0;
+ 	req->peer_ip = 0;
+ 	req->peer_netmask = 0;
+@@ -1152,8 +1278,32 @@ static int listen_start(struct iwch_list
+ 	req->opt1 = htonl(V_CONN_POLICY(CPL_CONN_POLICY_ASK));
+ 
+ 	skb->priority = 1;
++	ep->com.rpl_err = 0;
++	ep->com.rpl_done = 0;
+ 	cxgb3_ofld_send(ep->com.tdev, skb);
+-	return 0;
++	return wait_for_reply(&ep->com);
++}
++
++static int listen_start(struct iwch_listen_ep *ep)
++{
++	struct iwch_listen_entry *le;
++	struct iwch_dev *h = to_iwch_dev(ep->com.cm_id->device);
++	int err = 0;
++
++	PDBG("%s ep %p\n", __FUNCTION__, ep);
++	mutex_lock(&h->mutex);
++	list_for_each_entry(le, &ep->listeners, entry) {
++		err = listen_start_one(ep, le->stid, le->addr,
++				 ep->com.local_addr.sin_port);
++		if (err)
++			goto fail;
++	}
++	mutex_unlock(&h->mutex);
++	return err;
++fail:
++	mutex_unlock(&h->mutex);
++	listen_stop(ep);
++	return err;
+ }
+ 
+ static int pass_open_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+@@ -1170,39 +1320,59 @@ static int pass_open_rpl(struct t3cdev *
+ 	return CPL_RET_BUF_DONE;
+ }
+ 
+-static int listen_stop(struct iwch_listen_ep *ep)
+-{
+-	struct sk_buff *skb;
+-	struct cpl_close_listserv_req *req;
+-
+-	PDBG("%s ep %p\n", __FUNCTION__, ep);
+-	skb = get_skb(NULL, sizeof(*req), GFP_KERNEL);
+-	if (!skb) {
+-		printk(KERN_ERR MOD "%s - failed to alloc skb\n", __FUNCTION__);
+-		return -ENOMEM;
+-	}
+-	req = (struct cpl_close_listserv_req *) skb_put(skb, sizeof(*req));
+-	req->wr.wr_hi = htonl(V_WR_OP(FW_WROPCODE_FORWARD));
+-	req->cpu_idx = 0;
+-	OPCODE_TID(req) = htonl(MK_OPCODE_TID(CPL_CLOSE_LISTSRV_REQ, ep->stid));
+-	skb->priority = 1;
+-	cxgb3_ofld_send(ep->com.tdev, skb);
+-	return 0;
+-}
+-
+ static int close_listsrv_rpl(struct t3cdev *tdev, struct sk_buff *skb,
+ 			     void *ctx)
+ {
+ 	struct iwch_listen_ep *ep = ctx;
+ 	struct cpl_close_listserv_rpl *rpl = cplhdr(skb);
+ 
+-	PDBG("%s ep %p\n", __FUNCTION__, ep);
++	PDBG("%s ep %p stid %u\n", __FUNCTION__, ep, GET_TID(rpl));
++
+ 	ep->com.rpl_err = status2errno(rpl->status);
+ 	ep->com.rpl_done = 1;
+ 	wake_up(&ep->com.waitq);
+ 	return CPL_RET_BUF_DONE;
+ }
+ 
++void iwch_listeners_add_addr(struct iwch_dev *rnicp, __be32 addr)
++{
++	struct iwch_listen_ep *listen_ep;
++	struct iwch_listen_entry *le;
++
++	mutex_lock(&rnicp->mutex);
++	list_for_each_entry(listen_ep, &rnicp->listen_eps, entry) {
++		if (listen_ep->com.local_addr.sin_addr.s_addr)
++			continue;
++		le = alloc_listener(listen_ep, addr);
++		if (le) {
++			list_add_tail(&le->entry, &listen_ep->listeners);
++			listen_start_one(listen_ep, le->stid, addr,
++					 listen_ep->com.local_addr.sin_port);
++		}
++	}
++	mutex_unlock(&rnicp->mutex);
++}
++
++void iwch_listeners_del_addr(struct iwch_dev *rnicp, __be32 addr)
++{
++	struct iwch_listen_ep *listen_ep;
++	struct iwch_listen_entry *le, *tmp;
++
++	mutex_lock(&rnicp->mutex);
++	list_for_each_entry(listen_ep, &rnicp->listen_eps, entry) {
++		if (listen_ep->com.local_addr.sin_addr.s_addr)
++			continue;
++		list_for_each_entry_safe(le, tmp, &listen_ep->listeners,
++					 entry)
++			if (le->addr == addr) {
++				listen_stop_one(listen_ep, le->stid);
++				list_del_init(&le->entry);
++				dealloc_listener(listen_ep, le);
++			}
++	}
++	mutex_unlock(&rnicp->mutex);
++}
++
+ static void accept_cr(struct iwch_ep *ep, __be32 peer_ip, struct sk_buff *skb)
+ {
+ 	struct cpl_pass_accept_rpl *rpl;
+@@ -1767,8 +1937,7 @@ int iwch_accept_cr(struct iw_cm_id *cm_i
+ 		goto err;
+ 
+ 	/* wait for wr_ack */
+-	wait_event(ep->com.waitq, ep->com.rpl_done);
+-	err = ep->com.rpl_err;
++	err = wait_for_reply(&ep->com);
+ 	if (err)
+ 		goto err;
+ 
+@@ -1887,31 +2056,23 @@ int iwch_create_listen(struct iw_cm_id *
+ 	ep->com.cm_id = cm_id;
+ 	ep->backlog = backlog;
+ 	ep->com.local_addr = cm_id->local_addr;
++	INIT_LIST_HEAD(&ep->listeners);
+ 
+-	/*
+-	 * Allocate a server TID.
+-	 */
+-	ep->stid = cxgb3_alloc_stid(h->rdev.t3cdev_p, &t3c_client, ep);
+-	if (ep->stid == -1) {
+-		printk(KERN_ERR MOD "%s - cannot alloc atid.\n", __FUNCTION__);
+-		err = -ENOMEM;
++	err = alloc_listener_list(ep);
++	if (err)
+ 		goto fail2;
+-	}
+ 
+ 	state_set(&ep->com, LISTEN);
+ 	err = listen_start(ep);
+-	if (err)
+-		goto fail3;
+ 
+-	/* wait for pass_open_rpl */
+-	wait_event(ep->com.waitq, ep->com.rpl_done);
+-	err = ep->com.rpl_err;
+ 	if (!err) {
+ 		cm_id->provider_data = ep;
++		mutex_lock(&h->mutex);
++		list_add_tail(&ep->entry, &h->listen_eps);
++		mutex_unlock(&h->mutex);
+ 		goto out;
+ 	}
+-fail3:
+-	cxgb3_free_stid(ep->com.tdev, ep->stid);
++	dealloc_listener_list(ep);
+ fail2:
+ 	cm_id->rem_ref(cm_id);
+ 	put_ep(&ep->com);
+@@ -1923,18 +2084,20 @@ out:
+ int iwch_destroy_listen(struct iw_cm_id *cm_id)
+ {
+ 	int err;
++	struct iwch_dev *h = to_iwch_dev(cm_id->device);
+ 	struct iwch_listen_ep *ep = to_listen_ep(cm_id);
+ 
+ 	PDBG("%s ep %p\n", __FUNCTION__, ep);
+ 
+ 	might_sleep();
++	mutex_lock(&h->mutex);
++	list_del_init(&ep->entry);
++	mutex_unlock(&h->mutex);
+ 	state_set(&ep->com, DEAD);
+ 	ep->com.rpl_done = 0;
+ 	ep->com.rpl_err = 0;
+ 	err = listen_stop(ep);
+-	wait_event(ep->com.waitq, ep->com.rpl_done);
+-	cxgb3_free_stid(ep->com.tdev, ep->stid);
+-	err = ep->com.rpl_err;
++	dealloc_listener_list(ep);
+ 	cm_id->rem_ref(cm_id);
+ 	put_ep(&ep->com);
+ 	return err;
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.h b/drivers/infiniband/hw/cxgb3/iwch_cm.h
+index 6107e7c..23e5a22 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_cm.h
++++ b/drivers/infiniband/hw/cxgb3/iwch_cm.h
+@@ -162,10 +162,19 @@ struct iwch_ep_common {
+ 	int rpl_err;
+ };
+ 
+-struct iwch_listen_ep {
+-	struct iwch_ep_common com;
++struct iwch_listen_entry {
++	struct list_head entry;
+ 	unsigned int stid;
++	__be32 addr;
++};
++
++struct iwch_listen_ep {
++	struct iwch_ep_common com;	/* Must be first entry! */
++	struct list_head entry;
++	struct list_head listeners;
+ 	int backlog;
++	int listen_count;
++	int listen_rpls;
+ };
+ 
+ struct iwch_ep {
+@@ -222,6 +231,8 @@ int iwch_resume_tid(struct iwch_ep *ep);
+ void __free_ep(struct kref *kref);
+ void iwch_rearp(struct iwch_ep *ep);
+ int iwch_ep_redirect(void *ctx, struct dst_entry *old, struct dst_entry *new, struct l2t_entry *l2t);
++void iwch_listeners_add_addr(struct iwch_dev *rnicp, __be32 addr);
++void iwch_listeners_del_addr(struct iwch_dev *rnicp, __be32 addr);
+ 
+ int __init iwch_cm_init(void);
+ void __exit iwch_cm_term(void);
