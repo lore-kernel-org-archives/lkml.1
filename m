@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbXIMI4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbXIMI5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758398AbXIMI4s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 04:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXIMI4j
+	id S1759288AbXIMI5l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 04:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbXIMI5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 04:56:39 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:49426 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753471AbXIMI4i (ORCPT
+	Thu, 13 Sep 2007 04:57:32 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:54922 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbXIMI5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 04:56:38 -0400
-Message-ID: <46E8F9D4.10307@aitel.hist.no>
-Date: Thu, 13 Sep 2007 10:50:28 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Thu, 13 Sep 2007 04:57:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=YIa7ARWqeyoJa/tQMwJlDMjYU9OswpMzywTNp9DaA1V+a8qGDwCqceH9bQ/zusNUJ65OJfmCAvkHWQK7AhmhzVjZiru720Ck0wJrOPEioPmGlc8EaskNgXfdIjHwzgKlCaaMbF9mJL6xsU5Mdcg8kn/30Yx94Oz6NGn6H9G415U=
+Message-ID: <46E8FB0F.3030904@gmail.com>
+Date: Thu, 13 Sep 2007 10:55:43 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-References: <20070907124800.GP16806@vanheusden.com> <20070907083522.3191a4ba.randy.dunlap@oracle.com>
-In-Reply-To: <20070907083522.3191a4ba.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Nigel Kukard <nkukard@lbsd.net>, Dave Jones <davej@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: SATA problems
+References: <4671366B.7090702@lbsd.net>	<46716B1D.1070902@garzik.org>	<20070614182854.GC1223@redhat.com>	<20070618200703.GB13344@redhat.com>	<46776223.3050402@lbsd.net>	<46D68CC2.3030206@lbsd.net> <20070910020243.1101cf7a.akpm@linux-foundation.org>
+In-Reply-To: <20070910020243.1101cf7a.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Fri, 7 Sep 2007 14:48:00 +0200 Folkert van Heusden wrote:
->
->   
->> Hi,
+Andrew Morton wrote:
+> On Thu, 30 Aug 2007 09:24:18 +0000 Nigel Kukard <nkukard@lbsd.net> wrote:
+> 
+>> Hrmmm,
 >>
->> Maybe it is a nice enhancement for make menuconfig to more explicitly
->> give a pop-up or so when someone selects for example a sata controller
->> while no 'scsi-disk' support was selected?
->>     
->
-> I know that it's difficult to get people to read docs & help text,
-> and maybe it is needed in more places, but CONFIG_ATA (SATA/PATA)
-> help text says:
->
->   NOTE: ATA enables basic SCSI support; *however*,
->   'SCSI disk support', 'SCSI tape support', or
->   'SCSI CDROM support' may also be needed,
->   depending on your hardware configuration.
->
->
-> A popup makes some sense, but I don't know if menuconfig knows how to
-> do popup warnings... and it needs to be done for all *configs,
-> not just menuconfig.
->   
-A popup hardly ever makes sense - popups generally are a
-bad user interface. The user will have to dismiss the popup -
-every time - whether he needs the warning or not.
+>>>>  > 
+>>>>  >  > > Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
+>>>>  >  > > 0x0001c807
+>>>>  >  > > Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
+>>>>  >  > > 0x0001c807
+>>>>  > 
+>>>>  > Unrelated to the other error, but I've been meaning to ask for a while..
+>>>>  > If this is 'abnormal', why does every SATA box I've seen do it?
+>>>>
+>>>> *crickets*
 
-But feel free to print a warning somewhere, such as a
-status line. The warning itself is useful, but not something
-we will have to dismiss in order to go on with the job.
+It's removed (finally).  :-)
 
-Helge Hafting
-
-
-
+-- 
+tejun
