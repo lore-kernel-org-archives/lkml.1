@@ -1,83 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbXIMOzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbXIMO5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbXIMOzz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 10:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXIMOzs
+	id S1759314AbXIMO5e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 10:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbXIMO5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 10:55:48 -0400
-Received: from ns.firmix.at ([62.141.48.66]:34117 "EHLO ns.firmix.at"
+	Thu, 13 Sep 2007 10:57:25 -0400
+Received: from mo31.po.2iij.NET ([210.128.50.54]:5464 "EHLO mo31.po.2iij.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbXIMOzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 10:55:47 -0400
-Subject: Re: [PATCH] 9p: rename uid and gid parameters
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Latchesar Ionkov <lucho@ionkov.net>
-Cc: Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org,
-       v9fs-developer@lists.sourceforge.net, linux-fsdevel@vger.kernel.org
-In-Reply-To: <f158dc670709130751s2f6046beje5401ec6c56051dd@mail.gmail.com>
-References: <20070913044718.GB2675@ionkov.net>
-	 <a4e6962a0709130638v384c2708y76167d4e92cbac56@mail.gmail.com>
-	 <f158dc670709130751s2f6046beje5401ec6c56051dd@mail.gmail.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Thu, 13 Sep 2007 16:55:30 +0200
-Message-Id: <1189695330.9137.75.camel@tara.firmix.at>
+	id S1751208AbXIMO5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 10:57:24 -0400
+Date: Thu, 13 Sep 2007 23:56:45 +0900
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: yoichi_yuasa@tripeaks.co.jp,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][2/2] led: update Cobalt Qube LED support
+Message-Id: <20070913235645.0fe06bc2.yoichi_yuasa@tripeaks.co.jp>
+In-Reply-To: <20070913235441.5bab3d8e.yoichi_yuasa@tripeaks.co.jp>
+References: <20070913235441.5bab3d8e.yoichi_yuasa@tripeaks.co.jp>
+Organization: TriPeaks Corporation
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.315 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.315 required=5
-X-Spam-Score: -2.315 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-13 at 08:51 -0600, Latchesar Ionkov wrote:
-> Zero was the value that was used before, even though it wasn't defined
-> explicitly. I just defined a macro so we can see and eventually change
-> it to something better. I don't know if there is a good default value.
-> Is nfsnobody the same on all Linux distributions?
+Update Cobalt Qube front LED support.
 
-Not necessarily.
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
-[....]
-> On 9/13/07, Eric Van Hensbergen <ericvh@gmail.com> wrote:
-> > On 9/12/07, Latchesar Ionkov <lucho@ionkov.net> wrote:
-> > > Change the names of 'uid' and 'gid' parameters to the more appropriate
-> > > 'dfltuid' and 'dfltgid'.
-> > >
-> >
-> > ...
-> >
-> > >         strcpy(v9ses->name, V9FS_DEFUSER);
-> > >         strcpy(v9ses->remotename, V9FS_DEFANAME);
-> > > +       v9ses->dfltuid = V9FS_DEFUID;
-> > > +       v9ses->dfltgid = V9FS_DEFGID;
-> > >
-> > ...
-> > > +#define V9FS_DEFUID    (0)
-> > > +#define V9FS_DEFGID    (0)
-> >
-> > I'm not sure if there is a good solution here, but I'm uncomfortable
-> > with using uid=0 as the default.  I'm not sure if there is a default
-> > uid for nobody, but anything is probably better than 0.  Looks like
-> > nfsnobody is 65534, we could use that - even if only as a marker for
-
-On 32bit hardware. On 64bit it is (similar to 32bit): (unsigned int)-2.
-
-> > the server to map it to nobody on the target system?  What do you
-> > think?
-> >
-> > Particularly with attach-per-user, we probably need to look at
-> > interacting with idmapd or create our own variant real soon.
-
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+diff -pruN -X mips/Documentation/dontdiff mips-orig/drivers/leds/leds-cobalt-qube.c mips/drivers/leds/leds-cobalt-qube.c
+--- mips-orig/drivers/leds/leds-cobalt-qube.c	2007-08-24 19:35:51.689587500 +0900
++++ mips/drivers/leds/leds-cobalt-qube.c	2007-08-24 19:57:45.391688750 +0900
+@@ -1,43 +1,103 @@
+ /*
+  * Copyright 2006 - Florian Fainelli <florian@openwrt.org>
+  *
+- * Control the Cobalt Qube/RaQ front LED
++ * Control the Cobalt Qube/Qube2 front LED
+  */
+-
++#include <linux/init.h>
++#include <linux/ioport.h>
++#include <linux/leds.h>
+ #include <linux/module.h>
++#include <linux/platform_device.h>
+ #include <linux/types.h>
+-#include <linux/kernel.h>
+-#include <linux/device.h>
+-#include <linux/leds.h>
+-#include <asm/mach-cobalt/cobalt.h>
+ 
+-static void cobalt_led_set(struct led_classdev *led_cdev, enum led_brightness brightness)
++#include <asm/io.h>
++
++#define LED_BAR_LEFT	0x01
++#define LED_BAR_RIGHT	0x02
++
++static void __iomem *led_port;
++static u8 led_value;
++
++static void qube_bar_led_set(struct led_classdev *led_cdev,
++                             enum led_brightness brightness)
+ {
+ 	if (brightness)
+-		COBALT_LED_PORT = COBALT_LED_BAR_LEFT | COBALT_LED_BAR_RIGHT;
++		led_value = LED_BAR_LEFT | LED_BAR_RIGHT;
+ 	else
+-		COBALT_LED_PORT = 0;
++		led_value = ~(LED_BAR_LEFT | LED_BAR_RIGHT);
++	writeb(led_value, led_port);
++}
++
++static struct led_classdev qube_bar_led = {
++	.name			= "qube-bar-led",
++	.brightness		= LED_FULL,
++	.brightness_set		= qube_bar_led_set,
++	.default_trigger	= "ide-disk",
++};
++
++static int __devinit cobalt_qube_led_probe(struct platform_device *pdev)
++{
++	struct resource *res;
++	int retval;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -EBUSY;
++
++	led_port = ioremap(res->start, res->end - res->start + 1);
++	if (!led_port)
++		return -ENOMEM;
++
++	led_value = LED_BAR_LEFT | LED_BAR_RIGHT;
++	writeb(led_value, led_port);
++
++	retval = led_classdev_register(&pdev->dev, &qube_bar_led);
++	if (retval)
++		goto err_iounmap;
++
++	return 0;
++
++err_iounmap:
++	iounmap(led_port);
++	led_port = NULL;
++
++	return retval;
++}
++
++static int __devexit cobalt_qube_led_remove(struct platform_device *pdev)
++{
++	if (led_port) {
++		iounmap(led_port);
++		led_port = NULL;
++	}
++
++	led_classdev_unregister(&qube_bar_led);
++
++	return 0;
+ }
+ 
+-static struct led_classdev cobalt_led = {
+-       .name = "cobalt-front-led",
+-       .brightness_set = cobalt_led_set,
+-       .default_trigger = "ide-disk",
++static struct platform_driver cobalt_qube_led_driver = {
++	.probe	= cobalt_qube_led_probe,
++	.remove	= __devexit_p(cobalt_qube_led_remove),
++	.driver	= {
++		.name	= "Cobalt Qube LEDs",
++		.owner	= THIS_MODULE,
++	},
+ };
+ 
+-static int __init cobalt_led_init(void)
++static int __init cobalt_qube_led_init(void)
+ {
+-	return led_classdev_register(NULL, &cobalt_led);
++	return platform_driver_register(&cobalt_qube_led_driver);
+ }
+ 
+-static void __exit cobalt_led_exit(void)
++static void __exit cobalt_qube_led_exit(void)
+ {
+-	led_classdev_unregister(&cobalt_led);
++	platform_driver_unregister(&cobalt_qube_led_driver);
+ }
+ 
+-module_init(cobalt_led_init);
+-module_exit(cobalt_led_exit);
++module_init(cobalt_qube_led_init);
++module_exit(cobalt_qube_led_exit);
+ 
+ MODULE_LICENSE("GPL");
+-MODULE_DESCRIPTION("Front LED support for Cobalt Server");
++MODULE_DESCRIPTION("Front LED support for Cobalt Qube");
+ MODULE_AUTHOR("Florian Fainelli <florian@openwrt.org>");
