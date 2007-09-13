@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbXIMMfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbXIMMff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbXIMMfR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 08:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXIMMfF
+	id S1753542AbXIMMff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 08:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbXIMMfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 08:35:05 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:35969 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751291AbXIMMfD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 08:35:06 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:3999 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751453AbXIMMfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Sep 2007 08:35:03 -0400
-Date: Thu, 13 Sep 2007 14:36:27 +0200
-From: aherrman@arcor.de
-To: luca.risolia@studio.unibo.it, akpm@linux-foundation.org
-Cc: linux-usb-devel@lists.sourceforge.net, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] v4l: Build error with et61x251, if V4L1_COMPAT is not selected
-Message-ID: <20070913123627.GD10348@devil>
+Date: Thu, 13 Sep 2007 14:35:35 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] CFS-devel, performance improvements
+In-Reply-To: <20070913075258.GA9173@elte.hu>
+Message-ID: <Pine.LNX.4.64.0709131419170.1817@scrub.home>
+References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home>
+ <20070913075258.GA9173@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With current git tree I get an build error
-for et61x251, if V4L1_COMPAT is not selected:
+Hi,
 
-drivers/media/video/et61x251/et61x251_core.c: In et61x251_show_:
-drivers/media/video/et61x251/et61x251_core.c:718: error: implicit declaration of to_video_device
+On Thu, 13 Sep 2007, Ingo Molnar wrote:
 
-Fix: add VIDEO_V4L1_COMPAT as a dependency for this driver.
+> > Out of curiousity: will I ever get answers to my questions?
+> 
+> the last few weeks/months have been pretty hectic - i get more than 50 
+> non-list emails a day so i could easily have missed some.
 
-Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
----
- drivers/media/video/et61x251/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Well, let's just take the recent "Really Simple Really Fair Scheduler" 
+thread. You had the time to ask me questions about my scheduler, I even 
+explained to you how the sleeping bonus works in my model. At the end I 
+was sort of hoping you would start answering my questions and explaining 
+things how the same things work in CFS - but nothing.
+Then you had the time to reimplement the very things you've just asked me 
+about and what do I get credit for - "two cleanups from RFS".
+And now I get this lame ass excuse for not answering my questions? :-(
 
-diff --git a/drivers/media/video/et61x251/Kconfig b/drivers/media/video/et61x251/Kconfig
-index dcc1a03..9143424 100644
---- a/drivers/media/video/et61x251/Kconfig
-+++ b/drivers/media/video/et61x251/Kconfig
-@@ -1,6 +1,6 @@
- config USB_ET61X251
- 	tristate "USB ET61X[12]51 PC Camera Controller support"
--	depends on VIDEO_V4L2
-+	depends on VIDEO_V4L2 && VIDEO_V4L1_COMPAT
- 	---help---
- 	  Say Y here if you want support for cameras based on Etoms ET61X151
- 	  or ET61X251 PC Camera Controllers.
--- 
-1.5.3
-
-
+bye, Roman
