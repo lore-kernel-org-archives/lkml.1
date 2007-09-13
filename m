@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbXIMXty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbXIMXuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761053AbXIMXty (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXIMXpS
+	id S932231AbXIMXuo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932914AbXIMXpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:45:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57155 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932868AbXIMXpQ (ORCPT
+	Thu, 13 Sep 2007 19:45:22 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:41165 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932913AbXIMXpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:45:16 -0400
-Date: Thu, 13 Sep 2007 16:43:11 -0700
+	Thu, 13 Sep 2007 19:45:19 -0400
+Date: Thu, 13 Sep 2007 16:43:45 -0700
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Subject: cdev: remove unneeded setting of cdev names
-Message-ID: <20070913234311.GK10856@kroah.com>
+Subject: kobjects: fix up improper use of the kobject name field
+Message-ID: <20070913234345.GL10856@kroah.com>
 References: <20070913233751.GA10856@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,82 +25,115 @@ X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<resend with proper subject:>
 
-struct cdev does not need the kobject name to be set, as it is never
-used.  This patch fixes up the few places it is set.
-
-
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+A number of different drivers incorrect access the kobject name field
+directly.  This is not correct as the name might not be in the array.
+Use the proper accessor function instead.
 
 ---
- block/bsg.c                         |    5 +----
- drivers/char/raw.c                  |    5 +----
- drivers/media/dvb/dvb-core/dvbdev.c |    5 +----
- drivers/usb/core/devio.c            |    6 ++----
- 4 files changed, 5 insertions(+), 16 deletions(-)
+ block/elevator.c          |    2 +-
+ block/ll_rw_blk.c         |    2 +-
+ drivers/acpi/bus.c        |    2 +-
+ drivers/cpufreq/cpufreq.c |    2 +-
+ drivers/md/md.c           |    3 +--
+ fs/partitions/check.c     |   12 +++++++-----
+ net/bridge/br_sysfs_br.c  |    2 +-
+ 7 files changed, 13 insertions(+), 12 deletions(-)
 
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -1010,10 +1010,7 @@ unlock:
- }
- EXPORT_SYMBOL_GPL(bsg_register_queue);
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -186,7 +186,7 @@ static elevator_t *elevator_alloc(struct
+ 	eq->ops = &e->ops;
+ 	eq->elevator_type = e;
+ 	kobject_init(&eq->kobj);
+-	snprintf(eq->kobj.name, KOBJ_NAME_LEN, "%s", "iosched");
++	kobject_set_name(&eq->kobj, "%s", "iosched");
+ 	eq->kobj.ktype = &elv_ktype;
+ 	mutex_init(&eq->sysfs_lock);
  
--static struct cdev bsg_cdev = {
--	.kobj   = {.name = "bsg", },
--	.owner  = THIS_MODULE,
--};
-+static struct cdev bsg_cdev;
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -1841,7 +1841,7 @@ struct request_queue *blk_alloc_queue_no
  
- static int __init bsg_init(void)
- {
---- a/drivers/char/raw.c
-+++ b/drivers/char/raw.c
-@@ -255,10 +255,7 @@ static const struct file_operations raw_
- 	.owner	=	THIS_MODULE,
- };
+ 	init_timer(&q->unplug_timer);
  
--static struct cdev raw_cdev = {
--	.kobj	=	{.name = "raw", },
--	.owner	=	THIS_MODULE,
--};
-+static struct cdev raw_cdev;
+-	snprintf(q->kobj.name, KOBJ_NAME_LEN, "%s", "queue");
++	kobject_set_name(&q->kobj, "%s", "queue");
+ 	q->kobj.ktype = &queue_ktype;
+ 	kobject_init(&q->kobj);
  
- static int __init raw_init(void)
- {
---- a/drivers/media/dvb/dvb-core/dvbdev.c
-+++ b/drivers/media/dvb/dvb-core/dvbdev.c
-@@ -109,10 +109,7 @@ static struct file_operations dvb_device
- 	.open =		dvb_device_open,
- };
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -194,7 +194,7 @@ int acpi_bus_set_power(acpi_handle handl
  
--static struct cdev dvb_device_cdev = {
--	.kobj   = {.name = "dvb", },
--	.owner  =       THIS_MODULE,
--};
-+static struct cdev dvb_device_cdev;
+ 	if (!device->flags.power_manageable) {
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device `[%s]' is not power manageable\n",
+-				device->dev.kobj.name));
++				kobject_name(&device->dev.kobj)));
+ 		return -ENODEV;
+ 	}
+ 	/*
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -828,7 +828,7 @@ static int cpufreq_add_dev (struct sys_d
+ 	/* prepare interface data */
+ 	policy->kobj.parent = &sys_dev->kobj;
+ 	policy->kobj.ktype = &ktype_cpufreq;
+-	strlcpy(policy->kobj.name, "cpufreq", KOBJ_NAME_LEN);
++	kobject_set_name(&policy->kobj, "cpufreq");
  
- int dvb_generic_open(struct inode *inode, struct file *file)
- {
---- a/drivers/usb/core/devio.c
-+++ b/drivers/usb/core/devio.c
-@@ -1576,6 +1576,7 @@ static unsigned int usbdev_poll(struct f
- }
+ 	ret = kobject_register(&policy->kobj);
+ 	if (ret) {
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -3085,8 +3085,7 @@ static struct kobject *md_probe(dev_t de
+ 	mddev->gendisk = disk;
+ 	mutex_unlock(&disks_mutex);
+ 	mddev->kobj.parent = &disk->kobj;
+-	mddev->kobj.k_name = NULL;
+-	snprintf(mddev->kobj.name, KOBJ_NAME_LEN, "%s", "md");
++	kobject_set_name(&mddev->kobj, "%s", "md");
+ 	mddev->kobj.ktype = &md_ktype;
+ 	if (kobject_register(&mddev->kobj))
+ 		printk(KERN_WARNING "md: cannot register %s/md - name in use\n",
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -381,10 +381,12 @@ void add_partition(struct gendisk *disk,
+ 	p->partno = part;
+ 	p->policy = disk->policy;
  
- const struct file_operations usbdev_file_operations = {
-+	.owner = 	THIS_MODULE,
- 	.llseek =	usbdev_lseek,
- 	.read =		usbdev_read,
- 	.poll =		usbdev_poll,
-@@ -1625,10 +1626,7 @@ static struct notifier_block usbdev_nb =
- };
- #endif
+-	if (isdigit(disk->kobj.name[strlen(disk->kobj.name)-1]))
+-		snprintf(p->kobj.name,KOBJ_NAME_LEN,"%sp%d",disk->kobj.name,part);
++	if (isdigit(disk->kobj.k_name[strlen(disk->kobj.k_name)-1]))
++		kobject_set_name(&p->kobj, "%sp%d",
++				 kobject_name(&disk->kobj), part);
+ 	else
+-		snprintf(p->kobj.name,KOBJ_NAME_LEN,"%s%d",disk->kobj.name,part);
++		kobject_set_name(&p->kobj, "%s%d",
++				 kobject_name(&disk->kobj),part);
+ 	p->kobj.parent = &disk->kobj;
+ 	p->kobj.ktype = &ktype_part;
+ 	kobject_init(&p->kobj);
+@@ -477,9 +479,9 @@ void register_disk(struct gendisk *disk)
+ 	struct hd_struct *p;
+ 	int err;
  
--static struct cdev usb_device_cdev = {
--	.kobj   = {.name = "usb_device", },
--	.owner  = THIS_MODULE,
--};
-+static struct cdev usb_device_cdev;
- 
- int __init usb_devio_init(void)
- {
+-	strlcpy(disk->kobj.name,disk->disk_name,KOBJ_NAME_LEN);
++	kobject_set_name(&disk->kobj, "%s", disk->disk_name);
+ 	/* ewww... some of these buggers have / in name... */
+-	s = strchr(disk->kobj.name, '/');
++	s = strchr(disk->kobj.k_name, '/');
+ 	if (s)
+ 		*s = '!';
+ 	if ((err = kobject_add(&disk->kobj)))
+--- a/net/bridge/br_sysfs_br.c
++++ b/net/bridge/br_sysfs_br.c
+@@ -435,7 +435,7 @@ int br_sysfs_addbr(struct net_device *de
+ 	err = kobject_register(&br->ifobj);
+ 	if (err) {
+ 		pr_info("%s: can't add kobject (directory) %s/%s\n",
+-			__FUNCTION__, dev->name, br->ifobj.name);
++			__FUNCTION__, dev->name, kobject_name(&br->ifobj));
+ 		goto out3;
+ 	}
+ 	return 0;
