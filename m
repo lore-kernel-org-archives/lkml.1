@@ -1,47 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbXIMEOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763985AbXIMEX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764251AbXIMEOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 00:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXIMEOK
+	id S1763985AbXIMEX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 00:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbXIMEXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 00:14:10 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40002 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbXIMEOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 00:14:09 -0400
-Message-ID: <46E8B909.2050201@garzik.org>
-Date: Thu, 13 Sep 2007 00:14:01 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 1/2][RESEND] ehea: propagate physical port state
-References: <200709071230.18395.ossthema@de.ibm.com>
-In-Reply-To: <200709071230.18395.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 13 Sep 2007 00:23:51 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:60022 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbXIMEXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 00:23:50 -0400
+Date: Wed, 12 Sep 2007 21:21:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, jgarzik <jgarzik@pobox.com>
+Subject: [PATCH v3] doc: about email clients for Linux patches
+Message-Id: <20070912212137.74347f13.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan-Bernd Themann wrote:
-> Introduces a module parameter to decide whether the physical
-> port link state is propagated to the network stack or not.
-> It makes sense not to take the physical port state into account
-> on machines with more logical partitions that communicate
-> with each other. This is always possible no matter what the physical
-> port state is. Thus eHEA can be considered as a switch there.
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-applied 1-2
+Requested by Jeff Garzik.
+v3, updated from lkml comments.
 
+Add info about various email clients and their applicability
+in being used to send Linux kernel patches.
 
+Some notes takes from http://mbligh.org/linuxdocs/Email/Clients
+Portions used with permission.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/email-clients.txt |  217 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 217 insertions(+)
+
+--- /dev/null
++++ linux-2.6.23-rc5-git1/Documentation/email-clients.txt
+@@ -0,0 +1,217 @@
++Email clients info for Linux
++======================================================================
++
++General Preferences
++----------------------------------------------------------------------
++Patches for the Linux kernel are submitted via email, preferably as
++inline text in the body of the email.  Some maintainers accept
++attachments, but then the attachments should have content-type
++"text/plain".  However, attachments are generally frowned upon because
++it makes quoting portions of the patch more difficult in the patch
++review process.
++
++Email clients that are used for Linux kernel patches should send the
++patch text untouched.  For example, they should not modify or delete tabs
++or spaces, even at the beginning or end of lines.
++
++Don't send patches with "format=flowed".  This can cause unexpected
++and unwanted line breaks.
++
++Don't let your email client do automatic word wrapping for you.
++This can also corrupt your patch.
++
++Email clients should not modify the character set encoding of the text.
++Emailed patches should be in ASCII or UTF-8 encoding only.
++If you configure your email client to send emails with UTF-8 encoding,
++you avoid some possible charset problems.
++
++Email clients should generate and maintain References: or In-Reply-To:
++headers so that mail threading is not broken.
++
++Copy-and-paste (or cut-and-paste) usually does not work for patches
++because tabs are converted to spaces.  Using xclipboard, xclip, and/or
++xcutsel may work, but it's best to test this for yourself or just avoid
++copy-and-paste.
++
++Don't use PGP/GPG signatures in mail that contains patches.
++This breaks many scripts that read and apply the patches.
++(This should be fixable.)
++
++It's a good idea to send a patch to yourself, save the received message,
++and successfully apply it with 'patch' before sending patches to Linux
++mailing lists.
++
++
++Some email client (MUA) hints
++----------------------------------------------------------------------
++Here are some specific MUA configuration hints for editing and sending
++patches for the Linux kernel.  These are not meant to be complete
++software package configuration summaries.
++
++Legend:
++TUI = text-based user interface
++GUI = graphical user interface
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Alpine (TUI)
++
++Config options:
++In the "Sending Preferences" section:
++
++- "Do Not Send Flowed Text" must be enabled
++- "Strip Whitespace Before Sending" must be disabled
++
++When composing the message, the cursor should be placed where the patch
++should appear, and then pressing CTRL-R let you specify the patch file
++to insert into the message.
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Evolution (GUI)
++
++Some people use this successfully for patches.
++
++When composing mail select: Preformat
++  from Format->Heading->Preformatted (Ctrl-7)
++  or the toolbar
++
++Then use:
++  Insert->Text File... (Alt-n x)
++to insert the patch.
++
++You can also "diff -Nru old.c new.c | xclip", select Preformat, then
++paste with the middle button.
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Kmail (GUI)
++
++Some people use Kmail successfully for patches.
++
++The default setting of not composing in HTML is appropriate; do not
++enable it.
++
++When composing an email, under options, uncheck "word wrap". The only
++disadvantage is any text you type in the email will not be word-wrapped
++so you will have to manually word wrap text before the patch. The easiest
++way around this is to compose your email with word wrap enabled, then save
++it as a draft. Once you pull it up again from your drafts it is now hard
++word-wrapped and you can uncheck "word wrap" without losing the existing
++wrapping.
++
++At the bottom of your email, put the commonly-used patch delimiter before
++inserting your patch:  three hyphens (---).
++
++Then from the "Message" menu item, select insert file and choose your patch.
++As an added bonus you can customise the message creation toolbar menu
++and put the "insert file" icon there.
++
++You can safely GPG sign attachments, but inlined text is preferred for
++patches so do not GPG sign them.  Signing patches that have been inserted
++as inlined text will make them tricky to extract from their 7-bit encoding.
++
++If you absolutely must send patches as attachments instead of inlining
++them as text, right click on the attachment and select properties, and
++highlight "Suggest automatic display" to make the attachment inlined to
++make it more viewable.
++
++When saving patches that are sent as inlined text, select the email that
++contains the patch from the message list pane, right click and select
++"save as".  You can use the whole email unmodified as a patch if it was
++properly composed.  There is no option currently to save the email when you
++are actually viewing it in its own window -- there has been a request filed
++at kmail's bugzilla and hopefully this will be addressed.  Emails are saved
++as read-write for user only so you will have to chmod them to make them
++group and world readable if you copy them elsewhere.
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Lotus Notes (GUI)
++
++Run away from it.
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Mutt (TUI)
++
++Plenty of Linux developers use mutt, so it must work pretty well.
++
++Mutt doesn't come with an editor, so whatever editor you use should be
++used in a way that there are no automatic linebreaks.  Most editors have
++an "insert file" option that inserts the contents of a file unaltered.
++
++To use 'vim' with mutt:
++  set editor="vi"
++
++  If using xclip, type the command
++  :set paste
++  before middle button or shift-insert or use
++  :r filename
++
++if you want to include the patch inline.
++(a)ttach works fine without "set paste".
++
++Config options:
++It should work with default settings.
++However, it's a good idea to set the "send_charset" to:
++  set send_charset="us-ascii:utf-8"
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Pine (TUI)
++
++Pine has had some whitespace truncation issues in the past, but these
++should all be fixed now.
++
++Use alpine (pine's successor) if you can.
++
++Config options:
++- quell-flowed-text is needed for recent versions
++- the "no-strip-whitespace-before-send" option is needed
++
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Sylpheed (GUI)
++
++- Works well for inlining text (or using attachments).
++- Allows use of an external editor.
++- Not good for IMAP.
++- Is slow on large folders.
++- Won't do TLS SMTP auth over a non-SSL connection.
++- Has a helpful ruler bar in the compose window.
++- Adding addresses to address book doesn't understand the display name
++  properly.
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Thunderbird (GUI)
++
++By default, thunderbird likes to mangle text, but there are ways to
++coerce it into being nice.
++
++- Under account settings, composition and addressing, uncheck "Compose
++  messages in HTML format".
++
++- Edit your Thunderbird config settings to tell it not to wrap lines:
++      user_pref("mailnews.wraplength", 0);
++
++- Edit your Thunderbird config settings so that it won't use format=flowed:
++      user_pref("mailnews.send_plaintext_flowed", false);
++
++- You need to get Thunderbird into preformat mode:
++. If you compose HTML messages by default, it's not too hard. Just select
++  "Preformat" from the drop-down box just under the subject line.
++. If you compose in text by default, you have to tell it to compose a new
++  message in HTML (just as a one-off), and then force it from there back to
++  text, else it will wrap lines. To do this, use shift-click on the Write
++  icon to compose to get HTML compose mode, then select "Preformat" from
++  the drop-down box just under the subject line.
++
++- Allows use of an external editor:
++  The easiest thing to do with Thunderbird and patches is to use an
++  "external editor" extension and then just use your favorite $EDITOR
++  for reading/merging patches into the body text.  To do this, download
++  and install the extension, then add a button for it using
++  View->Toolbars->Customize... and finally just click on it when in the
++  Compose dialog.
++
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++TkRat (GUI)
++
++Works.  Use "Insert file..." or external editor.
++
++                                ###
