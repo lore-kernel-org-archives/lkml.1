@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbXIMXnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765615AbXIMXng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761232AbXIMXnX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbXIMXnN
+	id S1765615AbXIMXng (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758261AbXIMXnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:43:13 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:41290 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753068AbXIMXnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:43:12 -0400
-Message-ID: <46E9CB0D.2040206@us.ibm.com>
-Date: Thu, 13 Sep 2007 16:43:09 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Thu, 13 Sep 2007 19:43:19 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:54107 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758258AbXIMXnS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 19:43:18 -0400
+X-Greylist: delayed 1773 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Sep 2007 19:43:18 EDT
+Date: Fri, 14 Sep 2007 01:13:41 +0200 (CEST)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/23] per device dirty throttling -v10
+Message-ID: <alpine.DEB.0.999.0709140113210.8141@nyyzraq.brgvxre.pu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, SystemTAP <systemtap@sources.redhat.com>
-CC: akpm@linux-foundation.org
-Subject: [PATCH 0/2] A kernel tracing interface
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches provide a kernel tracing interface called "trace".
+Peter,
 
-The motivation for "trace" is to:
-- Provide a simple set of tracing primitives that will utilize the high-
-  performance and low-overhead of relayfs for passing traces data from
-  kernel to user space.
-- Provide a common user interface for managing kernel traces.
-- Allow for binary as well as ascii trace data.
-- Incorporate features from the systemtap runtime that are
-  useful to others.
+I have been using your -v9 backport to 2.6.22 (thanks very much
+btw) for the last few days on an amd64 system configured like this:
 
-History- Versions of this code have been submitted for review under
-a couple of different names.  The original submission was called UTT,
-it was later re-submitted as GTSC.   Christoph Hellwig commented "The
-code looks fine ...but the name is just dumb".  Following Christoph's
-advice, I changed the name to simply "Trace".
+ [/],[/home],[/backup],...
+  on top of
+ [lvm2]
+  using
+ [/dev/sdb]
+  which is an
+ [areca hw raid 6 device made up from 8 sata disks]
 
-This patch addresses review comments made by Christoph Hellwig and Mathieu
-Desnoyers.  Changes include the addition of a mutex and synchronization
-protecting trace state changes (using RCU) and the reduction of the
-number of exports.
+With your patch, performance was much improved. But still there are
+some seemingly simple tasks which do not work well. Like
 
-Patches are against 2.6.23-rc4-mm1
+ cp /home/bigfile.txt /backup/bigfile.txt
 
-Required patches:
-1/2 Trace code and documentation
-2/2 Relay reset consumed  (required for trace's "rewind" feature")
+or also
 
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
+ rm -r /backup/big-directory
+
+They both affect disk access times of other processes very badly.
+
+As I said, things improved a quite a bit with your patch, but I wonder
+if there is more that could be done for this particular setup?
+
+A second thing. Since my box has 8GB memory, I am intrigued by the
+idea of setting dirty_ratio not as a ratio but as an absolute
+number of kilobytes as it was suggested by Neil Brown with the
+dirty_kb patch a few months back. Would it make sense to forward
+port this patch on top of yours ?
+
+cheers
+tobi
+
+
+-- 
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 213 9902
 
