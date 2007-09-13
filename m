@@ -1,130 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbXIMBBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXIMBK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759406AbXIMBBw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 21:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXIMBBo
+	id S1758619AbXIMBK3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 21:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXIMBKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 21:01:44 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44940 "EHLO e2.ny.us.ibm.com"
+	Wed, 12 Sep 2007 21:10:21 -0400
+Received: from mga11.intel.com ([192.55.52.93]:37230 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbXIMBBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 21:01:44 -0400
-Date: Wed, 12 Sep 2007 18:01:40 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [PATCH] State limits to safety of _safe iterators
-Message-ID: <20070913010140.GA21306@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1751213AbXIMBKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 21:10:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,247,1186383600"; 
+   d="scan'208";a="134770528"
+Subject: Re: [BUGFIX] x86_64: NX bit handling in change_page_attr
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200709121535.31550.ak@suse.de>
+References: <1187328518.28497.6.camel@caritas-dev.intel.com>
+	 <20070911202332.c539f1fe.akpm@linux-foundation.org>
+	 <200709121535.31550.ak@suse.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 13 Sep 2007 09:12:02 +0800
+Message-Id: <1189645922.7341.11.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 13 Sep 2007 01:10:16.0943 (UTC) FILETIME=[D884AFF0:01C7F5A2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The _safe list iterators make a blanket statement about how they are
-safe against removal.  This patch, inspired by private conversations
-with people who unwisely but perhaps understandably took this blanket
-statement at its word, adds comments stating limits to this safety.
+On Wed, 2007-09-12 at 15:35 +0200, Andi Kleen wrote:
+> > > Index: linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c
+> > > ===================================================================
+> > > --- linux-2.6.23-rc2-mm2.orig/arch/x86_64/mm/pageattr.c	2007-08-17
+> > > 12:50:25.000000000 +0800 +++
+> > > linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c	2007-08-17
+> > > 12:50:48.000000000 +0800 @@ -147,6 +147,7 @@
+> > >  			split = split_large_page(address, prot, ref_prot2);
+> > >  			if (!split)
+> > >  				return -ENOMEM;
+> > > +			pgprot_val(ref_prot2) &= ~_PAGE_NX;
+> > >  			set_pte(kpte, mk_pte(split, ref_prot2));
+> > >  			kpte_page = split;
+> > >  		}
+> >
+> > What happened with this?  Still valid?
+> 
+> The bug is probably latent there, but I don't think it can affect anything
+> in the kernel because nothing in the kernel should change NX status
+> as far as I know.
+> 
+> Where did you see it? 
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+I found the problem for EFI runtime service supporting. Where the EFI
+runtime code (from firmware) need to be mapped without NX bit set.
 
- list.h |   42 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
+> Anyways I would prefer to only clear the PMD NX when NX status actually 
+> changes on the PTE.Can you do that change? 
 
-diff -urpNa -X dontdiff linux-2.6.22/include/linux/list.h linux-2.6.22-safedoc/include/linux/list.h
---- linux-2.6.22/include/linux/list.h	2007-07-08 16:32:17.000000000 -0700
-+++ linux-2.6.22-safedoc/include/linux/list.h	2007-09-12 17:45:38.000000000 -0700
-@@ -472,6 +472,12 @@ static inline void list_splice_init_rcu(
-  * @pos:	the &struct list_head to use as a loop cursor.
-  * @n:		another &struct list_head to use as temporary storage
-  * @head:	the head for your list.
-+ *
-+ * Please note that this is safe only against removal by the code in
-+ * this iterator's body (either directly or via function calls).  In
-+ * particular, it is not safe against removal by other tasks unless
-+ * you use appropriate locking, RCU, or other synchronization
-+ * mechanism.
-  */
- #define list_for_each_safe(pos, n, head) \
- 	for (pos = (head)->next, n = pos->next; pos != (head); \
-@@ -542,6 +548,12 @@ static inline void list_splice_init_rcu(
-  * @n:		another type * to use as temporary storage
-  * @head:	the head for your list.
-  * @member:	the name of the list_struct within the struct.
-+ *
-+ * Please note that this is safe only against removal by the code in
-+ * this iterator's body (either directly or via function calls).  In
-+ * particular, it is not safe against removal by other tasks unless
-+ * you use appropriate locking, RCU, or other synchronization
-+ * mechanism.
-  */
- #define list_for_each_entry_safe(pos, n, head, member)			\
- 	for (pos = list_entry((head)->next, typeof(*pos), member),	\
-@@ -558,6 +570,12 @@ static inline void list_splice_init_rcu(
-  *
-  * Iterate over list of given type, continuing after current point,
-  * safe against removal of list entry.
-+ *
-+ * Please note that this is safe only against removal by the code in
-+ * this iterator's body (either directly or via function calls).  In
-+ * particular, it is not safe against removal by other tasks unless
-+ * you use appropriate locking, RCU, or other synchronization
-+ * mechanism.
-  */
- #define list_for_each_entry_safe_continue(pos, n, head, member) 		\
- 	for (pos = list_entry(pos->member.next, typeof(*pos), member), 		\
-@@ -574,6 +592,12 @@ static inline void list_splice_init_rcu(
-  *
-  * Iterate over list of given type from current point, safe against
-  * removal of list entry.
-+ *
-+ * Please note that this is safe only against removal by the code in
-+ * this iterator's body (either directly or via function calls).  In
-+ * particular, it is not safe against removal by other tasks unless
-+ * you use appropriate locking, RCU, or other synchronization
-+ * mechanism.
-  */
- #define list_for_each_entry_safe_from(pos, n, head, member) 			\
- 	for (n = list_entry(pos->member.next, typeof(*pos), member);		\
-@@ -589,6 +613,12 @@ static inline void list_splice_init_rcu(
-  *
-  * Iterate backwards over list of given type, safe against removal
-  * of list entry.
-+ *
-+ * Please note that this is safe only against removal by the code in
-+ * this iterator's body (either directly or via function calls).  In
-+ * particular, it is not safe against removal by other tasks unless
-+ * you use appropriate locking, RCU, or other synchronization
-+ * mechanism.
-  */
- #define list_for_each_entry_safe_reverse(pos, n, head, member)		\
- 	for (pos = list_entry((head)->prev, typeof(*pos), member),	\
-@@ -623,6 +653,12 @@ static inline void list_splice_init_rcu(
-  *
-  * Iterate over an rcu-protected list, safe against removal of list entry.
-  *
-+ * Please note that this is safe only against removal by the code in
-+ * this iterator's body (either directly or via function calls).  In
-+ * particular, it is not safe against removal by other tasks unless
-+ * you use appropriate locking, RCU, or other synchronization
-+ * mechanism.
-+ *
-  * This list-traversal primitive may safely run concurrently with
-  * the _rcu list-mutation primitives such as list_add_rcu()
-  * as long as the traversal is guarded by rcu_read_lock().
-@@ -942,6 +978,12 @@ static inline void hlist_add_after_rcu(s
-  * @n:		another &struct hlist_node to use as temporary storage
-  * @head:	the head for your list.
-  * @member:	the name of the hlist_node within the struct.
-+ *
-+ * Please note that this is safe only against removal by the code in
-+ * this iterator's body (either directly or via function calls).  In
-+ * particular, it is not safe against removal by other tasks unless
-+ * you use appropriate locking, RCU, or other synchronization
-+ * mechanism.
-  */
- #define hlist_for_each_entry_safe(tpos, pos, n, head, member) 		 \
- 	for (pos = (head)->first;					 \
+This change is sufficient for Intel CPU. Because the NX bit of PTE is
+still there, no page will be made executable if not been set explicitly
+through PTE. For AMD CPU, will the page be made executable if the NX bit
+of PMD is cleared and the NX bit of PTE is set? If so, I will do the
+change as you said.
+
+> Anyways; it's really not very important.
+
+It is needed by EFI runtime service supporting.
+
+Best Regards,
+Huang Ying
