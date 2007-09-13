@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763637AbXIMDkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763801AbXIMDyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763637AbXIMDkM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 23:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbXIMDkA
+	id S1763801AbXIMDyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 23:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760288AbXIMDyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 23:40:00 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:37737 "EHLO smtp.gentoo.org"
+	Wed, 12 Sep 2007 23:54:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37207 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751105AbXIMDj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 23:39:59 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch] update CFI URI n mtd kconfig
-Date: Wed, 12 Sep 2007 23:39:54 -0400
-User-Agent: KMail/1.9.7
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
+	id S1754325AbXIMDyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 23:54:11 -0400
+Message-ID: <46E8B460.3060606@garzik.org>
+Date: Wed, 12 Sep 2007 23:54:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Divy Le Ray <divy@chelsio.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 1/7 RESEND] cxgb3 - Firmware update
+References: <20070905225809.17217.20773.stgit@speedy5>
+In-Reply-To: <20070905225809.17217.20773.stgit@speedy5>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709122339.55267.vapier@gentoo.org>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since AMD shunted its flash memory division, the URI in the mtd Kconfig is now
-broken, so the attached patch points people to Wikipedia.
+Divy Le Ray wrote:
+> From: Divy Le Ray <divy@chelsio.com>
+> 
+> Update firmware version.
+> Allow the driver to be up and running with older FW image
+> 
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-diff --git a/drivers/mtd/chips/Kconfig b/drivers/mtd/chips/Kconfig
-index 479d32b..980117a 100644
---- a/drivers/mtd/chips/Kconfig
-+++ b/drivers/mtd/chips/Kconfig
-@@ -11,8 +11,8 @@ config MTD_CFI
- 	  AMD and other flash manufactures that provides a universal method
- 	  for probing the capabilities of flash devices. If you wish to
- 	  support any device that is CFI-compliant, you need to enable this
--	  option. Visit <http://www.amd.com/products/nvd/overview/cfi.html>
--	  for more information on CFI.
-+	  option. For more information on CFI, visit:
-+	  <http://wikipedia.org/wiki/Common_Flash_Memory_Interface>
- 
- config MTD_JEDECPROBE
- 	tristate "Detect non-CFI AMD/JEDEC-compatible flash chips"
+applied 1-7
+
+
