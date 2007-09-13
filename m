@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761809AbXIMPvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759791AbXIMP7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761809AbXIMPvy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXIMPvo
+	id S1759791AbXIMP7t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 11:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXIMP7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:51:44 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54833 "EHLO mail.dvmed.net"
+	Thu, 13 Sep 2007 11:59:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56290 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753288AbXIMPvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:51:43 -0400
-Message-ID: <46E95C7F.1050302@pobox.com>
-Date: Thu, 13 Sep 2007 11:51:27 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1751623AbXIMP7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 11:59:40 -0400
+Message-ID: <46E95E5D.2050305@redhat.com>
+Date: Thu, 13 Sep 2007 11:59:25 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-CC: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sb1250-mac.c: De-typedef, de-volatile, de-etc...
-References: <Pine.LNX.4.64N.0709101310030.25038@blysk.ds.pg.gda.pl> <46E8B56E.7060705@pobox.com> <Pine.LNX.4.64N.0709131506040.31069@blysk.ds.pg.gda.pl> <20070913151452.GB29665@linux-mips.org>
-In-Reply-To: <20070913151452.GB29665@linux-mips.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Robin Holt <holt@sgi.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Possible hang inside interrupt handler on sata_promise.
+References: <20070912131904.GW14474@lnx-holt.americas.sgi.com>
+In-Reply-To: <20070912131904.GW14474@lnx-holt.americas.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Baechle wrote:
-> On Thu, Sep 13, 2007 at 03:13:06PM +0100, Maciej W. Rozycki wrote:
-> 
->>  Hmm, works fine with linux-2.6.git#master.  I do not recall any recent 
->> activity with this driver -- I wonder what the difference is.  Let me 
->> see...
-> 
-> Hmm...  HEAD du jour has no differences for the sb1250-mac between lmo
-> and kernel.org.
+On 09/12/2007 09:19 AM, Robin Holt wrote:
+> I have been experiencing hangs on a newly setup machine.  Unfortunately,
+> it appears to be hanging inside the interrupt handler as sysrq and
+> caps-lock led seem to stop working when the event occurs.  I am guessing
+> it is related to the sata_promise driver, but that is only a guess as
+> I don't get much for output.  I am running the debian unstable kernel
+> (2.6.22-1-686), but the problem also occurs with the debian stable kernel
+> (2.6.18-4-686).  I do need to boot with the acpi=off option, but am
+> not sure if that is related.  Unfortunately, I do not know much about
+> troubleshooting i386 when problems occur inside the interrupt handlers.
 
-Net driver patches should apply on top of netdev-2.6.git#upstream, which 
-is where changes to net drivers are queued for the next release.
+There is a list of kernel options you can try, including:
 
-The closer we get to the merge window, the greater the diff between 
-netdev-2.6.git#upstream and linux-2.6.git#master, so 
-linux-2.6.git#master is not a useful comparison.
-
-	Jeff
-
-
+  noapic
+  nolapic
+  pci=nomsi,nommconf
+  pci=noacpi
 
