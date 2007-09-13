@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765208AbXIMSja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763647AbXIMS4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765208AbXIMSja (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 14:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbXIMSjW
+	id S1763647AbXIMS4r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 14:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbXIMS4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 14:39:22 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:45854 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbXIMSjV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 14:39:21 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 13 Sep 2007 14:37:11 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Chris Wedgwood <cw@f00f.org>, LKML <linux-kernel@vger.kernel.org>,
-       davej@redhat.com, Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: [RFC PATCH] Add a 'minimal tree install' target
-In-Reply-To: <20070913183359.GA27146@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0709131435001.6921@localhost.localdomain>
-References: <20070912232534.GA26868@puku.stupidest.org>
- <20070913183359.GA27146@uranus.ravnborg.org>
+	Thu, 13 Sep 2007 14:56:37 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37481 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753557AbXIMS4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 14:56:37 -0400
+Message-ID: <46E987E0.2010605@garzik.org>
+Date: Thu, 13 Sep 2007 14:56:32 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	TW_VN 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Steve Wise <swise@opengridcomputing.com>
+CC: Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
+References: <adahclymos8.fsf@cisco.com> <46E97BB0.9030106@opengridcomputing.com>
+In-Reply-To: <46E97BB0.9030106@opengridcomputing.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007, Sam Ravnborg wrote:
+Steve Wise wrote:
+> I was about to post v2 of my patch to avoid port space collisions with 
+> the native stack.  Can we get that 2.6.24?  It is high priority IMO. 
+> I've tried to solicit review on it, but I think folks are reluctant... ;-)
 
-> Hi Chris.
->
-> On Wed, Sep 12, 2007 at 04:25:34PM -0700, Chris Wedgwood wrote:
-...
-> > -----
-> > Add a 'mintree-install' makefile target.
+Well, if it involves /sharing/ port space with the native stack, i.e. 
+where port 1234 is IB but 1235 is Linux, pretty much all the networking 
+devs have NAK'd that approach AFAICS.
 
-> I would strongly prefer the name "build-pkg".
+	Jeff
 
-what about "devel-pkg" instead?  that would match fedora's
-"kernel-devel" naming convention.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
 
-http://crashcourse.ca
-========================================================================
