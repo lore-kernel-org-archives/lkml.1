@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbXIMPQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbXIMPTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761272AbXIMPQZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbXIMPQR
+	id S1760486AbXIMPTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 11:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXIMPTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:16:17 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:61662 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756735AbXIMPQQ (ORCPT
+	Thu, 13 Sep 2007 11:19:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48366 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752945AbXIMPTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:16:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=lFek/0fatf6N6kBF4Gc+DVI4XkaeVXVG9Hu5yq8BEL7ccziSTnNwEyJ6vewhWKCDZ92fu0do6qDljQECb8xv6bER9/oBIiAUZQ5c/la40BTDXTu9gp6cIKEC/b9woqISiQOZyBjIy5Xps+4x4cgtX2ri0SNAbUaMkwcNK2IUNV4=
-Message-ID: <46E953D7.5070305@gmail.com>
-Date: Thu, 13 Sep 2007 17:14:31 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 13 Sep 2007 11:19:08 -0400
+Date: Thu, 13 Sep 2007 08:16:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       orgis@agnld.uni-potsdam.de, arekm@maven.pl, ed.lin@promise.com,
+       Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com
+Subject: Re: [PATCH] Fix race with shared tag queue maps
+In-Reply-To: <20070913122652.GK25592@kernel.dk>
+Message-ID: <alpine.LFD.0.999.0709130813220.16478@woody.linux-foundation.org>
+References: <20070913122652.GK25592@kernel.dk>
 MIME-Version: 1.0
-To: Jon Ivar Rykkelid <jonry@pvv.org>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Re: sata_nv issues with MCP51 SATA controller
-References: <46E8EABF.3060409@pvv.org> <46E94728.9050509@garzik.org> <46E951C6.1000403@pvv.org>
-In-Reply-To: <46E951C6.1000403@pvv.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Ivar Rykkelid wrote:
-> Thanks for the suggestion, but sata_nv is not built modular in my
-> current kernel, so "no can do" at the moment
-> (However, if some expert REALLY thinks this will fix things, I will
-> CERTAINLY recompile and give it a go)
 
-Passing "sata_nv.adma=0" as kernel boot parameter will do the trick.
 
--- 
-tejun
+On Thu, 13 Sep 2007, Jens Axboe wrote:
+> +
+> +	/*
+> +	 * Ensure ordering with tag section
+> +	 */
+> +	smp_mb__before_clear_bit();
+> +
+> +	if (unlikely(!test_and_clear_bit(tag, bqt->tag_map))) {
+
+You don't need the "smp_mb__before_clear_bit()" there.
+
+The regular "clear_bit()" needs it, but the "test_and_xxx()" versions are 
+architecturally defined to be memory barriers, exactly because they are 
+regularly used for locking.
+
+This is even documented - see Documentation/atomic_ops.txt.
+
+		Linus
