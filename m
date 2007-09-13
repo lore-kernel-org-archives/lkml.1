@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbXIMJFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759943AbXIMJHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759860AbXIMJFW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbXIMJFI
+	id S1759943AbXIMJHN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:07:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbXIMJHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:05:08 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:30636 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752771AbXIMJFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:05:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4dq1IKSwG/+TBHbe0X68hzIH8sjJyLSFDYcmnR0RJ9ynwByNCk80TnSwo7jzI6N43ASYgKlOcJHeXJ3/H8QlPULGct3SyRe65ri6XRLfuKFN112HoX+HJ2UC4LIpcE717bY0MV1GhfsmAscLdSvqfR7CVK0zm7e+BDQRSjn5DhE=  ;
-X-YMail-OSG: smVmK_UVM1kuCC7DmILhAIXNCT0fZSv_xQQ9VbAiw0ONfEYX6Ke8yQEAfXriJtE_0x64JLmiLA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Date: Thu, 13 Sep 2007 03:23:21 +1000
-User-Agent: KMail/1.9.5
-Cc: Mel Gorman <mel@skynet.ie>, Christoph Lameter <clameter@sgi.com>,
-       andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-References: <20070911060349.993975297@sgi.com> <200709120127.33832.nickpiggin@yahoo.com.au> <20070913014905.GV995458@sgi.com>
-In-Reply-To: <20070913014905.GV995458@sgi.com>
+	Thu, 13 Sep 2007 05:07:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40373 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753581AbXIMJHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 05:07:00 -0400
+Date: Thu, 13 Sep 2007 11:06:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rob Hussey <robjhussey@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>, Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [announce] CFS-devel, performance improvements
+Message-ID: <20070913090655.GA28505@elte.hu>
+References: <20070911200459.GA6974@elte.hu> <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com> <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709130323.22534.nickpiggin@yahoo.com.au>
+In-Reply-To: <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 September 2007 11:49, David Chinner wrote:
-> On Wed, Sep 12, 2007 at 01:27:33AM +1000, Nick Piggin wrote:
 
-> > I just gave 4 things which combined might easily reduce xfs vmap overhead
-> > by several orders of magnitude, all without changing much code at all.
->
-> Patches would be greatly appreciately. You obviously understand this
-> vm code much better than I do, so if it's easy to fix by adding some
-> generic vmap cache thingy, please do.
+* Rob Hussey <robjhussey@gmail.com> wrote:
 
-Well, it may not be easy to _fix_, but it's easy to try a few improvements ;)
+> On 9/11/07, Rob Hussey <robjhussey@gmail.com> wrote:
+> > Hi Ingo,
+> >
+> > When compiling, I get:
+> 
+> Yeah, this was my fault :(
+> 
+> I've had a chance to test this now, and everything feels great. I did
+> some benchmarks for 2.6.23-rc1, 2.6.23-rc6-cfs, and
+> 2.6.23-rc6-cfs-devel:
 
-How do I make an image and run a workload that will coerce XFS into
-doing a significant number of vmaps?
+thanks for the numbers! Could you please also post the .config you used? 
+Thx,
+
+	Ingo
