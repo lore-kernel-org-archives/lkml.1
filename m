@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763647AbXIMUmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933623AbXIMUnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763647AbXIMUmr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 16:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760992AbXIMUmA
+	id S933623AbXIMUnJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 16:43:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761316AbXIMUmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 16:42:00 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:60214 "EHLO
+	Thu, 13 Sep 2007 16:42:01 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:60217 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755757AbXIMUl6 (ORCPT
+	with ESMTP id S1757280AbXIMUl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 16:41:58 -0400
+	Thu, 13 Sep 2007 16:41:59 -0400
 Date: Thu, 13 Sep 2007 16:41:11 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/3] UML - Remove an unused file
-Message-ID: <20070913204111.GA9981@c2.user-mode-linux.org>
+Subject: [PATCH 2/3] UML - Remove called-once function
+Message-ID: <20070913204111.GA9986@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,210 +24,67 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/um/os-Linux/tt.c is no longer used.
+init_irq_signals doesn't need to be called from the context of a new
+process.  It initializes handlers, which are useless in process
+context.  With that call gone, init_irq_signals has only one caller,
+so it can be inlined into init_new_thread_signals.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/os-Linux/tt.c |  195 --------------------------------------------------
- 1 file changed, 195 deletions(-)
-
-Index: linux-2.6.22/arch/um/os-Linux/tt.c
+Index: linux-2.6.22/arch/um/include/os.h
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/tt.c	2007-09-02 14:05:53.000000000 -0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,195 +0,0 @@
--/*
-- * Copyright (C) 2000, 2001, 2002 Jeff Dike (jdike@karaya.com)
-- * Licensed under the GPL
-- */
+--- linux-2.6.22.orig/arch/um/include/os.h	2007-09-12 16:45:28.000000000 -0400
++++ linux-2.6.22/arch/um/include/os.h	2007-09-13 10:46:34.000000000 -0400
+@@ -299,7 +299,6 @@ extern void os_free_irq_later(struct irq
+ extern int os_get_pollfd(int i);
+ extern void os_set_pollfd(int i, int fd);
+ extern void os_set_ioignore(void);
+-extern void init_irq_signals(int on_sigstack);
+ 
+ /* sigio.c */
+ extern int add_sigio_fd(int fd);
+Index: linux-2.6.22/arch/um/os-Linux/irq.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/irq.c	2007-09-12 16:44:34.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/irq.c	2007-09-13 10:47:13.000000000 -0400
+@@ -138,14 +138,3 @@ void os_set_ioignore(void)
+ {
+ 	signal(SIGIO, SIG_IGN);
+ }
 -
--#include <stdio.h>
--#include <unistd.h>
--#include <signal.h>
--#include <sched.h>
--#include <errno.h>
--#include <stdarg.h>
--#include <stdlib.h>
--#include <sys/time.h>
--#include <sys/ptrace.h>
--#include <linux/ptrace.h>
--#include <sys/wait.h>
--#include <sys/mman.h>
--#include <asm/ptrace.h>
--#include <asm/unistd.h>
--#include "kern_util.h"
--#include "user.h"
--#include "signal_kern.h"
--#include "sysdep/ptrace.h"
--#include "sysdep/sigcontext.h"
--#include "irq_user.h"
--#include "ptrace_user.h"
--#include "init.h"
--#include "os.h"
--#include "uml-config.h"
--#include "choose-mode.h"
--#include "mode.h"
--#include "tempfile.h"
--#include "kern_constants.h"
--
--int protect_memory(unsigned long addr, unsigned long len, int r, int w, int x,
--		   int must_succeed)
+-void init_irq_signals(int on_sigstack)
 -{
--	int err;
--
--	err = os_protect_memory((void *) addr, len, r, w, x);
--	if(err < 0){
--                if(must_succeed)
--			panic("protect failed, err = %d", -err);
--		else return(err);
--	}
--	return(0);
--}
--
--void kill_child_dead(int pid)
--{
--	kill(pid, SIGKILL);
--	kill(pid, SIGCONT);
--	do {
--		int n;
--		CATCH_EINTR(n = waitpid(pid, NULL, 0));
--		if (n > 0)
--			kill(pid, SIGCONT);
--		else
--			break;
--	} while(1);
--}
--
--void stop(void)
--{
--	while(1) sleep(1000000);
--}
--
--int wait_for_stop(int pid, int sig, int cont_type, void *relay)
--{
--	sigset_t *relay_signals = relay;
--	int status, ret;
--
--	while(1){
--		CATCH_EINTR(ret = waitpid(pid, &status, WUNTRACED));
--		if((ret < 0) ||
--		   !WIFSTOPPED(status) || (WSTOPSIG(status) != sig)){
--			if(ret < 0){
--				printk("wait failed, errno = %d\n",
--				       errno);
--			}
--			else if(WIFEXITED(status))
--				printk("process %d exited with status %d\n",
--				       pid, WEXITSTATUS(status));
--			else if(WIFSIGNALED(status))
--				printk("process %d exited with signal %d\n",
--				       pid, WTERMSIG(status));
--			else if((WSTOPSIG(status) == SIGVTALRM) ||
--				(WSTOPSIG(status) == SIGALRM) ||
--				(WSTOPSIG(status) == SIGIO) ||
--				(WSTOPSIG(status) == SIGPROF) ||
--				(WSTOPSIG(status) == SIGCHLD) ||
--				(WSTOPSIG(status) == SIGWINCH) ||
--				(WSTOPSIG(status) == SIGINT)){
--				ptrace(cont_type, pid, 0, WSTOPSIG(status));
--				continue;
--			}
--			else if((relay_signals != NULL) &&
--				sigismember(relay_signals, WSTOPSIG(status))){
--				ptrace(cont_type, pid, 0, WSTOPSIG(status));
--				continue;
--			}
--			else printk("process %d stopped with signal %d\n",
--				    pid, WSTOPSIG(status));
--			panic("wait_for_stop failed to wait for %d to stop "
--			      "with %d\n", pid, sig);
--		}
--		return(status);
--	}
--}
--
--void forward_ipi(int fd, int pid)
--{
--	int err;
--
--	err = os_set_owner(fd, pid);
--	if(err < 0)
--		printk("forward_ipi: set_owner failed, fd = %d, me = %d, "
--		       "target = %d, err = %d\n", fd, os_getpid(), pid, -err);
--}
--
--/*
-- *-------------------------
-- * only for tt mode (will be deleted in future...)
-- *-------------------------
-- */
--
--struct tramp {
--	int (*tramp)(void *);
--	void *tramp_data;
--	unsigned long temp_stack;
 -	int flags;
--	int pid;
--};
 -
--/* See above for why sigkill is here */
+-	flags = on_sigstack ? SA_ONSTACK : 0;
 -
--int sigkill = SIGKILL;
--
--int outer_tramp(void *arg)
--{
--	struct tramp *t;
--	int sig = sigkill;
--
--	t = arg;
--	t->pid = clone(t->tramp, (void *) t->temp_stack + UM_KERN_PAGE_SIZE/2,
--		       t->flags, t->tramp_data);
--	if(t->pid > 0) wait_for_stop(t->pid, SIGSTOP, PTRACE_CONT, NULL);
--	kill(os_getpid(), sig);
--	_exit(0);
+-	set_handler(SIGIO, (__sighandler_t) sig_handler, flags | SA_RESTART,
+-		    SIGUSR1, SIGIO, SIGWINCH, SIGVTALRM, -1);
+-	signal(SIGWINCH, SIG_IGN);
 -}
--
--int start_fork_tramp(void *thread_arg, unsigned long temp_stack,
--		     int clone_flags, int (*tramp)(void *))
--{
--	struct tramp arg;
--	unsigned long sp;
--	int new_pid, status, err;
--
--	/* The trampoline will run on the temporary stack */
--	sp = stack_sp(temp_stack);
--
--	clone_flags |= CLONE_FILES | SIGCHLD;
--
--	arg.tramp = tramp;
--	arg.tramp_data = thread_arg;
--	arg.temp_stack = temp_stack;
--	arg.flags = clone_flags;
--
--	/* Start the process and wait for it to kill itself */
--	new_pid = clone(outer_tramp, (void *) sp, clone_flags, &arg);
--	if(new_pid < 0)
--		return(new_pid);
--
--	CATCH_EINTR(err = waitpid(new_pid, &status, 0));
--	if(err < 0)
--		panic("Waiting for outer trampoline failed - errno = %d",
--		      errno);
--
--	if(!WIFSIGNALED(status) || (WTERMSIG(status) != SIGKILL))
--		panic("outer trampoline didn't exit with SIGKILL, "
--		      "status = %d", status);
--
--	return(arg.pid);
--}
--
--void forward_pending_sigio(int target)
--{
--	sigset_t sigs;
--
--	if(sigpending(&sigs))
--		panic("forward_pending_sigio : sigpending failed");
--	if(sigismember(&sigs, SIGIO))
--		kill(target, SIGIO);
--}
--
+Index: linux-2.6.22/arch/um/os-Linux/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/process.c	2007-09-12 16:44:34.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/process.c	2007-09-13 10:46:34.000000000 -0400
+@@ -249,7 +249,10 @@ void init_new_thread_signals(void)
+ 		    SIGUSR1, SIGIO, SIGWINCH, SIGVTALRM, -1);
+ 	signal(SIGHUP, SIG_IGN);
+ 
+-	init_irq_signals(1);
++	set_handler(SIGIO, (__sighandler_t) sig_handler,
++		    SA_ONSTACK | SA_RESTART, SIGUSR1, SIGIO, SIGWINCH, SIGALRM,
++		    SIGVTALRM, -1);
++	signal(SIGWINCH, SIG_IGN);
+ }
+ 
+ int run_kernel_thread(int (*fn)(void *), void *arg, jmp_buf **jmp_ptr)
+Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-09-13 10:45:15.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-09-13 10:46:34.000000000 -0400
+@@ -177,7 +177,6 @@ static int userspace_tramp(void *stack)
+ 
+ 	ptrace(PTRACE_TRACEME, 0, 0, 0);
+ 
+-	init_new_thread_signals();
+ 	err = set_interval();
+ 	if (err)
+ 		panic("userspace_tramp - setting timer failed, errno = %d\n",
