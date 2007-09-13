@@ -1,97 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXIMUbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764043AbXIMUcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbXIMUbs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 16:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbXIMUbl
+	id S1764043AbXIMUcF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 16:32:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbXIMUbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 16:31:41 -0400
-Received: from 0006b10c8258.cranite.com ([63.81.170.2]:45069 "EHLO
-	mailnode1.cranite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755757AbXIMUbk convert rfc822-to-8bit (ORCPT
+	Thu, 13 Sep 2007 16:31:48 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:46950 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765655AbXIMUbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 16:31:40 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 13 Sep 2007 16:31:47 -0400
+X-IronPort-AV: i="4.20,251,1186372800"; 
+   d="scan'208"; a="39576076:sNHT33638983"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Josh Boyer" <jwboyer@gmail.com>
+Subject: Re: [patch] update CFI URI n mtd kconfig
+Date: Thu, 13 Sep 2007 16:31:56 -0400
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier@gentoo.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
+References: <200709122339.55267.vapier@gentoo.org> <625fc13d0709131128m5a606b6ewe729c1e72f73f9d9@mail.gmail.com>
+In-Reply-To: <625fc13d0709131128m5a606b6ewe729c1e72f73f9d9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: irq load balancing
-Date: Thu, 13 Sep 2007 13:31:39 -0700
-Message-ID: <3641F7C576757E49AE23AD0D820D72C434DCB3@mailnode1.cranite.com>
-In-Reply-To: <46E85DDA.7010209@redhat.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: irq load balancing
-Thread-Index: Acf1hi+TjAdZc9OeToO+nybCr9QWpAAvUVcg
-From: "Venkat Subbiah" <venkats@cranite.com>
-To: "Chris Snook" <csnook@redhat.com>
-Cc: <linux-kernel@vger.kernel.org>
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709131631.56867.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 13 Sep 2007 20:31:39.0725 (UTC) FILETIME=[16B167D0:01C7F645]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Doing it in a round-robin fashion will be disastrous for performance.
-Your cache miss rate will go through the roof and you'll hit the slow
-paths in the network stack most of the time.
-> Most of the work in my system is spent in enrypt/decrypting traffic.
-Right now all this is done in a tasklet within the softirqd and hence
-all landing up on the same CPU.
-On the receive side it'a packet handler that handles the traffic. On the
-tx side it's done within the transmit path of the packet. So would
-re-architecting this to move the rx packet handler to a different kernel
-thread(with smp affinity to one CPU) and tx to a different kernel
-thread(with SMP affinity to a different CPU) be advisable. 
-What's the impact on cache miss and slowpath/fastpath in network stack.
+On Thu 13 Sep 2007 14:28, Josh Boyer pondered:
+> On 9/12/07, Mike Frysinger <vapier@gentoo.org> wrote:
+> > Since AMD shunted its flash memory division, the URI in the mtd Kconfig is now
+> > broken, so the attached patch points people to Wikipedia.
+> >
+> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> > ---
+> > diff --git a/drivers/mtd/chips/Kconfig b/drivers/mtd/chips/Kconfig
+> > index 479d32b..980117a 100644
+> > --- a/drivers/mtd/chips/Kconfig
+> > +++ b/drivers/mtd/chips/Kconfig
+> > @@ -11,8 +11,8 @@ config MTD_CFI
+> >           AMD and other flash manufactures that provides a universal method
 
-Thx,
--Venkat
+Even on the Intel page, it gives "Intel, AMD, Sharp, and Fujitsu" credit - why
+limit Sharp, and Fujitsu to "others"? (I would just take out everyone's name).
 
------Original Message-----
-From: Chris Snook [mailto:csnook@redhat.com] 
-Sent: Wednesday, September 12, 2007 2:45 PM
-To: Venkat Subbiah
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: irq load balancing
-
-Venkat Subbiah wrote:
-> Most of the load in my system is triggered by a single ethernet IRQ.
-> Essentially the IRQ schedules a tasklet and most of the work is done
-in the
-> taskelet which is scheduled in the IRQ. From what I read looks like
-the
-> tasklet would be executed on the same CPU on which it was scheduled.
-So this
-> means even in an SMP system it will be one processor which is
-overloaded.
+> >           for probing the capabilities of flash devices. If you wish to
+> >           support any device that is CFI-compliant, you need to enable this
+> > -         option. Visit <http://www.amd.com/products/nvd/overview/cfi.html>
+> > -         for more information on CFI.
+> > +         option. For more information on CFI, visit:
+> > +         <http://wikipedia.org/wiki/Common_Flash_Memory_Interface>
 > 
-> So will using the user space IRQ loadbalancer really help?
+> Erm, I'd rather not point to wikipedia.  Can you change it to point to:
+> 
+> http://www.intel.com/design/flash/swb/cfi.htm
 
-A little bit.  It'll keep other IRQs on different CPUs, which will
-prevent other 
-interrupts from causing cache and TLB evictions that could slow down the
+Why not from the place that you can get the standard? http://jedec.org/
 
-interrupt handler for the NIC.
+or http://www.jedec.org/download/search/jesd68-01.pdf 
 
-> What I am doubtful
-> about is that the user space load balance comes along and changes the
-> affinity once in a while. But really what I need is every interrupt to
-go to
-> a different CPU in a round robin fashion.
+There isn't any point to pick one vendor - unless you work there, own
+stock, or one provides outstanding support (free hardware) for driver 
+development. :)
 
-Doing it in a round-robin fashion will be disastrous for performance.
-Your 
-cache miss rate will go through the roof and you'll hit the slow paths
-in the 
-network stack most of the time.
-
-> Looks like the APIC  can distribute IRQ's dynamically? Is this
-supported in
-> the kernel and any config or proc interface to turn this on/off.
-
-/proc/irq/$FOO/smp_affinity is a bitmask.  You can mask an irq to
-multiple 
-processors.  Of course, this will absolutely kill your performance.
-That's why 
-irqbalance never does this.
-
-	-- Chris
+-Robin
