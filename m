@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbXIMHtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbXIMHwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbXIMHtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 03:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXIMHtH
+	id S1754631AbXIMHwk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 03:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbXIMHwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 03:49:07 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33932 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbXIMHtG (ORCPT
+	Thu, 13 Sep 2007 03:52:33 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:34212 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751139AbXIMHwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 03:49:06 -0400
-Date: Thu, 13 Sep 2007 08:47:42 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael Westermann <michael@dvmwest.de>, linux-kernel@vger.kernel.org
-Subject: Re: DTR/DSR Patch
-Message-ID: <20070913074742.GB11938@flint.arm.linux.org.uk>
-References: <20070831131741.GA14569@dvmwest.dvmwest.de> <20070912173817.7ca5c3dc.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070912173817.7ca5c3dc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 13 Sep 2007 03:52:32 -0400
+Message-Id: <200709130752.l8D7qAUA005911@owlet.beaverton.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: Bad hotplug/scheduler interaction?
+Date: Thu, 13 Sep 2007 00:52:10 -0700
+From: Rick Lindsley <ricklind@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 05:38:17PM -0700, Andrew Morton wrote:
-> On Fri, 31 Aug 2007 15:17:41 +0200
-> Michael Westermann <michael@dvmwest.de> wrote:
-> 
-> > Hello,
-> > 
-> > I make driver for Point of Sale Printer, a wide range of Printer use
-> > only a DTR/DSR hardware-handshaking. When I use a handshaking in the
-> > userspace, the Printr has a overrun problem and our customer has a
-> > problem with the tax office.
-> > 
-> > my Patch relaize a simple DTR/DSR handhake with a small change of the
-> > code. The change auf the userspace is very simple. e.g.
-> > 
-> > 
-> > cflags |= CDTRDSR;
-> > 
-> > The change of the stty tool at 2 lines.
-> > 
-> 
-> googling for CDTRDSR is useful.  I see from
-> http://lkml.org/lkml/2006/12/10/49 that Russell was generally supportive,
-> but requested changes which afaict you have implemented here?
+I'm concerned that we don't have adequate protection for the scheduler
+during cpu hotplug events, but I'm willing to believe I simply don't
+understand the mechanism well enough.  We had a crash in (comparatively
+ancient) 2.6.16.* but I think the relevant code is basically unchanged
+since then.
 
-Partially implemented - my point 1 seems to have been addressed but not
-point 2.  Point 2 is rather important, otherwise you can end up with a
-port in stopped mode with no way to get it transmitting.
+First we introduced some cpu-intensive workloads.  Then we added two cpus.
+System quickly crashed.  The crash was in find_busiest_group(), when
+the kernel tried to access "this", which was NULL.  If we don't find a
+localgroup, we won't set this, and when we try to calculate *imbalance,
+we'll dereference a NULL "this" and crash.
 
-Also, it doesn't seem to be tweaking the DTR signal at all, so how does
-it tell the remote end to stop transmitting?
+As I looked over the code, though, I couldn't tell if the fault was with
+find_busiest_group() for not covering this case, or if the problem was
+that the method the hotplug code is using to reconstruct the sched_domains
+really doesn't protect find_busiest_group (and find_idlest_group) at all.
+Can anybody explain how synchronize_sched() is really syncing?  It looks
+like a half-implemented RCU setup.  I fear we really don't have any way
+to protect the two functions above from hotplug's desire to twiddle
+with the sched_domains.
 
-Essentially, the author needs to search for CRTSCTS in serial_core.c and
-*carefully* consider whether they need to modify those places as well.
-I stress carefully, because at the moment we start the tty whenever
-we move from CRTSCTS to no CRTSCTS.  If you're moving CRTSCTS->CDTRDSR
-then you only want to do this iff DSR is asserted.
+Do we?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Rick
