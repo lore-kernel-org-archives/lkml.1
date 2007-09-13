@@ -1,168 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbXIMXoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbXIMXpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932749AbXIMXoU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763128AbXIMXn0
+	id S932375AbXIMXpF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbXIMXos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:43:26 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:59745 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762363AbXIMXnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:43:24 -0400
-Message-ID: <46E9CB1A.2080104@us.ibm.com>
-Date: Thu, 13 Sep 2007 16:43:22 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Thu, 13 Sep 2007 19:44:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57139 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754270AbXIMXor (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 19:44:47 -0400
+Date: Thu, 13 Sep 2007 16:21:19 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Russell King <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] wake up from a serial port
+Message-ID: <20070913232119.GA32307@kroah.com>
+References: <200709100831.l8A8VUH6015446@imap1.linux-foundation.org> <20070910132703.2dd92485@the-village.bc.nu> <Pine.LNX.4.60.0709102251250.5200@poirot.grange> <20070911081220.GA20847@flint.arm.linux.org.uk> <Pine.LNX.4.60.0709111217470.19259@poirot.grange> <20070911121057.34b9e066@the-village.bc.nu> <Pine.LNX.4.60.0709122019100.5909@poirot.grange> <20070912153610.11c4f5cb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, SystemTAP <systemtap@sources.redhat.com>
-CC: akpm@linux-foundation.org
-Subject: [PATCH 2/2] Relay reset consumed 
-Content-Type: multipart/mixed;
- boundary="------------000501050407020002060404"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070912153610.11c4f5cb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000501050407020002060404
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, Sep 12, 2007 at 03:36:10PM -0700, Andrew Morton wrote:
+> On Wed, 12 Sep 2007 20:50:10 +0200 (CEST)
+> Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> 
+> > Enable wakeup from serial ports, make it run-time configurable over sysfs, 
+> > e.g.,
+> > 
+> > echo enabled > /sys/devices/platform/serial8250.0/tty/ttyS0/power/wakeup
+> > 
+> > Requires
+> > 
+> > # CONFIG_SYSFS_DEPRECATED is not set
+> > 
+> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> > 
+> > ---
+> > 
+> > Following suggestions from Alan and Russell moved the may_wake_up checks 
+> > to serial_core.c. This time actually tested - it does even work. Could 
+> > someone, please, verify, that put_device after device_find_child is 
+> > correct?
+> 
+> Seems right to me, from reading device_find_child() and its associated
+> documentation.
 
+Yes, that is correct.
 
+thanks,
 
---------------000501050407020002060404
-Content-Type: text/x-patch;
- name="reset_consumed.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="reset_consumed.patch"
-
-This patch allows relay channels to be reset i.e. unconsumed.
-Basically allows a 'rewind' function for flight-recorder tracing.
-
-Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
----
- Documentation/filesystems/relay.txt |   11 ++++++
- include/linux/relay.h               |    1 +
- kernel/relay.c                      |   58 ++++++++++++++++++++++++++++++++---
- 3 files changed, 65 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
-index 18d23f9..d31113a 100644
---- a/Documentation/filesystems/relay.txt
-+++ b/Documentation/filesystems/relay.txt
-@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
-     relay_close(chan)
-     relay_flush(chan)
-     relay_reset(chan)
-+    relay_reset_consumed(chan)
- 
-   channel management typically called on instigation of userspace:
- 
-@@ -452,6 +453,16 @@ state without reallocating channel buffer memory or destroying
- existing mappings.  It should however only be called when it's safe to
- do so, i.e. when the channel isn't currently being written to.
- 
-+The read(2) implementation always 'consumes' the bytes read,
-+i.e. those bytes won't be available again to subsequent reads.
-+Certain applications may nonetheless wish to allow the 'consumed' data
-+to be re-read; relay_reset_consumed() is provided for that purpose -
-+it resets the internal consumed counters for all buffers in the
-+channel.  For example, if a first set of reads 'drains' the channel,
-+and then relay_reset_consumed() is called, a second set of reads will
-+get the exact same data (assuming no new data was written between the
-+first set of reads and the second).
-+
- Finally, there are a couple of utility callbacks that can be used for
- different purposes.  buf_mapped() is called whenever a channel buffer
- is mmapped from user space and buf_unmapped() is called when it's
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 6cd8c44..aca45fa 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -175,6 +175,7 @@ extern void relay_subbufs_consumed(struct rchan *chan,
- 				   unsigned int cpu,
- 				   size_t consumed);
- extern void relay_reset(struct rchan *chan);
-+extern void relay_reset_consumed(struct rchan *chan);
- extern int relay_buf_full(struct rchan_buf *buf);
- 
- extern size_t relay_switch_subbuf(struct rchan_buf *buf,
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 61134eb..106ce92 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -383,6 +383,57 @@ void relay_reset(struct rchan *chan)
- }
- EXPORT_SYMBOL_GPL(relay_reset);
- 
-+/**
-+ *	__relay_reset_consumed - reset a channel buffer's consumed count
-+ *	@buf: the channel buffer
-+ *
-+ *	See relay_reset_consumed for description of effect.
-+ */
-+static inline void __relay_reset_consumed(struct rchan_buf *buf)
-+{
-+	size_t n_subbufs = buf->chan->n_subbufs;
-+	size_t produced = buf->subbufs_produced;
-+	size_t consumed = buf->subbufs_consumed;
-+
-+	if (produced < n_subbufs)
-+		buf->subbufs_consumed = 0;
-+	else {
-+		consumed = produced - n_subbufs;
-+		if (buf->offset)
-+			consumed++;
-+		buf->subbufs_consumed = consumed;
-+	}
-+	buf->bytes_consumed = 0;
-+}
-+
-+/**
-+ *	relay_reset_consumed - reset the channel's consumed counts
-+ *	@chan: the channel
-+ *
-+ *	This has the effect of making all data previously read (and
-+ *	not overwritten by subsequent writes) from a channel available
-+ *	for reading again.
-+ *
-+ *	NOTE: Care should be taken that the channel isn't actually
-+ *	being used by anything when this call is made.
-+ */
-+void relay_reset_consumed(struct rchan *chan)
-+{
-+	unsigned int i;
-+	struct rchan_buf *prev = NULL;
-+
-+	if (!chan)
-+		return;
-+
-+	for (i = 0; i < NR_CPUS; i++) {
-+		if (!chan->buf[i] || chan->buf[i] == prev)
-+			break;
-+		__relay_reset_consumed(chan->buf[i]);
-+		prev = chan->buf[i];
-+	}
-+}
-+EXPORT_SYMBOL_GPL(relay_reset_consumed);
-+
- /*
-  *	relay_open_buf - create a new relay channel buffer
-  *
-@@ -845,11 +896,8 @@ static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
- 		return 1;
- 	}
- 
--	if (unlikely(produced - consumed >= n_subbufs)) {
--		consumed = produced - n_subbufs + 1;
--		buf->subbufs_consumed = consumed;
--		buf->bytes_consumed = 0;
--	}
-+	if (unlikely(produced - consumed >= n_subbufs)) 
-+		__relay_reset_consumed(buf);
- 
- 	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
- 	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
-
---------------000501050407020002060404--
+greg k-h
