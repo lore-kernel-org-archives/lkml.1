@@ -1,88 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764556AbXIMEd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbXIMEp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764556AbXIMEd4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 00:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbXIMEds
+	id S1760133AbXIMEp2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 00:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbXIMEpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 00:33:48 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:61619 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbXIMEdr (ORCPT
+	Thu, 13 Sep 2007 00:45:18 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:47606 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbXIMEpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 00:33:47 -0400
-X-IronPort-AV: E=Sophos;i="4.20,248,1186383600"; 
-   d="scan'208";a="398709018"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH] IB/ehca: Make sure user pages are from hugetlb before using MR large pages
-X-Message-Flag: Warning: May contain useful information
-References: <200709121439.32641.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 12 Sep 2007 21:33:45 -0700
-In-Reply-To: <200709121439.32641.fenkes@de.ibm.com> (Joachim Fenkes's message of "Wed, 12 Sep 2007 14:39:31 +0200")
-Message-ID: <adaps0nmbfa.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 13 Sep 2007 00:45:17 -0400
+Date: Wed, 12 Sep 2007 21:45:04 -0700
+From: Kees Cook <kees@ubuntu.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, Ben Collins <bcollins@ubuntu.com>
+Subject: [PATCHv2] misc: fix unterminated *_device_id lists
+Message-ID: <20070913044504.GP8183@outflux.net>
+References: <20070913004709.GL8183@outflux.net> <46E88F1B.5050405@garzik.org> <20070913035407.GN8183@outflux.net> <46E8B64D.3030107@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Sep 2007 04:33:45.0987 (UTC) FILETIME=[45ACF530:01C7F5BF]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <46E8B64D.3030107@garzik.org>
+Organization: Ubuntu
+X-HELO: gorgon.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > -#define HCA_CAP_MR_PGSIZE_4K  1
- > -#define HCA_CAP_MR_PGSIZE_64K 2
- > -#define HCA_CAP_MR_PGSIZE_1M  4
- > -#define HCA_CAP_MR_PGSIZE_16M 8
- > +#define HCA_CAP_MR_PGSIZE_4K  0x80000000
- > +#define HCA_CAP_MR_PGSIZE_64K 0x40000000
- > +#define HCA_CAP_MR_PGSIZE_1M  0x20000000
- > +#define HCA_CAP_MR_PGSIZE_16M 0x10000000
+Fixes drivers that do not correctly terminate their *_device_id lists.
+This results in garbage being spewed into modules.pcimap when the module
+happens to not have 28 NULL bytes following the table, and/or the last PCI
+ID is actually truncated from the table when calculating the modules.alias
+PCI aliases, causing those unfortunate device IDs to not auto-load.
 
-Not sure I understand what this has to do with things... is this an
-unrelated fix?
+Signed-off-by: Kees Cook <kees@ubuntu.com>
+---
+Re-send, using recommended list termination code-style.
+Diff is against 2.6.23-rc6.
 
- > +static int ehca_is_mem_hugetlb(unsigned long addr, unsigned long size)
+ linux-2.6.23-rc6/drivers/char/ipmi/ipmi_si_intf.c                |    3 ++-
+ linux-2.6.23-rc6/drivers/media/video/usbvision/usbvision-cards.c |    1 +
+ linux-2.6.23-rc6/drivers/mtd/nand/cafe_nand.c                    |    3 ++-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
+---
+diff -uNrp linux-2.6.23-rc6~/drivers/char/ipmi/ipmi_si_intf.c linux-2.6.23-rc6/drivers/char/ipmi/ipmi_si_intf.c
+--- linux-2.6.23-rc6~/drivers/char/ipmi/ipmi_si_intf.c	2007-09-11 23:17:13.000000000 -0700
++++ linux-2.6.23-rc6/drivers/char/ipmi/ipmi_si_intf.c	2007-09-11 23:21:51.000000000 -0700
+@@ -2215,7 +2215,8 @@ static int ipmi_pci_resume(struct pci_de
+ 
+ static struct pci_device_id ipmi_pci_devices[] = {
+ 	{ PCI_DEVICE(PCI_HP_VENDOR_ID, PCI_MMC_DEVICE_ID) },
+-	{ PCI_DEVICE_CLASS(PCI_ERMC_CLASSCODE, PCI_ERMC_CLASSCODE_MASK) }
++	{ PCI_DEVICE_CLASS(PCI_ERMC_CLASSCODE, PCI_ERMC_CLASSCODE_MASK) },
++	{ },    /* terminate list */
+ };
+ MODULE_DEVICE_TABLE(pci, ipmi_pci_devices);
+ 
+diff -uNrp linux-2.6.23-rc6~/drivers/mtd/nand/cafe_nand.c linux-2.6.23-rc6/drivers/mtd/nand/cafe_nand.c
+--- linux-2.6.23-rc6~/drivers/mtd/nand/cafe_nand.c	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.23-rc6/drivers/mtd/nand/cafe_nand.c	2007-09-11 23:22:11.000000000 -0700
+@@ -816,7 +816,8 @@ static void __devexit cafe_nand_remove(s
+ }
+ 
+ static struct pci_device_id cafe_nand_tbl[] = {
+-	{ 0x11ab, 0x4100, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_MEMORY_FLASH << 8, 0xFFFF0 }
++	{ 0x11ab, 0x4100, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_MEMORY_FLASH << 8, 0xFFFF0 },
++	{ },    /* terminate list */
+ };
+ 
+ MODULE_DEVICE_TABLE(pci, cafe_nand_tbl);
+diff -urp -x '*.o' linux-2.6.23-rc6~/drivers/media/video/usbvision/usbvision-cards.c linux-2.6.23-rc6/drivers/media/video/usbvision/usbvision-cards.c
+--- linux-2.6.23-rc6~/drivers/media/video/usbvision/usbvision-cards.c	2007-09-11 23:17:19.000000000 -0700
++++ linux-2.6.23-rc6/drivers/media/video/usbvision/usbvision-cards.c	2007-09-12 17:26:46.000000000 -0700
+@@ -1081,6 +1081,7 @@ struct usb_device_id usbvision_table [] 
+ 	{ USB_DEVICE(0x2304, 0x0301), .driver_info=PINNA_LINX_VD_IN_CAB_PAL },
+ 	{ USB_DEVICE(0x2304, 0x0419), .driver_info=PINNA_PCTV_BUNGEE_PAL_FM },
+ 	{ USB_DEVICE(0x2400, 0x4200), .driver_info=HPG_WINTV },
++	{ },    /* terminate list */
+ };
+ 
+ MODULE_DEVICE_TABLE (usb, usbvision_table);
 
-This is rather awful -- another call to get_user_pages() to iterate
-over all the vmas...
 
-I would suggest extending ib_umem_get() to check the vmas and adding a
-member to struct ib_umem to say whether the memory is entirely covered
-by hugetlb pages or not.
-
- > +		ret = ehca_is_mem_hugetlb(virt, length);
- > +		switch (ret) {
- > +		case 0: /* mem is not from hugetlb */
- > +			hwpage_size = PAGE_SIZE;
- > +			break;
- > +		case 1:
- > +			if (length <= EHCA_MR_PGSIZE4K
- > +			    && PAGE_SIZE == EHCA_MR_PGSIZE4K)
- > +				hwpage_size = EHCA_MR_PGSIZE4K;
- > +			else if (length <= EHCA_MR_PGSIZE64K)
- > +				hwpage_size = EHCA_MR_PGSIZE64K;
- > +			else if (length <= EHCA_MR_PGSIZE1M)
- > +				hwpage_size = EHCA_MR_PGSIZE1M;
- > +			else
- > +				hwpage_size = EHCA_MR_PGSIZE16M;
- > +			break;
- > +		default: /* out of mem */
- > +			ib_mr = ERR_PTR(-ENOMEM);
- > +			goto reg_user_mr_exit1;
-
-It seems like it would be better to just assume the memory is not from
-a hugetlb is ehca_is_mem_hugetlb() fails its memory allocation and
-fall back to the PAGE_SIZE case rather than failing entirely.
-
-Also if someone runs a kernel with 64K pages on a machine where they
-end up being simulated from 4K pages, do you have the same issue with
-the hypervisor ganging together non-contiguous pages?
-
- - R.
+-- 
+Kees Cook
