@@ -1,91 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbXIMNOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXIMNRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168AbXIMNOa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 09:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXIMNOW
+	id S1756181AbXIMNRX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 09:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXIMNRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 09:14:22 -0400
-Received: from allen.werkleitz.de ([80.190.251.108]:43614 "EHLO
-	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753238AbXIMNOV (ORCPT
+	Thu, 13 Sep 2007 09:17:15 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:56873 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbXIMNRN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 09:14:21 -0400
-X-Greylist: delayed 2002 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Sep 2007 09:14:21 EDT
-Date: Thu, 13 Sep 2007 15:13:53 +0200
-From: Johannes Stezenbach <js@linuxtv.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       video4linux-list@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Message-ID: <20070913131353.GB26972@linuxtv.org>
-References: <46C1BCC5.9090709@amd.com> <1189626560.5160.57.camel@gaivota> <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com> <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 84.190.150.24
+	Thu, 13 Sep 2007 09:17:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eN0vm6/cFt0G3VW7z1/NruEhuF7zn0zegzB/wIWlwsgdNxE5PJNlP30Kas9NUTN3Ys9bAtGxN3li6Ji2UVTkdWXMs5raayMSlR613F1iraZV9BHyOJ+kImv5vyOtCvdhmBFqjTjm/rr5SBzxwRup/x76miG+w2BIGm0IXc7ar0k=
+Message-ID: <d9def9db0709130617o3d4d555du59f9e422f062ae29@mail.gmail.com>
+Date: Thu, 13 Sep 2007 15:17:12 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Johannes Stezenbach" <js@linuxtv.org>
 Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
+Cc: "=?ISO-8859-1?Q?D=E2niel_Fraga?=" <fragabr@gmail.com>,
+       video4linux-list@redhat.com, linux-dvb@linuxtv.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070913124034.GA26972@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46C1BCC5.9090709@amd.com> <1189626560.5160.57.camel@gaivota>
+	 <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>
+	 <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
+	 <rjsmr4-rc8.ln1@tux.abusar.org>
+	 <d9def9db0709122258l4b05546dq2e370e67a2a1404@mail.gmail.com>
+	 <20070913124034.GA26972@linuxtv.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007, Markus Rechberger wrote:
-> Let's add the LKML to this.
-> 
-> On 9/13/07, Markus Rechberger <mrechberger@gmail.com> wrote:
-> > On 9/12/07, Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> > > I don't see any technical reason why tuner drivers should be moved to
-> > > userspace. Looking at xc3028 device, the driver is very simple and
-> > > doesn't require any special treatment that it isn't possible to be done
-> > > at kernel. There are already some implementations on kernelspace that
-> > > works fine.
+Hi,
+
+On 9/13/07, Johannes Stezenbach <js@linuxtv.org> wrote:
+> On Thu, Sep 13, 2007, Markus Rechberger wrote:
 > >
-> > As from my side to support the xceive driver properly it needs a
-> > rewrite and a proper API description. Since it's not possible to
-> > discuss any API changes
+> > We currently have an implementation that works, although
+> > it works by downloading several firmwares for several devices
+> > or even several countries. This is not what I want to have in
+> > future since it's not needed and it's also hard to manage for
+> > distributors. All those differences could be adjusted by
+> > software even without module parameter hacks.
+>
+> This argument doesn't hold water. The unpleasant point
+> for users and distributors isn't the "binary-only"
+> thing, it's the "no right to distribute" problem.
+> And that's the same for firmware blobs or binary-only
+> userspace blobs.
+>
+> IOW, if you can get the right to redistribute a binary-only
+> userspace blob which incudes the firmware inside, why
+> shouldn't you be able to get the right to redistribute
+> just the firmware?
+>
 
-Not possible? We're doing it all the time...
+In particular xceive based drivers provide a numerous set
+of features which cannot be implemented into the kernel
+because the API (both V4L and DVB) are limited.
+Since to me it seriously has the impression that the project
+especially the core of the project is closed to the outside
+world (just how someone stated it out recently
+"he licked the butts of others" to get his stuff accepted)
 
-However, your ideas were rejected in this discussion,
-and you can't seem to get over it.
+> Or the other way round: Do you think your binary-only software
+> will be important enough so distributors will go through
+> all the trouble of trying to get a license to include it in
+> their distribution? If so, why wouldn't they do the same
+> for the plain firmware blobs for in-kernel drivers?
 
-> > don't get me wrong but the existing community is rather small and
-> > kicking off people who are interested in changing things.
+I don't have any binary only software just as all the time before.
+I am also allowed to publish firmware for several drivers
+(not only the em28xx driver). Although as mentioned earlier
+already the current existing driver is not really manageable
+due the firmware mess and that driver will change completly
+and include templates for several other bridge drivers.
 
-IMHO there is a lack of openness caused by people being burned
-in past flamewars. This makes it a bit difficult to see through
-what happens and why, and to participate.  However, I think it
-is completely wrong to say that the community is "kicking off people".
-
-> > I'm against how the project works out at the moment and how it worked
-> > out in history. Exactly this way will kick off companies to be
-> > interested in future like Avermedia. A driver can easily be written
-> > within a few weeks and I've been struggling with it for 2 years(!!!)
-> > now just for nothing finally telling me that some guys want to steal
-> > my code and move it to kernelspace although it would raise more
-> > complications with upcoming and current devices which have even more
-> > requirements.
-
-Oh dear, there we go again... more flame bait...
-
-I reality, 95% of your driver code could have been merged
-without problems, but you refused to take the small, objectionable
-part out of the picture.
-
-(For those interested:
-http://mcentral.de/~mrec/patches/v4l-dvb/hg_v4l-dvb-experimental_01.patch
-The patch changed the internal tuner API and required changes
-to all tuner drivers.)
-
-Your all-or-nothing approach didn't work out.
-
-Out of curiosity: How does your userspace approach solve
-the hybrid (analog/digital TV) tuner problem which was the
-only objectionable part of your work? And why are the kernel
-parts of your new interface now less objectionable? What changed?
-
-
-Johannes
+Markus
