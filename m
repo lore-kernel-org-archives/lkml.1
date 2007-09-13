@@ -1,62 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764971AbXIMTqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765552AbXIMTwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764971AbXIMTqD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 15:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbXIMTpy
+	id S1765552AbXIMTwu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 15:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbXIMTwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 15:45:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39701 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752391AbXIMTpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 15:45:53 -0400
-Message-ID: <46E9933D.5070802@redhat.com>
-Date: Thu, 13 Sep 2007 15:45:01 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 13 Sep 2007 15:52:42 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:55222 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755189AbXIMTwl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 15:52:41 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Thu, 13 Sep 2007 21:52:03 +0200
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Andi Kleen" <ak@suse.de>
+cc: "Greg KH" <greg@kroah.com>, "Yinghai Lu" <Yinghai.Lu@sun.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Martin Mares" <mj@ucw.cz>,
+       "dean gaudet" <dean@arctic.org>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case
+ MMCONFIG is used
+Message-ID: <20070913195203.GA1131@alberich.amd.com>
+References: <200709121921.43950.yinghai.lu@sun.com>
+ <200709131147.43446.ak@suse.de> <20070913104704.GA3878@kroah.com>
+ <200709131353.15752.ak@suse.de>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Pavel Emelyanov <xemul@openvz.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Memory shortage can result in inconsistent flocks state
-References: <46E68C35.7040001@openvz.org> <46E98F0C.10504@redhat.com> <20070913193439.GA18052@fieldses.org>
-In-Reply-To: <20070913193439.GA18052@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <200709131353.15752.ak@suse.de>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 13 Sep 2007 19:52:07.0203 (UTC)
+ FILETIME=[908F4730:01C7F63F]
+X-WSS-ID: 6AF74B7F0X87459291-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/13/2007 03:34 PM, J. Bruce Fields wrote:
->> Doesn't that create a leak in some cases?
->>
->>>         for_each_lock(inode, before) {
->>>                 struct file_lock *fl = *before;
->>>                 if (IS_POSIX(fl))
->>>                         break;
->>>                 if (IS_LEASE(fl))
->>>                         continue;
->>>                 if (filp != fl->fl_file)
->>>                         continue;
->>>                 if (request->fl_type == fl->fl_type)
->>>                         goto out;  <<<<<<<<<<<<<<<< LEAK?
+On Thu, Sep 13, 2007 at 01:53:15PM +0200, Andi Kleen wrote:
+> On Thursday 13 September 2007 12:47, Greg KH wrote:
+> > On Thu, Sep 13, 2007 at 11:47:42AM +0200, Andi Kleen wrote:
+> > > On Thursday 13 September 2007 04:21, Yinghai Lu wrote:
+> > > > [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is
+> > > > used.
+> > > >
+> > > > reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
+> > >
+> > > I just rejected a similar patch -- this should be done using MMCONFIG
+> >
+> > But what about for broken machines without the proper MMCONFIG entries?
+> > They still need a way to get access to this config space,
 > 
-> You mean, a leak of the memory allocated for new_fl?  That's freed at
-> the exit labeled with "out".  It's the only exit:
+> If there are any devices that need it. IBS and PCI-E error handling 
+> do, but they're quite obscure.
 > 
-> 	out:
-> 	        unlock_kernel();
-> 		if (new_fl)
-> 			locks_free_lock(new_fl);
-> 		return error;
-> 
-> And new_fl is initially NULL, assigned only once by the allocation, then
-> assigned to NULL only at the very end when we know we've succeeded.
-> 
-> Am I missing something else?
-> 
+> Also so far we don't know of any Fam 10h systems without MMCONFIG
+> entries. Fam10h requires a new BIOS so it's reasonable to assume
+> that the new BIOSes will do better.
 
-Never mind, I didn't look closely enough. Looks good to me.
+IMHO support for all config space access methods should be added to the kernel.
+And it should be added at a central point. Not waiting for drivers to do it
+their own way if they need to use it.
+
+The more complicated/important question is how to decide which access method
+should be used for a device. (Something similar to the pci_mmcfg_fallback_slots
+stuff that exists already for K8 NB.)
+But that needs some more thinking.
+
+Here a summary wrt family 10h extended config space access methods.
+(Most of this stuff I verified with some patched kernels. I didn't
+eavesdropping on the physical links though ...)
+
+For family 10h we have 3 methods
+(1) "legacy" MMCONFIG access (via south bridge)
+(2) mmconfig access via CPU/NB (new with fam10h, using the new MMIO
+    config base MSR)
+(3) CF8/CFC ECS access (new with fam10h, has to be enabled in the NB_CFG MSR)
+
+- If (1) is used  and (2)+(3) are not configurred there is no way to access
+  NB config space with mmconfig accesses. Which implies that NB ECS cannot
+  be accessed.
+  So you can only access NB standard config space via "legacy" CF8/CFC.
+  This equals what we have with K8.
+  => ECS is accessible just for external devices (not the NB ECS).
+
+- If (2) is used, mmconfig accesses are translated by CPU/NB. So this will
+  result in (extended) config cycles on the link to the south bridge.
+  This works for both NB config space and config space for normal PCI(e) devices.
+  => ECS is accessible for all devices via that method.
+
+- And finally with (3) you can also access both NB config space and the config
+  space of external devices. The CPU/NB does the translation and will also
+  create (extended) config cycles here.
+  => ECS is accessible for all devices via that method.
+  (But of course not in the same "atomic" manner like with mmconfig.)
+
+Then we have different prereqs for those methods:
+- For (1) the ACPI stuff is required.
+- For (2) and (3) some MSRs have to be set up.
+
+Ah, yes in case I didn't mention that: ;-)
+Using (2) you haven't such a strict dependency on that ACPI stuff.
+Would be cool to disable MCFG at all and configure mmconfig just in
+the CPU, no?
+
+
+Regards,
+
+Andreas
+
+-- 
+Operating | AMD Saxony Limited Liability Company & Co. KG,
+  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ Research | Register Court Dresden: HRA 4896, General Partner authorized
+  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
+  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
 
