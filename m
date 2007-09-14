@@ -1,77 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764223AbXINNQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764425AbXINNR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764223AbXINNQV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 09:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763929AbXINNPz
+	id S1764425AbXINNR0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 09:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbXINNRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 09:15:55 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:22563 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763849AbXINNPx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 09:15:53 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ze+L9qYjnjD76lt9kXJB+Do4ZJAEXS8gzAP+vxRN7NCUOoFeeYOAOUMcjRC2jmwo+8tBj7pz/F6L5yyxOph9xR3sz26+1BhFITk1S2fFvLBbgoxgpWUuhFggERLC46TM6j/3TEnKF20Dykwa9g4i/WAiIqLaS2yXMYQH1IPPJcY=  ;
-X-YMail-OSG: 5fhEF6UVM1kZzzFjDl2gLd5iDYEHji8vvfsiK72f9wgsiE4QpGa82nRYRWrYn28dH7BJEIV7_w--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.22.6: kernel BUG at fs/locks.c:171
-Date: Fri, 14 Sep 2007 07:22:57 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-fsdevel@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-References: <1189675222.5352.10.camel@localhost> <200709130951.48194.nickpiggin@yahoo.com.au> <1189749754.25045.10.camel@localhost>
-In-Reply-To: <1189749754.25045.10.camel@localhost>
+	Fri, 14 Sep 2007 09:17:18 -0400
+Received: from sacred.ru ([62.205.161.221]:55411 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760407AbXINNRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 09:17:17 -0400
+Message-ID: <46EA88BA.5020005@openvz.org>
+Date: Fri, 14 Sep 2007 17:12:26 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Andrew Morton <akpm@osdl.org>
+CC: Serge Hallyn <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Alexey Dobriyan <adobriyan@openvz.org>
+Subject: [PATCH 2/2] Fix user namespace exiting OOPs
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709140722.58046.nickpiggin@yahoo.com.au>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 14 Sep 2007 17:14:49 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 14 September 2007 16:02, Soeren Sonnenburg wrote:
-> On Thu, 2007-09-13 at 09:51 +1000, Nick Piggin wrote:
-> > On Thursday 13 September 2007 19:20, Soeren Sonnenburg wrote:
-> > > Dear all,
-> > >
-> > > I've just seen this in dmesg on a AMD K7 / kernel 2.6.22.6 machine
-> > > (config attached).
-> > >
-> > > Any ideas / which further information needed ?
-> >
-> > Thanks for the report. Is it reproduceable? It seems like the
-> > locks_free_lock call that's oopsing is coming from __posix_lock_file.
-> > The actual function looks fine, but the lock being freed could have
-> > been corrupted if there was slab corruption, or a hardware corruption.
-> >
-> > You could: try running memtest86+ overnight. And try the following
-> > patch and turn on slab debugging then try to reproduce the problem.
->
-> OK so far I've run memtest86+ 1.40 from freedos for 8 hrs (v1.70 hung on
-> startup) - nothing.
+It turned out, that the user namespace is released during
+the do_exit() in exit_task_namespaces(), but the struct
+user_struct is released only during the put_task_struct(),
+i.e. MUCH later. 
 
-Thanks.
+On debug kernels with poisoned slabs this will cause the 
+oops in uid_hash_remove() because the head of the chain,
+which resides inside the struct user_namespace, will be 
+already freed and poisoned.
 
-> Could this corruption be caused by a pci card/driver? I am asking as I
-> am using a new dvb-t card (asus p7131) and the oops happened after 5 or
-> 6 days of uptime just about a day after watching some movie (very bad
-> reception/lots of errors).
+Since the uid hash itself is required only when someone
+can search it, i.e. when the namespace is alive, we can
+safely unhash all the user_struct-s from it during the 
+namespace exiting. The subsequent free_uid() will complete
+the user_struct destruction.
 
-It could be caused by that, definitely. slab debugging plus my earlier
-patch may help to narrow it down. (or stress testing with / without the
-dvb card in action).
+For example simple program
 
+   #include <sched.h>
+   
+   char stack[2 * 1024 * 1024];
+   
+   int f(void *foo)
+   {
+   	return 0;
+   }
+   
+   int main(void)
+   {
+   	clone(f, stack + 1 * 1024 * 1024, 0x10000000, 0);
+   	return 0;
+   }
 
-> However this machine used to have uptimes of months before the dvb card
-> was in there and the kernel version upgrade (don't know which version
-> that was...).
->
-> Anyway I am not sure if this is reproducible, but I will keep memtest
-> running today and then proceed as you said...
+run on kernel with CONFIG_USER_NS turned on will oops the
+kernel immediately.
 
-OK. Don't put too much effort into memtest if it hasn't caught anything
-by now -- it's really only exercising your CPU and memory, so even if it
-is your video hardware, it probably won't find the problem.
+This was spotted during OpenVZ kernel testing.
+
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
+
+---
+
+ include/linux/sched.h   |    1 +
+ kernel/user.c           |   26 +++++++++++++++++++++++++-
+ kernel/user_namespace.c |    2 +-
+ 3 files changed, 27 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index a2afa88..b4a4211 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1530,6 +1530,7 @@ static inline struct user_struct *get_ui
+ }
+ extern void free_uid(struct user_struct *);
+ extern void switch_uid(struct user_struct *);
++extern void release_uids(struct user_namespace *ns);
+ 
+ #include <asm/current.h>
+ 
+diff --git a/kernel/user.c b/kernel/user.c
+index add57c7..e1f2d32 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -62,7 +62,7 @@ static inline void uid_hash_insert(struc
+ 
+ static inline void uid_hash_remove(struct user_struct *up)
+ {
+-	hlist_del(&up->uidhash_node);
++	hlist_del_init(&up->uidhash_node);
+ }
+ 
+ static inline struct user_struct *uid_hash_find(uid_t uid, struct hlist_head *hashent)
+@@ -199,6 +199,30 @@ void switch_uid(struct user_struct *new_
+ 	suid_keys(current);
+ }
+ 
++void release_uids(struct user_namespace *ns)
++{
++	int i;
++	unsigned long flags;
++	struct hlist_head *head;
++	struct hlist_node *nd;
++
++	spin_lock_irqsave(&uidhash_lock, flags);
++	/*
++	 * collapse the chains so that the user_struct-s will
++	 * be still alive, but not in hashes. subsequent free_uid()
++	 * will free them.
++	 */
++	for (i = 0; i < UIDHASH_SZ; i++) {
++		head = ns->uidhash_table + i;
++		while (!hlist_empty(head)) {
++			nd = head->first;
++			hlist_del_init(nd);
++		}
++	}
++	spin_unlock_irqrestore(&uidhash_lock, flags);
++
++	free_uid(ns->root_user);
++}
+ 
+ static int __init uid_cache_init(void)
+ {
+diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
+index 85af942..df1d2cf 100644
+--- a/kernel/user_namespace.c
++++ b/kernel/user_namespace.c
+@@ -81,7 +81,7 @@ void free_user_ns(struct kref *kref)
+ 	struct user_namespace *ns;
+ 
+ 	ns = container_of(kref, struct user_namespace, kref);
+-	free_uid(ns->root_user);
++	release_uids(ns);
+ 	kfree(ns);
+ }
+ 
