@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbXINIR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbXINIan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbXINIR5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 04:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbXINIRn
+	id S1753290AbXINIan (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 04:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbXINIaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 04:17:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38430 "EHLO mx3.mail.elte.hu"
+	Fri, 14 Sep 2007 04:30:35 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5728 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbXINIRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 04:17:42 -0400
-Date: Fri, 14 Sep 2007 10:17:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: dimm <dmitry.adamushko@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [announce] CFS-devel, performance improvements
-Message-ID: <20070914081735.GC16159@elte.hu>
-References: <1189725940.4485.53.camel@earth>
+	id S1750943AbXINIae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 04:30:34 -0400
+Date: Fri, 14 Sep 2007 10:30:25 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
+       Peter Osterlund <petero2@telia.com>
+Subject: Re: 2.6.23-rc4-mm1: git-block.patch broke pktcdvd
+Message-ID: <20070914083025.GA25592@kernel.dk>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <46E5A6D1.3050704@free.fr> <46E9BEB1.3060504@free.fr> <20070913160554.ba812d76.akpm@linux-foundation.org> <20070914080020.GZ25592@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1189725940.4485.53.camel@earth>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070914080020.GZ25592@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* dimm <dmitry.adamushko@gmail.com> wrote:
-
-> and here's something a bit more intrusive.
+On Fri, Sep 14 2007, Jens Axboe wrote:
+> On Thu, Sep 13 2007, Andrew Morton wrote:
+> > On Fri, 14 Sep 2007 00:50:25 +0200
+> > Laurent Riffard <laurent.riffard@free.fr> wrote:
+> > 
+> > > I dig through git-block.patch and the culprit seems to be commit
+> > > c94f1c4ac87862675c8d70941973bc3a69aff5d8 "bio: use memset() in
+> > > bio_init()".
+> > 
+> > I think I'll be dropping git-block.  There were a number of problems
+> > in rc4-mm1 (for which I have a sprinkling of messy-looking patches
+> > somewhere ahead of my current cursor) and nothing seems to have
+> > happened in the git tree for a month or so.
 > 
-> The initial idea was to completely get rid of 'se->fair_key'. It's 
-> always equal to 'se->vruntime' for all runnable tasks but the 
-> 'current'. The exact key within the tree for the 'current' has to be 
-> known in order for __enqueue_entity() to work properly (if we just use 
-> 'vruntime', we may go a wrong way down the tree while looking for the 
-> correct position for a new element). Sure, it's possible to cache the 
-> current's key in the 'cfs_rq' and add a few additional checks, but 
-> that's not very nice... so what if we don't keep the 'current' within 
-> the tree? :-)
-> 
-> The illustration is below. Some bits can be missed so far but a 
-> patched kernel boots/works (haven't done real regression tests yet... 
-> can say that the mail client is still working at this very moment :-).
-> 
-> There are 2 benefits:
-> 
-> (1) no more 'fair_key' ;
-> (2) entity_tick() is simpler/more effective : 'update_curr()' now vs.
-> 'dequeue_entity() + enqueue_entity()' before.
+> Huh? It's not even two weeks old. And here we go again, git-block is
+> getting dropped and you'll be complaining about lack of testing next.
+> I'll update the branches today as discussed with Tomo, that should work
+> fine.
 
-cool patch - i like it! It removes some code as well, besides shrinking 
-struct task_struct with another 64-bit variable - so it's a nice 
-speedup:
+Branches updated with the scsi host template addition and the qla sg
+chaining fix.
 
-   text    data     bss     dec     hex filename
-  34467    3466      24   37957    9445 sched.o.before
-  34414    3466      24   37904    9410 sched.o.after
+-- 
+Jens Axboe
 
-i've applied it to the end of the queue - it depends on whether 
-->vruntime works out well.
-
-	Ingo
