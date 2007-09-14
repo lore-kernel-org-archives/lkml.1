@@ -1,44 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbXINVKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbXINVLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759609AbXINVKZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 17:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbXINVKQ
+	id S1759632AbXINVLf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 17:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322AbXINVL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 17:10:16 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33720 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754581AbXINVKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 17:10:15 -0400
-Date: Fri, 14 Sep 2007 23:11:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Shlomi Fish <shlomif@freehackers.org>
-Cc: linux-kernel@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH 2.6.23-rc4] qconf ("make xconfig") Search Dialog Enhancement (rev8)
-Message-ID: <20070914211140.GB5031@uranus.ravnborg.org>
-References: <200709141645.04112.shlomif@freehackers.org>
-Mime-Version: 1.0
+	Fri, 14 Sep 2007 17:11:27 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:42459 "EHLO
+	caffeine.uwaterloo.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752897AbXINVL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 17:11:26 -0400
+Date: Fri, 14 Sep 2007 17:11:25 -0400
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: James Bottomley <james.bottomley@steeleye.com>, linux-scsi@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SCSI: update Kconfig help text to indicate SCSI core's widespread usage
+Message-ID: <20070914211125.GB5384@csclub.uwaterloo.ca>
+References: <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de> <20070914185434.GD5386@csclub.uwaterloo.ca> <tkrat.e1d898d6a272d681@s5r6.in-berlin.de> <20070914202102.GE5386@csclub.uwaterloo.ca> <tkrat.f4379d6e5f1ce499@s5r6.in-berlin.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200709141645.04112.shlomif@freehackers.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <tkrat.f4379d6e5f1ce499@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Shlomi Fish.
-
-> [ I'm not subscribed to this list so please CC me on your replies. ]
-We always do so at lkml..
-
-> This patch adds an option to use either substring match, regular expression 
-> match, or keywords search in the "make xconfig" Edit->Find dialog.
+On Fri, Sep 14, 2007 at 11:06:44PM +0200, Stefan Richter wrote:
+> On 14 Sep, Lennart Sorensen wrote:
+> > On Fri, Sep 14, 2007 at 10:14:16PM +0200, Stefan Richter wrote:
+> >> -	  If you want to use a SCSI or FireWire CD-ROM under Linux,
+> >> +	  If you want to use a SCSI, SATA, USB or FireWire CD-ROM or DVD-ROM,
+> >>  	  say Y and read the SCSI-HOWTO and the CDROM-HOWTO at
+> >>  	  <http://www.tldp.org/docs.html#howto>. Also make sure to say
+> >>  	  Y or M to "ISO 9660 CD-ROM file system support" later.
+> > 
+> > How about that one for libata driven PATA CDROM drives?  Could replace
+> > SATA with libata, or something similar.
 > 
-> It also allows searching on the "help" field of the menus as well as 
-> the "name" of the symbol.
 > 
-> This change involved adding the sym_generic_search function to the LKC, and 
-> implementing sym_re_search using it.
+> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Subject: SCSI: update Kconfig help text to indicate SCSI core's widespread usage
 > 
-Thanks for being persistent on this.
-Unless I hear otherwise from Roman I plan to apply your patch during the weekend.
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+>  drivers/scsi/Kconfig |   67 ++++++++++++++++++++++---------------------
+>  1 file changed, 35 insertions(+), 32 deletions(-)
+> 
+> Index: linux-2.6.23-rc6/drivers/scsi/Kconfig
+> ===================================================================
+> --- linux-2.6.23-rc6.orig/drivers/scsi/Kconfig
+> +++ linux-2.6.23-rc6/drivers/scsi/Kconfig
+> @@ -12,23 +12,31 @@ config SCSI
+>  	depends on BLOCK
+>  	select SCSI_DMA if HAS_DMA
+>  	---help---
+> -	  If you want to use a SCSI hard disk, SCSI tape drive, SCSI CD-ROM or
+> -	  any other SCSI device under Linux, say Y and make sure that you know
+> -	  the name of your SCSI host adapter (the card inside your computer
+> -	  that "speaks" the SCSI protocol, also called SCSI controller),
+> -	  because you will be asked for it.
+> -
+> -	  You also need to say Y here if you have a device which speaks
+> -	  the SCSI protocol.  Examples of this include the parallel port
+> -	  version of the IOMEGA ZIP drive, USB storage devices, Fibre
+> -	  Channel, FireWire storage and the IDE-SCSI emulation driver.
+> +	  This option enables core support for SCSI protocols.
+> +	  You need it
+> +	  - for classic parallel SCSI hardware,
+> +	  - for newer SCSI transports such as Fibre Channel, FireWire storage,
+> +	    or iSCSI,
+> +	  - for non-SCSI hardware which speaks SCSI protocols, such as USB
+> +	    storage devices or the parallel port version of Iomega Zip drive,
+> +	  - for non-SCSI hardware whose drivers translate from and to SCSI
+> +	    protocols, most notably all Serial ATA drivers, and Parallel ATA
+> +	    via the ATA configuration option.
+>  
+>  	  To compile this driver as a module, choose M here and read
+>  	  <file:Documentation/scsi/scsi.txt>.
+>  	  The module will be called scsi_mod.
+>  
+>  	  However, do not compile this as a module if your root file system
+> -	  (the one containing the directory /) is located on a SCSI device.
+> +	  (the one containing the directory /) is located on a SCSI device
+> +	  or on a device whose driver represents it as SCSI device, as
+> +	  indicated above.  Choose Y in this case, or set up an initrd.
+> +
+> +	  Subsequent options in this menu enable specific SCSI command set
+> +	  support for harddisks, CD/DVD-ROM/R/W, tapes etc..  This menu also
+> +	  presents options for specific SCSI controllers, while options for
+> +	  some other SCSI transports and all non-SCSI controllers are located
+> +	  in other menus (SATA, USB, FireWire etc.).
+>  
+>  config SCSI_DMA
+>  	bool
+> @@ -57,32 +65,27 @@ config SCSI_PROC_FS
+>  
+>  	  If unsure say Y.
+>  
+> -comment "SCSI support type (disk, tape, CD-ROM)"
+> +comment "SCSI command set drivers (disk, tape, CD-ROM)"
+>  	depends on SCSI
+>  
+>  config BLK_DEV_SD
+> -	tristate "SCSI disk support"
+> +	tristate "Harddisks and other Direct access devices"
+>  	depends on SCSI
+>  	---help---
+> -	  If you want to use SCSI hard disks, Fibre Channel disks,
+> -	  Serial ATA (SATA) or Parallel ATA (PATA) hard disks,
+> -	  USB storage or the SCSI or parallel port version of
+> -	  the IOMEGA ZIP drive, say Y and read the SCSI-HOWTO,
+> -	  the Disk-HOWTO and the Multi-Disk-HOWTO, available from
+> -	  <http://www.tldp.org/docs.html#howto>. This is NOT for SCSI
+> -	  CD-ROMs.
+> +	  Say Y if you want to use harddisks and similar block-oriented devices
+> +	  via SCSI or via drivers which use SCSI command sets (e.g. the Serial
+> +	  and Parallel ATA kernel subsystem, USB, and more).
+>  
+>  	  To compile this driver as a module, choose M here and read
+>  	  <file:Documentation/scsi/scsi.txt>.
+>  	  The module will be called sd_mod.
+>  
+> -	  Do not compile this driver as a module if your root file system
+> -	  (the one containing the directory /) is located on a SCSI disk.
+> -	  In this case, do not compile the driver for your SCSI host adapter
+> -	  (below) as a module either.
+> +	  If your root file system (the one containing the directory /) is
+> +	  located on a disk which accessed via this driver, choose Y instead of
+> +	  M or set up a suitable initrd.
+>  
+>  config CHR_DEV_ST
+> -	tristate "SCSI tape support"
+> +	tristate "Tape drives"
+>  	depends on SCSI
+>  	---help---
+>  	  If you want to use a SCSI tape drive under Linux, say Y and read the
+> @@ -95,7 +98,7 @@ config CHR_DEV_ST
+>  	  <file:Documentation/scsi/scsi.txt>. The module will be called st.
+>  
+>  config CHR_DEV_OSST
+> -	tristate "SCSI OnStream SC-x0 tape support"
+> +	tristate "SCSI OnStream SC-x0 tape drives"
+>  	depends on SCSI
+>  	---help---
+>  	  The OnStream SC-x0 SCSI tape drives cannot be driven by the
+> @@ -117,13 +120,13 @@ config CHR_DEV_OSST
+>  	  <file:Documentation/scsi/scsi.txt>. The module will be called osst.
+>  
+>  config BLK_DEV_SR
+> -	tristate "SCSI CDROM support"
+> +	tristate "CD-ROMs, DVD-ROMs"
+>  	depends on SCSI
+>  	---help---
+> -	  If you want to use a SCSI or FireWire CD-ROM under Linux,
+> -	  say Y and read the SCSI-HOWTO and the CDROM-HOWTO at
+> -	  <http://www.tldp.org/docs.html#howto>. Also make sure to say
+> -	  Y or M to "ISO 9660 CD-ROM file system support" later.
+> +	  Say Y if you want to use CD-ROMs or DVD-ROMs via SCSI or via drivers
+> +	  which use SCSI command sets (e.g. the Serial and Parallel ATA kernel
+> +	  subsystem, USB, and more). Also make sure to say Y or M to "ISO 9660
+> +	  CD-ROM file system support" later.
+>  
+>  	  To compile this driver as a module, choose M here and read
+>  	  <file:Documentation/scsi/scsi.txt>.
+> @@ -164,7 +167,7 @@ config CHR_DEV_SG
+>  	  If unsure, say N.
+>  
+>  config CHR_DEV_SCH
+> -	tristate "SCSI media changer support"
+> +	tristate "SCSI media changers"
+>  	depends on SCSI
+>  	---help---
+>  	  This is a driver for SCSI media changers.  Most common devices are
 
-	Sam
+Looks great.  I like it.
+
+--
+Len Sorensen
