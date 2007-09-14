@@ -1,53 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbXINUMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbXINUNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbXINUMW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 16:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXINUML
+	id S1758906AbXINUNl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 16:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbXINUNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 16:12:11 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:2414 "EHLO mms1.broadcom.com"
+	Fri, 14 Sep 2007 16:13:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57844 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753794AbXINUMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 16:12:09 -0400
-X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-cc: "Steve Wise" <swise@opengridcomputing.com>,
-       "netdev" <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org, anilgv@broadcom.com, uri@broadcom.com,
-       talm@broadcom.com, lusinsky@broadcom.com
-In-Reply-To: <adaveadjk5i.fsf@cisco.com>
-References: <adahclymos8.fsf@cisco.com>
- <46E97BB0.9030106@opengridcomputing.com> <adaps0ml18e.fsf@cisco.com>
- <1189724358.9540.113.camel@dell> <adaveadjk5i.fsf@cisco.com>
-Date: Fri, 14 Sep 2007 14:09:46 -0700
-Message-ID: <1189804186.9540.173.camel@dell>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6AF434853K4586155-01-01
+	id S1755068AbXINUNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 16:13:30 -0400
+Subject: Re: [git patches] net driver fixes
+From: Dan Williams <dcbw@redhat.com>
+To: Jay Vosburgh <fubar@us.ibm.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <32620.1189797572@death>
+References: <20070913053022.GA16891@havoc.gtf.org>
+	 <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
+	 <46EAD049.4020107@garzik.org>
+	 <1189794677.2508.19.camel@xo-3E-67-34.localdomain> <32620.1189797572@death>
 Content-Type: text/plain
+Date: Fri, 14 Sep 2007 16:11:57 -0400
+Message-Id: <1189800717.20386.13.camel@xo-3E-67-34.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-14 at 09:18 -0700, Roland Dreier wrote:
-
-> However, do you have any plans to support iSCSI offload for targets?
-> Also, looking at the first CNIC patch, I can't help but notice that
-> you seem to have at least some support for iWARP there.  How does the
-> CNIC look?  Does it share the same interface/addresses as the
-> non-offload NIC, or does it create a completely separate netdevice?
-
-We will support iWARP in the future and it should be similar to the way
-we do iSCSI - using the same interface/addresses as the bnx2 NIC.
-
+On Fri, 2007-09-14 at 12:19 -0700, Jay Vosburgh wrote:
+> Dan Williams <dcbw@redhat.com> wrote:
+> [...]
+> >I admit that I probably don't understand the system architecture of
+> >where ehea would be used, but would this
+> >cause /sys/class/net/ethX/carrier to be TRUE even if the device has no
+> >carrier?  That seems quite wrong IMHO.  When does ehea not have a
+> >carrier?  And in that case, does sysfs say 1 or 0 for the carrier?
 > 
-> I want to make sure that whatever solution we come up with for cxgb3
-> doesn't cause problems for you.  And of course if you have a better
-> idea than what Steve has come up with, that would be great :)
+> 	I don't work on ehea, but I'm generally familiar with it, and
+> particularly with this patch.
 > 
+> 	The usual environment for ehea devices is on large systems
+> subdivided into multiple logical partitions.  One ehea device serves
+> many partitions.  By having ehea always report "link up" to the logical
+> ports (the ports seen by the partitions), the partitions can communicate
+> amongst themselves even if the external ports (the ports that go to the
+> switch or whatever) have no link.  
 
-We are looking at these discussions with great interest.  If we have any
-new ideas, we'll definitely let everyone know.  Thanks.
+(forgive my ignorance of course)
+
+So essentially the ehea device has a 1(+) external ports that may/may
+not be connected, but all lpars share the physical hardware itself,
+which is quite happy to let all the lpars talk to each other essentially
+via loopback even if there is no actual carrier detected on the external
+port(s)?  How does addressing work here, is it just L2 addresses?  Feel
+free to point me to some docs and tell me to shut up :)
+
+At least these days module parameters can be changed at runtime through
+sysfs.  Stuff that can only be set at module load doesn't provide
+userspace the flexibility it needs to configure stuff on the fly.
+
+Dan
+
+> 	The ehea device, more or less, acts as a switch connecting the
+> partitions together.  This switch type of functionality is not dependent
+> upon the link state of the external ports (any more than the
+> functionality of any switch is dependent upon whether or not it is
+> connected to a gateway).
+> 
+> 	This, if I'm not mistaken, is the way ehea has always operated
+> until this particular patch was added.
+> 
+> 	This patch (to optionally pass carrier state to the logical
+> ports) was added largely for bonding, so that the bonding driver can
+> detect link failures on the external ports (when so desired).  The
+> default behavior remains the original behavior, i.e., do not pass
+> external port link state to the logical ports.
+> 
+> 	Anyway, to answer your question, the carrier state reported for
+> the ehea interface on the partition will always be true.  Think of it as
+> reporting the link state from the logical interface to the "switch" that
+> connects the partitions; that link exists only within the ehea device
+> itself, and really can't fail unless the ehea device itself fails.
+> 
+> 	With the new option enabled, then ehea is more or less mimicing
+> a trunk failover type of function, and passing the carrier state of the
+> "external switch port" to the internal port.
+> 
+> 	-J
+> 
+> ---
+> 	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
 
