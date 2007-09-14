@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbXINSuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbXINSwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbXINSuz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 14:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXINSus
+	id S1757562AbXINSwX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 14:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbXINSwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 14:50:48 -0400
-Received: from mga03.intel.com ([143.182.124.21]:39634 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbXINSur convert rfc822-to-8bit (ORCPT
+	Fri, 14 Sep 2007 14:52:16 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:11069 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755330AbXINSwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 14:50:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,256,1186383600"; 
-   d="scan'208";a="279126028"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 14 Sep 2007 14:52:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RjLic1QBs1Wff007Rvv7nL5RsrysOE7yOE0U24VQ1ATc1X9nlyATOr3QHaLLgaXW/bhpZYohegMlokKbXiKzC57TT1pJ/FFAcj7Q8Y98EhLWFpbpfZncx6GqfNF9b8U/rloS92wiXbvbZoPnMdAz0ZWPwPq5iIPz7v7T0lsRKDA=
+Message-ID: <a728f9f90709141152n5a2c9a65wa1bd53085741da1e@mail.gmail.com>
+Date: Fri, 14 Sep 2007 14:52:14 -0400
+From: "Alex Deucher" <alexdeucher@gmail.com>
+To: "Markus Rechberger" <mrechberger@gmail.com>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+Cc: "Manu Abraham" <abraham.manu@gmail.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <d9def9db0709140909s5caceb6braf2b10213e721702@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: cpu hotplug support broken in 2.6.23-rc3
-Date: Fri, 14 Sep 2007 11:49:17 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F501619542@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <1189774257.3100.7.camel@chaos>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: cpu hotplug support broken in 2.6.23-rc3
-Thread-Index: Acf2zpBmzbaAG8UATK+sJyzaHAxZqQAMSKDw
-References: <20070827104350.GA2073@elf.ucw.cz> <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com> <20070903034720.GB3655@ucw.cz> <200709031219.12846.rjw@sisk.pl> <1188822917.3406.0.camel@chaos> <20070904072744.GA30474@atrey.karlin.mff.cuni.cz> <1189713695.3974.23.camel@chaos>  <20070914123816.GE1671@elf.ucw.cz> <1189774257.3100.7.camel@chaos>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>, "Pavel Machek" <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Jeff Chua" <jeff.chua.linux@gmail.com>,
-       <rusty@rustycorp.com.au>, <vatsa@in.ibm.com>, <zwane@arm.linux.org.uk>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Len Brown" <lenb@kernel.org>
-X-OriginalArrivalTime: 14 Sep 2007 18:50:31.0724 (UTC) FILETIME=[204BAEC0:01C7F700]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
+	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+	 <46E99F36.8090809@hauppauge.com>
+	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+	 <46E9DDC7.4000403@hauppauge.com>
+	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+	 <46EA3F07.9050806@gmail.com> <20070914091535.GA8998@8bytes.org>
+	 <46EA77DE.8060109@gmail.com>
+	 <d9def9db0709140909s5caceb6braf2b10213e721702@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On 9/14/07, Markus Rechberger <mrechberger@gmail.com> wrote:
+> On 9/14/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> > Joerg Roedel wrote:
+> > > On Fri, Sep 14, 2007 at 11:57:59AM +0400, Manu Abraham wrote:
+> > >>>>> What do you think about IOMMU?
+> > >>>>>
+> > >>>>>
+> > >>>> Just because AMD or INTEL want to invent some whizzy new technology it
+> > >>>> doesn't say anything about the TV card development and retail business.
+> > >>>> Intel and AMD have teams of Linux engineers helping operating system
+> > >>>> developers bring their ideas and technologies to new platforms. That's
+> > a
+> > >>>> million miles away from any of the TV board vendors I know of, who have
+> > >>>> little or NO fulltime linux developers and consider the < 5% market
+> > >>>> fringe at best.
+> > >>>>
+> > >>> it helps to virtualize devices and introduces newer features for that.
+> > >>> Some interesting projects could be derrived out of that, there are
+> > >>> quite a few interesting papers floating around how drivers could be
+> > >>> handled in future.
+> > >>>
+> > >> IOMMU can be considered similar to the AGP GART, which is similar,
+> > >> remapping the Addresses, as far as i understand.
+> > >
+> > > Common new IOMMUs have only very few in common with the AGP GART. In
+> > > fact, with current modern IOMMU hardware it will be possible to
+> > > implement secure userspace device drivers that are even able to do DMA.
+> > > This is not possible with the GART.
+> > >
+> > >> Though you get a physical to virtual translation, what about interrupts,
+> > >
+> > > Modern IOMMUs are able to remap interrupts. This will solve the problem
+> > > with PCI interrupt sharing.
+> >
+> > What CPU's are we talking about ?
+> >
+>
+> upcoming x86-64 processors from the AMD side. I'm not into what Intel
+> is doing in that area at the moment.
 
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org 
->[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
->Thomas Gleixner
->Sent: Friday, September 14, 2007 5:51 AM
->To: Pavel Machek
->Cc: Rafael J. Wysocki; Jeff Chua; rusty@rustycorp.com.au; 
->vatsa@in.ibm.com; zwane@arm.linux.org.uk; kernel list; Len Brown
->Subject: Re: cpu hotplug support broken in 2.6.23-rc3
->
->Pavel,
->
->On Fri, 2007-09-14 at 14:38 +0200, Pavel Machek wrote:
->> > I have an yet untested fix, which preserves the broadcast 
->state across
->> > the offline state, but Len is looking into it as well, 
->whether we can
->> > just reevaluate the power states (and the broadcast flags) 
->when a cpu
->> > becomes online again. If Len can do that easily for 
->2.6.23, I'd prefer
->> > that.
->> 
->> Is there a patch you want me to test? Or does Len have anything to
->> play with?
->
->Venki sent me an initial patch, but it has issues with the notify
->ordering. Find below my "cache the broadcast flags" version 
->for testing.
->
+All AMD64 chips have an IOMMU.  Only Intel's most recent chips do.
 
-While wirting that patch, I knew solution could not be that simple :(.
-Does the patch work for online offline case atleast?
-Will look at the Suspend/Resume ordering part in that case.
-
-Thanks,
-Venki
+Alex
