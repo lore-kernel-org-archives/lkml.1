@@ -1,90 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbXINSgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbXINSin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbXINSgi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 14:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbXINSgU
+	id S1757952AbXINSin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 14:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbXINSie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 14:36:20 -0400
-Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:43404
-	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755829AbXINSgT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 14:36:19 -0400
-Date: Fri, 14 Sep 2007 11:33:24 -0700 (PDT)
-Message-Id: <20070914.113324.104043149.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: lethal@linux-sh.org, mikey@neuling.org, jdi@l4x.org, paulus@samba.org,
-       torvalds@linux-foundation.org, tony@bakeyournoodle.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, alan@redhat.com,
-       heiko.carstens@de.ibm.com, hskinnemoen@atmel.com, dhowells@redhat.com
-Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070913035506.b599e84f.akpm@linux-foundation.org>
-References: <5058.1189668156@neuling.org>
-	<20070913095346.GA28194@linux-sh.org>
-	<20070913035506.b599e84f.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 14 Sep 2007 14:38:34 -0400
+Received: from ox.emgs.com ([194.248.190.99]:53129 "EHLO ox.emgs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754622AbXINSie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 14:38:34 -0400
+Message-ID: <46EAD526.1040601@pvv.org>
+Date: Fri, 14 Sep 2007 20:38:30 +0200
+From: Jon Ivar Rykkelid <jonry@pvv.org>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>, Prakash Punnoor <prakash@punnoor.de>,
+       linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sata_nv issues with MCP51 SATA controller
+References: <46E8EABF.3060409@pvv.org> <46E953D7.5070305@gmail.com> <46E97AFF.30202@pvv.org> <200709141529.11363.prakash@punnoor.de> <46EA97F0.9000300@pvv.org> <46EA99CD.8030009@garzik.org> <46EA9D09.3030809@gmail.com> <46EAAA9A.1020903@pvv.org> <46EAAF99.6030809@garzik.org>
+In-Reply-To: <46EAAF99.6030809@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 13 Sep 2007 03:55:06 -0700
+Jeff Garzik wrote:
+> Jon Ivar Rykkelid wrote:
+>
+>> I'm going to test another (identical) motherboard this evening to 
+>> establish whether it could be a HW-issue.
+>
+> Not just motherboard.  It is more likely to be a cable, drive or PSU 
+> problem.
 
-> I think we need to go with Tony's patch.  sparc32 and sparc64 are
-> presently broken too, and the patch which converts sparc to use the
-> new interfaces introduces a few build errors.
+>> It is NOT the PSU, nor is it cables, as all the drives work well 
+>> using the same cables + PSU (in the same box) if I connect them to my 
+>> other two controllers (in that same box).
+>
+>
+> It's sometimes the combination that matters most.  You cannot really 
+> make that determination yet.
+>
 
-The problem with the asm-generic/termios.h thing is it only works
-if your copying functions are just a copy_{to,from}_user() and you
-can define that __ARCH_* macro.
+Whatever.
+(Though I must confess, that in spite of my Master degree in Electrical 
+Engineering and extensive HW experience, I can not for the life of me 
+understand how you can find it more likely to be cables (that work fine 
+with other controllers), disks (that also work fine with other 
+controllers) or the power-supply (that also works fine with exactly the 
+same things connected to it) rather than the motherboard's 
+SATA-controller (that is the item that actually is reported to fail in 
+the first place). - Sure, I'm well aware that sometimes the combination 
+of HW matters, but to my experience we're normally not talking about 
+"dumb" stuff like cables and PSU if that is the issue.)
 
-In retrospect what that header should do is, outside of the
-ARCH_* block, define the foo_1 interfaces plainly to foo.
+Anyway, I have just changed to the other (identical) motherboard, and 
+things are running just fine at the moment...
+I'll let you know if they start acting up (as they did before). If not I 
+guess the fault was with the motherboard and not the driver - Guess 
+we'll know pretty soon...
 
-Alternatively, here is a patch that gets sparc compiling and
-working again in the current tree.
+Thanks for all your effort, gents, let's hope it all works now!
 
-This whole termios thing hasn't been handled very well, and it's maybe
-not what we should be doing so late in the -rc cycle.  And yes,
-this is coming from the guy who added the TCP oops'er two weeks ago
-:-P
+BR
+Jon Ivar
 
-[SPARC]: Fix build due to termios changes.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/asm-sparc/termios.h b/include/asm-sparc/termios.h
-index d767f20..25e9cbb 100644
---- a/include/asm-sparc/termios.h
-+++ b/include/asm-sparc/termios.h
-@@ -142,6 +142,11 @@ struct winsize {
- 	0; \
- })
- 
-+#define user_termios_to_kernel_termios_1(k, u) \
-+	user_termios_to_kernel_termios(k, u)
-+#define kernel_termios_to_user_termios_1(u, k) \
-+	kernel_termios_to_user_termios(u, k)
-+
- #endif	/* __KERNEL__ */
- 
- #endif /* _SPARC_TERMIOS_H */
-diff --git a/include/asm-sparc64/termios.h b/include/asm-sparc64/termios.h
-index f05d390..6fc71e6 100644
---- a/include/asm-sparc64/termios.h
-+++ b/include/asm-sparc64/termios.h
-@@ -145,6 +145,11 @@ struct winsize {
- 	err; \
- })
- 
-+#define user_termios_to_kernel_termios_1(k, u) \
-+	user_termios_to_kernel_termios(k, u)
-+#define kernel_termios_to_user_termios_1(u, k) \
-+	kernel_termios_to_user_termios(u, k)
-+
- #endif	/* __KERNEL__ */
- 
- #endif /* _SPARC64_TERMIOS_H */
