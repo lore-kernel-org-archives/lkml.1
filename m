@@ -1,234 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbXINWXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbXINWaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbXINWXT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 18:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXINWXL
+	id S1759243AbXINWaf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 18:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbXINWa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 18:23:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49387 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751214AbXINWXK (ORCPT
+	Fri, 14 Sep 2007 18:30:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41682
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756493AbXINWa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 18:23:10 -0400
-Date: Fri, 14 Sep 2007 15:23:10 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: linux-mm@kvack.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Configurable reclaim batch size 
-Message-ID: <Pine.LNX.4.64.0709141519230.14894@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Sep 2007 18:30:27 -0400
+Date: Fri, 14 Sep 2007 15:30:25 -0700 (PDT)
+Message-Id: <20070914.153025.41635808.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: lethal@linux-sh.org, mikey@neuling.org, jdi@l4x.org, paulus@samba.org,
+       torvalds@linux-foundation.org, tony@bakeyournoodle.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, alan@redhat.com,
+       heiko.carstens@de.ibm.com, hskinnemoen@atmel.com, dhowells@redhat.com
+Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070914151253.d7943119.akpm@linux-foundation.org>
+References: <20070913035506.b599e84f.akpm@linux-foundation.org>
+	<20070914.113324.104043149.davem@davemloft.net>
+	<20070914151253.d7943119.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows a configuration of the basic reclaim unit for reclaim in 
-vmscan.c. As memory sizes increase so will the frequency of running 
-reclaim. Configuring the reclaim unit higher will reduce the number of 
-times reclaim has to be entered and reduce the number of times that the 
-zone locks have to be taken.
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 14 Sep 2007 15:12:53 -0700
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> That fixes sparc, but I think other architectures are still broken.  And if
+> we use Tony's ifdef patch to fix the other architectures, that makes the
+> above sparc-fix patch unneeded.
+> 
+> argh.
 
----
- include/linux/mmzone.h |    1 +
- kernel/sysctl.c        |    8 ++++++++
- mm/vmscan.c            |   41 +++++++++++++++++++++--------------------
- 3 files changed, 30 insertions(+), 20 deletions(-)
+I don't care if we use Tony's fix or mine, both are fine.
 
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c	2007-09-12 18:21:28.000000000 -0700
-+++ linux-2.6/mm/vmscan.c	2007-09-12 18:31:13.000000000 -0700
-@@ -57,11 +57,11 @@ struct scan_control {
- 	/* Can pages be swapped as part of reclaim? */
- 	int may_swap;
- 
--	/* This context's SWAP_CLUSTER_MAX. If freeing memory for
--	 * suspend, we effectively ignore SWAP_CLUSTER_MAX.
-+	/* This context's  reclaim batch size. If freeing memory for
-+	 * suspend, we effectively ignore reclaim_batch.
- 	 * In this context, it doesn't matter that we scan the
- 	 * whole list at once. */
--	int swap_cluster_max;
-+	int reclaim_batch;
- 
- 	int swappiness;
- 
-@@ -105,6 +105,7 @@ struct scan_control {
-  */
- int vm_swappiness = 60;
- long vm_total_pages;	/* The total number of pages which the VM controls */
-+int sysctl_reclaim_batch = SWAP_CLUSTER_MAX;
- 
- static LIST_HEAD(shrinker_list);
- static DECLARE_RWSEM(shrinker_rwsem);
-@@ -159,7 +160,7 @@ unsigned long shrink_slab(unsigned long 
- 	unsigned long ret = 0;
- 
- 	if (scanned == 0)
--		scanned = SWAP_CLUSTER_MAX;
-+		scanned = sysctl_reclaim_batch;
- 
- 	if (!down_read_trylock(&shrinker_rwsem))
- 		return 1;	/* Assume we'll be able to shrink next time */
-@@ -338,7 +339,7 @@ static pageout_t pageout(struct page *pa
- 		int res;
- 		struct writeback_control wbc = {
- 			.sync_mode = WB_SYNC_NONE,
--			.nr_to_write = SWAP_CLUSTER_MAX,
-+			.nr_to_write = sysctl_reclaim_batch,
- 			.range_start = 0,
- 			.range_end = LLONG_MAX,
- 			.nonblocking = 1,
-@@ -801,7 +802,7 @@ static unsigned long shrink_inactive_lis
- 		unsigned long nr_freed;
- 		unsigned long nr_active;
- 
--		nr_taken = isolate_lru_pages(sc->swap_cluster_max,
-+		nr_taken = isolate_lru_pages(sc->reclaim_batch,
- 			     &zone->inactive_list,
- 			     &page_list, &nr_scan, sc->order,
- 			     (sc->order > PAGE_ALLOC_COSTLY_ORDER)?
-@@ -1076,7 +1077,7 @@ static unsigned long shrink_zone(int pri
- 	zone->nr_scan_active +=
- 		(zone_page_state(zone, NR_ACTIVE) >> priority) + 1;
- 	nr_active = zone->nr_scan_active;
--	if (nr_active >= sc->swap_cluster_max)
-+	if (nr_active >= sc->reclaim_batch)
- 		zone->nr_scan_active = 0;
- 	else
- 		nr_active = 0;
-@@ -1084,7 +1085,7 @@ static unsigned long shrink_zone(int pri
- 	zone->nr_scan_inactive +=
- 		(zone_page_state(zone, NR_INACTIVE) >> priority) + 1;
- 	nr_inactive = zone->nr_scan_inactive;
--	if (nr_inactive >= sc->swap_cluster_max)
-+	if (nr_inactive >= sc->reclaim_batch)
- 		zone->nr_scan_inactive = 0;
- 	else
- 		nr_inactive = 0;
-@@ -1092,14 +1093,14 @@ static unsigned long shrink_zone(int pri
- 	while (nr_active || nr_inactive) {
- 		if (nr_active) {
- 			nr_to_scan = min(nr_active,
--					(unsigned long)sc->swap_cluster_max);
-+					(unsigned long)sc->reclaim_batch);
- 			nr_active -= nr_to_scan;
- 			shrink_active_list(nr_to_scan, zone, sc, priority);
- 		}
- 
- 		if (nr_inactive) {
- 			nr_to_scan = min(nr_inactive,
--					(unsigned long)sc->swap_cluster_max);
-+					(unsigned long)sc->reclaim_batch);
- 			nr_inactive -= nr_to_scan;
- 			nr_reclaimed += shrink_inactive_list(nr_to_scan, zone,
- 								sc);
-@@ -1181,7 +1182,7 @@ unsigned long try_to_free_pages(struct z
- 	struct scan_control sc = {
- 		.gfp_mask = gfp_mask,
- 		.may_writepage = !laptop_mode,
--		.swap_cluster_max = SWAP_CLUSTER_MAX,
-+		.reclaim_batch = sysctl_reclaim_batch,
- 		.may_swap = 1,
- 		.swappiness = vm_swappiness,
- 		.order = order,
-@@ -1210,7 +1211,7 @@ unsigned long try_to_free_pages(struct z
- 			reclaim_state->reclaimed_slab = 0;
- 		}
- 		total_scanned += sc.nr_scanned;
--		if (nr_reclaimed >= sc.swap_cluster_max) {
-+		if (nr_reclaimed >= sc.reclaim_batch) {
- 			ret = 1;
- 			goto out;
- 		}
-@@ -1222,8 +1223,8 @@ unsigned long try_to_free_pages(struct z
- 		 * that's undesirable in laptop mode, where we *want* lumpy
- 		 * writeout.  So in laptop mode, write out the whole world.
- 		 */
--		if (total_scanned > sc.swap_cluster_max +
--					sc.swap_cluster_max / 2) {
-+		if (total_scanned > sc.reclaim_batch +
-+					sc.reclaim_batch / 2) {
- 			wakeup_pdflush(laptop_mode ? 0 : total_scanned);
- 			sc.may_writepage = 1;
- 		}
-@@ -1288,7 +1289,7 @@ static unsigned long balance_pgdat(pg_da
- 	struct scan_control sc = {
- 		.gfp_mask = GFP_KERNEL,
- 		.may_swap = 1,
--		.swap_cluster_max = SWAP_CLUSTER_MAX,
-+		.reclaim_batch = sysctl_reclaim_batch,
- 		.swappiness = vm_swappiness,
- 		.order = order,
- 	};
-@@ -1388,7 +1389,7 @@ loop_again:
- 			 * the reclaim ratio is low, start doing writepage
- 			 * even in laptop mode
- 			 */
--			if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
-+			if (total_scanned > sysctl_reclaim_batch * 2 &&
- 			    total_scanned > nr_reclaimed + nr_reclaimed / 2)
- 				sc.may_writepage = 1;
- 		}
-@@ -1407,7 +1408,7 @@ loop_again:
- 		 * matches the direct reclaim path behaviour in terms of impact
- 		 * on zone->*_priority.
- 		 */
--		if (nr_reclaimed >= SWAP_CLUSTER_MAX)
-+		if (nr_reclaimed >= sysctl_reclaim_batch)
- 			break;
- 	}
- out:
-@@ -1600,7 +1601,7 @@ unsigned long shrink_all_memory(unsigned
- 	struct scan_control sc = {
- 		.gfp_mask = GFP_KERNEL,
- 		.may_swap = 0,
--		.swap_cluster_max = nr_pages,
-+		.reclaim_batch = nr_pages,
- 		.may_writepage = 1,
- 		.swappiness = vm_swappiness,
- 	};
-@@ -1782,8 +1783,8 @@ static int __zone_reclaim(struct zone *z
- 	struct scan_control sc = {
- 		.may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
- 		.may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
--		.swap_cluster_max = max_t(unsigned long, nr_pages,
--					SWAP_CLUSTER_MAX),
-+		.reclaim_batch = max_t(unsigned long, nr_pages,
-+					sysctl_reclaim_batch),
- 		.gfp_mask = gfp_mask,
- 		.swappiness = vm_swappiness,
- 	};
-Index: linux-2.6/include/linux/mmzone.h
-===================================================================
---- linux-2.6.orig/include/linux/mmzone.h	2007-09-12 18:28:58.000000000 -0700
-+++ linux-2.6/include/linux/mmzone.h	2007-09-12 18:29:42.000000000 -0700
-@@ -607,6 +607,7 @@ int sysctl_min_unmapped_ratio_sysctl_han
- int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *, int,
- 			struct file *, void __user *, size_t *, loff_t *);
- 
-+extern int sysctl_reclaim_batch;
- extern int numa_zonelist_order_handler(struct ctl_table *, int,
- 			struct file *, void __user *, size_t *, loff_t *);
- extern char numa_zonelist_order[];
-Index: linux-2.6/kernel/sysctl.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl.c	2007-09-12 18:27:12.000000000 -0700
-+++ linux-2.6/kernel/sysctl.c	2007-09-12 18:28:48.000000000 -0700
-@@ -900,6 +900,14 @@ static ctl_table vm_table[] = {
- 		.strategy	= &sysctl_intvec,
- 	},
- 	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "reclaim_batch",
-+		.data		= &sysctl_reclaim_batch,
-+		.maxlen		= sizeof(sysctl_reclaim_batch),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
- 		.ctl_name	= VM_DROP_PAGECACHE,
- 		.procname	= "drop_caches",
- 		.data		= &sysctl_drop_caches,
+What I do care about is that I spent 24 hours on trains and
+planes, only to find more than a day later that Sparc still
+didn't build.
