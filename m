@@ -1,124 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbXINLZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbXINLeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759220AbXINLZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 07:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbXINLZV
+	id S1756822AbXINLeA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 07:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbXINLdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 07:25:21 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:33782 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756433AbXINLZU (ORCPT
+	Fri, 14 Sep 2007 07:33:52 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:49729 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbXINLdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 07:25:20 -0400
-Date: Fri, 14 Sep 2007 13:25:19 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Some driver core and kobject minor patches
-Message-ID: <20070914132519.587d7a35@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070913233751.GA10856@kroah.com>
-References: <20070913233751.GA10856@kroah.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Fri, 14 Sep 2007 07:33:51 -0400
+Date: Fri, 14 Sep 2007 15:33:54 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+Message-ID: <20070914153354.B5586@jurassic.park.msu.ru>
+References: <fa.ggBqx6W3i6hfs6jdfg64oXKSxW8@ifi.uio.no> <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no> <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no> <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no> <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no> <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no> <46EA00DA.6010704@shaw.ca> <20070914151401.A5586@jurassic.park.msu.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+In-Reply-To: <20070914151401.A5586@jurassic.park.msu.ru>; from ink@jurassic.park.msu.ru on Fri, Sep 14, 2007 at 03:14:01PM +0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007 16:37:51 -0700,
-Greg KH <greg@kroah.com> wrote:
+On Fri, Sep 14, 2007 at 03:14:01PM +0400, Ivan Kokshaysky wrote:
+> whippets doesn't look sane either. ;-)
+  ^^^^^^^^
+It's not me, it's a spellchecker :-) I meant "chipsets" of course, sorry.
 
-> Kay pointed out to me the other day that we are dragging around 20 bytes
-> in every struct kobject and in every struct device to contain a name
-> string that can be dynamically allocated instead.  For small device
-> names (the majority), this savings can add up, especially with a lot of
-> individual devices.
-> 
-> So, I started out by getting rid of the static array in the kobject
-> structure, as we already were dynamically allocating space if it was
-> needed.
-> 
-> Of course, this required a number of other minor cleanups through the
-> code tree to handle places where we were incorrectly directly accessing
-> the kobject name instead of using the "proper" function.  I also got
-> sidetracked by a few driver core and kobject.h cleanups of macros that
-> are no longer needed, or functions that no longer need to be global
-> (they were never exported, so we don't have to worry about that mess...)
-> 
-> And I added a change to trigger a warning if we add an attribute to
-> sysfs that we have already had created, to help the SCSI developers out
-> with their driver model reworks.
-> 
-> So, here's a series of 11 patches that I've added to my tree, and will
-> send to Linus when 2.6.24 is opened up.
-> 
-> Any review comments are appreciated.  The full diffstat is below showing
-> that overall, we did get rid of more code than was added.
-
-Neat. We can get rid of even more stuff if we remove the removed
-functions from the Documentation as well.
-
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-
----
- Documentation/kobject.txt |   21 ++-------------------
- 1 files changed, 2 insertions(+), 19 deletions(-)
-
---- linux-2.6.orig/Documentation/kobject.txt
-+++ linux-2.6/Documentation/kobject.txt
-@@ -54,7 +54,6 @@ embedded in larger data structures and r
- 
- struct kobject {
- 	const char		* k_name;
--	char			name[KOBJ_NAME_LEN];
- 	struct kref		kref;
- 	struct list_head	entry;
- 	struct kobject		* parent;
-@@ -223,18 +222,15 @@ decl_subsys(devices, &ktype_device, &dev
- is equivalent to doing:
- 
- struct kset devices_subsys = {
--     .kobj = {
--	   .name = "devices",
--     },
-      .ktype = &ktype_devices,
-      .uevent_ops = &device_uevent_ops,
- };
--
-+kobject_set_name(&devices_subsys, name);
- 
- The objects that are registered with a subsystem that use the
- subsystem's default list must have their kset ptr set properly. These
- objects may have embedded kobjects or ksets. The
--following helpers make setting the kset easier:
-+following helper makes setting the kset easier:
- 
- 
- kobj_set_kset_s(obj,subsys)
-@@ -242,22 +238,9 @@ kobj_set_kset_s(obj,subsys)
- - Assumes that obj->kobj exists, and is a struct kobject.
- - Sets the kset of that kobject to the kset <subsys>.
- 
--
--kset_set_kset_s(obj,subsys)
--
--- Assumes that obj->kset exists, and is a struct kset.
--- Sets the kset of the embedded kobject to the kset <subsys>.
--
--subsys_set_kset(obj,subsys)
--
--- Assumes obj->subsys exists, and is a struct subsystem.
--- Sets obj->subsys.kset.kobj.kset to the subsystem's embedded kset.
--
- void subsystem_init(struct kset *s);
- int subsystem_register(struct kset *s);
- void subsystem_unregister(struct kset *s);
--struct kset *subsys_get(struct kset *s);
--void kset_put(struct kset *s);
- 
- These are just wrappers around the respective kset_* functions.
- 
+Ivan.
