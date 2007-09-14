@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbXINKtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbXINKuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757132AbXINKtb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 06:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756956AbXINKtW
+	id S1752206AbXINKuV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 06:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbXINKuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 06:49:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50355 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756952AbXINKtV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 06:49:21 -0400
-Date: Fri, 14 Sep 2007 03:48:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olof Johansson <olof@lixom.net>
-Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org, hch@lst.de,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] pcmcia: Convert io_req_t to use kio_addr_t
-Message-Id: <20070914034854.1658a9cf.akpm@linux-foundation.org>
-In-Reply-To: <20070905142742.GA1760@lixom.net>
-References: <20070905142742.GA1760@lixom.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Sep 2007 06:50:06 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38644 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755061AbXINKuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 06:50:04 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: 7eggert@gmx.de
+Cc: Brent Casavant <bcasavan@sgi.com>, Gabor Gombas <gombasg@sztaki.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: O_NOLINK for open()
+References: <92Haf-7z7-5@gated-at.bofh.it> <92TO5-246-1@gated-at.bofh.it>
+	<92Zqu-2ur-1@gated-at.bofh.it> <E1IW8R4-0000ko-2z@be1.lrz>
+X-Yow: Well, I'm a classic ANAL RETENTIVE!!  And I'm looking for a way to
+ VICARIOUSLY experience some reason to LIVE!!
+Date: Fri, 14 Sep 2007 12:50:03 +0200
+In-Reply-To: <E1IW8R4-0000ko-2z@be1.lrz> (Bodo Eggert's message of "Fri\, 14
+	Sep 2007 12\:30\:05 +0200")
+Message-ID: <jek5qta5d0.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Sep 2007 09:27:43 -0500 Olof Johansson <olof@lixom.net> wrote:
+Bodo Eggert <7eggert@gmx.de> writes:
 
-> Convert the io_req_t members to kio_addr_t, to allow use on machines with
-> more than 16 bits worth of IO port address space (ppc64 in this case,
-> but it applies to others as well).
+> ~/tmp > cp /bin/sleep .
+> ~/tmp > chmod u+s sleep
+> ~/tmp > ./sleep 2147483647 &
+> [1] 2823
+> ~/tmp > strace -p 2823
+> Process 2823 attached - interrupt to quit
+> setup(
 
-drivers/usb/host/sl811_cs.c: In function 'sl811_cs_config':
-drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'kio_addr_t'
-drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
+You didn't change the owner, so this is not a setuid execution.
 
-That's not just a cosmetic thing - the printk can print junk and if there's
-a %s in the control string after the %x's, printk() will crash.
+Andreas.
 
-I don't know how many instances of this are in the tree, but they'll all
-need to be found and fixed.
-
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
