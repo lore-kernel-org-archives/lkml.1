@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbXINH6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbXINIAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbXINH6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 03:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbXINH6M
+	id S1754799AbXINIAi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 04:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbXINIAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 03:58:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:42878 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbXINH6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 03:58:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=DlfNXKOMEf6Po3A+RbLh7T5F+z8Ol+6suu7b6pFdYQ6xFcMJAXFJ8RQx1uzJbRX0jTcsJKVH02ivasdeLIt5hs3vM93zSbghMdWg7XVXwgjlRBOxnhoeQr0gOr0Y8+Va/u/28pAUdGIFYHHpucXUr5bvxIqj/w41KTmUnmtyTsk=
-Message-ID: <46EA3F07.9050806@gmail.com>
-Date: Fri, 14 Sep 2007 11:57:59 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Fri, 14 Sep 2007 04:00:30 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:12003 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752402AbXINIA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 04:00:29 -0400
+Date: Fri, 14 Sep 2007 10:00:20 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
+       Peter Osterlund <petero2@telia.com>
+Subject: Re: 2.6.23-rc4-mm1: git-block.patch broke pktcdvd
+Message-ID: <20070914080020.GZ25592@kernel.dk>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <46E5A6D1.3050704@free.fr> <46E9BEB1.3060504@free.fr> <20070913160554.ba812d76.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Markus Rechberger <mrechberger@gmail.com>
-CC: Steven Toth <stoth@hauppauge.com>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-References: <46C1BCC5.9090709@amd.com>	 <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>	 <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>	 <20070913131353.GB26972@linuxtv.org>	 <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com>	 <46E95C54.4060502@gmail.com>	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>	 <46E99F36.8090809@hauppauge.com>	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>	 <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
-In-Reply-To: <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070913160554.ba812d76.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> What do you think about IOMMU?
->>>
->>>
->> Just because AMD or INTEL want to invent some whizzy new technology it
->> doesn't say anything about the TV card development and retail business.
->> Intel and AMD have teams of Linux engineers helping operating system
->> developers bring their ideas and technologies to new platforms. That's a
->> million miles away from any of the TV board vendors I know of, who have
->> little or NO fulltime linux developers and consider the < 5% market
->> fringe at best.
->>
+On Thu, Sep 13 2007, Andrew Morton wrote:
+> On Fri, 14 Sep 2007 00:50:25 +0200
+> Laurent Riffard <laurent.riffard@free.fr> wrote:
 > 
-> it helps to virtualize devices and introduces newer features for that.
-> Some interesting projects could be derrived out of that, there are
-> quite a few interesting papers floating around how drivers could be
-> handled in future.
+> > I dig through git-block.patch and the culprit seems to be commit
+> > c94f1c4ac87862675c8d70941973bc3a69aff5d8 "bio: use memset() in
+> > bio_init()".
 > 
+> I think I'll be dropping git-block.  There were a number of problems
+> in rc4-mm1 (for which I have a sprinkling of messy-looking patches
+> somewhere ahead of my current cursor) and nothing seems to have
+> happened in the git tree for a month or so.
 
-IOMMU can be considered similar to the AGP GART, which is similar,
-remapping the Addresses, as far as i understand.
+Huh? It's not even two weeks old. And here we go again, git-block is
+getting dropped and you'll be complaining about lack of testing next.
+I'll update the branches today as discussed with Tomo, that should work
+fine.
 
-Though you get a physical to virtual translation, what about interrupts,
-yet to be seen with how to do it with multipath scenarios.
+-- 
+Jens Axboe
 
-Something that i happened to read
-https://www.gelato.unsw.edu.au/archives/comp-arch/2007-March/007370.html
-Even Documentation/Intel-IOMMU.txt, doesn't seem to paint a very rosy
-picture
-
-Manu
