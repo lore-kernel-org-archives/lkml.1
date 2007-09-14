@@ -1,180 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760266AbXINVPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXINVPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760266AbXINVPf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 17:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbXINVPT
+	id S932178AbXINVPz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 17:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758874AbXINVPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 17:15:19 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51595 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760123AbXINVPQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 17:15:16 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 14 Sep 2007 23:14:21 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH update] SCSI: update Kconfig help text to indicate SCSI core's
- widespread usage
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-cc: James Bottomley <james.bottomley@steeleye.com>, linux-scsi@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.f4379d6e5f1ce499@s5r6.in-berlin.de>
-Message-ID: <tkrat.0e73b94c1e80a481@s5r6.in-berlin.de>
-References: <1189371621.3526.28.camel@localhost.localdomain>
- <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org>
- <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de>
- <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de>
- <tkrat.d922469e152fe0f3@s5r6.in-berlin.de>
- <20070914185434.GD5386@csclub.uwaterloo.ca>
- <tkrat.e1d898d6a272d681@s5r6.in-berlin.de>
- <20070914202102.GE5386@csclub.uwaterloo.ca>
- <tkrat.f4379d6e5f1ce499@s5r6.in-berlin.de>
+	Fri, 14 Sep 2007 17:15:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45131 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758064AbXINVPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 17:15:44 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+X-Fcc: ~/Mail/linus
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Dan Aloni <da-x@monatomic.org>, Bernhard Walle <bwalle@suse.de>
+Subject: Re: [PATCH] Add ELF note with Linux version
+In-Reply-To: Sam Ravnborg's message of  Friday, 14 September 2007 23:07:38 +0200 <20070914210738.GA5031@uranus.ravnborg.org>
+References: <20070904150018.GA4357@suse.de>
+	<46DFD825.2020109@goop.org>
+	<20070913144228.2efcd5d9.akpm@linux-foundation.org>
+	<20070913221340.GA29181@uranus.ravnborg.org>
+	<46E9BD3D.4050102@goop.org>
+	<20070914060805.GA32169@uranus.ravnborg.org>
+	<46EAE534.5030900@goop.org>
+	<20070914210738.GA5031@uranus.ravnborg.org>
+X-Windows: the joke that kills.
+Message-Id: <20070914211537.47FDF4D0424@magilla.localdomain>
+Date: Fri, 14 Sep 2007 14:15:37 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
+The right fix for the linker script is to use the NOTES macro after RODATA.
+I'm pretty sure this has been posted before.  Each arch's vmlinux.lds.S
+needs that change, but the details vary if it uses an explicit PHDRS.
 
-And one more update:
-There is SAS too, and I forgot 'is' in "on a disk which __ accessed via".
 
- drivers/scsi/Kconfig |   67 ++++++++++++++++++++++---------------------
- 1 file changed, 35 insertions(+), 32 deletions(-)
-
-Index: linux-2.6.23-rc6/drivers/scsi/Kconfig
-===================================================================
---- linux-2.6.23-rc6.orig/drivers/scsi/Kconfig
-+++ linux-2.6.23-rc6/drivers/scsi/Kconfig
-@@ -12,23 +12,31 @@ config SCSI
- 	depends on BLOCK
- 	select SCSI_DMA if HAS_DMA
- 	---help---
--	  If you want to use a SCSI hard disk, SCSI tape drive, SCSI CD-ROM or
--	  any other SCSI device under Linux, say Y and make sure that you know
--	  the name of your SCSI host adapter (the card inside your computer
--	  that "speaks" the SCSI protocol, also called SCSI controller),
--	  because you will be asked for it.
--
--	  You also need to say Y here if you have a device which speaks
--	  the SCSI protocol.  Examples of this include the parallel port
--	  version of the IOMEGA ZIP drive, USB storage devices, Fibre
--	  Channel, FireWire storage and the IDE-SCSI emulation driver.
-+	  This option enables core support for SCSI protocols.
-+	  You need it
-+	  - for classic parallel SCSI hardware,
-+	  - for newer SCSI transports such as Fibre Channel, FireWire storage,
-+	    SAS, or iSCSI,
-+	  - for non-SCSI hardware which speaks SCSI protocols, such as USB
-+	    storage devices or the parallel port version of Iomega Zip drive,
-+	  - for non-SCSI hardware whose drivers translate from and to SCSI
-+	    protocols, most notably all Serial ATA drivers, and Parallel ATA
-+	    via the ATA configuration option.
- 
- 	  To compile this driver as a module, choose M here and read
- 	  <file:Documentation/scsi/scsi.txt>.
- 	  The module will be called scsi_mod.
- 
- 	  However, do not compile this as a module if your root file system
--	  (the one containing the directory /) is located on a SCSI device.
-+	  (the one containing the directory /) is located on a SCSI device
-+	  or on a device whose driver represents it as SCSI device, as
-+	  indicated above.  Choose Y in this case, or set up an initrd.
-+
-+	  Subsequent options in this menu enable specific SCSI command set
-+	  support for harddisks, CD/DVD-ROM/R/W, tapes etc..  This menu also
-+	  presents options for specific SCSI controllers, while options for
-+	  some other SCSI transports and all non-SCSI controllers are located
-+	  in other menus (SATA, USB, FireWire etc.).
- 
- config SCSI_DMA
- 	bool
-@@ -57,32 +65,27 @@ config SCSI_PROC_FS
- 
- 	  If unsure say Y.
- 
--comment "SCSI support type (disk, tape, CD-ROM)"
-+comment "SCSI command set drivers (disk, tape, CD-ROM)"
- 	depends on SCSI
- 
- config BLK_DEV_SD
--	tristate "SCSI disk support"
-+	tristate "Harddisks and other Direct access devices"
- 	depends on SCSI
- 	---help---
--	  If you want to use SCSI hard disks, Fibre Channel disks,
--	  Serial ATA (SATA) or Parallel ATA (PATA) hard disks,
--	  USB storage or the SCSI or parallel port version of
--	  the IOMEGA ZIP drive, say Y and read the SCSI-HOWTO,
--	  the Disk-HOWTO and the Multi-Disk-HOWTO, available from
--	  <http://www.tldp.org/docs.html#howto>. This is NOT for SCSI
--	  CD-ROMs.
-+	  Say Y if you want to use harddisks and similar block-oriented devices
-+	  via SCSI or via drivers which use SCSI command sets (e.g. the Serial
-+	  and Parallel ATA kernel subsystem, USB, and more).
- 
- 	  To compile this driver as a module, choose M here and read
- 	  <file:Documentation/scsi/scsi.txt>.
- 	  The module will be called sd_mod.
- 
--	  Do not compile this driver as a module if your root file system
--	  (the one containing the directory /) is located on a SCSI disk.
--	  In this case, do not compile the driver for your SCSI host adapter
--	  (below) as a module either.
-+	  If your root file system (the one containing the directory /) is
-+	  located on a disk which is accessed via this driver, choose Y rather
-+	  than M or set up a suitable initrd.
- 
- config CHR_DEV_ST
--	tristate "SCSI tape support"
-+	tristate "Tape drives"
- 	depends on SCSI
- 	---help---
- 	  If you want to use a SCSI tape drive under Linux, say Y and read the
-@@ -95,7 +98,7 @@ config CHR_DEV_ST
- 	  <file:Documentation/scsi/scsi.txt>. The module will be called st.
- 
- config CHR_DEV_OSST
--	tristate "SCSI OnStream SC-x0 tape support"
-+	tristate "SCSI OnStream SC-x0 tape drives"
- 	depends on SCSI
- 	---help---
- 	  The OnStream SC-x0 SCSI tape drives cannot be driven by the
-@@ -117,13 +120,13 @@ config CHR_DEV_OSST
- 	  <file:Documentation/scsi/scsi.txt>. The module will be called osst.
- 
- config BLK_DEV_SR
--	tristate "SCSI CDROM support"
-+	tristate "CD-ROMs, DVD-ROMs"
- 	depends on SCSI
- 	---help---
--	  If you want to use a SCSI or FireWire CD-ROM under Linux,
--	  say Y and read the SCSI-HOWTO and the CDROM-HOWTO at
--	  <http://www.tldp.org/docs.html#howto>. Also make sure to say
--	  Y or M to "ISO 9660 CD-ROM file system support" later.
-+	  Say Y if you want to use CD-ROMs or DVD-ROMs via SCSI or via drivers
-+	  which use SCSI command sets (e.g. the Serial and Parallel ATA kernel
-+	  subsystem, USB, and more). Also make sure to say Y or M to "ISO 9660
-+	  CD-ROM file system support" later.
- 
- 	  To compile this driver as a module, choose M here and read
- 	  <file:Documentation/scsi/scsi.txt>.
-@@ -164,7 +167,7 @@ config CHR_DEV_SG
- 	  If unsure, say N.
- 
- config CHR_DEV_SCH
--	tristate "SCSI media changer support"
-+	tristate "SCSI media changers"
- 	depends on SCSI
- 	---help---
- 	  This is a driver for SCSI media changers.  Most common devices are
-
--- 
-Stefan Richter
--=====-=-=== =--= -===-
-http://arcgraph.de/sr/
-
+Thanks,
+Roland
