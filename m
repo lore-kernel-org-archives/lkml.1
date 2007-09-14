@@ -1,116 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbXINO7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbXINPM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932973AbXINO7M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbXINO6y
+	id S1758923AbXINPM5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 11:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXINPMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:58:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50138 "EHLO mx1.redhat.com"
+	Fri, 14 Sep 2007 11:12:48 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:2676 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754109AbXINO6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:58:52 -0400
-Date: Fri, 14 Sep 2007 10:58:38 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Greg Banks <gnb@sgi.com>
-Cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ecryptfs-devel@lists.sourceforge.net, nfs@lists.sourceforge.net,
-       linux-fsdevel@vger.kernel.org, unionfs@filesystems.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: [NFS] [PATCH 2/7] NFS: if ATTR_KILL_S*ID bits are set, then
- skip mode change
-Message-Id: <20070914105838.efbfc45e.jlayton@redhat.com>
-In-Reply-To: <20070914144033.GD25610@sgi.com>
-References: <200709041437.l84Eb4lw010007@dantu.rdu.redhat.com>
-	<20070914102545.GF21965@sgi.com>
-	<20070914070258.8fccb40e.jlayton@redhat.com>
-	<20070914130924.GG21965@sgi.com>
-	<20070914093846.7cdd89da.jlayton@redhat.com>
-	<20070914144033.GD25610@sgi.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751347AbXINPMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 11:12:48 -0400
+Date: Fri, 14 Sep 2007 17:13:15 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] CFS-devel, performance improvements
+In-Reply-To: <20070914165653.0139a645@laptopd505.fenrus.org>
+Message-ID: <Pine.LNX.4.64.0709141712180.1817@scrub.home>
+References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home>
+ <20070913075258.GA9173@elte.hu> <Pine.LNX.4.64.0709131419170.1817@scrub.home>
+ <20070913142842.GA26016@elte.hu> <Pine.LNX.4.64.0709131706100.1817@scrub.home>
+ <20070914162641.197913c2@laptopd505.fenrus.org> <Pine.LNX.4.64.0709141630320.1817@scrub.home>
+ <20070914165653.0139a645@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Sep 2007 00:40:33 +1000
-Greg Banks <gnb@sgi.com> wrote:
+Hi,
 
-> On Fri, Sep 14, 2007 at 09:38:46AM -0400, Jeff Layton wrote:
-> > On Fri, 14 Sep 2007 23:09:24 +1000
-> > Greg Banks <gnb@sgi.com> wrote:
-> > 
-> > > On Fri, Sep 14, 2007 at 07:02:58AM -0400, Jeff Layton wrote:
-> > > > On Fri, 14 Sep 2007 20:25:45 +1000
-> > > > Greg Banks <gnb@sgi.com> wrote:
-> > > > 
-> > > > > I'm curious about the reasons behind this change.  You mention
-> > > > > credential issues; how exactly is it that you have the correct creds
-> > > > > to perform a WRITE rpc but not a SETATTR rpc?
-> > > > > 
-> > > > 
-> > > > Consider this case. user1 and user2 are both members of group
-> > > > "allusers":
-> > > > 
-> > > > user1$ echo foo > foo
-> > > > user1$ chgrp allusers foo
-> > > > user1$ chmod 04770 foo
-> > > > user2$ echo bar >> foo
-> > > > 
-> > > > On most local filesystems, this would work correctly. The end result
-> > > > would be a file with mode 0770 and the expected contents. On NFS
-> > > > though, the write by user2 fails. When the write is attempted, the
-> > > > kernel tries to squash the setuid bit using the credentials of user2,
-> > > > who's not allowed to change the mode. The write then fails because the
-> > > > setattr fails.
-> > > 
-> > > Ok, I ran an experiment and I see this failure mode.
-> > > 
-> > > So the SETATTR rpc is really a side effect of the client kernel's
-> > > behaviour and not an operation directly requested by the user process
-> > > on the client.  Is there any reason why that rpc needs to have user2's
-> > > creds?  Why not do the rpc with a fake set of creds with uid and gid
-> > > set to the uid and gid of the file, in this case user1/allusers ?
-> > > That way the rpc will most likely pass the server's permission check.
-> > > 
-> > 
-> > That might work in some cases, but there are many where it wouldn't...
-> > 
-> > Suppose user1 here is root and all of the user1 operations are being
-> > done on the server. If the server has root squashing enabled, then
-> > user2's operation would still fail.
+On Fri, 14 Sep 2007, Arjan van de Ven wrote:
+
+> > There is actually a very simple reason for that, the actual patch is
+> > not my primary focus, 
 > 
-> In that case, user1's operations would also fail, which is even more
-> serious a problem.  Also arguably you actually *want* writes by a
-> nonroot user to a setuid root executable to fail ;-)
 > 
+> for someone who's not focused on patches/code,  you make quite a bit of
+> noise when someone does turn your discussion into smaller patches and
+> only credits you three times.
 
-Well, user1's operations would fail if done from the client, which is
-why I mentioned that they would have to be done on the server.
+As I said before, it's not really the lack of credit, it's the lack of 
+discussion.
 
-The second point is a good one, but POSIX says that it should be allowed
-if the permissions allow for it. The whole situation is somewhat
-contrived anyway, I can't think of a place where this is something
-you'd really want to do, but I think we need to try to follow the spec
-as best as possible...
-
-> > Another problem:
-> > 
-> > Suppose we're using gssapi. There's no guarantee that the client will
-> > have the proper credentials to fake up a call as user1 (you might need
-> > user1 krb5 tickets, etc).
-> 
-> Yes, good point.  You could use the root creds, except for root squashing.
-> Ok, you convinced me.
-> 
-
-Right. When I was first looking at this, I considered some similar
-approaches, but hit roadblocks with all of them. The only real option
-seems to be to leave this to the server, but that does assume that the
-server handles this properly.
-
-Servers that don't are broken, IMO. If Irix isn't clearing these bits
-on a write then it might be good to see if they can fix that...
-
--- 
-Jeff Layton <jlayton@redhat.com>
+bye, Roman
