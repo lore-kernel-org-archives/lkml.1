@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbXINTGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758402AbXINTIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbXINTGQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 15:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbXINTGA
+	id S1758402AbXINTIB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 15:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbXINTHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 15:06:00 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58831 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755688AbXINTF7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 15:05:59 -0400
-Date: Fri, 14 Sep 2007 21:06:09 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
-Message-ID: <20070914190609.GN3563@stusta.de>
-References: <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de> <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org>
+	Fri, 14 Sep 2007 15:07:50 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49960 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753246AbXINTHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 15:07:48 -0400
+Message-ID: <46EADC02.9070409@garzik.org>
+Date: Fri, 14 Sep 2007 15:07:46 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070914190033.GA4003@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Move away from char device ioctls.
+References: <20070914185429.GA9439@2ka.mipt.ru>
+In-Reply-To: <20070914185429.GA9439@2ka.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 09:00:33PM +0200, Sam Ravnborg wrote:
-> Hi Stefan.
+Evgeniy Polyakov wrote:
+> Hi.
 > 
-> Such a patch really calls for some minimal unifacation among
-> the architectures.
+> I'm pleased to announce fourth release of the distributed storage
+> subsystem, which allows to form a storage on top of remote and local
+> nodes, which in turn can be exported to another storage as a node to
+> form tree-like storages.
 > 
-> > 
-> >  arch/alpha/Kconfig            |    2 
-> >  arch/arm/Kconfig              |    2 
-> >  arch/avr32/Kconfig            |    2 
-> >  arch/blackfin/Kconfig         |    2 
-> >  arch/cris/Kconfig             |    2 
-> >  arch/frv/Kconfig              |    2 
-> >  arch/i386/Kconfig             |    2 
-> >  arch/ia64/Kconfig             |    2 
-> >  arch/m32r/Kconfig             |    2 
-> >  arch/m68k/Kconfig             |    2 
-> >  arch/m68knommu/Kconfig        |    2 
-> >  arch/mips/Kconfig             |    2 
-> >  arch/parisc/Kconfig           |    2 
-> >  arch/powerpc/Kconfig          |    2 
-> >  arch/ppc/Kconfig              |    2 
-> >  arch/s390/Kconfig             |    2 
-> >  arch/sh/Kconfig               |    2 
-> >  arch/sh64/Kconfig             |    2 
-> >  arch/sparc/Kconfig            |    2 
-> >  arch/sparc64/Kconfig          |    2 
-> >  arch/um/Kconfig               |    2 
-> >  arch/v850/Kconfig             |    2 
-> >  arch/x86_64/Kconfig           |    4 
-> >  arch/xtensa/Kconfig           |    2 
+> This release includes new configuration interface (kernel connector over
+> netlink socket) and number of fixes of various bugs found during move 
+> to it (in error path).
 > 
+> Further TODO list includes:
+> * implement optional saving of mirroring/linear information on the remote
+> 	nodes (simple)
+> * new redundancy algorithm (complex)
+> * some thoughts about distributed filesystem tightly connected to DST
+> 	(far-far planes so far)
 > 
-> Exactly the same change for all architectures.
-> IT would be good to introduce a common file that contains
-> some of the shared stuff from the different architectures.
-> We could start out simple with:
+> Homepage:
+> http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
 > 
-> arch/Kconfig.arch:
->...
+> Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
-Stefan simply shouldn't move it out of drivers/Kconfig.
+My thoughts.  But first a disclaimer:   Perhaps you will recall me as 
+one of the people who really reads all your patches, and examines your 
+code and proposals closely.  So, with that in mind...
 
-> 	Sam
+I question the value of distributed block services (DBS), whether its 
+your version or the others out there.  DBS are not very useful, because 
+it still relies on a useful filesystem sitting on top of the DBS.  It 
+devolves into one of two cases:  (1) multi-path much like today's SCSI, 
+with distributed filesystem arbitrarion to ensure coherency, or (2) the 
+filesystem running on top of the DBS is on a single host, and thus, a 
+single point of failure (SPOF).
 
-cu
-Adrian
+It is quite logical to extend the concepts of RAID across the network, 
+but ultimately you are still bound by the inflexibility and simplicity 
+of the block device.
 
--- 
+In contrast, a distributed filesystem offers far more scalability, 
+eliminates single points of failure, and offers more room for 
+optimization and redundancy across the cluster.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+A distributed filesystem is also much more complex, which is why 
+distributed block devices are so appealing :)
+
+With a redundant, distributed filesystem, you simply do not need any 
+complexity at all at the block device level.  You don't even need RAID.
+
+It is my hope that you will put your skills towards a distributed 
+filesystem :)  Of the current solutions, GFS (currently in kernel) 
+scales poorly, and NFS v4.1 is amazingly bloated and overly complex.
+
+I've been waiting for years for a smart person to come along and write a 
+POSIX-only distributed filesystem.
+
+	Jeff
+
+
 
