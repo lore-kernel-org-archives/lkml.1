@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbXINUsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbXINUwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbXINUsc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 16:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758408AbXINUsM
+	id S1759204AbXINUwv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 16:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbXINUwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 16:48:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37035 "EHLO
+	Fri, 14 Sep 2007 16:52:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56952 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757464AbXINUsK (ORCPT
+	by vger.kernel.org with ESMTP id S1754799AbXINUwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 16:48:10 -0400
-Date: Fri, 14 Sep 2007 13:47:03 -0700
+	Fri, 14 Sep 2007 16:52:43 -0400
+Date: Fri, 14 Sep 2007 13:51:54 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc4-mm1 list_add corruption in networking code
-Message-Id: <20070914134703.c66889c9.akpm@linux-foundation.org>
-In-Reply-To: <20070914092552.ebccdaa9.randy.dunlap@oracle.com>
-References: <20070914140803.GA26161@Krystal>
-	<20070914092552.ebccdaa9.randy.dunlap@oracle.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Andy Whitcroft <apw@shadowen.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
+Message-Id: <20070914135154.bc60742e.akpm@linux-foundation.org>
+In-Reply-To: <1189778967.5315.11.camel@localhost>
+References: <20070911182546.F139.Y-GOTO@jp.fujitsu.com>
+	<20070913184456.16ff248e.akpm@linux-foundation.org>
+	<20070914105420.F2E9.Y-GOTO@jp.fujitsu.com>
+	<20070913194130.1611fd78.akpm@linux-foundation.org>
+	<1189778967.5315.11.camel@localhost>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,77 +31,39 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007 09:25:52 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Fri, 14 Sep 2007 10:09:27 -0400
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
-> [adding netdev]
-
-yup.      I wonder if the net developers are setting CONFIG_DEBUG_LIST
-
-> On Fri, 14 Sep 2007 10:08:03 -0400 Mathieu Desnoyers wrote:
+> I originally sent in the "update-n_high_memory..." patch against
+> 23-rc3-mm1 on 27aug to fix a problem that I introduced when I moved the
+> populating of N_HIGH_MEMORY state to free_area_init_nodes().  This would
+> miss setting the "has memory" node state for hot added memory.  I never
+> saw any response, but then it ended up in 23-rc4-mm1.
 > 
-> > Hi Andrew,
-> > 
-> > My P4 is crashing about once a day, started with 2.6.23-rc4-mm1, with
-> > errors that seems related to network code. Here is the latest BUG:
-> > (sorry, my console log cuts it at 80 cols)
-> > 
-> > Mathieu
-> > 
-> > [ 4590.836342] list_add corruption. prev->next should be next (c1df4a10), but w 
-> > [ 4590.864914] ------------[ cut here ]------------                             
-> > [ 4590.878687] Kernel BUG at c0263cbc [verbose debug info unavailable]          
-> > [ 4590.897389] invalid opcode: 0000 [#1] PREEMPT SMP                            
-> > [ 4590.911721] last sysfs file: /block/sda/size                                 
-> > [ 4590.924453] Modules linked in: snd_hda_intel usbserial rtc pl2303 skge sky2  
-> > [ 4590.945324]                                                                  
-> > [ 4590.949752] Pid: 3283, comm: cc1 Not tainted (2.6.23-rc4-mm1-testssmp #334)  
-> > [ 4590.970525] EIP: 0060:[<c0263cbc>] EFLAGS: 00010082 CPU: 0                   
-> > [ 4590.986895] EIP is at __list_add+0x5c/0x60                                   
-> > [ 4590.999111] EAX: 00000070 EBX: c2b3b4e8 ECX: 00000001 EDX: 00000203          
-> > [ 4591.017812] ESI: c2b3b4e8 EDI: 00000202 EBP: c3eb7b34 ESP: c3eb7b1c          
-> > [ 4591.036511]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068                   )
-> > [ 4591.052621] Process cc1 (pid: 3283, ti=c3eb6000 task=c2073ea0 task.ti=c3eb60 
-> > [ 4591.073917] Stack: c04dcd50 c1df4a10 c2b3b4e8 c2b3b4e8 c05b3d00 00000006 c3e 
-> > [ 4591.098997]        c1df49e0 c20a499c c3eb7b58 c03afdaf c20a499c c054d4e0 c05
-> > [ 4591.149154] Call Trace:                                                      
-> > [ 4591.156974]  [<c010971a>] show_trace_log_lvl+0x1a/0x30                       
-> > [ 4591.172332]  [<c01097d8>] show_stack_log_lvl+0xa8/0xe0                       
-> > [ 4591.187685]  [<c01098da>] show_registers+0xca/0x250                          
-> > [ 4591.202264]  [<c0109b75>] die+0x115/0x280                                    
-> > [ 4591.214247]  [<c0109d71>] do_trap+0x91/0xc0                                  
-> > [ 4591.226748]  [<c010a119>] do_invalid_op+0x89/0xa0                            
-> > [ 4591.240808]  [<c0423e7a>] error_code+0x72/0x78                               
-> > [ 4591.254091]  [<c03aee41>] __napi_schedule+0x51/0xb0                          
-> > [ 4591.268667]  [<c03afdaf>] netif_rx+0x14f/0x160                               
-> > [ 4591.281946]  [<c02de090>] loopback_xmit+0x60/0x70                            
-> > [ 4591.296006]  [<c03b02fb>] dev_hard_start_xmit+0x22b/0x300                    
-> > [ 4591.312142]  [<c03b2695>] dev_queue_xmit+0x295/0x350                         
-> > [ 4591.326979]  [<c03ceaa9>] ip_output+0x199/0x330                              
-> > [ 4591.340519]  [<c03cdf96>] ip_queue_xmit+0x1c6/0x3e0                          
-> > [ 4591.355104]  [<c03dec4b>] tcp_transmit_skb+0x3db/0x770                       
-> > [ 4591.370462]  [<c03df9c3>] tcp_write_wakeup+0xf3/0x150                        
-> > [ 4591.385562]  [<c03e18fb>] tcp_send_probe0+0xb/0xe0                           
-> > [ 4591.399885]  [<c03e23dc>] tcp_write_timer+0x13c/0x720                        
-> > [ 4591.414982]  [<c013af80>] run_timer_softirq+0x120/0x190                      
-> > [ 4591.430600]  [<c0136d53>] __do_softirq+0x93/0x120                     
-> > [ 4591.444662]  [<c0136e85>] do_softirq+0xa5/0xb0                               
-> > [ 4591.457943]  [<c0137084>] irq_exit+0x54/0x60                                 
-> > [ 4591.470704]  [<c010b425>] do_IRQ+0x45/0x80                                   
-> > [ 4591.482951]  [<c0108fce>] common_interrupt+0x2e/0x34                         
-> > [ 4591.497798]  [<c016d791>] file_read_actor+0xe1/0x100                         
-> > [ 4591.512641]  [<c016e134>] do_generic_mapping_read+0x1f4/0x440                
-> > [ 4591.529815]  [<c016fbfe>] generic_file_aio_read+0xbe/0x1c0                   
-> > [ 4591.546217]  [<c019138e>] do_sync_read+0xce/0x110                            
-> > [ 4591.560282]  [<c0191be4>] vfs_read+0x94/0x130                                
-> > [ 4591.573310]  [<c019212d>] sys_read+0x3d/0x70                                 
-> > [ 4591.586075]  [<c0108596>] syscall_call+0x7/0xb                               
-> > [ 4591.599357]  =======================                                         
-> > [ 4591.610015] INFO: lockdep is turned off.                                     
-> > [ 4591.621713] Code: 5c 24 04 c7 04 24 00 cd 4d c0 e8 40 e1 ec ff 0f 0b eb fe 8 
-> > [ 4591.679092] EIP: [<c0263cbc>] __list_add+0x5c/0x60 SS:ESP 0068:c3eb7b1c      
-> > [ 4591.698884] Kernel panic - not syncing: Fatal exception in interrupt        
+> This Tuesday, Paul Mundt sent in a patch to fix a build problem with
+> MEMORY_HOTPLUG_SPARSE introduced by my patch.  He replaced zone->node
+> with zone_to_nid(zone) in the node_set_state() arguments.
+> 
+> The latest patch, from Yasunori-san, I believe, starts kswapd for nodes
+> to which memory has been hot-added.  As I understand it, his is needed
+> because the memoryless nodes patch results in no kswapd for memoryless
+> nodes.
+> 
+> Does that help?
 
-We're doing NAPI stuff on the loopback device??
+not really ;)
 
+See, when I get some rinky-dink little fix for a patch in -mm I will
+position that patch immediately after the patch which it is fixing, with a
+filename which is derived from the fixed patch's name.  So when
+send-to-Linus time comes, I can fold the fixes into the base patch.  This
+practice also keeps the patches in a sensible presentation order, with
+minimum interdependencies and good git-bisect friendliness.
+
+However it sometimes (rarely) takes considerable effort to work out which
+patch in -mm a particular fix is fixing.  That was the case with
+update-n_high_memory-node-state-for-memory-hotadd.patch.
+
+It helps me quite a bit if people tell me which patch they're fixing. 
+Usually they don't and I get to work it out.  Usually it's fairly obvious.
 
