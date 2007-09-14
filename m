@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760392AbXINMGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbXINMKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760392AbXINMGa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 08:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757998AbXINMGX
+	id S1760658AbXINMKf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 08:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbXINMK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 08:06:23 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:52618 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753898AbXINMGW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 08:06:22 -0400
-Date: Fri, 14 Sep 2007 14:06:21 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sysfs: spit a warning to users when they try to create a
- duplicate sysfs file
-Message-ID: <20070914140621.77054e9d@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070913234118.GH10856@kroah.com>
-References: <20070913233751.GA10856@kroah.com>
-	<20070913234118.GH10856@kroah.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 14 Sep 2007 08:10:26 -0400
+Received: from ox.emgs.com ([194.248.190.99]:50199 "EHLO ox.emgs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754597AbXINMK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 08:10:26 -0400
+Message-ID: <46EA7A2D.90700@pvv.org>
+Date: Fri, 14 Sep 2007 14:10:21 +0200
+From: Jon Ivar Rykkelid <jonry@pvv.org>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: sata_nv issues with MCP51 SATA controller
+References: <46E8EABF.3060409@pvv.org> <46E94728.9050509@garzik.org> <46E951C6.1000403@pvv.org> <46E953D7.5070305@gmail.com> <46E97AFF.30202@pvv.org> <46E98ED1.8070109@pvv.org> <46E99572.7080400@garzik.org> <46E9D7DD.30801@shaw.ca>
+In-Reply-To: <46E9D7DD.30801@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007 16:41:18 -0700,
-Greg KH <greg@kroah.com> wrote:
+Hi,
 
+To eliminate the possibility of this being a hardware issue, I have now 
+acquired another "Gigabyte GA-N650SLI-DS4" motherboard (with the "MCP51" 
+chipset) for testing. I'll swap parts this evening. Hopefully I'll be 
+able to tell you in a few hours whether this appears to be working as it 
+should. The motherboard that I'm going to swap to has actually been 
+tested (with MS Windows OS+driver) for more than a day with a disk 
+connected, so if this MB also fails, I think it will be safe to say that 
+the issue is with the sata_nv driver... So hang on.
 
->  int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
->  {
-> -	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
-> +	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
-> +		printk(KERN_WARNING, "sysfs: duplicate filename '%s' "
+(You can't think of something else that could conflict with the sata_nv 
+driver after a bit of time, like two of my raid-disks being encrypted, 
+me running a SW raid-5 array / some special HW (quad-core CPU) / me 
+running vmware on this server ... ? - To me, all these suggestions seems 
+rather far fetched, especially as all is working with another 
+controller, so I'm arguing that unless there's a HW issue, the issue is 
+with the driver, but you're the expert(s), so let me know if you differ.)
 
-Stray ',' here ------------------->^
-> +		       "can not be created\n", sd->s_name);
-> +		WARN_ON(1);
->  		return -EEXIST;
-> +	}
+I'll keep you posted as to the result of swapping HW.. Give me a few 
+hours.  :-)
+
+BR
+Jon Ivar
+
+Robert Hancock wrote:
+> Jeff Garzik wrote:
+>> Jon Ivar Rykkelid wrote:
+>>> Hi,
+>>>
+>>> I now tested with the adma=0 option, but if anything I got a crash 
+>>> quicker than before. Same error message started coming in, but this 
+>>> time the system hung before I was able to capture the log as well 
+>>> (but I saw the error, and it was the same as before, except that 
+>>> this time it was the ata3-channel that first started acting up..) - 
+>>> To remind you all what this is about, I have reattached the log that 
+>>> I originally captured...
+>>
+>> Sounds like a hardware problem, since disabling ADMA is generally the 
+>> cure-all we use -- it appears to stress the hardware less.
+>
+> If this is an MCP51 chipset, adma=0 will make no difference since that 
+> chipset does not support ADMA in the first place.
 >
