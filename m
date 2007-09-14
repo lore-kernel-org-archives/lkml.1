@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761612AbXINM0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXINMh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761612AbXINM0e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 08:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXINM0J
+	id S1756690AbXINMh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 08:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbXINMhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 08:26:09 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4748 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752982AbXINM0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 08:26:08 -0400
-Date: Fri, 14 Sep 2007 14:26:33 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] CFS-devel, performance improvements
-In-Reply-To: <20070913190125.GC27146@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0709141405130.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home>
- <20070913075258.GA9173@elte.hu> <Pine.LNX.4.64.0709131419170.1817@scrub.home>
- <20070913190125.GC27146@uranus.ravnborg.org>
+	Fri, 14 Sep 2007 08:37:21 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:59768 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954AbXINMhU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 08:37:20 -0400
+Date: Fri, 14 Sep 2007 14:38:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Subject: Re: cpu hotplug support broken in 2.6.23-rc3
+Message-ID: <20070914123816.GE1671@elf.ucw.cz>
+References: <20070827104350.GA2073@elf.ucw.cz> <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com> <20070903034720.GB3655@ucw.cz> <200709031219.12846.rjw@sisk.pl> <1188822917.3406.0.camel@chaos> <20070904072744.GA30474@atrey.karlin.mff.cuni.cz> <1189713695.3974.23.camel@chaos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1189713695.3974.23.camel@chaos>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!
 
-On Thu, 13 Sep 2007, Sam Ravnborg wrote:
-
-> I have read the announcement from Ingo and after reading it I concluded
-> that it was good to see that Ingo had taken in consideration the feedback
-> from you and improved the schduler based on this.
-> And when I read that he removed a lot of stuff I smiled. This reminded
-> me of countless monkey aka code review sessions where I repeatedly do
-> like my childred and asks why so many times that the author realize that
-> something is not needed or no longer used.
+> > > What was the last known to work version ?
+> > 
+> > I'm afraid I only turned on HIGH_RES_TIMERS in 2.6.23-rc1
+> > timeframe... so I'm not sure if it ever worked for me.
+> > 
+> > I can confirm it is working in 2.6.23-rc5 with highres disabled, and
+> > broken with highres enabled. NOHZ turns "waits for keypress during
+> > unplug/replug" into "just plain hangs".
 > 
+> Ok, I can reproduce it and I tracked down what happens:
 > 
-> The above were my impression after reading the announcement with
-> respect to your influence and that goes far beyond "two cleanups".
-> I bet many others read it roughly like I did.
+> When the CPU goes offline, the clock event source for this CPU (lapic)
+> is removed from the clock events framework. This also clears the
+> information that the CPU is using C-States which stop the local APIC
+> timer.
+> 
+> Now you put the CPU online again and the local APIC timer is used, but
+> the C-State information is not evaluated again in ACPI. This means that
+> the clock events code does not know that the APIC might stop. In the
+> worst case this will happen and make the CPU wait for timer interrupts
+> forever.
+> 
+> The problem only appears when you are on battery (c3/c4 available) or on
+> those broken machines, where C2 is in reality C3 (e.g. akpm's VAIO)
+> 
+> I have an yet untested fix, which preserves the broadcast state across
+> the offline state, but Len is looking into it as well, whether we can
+> just reevaluate the power states (and the broadcast flags) when a cpu
+> becomes online again. If Len can do that easily for 2.6.23, I'd prefer
+> that.
 
-Sam, in a way you actually prove my point. Thanks. :)
-The primary thing you remember here from the announcements is the cleanup 
-and tuning part, during which he picked up some small parts from my patch.
-
-That's what I was afraid of, most people won't realize what was added in 
-this process and even if they notice it, Ingo describes it somewhat 
-"similiar", but actually "different". That part is pretty important to me, 
-but Ingo treats it more as a minor matter.
-
-bye, Roman
+Is there a patch you want me to test? Or does Len have anything to
+play with?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
