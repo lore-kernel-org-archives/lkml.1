@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbXINVwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXINVxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758506AbXINVwf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 17:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbXINVw1
+	id S1759526AbXINVxQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 17:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbXINVxC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 17:52:27 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38181 "EHLO e1.ny.us.ibm.com"
+	Fri, 14 Sep 2007 17:53:02 -0400
+Received: from gw.goop.org ([64.81.55.164]:41922 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755821AbXINVw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 17:52:26 -0400
-Date: Fri, 14 Sep 2007 14:52:21 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH] list.h: add list_for_each_entry_continue_rcu
-Message-ID: <20070914215221.GH9393@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1189425947.4506.78.camel@johannes.berg> <20070910173948.GD11801@linux.vnet.ibm.com> <1189804498.3974.57.camel@johannes.berg>
+	id S1756501AbXINVxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 17:53:00 -0400
+Message-ID: <46EB02BA.6030909@goop.org>
+Date: Fri, 14 Sep 2007 14:52:58 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1189804498.3974.57.camel@johannes.berg>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure
+References: <11897991353793-git-send-email-aliguori@us.ibm.com> <46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws> <46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws>
+In-Reply-To: <46EB0136.6080105@codemonkey.ws>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 11:14:58PM +0200, Johannes Berg wrote:
-> On Mon, 2007-09-10 at 10:39 -0700, Paul E. McKenney wrote:
-> > On Mon, Sep 10, 2007 at 02:05:47PM +0200, Johannes Berg wrote:
-> > > To implement the multicast list callback in mac80211 we need to
-> > > do partial list iteration. Since I want to convert the interface
-> > > list to an RCU list, I need a new list walking primitive:
-> > > list_for_each_entry_continue_rcu().
-> 
-> Hah. Turns out if I do the right thing with dev_mc_sync() I no longer
-> need this. Paul, do you want to push it to akpm or such? My bugfix no
-> longer relies on it.
+Anthony Liguori wrote:
+> Yeah, see, the initial goal was to make it possible to use the KVM
+> paravirtualizations on other hypervisors.  However, I don't think this
+> is really going to be possible in general so maybe it's better to just
+> use leaf 0.  I'll let others chime in before sending a new patch.
 
-OK, will push it when I convert list_for_each_continue_rcu().
+Hm.  Obviously you can just define a signature for "kvm-compatible
+hypercall interface" and make it common that way, but it gets tricky if
+the hypervisor supports multiple hypercall interfaces, including the kvm
+one.  Start the kvm leaves at 0x40001000 or something?
 
-						Thanx, Paul
+    J
