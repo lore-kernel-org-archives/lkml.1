@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbXINSPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbXINSSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754872AbXINSPb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 14:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbXINSPT
+	id S1757349AbXINSSE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 14:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbXINSRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 14:15:19 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60428 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753787AbXINSPR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 14:15:17 -0400
-Date: Fri, 14 Sep 2007 11:15:16 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Mel Gorman <mel@skynet.ie>, andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <Pine.LNX.4.64.0709141053110.15813@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0709141114130.15965@schroedinger.engr.sgi.com>
-References: <20070911060349.993975297@sgi.com> <200709121246.08833.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709121607140.4204@schroedinger.engr.sgi.com>
- <200709140720.06537.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709141053110.15813@schroedinger.engr.sgi.com>
+	Fri, 14 Sep 2007 14:17:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41678 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754350AbXINSRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 14:17:51 -0400
+Message-ID: <46EAD049.4020107@garzik.org>
+Date: Fri, 14 Sep 2007 14:17:45 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dan Williams <dcbw@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] net driver fixes
+References: <20070913053022.GA16891@havoc.gtf.org> <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
+In-Reply-To: <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007, Christoph Lameter wrote:
+Dan Williams wrote:
+> WTF?  why would the default be to _not_ propagate carrier state?  Are
+> there some mitigating circumstances that require this driver to not
+> notify the stack of carrier on/off?  Userspace stuff really should know
+> about the carrier state, and this disables it by default.
 
-> an -ENOMEM. Given the quantities of pages on todays machine--a 1 G machine 
 
-s/1G/1T/ Sigh.
+The commit explains that...
 
-> has 256 milllion 4k pages--and the unmovable ratios we see today it 
+	Jeff
 
-256k for 1G.
 
