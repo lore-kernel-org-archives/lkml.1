@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764882AbXINN25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbXINNjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764882AbXINN25 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 09:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbXINN2u
+	id S1758605AbXINNjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 09:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbXINNjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 09:28:50 -0400
-Received: from mail-in-04.arcor-online.net ([151.189.21.44]:34994 "EHLO
-	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752458AbXINN2t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 09:28:49 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Jon Ivar Rykkelid <jonry@pvv.org>
-Subject: Re: sata_nv issues with MCP51 SATA controller
-Date: Fri, 14 Sep 2007 15:29:07 +0200
-User-Agent: KMail/1.9.7
-Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>
-References: <46E8EABF.3060409@pvv.org> <46E953D7.5070305@gmail.com> <46E97AFF.30202@pvv.org>
-In-Reply-To: <46E97AFF.30202@pvv.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1658547.2tIuQWeGrt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 14 Sep 2007 09:39:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53840 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752474AbXINNjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 09:39:04 -0400
+Date: Fri, 14 Sep 2007 09:38:46 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Greg Banks <gnb@sgi.com>
+Cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ecryptfs-devel@lists.sourceforge.net, nfs@lists.sourceforge.net,
+       linux-fsdevel@vger.kernel.org, unionfs@filesystems.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: [NFS] [PATCH 2/7] NFS: if ATTR_KILL_S*ID bits are set, then
+ skip mode change
+Message-Id: <20070914093846.7cdd89da.jlayton@redhat.com>
+In-Reply-To: <20070914130924.GG21965@sgi.com>
+References: <200709041437.l84Eb4lw010007@dantu.rdu.redhat.com>
+	<20070914102545.GF21965@sgi.com>
+	<20070914070258.8fccb40e.jlayton@redhat.com>
+	<20070914130924.GG21965@sgi.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200709141529.11363.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1658547.2tIuQWeGrt
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 14 Sep 2007 23:09:24 +1000
+Greg Banks <gnb@sgi.com> wrote:
 
-On the day of Thursday 13 September 2007 Jon Ivar Rykkelid hast written:
-> Resending, as my first attempts contained HTML and was blocked...
->
-> Tejun Heo wrote:
-> > Jon Ivar Rykkelid wrote:
-> >> Thanks for the suggestion, but sata_nv is not built modular in my
-> >> current kernel, so "no can do" at the moment
-> >> (However, if some expert REALLY thinks this will fix things, I will
-> >> CERTAINLY recompile and give it a go)
-> >
-> > Passing "sata_nv.adma=3D0" as kernel boot parameter will do the trick.
->
-> Ahh, silly me... Of course!
-> Ooops, I just got back, and verified: I actually have sata_nv running as
-> a module after all on this server... My bad.
-> I fixed /etc/modprobe.conf to include the following two lines:
-> "
-> alias scsi_hostadapter sata_nv
-> options sata_nv adma=3D0
-> ...
-> "
+> On Fri, Sep 14, 2007 at 07:02:58AM -0400, Jeff Layton wrote:
+> > On Fri, 14 Sep 2007 20:25:45 +1000
+> > Greg Banks <gnb@sgi.com> wrote:
+> > 
+> > > I'm curious about the reasons behind this change.  You mention
+> > > credential issues; how exactly is it that you have the correct creds
+> > > to perform a WRITE rpc but not a SETATTR rpc?
+> > > 
+> > 
+> > Consider this case. user1 and user2 are both members of group
+> > "allusers":
+> > 
+> > user1$ echo foo > foo
+> > user1$ chgrp allusers foo
+> > user1$ chmod 04770 foo
+> > user2$ echo bar >> foo
+> > 
+> > On most local filesystems, this would work correctly. The end result
+> > would be a file with mode 0770 and the expected contents. On NFS
+> > though, the write by user2 fails. When the write is attempted, the
+> > kernel tries to squash the setuid bit using the credentials of user2,
+> > who's not allowed to change the mode. The write then fails because the
+> > setattr fails.
+> 
+> Ok, I ran an experiment and I see this failure mode.
+> 
+> So the SETATTR rpc is really a side effect of the client kernel's
+> behaviour and not an operation directly requested by the user process
+> on the client.  Is there any reason why that rpc needs to have user2's
+> creds?  Why not do the rpc with a fake set of creds with uid and gid
+> set to the uid and gid of the file, in this case user1/allusers ?
+> That way the rpc will most likely pass the server's permission check.
+> 
 
-I don't think it will matter, as adma doesn't affect MCP51, but only nforce=
-4.=20
-So I'd look for other trouble makers.
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+That might work in some cases, but there are many where it wouldn't...
 
---nextPart1658547.2tIuQWeGrt
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Suppose user1 here is root and all of the user1 operations are being
+done on the server. If the server has root squashing enabled, then
+user2's operation would still fail.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.6 (GNU/Linux)
+Another problem:
 
-iD8DBQBG6oynxU2n/+9+t5gRAukJAKCNxvn/4cfQjVkuRart5d/rkMkoIgCg5JJi
-o9WEHjw7RekP0371Un6ev5o=
-=d7es
------END PGP SIGNATURE-----
+Suppose we're using gssapi. There's no guarantee that the client will
+have the proper credentials to fake up a call as user1 (you might need
+user1 krb5 tickets, etc).
 
---nextPart1658547.2tIuQWeGrt--
+-- 
+Jeff Layton <jlayton@redhat.com>
