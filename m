@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbXINNsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762701AbXINNsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757986AbXINNsS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 09:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbXINNsH
+	id S1762701AbXINNsx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 09:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbXINNso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 09:48:07 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:41473 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbXINNsE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 09:48:04 -0400
-In-Reply-To: <adaodg7ocrh.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
+	Fri, 14 Sep 2007 09:48:44 -0400
+Received: from rtr.ca ([76.10.145.34]:2219 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752635AbXINNsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 09:48:43 -0400
+Message-ID: <46EA8AC4.3000007@rtr.ca>
+Date: Fri, 14 Sep 2007 09:21:08 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Subject: Re: [PATCH 02/12] IB/ehca: Add 1 is not longer needed because of firmware
- interface change
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OF628247C3.FB0AFE13-ONC1257355.005E8356-C1257356.004BCE85@de.ibm.com>
-Date: Fri, 14 Sep 2007 15:48:00 +0200
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 14/09/2007 15:48:01,
-	Serialize complete at 14/09/2007 15:48:01
-Content-Type: text/plain; charset="US-ASCII"
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, Oliver Neukum <oneukum@suse.de>
+Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
+References: <20070913154019.GG3563@stusta.de> <Pine.LNX.4.44L0.0709131154240.7406-100000@iolanthe.rowland.org> <20070913201910.GH3563@stusta.de> <alpine.LFD.0.999.0709131341300.16478@woody.linux-foundation.org> <20070913212842.GI3563@stusta.de> <20070913220543.GJ3563@stusta.de> <alpine.LFD.0.999.0709131709320.16478@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0709131709320.16478@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier <rdreier@cisco.com> wrote on 12.09.2007 22:21:54:
+Linus Torvalds wrote:
+> 
+> On Fri, 14 Sep 2007, Adrian Bunk wrote:
+>> E.g. when looking at the reverse dependencies of libhal, it would not be 
+>> funny if kernel 2.6.43 required a more recent version of HAL.
+> 
+> Adrian, what's the point of answering your questions, WHEN YOU DON'T EVEN 
+> READ THE ANSWERS!
+> 
+> So stop repeating your inane question, and instead LISTEN to what people 
+> are saying.
+> 
+> There is *no* requirement what-so-ever on user space. End of story.
+> 
+> If user-space doesn't tell devices to go to autosuspend, they just won't 
+> do so. But this has nothing to do with white-lists, black-lists, 2.6.43, 
+> or your HAL version.
+> 
+> That black-listing was a mistake. We got over it. Now PLEASE you get over 
+> it too!
 
-> What happens if someone runs the new driver with older firmware?  Or
-> what if someone upgrades the firmware without updating the driver?
+Adrian, please note that this is NOT the normal "suspend to ram/disk" stuff
+that is being discussed / affected here.  But rather something brand new 
+(to Linux), the automatic powerdown (well, nearly) of idle USB devices
+during regular running.
 
-Thanks for pointing our noses to this. Your comment triggered some further 
-internal discussions about the meaning of the values for the current 
-system implementation. We'll think this one over again and repost the 
-final solution in time for 2.6.24-rc1.
+Things will work just fine without chewing up gobs of memory in a futile effort
+to list everything inside the kernel.  Devices will plug in and work fine
+(which they didn't in 2.6.23 until this stuff got reverted) the same as always.
 
-If the rest of this patchset is okay with you, could you apply it and 
-leave out this one patch? The patchset will apply cleanly without it.
+To gain the last xx% in power savings, some userspace support may be needed,
+that's all.  And with the pace of new/updated USB devices coming/going these days,
+userspace is really the only appropriate place for this kind of stuff.
 
-Thanks,
-  Joachim
+Cheers
