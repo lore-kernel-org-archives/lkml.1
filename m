@@ -1,125 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933979AbXINQKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934044AbXINQMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933979AbXINQKu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758858AbXINQKj
+	id S934044AbXINQMX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760125AbXINQMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:10:39 -0400
-Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:63042 "EHLO
-	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756578AbXINQKh (ORCPT
+	Fri, 14 Sep 2007 12:12:09 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50343 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756576AbXINQMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:10:37 -0400
-From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
-       andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-References: <20070911060349.993975297@sgi.com>
-	<200709111606.10873.nickpiggin@yahoo.com.au>
-	<Pine.LNX.4.64.0709111448430.27023@schroedinger.engr.sgi.com>
-	<200709120407.48344.nickpiggin@yahoo.com.au>
-Date: Fri, 14 Sep 2007 18:10:31 +0200
-In-Reply-To: <200709120407.48344.nickpiggin@yahoo.com.au> (Nick Piggin's
-	message of "Wed, 12 Sep 2007 04:07:47 +1000")
-Message-ID: <87zlzpqlc8.fsf@informatik.uni-tuebingen.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
+	Fri, 14 Sep 2007 12:12:07 -0400
+Date: Fri, 14 Sep 2007 21:52:24 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, Jan Engelhardt <jengelh@computergmbh.de>,
+       dhaval@linux.vnet.ibm.com, menage@google.com
+Subject: Re: [PATCH] Hookup group-scheduler with task container infrastructure
+Message-ID: <20070914162224.GA29072@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070910102259.dc45a481.akpm@linux-foundation.org> <20070910174649.GA16222@linux.vnet.ibm.com> <b647ffbd0709101528i7440a0f9m9837065a43e4a720@mail.gmail.com> <20070911044145.GC16222@linux.vnet.ibm.com> <b647ffbd0709110253y7d9564c4j88aa134330e2a292@mail.gmail.com> <20070912114202.GA30385@linux.vnet.ibm.com> <b647ffbd0709120925i690ecb11i975149037fc72979@mail.gmail.com> <20070913123324.GA6214@linux.vnet.ibm.com> <20070914094158.GA1990@elte.hu> <20070914155913.GA8751@linux.vnet.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070914155913.GA8751@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Sep 14, 2007 at 09:29:13PM +0530, Srivatsa Vaddagiri wrote:
+> 2. Enable only one form of grouping, which is task-container based. Provide a 
+>    user-space daemon (attached) which can automatically put tasks of different 
+Oops ..forgot to attach. But I realize that I had already sent the
+source for the daemon here:
 
+	http://article.gmane.org/gmane.linux.kernel/553267
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
-
-> In my attack, I cause the kernel to allocate lots of unmovable allocations
-> and deplete movable groups. I theoretically then only need to keep a
-> small number (1/2^N) of these allocations around in order to DoS a
-> page allocation of order N.
-
-I'm assuming that when an unmovable allocation hijacks a movable group
-any further unmovable alloc will evict movable objects out of that
-group before hijacking another one. right?
-
-> And it doesn't even have to be a DoS. The natural fragmentation
-> that occurs today in a kernel today has the possibility to slowly push out
-> the movable groups and give you the same situation.
-
-How would you cause that? Say you do want to purposefully place one
-unmovable 4k page into every 64k compund page. So you allocate
-4K. First 64k page locked. But now, to get 4K into the second 64K page
-you have to first use up all the rest of the first 64k page. Meaning
-one 4k chunk, one 8k chunk, one 16k cunk, one 32k chunk. Only then
-will a new 64k chunk be broken and become locked.
-
-So to get the last 64k chunk used all previous 32k chunks need to be
-blocked and you need to allocate 32k (or less if more is blocked). For
-all previous 32k chunks to be blocked every second 16k needs to be
-blocked. To block the last of those 16k chunks all previous 8k chunks
-need to be blocked and you need to allocate 8k. For all previous 8k
-chunks to be blocked every second 4k page needs to be used. To alloc
-the last of those 4k pages all previous 4k pages need to be used.
-
-So to construct a situation where no continious 64k chunk is free you
-have to allocate <total mem> - 64k - 32k - 16k - 8k - 4k (or there
-about) of memory first. Only then could you free memory again while
-still keeping every 64k page blocked. Does that occur naturally given
-enough ram to start with?
-
-
-
-Too see how bad fragmentation could be I wrote a little progamm to
-simulate allocations with the following simplified alogrithm:
-
-Memory management:
-- Free pages are kept in buckets, one per order, and sorted by address.
-- alloc() the front page (smallest address) out of the bucket of the
-  right order or recursively splits the next higher bucket.
-- free() recursively tries to merge a page with its neighbour and puts
-  the result back into the proper bucket (sorted by address).
-
-Allocation and lifetime:
-- Every tick a new page is allocated with random order.
-- The order is a triangle distribution with max at 0 (throw 2 dice,
-  add the eyes, subtract 7, abs() the number).
-- The page is scheduled to be freed after X ticks. Where X is nearly
-  a gaus curve centered at 0 and maximum at <total num pages> * 1.5.
-  (What I actualy do is throw 8 dice and sum them up and shift the
-   result.)
-
-Display:
-I start with a white window. Every page allocation draws a black box
-from the address of the page and as wide as the page is big (-1 pixel to
-give a seperation to the next page). Every page free draws a yellow
-box in place of the black one. Yellow to show where a page was in use
-at one point while white means the page was never used.
-
-As the time ticks the memory fills up. Quickly at first and then comes
-to a stop around 80% filled. And then something interesting
-happens. The yellow regions (previously used but now free) start
-drifting up. Small pages tend to end up in the lower addresses and big
-pages at the higher addresses. The memory defragments itself to some
-degree.
-
-http://mrvn.homeip.net/fragment/
-
-Simulating 256MB ram and after 1472943 ticks and 530095 4k, 411841 8k,
-295296 16k, 176647 32k and 59064 64k allocations you get this:
-http://mrvn.homeip.net/fragment/256mb.png
-
-Simulating 1GB ram and after 5881185 ticks  and 2116671 4k, 1645957
-8k, 1176994 16k, 705873 32k and 235690 64k allocations you get this:
-http://mrvn.homeip.net/fragment/1gb.png
-
-MfG
-        Goswin
+-- 
+Regards,
+vatsa
