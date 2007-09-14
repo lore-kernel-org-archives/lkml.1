@@ -1,153 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbXINQwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbXINQ5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbXINQwu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbXINQwj
+	id S1757598AbXINQ5B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbXINQ4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:52:39 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:58951 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbXINQwg (ORCPT
+	Fri, 14 Sep 2007 12:56:53 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:19437 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbXINQ4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:52:36 -0400
-Message-ID: <46EABC28.9000704@linux.vnet.ibm.com>
-Date: Fri, 14 Sep 2007 22:21:52 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	Fri, 14 Sep 2007 12:56:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=dwVGx1GG/4MGNaQosudDz5tVteOZ4l7+NdjBIE/1VAcQ2EeyoIU+HaaPeZr/H0FK6PfSugTFIIBJk1eU0u0V/V2fY8/Q/x9frHIss3jCtycRoycfsgDu51TNsxJf1AHr9vZl2KuIuNxOYCuNDzFiZLSvZPHgDCV3HSLYfUBlTeM=
+Message-ID: <46EABD48.3020902@gmail.com>
+Date: Fri, 14 Sep 2007 20:56:40 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Clayton <andrew@digital-domain.net>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       jfs-discussion@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
-       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       Chuck Ebbert <cebbert@redhat.com>, dth <dth@dth.net>
-Subject: Re: [2/4] 2.6.23-rc6: known regressions
-References: <46E8187E.9000006@googlemail.com> <46E81ACE.6030305@googlemail.com>
-In-Reply-To: <46E81ACE.6030305@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: Joerg Roedel <joro@8bytes.org>
+CC: Markus Rechberger <mrechberger@gmail.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+References: <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com> <46E95C54.4060502@gmail.com> <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com> <46E99F36.8090809@hauppauge.com> <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com> <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com> <46EA3F07.9050806@gmail.com> <20070914091535.GA8998@8bytes.org> <46EA77DE.8060109@gmail.com> <20070914161345.GB8998@8bytes.org>
+In-Reply-To: <20070914161345.GB8998@8bytes.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Hi all,
->
-> Here is a list of some known regressions in 2.6.23-rc6.
->
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
->
-> List of Aces
->
-> Name                    Regressions fixed since 21-Jun-2007
-> Adrian Bunk                            10
-> Linus Torvalds                         6
-> Alan Stern                             5
-> Andi Kleen                             5
-> Hugh Dickins                           5
-> Trond Myklebust                        5
-> Andrew Morton                          4
-> Al Viro                                3
-> Alexey Starikovskiy                    3
-> Cornelia Huck                          3
-> David S. Miller                        3
-> Jens Axboe                             3
-> Stephen Hemminger                      3
-> Tejun Heo                              3
->
->
->
-> ACPI
->
-> Subject         : 2.6.23-rc5 hangs on boot, apparently when initializing the EC
-> References      : http://lkml.org/lkml/2007/9/11/369
-> Last known good : ?
-> Submitter       : Chuck Ebbert <cebbert@redhat.com>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : unknown
->
->
->
-> CPUFREQ
->
-> Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-> References      : http://lkml.org/lkml/2007/7/27/298
->                   http://lkml.org/lkml/2007/7/29/371
-> Last known good : ?
-> Submitter       : dth <dth@dth.net>
-> Caused-By       : Len Brown <lenb@kernel.org>
->                   commit f79e3185dd0f8650022518d7624c876d8929061b
-> Handled-By      : Len Brown <lenb@kernel.org>
-> Status          : problem is being debugged
->
->
->
-> FS
->
-> Subject         : hanging ext3 dbench tests
-> References      : http://lkml.org/lkml/2007/9/11/176
-> Last known good : ?
-> Submitter       : Andy Whitcroft <apw@shadowen.org>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : unknown
->
-> Subject         : umount triggers a warning in jfs and takes almost a minute
-> References      : http://lkml.org/lkml/2007/9/4/73
-> Last known good : ?
-> Submitter       : Oliver Neukum <oliver@neukum.org>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : unknown
->
-> Subject         : [NFSv4] 2.6.23-rc4 oops in nfs4_cb_recall
-> References      : http://lkml.org/lkml/2007/9/4/53
->                   http://bugzilla.kernel.org/show_bug.cgi?id=9003
-> Last known good : ?
-> Submitter       : Daniel J Blueman <daniel.blueman@gmail.com>
-> Caused-By       : ?
-> Handled-By      : ?
-> Workaround      : http://bugzilla.kernel.org/attachment.cgi?id=12797
-> Status          : unknown
->
-> Subject         : [NFSD OOPS] 2.6.23-rc1-git10
-> References      : http://lkml.org/lkml/2007/8/2/462
-> Last known good : ?
-> Submitter       : Andrew Clayton <andrew@digital-domain.net>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : unknown
->
->
->
-> Regards,
-> Michal
->
-> --
-> LOG
-> http://www.stardust.webpages.pl/log/
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
-Hi Michal,
+Joerg Roedel wrote:
 
-The NFSV4 [BUG] 2.6.23-rc5 kernel BUG at fs/nfs/nfs4xdr.c:945, is again
-seen in 2.6.23-rc6. Can this bug be added as known regression for
-2.6.23-rc6. References http://lkml.org/lkml/2007/9/7/27.
+>>> Common new IOMMUs have only very few in common with the AGP GART. In
+>>> fact, with current modern IOMMU hardware it will be possible to
+>>> implement secure userspace device drivers that are even able to do DMA.
+>>> This is not possible with the GART.
+>>>
+>>>> Though you get a physical to virtual translation, what about interrupts,
+>>> Modern IOMMUs are able to remap interrupts. This will solve the problem
+>>> with PCI interrupt sharing.
+>> What CPU's are we talking about ?
+> 
+> IOMMUs are not necessarily a CPU feature. These IOMMUS will be found in
+> the South/North Bridge or even on PCI devices itself (uncommon). The
+> Calgary IOMMU is such an example of an IOMMU not implemented on the CPU
+> itself.
+> 
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
 
+I do understand that (an earlier reply from Grant Grundler on the same
+[1], while working on something else), but that wasn't exactly what i
+was getting at. The bridges are in fact tied up with a certain CPU class.
+
+Though your argument holds true: "secure userpsace device drivers can be
+implemented with modern hardware" There is a large flaw in it. (From an
+academic POV, you are correct)
+
+Now, if all the drivers were to depend on that certain feature, what
+happens to all other CPU class users ? Looking at a pile of CPU's being
+used, also not to forget that devices such as STB's use even very small
+embedded CPU's such as the PPC405 Vulcan based [2] to mobile devices
+such as mobile phones using ARM, Xtensa [3], OMAP CPU's/platforms, which
+do not in any way use the bridges nor the CPU class which you however
+mention.
+
+So .. we are looking at a small segment, ie. a subset of the PC users
+even, even if the larger segments like STB's can be ignored. This would
+mean that only a small subset of users using a certain CPU class can use
+those drivers (eventhough the devices themselves don't have that
+limitation, the limitation being the implementation of the driver
+alone), which is absurd.
+
+
+Manu
+
+[1] http://lkml.org/lkml/2007/5/26/217
+[2] http://abraham.manu.googlepages.com/p3160033.jpg
+[3] http://tensilica.com/
