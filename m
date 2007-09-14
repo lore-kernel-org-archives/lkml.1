@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbXINWmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbXINXAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759653AbXINWmc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 18:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757133AbXINWmW
+	id S1759288AbXINXAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 19:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbXINXAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 18:42:22 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:52278 "EHLO fieldses.org"
+	Fri, 14 Sep 2007 19:00:04 -0400
+Received: from zakalwe.fi ([80.83.5.154]:53404 "EHLO zakalwe.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756843AbXINWmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 18:42:21 -0400
-Date: Fri, 14 Sep 2007 18:42:12 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Move away from char device ioctls.
-Message-ID: <20070914224212.GJ12444@fieldses.org>
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070914211210.GB12444@fieldses.org> <46EAF9CD.1090808@garzik.org> <20070914211828.GC12444@fieldses.org> <46EB0BEB.2090808@garzik.org>
+	id S1757443AbXINXAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 19:00:01 -0400
+X-Greylist: delayed 1199 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Sep 2007 19:00:00 EDT
+Date: Sat, 15 Sep 2007 01:40:00 +0300
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: On thread scheduling
+Message-ID: <20070914224000.GI3400@zakalwe.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <46EB0BEB.2090808@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 06:32:11PM -0400, Jeff Garzik wrote:
-> J. Bruce Fields wrote:
->> On Fri, Sep 14, 2007 at 05:14:53PM -0400, Jeff Garzik wrote:
->>> J. Bruce Fields wrote:
->>>> On Fri, Sep 14, 2007 at 03:07:46PM -0400, Jeff Garzik wrote:
->>>>> I've been waiting for years for a smart person to come along and write 
->>>>> a POSIX-only distributed filesystem.
->>>> What exactly do you mean by "POSIX-only"?
->>> Don't bother supporting attributes, file modes, and other details not 
->>> supported by POSIX.  The prime example being NFSv4, which is larded down 
->>> with Windows features.
->> I am sympathetic....  Cutting those out may still leave you with
->> something pretty complicated, though.
->
-> Far less complicated than NFSv4.1 though (which is easy :))
+Consider a simple embedded system:
 
-One would hope so.
+void interrupt_handler(void)
+{
+	...
+}
 
->>> NFSv4.1 adds to the fun, by throwing interoperability completely out the 
->>> window.
->> What parts are you worried about in particular?
->
-> I'm not worried; I'm stating facts as they exist today (draft 13):
->
-> NFS v4.1 does something completely without precedent in the history of NFS: 
->  the specification is defined such that interoperability is -impossible- to 
-> guarantee.
->
-> pNFS permits private and unspecified layout types.  This means it is 
-> impossible to guarantee that one NFSv4.1 implementation will be able to 
-> talk another NFSv4.1 implementation.
+int main(void)
+{
+	...
+}
 
-No, servers are required to support ordinary nfs operations to the
-metadata server.
+I would like to "emulate" this system with a workstation to make 
+development faster. I would create two threads, one executing the 
+main() function, and the other occasionally calling interrupt_handler(). 
+Before interrupt_handler() is called, the main() thread should be 
+stopped asynchronously.
 
-At least, that's the way it was last I heard, which was a while ago.  I
-agree that it'd stink (for any number of reasons) if you ever *had* to
-get a layout to access some file.
+I looked into pthreads documentation and found only pthread_kill(thread, 
+SIGTSTP) to do asynchronous stop, but then I also have to play terminal 
+tricks to avoid problems..
 
-Was that your main concern?
+Is there are function to just disable scheduling of a single thread 
+without having other side-effects (such as terminal stuff)? Functions 
+like pthread_disable_scheduling(thread) and 
+pthread_enable_scheduling(thread) would be good for this..
 
---b.
+-- 
+Heikki Orsila			Barbie's law:
+heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
+http://www.iki.fi/shd
