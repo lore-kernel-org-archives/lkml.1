@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbXINMT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761297AbXINM0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761317AbXINMT7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 08:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbXINMTv
+	id S1761297AbXINM0T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 08:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbXINM0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 08:19:51 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:38576 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752711AbXINMTv (ORCPT
+	Fri, 14 Sep 2007 08:26:05 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:43488 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbXINM0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 08:19:51 -0400
-Date: Fri, 14 Sep 2007 14:20:18 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix failure to resume from initrds
-Message-ID: <20070914122018.GA1671@elf.ucw.cz>
-References: <200709141422.18788.rjw@sisk.pl>
+	Fri, 14 Sep 2007 08:26:03 -0400
+Date: Fri, 14 Sep 2007 13:25:55 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
+cc: netdev@vger.kernel.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] sb1250-mac.c: Fix "stats" references
+Message-ID: <Pine.LNX.4.64N.0709141316410.1926@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709141422.18788.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+ Fix build errors resulting from a recent commit that added references to 
+"stats" through "dev" from sbdma_rx_process() and sbdma_tx_process(), but 
+no definitions of that variable.
 
-> From: Nigel Cunningham <nigel@nigel.suspend2.net>
-> 
-> Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel threads
-> nonfreezable by default) breaks freezing when attempting to resume from an
-> initrd, because the init (which is freezeable) spins while waiting for another
-> thread to run /linuxrc, but doesn't check whether it has been told to enter
-> the refrigerator. The original patch replaced a call to try_to_freeze() with a
-> call to yield(). I believe a simple reversion is wrong because
-> if !CONFIG_PM_SLEEP, try_to_freeze() is a noop. It should still yield.
-> 
-> Signed-off-by: Nigel Cunningham <nigel@nigel.suspend2.net>
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ This is probably the simplest fix possible, though at this point it is of 
+question whether it is still "struct sbmac_softc *" that should be passed 
+to these functions.  I'll leave it to another occasion though.
 
-ACK.
-								Pavel
+ Applies under patch-netdev-2.6.23-rc6-20070913-sb1250-mac-typedef-8.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ Please apply,
+
+  Maciej
+
+patch-netdev-2.6.23-rc6-20070913-sb1250-mac-fix-1
+diff -up --recursive --new-file linux-netdev-2.6.23-rc6-20070913.macro/drivers/net/sb1250-mac.c linux-netdev-2.6.23-rc6-20070913/drivers/net/sb1250-mac.c
+--- linux-netdev-2.6.23-rc6-20070913.macro/drivers/net/sb1250-mac.c	2007-09-13 17:27:52.000000000 +0000
++++ linux-netdev-2.6.23-rc6-20070913/drivers/net/sb1250-mac.c	2007-09-14 12:06:15.000000000 +0000
+@@ -1187,6 +1187,7 @@ static void sbmac_netpoll(struct net_dev
+ static int sbdma_rx_process(struct sbmac_softc *sc,sbmacdma_t *d,
+                              int work_to_do, int poll)
+ {
++	struct net_device *dev = sc->sbm_dev;
+ 	int curidx;
+ 	int hwidx;
+ 	sbdmadscr_t *dsc;
+@@ -1348,6 +1349,7 @@ done:
+ 
+ static void sbdma_tx_process(struct sbmac_softc *sc,sbmacdma_t *d, int poll)
+ {
++	struct net_device *dev = sc->sbm_dev;
+ 	int curidx;
+ 	int hwidx;
+ 	sbdmadscr_t *dsc;
