@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbXINSSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbXINSVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbXINSSE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 14:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbXINSRw
+	id S1756567AbXINSVd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 14:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbXINSVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 14:17:52 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41678 "EHLO mail.dvmed.net"
+	Fri, 14 Sep 2007 14:21:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:48527 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754350AbXINSRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 14:17:51 -0400
-Message-ID: <46EAD049.4020107@garzik.org>
-Date: Fri, 14 Sep 2007 14:17:45 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	id S1752278AbXINSVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 14:21:25 -0400
+Message-ID: <46EAD121.5080804@goop.org>
+Date: Fri, 14 Sep 2007 11:21:21 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Dan Williams <dcbw@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] net driver fixes
-References: <20070913053022.GA16891@havoc.gtf.org> <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
-In-Reply-To: <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Chris Friesen <cfriesen@nortel.com>
+CC: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@osdl.org>,
+       James Bottomley <James.Bottomley@steeleye.com>, bapper@piratehaven.org,
+       aaw@google.com
+Subject: Re: RFC: bug in load_elf_binary?
+References: <46E5B6FA.7000902@nortel.com> <46E83191.5070208@nortel.com> <46E9B30E.1080402@goop.org> <46E9C6E4.5080102@nortel.com>
+In-Reply-To: <46E9C6E4.5080102@nortel.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-> WTF?  why would the default be to _not_ propagate carrier state?  Are
-> there some mitigating circumstances that require this driver to not
-> notify the stack of carrier on/off?  Userspace stuff really should know
-> about the carrier state, and this disables it by default.
+Chris Friesen wrote:
+> I believe that's correct.  It's basically the equivalent of BSS, but
+> used for an emulated OS (the app in question is an emulator).
 
+Right.
 
-The commit explains that...
+>> Well, you could make the p_offset the same as the first segment with a
+>> non-zero filesz.  That should satisfy the elf loader, though it might
+>> still confuse things.
+>
+> Interesting idea.  Worth a try.
+>
+> However, this doesn't address the kernel side of things.  Am I correct
+> in thinking that the kernel is making an invalid assumption that it
+> can find the load_addr based on the first segment?
 
-	Jeff
+God, that code is such a tangle.  I'm not sure why it particularly cares
+about the offset, though perhaps its making sure that (offset %
+pagesize) == (vaddr % pagesize), which only matters for filesz>0.
 
+It's not too surprising it falls over with more unconventional ELF files.
 
+>> Why can't you create this mapping at runtime?
+>
+> Our emulated OS wants to put stuff at fixed addresses in this range,
+> so we're trying to keep the loader from allocating stuff there before
+> our program gets a chance to start up.
+
+Hm, you might want to have a look at how valgrind gets itself started.
+
+    J
