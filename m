@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbXINKuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbXINK5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbXINKuV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 06:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbXINKuG
+	id S1757202AbXINK5w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 06:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbXINK5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 06:50:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38644 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755061AbXINKuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 06:50:04 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: 7eggert@gmx.de
-Cc: Brent Casavant <bcasavan@sgi.com>, Gabor Gombas <gombasg@sztaki.hu>,
+	Fri, 14 Sep 2007 06:57:43 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:38825 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbXINK5l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 06:57:41 -0400
+Date: Fri, 14 Sep 2007 11:57:33 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
+cc: netdev@vger.kernel.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-Subject: Re: O_NOLINK for open()
-References: <92Haf-7z7-5@gated-at.bofh.it> <92TO5-246-1@gated-at.bofh.it>
-	<92Zqu-2ur-1@gated-at.bofh.it> <E1IW8R4-0000ko-2z@be1.lrz>
-X-Yow: Well, I'm a classic ANAL RETENTIVE!!  And I'm looking for a way to
- VICARIOUSLY experience some reason to LIVE!!
-Date: Fri, 14 Sep 2007 12:50:03 +0200
-In-Reply-To: <E1IW8R4-0000ko-2z@be1.lrz> (Bodo Eggert's message of "Fri\, 14
-	Sep 2007 12\:30\:05 +0200")
-Message-ID: <jek5qta5d0.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+Subject: [PATCH] NET_SB1250_MAC: Update Kconfig entry
+Message-ID: <Pine.LNX.4.64N.0709141148540.1926@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert <7eggert@gmx.de> writes:
+ The SB1250 network interfaces are Gigabit Ethernet ones.  Move the 
+Kconfig entry to the appropriate section and add some help text.
 
-> ~/tmp > cp /bin/sleep .
-> ~/tmp > chmod u+s sleep
-> ~/tmp > ./sleep 2147483647 &
-> [1] 2823
-> ~/tmp > strace -p 2823
-> Process 2823 attached - interrupt to quit
-> setup(
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ It should be obvious; I hope the help text will be useful to somebody and 
+will prevent from misclassifying the interface again in the future.
 
-You didn't change the owner, so this is not a setuid execution.
+ Please apply,
 
-Andreas.
+  Maciej
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+patch-netdev-2.6.23-rc6-20070913-sb1250-mac-kconfig-0
+diff -up --recursive --new-file linux-netdev-2.6.23-rc6-20070913.macro/drivers/net/Kconfig linux-netdev-2.6.23-rc6-20070913/drivers/net/Kconfig
+--- linux-netdev-2.6.23-rc6-20070913.macro/drivers/net/Kconfig	2007-09-13 17:27:52.000000000 +0000
++++ linux-netdev-2.6.23-rc6-20070913/drivers/net/Kconfig	2007-09-14 00:02:05.000000000 +0000
+@@ -466,10 +466,6 @@ config MIPS_AU1X00_ENET
+ 	  If you have an Alchemy Semi AU1X00 based system
+ 	  say Y.  Otherwise, say N.
+ 
+-config NET_SB1250_MAC
+-	tristate "SB1250 Ethernet support"
+-	depends on SIBYTE_SB1xxx_SOC
+-
+ config SGI_IOC3_ETH
+ 	bool "SGI IOC3 Ethernet"
+ 	depends on PCI && SGI_IP27
+@@ -2157,6 +2153,18 @@ config R8169_VLAN
+ 	  
+ 	  If in doubt, say Y.
+ 
++config NET_SB1250_MAC
++	tristate "SB1250 Gigabit Ethernet support"
++	depends on SIBYTE_SB1xxx_SOC
++	---help---
++	  This driver supports Gigabit Ethernet interfaces based on the
++	  Broadcom SiByte family of System-On-a-Chip parts.  They include
++	  the BCM1120, BCM1125, BCM1125H, BCM1250, BCM1255, BCM1280, BCM1455
++	  and BCM1480 chips.
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called sb1250-mac.
++
+ config SIS190
+ 	tristate "SiS190/SiS191 gigabit ethernet support"
+ 	depends on PCI
