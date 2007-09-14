@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbXINRSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbXINRUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbXINRSp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 13:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXINRSe
+	id S1754896AbXINRUx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 13:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbXINRUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 13:18:34 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:20633 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbXINRSc (ORCPT
+	Fri, 14 Sep 2007 13:20:46 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:32891 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbXINRUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 13:18:32 -0400
-Date: Fri, 14 Sep 2007 10:13:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, i2c@lm-sensors.org,
-       linux-omap-open-source@linux.omap.com
-Subject: Re: [PATCH v3] Make the pr_*() family of macros in kernel.h
- complete
-Message-Id: <20070914101329.60d42ca7.randy.dunlap@oracle.com>
-In-Reply-To: <a781481a0709140941w4ec76582j40ee53a189b99b05@mail.gmail.com>
-References: <11896151802410-git-send-email-Emilian.Medve@Freescale.com>
-	<598D5675D34BE349929AF5EDE9B03E270155578C@az33exm24.fsl.freescale.net>
-	<a781481a0709140941w4ec76582j40ee53a189b99b05@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 14 Sep 2007 13:20:45 -0400
+Date: Fri, 14 Sep 2007 12:20:37 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Andrew Morton <akpm@osdl.org>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com
+Subject: Re: rtc-ds1742.c should use resource_size_t for base address
+Message-ID: <20070914122037.65a08f48@weaponx.rchland.ibm.com>
+In-Reply-To: <20070914055427.GM481@localhost.localdomain>
+References: <20070914055427.GM481@localhost.localdomain>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; powerpc-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007 22:11:59 +0530 Satyam Sharma wrote:
+On Fri, 14 Sep 2007 15:54:27 +1000
+David Gibson <david@gibson.dropbear.id.au> wrote:
 
-> > > -----Original Message-----
-> > > From: Medve Emilian-EMMEDVE1
-> > > Sent: Wednesday, September 12, 2007 11:40 AM
-> > > To: linux-kernel@vger.kernel.org; netdev@vger.kernel.org;
-> > > i2c@lm-sensors.org; linux-omap-open-source@linux.omap.com
-> > > Cc: Medve Emilian-EMMEDVE1
+> Currently the rtc driver, rtc-ds1742.c uses an unsigned long to store
+> the base mmio address of the NVRAM/RTC.  This breaks on systems like
+> PowerPC 440, which is a 32-bit core with 36-bit physical addresses: IO
+> on the system, including the RTC, is typically above the 4GB point,
+> and cannot fit into an unsigned long.
 > 
-> ... no maintainer explicitly copied on the original mail who'd push this in.
-> Little thing, but LKML is too noisy, so you need to Cc: folks explicitly ...
-> 
-> > > Subject: [PATCH v3] Make the pr_*() family of macros in
-> > > kernel.h complete
-> > >
-> > > Other/Some pr_*() macros are already defined in kernel.h, but
-> > > pr_err() was defined
-> > > multiple times in several other places
-> > >
-> > > Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> 
-> I think it's a useful cleanup, patch looks good to me ...
-> 
-> Reviewed-by: Satyam Sharma <satyam@infradead.org>
+> This patch fixes the problem by replacing the unsigned long with a
+> resource_size_t.  Tested on Ebony (PPC440) (with additional patches to
+> instantiate the ds1742 platform device appropriately).
 
-I like it too.
+Where would those additional patches be? :)
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-(since I still haven't seen reviewed-by in SubmittingPatches)
-
-> [ Original diff is at: http://lkml.org/lkml/diff/2007/9/12/182/1 ]
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+josh
