@@ -1,139 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbXINXr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbXINXyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932260AbXINXr6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 19:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbXINXru
+	id S932222AbXINXyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 19:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbXINXyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 19:47:50 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:45683 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754102AbXINXrt (ORCPT
+	Fri, 14 Sep 2007 19:54:13 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:6917 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753518AbXINXyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 19:47:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Jps46K6Mqsj5wEEtLWKnbdhmSbgyZYgSDVXy3nns+bT3l4O1EwgedySrVQLZzQUwRz5juKemHJ+gVi8CIH+BD+P8X9AAxInOV59z2DxT4U67vthkTknJytMMV0EqH5J51plkL3EjgVFoRNwYo8WnvUlqOpP9OauXMwHu3R3VylI=
-Message-ID: <a781481a0709141647q3d019423s388c64bf6bed871a@mail.gmail.com>
-Date: Sat, 15 Sep 2007 05:17:48 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/6] cpuset write dirty map
-Cc: "Ethan Solomita" <solo@google.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <clameter@sgi.com>
-In-Reply-To: <20070914161536.3ec5c533.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <469D3342.3080405@google.com> <46E741B1.4030100@google.com>
-	 <46E742A2.9040006@google.com>
-	 <20070914161536.3ec5c533.akpm@linux-foundation.org>
+	Fri, 14 Sep 2007 19:54:12 -0400
+Date: Fri, 14 Sep 2007 17:53:58 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+In-reply-to: <20070914192913.A6668@jurassic.park.msu.ru>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Message-id: <46EB1F16.8060209@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.ggBqx6W3i6hfs6jdfg64oXKSxW8@ifi.uio.no>
+ <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no>
+ <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no>
+ <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no>
+ <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no>
+ <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no> <46EA00DA.6010704@shaw.ca>
+ <20070914151401.A5586@jurassic.park.msu.ru> <46EA9B23.7030709@shaw.ca>
+ <20070914192913.A6668@jurassic.park.msu.ru>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/15/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 11 Sep 2007 18:36:34 -0700
-> Ethan Solomita <solo@google.com> wrote:
+Ivan Kokshaysky wrote:
+> On Fri, Sep 14, 2007 at 08:30:59AM -0600, Robert Hancock wrote:
+>> Do you have an example of specific hardware that exhibits this problem?
+> 
+> Well, first two results of google search for "disable bar when sizing":
+>  http://lkml.org/lkml/2002/12/21/95
+>  http://lkml.org/lkml/2002/12/20/110
 
-> > The dirty map may be stored either directly in the mapping (for NUMA
-> > systems with less then BITS_PER_LONG nodes) or separately allocated
-> > for systems with a large number of nodes (f.e. IA64 with 1024 nodes).
+In the first one, Linus talks about a USB controller whose SMM code 
+chokes on the BAR being disabled. That explanation seems odd to me. If 
+it chokes on the BAR disabled, how doesn't it choke on the BAR being 
+moved to a different location, which is unavoidable during probing?
 
-> > --- 0/include/linux/fs.h      2007-09-11 14:35:58.000000000 -0700
-> > +++ 1/include/linux/fs.h      2007-09-11 14:36:24.000000000 -0700
-> > @@ -516,6 +516,13 @@ struct address_space {
-> >       spinlock_t              private_lock;   /* for use by the address_space */
-> >       struct list_head        private_list;   /* ditto */
-> >       struct address_space    *assoc_mapping; /* ditto */
-> > +#ifdef CONFIG_CPUSETS
-> > +#if MAX_NUMNODES <= BITS_PER_LONG
-> > +     nodemask_t              dirty_nodes;    /* nodes with dirty pages */
-> > +#else
-> > +     nodemask_t              *dirty_nodes;   /* pointer to map if dirty */
-> > +#endif
-> > +#endif
->
-> afacit there is no code comment and no changelog text which explains the
-> above design decision?  There should be, please.
+Also, I think we do USB handoff from the BIOS much earlier than we used 
+to, which likely prevents these issues.
 
-> > +/*
-> > + * Special functions for NUMA systems with a large number of nodes.
-> > + * The nodemask is pointed to from the address space structures.
-> > + * The attachment of the dirty_node mask is protected by the
-> > + * tree_lock. The nodemask is freed only when the inode is cleared
-> > + * (and therefore unused, thus no locking necessary).
-> > + */
->
-> hmm, OK, there's a hint as to wghat's going on.
->
-> It's unobvious why the break point is at MAX_NUMNODES = BITS_PER_LONG and
-> we might want to tweak that in the future.  Yet another argument for
-> centralising this comparison.
+In the second one, he mentions that "So the secondary rule to "don't 
+turnoff MEM or IO accesses" is "never allocate real PCI BAR resources at 
+the top of memory". Well, unfortunately, the second one isn't possible 
+to meet given that we have boards with the MMCONFIG up there, so 
+disabling the decode is the only thing we can do. That whole discussion 
+was also based on the fact that it wasn't necessary to solve problems. 
+This is no longer a theoretical problem. We now have real problems that 
+we need this in order to solve.
 
-Looks like just an optimization to me ... Ethan wants to economize and not bloat
-struct address_space too much.
+> 
+>> So far after a similar patch has been in -mm for months there have been 
+>> no reports of any such problems.
+> 
+> You cannot compare user base of -mm and release kernels. Also, note
+> that we're talking about maybe 0.01% of systems running Linux.
+> And similar patch appeared in various trees several times over the last
+> decade and every time it had to be reverted.
+> 
+>> This isn't guaranteed to help. I don't think it is only integrated 
+>> graphics that could cause this problem, I think that an add-on PCI 
+>> Express card can do this as well. Depending on the chipset memory decode 
+>> rules, any PCI or PCI Express device with a BAR large enough could cause 
+>> issues.
+> 
+> No, it's impossible for several reasons. Most obvious one is that a PCI-E
+> bridge does isolate stuff quite nicely.
 
-So, if sizeof(nodemask_t) == sizeof(long), i.e. when:
-MAX_NUMNODES <= BITS_PER_LONG, then we'll be adding only sizeof(long)
-extra bytes to the struct (by plonking the object itself into it).
+It's not impossible at all. In fact I'm quite sure (Jesse can confirm) 
+that in the case of the board he was using, it was an add-in graphics 
+card where he saw this problem.
 
-But even when MAX_NUMNODES > BITS_PER_LONG, because we're storing
-a pointer, and because sizeof(void *) == sizeof(long), so again the maximum
-bloat addition to struct address_space would only be sizeof(long) bytes.
+The fact is that in the case of MMCONFIG overlap with PCI BARs, which 
+one takes priority is completely undefined. In the case of this Intel 
+chipset, clearly the PCI Express device connected to the northbridge had 
+higher decode priority than the MMCONFIG aperture.
 
-I didn't see the original mail, but if the #ifdeffery for this
-conditional is too much
-as a result of this optimization, Ethan should probably just do away
-with all of it
-entirely, and simply put a full nodemask_t object (irrespective of MAX_NUMNODES)
-into the struct. After all, struct task_struct does the same unconditionally ...
-but admittedly, there are several times more address_space struct's resident in
-memory at any given time than there are task_struct's, so this optimization does
-make sense too ...
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-
-> > +             if (!nodes)
-> > +                     return;
-> > +
-> > +             *nodes = NODE_MASK_NONE;
-> > +             mapping->dirty_nodes = nodes;
-> > +     }
-> > +
-> > +     if (!node_isset(node, *nodes))
-> > +             node_set(node, *nodes);
-> > +}
-> > +
-> > +void cpuset_clear_dirty_nodes(struct address_space *mapping)
-> > +{
-> > +     nodemask_t *nodes = mapping->dirty_nodes;
-> > +
-> > +     if (nodes) {
-> > +             mapping->dirty_nodes = NULL;
-> > +             kfree(nodes);
-> > +     }
-> > +}
->
-> Can this race with cpuset_update_dirty_nodes()?  And with itself?  If not,
-> a comment which describes the locking requirements would be good.
->
-> > +/*
-> > + * Called without the tree_lock. The nodemask is only freed when the inode
-> > + * is cleared and therefore this is safe.
-> > + */
-> > +int cpuset_intersects_dirty_nodes(struct address_space *mapping,
-> > +                     nodemask_t *mask)
-> > +{
-> > +     nodemask_t *dirty_nodes = mapping->dirty_nodes;
-> > +
-> > +     if (!mask)
-> > +             return 1;
-> > +
-> > +     if (!dirty_nodes)
-> > +             return 0;
-> > +
-> > +     return nodes_intersects(*dirty_nodes, *mask);
-> > +}
-> > +#endif
-> > +
