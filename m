@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbXINJIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbXINJIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbXINJIA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 05:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXINJHw
+	id S1753656AbXINJIX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 05:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbXINJHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 05:07:52 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:54771 "EHLO
+	Fri, 14 Sep 2007 05:07:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:60034 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbXINJHv (ORCPT
+	with ESMTP id S1752454AbXINJHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 05:07:51 -0400
-Date: Fri, 14 Sep 2007 11:07:37 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Jan Kara <jack@suse.cz>
-cc: Bodo Eggert <7eggert@gmx.de>, Brent Casavant <bcasavan@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: O_NOLINK for open()
-In-Reply-To: <20070913091345.GB5125@atrey.karlin.mff.cuni.cz>
-Message-ID: <Pine.LNX.4.58.0709141106160.2496@be1.lrz>
-References: <92Haf-7z7-5@gated-at.bofh.it> <E1IValy-0000fU-Sd@be1.lrz>
- <20070913091345.GB5125@atrey.karlin.mff.cuni.cz>
+	Fri, 14 Sep 2007 05:07:54 -0400
+Message-ID: <46EA4F41.3010300@anagramm.de>
+Date: Fri, 14 Sep 2007 11:07:13 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+uqKk5NpGO/d8L+G7X4mzlUMTpMb2Vt8nH6CJ
- NI3zTokrgLacSCBOLeFKNfnn8eoiD+lam/FAlqxL2ubTw8AgBC
- GKcCeDfs0ywCxJxCrsQkQ==
+To: Mike Frysinger <vapier@gentoo.org>
+CC: Robin Getz <rgetz@blackfin.uclinux.org>, Josh Boyer <jwboyer@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
+Subject: Re: [patch] update CFI URI n mtd kconfig
+References: <200709122339.55267.vapier@gentoo.org> <625fc13d0709131128m5a606b6ewe729c1e72f73f9d9@mail.gmail.com> <200709131631.56867.rgetz@blackfin.uclinux.org> <200709131701.17572.vapier@gentoo.org>
+In-Reply-To: <200709131701.17572.vapier@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX18r6rAES3yNHWbRGIYY49vsiNVrUObLv1gl2aO
+ hVNEOOfIps1vbAnFVUuh0fAmLDEtGar3aYoiMpGwIZ9CiJpXSX
+ AbcDSK1xRyzcjp3HnB9vQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007, Jan Kara wrote:
+Mike Frysinger schrieb:
+> On Thursday 13 September 2007, Robin Getz wrote:
+>> Why not from the place that you can get the standard? http://jedec.org/
+> 
+> i found jedec.org a nightmare to navigate
+> 
+>> or http://www.jedec.org/download/search/jesd68-01.pdf
+> 
+> i'll add that to wikipedia ;)
+> -mike
 
-> > > However, it occurs to me that this problem goes away if there were
-> > > a method create a file in an unlinked state to begin with.  However
-> > > there does not appear to be any such mechanism in Linux's open()
-> > > interface.
-> > 
-> > Having no window for creating stale temp files is nice to have. We only
-> > need a clever fool to implement it.-) But since it's hard to get killed
-> > just in the right moment for having a stale temp file, there is very low
-> > interest for this feature.
+...done.
 
->   I don't think this is a problem. The file is simply created with link
-> count 0. As soon as the process closes the file, it gets deleted. So
-> there would be no stale files... Or did you mean anything else?
+Regards,
 
-This feature does, AFAIK, not yet exist. Therefore we'd need a code monkey.
--- 
-Top 100 things you don't want the sysadmin to say:
-42. Hey Fred, did you save that posting about restoring filesystems
-    with vi and a toothpick?  More importantly, did you print it out?
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
+
