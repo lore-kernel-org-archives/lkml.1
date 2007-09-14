@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbXINUj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbXINUoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758411AbXINUj5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 16:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbXINUjs
+	id S1758273AbXINUoP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 16:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbXINUoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 16:39:48 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53713 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752717AbXINUjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 16:39:47 -0400
-To: Dan Williams <dcbw@redhat.com>
-cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] net driver fixes 
-In-reply-to: <1189800717.20386.13.camel@xo-3E-67-34.localdomain> 
-References: <20070913053022.GA16891@havoc.gtf.org> <1189793598.2508.4.camel@xo-3E-67-34.localdomain> <46EAD049.4020107@garzik.org> <1189794677.2508.19.camel@xo-3E-67-34.localdomain> <32620.1189797572@death> <1189800717.20386.13.camel@xo-3E-67-34.localdomain>
-Comments: In-reply-to Dan Williams <dcbw@redhat.com>
-   message dated "Fri, 14 Sep 2007 16:11:57 -0400."
-X-Mailer: MH-E 8.0.3; nmh 1.1-RC4; GNU Emacs 22.0.95
-Date: Fri, 14 Sep 2007 13:39:44 -0700
-Message-ID: <31488.1189802384@death>
-From: Jay Vosburgh <fubar@us.ibm.com>
+	Fri, 14 Sep 2007 16:44:01 -0400
+Received: from allen.werkleitz.de ([80.190.251.108]:51444 "EHLO
+	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754749AbXINUoA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 16:44:00 -0400
+Date: Fri, 14 Sep 2007 22:43:44 +0200
+From: Johannes Stezenbach <js@linuxtv.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Steven Toth <stoth@hauppauge.com>, Manu Abraham <abraham.manu@gmail.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Message-ID: <20070914204343.GA9058@linuxtv.org>
+References: <20070913131353.GB26972@linuxtv.org> <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com> <46E95C54.4060502@gmail.com> <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com> <46E99F36.8090809@hauppauge.com> <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com> <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com> <20070914113838.GA29962@linuxtv.org> <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 87.162.112.115
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams <dcbw@redhat.com> wrote:
-[...]
->So essentially the ehea device has a 1(+) external ports that may/may
->not be connected, but all lpars share the physical hardware itself,
->which is quite happy to let all the lpars talk to each other essentially
->via loopback even if there is no actual carrier detected on the external
->port(s)? [...]
+On Fri, Sep 14, 2007, Markus Rechberger wrote:
+> 
+> people do contribute to the em28xx project.
+...
+> there's also an active and even problem solving oriented ML available:
+> http://mcentral.de/pipermail/em28xx/
+> 
+> Also if you look at the mercurial code you'll see several people
+> contributing to that project.
 
-	Yes.
+Of course, people who own such a device and want to use
+it with Linux have no choice but to work with you.
+And you do a good job for your users, you support them
+well and in return they contribute info and patches
+to support new devices.
 
->[...]  How does addressing work here, is it just L2 addresses?  
+But the thing is that at mcentral.de you're the man at the top,
+and your users will hardly disagree with you on core
+technical questions. (Well, admittedly I'm speculating
+here as I don't read your em28xx list.)
 
-	Yes.  The logical ports all have unique MAC addresses.
+On for drivers/media/ OTOH you are just one developer among others,
+and some of them choose to disagree with you. Even worse,
+IIRC there wasn't even _a single_ other developer willing
+to ACK your offending patch.
 
-> [...] Feel
->free to point me to some docs and tell me to shut up :)
+Now, doesn't _that_ get you thinking?
 
-http://www.redbooks.ibm.com/redpieces/abstracts/redp4340.html
 
-	I found this via google; I haven't read it in detail, but it
-seems to cover the HEA architecture at a high level.  It talks about the
-whole "IVE" (integrated virtual ethernet: the adapter, hypervisor, etc)
-system, but HEA is part of that, so it's probably got the answers you're
-looking for.
-
-	-J
-
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+Johannes
