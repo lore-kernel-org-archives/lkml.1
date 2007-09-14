@@ -1,57 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbXINOlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932539AbXINOmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932387AbXINOlR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbXINOlD
+	id S932539AbXINOmz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbXINOmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:41:03 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:62245 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753850AbXINOlB (ORCPT
+	Fri, 14 Sep 2007 10:42:45 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:42370 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751594AbXINOmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:41:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=cO3LHbVzBs81N4vp5U56krNXFOgITmmlTGvtyO+psgHGdkRGbSQ7PouDQrpi0rvGAx1/BP8/OPinVoeMM9KQMpxKmhouNpr5a0e8DxYA8QIaB7dlqmbmDFvpGTGcFmQlCofJrxxNr84prUZla2KUCM8IiQiN04EdcLMxVEG6pU0=
-Message-ID: <46EA9D09.3030809@gmail.com>
-Date: Fri, 14 Sep 2007 16:39:05 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Jon Ivar Rykkelid <jonry@pvv.org>, Prakash Punnoor <prakash@punnoor.de>,
-       linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>
-Subject: Re: sata_nv issues with MCP51 SATA controller
-References: <46E8EABF.3060409@pvv.org> <46E953D7.5070305@gmail.com> <46E97AFF.30202@pvv.org> <200709141529.11363.prakash@punnoor.de> <46EA97F0.9000300@pvv.org> <46EA99CD.8030009@garzik.org>
-In-Reply-To: <46EA99CD.8030009@garzik.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Sep 2007 10:42:44 -0400
+Subject: Re: [PATCH 1/4] scsi: megaraid_sas -- add hibernation support
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: linux-box <bo.yang@lsi.com>
+Cc: linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       sumant.patro@lsi.com
+In-Reply-To: <1189513284.6082.4.camel@dhcp-75-534.se.lsil.com>
+References: <1189513284.6082.4.camel@dhcp-75-534.se.lsil.com>
+Content-Type: text/plain
+Date: Fri, 14 Sep 2007 09:42:42 -0500
+Message-Id: <1189780962.3343.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Jon Ivar Rykkelid wrote:
->> Prakash Punnoor wrote:
->>> I don't think it will matter, as adma doesn't affect MCP51, but only
->>> nforce4. So I'd look for other trouble makers.
->>>   
->> Robert told me. (And you're correct - It didn't help).
+On Tue, 2007-09-11 at 12:21 +0000, linux-box wrote:
+> The megaraid_sas driver doesn't support the hibernation, the suspend/resume  
+> routine implemented to support the hibernation.
 > 
-> Yes, it was already in slow-and-safe mode.
-> 
-> 
->> I'm going to test another (identical) motherboard this evening to
->> establish whether it could be a HW-issue.
-> 
-> Not just motherboard.  It is more likely to be a cable, drive or PSU
-> problem.
+> Signed-off-by: Bo Yang <bo.yang@lsi.com> 
 
-I don't think it's cable as the problem occurs on multiple ports.  My
-bet is either the controller or PSU.
+Just from a process point of view, your email from: is linux-box
+<bo.yang@lsi.com>, but your signoff is Bo Yang <bo.yang@lsi.com>, I'm
+assuming the signoff line is the real name you want me to use?
 
-Thanks.
+> @@ -2525,6 +2560,138 @@ static void megasas_shutdown_controller(
+>  }
+>  
+>  /**
+> + * megasas_suspend -    driver suspend entry point
+> + * @pdev:               PCI device structure
+> + * @state:		PCI power state to suspend routine
+> + */
+> +static int __devinit
+> +megasas_suspend(struct pci_dev *pdev, pm_message_t state)
+> +{
+> +	struct Scsi_Host *host;
+> +	struct megasas_instance *instance;
+> +
+> +	instance = pci_get_drvdata(pdev);
+> +	host = instance->host;
+> +
+> +	megasas_flush_cache(instance);
+> +	megasas_shutdown_controller(instance, MR_DCMD_HIBERNATE_SHUTDOWN);
+> +	tasklet_kill(&instance->isr_tasklet);
+> +
+> +	pci_set_drvdata(instance->pdev, instance);
+> +	instance->instancet->disable_intr(instance->reg_set);
+> +	free_irq(instance->pdev->irq, instance);
+> +
+> +	scsi_host_put(host);
 
--- 
-tejun
+This can't be right.  You're not relinquishing the host here, since you
+simply pick it out of the pci driver data on resume.
+
+> +
+> +	pci_save_state(pdev);
+> +	pci_disable_device(pdev);
+> +
+> +	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * megasas_resume-      driver resume entry point
+> + * @pdev:               PCI device structure
+> + */
+> +static int __devinit
+> +megasas_resume(struct pci_dev *pdev)
+> +{
+> +	int rval;
+> +	struct Scsi_Host *host;
+> +	struct megasas_instance *instance;
+> +
+> +	instance = pci_get_drvdata(pdev);
+> +	host = instance->host;
+
+As in here ... to get the correct refcounting, you'd have to bump up the
+reference here.  However, I don't think the put on suspend is correct.
+
+> +       pci_set_power_state(pdev, PCI_D0);
+> +       pci_enable_wake(pdev, PCI_D0, 0);
+> +       pci_restore_state(pdev);
+> +
+> +       /*
+> +        * PCI prepping: enable device set bus mastering and dma mask
+> +        */
+> +       rval = pci_enable_device(pdev);
+> +
+> +       if (rval) {
+> +               printk(KERN_ERR "megasas: Enable device failed\n");
+> +               return rval;
+> +       }
+> +
+> +       pci_set_master(pdev);
+> +
+> +       if (megasas_set_dma_mask(pdev))
+> +               goto fail_set_dma_mask;
+> +
+> +       /*
+> +        * Initialize MFI Firmware
+> +        */
+> +
+> +       *instance->producer = 0;
+> +       *instance->consumer = 0;
+> +
+> +       atomic_set(&instance->fw_outstanding, 0);
+> +
+> +       /*
+> +        * We expect the FW state to be READY
+> +        */
+> +       if (megasas_transition_to_ready(instance))
+> +               goto fail_ready_state;
+> +
+> +       if (megasas_issue_init_mfi(instance))
+> +               goto fail_init_mfi;
+> +
+> +       tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
+> +                       (unsigned long)instance);
+> +
+> +       /*
+> +        * Register IRQ
+> +        */
+> +       if (request_irq(pdev->irq, megasas_isr, IRQF_SHARED,
+> +               "megasas", instance)) {
+> +               printk(KERN_ERR "megasas: Failed to register IRQ\n");
+> +               goto fail_irq;
+> +       }
+> +
+> +       instance->instancet->enable_intr(instance->reg_set);
+> +
+> +       /*
+> +        * Store instance in PCI softstate
+> +        */
+> +       pci_set_drvdata(pdev, instance);
+
+This better be redundant ... you picked the instance out of the driver
+data at the beginning of this routine ... it better still be there or
+else something is seriously wrong.
+
+> +
+> +       /*
+> +        * Initiate AEN (Asynchronous Event Notification)
+> +        */
+> +       if (megasas_start_aen(instance))
+> +               printk(KERN_ERR "megasas: Start AEN failed\n");
+> +
+> +       return 0;
+
+
+James
+
+
