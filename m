@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765260AbXINCib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763885AbXINCm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765260AbXINCib (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 22:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbXINCiV
+	id S1763885AbXINCm1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 22:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755755AbXINCmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 22:38:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38983 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751174AbXINCiU (ORCPT
+	Thu, 13 Sep 2007 22:42:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51824 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754359AbXINCmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 22:38:20 -0400
-Date: Thu, 13 Sep 2007 19:38:16 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, andrea@suse.de,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <20070913094030.GA22778@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0709131934310.12159@schroedinger.engr.sgi.com>
-References: <20070911060349.993975297@sgi.com> <200709111617.03586.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709111644240.29413@schroedinger.engr.sgi.com>
- <200709121246.08833.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709121607140.4204@schroedinger.engr.sgi.com>
- <20070913094030.GA22778@skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 13 Sep 2007 22:42:18 -0400
+Date: Thu, 13 Sep 2007 19:41:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
+Message-Id: <20070913194130.1611fd78.akpm@linux-foundation.org>
+In-Reply-To: <20070914105420.F2E9.Y-GOTO@jp.fujitsu.com>
+References: <20070911182546.F139.Y-GOTO@jp.fujitsu.com>
+	<20070913184456.16ff248e.akpm@linux-foundation.org>
+	<20070914105420.F2E9.Y-GOTO@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007, Mel Gorman wrote:
+On Fri, 14 Sep 2007 11:02:43 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
 
-> Surely, we'll be able to detect the situation where the memory is really
-> contiguous as a fast path and have a slower path where fragmentation was
-> a problem.
+> > >  	/* call arch's memory hotadd */
+> > > 
+> > 
+> > OK, we're getting into a mess here.  This patch fixes
+> > update-n_high_memory-node-state-for-memory-hotadd.patch, but which patch
+> > does update-n_high_memory-node-state-for-memory-hotadd.patch fix?
+> > 
+> > At present I just whacked
+> > update-n_high_memory-node-state-for-memory-hotadd.patch at the end of
+> > everything, but that was lazy of me and it ends up making a mess.
+> 
+> It is enough. No more patch is necessary for these issues.
+> I already fixed about Andy-san's comment. :-)
 
-Yes I have a draft here now of a virtual compound page solution that I am 
-testing with SLUB. Page allocator first tries to allocate a contiguous 
-page. If that is not possible then we string together a contiguous page 
-through order 0 allocs and vmalloc.
- 
-> The only implementation question about these patches that hasn't been addressed
-> is the mmap() support. What's wrong with it in it's current form. Can it be
-> fixed or if it's fundamentally screwed etc. That has fallen by the
-> wayside.
+Now I'm more confused.  I have two separeate questions:
 
-Yes I have not heard about those. Got some more ideas how to clean it up 
-even more in the meantime. No feedback usually means no objections..... 
+a) Is the justr-added update-n_high_memory-node-state-for-memory-hotadd-fix.patch
+   still needed?
 
-> I am *very* wary of using reserve pools for anything other than
-> emergency situations. If nothing else pools == wasted memory + a sizing
-> problem. But hey, it is one option.
+b) Which patch in 2.6.22-rc4-mm1 does
+   update-n_high_memory-node-state-for-memory-hotadd.patch fix?  In other
+   words, into which patch should I fold
+   update-n_high_memory-node-state-for-memory-hotadd.patch prior to sending
+   to Linus?
 
-Well we need the page pools anyways for large page sizes > MAX_ORDER. But 
+   (I (usually) get to work this out for myself.  Sometimes it is painful).
 
-> Are we going to agree on some sort of plan or are we just going to
-> handwave ourselves to death?
+Generally, if people tell me which patch-in-mm their patch is fixing,
+it really helps.  Adrian does this all the time.
 
-Ill try to do the virtual mapped compound pages. Hopefully that will 
-allow fallback for compound pages in a generic way.
+Thanks.
