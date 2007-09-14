@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbXINO5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbXINO6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932653AbXINO5x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXINO5p
+	id S932829AbXINO6T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932678AbXINO54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:57:45 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:24888 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751398AbXINO5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:57:45 -0400
-Date: Fri, 14 Sep 2007 18:57:30 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH] Fix UTS corruption during clone(CLONE_NEWUTS)
-Message-ID: <20070914145730.GB27986@localhost.sw.ru>
+	Fri, 14 Sep 2007 10:57:56 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53903 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932665AbXINO5y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 10:57:54 -0400
+Date: Fri, 14 Sep 2007 16:56:53 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] CFS-devel, performance improvements
+Message-ID: <20070914165653.0139a645@laptopd505.fenrus.org>
+In-Reply-To: <Pine.LNX.4.64.0709141630320.1817@scrub.home>
+References: <20070911200459.GA6974@elte.hu>
+	<Pine.LNX.4.64.0709120242040.1817@scrub.home>
+	<20070913075258.GA9173@elte.hu>
+	<Pine.LNX.4.64.0709131419170.1817@scrub.home>
+	<20070913142842.GA26016@elte.hu>
+	<Pine.LNX.4.64.0709131706100.1817@scrub.home>
+	<20070914162641.197913c2@laptopd505.fenrus.org>
+	<Pine.LNX.4.64.0709141630320.1817@scrub.home>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-struct utsname is copied from master one without any exclusion.
+On Fri, 14 Sep 2007 16:50:22 +0200 (CEST)
+Roman Zippel <zippel@linux-m68k.org> wrote:
 
-Here is sample output from one proggie doing
+> Hi,
+> 
+> On Fri, 14 Sep 2007, Arjan van de Ven wrote:
+> 
+> > > This is ridiculous, I asked you multiple times to explain to me
+> > > some of the differences relative to CFS as response to the splitup
+> > > requests. Not once did you react, you didn't even ask what I'd
+> > > like to know specifically.
+> > 
+> > Roman,
+> > 
+> > this is... a strange comment. It almost sounds like you were holding
+> > the splitup hostage depending on some other thing happening....
+> > that's not a good attitude in my book. Having big-blob patches that
+> > do many things at the same time leads to them being impossible to
+> > apply. Linux works by having smaller incrementals. You know that;
+> > you've been around for a long time.
+> 
+> There is actually a very simple reason for that, the actual patch is
+> not my primary focus, 
 
-	sethostname("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-	sethostname("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 
-and another
-
-	clone(,, CLONE_NEWUTS, ...)
-	uname()
-
-
-	hostname = 'aaaaaaaaaaaaaaaaaaaaaaaaabbbbb'
-	hostname = 'bbbaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-	hostname = 'aaaaaaaabbbbbbbbbbbbbbbbbbbbbb'
-	hostname = 'aaaaaaaaaaaaaaaaaaaaaaaaaabbbb'
-	hostname = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaabb'
-	hostname = 'aaabbbbbbbbbbbbbbbbbbbbbbbbbbb'
-	hostname = 'bbbbbbbbbbbbbbbbaaaaaaaaaaaaaa'
-
-Hostname is sometimes corrupted.
-
-Yes, even _the_ simplest namespace activity had bug in it. :-(
-
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
-
- kernel/utsname.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- a/kernel/utsname.c
-+++ b/kernel/utsname.c
-@@ -28,7 +28,9 @@ static struct uts_namespace *clone_uts_ns(struct uts_namespace *old_ns)
- 	if (!ns)
- 		return ERR_PTR(-ENOMEM);
- 
-+	down_read(&uts_sem);
- 	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
-+	up_read(&uts_sem);
- 	kref_init(&ns->kref);
- 	return ns;
- }
-
+for someone who's not focused on patches/code,  you make quite a bit of
+noise when someone does turn your discussion into smaller patches and
+only credits you three times.
