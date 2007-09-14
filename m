@@ -1,59 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXINQmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXINQnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759526AbXINQmg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbXINQmI
+	id S1760091AbXINQnX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXINQnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:42:08 -0400
-Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:63360 "EHLO
-	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754143AbXINQmG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:42:06 -0400
-From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-References: <20070907124800.GP16806@vanheusden.com>
-	<20070907083522.3191a4ba.randy.dunlap@oracle.com>
-	<46E8F9D4.10307@aitel.hist.no>
-Date: Fri, 14 Sep 2007 18:42:02 +0200
-In-Reply-To: <46E8F9D4.10307@aitel.hist.no> (Helge Hafting's message of "Thu,
-	13 Sep 2007 10:50:28 +0200")
-Message-ID: <87myvpqjvp.fsf@informatik.uni-tuebingen.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Sep 2007 12:43:00 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:47153 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753328AbXINQm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 12:42:58 -0400
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+From: Mel Gorman <mel@csn.ul.ie>
+To: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+In-Reply-To: <87zlzpqlc8.fsf@informatik.uni-tuebingen.de>
+References: <20070911060349.993975297@sgi.com>
+	 <200709111606.10873.nickpiggin@yahoo.com.au>
+	 <Pine.LNX.4.64.0709111448430.27023@schroedinger.engr.sgi.com>
+	 <200709120407.48344.nickpiggin@yahoo.com.au>
+	 <87zlzpqlc8.fsf@informatik.uni-tuebingen.de>
+Content-Type: text/plain
+Date: Fri, 14 Sep 2007 18:42:52 +0100
+Message-Id: <1189791772.13629.20.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Helge Hafting <helge.hafting@aitel.hist.no> writes:
+On Fri, 2007-09-14 at 18:10 +0200, Goswin von Brederlow wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> 
+> > In my attack, I cause the kernel to allocate lots of unmovable allocations
+> > and deplete movable groups. I theoretically then only need to keep a
+> > small number (1/2^N) of these allocations around in order to DoS a
+> > page allocation of order N.
+> 
+> I'm assuming that when an unmovable allocation hijacks a movable group
+> any further unmovable alloc will evict movable objects out of that
+> group before hijacking another one. right?
+> 
 
-> Randy Dunlap wrote:
->> On Fri, 7 Sep 2007 14:48:00 +0200 Folkert van Heusden wrote:
->>
->>
->>> Hi,
->>>
->>> Maybe it is a nice enhancement for make menuconfig to more explicitly
->>> give a pop-up or so when someone selects for example a sata controller
->>> while no 'scsi-disk' support was selected?
->>>
->>
->> I know that it's difficult to get people to read docs & help text,
->> and maybe it is needed in more places, but CONFIG_ATA (SATA/PATA)
->> help text says:
->>
->>   NOTE: ATA enables basic SCSI support; *however*,
->>   'SCSI disk support', 'SCSI tape support', or
->>   'SCSI CDROM support' may also be needed,
->>   depending on your hardware configuration.
+No eviction takes place. If an unmovable allocation gets placed in a
+movable group, then steps are taken to ensure that future unmovable
+allocations will take place in the same range (these decisions take
+place in __rmqueue_fallback()). When choosing a movable block to
+pollute, it will also choose the lowest possible block in PFN terms to
+steal so that fragmentation pollution will be as confined as possible.
+Evicting the unmovable pages would be one of those expensive steps that
+have been avoided to date.
 
-Could one duplicate the configure options for scsi disk/tape/cdrom at
-that place? The text should then probably read SCSI/SATA disk support
-in both places.
+> > And it doesn't even have to be a DoS. The natural fragmentation
+> > that occurs today in a kernel today has the possibility to slowly push out
+> > the movable groups and give you the same situation.
+> 
+> How would you cause that? Say you do want to purposefully place one
+> unmovable 4k page into every 64k compund page. So you allocate
+> 4K. First 64k page locked. But now, to get 4K into the second 64K page
+> you have to first use up all the rest of the first 64k page. Meaning
+> one 4k chunk, one 8k chunk, one 16k cunk, one 32k chunk. Only then
+> will a new 64k chunk be broken and become locked.
 
-MfG
-        Goswin
+It would be easier early in the boot to mmap a large area and fault it
+in in virtual address order then mlock every a page every 64K. Early in
+the systems lifetime, there will be a rough correlation between physical
+and virtual memory.
+
+Without mlock(), the most successful attack will like mmap() a 60K
+region and fault it in as an attempt to get pagetable pages placed in
+every 64K region. This strategy would not work with grouping pages by
+mobility though as it would group the pagetable pages together.
+
+Targetted attacks on grouping pages by mobility are not very easy and
+not that interesting either. As Nick suggests, the natural fragmentation
+over long periods of time is what is interesting.
+
+> So to get the last 64k chunk used all previous 32k chunks need to be
+> blocked and you need to allocate 32k (or less if more is blocked). For
+> all previous 32k chunks to be blocked every second 16k needs to be
+> blocked. To block the last of those 16k chunks all previous 8k chunks
+> need to be blocked and you need to allocate 8k. For all previous 8k
+> chunks to be blocked every second 4k page needs to be used. To alloc
+> the last of those 4k pages all previous 4k pages need to be used.
+> 
+> So to construct a situation where no continious 64k chunk is free you
+> have to allocate <total mem> - 64k - 32k - 16k - 8k - 4k (or there
+> about) of memory first. Only then could you free memory again while
+> still keeping every 64k page blocked. Does that occur naturally given
+> enough ram to start with?
+> 
+
+I believe it's very difficult to craft an attack that will work in a
+short period of time. An attack that worked on 2.6.22 as well may have
+no success on 2.6.23-rc4-mm1 for example as grouping pages by mobility
+does it make it exceedingly hard to craft an attack unless the attacker
+can mlock large amounts of memory.
+
+> 
+> Too see how bad fragmentation could be I wrote a little progamm to
+> simulate allocations with the following simplified alogrithm:
+> 
+> Memory management:
+> - Free pages are kept in buckets, one per order, and sorted by address.
+> - alloc() the front page (smallest address) out of the bucket of the
+>   right order or recursively splits the next higher bucket.
+> - free() recursively tries to merge a page with its neighbour and puts
+>   the result back into the proper bucket (sorted by address).
+> 
+> Allocation and lifetime:
+> - Every tick a new page is allocated with random order.
+
+This step in itself is not representative of what happens in the kernel.
+The vast vast majority of allocations are order-0. It's a fun analysis
+but I'm not sure can we draw any conclusions from it.
+
+Statistical analysis of the buddy algorithm have implied that it doesn't
+suffer that badly from external fragmentation but we know in practice
+that things are different. A model is hard because minimally the
+lifetime of pages varies widely.
+
+> - The order is a triangle distribution with max at 0 (throw 2 dice,
+>   add the eyes, subtract 7, abs() the number).
+> - The page is scheduled to be freed after X ticks. Where X is nearly
+>   a gaus curve centered at 0 and maximum at <total num pages> * 1.5.
+>   (What I actualy do is throw 8 dice and sum them up and shift the
+>    result.)
+> 
+
+I doubt this is how the kernel behaves either.
+
+> Display:
+> I start with a white window. Every page allocation draws a black box
+> from the address of the page and as wide as the page is big (-1 pixel to
+> give a seperation to the next page). Every page free draws a yellow
+> box in place of the black one. Yellow to show where a page was in use
+> at one point while white means the page was never used.
+> 
+> As the time ticks the memory fills up. Quickly at first and then comes
+> to a stop around 80% filled. And then something interesting
+> happens. The yellow regions (previously used but now free) start
+> drifting up. Small pages tend to end up in the lower addresses and big
+> pages at the higher addresses. The memory defragments itself to some
+> degree.
+> 
+> http://mrvn.homeip.net/fragment/
+> 
+> Simulating 256MB ram and after 1472943 ticks and 530095 4k, 411841 8k,
+> 295296 16k, 176647 32k and 59064 64k allocations you get this:
+> http://mrvn.homeip.net/fragment/256mb.png
+> 
+> Simulating 1GB ram and after 5881185 ticks  and 2116671 4k, 1645957
+> 8k, 1176994 16k, 705873 32k and 235690 64k allocations you get this:
+> http://mrvn.homeip.net/fragment/1gb.png
+> 
+
+These type of pictures feel somewhat familiar
+(http://www.skynet.ie/~mel/anti-frag/2007-02-28/page_type_distribution.jpg).
+
+-- 
+Mel Gorman
+
