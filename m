@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932199AbXINXAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbXINXHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932199AbXINXAj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 19:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbXINXAZ
+	id S1759529AbXINXHm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 19:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbXINXHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 19:00:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:36933 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757443AbXINXAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 19:00:24 -0400
-Message-ID: <46EB1285.5050807@goop.org>
-Date: Fri, 14 Sep 2007 16:00:21 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 14 Sep 2007 19:07:35 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:47828 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753518AbXINXHf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 19:07:35 -0400
+Message-ID: <46EB141A.7090200@gmail.com>
+Date: Sat, 15 Sep 2007 01:07:06 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-References: <11897991353793-git-send-email-aliguori@us.ibm.com><46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws><46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws><46EB02BA.6030909@goop.org> <46EB0657.40603@codemonkey.ws> <97D612E30E1F88419025B06CB4CF1BE10379EBF9@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <97D612E30E1F88419025B06CB4CF1BE10379EBF9@scsmsx412.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kai Germaschewski <kai@germaschewski.name>,
+       Sam Ravnborg <sam@ravnborg.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       ALSA devel <alsa-devel@alsa-project.org>
+Subject: Per option CFLAGS?
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nakajima, Jun wrote:
->>> one.  Start the kvm leaves at 0x40001000 or something?
->>>
->>>       
->> Yeah, that works with me.
->>     
->
-> To me this is the beginning of fragmentation. Why do we need different
-> and VMM-specific Linux paravirtualization for hardware-assisted
-> virtualization? That would not be good for Linux.
->   
+Hi Kai, Sam.
 
-On the contrary.  Xen already has a hypercall interface, and we need to
-keep supporting it.  If we were to also support a vmm-independent
-interface (aka "kvm interface"), then we need to be able to do that in
-parallel.  If we have a cpuid leaf clash, then its impossible to do so;
-if we define the new interface to be disjoint from other current users
-of cpuid, then we can support them concurrently.
+I have a single file foo.c that I want to generate two (ALSA) modules from, 
+snd-foo2000.ko and snd-foo2001.ko, by compiling with either FOO2000 or 
+FOO2001 defined.
 
-    J
+I can do this, and ALSA does this a few times, by providing dummy foo2000.c 
+and foo2001.c files, like:
+
+=== foo2000.c
+#define FOO2000
+#include "foo.c"
+===
+
+and a regular Makefile
+
+===
+foo2000-objs := foo2000.o
+foo2001-objs := foo2001.o
+
+obj-$(CONFIG_SND_FOO2000) += snd-foo2000.o
+obj-$(CONFIG_SND_F002001) += snd-foo2001.o
+===
+
+That #include is a little lame though. Is there a nicer way? I noticed the 
+per-file CFLAGS, but given that it's one source file for both, that doesn't fit.
+
+Rene.
