@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbXINPM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764387AbXINPP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758923AbXINPM5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 11:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXINPMs
+	id S1764387AbXINPP1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 11:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbXINPPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 11:12:48 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2676 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbXINPMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 11:12:48 -0400
-Date: Fri, 14 Sep 2007 17:13:15 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] CFS-devel, performance improvements
-In-Reply-To: <20070914165653.0139a645@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0709141712180.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home>
- <20070913075258.GA9173@elte.hu> <Pine.LNX.4.64.0709131419170.1817@scrub.home>
- <20070913142842.GA26016@elte.hu> <Pine.LNX.4.64.0709131706100.1817@scrub.home>
- <20070914162641.197913c2@laptopd505.fenrus.org> <Pine.LNX.4.64.0709141630320.1817@scrub.home>
- <20070914165653.0139a645@laptopd505.fenrus.org>
+	Fri, 14 Sep 2007 11:15:14 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43167 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754430AbXINPPM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 11:15:12 -0400
+Date: Fri, 14 Sep 2007 17:15:22 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+Message-ID: <20070914151522.GL3563@stusta.de>
+References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46EAA08F.30703@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Fri, 14 Sep 2007, Arjan van de Ven wrote:
-
-> > There is actually a very simple reason for that, the actual patch is
-> > not my primary focus, 
+On Fri, Sep 14, 2007 at 04:54:07PM +0200, Stefan Richter wrote:
+> Adrian Bunk wrote:
+> > On Sun, Sep 09, 2007 at 05:11:44PM -0400, Jeff Garzik wrote:
+> >> Let's step back a moment and consider the actual scale and impact of the 
+> >> problem at hand.
+> >>
+> >> The vast majority of users are consumers of pre-compiled kernels, built by 
+> >> People With Clue(tm), who figured this stuff out as soon as it was 
+> >> introduced.
+> [...]
+> > In my experience, the vast majority of kconfig users are not the few 
+> > people working on distribution kernels, most of the kconfig userbase 
+> > could be better described by the use case "sysadmin who knows about the 
+> > hardware in his machine and which filesystems he uses".
 > 
-> 
-> for someone who's not focused on patches/code,  you make quite a bit of
-> noise when someone does turn your discussion into smaller patches and
-> only credits you three times.
+> The patch which is discussed here is specifically targeted towards users
+> who are convinced that they can migrate to different drivers without
+> reading Kconfig help texts.
 
-As I said before, it's not really the lack of credit, it's the lack of 
-discussion.
+Nothing about the patch is only about migration.
 
-bye, Roman
+The same applies if you configure a kernel from scratch.
+
+Do "make menuconfig" with the .config you are normally using, count the 
+number of options that are visible, and ask yourself whether we can 
+really expect users to read the help texts for every single option shown.
+
+People mostly read help texts for options where they don't understand 
+what this option is about - and "Serial ATA" therefore is an option that 
+is likely to get enabled without the user looking at the help text.
+
+> Stefan Richter
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
