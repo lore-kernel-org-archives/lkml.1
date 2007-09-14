@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXINQvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbXINQvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbXINQvR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbXINQvA
+	id S1757547AbXINQvc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbXINQvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:51:00 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43526 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbXINQu7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:50:59 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46EABBBB.7060201@s5r6.in-berlin.de>
-Date: Fri, 14 Sep 2007 18:50:03 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Fri, 14 Sep 2007 12:51:15 -0400
+Received: from lixom.net ([66.141.50.11]:60447 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755160AbXINQvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 12:51:13 -0400
+Date: Fri, 14 Sep 2007 11:52:33 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org, hch@lst.de,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] pcmcia: Convert io_req_t to use kio_addr_t
+Message-ID: <20070914165233.GA3045@lixom.net>
+References: <20070905142742.GA1760@lixom.net> <20070914034854.1658a9cf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <20070914161619.GM3563@stusta.de>
-In-Reply-To: <20070914161619.GM3563@stusta.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070914034854.1658a9cf.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Fri, Sep 14, 2007 at 05:37:37PM +0200, Stefan Richter wrote:
->> In
->> practice, this takes too much time, hence you take an existing .config
->> (yours or somebody else's) and go from there.
+On Fri, Sep 14, 2007 at 03:48:54AM -0700, Andrew Morton wrote:
+> On Wed, 5 Sep 2007 09:27:43 -0500 Olof Johansson <olof@lixom.net> wrote:
 > 
-> Kconfig let's you start with the defconfig when doing "make menuconfig" 
-> without any .config present,
-[...]
-
-This is one of those "somebody else's .config".
-
->> Whenever one enables an option for the first time, it would IMO be
->> foolish to ignore its help text.
+> > Convert the io_req_t members to kio_addr_t, to allow use on machines with
+> > more than 16 bits worth of IO port address space (ppc64 in this case,
+> > but it applies to others as well).
 > 
-> Then the number of non-foolish users is quite near to 0...
-
-Perhaps.  Although I meant only options which one enables oneself, not
-options which are taken over from somebody else's .config.
-
-> If you expect people to read several hundreds or thousands of help texts 
-> only for configuring a kernel then you are expecting something that is 
-> simply not realistic.
+> drivers/usb/host/sl811_cs.c: In function 'sl811_cs_config':
+> drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'kio_addr_t'
+> drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
 > 
-> It is intuitive for a user to enable the "Serial ATA" menu and he might 
-> not expect to have to read the help text when he has SATA drivers, while 
-> having to enable anything in the "SCSI device support" menu is highly 
-> unintuitively when the user does not have SCSI hardware.
+> That's not just a cosmetic thing - the printk can print junk and if there's
+> a %s in the control string after the %x's, printk() will crash.
+> 
+> I don't know how many instances of this are in the tree, but they'll all
+> need to be found and fixed.
 
-It surely is unintuitive, and it is one of the worse cases where the
-current menu layout is unintuitive.  We have to improve that, even
-though it is ultimately impossible to serve everyone's needs equally
-well or, generally, make kernel configuration a piece of cake.
+A crap, I completely forgot to check drivers/, and my default builds
+don't contain many of them. My bad.
 
-Note though, some suggestions which came up here don't actually make the
-menus more intuitive.  Notably the patch "Select BLK_DEV_SD for all
-SCSI/libata drivers" is counterintuitive in a different color:  It
-follows the philosophy of "I know what's good for you and I act on your
-behalf behind your back --- trust me, it's for your best".
+I'll do a full pass and review all references to the changed variables. So
+far I've only noticed printk stuff, but I'm not done. There's a fair
+amount lot of places where they're cast into ints instead of longs,
+but that's a whole other ball of wax (and shouldn't cause regressions
+like the printk ones could).
 
-I too am guilty of proposing the usage of 'select'
-(http://lkml.org/lkml/2007/9/8/9) but I suggested a variant which lets
-the user stay informed and in control (as far as this is possible with
-'select' which always increases complexity, never reduces it).
 
-But rather than adding multiple menu items which enable the same option,
-a reorganization of the menus which better reflect the role of SCSI core
-and SCSI highlevel might be more effective --- similar to "Networking"
-which is separate from "Network device support"
-(http://lkml.org/lkml/2007/9/10/5, http://lkml.org/lkml/2007/9/10/115).
--- 
-Stefan Richter
--=====-=-=== =--= -===-
-http://arcgraph.de/sr/
+-Olof
