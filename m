@@ -1,83 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933897AbXINQJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933979AbXINQKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933897AbXINQJm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759204AbXINQJc
+	id S933979AbXINQKu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758858AbXINQKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:09:32 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:54948 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933788AbXINQJa (ORCPT
+	Fri, 14 Sep 2007 12:10:39 -0400
+Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:63042 "EHLO
+	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756578AbXINQKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:09:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hEfTRqUJSt2rbTqFDqewH+XsQDNKNuF4Qb6OJCByOd+Y0b0+GNLOtUWU4xQvoQ1ddI/3z56ya9y8z8ZjTFRvCTMHImsJHKIRDK+OkP+HGINNQHl44jxVMUDXhRriEKMB+SYO7vyUia69+sh7lnw2o5IHYipkr1gIruOClYE5seo=
-Message-ID: <d9def9db0709140909s5caceb6braf2b10213e721702@mail.gmail.com>
-Date: Fri, 14 Sep 2007 18:09:28 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-Cc: "Joerg Roedel" <joro@8bytes.org>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <46EA77DE.8060109@gmail.com>
+	Fri, 14 Sep 2007 12:10:37 -0400
+From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
+       andrea@suse.de, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+References: <20070911060349.993975297@sgi.com>
+	<200709111606.10873.nickpiggin@yahoo.com.au>
+	<Pine.LNX.4.64.0709111448430.27023@schroedinger.engr.sgi.com>
+	<200709120407.48344.nickpiggin@yahoo.com.au>
+Date: Fri, 14 Sep 2007 18:10:31 +0200
+In-Reply-To: <200709120407.48344.nickpiggin@yahoo.com.au> (Nick Piggin's
+	message of "Wed, 12 Sep 2007 04:07:47 +1000")
+Message-ID: <87zlzpqlc8.fsf@informatik.uni-tuebingen.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
-	 <46E95C54.4060502@gmail.com>
-	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
-	 <46E99F36.8090809@hauppauge.com>
-	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
-	 <46E9DDC7.4000403@hauppauge.com>
-	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
-	 <46EA3F07.9050806@gmail.com> <20070914091535.GA8998@8bytes.org>
-	 <46EA77DE.8060109@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/14/07, Manu Abraham <abraham.manu@gmail.com> wrote:
-> Joerg Roedel wrote:
-> > On Fri, Sep 14, 2007 at 11:57:59AM +0400, Manu Abraham wrote:
-> >>>>> What do you think about IOMMU?
-> >>>>>
-> >>>>>
-> >>>> Just because AMD or INTEL want to invent some whizzy new technology it
-> >>>> doesn't say anything about the TV card development and retail business.
-> >>>> Intel and AMD have teams of Linux engineers helping operating system
-> >>>> developers bring their ideas and technologies to new platforms. That's
-> a
-> >>>> million miles away from any of the TV board vendors I know of, who have
-> >>>> little or NO fulltime linux developers and consider the < 5% market
-> >>>> fringe at best.
-> >>>>
-> >>> it helps to virtualize devices and introduces newer features for that.
-> >>> Some interesting projects could be derrived out of that, there are
-> >>> quite a few interesting papers floating around how drivers could be
-> >>> handled in future.
-> >>>
-> >> IOMMU can be considered similar to the AGP GART, which is similar,
-> >> remapping the Addresses, as far as i understand.
-> >
-> > Common new IOMMUs have only very few in common with the AGP GART. In
-> > fact, with current modern IOMMU hardware it will be possible to
-> > implement secure userspace device drivers that are even able to do DMA.
-> > This is not possible with the GART.
-> >
-> >> Though you get a physical to virtual translation, what about interrupts,
-> >
-> > Modern IOMMUs are able to remap interrupts. This will solve the problem
-> > with PCI interrupt sharing.
->
-> What CPU's are we talking about ?
->
+Hi,
 
-upcoming x86-64 processors from the AMD side. I'm not into what Intel
-is doing in that area at the moment.
 
-Markus
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
+
+> In my attack, I cause the kernel to allocate lots of unmovable allocations
+> and deplete movable groups. I theoretically then only need to keep a
+> small number (1/2^N) of these allocations around in order to DoS a
+> page allocation of order N.
+
+I'm assuming that when an unmovable allocation hijacks a movable group
+any further unmovable alloc will evict movable objects out of that
+group before hijacking another one. right?
+
+> And it doesn't even have to be a DoS. The natural fragmentation
+> that occurs today in a kernel today has the possibility to slowly push out
+> the movable groups and give you the same situation.
+
+How would you cause that? Say you do want to purposefully place one
+unmovable 4k page into every 64k compund page. So you allocate
+4K. First 64k page locked. But now, to get 4K into the second 64K page
+you have to first use up all the rest of the first 64k page. Meaning
+one 4k chunk, one 8k chunk, one 16k cunk, one 32k chunk. Only then
+will a new 64k chunk be broken and become locked.
+
+So to get the last 64k chunk used all previous 32k chunks need to be
+blocked and you need to allocate 32k (or less if more is blocked). For
+all previous 32k chunks to be blocked every second 16k needs to be
+blocked. To block the last of those 16k chunks all previous 8k chunks
+need to be blocked and you need to allocate 8k. For all previous 8k
+chunks to be blocked every second 4k page needs to be used. To alloc
+the last of those 4k pages all previous 4k pages need to be used.
+
+So to construct a situation where no continious 64k chunk is free you
+have to allocate <total mem> - 64k - 32k - 16k - 8k - 4k (or there
+about) of memory first. Only then could you free memory again while
+still keeping every 64k page blocked. Does that occur naturally given
+enough ram to start with?
+
+
+
+Too see how bad fragmentation could be I wrote a little progamm to
+simulate allocations with the following simplified alogrithm:
+
+Memory management:
+- Free pages are kept in buckets, one per order, and sorted by address.
+- alloc() the front page (smallest address) out of the bucket of the
+  right order or recursively splits the next higher bucket.
+- free() recursively tries to merge a page with its neighbour and puts
+  the result back into the proper bucket (sorted by address).
+
+Allocation and lifetime:
+- Every tick a new page is allocated with random order.
+- The order is a triangle distribution with max at 0 (throw 2 dice,
+  add the eyes, subtract 7, abs() the number).
+- The page is scheduled to be freed after X ticks. Where X is nearly
+  a gaus curve centered at 0 and maximum at <total num pages> * 1.5.
+  (What I actualy do is throw 8 dice and sum them up and shift the
+   result.)
+
+Display:
+I start with a white window. Every page allocation draws a black box
+from the address of the page and as wide as the page is big (-1 pixel to
+give a seperation to the next page). Every page free draws a yellow
+box in place of the black one. Yellow to show where a page was in use
+at one point while white means the page was never used.
+
+As the time ticks the memory fills up. Quickly at first and then comes
+to a stop around 80% filled. And then something interesting
+happens. The yellow regions (previously used but now free) start
+drifting up. Small pages tend to end up in the lower addresses and big
+pages at the higher addresses. The memory defragments itself to some
+degree.
+
+http://mrvn.homeip.net/fragment/
+
+Simulating 256MB ram and after 1472943 ticks and 530095 4k, 411841 8k,
+295296 16k, 176647 32k and 59064 64k allocations you get this:
+http://mrvn.homeip.net/fragment/256mb.png
+
+Simulating 1GB ram and after 5881185 ticks  and 2116671 4k, 1645957
+8k, 1176994 16k, 705873 32k and 235690 64k allocations you get this:
+http://mrvn.homeip.net/fragment/1gb.png
+
+MfG
+        Goswin
