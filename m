@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbXINUxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbXINVAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759540AbXINUxh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 16:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbXINUxa
+	id S1757506AbXINVAV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 17:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbXINVAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 16:53:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:55401 "EHLO mail.goop.org"
+	Fri, 14 Sep 2007 17:00:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:33076 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755249AbXINUx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 16:53:29 -0400
-Message-ID: <46EAF4C6.8090903@goop.org>
-Date: Fri, 14 Sep 2007 13:53:26 -0700
+	id S1752897AbXINVAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 17:00:07 -0400
+Message-ID: <46EAF652.9060405@goop.org>
+Date: Fri, 14 Sep 2007 14:00:02 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Anthony Liguori <aliguori@us.ibm.com>
-CC: kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
-       Ingo Molnar <mingo@elte.hu>, Dor Laor <dor.laor@qumranet.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Refactor hypercall infrastructure
-References: <11897991353793-git-send-email-aliguori@us.ibm.com>
-In-Reply-To: <11897991353793-git-send-email-aliguori@us.ibm.com>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+CC: akpm@osdl.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       suresh.b.siddha@intel.com
+Subject: Re: [patch] Fix BIOS-e820 end address
+References: <20070908205044.GA16419@askeshav-devel.jf.intel.com>
+In-Reply-To: <20070908205044.GA16419@askeshav-devel.jf.intel.com>
 X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> This patch refactors the current hypercall infrastructure to better support live
-> migration and SMP.  It eliminates the hypercall page by trapping the UD
-> exception that would occur if you used the wrong hypercall instruction for the
-> underlying architecture and replacing it with the right one lazily.
+Keshavamurthy, Anil S wrote:
+> Subject: [patch] Fix BIOS-e820 end address
+>
+> --snip of boot message--
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
+>  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 000000007fe8cc00 (usable)
+> ----end snip---
+>
+> As you see from above the address 0000000000100000 is both
+> shown as reserved and usable which is confusing.
 >   
 
-I guess it would be pretty rude/unlikely for these opcodes to get reused
-in other implementations...  But couldn't you make the page trap
-instead, rather than relying on an instruction fault?
-
-> It also introduces the infrastructure to probe for hypercall available via
-> CPUID leaves 0x40000002.  CPUID leaf 0x40000003 should be filled out by
-> userspace.
->   
-
-Is this compatible with Xen's (and other's) use of cpuid?  That is,
-0x40000000 returns a hypervisor-specific signature in e[bcd]x, and eax
-has the max hypervisor leaf.
+I think this is consistent with many other kernel interfaces (such as
+/proc/X/maps) where the end address is taken to be exclusive: [0xf0000,
+0x100000).
 
     J
