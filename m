@@ -1,76 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbXINJUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbXINJXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321AbXINJUZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 05:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXINJUM
+	id S1753700AbXINJXT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 05:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXINJXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 05:20:12 -0400
-Received: from mail.dgt.com.pl ([195.117.141.2]:39196 "EHLO dgt.com.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751804AbXINJUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 05:20:10 -0400
-X-Greylist: delayed 1780 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Sep 2007 05:20:10 EDT
-DGT-Virus-Scanned: amavisd-new at dgt.com.pl
-Message-ID: <46EA4B50.7040904@dgt.com.pl>
-Date: Fri, 14 Sep 2007 10:50:24 +0200
-From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); pl-PL; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	Fri, 14 Sep 2007 05:23:10 -0400
+Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:60020 "EHLO iris"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751926AbXINJXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 05:23:09 -0400
+X-Greylist: delayed 1798 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Sep 2007 05:23:09 EDT
+Date: Fri, 14 Sep 2007 12:37:12 +0400
+From: "Denis V. Lunev" <den@openvz.org>
+To: akpm@linux-foundation.org
+Cc: devel@openvz.org, den@openvz.org, dev@openvz.org, amirkin@openvz.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: [PATCH] shrink_dcache_sb speedup
+Message-ID: <20070914083712.GA9788@iris.sw.ru>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Intel-Quad on GA-P35-S3 motherboard with 4*2GB 
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I can't see whole 8GB of ram.
+From: Denis V. Lunev <den@openvz.org>
 
-With F2 BIOS release i can only work with kernel param mem=4G.
-After updating to F4 BIOS release I can work with mem=8G, but I see this:
+This patch makes shrink_dcache_sb consistent with dentry pruning policy.
 
-# free -m
-             total       used       free     shared    buffers     cached
-Mem:          6473        474       5999          0         29        278
+On the first pass we iterate over dentry unused list and prepare some
+dentries for removal.
+However, since the existing code moves evicted dentries
+to the beginning of the LRU it can happen that fresh dentries from
+other superblocks will be inserted *before* our dentries.
 
-Without mem=8G kernel starts to slow down and hangs while starting 
-filesystem.
-There is no message.
+This can result in significant slowdown of shrink_dcache_sb().
+Moreover, for virtual filesystems like unionfs which can call dput()
+during dentries kill existing code results in O(n^2) complexity.
 
-My whole memory was tested with memtest. Full test took about 48hour. Is 
-it wrong?
+We observed 2 minutes shrink_dcache_sb() with only 35000 dentries.
 
-I have:  Intel(R) Core(TM)2 Quad CPU @ 2.40GHz
-There are 4   *  2GB / 667MHz DIMMs.
+To avoid this effects we propose to isolate sb dentries at the end
+of LRU list.
 
+Signed-off-by: Denis V. Lunev <den@openvz.org>
+Signed-off-by: Kirill Korotaev <dev@openvz.org>
+Signed-off-by: Andrey Mirkin <amirkin@openvz.org>
 
-# cat /proc/iomem |grep RAM
-00000000-0009f7ff : System RAM
-00100000-9fedffff : System RAM
-100000000-25fffffff : System RAM
+-------
 
-# dmesg|grep BIOS-e820
- BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
- BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000009fee0000 (usable)
- BIOS-e820: 000000009fee0000 - 000000009fee3000 (ACPI NVS)
- BIOS-e820: 000000009fee3000 - 000000009fef0000 (ACPI data)
- BIOS-e820: 000000009fef0000 - 000000009ff00000 (reserved)
- BIOS-e820: 00000000c0000000 - 00000000c4000000 (reserved)
- BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 0000000260000000 (usable)
-
-
-
-I can see that higer memory range was remmaped,
-by why accesing something greater than 100000000 is problematic?
-Do I need to change something i kernel configuration?
-
-
-
-
-
-
-
+--- ./fs/dcache.c.shrink	2007-09-14 10:25:21.000000000 +0400
++++ ./fs/dcache.c	2007-09-14 10:26:08.000000000 +0400
+@@ -553,18 +553,18 @@ void shrink_dcache_sb(struct super_block
+ 	 * superblock to the most recent end of the unused list.
+ 	 */
+ 	spin_lock(&dcache_lock);
+-	list_for_each_safe(tmp, next, &dentry_unused) {
++	list_for_each_prev_safe(tmp, next, &dentry_unused) {
+ 		dentry = list_entry(tmp, struct dentry, d_lru);
+ 		if (dentry->d_sb != sb)
+ 			continue;
+-		list_move(tmp, &dentry_unused);
++		list_move_tail(tmp, &dentry_unused);
+ 	}
  
-
+ 	/*
+ 	 * Pass two ... free the dentries for this superblock.
+ 	 */
+ repeat:
+-	list_for_each_safe(tmp, next, &dentry_unused) {
++	list_for_each_prev_safe(tmp, next, &dentry_unused) {
+ 		dentry = list_entry(tmp, struct dentry, d_lru);
+ 		if (dentry->d_sb != sb)
+ 			continue;
+--- ./include/linux/list.h.shrink	2007-08-10 16:58:49.000000000 +0400
++++ ./include/linux/list.h	2007-09-14 10:26:08.000000000 +0400
+@@ -478,6 +478,18 @@ static inline void list_splice_init_rcu(
+ 		pos = n, n = pos->next)
+ 
+ /**
++ * list_for_each_prev_safe - iterate over a list backwards safe against removal
++			of list entry
++ * @pos:	the &struct list_head to use as a loop cursor.
++ * @n:		another &struct list_head to use as temporary storage
++ * @head:	the head for your list.
++ */
++#define list_for_each_prev_safe(pos, n, head) \
++	for (pos = (head)->prev, n = pos->prev; \
++	     prefetch(pos->prev), pos != (head); \
++	     pos = n, n = pos->prev)
++
++/**
+  * list_for_each_entry	-	iterate over list of given type
+  * @pos:	the type * to use as a loop cursor.
+  * @head:	the head for your list.
