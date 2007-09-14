@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbXINUBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbXINUBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759152AbXINUBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 16:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756584AbXINUBL
+	id S1759269AbXINUBv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 16:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbXINUBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 16:01:11 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:49356 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756092AbXINUBK (ORCPT
+	Fri, 14 Sep 2007 16:01:42 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:47340 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756396AbXINUBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 16:01:10 -0400
-Message-ID: <46EAE885.3080106@lwfinger.net>
-Date: Fri, 14 Sep 2007 15:01:09 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 14 Sep 2007 16:01:41 -0400
+Date: Fri, 14 Sep 2007 22:01:40 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
+       Anthony Liguori <aliguori@us.ibm.com>
+Subject: Re: [PATCH 2/3] Consolidate host virtualization support under
+ Virtualization menu
+In-Reply-To: <20070914091921.73007c5a.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0709142201110.10168@fbirervta.pbzchgretzou.qr>
+References: <1189747054.7262.34.camel@localhost.localdomain>
+ <1189747124.7262.36.camel@localhost.localdomain> <20070914091921.73007c5a.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Interpretation of sparse warning
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The code sequence
 
-        u32 macstat;
-.....
-        macstat = le32_to_cpu(rxhdr->mac_status);
+On Sep 14 2007 09:19, Randy Dunlap wrote:
+>On Fri, 14 Sep 2007 15:18:44 +1000 Rusty Russell wrote:
+>
+>> We turn "Virtualization" into a menu, not a config option, since it's
+>> actually only used as a menu.  Then we move lguest under that menu.
 
-generates the following sparse warnings
-
-drivers/net/wireless/b43legacy/xmit.c:446:12: warning: cast to restricted type
-drivers/net/wireless/b43legacy/xmit.c:446:12: warning: cast from restricted type
-
-(#446 is the macstat = ..... line)
-
-My version of sparse is from the git tree and was downloaded today.
-
-I think the code sequence is correct. What, if anything, should I do to eliminate the warning?
-
-Thanks,
-
-Larry
+Whatever, keep it as menuconfig. I want to disable it _at once_
+without having to enter the menu, which is the primary motivation
+having it as 'menuconfig'.
 
 
+	Jan
+-- 
