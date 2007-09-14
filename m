@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbXINWkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbXINWmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932122AbXINWkj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 18:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757590AbXINWkc
+	id S1759653AbXINWmc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 18:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757133AbXINWmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 18:40:32 -0400
-Received: from mga01.intel.com ([192.55.52.88]:52566 "EHLO mga01.intel.com"
+	Fri, 14 Sep 2007 18:42:22 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:52278 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757031AbXINWkb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 18:40:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,257,1186383600"; 
-   d="scan'208";a="307249833"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1756843AbXINWmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 18:42:21 -0400
+Date: Fri, 14 Sep 2007 18:42:12 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Move away from char device ioctls.
+Message-ID: <20070914224212.GJ12444@fieldses.org>
+References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070914211210.GB12444@fieldses.org> <46EAF9CD.1090808@garzik.org> <20070914211828.GC12444@fieldses.org> <46EB0BEB.2090808@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-Date: Fri, 14 Sep 2007 15:40:29 -0700
-Message-ID: <97D612E30E1F88419025B06CB4CF1BE10379EBF9@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <46EB0657.40603@codemonkey.ws>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-Thread-Index: Acf3G82DqlLKz2UnQxi+hI0c6pvbRQAAEUog
-References: <11897991353793-git-send-email-aliguori@us.ibm.com><46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws><46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws><46EB02BA.6030909@goop.org> <46EB0657.40603@codemonkey.ws>
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: "Anthony Liguori" <anthony@codemonkey.ws>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: <kvm-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       "Avi Kivity" <avi@qumranet.com>
-X-OriginalArrivalTime: 14 Sep 2007 22:40:30.0353 (UTC) FILETIME=[40EB6010:01C7F720]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46EB0BEB.2090808@garzik.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> Jeremy Fitzhardinge wrote:
-> > Anthony Liguori wrote:
-> > 
-> > > Yeah, see, the initial goal was to make it possible to use the KVM
-> > > paravirtualizations on other hypervisors.  However, I don't think
-this
-> > > is really going to be possible in general so maybe it's better to
-just
-> > > use leaf 0.  I'll let others chime in before sending a new patch.
-> > > 
-> > 
-> > Hm.  Obviously you can just define a signature for "kvm-compatible
-> > hypercall interface" and make it common that way, but it gets tricky
-if
-> > the hypervisor supports multiple hypercall interfaces, including the
-kvm
-> > one.  Start the kvm leaves at 0x40001000 or something?
-> > 
-> 
-> Yeah, that works with me.
+On Fri, Sep 14, 2007 at 06:32:11PM -0400, Jeff Garzik wrote:
+> J. Bruce Fields wrote:
+>> On Fri, Sep 14, 2007 at 05:14:53PM -0400, Jeff Garzik wrote:
+>>> J. Bruce Fields wrote:
+>>>> On Fri, Sep 14, 2007 at 03:07:46PM -0400, Jeff Garzik wrote:
+>>>>> I've been waiting for years for a smart person to come along and write 
+>>>>> a POSIX-only distributed filesystem.
+>>>> What exactly do you mean by "POSIX-only"?
+>>> Don't bother supporting attributes, file modes, and other details not 
+>>> supported by POSIX.  The prime example being NFSv4, which is larded down 
+>>> with Windows features.
+>> I am sympathetic....  Cutting those out may still leave you with
+>> something pretty complicated, though.
+>
+> Far less complicated than NFSv4.1 though (which is easy :))
 
-To me this is the beginning of fragmentation. Why do we need different
-and VMM-specific Linux paravirtualization for hardware-assisted
-virtualization? That would not be good for Linux.
+One would hope so.
 
-> 
-> Regards,
-> 
-> Anthony Liguori
-> 
-> >     J
+>>> NFSv4.1 adds to the fun, by throwing interoperability completely out the 
+>>> window.
+>> What parts are you worried about in particular?
+>
+> I'm not worried; I'm stating facts as they exist today (draft 13):
+>
+> NFS v4.1 does something completely without precedent in the history of NFS: 
+>  the specification is defined such that interoperability is -impossible- to 
+> guarantee.
+>
+> pNFS permits private and unspecified layout types.  This means it is 
+> impossible to guarantee that one NFSv4.1 implementation will be able to 
+> talk another NFSv4.1 implementation.
 
-Jun
----
-Intel Open Source Technology Center
+No, servers are required to support ordinary nfs operations to the
+metadata server.
+
+At least, that's the way it was last I heard, which was a while ago.  I
+agree that it'd stink (for any number of reasons) if you ever *had* to
+get a layout to access some file.
+
+Was that your main concern?
+
+--b.
