@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbXINHwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbXINH6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbXINHwq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 03:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXINHwh
+	id S1754489AbXINH6W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 03:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbXINH6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 03:52:37 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58959 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751398AbXINHwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 03:52:37 -0400
-Date: Fri, 14 Sep 2007 09:52:34 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Dan Aloni <da-x@monatomic.org>
-Subject: Re: [PATCH] Add ELF note with Linux version
-Message-ID: <20070914075234.GI30366@suse.de>
-Mail-Followup-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Dan Aloni <da-x@monatomic.org>
-References: <20070904150018.GA4357@suse.de> <46DFD825.2020109@goop.org> <20070913144228.2efcd5d9.akpm@linux-foundation.org> <46E9B22B.1000002@goop.org>
+	Fri, 14 Sep 2007 03:58:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:42878 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbXINH6K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 03:58:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=DlfNXKOMEf6Po3A+RbLh7T5F+z8Ol+6suu7b6pFdYQ6xFcMJAXFJ8RQx1uzJbRX0jTcsJKVH02ivasdeLIt5hs3vM93zSbghMdWg7XVXwgjlRBOxnhoeQr0gOr0Y8+Va/u/28pAUdGIFYHHpucXUr5bvxIqj/w41KTmUnmtyTsk=
+Message-ID: <46EA3F07.9050806@gmail.com>
+Date: Fri, 14 Sep 2007 11:57:59 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46E9B22B.1000002@goop.org>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Markus Rechberger <mrechberger@gmail.com>
+CC: Steven Toth <stoth@hauppauge.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+References: <46C1BCC5.9090709@amd.com>	 <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>	 <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>	 <20070913131353.GB26972@linuxtv.org>	 <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com>	 <46E95C54.4060502@gmail.com>	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>	 <46E99F36.8090809@hauppauge.com>	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>	 <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+In-Reply-To: <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge <jeremy@goop.org> [2007-09-13 23:56]:
+>>> What do you think about IOMMU?
+>>>
+>>>
+>> Just because AMD or INTEL want to invent some whizzy new technology it
+>> doesn't say anything about the TV card development and retail business.
+>> Intel and AMD have teams of Linux engineers helping operating system
+>> developers bring their ideas and technologies to new platforms. That's a
+>> million miles away from any of the TV board vendors I know of, who have
+>> little or NO fulltime linux developers and consider the < 5% market
+>> fringe at best.
+>>
 > 
-> > I'd like to know a little bit more about why this is needed, how it will be
-> > used, etc.  And given that this feature is intended to improve life for
-> > distributors, it would be nice to get some feedback from the appropriate
-> > persons.
+> it helps to virtualize devices and introduces newer features for that.
+> Some interesting projects could be derrived out of that, there are
+> quite a few interesting papers floating around how drivers could be
+> handled in future.
 > 
-> Hm, yes.  ELF notes don't appear in the bzImage, since it isn't an ELF
-> file, so perhaps this doesn't satisfy the requirement.  It would help to
-> have more detail.
 
-the bzImage already contains the version (and much more, e.g. if the
-kernel is relocatable, the command line length it accepts). See
-Documentation/i386/boot.txt.
+IOMMU can be considered similar to the AGP GART, which is similar,
+remapping the Addresses, as far as i understand.
 
+Though you get a physical to virtual translation, what about interrupts,
+yet to be seen with how to do it with multipath scenarios.
 
+Something that i happened to read
+https://www.gelato.unsw.edu.au/archives/comp-arch/2007-March/007370.html
+Even Documentation/Intel-IOMMU.txt, doesn't seem to paint a very rosy
+picture
 
-Thanks,
-   Bernhard
+Manu
