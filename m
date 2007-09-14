@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761104AbXINOPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbXINONl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761104AbXINOPl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbXINOPe
+	id S1758424AbXINONl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXINONd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:15:34 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42641 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754321AbXINOPd (ORCPT
+	Fri, 14 Sep 2007 10:13:33 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:13990 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739AbXINONc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:15:33 -0400
-Date: Fri, 14 Sep 2007 16:15:42 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net, Oliver Neukum <oneukum@suse.de>
-Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
-Message-ID: <20070914141542.GK3563@stusta.de>
-References: <20070913154019.GG3563@stusta.de> <Pine.LNX.4.44L0.0709131154240.7406-100000@iolanthe.rowland.org> <20070913201910.GH3563@stusta.de> <alpine.LFD.0.999.0709131341300.16478@woody.linux-foundation.org> <20070913212842.GI3563@stusta.de> <20070913220543.GJ3563@stusta.de> <alpine.LFD.0.999.0709131709320.16478@woody.linux-foundation.org> <46EA8AC4.3000007@rtr.ca>
+	Fri, 14 Sep 2007 10:13:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=D3IayAMtIF3bjTo7mR1mqZBSSGpLh479jOMBcSFYzCtNK/VYEKVAkpYXWhYvTuhiFXdXfr46Jlccqolfb0dibQJyu1ddZqmFj/W/qUusz4nCtDhPAaYvc7sGYhen2O5jylpnAt+o7dsiiVghEYCb0Z5rnXeAq3CUOcWz3g/gjug=
+Message-ID: <46EAA4C0.3070703@gmail.com>
+Date: Fri, 14 Sep 2007 17:12:00 +0200
+From: Robert de Rooy <robert.de.rooy@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46EA8AC4.3000007@rtr.ca>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Mel Gorman <mel@skynet.ie>
+CC: jirislaby@gmail.com, jeff@garzik.org, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: ath5k driver not working on ThinkPad
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070909122251.GA31986@skynet.ie>
+In-Reply-To: <20070909122251.GA31986@skynet.ie>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 09:21:08AM -0400, Mark Lord wrote:
-> Linus Torvalds wrote:
->> On Fri, 14 Sep 2007, Adrian Bunk wrote:
->>> E.g. when looking at the reverse dependencies of libhal, it would not be 
->>> funny if kernel 2.6.43 required a more recent version of HAL.
->> Adrian, what's the point of answering your questions, WHEN YOU DON'T EVEN 
->> READ THE ANSWERS!
->> So stop repeating your inane question, and instead LISTEN to what people 
->> are saying.
->> There is *no* requirement what-so-ever on user space. End of story.
->> If user-space doesn't tell devices to go to autosuspend, they just won't 
->> do so. But this has nothing to do with white-lists, black-lists, 2.6.43, 
->> or your HAL version.
->> That black-listing was a mistake. We got over it. Now PLEASE you get over 
->> it too!
+Mel Gorman wrote:
+> (To list based on CC's in net-add-ath5k-wireless-driver-fix.patch . If
+> that is in error, apologies)
 >
-> Adrian, please note that this is NOT the normal "suspend to ram/disk" stuff
-> that is being discussed / affected here.  But rather something brand new 
-> (to Linux), the automatic powerdown (well, nearly) of idle USB devices
-> during regular running.
-
-I am quite aware of this fact.
-
-> Things will work just fine without chewing up gobs of memory in a futile 
-> effort
-> to list everything inside the kernel.  Devices will plug in and work fine
-> (which they didn't in 2.6.23 until this stuff got reverted) the same as 
-> always.
-
-Space saving has it's place, but there's also the point that for the 
-normal desktop usage a few 100 kB of data wouldn't matter.
-
-> To gain the last xx% in power savings, some userspace support may be 
-> needed,
-> that's all.  And with the pace of new/updated USB devices coming/going 
-> these days,
-> userspace is really the only appropriate place for this kind of stuff.
-
-It creates one more userspace _ABI_ for something that doesn't 
-necessarily need one.
-
-Perhaps I'm wrong and people have learnt the lesson from the udev 
-disaster that ABIs used by stuff like udev or HAL are _userspace ABIs_
-and have to be treated accordingly.
-
-> Cheers
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+> On (31/08/07 21:58), Andrew Morton didst pronounce:
+>   
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+>>
+>>     
+>
+> I thought I would give the ath5k driver a shot on my Thinkpad T60p to see
+> what happened but it wasn't particularly successful. lspci -v shows
+>
+> 03:00.0 Ethernet controller: Atheros Communications, Inc. AR5212 802.11abg NIC (rev 01)
+>         Subsystem: IBM ThinkPad 11a/b/g Wireless LAN Mini Express Adapter (AR5BXB6)
+>         Flags: bus master, fast devsel, latency 0, IRQ 22
+>         Memory at edf00000 (64-bit, non-prefetchable) [size=64K]
+>         Capabilities: [40] Power Management version 2
+>         Capabilities: [50] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
+>         Capabilities: [60] Express Legacy Endpoint IRQ 0
+>         Capabilities: [90] MSI-X: Enable- Mask- TabSize=1
+>         Capabilities: [100] Advanced Error Reporting
+>         Capabilities: [140] Virtual Channel
+>
+> During boot, the following relevant information in dmesg shows up;
+>
+> ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level, low) -> IRQ 21
+> PCI: Setting latency timer of device 0000:03:00.0 to 64
+> Uhhuh. NMI received for unknown reason b1 on CPU 0.
+> You have some hardware problem, likely on the PCI bus.
+> Dazed and confused, but trying to continue
+> ath5k_hw_nic_wakeup: failed to resume the MAC Chip
+> ACPI: PCI interrupt for device 0000:03:00.0 disabled
+> ath_pci: probe of 0000:03:00.0 failed with error -5
+>
+> Needless to say, it fails to bring up networking later. I have no real idea
+> how to debug something like this. Any suggestions?
+>
+>   
+I just tried Fedora 8test2 LiveCD which includes the 0.9.5-BSD version 
+of the ath5k driver and get the exact same thing on my ThinkPad T60.
+Fedora 8test2 uses a 2.6.23 based kernel.
