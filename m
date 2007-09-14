@@ -1,103 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759839AbXINWOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbXINWS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759839AbXINWOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 18:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbXINWOK
+	id S1759627AbXINWS7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 18:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbXINWSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 18:14:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39230 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756612AbXINWOJ (ORCPT
+	Fri, 14 Sep 2007 18:18:52 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58026 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751941AbXINWSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 18:14:09 -0400
-Date: Fri, 14 Sep 2007 15:12:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: lethal@linux-sh.org, mikey@neuling.org, jdi@l4x.org, paulus@samba.org,
-       torvalds@linux-foundation.org, tony@bakeyournoodle.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, alan@redhat.com,
-       heiko.carstens@de.ibm.com, hskinnemoen@atmel.com, dhowells@redhat.com
-Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
-Message-Id: <20070914151253.d7943119.akpm@linux-foundation.org>
-In-Reply-To: <20070914.113324.104043149.davem@davemloft.net>
-References: <5058.1189668156@neuling.org>
-	<20070913095346.GA28194@linux-sh.org>
-	<20070913035506.b599e84f.akpm@linux-foundation.org>
-	<20070914.113324.104043149.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Sep 2007 18:18:51 -0400
+Date: Fri, 14 Sep 2007 15:18:50 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: linux-kernel@vger.kernel.org
+cc: linux-mm@kvack.org
+Subject: [RFC] SLUB: Make NUMA support optional on NUMA machines
+Message-ID: <Pine.LNX.4.64.0709141518070.14856@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007 11:33:24 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+NUMA support in the slab allocators may create unnecessary overhead for
+small NUMA configurations (especially those that realize multiple nodes
+on a motherboard like Opterons).
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Thu, 13 Sep 2007 03:55:06 -0700
-> 
-> > I think we need to go with Tony's patch.  sparc32 and sparc64 are
-> > presently broken too, and the patch which converts sparc to use the
-> > new interfaces introduces a few build errors.
-> 
-> The problem with the asm-generic/termios.h thing is it only works
-> if your copying functions are just a copy_{to,from}_user() and you
-> can define that __ARCH_* macro.
-> 
-> In retrospect what that header should do is, outside of the
-> ARCH_* block, define the foo_1 interfaces plainly to foo.
-> 
-> Alternatively, here is a patch that gets sparc compiling and
-> working again in the current tree.
-> 
-> This whole termios thing hasn't been handled very well, and it's maybe
-> not what we should be doing so late in the -rc cycle.  And yes,
-> this is coming from the guy who added the TCP oops'er two weeks ago
-> :-P
+If NUMA support is disabled on a NUMA machines then the NUMA locality
+controls will not work for slab allocations anymore. However, the resulting
+memory imbalances and non optimal placements may not matter much if the
+system is small.
 
-tell me about it.
+Is this worth doing?
 
-> [SPARC]: Fix build due to termios changes.
-> 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> diff --git a/include/asm-sparc/termios.h b/include/asm-sparc/termios.h
-> index d767f20..25e9cbb 100644
-> --- a/include/asm-sparc/termios.h
-> +++ b/include/asm-sparc/termios.h
-> @@ -142,6 +142,11 @@ struct winsize {
->  	0; \
->  })
->  
-> +#define user_termios_to_kernel_termios_1(k, u) \
-> +	user_termios_to_kernel_termios(k, u)
-> +#define kernel_termios_to_user_termios_1(u, k) \
-> +	kernel_termios_to_user_termios(u, k)
-> +
->  #endif	/* __KERNEL__ */
->  
->  #endif /* _SPARC_TERMIOS_H */
-> diff --git a/include/asm-sparc64/termios.h b/include/asm-sparc64/termios.h
-> index f05d390..6fc71e6 100644
-> --- a/include/asm-sparc64/termios.h
-> +++ b/include/asm-sparc64/termios.h
-> @@ -145,6 +145,11 @@ struct winsize {
->  	err; \
->  })
->  
-> +#define user_termios_to_kernel_termios_1(k, u) \
-> +	user_termios_to_kernel_termios(k, u)
-> +#define kernel_termios_to_user_termios_1(u, k) \
-> +	kernel_termios_to_user_termios(u, k)
-> +
->  #endif	/* __KERNEL__ */
->  
->  #endif /* _SPARC64_TERMIOS_H */
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-That fixes sparc, but I think other architectures are still broken.  And if
-we use Tony's ifdef patch to fix the other architectures, that makes the
-above sparc-fix patch unneeded.
-
-argh.
-
+Index: linux-2.6/include/linux/slab.h
+===================================================================
+--- linux-2.6.orig/include/linux/slab.h	2007-09-14 13:54:51.000000000 -0700
++++ linux-2.6/include/linux/slab.h	2007-09-14 13:54:56.000000000 -0700
+@@ -178,7 +178,7 @@ static inline void *kcalloc(size_t n, si
+ 	return __kmalloc(n * size, flags | __GFP_ZERO);
+ }
+ 
+-#if !defined(CONFIG_NUMA) && !defined(CONFIG_SLOB)
++#if !defined(CONFIG_SLAB_NUMA) && !defined(CONFIG_SLOB)
+ /**
+  * kmalloc_node - allocate memory from a specific node
+  * @size: how many bytes of memory are required.
+@@ -206,7 +206,7 @@ static inline void *kmem_cache_alloc_nod
+ {
+ 	return kmem_cache_alloc(cachep, flags);
+ }
+-#endif /* !CONFIG_NUMA && !CONFIG_SLOB */
++#endif /* !CONFIG_SLAB_NUMA && !CONFIG_SLOB */
+ 
+ /*
+  * kmalloc_track_caller is a special version of kmalloc that records the
+@@ -225,7 +225,7 @@ extern void *__kmalloc_track_caller(size
+ 	__kmalloc(size, flags)
+ #endif /* DEBUG_SLAB */
+ 
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ /*
+  * kmalloc_node_track_caller is a special version of kmalloc_node that
+  * records the calling function of the routine calling it for slab leak
+@@ -244,7 +244,7 @@ extern void *__kmalloc_node_track_caller
+ 	__kmalloc_node(size, flags, node)
+ #endif
+ 
+-#else /* CONFIG_NUMA */
++#else /* CONFIG_SLAB_NUMA */
+ 
+ #define kmalloc_node_track_caller(size, flags, node) \
+ 	kmalloc_track_caller(size, flags)
+Index: linux-2.6/include/linux/slub_def.h
+===================================================================
+--- linux-2.6.orig/include/linux/slub_def.h	2007-09-14 13:54:51.000000000 -0700
++++ linux-2.6/include/linux/slub_def.h	2007-09-14 13:54:56.000000000 -0700
+@@ -58,7 +58,7 @@ struct kmem_cache {
+ 	struct kobject kobj;	/* For sysfs */
+ #endif
+ 
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ 	int defrag_ratio;
+ 	struct kmem_cache_node *node[MAX_NUMNODES];
+ #endif
+@@ -181,7 +181,7 @@ static __always_inline void *kmalloc(siz
+ 	return __kmalloc(size, flags);
+ }
+ 
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ void *__kmalloc_node(size_t size, gfp_t flags, int node);
+ void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+ 
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-09-14 13:54:51.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-09-14 13:58:50.000000000 -0700
+@@ -137,6 +137,12 @@ static inline void ClearSlabDebug(struct
+ 	page->flags &= ~SLABDEBUG;
+ }
+ 
++#ifdef CONFIG_SLAB_NUMA
++#define node(x) page_to_nid(x)
++#else
++#define node(x) 0
++#endif
++
+ /*
+  * Issues still to be resolved:
+  *
+@@ -260,7 +266,7 @@ int slab_is_available(void)
+ 
+ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
+ {
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ 	return s->node[node];
+ #else
+ 	return &s->local_node;
+@@ -813,7 +819,7 @@ static void remove_full(struct kmem_cach
+ 	if (!(s->flags & SLAB_STORE_USER))
+ 		return;
+ 
+-	n = get_node(s, page_to_nid(page));
++	n = get_node(s, node(page));
+ 
+ 	spin_lock(&n->list_lock);
+ 	list_del(&page->lru);
+@@ -1067,7 +1073,7 @@ static struct page *new_slab(struct kmem
+ 	if (!page)
+ 		goto out;
+ 
+-	n = get_node(s, page_to_nid(page));
++	n = get_node(s, node(page));
+ 	if (n)
+ 		atomic_long_inc(&n->nr_slabs);
+ 	page->slab = s;
+@@ -1141,7 +1147,7 @@ static void free_slab(struct kmem_cache 
+ 
+ static void discard_slab(struct kmem_cache *s, struct page *page)
+ {
+-	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
++	struct kmem_cache_node *n = get_node(s, node(page));
+ 
+ 	atomic_long_dec(&n->nr_slabs);
+ 	reset_page_mapcount(page);
+@@ -1192,7 +1198,7 @@ static void add_partial(struct kmem_cach
+ static void remove_partial(struct kmem_cache *s,
+ 						struct page *page)
+ {
+-	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
++	struct kmem_cache_node *n = get_node(s, node(page));
+ 
+ 	spin_lock(&n->list_lock);
+ 	list_del(&page->lru);
+@@ -1247,7 +1253,7 @@ out:
+  */
+ static struct page *get_any_partial(struct kmem_cache *s, gfp_t flags)
+ {
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ 	struct zonelist *zonelist;
+ 	struct zone **z;
+ 	struct page *page;
+@@ -1315,7 +1321,7 @@ static struct page *get_partial(struct k
+  */
+ static void unfreeze_slab(struct kmem_cache *s, struct page *page)
+ {
+-	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
++	struct kmem_cache_node *n = get_node(s, node(page));
+ 
+ 	ClearSlabFrozen(page);
+ 	if (page->inuse) {
+@@ -1463,7 +1469,7 @@ load_freelist:
+ 	c->freelist = object[c->offset];
+ 	c->page->inuse = s->objects;
+ 	c->page->freelist = NULL;
+-	c->node = page_to_nid(c->page);
++	c->node = node(c->page);
+ 	slab_unlock(c->page);
+ 	return object;
+ 
+@@ -1566,7 +1572,7 @@ void *kmem_cache_alloc(struct kmem_cache
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc);
+ 
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+ {
+ 	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
+@@ -1609,7 +1615,7 @@ checks_ok:
+ 	 * then add it.
+ 	 */
+ 	if (unlikely(!prior))
+-		add_partial(get_node(s, page_to_nid(page)), page);
++		add_partial(get_node(s, node(page)), page);
+ 
+ out_unlock:
+ 	slab_unlock(page);
+@@ -1979,7 +1985,7 @@ static inline int alloc_kmem_cache_cpus(
+ }
+ #endif
+ 
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ /*
+  * No kmalloc_node yet so do it by hand. We know that this is the first
+  * slab on the node for this slabcache. There are no concurrent accesses
+@@ -2202,7 +2208,7 @@ static int kmem_cache_open(struct kmem_c
+ 		goto error;
+ 
+ 	s->refcount = 1;
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ 	s->defrag_ratio = 100;
+ #endif
+ 
+@@ -2529,7 +2535,7 @@ void *__kmalloc(size_t size, gfp_t flags
+ }
+ EXPORT_SYMBOL(__kmalloc);
+ 
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ void *__kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+ 	struct kmem_cache *s;
+@@ -2683,7 +2689,7 @@ void __init kmem_cache_init(void)
+ 
+ 	init_alloc_cpu();
+ 
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ 	/*
+ 	 * Must first have the slab cache available for the allocations of the
+ 	 * struct kmem_cache_node's. There is special bootstrap code in
+@@ -2754,7 +2760,13 @@ void __init kmem_cache_init(void)
+ 		" CPUs=%d, Nodes=%d\n",
+ 		caches, cache_line_size(),
+ 		slub_min_order, slub_max_order, slub_min_objects,
+-		nr_cpu_ids, nr_node_ids);
++		nr_cpu_ids,
++#ifdef CONFIG_SLUB_NUMA
++		nr_node_ids
++#else
++		1
++#endif
++		);
+ }
+ 
+ /*
+@@ -3422,7 +3434,7 @@ static unsigned long slab_objects(struct
+ 	}
+ 
+ 	x = sprintf(buf, "%lu", total);
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ 	for_each_online_node(node)
+ 		if (nodes[node])
+ 			x += sprintf(buf + x, " N%d=%lu",
+@@ -3719,7 +3731,7 @@ static ssize_t free_calls_show(struct km
+ }
+ SLAB_ATTR_RO(free_calls);
+ 
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
+ {
+ 	return sprintf(buf, "%d\n", s->defrag_ratio / 10);
+@@ -3764,7 +3776,7 @@ static struct attribute * slab_attrs[] =
+ #ifdef CONFIG_ZONE_DMA
+ 	&cache_dma_attr.attr,
+ #endif
+-#ifdef CONFIG_NUMA
++#ifdef CONFIG_SLAB_NUMA
+ 	&defrag_ratio_attr.attr,
+ #endif
+ 	NULL
+Index: linux-2.6/init/Kconfig
+===================================================================
+--- linux-2.6.orig/init/Kconfig	2007-09-14 13:54:45.000000000 -0700
++++ linux-2.6/init/Kconfig	2007-09-14 13:54:56.000000000 -0700
+@@ -543,6 +543,7 @@ choice
+ 
+ config SLAB
+ 	bool "SLAB"
++	select SLAB_NUMA
+ 	help
+ 	  The regular slab allocator that is established and known to work
+ 	  well in all environments. It organizes cache hot objects in
+@@ -570,6 +571,19 @@ config SLOB
+ 
+ endchoice
+ 
++config SLAB_NUMA
++	depends on NUMA
++	bool "Slab NUMA Support"
++	default y
++	help
++	  Slab NUMA support allows NUMA aware slab operations. The
++	  NUMA logic creates overhead that may result in regressions on
++	  systems with a small number of nodes (such as multiple nodes
++	  on the same motherboard) but it may be essential for distributed
++	  NUMA systems with a high NUMA factor.
++	  WARNING: Disabling Slab NUMA support will disable all NUMA locality
++	  controls for slab objects.
++
+ endmenu		# General setup
+ 
+ config RT_MUTEXES
