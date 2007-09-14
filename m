@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbXINGCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbXINGGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbXINGCw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 02:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXINGCo
+	id S1754357AbXINGGu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 02:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbXINGGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 02:02:44 -0400
-Received: from nn7.de ([85.214.94.156]:33253 "EHLO nn7.de"
+	Fri, 14 Sep 2007 02:06:42 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55498 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbXINGCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 02:02:43 -0400
-Subject: Re: 2.6.22.6: kernel BUG at fs/locks.c:171
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-fsdevel@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200709130951.48194.nickpiggin@yahoo.com.au>
-References: <1189675222.5352.10.camel@localhost>
-	 <200709130951.48194.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 14 Sep 2007 08:02:34 +0200
-Message-Id: <1189749754.25045.10.camel@localhost>
+	id S1751356AbXINGGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 02:06:42 -0400
+Date: Fri, 14 Sep 2007 08:08:05 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Dan Aloni <da-x@monatomic.org>, Bernhard Walle <bwalle@suse.de>
+Subject: Re: [PATCH] Add ELF note with Linux version
+Message-ID: <20070914060805.GA32169@uranus.ravnborg.org>
+References: <20070904150018.GA4357@suse.de> <46DFD825.2020109@goop.org> <20070913144228.2efcd5d9.akpm@linux-foundation.org> <20070913221340.GA29181@uranus.ravnborg.org> <46E9BD3D.4050102@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46E9BD3D.4050102@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-13 at 09:51 +1000, Nick Piggin wrote:
-> On Thursday 13 September 2007 19:20, Soeren Sonnenburg wrote:
-> > Dear all,
+On Thu, Sep 13, 2007 at 03:44:13PM -0700, Jeremy Fitzhardinge wrote:
+> Sam Ravnborg wrote:
+> > I would rather see allt this ELFNOTE stuff reverted.
+> > It causes troubles for several archs and is at the moment
+> > being discussed at arm-kernel for example.
 > >
-> > I've just seen this in dmesg on a AMD K7 / kernel 2.6.22.6 machine
-> > (config attached).
-> >
-> > Any ideas / which further information needed ?
+> > Having it reverted and then applied when it is ready for all archs would
+> > be preferred.
+> >   
 > 
-> Thanks for the report. Is it reproduceable? It seems like the
-> locks_free_lock call that's oopsing is coming from __posix_lock_file.
-> The actual function looks fine, but the lock being freed could have
-> been corrupted if there was slab corruption, or a hardware corruption.
+> What problems does it cause on other archs?  It should be
+> cross-architecture.
 > 
-> You could: try running memtest86+ overnight. And try the following
-> patch and turn on slab debugging then try to reproduce the problem.
+> > On top of this I never understood the actual purpose of it...
+> 
+> It was originally there to put ELF notes into the vdso objects.  I'm
+> using it to create notes in vmlinux for Xen, and apparently people are
+> using it to put other metadata into their kernel images.
+>From a post on arm-kernel:
 
-OK so far I've run memtest86+ 1.40 from freedos for 8 hrs (v1.70 hung on
-startup) - nothing.
+> With build-id binutils (e.g. the latest bintuils 2.18), objcopy produces
+> a 3.1 Gbytes Image file.
 
-Could this corruption be caused by a pci card/driver? I am asking as I
-am using a new dvb-t card (asus p7131) and the oops happened after 5 or
-6 days of uptime just about a day after watching some movie (very bad
-reception/lots of errors). 
+This seems outright silly.
+Either we should revert the notes changes or someone caring about it 
+should sweep all archs and make sure it does not hurt there.
 
-However this machine used to have uptimes of months before the dvb card
-was in there and the kernel version upgrade (don't know which version
-that was...).
-
-Anyway I am not sure if this is reproducible, but I will keep memtest
-running today and then proceed as you said...
-
-Thanks,
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+	Sam
