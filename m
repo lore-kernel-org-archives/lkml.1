@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbXINWDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbXINWIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759288AbXINWDw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 18:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757299AbXINWDn
+	id S1759204AbXINWIg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 18:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbXINWI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 18:03:43 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:57605 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753457AbXINWDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 18:03:42 -0400
-Date: Sat, 15 Sep 2007 07:02:34 +0900
-To: stefanr@s5r6.in-berlin.de
-Cc: lsorense@csclub.uwaterloo.ca, james.bottomley@steeleye.com,
-       linux-scsi@vger.kernel.org, jeff@garzik.org, andi@firstfloor.org,
-       folkert@vanheusden.com, bunk@kernel.org, linux-kernel@vger.kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH update] SCSI: update Kconfig help text to indicate SCSI
- core's widespread usage
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <tkrat.0e73b94c1e80a481@s5r6.in-berlin.de>
-References: <20070914202102.GE5386@csclub.uwaterloo.ca>
-	<tkrat.f4379d6e5f1ce499@s5r6.in-berlin.de>
-	<tkrat.0e73b94c1e80a481@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 14 Sep 2007 18:08:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:40634 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755724AbXINWI3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 18:08:29 -0400
+Message-ID: <46EB0657.40603@codemonkey.ws>
+Date: Fri, 14 Sep 2007 17:08:23 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070830)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure
+References: <11897991353793-git-send-email-aliguori@us.ibm.com> <46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws> <46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws> <46EB02BA.6030909@goop.org>
+In-Reply-To: <46EB02BA.6030909@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070914031256T.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007 23:14:21 +0200 (CEST)
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+Jeremy Fitzhardinge wrote:
+> Anthony Liguori wrote:
+>   
+>> Yeah, see, the initial goal was to make it possible to use the KVM
+>> paravirtualizations on other hypervisors.  However, I don't think this
+>> is really going to be possible in general so maybe it's better to just
+>> use leaf 0.  I'll let others chime in before sending a new patch.
+>>     
+>
+> Hm.  Obviously you can just define a signature for "kvm-compatible
+> hypercall interface" and make it common that way, but it gets tricky if
+> the hypervisor supports multiple hypercall interfaces, including the kvm
+> one.  Start the kvm leaves at 0x40001000 or something?
+>   
 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
-> 
-> And one more update:
-> There is SAS too, and I forgot 'is' in "on a disk which __ accessed via".
-> 
->  drivers/scsi/Kconfig |   67 ++++++++++++++++++++++---------------------
->  1 file changed, 35 insertions(+), 32 deletions(-)
-> 
-> Index: linux-2.6.23-rc6/drivers/scsi/Kconfig
-> ===================================================================
-> --- linux-2.6.23-rc6.orig/drivers/scsi/Kconfig
-> +++ linux-2.6.23-rc6/drivers/scsi/Kconfig
-> @@ -12,23 +12,31 @@ config SCSI
->  	depends on BLOCK
->  	select SCSI_DMA if HAS_DMA
->  	---help---
-> -	  If you want to use a SCSI hard disk, SCSI tape drive, SCSI CD-ROM or
-> -	  any other SCSI device under Linux, say Y and make sure that you know
-> -	  the name of your SCSI host adapter (the card inside your computer
-> -	  that "speaks" the SCSI protocol, also called SCSI controller),
-> -	  because you will be asked for it.
-> -
-> -	  You also need to say Y here if you have a device which speaks
-> -	  the SCSI protocol.  Examples of this include the parallel port
-> -	  version of the IOMEGA ZIP drive, USB storage devices, Fibre
-> -	  Channel, FireWire storage and the IDE-SCSI emulation driver.
-> +	  This option enables core support for SCSI protocols.
-> +	  You need it
-> +	  - for classic parallel SCSI hardware,
-> +	  - for newer SCSI transports such as Fibre Channel, FireWire storage,
-> +	    SAS, or iSCSI,
+Yeah, that works with me.
 
-There is SRP too.
+Regards,
+
+Anthony Liguori
+
+>     J
+>
+>   
+
