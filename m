@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760334AbXINOuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763789AbXINOzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760334AbXINOuD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:50:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbXINOty
+	id S1763789AbXINOzc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXINOzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:49:54 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4534 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752881AbXINOtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:49:53 -0400
-Date: Fri, 14 Sep 2007 16:50:22 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] CFS-devel, performance improvements
-In-Reply-To: <20070914162641.197913c2@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0709141630320.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home>
- <20070913075258.GA9173@elte.hu> <Pine.LNX.4.64.0709131419170.1817@scrub.home>
- <20070913142842.GA26016@elte.hu> <Pine.LNX.4.64.0709131706100.1817@scrub.home>
- <20070914162641.197913c2@laptopd505.fenrus.org>
+	Fri, 14 Sep 2007 10:55:22 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39467 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbXINOzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 10:55:20 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46EAA08F.30703@s5r6.in-berlin.de>
+Date: Fri, 14 Sep 2007 16:54:07 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Bunk <bunk@kernel.org>
+CC: Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de>
+In-Reply-To: <20070912224655.GC3563@stusta.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Adrian Bunk wrote:
+> On Sun, Sep 09, 2007 at 05:11:44PM -0400, Jeff Garzik wrote:
+>> Let's step back a moment and consider the actual scale and impact of the 
+>> problem at hand.
+>>
+>> The vast majority of users are consumers of pre-compiled kernels, built by 
+>> People With Clue(tm), who figured this stuff out as soon as it was 
+>> introduced.
+[...]
+> In my experience, the vast majority of kconfig users are not the few 
+> people working on distribution kernels, most of the kconfig userbase 
+> could be better described by the use case "sysadmin who knows about the 
+> hardware in his machine and which filesystems he uses".
 
-On Fri, 14 Sep 2007, Arjan van de Ven wrote:
-
-> > This is ridiculous, I asked you multiple times to explain to me some
-> > of the differences relative to CFS as response to the splitup
-> > requests. Not once did you react, you didn't even ask what I'd like
-> > to know specifically.
-> 
-> Roman,
-> 
-> this is... a strange comment. It almost sounds like you were holding
-> the splitup hostage depending on some other thing happening.... that's
-> not a good attitude in my book. Having big-blob patches that do many
-> things at the same time leads to them being impossible to apply. Linux
-> works by having smaller incrementals. You know that; you've been around
-> for a long time.
-
-There is actually a very simple reason for that, the actual patch is not
-my primary focus, for me it's actually more an afterthought of the actual 
-design to show that it actually works.
-My primary interest is a _discussion_ of the scheduler design, but Ingo 
-insists on patches. Sorry, but I don't really work this way, I want to 
-think things through _first_, I need a solid concept and I don't like to 
-rely on guesswork.
-
-How much response would I have gotten if I had only posted the example 
-program and the math description as I initially planned?
-
-bye, Roman
+The patch which is discussed here is specifically targeted towards users
+who are convinced that they can migrate to different drivers without
+reading Kconfig help texts.
+-- 
+Stefan Richter
+-=====-=-=== =--= -===-
+http://arcgraph.de/sr/
