@@ -1,204 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbXINJaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbXINJeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753052AbXINJaY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 05:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXINJaK
+	id S1754216AbXINJeS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 05:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbXINJeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 05:30:10 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50665 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbXINJaH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 05:30:07 -0400
-Message-Id: <20070914093533.222891000@bull.net>
-References: <20070914093428.934490000@bull.net>
-User-Agent: quilt/0.45-1
-Date: Fri, 14 Sep 2007 11:34:29 +0200
-From: Nadia.Derbey@bull.net
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, matthltc@us.ibm.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [PATCH -mm1] Storing ipcs into IDRs
-Content-Disposition: inline; filename=ipc_casts_to_containerof.patch
+	Fri, 14 Sep 2007 05:34:09 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:27890 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751804AbXINJeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 05:34:07 -0400
+Date: Fri, 14 Sep 2007 11:33:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Laurent Riffard <laurent.riffard@free.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Peter Osterlund <petero2@telia.com>
+Subject: Re: 2.6.23-rc4-mm1: git-block.patch broke pktcdvd
+Message-ID: <20070914093358.GB25592@kernel.dk>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <46E5A6D1.3050704@free.fr> <46E9BEB1.3060504@free.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46E9BEB1.3060504@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts casts of struct kern_ipc_perm to
-   . struct msg_queue
-   . struct sem_array
-   . struct shmid_kernel
-into the equivalent container_of() macro. It improves code maintenance
-because the code need not change if kern_ipc_perm is no longer at the
-beginning of the containing struct.
+On Fri, Sep 14 2007, Laurent Riffard wrote:
+> Le 10.09.2007 22:19, Laurent Riffard a écrit :
+> > Le 01.09.2007 06:58, Andrew Morton a écrit :
+> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+> > [...]
+> > 
+> > Jens,
+> > 
+> > git-block.patch broke pktcdvd, I've got an Oops while syncing:
+> > 
+> >>  [  713.014888] pktcdvd: Fixed packets, 16 blocks, Mode-1 disc
+> >>  [  713.021844] pktcdvd: write speed 2770kB/s
+> >>  [  718.401761] pktcdvd: 4595774kB available on disc
+> >>  [  721.175644] UDF-fs INFO UDF 0.9.8.1 (2004/29/09) Mounting volume 'LinuxUDF', timestamp 2006/10/08 21:17 (1078)
+> >>  [  721.213784] mount used greatest stack depth: 460 bytes left
+> >>  [  752.634402] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
+> >>  [  752.635711] printing eip: c017b69e *pde = 00000000 
+> >>  [  752.636983] Oops: 0002 [#1] PREEMPT 
+> >>  [  752.638240] last sysfs file: /devices/pci0000:00/0000:00:0d.0/modalias
+> >>  [  752.639477] Modules linked in: udf binfmt_misc pktcdvd radeon drm lp nls_iso8859_1 nls_cp850 vfat fat reiser4 lzo_decompress lzo_compress eeprom w83781d hwmon_vid snd_ens1371 gameport snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm sg firewire_ohci firewire_core sr_mod cdrom crc_itu_t snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device snd 8250_pnp i2c_viapro via_agp floppy ohci1394 soundcore 8250 serial_core ata_generic uhci_hcd agpgart ne2k_pci 8390 ieee1394 snd_page_alloc rtc pcspkr via686a usbcore parport_pc parport evdev reiserfs sd_mod pata_via libata scsi_mod dm_mirror dm_mod
+> >>  [  752.645759] 
+> >>  [  752.646990] Pid: 3403, comm: pktcdvd0 Not tainted (2.6.23-rc4-mm1 #50)
+> >>  [  752.648256] EIP: 0060:[__bio_add_page+212/355] EFLAGS: 00010246 CPU: 0
+> >>  [  752.649515] EIP is at __bio_add_page+0xd4/0x163
+> >>  [  752.650750] EAX: 00000000 EBX: 00000000 ECX: c26ca400 EDX: 00000000
+> >>  [  752.651984] ESI: cba3cf48 EDI: c1174be0 EBP: cb01cef4 ESP: cb01cee4
+> >>  [  752.653219]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> >>  [  752.654446] Process pktcdvd0 (pid: 3403, ti=cb01c000 task=c1b9cdb0 task.ti=cb01c000)
+> >>  [  752.654526] Stack: c26ca400 cba3cf48 c1174be0 00000001 cb01cf10 c017b763 00000800 00000800 
+> >>  [  752.655908]        00000040 cba3cf48 cb06e120 cb01cfd0 e1d94044 00000800 00000004 cb09b8a0 
+> >>  [  752.657297]        c1853ce0 00000000 00000800 00000001 00000000 00000000 00000000 00000000 
+> >>  [  752.658695] Call Trace:
+> >>  [  752.661126]  [show_trace_log_lvl+26/47] show_trace_log_lvl+0x1a/0x2f
+> >>  [  752.662383]  [show_stack_log_lvl+155/163] show_stack_log_lvl+0x9b/0xa3
+> >>  [  752.663626]  [show_registers+160/482] show_registers+0xa0/0x1e2
+> >>  [  752.664868]  [die+261/567] die+0x105/0x237
+> >>  [  752.666072]  [do_page_fault+1127/1349] do_page_fault+0x467/0x545
+> >>  [  752.667274]  [error_code+106/112] error_code+0x6a/0x70
+> >>  [  752.668477]  [bio_add_page+54/61] bio_add_page+0x36/0x3d
+> >>  [  752.669669]  [<e1d94044>] kcdrwd+0x5a5/0x9ba [pktcdvd]
+> >>  [  752.670856]  [kthread+57/97] kthread+0x39/0x61
+> >>  [  752.672024]  [kernel_thread_helper+7/16] kernel_thread_helper+0x7/0x10
+> >>  [  752.673197]  =======================
+> >>  [  752.674336] Code: ba 01 00 00 00 8b 4d f0 8b 46 18 66 3b 81 50 01 00 00 73 da 66 8b 46 1a 66 3b 81 52 01 00 00 73 cd 0f 
+> >> b7 46 14 6b d8 0c 03 5e 2c <89> 3b 8b 45 08 89 43 04 8b 4d 0c 89 4b 08 8b 45 f0 8b 78 68 85 
+> >>  [  752.677879] EIP: [__bio_add_page+212/355] __bio_add_page+0xd4/0x163 SS:ESP 0068:cb01cee4
+> 
+> I dig through git-block.patch and the culprit seems to be commit
+> c94f1c4ac87862675c8d70941973bc3a69aff5d8 "bio: use memset() in
+> bio_init()".
+> 
+> Maybe the real bug is a bad bio initialization in pktcdvd driver,
+> which is revealed by this commit ?
 
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+At least pktcdvd doesn't expect bio->bi_io_vec[] to be cleared, that's
+why it's oopsing now. I'll revert this bit for now, thanks for the
+report.
 
----
+-- 
+Jens Axboe
 
-This patch applies on top of 2.6.23-rc4-mm1 + the previous IPC patches.
-Hopefully this will make review and application easier for anyone already
-familiar with this series.
-
-
-
- ipc/msg.c  |   14 ++++++++++----
- ipc/sem.c  |   23 +++++++++++++++++------
- ipc/shm.c  |   23 +++++++++++++++++------
- ipc/util.h |    4 ++--
- 4 files changed, 46 insertions(+), 18 deletions(-)
-
-Index: linux-2.6.23-rc4-mm1/ipc/msg.c
-===================================================================
---- linux-2.6.23-rc4-mm1.orig/ipc/msg.c	2007-09-13 14:04:28.000000000 +0200
-+++ linux-2.6.23-rc4-mm1/ipc/msg.c	2007-09-13 14:11:43.000000000 +0200
-@@ -138,13 +138,17 @@ void __init msg_init(void)
- 
- static inline struct msg_queue *msg_lock(struct ipc_namespace *ns, int id)
- {
--	return (struct msg_queue *) ipc_lock(&msg_ids(ns), id);
-+	struct kern_ipc_perm *ipcp = ipc_lock(&msg_ids(ns), id);
-+
-+	return container_of(ipcp, struct msg_queue, q_perm);
- }
- 
- static inline struct msg_queue *msg_lock_check(struct ipc_namespace *ns,
- 						int id)
- {
--	return (struct msg_queue *) ipc_lock_check(&msg_ids(ns), id);
-+	struct kern_ipc_perm *ipcp = ipc_lock_check(&msg_ids(ns), id);
-+
-+	return container_of(ipcp, struct msg_queue, q_perm);
- }
- 
- static inline void msg_rmid(struct ipc_namespace *ns, struct msg_queue *s)
-@@ -274,9 +278,11 @@ static void freeque(struct ipc_namespace
- 	ipc_rcu_putref(msq);
- }
- 
--static inline int msg_security(void *msq, int msgflg)
-+static inline int msg_security(struct kern_ipc_perm *ipcp, int msgflg)
- {
--	return security_msg_queue_associate((struct msg_queue *) msq, msgflg);
-+	struct msg_queue *msq = container_of(ipcp, struct msg_queue, q_perm);
-+
-+	return security_msg_queue_associate(msq, msgflg);
- }
- 
- asmlinkage long sys_msgget(key_t key, int msgflg)
-Index: linux-2.6.23-rc4-mm1/ipc/sem.c
-===================================================================
---- linux-2.6.23-rc4-mm1.orig/ipc/sem.c	2007-09-13 14:04:28.000000000 +0200
-+++ linux-2.6.23-rc4-mm1/ipc/sem.c	2007-09-13 14:16:30.000000000 +0200
-@@ -176,13 +176,17 @@ void __init sem_init (void)
- 
- static inline struct sem_array *sem_lock(struct ipc_namespace *ns, int id)
- {
--	return (struct sem_array *) ipc_lock(&sem_ids(ns), id);
-+	struct kern_ipc_perm *ipcp = ipc_lock(&sem_ids(ns), id);
-+
-+	return container_of(ipcp, struct sem_array, sem_perm);
- }
- 
- static inline struct sem_array *sem_lock_check(struct ipc_namespace *ns,
- 						int id)
- {
--	return (struct sem_array *) ipc_lock_check(&sem_ids(ns), id);
-+	struct kern_ipc_perm *ipcp = ipc_lock_check(&sem_ids(ns), id);
-+
-+	return container_of(ipcp, struct sem_array, sem_perm);
- }
- 
- static inline void sem_rmid(struct ipc_namespace *ns, struct sem_array *s)
-@@ -277,14 +281,21 @@ static int newary(struct ipc_namespace *
- }
- 
- 
--static inline int sem_security(void *sma, int semflg)
-+static inline int sem_security(struct kern_ipc_perm *ipcp, int semflg)
- {
--	return security_sem_associate((struct sem_array *) sma, semflg);
-+	struct sem_array *sma;
-+
-+	sma = container_of(ipcp, struct sem_array, sem_perm);
-+	return security_sem_associate(sma, semflg);
- }
- 
--static inline int sem_more_checks(void *sma, struct ipc_params *params)
-+static inline int sem_more_checks(struct kern_ipc_perm *ipcp,
-+				struct ipc_params *params)
- {
--	if (params->u.nsems > ((struct sem_array *)sma)->sem_nsems)
-+	struct sem_array *sma;
-+
-+	sma = container_of(ipcp, struct sem_array, sem_perm);
-+	if (params->u.nsems > sma->sem_nsems)
- 		return -EINVAL;
- 
- 	return 0;
-Index: linux-2.6.23-rc4-mm1/ipc/shm.c
-===================================================================
---- linux-2.6.23-rc4-mm1.orig/ipc/shm.c	2007-09-13 14:04:28.000000000 +0200
-+++ linux-2.6.23-rc4-mm1/ipc/shm.c	2007-09-13 14:19:51.000000000 +0200
-@@ -139,13 +139,17 @@ void __init shm_init (void)
- 
- static inline struct shmid_kernel *shm_lock(struct ipc_namespace *ns, int id)
- {
--	return (struct shmid_kernel *) ipc_lock(&shm_ids(ns), id);
-+	struct kern_ipc_perm *ipcp = ipc_lock(&shm_ids(ns), id);
-+
-+	return container_of(ipcp, struct shmid_kernel, shm_perm);
- }
- 
- static inline struct shmid_kernel *shm_lock_check(struct ipc_namespace *ns,
- 						int id)
- {
--	return (struct shmid_kernel *) ipc_lock_check(&shm_ids(ns), id);
-+	struct kern_ipc_perm *ipcp = ipc_lock_check(&shm_ids(ns), id);
-+
-+	return container_of(ipcp, struct shmid_kernel, shm_perm);
- }
- 
- static inline void shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *s)
-@@ -424,14 +428,21 @@ no_file:
- 	return error;
- }
- 
--static inline int shm_security(void *shp, int shmflg)
-+static inline int shm_security(struct kern_ipc_perm *ipcp, int shmflg)
- {
--	return security_shm_associate((struct shmid_kernel *) shp, shmflg);
-+	struct shmid_kernel *shp;
-+
-+	shp = container_of(ipcp, struct shmid_kernel, shm_perm);
-+	return security_shm_associate(shp, shmflg);
- }
- 
--static inline int shm_more_checks(void *shp, struct ipc_params *params)
-+static inline int shm_more_checks(struct kern_ipc_perm *ipcp,
-+				struct ipc_params *params)
- {
--	if (((struct shmid_kernel *)shp)->shm_segsz < params->u.size)
-+	struct shmid_kernel *shp;
-+
-+	shp = container_of(ipcp, struct shmid_kernel, shm_perm);
-+	if (shp->shm_segsz < params->u.size)
- 		return -EINVAL;
- 
- 	return 0;
-Index: linux-2.6.23-rc4-mm1/ipc/util.h
-===================================================================
---- linux-2.6.23-rc4-mm1.orig/ipc/util.h	2007-09-13 14:04:28.000000000 +0200
-+++ linux-2.6.23-rc4-mm1/ipc/util.h	2007-09-13 14:20:44.000000000 +0200
-@@ -61,8 +61,8 @@ struct ipc_params {
-  */
- struct ipc_ops {
- 	int (*getnew) (struct ipc_namespace *, struct ipc_params *);
--	int (*associate) (void *, int);
--	int (*more_checks) (void *, struct ipc_params *);
-+	int (*associate) (struct kern_ipc_perm *, int);
-+	int (*more_checks) (struct kern_ipc_perm *, struct ipc_params *);
- };
- 
- struct seq_file;
-
---
