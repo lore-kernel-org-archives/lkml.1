@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbXINQ3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbXINQbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbXINQ3o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbXINQ3f
+	id S1755909AbXINQbU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbXINQbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:29:35 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42567 "EHLO mail.dvmed.net"
+	Fri, 14 Sep 2007 12:31:09 -0400
+Received: from ozlabs.org ([203.10.76.45]:35389 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbXINQ3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:29:35 -0400
-Message-ID: <46EAB6E8.2070702@garzik.org>
-Date: Fri, 14 Sep 2007 12:29:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1751066AbXINQbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 12:31:07 -0400
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: James Bottomley <james.bottomley@steeleye.com>, linux-scsi@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SCSI: update Kconfig help text to indicate SCSI core's
- widespread usage
-References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.d922469e152fe0f3@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Message-ID: <18154.46896.578938.642491@cargo.ozlabs.ibm.com>
+Date: Sat, 15 Sep 2007 02:30:40 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: akpm@osdl.org, Greg KH <greg@kroah.com>, muli@il.ibm.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       kristen.c.accardi@intel.com
+Subject: Re: [patch][Intel-IOMMU] Fix for IOMMU early crash
+In-Reply-To: <20070913012952.GA958@askeshav-devel.jf.intel.com>
+References: <20070908200523.GA16204@askeshav-devel.jf.intel.com>
+	<18148.12140.21118.252581@cargo.ozlabs.ibm.com>
+	<20070911174231.GC24627@askeshav-devel.jf.intel.com>
+	<20070912192854.GA32610@askeshav-devel.jf.intel.com>
+	<18150.61732.490669.269794@cargo.ozlabs.ibm.com>
+	<20070913012952.GA958@askeshav-devel.jf.intel.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
-> 
-> Applicable to 2.6.23-rc6 and to scsi-misc.
-> 
->  drivers/scsi/Kconfig |   32 ++++++++++++++++++++------------
->  1 file changed, 20 insertions(+), 12 deletions(-)
+Keshavamurthy, Anil S writes:
 
-ACK
+> Can I expect the ppc64 code changes from you? 
+> Once I get your, I will merge with mine and post it again.
 
+Sure, but it will be next week, since I am travelling this week.
 
+Paul.
