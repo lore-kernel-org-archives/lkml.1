@@ -1,169 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760499AbXINC0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbXINChc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760499AbXINC0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 22:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXINC0f
+	id S1761063AbXINChc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 22:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbXINChY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 22:26:35 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:19983 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbXINC0e (ORCPT
+	Thu, 13 Sep 2007 22:37:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44402 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750814AbXINChW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 22:26:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=JO1P3ZsJsnjQapdlWRx3MXFwS3Wgz1wP3kXyjFfN6jsVfo94QtF6ZoIu7uM677jtXwrmXCiRQISWWIVufeLU7IqRBoGYYs26GTASsYbWpHA4twNtJutV4Kn741Lv/e6xQfT+ztTsL503UYtnK4PfpHugnqjg5DC7gZXryQ7wM/U=
-Message-ID: <6b8cef970709131926h59a4cb38j64c7614bd41d2dbd@mail.gmail.com>
-Date: Thu, 13 Sep 2007 22:26:33 -0400
-From: "Rob Hussey" <robjhussey@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [announce] CFS-devel, performance improvements
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <6b8cef970709131847r770ad338tcfbbad90377a4115@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_24964_5154588.1189736793334"
-References: <20070911200459.GA6974@elte.hu>
-	 <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com>
-	 <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com>
-	 <20070913090655.GA28505@elte.hu>
-	 <6b8cef970709130224t2f8d28d4mdfbf22ba10b42497@mail.gmail.com>
-	 <20070913093137.GA31923@elte.hu>
-	 <6b8cef970709130236o48e4d923ofe4ad862c749f2da@mail.gmail.com>
-	 <20070913114828.GA28339@elte.hu>
-	 <6b8cef970709131847r770ad338tcfbbad90377a4115@mail.gmail.com>
+	Thu, 13 Sep 2007 22:37:22 -0400
+Date: Thu, 13 Sep 2007 19:37:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] mm: use pagevec to rotate reclaimable page
+Message-Id: <20070913193711.ecc825f7.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20070907113025.024dfbb8@172.19.0.2>
+References: <6.0.0.20.2.20070907113025.024dfbb8@172.19.0.2>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_24964_5154588.1189736793334
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 11 Sep 2007 18:31:12 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-On 9/13/07, Rob Hussey <robjhussey@gmail.com> wrote:
-> Bound to single core:
-...
-> hackbench 50
-> #  rc1   rc6   cfs-devel
-> 1  7.528 7.950 7.538
-> 2  7.649 8.026 7.548
-> 3  7.613 8.160 7.580
-> 4  7.550 8.054 7.558
-> 5  7.563 8.373 7.559
-> 6  7.617 8.152 7.550
-> 7  7.593 7.831 7.562
-> 8  7.602 8.311 7.588
-> 9  7.589 8.010 7.552
-> 10 7.682 8.059 7.556
->
+> Hi.
+> While running some memory intensive load, system response
+> deteriorated just after swap-out started.
+> 
+> The cause of this problem is that when a PG_reclaim page is
+> moved to the tail of the inactive LRU list in rotate_reclaimable_page(),
+> lru_lock spin lock is acquired every page writeback . This deteriorates
+> system performance and makes interrupt hold off time longer when
+> swap-out started.
+> 
+> Following patch solves this problem. I use pagevec in rotating reclaimable
+> pages to mitigate LRU spin lock contention and reduce interrupt
+> hold off time.
+> 
+> I did a test that allocating and touching pages in multiple processes, and
+> pinging to the test machine in flooding mode to measure response under
+> memory intensive load.
+> The test result is:
+> 
+> 	-2.6.23-rc5
+> 	--- testmachine ping statistics ---
+> 	3000 packets transmitted, 3000 received, 0% packet loss, time 53222ms
+> 	rtt min/avg/max/mdev = 0.074/0.652/172.228/7.176 ms, pipe 11, ipg/ewma 
+> 17.746/0.092 ms
+> 
+> 	-2.6.23-rc5-patched
+> 	--- testmachine ping statistics ---
+> 	3000 packets transmitted, 3000 received, 0% packet loss, time 51924ms
+> 	rtt min/avg/max/mdev = 0.072/0.108/3.884/0.114 ms, pipe 2, ipg/ewma 
+> 17.314/0.091 ms
+> 
+> Max round-trip-time was improved.
+> 
+> The test machine spec is that 4CPU(3.16GHz, Hyper-threading enabled)
+> 8GB memory , 8GB swap.
+> 
 
-I knew there was no way I'd post all these numbers and not screw
-something up. Switch rc6 and rc1 for hackbench 50 (bound to single
-core). Updated graph:
-http://www.healthcarelinen.com/misc/BOUND_hackbench_benchmark_fixed.png
+Perfect changelog, thanks.  It really helps everyone.
 
-Also attached.
+> 
+> diff -Nrup linux-2.6.23-rc5.org/include/linux/swap.h 
+> linux-2.6.23-rc5/include/linux/swap.h
+> --- linux-2.6.23-rc5.org/include/linux/swap.h	2007-09-06 18:44:06.000000000 +0900
+> +++ linux-2.6.23-rc5/include/linux/swap.h	2007-09-06 18:45:28.000000000 +0900
+> @@ -185,6 +185,7 @@ extern void FASTCALL(mark_page_accessed(
+>   extern void lru_add_drain(void);
+>   extern int lru_add_drain_all(void);
+>   extern int rotate_reclaimable_page(struct page *page);
+> +extern void move_tail_pages(void);
+>   extern void swap_setup(void);
 
-------=_Part_24964_5154588.1189736793334
-Content-Type: image/png; name="BOUND_hackbench_benchmark_fixed.png"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="BOUND_hackbench_benchmark_fixed.png"
-X-Attachment-Id: f_f6k2jyra
+Your email client performs space-stuffing.  That means the recipient needs
+to do s/^ / /g to apply the patch.
 
-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
-AAAA/vkHB1Uz9YPv+8wAAAAASUVORK5CYII=
-------=_Part_24964_5154588.1189736793334--
+>   /* linux/mm/vmscan.c */
+> diff -Nrup linux-2.6.23-rc5.org/mm/swap.c linux-2.6.23-rc5/mm/swap.c
+> --- linux-2.6.23-rc5.org/mm/swap.c	2007-07-09 08:32:17.000000000 +0900
+> +++ linux-2.6.23-rc5/mm/swap.c	2007-09-06 18:45:28.000000000 +0900
+> @@ -93,25 +93,56 @@ void put_pages_list(struct list_head *pa
+>   }
+>   EXPORT_SYMBOL(put_pages_list);
+> 
+> +static void pagevec_move_tail(struct pagevec *pvec)
+> +{
+> +	int i;
+> +	struct zone *zone = NULL;
+> +	unsigned long flags = 0;
+> +
+> +	for (i = 0; i < pagevec_count(pvec); i++) {
+> +		struct page *page = pvec->pages[i];
+> +		struct zone *pagezone = page_zone(page);
+> +
+> +		if (!PageLRU(page) || !page_count(page))
+> +			continue;
+> +
+> +		if (pagezone != zone) {
+> +			if (zone)
+> +				spin_unlock_irqrestore(&zone->lru_lock, flags);
+> +			zone = pagezone;
+> +			spin_lock_irqsave(&zone->lru_lock, flags);
+> +		}
+> +		if (PageLRU(page) && !PageActive(page) && page_count(page)) {
+> +			list_move_tail(&page->lru, &zone->inactive_list);
+> +			__count_vm_event(PGROTATED);
+> +		}
+> +	}
+> +	if (zone)
+> +		spin_unlock_irqrestore(&zone->lru_lock, flags);
+> +	pagevec_reinit(pvec);
+> +}
+
+I really don't like the games we play with page refcounts here.  By the
+time we consider a page, that page could have been freed and could be
+reused for any purpose whatever.  We don't have any business playing around
+with the page's internal state when we're unsure of what it is being used
+for.
+
+Nick is the guy who skates on thin ice.  If you join him, we all drown ;)
+
+> +static DEFINE_PER_CPU(struct pagevec, rotate_pvecs) = { 0, };
+> +
+> +void move_tail_pages()
+> +{
+> +	struct pagevec *pvec = &per_cpu(rotate_pvecs, get_cpu());
+> +
+> +	if (pagevec_count(pvec))
+> +		pagevec_move_tail(pvec);
+> +	put_cpu();
+> +}
+> +
+>   /*
+>    * Writeback is about to end against a page which has been marked for immediate
+>    * reclaim.  If it still appears to be reclaimable, move it to the tail of the
+> - * inactive list.  The page still has PageWriteback set, which will pin it.
+> - *
+> - * We don't expect many pages to come through here, so don't bother batching
+> - * things up.
+> - *
+> - * To avoid placing the page at the tail of the LRU while PG_writeback is still
+> - * set, this function will clear PG_writeback before performing the page
+> - * motion.  Do that inside the lru lock because once PG_writeback is cleared
+> - * we may not touch the page.
+> + * inactive list.
+>    *
+>    * Returns zero if it cleared PG_writeback.
+>    */
+>   int rotate_reclaimable_page(struct page *page)
+>   {
+> -	struct zone *zone;
+> -	unsigned long flags;
+> +	struct pagevec *pvec;
+> 
+>   	if (PageLocked(page))
+>   		return 1;
+> @@ -122,15 +153,16 @@ int rotate_reclaimable_page(struct page
+>   	if (!PageLRU(page))
+>   		return 1;
+> 
+> -	zone = page_zone(page);
+> -	spin_lock_irqsave(&zone->lru_lock, flags);
+> -	if (PageLRU(page) && !PageActive(page)) {
+> -		list_move_tail(&page->lru, &zone->inactive_list);
+> -		__count_vm_event(PGROTATED);
+> -	}
+>   	if (!test_clear_page_writeback(page))
+>   		BUG();
+> -	spin_unlock_irqrestore(&zone->lru_lock, flags);
+> +
+> +	if (PageLRU(page) && !PageActive(page) && page_count(page)) {
+
+The page_count() test here is a bit of a worry, too.  Why do we need it? 
+The caller must have pinned the page in some fashion else we couldn't use
+it safely in this function at all.
+
+I assume that you discovered that once we've cleared PageWriteback(), the
+page can get reclaimed elsewhere?  If so, that could still happen
+immediately after the page_count() test.  It's all a bit of a worry. 
+Deferring the ClearPageWriteback() will fix any race concerns, but I do
+think that we need to take a ref on the page for the pagevec ownership.
+
+> 
+> +	move_tail_pages();
+>   	lru_add_drain();
+>   	spin_lock_irq(&zone->lru_lock);
+>   	do { 
+
+The tricky part will be working out whether you've found all the places
+which need to have move_tail_pages() added to them.
+
+pagevec_move_tail() needs a comment explaining that it must be called with
+preemption disabled.  Otherwise it has nasty races.
+
+Actually, given that pagevec_move_tail() is called from both interrupt and
+non-interrupt context, I guess that it needs local_irq_save() protection as
+well.  In which case the preempt_disable() and preempt_enable() in
+move_tail_pages() can be optimised away (use local_irq_save() and
+__get_cpu_var()).
+
+
+
+So I do think that for safety and sanity's sake, we should be taking a ref
+on the pages when they are in a pagevec.  That's going to hurt your nice
+performance numbers :(
+
+Please consider doing a single call to __count_vm_events() in
+pagevec_move_tail(), instead of multiple calls to __count_vm_event().
+
+It's a bit of a concern that we can have ((num_online_cpus - 1) *
+PAGEVEC_SIZE) pages outstanding in the other CPU's pagevecs.  But I _guess_
+that'll be OK - it's a relatively small number of pages.
+
+What happens during cpu hot-unplug?  If we take a ref on the pageved'ed
+pages then we have pages stranded in the now-unplugged cpu's pagevec? 
+Might need a hotplug notifier for that.
+
+Memory hot-unplug?  What happens if we have pointers to hot-unplugged pages
+in some cpu's pagevec?  Nothing, I guess.
+
+
+
+Historical note on pagevecs: like just about everything else in page
+reclaim, this is primarily an IO scheduling problem (if rotating disks ever
+become obsolete, we get to throw out a huge amount of stuff).
+
+When I first did the pagevec batching code I found that pageout was doing
+increased amounts of disk seeking.  This was because a few pages were
+getting stranded in the per-cpu pagevecs on "other" CPUs.  So pageout on
+"this" CPU was doing large writes with small "holes" in them (small
+problem).  But later, when the "other" CPU's pagevec was spilled, we ended
+up with pages on the LRU which were dirty, but which were no longer
+close-on-disk to any other dirty pages.  IOW: hiding dirty pages in the
+per-cpu pagevecs was deoptimising IO patterns coming out of page reclaim. 
+So lru_add_drain() got added and calls to it were sprinkled around the
+place.
+
+That's just an fyi.  I doubt if similar problems will occur with your
+change, because these pages are clean.
+
+
