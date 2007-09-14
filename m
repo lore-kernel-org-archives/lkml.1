@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbXINSpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbXINSuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756583AbXINSpk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 14:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbXINSpT
+	id S1757176AbXINSuz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 14:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXINSus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 14:45:19 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47165 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753531AbXINSpP (ORCPT
+	Fri, 14 Sep 2007 14:50:48 -0400
+Received: from mga03.intel.com ([143.182.124.21]:39634 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751240AbXINSur convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 14:45:15 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46EAD68C.5020809@s5r6.in-berlin.de>
-Date: Fri, 14 Sep 2007 20:44:28 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Fri, 14 Sep 2007 14:50:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,256,1186383600"; 
+   d="scan'208";a="279126028"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-CC: Helge Hafting <helge.hafting@aitel.hist.no>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-References: <20070907124800.GP16806@vanheusden.com>	<20070907083522.3191a4ba.randy.dunlap@oracle.com>	<46E8F9D4.10307@aitel.hist.no> <87myvpqjvp.fsf@informatik.uni-tuebingen.de>
-In-Reply-To: <87myvpqjvp.fsf@informatik.uni-tuebingen.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: cpu hotplug support broken in 2.6.23-rc3
+Date: Fri, 14 Sep 2007 11:49:17 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F501619542@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <1189774257.3100.7.camel@chaos>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: cpu hotplug support broken in 2.6.23-rc3
+Thread-Index: Acf2zpBmzbaAG8UATK+sJyzaHAxZqQAMSKDw
+References: <20070827104350.GA2073@elf.ucw.cz> <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com> <20070903034720.GB3655@ucw.cz> <200709031219.12846.rjw@sisk.pl> <1188822917.3406.0.camel@chaos> <20070904072744.GA30474@atrey.karlin.mff.cuni.cz> <1189713695.3974.23.camel@chaos>  <20070914123816.GE1671@elf.ucw.cz> <1189774257.3100.7.camel@chaos>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>, "Pavel Machek" <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Jeff Chua" <jeff.chua.linux@gmail.com>,
+       <rusty@rustycorp.com.au>, <vatsa@in.ibm.com>, <zwane@arm.linux.org.uk>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Len Brown" <lenb@kernel.org>
+X-OriginalArrivalTime: 14 Sep 2007 18:50:31.0724 (UTC) FILETIME=[204BAEC0:01C7F700]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Goswin von Brederlow wrote:
-> Helge Hafting <helge.hafting@aitel.hist.no> writes:
->> Randy Dunlap wrote:
->>>   NOTE: ATA enables basic SCSI support; *however*,
->>>   'SCSI disk support', 'SCSI tape support', or
->>>   'SCSI CDROM support' may also be needed,
->>>   depending on your hardware configuration.
-> 
-> Could one duplicate the configure options for scsi disk/tape/cdrom at
-> that place?
+ 
 
-Yes, e.g. like in http://lkml.org/lkml/2007/9/8/9.
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org 
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
+>Thomas Gleixner
+>Sent: Friday, September 14, 2007 5:51 AM
+>To: Pavel Machek
+>Cc: Rafael J. Wysocki; Jeff Chua; rusty@rustycorp.com.au; 
+>vatsa@in.ibm.com; zwane@arm.linux.org.uk; kernel list; Len Brown
+>Subject: Re: cpu hotplug support broken in 2.6.23-rc3
+>
+>Pavel,
+>
+>On Fri, 2007-09-14 at 14:38 +0200, Pavel Machek wrote:
+>> > I have an yet untested fix, which preserves the broadcast 
+>state across
+>> > the offline state, but Len is looking into it as well, 
+>whether we can
+>> > just reevaluate the power states (and the broadcast flags) 
+>when a cpu
+>> > becomes online again. If Len can do that easily for 
+>2.6.23, I'd prefer
+>> > that.
+>> 
+>> Is there a patch you want me to test? Or does Len have anything to
+>> play with?
+>
+>Venki sent me an initial patch, but it has issues with the notify
+>ordering. Find below my "cache the broadcast flags" version 
+>for testing.
+>
 
-> The text should then probably read SCSI/SATA disk support in both places.
+While wirting that patch, I knew solution could not be that simple :(.
+Does the patch work for online offline case atleast?
+Will look at the Suspend/Resume ordering part in that case.
 
-Or rather than duplicating the menu items for the same options, split
-the SCSI high-level options out into a top-level menu and adjust the
-wording of the prompts.  http://lkml.org/lkml/2007/9/14/217
-
-(top level)
-menu "Storage (core and SCSI commands)"
-	config SCSI
-		tristate "Storage support (core and SCSI commands)"
-	config BLK_DEV_SD
-		tristate "Harddisks and other Direct access devices"
-	config CHR_DEV_ST
-		tristate "Tape drives"
-	config CHR_DEV_OSST
-		tristate "SCSI OnStream SC-x0 tape support"
-	config BLK_DEV_SR
-		tristate "CD-ROMs, DVD-ROMs"
-	...
-
-menu "Device Drivers"
-	...
-	menu "SCSI device support"
-		config RAID_ATTRS
-		config SCSI_TGT
-		menu "SCSI Transports"
-			...
-		menuconfig SCSI_LOWLEVEL
-			bool "SCSI low-level drivers"
-			...
-
--- 
-Stefan Richter
--=====-=-=== =--= -===-
-http://arcgraph.de/sr/
+Thanks,
+Venki
