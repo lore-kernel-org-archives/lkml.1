@@ -1,76 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758419AbXINU2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbXINU3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758419AbXINU2u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 16:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXINU2m
+	id S1759653AbXINU3Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 16:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758897AbXINU27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 16:28:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:33059 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753228AbXINU2l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 16:28:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=Z7DNhPslHIhJuzp1ZKiGb/Re8R5O4IbnpZDgsHKi8O/a3j7nRZ7+pFOJtNz8FtmQDJM1iadMKy1XJ7JyMqCxoCtKSjeSkkG8Bb96srLF4MYLDvVgzjQCiO11U/JGeJ5njVgv2XHbSr/tOl2AObhvJn5F4Dlp3pC+gPaeHLyGWqg=
-From: auxsvr@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: Re: sata_nv issues with MCP51 SATA controller
-Date: Fri, 14 Sep 2007 23:24:49 +0300
-User-Agent: KMail/1.9.5
-References: <46E8EABF.3060409@pvv.org> <46EAAF99.6030809@garzik.org> <46EAD526.1040601@pvv.org>
-In-Reply-To: <46EAD526.1040601@pvv.org>
-MIME-Version: 1.0
+	Fri, 14 Sep 2007 16:28:59 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52784 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758854AbXINU26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 16:28:58 -0400
+Date: Fri, 14 Sep 2007 22:30:22 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] i386: fix section mismatch warning in intel.c
+Message-ID: <20070914203022.GB4554@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709142324.50263.auxsvr@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Fix following section mismatch warning:
+WARNING: vmlinux.o(.text+0xc88c): Section mismatch: reference to .init.text:trap_init_f00f_bug (between 'init_intel' and 'cpuid4_cache_lookup')
 
-I get a similar, if not identical, problem with an ASUS A8N SLI nforce4 based 
-motherboard. The PC (with a seagate SATA-2 120 GB HDD) ran fine for two 
-years , last Christmas windows xp (I didn't change either hardware or 
-drivers) started crashing and the filesystem got corrupted beyond repair 
-within 8 hours after every installation. The system log contained entries 
-about bad sectors and, based on the seagate diagnosis tool, I returned the 
-system to the supplier. According to the retail shop, neither the disk nor 
-the system had any problems, so I was coerced to pay for a replacement disk. 
-The replacement HDD (seagate again, 120 GB) ran fine until a month ago (this 
-time the system is connected to a UPS), when the same problem occurred! I 
-moved the disk to a linux system with the promise tx2plus controller (the one 
-I'm typing this from), found bad sectors, formatted it and everything works 
-fine for at least 6 hours of continuous disk writes and reads in this system. 
-If I return the disk to the nforce4 system, it becomes corrupted within some 
-hours of disk access, no matter whether linux or windows is installed, 
-regardless of NCQ settings, drivers and cables.
+init_intel are __cpuint where trap_init_f00f_bug is __init.
+Fixed by declaring trap_init_f00f_bug __cpuinit.
 
-The symptoms are the same in both cases: the system crashes, then runs for 
-some hours, then the controller stops completely responding (ata1: exception 
-Emask 0x10 SAct 0x0 SErr 0x1810000 action 0x2 frozen is the first error 
-message), the disk access LED blinks continuously, linux 2.6.18 (opensuse 
-10.2) throws lots of error messages similar to the ones you mention above, 
-linux says that the device is dead and the system becomes unusable (no disk 
-access). After a reboot, the filesystem is fine for some time, afterwards 
-similar error messages appear, seek errors appear and the filesystem becomes 
-completely destroyed. The positive part of this ordeal is that the linux SATA 
-error handling works fine and linux recovered the first time, without access 
-to the drive of course, while windows crashed badly and I was unable to find 
-out what was happening in the beginning.
+Moved the defintion of trap_init_f00f_bug to the sole user in init.c
+so the ugly prototype in intel.c could get killed.
 
-I cannot say with certainty that this is a hardware error or damage, seagate 
-technical support insists that their HDD is at fault, which is obviously 
-wrong, the PC is (after the second incident) connected to a UPS and was 
-checked by the service at the shop, and the most weird thing I cannot 
-explain is that the system ran fine for 8 months after I changed the 
-disk, even though the disk wasn't damaged! Either the motherboard is damaged 
-or faulty (how can you explain that it ran fine for 8 months after I changed 
-the disk?)  or there is some very weird interaction with the HDD and the SATA 
-controller, which isn't unlikely, considering the problems reported about 
-combinations of nforce4 and maxtor HDDs, yet still doesn't explain the 2 year 
-and 8 month period of normal operation. I'm going to contact the service 
-again and see how this comes out.
+Frank van Maarseveen <frankvm@frankvm.com> supplied the .config used
+to reproduce the warning.
+
+Cc: Frank van Maarseveen <frankvm@frankvm.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/arch/i386/kernel/cpu/intel.c b/arch/i386/kernel/cpu/intel.c
+index dc4e081..ced6cea 100644
+--- a/arch/i386/kernel/cpu/intel.c
++++ b/arch/i386/kernel/cpu/intel.c
+@@ -8,6 +8,7 @@
+ #include <linux/module.h>
+ 
+ #include <asm/processor.h>
++#include <asm/pgtable.h>
+ #include <asm/msr.h>
+ #include <asm/uaccess.h>
+ 
+@@ -19,8 +20,6 @@
+ #include <mach_apic.h>
+ #endif
+ 
+-extern int trap_init_f00f_bug(void);
+-
+ #ifdef CONFIG_X86_INTEL_USERCOPY
+ /*
+  * Alignment at which movsl is preferred for bulk memory copies.
+@@ -95,6 +94,20 @@ static int __cpuinit num_cpu_cores(struct cpuinfo_x86 *c)
+ 		return 1;
+ }
+ 
++#ifdef CONFIG_X86_F00F_BUG
++static void __cpuinit trap_init_f00f_bug(void)
++{
++	__set_fixmap(FIX_F00F_IDT, __pa(&idt_table), PAGE_KERNEL_RO);
++
++	/*
++	 * Update the IDT descriptor and reload the IDT so that
++	 * it uses the read-only mapped virtual address.
++	 */
++	idt_descr.address = fix_to_virt(FIX_F00F_IDT);
++	load_idt(&idt_descr);
++}
++#endif
++
+ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int l2 = 0;
+diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
+index 47b0bef..5c499e2 100644
+--- a/arch/i386/kernel/traps.c
++++ b/arch/i386/kernel/traps.c
+@@ -1114,20 +1114,6 @@ asmlinkage void math_emulate(long arg)
+ 
+ #endif /* CONFIG_MATH_EMULATION */
+ 
+-#ifdef CONFIG_X86_F00F_BUG
+-void __init trap_init_f00f_bug(void)
+-{
+-	__set_fixmap(FIX_F00F_IDT, __pa(&idt_table), PAGE_KERNEL_RO);
+-
+-	/*
+-	 * Update the IDT descriptor and reload the IDT so that
+-	 * it uses the read-only mapped virtual address.
+-	 */
+-	idt_descr.address = fix_to_virt(FIX_F00F_IDT);
+-	load_idt(&idt_descr);
+-}
+-#endif
+-
+ /*
+  * This needs to use 'idt_table' rather than 'idt', and
+  * thus use the _nonmapped_ version of the IDT, as the
