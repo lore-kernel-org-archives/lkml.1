@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXINO4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbXINO5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932404AbXINO4G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbXINOzx
+	id S932653AbXINO5x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXINO5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:55:53 -0400
-Received: from smtp.seznam.cz ([77.75.72.43]:47896 "HELO smtp.seznam.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751943AbXINOzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:55:52 -0400
-From: "Frantisek Rysanek" <Frantisek.Rysanek@post.cz>
-To: linux-kernel@vger.kernel.org
-Date: Fri, 14 Sep 2007 17:00:09 +0200
-MIME-Version: 1.0
-Subject: Re: [newbie:] Bonnie++2 hangs recent 2.6 kernels? Bash keeps looping in waitpid(), eating 100% CPU
-Message-ID: <46EABE19.27660.2EE1940D@localhost>
-In-reply-to: <200709131030.55247.nickpiggin@yahoo.com.au>
-References: <46E96951.10344.29AE6546@localhost>
-X-mailer: Pegasus Mail for Windows (4.21c)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Smtpd: 1.0.12@11920:11921
+	Fri, 14 Sep 2007 10:57:45 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:24888 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751398AbXINO5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 10:57:45 -0400
+Date: Fri, 14 Sep 2007 18:57:30 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: [PATCH] Fix UTS corruption during clone(CLONE_NEWUTS)
+Message-ID: <20070914145730.GB27986@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Mr. Piggin,
+struct utsname is copied from master one without any exclusion.
 
-thanks for your response in the first place :-)
+Here is sample output from one proggie doing
 
-On 13 Sep 2007 at 2:30, Nick Piggin wrote:
->
-> Can you see if it is looping in userspace or kernel? Can you kill -9
-> the process?
-> 
-I can't run any command. Any command hangs or coredumps.
+	sethostname("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+	sethostname("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 
-> Are you able to test with the latest 2.6.23-rc kernel? If not (or if it
-> still has the same problem), then can you get the output of sysrq+T
-> and three sysrq+P calls, please? (this might help work out where in
-> kernel it is spinning).
->
-I've compiled 2.6.23-rc6, enabled serial console and captured 
-the output of sysrq+P (on the affected virtual VGA console)
-and sysrq+T. 
+and another
 
-http://www.fccps.cz/download/adv/frr/bonnie/2.6.23-rc6.txt
+	clone(,, CLONE_NEWUTS, ...)
+	uname()
 
-The interesting bit of information, related to the erratic "bash" 
-processes, is always a single line, such as:
 
-bash          R running      0  2358      1
+	hostname = 'aaaaaaaaaaaaaaaaaaaaaaaaabbbbb'
+	hostname = 'bbbaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+	hostname = 'aaaaaaaabbbbbbbbbbbbbbbbbbbbbb'
+	hostname = 'aaaaaaaaaaaaaaaaaaaaaaaaaabbbb'
+	hostname = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaabb'
+	hostname = 'aaabbbbbbbbbbbbbbbbbbbbbbbbbbb'
+	hostname = 'bbbbbbbbbbbbbbbbaaaaaaaaaaaaaa'
 
-I've also taken a photo of `top` running
-on another virtual console. I can't get any data out of the
-affected box, as I can't run any shell commands...
+Hostname is sometimes corrupted.
 
-http://www.fccps.cz/download/adv/frr/bonnie/top.jpg
+Yes, even _the_ simplest namespace activity had bug in it. :-(
 
-Note that there are rather few processes running in the user space.
-Can't say if that makes any difference from a full-blown distro.
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
 
-Maybe I could set up the bootable CD for download somewhere 
-(gzipped ISO of maybe 50 Megs).
+ kernel/utsname.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-In this scenario, Linux 2.6.16.18 once reported a soft lockup.
-http://www.fccps.cz/download/adv/frr/bonnie/soft-lockup1.txt
-Never again.
-
-I also managed to catch the misbehavior in strace once, didn't
-get a capture, but essentially it was stuck at a single open
-syscall, I believe it was "waitpid(1, " . (Never managed that again, 
-always got segfaults instead of the loopy bash when trying to watch 
-bash by strace -p). 
-
-Exactly where does the context switch from user to kernel take place?
-I know that I can call ioctl() from user space, and I can write 
-ioctl() handlers in kernel space as part of device drivers (the 
-handlers take place entirely in kernel space). The waitpid()
-thing is a syscall, being entered only once from user space
-- and the bash process seems to keep looping inside it.
-Does the single "running" line in Alt+SysRq+T mean that the
-process is looping in user space?
-Take a look at the CPU consumption % numbers though...
-
-Note that there's no OOM killer. (Seen that one before, under 
-different circumstances - when OCFS2 didn't like machines
-with less than 1 GB RAM.)
-
-My impression is that the erratic behavior could be a secondary 
-symptom of a kernel-space memory leak taking place somewhere else 
-than in the loopy code itself. Can't say if the leak takes place in 
-memory management or EXT3 for instance...
-
-Frank Rysanek
+--- a/kernel/utsname.c
++++ b/kernel/utsname.c
+@@ -28,7 +28,9 @@ static struct uts_namespace *clone_uts_ns(struct uts_namespace *old_ns)
+ 	if (!ns)
+ 		return ERR_PTR(-ENOMEM);
+ 
++	down_read(&uts_sem);
+ 	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
++	up_read(&uts_sem);
+ 	kref_init(&ns->kref);
+ 	return ns;
+ }
 
