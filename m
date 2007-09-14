@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763199AbXINDeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764736AbXINDhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763199AbXINDeT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 23:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbXINDeL
+	id S1764736AbXINDhZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 23:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbXINDhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 23:34:11 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:52512 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbXINDeK (ORCPT
+	Thu, 13 Sep 2007 23:37:11 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:13333 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbXINDhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 23:34:10 -0400
-Date: Thu, 13 Sep 2007 21:32:42 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
-In-reply-to: <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
-       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-id: <46EA00DA.6010704@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.ggBqx6W3i6hfs6jdfg64oXKSxW8@ifi.uio.no>
- <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no>
- <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no>
- <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no>
- <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no>
- <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 13 Sep 2007 23:37:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=jegHiHaRIxSb/YOPcC/T5SlvUJuSXVISyOM7OMMK3Ak5A9NOatIrrh4+v7SZtU3to
+	GmcRjbYq4bKPhc5n5dTew==
+Date: Thu, 13 Sep 2007 20:36:42 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
+       kexec-ml <kexec@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] [-mm patch]  Add nodemask_t's size and NR_FREE_PAGES's
+ value to vmcoreinfo_data.
+In-Reply-To: <46E9F854.9030804@mxs.nes.nec.co.jp>
+Message-ID: <alpine.DEB.0.9999.0709132034540.30494@chino.kir.corp.google.com>
+References: <46E9F6A9.8060500@mxs.nes.nec.co.jp> <46E9F854.9030804@mxs.nes.nec.co.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Kokshaysky wrote:
-> On Thu, Sep 13, 2007 at 02:53:13AM -0700, Greg KH wrote:
->> On Thu, Sep 13, 2007 at 01:55:36AM -0600, Matthew Wilcox wrote:
->>> Unfortunately if this patch does cause any machine to break, these will
->>> be machines that worked fine up until this point, so that would be a
->>> regression, which is worse.  Life sucks.
->> If, after a while, you think the change should go into the -stable tree,
->> I have no objection.
+On Fri, 14 Sep 2007, Ken'ichi Ohmichi wrote:
+
+> diff -rpuN a/include/linux/kexec.h b/include/linux/kexec.h
+> --- a/include/linux/kexec.h	2007-09-10 23:28:42.000000000 +0900
+> +++ b/include/linux/kexec.h	2007-09-10 23:29:52.000000000 +0900
+> @@ -132,11 +132,16 @@ unsigned long paddr_vmcoreinfo_note(void
+>  #define SIZE(name) \
+>  	vmcoreinfo_append_str("SIZE(%s)=%lu\n", #name, \
+>  			      (unsigned long)sizeof(struct name))
+> +#define TYPEDEF_SIZE(name) \
+> +	vmcoreinfo_append_str("SIZE(%s)=%lu\n", #name, \
+> +			      (unsigned long)sizeof(name))
+>   #define OFFSET(name, field) \
+>  	vmcoreinfo_append_str("OFFSET(%s.%s)=%lu\n", #name, #field, \
+>  			      (unsigned long)&(((struct name *)0)->field))
+>  #define LENGTH(name, value) \
+>  	vmcoreinfo_append_str("LENGTH(%s)=%lu\n", #name, (unsigned long)value)
+> +#define NUMBER(name) \
+> +	vmcoreinfo_append_str("NUMBER(%s)=%ld\n", #name, (long)name)
+>  #define CONFIG(name) \
+>  	vmcoreinfo_append_str("CONFIG_%s=y\n", #name)
 > 
-> I think it shouldn't - this change will almost certainly cause a regression.
-> There is a lot of system devices besides the host bridges that shouldn't be
-> disabled during BAR probe, like interrupt controllers, power management
-> controllers and so on.
-> 
-> We need a more sophisticated fix - I'm thinking of introducing "probe" field
-> in struct pci_dev which can be set by "early" quirk routines.
 
-Disabling the BAR decoding does not mean disabling the device (aside 
-from the one  group of host bridge that apparently disables CPU to RAM 
-access, whose designers were apparently on crack when they read the PCI 
-spec and which is why we don't disable the decode on host bridges). 
-There really is no other sane way to do it.
-
-If we do encounter other devices that choke on having the BAR disabled 
-during probing then we can add additional quirk logic, but we haven't 
-run into anything like that yet.
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+The #define SIZE() should be renamed STRUCT_SIZE() since it's always 
+returning the size of the struct with a given name.  This would allow 
+TYPEDEF_SIZE() to simply become SIZE() since it need not be used 
+exclusively for typedefs.
