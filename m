@@ -1,149 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbXINFPD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763062AbXINFPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759620AbXINFPD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 01:15:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXINFOx
+	id S1763062AbXINFPg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 01:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXINFP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 01:14:53 -0400
-Received: from ozlabs.org ([203.10.76.45]:34009 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbXINFOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 01:14:53 -0400
-Subject: [PATCH] Introduce "used_vectors" bitmap which can be used to
-	reserve vectors.
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <ak@muc.de>
-Cc: lguest <lguest@ozlabs.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Fri, 14 Sep 2007 15:14:09 +1000
-Message-Id: <1189746849.7262.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 14 Sep 2007 01:15:27 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60202 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752319AbXINFP0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 01:15:26 -0400
+Date: Fri, 14 Sep 2007 14:14:47 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
+Cc: Andy Whitcroft <apw@shadowen.org>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20070913194130.1611fd78.akpm@linux-foundation.org>
+References: <20070914105420.F2E9.Y-GOTO@jp.fujitsu.com> <20070913194130.1611fd78.akpm@linux-foundation.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070914115045.F2EB.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi and everyone,
 
-	Wanted to get your thoughts on this patch.  lguest now supports plan9
-guests which use 0x40 for system calls.  We want to let the guests use
-that vector if available, but have no way to stop io_apic from
-clobbering it.  This does that, and also simplifies the current code a
-little.
+> On Fri, 14 Sep 2007 11:02:43 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> 
+> > > >  	/* call arch's memory hotadd */
+> > > > 
+> > > 
+> > > OK, we're getting into a mess here.  This patch fixes
+> > > update-n_high_memory-node-state-for-memory-hotadd.patch, but which patch
+> > > does update-n_high_memory-node-state-for-memory-hotadd.patch fix?
+> > > 
+> > > At present I just whacked
+> > > update-n_high_memory-node-state-for-memory-hotadd.patch at the end of
+> > > everything, but that was lazy of me and it ends up making a mess.
+> > 
+> > It is enough. No more patch is necessary for these issues.
+> > I already fixed about Andy-san's comment. :-)
+> 
+> Now I'm more confused.  I have two separeate questions:
+> 
+> a) Is the justr-added update-n_high_memory-node-state-for-memory-hotadd-fix.patch
+>    still needed?
 
-Thanks,
-Rusty.
+I'm not sure exact meaning of "just-added". 
+But, update-n_high_memory-node-state-for-memory-hotadd-fix.patch is
+necessary for 2.6.23-rc4-mm1.
 
-This simplifies the io_apic.c __assign_irq_vector() logic and removes
-the explicit SYSCALL_VECTOR check, and also allows for vectors to be
-reserved by other mechanisms (ie. lguest).
+> b) Which patch in 2.6.22-rc4-mm1 does
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+                    2.6.23-rc4-mm1?
 
----
- arch/i386/kernel/i8259.c   |    3 ++-
- arch/i386/kernel/io_apic.c |   13 ++++++++-----
- arch/i386/kernel/traps.c   |   10 ++++++++++
- include/asm-i386/irq.h     |    3 +++
- 4 files changed, 23 insertions(+), 6 deletions(-)
+>    update-n_high_memory-node-state-for-memory-hotadd.patch fix?  In other
+>    words, into which patch should I fold
+>    update-n_high_memory-node-state-for-memory-hotadd.patch prior to sending
+>    to Linus?
 
-===================================================================
---- a/arch/i386/kernel/i8259.c
-+++ b/arch/i386/kernel/i8259.c
-@@ -400,7 +400,8 @@ void __init native_init_IRQ(void)
- 		int vector = FIRST_EXTERNAL_VECTOR + i;
- 		if (i >= NR_IRQS)
- 			break;
--		if (vector != SYSCALL_VECTOR) 
-+		/* SYSCALL_VECTOR was reserved in trap_init. */
-+		if (!test_bit(vector, used_vectors))
- 			set_intr_gate(vector, interrupt[i]);
- 	}
- 
-===================================================================
---- a/arch/i386/kernel/io_apic.c
-+++ b/arch/i386/kernel/io_apic.c
-@@ -1198,7 +1198,7 @@ static int __assign_irq_vector(int irq)
- static int __assign_irq_vector(int irq)
- {
- 	static int current_vector = FIRST_DEVICE_VECTOR, current_offset = 0;
--	int vector, offset, i;
-+	int vector, offset;
- 
- 	BUG_ON((unsigned)irq >= NR_IRQ_VECTORS);
- 
-@@ -1215,11 +1215,8 @@ next:
- 	}
- 	if (vector == current_vector)
- 		return -ENOSPC;
--	if (vector == SYSCALL_VECTOR)
-+	if (test_and_set_bit(vector, used_vectors))
- 		goto next;
--	for (i = 0; i < NR_IRQ_VECTORS; i++)
--		if (irq_vector[i] == vector)
--			goto next;
- 
- 	current_vector = vector;
- 	current_offset = offset;
-@@ -2290,6 +2287,12 @@ static inline void __init check_timer(vo
- 
- void __init setup_IO_APIC(void)
- {
-+	int i;
-+
-+	/* Reserve all the system vectors. */
-+	for (i = FIRST_SYSTEM_VECTOR; i < NR_VECTORS; i++)
-+		set_bit(i, used_vectors);
-+
- 	enable_IO_APIC();
- 
- 	if (acpi_ioapic)
-===================================================================
---- a/arch/i386/kernel/traps.c
-+++ b/arch/i386/kernel/traps.c
-@@ -64,6 +64,9 @@
- #include "mach_traps.h"
- 
- int panic_on_unrecovered_nmi;
-+
-+DECLARE_BITMAP(used_vectors, NR_VECTORS);
-+EXPORT_SYMBOL_GPL(used_vectors);
- 
- asmlinkage int system_call(void);
- 
-@@ -1156,6 +1159,8 @@ static void __init set_task_gate(unsigne
- 
- void __init trap_init(void)
- {
-+	int i;
-+
- #ifdef CONFIG_EISA
- 	void __iomem *p = ioremap(0x0FFFD9, 4);
- 	if (readl(p) == 'E'+('I'<<8)+('S'<<16)+('A'<<24)) {
-@@ -1215,6 +1220,11 @@ void __init trap_init(void)
- 
- 	set_system_gate(SYSCALL_VECTOR,&system_call);
- 
-+	/* Reserve all the builtin and the syscall vector. */
-+	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
-+		set_bit(i, used_vectors);
-+	set_bit(SYSCALL_VECTOR, used_vectors);
-+
- 	/*
- 	 * Should be a barrier for any external CPU state.
- 	 */
-===================================================================
---- a/include/asm-i386/irq.h
-+++ b/include/asm-i386/irq.h
-@@ -45,4 +45,7 @@ void init_IRQ(void);
- void init_IRQ(void);
- void __init native_init_IRQ(void);
- 
-+/* Interrupt vector management */
-+extern DECLARE_BITMAP(used_vectors, NR_VECTORS);
-+
- #endif /* _ASM_IRQ_H */
+In my understanding, 
+update-n_high_memory-node-state-for-memory-hotadd.patch should be folded
+with all of memoryless-nodes-xxxxxxxxxxxx.patch.
+It sets N_HIGH_MEMORY for a new node-with-memory.
+
+But if you need specifing of more detail patch, becase N_HIGH_MEMORY is
+set in memoryless-nodes-introduce-ask-of-nodes-with-memory.patch, 
+I suppose update-n_high_memory-node-state-for-memory-hotadd.patch
+should be fold with it.
+
+
+update-n_high_memory-node-state-for-memory-hotadd-fix.patch
+                                                  ^^^
+is fixes of update-n_high_memory-node-state-for-memory-hotadd.patch
+and memoryless-nodes-no-need-for-kswapd.patch
+
+
+Is it enough for your question? Or more confuse?
+
+
+>    (I (usually) get to work this out for myself.  Sometimes it is painful).
+> 
+> Generally, if people tell me which patch-in-mm their patch is fixing,
+> it really helps.  Adrian does this all the time.
+
+Sorry for your confusing...
+
+
+-- 
+Yasunori Goto 
 
 
