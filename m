@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbXINOJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762940AbXINOJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760964AbXINOJK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXINOI5
+	id S1762940AbXINOJl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756208AbXINOJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:08:57 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60087 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbXINOI4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:08:56 -0400
-Message-ID: <46EA95E1.4000308@zytor.com>
-Date: Fri, 14 Sep 2007 07:08:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Andreas Herrmann <aherrman@arcor.de>
-CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       dean gaudet <dean@arctic.org>
-Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG
-References: <46E9A391.3000804@zytor.com> <20070914082129.GA6727@devil> <20070914112154.GB6727@devil>
-In-Reply-To: <20070914112154.GB6727@devil>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Sep 2007 10:09:32 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:39266 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753233AbXINOJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 10:09:31 -0400
+Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Andy Whitcroft <apw@shadowen.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20070913194130.1611fd78.akpm@linux-foundation.org>
+References: <20070911182546.F139.Y-GOTO@jp.fujitsu.com>
+	 <20070913184456.16ff248e.akpm@linux-foundation.org>
+	 <20070914105420.F2E9.Y-GOTO@jp.fujitsu.com>
+	 <20070913194130.1611fd78.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Fri, 14 Sep 2007 10:09:27 -0400
+Message-Id: <1189778967.5315.11.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Herrmann wrote:
->>>
->> I'm not talking about Linux here.  I'm talking about any random system
->> software (which may or may not be Vista, and may nor may not even be an
->> OS.)
+On Thu, 2007-09-13 at 19:41 -0700, Andrew Morton wrote:
+> On Fri, 14 Sep 2007 11:02:43 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
 > 
-> Are you serious? You are worried about Vista compatibility issues for
-> new hardware? Here on LKML? I thought this is a Linux mailing list.
+> > > >  	/* call arch's memory hotadd */
+> > > > 
+> > > 
+> > > OK, we're getting into a mess here.  This patch fixes
+> > > update-n_high_memory-node-state-for-memory-hotadd.patch, but which patch
+> > > does update-n_high_memory-node-state-for-memory-hotadd.patch fix?
+> > > 
+> > > At present I just whacked
+> > > update-n_high_memory-node-state-for-memory-hotadd.patch at the end of
+> > > everything, but that was lazy of me and it ends up making a mess.
+> > 
+> > It is enough. No more patch is necessary for these issues.
+> > I already fixed about Andy-san's comment. :-)
 > 
-
-No, I'm not concerned about Vista.  Read: MAY OR MAY NOT EVEN BE AN OS.
- In fact, non-OS system software, such as bootloaders or diagnostic
-systems, are in fact much more difficult in this than OSes.
-
->>  If they advertise MCFG, then a random OS could try to use it, in
->> accordance with the spec, without the workaround, with serious
->> malfunction as a result.
+> Now I'm more confused.  I have two separeate questions:
 > 
-> Have you looked into the BKDG of that CPU?
-> You can download it here
-> http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/31116.pdf
+> a) Is the justr-added update-n_high_memory-node-state-for-memory-hotadd-fix.patch
+>    still needed?
 > 
-> BTW, in this version it is even recommended to set up MCFG. So why should a
-> BIOS vendor drop it?
+> b) Which patch in 2.6.22-rc4-mm1 does
+>    update-n_high_memory-node-state-for-memory-hotadd.patch fix?  In other
+>    words, into which patch should I fold
+>    update-n_high_memory-node-state-for-memory-hotadd.patch prior to sending
+>    to Linus?
 
-They probably won't, which is highly unfortunate.  AMD is unlikely to
-admit that they have a serious bug in their compliance, and BIOS vendors
-are unlikely to catch on.  It's still broken.
+Andrew:  
 
-> Because I am not as standards-compliant as you are, I should say: "To err is human".
-> So I've done my best to verify that config space stuff with real code on real hardware
-> last week. But as always, it is possible that I am wrong with certain statements.
+I originally sent in the "update-n_high_memory..." patch against
+23-rc3-mm1 on 27aug to fix a problem that I introduced when I moved the
+populating of N_HIGH_MEMORY state to free_area_init_nodes().  This would
+miss setting the "has memory" node state for hot added memory.  I never
+saw any response, but then it ended up in 23-rc4-mm1.
 
-To err is human (and, in silicon manufacturing, both common and
-extremely expensive.)  It's now you deal with the fallout that matters,
-and it's quite unforgiving, because we're dealing with computer
-protocols here.  You MUST NOT advertise compliance with a protocol that
-you don't actually have (MCFG).  You then SHOULD promulgate workarounds
-that say "oh, I'm on chip X, that means that I can enable mmconfig as
-long as I play within these chip-specific rules."
+This Tuesday, Paul Mundt sent in a patch to fix a build problem with
+MEMORY_HOTPLUG_SPARSE introduced by my patch.  He replaced zone->node
+with zone_to_nid(zone) in the node_set_state() arguments.
 
-> Do you think it is a good idea to discuss that MMCONFIG topic with
-> some designers at AMD? I could print out that mail or forward it to them.
-> Do you think they will be happy to listen to your words if you say that
-> they are "fucking up" stuff and come up with "braindamaged" ideas?
-> I appreciate the code you write, but not the communication style you chose.
+The latest patch, from Yasunori-san, I believe, starts kswapd for nodes
+to which memory has been hot-added.  As I understand it, his is needed
+because the memoryless nodes patch results in no kswapd for memoryless
+nodes.
 
-Uhm, it's hardware.  Bugs happen.  What gets ugly is when marketing gets
-involved, and says "we can't afford to say we don't have <feature X>, so
-let's advertise it anyway."
+Does that help?
 
-	-hpa
+Lee
+
+
+> 
+>    (I (usually) get to work this out for myself.  Sometimes it is painful).
+> 
+> Generally, if people tell me which patch-in-mm their patch is fixing,
+> it really helps.  Adrian does this all the time.
+> 
+> Thanks.
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
