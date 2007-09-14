@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764526AbXINO0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764883AbXINO1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764526AbXINO0g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbXINO01
+	id S1764883AbXINO1t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbXINO1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:26:27 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54275 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750890AbXINO00 (ORCPT
+	Fri, 14 Sep 2007 10:27:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48137 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751111AbXINO1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:26:26 -0400
-Date: Fri, 14 Sep 2007 10:26:25 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Adrian Bunk <bunk@kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>,
-       Oliver Neukum <oneukum@suse.de>
-Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
-In-Reply-To: <20070913212842.GI3563@stusta.de>
-Message-ID: <Pine.LNX.4.44L0.0709141015550.3782-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Sep 2007 10:27:41 -0400
+Date: Fri, 14 Sep 2007 16:26:41 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] CFS-devel, performance improvements
+Message-ID: <20070914162641.197913c2@laptopd505.fenrus.org>
+In-Reply-To: <Pine.LNX.4.64.0709131706100.1817@scrub.home>
+References: <20070911200459.GA6974@elte.hu>
+	<Pine.LNX.4.64.0709120242040.1817@scrub.home>
+	<20070913075258.GA9173@elte.hu>
+	<Pine.LNX.4.64.0709131419170.1817@scrub.home>
+	<20070913142842.GA26016@elte.hu>
+	<Pine.LNX.4.64.0709131706100.1817@scrub.home>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007, Adrian Bunk wrote:
+On Thu, 13 Sep 2007 18:50:12 +0200 (CEST)
+Roman Zippel <zippel@linux-m68k.org> wrote:
+> > You never directly replied to these pretty explicit requests, all
+> > you did was this side remark 5 days later in one of your patch 
+> > announcements:
+> 
+> This is ridiculous, I asked you multiple times to explain to me some
+> of the differences relative to CFS as response to the splitup
+> requests. Not once did you react, you didn't even ask what I'd like
+> to know specifically.
 
-> What is not policy is the blacklist or whitelist information.
+Roman,
 
-That's debatable, but never mind.
+this is... a strange comment. It almost sounds like you were holding
+the splitup hostage depending on some other thing happening.... that's
+not a good attitude in my book. Having big-blob patches that do many
+things at the same time leads to them being impossible to apply. Linux
+works by having smaller incrementals. You know that; you've been around
+for a long time.
 
-> And I'm also a bit concerned why "is policy" is that much a reason 
-> against setting *reasonable default policies* without requiring the user 
-> to do various things in userspace.
-
-"Don't autosuspend" _is_ a reasonable default policy.  It's what Linux 
-has been doing all along.
-
-> Especially since this creates some nasty interdependencies between the 
-> kernel and userspace.
-
-No it doesn't.  If the kernel fails to provide the mechanism there's 
-nothing that userspace can do about it anyway.  If the kernel does 
-provide the mechanism and userspace ignores it, then things continue to 
-work the same as they always have.
-
-> And as an example, couldn't you equally say it's wrong that the kernel
-> enables DMA on disks instead of leaving it to userspace?
-
-It's not analogous.  Autosuspend involves setting an idle-delay time, 
-which depends on the type of device and how it is being used.  DMA 
-doesn't involve anything like that.
-
-But forget about the delay for the moment.  If there were a high 
-percentage of disk drives which would fail when DMA was enabled, then 
-yes, the decision should be left to userspace.  If the percentage is 
-low enough (and shrinking as vendors become more clueful) then moving
-the decision into the kernel is acceptable.  At the moment USB 
-autosuspend is not in this position, as we have learned painfully.
-
-> We've already seen the udev disaster where upgrading from Debian 3.1 to 
-> Debian 4.0 means upgrading from kernel 2.6.8 to 2.6.18 with the udev 
-> version in Debian 3.1 not supporting kernel 2.6.18 and the udev version 
-> in Debian 4.0 not supporting kernel 2.6.8, and I don't have a good 
-> feeling about outsourcing more and more things to userspace tools not 
-> distributed with the kernel.
-
-This isn't a question of not being able to boot, like the udev fiasco;
-this is a question of saving a few watts of power.  While it may be 
-important for laptop users, it is not critical.
-
-Alan Stern
+Complaining that someone finally did splitup work after you refused,
+and even puts credit in for you... that's beyond my comprehension.
+Sorry.
 
