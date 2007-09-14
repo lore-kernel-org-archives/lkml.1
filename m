@@ -1,135 +1,370 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765567AbXINOcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765649AbXINOdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765567AbXINOcP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbXINOb7
+	id S1765649AbXINOdZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbXINOdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:31:59 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:62989 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbXINOb6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:31:58 -0400
-Date: Fri, 14 Sep 2007 08:30:59 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
-In-reply-to: <20070914151401.A5586@jurassic.park.msu.ru>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
-       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Message-id: <46EA9B23.7030709@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.ggBqx6W3i6hfs6jdfg64oXKSxW8@ifi.uio.no>
- <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no>
- <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no>
- <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no>
- <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no>
- <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no> <46EA00DA.6010704@shaw.ca>
- <20070914151401.A5586@jurassic.park.msu.ru>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 14 Sep 2007 10:33:17 -0400
+Received: from sa7.bezeqint.net ([192.115.104.21]:36909 "EHLO sa7.bezeqint.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751937AbXINOdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 10:33:16 -0400
+X-Greylist: delayed 2665 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Sep 2007 10:33:15 EDT
+From: Shlomi Fish <shlomif-lkml@freehackers.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.23-rc4] qconf ("make xconfig") Search Dialog Enhancement (rev8)
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Fri, 14 Sep 2007 16:48:35 +0300
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709141648.35745.shlomif-lkml@freehackers.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Kokshaysky wrote:
-> On Thu, Sep 13, 2007 at 09:32:42PM -0600, Robert Hancock wrote:
->> Disabling the BAR decoding does not mean disabling the device (aside 
->> from the one  group of host bridge that apparently disables CPU to RAM 
->> access, whose designers were apparently on crack when they read the PCI 
->> spec and which is why we don't disable the decode on host bridges). 
->> There really is no other sane way to do it.
-> 
-> Disabling IO and MEM decode effectively disables device as a PCI target.
-> Worse, it's often not just BARs that get disabled, but some non-standard
-> or hidden address ranges as well. Host bridges are just one common
-> example, there is a lot of other insane hardware, more than one could
-> expect.
+Hi all!
 
-Do you have an example of specific hardware that exhibits this problem? 
-So far after a similar patch has been in -mm for months there have been 
-no reports of any such problems.
+[ I'm not subscribed to this list so please CC me on your replies. ]
 
-> BTW, the way how the internal address decode works on these latest Intel
-> whippets doesn't look sane either. ;-)
-> 
->> If we do encounter other devices that choke on having the BAR disabled 
->> during probing then we can add additional quirk logic, but we haven't 
->> run into anything like that yet.
-> 
-> As Greg said, the main point is "no regression".
-> 
-> Folks, can you check if the patch below helps?
+This patch adds an option to use either substring match, regular expression 
+match, or keywords search in the "make xconfig" Edit->Find dialog.
 
-This isn't guaranteed to help. I don't think it is only integrated 
-graphics that could cause this problem, I think that an add-on PCI 
-Express card can do this as well. Depending on the chipset memory decode 
-rules, any PCI or PCI Express device with a BAR large enough could cause 
-issues.
+It also allows searching on the "help" field of the menus as well as 
+the "name" of the symbol.
 
-> 
-> Ivan.
-> 
-> --- 2.6.23-rc6-git4/include/linux/pci.h	2007-09-12 17:22:57.000000000 +0400
-> +++ linux/include/linux/pci.h	2007-09-14 10:26:29.000000000 +0400
-> @@ -183,6 +183,7 @@ struct pci_dev {
->  	unsigned int 	msi_enabled:1;
->  	unsigned int	msix_enabled:1;
->  	unsigned int	is_managed:1;
-> +	unsigned int	disable_while_probe:1; /* Probe BARs with IO and MMIO turned off */
->  	atomic_t	enable_cnt;	/* pci_enable_device has been called */
->  
->  	u32		saved_config_space[16]; /* config space saved at suspend time */
-> --- 2.6.23-rc6-git4/arch/i386/pci/fixup.c	2007-09-12 17:22:55.000000000 +0400
-> +++ linux/arch/i386/pci/fixup.c	2007-09-14 14:43:13.000000000 +0400
-> @@ -444,3 +444,21 @@ static void __devinit pci_siemens_interr
->  }
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_SIEMENS, 0x0015,
->  			  pci_siemens_interrupt_controller);
-> +
-> +/*
-> + * Work around apparent quirk in internal address decoding on
-> + * some Intel chipsets (G31, G33, Q965 etc.): 
-> + * when some MMIO address range of integrated peripheral overlaps
-> + * mmconfig area, mmconfig accesses are blocked. This can happen
-> + * when we size the BAR writing all ones to it.
-> + * In practice, only integrated graphics controller has MMIO range
-> + * large enough (BAR2, 256Mb) to cause a trouble, so we disable
-> + * address decoders just on that function during PCI BAR probe.
-> + */
-> +static void __devinit pci_intel_mmconfig(struct pci_dev *dev)
-> +{
-> +	if ((dev->class >> 8) == PCI_CLASS_DISPLAY_VGA &&
-> +	    pci_domain_nr(dev->bus) == 0 && dev->bus->number == 0)
-> +		dev->disable_while_probe = 1;
-> +}
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, pci_intel_mmconfig);
-> --- 2.6.23-rc6-git4/drivers/pci/probe.c	2007-09-14 00:35:47.000000000 +0400
-> +++ linux/drivers/pci/probe.c	2007-09-14 10:27:45.000000000 +0400
-> @@ -185,6 +185,13 @@ static void pci_read_bases(struct pci_de
->  	unsigned int pos, reg, next;
->  	u32 l, sz;
->  	struct resource *res;
-> +	u16 cmd, orig_cmd;
-> +
-> +	if (dev->disable_while_probe) {
-> +		pci_read_config_word(dev, PCI_COMMAND, &orig_cmd);
-> +		cmd |= orig_cmd & ~(PCI_COMMAND_MEMORY | PCI_COMMAND_IO);
-> +		pci_write_config_word(dev, PCI_COMMAND, cmd);
-> +	}
->  
->  	for(pos=0; pos<howmany; pos = next) {
->  		u64 l64;
-> @@ -283,6 +290,8 @@ static void pci_read_bases(struct pci_de
->  			}
->  		}
->  	}
-> +	if (dev->disable_while_probe)
-> +		pci_write_config_word(dev, PCI_COMMAND, orig_cmd);
->  }
->  
->  void pci_read_bridge_bases(struct pci_bus *child)
-> 
+This change involved adding the sym_generic_search function to the LKC, and 
+implementing sym_re_search using it.
+
+Regards,
+
+	Shlomi Fish
+
+--- linux-2.6.23-rc4/scripts/kconfig/qconf.cc.orig	2007-09-01 
+21:15:39.017466409 +0300
++++ linux-2.6.23-rc4/scripts/kconfig/qconf.cc	2007-09-08 11:29:31.357869409 
++0300
+@@ -1199,6 +1199,23 @@
+ 	layout2->addWidget(searchButton);
+ 	layout1->addLayout(layout2);
+ 
++	// Initialize the "Search Type" button group.
++	searchType = new QVButtonGroup("Search Type", this, "searchType");
++
++	substringSearch = new QRadioButton(
++		"Substring Match", searchType, "Substring Match"
++		);
++
++	keywordsSearch = new QRadioButton("Keywords", searchType, "Keywords");
++
++	regexSearch = new QRadioButton(
++		"Regular Expression", searchType, "Regular Expression"
++		);
++
++	substringSearch->setChecked(TRUE);
++	layout1->addWidget(searchType);
++
++	// Initialize the ConfigView and ConfigInfoView
+ 	split = new QSplitter(this);
+ 	split->setOrientation(QSplitter::Vertical);
+ 	list = new ConfigView(split, name);
+@@ -1245,6 +1262,20 @@
+ 	}
+ }
+ 
++SEARCH_TYPE ConfigSearchWindow::getSearchType()
++{
++	return	substringSearch->isChecked() ? SUBSTRING :
++		regexSearch->isChecked() ? REGEX :
++		KEYWORDS;
++}
++
++
++static int search_filter(struct symbol *sym, void *context)
++{
++	FindQuery *query = (FindQuery *)context;
++	return query->sym_matches(sym);
++}
++
+ void ConfigSearchWindow::search(void)
+ {
+ 	struct symbol **p;
+@@ -1255,7 +1286,9 @@
+ 	list->list->clear();
+ 	info->clear();
+ 
+-	result = sym_re_search(editField->text().latin1());
++	FindQuery query(editField->text(), getSearchType());
++
++	result = sym_generic_search(search_filter, (void *)&query);
+ 	if (!result)
+ 		return;
+ 	for (p = result; *p; p++) {
+@@ -1265,6 +1298,114 @@
+ 	}
+ }
+ 
++FindQuery::FindQuery(QString q, SEARCH_TYPE t, bool a_case) :
++	query(q), search_type(t), case_sensitive(a_case)
++{
++	compiled_regex = NULL;
++	if (search_type == REGEX)
++	{
++		compiled_regex = new QRegExp(query, case_sensitive);
++	}
++	else if (search_type == KEYWORDS)
++	{
++		compile_keywords();
++	}
++}
++
++void FindQuery::compile_keywords()
++{
++	QRegExp split_words("\\s+");
++	QStringList bare_words = QStringList::split(split_words, query);
++
++	QStringList::iterator it;
++	for ( it = bare_words.begin(); it != bare_words.end(); ++it )
++	{
++		QString escaped = QRegExp::escape(*it);
++		
++		keywords.append(QRegExp(QString("\\b") + escaped + "\\b"));
++	}
++}
++
++FindQuery::~FindQuery()
++{
++	if (compiled_regex)
++	{
++		delete compiled_regex;
++		compiled_regex = NULL;
++	}
++}
++
++bool FindQuery::string_matches_regex(QRegExp & re, const char *string)
++{
++	QString qs(string);
++
++	return (re.search(qs) >= 0);
++}
++
++bool FindQuery::string_matches(const char *string)
++{
++	QString qs(string);
++
++	if (search_type == SUBSTRING)
++	{
++		return qs.contains(query, case_sensitive);
++	}
++	else if (search_type == REGEX)
++	{
++		return string_matches_regex(*compiled_regex, string);
++	}
++	else
++	{
++		return false;
++	}
++}
++
++bool FindQuery::sym_matches(struct symbol *sym)
++{
++	if (!sym)
++	{
++		return false;
++	}
++
++	if (search_type == KEYWORDS)
++	{
++		return sym_matches_keywords(sym);
++	}
++	else
++	{
++		return sym_matches_atom(sym);
++	}
++
++}
++
++bool FindQuery::sym_matches_atom(struct symbol *sym)
++{
++	return (string_matches(sym->name) ||
++		(sym->prop &&
++		 sym->prop->menu &&
++		 string_matches(sym->prop->menu->help)
++		));
++}
++
++bool FindQuery::sym_matches_keywords(struct symbol *sym)
++{
++	QValueList<QRegExp>::iterator it;
++
++	for ( it = keywords.begin(); it != keywords.end(); ++it )
++	{
++		if (!(string_matches_regex(*it, sym->name)
++				||
++			(sym->prop &&
++			 sym->prop->menu &&
++			 string_matches_regex(*it, sym->prop->menu->help))))
++		{
++			return false;
++		}
++	}
++
++	return true;
++}
++
+ /*
+  * Construct the complete config widget
+  */
+--- linux-2.6.23-rc4/scripts/kconfig/qconf.h.orig	2007-09-01 
+21:15:33.537030610 +0300
++++ linux-2.6.23-rc4/scripts/kconfig/qconf.h	2007-09-08 11:12:18.015699416 
++0300
+@@ -4,6 +4,8 @@
+  */
+ 
+ #include <qlistview.h>
++#include <qradiobutton.h>
++#include <qvbuttongroup.h>
+ #if QT_VERSION >= 300
+ #include <qsettings.h>
+ #else
+@@ -275,6 +277,7 @@
+ 	bool _showDebug;
+ };
+ 
++enum SEARCH_TYPE { SUBSTRING, KEYWORDS, REGEX };
+ class ConfigSearchWindow : public QDialog {
+ 	Q_OBJECT
+ 	typedef class QDialog Parent;
+@@ -288,11 +291,15 @@
+ protected:
+ 	QLineEdit* editField;
+ 	QPushButton* searchButton;
++	QVButtonGroup *searchType;
++	QRadioButton *substringSearch, *keywordsSearch, *regexSearch;
+ 	QSplitter* split;
+ 	ConfigView* list;
+ 	ConfigInfoView* info;
+ 
+ 	struct symbol **result;
++
++	SEARCH_TYPE getSearchType();
+ };
+ 
+ class ConfigMainWindow : public QMainWindow {
+@@ -332,3 +339,25 @@
+ 	QSplitter* split1;
+ 	QSplitter* split2;
+ };
++
++class FindQuery
++{
++	public:
++	bool case_sensitive;
++	SEARCH_TYPE search_type;
++	QString query;
++	QRegExp * compiled_regex;
++	QValueList<QRegExp> keywords;
++
++	public:
++	FindQuery() : query("") { case_sensitive = false; search_type = SUBSTRING; }
++	FindQuery(QString q, SEARCH_TYPE t, bool a_case = false);
++	~FindQuery();
++	void compile_keywords();
++	bool string_matches(const char *);
++	bool string_matches_regex(QRegExp & re, const char *string);
++	bool sym_matches(struct symbol *sym);
++	bool sym_matches_keywords(struct symbol *sym);
++	bool sym_matches_atom(struct symbol *sym);
++};
++
+--- linux-2.6.23-rc4/scripts/kconfig/lkc.h.orig	2007-09-01 19:56:36.528350007 
++0300
++++ linux-2.6.23-rc4/scripts/kconfig/lkc.h	2007-09-01 19:57:57.758809341 +0300
+@@ -111,6 +111,9 @@
+ struct property *prop_alloc(enum prop_type type, struct symbol *sym);
+ struct symbol *prop_get_symbol(struct property *prop);
+ 
++typedef int (*sym_search_filter_t)(struct symbol *sym, void *context);
++struct symbol **sym_generic_search(sym_search_filter_t filter, void 
+*context);
++
+ static inline tristate sym_get_tristate_value(struct symbol *sym)
+ {
+ 	return sym->curr.tri;
+--- linux-2.6.23-rc4/scripts/kconfig/symbol.c.orig	2007-09-01 
+21:24:07.885930947 +0300
++++ linux-2.6.23-rc4/scripts/kconfig/symbol.c	2007-09-01 20:41:58.420791258 
++0300
+@@ -717,23 +717,39 @@
+ 	return symbol;
+ }
+ 
++static int re_search_filter(struct symbol *sym, void *re_void)
++{
++	return (regexec((regex_t*)re_void, sym->name, 0, NULL, 0) == 0);
++}
++
+ struct symbol **sym_re_search(const char *pattern)
+ {
+-	struct symbol *sym, **sym_arr = NULL;
+-	int i, cnt, size;
+ 	regex_t re;
++	struct symbol **results;
+ 
+-	cnt = size = 0;
+-	/* Skip if empty */
+ 	if (strlen(pattern) == 0)
+ 		return NULL;
+ 	if (regcomp(&re, pattern, REG_EXTENDED|REG_NOSUB|REG_ICASE))
+ 		return NULL;
+ 
++	results = sym_generic_search(re_search_filter, (void *)&re);
++
++	regfree(&re);
++
++	return results;
++}
++
++struct symbol **sym_generic_search(sym_search_filter_t filter, void *context)
++{
++	struct symbol *sym, **sym_arr = NULL;
++	int i, cnt, size;
++
++	cnt = size = 0;
++
+ 	for_all_symbols(i, sym) {
+ 		if (sym->flags & SYMBOL_CONST || !sym->name)
+ 			continue;
+-		if (regexec(&re, sym->name, 0, NULL, 0))
++		if (!filter(sym, context))
+ 			continue;
+ 		if (cnt + 1 >= size) {
+ 			void *tmp = sym_arr;
+@@ -748,7 +764,6 @@
+ 	}
+ 	if (sym_arr)
+ 		sym_arr[cnt] = NULL;
+-	regfree(&re);
+ 
+ 	return sym_arr;
+ }
+
+
+---------------------------------------------------------------------
+Shlomi Fish      shlomif@iglu.org.il
+Homepage:        http://www.shlomifish.org/
+
+If it's not in my E-mail it doesn't happen. And if my E-mail is saying
+one thing, and everything else says something else - E-mail will conquer.
+    -- An Israeli Linuxer
+-- 
+
+---------------------------------------------------------------------
+Shlomi Fish      shlomif@iglu.org.il
+Homepage:        http://www.shlomifish.org/
+
+If it's not in my E-mail it doesn't happen. And if my E-mail is saying
+one thing, and everything else says something else - E-mail will conquer.
+    -- An Israeli Linuxer
