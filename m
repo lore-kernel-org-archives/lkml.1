@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934319AbXINQSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbXINQ3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934319AbXINQSq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763732AbXINQSQ
+	id S1755778AbXINQ3o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbXINQ3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:18:16 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:6601 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764614AbXINQSO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:18:14 -0400
-X-IronPort-AV: E=Sophos;i="4.20,256,1186383600"; 
-   d="scan'208";a="524068233"
-To: "Michael Chan" <mchan@broadcom.com>
-Cc: "Steve Wise" <swise@opengridcomputing.com>,
-       "netdev" <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org, anilgv@broadcom.com, uri@broadcom.com
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
-X-Message-Flag: Warning: May contain useful information
-References: <adahclymos8.fsf@cisco.com>
-	<46E97BB0.9030106@opengridcomputing.com> <adaps0ml18e.fsf@cisco.com>
-	<1189724358.9540.113.camel@dell>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 14 Sep 2007 09:18:01 -0700
-In-Reply-To: <1189724358.9540.113.camel@dell> (Michael Chan's message of "Thu, 13 Sep 2007 15:59:18 -0700")
-Message-ID: <adaveadjk5i.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Fri, 14 Sep 2007 12:29:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42567 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750962AbXINQ3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 12:29:35 -0400
+Message-ID: <46EAB6E8.2070702@garzik.org>
+Date: Fri, 14 Sep 2007 12:29:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Sep 2007 16:18:01.0671 (UTC) FILETIME=[D2706570:01C7F6EA]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: James Bottomley <james.bottomley@steeleye.com>, linux-scsi@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SCSI: update Kconfig help text to indicate SCSI core's
+ widespread usage
+References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.d922469e152fe0f3@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > I've been meaning to track down the bnx2 iscsi offload patch to look
- > > and see if this issue is addressed, since the same problem seems to
- > > exist: it seems an iscsi connection and a main stack tcp connection
- > > might share the same 4-tuple unless something is done to avoid that
- > > happening.
+Stefan Richter wrote:
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+> 
+> Applicable to 2.6.23-rc6 and to scsi-misc.
+> 
+>  drivers/scsi/Kconfig |   32 ++++++++++++++++++++------------
+>  1 file changed, 20 insertions(+), 12 deletions(-)
 
- > iSCSI does not do passive listens, only active connections to the
- > target.  But you're right, the port space is still shared between iSCSI
- > and the main stack.  We currently rely on user apps binding to the main
- > stack to reserve certain ephemeral ports, and telling the iSCSI driver
- > which ports to use.
+ACK
 
-Got it... I wasn't thinking that clearly, but it is clear that a full
-4-tuple collision with only active connections is quite unlikely.  I
-guess you would have to make both an offloaded and a non-offloaded
-iSCSI connection to the same target and get really unlucky with
-ephemeral port allocation.  So in practice I guess it's not an issue
-at all with your driver yet.
 
-However, do you have any plans to support iSCSI offload for targets?
-Also, looking at the first CNIC patch, I can't help but notice that
-you seem to have at least some support for iWARP there.  How does the
-CNIC look?  Does it share the same interface/addresses as the
-non-offload NIC, or does it create a completely separate netdevice?
-
-I want to make sure that whatever solution we come up with for cxgb3
-doesn't cause problems for you.  And of course if you have a better
-idea than what Steve has come up with, that would be great :)
-
- - R.
