@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbXINPZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764747AbXINP3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759970AbXINPZf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 11:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbXINPZ1
+	id S1764747AbXINP3S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 11:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbXINP3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 11:25:27 -0400
-Received: from mail.nagafix.co.uk ([194.145.196.85]:41854 "EHLO
-	mail.nagafix.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbXINPZ0 (ORCPT
+	Fri, 14 Sep 2007 11:29:10 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:53354 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753193AbXINP3J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 11:25:26 -0400
-Message-ID: <46EAA7E4.8020700@nagafix.co.uk>
-Date: Fri, 14 Sep 2007 16:25:24 +0100
-From: Antoine Martin <antoine@nagafix.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070806)
-MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: CFS: some bad numbers with Java/database threading [FIXED]
-References: <46E871FE.9010908@nagafix.co.uk> <20070913112427.GA20686@elte.hu>	 <20070914083246.GA20514@elte.hu> <a781481a0709140306k3faf3585haae26853fe81381c@mail.gmail.com>
-In-Reply-To: <a781481a0709140306k3faf3585haae26853fe81381c@mail.gmail.com>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=F18AD6BB;
-	url=http://users.nagafix.co.uk/~antoine/antoine.asc
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Sep 2007 11:29:09 -0400
+Date: Fri, 14 Sep 2007 19:29:13 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+Message-ID: <20070914192913.A6668@jurassic.park.msu.ru>
+References: <fa.ggBqx6W3i6hfs6jdfg64oXKSxW8@ifi.uio.no> <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no> <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no> <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no> <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no> <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no> <46EA00DA.6010704@shaw.ca> <20070914151401.A5586@jurassic.park.msu.ru> <46EA9B23.7030709@shaw.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+In-Reply-To: <46EA9B23.7030709@shaw.ca>; from hancockr@shaw.ca on Fri, Sep 14, 2007 at 08:30:59AM -0600
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+On Fri, Sep 14, 2007 at 08:30:59AM -0600, Robert Hancock wrote:
+> Do you have an example of specific hardware that exhibits this problem?
 
-Satyam Sharma wrote:
-> Hi Antoine, Ingo,
-> On 9/14/07, Ingo Molnar <mingo@elte.hu> wrote:
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> hm, could you try the patch below ontop of 2.6.23-rc6 and do:
->>>
->>>  echo 1 > /proc/sys/kernel/sched_yield_bug_workaround
->>>
->>> does this improve the numbers?
-> 
-> Hmm, I know diddly about Java, and I don't want to preempt Antoine's next
-> test, but I noticed that he uses Thread.sleep() in his testcode and not the
-> Thread.yield() so it would be interesting if Antoine can test with this patch
-> and report if something shows up ..
-See below...
-I'll add a new test using yield() and see what that does.
+Well, first two results of google search for "disable bar when sizing":
+ http://lkml.org/lkml/2002/12/21/95
+ http://lkml.org/lkml/2002/12/20/110
 
->> the patch i sent was against CFS-devel. Could you try the one below,
->> which is against vanilla -rc6, does it improve the numbers? (it should
->> have an impact) Keep CONFIG_SCHED_DEBUG=y to be able to twiddle the
->> sysctl.
-It looks good now! Updated results here:
-http://devloop.org.uk/documentation/database-performance/Linux-Kernels/Kernels-ManyThreads-CombinedTests5-10msYield-noload.png
-http://devloop.org.uk/documentation/database-performance/Linux-Kernels/Kernels-ManyThreads-CombinedTests5-10msYield.png
-Compared with more kernels here - a bit more cluttered:
-http://devloop.org.uk/documentation/database-performance/Linux-Kernels/Kernels-ManyThreads-CombinedTests4-10msYield-noload.png
+> So far after a similar patch has been in -mm for months there have been 
+> no reports of any such problems.
 
-Thanks Ingo!
-Does this mean that I'll have to keep doing:
-echo 1 > /proc/sys/kernel/sched_yield_bug_workaround
-Or are you planning on finding a more elegant solution?
-# find /proc -name "*workaround*"
-/proc/sys/kernel/sched_yield_bug_workaround
-/proc/sys/net/ipv4/tcp_workaround_signed_windows
+You cannot compare user base of -mm and release kernels. Also, note
+that we're talking about maybe 0.01% of systems running Linux.
+And similar patch appeared in various trees several times over the last
+decade and every time it had to be reverted.
 
-> On 9/13/07, Antoine Martin <antoine@nagafix.co.uk> wrote:
->> All the 2.6.23-rc kernels performed poorly (except -rc3!):
-> 
-> This is an interesting data point, IMHO ... considering these tests are long,
-> I suspect you ran them only once each per kernel. So I wonder how reliable
-> that -rc3 testpoint is. If this oddity is reproducible, it would be great if you
-> could git-bisect:
-Yeah, I thought that was quite suspicious.
-- -rc2 is just like -rc1 (see above) so I'll re-test -rc3 first,
-git-bisect could take a while with those tests... just wiping the disk
-between tests takes about 30mins.
+> This isn't guaranteed to help. I don't think it is only integrated 
+> graphics that could cause this problem, I think that an add-on PCI 
+> Express card can do this as well. Depending on the chipset memory decode 
+> rules, any PCI or PCI Express device with a BAR large enough could cause 
+> issues.
 
->> * java threads are created first and the data is prepared, then all the
->> threads are started in a tight loop. Each thread runs multiple queries
->> with a 10ms pause (to allow the other threads to get scheduled)
-> 
-> Don't know much about CFS either, but does that constant "10 ms" sleep
-> somehow lead to evil synchronization issues between the test threads?
-> Does randomizing that time (say from 2-20 ms) lead to different numbers?
-I've tested before with varying timings, but I had not thought of using
-a randomized delay.
-Will add that too.
+No, it's impossible for several reasons. Most obvious one is that a PCI-E
+bridge does isolate stuff quite nicely.
 
-Many thanks to you all for the feedback!
-Antoine
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFG6qfkGK2zHPGK1rsRCgeEAJ9HUUtHUNScvTVKo5z2sSmo+G+BVgCfdYmK
-rcd1VYUuzQA2oFEmakjZxgM=
-=jmI8
------END PGP SIGNATURE-----
+Ivan.
