@@ -1,164 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758172AbXINLUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbXINLZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758172AbXINLUl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 07:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbXINLUe
+	id S1759220AbXINLZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 07:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbXINLZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 07:20:34 -0400
-Received: from mail-in-05.arcor-online.net ([151.189.21.45]:38446 "EHLO
-	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752545AbXINLUd (ORCPT
+	Fri, 14 Sep 2007 07:25:21 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:33782 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756433AbXINLZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 07:20:33 -0400
-Date: Fri, 14 Sep 2007 13:21:54 +0200
-From: Andreas Herrmann <aherrman@arcor.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       dean gaudet <dean@arctic.org>
-Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG
-Message-ID: <20070914112154.GB6727@devil>
-References: <46E9A391.3000804@zytor.com> <20070914082129.GA6727@devil>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46E9A391.3000804@zytor.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+	Fri, 14 Sep 2007 07:25:20 -0400
+Date: Fri, 14 Sep 2007 13:25:19 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Some driver core and kobject minor patches
+Message-ID: <20070914132519.587d7a35@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070913233751.GA10856@kroah.com>
+References: <20070913233751.GA10856@kroah.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Usually one shouldn't reply to such mails. But I cannot resist.
-Because partially there was told such nonsense ...
-Of course the following is just my personal view.
+On Thu, 13 Sep 2007 16:37:51 -0700,
+Greg KH <greg@kroah.com> wrote:
 
-On 2007-09-13 20:54:41, H. Peter Anvin wrote:
-> Andreas Herrmann wrote:
-> > On Thu, Sep 13, 2007 at 10:20:56AM -0700, H. Peter Anvin wrote:
-> >> Yinghai Lu wrote:
-> >>> BIOS guys also said that fam 10h need mmconfig via eax accessing, may
-> >>> need OS do sth, so it is safe to stay with MCFG entry for SB like
-> >>> mcp55...
-> >>>
-> >>> but latest kernel already have that workaround to make mmconfig via eax...
-> >>>
-> >> This is actually a good point.  Since the CPU vendor managed to
-> >> completely fuck up the operation of MMCONFIG itself on this CPU (it's a
-> >> *MEMORY REFERENCE*, guys!), it is actually to be expected and prudent
-> >> that BIOS vendors will drop the MCFG entry.  MMCONFIG doesn't actually
-> >> work on this CPU for any system software which doesn't already know to
-> >> work around this particular piece of severe braindamage;
-> > 
-> > But wait, isn't it true that Vista is using MCFG?
-> > So, poor BIOS guys what should they do now?
-> > If you have a special problem here why not upgrading your Linux kernel?
-> > 
->
-> I'm not talking about Linux here.  I'm talking about any random system
-> software (which may or may not be Vista, and may nor may not even be an
-> OS.)
-
-Are you serious? You are worried about Vista compatibility issues for
-new hardware? Here on LKML? I thought this is a Linux mailing list.
-
-But if this is your worry:
-Aren't you aware that most OSes have included patches in order to
-support this new hardware? Making use of the new pstates stuff is one
-example. And aren't you aware that even for proprietary OSes there are
-updates?
-
-But if that is not functioning for you why don't you just get rid of your
-proprietary hoax?
-
->  If they advertise MCFG, then a random OS could try to use it, in
-> accordance with the spec, without the workaround, with serious
-> malfunction as a result.
-
-Have you looked into the BKDG of that CPU?
-You can download it here
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/31116.pdf
-
-BTW, in this version it is even recommended to set up MCFG. So why should a
-BIOS vendor drop it?
-
-As I have stated in some mail yesterday there are actually 3 ECS access methods
-possible. For mmio config space accesses you have the choices that the
-translation is done either by CPU/NB or by the chipset.
-So if you do not enable MMIO config space access within CPU/NB, the CPU will
-not convert the config accesses to config cycles on the link.
-
-Which means that:
-- your tiny "random OS" should work as usual
-- you have no mmio config access to the northbridge functions.
-
-Said that, it seems obvious that the MMIO configuration requirements
-are just needed if the translation is done by the CPU/NB. Which makes
-somehow sense, because I think the CPU has to intercept somehow the
-MMIO traffic to decide whether config space should be accessed or not.
-And maybe the hardware designers had some reason to impose those
-requirements?
-
-So here comes one funny part out of that discussion.
-
-It seems that a workaround went into the kernel
-(commit  3320ad994afb2c44ad34b3b34c3c5cf0da297331)
-for a feature that is not yet switched on by the OS.
-
-Because Yinghai's patch is rejected. Or did I miss something?
-Did Andi rejected just the third patch and not the first two? Hm, ...
-
-(And obviously Dean Gaudet must have had a system where MSR 0xc0010058
-was accordingly configured  - by the BIOS or himself?)
-
-This shows just one thing. Code in this area needs more review and testing
-before it goes upstream. So maybe there is some problem with the
-"development process" for x86_64?
-
-> If they don't include MCFG, then the worst thing that can happen is that
-> the OS doesn't see the extended space.  An OS that has chip-specific
-> workarounds can be aware that this chip is Special and enable MMCONFIG
-> and use it anyway.
-
-Why then not add code for this "fam 10h-chip" - to decide it is special
-and to set up the MmioConfigBase MSR in such a case?
-
-> In RFC-speak:
+> Kay pointed out to me the other day that we are dragging around 20 bytes
+> in every struct kobject and in every struct device to contain a name
+> string that can be dynamically allocated instead.  For small device
+> names (the majority), this savings can add up, especially with a lot of
+> individual devices.
 > 
-> Since this chip doesn't implement standards-conformant mmconfig, a BIOS
-> MUST NOT enable MCFG in ACPI.  As a result, OSes that have chip-specific
-> workarounds, like Linux has, SHOULD detect it and use ad hoc code to
-> enable it anyway.
+> So, I started out by getting rid of the static array in the kobject
+> structure, as we already were dynamically allocating space if it was
+> needed.
+> 
+> Of course, this required a number of other minor cleanups through the
+> code tree to handle places where we were incorrectly directly accessing
+> the kobject name instead of using the "proper" function.  I also got
+> sidetracked by a few driver core and kobject.h cleanups of macros that
+> are no longer needed, or functions that no longer need to be global
+> (they were never exported, so we don't have to worry about that mess...)
+> 
+> And I added a change to trigger a warning if we add an attribute to
+> sysfs that we have already had created, to help the SCSI developers out
+> with their driver model reworks.
+> 
+> So, here's a series of 11 patches that I've added to my tree, and will
+> send to Linus when 2.6.24 is opened up.
+> 
+> Any review comments are appreciated.  The full diffstat is below showing
+> that overall, we did get rid of more code than was added.
 
+Neat. We can get rid of even more stuff if we remove the removed
+functions from the Documentation as well.
 
-#1: So if you all think that the new mmconfig stuff (done in the CPU/NB) is a crux,
-then make it right and double-check in the OS whether the MmioConfigBase MSR
-is set and clear it if you like!
-(And I can even imagine that you would send patches to do this ;-(
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-And your statement is wrong again. If #1 is done.
-Then you should still have MCFG set up in the BIOS to tell the OS the config space
-address range such that mmconfig can be done via the chipset.
+---
+ Documentation/kobject.txt |   21 ++-------------------
+ 1 files changed, 2 insertions(+), 19 deletions(-)
 
-
-And some final notes:
-
-This stuff was long documented in some preliminary NDA specs. And some kernel
-developer(s) had access to it. So if it is such a big deal, why didn't they speak
-up earlier?
-
-Why I didn't speak up earlier?
-Because I have to admit that I didn't care about that stuff until 2-3 weeks ago.
-
-Because I am not as standards-compliant as you are, I should say: "To err is human".
-So I've done my best to verify that config space stuff with real code on real hardware
-last week. But as always, it is possible that I am wrong with certain statements.
-
-Do you think it is a good idea to discuss that MMCONFIG topic with
-some designers at AMD? I could print out that mail or forward it to them.
-Do you think they will be happy to listen to your words if you say that
-they are "fucking up" stuff and come up with "braindamaged" ideas?
-I appreciate the code you write, but not the communication style you chose.
-
-
-Regards,
-
-Andreas
-
+--- linux-2.6.orig/Documentation/kobject.txt
++++ linux-2.6/Documentation/kobject.txt
+@@ -54,7 +54,6 @@ embedded in larger data structures and r
+ 
+ struct kobject {
+ 	const char		* k_name;
+-	char			name[KOBJ_NAME_LEN];
+ 	struct kref		kref;
+ 	struct list_head	entry;
+ 	struct kobject		* parent;
+@@ -223,18 +222,15 @@ decl_subsys(devices, &ktype_device, &dev
+ is equivalent to doing:
+ 
+ struct kset devices_subsys = {
+-     .kobj = {
+-	   .name = "devices",
+-     },
+      .ktype = &ktype_devices,
+      .uevent_ops = &device_uevent_ops,
+ };
+-
++kobject_set_name(&devices_subsys, name);
+ 
+ The objects that are registered with a subsystem that use the
+ subsystem's default list must have their kset ptr set properly. These
+ objects may have embedded kobjects or ksets. The
+-following helpers make setting the kset easier:
++following helper makes setting the kset easier:
+ 
+ 
+ kobj_set_kset_s(obj,subsys)
+@@ -242,22 +238,9 @@ kobj_set_kset_s(obj,subsys)
+ - Assumes that obj->kobj exists, and is a struct kobject.
+ - Sets the kset of that kobject to the kset <subsys>.
+ 
+-
+-kset_set_kset_s(obj,subsys)
+-
+-- Assumes that obj->kset exists, and is a struct kset.
+-- Sets the kset of the embedded kobject to the kset <subsys>.
+-
+-subsys_set_kset(obj,subsys)
+-
+-- Assumes obj->subsys exists, and is a struct subsystem.
+-- Sets obj->subsys.kset.kobj.kset to the subsystem's embedded kset.
+-
+ void subsystem_init(struct kset *s);
+ int subsystem_register(struct kset *s);
+ void subsystem_unregister(struct kset *s);
+-struct kset *subsys_get(struct kset *s);
+-void kset_put(struct kset *s);
+ 
+ These are just wrappers around the respective kset_* functions.
+ 
