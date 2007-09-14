@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757988AbXINQmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXINQmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757988AbXINQmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXINQmB
+	id S1759526AbXINQmg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbXINQmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:42:01 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:65367 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbXINQmA (ORCPT
+	Fri, 14 Sep 2007 12:42:08 -0400
+Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:63360 "EHLO
+	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754143AbXINQmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:42:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JD0hl7o1a6iJ0TwfhZ8l8LEJmeDCO4XjQJZfYjyj22+qbcgaa7YCFPONmdNkU13JMp2NIW9WHzUuhHPxCcfjRvy+qKd1OicPlg6JKkTYwjXox8OJUnbxpmxbyx/pqLYPgV2lC3ORLDqEJno4zQihO/h/iDgEOkqW449L993BiGw=
-Message-ID: <a781481a0709140941w4ec76582j40ee53a189b99b05@mail.gmail.com>
-Date: Fri, 14 Sep 2007 22:11:59 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
-Subject: Re: [PATCH v3] Make the pr_*() family of macros in kernel.h complete
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, i2c@lm-sensors.org,
-       linux-omap-open-source@linux.omap.com
-In-Reply-To: <598D5675D34BE349929AF5EDE9B03E270155578C@az33exm24.fsl.freescale.net>
+	Fri, 14 Sep 2007 12:42:06 -0400
+From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+References: <20070907124800.GP16806@vanheusden.com>
+	<20070907083522.3191a4ba.randy.dunlap@oracle.com>
+	<46E8F9D4.10307@aitel.hist.no>
+Date: Fri, 14 Sep 2007 18:42:02 +0200
+In-Reply-To: <46E8F9D4.10307@aitel.hist.no> (Helge Hafting's message of "Thu,
+	13 Sep 2007 10:50:28 +0200")
+Message-ID: <87myvpqjvp.fsf@informatik.uni-tuebingen.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11896151802410-git-send-email-Emilian.Medve@Freescale.com>
-	 <598D5675D34BE349929AF5EDE9B03E270155578C@az33exm24.fsl.freescale.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > -----Original Message-----
-> > From: Medve Emilian-EMMEDVE1
-> > Sent: Wednesday, September 12, 2007 11:40 AM
-> > To: linux-kernel@vger.kernel.org; netdev@vger.kernel.org;
-> > i2c@lm-sensors.org; linux-omap-open-source@linux.omap.com
-> > Cc: Medve Emilian-EMMEDVE1
+Helge Hafting <helge.hafting@aitel.hist.no> writes:
 
-... no maintainer explicitly copied on the original mail who'd push this in.
-Little thing, but LKML is too noisy, so you need to Cc: folks explicitly ...
+> Randy Dunlap wrote:
+>> On Fri, 7 Sep 2007 14:48:00 +0200 Folkert van Heusden wrote:
+>>
+>>
+>>> Hi,
+>>>
+>>> Maybe it is a nice enhancement for make menuconfig to more explicitly
+>>> give a pop-up or so when someone selects for example a sata controller
+>>> while no 'scsi-disk' support was selected?
+>>>
+>>
+>> I know that it's difficult to get people to read docs & help text,
+>> and maybe it is needed in more places, but CONFIG_ATA (SATA/PATA)
+>> help text says:
+>>
+>>   NOTE: ATA enables basic SCSI support; *however*,
+>>   'SCSI disk support', 'SCSI tape support', or
+>>   'SCSI CDROM support' may also be needed,
+>>   depending on your hardware configuration.
 
-> > Subject: [PATCH v3] Make the pr_*() family of macros in
-> > kernel.h complete
-> >
-> > Other/Some pr_*() macros are already defined in kernel.h, but
-> > pr_err() was defined
-> > multiple times in several other places
-> >
-> > Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+Could one duplicate the configure options for scsi disk/tape/cdrom at
+that place? The text should then probably read SCSI/SATA disk support
+in both places.
 
-I think it's a useful cleanup, patch looks good to me ...
-
-Reviewed-by: Satyam Sharma <satyam@infradead.org>
-
-[ Original diff is at: http://lkml.org/lkml/diff/2007/9/12/182/1 ]
+MfG
+        Goswin
