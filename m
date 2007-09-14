@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbXINFyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbXINGCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756469AbXINFyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 01:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbXINFya
+	id S1756814AbXINGCw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 02:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXINGCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 01:54:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:39074 "EHLO ozlabs.org"
+	Fri, 14 Sep 2007 02:02:44 -0400
+Received: from nn7.de ([85.214.94.156]:33253 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751433AbXINFy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 01:54:29 -0400
-Date: Fri, 14 Sep 2007 15:54:27 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Andrew Morton <akpm@osdl.org>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       rtc-linux@googlegroups.com
-Subject: rtc-ds1742.c should use resource_size_t for base address
-Message-ID: <20070914055427.GM481@localhost.localdomain>
-Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
-	Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1751539AbXINGCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 02:02:43 -0400
+Subject: Re: 2.6.22.6: kernel BUG at fs/locks.c:171
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-fsdevel@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200709130951.48194.nickpiggin@yahoo.com.au>
+References: <1189675222.5352.10.camel@localhost>
+	 <200709130951.48194.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 14 Sep 2007 08:02:34 +0200
+Message-Id: <1189749754.25045.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the rtc driver, rtc-ds1742.c uses an unsigned long to store
-the base mmio address of the NVRAM/RTC.  This breaks on systems like
-PowerPC 440, which is a 32-bit core with 36-bit physical addresses: IO
-on the system, including the RTC, is typically above the 4GB point,
-and cannot fit into an unsigned long.
+On Thu, 2007-09-13 at 09:51 +1000, Nick Piggin wrote:
+> On Thursday 13 September 2007 19:20, Soeren Sonnenburg wrote:
+> > Dear all,
+> >
+> > I've just seen this in dmesg on a AMD K7 / kernel 2.6.22.6 machine
+> > (config attached).
+> >
+> > Any ideas / which further information needed ?
+> 
+> Thanks for the report. Is it reproduceable? It seems like the
+> locks_free_lock call that's oopsing is coming from __posix_lock_file.
+> The actual function looks fine, but the lock being freed could have
+> been corrupted if there was slab corruption, or a hardware corruption.
+> 
+> You could: try running memtest86+ overnight. And try the following
+> patch and turn on slab debugging then try to reproduce the problem.
 
-This patch fixes the problem by replacing the unsigned long with a
-resource_size_t.  Tested on Ebony (PPC440) (with additional patches to
-instantiate the ds1742 platform device appropriately).
+OK so far I've run memtest86+ 1.40 from freedos for 8 hrs (v1.70 hung on
+startup) - nothing.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Could this corruption be caused by a pci card/driver? I am asking as I
+am using a new dvb-t card (asus p7131) and the oops happened after 5 or
+6 days of uptime just about a day after watching some movie (very bad
+reception/lots of errors). 
 
-Index: working-2.6/drivers/rtc/rtc-ds1742.c
-===================================================================
---- working-2.6.orig/drivers/rtc/rtc-ds1742.c	2007-09-14 15:43:31.000000000 +1000
-+++ working-2.6/drivers/rtc/rtc-ds1742.c	2007-09-14 15:44:09.000000000 +1000
-@@ -55,7 +55,7 @@ struct rtc_plat_data {
- 	void __iomem *ioaddr_rtc;
- 	size_t size_nvram;
- 	size_t size;
--	unsigned long baseaddr;
-+	resource_size_t baseaddr;
- 	unsigned long last_jiffies;
- };
- 
+However this machine used to have uptimes of months before the dvb card
+was in there and the kernel version upgrade (don't know which version
+that was...).
 
+Anyway I am not sure if this is reproducible, but I will keep memtest
+running today and then proceed as you said...
+
+Thanks,
+Soeren
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
