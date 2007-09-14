@@ -1,65 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbXINXm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbXINXr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758914AbXINXm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 19:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758512AbXINXmU
+	id S932260AbXINXr6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 19:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbXINXru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 19:42:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33319 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757952AbXINXmT (ORCPT
+	Fri, 14 Sep 2007 19:47:50 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:45683 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754102AbXINXrt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 19:42:19 -0400
-Date: Fri, 14 Sep 2007 16:42:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
-Subject: Re: [PATCH 1/5] Use existing macros for distinguishing mandatory
- locks
-Message-Id: <20070914164215.60d7d8b2.akpm@linux-foundation.org>
-In-Reply-To: <46E7CAE6.8040803@openvz.org>
-References: <46E7CAE6.8040803@openvz.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 14 Sep 2007 19:47:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Jps46K6Mqsj5wEEtLWKnbdhmSbgyZYgSDVXy3nns+bT3l4O1EwgedySrVQLZzQUwRz5juKemHJ+gVi8CIH+BD+P8X9AAxInOV59z2DxT4U67vthkTknJytMMV0EqH5J51plkL3EjgVFoRNwYo8WnvUlqOpP9OauXMwHu3R3VylI=
+Message-ID: <a781481a0709141647q3d019423s388c64bf6bed871a@mail.gmail.com>
+Date: Sat, 15 Sep 2007 05:17:48 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/6] cpuset write dirty map
+Cc: "Ethan Solomita" <solo@google.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <20070914161536.3ec5c533.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <469D3342.3080405@google.com> <46E741B1.4030100@google.com>
+	 <46E742A2.9040006@google.com>
+	 <20070914161536.3ec5c533.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007 15:17:58 +0400
-Pavel Emelyanov <xemul@openvz.org> wrote:
+On 9/15/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 11 Sep 2007 18:36:34 -0700
+> Ethan Solomita <solo@google.com> wrote:
 
-> The combination of S_ISGID bit set and S_IXGRP bit unset is 
-> used to mark the inode as "mandatory lockable" and there's a 
-> macro for this check called MANDATORY_LOCK(inode). However, 
-> fs/locks.c and some filesystems still perform the explicit 
-> i_mode checking. 
-> 
-> Switch the fs/locks.c to macro making the code shorter and 
-> more readable.
-> 
-> The __MANDATORY_LOCK() macro is to be used in places where
-> the IS_MANDLOCK() for superblock is already known to be true.
-> 
+> > The dirty map may be stored either directly in the mapping (for NUMA
+> > systems with less then BITS_PER_LONG nodes) or separately allocated
+> > for systems with a large number of nodes (f.e. IA64 with 1024 nodes).
 
-If we're going to churn this code then it would be better to switch from
-ugly-upper-case-macro to nice-lower-case-C-function while we're doing it,
-please.
+> > --- 0/include/linux/fs.h      2007-09-11 14:35:58.000000000 -0700
+> > +++ 1/include/linux/fs.h      2007-09-11 14:36:24.000000000 -0700
+> > @@ -516,6 +516,13 @@ struct address_space {
+> >       spinlock_t              private_lock;   /* for use by the address_space */
+> >       struct list_head        private_list;   /* ditto */
+> >       struct address_space    *assoc_mapping; /* ditto */
+> > +#ifdef CONFIG_CPUSETS
+> > +#if MAX_NUMNODES <= BITS_PER_LONG
+> > +     nodemask_t              dirty_nodes;    /* nodes with dirty pages */
+> > +#else
+> > +     nodemask_t              *dirty_nodes;   /* pointer to map if dirty */
+> > +#endif
+> > +#endif
+>
+> afacit there is no code comment and no changelog text which explains the
+> above design decision?  There should be, please.
 
-> 
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 291d40b..035ffda 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1488,8 +1488,8 @@ extern int locks_mandatory_area(int, str
->   * Candidates for mandatory locking have the setgid bit set
->   * but no group execute bit -  an otherwise meaningless combination.
->   */
-> -#define MANDATORY_LOCK(inode) \
-> -	(IS_MANDLOCK(inode) && ((inode)->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID)
-> +#define __MANDATORY_LOCK(ino) (((ino)->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID)
-> +#define MANDATORY_LOCK(inode) (IS_MANDLOCK(inode) && __MANDATORY_LOCK(inode))
+> > +/*
+> > + * Special functions for NUMA systems with a large number of nodes.
+> > + * The nodemask is pointed to from the address space structures.
+> > + * The attachment of the dirty_node mask is protected by the
+> > + * tree_lock. The nodemask is freed only when the inode is cleared
+> > + * (and therefore unused, thus no locking necessary).
+> > + */
+>
+> hmm, OK, there's a hint as to wghat's going on.
+>
+> It's unobvious why the break point is at MAX_NUMNODES = BITS_PER_LONG and
+> we might want to tweak that in the future.  Yet another argument for
+> centralising this comparison.
 
-Especially as the macro is a buggy one which references its argument more
-than once.
+Looks like just an optimization to me ... Ethan wants to economize and not bloat
+struct address_space too much.
 
+So, if sizeof(nodemask_t) == sizeof(long), i.e. when:
+MAX_NUMNODES <= BITS_PER_LONG, then we'll be adding only sizeof(long)
+extra bytes to the struct (by plonking the object itself into it).
+
+But even when MAX_NUMNODES > BITS_PER_LONG, because we're storing
+a pointer, and because sizeof(void *) == sizeof(long), so again the maximum
+bloat addition to struct address_space would only be sizeof(long) bytes.
+
+I didn't see the original mail, but if the #ifdeffery for this
+conditional is too much
+as a result of this optimization, Ethan should probably just do away
+with all of it
+entirely, and simply put a full nodemask_t object (irrespective of MAX_NUMNODES)
+into the struct. After all, struct task_struct does the same unconditionally ...
+but admittedly, there are several times more address_space struct's resident in
+memory at any given time than there are task_struct's, so this optimization does
+make sense too ...
+
+
+> > +             if (!nodes)
+> > +                     return;
+> > +
+> > +             *nodes = NODE_MASK_NONE;
+> > +             mapping->dirty_nodes = nodes;
+> > +     }
+> > +
+> > +     if (!node_isset(node, *nodes))
+> > +             node_set(node, *nodes);
+> > +}
+> > +
+> > +void cpuset_clear_dirty_nodes(struct address_space *mapping)
+> > +{
+> > +     nodemask_t *nodes = mapping->dirty_nodes;
+> > +
+> > +     if (nodes) {
+> > +             mapping->dirty_nodes = NULL;
+> > +             kfree(nodes);
+> > +     }
+> > +}
+>
+> Can this race with cpuset_update_dirty_nodes()?  And with itself?  If not,
+> a comment which describes the locking requirements would be good.
+>
+> > +/*
+> > + * Called without the tree_lock. The nodemask is only freed when the inode
+> > + * is cleared and therefore this is safe.
+> > + */
+> > +int cpuset_intersects_dirty_nodes(struct address_space *mapping,
+> > +                     nodemask_t *mask)
+> > +{
+> > +     nodemask_t *dirty_nodes = mapping->dirty_nodes;
+> > +
+> > +     if (!mask)
+> > +             return 1;
+> > +
+> > +     if (!dirty_nodes)
+> > +             return 0;
+> > +
+> > +     return nodes_intersects(*dirty_nodes, *mask);
+> > +}
+> > +#endif
+> > +
