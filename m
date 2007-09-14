@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932305AbXIOALA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXIOAOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932305AbXIOALA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 20:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXIOAKy
+	id S932403AbXIOAOA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 20:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXIOANu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 20:10:54 -0400
-Received: from mga01.intel.com ([192.55.52.88]:40569 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755189AbXIOAKx convert rfc822-to-8bit (ORCPT
+	Fri, 14 Sep 2007 20:13:50 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:54381 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755189AbXIOANt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 20:10:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,257,1186383600"; 
-   d="scan'208";a="307350400"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-Date: Fri, 14 Sep 2007 17:10:03 -0700
-Message-ID: <97D612E30E1F88419025B06CB4CF1BE10379ED0A@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <46EB1285.5050807@goop.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-Thread-Index: Acf3IzNJy7q+iSl0RpK8hIB4pPaWSQABkxtQ
-References: <11897991353793-git-send-email-aliguori@us.ibm.com><46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws><46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws><46EB02BA.6030909@goop.org> <46EB0657.40603@codemonkey.ws> <97D612E30E1F88419025B06CB4CF1BE10379EBF9@scsmsx412.amr.corp.intel.com> <46EB1285.5050807@goop.org>
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: "Anthony Liguori" <anthony@codemonkey.ws>,
-       <kvm-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       "Avi Kivity" <avi@qumranet.com>
-X-OriginalArrivalTime: 15 Sep 2007 00:10:04.0408 (UTC) FILETIME=[C41B1780:01C7F72C]
+	Fri, 14 Sep 2007 20:13:49 -0400
+Date: Fri, 14 Sep 2007 14:09:48 -0700
+From: "Kok, Auke" <sofar@foo-projects.org>
+Subject: Re: [git patches] net driver fixes
+In-reply-to: <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
+To: Dan Williams <dcbw@redhat.com>, netdev@vger.kernel.org,
+       Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <46EAF89C.4080808@foo-projects.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 8BIT
+References: <20070913053022.GA16891@havoc.gtf.org>
+ <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Nakajima, Jun wrote:
-> > > > one.  Start the kvm leaves at 0x40001000 or something?
-> > > > 
-> > > > 
-> > > Yeah, that works with me.
-> > > 
-> > 
-> > To me this is the beginning of fragmentation. Why do we need
-different
-> > and VMM-specific Linux paravirtualization for hardware-assisted
-> > virtualization? That would not be good for Linux.
-> > 
-> 
-> On the contrary.  Xen already has a hypercall interface, and we need
-to
-> keep supporting it.  If we were to also support a vmm-independent
-> interface (aka "kvm interface"), then we need to be able to do that in
-> parallel.  If we have a cpuid leaf clash, then its impossible to do
-so;
-> if we define the new interface to be disjoint from other current users
-> of cpuid, then we can support them concurrently.
-> 
->     J
+Dan Williams wrote:
+> On Thu, 2007-09-13 at 01:30 -0400, Jeff Garzik wrote:
+>> Please pull from 'upstream-linus' branch of
+>> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
+>>
+>> to receive the following updates:
+>>
+>>  drivers/net/atl1/atl1_main.c |   19 +++++++------------
+>>  drivers/net/ehea/ehea.h      |    5 ++++-
+>>  drivers/net/ehea/ehea_main.c |   16 ++++++++++++++--
+>>  drivers/net/phy/phy.c        |    4 ++--
+>>  drivers/net/phy/phy_device.c |    4 ++--
+>>  drivers/net/sky2.c           |    9 ++++++++-
+>>  drivers/net/spider_net.c     |   12 ++++--------
+>>  7 files changed, 41 insertions(+), 28 deletions(-)
+>>
+>> Hans-Jürgen Koch (1):
+>>       Fix a lock problem in generic phy code
+>>
+>> Ishizaki Kou (1):
+>>       spidernet: fix interrupt reason recognition
+>>
+>> Jan-Bernd Themann (2):
+>>       ehea: propagate physical port state
+>>       ehea: fix last_rx update
+>>
 
-Today, 3 CPUID leaves starting from 0x4000_0000 are defined in a generic
-fashion (hypervisor detection, version, and hypercall page), and those
-are the ones used by Xen today. We should extend those leaves (e.g.
-starting from 0x4000_0003) for the vmm-independent features as well.
+maybe a little bit late with this comment:
 
-If Xen needs additional Xen-specific features, we need to allocate some
-leaves for those (e.g. 0x4000_1000)
+>>  			ehea_error("Failed setting port speed");
+>>  		}
+>>  	}
+>> -	netif_carrier_on(port->netdev);
+>> +	if (!prop_carrier_state || (port->phy_link == EHEA_PHY_LINK_UP))
+>> +		netif_carrier_on(port->netdev);
+>> +
+>>  	kfree(cb4);
+>>  out:
+>>  	return ret;
+>> @@ -869,13 +875,19 @@ static void ehea_parse_eqe(struct ehea_adapter *adapter, u64 eqe)
+>>  			}
+>>  
+>>  		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PORT_UP, eqe)) {
+>> +			port->phy_link = EHEA_PHY_LINK_UP;
+>>  			if (netif_msg_link(port))
+>>  				ehea_info("%s: Physical port up",
+>>  					  port->netdev->name);
+>> +			if (prop_carrier_state)
+>> +				netif_carrier_on(port->netdev);
+>>  		} else {
+>> +			port->phy_link = EHEA_PHY_LINK_DOWN;
+>>  			if (netif_msg_link(port))
+>>  				ehea_info("%s: Physical port down",
+>>  					  port->netdev->name);
+>> +			if (prop_carrier_state)
+>> +				netif_carrier_off(port->netdev);
 
-Jun
----
-Intel Open Source Technology Center
+maybe it was better to code this as 'ehea_carrier_off/on()' which then tests 
+(prop_carrier_state) - this now begs for regressions where this isn't properly 
+done in future commits, and on top of that there are all these extra conditions now.
+
+Cheers,
+
+Auke
+
