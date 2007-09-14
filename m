@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbXINPi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933037AbXINPnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933039AbXINPi7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 11:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbXINPit
+	id S933037AbXINPnq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 11:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbXINPnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 11:38:49 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41136 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753164AbXINPis (ORCPT
+	Fri, 14 Sep 2007 11:43:37 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58615 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751208AbXINPng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 11:38:48 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46EAAAC1.3050409@s5r6.in-berlin.de>
-Date: Fri, 14 Sep 2007 17:37:37 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de>
-In-Reply-To: <20070914151522.GL3563@stusta.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Sep 2007 11:43:36 -0400
+Date: Sat, 15 Sep 2007 01:43:45 +1000
+From: Greg Banks <gnb@sgi.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ecryptfs-devel@lists.sourceforge.net, nfs@lists.sourceforge.net,
+       linux-fsdevel@vger.kernel.org, unionfs@filesystems.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: [NFS] [PATCH 2/7] NFS: if ATTR_KILL_S*ID bits are set, then skip mode change
+Message-ID: <20070914154345.GE25610@sgi.com>
+References: <200709041437.l84Eb4lw010007@dantu.rdu.redhat.com> <20070914102545.GF21965@sgi.com> <20070914070258.8fccb40e.jlayton@redhat.com> <20070914130924.GG21965@sgi.com> <20070914093846.7cdd89da.jlayton@redhat.com> <20070914144033.GD25610@sgi.com> <20070914105838.efbfc45e.jlayton@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070914105838.efbfc45e.jlayton@redhat.com>
+User-Agent: Mutt/1.5.5.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Fri, Sep 14, 2007 at 04:54:07PM +0200, Stefan Richter wrote:
->> The patch which is discussed here is specifically targeted towards users
->> who are convinced that they can migrate to different drivers without
->> reading Kconfig help texts.
+On Fri, Sep 14, 2007 at 10:58:38AM -0400, Jeff Layton wrote:
+> On Sat, 15 Sep 2007 00:40:33 +1000
+> Greg Banks <gnb@sgi.com> wrote:
 > 
-> Nothing about the patch is only about migration.
 > 
-> The same applies if you configure a kernel from scratch.
+> > Ok, you convinced me.
 > 
-> Do "make menuconfig" with the .config you are normally using, count the 
-> number of options that are visible, and ask yourself whether we can 
-> really expect users to read the help texts for every single option shown.
+> Right. When I was first looking at this, I considered some similar
+> approaches, but hit roadblocks with all of them. The only real option
+> seems to be to leave this to the server, but that does assume that the
+> server handles this properly.
 > 
-> People mostly read help texts for options where they don't understand 
-> what this option is about - and "Serial ATA" therefore is an option that 
-> is likely to get enabled without the user looking at the help text.
+> Servers that don't are broken, IMO.
 
-If you create .config from scratch, then you can get away without
-reading help texts if you have a target with minimal hardware and
-protocols requirements and you know all the subsystems involved.
+According to what spec?  A quick trip around the machine room shows
+that neither Solaris 10 nor Darwin 7.9.0 clobber setuid on write
+either.
 
-In all other cases, you theoretically need to read all help texts (minus
-the ones that don't appear because you deselect entire subsystems).  In
-practice, this takes too much time, hence you take an existing .config
-(yours or somebody else's) and go from there.
+> If Irix isn't clearing these bits
+> on a write then it might be good to see if they can fix that...
 
-Whenever one enables an option for the first time, it would IMO be
-foolish to ignore its help text.
+I think first you'd have to mount a serious argument that it's broken,
+more serious than "it works differently from Linux".
+
+Greg.
 -- 
-Stefan Richter
--=====-=-=== =--= -===-
-http://arcgraph.de/sr/
+Greg Banks, R&D Software Engineer, SGI Australian Software Group.
+Apparently, I'm Bedevere.  Which MPHG character are you?
+I don't speak for SGI.
