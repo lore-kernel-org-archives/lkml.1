@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934223AbXINQS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934319AbXINQSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934223AbXINQS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbXINQSE
+	id S934319AbXINQSq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763732AbXINQSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:18:04 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:58633 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756428AbXINQSB (ORCPT
+	Fri, 14 Sep 2007 12:18:16 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:6601 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764614AbXINQSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:18:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lE189KlfyVNUfa/0UP8EJGtmvLk2sn+mfpvfSv9H5k4qqSECfSoWIBaJCI3ucBrGXMqcUwyrkyL7YPDfe6duqIeHjcK11Aq+aSK5ma177lvD79haumjCZmslQ2rNx/G5vnfNmRd30lv7E4IS4xqVW6P3yluZtikUGWiin0sU8Vc=
-Message-ID: <d9def9db0709140918m4eff0fe9if01c3383a3a5c3ce@mail.gmail.com>
-Date: Fri, 14 Sep 2007 18:18:00 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Alan Cox" <alan@redhat.com>
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-Cc: "Steven Toth" <stoth@hauppauge.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070914135237.GB19311@devserv.devel.redhat.com>
+	Fri, 14 Sep 2007 12:18:14 -0400
+X-IronPort-AV: E=Sophos;i="4.20,256,1186383600"; 
+   d="scan'208";a="524068233"
+To: "Michael Chan" <mchan@broadcom.com>
+Cc: "Steve Wise" <swise@opengridcomputing.com>,
+       "netdev" <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org, anilgv@broadcom.com, uri@broadcom.com
+Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
+X-Message-Flag: Warning: May contain useful information
+References: <adahclymos8.fsf@cisco.com>
+	<46E97BB0.9030106@opengridcomputing.com> <adaps0ml18e.fsf@cisco.com>
+	<1189724358.9540.113.camel@dell>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 14 Sep 2007 09:18:01 -0700
+In-Reply-To: <1189724358.9540.113.camel@dell> (Michael Chan's message of "Thu, 13 Sep 2007 15:59:18 -0700")
+Message-ID: <adaveadjk5i.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46C1BCC5.9090709@amd.com>
-	 <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>
-	 <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
-	 <20070913131353.GB26972@linuxtv.org>
-	 <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com>
-	 <46E95C54.4060502@gmail.com>
-	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
-	 <46E99F36.8090809@hauppauge.com>
-	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
-	 <20070914135237.GB19311@devserv.devel.redhat.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Sep 2007 16:18:01.0671 (UTC) FILETIME=[D2706570:01C7F6EA]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/14/07, Alan Cox <alan@redhat.com> wrote:
-> On Fri, Sep 14, 2007 at 01:17:05AM +0200, Markus Rechberger wrote:
-> > what stops vendors of using the current existing code to achieve that
-> > goal. They could provide binary drivers with the existing API.
->
-> If you feel lucky about the GPL
->
-> > What stops companies to intercept the ioctl calls and overriding some
-> > I2C commands?
->
-> The GPL - derivative work is the boundary not code linkage. Possibly a
-> userspace
-> tuner hack would probably fit this too. Especially if a specific vendor is
-> producing both bits together and trying to claim they are independant.
->
-> > How about proprietary video formats, would you also place the decoding
-> > algorithms in kernel  just to force companies to release their code
-> > for it?
->
-> No, I would assume they'd provide a proprietary conversion library that
-> no nobody would use (just like their hw). We keep format conversion firmly
-> seperated from hardware I/O processing.
->
+ > > I've been meaning to track down the bnx2 iscsi offload patch to look
+ > > and see if this issue is addressed, since the same problem seems to
+ > > exist: it seems an iscsi connection and a main stack tcp connection
+ > > might share the same 4-tuple unless something is done to avoid that
+ > > happening.
 
-In general there are known formats available, the drawback is that every TV
-application deals with it in a non-unified way at the moment, meaning alot
-code duplication in userspace since there's no library available at the moment
-which does the videoconversion from one to another format. Such a library is
-beeing developed at the moment which gets plugged infront of accessing
-the devicenodes.
+ > iSCSI does not do passive listens, only active connections to the
+ > target.  But you're right, the port space is still shared between iSCSI
+ > and the main stack.  We currently rely on user apps binding to the main
+ > stack to reserve certain ephemeral ports, and telling the iSCSI driver
+ > which ports to use.
 
-Although in the long run I'm looking forward to reuse the userspace tuners with
-such a library infront of everything by using i2c-dev.
-This would also make it easy to reuse the sample code of several companies,
-without having to cut out several features of the drivers and to rewrite them
-to an inkernel format.
+Got it... I wasn't thinking that clearly, but it is clear that a full
+4-tuple collision with only active connections is quite unlikely.  I
+guess you would have to make both an offloaded and a non-offloaded
+iSCSI connection to the same target and get really unlucky with
+ephemeral port allocation.  So in practice I guess it's not an issue
+at all with your driver yet.
 
-Markus
+However, do you have any plans to support iSCSI offload for targets?
+Also, looking at the first CNIC patch, I can't help but notice that
+you seem to have at least some support for iWARP there.  How does the
+CNIC look?  Does it share the same interface/addresses as the
+non-offload NIC, or does it create a completely separate netdevice?
+
+I want to make sure that whatever solution we come up with for cxgb3
+doesn't cause problems for you.  And of course if you have a better
+idea than what Steve has come up with, that would be great :)
+
+ - R.
