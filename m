@@ -1,43 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXINVPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758259AbXINVQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932178AbXINVPz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 17:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758874AbXINVPp
+	id S1758259AbXINVQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 17:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbXINVQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 17:15:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45131 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758064AbXINVPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 17:15:44 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Sep 2007 17:16:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52136 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757536AbXINVQT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 17:16:19 -0400
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Aidan Thornton <makosoft@googlemail.com>
+Cc: Michael Krufky <mkrufky@linuxtv.org>,
+       Manu Abraham <abraham.manu@gmail.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>
+In-Reply-To: <c8b4dbe10709141407p757d0909s5a4d49a7eb44d929@mail.gmail.com>
+References: <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>
+	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+	 <46E9DDC7.4000403@hauppauge.com>
+	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+	 <20070914113838.GA29962@linuxtv.org>
+	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+	 <1189791161.2363.8.camel@gaivota>
+	 <d9def9db0709141046h3b2dee40l398f5ed1bbc19322@mail.gmail.com>
+	 <1189794551.2363.36.camel@gaivota>
+	 <37219a840709141220p543b0da9x53f48eabc1cfe8c9@mail.gmail.com>
+	 <c8b4dbe10709141407p757d0909s5a4d49a7eb44d929@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 14 Sep 2007 18:16:09 -0300
+Message-Id: <1189804569.2363.93.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-X-Fcc: ~/Mail/linus
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Dan Aloni <da-x@monatomic.org>, Bernhard Walle <bwalle@suse.de>
-Subject: Re: [PATCH] Add ELF note with Linux version
-In-Reply-To: Sam Ravnborg's message of  Friday, 14 September 2007 23:07:38 +0200 <20070914210738.GA5031@uranus.ravnborg.org>
-References: <20070904150018.GA4357@suse.de>
-	<46DFD825.2020109@goop.org>
-	<20070913144228.2efcd5d9.akpm@linux-foundation.org>
-	<20070913221340.GA29181@uranus.ravnborg.org>
-	<46E9BD3D.4050102@goop.org>
-	<20070914060805.GA32169@uranus.ravnborg.org>
-	<46EAE534.5030900@goop.org>
-	<20070914210738.GA5031@uranus.ravnborg.org>
-X-Windows: the joke that kills.
-Message-Id: <20070914211537.47FDF4D0424@magilla.localdomain>
-Date: Fri, 14 Sep 2007 14:15:37 -0700 (PDT)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The right fix for the linker script is to use the NOTES macro after RODATA.
-I'm pretty sure this has been posted before.  Each arch's vmlinux.lds.S
-needs that change, but the details vary if it uses an explicit PHDRS.
 
+> > There is no reason why the Xceive driver cannot be merged into the
+> > current development tree using the hybrid tuner framework as it stands
+> > today.
+> 
+> I'm not convinced this is entirely true. In order to avoid unnecessary
+> reinitialisation of the device, the driver needs to know whether the
+> device is in analog or digital mode, and I can't see a way of doing it
+> with the current API. (I think existing drivers, such as the xc2028
+> driver in one branch, use the older analog API and make the digital
+> driver a wrapper around it.) Again, I may be missing something.
 
-Thanks,
-Roland
+For sure there are some ways. One dirty way would be to add an static
+lock at xc3028 driver. You can rise the lock when firmware is being
+uploaded, removing it at the end. This would prevent the troubles you've
+mentioned.
+
+A cleaner way would be to create a tasklet for firmware upload. This
+will also prevent the driver for a long load time, due to firmware
+initialization (a similar change were recently added at ivtv driver).
+
+For sure there are other ways of doing this.
+ 
+Cheers,
+Mauro
+
