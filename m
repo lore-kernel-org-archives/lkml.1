@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761043AbXINMR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbXINMT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761043AbXINMR1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 08:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbXINMRT
+	id S1761317AbXINMT7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 08:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbXINMTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 08:17:19 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:52973 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753127AbXINMRS (ORCPT
+	Fri, 14 Sep 2007 08:19:51 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:38576 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbXINMTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 08:17:18 -0400
-Subject: Re: [announce] CFS-devel, performance improvements
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>
-In-Reply-To: <Pine.LNX.4.64.0709141352430.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu>
-	 <Pine.LNX.4.64.0709120242040.1817@scrub.home>
-	 <20070913075258.GA9173@elte.hu>
-	 <Pine.LNX.4.64.0709131419170.1817@scrub.home>
-	 <20070913142842.GA26016@elte.hu>
-	 <Pine.LNX.4.64.0709131706100.1817@scrub.home>
-	 <1189703165.21778.258.camel@twins>
-	 <Pine.LNX.4.64.0709141352430.1817@scrub.home>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-cEr0g5hhZYsZtWF9rWLy"
-Date: Fri, 14 Sep 2007 14:17:15 +0200
-Message-Id: <1189772235.21778.287.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 14 Sep 2007 08:19:51 -0400
+Date: Fri, 14 Sep 2007 14:20:18 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix failure to resume from initrds
+Message-ID: <20070914122018.GA1671@elf.ucw.cz>
+References: <200709141422.18788.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709141422.18788.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
---=-cEr0g5hhZYsZtWF9rWLy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> From: Nigel Cunningham <nigel@nigel.suspend2.net>
+> 
+> Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel threads
+> nonfreezable by default) breaks freezing when attempting to resume from an
+> initrd, because the init (which is freezeable) spins while waiting for another
+> thread to run /linuxrc, but doesn't check whether it has been told to enter
+> the refrigerator. The original patch replaced a call to try_to_freeze() with a
+> call to yield(). I believe a simple reversion is wrong because
+> if !CONFIG_PM_SLEEP, try_to_freeze() is a noop. It should still yield.
+> 
+> Signed-off-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-On Fri, 2007-09-14 at 14:04 +0200, Roman Zippel wrote:
+ACK.
+								Pavel
 
-> AFAICT the compensation part is already done by the scaling part, without=
-=20
-> the load part it largely mirrors what __update_stats_wait_end() does, i.e=
-.=20
-> it gets the same time as other tasks, which have been on the rq.
-
-All it tried to do was approximate the situation where the task never
-left the rq. I'm not saying it makes sense or is the right thing to do,
-just what the thought behind that particular bit was.
-
-There is a reason it was turned off by default:
-
--		SCHED_FEAT_SLEEPER_AVG		*0 |
-
-
-
---=-cEr0g5hhZYsZtWF9rWLy
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBG6nvLXA2jU0ANEf4RAjoeAJ9TPlcpgHAGz2/1wcgU8Gjz7Ph5DwCeN3xx
-AXs+6bq2eKAnGPnIvKj4C80=
-=pW+w
------END PGP SIGNATURE-----
-
---=-cEr0g5hhZYsZtWF9rWLy--
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
