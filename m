@@ -1,114 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762905AbXINCEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760499AbXINC0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762905AbXINCEO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 22:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbXINCD7
+	id S1760499AbXINC0n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 22:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXINC0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 22:03:59 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45113 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890AbXINCD6 (ORCPT
+	Thu, 13 Sep 2007 22:26:35 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:19983 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbXINC0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 22:03:58 -0400
-Date: Fri, 14 Sep 2007 11:02:43 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
-Cc: Andy Whitcroft <apw@shadowen.org>, Paul Mundt <lethal@linux-sh.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20070913184456.16ff248e.akpm@linux-foundation.org>
-References: <20070911182546.F139.Y-GOTO@jp.fujitsu.com> <20070913184456.16ff248e.akpm@linux-foundation.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070914105420.F2E9.Y-GOTO@jp.fujitsu.com>
+	Thu, 13 Sep 2007 22:26:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=JO1P3ZsJsnjQapdlWRx3MXFwS3Wgz1wP3kXyjFfN6jsVfo94QtF6ZoIu7uM677jtXwrmXCiRQISWWIVufeLU7IqRBoGYYs26GTASsYbWpHA4twNtJutV4Kn741Lv/e6xQfT+ztTsL503UYtnK4PfpHugnqjg5DC7gZXryQ7wM/U=
+Message-ID: <6b8cef970709131926h59a4cb38j64c7614bd41d2dbd@mail.gmail.com>
+Date: Thu, 13 Sep 2007 22:26:33 -0400
+From: "Rob Hussey" <robjhussey@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [announce] CFS-devel, performance improvements
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6b8cef970709131847r770ad338tcfbbad90377a4115@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_24964_5154588.1189736793334"
+References: <20070911200459.GA6974@elte.hu>
+	 <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com>
+	 <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com>
+	 <20070913090655.GA28505@elte.hu>
+	 <6b8cef970709130224t2f8d28d4mdfbf22ba10b42497@mail.gmail.com>
+	 <20070913093137.GA31923@elte.hu>
+	 <6b8cef970709130236o48e4d923ofe4ad862c749f2da@mail.gmail.com>
+	 <20070913114828.GA28339@elte.hu>
+	 <6b8cef970709131847r770ad338tcfbbad90377a4115@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 11 Sep 2007 18:37:12 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> 
-> > 
-> > > > +	if (onlined_pages){
-> > > 
-> > > Nit, needs a space there before the '{'.
-> > 
-> > Ah, Ok. I attached fixed patch in this mail.
-> > 
-> > > The problem as I see it is that when we boot the system we start a
-> > > kswapd on all nodes with memory.  If the hot-add adds memory to a
-> > > pre-existing node with no memory we will not start one and we end up
-> > > with a node with memory and no kswapd.  Bad.
-> > > 
-> > > As kswapd_run is a no-op when a kswapd already exists this seems a safe
-> > > way to fix that.  Paul's ->zone conversion is obviously correct also.
-> > > 
-> > > Acked-by: Andy Whitcroft <apw@shadowen.org>
-> > 
-> > Thanks for your explanation.
-> > You mentioned all of my intention correctly. :-)
-> > 
-> > 
-> > ----
-> > 
-> > Fix kswapd doesn't run when memory is added on memory-less-node.
-> > Fix compile error of zone->node when CONFIG_NUMA is off.
-> > 
-> > Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> > Acked-by: Andy Whitcroft <apw@shadowen.org>
-> > 
-> > 
-> > ---
-> >  mm/memory_hotplug.c |    9 ++++-----
-> >  1 file changed, 4 insertions(+), 5 deletions(-)
-> > 
-> > Index: current/mm/memory_hotplug.c
-> > ===================================================================
-> > --- current.orig/mm/memory_hotplug.c	2007-09-07 18:08:07.000000000 +0900
-> > +++ current/mm/memory_hotplug.c	2007-09-11 17:29:19.000000000 +0900
-> > @@ -211,10 +211,12 @@ int online_pages(unsigned long pfn, unsi
-> >  		online_pages_range);
-> >  	zone->present_pages += onlined_pages;
-> >  	zone->zone_pgdat->node_present_pages += onlined_pages;
-> > -	if (onlined_pages)
-> > -		node_set_state(zone->node, N_HIGH_MEMORY);
-> >  
-> >  	setup_per_zone_pages_min();
-> > +	if (onlined_pages) {
-> > +		kswapd_run(zone_to_nid(zone));
-> > +		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-> > +	}
-> >  
-> >  	if (need_zonelists_rebuild)
-> >  		build_all_zonelists();
-> > @@ -269,9 +271,6 @@ int add_memory(int nid, u64 start, u64 s
-> >  		if (!pgdat)
-> >  			return -ENOMEM;
-> >  		new_pgdat = 1;
-> > -		ret = kswapd_run(nid);
-> > -		if (ret)
-> > -			goto error;
-> >  	}
-> >  
-> >  	/* call arch's memory hotadd */
-> > 
-> 
-> OK, we're getting into a mess here.  This patch fixes
-> update-n_high_memory-node-state-for-memory-hotadd.patch, but which patch
-> does update-n_high_memory-node-state-for-memory-hotadd.patch fix?
-> 
-> At present I just whacked
-> update-n_high_memory-node-state-for-memory-hotadd.patch at the end of
-> everything, but that was lazy of me and it ends up making a mess.
+------=_Part_24964_5154588.1189736793334
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-It is enough. No more patch is necessary for these issues.
-I already fixed about Andy-san's comment. :-)
+On 9/13/07, Rob Hussey <robjhussey@gmail.com> wrote:
+> Bound to single core:
+...
+> hackbench 50
+> #  rc1   rc6   cfs-devel
+> 1  7.528 7.950 7.538
+> 2  7.649 8.026 7.548
+> 3  7.613 8.160 7.580
+> 4  7.550 8.054 7.558
+> 5  7.563 8.373 7.559
+> 6  7.617 8.152 7.550
+> 7  7.593 7.831 7.562
+> 8  7.602 8.311 7.588
+> 9  7.589 8.010 7.552
+> 10 7.682 8.059 7.556
+>
 
+I knew there was no way I'd post all these numbers and not screw
+something up. Switch rc6 and rc1 for hackbench 50 (bound to single
+core). Updated graph:
+http://www.healthcarelinen.com/misc/BOUND_hackbench_benchmark_fixed.png
 
-Thanks.
--- 
-Yasunori Goto 
+Also attached.
 
+------=_Part_24964_5154588.1189736793334
+Content-Type: image/png; name="BOUND_hackbench_benchmark_fixed.png"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="BOUND_hackbench_benchmark_fixed.png"
+X-Attachment-Id: f_f6k2jyra
 
+iVBORw0KGgoAAAANSUhEUgAAAoAAAAHgCAMAAAACDyzWAAABKVBMVEX///8AAACgoKD/AAAAwAAA
+gP/AAP8A7u7AQADu7gAgIMD/wCAAgECggP+AQAD/gP8AwGAAwMAAYIDAYIAAgABA/4AwYICAYABA
+QEBAgAAAAICAYBCAYGCAYIAAAMAAAP8AYADjsMBAwIBgoMBgwABgwKCAAACAAIBgIIBgYGAgICAg
+QEAgQIBggCBggGBggICAgEAggCCAgICgoKCg0ODAICAAgIDAYACAwODAYMDAgADAgGD/QAD/QECA
+wP//gGD/gIDAoADAwMDA/8D/AAD/AP//gKDAwKD/YGAA/wD/gAD/oACA4OCg4OCg/yDAAADAAMCg
+ICCgIP+AIACAICCAQCCAQICAYMCAYP+AgADAwAD/gED/oED/oGD/oHD/wMD//wD//4D//8BUJrxz
+AAATYUlEQVR4nO2d65qqMAwA9cN9/1c+Zy8qhRZ6SZoEZ37s6krT2MwWRLS3GwAAAAAAAAAAAAAA
+AAAAAAAAROB+b3zs6I/NwbJbnW1ZFym/3b22cWtncL//Fu/9O3moNI5GAmbz/NuoQcDDTevTr+wN
+DvibOlYmvEfuaFqpcma9kZSA2cxEBaxIQ6PBh5IqsK/2e7p5zofJvae72z+u2r2CrZvfki2zoTf3
+kigbAX9vbtvtQt8Luaz+envubVeb3O5JF7kGu6x3YwkFXqOVKUla7cKv9YC/H3vWK+2otOVxD5lJ
++bfnzZOoj5I22Cb4+rFut/7jLpdsRwhYxf7fNTPCP5KtJ7ztY7f3JrftPJEGy25Z0VEaaRXinfKg
+gK+bRwKm8+ht022yCQJWUSXg8b2MM2UBs1tWdJRG2v4x40y7gMnUtf5/Sf6YHbo03e2IwgFH1a6o
+aEGrdSlPgr0rXaNO3qceAUuh98F2PRSf0S4KnPM+znvfWz10TzZ5zwmbwm52rOnssfvjPsppR2m6
+aehbEnm9yTbBdZhdlNXBxH2XxDrrbC6bEcQ/D8SvwnaqBZhL9ngWAAAAAAAAAAAAAAAA3LN7n4e3
+fWAiu3e6ed8RZrK/qg0BYSbby8uSqx0Bqun1L3tF7u+9vpC0pnVDs42Aa5UDPh1aR2u9//wAAtJ6
+Zuu/Ke898yEgree3zp7+4+Uw1KNgCwJCPQgIt8KHNtN7h6dM+s8CIyCcnFVLP0ZdaI+AMMBeuexj
+mxNvt9cn25kBYZi9Xeljf679PridFtfbL2ekoRWeiXxI0GatXOaN/tcDKwFv2bPAzR33NpwaMgTL
++SZu2VzZlPwht29GQIcscQ1MRUp3rJuvbUoaZHfBjV33NpwaMgJL4Cnw+WZ+esYlOepLT8OkX6g1
+dFnLcPIzQkZgib0T/mX/Ali9xxAhA7C8fkALCCgEAvaBgDIsyS+oBgFlQMBOEFCGZfM7GIMXI/S/
+CEZAGZbMrUAMXoww8nXUCCjC5QTMPla8GGGg5AgowVK4HYmBixHSBo8z0tAKz0Q+pHeW4p0oDF2M
+wC7YmOXgXgzGLkZAQGOWw7sBGLwYAQFt2QoXUcChixE4DWPLTrh4Bj7hYoSI7H2La+B0EHCYjG0I
+WA0CDpOzDQNrQcBR8q7FNrDwmqJ4TMjngg0xFlDjMoJ74YO+R2Gqks217G04NaRjSqZNMlDlMoKj
+rVsfOQMBB3EnYPaxyssIXo+t76UN3+3WJwcR0IyiaPOOAscvI9g+tn5DpNAunVzXvX6dkSaoMB7y
+If1yoNm0OXD8MoL0sXSbvZy7e8yAdpgLKHkZwUbAXazE0aQpAhpxKNkMA1MF0l3ikWTZFyjro7uT
+VzTpoSACWnHs2AQDRS4jWNbRbitJiy9C1vvnd0ddT6Cv2eSQXjkxbObZ6P0L4Hosz5r32nJw/hMB
+qx/3gem32vROnNljh6GQEUHAYUQEfP5lKGRAzusWwkDTr1XS2AUPXB8bi4qyRTDQTMCR1y7MgHVV
+CyCg7dcqIWA/VUXzb2BsAdPznyMhw1FZM/cGLquf8xk8BsxdcYaAPZuZYfy9XqO2ZA4iEbBvOyOM
+v9eLd0J6qS4YAh6BgL3UF8y3gcvuxlQQsJOWcnk20PqL5RCwEwSUAQH7aKuWYwOX7M15IGAfjcVy
+a6D5V2siYBettQohoEmWCNhFc6m8GoiAMbmKgPZfrYmAPXQUyqeBCBiTnkK5NND+y10RsIOuMiFg
+FgTsoK9MDg108N2uCNhOb5H8GYiAIbmygNOTRMB2umvkzUAPXy6MgM30lwgB9yBgMwMlcmZgNp3J
+OSJgK0MF8mUgAkbkOgIWkpmbIwI2MlgeTwYiYERGy+PIwFIqU1NEwEauI2AxEwR0zHhx3BhYTmRm
+igjYBgIKg4BNSJTGi4EHeUxMEQGbEKmMDwOPskBAp8gUxr+AE1NEwBaE6uLCQAQMiFRdHBh4ksK0
+DBGwAbGqIOALBGxArir2BiJgPASL4l7AaRkiYD2SNbE28LR/BHSHbEmMDTzvflKCrBVXDQJqwFpx
+tUgXxNTAms7nJIiAtYjXw9LA8ALedqt8rXW85FpxHyegfoKCa8Vd/xhQoRqGBvoQ8BsZAROPEdAu
+pGzPMxIUWytuOKRvVGphZmB8AdNF4u7JzhwBjaPK9TshP9aKq0KpEkYCVncbQMA5Ic3RqoSNgQgY
+DrVKmBhY36l+eghYg14dLARs6BMBfaBYBwMDW7rUPxkdIqQxmlVAwAghjVGtwnwDm3rUTg8Bz1Gu
+wWwD2/pDQHs+WkDt9BDwHG1DJhuIgMHQ92Oqgc2d6WaHgKcgoCYIeMYMO2Ya2N6XanYXEzDoVXsI
+6DxkLUvUC+fnGdjREwLW8j1Si/BwTVJjmoE9HWkmdyUBl+SXbFBtENB1yCqW3Q3JoNq4Fl0xuesI
+uBokwd0wAva3quIyAi4H96SiquL61Y5eclcRcDtCQiOGgEPNKriIgPsBEhky329RzOxDLblrCJgb
+HokDQQQcbnjGJQQsjM7woPm+TGVuF1rJXUHA4tiMDtrlBBzoAQGLHAzN4G4YAYXaHhBfwOOBcTjk
+hh06HI3wAp6Ni8O9jl2HCChNxT62ezfs/AOT08PrJBdbwLoxcXfy1apLBBSmdki6hs7AP+1OB6Or
+JBdZwPoB8XYNkk2nLs9KBRawZTw6DgRNBFTt1eWJ+bgCNo5G6+DZ+IeAPkNmaB4MZWGFcC2gRnZR
+Bez5bE3TPrs9vgx6Hfu8OCOogOoX9iKgWowUoZWSkkVrRvKpQ/3cspl/il1fSsDdQjVTBdS/qOiC
+AsrEFc9OZrHCuTPg0Duaqm+eiKDU97UEPNwFKy9WOOF8vqV/HySg6GKFq9tjWZ0x42zWBQWUiiqd
+XTgBJU4mKF7CJYFK91cV8M+8aQJO2ZEg4IxAvwRbrHDK/7GxfzoJXE3AV/upixXKPfmjSFcUUDCk
+bHah3gmRfOoHB4LmAipkgIACCJelFM7eP98CCp+KkQymFvIH8aoUAl5RQNGAHyqgxoFRLqYD/+ST
+kI0nGS2MgNNOzyLg1GhRBJz2Fr0L/6Yd79qHCyKg4lVym9CXFNDxhBpDQFUrluIdS/y+bJANGEJA
+ZSuWwm1TENBPSHUpluxNW9yeuBOOGEDACU68DgTd+Of4vQvZkP4FnOPEMrOzKhDQRUjplbfKHb1+
+eGHOlRfGMRfnAk404lv1awro9vrC5f+Y+xZwrhDTZttKvF7ELBN1+R1u1wLOFgIBp0V9/bN7FtCZ
+D/OZ8vkDg7jLal/jWMCP9++aAi7pkY5fAfHPuYA9gZfdcbZbAfHvJjQIbgTc23fzKyD+fSNyrkMg
+hkTowjkGpwLi3y8C4+BCwOzk94NPAfHvj0sIWLbv5lRA/HsxPBTzLqUsbHJyet+jgPj3JraAZ/bd
+XAqIfyt8C3gYvcK+m0cB8S9hcDgmXky+eaSyZ3cC4l+KbwEL8esmvx+cCejtghQHDL7pL5RFQ/wG
++27OBES/DL4F3HbQZt/NlYDol2dkWPSHNPlIYUcJ3QiIfiV8C/juoq+CTgREvzIhBOyZ/H7wISD6
+HTFw5adgFgeddNt38yEg098x3gUc6sVeQPQ7pXuEAgytjIDJijdNIdGvAgQ8C7JZOa4a9Kuj9+MX
+slmoYCpghAFyAQKeRbmna7dWLUHH9FfNRQUUW9ayZwZEvxa6BivECBsJiH5tIOBxkEYB0a+ZnhEL
+McoGp2HQrwMEFAsZYlj80T5sMQZ6toBMf50goERI9OuneehijPVMAdFvhOZvYlHJQpx5AqLfGB8r
+4P/Xt22WZrdGv2EaRzDIgJ+69X2Cpe39ktzGQUbDNZ8q4PcmgwIy/YnQ9m1oWlkIM0FA9BPiQwVs
+vmQh3Rj95GgZyijDXvMipPGSmfXW6CdJw2CGGXfd0zBhhiEGnylg/y6Y6U+a+gENM/R6x4DoJ8+H
+CtgTEv1UqB3VOKNf9U5Ic0j0U+IDBezYBaOfHpVDG6cC6ucBQZQ6s+L45+CrOaCFDxWQGdANVW4h
+IGhR41Yg/05s+bkUi2NAV1TYhYCgx0cJ+NwAAR1xrtelBGzYqmdjaOZUr0j+cRomHh8ooMCHkkCO
+M8GuJeD3BrwIccWJYKH840VIRI4Vu5SA9zunYfzxeQJKhoRxDh27lIA9OiGgOkeOxfKP0zAxObAM
+ARFQHwScGxI2lC0L5h8CBqXo2YcIuHlx3L9WHPTx6QL+NL2vb3WtFQfdlET7HAGTCRABZ1MQLZp/
+KgJKrQAGR+RVCyXgkClJyyQS8k3hAgJ+IyPgjV3wdLKqhfOv25anb/fn5VoIOJucbB8n4N+ul9Mw
+Bny2gK/2+wAIOImMbZ8n4JyQkGNvWzz/EDAyO98QUCkkZEHAWSEhy9a3gP4hYGiWw7shQMDIIOCk
+kFBgObgXAwQMzVK8EwUEjM1SuB0GBIwNAk4JCSWW7M1AIGBwlsytSCBgcBBwRkgos2x+BwMBo4OA
+E0LCAUvyKxoIGB4E1A8JRyyvHwFBwPggoHpIOAIB1UPCIUtc/xDwCiCgdkg4ZkFA3ZBwDAIqh4QT
+wvqHgNcAAXVDwmVBQDAFAcEUBARTEBBMQUAwBQHBFAQEUxAQTEFAMIXFCsEUFisEU1isEEwREfC2
+2x8jIZwjtlghMyD0goBgCosVgiksVgimsFghmMI7IWAKAoIpCAimICCYgoBgCgKCKQgIpiAgmIKA
+YAoCgikICKYgIJiCgGAKAoIpCAimICCYgoBgCgKCKQgIpiAgmIKAYAoCgikICKYgIJiCgGAKAoIp
+CAimICCYgoBgCgKCKQgIpiAgmIKAYAoCgikICKYgIJgisljh5t54VvAxiCxWmN5DQKhHZq24dOnC
+/mzg49AQkMUKoQqxxQo3K8f1ZwQfBwKCKSKLFaY2IiDUI7VYoUBI+ERYrBBM4Z0QMAUBwRQEBFMQ
+EAx5PBAQ7HgwA4Idj//+ISBY8fj5iYBgwuPXPwQEEx7PGwgI83m8/ENAmM9jdRsBYTKPtX8ICJN5
+pHcREGby2PiHgDCTrX4ICBPZTX83hwLmkoRLkK2sNwEf3woi4QUpFNWZgM8kkfBqlMrpSsBUOhy8
+DuVSehJwnyQT4TU4KKIjAQtZImF0DuvnR8CjLHEwLielcyPgmWFMhDE5K5oXAavkwsFonBfMiYDV
+YjERRqKiVC4EbHQKCWNQVSUPAvbYhIPuqSuQAwF7TWIi9ExtbewFHJIICZ1SXRVzAcf9wUF3NFTE
+WkAZd+JPhI/4T+FNyxMxFlBwzCNX8C/zxyU0bHsGpgKKD3bI8m2TDq5hY+aWAqoMcrDSFVULqmFz
+yiJrxd3SO5UxtEY3UNlOU42mYXuqImvFfd9qXitOcVhjlKzerEcQD3tSFFmqa7NoTVVz3eH0X62O
+DOU1fKwZj9bTSEjA7f74NKy6IK5njJHkRmx5bCg82Bm7uYnYWnHtu+ApcnhVUCKvSlOOhKtp1ZBQ
+/aYJJgJOM8OhgqIz886Swymuu4PzUP09iawV1yjgTCt8KahzXCB5HFfTS+ax/rBSa8U1nIaZrISf
+g0E3iQyyVXHoec1fK86gCh4q7+f/QBCBaXf6OyE2ZbCuvnX/R3z9x6732QKaFcJQAbeT39fXUz47
+CecKaFoJm8592vdWL/3b/EymCqhditywJv1Pl8GhfYdjNF/CmQKqFuM9dIcazjTC2+R39v+52mxC
+Nn9MFFCvGrkhK472LCs82VepXtpALZuEeQIq1eN4qLIjP0ENP5Nfq3ppS+FkMkwTUKMgtUO001BZ
+Dx/2NU97hRgy2ZSYJaB4SdqH5mtdEb0pysPkJ6BeEkwqVIY5AgrXZGh4XxpqiGJun8S0l48qHfOP
+KQIKFkVqfH8LJWyLqX066qXxFcLOEFCqLPJDIFU0/WtRynx9aauX9iUccoKAInVRG+L/3vQWcMpV
+UAW+vmaKt+1ZMJy+gOPV0R7mX4G+pFDM1E67fR5CodQFHPRvzmBXfjyybraTFnKO28305rMZHW0B
+R/ybOeRZsWT2sX0++rRuQza9th2EroD9lZs/8q9clQ/tDgsSQruUM8NOUBWws4JW42/zimKgeFdA
+U8C2Un5yFT4YRQFP/BubueEi6Am48w/hYI+agA+mOKhAQ0CEg2p0ZkDra0IgDCoCoh/UoiEg/kE1
+1ss0wIeDgGAKAoIpCAimICCYgoBgCgKCKQgIpiAgmOJOQFrTuqZZssjN5p5FQrT+vNbpYoUiIWlN
+6/qWpdXhYj4dWkdrvVktc7tDBqhCwL/sfQBVEBAsOVisEECfg8UKAeaBeAAAAAAAYM/QK5OxV9TD
+r8dHTs0PdT7c2Krvoda/LYXPogw+mzEJxvUf6XukY4kIFn2PtL5rnEe+DwWzLMToP/PYJNTddDiA
+mYB3pTcyRoMZ7kwM55HB3ZDZgcvQ834KKL0PHmttdxQXdTc43nb0AHSg65+K+xHQcF80eCg/2HdY
+AUd697cL5lC+u/lQY6PMVV6EDF5naHhC4WZ6/Gn5f2uT+bPYXMwCAAAAAAAAAAAAAAAAUtz5Gk+w
+BAHBkuHLvgBOeF3n8bzgd20cAoI2L/PWv96PsgsGXe7316+9gMyAoA0CgimHArILBm2euv1OdggI
+AAAA/vkHB1Uz9YPv+8wAAAAASUVORK5CYII=
+------=_Part_24964_5154588.1189736793334--
