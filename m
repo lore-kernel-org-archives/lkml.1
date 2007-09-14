@@ -1,83 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbXINQ5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbXINRIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757598AbXINQ5B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbXINQ4x
+	id S1753794AbXINRIE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 13:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbXINRHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:56:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:19437 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753228AbXINQ4w (ORCPT
+	Fri, 14 Sep 2007 13:07:55 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:39435 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbXINRHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:56:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=dwVGx1GG/4MGNaQosudDz5tVteOZ4l7+NdjBIE/1VAcQ2EeyoIU+HaaPeZr/H0FK6PfSugTFIIBJk1eU0u0V/V2fY8/Q/x9frHIss3jCtycRoycfsgDu51TNsxJf1AHr9vZl2KuIuNxOYCuNDzFiZLSvZPHgDCV3HSLYfUBlTeM=
-Message-ID: <46EABD48.3020902@gmail.com>
-Date: Fri, 14 Sep 2007 20:56:40 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Joerg Roedel <joro@8bytes.org>
-CC: Markus Rechberger <mrechberger@gmail.com>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-References: <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com> <46E95C54.4060502@gmail.com> <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com> <46E99F36.8090809@hauppauge.com> <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com> <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com> <46EA3F07.9050806@gmail.com> <20070914091535.GA8998@8bytes.org> <46EA77DE.8060109@gmail.com> <20070914161345.GB8998@8bytes.org>
-In-Reply-To: <20070914161345.GB8998@8bytes.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Sep 2007 13:07:54 -0400
+Date: Fri, 14 Sep 2007 10:07:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Matej Laitl <strohel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, sam@ravnborg.org
+Subject: Re: RFC [PATCH] menuconfig: distinguish between selected-by-another
+ options and comments (resend)
+Message-Id: <20070914100717.8900b29b.randy.dunlap@oracle.com>
+In-Reply-To: <200709141316.31841.strohel@gmail.com>
+References: <200709141316.31841.strohel@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
+On Fri, 14 Sep 2007 13:16:31 +0200 Matej Laitl wrote:
 
->>> Common new IOMMUs have only very few in common with the AGP GART. In
->>> fact, with current modern IOMMU hardware it will be possible to
->>> implement secure userspace device drivers that are even able to do DMA.
->>> This is not possible with the GART.
->>>
->>>> Though you get a physical to virtual translation, what about interrupts,
->>> Modern IOMMUs are able to remap interrupts. This will solve the problem
->>> with PCI interrupt sharing.
->> What CPU's are we talking about ?
+> menuconfig currently represents options implied by another option ('select'
+> directive in Kconfig) by prefixing them with '---'. Unfortunately the same
+> notation is used for comments. If the implied option is module capable,
+> user can still switch between Y and M, all without any feedback until she
+> visits option's help. (try saying M to MAC80211 and then toggling CFG80211)
 > 
-> IOMMUs are not necessarily a CPU feature. These IOMMUS will be found in
-> the South/North Bridge or even on PCI devices itself (uncommon). The
-> Calgary IOMMU is such an example of an IOMMU not implemented on the CPU
-> itself.
+> This patch changes notation of selected-by-another items by introducing 2 new
+> representations for implied options:
+> {*} or {M} for options selected by another modularized one, thus builtin or
+> module capable,
+> -*- or -M- for options that cannot be at the moment changed by user.
 > 
+> The idea is to represent actual capability of the option by braces (dashes)
+> around and to always report actual state by * or M inside.
+> 
+> Signed-off-by: Matěj Laitl <strohel@gmail.com>
 
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-I do understand that (an earlier reply from Grant Grundler on the same
-[1], while working on something else), but that wasn't exactly what i
-was getting at. The bridges are in fact tied up with a certain CPU class.
+> ---
+> Hi list,
+> after being a little annoyed by menuconfig not showing me current state of 
+> selected-by-another options (which were looking as comments), I made up a 
+> little patch to help users tell these 2 things apart.
+> 
+> I'd like to hear your comments especially concerning the following:
+>  * English grammar and style in new menuconfig README (I'm non-native english 
+> speaker)
+>  * the way to present the new combinations to user (currently I use "{ }" 
+> and "- -", which may be replaced by something more sexy and clear)
+>  * the use of "if (sym->rev_dep.tri == mod)". It seems inappropriate to use 
+> something from struct symbol directly, as all other uses of it are 
+> abstracted.
+> 
+> TODO is to also change legend text in menuconfig's window header.
 
-Though your argument holds true: "secure userpsace device drivers can be
-implemented with modern hardware" There is a large flaw in it. (From an
-academic POV, you are correct)
+Yes, that would be helpful.
 
-Now, if all the drivers were to depend on that certain feature, what
-happens to all other CPU class users ? Looking at a pile of CPU's being
-used, also not to forget that devices such as STB's use even very small
-embedded CPU's such as the PPC405 Vulcan based [2] to mobile devices
-such as mobile phones using ARM, Xtensa [3], OMAP CPU's/platforms, which
-do not in any way use the bridges nor the CPU class which you however
-mention.
+> Regards,
+>          Matěj Latil
+> 
+>  scripts/kconfig/mconf.c |   23 +++++++++++++++--------
+>  1 files changed, 15 insertions(+), 8 deletions(-)
+> 
+> diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
+> index bc5854e..5cf99dd 100644
+> --- a/scripts/kconfig/mconf.c
+> +++ b/scripts/kconfig/mconf.c
+> @@ -35,9 +35,13 @@ static const char mconf_readme[] = N_(
+>  "kernel parameters which are not really features, but must be\n"
+>  "entered in as decimal or hexadecimal numbers or possibly text.\n"
+>  "\n"
+> -"Menu items beginning with [*], <M> or [ ] represent features\n"
+> -"configured to be built in, modularized or removed respectively.\n"
+> -"Pointed brackets <> represent module capable features.\n"
+> +"Menu items beginning with following braces represent features that\n"
+> +"  [ ] can be built in or removed\n"
+> +"  < > can be built in, modularized or removed\n"
+> +"  { } can be built in or modularized (selected by other feature)\n"
+> +"  - - are selected by other feature,\n"
+> +"while *, M or whitespace inside braces means to build in, build as\n"
+> +"a module or to exclude the feature respectively.\n"
+>  "\n"
+>  "To change any of these features, highlight it with the cursor\n"
+>  "keys and press <Y> to build it in, <M> to make it a module or\n"
+> @@ -560,7 +564,7 @@ static void build_conf(struct menu *menu)
+>  				if (sym_is_changable(sym))
+>  					item_make("[%c]", val == no ? ' ' : '*');
+>  				else
+> -					item_make("---");
+> +					item_make("-%c-", val == no ? ' ' : '*');
+>  				item_set_tag('t');
+>  				item_set_data(menu);
+>  				break;
+> @@ -570,10 +574,13 @@ static void build_conf(struct menu *menu)
+>  				case mod: ch = 'M'; break;
+>  				default:  ch = ' '; break;
+>  				}
+> -				if (sym_is_changable(sym))
+> -					item_make("<%c>", ch);
+> -				else
+> -					item_make("---");
+> +				if (sym_is_changable(sym)) {
+> +					if (sym->rev_dep.tri == mod)
+> +						item_make("{%c}", ch);
+> +					else
+> +						item_make("<%c>", ch);
+> +				} else
+> +					item_make("-%c-", ch);
+>  				item_set_tag('t');
+>  				item_set_data(menu);
+>  				break;
+> -- 
 
-So .. we are looking at a small segment, ie. a subset of the PC users
-even, even if the larger segments like STB's can be ignored. This would
-mean that only a small subset of users using a certain CPU class can use
-those drivers (eventhough the devices themselves don't have that
-limitation, the limitation being the implementation of the driver
-alone), which is absurd.
-
-
-Manu
-
-[1] http://lkml.org/lkml/2007/5/26/217
-[2] http://abraham.manu.googlepages.com/p3160033.jpg
-[3] http://tensilica.com/
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
