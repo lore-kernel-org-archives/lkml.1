@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764883AbXINO1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765144AbXINO2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764883AbXINO1t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbXINO1m
+	id S1765144AbXINO2e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXINO21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:27:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48137 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbXINO1l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:27:41 -0400
-Date: Fri, 14 Sep 2007 16:26:41 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] CFS-devel, performance improvements
-Message-ID: <20070914162641.197913c2@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.64.0709131706100.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu>
-	<Pine.LNX.4.64.0709120242040.1817@scrub.home>
-	<20070913075258.GA9173@elte.hu>
-	<Pine.LNX.4.64.0709131419170.1817@scrub.home>
-	<20070913142842.GA26016@elte.hu>
-	<Pine.LNX.4.64.0709131706100.1817@scrub.home>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 14 Sep 2007 10:28:27 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:42235 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750874AbXINO20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 10:28:26 -0400
+Date: Fri, 14 Sep 2007 10:28:08 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
+Cc: Neil Brown <neilb@suse.de>, trond.myklebust@fys.uio.no,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] Correctly close old nfsd/lockd sockets.
+Message-ID: <20070914142808.GD20606@fieldses.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007 18:50:12 +0200 (CEST)
-Roman Zippel <zippel@linux-m68k.org> wrote:
-> > You never directly replied to these pretty explicit requests, all
-> > you did was this side remark 5 days later in one of your patch 
-> > announcements:
-> 
-> This is ridiculous, I asked you multiple times to explain to me some
-> of the differences relative to CFS as response to the splitup
-> requests. Not once did you react, you didn't even ask what I'd like
-> to know specifically.
+From: Neil Brown <neilb@suse.de>
 
-Roman,
+Commit aaf68cfbf2241d24d46583423f6bff5c47e088b3 added a bias
+to sk_inuse, so this test for an unused socket now fails.  So no
+sockets get closed because they are old (they might get closed
+if the client closed them).
 
-this is... a strange comment. It almost sounds like you were holding
-the splitup hostage depending on some other thing happening.... that's
-not a good attitude in my book. Having big-blob patches that do many
-things at the same time leads to them being impossible to apply. Linux
-works by having smaller incrementals. You know that; you've been around
-for a long time.
+This bug has existed since 2.6.21-rc1.
 
-Complaining that someone finally did splitup work after you refused,
-and even puts credit in for you... that's beyond my comprehension.
-Sorry.
+Thanks to Wolfgang Walter for finding and reporting the bug.
+
+Cc: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+---
+ net/sunrpc/svcsock.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+This looks appropriate for both 2.6.23 and 2.6.22.x.
+
+diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+index e053f5a..0417283 100644
+--- a/net/sunrpc/svcsock.c
++++ b/net/sunrpc/svcsock.c
+@@ -1593,7 +1593,8 @@ svc_age_temp_sockets(unsigned long closure)
+ 
+ 		if (!test_and_set_bit(SK_OLD, &svsk->sk_flags))
+ 			continue;
+-		if (atomic_read(&svsk->sk_inuse) || test_bit(SK_BUSY, &svsk->sk_flags))
++		if (atomic_read(&svsk->sk_inuse) > 1
++		    || test_bit(SK_BUSY, &svsk->sk_flags))
+ 			continue;
+ 		atomic_inc(&svsk->sk_inuse);
+ 		list_move(le, &to_be_aged);
+-- 
+1.5.3.1.42.gfe5df
 
