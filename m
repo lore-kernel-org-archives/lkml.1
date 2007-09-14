@@ -1,66 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbXINO6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbXINO7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932829AbXINO6T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 10:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932678AbXINO54
+	id S932973AbXINO7M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 10:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbXINO6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 10:57:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53903 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932665AbXINO5y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 10:57:54 -0400
-Date: Fri, 14 Sep 2007 16:56:53 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] CFS-devel, performance improvements
-Message-ID: <20070914165653.0139a645@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.64.0709141630320.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu>
-	<Pine.LNX.4.64.0709120242040.1817@scrub.home>
-	<20070913075258.GA9173@elte.hu>
-	<Pine.LNX.4.64.0709131419170.1817@scrub.home>
-	<20070913142842.GA26016@elte.hu>
-	<Pine.LNX.4.64.0709131706100.1817@scrub.home>
-	<20070914162641.197913c2@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0709141630320.1817@scrub.home>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+	Fri, 14 Sep 2007 10:58:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50138 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754109AbXINO6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 10:58:52 -0400
+Date: Fri, 14 Sep 2007 10:58:38 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Greg Banks <gnb@sgi.com>
+Cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ecryptfs-devel@lists.sourceforge.net, nfs@lists.sourceforge.net,
+       linux-fsdevel@vger.kernel.org, unionfs@filesystems.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: [NFS] [PATCH 2/7] NFS: if ATTR_KILL_S*ID bits are set, then
+ skip mode change
+Message-Id: <20070914105838.efbfc45e.jlayton@redhat.com>
+In-Reply-To: <20070914144033.GD25610@sgi.com>
+References: <200709041437.l84Eb4lw010007@dantu.rdu.redhat.com>
+	<20070914102545.GF21965@sgi.com>
+	<20070914070258.8fccb40e.jlayton@redhat.com>
+	<20070914130924.GG21965@sgi.com>
+	<20070914093846.7cdd89da.jlayton@redhat.com>
+	<20070914144033.GD25610@sgi.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007 16:50:22 +0200 (CEST)
-Roman Zippel <zippel@linux-m68k.org> wrote:
+On Sat, 15 Sep 2007 00:40:33 +1000
+Greg Banks <gnb@sgi.com> wrote:
 
-> Hi,
-> 
-> On Fri, 14 Sep 2007, Arjan van de Ven wrote:
-> 
-> > > This is ridiculous, I asked you multiple times to explain to me
-> > > some of the differences relative to CFS as response to the splitup
-> > > requests. Not once did you react, you didn't even ask what I'd
-> > > like to know specifically.
+> On Fri, Sep 14, 2007 at 09:38:46AM -0400, Jeff Layton wrote:
+> > On Fri, 14 Sep 2007 23:09:24 +1000
+> > Greg Banks <gnb@sgi.com> wrote:
 > > 
-> > Roman,
+> > > On Fri, Sep 14, 2007 at 07:02:58AM -0400, Jeff Layton wrote:
+> > > > On Fri, 14 Sep 2007 20:25:45 +1000
+> > > > Greg Banks <gnb@sgi.com> wrote:
+> > > > 
+> > > > > I'm curious about the reasons behind this change.  You mention
+> > > > > credential issues; how exactly is it that you have the correct creds
+> > > > > to perform a WRITE rpc but not a SETATTR rpc?
+> > > > > 
+> > > > 
+> > > > Consider this case. user1 and user2 are both members of group
+> > > > "allusers":
+> > > > 
+> > > > user1$ echo foo > foo
+> > > > user1$ chgrp allusers foo
+> > > > user1$ chmod 04770 foo
+> > > > user2$ echo bar >> foo
+> > > > 
+> > > > On most local filesystems, this would work correctly. The end result
+> > > > would be a file with mode 0770 and the expected contents. On NFS
+> > > > though, the write by user2 fails. When the write is attempted, the
+> > > > kernel tries to squash the setuid bit using the credentials of user2,
+> > > > who's not allowed to change the mode. The write then fails because the
+> > > > setattr fails.
+> > > 
+> > > Ok, I ran an experiment and I see this failure mode.
+> > > 
+> > > So the SETATTR rpc is really a side effect of the client kernel's
+> > > behaviour and not an operation directly requested by the user process
+> > > on the client.  Is there any reason why that rpc needs to have user2's
+> > > creds?  Why not do the rpc with a fake set of creds with uid and gid
+> > > set to the uid and gid of the file, in this case user1/allusers ?
+> > > That way the rpc will most likely pass the server's permission check.
+> > > 
 > > 
-> > this is... a strange comment. It almost sounds like you were holding
-> > the splitup hostage depending on some other thing happening....
-> > that's not a good attitude in my book. Having big-blob patches that
-> > do many things at the same time leads to them being impossible to
-> > apply. Linux works by having smaller incrementals. You know that;
-> > you've been around for a long time.
+> > That might work in some cases, but there are many where it wouldn't...
+> > 
+> > Suppose user1 here is root and all of the user1 operations are being
+> > done on the server. If the server has root squashing enabled, then
+> > user2's operation would still fail.
 > 
-> There is actually a very simple reason for that, the actual patch is
-> not my primary focus, 
+> In that case, user1's operations would also fail, which is even more
+> serious a problem.  Also arguably you actually *want* writes by a
+> nonroot user to a setuid root executable to fail ;-)
+> 
 
+Well, user1's operations would fail if done from the client, which is
+why I mentioned that they would have to be done on the server.
 
-for someone who's not focused on patches/code,  you make quite a bit of
-noise when someone does turn your discussion into smaller patches and
-only credits you three times.
+The second point is a good one, but POSIX says that it should be allowed
+if the permissions allow for it. The whole situation is somewhat
+contrived anyway, I can't think of a place where this is something
+you'd really want to do, but I think we need to try to follow the spec
+as best as possible...
+
+> > Another problem:
+> > 
+> > Suppose we're using gssapi. There's no guarantee that the client will
+> > have the proper credentials to fake up a call as user1 (you might need
+> > user1 krb5 tickets, etc).
+> 
+> Yes, good point.  You could use the root creds, except for root squashing.
+> Ok, you convinced me.
+> 
+
+Right. When I was first looking at this, I considered some similar
+approaches, but hit roadblocks with all of them. The only real option
+seems to be to leave this to the server, but that does assume that the
+server handles this properly.
+
+Servers that don't are broken, IMO. If Irix isn't clearing these bits
+on a write then it might be good to see if they can fix that...
+
+-- 
+Jeff Layton <jlayton@redhat.com>
