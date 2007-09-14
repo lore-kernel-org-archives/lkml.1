@@ -1,38 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784AbXINK33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbXINKa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755784AbXINK33 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 06:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbXINK3U
+	id S1756108AbXINKa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 06:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbXINKaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 06:29:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58037 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752206AbXINK3T (ORCPT
+	Fri, 14 Sep 2007 06:30:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:53091 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752888AbXINKaO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 06:29:19 -0400
-Date: Fri, 14 Sep 2007 03:29:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux-box <bo.yang@lsi.com>
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com,
-       linux-kernel@vger.kernel.org, sumant.patro@lsi.com
-Subject: Re: PATCH 2/4] scsi: megaraid_sas -- add module param fast_load
-Message-Id: <20070914032914.ca96117e.akpm@linux-foundation.org>
-In-Reply-To: <1189513694.6082.9.camel@dhcp-75-534.se.lsil.com>
-References: <1189513694.6082.9.camel@dhcp-75-534.se.lsil.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Sep 2007 06:30:14 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: O_NOLINK for open()
+To: Brent Casavant <bcasavan@sgi.com>, Gabor Gombas <gombasg@sztaki.hu>,
+       linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Fri, 14 Sep 2007 12:30:05 +0200
+References: <92Haf-7z7-5@gated-at.bofh.it> <92TO5-246-1@gated-at.bofh.it> <92Zqu-2ur-1@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1IW8R4-0000ko-2z@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX18QKouEpooXVHn/tLkcgF2tuJwK5WUOdktLJIz
+ v29z2qY+aypaXsqdOWqPSrNvYe0fKAxaQAuFIbMKOm58aiFM2E
+ eO7eq/IeV81eRy3tBLesw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007 08:28:14 -0400 linux-box <bo.yang@lsi.com> wrote:
+Brent Casavant <bcasavan@sgi.com> wrote:
 
-> Driver will skip physical devices scan for the first time if the fast_load is set
+[...]
+> Hmm.  This will work as long as the peer process is running setuid
+> to it's own unique user.  Excellent idea!  Since I need to make the
+> program setuid to avoid non-priveleged ptrace attacks, this is a
+> terrific solution.
 
-When preparing changelogs it is often good to describe _why_ the change is
-being made, as well as what the change does.
+Tried that:
 
-It may be obvious to some people why users of this driver might want to use
-this feature, but I don't have clue why you did this.
+~ > cd tmp
+~/tmp > cp /bin/sleep .
+~/tmp > chmod u+s sleep
+~/tmp > ./sleep 2147483647 &
+[1] 2823
+~/tmp > strace -p 2823
+Process 2823 attached - interrupt to quit
+setup(
 
+-- 
+Top 100 things you don't want the sysadmin to say:
+27. You can do this patch with the system up...
+
+Friﬂ, Spammer: 7TdJfPsslN@y4jaOy.7eggert.dyndns.org
