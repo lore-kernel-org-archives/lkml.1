@@ -1,52 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbXINQgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbXINQhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756997AbXINQgX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbXINQgN
+	id S1757731AbXINQhD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbXINQgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:36:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39637 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbXINQgM (ORCPT
+	Fri, 14 Sep 2007 12:36:53 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:2430 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755714AbXINQgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:36:12 -0400
-Date: Fri, 14 Sep 2007 17:36:11 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>,
-       Andreas Gruenbacher <agruen@suse.de>, linux-kernel@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
-       Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: Re: [patch 1/4] Introduce pathput
-Message-ID: <20070914163611.GA30469@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andreas Gruenbacher <agruen@suse.de>, linux-kernel@vger.kernel.org,
-	John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
-	Erez Zadok <ezk@cs.sunysb.edu>,
-	Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
-References: <20070808171622.632749741@suse.de> <20070808171643.542685765@suse.de> <20070808193209.GA31354@infradead.org> <20070810142208.827949199@suse.de> <20070810143846.804017666@suse.de> <20070829190710.GA28028@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Sep 2007 12:36:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A/DzXeJQWLo7sF95aTBjZImQAPHtSsNvAc66I0Thjibjv97VN5AlC/VT0EQMnqx+XvB35+mKtTGPyNom2UiZ3E4FQkn14PqAbjd0jlCxpXSFLxkUg2xpHdazv/ibRS0rNAzYCYvdUe4AEuANjglbVxw/wuPNX8bJGbIZ7AE61d8=
+Message-ID: <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+Date: Fri, 14 Sep 2007 18:36:50 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Johannes Stezenbach" <js@linuxtv.org>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+Cc: "Steven Toth" <stoth@hauppauge.com>,
+       "Manu Abraham" <abraham.manu@gmail.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+In-Reply-To: <20070914113838.GA29962@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070829190710.GA28028@infradead.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>
+	 <20070913131353.GB26972@linuxtv.org>
+	 <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com>
+	 <46E95C54.4060502@gmail.com>
+	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+	 <46E99F36.8090809@hauppauge.com>
+	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+	 <46E9DDC7.4000403@hauppauge.com>
+	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+	 <20070914113838.GA29962@linuxtv.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 29, 2007 at 08:07:10PM +0100, Christoph Hellwig wrote:
-> > * Switch from path_release_on_umount(nd) to pathput_on_umount(&nd->path).
-> > 
-> > * Rename dput_path() to pathput_conditional().
-> 
-> The introduction of pathput is fine we me.  The removal of path_release
-> doesn't make much sense.  We have tons of invocations of exactly that
-> patter, and having keeping path_release for that makes a lot of sense.
+On 9/14/07, Johannes Stezenbach <js@linuxtv.org> wrote:
+> On Fri, Sep 14, 2007, Markus Rechberger wrote:
+> > On 9/14/07, Steven Toth <stoth@hauppauge.com> wrote:
+> > >
+> > > If you care about LinuxTV you'll work with the core subsystem developers
+> > > to bring your em28xx tree inline. If you don't care then why are you
+> here?
+> >
+> > It doesn't really work out to work with those 3-5 "core" people who are
+> active
+> > there.
+> > It starts at the point where RFCs are submitted and not answered,
+> > discussions are avoided and finally some people start to complain.
+> > In case of pointing people to wrong or bad solutions, one "Maintainer"
+> > pointed out it would be like manipulating others work ... this exactly
+> > happened with the em28xx project. It's not only about the current
+> > implementation, as from my side I also take upcoming products into
+> > account and how long it would take to get something which isn't
+> > supported by the API fixed.. it's just something that is too hard and
+> > I don't want to debate about things where I know that the outcome
+> > is that I have to wait till someone of those 3-5 "core" people come up
+> > with an own idea.
+>
+> Maybe you still don't realize how tiresome it is to talk to you.
+> What you present as "linuxtv people block my contributions" is
+> IMHO "linuxtv people got fed up talking to you". Because when
+> people disagree with you, you keep rambling on and on instead
+> of just accepting it. See, working with an Open source community
+> requires that you don't piss everyone off, but instead find
+> ways to _motivate_ them to help you fix the problems which
+> prevent your code from being merged. When people are doing
+> software development _for fun_, then it should be a _pleasure_
+> for them to work with you, and not a pain in the ass.
+>
 
-After some private discussion on this I think I was overruled, so feel
-free to keep that change.  Al also suggested to rename the things
-to path_get/path_put which makes sense.
+Johannes,
 
-Any chance you could respin the series with the review comments addressed
-so that there is a chance to get it into 2.6.24?
+people do contribute to the em28xx project.
+If noone keeps finding solutions for requirements I will of course
+go on to find my own way.
+Although upcoming and even the current requirements are not met
+by the existing API.
+It's worth nothing to merge what's available now since I'm not even
+ok with how several issues are solved with the driver itself at the
+moment.
+I'm going forward step by step with it now.
+
+there's also an active and even problem solving oriented ML available:
+http://mcentral.de/pipermail/em28xx/
+
+Also if you look at the mercurial code you'll see several people
+contributing to that project.
+
+Markus
