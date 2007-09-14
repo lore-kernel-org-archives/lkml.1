@@ -1,42 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbXINJZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbXINJaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbXINJZg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 05:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbXINJZ2
+	id S1753052AbXINJaY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 05:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXINJaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 05:25:28 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47082 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbXINJZ1 (ORCPT
+	Fri, 14 Sep 2007 05:30:10 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50665 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbXINJaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 05:25:27 -0400
-Date: Fri, 14 Sep 2007 11:25:55 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ACPI video mode patch review
-Message-ID: <20070914092555.GA5285@elf.ucw.cz>
-References: <46E9AD88.7070400@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46E9AD88.7070400@zytor.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 14 Sep 2007 05:30:07 -0400
+Message-Id: <20070914093533.222891000@bull.net>
+References: <20070914093428.934490000@bull.net>
+User-Agent: quilt/0.45-1
+Date: Fri, 14 Sep 2007 11:34:29 +0200
+From: Nadia.Derbey@bull.net
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, matthltc@us.ibm.com,
+       Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: [PATCH -mm1] Storing ipcs into IDRs
+Content-Disposition: inline; filename=ipc_casts_to_containerof.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+This patch converts casts of struct kern_ipc_perm to
+   . struct msg_queue
+   . struct sem_array
+   . struct shmid_kernel
+into the equivalent container_of() macro. It improves code maintenance
+because the code need not change if kern_ipc_perm is no longer at the
+beginning of the containing struct.
 
-> Pavel, want to look at the patch before sending it to Linus?
+Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
-Looks okay from a quick look. I'm on conference just now, will test
-shortly.
+---
 
-								Pavel
+This patch applies on top of 2.6.23-rc4-mm1 + the previous IPC patches.
+Hopefully this will make review and application easier for anyone already
+familiar with this series.
 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+ ipc/msg.c  |   14 ++++++++++----
+ ipc/sem.c  |   23 +++++++++++++++++------
+ ipc/shm.c  |   23 +++++++++++++++++------
+ ipc/util.h |    4 ++--
+ 4 files changed, 46 insertions(+), 18 deletions(-)
+
+Index: linux-2.6.23-rc4-mm1/ipc/msg.c
+===================================================================
+--- linux-2.6.23-rc4-mm1.orig/ipc/msg.c	2007-09-13 14:04:28.000000000 +0200
++++ linux-2.6.23-rc4-mm1/ipc/msg.c	2007-09-13 14:11:43.000000000 +0200
+@@ -138,13 +138,17 @@ void __init msg_init(void)
+ 
+ static inline struct msg_queue *msg_lock(struct ipc_namespace *ns, int id)
+ {
+-	return (struct msg_queue *) ipc_lock(&msg_ids(ns), id);
++	struct kern_ipc_perm *ipcp = ipc_lock(&msg_ids(ns), id);
++
++	return container_of(ipcp, struct msg_queue, q_perm);
+ }
+ 
+ static inline struct msg_queue *msg_lock_check(struct ipc_namespace *ns,
+ 						int id)
+ {
+-	return (struct msg_queue *) ipc_lock_check(&msg_ids(ns), id);
++	struct kern_ipc_perm *ipcp = ipc_lock_check(&msg_ids(ns), id);
++
++	return container_of(ipcp, struct msg_queue, q_perm);
+ }
+ 
+ static inline void msg_rmid(struct ipc_namespace *ns, struct msg_queue *s)
+@@ -274,9 +278,11 @@ static void freeque(struct ipc_namespace
+ 	ipc_rcu_putref(msq);
+ }
+ 
+-static inline int msg_security(void *msq, int msgflg)
++static inline int msg_security(struct kern_ipc_perm *ipcp, int msgflg)
+ {
+-	return security_msg_queue_associate((struct msg_queue *) msq, msgflg);
++	struct msg_queue *msq = container_of(ipcp, struct msg_queue, q_perm);
++
++	return security_msg_queue_associate(msq, msgflg);
+ }
+ 
+ asmlinkage long sys_msgget(key_t key, int msgflg)
+Index: linux-2.6.23-rc4-mm1/ipc/sem.c
+===================================================================
+--- linux-2.6.23-rc4-mm1.orig/ipc/sem.c	2007-09-13 14:04:28.000000000 +0200
++++ linux-2.6.23-rc4-mm1/ipc/sem.c	2007-09-13 14:16:30.000000000 +0200
+@@ -176,13 +176,17 @@ void __init sem_init (void)
+ 
+ static inline struct sem_array *sem_lock(struct ipc_namespace *ns, int id)
+ {
+-	return (struct sem_array *) ipc_lock(&sem_ids(ns), id);
++	struct kern_ipc_perm *ipcp = ipc_lock(&sem_ids(ns), id);
++
++	return container_of(ipcp, struct sem_array, sem_perm);
+ }
+ 
+ static inline struct sem_array *sem_lock_check(struct ipc_namespace *ns,
+ 						int id)
+ {
+-	return (struct sem_array *) ipc_lock_check(&sem_ids(ns), id);
++	struct kern_ipc_perm *ipcp = ipc_lock_check(&sem_ids(ns), id);
++
++	return container_of(ipcp, struct sem_array, sem_perm);
+ }
+ 
+ static inline void sem_rmid(struct ipc_namespace *ns, struct sem_array *s)
+@@ -277,14 +281,21 @@ static int newary(struct ipc_namespace *
+ }
+ 
+ 
+-static inline int sem_security(void *sma, int semflg)
++static inline int sem_security(struct kern_ipc_perm *ipcp, int semflg)
+ {
+-	return security_sem_associate((struct sem_array *) sma, semflg);
++	struct sem_array *sma;
++
++	sma = container_of(ipcp, struct sem_array, sem_perm);
++	return security_sem_associate(sma, semflg);
+ }
+ 
+-static inline int sem_more_checks(void *sma, struct ipc_params *params)
++static inline int sem_more_checks(struct kern_ipc_perm *ipcp,
++				struct ipc_params *params)
+ {
+-	if (params->u.nsems > ((struct sem_array *)sma)->sem_nsems)
++	struct sem_array *sma;
++
++	sma = container_of(ipcp, struct sem_array, sem_perm);
++	if (params->u.nsems > sma->sem_nsems)
+ 		return -EINVAL;
+ 
+ 	return 0;
+Index: linux-2.6.23-rc4-mm1/ipc/shm.c
+===================================================================
+--- linux-2.6.23-rc4-mm1.orig/ipc/shm.c	2007-09-13 14:04:28.000000000 +0200
++++ linux-2.6.23-rc4-mm1/ipc/shm.c	2007-09-13 14:19:51.000000000 +0200
+@@ -139,13 +139,17 @@ void __init shm_init (void)
+ 
+ static inline struct shmid_kernel *shm_lock(struct ipc_namespace *ns, int id)
+ {
+-	return (struct shmid_kernel *) ipc_lock(&shm_ids(ns), id);
++	struct kern_ipc_perm *ipcp = ipc_lock(&shm_ids(ns), id);
++
++	return container_of(ipcp, struct shmid_kernel, shm_perm);
+ }
+ 
+ static inline struct shmid_kernel *shm_lock_check(struct ipc_namespace *ns,
+ 						int id)
+ {
+-	return (struct shmid_kernel *) ipc_lock_check(&shm_ids(ns), id);
++	struct kern_ipc_perm *ipcp = ipc_lock_check(&shm_ids(ns), id);
++
++	return container_of(ipcp, struct shmid_kernel, shm_perm);
+ }
+ 
+ static inline void shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *s)
+@@ -424,14 +428,21 @@ no_file:
+ 	return error;
+ }
+ 
+-static inline int shm_security(void *shp, int shmflg)
++static inline int shm_security(struct kern_ipc_perm *ipcp, int shmflg)
+ {
+-	return security_shm_associate((struct shmid_kernel *) shp, shmflg);
++	struct shmid_kernel *shp;
++
++	shp = container_of(ipcp, struct shmid_kernel, shm_perm);
++	return security_shm_associate(shp, shmflg);
+ }
+ 
+-static inline int shm_more_checks(void *shp, struct ipc_params *params)
++static inline int shm_more_checks(struct kern_ipc_perm *ipcp,
++				struct ipc_params *params)
+ {
+-	if (((struct shmid_kernel *)shp)->shm_segsz < params->u.size)
++	struct shmid_kernel *shp;
++
++	shp = container_of(ipcp, struct shmid_kernel, shm_perm);
++	if (shp->shm_segsz < params->u.size)
+ 		return -EINVAL;
+ 
+ 	return 0;
+Index: linux-2.6.23-rc4-mm1/ipc/util.h
+===================================================================
+--- linux-2.6.23-rc4-mm1.orig/ipc/util.h	2007-09-13 14:04:28.000000000 +0200
++++ linux-2.6.23-rc4-mm1/ipc/util.h	2007-09-13 14:20:44.000000000 +0200
+@@ -61,8 +61,8 @@ struct ipc_params {
+  */
+ struct ipc_ops {
+ 	int (*getnew) (struct ipc_namespace *, struct ipc_params *);
+-	int (*associate) (void *, int);
+-	int (*more_checks) (void *, struct ipc_params *);
++	int (*associate) (struct kern_ipc_perm *, int);
++	int (*more_checks) (struct kern_ipc_perm *, struct ipc_params *);
+ };
+ 
+ struct seq_file;
+
+--
