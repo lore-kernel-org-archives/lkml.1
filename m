@@ -1,55 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbXINQvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbXINQwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbXINQvc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 12:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbXINQvP
+	id S1758672AbXINQwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 12:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbXINQwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 12:51:15 -0400
-Received: from lixom.net ([66.141.50.11]:60447 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755160AbXINQvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 12:51:13 -0400
-Date: Fri, 14 Sep 2007 11:52:33 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org, hch@lst.de,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] pcmcia: Convert io_req_t to use kio_addr_t
-Message-ID: <20070914165233.GA3045@lixom.net>
-References: <20070905142742.GA1760@lixom.net> <20070914034854.1658a9cf.akpm@linux-foundation.org>
+	Fri, 14 Sep 2007 12:52:39 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:58951 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbXINQwg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 12:52:36 -0400
+Message-ID: <46EABC28.9000704@linux.vnet.ibm.com>
+Date: Fri, 14 Sep 2007 22:21:52 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070914034854.1658a9cf.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Clayton <andrew@digital-domain.net>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Dave Kleikamp <shaggy@austin.ibm.com>,
+       jfs-discussion@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
+       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Chuck Ebbert <cebbert@redhat.com>, dth <dth@dth.net>
+Subject: Re: [2/4] 2.6.23-rc6: known regressions
+References: <46E8187E.9000006@googlemail.com> <46E81ACE.6030305@googlemail.com>
+In-Reply-To: <46E81ACE.6030305@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 03:48:54AM -0700, Andrew Morton wrote:
-> On Wed, 5 Sep 2007 09:27:43 -0500 Olof Johansson <olof@lixom.net> wrote:
-> 
-> > Convert the io_req_t members to kio_addr_t, to allow use on machines with
-> > more than 16 bits worth of IO port address space (ppc64 in this case,
-> > but it applies to others as well).
-> 
-> drivers/usb/host/sl811_cs.c: In function 'sl811_cs_config':
-> drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'kio_addr_t'
-> drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
-> 
-> That's not just a cosmetic thing - the printk can print junk and if there's
-> a %s in the control string after the %x's, printk() will crash.
-> 
-> I don't know how many instances of this are in the tree, but they'll all
-> need to be found and fixed.
+Michal Piotrowski wrote:
+> Hi all,
+>
+> Here is a list of some known regressions in 2.6.23-rc6.
+>
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+>
+> List of Aces
+>
+> Name                    Regressions fixed since 21-Jun-2007
+> Adrian Bunk                            10
+> Linus Torvalds                         6
+> Alan Stern                             5
+> Andi Kleen                             5
+> Hugh Dickins                           5
+> Trond Myklebust                        5
+> Andrew Morton                          4
+> Al Viro                                3
+> Alexey Starikovskiy                    3
+> Cornelia Huck                          3
+> David S. Miller                        3
+> Jens Axboe                             3
+> Stephen Hemminger                      3
+> Tejun Heo                              3
+>
+>
+>
+> ACPI
+>
+> Subject         : 2.6.23-rc5 hangs on boot, apparently when initializing the EC
+> References      : http://lkml.org/lkml/2007/9/11/369
+> Last known good : ?
+> Submitter       : Chuck Ebbert <cebbert@redhat.com>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
+>
+>
+>
+> CPUFREQ
+>
+> Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+> References      : http://lkml.org/lkml/2007/7/27/298
+>                   http://lkml.org/lkml/2007/7/29/371
+> Last known good : ?
+> Submitter       : dth <dth@dth.net>
+> Caused-By       : Len Brown <lenb@kernel.org>
+>                   commit f79e3185dd0f8650022518d7624c876d8929061b
+> Handled-By      : Len Brown <lenb@kernel.org>
+> Status          : problem is being debugged
+>
+>
+>
+> FS
+>
+> Subject         : hanging ext3 dbench tests
+> References      : http://lkml.org/lkml/2007/9/11/176
+> Last known good : ?
+> Submitter       : Andy Whitcroft <apw@shadowen.org>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
+>
+> Subject         : umount triggers a warning in jfs and takes almost a minute
+> References      : http://lkml.org/lkml/2007/9/4/73
+> Last known good : ?
+> Submitter       : Oliver Neukum <oliver@neukum.org>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
+>
+> Subject         : [NFSv4] 2.6.23-rc4 oops in nfs4_cb_recall
+> References      : http://lkml.org/lkml/2007/9/4/53
+>                   http://bugzilla.kernel.org/show_bug.cgi?id=9003
+> Last known good : ?
+> Submitter       : Daniel J Blueman <daniel.blueman@gmail.com>
+> Caused-By       : ?
+> Handled-By      : ?
+> Workaround      : http://bugzilla.kernel.org/attachment.cgi?id=12797
+> Status          : unknown
+>
+> Subject         : [NFSD OOPS] 2.6.23-rc1-git10
+> References      : http://lkml.org/lkml/2007/8/2/462
+> Last known good : ?
+> Submitter       : Andrew Clayton <andrew@digital-domain.net>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
+>
+>
+>
+> Regards,
+> Michal
+>
+> --
+> LOG
+> http://www.stardust.webpages.pl/log/
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
+Hi Michal,
 
-A crap, I completely forgot to check drivers/, and my default builds
-don't contain many of them. My bad.
+The NFSV4 [BUG] 2.6.23-rc5 kernel BUG at fs/nfs/nfs4xdr.c:945, is again
+seen in 2.6.23-rc6. Can this bug be added as known regression for
+2.6.23-rc6. References http://lkml.org/lkml/2007/9/7/27.
 
-I'll do a full pass and review all references to the changed variables. So
-far I've only noticed printk stuff, but I'm not done. There's a fair
-amount lot of places where they're cast into ints instead of longs,
-but that's a whole other ball of wax (and shouldn't cause regressions
-like the printk ones could).
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
 
-
--Olof
