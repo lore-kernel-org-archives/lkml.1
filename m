@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763885AbXINCm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762433AbXINCti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763885AbXINCm1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 22:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755755AbXINCmT
+	id S1762433AbXINCti (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 22:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbXINCta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 22:42:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51824 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754359AbXINCmS (ORCPT
+	Thu, 13 Sep 2007 22:49:30 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:50122 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753352AbXINCta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 22:42:18 -0400
-Date: Thu, 13 Sep 2007 19:41:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, Paul Mundt <lethal@linux-sh.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
-Message-Id: <20070913194130.1611fd78.akpm@linux-foundation.org>
-In-Reply-To: <20070914105420.F2E9.Y-GOTO@jp.fujitsu.com>
-References: <20070911182546.F139.Y-GOTO@jp.fujitsu.com>
-	<20070913184456.16ff248e.akpm@linux-foundation.org>
-	<20070914105420.F2E9.Y-GOTO@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Sep 2007 22:49:30 -0400
+Message-Id: <46E9F6A9.8060500@mxs.nes.nec.co.jp>
+Date: Fri, 14 Sep 2007 11:49:13 +0900
+From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Adrian Bunk <bunk@kernel.org>, kexec-ml <kexec@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/4] [-mm patch]  Cleanup add-vmcoreinfo.patch v2
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007 11:02:43 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
 
-> > >  	/* call arch's memory hotadd */
-> > > 
-> > 
-> > OK, we're getting into a mess here.  This patch fixes
-> > update-n_high_memory-node-state-for-memory-hotadd.patch, but which patch
-> > does update-n_high_memory-node-state-for-memory-hotadd.patch fix?
-> > 
-> > At present I just whacked
-> > update-n_high_memory-node-state-for-memory-hotadd.patch at the end of
-> > everything, but that was lazy of me and it ends up making a mess.
-> 
-> It is enough. No more patch is necessary for these issues.
-> I already fixed about Andy-san's comment. :-)
+Hi Andrew,
 
-Now I'm more confused.  I have two separeate questions:
+I updated the cleanup patchset for add-vmcoreinfo.patch.
+* Cleanup add-vmcoreinfo.patch v1:
+http://www.ussg.iu.edu/hypermail/linux/kernel/0709.1/0318.html
 
-a) Is the justr-added update-n_high_memory-node-state-for-memory-hotadd-fix.patch
-   still needed?
+This patchset (v2) includes a new patch[4/4] for adding a prefix
+"VMCOREINFO_" to the vmcoreinfo macros. Other patches ([1/4]-[3/4])
+don't have any changes.
 
-b) Which patch in 2.6.22-rc4-mm1 does
-   update-n_high_memory-node-state-for-memory-hotadd.patch fix?  In other
-   words, into which patch should I fold
-   update-n_high_memory-node-state-for-memory-hotadd.patch prior to sending
-   to Linus?
+Changelog:
+  - Add "Add a prefix VMCOREINFO_ to the vmcoreinfo macros" patch.
 
-   (I (usually) get to work this out for myself.  Sometimes it is painful).
+Patchset:
+[1/4] Cleanup the coding style according to Andrew's comments:
+  http://lists.infradead.org/pipermail/kexec/2007-August/000522.html
+  - vmcoreinfo_append_str() should have suitable __attribute__s so that
+    the compiler can check its use.
+  - vmcoreinfo_max_size should have size_t.
+  - Use get_seconds() instead of xtime.tv_sec.
+  - Use init_uts_ns.name.release instead of UTS_RELEASE.
 
-Generally, if people tell me which patch-in-mm their patch is fixing,
-it really helps.  Adrian does this all the time.
+[2/4] Add nodemask_t's size and NR_FREE_PAGES's value to vmcoreinfo_data.
+  The dump filetering command 'makedumpfile'(v1.1.6 or before) had assumed
+  the above values, and it was not good from the reliability viewpoint.
+  So makedumpfile v1.2.0 came to need these values and I created the patch
+  to let the kernel output them.
+  makedumpfile site:
+  https://sourceforge.net/projects/makedumpfile/
 
-Thanks.
+[3/4] Use the existing ia64_tpa() instead of asm code.
+
+[4/4] Add a prefix "VMCOREINFO_" to the vmcoreinfo macros.
+  Old vmcoreinfo macros were defined as generic names SYMBOL/SIZE/OFFSET
+  /LENGTH/CONFIG, and it is impossible to grep for them. So these names
+  should be changed. This discussion is the following:
+  http://www.ussg.iu.edu/hypermail/linux/kernel/0709.1/0415.html
+
+
+Thanks
+Ken'ichi Ohmichi
+
