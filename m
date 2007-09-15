@@ -1,61 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbXIOUZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbXIOUwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbXIOUZV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 16:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbXIOUZK
+	id S1755294AbXIOUwA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 16:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXIOUvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 16:25:10 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:59310 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752574AbXIOUZI (ORCPT
+	Sat, 15 Sep 2007 16:51:50 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:41598 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910AbXIOUvt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 16:25:08 -0400
-Date: Sat, 15 Sep 2007 14:24:45 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
-In-reply-to: <fa.lPg6OSzX+f6jdXK1ZF0rlIhZok4@ifi.uio.no>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       Matthew Wilcox <matthew@wil.cx>, Shaohua Li <shaohua.li@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Message-id: <46EC3F8D.4040702@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.+WRenB38novq157RnGPLoU4q2XI@ifi.uio.no>
- <fa.mM7Va6Nlsaduo/AF4MkeurSBTbs@ifi.uio.no>
- <fa.Ff0IMhMYWp7NYEdjO0AftHzVOh4@ifi.uio.no>
- <fa.d9zBdhHd9gKcJbtwrYguusbECo4@ifi.uio.no>
- <fa.TLO57rS9iV7zhomQxJbV9gjbxx8@ifi.uio.no>
- <fa.lPg6OSzX+f6jdXK1ZF0rlIhZok4@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 15 Sep 2007 16:51:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=jXuSCIAqSUkGLaHMJ1sVtc++NAwQmy7SnNYChDSctydE+N3mepiNtEXzHs5WU1+3bQIBz0fuubLxdc6YseQSAwQWSPloxeNHdEGjwxid0FclUCxITbCPk4vGe43e+7BLJORWKASVU+nfWs8xERmWfbuaUXa+MonPyK/lp57wvUY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+Date: Sat, 15 Sep 2007 22:54:14 +0200
+User-Agent: KMail/1.9.6
+Cc: Adrian Bunk <bunk@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+References: <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <200709151852.43157.bzolnier@gmail.com> <46EC2FCD.5080803@garzik.org>
+In-Reply-To: <46EC2FCD.5080803@garzik.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200709152254.14879.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On 9/14/07, Robert Hancock <hancockr@shaw.ca> wrote:
->> It's not impossible at all. In fact I'm quite sure (Jesse can confirm)
->> that in the case of the board he was using, it was an add-in graphics
->> card where he saw this problem.
->>
->> The fact is that in the case of MMCONFIG overlap with PCI BARs, which
->> one takes priority is completely undefined. In the case of this Intel
->> chipset, clearly the PCI Express device connected to the northbridge had
->> higher decode priority than the MMCONFIG aperture.
+On Saturday 15 September 2007, Jeff Garzik wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> > On Saturday 15 September 2007, Adrian Bunk wrote:
+> >> On Sat, Sep 15, 2007 at 11:44:59AM -0400, Jeff Garzik wrote:
+> >>> Stefan Richter wrote:
+> >>>> Adrian Bunk wrote:
+> >>>>> On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
+> >>>>>> Perfect is in the eye of the beholder.  You would consequently have to
+> >>>>>> add such options into all menus which contain scsi low-level providers.
+> >>>>> Kconfig is a user interface, so perfect is what is best for the
+> >>>>> kconfig users.
+> >>>> Duplicate options with different names in different menus, but which all
+> >>>> do the same, --- is this the best for users?
+> >>> I recognize it's a rhetorical question :)  The answer is of course "no".
+> >>>
+> >>> I hope the other participants of this thread register the severe 
+> >>> disinclination of the maintainers to change this stuff, as this is a 
+> >>> classic case of making a mountain out of a molehill[1].
+> >>>
+> >>> For the -vast majority- of people configuring the kernel, this is not a 
+> >>> problem.  Kernel people are -expected- to know what they're doing, 
+> >> I doubt your claim is true since the vast majority of kconfig users
+> >> are most likely not kernel developers.
+> > 
+> > Yes, we shouldn't be needlessly raising the bar for power users.
 > 
-> can you relocate the MMCONFIG above RAM range? for example 512G...
+> In this case, no bar is being "raised," for any user.
 
-On some chipsets that might be possible, however I think that on the 
-Intel ones it's not possible to move it above 4G. And in any case this 
-would require chipset-specific knowledge, which we would rather not have 
-to need.
+It has already been raised by making SATA configuration counterintuitive
+(SATA has a separate Kconfig menu but depends on SCSI device drivers).
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> >> @Greg:
+> >> Do you have any numbers regarding how your "Linux Kernel in a Nutshell" 
+> >> is selling?
+> >> Even download numbers?
+> >>
+> >>> especially when switching from one major subsystem to another.
+> >> It's not only about switching, the same problems awaits people when 
+> >> configuring a kernel for their hardware the first time.
+> > 
+> > *nods*
+> > 
+> >>> Therefore, all this is IMO wasted effort and hot air.  There are far more 
+> >>> important issues to deal with.
+> >> Why don't we dump kconfig and write the .config by hand?  ;-)
+> >>
+> >> More seriously:
+> >> Yes, there are many other important issues in the kernel.
+> >> But not fixing kconfig UI problems doesn't fix these issues faster.
+> > 
+> > Agreed, and actually not fixing Kconfig UI problems will make the other
+> > issues being fixed *slower* (because they result in *increased* workload
+> > on developers' side).
+> 
+> Irrelevant in this case, because there is no increased workload on the 
+> developer's side.
 
+This thread alone serves as a perfect counter-example. ;)
+
+> >> I have seen people running into problems because some required 
+> >> option wasn't set - in the simplest cases things like IDE without DMA 
+> >> because a help text wasn't updated when more hardware support was added 
+> >> to a driver.
+> > 
+> > This is why nowadays IDE DMA support is automatically selected by IDE
+> > host drivers that need it - a big relief for everybody.
+> 
+> Please don't take this any more off-topic than it already is.
+
+OK, I'll stop here and I'll just patiently wait till the SATA Kconfig
+issue comes up again on LKML (then I'll just smile and move on to
+the next post 8).
+
+> IDE DMA option was vastly different.  The options in question here 
+> affect whether or not you have a block device to use -- something that 
+> is immediately obviously and corrected quickly.
+
+Indeed -- completely different situation.
+
+> >> You might not care about the kconfig users.
+> >> But other people do.
+> > 
+> > ...and even if their attempts/solutions may not be proper yet they should
+> > not be discouraged to work on these problems...
+> 
+> There is no problem, in this case.
+
+Fine with me then.  The above was the most important part for me.
+
+> Otherwise, there would be more than a complaint or two per year.
+
+Thanks,
+Bart
