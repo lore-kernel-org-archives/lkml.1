@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXIOOUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778AbXIOO1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbXIOOUZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 10:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXIOOUK
+	id S1753778AbXIOO1k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 10:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbXIOO1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 10:20:10 -0400
-Received: from quail.cita.utoronto.ca ([128.100.76.6]:45661 "EHLO
-	quail.cita.utoronto.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbXIOOUI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 10:20:08 -0400
-X-Greylist: delayed 1396 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Sep 2007 10:20:08 EDT
-Date: Sat, 15 Sep 2007 09:56:33 -0400
-From: Robin Humble <rjh@cita.utoronto.ca>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Move away from char device ioctls.
-Message-ID: <20070915135633.GA19482@lemming.cita.utoronto.ca>
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46EADC02.9070409@garzik.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 15 Sep 2007 10:27:33 -0400
+Received: from smtp2f.orange.fr ([80.12.242.151]:32961 "EHLO smtp2f.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750983AbXIOO1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 10:27:32 -0400
+X-ME-UUID: 20070915142731243.05EF27000091@mwinf2f07.orange.fr
+Message-ID: <46EBEBD2.7060502@free.fr>
+Date: Sat, 15 Sep 2007 16:27:30 +0200
+From: Eric Valette <eric.valette@free.fr>
+Reply-To: eric.valette@free.fr
+Organization: HOME
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+MIME-Version: 1.0
+To: eric.valette@free.fr, flamingice@sourmilk.net, andreamrl@tiscali.it
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: rtl8187 driver in 2.6.23-rc6-git5: kernel panic if not used as
+ a module. Works as a module.
+References: <46EBE70C.2040201@free.fr>
+In-Reply-To: <46EBE70C.2040201@free.fr>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 03:07:46PM -0400, Jeff Garzik wrote:
->It is my hope that you will put your skills towards a distributed 
->filesystem :)  Of the current solutions, GFS (currently in kernel) 
->scales poorly, and NFS v4.1 is amazingly bloated and overly complex.
->
->I've been waiting for years for a smart person to come along and write a 
->POSIX-only distributed filesystem.
+Eric Valette wrote:
 
-it's called Lustre.
-works well, scales well, is widely used, is GPL.
-sadly it's not in mainline.
+> I can probably take a picture of the backtrace if you want.
 
-cheers,
-robin
+Just saw that just above my message in the LKML web interface, someone
+posted a backtrace. Mine is different but at least, we are at least two
+to have the crash.
+
+-- eric
+
+
