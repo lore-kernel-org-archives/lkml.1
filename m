@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbXIOPR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbXIOP2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbXIOPR5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 11:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXIOPRu
+	id S1753480AbXIOP2g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 11:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbXIOP21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 11:17:50 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:50973 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751320AbXIOPRt (ORCPT
+	Sat, 15 Sep 2007 11:28:27 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:42922 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751033AbXIOP20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 11:17:49 -0400
-Message-ID: <46EBF774.2030306@gmail.com>
-Date: Sat, 15 Sep 2007 17:17:08 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sat, 15 Sep 2007 11:28:26 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46EBF9DC.1000503@s5r6.in-berlin.de>
+Date: Sat, 15 Sep 2007 17:27:24 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
 To: Adrian Bunk <bunk@kernel.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Kai Germaschewski <kai@germaschewski.name>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-Subject: Re: Per option CFLAGS?
-References: <46EB141A.7090200@gmail.com> <46EB1599.4020806@zytor.com> <46EB198D.2040208@gmail.com> <20070915084754.GO3563@stusta.de>
-In-Reply-To: <20070915084754.GO3563@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+References: <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org> <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de> <46EBDC06.3030202@s5r6.in-berlin.de> <20070915135314.GS3563@stusta.de> <46EBE821.2080300@s5r6.in-berlin.de> <20070915144341.GT3563@stusta.de>
+In-Reply-To: <20070915144341.GT3563@stusta.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/15/2007 10:47 AM, Adrian Bunk wrote:
-
-> On Sat, Sep 15, 2007 at 01:30:21AM +0200, Rene Herman wrote:
->> On 09/15/2007 01:13 AM, H. Peter Anvin wrote:
->>
->>> Rene Herman wrote:
->>>> I have a single file foo.c that I want to generate two (ALSA) modules
->>>> from, snd-foo2000.ko and snd-foo2001.ko, by compiling with either
->>>> FOO2000 or FOO2001 defined.
->>>>
->>>> I can do this, and ALSA does this a few times, by providing dummy
->>>> foo2000.c and foo2001.c files, like:
->>>>
->>>> === foo2000.c
->>>> #define FOO2000
->>>> #include "foo.c"
->>>> ===
-
-[ ... ]
-
->>> The stub source file is usually considered a good way to do this.
->> Mmm. If I'll have to live with it, I can, but thought I'd ask if there was 
->> some nice build trickery available instead.
+Adrian Bunk wrote:
+> On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
+>> Perfect is in the eye of the beholder.  You would consequently have to
+>> add such options into all menus which contain scsi low-level providers.
 > 
-> The usual trick is to create _three_ modules:
+> Kconfig is a user interface, so perfect is what is best for the
+> kconfig users.
+
+Duplicate options with different names in different menus, but which all
+do the same, --- is this the best for users?
+
+>> Also, one more question on whether CONFIG_SCSI ought to be 'select'ed:
+>> Where do scsi-core options like CONFIG_SCSI_CONSTANTS go?
 > 
-> Two with the foo2000 and foo2001 specific parts, and a third one with 
-> all code used by both.
+> The first question is whether it's for actual SCSI hardware [1] or for 
+> the block layer functionality which the SCSI subsystem has become.
+> The mixture of these two is the root of much user confusion.
 > 
-> Or if foo2000 and foo2001 differ only in small details, create one 
-> snd-foo200x module supporting both at the same time.
+> With the help text "The error messages regarding your SCSI hardware will 
+> be easier to understand if you say Y here" a user wouldn't have expected 
+> to see you using it in a firewire driver.
 
-Thanks for the comment. Yes, first would be massive overkill in this case 
-and second somewhat annoying as one of the differences is support for 
-different resources (IRQs) among the two versions, whereas I'm checking the 
-validity of the passed in values at a time I do not know which version I'm 
-looking at yet -- knowing that requires having talked to the hardware.
+FireWire hardware which implements SBP-2 is SCSI hardware...  But this
+detail aside --- yes, of course this help text is old and misleading.
 
-Can do, but for now it seems like the two seperate modules might be cleaner. 
-Can keep things much more straighforward that way by just redefining a bunch 
-of #defines.
+> But unless I miss anything, 
+> the setting of SCSI_SCAN_ASYNC does only affect "real" SCSI hardware.
 
-I'll just do the split version first and if someone really wants me to, I'll 
-merge them after all...
+It affects every hardware which is driven by scsi low-level providers
+which have been integrated with the SCSI_SCAN_ASYNC facility.
 
-Rene
+> If you check each option and place it either in the generic storage menu 
+> or the SCSI lowlevel menu this would fix much possible user confusion.
+> 
+> But these are relatively unimportant options compared to e.g.
+> USB_STORAGE=y, BLK_DEV_SD=n, which is a misconfiguration many
+> users run into, so having one menu somewhere with these advanced 
+> options should be enough.
 
+True.
+
+So,
+    config SCSI_CONSTANTS
+        "Kernel log messages from the SCSI subsystem will be easier to
+        understand if you say Y here..."
+would say what this option really does.  But to some degree the need to
+explain what the SCSI subsystem or SCSI core is and which other
+subsystems make use of it remains.  Maybe it's OK to provide
+documentation of this kind outside of Kconfig help though.
+
+> [1] SCSI as in "sold as SCSI"
+
+Difficult.  Does e.g. hardware sold as SAS count as "sold as SCSI"?  How
+about SBP-2 then?  ;-)
+-- 
+Stefan Richter
+-=====-=-=== =--= -====
+http://arcgraph.de/sr/
