@@ -1,118 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbXIOTzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXIOTzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756415AbXIOTzd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 15:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbXIOTz0
+	id S1757283AbXIOTzu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 15:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbXIOTzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 15:55:26 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4833 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752414AbXIOTzZ (ORCPT
+	Sat, 15 Sep 2007 15:55:42 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:45900 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbXIOTzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 15:55:25 -0400
-Date: Sat, 15 Sep 2007 15:55:24 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Christian Volkmann <haveaniceday@cv-sv.de>
-cc: Pete Zaitcev <zaitcev@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [linux-usb-devel] 2.6.23-rc6: usb 1-1: device not accepting
- address 2, error -62
-In-Reply-To: <46EC113A.4040309@cv-sv.de>
-Message-ID: <Pine.LNX.4.44L0.0709151532130.8724-100000@netrider.rowland.org>
+	Sat, 15 Sep 2007 15:55:41 -0400
+Message-ID: <46EC3843.8010405@oracle.com>
+Date: Sat, 15 Sep 2007 12:53:39 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: crashme fault
+References: <20070912222151.70d1fc7d.randy.dunlap@oracle.com> <alpine.LFD.0.999.0709142101140.16478@woody.linux-foundation.org> <20070915183412.GA14501@one.firstfloor.org> <46EC2702.3090000@oracle.com> <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Sep 2007, Christian Volkmann wrote:
-
-> Please see below for the logs with timestamp and usb-debug.
+Linus Torvalds wrote:
 > 
-> Alan Stern wrote:
-> > On Sat, 15 Sep 2007, Christian Volkmann wrote:
-> > 
-> >>> Does the machine otherwise work OK?
-> >>>
-> >> Yes, the USB is working fine for the easy things I do with it.
-> >>
-> >> Hmm, so I expect this 2.6.22 message:
-> >>>> <6>usb 1-1: USB disconnect, address 2
-> >> became this 2.6.23rc6 message:
-> >>>> <3>usb 1-1: device not accepting address 2, error -62
-> >> and nothing is harmed.
-> > 
-> > Maybe.  It's hard to tell because you have not provided enough
-> > information.  To get a better idea of what's going on you should enable 
-> > CONFIG_USB_DEBUG, for both 2.6.22 and 2.6.23, and then post the dmesg 
-> > logs.  It wouldn't hurt to enable CONFIG_PRINTK_TIME also.
-> > 
-> > These sorts of errors can occur because of bad cable connections or
-> > other similar hardware problems.  There's an excellent chance they have
-> > no connection to the kernel version.
-> > 
-> > Alan Stern
+> On Sat, 15 Sep 2007, Randy Dunlap wrote:
+>> Had another on recent last night (probably not helpful):
+> 
+> At least the original "crashme" would write its random number seeds to a 
+> logfile each time (and I made it fsync it in some versions), which meant 
+> that once a crash happened, you could re-produce it immediately (if it was 
+> reproducible at all, of course).
+> 
+> Does your crashme have something like that?
 
-It looks like both of Pete's guesses were correct.  The highly-edited 
-extracts below show a few things.
+I tell it the "random" seed to use.  I can also sets its debug level,
+but when I did that yesterday, it never faulted, so I lowered it again,
+them boom.  Could be coincidence.
 
-In 2.6.22, a disconnect occurred because ohci-hcd was loaded before 
-ehci-hcd:
 
-> Boot of 2.6.22 with CONFIG_PRINTK_TIME and CONFIG_USB_DEBUG
-> <7>[   29.035665] ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-> <6>[   29.078652] ohci_hcd 0000:00:03.0: new USB bus registered, assigned bus number 1
-> <6>[   29.406003] ohci_hcd 0000:00:03.1: new USB bus registered, assigned bus number 2
-> <6>[   29.655430] usb 1-1: new low speed USB device using ohci_hcd and address 2
-> <6>[   29.736975] ohci_hcd 0000:00:03.2: new USB bus registered, assigned bus number 3
-> <6>[   29.935872] usb 1-1: Product: USB Optical Mouse
-> <6>[   30.072347] ehci_hcd 0000:00:03.3: new USB bus registered, assigned bus number 4
-> <6>[   30.179588] usb 1-1: USB disconnect, address 2
-> <6>[   30.386138] ehci_hcd 0000:00:07.2: new USB bus registered, assigned bus number 5
-> <7>[   30.606818] ehci_hcd 0000:00:03.3: port 1 low speed --> companion
-> <6>[   30.664503] uhci_hcd 0000:00:07.0: UHCI Host Controller
-> <6>[   30.681636] uhci_hcd 0000:00:07.0: new USB bus registered, assigned bus number 6
-> <7>[   30.854760] ehci_hcd 0000:00:03.3: port 2 full speed --> companion
-> <6>[   30.969096] uhci_hcd 0000:00:07.1: new USB bus registered, assigned bus number 7
-> <6>[   31.177917] usb 1-1: new low speed USB device using ohci_hcd and address 3
-> <6>[   32.537664] usb 2-1: Product: Medion Flash XL V3.0C
-> <6>[   32.549438] usb 2-1: Manufacturer: MEDION
-> <6>[   32.561308] usb 2-1: SerialNumber: 2003-02
+> All your crashes look basically identical - I don't think there is 
+> anything new in this one, they're all the same issue. What CPU do you have 
+> - vendor, stepping, version etc - and has something else than the kernel 
+> changed in your setup lately?
 
-In 2.6.23, a different series of errors occurred because ohci-hcd, 
-ehci-hcd, and uhci-hcd were loaded in parallel.
+Just kernel changes.  CPU is dual Pentium Xeon + HT:
 
-> Boot of 2.6.23rc6 with CONFIG_PRINTK_TIME and CONFIG_USB_DEBUG
-> <7>[   27.133379] ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) Driver
-> <7>[   27.133384] ohci_hcd: block sizes: ed 64 td 64
-> <6>[   27.136391] USB Universal Host Controller Interface driver v3.0
-> <7>[   27.288172] ehci_hcd: block sizes: qh 128 qtd 96 itd 192 sitd 96
-> <6>[   28.061139] ohci_hcd 0000:00:03.0: new USB bus registered, assigned bus number 1
-> <6>[   28.337023] uhci_hcd 0000:00:07.0: UHCI Host Controller
-> <6>[   28.350241] uhci_hcd 0000:00:07.0: new USB bus registered, assigned bus number 2
-> <6>[   28.600358] usb 1-1: new low speed USB device using ohci_hcd and address 2
-> <6>[   28.652269] ehci_hcd 0000:00:03.3: new USB bus registered, assigned bus number 3
-> <7>[   28.752739] ohci_hcd 0000:00:03.0: urb c5ead340 path 1 ep0out 5ec20000 cc 5 --> status -62
-> <3>[   29.166906] usb 1-1: device not accepting address 2, error -62
-> <6>[   29.977427] ohci_hcd 0000:00:03.1: new USB bus registered, assigned bus number 4
-> <6>[   30.308993] ohci_hcd 0000:00:03.2: new USB bus registered, assigned bus number 5
-> <6>[   30.631777] uhci_hcd 0000:00:07.1: new USB bus registered, assigned bus number 6
-> <6>[   30.921451] ehci_hcd 0000:00:07.2: new USB bus registered, assigned bus number 7
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 3
+model name      :                   Intel(R) Xeon(TM) CPU 3.40GHz
+stepping        : 4
+cpu MHz         : 3400.227
+cache size      : 1024 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 1
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 5
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 c
+lflush dts acpi mmx fxsr sse sse2 ss ht tm syscall lm constant_tsc pni monitor ds_cpl est t
+m2 cid xtpr
+bogomips        : 6805.96
+clflush size    : 64
+cache_alignment : 128
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
 
-None of the nasty-sounding messages indicate any real problem.  They
-are normal when a low- or full-speed device is connected while the
-companion high-speed controller is initialized.
+processor       : 1
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 3
+model name      :                   Intel(R) Xeon(TM) CPU 3.40GHz
+stepping        : 4
+cpu MHz         : 3400.227
+cache size      : 1024 KB
+physical id     : 3
+siblings        : 2
+core id         : 0
+cpu cores       : 1
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 5
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 c
+lflush dts acpi mmx fxsr sse sse2 ss ht tm syscall lm constant_tsc pni monitor ds_cpl est t
+m2 cid xtpr
+bogomips        : 6800.28
+clflush size    : 64
+cache_alignment : 128
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
 
-To prevent all the error messages, make sure the ehci-hcd is loaded
-before the other two and after all the PCI devices have been detected.  
-(In the presence of the hotplug subsystem, this may not be easy to
-accomplish.)
+processor       : 2
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 3
+model name      :                   Intel(R) Xeon(TM) CPU 3.40GHz
+stepping        : 4
+cpu MHz         : 3400.227
+cache size      : 1024 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 1
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 5
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 c
+lflush dts acpi mmx fxsr sse sse2 ss ht tm syscall lm constant_tsc pni monitor ds_cpl est t
+m2 cid xtpr
+bogomips        : 6800.72
+clflush size    : 64
+cache_alignment : 128
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
 
-At any rate, this is not a regression because it isn't a bug or a 
-mulfunction.  It is normal behavior.
+processor       : 3
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 3
+model name      :                   Intel(R) Xeon(TM) CPU 3.40GHz
+stepping        : 4
+cpu MHz         : 3400.227
+cache size      : 1024 KB
+physical id     : 3
+siblings        : 2
+core id         : 0
+cpu cores       : 1
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 5
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 c
+lflush dts acpi mmx fxsr sse sse2 ss ht tm syscall lm constant_tsc pni monitor ds_cpl est t
+m2 cid xtpr
+bogomips        : 6800.57
+clflush size    : 64
+cache_alignment : 128
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
 
-Alan Stern
+
+
+> As mentioned, the crash does look like a user-level crash got reported as 
+> a kernel page fault, and while a CPU bug sounds incredibly unlikely, this 
+> does have the smell of something strange like a fault in the middle of an 
+> "iretq" or "sysretq", where part of the CPU state has already been 
+> restored - which would explain why rip/cs is user space - but some part of 
+> the CPU is still in kernel mode - which would explain the incorrect page 
+> fault error code.
+> 
+> Here's a really *stupid* patch (and untested too, btw) to see if it gets 
+> easier to debug when you don't oops, just print the register state 
+> instead.
+
+Will add this patch.
+
+> (It might be interesting to also do something like
+> 
+> 	force_sig_specific(SIGSTOP, current);
+> 
+> to then be able to more easily attach to the process that had problems, 
+> and debug it in user space to see what was going on..)
+> 
+> 		Linus
+> ---
+> diff --git a/arch/x86_64/mm/fault.c b/arch/x86_64/mm/fault.c
+> index 327c9f2..1b81392 100644
+> --- a/arch/x86_64/mm/fault.c
+> +++ b/arch/x86_64/mm/fault.c
+> @@ -320,6 +320,11 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+>  
+>  	info.si_code = SEGV_MAPERR;
+>  
+> +	if (!(error_code & PF_USER) && user_mode(regs)) {
+> +		printk("kernel mode page fault from user space? Huh?\n");
+> +		__show_regs(regs);
+> +		error_code |= PF_USER;
+> +	}
+>  
+>  	/*
+>  	 * We fault-in kernel-space virtual memory on-demand. The
 
