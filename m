@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbXIOX35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbXIOXuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbXIOX35 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 19:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXIOX3u
+	id S1754521AbXIOXuW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 19:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbXIOXuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 19:29:50 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1693 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753110AbXIOX3t (ORCPT
+	Sat, 15 Sep 2007 19:50:09 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:54810 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753069AbXIOXuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 19:29:49 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: RE: CPU usage for 10Gbps UDP transfers
-Date: Sat, 15 Sep 2007 16:29:39 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMECDGNAC.davids@webmaster.com>
+	Sat, 15 Sep 2007 19:50:08 -0400
+Message-ID: <46EC6F2A.5090008@oracle.com>
+Date: Sat, 15 Sep 2007 16:47:54 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-2"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: crashme fault
+References: <20070912222151.70d1fc7d.randy.dunlap@oracle.com> <alpine.LFD.0.999.0709142101140.16478@woody.linux-foundation.org> <20070915183412.GA14501@one.firstfloor.org> <46EC2702.3090000@oracle.com> <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org> <alpine.LFD.0.999.0709151508590.16478@woody.linux-foundation.org> <alpine.LFD.0.999.0709151542340.16478@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0709151542340.16478@woody.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070915190016.GA3868@ics.muni.cz>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sat, 15 Sep 2007 16:30:19 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sat, 15 Sep 2007 16:30:20 -0700
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> 
+> On Sat, 15 Sep 2007, Linus Torvalds wrote:
+>> So regardless of whether we want to trust "user_mode(regs)" more than 
+>> "error_code & PF_USER", it would definitely be very interesting if you can 
+>> give a good "this is where it started happening".
+> 
+> Also, can you point to good crashme sources, and give the arguments you 
+> used to run it when it crashed?
 
-> Hello,
->
-> is it expected that application sending 8900bytes datagram
-> through 10Gbps NIC
-> utilizes CPU to 100% and similarly the receiver also utilizes CPU to 100%.
-> Is it something wrong or this is quite OK?
->
-> (The box is dual single core Opteron 2.4GHz with Myricom 10GE NIC.)
+I use http://people.delphiforums.com/gjc/crashme.tgz from
+http://people.delphiforums.com/gjc/crashme.html, plus one small patch:
 
-It's extremely hard to understand what it is that you're saying. Perhaps if
-I explain the two things I first thought when you posted this, it will
-explain why your post is vague:
+--- gjc-crashme.orig/crashme.c
++++ gjc-crashme/crashme.c
+@@ -260,7 +260,8 @@ void my_signal(sig, func)
+ #else
+  struct sigaction act;
+  act.sa_handler = func;
+- act.sa_mask = 0;
++ //act.sa_mask = 0;
++ sigemptyset(&act.sa_mask);
+ #ifdef linux
+  act.sa_restorer = 0;
+ #endif /* linux */
 
-1) *Any* task will use the CPU to 100% while it's running. Even if you ask
-the computer to add 1 to 1, while it's doing that add for you, the task is
-using 100% of the CPU.
 
-2) If you ask the CPU to do any task over and over again as quickly as it
-can, and it has nothing else to do, that task will get 100% of the CPU?
+Command: ./crashme +2000 666 1000 1:00:00 1
 
-So what are you really asking?
+> The original gjc crashme doesn't even do a "mprotect(PROT_EXEC)" by 
+> default (nor does it even compile on a modern unix), so it's not going to 
+> do anything. I hacked it up, and it appears to work ok for me, but I'm not 
+> at all confident that I'm even close to recreating what you are doing.
 
-DS
+So I'm missing some mprotect() call also?
+Oops.
 
+> (It probably goes without saying that I've not reproduced the oops on my 
+> Core 2 Duo. Lots of #GP and #PF errors, but nothing interesting.
+> 
+> 		Linus
 
