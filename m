@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbXIOMpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbXIOMqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbXIOMpA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 08:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXIOMox
+	id S1754554AbXIOMqT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 08:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXIOMqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 08:44:53 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38631 "EHLO
+	Sat, 15 Sep 2007 08:46:13 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:38668 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751928AbXIOMow (ORCPT
+	with ESMTP id S1751961AbXIOMqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 08:44:52 -0400
+	Sat, 15 Sep 2007 08:46:12 -0400
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46EBD3BA.9020306@s5r6.in-berlin.de>
-Date: Sat, 15 Sep 2007 14:44:42 +0200
+Date: Sat, 15 Sep 2007 14:45:53 +0200 (CEST)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+Subject: [PATCH] ieee1394: nodemgr: fix leak of struct csr1212_keyval
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.37945da3d080e083@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: sysfs: spit a warning to users when they try to create a duplicate
- sysfs file
-References: <20070913233751.GA10856@kroah.com> <20070913234118.GH10856@kroah.com>
-In-Reply-To: <20070913234118.GH10856@kroah.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> We want to let people know when we create a duplicate sysfs file, as
-> they need to fix up their code.
-> 
-> 
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  fs/sysfs/dir.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> --- a/fs/sysfs/dir.c
-> +++ b/fs/sysfs/dir.c
-> @@ -428,8 +428,12 @@ void sysfs_addrm_start(struct sysfs_addr
->   */
->  int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
->  {
-> -	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
-> +	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
-> +		printk(KERN_WARNING, "sysfs: duplicate filename '%s' "
-> +		       "can not be created\n", sd->s_name);
-> +		WARN_ON(1);
->  		return -EEXIST;
-> +	}
->  
->  	sd->s_parent = sysfs_get(acxt->parent_sd);
->  
+csr1212_keep_keyval(kv) in nodemgr_process_root_directory was
+unbalanced if ne->vendor_name_kv already exists.  This happens for
+example if eth1394 or raw1394 modify the local config ROM and it is
+parsed again.
 
-As a side story:
+As a bonus, the attempt to add the vendor_name_kv sysfs attribute
+when it already exists is now fixed for good.
 
-I've got code which has checks for device_create_file != 0 but keeps
-quiet if it got -EEXIST.  I rewrote it now so that it does not rely on
-the driver core to skip over already existing files.  Doing this
-revealed a group of old refcounting bugs. :-)  Thanks,
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/nodemgr.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+Index: linux/drivers/ieee1394/nodemgr.c
+===================================================================
+--- linux.orig/drivers/ieee1394/nodemgr.c
++++ linux/drivers/ieee1394/nodemgr.c
+@@ -1113,7 +1113,7 @@ static void nodemgr_process_root_directo
+ {
+ 	unsigned int ud_id = 0;
+ 	struct csr1212_dentry *dentry;
+-	struct csr1212_keyval *kv;
++	struct csr1212_keyval *kv, *vendor_name_kv = NULL;
+ 	u8 last_key_id = 0;
+ 
+ 	ne->needs_probe = 0;
+@@ -1140,8 +1140,8 @@ static void nodemgr_process_root_directo
+ 				    CSR1212_TEXTUAL_DESCRIPTOR_LEAF_WIDTH(kv) == 0 &&
+ 				    CSR1212_TEXTUAL_DESCRIPTOR_LEAF_CHAR_SET(kv) == 0 &&
+ 				    CSR1212_TEXTUAL_DESCRIPTOR_LEAF_LANGUAGE(kv) == 0) {
+-					ne->vendor_name_kv = kv;
+ 					csr1212_keep_keyval(kv);
++					vendor_name_kv = kv;
+ 				}
+ 			}
+ 			break;
+@@ -1150,10 +1150,13 @@ static void nodemgr_process_root_directo
+ 	}
+ 
+ 	if (ne->vendor_name_kv) {
+-		int error = device_create_file(&ne->device,
+-					       &dev_attr_ne_vendor_name_kv);
+-
+-		if (error && error != -EEXIST)
++		kv = ne->vendor_name_kv;
++		ne->vendor_name_kv = vendor_name_kv;
++		csr1212_release_keyval(kv);
++	} else if (vendor_name_kv) {
++		ne->vendor_name_kv = vendor_name_kv;
++		if (device_create_file(&ne->device,
++				       &dev_attr_ne_vendor_name_kv) != 0)
+ 			HPSB_ERR("Failed to add sysfs attribute");
+ 	}
+ }
+
 -- 
 Stefan Richter
 -=====-=-=== =--= -====
 http://arcgraph.de/sr/
+
