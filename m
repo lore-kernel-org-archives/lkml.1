@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbXIOQXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbXIOQ2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbXIOQXR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 12:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbXIOQXE
+	id S1754838AbXIOQ2q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 12:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbXIOQ2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 12:23:04 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:51092 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751585AbXIOQXD (ORCPT
+	Sat, 15 Sep 2007 12:28:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:15680 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751172AbXIOQ2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 12:23:03 -0400
-Date: Sat, 15 Sep 2007 18:23:13 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
+	Sat, 15 Sep 2007 12:28:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IZ++2NOa5/U9tCa40ek557cnu2/x6HjxyFiNdywKiJ4kIRx+aB0MEKsbqm3Kbl8Mf+dhxk4CQ6FigrY7Elzh0/az/vkMMZ6ATCl+8zf3ST+okjRS7HlmxsKddD+173bIcRYQBV7HWxJMbNyawZCuKc1YcsmS1J7LW3zh0l1kA/o=
+Message-ID: <6b8cef970709150928h25a7093md5f86d2bdcf677cc@mail.gmail.com>
+Date: Sat, 15 Sep 2007 12:28:36 -0400
+From: "Rob Hussey" <robjhussey@gmail.com>
+To: eric.valette@free.fr
+Subject: Re: rtl8187 driver in 2.6.23-rc6-git5: kernel panic if not used as a module. Works as a module.
+Cc: flamingice@sourmilk.net, andreamrl@tiscali.it,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
-Message-ID: <20070915162313.GV3563@stusta.de>
-References: <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de> <46EBDC06.3030202@s5r6.in-berlin.de> <20070915135314.GS3563@stusta.de> <46EBE821.2080300@s5r6.in-berlin.de> <20070915144341.GT3563@stusta.de> <46EBF9DC.1000503@s5r6.in-berlin.de> <46EBFDFB.5040401@garzik.org>
+In-Reply-To: <46EBEBD2.7060502@free.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46EBFDFB.5040401@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <46EBE70C.2040201@free.fr> <46EBEBD2.7060502@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 15, 2007 at 11:44:59AM -0400, Jeff Garzik wrote:
-> Stefan Richter wrote:
->> Adrian Bunk wrote:
->>> On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
->>>> Perfect is in the eye of the beholder.  You would consequently have to
->>>> add such options into all menus which contain scsi low-level providers.
->>> Kconfig is a user interface, so perfect is what is best for the
->>> kconfig users.
->> Duplicate options with different names in different menus, but which all
->> do the same, --- is this the best for users?
+On 9/15/07, Eric Valette <eric.valette@free.fr> wrote:
+> Eric Valette wrote:
 >
-> I recognize it's a rhetorical question :)  The answer is of course "no".
+> > I can probably take a picture of the backtrace if you want.
 >
-> I hope the other participants of this thread register the severe 
-> disinclination of the maintainers to change this stuff, as this is a 
-> classic case of making a mountain out of a molehill[1].
->
-> For the -vast majority- of people configuring the kernel, this is not a 
-> problem.  Kernel people are -expected- to know what they're doing, 
+> Just saw that just above my message in the LKML web interface, someone
+> posted a backtrace. Mine is different but at least, we are at least two
+> to have the crash.
 
-I doubt your claim is true since the vast majority of kconfig users
-are most likely not kernel developers.
+This is the same thing I said to Paul Rolland, since I think your
+problems are the same:
+I had this problem as well. It has to do with mac80211, cfg80211 and
+the rate control algorithm not initializing early enough in the boot
+process. These two patches should fix it:
 
-@Greg:
-Do you have any numbers regarding how your "Linux Kernel in a Nutshell" 
-is selling?
-Even download numbers?
+[PATCH] mac80211: fix initialisation when built-in
+http://article.gmane.org/gmane.linux.kernel.wireless.general/5710/match=patch+mac80211+initialisation
 
-> especially when switching from one major subsystem to another.
+[PATCH] cfg80211: fix initialisation if built-in
+http://article.gmane.org/gmane.linux.network/71326/match=patch+cfg80211+initialisation
 
-It's not only about switching, the same problems awaits people when 
-configuring a kernel for their hardware the first time.
-
-> Therefore, all this is IMO wasted effort and hot air.  There are far more 
-> important issues to deal with.
-
-Why don't we dump kconfig and write the .config by hand?  ;-)
-
-More seriously:
-Yes, there are many other important issues in the kernel.
-But not fixing kconfig UI problems doesn't fix these issues faster.
-
-I have seen people running into problems because some required 
-option wasn't set - in the simplest cases things like IDE without DMA 
-because a help text wasn't updated when more hardware support was added 
-to a driver.
-
-You might not care about the kconfig users.
-But other people do.
-
-> 	Jeff
->...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Regards,
+Rob
