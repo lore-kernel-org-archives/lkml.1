@@ -1,66 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbXIONBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbXIONCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbXIONBO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 09:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbXIONA6
+	id S1754968AbXIONCz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 09:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXIONCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 09:00:58 -0400
-Received: from tag.witbe.net ([81.88.96.48]:54834 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750935AbXIONA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 09:00:57 -0400
-Date: Sat, 15 Sep 2007 13:00:10 +0000
-From: Paul Rolland <rol@as2917.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Adrian Bunk <bunk@kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, rol@witbe.net
-Subject: Re: sata & scsi suggestion for make menuconfig
-Message-ID: <20070915130010.4272403c@tux.DEF.witbe.net>
-In-Reply-To: <46EB9703.70705@s5r6.in-berlin.de>
-References: <20070907124800.GP16806@vanheusden.com>
-	<p73fy1p9m57.fsf@bingen.suse.de>
-	<1189371621.3526.28.camel@localhost.localdomain>
-	<20070909210329.GE25798@one.firstfloor.org>
-	<46E46190.6080607@garzik.org>
-	<20070912224655.GC3563@stusta.de>
-	<46EAA08F.30703@s5r6.in-berlin.de>
-	<20070914151522.GL3563@stusta.de>
-	<20070915080448.37457dcf@tux.DEF.witbe.net>
-	<46EB9703.70705@s5r6.in-berlin.de>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 15 Sep 2007 09:02:48 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:54910 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbXIONCr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 09:02:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=a1pI0ztbepDklD7Y+TH9lwF+mIL/MqTsK8g2+toR9Kp4kiIZhU4c0MASATySOJ4jaU6r4Hk30dzIVixg9rC5m6m35x5ggAOPGAeA1sU/eQPuKchvWAJppQve079q0R6r8UdheYFqranIkLG4M7x7sn0Wa28af4bXknpOYkczJKQ=
+Message-ID: <a781481a0709150602v6be754caw4fbe0f76c8db5beb@mail.gmail.com>
+Date: Sat, 15 Sep 2007 18:32:46 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: gilboad@gmail.com
+Subject: Re: [Minor patch] Reduce __print_symbol/sprint_symbol stack usage.
+Cc: linux-kernel@vger.kernel.org, "Eric Sandeen" <sandeen@sandeen.net>
+In-Reply-To: <1189856129.18191.11.camel@gilboa-home-dev.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1189856129.18191.11.camel@gilboa-home-dev.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Stefan,
+Hi,
 
-On Sat, 15 Sep 2007 10:25:39 +0200
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> Paul Rolland wrote:
-> > getting too much of "No help text available"
-> > usually results in people no more reading the help text.
-> 
-> I assert that a Kconfig prompt (a visible Kconfig variable) _without_
-> help text is a bug.
+On 9/15/07, Gilboa Davara <gilboad@gmail.com> wrote:
+> Hello all,
+>
+> In a small exchange in fedora-kernel-list [1] Eric Sandeen has pointed
+> out a possible stack overflow... when CONFIG_DEBUG_STACKOVERFLOW is
+> enabled. (Though not limited to it)
 
-Here is an example from 2.6.34-rc6 :
- .config - Linux Kernel v2.6.23-rc6 Configuration
-------------------------------------------------------------------------------
- +------------------------- Provide RTC interrupt -------------------------+ 
- | There is no help available for this kernel option.                      |
- | Symbol: HPET_EMULATE_RTC [=y]                                           |
- | Prompt: Provide RTC interrupt                                           |
- |   Defined at arch/x86_64/Kconfig:471                                    |
- |   Depends on: HPET_TIMER && RTC=y                                       |
- |   Location:                                                             |
- |   -> Processor type and features |   
+Yeah, I have experienced this phenomenon/problem myself.
 
-Regards,
-Paul
+
+> Code path is simple: do_IRQ detects a a near stack overflow condition
+> and calls show_trace_log_lvl which, down the line uses __print_symbol
+> and sprint_symbol to print the call stack.
+> However,  both __print_symbol + sprint_symbol are eating no-less then
+> 128+223 bytes on static char arrays, which, given the fact that this
+> code path is actually generated by low stack warning (< 512 bytes),
+> might turn a minor (?) problem (low stack) into a full blown crash.
+
+__print_symbol() and sprint_symbol() are called multiple times during
+oopsen / panics. I think those buffers were static char arrays for a good
+reason ...
+
+
+> The patch itself is fairly simple and non-intrusive. [2]
+> Both functions allocate memory for their buffers - falling back to
+> minimal address display if memory allocation fails.
+>
+> P.S. Can anyone please point me to the maintainer of kernel/syms? (I
+> rather not spam world + dog for such a minor patch)
+
+Anything that touches the panic codepath is important, not minor at all.
+
+
+> Gilboa Davara <gilboad@gmail.com>
+>
+> [1]
+> http://www.mail-archive.com/fedora-kernel-list@redhat.com/msg00640.html
+>
+> [2]. In theory, there's a second option: pre-allocating memory on a
+> per_cpu basis, however:
+> A. dump_trace/stack are usually called when something bad has happened -
+> reducing the need for performance optimizations.
+
+That's not a performance optimization -- avoiding repeated kmalloc()'s in the
+panic codepath sounds like a *requirement* to me.
+
+
+> B. per_cpu allocation will also require local_irq_disable/enable as both
+> functions are being called from multiple contexts. Too much hassle.
+
+I think not bothering about any locking in these codepaths may not be an
+entirely unreasonable thing to do (sorry about the triple negation in the
+sentence). What I mean is that there are places in these codepaths where
+we already don't bother with locking ...
+
+Overall I don't much like introducing kmalloc(GFP_ATOMIC) in these codepaths
+and would ask you guys to consider some other pre-allocation (i.e. static
+allocation not on stack but in .data) alternative instead ...
+
+
+Satyam
+
+
+> --- linux-2.6/kernel/kallsyms.orig      2007-09-15 11:46:54.000000000 +0300
+> +++ linux-2.6/kernel/kallsyms.c 2007-09-15 14:25:21.000000000 +0300
+> @@ -309,30 +309,62 @@ int lookup_symbol_attrs(unsigned long ad
+>  /* Look up a kernel symbol and return it in a text buffer. */
+>  int sprint_symbol(char *buffer, unsigned long address)
+>  {
+> -       char *modname;
+> -       const char *name;
+>         unsigned long offset, size;
+> -       char namebuf[KSYM_NAME_LEN];
+> +       const char *name = NULL;
+> +       char *namebuf = NULL;
+> +       char *modname;
+> +       int ret;
+> +
+> +
+> +       /* Static buffer allocation.
+> +          Required in-order to reduce stack footprint on
+> +            do_IRQ/4KSTACK/i386 */
+> +       namebuf = kmalloc(KSYM_NAME_LEN, GFP_ATOMIC);
+> +       if (namebuf)
+> +               name = kallsyms_lookup(address, &size, &offset,
+> +                                       &modname, namebuf);
+>
+> -       name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
+>         if (!name)
+> -               return sprintf(buffer, "0x%lx", address);
+> +               ret = sprintf(buffer, "0x%lx", address);
+> +       else {
+> +               if (modname)
+> +                       ret = sprintf(buffer, "%s+%#lx/%#lx [%s]",
+> +                                       name, offset, size, modname);
+> +               else
+> +                       ret = sprintf(buffer, "%s+%#lx/%#lx",
+> +                                       name, offset, size);
+> +       }
+>
+> -       if (modname)
+> -               return sprintf(buffer, "%s+%#lx/%#lx [%s]", name, offset,
+> -                               size, modname);
+> -       else
+> -               return sprintf(buffer, "%s+%#lx/%#lx", name, offset, size);
+> +       if (namebuf)
+> +               kfree(namebuf);
+> +
+> +       return ret;
+>  }
+>
+>  /* Look up a kernel symbol and print it to the kernel messages. */
+>  void __print_symbol(const char *fmt, unsigned long address)
+>  {
+> -       char buffer[KSYM_SYMBOL_LEN];
+> +       char *buffer = NULL;
+>
+> -       sprint_symbol(buffer, address);
+>
+> -       printk(fmt, buffer);
+> +       /* Static buffer allocation.
+> +          Required in-order to reduce stack footprint on
+> +            do_IRQ/4KSTACK/i386 */
+> +       buffer = kmalloc(KSYM_SYMBOL_LEN, GFP_ATOMIC);
+> +       if (buffer) {
+> +               sprint_symbol(buffer, address);
+> +               printk(fmt, buffer);
+> +               kfree(buffer);
+> +       } else {
+> +               /* Address + '0x' + NULL. */
+> +               char sbuffer[(BITS_PER_LONG / 4) + 3];
+> +
+> +               /* Fall-back mode.
+> +                  Memory allocation failed.
+> +                  Convert the address to string and display it. */
+> +               sprintf(sbuffer, "0x%lx", address);
+> +               printk(fmt, sbuffer);
+> +       }
+>  }
+>
+>  /* To avoid using get_symbol_offset for every symbol, we carry prefix
+> along. */
