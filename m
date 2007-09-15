@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbXIOWQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbXIOWVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754034AbXIOWQS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 18:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbXIOWQH
+	id S1754626AbXIOWVS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 18:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbXIOWVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 18:16:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39562 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751954AbXIOWQG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 18:16:06 -0400
-Date: Sat, 15 Sep 2007 15:15:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: crashme fault
-In-Reply-To: <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0709151508590.16478@woody.linux-foundation.org>
-References: <20070912222151.70d1fc7d.randy.dunlap@oracle.com>
- <alpine.LFD.0.999.0709142101140.16478@woody.linux-foundation.org>
- <20070915183412.GA14501@one.firstfloor.org> <46EC2702.3090000@oracle.com>
- <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 15 Sep 2007 18:21:01 -0400
+Received: from hera.cwi.nl ([192.16.191.8]:43406 "EHLO hera.cwi.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751699AbXIOWVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 18:21:00 -0400
+X-Greylist: delayed 2022 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Sep 2007 18:21:00 EDT
+Date: Sat, 15 Sep 2007 23:49:31 +0200
+From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+To: linux-kernel@vger.kernel.org
+Subject: iso9660 vs udf
+Message-ID: <20070915214926.GA31416@mette>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Today I got a CD. MacOS does not mount it and Linux does not
+mount it without an explicit filesystemtype option.
+That is,
+	# mount /dev/hdc /dir -t iso9660
+works fine, but
+	# mount /dev/hdc /dir
+	mount: you didn't specify a filesystem type for /dev/hdc
+               I will try type udf
+        mount: wrong fs type, bad option, bad superblock on /dev/hdc,
+               missing codepage or other error
+               In some cases useful info is found in syslog - try
+               dmesg | tail  or so
+	# dmesg | tail
+        UDF-fs INFO UDF 0.9.8.1 (2004/29/09) Mounting volume 'Wisk1956-82', timestamp 2006/03/07 16:26 (1078)
+        udf: udf_read_inode(ino 547) failed !bh
+        UDF-fs: Error in udf_iget, block=1, partition=1
 
+Google gave me half a dozen other people that mentioned the same
+problem (with the same inode 547). Clearly some CD mastering software
+produces a format that Linux and MacOS do not handle easily.
 
-On Sat, 15 Sep 2007, Linus Torvalds wrote:
-> 
-> Here's a really *stupid* patch (and untested too, btw) to see if it gets 
-> easier to debug when you don't oops, just print the register state 
-> instead.
+One result of this letter will be that people with the same problem
+learn via Google that using the "-t iso9660" option may help.
 
-Side note - while thinking about this, I'm wondering whether maybe that 
-"stupid" patch might not actually be the right thing to do.
+What goes wrong on the mount side is that when it hesitates between
+iso9660 and udf it decides for udf when seeing "NSR02".
+Maybe the heuristics in mount should be tuned.
 
-The fact is, the "user access" bit in the error code is in many ways a 
-totally *different* issue than the "user_mode(regs)" test. We may end up 
-having a system page fault for some action that was initiated by user 
-space: eg taking a page fault on a segment load. And it may well be marked 
-as a "system access" in the error code, even though the instruction that 
-triggered it was all user mode, and even though we could just terminate 
-the program rather than oops.
+On the other hand, this filesystem announces itself as UDF
+("CD-RTOS" "CD-BRIDGE" "CDUDF File System - Adaptec Inc"),
+perhaps the kernel code should be more robust.
 
-That said, since the kernel isn't paging itself out, user mode generally 
-should not be able to generate those kinds of system access page faults. 
-Our segment tables should all be in core, and so I would still in 
-*practice* always expect the register state and the error code to match in 
-the "usermode'ness".
+If anybody feels responsible for mount and/or this kernel area
+we might discuss.
 
-So regardless of whether we want to trust "user_mode(regs)" more than 
-"error_code & PF_USER", it would definitely be very interesting if you can 
-give a good "this is where it started happening".
+Andries
 
-			Linus
