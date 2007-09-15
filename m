@@ -1,53 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760661AbXIODiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXIOEI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760661AbXIODiF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 23:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXIODh4
+	id S1753381AbXIOEI4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 00:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750723AbXIOEIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 23:37:56 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42920 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752834AbXIODhz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 23:37:55 -0400
-Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-From: Zachary Amsden <zach@vmware.com>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Anthony Liguori <aliguori@us.ibm.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-In-Reply-To: <46EB00D8.3090903@codemonkey.ws>
-References: <11897991353793-git-send-email-aliguori@us.ibm.com>
-	 <46EAF4C6.8090903@goop.org>  <46EAF6FC.80207@codemonkey.ws>
-	 <1189804847.5982.137.camel@bodhitayantram.eng.vmware.com>
-	 <46EB00D8.3090903@codemonkey.ws>
-Content-Type: text/plain
-Date: Fri, 14 Sep 2007 20:37:56 -0700
-Message-Id: <1189827476.5982.143.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Sat, 15 Sep 2007 00:08:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42270 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750711AbXIOEIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 00:08:44 -0400
+Message-ID: <46EB5ACA.5000207@garzik.org>
+Date: Sat, 15 Sep 2007 00:08:42 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Move away from char device ioctls.
+References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070914211210.GB12444@fieldses.org> <46EAF9CD.1090808@garzik.org> <20070914211828.GC12444@fieldses.org> <46EB0BEB.2090808@garzik.org> <20070914224212.GJ12444@fieldses.org>
+In-Reply-To: <20070914224212.GJ12444@fieldses.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-14 at 16:44 -0500, Anthony Liguori wrote:
+J. Bruce Fields wrote:
+> On Fri, Sep 14, 2007 at 06:32:11PM -0400, Jeff Garzik wrote:
+>> J. Bruce Fields wrote:
+>>> On Fri, Sep 14, 2007 at 05:14:53PM -0400, Jeff Garzik wrote:
+>>>> NFSv4.1 adds to the fun, by throwing interoperability completely out the 
+>>>> window.
 
-> So then each module creates a hypercall page using this magic MSR and 
-> the hypervisor has to keep track of it so that it can appropriately 
-> change the page on migration.  The page can only contain a single 
-> instruction or else it cannot be easily changed (or you have to be able 
-> to prevent the guest from being migrated while in the hypercall page).
+>>> What parts are you worried about in particular?
+
+>> I'm not worried; I'm stating facts as they exist today (draft 13):
+>>
+>> NFS v4.1 does something completely without precedent in the history of NFS: 
+>>  the specification is defined such that interoperability is -impossible- to 
+>> guarantee.
+>>
+>> pNFS permits private and unspecified layout types.  This means it is 
+>> impossible to guarantee that one NFSv4.1 implementation will be able to 
+>> talk another NFSv4.1 implementation.
+
+> No, servers are required to support ordinary nfs operations to the
+> metadata server.
 > 
-> We're really talking about identical models.  Instead of an MSR, the #GP 
-> is what tells the hypervisor to update the instruction.  The nice thing 
-> about this is that you don't have to keep track of all the current 
-> hypercall page locations in the hypervisor.
+> At least, that's the way it was last I heard, which was a while ago.  I
+> agree that it'd stink (for any number of reasons) if you ever *had* to
+> get a layout to access some file.
+> 
+> Was that your main concern?
 
-I agree, multiple hypercall pages is insane.  I was thinking more of a
-single hypercall page, fixed in place by the hypervisor, not the kernel.
+I just sorta assumed you could fall back to the NFSv4.0 mode of 
+operation, going through the metadata server for all data accesses.
 
-Then each module can read an MSR saying what VA the hypercall page is
-at, and the hypervisor can simply flip one page to switch architectures.
+But look at that choice in practice:  you can either ditch pNFS 
+completely, or use a proprietary solution.  The market incentives are 
+CLEARLY tilted in favor of makers of proprietary solutions.  But it's a 
+poor choice (really little choice at all).
 
-Zach
+Overall, my main concern is that NFSv4.1 is no longer an open 
+architecture solution.  The "no-pNFS or proprietary platform" choice 
+merely illustrate one of many negative aspects of this architecture.
+
+One of NFS's biggest value propositions is its interoperability.  To 
+quote some Wall Street guys, "NFS is like crack.  It Just Works.  We 
+love it."
+
+Now, for the first time in NFS's history (AFAIK), the protocol is no 
+longer completely specified, completely known.  No longer a "closed 
+loop."  Private layout types mean that it is _highly_ unlikely that any 
+OS or appliance or implementation will be able to claim "full NFS 
+compatibility."
+
+And when the proprietary portion of the spec involves something as basic 
+as accessing one's own data, I consider that a fundamental flaw.  NFS is 
+no longer completely open.
+
+	Jeff
+
+
 
