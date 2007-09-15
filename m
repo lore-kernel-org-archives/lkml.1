@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbXIOCcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbXIOCzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933054AbXIOCcq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 22:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbXIOCci
+	id S1760653AbXIOCzO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 22:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbXIOCy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 22:32:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46644 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755001AbXIOCch (ORCPT
+	Fri, 14 Sep 2007 22:54:58 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:64227 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755487AbXIOCy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 22:32:37 -0400
-Date: Fri, 14 Sep 2007 19:32:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Alexey Dobriyan <adobriyan@openvz.org>
-Subject: Re: [PATCH 2/2] Fix user namespace exiting OOPs
-Message-Id: <20070914193233.77138604.akpm@linux-foundation.org>
-In-Reply-To: <20070914182355.GA9810@sergelap.austin.ibm.com>
-References: <46EA88BA.5020005@openvz.org>
-	<20070914182355.GA9810@sergelap.austin.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 14 Sep 2007 22:54:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DLlC05X4ChHp+NCLTrl01EBWSA9+IjeU8GFoE3zUj1uwn0tSbZF+zkxt/DHjjcbng88Sljk1W5JFTy9d8iezF5WhlcVlPWBx4zbIyQ2VJ9BzF6wdA1VfP7LvEwaSPz3yM0Dv/XlVGd64zbNgKuU8VX+ucP+qrkQreNmToYVXvaw=
+Message-ID: <170fa0d20709141954m4cff4650pa3b2bfd347e23f74@mail.gmail.com>
+Date: Fri, 14 Sep 2007 22:54:56 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: Distributed storage. Move away from char device ioctls.
+Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <46EADC02.9070409@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007 13:23:55 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+On 9/14/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Evgeniy Polyakov wrote:
+> > Hi.
+> >
+> > I'm pleased to announce fourth release of the distributed storage
+> > subsystem, which allows to form a storage on top of remote and local
+> > nodes, which in turn can be exported to another storage as a node to
+> > form tree-like storages.
+> >
+> > This release includes new configuration interface (kernel connector over
+> > netlink socket) and number of fixes of various bugs found during move
+> > to it (in error path).
+> >
+> > Further TODO list includes:
+> > * implement optional saving of mirroring/linear information on the remote
+> >       nodes (simple)
+> > * new redundancy algorithm (complex)
+> > * some thoughts about distributed filesystem tightly connected to DST
+> >       (far-far planes so far)
+> >
+> > Homepage:
+> > http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
+> >
+> > Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+>
+> My thoughts.  But first a disclaimer:   Perhaps you will recall me as
+> one of the people who really reads all your patches, and examines your
+> code and proposals closely.  So, with that in mind...
+>
+> I question the value of distributed block services (DBS), whether its
+> your version or the others out there.  DBS are not very useful, because
+> it still relies on a useful filesystem sitting on top of the DBS.  It
+> devolves into one of two cases:  (1) multi-path much like today's SCSI,
+> with distributed filesystem arbitrarion to ensure coherency, or (2) the
+> filesystem running on top of the DBS is on a single host, and thus, a
+> single point of failure (SPOF).
 
-> > run on kernel with CONFIG_USER_NS turned on will oops the
-> > kernel immediately.
-> > 
-> > This was spotted during OpenVZ kernel testing.
-> > 
-> > Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> > Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
-> 
-> Good spot.  Interesting solution :)
-> 
+This distributed storage is very much needed; even if it were to act
+as a more capable/performant replacement for NBD (or MD+NBD) in the
+near term.  Many high availability applications don't _need_ all the
+additional complexity of a full distributed filesystem.  So given
+that, its discouraging to see you trying to gently push Evgeniy away
+from all the promising work he has published.
 
-Do we want to fix this in 2.6.23?
+Evgeniy, please continue your current work.
 
-If so then at present I'll need to merge 
-
-kernel-userc-use-list_for_each_entry-instead-of-list_for_each.patch
-convert-uid-hash-to-hlist.patch
-fix-user-namespace-exiting-oops.patch
-
-which is rather a lot of merging at this stage - surely more than
-is really needed?
+Mike
