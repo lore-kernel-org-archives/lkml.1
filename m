@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbXIOQVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbXIOQXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756022AbXIOQVy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 12:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXIOQVp
+	id S1755798AbXIOQXR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 12:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbXIOQXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 12:21:45 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:63390 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbXIOQVo (ORCPT
+	Sat, 15 Sep 2007 12:23:04 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:51092 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751585AbXIOQXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 12:21:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a4gYSnpLCNBgKcvDGsOllrWChWTLxbeFpi8HVdEQd9rGiFy/W54mUtmNufPwM2U4Ratv6H9YXPXcbNYadwAKYfjbxRV4aMDhY/jV2T+9zVPeKAEFOYRfHLZj3nuaPFJvlL/+tzvLfPhwB0pkVnme1UjddRrfS92vD7+6NsPTCS4=
-Message-ID: <6b8cef970709150921s48488096wa8089d8d9f5d28bf@mail.gmail.com>
-Date: Sat, 15 Sep 2007 12:21:39 -0400
-From: "Rob Hussey" <robjhussey@gmail.com>
-To: "=?ISO-2022-JP?B?GyRCJV0hPCVrISYlbSVpJXMbKEIgUGF1bCBSb2xsYW5k?=" 
-	<rol@witbe.net>
-Subject: Re: 2.6.23-rc6 : crash with RTL8187 USB
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070915131656.4cddab33@tux.DEF.witbe.net>
+	Sat, 15 Sep 2007 12:23:03 -0400
+Date: Sat, 15 Sep 2007 18:23:13 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+Message-ID: <20070915162313.GV3563@stusta.de>
+References: <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de> <46EBDC06.3030202@s5r6.in-berlin.de> <20070915135314.GS3563@stusta.de> <46EBE821.2080300@s5r6.in-berlin.de> <20070915144341.GT3563@stusta.de> <46EBF9DC.1000503@s5r6.in-berlin.de> <46EBFDFB.5040401@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20070915131656.4cddab33@tux.DEF.witbe.net>
+In-Reply-To: <46EBFDFB.5040401@garzik.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/15/07, ポール・ロラン Paul Rolland <rol@witbe.net> wrote:
-> Hello,
+On Sat, Sep 15, 2007 at 11:44:59AM -0400, Jeff Garzik wrote:
+> Stefan Richter wrote:
+>> Adrian Bunk wrote:
+>>> On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
+>>>> Perfect is in the eye of the beholder.  You would consequently have to
+>>>> add such options into all menus which contain scsi low-level providers.
+>>> Kconfig is a user interface, so perfect is what is best for the
+>>> kconfig users.
+>> Duplicate options with different names in different menus, but which all
+>> do the same, --- is this the best for users?
 >
-> Each time I add the support for this piece of hardware, I have a crash during
-> the boot process.
-> Serial console gives the attached boot message...
+> I recognize it's a rhetorical question :)  The answer is of course "no".
 >
-...
-> WARNING: at lib/kref.c:33 kref_get()
-> Call Trace:
->  [<ffffffff8121fa41>] kref_get+0x2f/0x36
->  [<ffffffff8121ec3f>] kobject_get+0x12/0x17
->  [<ffffffff8121edad>] kobject_shadow_add+0x7f/0x1a2
->  [<ffffffff812beaa4>] device_add+0xb7/0x631
->  [<ffffffff81040607>] msleep+0x14/0x1e
->  [<ffffffff8149f95f>] wiphy_register+0x29/0x80
->  [<ffffffff814a4a9b>] ieee80211_register_hw+0x11/0x208
->  [<ffffffff812e1a64>] rtl8187_probe+0x544/0x624
+> I hope the other participants of this thread register the severe 
+> disinclination of the maintainers to change this stuff, as this is a 
+> classic case of making a mountain out of a molehill[1].
+>
+> For the -vast majority- of people configuring the kernel, this is not a 
+> problem.  Kernel people are -expected- to know what they're doing, 
 
-I had this problem as well. It has to do with mac80211, cfg80211 and
-the rate control algorithm not initializing early enough in the boot
-process. These two patches should fix it:
+I doubt your claim is true since the vast majority of kconfig users
+are most likely not kernel developers.
 
-[PATCH] mac80211: fix initialisation when built-in
-http://article.gmane.org/gmane.linux.kernel.wireless.general/5710/match=patch+mac80211+initialisation
+@Greg:
+Do you have any numbers regarding how your "Linux Kernel in a Nutshell" 
+is selling?
+Even download numbers?
 
-[PATCH] cfg80211: fix initialisation if built-in
-http://article.gmane.org/gmane.linux.network/71326/match=patch+cfg80211+initialisation
+> especially when switching from one major subsystem to another.
 
-Regards,
-Rob
+It's not only about switching, the same problems awaits people when 
+configuring a kernel for their hardware the first time.
+
+> Therefore, all this is IMO wasted effort and hot air.  There are far more 
+> important issues to deal with.
+
+Why don't we dump kconfig and write the .config by hand?  ;-)
+
+More seriously:
+Yes, there are many other important issues in the kernel.
+But not fixing kconfig UI problems doesn't fix these issues faster.
+
+I have seen people running into problems because some required 
+option wasn't set - in the simplest cases things like IDE without DMA 
+because a help text wasn't updated when more hardware support was added 
+to a driver.
+
+You might not care about the kconfig users.
+But other people do.
+
+> 	Jeff
+>...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
