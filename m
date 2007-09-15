@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXIOEI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXIOEQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbXIOEI4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 00:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750723AbXIOEIp
+	id S1758619AbXIOEQv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 00:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbXIOEQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 00:08:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42270 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbXIOEIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 00:08:44 -0400
-Message-ID: <46EB5ACA.5000207@garzik.org>
-Date: Sat, 15 Sep 2007 00:08:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Move away from char device ioctls.
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070914211210.GB12444@fieldses.org> <46EAF9CD.1090808@garzik.org> <20070914211828.GC12444@fieldses.org> <46EB0BEB.2090808@garzik.org> <20070914224212.GJ12444@fieldses.org>
-In-Reply-To: <20070914224212.GJ12444@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 15 Sep 2007 00:16:43 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43761 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750811AbXIOEQm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 00:16:42 -0400
+Date: Fri, 14 Sep 2007 21:16:35 -0700
+From: Paul Jackson <pj@sgi.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: apw@shadowen.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mel@csn.ul.ie, jens.axboe@oracle.com, linux-scsi@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: 2.6.23-rc4-mm1
+Message-Id: <20070914211635.4774c971.pj@sgi.com>
+In-Reply-To: <20070910042256Z.tomof@acm.org>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+	<20070910174926.GC30335@shadowen.org>
+	<20070910111926.9c942358.akpm@linux-foundation.org>
+	<20070910042256Z.tomof@acm.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Fri, Sep 14, 2007 at 06:32:11PM -0400, Jeff Garzik wrote:
->> J. Bruce Fields wrote:
->>> On Fri, Sep 14, 2007 at 05:14:53PM -0400, Jeff Garzik wrote:
->>>> NFSv4.1 adds to the fun, by throwing interoperability completely out the 
->>>> window.
-
->>> What parts are you worried about in particular?
-
->> I'm not worried; I'm stating facts as they exist today (draft 13):
->>
->> NFS v4.1 does something completely without precedent in the history of NFS: 
->>  the specification is defined such that interoperability is -impossible- to 
->> guarantee.
->>
->> pNFS permits private and unspecified layout types.  This means it is 
->> impossible to guarantee that one NFSv4.1 implementation will be able to 
->> talk another NFSv4.1 implementation.
-
-> No, servers are required to support ordinary nfs operations to the
-> metadata server.
+FUJITA Tomonori wrote:
+> Can you try this patch (against 2.6.23-rc4-mm1)?
 > 
-> At least, that's the way it was last I heard, which was a while ago.  I
-> agree that it'd stink (for any number of reasons) if you ever *had* to
-> get a layout to access some file.
+> >From 592bd2049cb3e6e1f1dde7cf631879f26ddffeaa Mon Sep 17 00:00:00 2001
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date: Mon, 10 Sep 2007 04:17:13 +0100
+> Subject: [PATCH] qla1280: sg chaining fixes
 > 
-> Was that your main concern?
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  drivers/scsi/qla1280.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
 
-I just sorta assumed you could fall back to the NFSv4.0 mode of 
-operation, going through the metadata server for all data accesses.
+This patch works for me.
 
-But look at that choice in practice:  you can either ditch pNFS 
-completely, or use a proprietary solution.  The market incentives are 
-CLEARLY tilted in favor of makers of proprietary solutions.  But it's a 
-poor choice (really little choice at all).
+I was getting the scsi errors reported earlier in
+this thread, running 2.6.23-rc4-mm1 on one of our
+big SGI Altix systems.
 
-Overall, my main concern is that NFSv4.1 is no longer an open 
-architecture solution.  The "no-pNFS or proprietary platform" choice 
-merely illustrate one of many negative aspects of this architecture.
+Applying this patch fixed it, so far as I can tell,
+which is to say my system boots cleanly once again.
 
-One of NFS's biggest value propositions is its interoperability.  To 
-quote some Wall Street guys, "NFS is like crack.  It Just Works.  We 
-love it."
+Thanks.
 
-Now, for the first time in NFS's history (AFAIK), the protocol is no 
-longer completely specified, completely known.  No longer a "closed 
-loop."  Private layout types mean that it is _highly_ unlikely that any 
-OS or appliance or implementation will be able to claim "full NFS 
-compatibility."
-
-And when the proprietary portion of the spec involves something as basic 
-as accessing one's own data, I consider that a fundamental flaw.  NFS is 
-no longer completely open.
-
-	Jeff
-
-
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
