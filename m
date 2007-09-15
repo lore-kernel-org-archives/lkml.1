@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbXIOWDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbXIOWQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbXIOWDU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 18:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbXIOWDN
+	id S1754034AbXIOWQS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 18:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbXIOWQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 18:03:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56606 "EHLO
+	Sat, 15 Sep 2007 18:16:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39562 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751347AbXIOWDM (ORCPT
+	by vger.kernel.org with ESMTP id S1751954AbXIOWQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 18:03:12 -0400
-Date: Sat, 15 Sep 2007 15:01:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, rusty@rustycorp.com.au,
-       vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-Message-Id: <20070915150113.0c2decce.akpm@linux-foundation.org>
-In-Reply-To: <1189862903.4319.7.camel@chaos>
-References: <20070827104350.GA2073@elf.ucw.cz>
-	<b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com>
-	<20070903034720.GB3655@ucw.cz>
-	<200709031219.12846.rjw@sisk.pl>
-	<1188822917.3406.0.camel@chaos>
-	<20070904072744.GA30474@atrey.karlin.mff.cuni.cz>
-	<1189713695.3974.23.camel@chaos>
-	<20070914123816.GE1671@elf.ucw.cz>
-	<1189774257.3100.7.camel@chaos>
-	<1189775743.3100.9.camel@chaos>
-	<1189849781.4319.5.camel@chaos>
-	<20070915031858.70a3a331.akpm@linux-foundation.org>
-	<1189862903.4319.7.camel@chaos>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Sep 2007 18:16:06 -0400
+Date: Sat, 15 Sep 2007 15:15:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: crashme fault
+In-Reply-To: <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0709151508590.16478@woody.linux-foundation.org>
+References: <20070912222151.70d1fc7d.randy.dunlap@oracle.com>
+ <alpine.LFD.0.999.0709142101140.16478@woody.linux-foundation.org>
+ <20070915183412.GA14501@one.firstfloor.org> <46EC2702.3090000@oracle.com>
+ <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Sep 2007 15:28:23 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> On Sat, 2007-09-15 at 03:18 -0700, Andrew Morton wrote:
-> > > http://git.kernel.org/?p=linux/kernel/git/tglx/linux-2.6-hrt.git;a=shortlog;h=for-2.6.23
-> > > 
-> > 
-> > That patch fixes the resume-from-ram and suspend-to-ram regressions on the
-> > Vaio.
-> > 
-> > I dropped the timekeeping.c hunks because they are an older version of
-> > timekeeping-prevent-time-going-backwards-on-resume.patch which I already
-> > had.
-> > 
-> > Is this good to go?  Needs a bit of changelogging.
-> 
-> Changelog it in the git tree. Please pull from there:
 
-who, me?
+On Sat, 15 Sep 2007, Linus Torvalds wrote:
+> 
+> Here's a really *stupid* patch (and untested too, btw) to see if it gets 
+> easier to debug when you don't oops, just print the register state 
+> instead.
 
-> The following changes since commit 53a3f3087be361dacfc02e7a85b6d6142a41ce8a:
->   Linus Torvalds (1):
->         Merge branch 'for-linus' of master.kernel.org:/.../cooloney/blackfin-2.6
-> 
-> are available in the git repository at:
-> 
->   ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git for-2.6.23
-> 
-> Thomas Gleixner (6):
->       timekeeping: access rtc outside of xtime lock
->       timekeeping: Prevent time going backwards on resume
->       ACPI: Reevaluate C/P/T states when a cpu becomes online
->       clockevents: Enforce oneshot broadcast when broadcast mask is set on resume
->       clockevents: do not shutdown the oneshot broadcast device
->       clockevents: prevent stale tick update on offline cpu
+Side note - while thinking about this, I'm wondering whether maybe that 
+"stupid" patch might not actually be the right thing to do.
 
-please send it to Linus?
+The fact is, the "user access" bit in the error code is in many ways a 
+totally *different* issue than the "user_mode(regs)" test. We may end up 
+having a system page fault for some action that was initiated by user 
+space: eg taking a page fault on a segment load. And it may well be marked 
+as a "system access" in the error code, even though the instruction that 
+triggered it was all user mode, and even though we could just terminate 
+the program rather than oops.
+
+That said, since the kernel isn't paging itself out, user mode generally 
+should not be able to generate those kinds of system access page faults. 
+Our segment tables should all be in core, and so I would still in 
+*practice* always expect the register state and the error code to match in 
+the "usermode'ness".
+
+So regardless of whether we want to trust "user_mode(regs)" more than 
+"error_code & PF_USER", it would definitely be very interesting if you can 
+give a good "this is where it started happening".
+
+			Linus
