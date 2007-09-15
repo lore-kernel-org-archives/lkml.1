@@ -1,60 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbXIORuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbXIORu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbXIORuM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 13:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbXIORuA
+	id S1756574AbXIORu5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 13:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbXIORuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 13:50:00 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36530 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751562AbXIORuA (ORCPT
+	Sat, 15 Sep 2007 13:50:46 -0400
+Received: from mail.clusterfs.com ([74.0.229.162]:56518 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164AbXIORuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 13:50:00 -0400
-Message-ID: <46EC1B24.1010600@gmail.com>
-Date: Sat, 15 Sep 2007 19:49:24 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] lib/iomap.c:bad_io_access() -- print 0x hex prefix
-Content-Type: multipart/mixed;
- boundary="------------040901020606030901050706"
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Sat, 15 Sep 2007 13:50:44 -0400
+Date: Sat, 15 Sep 2007 11:51:08 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Robin Humble <rjh@cita.utoronto.ca>
+Cc: Jeff Garzik <jeff@garzik.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Move away from char device ioctls.
+Message-ID: <20070915175108.GD2990@schatzie.adilger.int>
+Mail-Followup-To: Robin Humble <rjh@cita.utoronto.ca>,
+	Jeff Garzik <jeff@garzik.org>,
+	Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070915135633.GA19482@lemming.cita.utoronto.ca> <46EBEDA4.3070103@garzik.org> <20070915162056.GA31576@lemming.cita.utoronto.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070915162056.GA31576@lemming.cita.utoronto.ca>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040901020606030901050706
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sep 15, 2007  12:20 -0400, Robin Humble wrote:
+> On Sat, Sep 15, 2007 at 10:35:16AM -0400, Jeff Garzik wrote:
+> >Lustre is tilted far too much towards high-priced storage,
+> 
+> many (most?) Lustre deployments are with SATA and md raid5 and GigE -
+> can't get much cheaper than that.
 
-Hi Andrew.
+I have to agree - while Lustre CAN scale up to huge servers and fat pipes,
+it can definitely also scale down (which is a LOT easier to do :-).  I can
+run a client + MDS + 5 OSTs in a single UML instance using loop devices
+for testing w/o problems.
 
-Trivial -- be explicit about printing hex.
+> interestingly, one of the ways to provide dual-attached storage behind
+> a failover pair of lustre servers (apart from buying SAS) would be via
+> a networked-raid-1 device like Evgeniy's, so I don't see distributed
+> block devices and distributed filesystems as being mutually exclusive.
 
-Rene
+That is definitely true, and there are a number of users who run in
+this mode.  We're also working to make Lustre handle the replication
+internally (RAID5/6+ at the OST level) so you wouldn't need any kind of
+block-level redundancy at all.  I suspect some sites may still use RAID5/6
+back-ends anyways to avoid performance loss from taking out a whole OST
+due to a single disk failure, but that would definitely not be required.
 
---------------040901020606030901050706
-Content-Type: text/plain;
- name="bad_io_access-hex.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="bad_io_access-hex.diff"
+> >and needs improvement before it could be considered for mainline.
 
-diff --git a/lib/iomap.c b/lib/iomap.c
-index a57d262..5dfcbde 100644
---- a/lib/iomap.c
-+++ b/lib/iomap.c
-@@ -40,7 +40,7 @@ static void bad_io_access(unsigned long port, const char *access)
- 	static int count = 10;
- 	if (count) {
- 		count--;
--		printk(KERN_ERR "Bad IO access at port %lx (%s)\n", port, access);
-+		printk(KERN_ERR "Bad IO access at port %#lx (%s)\n", port, access);
- 		WARN_ON(1);
- 	}
- }
+It's definitely true, and we are always working at improving it.  It
+used to be in the past that one of the reasons we DIDN'T want to go
+into mainline was because this would restrict our ability to make
+network protocol changes.  Because our install base is large enough
+and many of the large sites with mutliple supercomputers mounting
+multiple global filesystems we aren't at liberty to change the network
+protocol at will anymore.  That said, we also have network protocol
+versioning that is akin to the ext3 COMPAT/INCOMPAT feature flags, so
+we are able to add/change features without breaking old clients
 
---------------040901020606030901050706--
+> from what I understand (hopefully I am mistaken) they consider a merge
+> task to be too daunting as the number of kernel subsystems that any
+> scalable distributed filesystem touches is necessarily large.
+
+That's partly true - Lustre has its own RDMA RPC mechanism, but it does
+not need kernel patches anymore (we removed the zero-copy callback and
+do this at the protocol level because there was too much resistance to it).
+We are now also able to run a client filesystem that doesn't require any
+kernel patches, since we've given up on trying to get the intents and
+raw operations into the VFS, and have worked out other ways to improve
+the performance to compensate.  Likewise with parallel directory operations.
+
+It's a bit sad, in a way, because these are features that other filesystems
+(especially network fs) could have benefitted from also.
+
+> roadmaps indicate that parts of lustre are likely to move to userspace
+> (partly to ease solaris and ZFS ports) so perhaps those performance
+> critical parts that remain kernel space will be easier to merge.
+
+This is also true - when that is done the only parts that will remain
+in the kernel are the network drivers.  With some network stacks there
+is even direct userspace acceleration.  We'll use RDMA and direct IO to
+avoid doing any user<->kernel data copies.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
