@@ -1,73 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbXIOJwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXIOKId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760724AbXIOJwh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 05:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbXIOJw3
+	id S1757561AbXIOKId (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 06:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbXIOKI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 05:52:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52177 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753163AbXIOJw2 (ORCPT
+	Sat, 15 Sep 2007 06:08:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55940 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752383AbXIOKI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 05:52:28 -0400
-Date: Sat, 15 Sep 2007 02:52:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "tx tox" <t0mc4t1@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Eric Cooper <ecc@cmu.edu>,
-       linux-acpi@vger.kernel.org
-Subject: Re: boot hangs with SMP, USB storage, and ACPI
-Message-Id: <20070915025208.acb03ad3.akpm@linux-foundation.org>
-In-Reply-To: <9b9c8e900709120600n3ffa9b6fn1bd514672d2e9bc1@mail.gmail.com>
-References: <9b9c8e900709120600n3ffa9b6fn1bd514672d2e9bc1@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 15 Sep 2007 06:08:26 -0400
+Subject: Re: VM/VFS bug with large amount of memory and file systems?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       marc.smith@esmail.mcc.edu
+In-Reply-To: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk>
+References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk>
+Content-Type: text/plain
+Date: Sat, 15 Sep 2007 12:08:17 +0200
+Message-Id: <1189850897.21778.301.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-09-15 at 08:27 +0100, Anton Altaparmakov wrote:
 
-(cc restored.  Please always do reply-to-all)
+Please, don't word wrap log-files, they're hard enough to read without
+it :-(
 
-(linux-acpi cc added)
+( I see people do this more and more often, *WHY*? is that because we
+like 80 char lines, in code and email? )
 
-On Wed, 12 Sep 2007 15:00:41 +0200 "tx tox" <t0mc4t1@gmail.com> wrote:
 
-> On 12 Lip 2006, 00:41, Eric Cooper <e...@cmu.edu> wrote:
-> > When I try toboota 2.6.17 kernel compiled forSMP(hyperthreading),
-> > it hangs early in thebootsequence (after printing "FreeingSMP
-> > alternatives").  The issue seems to be an interaction between a
-> > USB-storage device (an empty flash card reader built into the
-> > monitor) andACPI.
-> >
-> > It boots fine if I do any one of these:
-> >   - physically disconnect theUSBdevice
-> >   - disableUSBsupport in the BIOS
-> >   -bootwithacpi=ht
-> > but none of these is completely satisfactory.
-> >
-> > I'll happily supply more details, run tests, etc. if anyone is
-> > interested in looking at this.  Thanks, and please CC me if you
-> > respond.
-> >
-> > --
-> > Eric Cooper             e c c @ c m u . e d u
-> 
-> 
-> I have exactly the same problem
-> This happens whenever i boot machine with reader on
-> or usbstick plugged in.
-> It happens with newer kernels as well.
-> It is little bit annoying to reset machine just because i forgot
-> to switch off the printer which has card reader equipped ;)
-> some goofing with printks suggests ACPI as a place whenre it freezes.
-> But i got no proof for that.
-> Any suggestions are welcome.
+Anyway, looks like all of zone_normal is pinned in kernel allocations:
 
-Could you both please test 2.6.22 (or 2.6.23, soon) and if the bug is still
-present, raise a report against acpi at bugzilla.kernel.org?
+> Sep 13 15:31:25 escabot Normal free:3648kB min:3744kB low:4680kB high: 5616kB active:0kB inactive:3160kB present:894080kB pages_scanned:5336 all_unreclaimable? yes
 
-We'd be particularly internested in knowing if any earlier 2.6 kernel
-worked OK and if so, which version(s).
+Out of the 870 odd mb only 3 is on the lru.
 
-Thanks.
+Would be grand it you could have a look at slabinfo and the like.
+
+Peter
+
+---
+
+> Sep 13 15:31:25 escabot init invoked oom-killer: gfp_mask=0xd0,  
+> order=0, oomkilladj=0
+> Sep 13 15:31:25 escabot [<c0149ea8>] out_of_memory+0x158/0x1b0
+> Sep 13 15:31:25 escabot [<c014b7b0>] __alloc_pages+0x2a0/0x300
+> Sep 13 15:31:25 escabot [<c01729aa>] core_sys_select+0x1fa/0x2f0
+> Sep 13 15:31:25 escabot [<c0162a21>] cache_alloc_refill+0x2e1/0x500
+> Sep 13 15:31:25 escabot [<c0162736>] kmem_cache_alloc+0x46/0x50
+> Sep 13 15:31:25 escabot [<c016e238>] getname+0x28/0xf0
+> Sep 13 15:31:25 escabot [<c016fe5e>] __user_walk_fd+0x1e/0x60
+> Sep 13 15:31:25 escabot [<c0168e29>] cp_new_stat64+0xf9/0x110
+> Sep 13 15:31:25 escabot [<c0169152>] vfs_stat_fd+0x22/0x60
+> Sep 13 15:31:25 escabot [<c016922f>] sys_stat64+0xf/0x30
+> Sep 13 15:31:25 escabot [<c0124956>] do_gettimeofday+0x36/0xf0
+> Sep 13 15:31:25 escabot [<c0120bbf>] sys_time+0xf/0x30
+> Sep 13 15:31:25 escabot [<c0102b10>] sysenter_past_esp+0x5d/0x81
+> Sep 13 15:31:25 escabot =======================
+> Sep 13 15:31:25 escabot Mem-info:
+> Sep 13 15:31:25 escabot DMA per-cpu:
+> Sep 13 15:31:25 escabot CPU    0: Hot: hi:    0, btch:   1 usd:   0    
+> Cold: hi:    0, btch:   1 usd:   0
+> Sep 13 15:31:25 escabot CPU    1: Hot: hi:    0, btch:   1 usd:   0    
+> Cold: hi:    0, btch:   1 usd:   0
+> Sep 13 15:31:25 escabot CPU    2: Hot: hi:    0, btch:   1 usd:   0    
+> Cold: hi:    0, btch:   1 usd:   0
+> Sep 13 15:31:25 escabot CPU    3: Hot: hi:    0, btch:   1 usd:   0    
+> Cold: hi:    0, btch:   1 usd:   0
+> Sep 13 15:31:25 escabot Normal per-cpu:
+> Sep 13 15:31:25 escabot CPU    0: Hot: hi:  186, btch:  31 usd: 143    
+> Cold: hi:   62, btch:  15 usd:  56
+> Sep 13 15:31:25 escabot CPU    1: Hot: hi:  186, btch:  31 usd:  31    
+> Cold: hi:   62, btch:  15 usd:  53
+> Sep 13 15:31:25 escabot CPU    2: Hot: hi:  186, btch:  31 usd:   8    
+> Cold: hi:   62, btch:  15 usd:  54
+> Sep 13 15:31:25 escabot CPU    3: Hot: hi:  186, btch:  31 usd:  99    
+> Cold: hi:   62, btch:  15 usd:  58
+> Sep 13 15:31:25 escabot HighMem per-cpu:
+> Sep 13 15:31:25 escabot CPU    0: Hot: hi:  186, btch:  31 usd:   1    
+> Cold: hi:   62, btch:  15 usd:  10
+> Sep 13 15:31:25 escabot CPU    1: Hot: hi:  186, btch:  31 usd:  23    
+> Cold: hi:   62, btch:  15 usd:   1
+> Sep 13 15:31:25 escabot CPU    2: Hot: hi:  186, btch:  31 usd:  18    
+> Cold: hi:   62, btch:  15 usd:   1
+> Sep 13 15:31:25 escabot CPU    3: Hot: hi:  186, btch:  31 usd:   9    
+> Cold: hi:   62, btch:  15 usd:  12
+> Sep 13 15:31:25 escabot Active:8078 inactive:1776744 dirty:10338  
+> writeback:0 unstable:0
+> Sep 13 15:31:25 escabot free:1090395 slab:198893 mapped:988  
+> pagetables:129 bounce:0
+> Sep 13 15:31:25 escabot DMA free:3560kB min:68kB low:84kB high:100kB  
+> active:0kB inactive:0kB present:16256kB pages_scanned:0  
+> all_unreclaimable? yes
+> Sep 13 15:31:25 escabot lowmem_reserve[]: 0 873 12176
+> Sep 13 15:31:25 escabot Normal free:3648kB min:3744kB low:4680kB high: 
+> 5616kB active:0kB inactive:3160kB present:894080kB pages_scanned:5336  
+> all_unreclaimable? yes
+> Sep 13 15:31:25 escabot lowmem_reserve[]: 0 0 90424
+> Sep 13 15:31:25 escabot HighMem free:4354372kB min:512kB low:12640kB  
+> high:24768kB active:32312kB inactive:7103816kB present:11574272kB  
+> pages_scanned:0 all_unreclaimable? no
+> Sep 13 15:31:25 escabot lowmem_reserve[]: 0 0 0
+> Sep 13 15:31:25 escabot DMA: 4*4kB 3*8kB 0*16kB 0*32kB 1*64kB 1*128kB  
+> 1*256kB 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3560kB
+> Sep 13 15:31:25 escabot Normal: 44*4kB 18*8kB 6*16kB 1*32kB 6*64kB  
+> 2*128kB 0*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 3648kB
+> Sep 13 15:31:25 escabot HighMem: 1*4kB 0*8kB 0*16kB 37914*32kB  
+> 43188*64kB 1628*128kB 5*256kB 247*512kB 30*1024kB 1*2048kB 2*4096kB =  
+> 4354372kB
+> Sep 13 15:31:25 escabot Swap cache: add 983, delete 972, find 0/1,  
+> race 0+0
+> Sep 13 15:31:25 escabot Free swap  = 2004216kB
+> Sep 13 15:31:25 escabot Total swap = 2008116kB
+> Sep 13 15:31:25 escabot Free swap:       2004216kB
+
+
