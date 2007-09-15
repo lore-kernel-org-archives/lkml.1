@@ -1,61 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbXIOOMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbXIOOS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbXIOOMs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 10:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbXIOOMk
+	id S1754157AbXIOOS1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 10:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXIOOST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 10:12:40 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:40680 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402AbXIOOMj (ORCPT
+	Sat, 15 Sep 2007 10:18:19 -0400
+Received: from mxsf05.insightbb.com ([74.128.0.75]:33515 "EHLO
+	mxsf05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbXIOOSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 10:12:39 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46EBE821.2080300@s5r6.in-berlin.de>
-Date: Sat, 15 Sep 2007 16:11:45 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Sat, 15 Sep 2007 10:18:18 -0400
+X-IronPort-AV: E=Sophos;i="4.20,258,1186372800"; 
+   d="scan'208";a="35728858"
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAP6F60ZKjlCP/2dsb2JhbACBVw
+X-IronPort-AV: E=Sophos;i="4.20,258,1186372800"; 
+   d="scan'208";a="116419458"
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: sysfs change of input/event devices in 2.6.23rc breaks udev
+Date: Sat, 15 Sep 2007 10:18:15 -0400
+User-Agent: KMail/1.9.3
+Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Anssi Hannula <anssi.hannula@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+References: <46E2D712.1010402@gmail.com> <d120d5000709100624s4fd7e68djf8654a4d591cbb5d@mail.gmail.com> <20070915010519.34bcb9ae.akpm@linux-foundation.org>
+In-Reply-To: <20070915010519.34bcb9ae.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Sam Ravnborg <sam@ravnborg.org>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
-References: <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de> <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org> <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de> <46EBDC06.3030202@s5r6.in-berlin.de> <20070915135314.GS3563@stusta.de>
-In-Reply-To: <20070915135314.GS3563@stusta.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709151018.16076.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sat, Sep 15, 2007 at 03:20:06PM +0200, Stefan Richter wrote:
->> It still doesn't entirely clarify whether users need sd, sr, st, and
->> whether thy need sd for the disk with root filesystem.
+On Saturday 15 September 2007 04:05, Andrew Morton wrote:
+> On Mon, 10 Sep 2007 09:24:04 -0400 "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
 > 
-> If you want to do it in a really perfect way, help texts aren't the 
-> solution. You'll have to make the options like CONFIG_BLK_DEV_SR no 
-> longer be user visible and select'ed through dummy options like e.g.:
-...
-> 	tristate "USB Mass Storage hard disk support"
-> 	depends on USB_STORAGE
-> 	select BLK_DEV_SD
-...
->         tristate "USB Mass Storage CD/DVD support"
->         depends on USB_STORAGE
-> 	select BLK_DEV_SR
-...
+> > On 9/10/07, Greg KH <gregkh@suse.de> wrote:
+> > > On Mon, Sep 10, 2007 at 01:28:47AM -0400, Dmitry Torokhov wrote:
+> > > > On Sunday 09 September 2007 19:03, Kay Sievers wrote:
+> > > > > On 9/8/07, Anssi Hannula <anssi.hannula@gmail.com> wrote:
+> > > > > >
+> > > > > > However, the change that broke id_path of udev is that
+> > > > > > /sys/class/input/event5/device is now a symlink to the inputX directory
+> > > > > > instead of being the same as the device symlink in inputX directory,
+> > > > > > i.e. to ../../../devices/platform/pcspkr in this case.
+> > > > > >
+> > > > > > Udev id_path uses that directory to construct the ID_PATH variable.
+> > > > > > Should the sysfs structure be reverted or should udev be adapted to
+> > > > > > handle traversing /device symlink twice? I think the former, as there
+> > > > > > should be considerably more time to adapt udev for coming changes in sysfs.
+> > > > >
+> > > > > Udev's path_id script is too dumb to follow the "device" link of
+> > > > > stacked class devices in the CONFIG_SYSFS_DEPRECATED=y layout. Does
+> > > > > this change fix it for you?
+> > > > >   http://git.kernel.org/?p=linux/hotplug/udev.git;a=commitdiff_plain;h=b1ac36ff5e3756cefc79967a26280056da31bf6f
+> > > > >
+> > > >
+> > > > Hmm, fixing udev is good but users will not get the change in time. I think we
+> > > > need to adjust SYSFS_DEPRECATED code to produce old results. Something like the
+> > > > patch below. I wonder what Greg would think...
+> > >
+> > > Hm, I don't understand.  Didn't the original conversion of the input
+> > > layer by Kay not have this kind of problem?  What did your changes do
+> > > differently to cause this driver core change to be needed?
+> > >
+> > 
+> > If I understand it correctly Kay's convesion had the same issue. With
+> > class devices "device" link points to class_dev->device instead of
+> > class_dev->parent. If you want to keep compatibility with old sysfs
+> > layout when moving from class devices to regular devices then you need
+> > to "skip" couple of parents till you get to "real" device. This only
+> > matters for input because this was the only subsystem with class
+> > devices stacked.
+> > 
+> 
+> <wonders where the rest of this thread went to>
 
-Perfect is in the eye of the beholder.  You would consequently have to
-add such options into all menus which contain scsi low-level providers.
+Limbo ;)
 
-Also, one more question on whether CONFIG_SCSI ought to be 'select'ed:
-Where do scsi-core options like CONFIG_SCSI_CONSTANTS go?
+Anssi, could you please tell me if the patch fixes the issue on your box?
+
+> 
+> Did this userspace-visible post-2.6.22 regression get fixed?
+> 
+
+I'd like the patch to go through Greg if he is OK with it.
+
 -- 
-Stefan Richter
--=====-=-=== =--= -====
-http://arcgraph.de/sr/
+Dmitry
