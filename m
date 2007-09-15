@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbXIOCbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbXIOCcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760548AbXIOCbH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 22:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932795AbXIOC3n
+	id S933054AbXIOCcq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 22:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbXIOCci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 22:29:43 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:48694 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932749AbXIOC3k (ORCPT
+	Fri, 14 Sep 2007 22:32:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46644 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755001AbXIOCch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 22:29:40 -0400
-Date: Sat, 15 Sep 2007 11:30:00 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
-       rtc-linux@googlegroups.com
-Subject: Re: rtc-ds1742.c should use resource_size_t for base address
-Message-ID: <20070915013000.GA25414@localhost.localdomain>
-Mail-Followup-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
-	rtc-linux@googlegroups.com
-References: <20070914055427.GM481@localhost.localdomain> <20070914122037.65a08f48@weaponx.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070914122037.65a08f48@weaponx.rchland.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 14 Sep 2007 22:32:37 -0400
+Date: Fri, 14 Sep 2007 19:32:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Alexey Dobriyan <adobriyan@openvz.org>
+Subject: Re: [PATCH 2/2] Fix user namespace exiting OOPs
+Message-Id: <20070914193233.77138604.akpm@linux-foundation.org>
+In-Reply-To: <20070914182355.GA9810@sergelap.austin.ibm.com>
+References: <46EA88BA.5020005@openvz.org>
+	<20070914182355.GA9810@sergelap.austin.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 12:20:37PM -0500, Josh Boyer wrote:
-> On Fri, 14 Sep 2007 15:54:27 +1000
-> David Gibson <david@gibson.dropbear.id.au> wrote:
-> 
-> > Currently the rtc driver, rtc-ds1742.c uses an unsigned long to store
-> > the base mmio address of the NVRAM/RTC.  This breaks on systems like
-> > PowerPC 440, which is a 32-bit core with 36-bit physical addresses: IO
-> > on the system, including the RTC, is typically above the 4GB point,
-> > and cannot fit into an unsigned long.
+On Fri, 14 Sep 2007 13:23:55 -0500 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+
+> > run on kernel with CONFIG_USER_NS turned on will oops the
+> > kernel immediately.
 > > 
-> > This patch fixes the problem by replacing the unsigned long with a
-> > resource_size_t.  Tested on Ebony (PPC440) (with additional patches to
-> > instantiate the ds1742 platform device appropriately).
+> > This was spotted during OpenVZ kernel testing.
+> > 
+> > Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> > Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
 > 
-> Where would those additional patches be? :)
+> Good spot.  Interesting solution :)
+> 
 
-Coming, they still need polish...
+Do we want to fix this in 2.6.23?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+If so then at present I'll need to merge 
+
+kernel-userc-use-list_for_each_entry-instead-of-list_for_each.patch
+convert-uid-hash-to-hlist.patch
+fix-user-namespace-exiting-oops.patch
+
+which is rather a lot of merging at this stage - surely more than
+is really needed?
