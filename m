@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbXIOIGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXIOIJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757406AbXIOIGL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 04:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbXIOIFj
+	id S1756690AbXIOIJD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 04:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbXIOIIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 04:05:39 -0400
-Received: from tag.witbe.net ([81.88.96.48]:51789 "EHLO tag.witbe.net"
+	Sat, 15 Sep 2007 04:08:47 -0400
+Received: from il.qumranet.com ([82.166.9.18]:37439 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752836AbXIOIFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 04:05:36 -0400
-Date: Sat, 15 Sep 2007 08:04:48 +0000
-From: Paul Rolland <rol@as2917.net>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, rol@witbe.net
-Subject: Re: sata & scsi suggestion for make menuconfig
-Message-ID: <20070915080448.37457dcf@tux.DEF.witbe.net>
-In-Reply-To: <20070914151522.GL3563@stusta.de>
-References: <20070907124800.GP16806@vanheusden.com>
-	<p73fy1p9m57.fsf@bingen.suse.de>
-	<1189371621.3526.28.camel@localhost.localdomain>
-	<20070909210329.GE25798@one.firstfloor.org>
-	<46E46190.6080607@garzik.org>
-	<20070912224655.GC3563@stusta.de>
-	<46EAA08F.30703@s5r6.in-berlin.de>
-	<20070914151522.GL3563@stusta.de>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752431AbXIOIIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 04:08:46 -0400
+Message-ID: <46EB930C.2000909@qumranet.com>
+Date: Sat, 15 Sep 2007 11:08:44 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, kvm-devel@lists.sourceforge.net,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure
+References: <11897991353793-git-send-email-aliguori@us.ibm.com>	<46EAF4C6.8090903@goop.org>  <46EAF6FC.80207@codemonkey.ws>	<1189804847.5982.137.camel@bodhitayantram.eng.vmware.com>	<46EB00D8.3090903@codemonkey.ws> <1189827476.5982.143.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1189827476.5982.143.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Sat, 15 Sep 2007 11:08:44 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Zachary Amsden wrote:
+> On Fri, 2007-09-14 at 16:44 -0500, Anthony Liguori wrote:
+>
+>   
+>> So then each module creates a hypercall page using this magic MSR and 
+>> the hypervisor has to keep track of it so that it can appropriately 
+>> change the page on migration.  The page can only contain a single 
+>> instruction or else it cannot be easily changed (or you have to be able 
+>> to prevent the guest from being migrated while in the hypercall page).
+>>
+>> We're really talking about identical models.  Instead of an MSR, the #GP 
+>> is what tells the hypervisor to update the instruction.  The nice thing 
+>> about this is that you don't have to keep track of all the current 
+>> hypercall page locations in the hypervisor.
+>>     
+>
+> I agree, multiple hypercall pages is insane.  I was thinking more of a
+> single hypercall page, fixed in place by the hypervisor, not the kernel.
+>
+> Then each module can read an MSR saying what VA the hypercall page is
+> at, and the hypervisor can simply flip one page to switch architectures.
+>   
 
-On Fri, 14 Sep 2007 17:15:22 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+VA as in "Virtual Address"?  the ppc people don't have
+hypervisor-visible virtual addresses, and the hypervisor (on x86) can't
+safely select a virtual address, and ...
 
-> On Fri, Sep 14, 2007 at 04:54:07PM +0200, Stefan Richter wrote:
-> > Adrian Bunk wrote:
-> > > On Sun, Sep 09, 2007 at 05:11:44PM -0400, Jeff Garzik wrote:
-> > >> Let's step back a moment and consider the actual scale and impact of
-> > >> the problem at hand.
-> Do "make menuconfig" with the .config you are normally using, count the 
-> number of options that are visible, and ask yourself whether we can 
-> really expect users to read the help texts for every single option shown.
-> 
-> People mostly read help texts for options where they don't understand 
-> what this option is about - and "Serial ATA" therefore is an option that 
-> is likely to get enabled without the user looking at the help text.
-> 
-
-As a "make menuconfig" user, let me say that I agree. Of course, I'm used
-to rebuild kernel, but sometimes, some options are not clear, and the help
-text is searched for. But, getting too much of "No help text available"
-usually results in people no more reading the help text.
-
-What about splitting the screen to have the top half with the menu, and the
-bottom half with the help ?
-
-Paul
-
+That means you need a physical address, so you need a central
+initialization routine, and drivers for unmodified OSes can no longer be
+self contained.
 
 -- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-Witbe.net SA                                Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un navigateur 
-"Some people dream of success... while others wake up and work hard at it" 
-
-"I worry about my child and the Internet all the time, even though she's too 
-young to have logged on yet. Here's what I worry about. I worry that 10 or 15 
-years from now, she will come to me and say 'Daddy, where were you when they 
-took freedom of the press away from the Internet?'"
---Mike Godwin, Electronic Frontier Foundation 
