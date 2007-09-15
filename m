@@ -1,35 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbXIOCaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXIOCap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932963AbXIOCaU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 22:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932394AbXIOC3d
+	id S932903AbXIOCap (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 22:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932730AbXIOC3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 22:29:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:20223 "EHLO
+	Fri, 14 Sep 2007 22:29:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:20414 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760039AbXIOC31 (ORCPT
+	with ESMTP id S1760150AbXIOC3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 22:29:27 -0400
+	Fri, 14 Sep 2007 22:29:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=DmjpEncnEj6aRDiq9Mm/1tfi+feUbcYNIHI8UxjuWF/SDKpjXfb0gi+gpXAT5FeE4F1wDxpX8dWu1g3mObdjtlNq58BQVyD4S36i2z35821pRaOsPbx1uN3EaZ88fqm0Alu1GueCSDq8be/sfb6WNmhEdvuCPC9D8fakhqctC08=
-Message-ID: <46EB4374.50104@googlemail.com>
-Date: Sat, 15 Sep 2007 04:29:08 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=sYft7H9ITUhpfINOZkYCMSnTJmsqibpOadDjxI1ZmBmCUrmjwnOdcPcZfqM9lY9Kz6OYlzkgNTDs5yGtDpaKY4VFe0+DzVpeJfkJw10drsF4y80aZoSL2GF6WUcswF8tRB1hlmNPLqE5Et8V/M2S0e6yl9lShMtGrMay7VowANs=
+Message-ID: <46EB4377.7040200@googlemail.com>
+Date: Sat, 15 Sep 2007 04:29:11 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Thomas Voegtle <tv@lio96.de>, Soeren Sonnenburg <kernel@nn7.de>,
-       Christian Leber <christian@leber.de>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       Christian Volkmann <haveaniceday@cv-sv.de>
-Subject: Re: [3/3] 2.6.23-rc6: known regressions v2
-References: <46EB3EF8.6040103@googlemail.com>
-In-Reply-To: <46EB3EF8.6040103@googlemail.com>
+       Gabriel C <nix.or.die@googlemail.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg KH <gregkh@suse.de>,
+       Anssi Hannula <anssi.hannula@gmail.com>,
+       Christian Kujau <lists@nerdbynature.de>, jamal <hadi@cyberus.ca>,
+       netdev@vger.kernel.org
+Subject: 2.6.23-rc6: known regressions with patches v2
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -39,7 +41,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi all,
 
-Here is a list of some known regressions in 2.6.23-rc6.
+Here is a list of some known regressions in 2.6.23-rc6
+with patches available.
 
 Feel free to add new regressions/remove fixed etc.
 http://kernelnewbies.org/known_regressions
@@ -64,51 +67,56 @@ Tejun Heo                              3
 
 
 
-Power management
+Unclassified
 
-Subject         : powersaving degradation, (time spend in C0 goes up after a while)
-References      : http://lkml.org/lkml/2007/9/2/142
+Subject         : Oops while modprobing phy fixed module
+References      : http://lkml.org/lkml/2007/7/14/63
 Last known good : ?
-Submitter       : Christian Leber <christian@leber.de>
+Submitter       : Gabriel C <nix.or.die@googlemail.com>
 Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
+Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
+                  Vitaly Bordug <vitb@kernel.crashing.org>
+Patch1          : http://lkml.org/lkml/2007/7/18/506
+Status          : patch available
 
-Subject         : something broke resume from s2ram on mbp c1d (??? :))
-References      : http://lkml.org/lkml/2007/8/28/67
-Last known good : 2.6.23-rc3
-Submitter       : Soeren Sonnenburg <kernel@nn7.de>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : unknown
 
-Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
-References      : http://lkml.org/lkml/2007/8/12/249
+
+ACPI
+
+Subject         : 2.6.23-rc5 hangs on boot, apparently when initializing the EC
+References      : http://lkml.org/lkml/2007/9/11/369
 Last known good : ?
-Submitter       : Thomas Voegtle <tv@lio96.de>
+Submitter       : Chuck Ebbert <cebbert@redhat.com>
 Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
-
-Subject         : resume from ram much slower
-References      : http://lkml.org/lkml/2007/8/10/275
-Last known good : 2.6.23-rc1 ?
-Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
+Handled-By      : Alexey Starikovskiy <aystarik@gmail.com>
+Patch           : http://bugzilla.kernel.org/attachment.cgi?id=12673
+Status          : patch was suggested
 
 
 
-USB
+Drivercore
 
-Subject         : usb 1-1: device not accepting address 2, error -62
-References      : http://lkml.org/lkml/2007/9/14/302
+Subject         : sysfs change of input/event devices in 2.6.23rc breaks udev
+References      : http://lkml.org/lkml/2007/9/8/86
 Last known good : ?
-Submitter       : Christian Volkmann <haveaniceday@cv-sv.de>
+Submitter       : Anssi Hannula <anssi.hannula@gmail.com>
 Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
+Handled-By      : Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Patch           : http://lkml.org/lkml/2007/9/10/3
+Status          : patch available
+
+
+
+Networking
+
+Subject         : 2.6.23-rc5: possible irq lock inversion dependency detected
+References      : http://lkml.org/lkml/2007/9/2/97
+Last known good : ?
+Submitter       : Christian Kujau <lists@nerdbynature.de>
+Caused-By       : ?
+Handled-By      : jamal <hadi@cyberus.ca>
+Patch           : http://lkml.org/lkml/2007/9/11/159
+Status          : patch available
 
 
 
