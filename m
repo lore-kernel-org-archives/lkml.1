@@ -1,145 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbXIONHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbXIONQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbXIONHG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 09:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXIONG5
+	id S1753515AbXIONQl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 09:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXIONQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 09:06:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44724 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbXIONGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 09:06:55 -0400
-Date: Sat, 15 Sep 2007 15:06:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: [git] CFS-devel, group scheduler, fixes
-Message-ID: <20070915130636.GA17223@elte.hu>
+	Sat, 15 Sep 2007 09:16:33 -0400
+Received: from allen.werkleitz.de ([80.190.251.108]:45546 "EHLO
+	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751002AbXIONQd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 09:16:33 -0400
+Date: Sat, 15 Sep 2007 15:16:50 +0200
+From: Johannes Stezenbach <js@linuxtv.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Steven Toth <stoth@hauppauge.com>, Manu Abraham <abraham.manu@gmail.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Message-ID: <20070915131650.GA12531@linuxtv.org>
+References: <46E95C54.4060502@gmail.com> <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com> <46E99F36.8090809@hauppauge.com> <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com> <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com> <20070914113838.GA29962@linuxtv.org> <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com> <20070914204343.GA9058@linuxtv.org> <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 87.162.108.9
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Sep 15, 2007, Markus Rechberger wrote:
+> 
+> it gets me thinking. Some core developers who I met during
+> the last few weeks (kernel summit, suse conference in czech)
+> told me to go on with it actually because the final plan isn't that
+> bad..
 
-The latest sched-devel.git tree can be pulled from:
+I was referring to your code you posted for merging on linux-dvb,
+and which got rejected. Anyway, it's easy to agree with you if one
+has just heard _your_ version -- the purpose of this thread is to
+give people an alternate version of the story to complement
+yours, which would allow the people you talked to to think it over
+and change their mind. See if you can get of those people you
+talked to to post here to support you.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+> Beside that I'm just curious how much did you contribute
+> during the last 2 years to the lkml/linux kernel, and how much
+> do you want to contribute in future? (also from my side
+> talk is cheap (even for me) but getting something done costs
+> quite some time and feedback from other people)
 
-people were busy sending patches, so there's lots of updates since the 
-first announcement of the cfs-devel.git tree four days ago:
+IOW you say if I don't write code I should shut up?
+Is that also what you tell users on your em28xx list
+when they dare to disagree with you?
 
-  include/linux/sched.h   |    4 
-  init/Kconfig            |    9 +
-  kernel/sched.c          |  374 +++++++++++++++++++++++++++++++++++++++++++-----
-  kernel/sched_debug.c    |   22 +-
-  kernel/sched_fair.c     |  191 ++++++++++++++++++++----
-  kernel/sched_idletask.c |    5 
-  kernel/sched_rt.c       |    5 
-  kernel/sysctl.c         |   19 ++
-  8 files changed, 552 insertions(+), 77 deletions(-)
+Nice...
 
-the most user-noticeable improvement should be the latency/interactivity 
-fixes from Mike Galbraith and Peter Zijlstra. The biggest (and most 
-complex) item is the new group scheduler code from Srivatsa Vaddagiri. 
-There's also speedups from Dmitry Adamushko and various cleanups and 
-fixes. Also added in the yield workaround that should address the 
-regression reported by Antoine Martin.
 
-Changes:
-
-- the biggest item is the addition of the group scheduler from Srivatsa 
-  Vaddagiri - this is not configurable yet, it depends on
-  CONFIG_CONTAINERS. It causes no overhead on !CONFIG_CONTAINERS. This
-  code clearly seems mature now, hopefully the container bits go
-  upstream in 2.6.24 too. Srivatsa did lots of heavy lifting in the past 
-  few months, and this final bit of code that moves in all the 
-  infrastructure changes almost nothing in the core scheduler.
-
-- a triplet of nice simplifications from Dmitry Adamushko. Most notably
-  Dmitry got rid of se->fair_key which shaves 8 bytes of task_struct and
-  gives further speedup. Thanks Dmitry!
-
-- continued refinements to the SMP ->vruntime code and timeslicing by 
-  Peter Zijstra and Mike Galbraith.
-
-As usual, bugreports, fixes and suggestions are welcome and please 
-holler if some patch went missing in action.
-
-	Ingo
-
------------------->
-Dmitry Adamushko (3):
-      sched: clean up struct load_stat
-      sched: clean up schedstat block in dequeue_entity()
-      sched: optimize away ->fair_key
-
-Matthias Kaehlcke (1):
-      sched: use list_for_each_entry_safe() in __wake_up_common()
-
-Mike Galbraith (1):
-      sched: fix SMP migration latencies
-
-Peter Zijlstra (7):
-      sched: simplify SCHED_FEAT_* code
-      sched: new task placement for vruntime
-      sched: simplify adaptive latency
-      sched: clean up new task placement
-      sched: add tree based averages
-      sched: handle vruntime overflow
-      sched: better min_vruntime tracking
-
-Srivatsa Vaddagiri (1):
-      sched: group-scheduler core
-
-Ingo Molnar (27):
-      sched: fix new-task method
-      sched: resched task in task_new_fair()
-      sched: small sched_debug cleanup
-      sched: debug: track maximum 'slice'
-      sched: uniform tunings
-      sched: use constants if !CONFIG_SCHED_DEBUG
-      sched: remove stat_gran
-      sched: remove precise CPU load
-      sched: remove precise CPU load calculations #2
-      sched: track cfs_rq->curr on !group-scheduling too
-      sched: cleanup: simplify cfs_rq_curr() methods
-      sched: uninline __enqueue_entity()/__dequeue_entity()
-      sched: speed up update_load_add/_sub()
-      sched: clean up calc_weighted()
-      sched: introduce se->vruntime
-      sched: move sched_feat() definitions
-      sched: optimize vruntime based scheduling
-      sched: simplify check_preempt() methods
-      sched: wakeup granularity fix
-      sched: add se->vruntime debugging
-      sched: sync up ->min_vruntime when going idle
-      sched: add more vruntime statistics
-      sched: debug: update exec_clock only when SCHED_DEBUG
-      sched: remove wait_runtime limit
-      sched: remove wait_runtime fields and features
-      sched: x86: allow single-depth wchan output
-      sched: yield workaround
-
- arch/i386/Kconfig       |   11 
- include/linux/sched.h   |   21 -
- init/Kconfig            |    9 
- kernel/sched.c          |  558 +++++++++++++++++++++++++------------
- kernel/sched_debug.c    |  100 +++---
- kernel/sched_fair.c     |  716 +++++++++++++++++++-----------------------------
- kernel/sched_idletask.c |    5 
- kernel/sched_rt.c       |    5 
- kernel/sysctl.c         |   33 +-
- 9 files changed, 765 insertions(+), 693 deletions(-)
+Johannes
