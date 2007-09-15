@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbXIOGLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbXIOGRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760482AbXIOGLc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 02:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXIOGLZ
+	id S932252AbXIOGRU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 02:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbXIOGRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 02:11:25 -0400
-Received: from mga11.intel.com ([192.55.52.93]:35412 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751912AbXIOGLY convert rfc822-to-8bit (ORCPT
+	Sat, 15 Sep 2007 02:17:10 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:59720 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbXIOGRI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 02:11:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,258,1186383600"; 
-   d="scan'208";a="138209468"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sat, 15 Sep 2007 02:17:08 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46EB78A3.9050404@s5r6.in-berlin.de>
+Date: Sat, 15 Sep 2007 08:16:03 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-Date: Fri, 14 Sep 2007 23:11:22 -0700
-Message-ID: <97D612E30E1F88419025B06CB4CF1BE10379EDA0@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <46EB6556.5020506@goop.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-Thread-Index: Acf3VGa+M5LY5LaySry+ynZKedy9FQAARuqw
-References: <11897991353793-git-send-email-aliguori@us.ibm.com><46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws><46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws><46EB02BA.6030909@goop.org> <46EB0657.40603@codemonkey.ws> <97D612E30E1F88419025B06CB4CF1BE10379EBF9@scsmsx412.amr.corp.intel.com> <46EB1285.5050807@goop.org> <97D612E30E1F88419025B06CB4CF1BE10379ED0A@scsmsx412.amr.corp.intel.com> <46EB2716.1070908@goop.org> <97D612E30E1F88419025B06CB4CF1BE10379ED4C@scsmsx412.amr.corp.intel.com> <46EB6556.5020506@goop.org>
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: "Anthony Liguori" <anthony@codemonkey.ws>,
-       <kvm-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       "Avi Kivity" <avi@qumranet.com>
-X-OriginalArrivalTime: 15 Sep 2007 06:11:23.0418 (UTC) FILETIME=[3DCD7FA0:01C7F75F]
+To: FUJITA Tomonori <tomof@acm.org>
+CC: lsorense@csclub.uwaterloo.ca, james.bottomley@steeleye.com,
+       linux-scsi@vger.kernel.org, jeff@garzik.org, andi@firstfloor.org,
+       folkert@vanheusden.com, bunk@kernel.org, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH update] SCSI: update Kconfig help text to indicate SCSI
+ core's widespread usage
+References: <20070914202102.GE5386@csclub.uwaterloo.ca>	<tkrat.f4379d6e5f1ce499@s5r6.in-berlin.de>	<tkrat.0e73b94c1e80a481@s5r6.in-berlin.de> <20070914031256T.tomof@acm.org>
+In-Reply-To: <20070914031256T.tomof@acm.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Nakajima, Jun wrote:
-> > The hypervisor detection machanism is generic, and the signature
-> > returned is implentation specific. Having a list of all hypervisor
-> > signatures sounds fine to me as we are detecting vendor-specific
-> > processor(s) in the native. And I don't expect the list is large.
-> > 
-> > 
+FUJITA Tomonori wrote:
+> On Fri, 14 Sep 2007 23:14:21 +0200 (CEST)
+> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+...
+>> And one more update:
+>> There is SAS too,
+...
+>> +	  You need it
+>> +	  - for classic parallel SCSI hardware,
+>> +	  - for newer SCSI transports such as Fibre Channel, FireWire storage,
+>> +	    SAS, or iSCSI,
 > 
-> I'm confused about what you're proposing.  I was thinking that a
-kernel
-> looking for the generic hypervisor interface would check for a
-specific
-> signature at some cpuid leaf, and then go about using it from there.
-If
-> not, how does is it supposed to detect the generic hypervisor
-interface?
-> 
->     J
+> There is SRP too.
 
-I'm suggesting that we use CPUID.0x4000000Y (Y: TBD, e.g. 6) for Linux
-paravirtualization.  The ebx, ecx and edx return the Linux
-paravirtualization features available on that hypervisor. Those features
-are defined architecturally (not VMM specific).
+I think I'll rewrite it as "for newer SCSI transports such as FireWire
+storage."  ;-)
 
-Like CPUID.0, CPUID.0x40000000 is used to detect the hypervisor with the
-vendor identification string returned in ebx, edx, and ecx (as we are
-doing in Xen). The eax returns the max leaf (which is 0x40000002 on Xen
-today). And like CPUID.1, CPUID.0x40000001 returns the version number in
-eax, and each VMM should be able to define a number of VMM-specific
-features available in ebx, ecx, and edx returned (which are reserved,
-i.e. not used in Xen today). 
-
-Suppose we knew (i.e. tested) Xen and KVM supported Linux
-paravirtualization, the Linux code does:
-1. detect Xen or KVM <the list> using CPUID.0x40000000 
-2. Check the version if necessary using CPUID.0x40000001
-3. Check the Linux paravirtualization features available using
-CPUID.0x4000000Y.
-
-Jun
----
-Intel Open Source Technology Center
+If SRP was in, can 'such as' be omitted?  "for newer SCSI transports
+(Fibre Channel, FireWire storage, iSCSI, SAS, SRP),"  Or would be "for
+newer SCSI transports such as Fibre Channel, FireWire storage, iSCSI,
+SAS, and more," be OK?
+-- 
+Stefan Richter
+-=====-=-=== =--= -====
+http://arcgraph.de/sr/
