@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbXIOWgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbXIOWrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbXIOWgR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 18:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbXIOWgG
+	id S1754612AbXIOWrd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 18:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXIOWr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 18:36:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46938
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751542AbXIOWgF (ORCPT
+	Sat, 15 Sep 2007 18:47:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33089 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752577AbXIOWrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 18:36:05 -0400
-Date: Sat, 15 Sep 2007 15:36:02 -0700 (PDT)
-Message-Id: <20070915.153602.74747413.davem@davemloft.net>
-To: vonbrand@inf.utfsm.cl
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: SPARC{,64}: kernel_termios_to_user_termios_1 missing
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200709152137.l8FLbtXP001446@laptop13.inf.utfsm.cl>
-References: <200709152137.l8FLbtXP001446@laptop13.inf.utfsm.cl>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Sep 2007 18:47:25 -0400
+Date: Sat, 15 Sep 2007 15:47:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: crashme fault
+In-Reply-To: <alpine.LFD.0.999.0709151508590.16478@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0709151542340.16478@woody.linux-foundation.org>
+References: <20070912222151.70d1fc7d.randy.dunlap@oracle.com>
+ <alpine.LFD.0.999.0709142101140.16478@woody.linux-foundation.org>
+ <20070915183412.GA14501@one.firstfloor.org> <46EC2702.3090000@oracle.com>
+ <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0709151508590.16478@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Horst H. von Brand" <vonbrand@inf.utfsm.cl>
-Date: Sat, 15 Sep 2007 17:37:55 -0400
 
-> git-describe says this is v2.6.23-rc6-168-g53a3f30
-> I'm getting:
+
+On Sat, 15 Sep 2007, Linus Torvalds wrote:
 > 
->   drivers/char/tty_ioctl.c: In function 'n_tty_ioctl':
->   drivers/char/tty_ioctl.c:799: error: implicit declaration of function 'kernel_termios_to_user_termios_1'
-> 
-> This is a macro at the very end of include/asm-<foo>/termios.h for i686, on
-> SPARC and SPARC64 it is missing. Sorry, I've got no clue on how to define
-> this correctly here.
-> 
-> It is also missing on alpha, blackfin, parisc, sh64, sh, xtensa
+> So regardless of whether we want to trust "user_mode(regs)" more than 
+> "error_code & PF_USER", it would definitely be very interesting if you can 
+> give a good "this is where it started happening".
 
-This has been reported and discussed extensively on the lists
-over the past 4 or 5 days.
+Also, can you point to good crashme sources, and give the arguments you 
+used to run it when it crashed?
 
-It is a well known issue, and if you just need to get the sparc64
-build working so you can test it out just use the patch below:
+The original gjc crashme doesn't even do a "mprotect(PROT_EXEC)" by 
+default (nor does it even compile on a modern unix), so it's not going to 
+do anything. I hacked it up, and it appears to work ok for me, but I'm not 
+at all confident that I'm even close to recreating what you are doing.
 
-diff --git a/include/asm-sparc/termios.h b/include/asm-sparc/termios.h
-index d767f20..25e9cbb 100644
---- a/include/asm-sparc/termios.h
-+++ b/include/asm-sparc/termios.h
-@@ -142,6 +142,11 @@ struct winsize {
- 	0; \
- })
- 
-+#define user_termios_to_kernel_termios_1(k, u) \
-+	user_termios_to_kernel_termios(k, u)
-+#define kernel_termios_to_user_termios_1(u, k) \
-+	kernel_termios_to_user_termios(u, k)
-+
- #endif	/* __KERNEL__ */
- 
- #endif /* _SPARC_TERMIOS_H */
-diff --git a/include/asm-sparc64/termios.h b/include/asm-sparc64/termios.h
-index f05d390..6fc71e6 100644
---- a/include/asm-sparc64/termios.h
-+++ b/include/asm-sparc64/termios.h
-@@ -145,6 +145,11 @@ struct winsize {
- 	err; \
- })
- 
-+#define user_termios_to_kernel_termios_1(k, u) \
-+	user_termios_to_kernel_termios(k, u)
-+#define kernel_termios_to_user_termios_1(u, k) \
-+	kernel_termios_to_user_termios(u, k)
-+
- #endif	/* __KERNEL__ */
- 
- #endif /* _SPARC64_TERMIOS_H */
+(It probably goes without saying that I've not reproduced the oops on my 
+Core 2 Duo. Lots of #GP and #PF errors, but nothing interesting.
+
+		Linus
