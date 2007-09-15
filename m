@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbXIOKxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbXIOK6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760834AbXIOKxo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 06:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbXIOKxd
+	id S1760634AbXIOK6U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 06:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbXIOK6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 06:53:33 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:44167 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751583AbXIOKxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 06:53:31 -0400
-Date: Sat, 15 Sep 2007 19:52:38 +0900
-To: stefanr@s5r6.in-berlin.de
-Cc: tomof@acm.org, lsorense@csclub.uwaterloo.ca, james.bottomley@steeleye.com,
-       linux-scsi@vger.kernel.org, jeff@garzik.org, andi@firstfloor.org,
-       folkert@vanheusden.com, bunk@kernel.org, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH update] SCSI: update Kconfig help text to indicate SCSI
- core's widespread usage
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <46EB78A3.9050404@s5r6.in-berlin.de>
-References: <tkrat.0e73b94c1e80a481@s5r6.in-berlin.de>
-	<20070914031256T.tomof@acm.org>
-	<46EB78A3.9050404@s5r6.in-berlin.de>
+	Sat, 15 Sep 2007 06:58:12 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45454 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751618AbXIOK6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 06:58:12 -0400
+Date: Sat, 15 Sep 2007 03:55:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Andi Kleen <ak@suse.de>, Adrian Bunk <bunk@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: x86 merge - a little feedback
+Message-Id: <20070915035553.499fea1d.akpm@linux-foundation.org>
+In-Reply-To: <20070912002953.GA26293@linux-sh.org>
+References: <20070911201219.GA9674@uranus.ravnborg.org>
+	<200709112138.11247.ak@suse.de>
+	<20070911211422.GU3563@stusta.de>
+	<200709112234.24155.ak@suse.de>
+	<20070912002953.GA26293@linux-sh.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070914114042M.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Sep 2007 08:16:03 +0200
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+On Wed, 12 Sep 2007 09:29:53 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
 
-> FUJITA Tomonori wrote:
-> > On Fri, 14 Sep 2007 23:14:21 +0200 (CEST)
-> > Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> ...
-> >> And one more update:
-> >> There is SAS too,
-> ...
-> >> +	  You need it
-> >> +	  - for classic parallel SCSI hardware,
-> >> +	  - for newer SCSI transports such as Fibre Channel, FireWire storage,
-> >> +	    SAS, or iSCSI,
-> > 
-> > There is SRP too.
-> 
-> I think I'll rewrite it as "for newer SCSI transports such as FireWire
-> storage."  ;-)
-> 
-> If SRP was in, can 'such as' be omitted?  "for newer SCSI transports
-> (Fibre Channel, FireWire storage, iSCSI, SAS, SRP),"
+> As I was the first one to do CONFIG_MMU=y/n in the same arch directory,
+> since 2.5, I can tell you that that's simply crap. The only reason
+> CONFIG_MMU=n gets broken all the time is because people don't think about
+> it in generic code, it's rarely broken in the architecture code, and even
+> with the most occasional of build tests most of that gets caught in a
+> hurry.
 
-It might be necessary to add SSA too.
+oy.  I do sh allmodconfig test builds fairly regularly.
 
+<does one>
 
-> Or would be "for newer SCSI transports such as Fibre Channel,
-> FireWire storage, iSCSI, SAS, and more," be OK?
+It all went OK, up until moddep:
 
-scsi-ml has SPI, FC, iSCSI, SAS, and SRP transport classes (SRP is in
-scsi-misc now). It's a bit strange to omit only SRP, I think. But I
-might be too SRP-biased.
+ERROR: "_ebss" [drivers/mtd/maps/uclinux.ko] undefined!
+
