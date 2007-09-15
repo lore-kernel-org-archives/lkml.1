@@ -1,128 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXIOCap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbXIOCbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903AbXIOCap (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 22:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932730AbXIOC3i
+	id S1760548AbXIOCbH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 22:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932795AbXIOC3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 22:29:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:20414 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760150AbXIOC3b (ORCPT
+	Fri, 14 Sep 2007 22:29:43 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:48694 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932749AbXIOC3k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 22:29:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=sYft7H9ITUhpfINOZkYCMSnTJmsqibpOadDjxI1ZmBmCUrmjwnOdcPcZfqM9lY9Kz6OYlzkgNTDs5yGtDpaKY4VFe0+DzVpeJfkJw10drsF4y80aZoSL2GF6WUcswF8tRB1hlmNPLqE5Et8V/M2S0e6yl9lShMtGrMay7VowANs=
-Message-ID: <46EB4377.7040200@googlemail.com>
-Date: Sat, 15 Sep 2007 04:29:11 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 14 Sep 2007 22:29:40 -0400
+Date: Sat, 15 Sep 2007 11:30:00 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com
+Subject: Re: rtc-ds1742.c should use resource_size_t for base address
+Message-ID: <20070915013000.GA25414@localhost.localdomain>
+Mail-Followup-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+	rtc-linux@googlegroups.com
+References: <20070914055427.GM481@localhost.localdomain> <20070914122037.65a08f48@weaponx.rchland.ibm.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg KH <gregkh@suse.de>,
-       Anssi Hannula <anssi.hannula@gmail.com>,
-       Christian Kujau <lists@nerdbynature.de>, jamal <hadi@cyberus.ca>,
-       netdev@vger.kernel.org
-Subject: 2.6.23-rc6: known regressions with patches v2
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070914122037.65a08f48@weaponx.rchland.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Fri, Sep 14, 2007 at 12:20:37PM -0500, Josh Boyer wrote:
+> On Fri, 14 Sep 2007 15:54:27 +1000
+> David Gibson <david@gibson.dropbear.id.au> wrote:
+> 
+> > Currently the rtc driver, rtc-ds1742.c uses an unsigned long to store
+> > the base mmio address of the NVRAM/RTC.  This breaks on systems like
+> > PowerPC 440, which is a 32-bit core with 36-bit physical addresses: IO
+> > on the system, including the RTC, is typically above the 4GB point,
+> > and cannot fit into an unsigned long.
+> > 
+> > This patch fixes the problem by replacing the unsigned long with a
+> > resource_size_t.  Tested on Ebony (PPC440) (with additional patches to
+> > instantiate the ds1742 platform device appropriately).
+> 
+> Where would those additional patches be? :)
 
-Here is a list of some known regressions in 2.6.23-rc6
-with patches available.
+Coming, they still need polish...
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
-
-List of Aces
-
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            10
-Andi Kleen                             7
-Linus Torvalds                         6
-Alan Stern                             5
-Hugh Dickins                           5
-Trond Myklebust                        5
-Andrew Morton                          4
-David S. Miller                        4
-Al Viro                                3
-Alexey Starikovskiy                    3
-Cornelia Huck                          3
-Jens Axboe                             3
-Stephen Hemminger                      3
-Tejun Heo                              3
-
-
-
-Unclassified
-
-Subject         : Oops while modprobing phy fixed module
-References      : http://lkml.org/lkml/2007/7/14/63
-Last known good : ?
-Submitter       : Gabriel C <nix.or.die@googlemail.com>
-Caused-By       : ?
-Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
-                  Vitaly Bordug <vitb@kernel.crashing.org>
-Patch1          : http://lkml.org/lkml/2007/7/18/506
-Status          : patch available
-
-
-
-ACPI
-
-Subject         : 2.6.23-rc5 hangs on boot, apparently when initializing the EC
-References      : http://lkml.org/lkml/2007/9/11/369
-Last known good : ?
-Submitter       : Chuck Ebbert <cebbert@redhat.com>
-Caused-By       : ?
-Handled-By      : Alexey Starikovskiy <aystarik@gmail.com>
-Patch           : http://bugzilla.kernel.org/attachment.cgi?id=12673
-Status          : patch was suggested
-
-
-
-Drivercore
-
-Subject         : sysfs change of input/event devices in 2.6.23rc breaks udev
-References      : http://lkml.org/lkml/2007/9/8/86
-Last known good : ?
-Submitter       : Anssi Hannula <anssi.hannula@gmail.com>
-Caused-By       : ?
-Handled-By      : Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Patch           : http://lkml.org/lkml/2007/9/10/3
-Status          : patch available
-
-
-
-Networking
-
-Subject         : 2.6.23-rc5: possible irq lock inversion dependency detected
-References      : http://lkml.org/lkml/2007/9/2/97
-Last known good : ?
-Submitter       : Christian Kujau <lists@nerdbynature.de>
-Caused-By       : ?
-Handled-By      : jamal <hadi@cyberus.ca>
-Patch           : http://lkml.org/lkml/2007/9/11/159
-Status          : patch available
-
-
-
-Farewell!
-Michal
-
---
-LOGOUT
-http://www.stardust.webpages.pl/
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
