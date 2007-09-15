@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbXIOSub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbXIOSwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756269AbXIOSub (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 14:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbXIOSuY
+	id S1755839AbXIOSwQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 14:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXIOSwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 14:50:24 -0400
-Received: from smtp120.sbc.mail.re3.yahoo.com ([66.196.96.93]:28403 "HELO
-	smtp120.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751452AbXIOSuX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 14:50:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=yJe5lnn/pJ7recZUpICpLKS1RO8fq0kiLKzhgjWrfVVFxQQl7DNds8VnMLcR4lAxDmha3wFoShqmUGhsNRq8T/qamH3+ActLczovBniF5ll2iQ4XZTZKsqK5zpPMIUhFeIC80ZiusxH4p+5N4duMKJfcFAAT4HrxTtmPsXF8tpI=  ;
-X-YMail-OSG: e.tritgVM1mSphSLrmjxaMrdSkYIC0mJMu3Nf.xPVotpp3Psnao_1.494o.KDBZX4Hv8A_vdkw--
-Date: Sat, 15 Sep 2007 11:50:21 -0700
-From: David Brownell <david-b@pacbell.net>
-To: cebbert@redhat.com, akpm@linux-foundation.org
-Subject: Re: Two identical entries for "rtc" in /proc/devices
-Cc: linux-kernel@vger.kernel.org
-References: <46E07DDA.2040907@redhat.com>
- <20070915004421.33d552d3.akpm@linux-foundation.org>
-In-Reply-To: <20070915004421.33d552d3.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 15 Sep 2007 14:52:03 -0400
+Received: from tag.witbe.net ([81.88.96.48]:58247 "EHLO tag.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752300AbXIOSwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 14:52:01 -0400
+Date: Sat, 15 Sep 2007 18:51:53 +0000
+From: Paul Rolland (=?UTF-8?Q?=E3=83=9D=E3=83=BC=E3=83=AB=E3=83=BB?=
+	=?UTF-8?Q?=E3=83=AD=E3=83=A9=E3=83=B3?=) <rol@witbe.net>
+To: eric.valette@free.fr
+Cc: Rob Hussey <robjhussey@gmail.com>, flamingice@sourmilk.net,
+       andreamrl@tiscali.it, linux-kernel@vger.kernel.org, rol@witbe.net,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: rtl8187 driver in 2.6.23-rc6-git5: kernel panic if not used as
+ a module. Works as a module.
+Message-ID: <20070915185153.08490a9b@tux.DEF.witbe.net>
+In-Reply-To: <46EC24B6.2030709@free.fr>
+References: <46EBE70C.2040201@free.fr>
+	<46EBEBD2.7060502@free.fr>
+	<6b8cef970709150928h25a7093md5f86d2bdcf677cc@mail.gmail.com>
+	<46EC24B6.2030709@free.fr>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070915185020.16BB51F9EAA@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 06 Sep 2007 18:23:22 -0400 Chuck Ebbert <cebbert@redhat.com> wrote:
->
-> > # ls -li
-> > total 0
-> > 4026532007 -r--r--r-- 1 root root 0 Sep  6 18:18 nvram
-> > 4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
-> > 4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
-> > 4026532056 -rw-r--r-- 1 root root 0 Sep  6 18:18 snd-page-alloc
->
-> Next -mm has
->
-> procfs-detect-duplicate-names.patch
-> procfs-detect-duplicate-names-fix.patch
-> procfs-detect-duplicate-names-fix-fix-2.patch
->
-> which will at least tell us who the second offender is.
+Hi Eric,
 
-Semes pretty clear that this must be procfs itself...
-when a filesystem sees a name in a directory, it should
-refuse to make another file with the same name.  And it
-should *never* reuse inode numbers...
+On Sat, 15 Sep 2007 20:30:14 +0200
+Eric Valette <eric.valette@free.fr> wrote:
 
+> Rob Hussey wrote:
+> > On 9/15/07, Eric Valette <eric.valette@free.fr> wrote:
+> >> Eric Valette wrote:
+> >>
+> 
+> Thanks for your help: it does indeed fix the problem.
+Nice it works for you too !
+ 
+> Now I have two side questions:
+> 	- the code is no more symetric "subsys_initcall" -> "module_exit".
+> Do not know if it is "normal" but I love symmetry in code :-). Did not test
+> it still works as a module...
+Symmetry is not broken, as we have :
+#define subsys_initcall(fn)             module_init(fn)
+in include/linux/init.h where compiling as a module, and when not compiling
+as a module, I doubt the exit function is called unless you are shuting
+down your machine...
+
+> 	- Who takes the responsability to push a patch to Linus? I guess it
+> is urgent unless he plans a rc7
+Good point ! I expect the patches to be already in some queue waiting to be
+pulled !
 
