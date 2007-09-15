@@ -1,166 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbXIOLkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbXIOLmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbXIOLkz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 07:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXIOLkr
+	id S1754177AbXIOLmw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 07:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbXIOLmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 07:40:47 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57261 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751169AbXIOLkp (ORCPT
+	Sat, 15 Sep 2007 07:42:46 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:24296 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbXIOLmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 07:40:45 -0400
-Date: Sat, 15 Sep 2007 13:40:55 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
+	Sat, 15 Sep 2007 07:42:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=GEyvxaYoT7XWhMVefbAY6PpkxncLdTAvs3C5I/ogPK8i9JcEiH46rbvT/InJAZVWDNPVkTd/UblYn4ObljFea64SjMs+vnPVqaUjKlU2ZQmG1NSqz/dchGg4iEgkfG6p/6LHJu57B0GWgFvdRA3w0bEf9tHiUUGhxVhxFv/Q++8=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: [PATCH] add consts where appropriate in sound/pci/hda/*
+Date: Sat, 15 Sep 2007 12:42:38 +0100
+User-Agent: KMail/1.9.1
+Cc: Sam Ravnborg <sam@ravnborg.org>, Takashi Iwai <tiwai@suse.de>,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
-Message-ID: <20070915114055.GP3563@stusta.de>
-References: <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de> <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org> <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de>
+References: <200709141848.06027.vda.linux@googlemail.com> <20070915101811.GA9934@uranus.ravnborg.org> <Pine.LNX.4.64.0709151228360.13411@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0709151228360.13411@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <tkrat.552dbee831c88bbe@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200709151242.38464.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 10:01:18PM +0200, Stefan Richter wrote:
-> On 14 Sep, Adrian Bunk wrote:
-> > On Fri, Sep 14, 2007 at 09:00:33PM +0200, Sam Ravnborg wrote:
-> >> Hi Stefan.
+On Saturday 15 September 2007 11:29, Jan Engelhardt wrote:
+ 
+> On Sep 15 2007 12:18, Sam Ravnborg wrote:
+> >> >   text    data     bss     dec     hex filename
+> >> > 106315  179564      36  285915   45cdb snd-hda-intel.o
+> >> > 283051    2624      36  285711   45c0f snd-hda-intel_patched.o
 > >> 
-> >> Such a patch really calls for some minimal unifacation among
-> >> the architectures.
-> >> 
-> >> > 
-> >> >  arch/alpha/Kconfig            |    2 
-> >> >  arch/arm/Kconfig              |    2 
-> >> >  arch/avr32/Kconfig            |    2 
-> >> >  arch/blackfin/Kconfig         |    2 
-> >> >  arch/cris/Kconfig             |    2 
-> >> >  arch/frv/Kconfig              |    2 
-> >> >  arch/i386/Kconfig             |    2 
-> >> >  arch/ia64/Kconfig             |    2 
-> >> >  arch/m32r/Kconfig             |    2 
-> >> >  arch/m68k/Kconfig             |    2 
-> >> >  arch/m68knommu/Kconfig        |    2 
-> >> >  arch/mips/Kconfig             |    2 
-> >> >  arch/parisc/Kconfig           |    2 
-> >> >  arch/powerpc/Kconfig          |    2 
-> >> >  arch/ppc/Kconfig              |    2 
-> >> >  arch/s390/Kconfig             |    2 
-> >> >  arch/sh/Kconfig               |    2 
-> >> >  arch/sh64/Kconfig             |    2 
-> >> >  arch/sparc/Kconfig            |    2 
-> >> >  arch/sparc64/Kconfig          |    2 
-> >> >  arch/um/Kconfig               |    2 
-> >> >  arch/v850/Kconfig             |    2 
-> >> >  arch/x86_64/Kconfig           |    4 
-> >> >  arch/xtensa/Kconfig           |    2 
-> >> 
-> >> 
-> >> Exactly the same change for all architectures.
-> >> IT would be good to introduce a common file that contains
-> >> some of the shared stuff from the different architectures.
-> >> We could start out simple with:
-> >> 
-> >> arch/Kconfig.arch:
-> >>...
+> >> This is kinda odd. Why did the _text_ size increase by constifying?
+> >
+> >The data got converted from data to text because they were made const.
 > 
-> Yes, that would be good.  But Adrian has a point too.
-> 
-> > Stefan simply shouldn't move it out of drivers/Kconfig.
->...
->  drivers/Kconfig               |    4 
->  drivers/scsi/Kconfig          | 1589 ----------------------------------
->  drivers/scsi/Kconfig.lowlevel | 1578 +++++++++++++++++++++++++++++++++
->  3 files changed, 1588 insertions(+), 1583 deletions(-)
+> Which is odd. How can data become code? Or does 'text' actually
+> include .rodata?
 
-Nearly right.  ;-)
+More precisely: size utility adds up all readonly code and
+readonly data sections it sees and shows it as "text".
 
-There are a few architectures not (yet) using drivers/Kconfig.
-
-> Index: linux-2.6.23-rc6/drivers/Kconfig
-> ===================================================================
-> --- linux-2.6.23-rc6.orig/drivers/Kconfig
-> +++ linux-2.6.23-rc6/drivers/Kconfig
-> @@ -1,5 +1,7 @@
->  # drivers/Kconfig
->  
-> +source "drivers/scsi/Kconfig"
-> +
->  menu "Device Drivers"
->  
->  source "drivers/base/Kconfig"
-> @@ -22,7 +24,7 @@ source "drivers/misc/Kconfig"
->  
->  source "drivers/ide/Kconfig"
->  
-> -source "drivers/scsi/Kconfig"
-> +source "drivers/scsi/Kconfig.lowlevel"
->  
->  source "drivers/ata/Kconfig"
->...
-
-This way the order is wrong:
-
-There should first be the lowlevel SCSI, SATA, USB etc. drivers, these 
-drivers should select CONFIG_SCSI, and then the menu offering support 
-for disk, CD,...
-
-> Index: linux-2.6.23-rc6/drivers/scsi/Kconfig
-> ===================================================================
-> --- linux-2.6.23-rc6.orig/drivers/scsi/Kconfig
-> +++ linux-2.6.23-rc6/drivers/scsi/Kconfig
-> @@ -1,14 +1,7 @@
-> -menu "SCSI device support"
-> -
-> -config RAID_ATTRS
-> -	tristate "RAID Transport Class"
-> -	default n
-> -	depends on BLOCK
-> -	---help---
-> -	  Provides RAID
-> +menu "Storage (core and SCSI commands)"
->  
->  config SCSI
-> -	tristate "SCSI device support"
-> +	tristate "Storage support (core and SCSI commands)"
->  	depends on BLOCK
->  	select SCSI_DMA if HAS_DMA
->  	---help---
->...
-
-What is "storage support"?
-SATA?
-PATA?
-USB mass storage?
-MMC?
-MTD?
-
-Whether or not a driver uses the SCSI layer is an implementation detail 
-(it even differs for the two USB mass storage implementations and the 
-two PATA implementations in the kernel) the user shouldn't have to know 
-about.
-
-I don't see any reason why CONFIG_SCSI should have to stay user-visible 
-at all after your patch.
-
-> Stefan Richter
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+ELF is not as rigid as old a.out (which had only one text, one data
+and one bss segment per .o file IIRC), but size was born in a.out days,
+so it sort of "translates" ELF into a.out.
+--
+vda
