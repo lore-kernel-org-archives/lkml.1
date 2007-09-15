@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbXIOOsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbXIOOwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbXIOOsR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 10:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbXIOOsF
+	id S1753480AbXIOOwN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 10:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbXIOOv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 10:48:05 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:47941 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbXIOOsE (ORCPT
+	Sat, 15 Sep 2007 10:51:59 -0400
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:65186 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbXIOOv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 10:48:04 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18155.61586.118828.112512@stoffel.org>
-Date: Sat, 15 Sep 2007 10:47:46 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Jon Ivar Rykkelid <jonry@pvv.org>
-Cc: linux-kernel@vger.kernel.org, Prakash Punnoor <prakash@punnoor.de>,
-       Robert Hancock <hancockr@shaw.ca>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: sata_nv issues with MCP51 SATA controller
-In-Reply-To: <46EBB08A.5050709@pvv.org>
-References: <46E8EABF.3060409@pvv.org>
-	<46EA97F0.9000300@pvv.org>
-	<46EAF099.9070805@pvv.org>
-	<200709150912.28358.prakash@punnoor.de>
-	<46EBB08A.5050709@pvv.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Sat, 15 Sep 2007 10:51:58 -0400
+Date: Sat, 15 Sep 2007 10:56:48 -0400
+From: Steven Toth <stoth@hauppauge.com>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+In-reply-to: <20070915133418.GB12531@linuxtv.org>
+To: Johannes Stezenbach <js@linuxtv.org>
+Cc: Markus Rechberger <mrechberger@gmail.com>,
+       Manu Abraham <abraham.manu@gmail.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Message-id: <46EBF2B0.6040508@hauppauge.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <46E95C54.4060502@gmail.com>
+ <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+ <46E99F36.8090809@hauppauge.com>
+ <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+ <46E9DDC7.4000403@hauppauge.com>
+ <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+ <20070914113838.GA29962@linuxtv.org>
+ <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+ <20070914204343.GA9058@linuxtv.org>
+ <d9def9db0709141849r4dc489c2h88ac99e3d4f56d50@mail.gmail.com>
+ <20070915133418.GB12531@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Jon" == Jon Ivar Rykkelid <jonry@pvv.org> writes:
+Johannes Stezenbach wrote:
+> On Sat, Sep 15, 2007, Markus Rechberger wrote:
+>   
+>> The main discussion in this thread was about drivers in userspace
+>> are bad because the API will allow binary drivers. The guy
+>> who works for Hauppauge (again I also have good contacts
+>> at Hauppauge Europe) writes it's bad - for no technical reason.
+>>     
+>
+>   
 
-Jon> Prakash Punnoor wrote:
->> I don't have exaclty the same hw, but the same chipset and I don't have any 
->> problems - even with the swncq patch applied. Do you have an hpet? If not, 
->> try booting with acpi_use_time_override. My system won't work with skipping 
->> the override.
+lol, oh man, how to make friends and influence people.
 
-Jon> Hi , I reconnected and rebooted with the kernel option
-Jon> "acpi_use_timer_override" (this is the correct spelling, isn't
-Jon> it? - Kernel didn't complain.). Didn't help, the same error
-Jon> received as before. - I'll have to connect all disks back to my
-Jon> PCI-connected SATA controllers and start rebuilding my RAID yet
-Jon> again.
+> It sends a shiver down my spine that seem to imply that you
+> use your Hauppauge Europe contact to lobby against the
+> efforts of Hauppauge USA employees to promote support for
+> Open Source kernel drivers within their company.
+>
+>   
 
-What happens when you just have ONE disk connected to the motherboard
-controller, and the rest connected to PCI controllers?  Does it crap
-out then?  You've just such a nice repeatable problem across
-motherboards that it's a shame to waste this debugging time.
+Ack.
 
-I'm wondering if it's a PCI bus issue somehow, and that the load on
-the motherboard controller isn't supportable when you have a bunch of
-disks on PCI controllers as well.  Shot in the dark...
 
-Thanks for all your hard work on this, I know how frustrating it is to
-not have a stable system!
 
-John
