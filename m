@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932475AbXIOAWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760190AbXIOA2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932475AbXIOAWG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 20:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbXIOAV4
+	id S1760190AbXIOA2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 20:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbXIOA2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 20:21:56 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53447 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753518AbXIOAV4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 20:21:56 -0400
-Date: Fri, 14 Sep 2007 17:21:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Matthew Helsley <matthltc@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] State limits to safety of _safe iterators
-Message-Id: <20070914172151.818e32fe.akpm@linux-foundation.org>
-In-Reply-To: <20070913152107.GC12806@linux.vnet.ibm.com>
-References: <20070913010140.GA21306@linux.vnet.ibm.com>
-	<1189675366.5518.12.camel@localhost.localdomain>
-	<20070913152107.GC12806@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 14 Sep 2007 20:28:10 -0400
+Received: from gw.goop.org ([64.81.55.164]:51258 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753874AbXIOA2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 20:28:09 -0400
+Message-ID: <46EB2716.1070908@goop.org>
+Date: Fri, 14 Sep 2007 17:28:06 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
+Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure
+References: <11897991353793-git-send-email-aliguori@us.ibm.com><46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws><46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws><46EB02BA.6030909@goop.org> <46EB0657.40603@codemonkey.ws> <97D612E30E1F88419025B06CB4CF1BE10379EBF9@scsmsx412.amr.corp.intel.com> <46EB1285.5050807@goop.org> <97D612E30E1F88419025B06CB4CF1BE10379ED0A@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <97D612E30E1F88419025B06CB4CF1BE10379ED0A@scsmsx412.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007 08:21:07 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+Nakajima, Jun wrote:
+> Today, 3 CPUID leaves starting from 0x4000_0000 are defined in a generic
+> fashion (hypervisor detection, version, and hypercall page), and those
+> are the ones used by Xen today. We should extend those leaves (e.g.
+> starting from 0x4000_0003) for the vmm-independent features as well.
+>
+> If Xen needs additional Xen-specific features, we need to allocate some
+> leaves for those (e.g. 0x4000_1000)
 
-> On Thu, Sep 13, 2007 at 02:22:45AM -0700, Matthew Helsley wrote:
-> > On Wed, 2007-09-12 at 18:01 -0700, Paul E. McKenney wrote:
-> > > The _safe list iterators make a blanket statement about how they are
-> > > safe against removal.  This patch, inspired by private conversations
-> > > with people who unwisely but perhaps understandably took this blanket
-> > > statement at its word, adds comments stating limits to this safety.
-> > > 
-> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > ---
-> > > 
-> > >  list.h |   42 ++++++++++++++++++++++++++++++++++++++++++
-> > >  1 file changed, 42 insertions(+)
-> > > 
-> > > diff -urpNa -X dontdiff linux-2.6.22/include/linux/list.h linux-2.6.22-safedoc/include/linux/list.h
-> > > --- linux-2.6.22/include/linux/list.h	2007-07-08 16:32:17.000000000 -0700
-> > > +++ linux-2.6.22-safedoc/include/linux/list.h	2007-09-12 17:45:38.000000000 -0700
-> > > @@ -472,6 +472,12 @@ static inline void list_splice_init_rcu(
-> > >   * @pos:	the &struct list_head to use as a loop cursor.
-> > >   * @n:		another &struct list_head to use as temporary storage
-> > >   * @head:	the head for your list.
-> > > + *
-> > > + * Please note that this is safe only against removal by the code in
-> > 
-> > I'm not trying to be snarky but how far should we go before expecting
-> > folks to read the macros? Depending on the answer you may also want to
-> > mention that without additional additional code it's safe only against
-> > removal of the list element at pos.
-> 
-> Good question.  In fact, I would have agreed with you before coming
-> across people who in my experience are generally reasonably well clued
-> in who were confused about this.
-> 
+But the signature is "XenVMMXenVMM", which isn't very generic.  If we're
+presenting a generic interface, it needs to have a generic signature,
+otherwise guests will need to have a list of all hypervisor signatures
+supporting their interface.  Since 0x40000000 has already been
+established as the base leaf of the hypervisor-specific interfaces, the
+generic interface will have to be elsewhere.
 
-hmm, yes, I must say, one would need to be fairly thick to expect a little
-helper macro to protect you from activity on other CPUs.
-
+    J
