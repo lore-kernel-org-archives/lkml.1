@@ -1,107 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbXIOH3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbXIOHjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbXIOH3Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 03:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXIOH3I
+	id S1754264AbXIOHjh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 03:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXIOHja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 03:29:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49222 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751239AbXIOH3H (ORCPT
+	Sat, 15 Sep 2007 03:39:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54993 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751525AbXIOHj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 03:29:07 -0400
-From: Paul Jackson <pj@sgi.com>
-To: Paul Menage <menage@google.com>
-Cc: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Date: Sat, 15 Sep 2007 00:29:04 -0700
-Message-Id: <20070915072904.30468.73201.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [PATCH] task containersv11 enable containers by default in some configs
+	Sat, 15 Sep 2007 03:39:29 -0400
+Date: Sat, 15 Sep 2007 00:39:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Why do so many machines need "noapic"?
+Message-Id: <20070915003906.5fa6dc0f.akpm@linux-foundation.org>
+In-Reply-To: <p73veao9gih.fsf@bingen.suse.de>
+References: <46DF3BFF.9000809@redhat.com>
+	<p73veao9gih.fsf@bingen.suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com>
+On 06 Sep 2007 13:31:50 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-Paul Menage - in pre-container cpusets, a few config files enabled
-cpusets by default.  Could you blend the following patch into your
-container patch set, so that cpusets continue to be configured by
-default for those same configurations?
+> Chuck Ebbert <cebbert@redhat.com> writes:
+> 
+> > Some systems lock up without the noapic option.
+> 
+> Please find patterns: cpu type, chipsets, mainboard vendors etc.
 
-Thanks - pj.
+There are 48 bugs in bugzilla which mention "noapic"
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
+http://bugzilla.kernel.org/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=&long_desc_type=substring&long_desc=noapic&kernel_version_type=allwordssubstr&kernel_version=&bug_status=NEW&bug_status=REOPENED&bug_status=ASSIGNED&emailassigned_to1=1&emailtype1=substring&email1=&emailassigned_to2=1&emailreporter2=1&emailcc2=1&emailtype2=substring&email2=&bugidtype=include&bug_id=&chfieldfrom=&chfieldto=Now&chfieldvalue=&regression=both&cmdtype=doit&order=Reuse+same+sort+as+last+time&field0-0-0=noop&type0-0-0=noop&value0-0-0=
 
----
+And there are 173,000 on the internet ;)
+http://www.google.com/search?hl=en&q=linux+noapic&btnG=Google+Search
 
- arch/ia64/configs/sn2_defconfig          |    1 +
- arch/mips/configs/ip27_defconfig         |    1 +
- arch/mips/configs/sb1250-swarm_defconfig |    1 +
- arch/powerpc/configs/cell_defconfig      |    1 +
- arch/powerpc/configs/ppc64_defconfig     |    1 +
- arch/powerpc/configs/pseries_defconfig   |    1 +
- 6 files changed, 6 insertions(+)
+We screwed this pooch a long time ago - years.  Perhaps if some of the many
+noapic users could run a bisection search to work out when it broke we
+could start fixing things.  But they all have a workaround so there's no
+motivation.
 
---- 2.6.23-rc4-mm1.orig/arch/ia64/configs/sn2_defconfig	2007-09-13 15:17:47.412216707 -0700
-+++ 2.6.23-rc4-mm1/arch/ia64/configs/sn2_defconfig	2007-09-13 17:53:15.363009794 -0700
-@@ -27,6 +27,7 @@ CONFIG_TASKSTATS=y
- # CONFIG_UTS_NS is not set
- # CONFIG_AUDIT is not set
- # CONFIG_IKCONFIG is not set
-+CONFIG_CONTAINERS=y
- CONFIG_CPUSETS=y
- CONFIG_RELAY=y
- CONFIG_INITRAMFS_SOURCE=""
---- 2.6.23-rc4-mm1.orig/arch/mips/configs/ip27_defconfig	2007-09-13 15:17:57.968367923 -0700
-+++ 2.6.23-rc4-mm1/arch/mips/configs/ip27_defconfig	2007-09-13 17:54:09.743831694 -0700
-@@ -175,6 +175,7 @@ CONFIG_POSIX_MQUEUE=y
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT=15
-+CONFIG_CONTAINERS=y
- CONFIG_CPUSETS=y
- CONFIG_SYSFS_DEPRECATED=y
- CONFIG_RELAY=y
---- 2.6.23-rc4-mm1.orig/arch/mips/configs/sb1250-swarm_defconfig	2007-09-13 15:17:58.184371018 -0700
-+++ 2.6.23-rc4-mm1/arch/mips/configs/sb1250-swarm_defconfig	2007-09-13 17:53:15.395010278 -0700
-@@ -197,6 +197,7 @@ CONFIG_SYSVIPC_SYSCTL=y
- # CONFIG_UTS_NS is not set
- # CONFIG_AUDIT is not set
- # CONFIG_IKCONFIG is not set
-+CONFIG_CONTAINERS=y
- CONFIG_CPUSETS=y
- CONFIG_SYSFS_DEPRECATED=y
- CONFIG_RELAY=y
---- 2.6.23-rc4-mm1.orig/arch/powerpc/configs/cell_defconfig	2007-09-13 15:18:07.816509023 -0700
-+++ 2.6.23-rc4-mm1/arch/powerpc/configs/cell_defconfig	2007-09-13 17:53:15.411010519 -0700
-@@ -68,6 +68,7 @@ CONFIG_SYSVIPC_SYSCTL=y
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT=15
-+CONFIG_CONTAINERS=y
- CONFIG_CPUSETS=y
- CONFIG_SYSFS_DEPRECATED=y
- # CONFIG_RELAY is not set
---- 2.6.23-rc4-mm1.orig/arch/powerpc/configs/ppc64_defconfig	2007-09-13 15:28:41.533723431 -0700
-+++ 2.6.23-rc4-mm1/arch/powerpc/configs/ppc64_defconfig	2007-09-13 17:53:15.431010822 -0700
-@@ -71,6 +71,7 @@ CONFIG_TASK_DELAY_ACCT=y
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT=17
-+CONFIG_CONTAINERS=y
- CONFIG_CPUSETS=y
- CONFIG_SYSFS_DEPRECATED=y
- CONFIG_RELAY=y
---- 2.6.23-rc4-mm1.orig/arch/powerpc/configs/pseries_defconfig	2007-09-13 15:28:41.565723900 -0700
-+++ 2.6.23-rc4-mm1/arch/powerpc/configs/pseries_defconfig	2007-09-13 17:53:15.447011064 -0700
-@@ -71,6 +71,7 @@ CONFIG_AUDITSYSCALL=y
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT=17
-+CONFIG_CONTAINERS=y
- CONFIG_CPUSETS=y
- CONFIG_SYSFS_DEPRECATED=y
- # CONFIG_RELAY is not set
-
--- 
-                          I won't rest till it's the best ...
-                          Programmer, Linux Scalability
-                          Paul Jackson <pj@sgi.com> 1.650.933.1373
