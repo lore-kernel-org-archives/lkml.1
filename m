@@ -1,41 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbXIOTM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbXIOTSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755768AbXIOTM3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 15:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbXIOTMX
+	id S1755581AbXIOTSN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 15:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbXIOTR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 15:12:23 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:34857 "EHLO minas.ics.muni.cz"
+	Sat, 15 Sep 2007 15:17:57 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49486 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829AbXIOTMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 15:12:22 -0400
-X-Greylist: delayed 696 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Sep 2007 15:12:22 EDT
-Date: Sat, 15 Sep 2007 21:00:16 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: linux-kernel@vger.kernel.org
-Subject: CPU usage for 10Gbps UDP transfers
-Message-ID: <20070915190016.GA3868@ics.muni.cz>
+	id S1751829AbXIOTR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 15:17:56 -0400
+Message-ID: <46EC2FCD.5080803@garzik.org>
+Date: Sat, 15 Sep 2007 15:17:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
-X-Muni-Envelope-To: linux-kernel@vger.kernel.org
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 15 Sep 2007 21:00:43 +0200 (CEST)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Adrian Bunk <bunk@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+References: <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <46EBFDFB.5040401@garzik.org> <20070915162313.GV3563@stusta.de> <200709151852.43157.bzolnier@gmail.com>
+In-Reply-To: <200709151852.43157.bzolnier@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Bartlomiej Zolnierkiewicz wrote:
+> On Saturday 15 September 2007, Adrian Bunk wrote:
+>> On Sat, Sep 15, 2007 at 11:44:59AM -0400, Jeff Garzik wrote:
+>>> Stefan Richter wrote:
+>>>> Adrian Bunk wrote:
+>>>>> On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
+>>>>>> Perfect is in the eye of the beholder.  You would consequently have to
+>>>>>> add such options into all menus which contain scsi low-level providers.
+>>>>> Kconfig is a user interface, so perfect is what is best for the
+>>>>> kconfig users.
+>>>> Duplicate options with different names in different menus, but which all
+>>>> do the same, --- is this the best for users?
+>>> I recognize it's a rhetorical question :)  The answer is of course "no".
+>>>
+>>> I hope the other participants of this thread register the severe 
+>>> disinclination of the maintainers to change this stuff, as this is a 
+>>> classic case of making a mountain out of a molehill[1].
+>>>
+>>> For the -vast majority- of people configuring the kernel, this is not a 
+>>> problem.  Kernel people are -expected- to know what they're doing, 
+>> I doubt your claim is true since the vast majority of kconfig users
+>> are most likely not kernel developers.
+> 
+> Yes, we shouldn't be needlessly raising the bar for power users.
 
-is it expected that application sending 8900bytes datagram through 10Gbps NIC
-utilizes CPU to 100% and similarly the receiver also utilizes CPU to 100%.
-Is it something wrong or this is quite OK?
+In this case, no bar is being "raised," for any user.
 
-(The box is dual single core Opteron 2.4GHz with Myricom 10GE NIC.)
 
--- 
-Luká¹ Hejtmánek
+>> @Greg:
+>> Do you have any numbers regarding how your "Linux Kernel in a Nutshell" 
+>> is selling?
+>> Even download numbers?
+>>
+>>> especially when switching from one major subsystem to another.
+>> It's not only about switching, the same problems awaits people when 
+>> configuring a kernel for their hardware the first time.
+> 
+> *nods*
+> 
+>>> Therefore, all this is IMO wasted effort and hot air.  There are far more 
+>>> important issues to deal with.
+>> Why don't we dump kconfig and write the .config by hand?  ;-)
+>>
+>> More seriously:
+>> Yes, there are many other important issues in the kernel.
+>> But not fixing kconfig UI problems doesn't fix these issues faster.
+> 
+> Agreed, and actually not fixing Kconfig UI problems will make the other
+> issues being fixed *slower* (because they result in *increased* workload
+> on developers' side).
+
+Irrelevant in this case, because there is no increased workload on the 
+developer's side.
+
+
+>> I have seen people running into problems because some required 
+>> option wasn't set - in the simplest cases things like IDE without DMA 
+>> because a help text wasn't updated when more hardware support was added 
+>> to a driver.
+> 
+> This is why nowadays IDE DMA support is automatically selected by IDE
+> host drivers that need it - a big relief for everybody.
+
+Please don't take this any more off-topic than it already is.
+
+IDE DMA option was vastly different.  The options in question here 
+affect whether or not you have a block device to use -- something that 
+is immediately obviously and corrected quickly.
+
+
+>> You might not care about the kconfig users.
+>> But other people do.
+> 
+> ...and even if their attempts/solutions may not be proper yet they should
+> not be discouraged to work on these problems...
+
+There is no problem, in this case.
+
+Otherwise, there would be more than a complaint or two per year.
+
+	Jeff
+
+
