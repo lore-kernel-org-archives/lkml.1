@@ -1,42 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbXIOPv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbXIOPwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbXIOPv5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 11:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbXIOPvp
+	id S1756167AbXIOPwd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 11:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbXIOPwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 11:51:45 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:21371 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755884AbXIOPvo (ORCPT
+	Sat, 15 Sep 2007 11:52:22 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:53292 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752024AbXIOPwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 11:51:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZjBN7rj0sYxDL2UjHkSA+lC3f6MvCatbvC3w5P7yXKX4fgjwVWYMmR8joagu5zufnZsB+YomksVRz4GN7I4+VlPyiLyHFP0+Wyqzh6X7XQHBcpfYRcdl618k4le0HQcC7HXdCbQiyWpkfhlei7BhsvQtbJILK8GZzhgwIB3+uRw=
-Message-ID: <a36005b50709150851s52d04554t62d53dab3f47eaf8@mail.gmail.com>
-Date: Sat, 15 Sep 2007 08:51:39 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: Credentials test patch
-Cc: viro@ftp.linux.org.uk, hch@infradead.org, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1577.1189713412@redhat.com>
+	Sat, 15 Sep 2007 11:52:21 -0400
+Date: Sat, 15 Sep 2007 17:52:32 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Kai Germaschewski <kai@germaschewski.name>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ALSA devel <alsa-devel@alsa-project.org>
+Subject: Re: Per option CFLAGS?
+Message-ID: <20070915155231.GU3563@stusta.de>
+References: <46EB141A.7090200@gmail.com> <46EB1599.4020806@zytor.com> <46EB198D.2040208@gmail.com> <20070915084754.GO3563@stusta.de> <46EBF774.2030306@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <1577.1189713412@redhat.com>
+In-Reply-To: <46EBF774.2030306@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In sys_faccessat you temporarily allocate a cred object which is
-discarded in the end.  With a few more macro definitions you could
-create a dup_cred variant which initialized an automatic variable of
-type struct cred.  This way the kmalloc/kfree pair would fall away.
+On Sat, Sep 15, 2007 at 05:17:08PM +0200, Rene Herman wrote:
+> On 09/15/2007 10:47 AM, Adrian Bunk wrote:
+>
+>> On Sat, Sep 15, 2007 at 01:30:21AM +0200, Rene Herman wrote:
+>>> On 09/15/2007 01:13 AM, H. Peter Anvin wrote:
+>>>
+>>>> Rene Herman wrote:
+>>>>> I have a single file foo.c that I want to generate two (ALSA) modules
+>>>>> from, snd-foo2000.ko and snd-foo2001.ko, by compiling with either
+>>>>> FOO2000 or FOO2001 defined.
+>>>>>
+>>>>> I can do this, and ALSA does this a few times, by providing dummy
+>>>>> foo2000.c and foo2001.c files, like:
+>>>>>
+>>>>> === foo2000.c
+>>>>> #define FOO2000
+>>>>> #include "foo.c"
+>>>>> ===
+>
+> [ ... ]
+>
+>>>> The stub source file is usually considered a good way to do this.
+>>> Mmm. If I'll have to live with it, I can, but thought I'd ask if there 
+>>> was some nice build trickery available instead.
+>> The usual trick is to create _three_ modules:
+>> Two with the foo2000 and foo2001 specific parts, and a third one with all 
+>> code used by both.
+>> Or if foo2000 and foo2001 differ only in small details, create one 
+>> snd-foo200x module supporting both at the same time.
+>
+> Thanks for the comment. Yes, first would be massive overkill in this case 
+> and second somewhat annoying as one of the differences is support for 
+> different resources (IRQs) among the two versions, whereas I'm checking the 
+> validity of the passed in values at a time I do not know which version I'm 
+> looking at yet -- knowing that requires having talked to the hardware.
 
-access is actually used frequently.  For instance, ld.so uses it on
-every startup as a quicker possibility to check for a file which
-usually doesn't exist.  So, speeding up access has some small effect
-on performance.  The resulting code might actually reduce the kernel
-size a bit due to all the checks and calls which go away.
+I'm not getting this point.
+
+Consider both snd-foo2000 and snd-foo2001 are compiled statically into 
+the kernel - somehow one of them must realize quite early that it's not 
+responsible for the device.
+
+And however this is done, it should similarly work in one module 
+supporting both.
+
+> Can do, but for now it seems like the two seperate modules might be 
+> cleaner. Can keep things much more straighforward that way by just 
+> redefining a bunch of #defines.
+>
+> I'll just do the split version first and if someone really wants me to, 
+> I'll merge them after all...
+>
+> Rene
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
