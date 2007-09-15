@@ -1,87 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760657AbXIOIry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760371AbXIOItp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760657AbXIOIry (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 04:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXIOIrq
+	id S1760371AbXIOItp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 04:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXIOIti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 04:47:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:47479 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752890AbXIOIro (ORCPT
+	Sat, 15 Sep 2007 04:49:38 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:27218 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbXIOIth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 04:47:44 -0400
-Date: Sat, 15 Sep 2007 10:47:55 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Kai Germaschewski <kai@germaschewski.name>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-Subject: Re: Per option CFLAGS?
-Message-ID: <20070915084754.GO3563@stusta.de>
-References: <46EB141A.7090200@gmail.com> <46EB1599.4020806@zytor.com> <46EB198D.2040208@gmail.com>
+	Sat, 15 Sep 2007 04:49:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TOpsePvpzDIeAxjZ7yYtQjg38TDGxdj8jts23uZsN9vgwEGHsluszDP0psb2IBEgkCy9+8msUZXGpecqzTj7m+9Z6nQVTVmXvHCvgTAAOnf1YCyAFBpu8EIU60Z1d+1tArBVu0v+6mQkT0B95ZCRo7fA3eh/0Gb7vv2cx3sB37I=
+Message-ID: <7fac565a0709150149kf55de62q92496cf74e7b0581@mail.gmail.com>
+Date: Sat, 15 Sep 2007 11:49:37 +0300
+From: "Alexey Eremenko" <al4321@gmail.com>
+To: "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 2/3] Consolidate host virtualization support under Virtualization menu
+In-Reply-To: <1189825504.7262.75.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46EB198D.2040208@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <1189747054.7262.34.camel@localhost.localdomain>
+	 <1189747124.7262.36.camel@localhost.localdomain>
+	 <20070914091921.73007c5a.randy.dunlap@oracle.com>
+	 <1189825504.7262.75.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 15, 2007 at 01:30:21AM +0200, Rene Herman wrote:
-> On 09/15/2007 01:13 AM, H. Peter Anvin wrote:
->
->> Rene Herman wrote:
->
->>> I have a single file foo.c that I want to generate two (ALSA) modules
->>> from, snd-foo2000.ko and snd-foo2001.ko, by compiling with either
->>> FOO2000 or FOO2001 defined.
->>>
->>> I can do this, and ALSA does this a few times, by providing dummy
->>> foo2000.c and foo2001.c files, like:
->>>
->>> === foo2000.c
->>> #define FOO2000
->>> #include "foo.c"
->>> ===
->>>
->>> and a regular Makefile
->>>
->>> ===
->>> foo2000-objs := foo2000.o
->>> foo2001-objs := foo2001.o
->>>
->>> obj-$(CONFIG_SND_FOO2000) += snd-foo2000.o
->>> obj-$(CONFIG_SND_F002001) += snd-foo2001.o
->>> ===
->>>
->>> That #include is a little lame though. Is there a nicer way? I noticed
->>> the per-file CFLAGS, but given that it's one source file for both, that
->>> doesn't fit.
->>>
->> The stub source file is usually considered a good way to do this.
->
-> Mmm. If I'll have to live with it, I can, but thought I'd ask if there was 
-> some nice build trickery available instead.
+> We turn "Virtualization" into a menu, not a config option, since it's
+> actually only used as a menu.  Then we move lguest under that menu.
 
-The usual trick is to create _three_ modules:
+What about containerization bits ?
 
-Two with the foo2000 and foo2001 specific parts, and a third one with 
-all code used by both.
-
-Or if foo2000 and foo2001 differ only in small details, create one 
-snd-foo200x module supporting both at the same time.
-
-> Rene.
-
-cu
-Adrian
+IPC_Namespaces, *_Namespaces  - I think we should evaluate adding them
+too to this menu.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-Alexey Eremenko "Technologov"
