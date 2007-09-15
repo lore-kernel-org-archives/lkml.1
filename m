@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760015AbXIOAIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932305AbXIOALA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760015AbXIOAIa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 20:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXIOAIX
+	id S932305AbXIOALA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 20:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXIOAKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 20:08:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44824 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754102AbXIOAIW (ORCPT
+	Fri, 14 Sep 2007 20:10:54 -0400
+Received: from mga01.intel.com ([192.55.52.88]:40569 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755189AbXIOAKx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 20:08:22 -0400
-Date: Fri, 14 Sep 2007 17:07:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: "Ethan Solomita" <solo@google.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH 1/6] cpuset write dirty map
-Message-Id: <20070914170733.dbe89493.akpm@linux-foundation.org>
-In-Reply-To: <a781481a0709141647q3d019423s388c64bf6bed871a@mail.gmail.com>
-References: <469D3342.3080405@google.com>
-	<46E741B1.4030100@google.com>
-	<46E742A2.9040006@google.com>
-	<20070914161536.3ec5c533.akpm@linux-foundation.org>
-	<a781481a0709141647q3d019423s388c64bf6bed871a@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Sep 2007 20:10:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,257,1186383600"; 
+   d="scan'208";a="307350400"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [kvm-devel] [PATCH] Refactor hypercall infrastructure
+Date: Fri, 14 Sep 2007 17:10:03 -0700
+Message-ID: <97D612E30E1F88419025B06CB4CF1BE10379ED0A@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <46EB1285.5050807@goop.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [kvm-devel] [PATCH] Refactor hypercall infrastructure
+Thread-Index: Acf3IzNJy7q+iSl0RpK8hIB4pPaWSQABkxtQ
+References: <11897991353793-git-send-email-aliguori@us.ibm.com><46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws><46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws><46EB02BA.6030909@goop.org> <46EB0657.40603@codemonkey.ws> <97D612E30E1F88419025B06CB4CF1BE10379EBF9@scsmsx412.amr.corp.intel.com> <46EB1285.5050807@goop.org>
+From: "Nakajima, Jun" <jun.nakajima@intel.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: "Anthony Liguori" <anthony@codemonkey.ws>,
+       <kvm-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
+       "Avi Kivity" <avi@qumranet.com>
+X-OriginalArrivalTime: 15 Sep 2007 00:10:04.0408 (UTC) FILETIME=[C41B1780:01C7F72C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Sep 2007 05:17:48 +0530
-"Satyam Sharma" <satyam.sharma@gmail.com> wrote:
-
-> > It's unobvious why the break point is at MAX_NUMNODES = BITS_PER_LONG and
-> > we might want to tweak that in the future.  Yet another argument for
-> > centralising this comparison.
+Jeremy Fitzhardinge wrote:
+> Nakajima, Jun wrote:
+> > > > one.  Start the kvm leaves at 0x40001000 or something?
+> > > > 
+> > > > 
+> > > Yeah, that works with me.
+> > > 
+> > 
+> > To me this is the beginning of fragmentation. Why do we need
+different
+> > and VMM-specific Linux paravirtualization for hardware-assisted
+> > virtualization? That would not be good for Linux.
+> > 
 > 
-> Looks like just an optimization to me ... Ethan wants to economize and not bloat
-> struct address_space too much.
+> On the contrary.  Xen already has a hypercall interface, and we need
+to
+> keep supporting it.  If we were to also support a vmm-independent
+> interface (aka "kvm interface"), then we need to be able to do that in
+> parallel.  If we have a cpuid leaf clash, then its impossible to do
+so;
+> if we define the new interface to be disjoint from other current users
+> of cpuid, then we can support them concurrently.
 > 
-> So, if sizeof(nodemask_t) == sizeof(long), i.e. when:
-> MAX_NUMNODES <= BITS_PER_LONG, then we'll be adding only sizeof(long)
-> extra bytes to the struct (by plonking the object itself into it).
-> 
-> But even when MAX_NUMNODES > BITS_PER_LONG, because we're storing
-> a pointer, and because sizeof(void *) == sizeof(long), so again the maximum
-> bloat addition to struct address_space would only be sizeof(long) bytes.
+>     J
 
-yup.
+Today, 3 CPUID leaves starting from 0x4000_0000 are defined in a generic
+fashion (hypervisor detection, version, and hypercall page), and those
+are the ones used by Xen today. We should extend those leaves (e.g.
+starting from 0x4000_0003) for the vmm-independent features as well.
 
-Note that "It's unobvious" != "It's unobvious to me".  I review code for
-understandability-by-others, not for understandability-by-me.
+If Xen needs additional Xen-specific features, we need to allocate some
+leaves for those (e.g. 0x4000_1000)
 
-> I didn't see the original mail, but if the #ifdeffery for this
-> conditional is too much
-> as a result of this optimization, Ethan should probably just do away
-> with all of it
-> entirely, and simply put a full nodemask_t object (irrespective of MAX_NUMNODES)
-> into the struct. After all, struct task_struct does the same unconditionally ...
-> but admittedly, there are several times more address_space struct's resident in
-> memory at any given time than there are task_struct's, so this optimization does
-> make sense too ...
-
-I think the optimisation is (probably) desirable, but it would be best to
-describe the tradeoff in the changelog and to add some suitable
-code-commentary for those who read the code in a year's time and to avoid
-sprinkling the logic all over the tree.
-
+Jun
+---
+Intel Open Source Technology Center
