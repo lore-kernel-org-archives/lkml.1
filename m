@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbXIOQw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbXIOQxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755271AbXIOQw0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 12:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXIOQwR
+	id S1755544AbXIOQxz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 12:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbXIOQxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 12:52:17 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:55137 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751541AbXIOQwP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 12:52:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=PgiXtXnfu1RLvGKFwTdrSBcaGJNsRR+j/Xf5BKGvaXvMTGElwgLAjriGP2u47EbIi8Y5peiL0Myi+JShxdBPnTYlQQ5UgeNPYSThysDUwdronxjrMlaEUr8mncfO7BHYwrghRv7ylQ0ZGQElhOLMA3nMFZgKOFGkKO8vAnrPhjM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
-Date: Sat, 15 Sep 2007 18:52:42 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeff Garzik <jeff@garzik.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org
-References: <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <46EBFDFB.5040401@garzik.org> <20070915162313.GV3563@stusta.de>
-In-Reply-To: <20070915162313.GV3563@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sat, 15 Sep 2007 12:53:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52626 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750779AbXIOQxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 12:53:47 -0400
+Date: Sat, 15 Sep 2007 09:56:28 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christian Volkmann <haveaniceday@cv-sv.de>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, zaitcev@redhat.com
+Subject: Re: 2.6.23-rc6: usb 1-1: device not accepting address 2, error -62
+Message-Id: <20070915095628.491c8a86.zaitcev@redhat.com>
+In-Reply-To: <20070915034819.3e695370.akpm@linux-foundation.org>
+References: <46EAFCF7.1030907@cv-sv.de>
+	<20070915034819.3e695370.akpm@linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.11.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709151852.43157.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 September 2007, Adrian Bunk wrote:
-> On Sat, Sep 15, 2007 at 11:44:59AM -0400, Jeff Garzik wrote:
-> > Stefan Richter wrote:
-> >> Adrian Bunk wrote:
-> >>> On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
-> >>>> Perfect is in the eye of the beholder.  You would consequently have to
-> >>>> add such options into all menus which contain scsi low-level providers.
-> >>> Kconfig is a user interface, so perfect is what is best for the
-> >>> kconfig users.
-> >> Duplicate options with different names in different menus, but which all
-> >> do the same, --- is this the best for users?
-> >
-> > I recognize it's a rhetorical question :)  The answer is of course "no".
-> >
-> > I hope the other participants of this thread register the severe 
-> > disinclination of the maintainers to change this stuff, as this is a 
-> > classic case of making a mountain out of a molehill[1].
-> >
-> > For the -vast majority- of people configuring the kernel, this is not a 
-> > problem.  Kernel people are -expected- to know what they're doing, 
+On Sat, 15 Sep 2007 03:48:19 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > I have an error message with 2.6.23-rc6.
+> > This did not happen with 2.6.22.
 > 
-> I doubt your claim is true since the vast majority of kconfig users
-> are most likely not kernel developers.
+> Another one for Michal's dirt file.
 
-Yes, we shouldn't be needlessly raising the bar for power users.
+No, I think it's the module ordering again.
 
-> @Greg:
-> Do you have any numbers regarding how your "Linux Kernel in a Nutshell" 
-> is selling?
-> Even download numbers?
-> 
-> > especially when switching from one major subsystem to another.
-> 
-> It's not only about switching, the same problems awaits people when 
-> configuring a kernel for their hardware the first time.
+> > 2.6.23-rc6 boot.msg extract ( hub/usb )
 
-*nods*
+I wish users stopped this filtering, it's a very bad idea.
 
-> > Therefore, all this is IMO wasted effort and hot air.  There are far more 
-> > important issues to deal with.
-> 
-> Why don't we dump kconfig and write the .config by hand?  ;-)
-> 
-> More seriously:
-> Yes, there are many other important issues in the kernel.
-> But not fixing kconfig UI problems doesn't fix these issues faster.
+As it is, there's no message showing when ehci_hcd was loaded.
+We can try piece together the picture:
 
-Agreed, and actually not fixing Kconfig UI problems will make the other
-issues being fixed *slower* (because they result in *increased* workload
-on developers' side).
+> > <6>usb usb1: configuration #1 chosen from 1 choice
+> > <6>hub 1-0:1.0: USB hub found
+> > <6>hub 1-0:1.0: 2 ports detected
+> > <6>usb usb2: configuration #1 chosen from 1 choice
+> > <6>hub 2-0:1.0: USB hub found
+> > <6>hub 2-0:1.0: 2 ports detected
+> > <6>usb 1-1: new low speed USB device using ohci_hcd and address 2
 
-> I have seen people running into problems because some required 
-> option wasn't set - in the simplest cases things like IDE without DMA 
-> because a help text wasn't updated when more hardware support was added 
-> to a driver.
+ok this was ohci_hcd
 
-This is why nowadays IDE DMA support is automatically selected by IDE
-host drivers that need it - a big relief for everybody.
+> > <3>usb 1-1: device not accepting address 2, error -62
+> > <6>usb 5-2: new full speed USB device using uhci_hcd and address 2
 
-> You might not care about the kconfig users.
-> But other people do.
+was ehci here? We don't know but I bet it was, because:
 
-...and even if their attempts/solutions may not be proper yet they should
-not be discouraged to work on these problems...
+> > <6>usb 6-2: new high speed USB device using ehci_hcd and address 2
 
-Thanks,
-Bart
+> > 2.6.22 boot.msg extract ( hub/usb )
+
+This one seems far shorter. The EHCI comes online late here as well,
+but not as late as in the "regression" case. I am wondering if we
+have some kind of "parallel PCI probing" option in action here.
+
+-- Pete
