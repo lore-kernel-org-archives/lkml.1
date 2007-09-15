@@ -1,105 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932679AbXIOB3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbXIOBbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932679AbXIOB3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 21:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759525AbXIOB3H
+	id S932794AbXIOBbh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 21:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbXIOBba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 21:29:07 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:56733 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752861AbXIOB3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 21:29:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ihn83TGYvHdCFvI/QKcP/PB0fcmr25VA1eZkWzqFumZeY9aabCdZ7QkFjgFUgDac7/6QllqL/Y9ybFEwmUiuBEXdt+KyT2yvSqfRwCWgQGE+36Caj2J3JkkNwidQ7njGpTngaXhLSzTLbTucwNOpwlNUf2PPvnAwgkyq2p/AL3c=
-Message-ID: <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
-Date: Sat, 15 Sep 2007 03:29:05 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Johannes Stezenbach" <js@linuxtv.org>
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-Cc: "Steven Toth" <stoth@hauppauge.com>,
-       "Manu Abraham" <abraham.manu@gmail.com>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-In-Reply-To: <20070914204343.GA9058@linuxtv.org>
+	Fri, 14 Sep 2007 21:31:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47788 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbXIOBb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 21:31:29 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070913131353.GB26972@linuxtv.org> <46E95C54.4060502@gmail.com>
-	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
-	 <46E99F36.8090809@hauppauge.com>
-	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
-	 <46E9DDC7.4000403@hauppauge.com>
-	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
-	 <20070914113838.GA29962@linuxtv.org>
-	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
-	 <20070914204343.GA9058@linuxtv.org>
+From: Roland McGrath <roland@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+X-Fcc: ~/Mail/linus
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Dan Aloni <da-x@monatomic.org>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [PATCH] Add ELF note with Linux version
+In-Reply-To: Jeremy Fitzhardinge's message of  Friday, 14 September 2007 14:31:27 -0700 <46EAFDAF.8000809@goop.org>
+References: <20070904150018.GA4357@suse.de>
+	<46DFD825.2020109@goop.org>
+	<20070913144228.2efcd5d9.akpm@linux-foundation.org>
+	<20070913221340.GA29181@uranus.ravnborg.org>
+	<46E9BD3D.4050102@goop.org>
+	<20070914060805.GA32169@uranus.ravnborg.org>
+	<46EAE534.5030900@goop.org>
+	<20070914210738.GA5031@uranus.ravnborg.org>
+	<46EAFDAF.8000809@goop.org>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20070915013052.578554D0424@magilla.localdomain>
+Date: Fri, 14 Sep 2007 18:30:52 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/14/07, Johannes Stezenbach <js@linuxtv.org> wrote:
-> On Fri, Sep 14, 2007, Markus Rechberger wrote:
-> >
-> > people do contribute to the em28xx project.
-> ...
-> > there's also an active and even problem solving oriented ML available:
-> > http://mcentral.de/pipermail/em28xx/
-> >
-> > Also if you look at the mercurial code you'll see several people
-> > contributing to that project.
->
-> Of course, people who own such a device and want to use
-> it with Linux have no choice but to work with you.
-> And you do a good job for your users, you support them
-> well and in return they contribute info and patches
-> to support new devices.
->
-> But the thing is that at mcentral.de you're the man at the top,
-> and your users will hardly disagree with you on core
-> technical questions. (Well, admittedly I'm speculating
-> here as I don't read your em28xx list.)
->
+> Yes, binutils can be pretty fragile with notes about.  In this case it
+> seems to be a specific problem with build-id; I'm not really sure what
+> build-id actually does.
 
-they can. Put technical issues infront of everything also see the
-whole picture that userspace tv applications have to support
-all the codecs which are available.
+The thing about the build ID section that brings up issues with linking is
+that it is a SHF_ALLOC, SHT_NOTE section.  As you mentioned, this is a
+general, straightforward, and well-defined thing in ELF.  But in practice,
+there were not previously SHF_ALLOC note sections used with custom linker
+scripts like the kernel's.  (They are used every day in normal executables
+and DSOs, but those don't use custom linker scripts.)
 
-> On for drivers/media/ OTOH you are just one developer among others,
-> and some of them choose to disagree with you. Even worse,
-> IIRC there wasn't even _a single_ other developer willing
-> to ACK your offending patch.
->
 
-there was not a single developer of the old crufted developers who
-didn't bring the project forward during the last 2 years.
-yes you're right.
-
-> Now, doesn't _that_ get you thinking?
->
-
-it gets me thinking. Some core developers who I met during
-the last few weeks (kernel summit, suse conference in czech)
-told me to go on with it actually because the final plan isn't that
-bad.. I don't expect anyone of the old crufted v4l/dvb (well many
-of them already left the party) will join the game...
-(I'll leave that open here) spend some time read the whole history
-of this thread and it will show up what this all is targeting at.
-I'll answer your questions with technical reasons why I'm doing
-all that stuff that way if you'll just ask.
-Someone told me during the last 2 weeks
- "but v4l2 was about to solve all those problems" it didn't. (point)
-and I think I explained good enough why all that crap still goes
-on as it is.
-
-Beside that I'm just curious how much did you contribute
-during the last 2 years to the lkml/linux kernel, and how much
-do you want to contribute in future? (also from my side
-talk is cheap (even for me) but getting something done costs
-quite some time and feedback from other people)
-
-Markus
+Thanks,
+Roland
