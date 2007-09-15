@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbXIOOp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbXIOOsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbXIOOp6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 10:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXIOOpw
+	id S1755331AbXIOOsR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 10:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbXIOOsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 10:45:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38957 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983AbXIOOpv (ORCPT
+	Sat, 15 Sep 2007 10:48:05 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:47941 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbXIOOsE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 10:45:51 -0400
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Johannes Stezenbach <js@linuxtv.org>, Steven Toth <stoth@hauppauge.com>,
-       Manu Abraham <abraham.manu@gmail.com>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-In-Reply-To: <d9def9db0709150733l1b35a5mad60fdcf8f6e66ec@mail.gmail.com>
-References: <46E95C54.4060502@gmail.com> <46E9DDC7.4000403@hauppauge.com>
-	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
-	 <20070914113838.GA29962@linuxtv.org>
-	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
-	 <20070914204343.GA9058@linuxtv.org>
-	 <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
-	 <20070915131650.GA12531@linuxtv.org>
-	 <d9def9db0709150638o2e4026fbgd347eefc0fa4b3e6@mail.gmail.com>
-	 <1189865082.5271.91.camel@gaivota>
-	 <d9def9db0709150733l1b35a5mad60fdcf8f6e66ec@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 15 Sep 2007 11:45:35 -0300
-Message-Id: <1189867535.5271.111.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92-2mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 15 Sep 2007 10:48:04 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18155.61586.118828.112512@stoffel.org>
+Date: Sat, 15 Sep 2007 10:47:46 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Jon Ivar Rykkelid <jonry@pvv.org>
+Cc: linux-kernel@vger.kernel.org, Prakash Punnoor <prakash@punnoor.de>,
+       Robert Hancock <hancockr@shaw.ca>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: sata_nv issues with MCP51 SATA controller
+In-Reply-To: <46EBB08A.5050709@pvv.org>
+References: <46E8EABF.3060409@pvv.org>
+	<46EA97F0.9000300@pvv.org>
+	<46EAF099.9070805@pvv.org>
+	<200709150912.28358.prakash@punnoor.de>
+	<46EBB08A.5050709@pvv.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>>> "Jon" == Jon Ivar Rykkelid <jonry@pvv.org> writes:
 
-Em Sáb, 2007-09-15 às 16:33 +0200, Markus Rechberger escreveu:
-> I'm off for the weekend now so have a nice one :-)
+Jon> Prakash Punnoor wrote:
+>> I don't have exaclty the same hw, but the same chipset and I don't have any 
+>> problems - even with the swncq patch applied. Do you have an hpet? If not, 
+>> try booting with acpi_use_time_override. My system won't work with skipping 
+>> the override.
 
-Enjoy your weekend. I really hope that you have some time to reflect and
-review your positions during the weekend.
+Jon> Hi , I reconnected and rebooted with the kernel option
+Jon> "acpi_use_timer_override" (this is the correct spelling, isn't
+Jon> it? - Kernel didn't complain.). Didn't help, the same error
+Jon> received as before. - I'll have to connect all disks back to my
+Jon> PCI-connected SATA controllers and start rebuilding my RAID yet
+Jon> again.
 
--- 
-Cheers,
-Mauro
+What happens when you just have ONE disk connected to the motherboard
+controller, and the rest connected to PCI controllers?  Does it crap
+out then?  You've just such a nice repeatable problem across
+motherboards that it's a shame to waste this debugging time.
 
+I'm wondering if it's a PCI bus issue somehow, and that the load on
+the motherboard controller isn't supportable when you have a bunch of
+disks on PCI controllers as well.  Shot in the dark...
+
+Thanks for all your hard work on this, I know how frustrating it is to
+not have a stable system!
+
+John
