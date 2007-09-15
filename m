@@ -1,149 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbXIOSEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXIOSIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754968AbXIOSEc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 14:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXIOSEZ
+	id S1755933AbXIOSIS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 14:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbXIOSIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 14:04:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:13129 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbXIOSEY (ORCPT
+	Sat, 15 Sep 2007 14:08:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:58123 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbXIOSIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 14:04:24 -0400
+	Sat, 15 Sep 2007 14:08:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:subject:mime-version:from:to:cc:reply-to:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=jYSWHnPb4C3O4+liX+Y69V/OXobeMJErtcp1pdIdyy/IvX2jhGc76jyU9dmLrOGOvVFfUVb1RHwIDRDd/c3UGo4U+blDrIcBnOGNkuSPFNwLLtIDvU+hLd6IOzpWEaqtVLntP7Qo0YNwqoQYsFPQcZa7Ut4llj0rd9dXNjgPtX4=
-Date: Sat, 15 Sep 2007 20:04:10 +0200
-Subject: [PATCH v2] menuconfig: distinguish between selected-by-another options and comments
-MIME-Version: 1.0
-From: Matej Laitl <strohel@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Reply-To: 20070914100717.8900b29b.randy.dunlap@oracle.com
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <200709152004.11930.strohel@gmail.com>
+        h=received:subject:from:reply-to:to:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Ge6qe/I6UnVHFioSnq9KJFxSPTrcjq/DqEnR1XsAl5RaXaUJX0lc5vgGAtyREDzt/WItEK9RGC3WxijfF+9oNIxy+we5KjeZKeLLC638Hh6IfmOkf8euKpPNs10+SecsfMZ4U+vbgiTyvFZYGcCxlhil2p0nRd3EwKZKk8FZ2mU=
+Subject: Re: [PATCH] Reduce __print_symbol/sprint_symbol stack usage.
+From: Gilboa Davara <gilboad@gmail.com>
+Reply-To: gilboad@gmail.com
+To: Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1189869329.18191.77.camel@gilboa-home-dev.localdomain>
+References: <1189856129.18191.11.camel@gilboa-home-dev.localdomain>
+	 <a781481a0709150602v6be754caw4fbe0f76c8db5beb@mail.gmail.com>
+	 <1189869329.18191.77.camel@gilboa-home-dev.localdomain>
+Content-Type: text/plain
+Date: Sat, 15 Sep 2007 21:08:01 +0300
+Message-Id: <1189879681.18191.93.camel@gilboa-home-dev.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-menuconfig currently represents options implied by another option ('select'
-directive in Kconfig) by prefixing them with '---'. Unfortunately the same
-notation is used for comments.
+Hello all, Satyam,
 
-This patch changes notation of selected-by-another items by introducing 2 new
-representations for implied options:
-{*} or {M} for options selected by another modularized one, thus builtin or
-module capable,
--*- or -M- for options that cannot be at the moment changed by user.
+This is my second stab at solving the "stack over flow due to
+dump_strace when close to stack-overflow is detected by do_IRQ" problem.
+(Hopefully) this patch is creates less noise then the previous one.
 
-The idea is to represent actual capability of the option by braces (dashes)
-around and to always report actual state by * or M inside.
+[snip]
+> I'll try and create an option 2 (static allocation, minimal locking)
+> patch and post ASAP.
+> Hopefully it'll fare better. (While keeping the current interface intact
+> and reducing the damage/noise)
+> 
+> - Gilboa
 
-Signed-off-by: Matěj Laitl <strohel@gmail.com>
----
-Changes since v1:
-* introduce sym_get_minimal_value(), so that access to struct symbol is 
-abstracted.
-* change also menuconfig's window header text to reflect the change. I'm still 
-not sure if the wording is optimal.
+- Gilboa
 
-v1 was acked by Randy Dunlap, I'm not sure if it's appropriate to keep 
-Acked-by when patch changes. (teach me please)
-
- scripts/kconfig/lkc_proto.h |    1 +
- scripts/kconfig/mconf.c     |   21 +++++++++++++--------
- scripts/kconfig/symbol.c    |    5 +++++
- 3 files changed, 19 insertions(+), 8 deletions(-)
-
-diff --git a/scripts/kconfig/lkc_proto.h b/scripts/kconfig/lkc_proto.h
-index 4d09f6d..98642bc 100644
---- a/scripts/kconfig/lkc_proto.h
-+++ b/scripts/kconfig/lkc_proto.h
-@@ -34,6 +34,7 @@ P(sym_string_valid,bool,(struct symbol *sym, const char 
-*newval));
- P(sym_string_within_range,bool,(struct symbol *sym, const char *str));
- P(sym_set_string_value,bool,(struct symbol *sym, const char *newval));
- P(sym_is_changable,bool,(struct symbol *sym));
-+P(sym_get_minimal_value,tristate,(struct symbol *sym));
- P(sym_get_choice_prop,struct property *,(struct symbol *sym));
- P(sym_get_default_prop,struct property *,(struct symbol *sym));
- P(sym_get_string_value,const char *,(struct symbol *sym));
-diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
-index bc5854e..77ab552 100644
---- a/scripts/kconfig/mconf.c
-+++ b/scripts/kconfig/mconf.c
-@@ -35,9 +35,13 @@ static const char mconf_readme[] = N_(
- "kernel parameters which are not really features, but must be\n"
- "entered in as decimal or hexadecimal numbers or possibly text.\n"
- "\n"
--"Menu items beginning with [*], <M> or [ ] represent features\n"
--"configured to be built in, modularized or removed respectively.\n"
--"Pointed brackets <> represent module capable features.\n"
-+"Menu items beginning with following braces represent features that\n"
-+"  [ ] can be built in or removed\n"
-+"  < > can be built in, modularized or removed\n"
-+"  { } can be built in or modularized (selected by other feature)\n"
-+"  - - are selected by other feature,\n"
-+"while *, M or whitespace inside braces means to build in, build as\n"
-+"a module or to exclude the feature respectively.\n"
- "\n"
- "To change any of these features, highlight it with the cursor\n"
- "keys and press <Y> to build it in, <M> to make it a module or\n"
-@@ -178,9 +182,9 @@ menu_instructions[] = N_(
- 	"Arrow keys navigate the menu.  "
- 	"<Enter> selects submenus --->.  "
- 	"Highlighted letters are hotkeys.  "
--	"Pressing <Y> includes, <N> excludes, <M> modularizes features.  "
-+	"Pressing <Y> includes (*), <M> modularizes (M), <N> excludes features 
-( ).  "
- 	"Press <Esc><Esc> to exit, <?> for Help, </> for Search.  "
--	"Legend: [*] built-in  [ ] excluded  <M> module  < > module capable"),
-+	"Legend: [*] built-in, < > module capable, { } implied, -*- forced."),
- radiolist_instructions[] = N_(
- 	"Use the arrow keys to navigate this window or "
- 	"press the hotkey of the item you wish to select "
-@@ -560,7 +564,7 @@ static void build_conf(struct menu *menu)
- 				if (sym_is_changable(sym))
- 					item_make("[%c]", val == no ? ' ' : '*');
- 				else
--					item_make("---");
-+					item_make("-%c-", val == no ? ' ' : '*');
- 				item_set_tag('t');
- 				item_set_data(menu);
- 				break;
-@@ -571,9 +575,10 @@ static void build_conf(struct menu *menu)
- 				default:  ch = ' '; break;
- 				}
- 				if (sym_is_changable(sym))
--					item_make("<%c>", ch);
-+					item_make((sym_get_minimal_value(sym) == mod) ?
-+					          "{%c}" : "<%c>", ch);
- 				else
--					item_make("---");
-+					item_make("-%c-", ch);
- 				item_set_tag('t');
- 				item_set_data(menu);
- 				break;
-diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
-index c35dcc5..b9832d0 100644
---- a/scripts/kconfig/symbol.c
-+++ b/scripts/kconfig/symbol.c
-@@ -643,6 +643,11 @@ bool sym_is_changable(struct symbol *sym)
- 	return sym->visible > sym->rev_dep.tri;
+--- linux-2.6/kernel/kallsyms.orig	2007-09-15 11:46:54.000000000 +0300
++++ linux-2.6/kernel/kallsyms.c	2007-09-15 21:06:55.000000000 +0300
+@@ -306,13 +306,14 @@ int lookup_symbol_attrs(unsigned long ad
+ 	return lookup_module_symbol_attrs(addr, size, offset, modname, name);
  }
  
-+tristate sym_get_minimal_value(struct symbol *sym)
+-/* Look up a kernel symbol and return it in a text buffer. */
+-int sprint_symbol(char *buffer, unsigned long address)
++/* Internal version:
++   Look up a kernel symbol and module name and return them to the
++     caller's buffer/namebuf buffers. */
++int __sprint_symbol(char *buffer, char *namebuf, unsigned long address)
+ {
+-	char *modname;
+-	const char *name;
+ 	unsigned long offset, size;
+-	char namebuf[KSYM_NAME_LEN];
++	const char *name;
++	char *modname;
+ 
+ 	name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
+ 	if (!name)
+@@ -325,14 +326,35 @@ int sprint_symbol(char *buffer, unsigned
+ 		return sprintf(buffer, "%s+%#lx/%#lx", name, offset, size);
+ }
+ 
++/* Exported version:
++   Look up a kernel symbol and return it in a text buffer. */
++int sprint_symbol(char *buffer, unsigned long address)
 +{
-+	return sym->rev_dep.tri;
++	char namebuf[KSYM_NAME_LEN];
++
++	return __sprint_symbol(buffer, namebuf, address);
 +}
 +
- struct symbol *sym_lookup(const char *name, int isconst)
++static DEFINE_SPINLOCK(symbol_lock);
++
+ /* Look up a kernel symbol and print it to the kernel messages. */
+ void __print_symbol(const char *fmt, unsigned long address)
  {
- 	struct symbol *symbol;
--- 
-1.5.1.6
+-	char buffer[KSYM_SYMBOL_LEN];
++	/* Use static buffers instead of char array to reduce
++	     stack footprint in i386/4KSTACKS.
++	     Buffers must be protected against re-entry. */
++	static char namebuf[KSYM_NAME_LEN];
++	static char buffer[KSYM_SYMBOL_LEN];
++	unsigned long flags;
++
+ 
+-	sprint_symbol(buffer, address);
++	spin_lock_irqsave(&symbol_lock, flags);
++
++	__sprint_symbol(buffer, namebuf, address);
+ 
+ 	printk(fmt, buffer);
++
++	spin_unlock_irqrestore(&symbol_lock, flags);
+ }
+ 
+ /* To avoid using get_symbol_offset for every symbol, we carry prefix
+along. */
+
 
