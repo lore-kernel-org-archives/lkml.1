@@ -1,89 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbXIOB2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932679AbXIOB3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760279AbXIOB2U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 21:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbXIOB2J
+	id S932679AbXIOB3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 21:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759525AbXIOB3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 21:28:09 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:56744 "EHLO
+	Fri, 14 Sep 2007 21:29:07 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:56733 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbXIOB2H (ORCPT
+	with ESMTP id S1752861AbXIOB3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 21:28:07 -0400
+	Fri, 14 Sep 2007 21:29:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rXRAphaDH8lKvbu6n+oC7byCW6w7kPGn3KBoI0541ZVemozVo1FOjqol/IOTkIFdhK9wVMNEDUBXtvPvOAVGn4Xd++UdHH/UaDpJTPF3B8WbgyqBT6sqLx+2BNeEvuJ1eD/ceeNhQgcTM7nYRQJY4fDar9RV2TfSkLOPdODaXEg=
-Message-ID: <8bd0f97a0709141828p6ed05f5dm9cea104714b37a0d@mail.gmail.com>
-Date: Fri, 14 Sep 2007 21:28:06 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: bryan.wu@analog.com
-Subject: Re: [Uclinux-dist-devel] Re: [PATCH] Blackfin arch: add some missing syscall
-Cc: "Bernd Schmidt" <bernds_cb1@t-online.de>, bernd.schmidt@analog.com,
-       linux-arch@vger.kernel.org, "Matthew Wilcox" <matthew@wil.cx>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1189755148.8165.15.camel@roc-desktop>
+        b=Ihn83TGYvHdCFvI/QKcP/PB0fcmr25VA1eZkWzqFumZeY9aabCdZ7QkFjgFUgDac7/6QllqL/Y9ybFEwmUiuBEXdt+KyT2yvSqfRwCWgQGE+36Caj2J3JkkNwidQ7njGpTngaXhLSzTLbTucwNOpwlNUf2PPvnAwgkyq2p/AL3c=
+Message-ID: <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
+Date: Sat, 15 Sep 2007 03:29:05 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Johannes Stezenbach" <js@linuxtv.org>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+Cc: "Steven Toth" <stoth@hauppauge.com>,
+       "Manu Abraham" <abraham.manu@gmail.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+In-Reply-To: <20070914204343.GA9058@linuxtv.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1189670203.30686.15.camel@roc-desktop>
-	 <20070913081852.GC17367@parisc-linux.org>
-	 <8bd0f97a0709130137l55977c28w95cf8527ae8b9e24@mail.gmail.com>
-	 <1189673849.30686.28.camel@roc-desktop> <46E918FD.3070607@t-online.de>
-	 <1189748718.5133.23.camel@roc-desktop>
-	 <8bd0f97a0709132344w136f2df5ncfe4496c6c895bd8@mail.gmail.com>
-	 <1189755148.8165.15.camel@roc-desktop>
+References: <20070913131353.GB26972@linuxtv.org> <46E95C54.4060502@gmail.com>
+	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+	 <46E99F36.8090809@hauppauge.com>
+	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+	 <46E9DDC7.4000403@hauppauge.com>
+	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+	 <20070914113838.GA29962@linuxtv.org>
+	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+	 <20070914204343.GA9058@linuxtv.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/14/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> On Fri, 2007-09-14 at 02:44 -0400, Mike Frysinger wrote:
-> > On 9/14/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> > > On Thu, 2007-09-13 at 13:03 +0200, Bernd Schmidt wrote:
-> > > > Bryan Wu wrote:
-> > > > >>> but mremap doesn't -- there's even an implementation in mm/nommu.c.
-> > > > >>> Could you check the rest of these over to see if they truly don't need
-> > > > >>> to be implemented for no-mmu?
-> > > > >> you're right we want mremap, my fault
-> > > > >>
-> > > > >
-> > > > > Yes, I do think so, both sys_mremap and sys_munmap are implemented in
-> > > > > mm/nommu.c. How do think of this, Bernd?
-> > > >
-> > > > There's a mremap in nommu.c, but it doesn't do a lot that is useful.
-> > > > With some further mm changes in our tree, it's little more than a fancy
-> > > > way of saying munmap, and uClibc does not use it, so there's no
-> > > > compelling need to have it in userspace.
-> > >
-> > > Make sense. So currently Blackfin uClinux use the mremap/munmap in
-> > > uClibc?
+On 9/14/07, Johannes Stezenbach <js@linuxtv.org> wrote:
+> On Fri, Sep 14, 2007, Markus Rechberger wrote:
 > >
-> > most functions like this dont have any real libc component ... uClibc
-> > will define userspace symbols that merely make a syscall iff the __NR_
-> > exists in the headers
+> > people do contribute to the em28xx project.
+> ...
+> > there's also an active and even problem solving oriented ML available:
+> > http://mcentral.de/pipermail/em28xx/
 > >
-> > if we have __NR_mremap in our unistd.h, we'll automagically get the
-> > mremap() symbol in uClibc which simply passes along the args to the
-> > kernel
+> > Also if you look at the mercurial code you'll see several people
+> > contributing to that project.
 >
-> Yes, I know this. But currently, __NR_mremap does not exit in Blackfin
-> unistd.h:
-> /* 163 __NR_mremap */.
+> Of course, people who own such a device and want to use
+> it with Linux have no choice but to work with you.
+> And you do a good job for your users, you support them
+> well and in return they contribute info and patches
+> to support new devices.
 >
-> So the implementation of this kind syscalls should be in uClibc, right?
+> But the thing is that at mcentral.de you're the man at the top,
+> and your users will hardly disagree with you on core
+> technical questions. (Well, admittedly I'm speculating
+> here as I don't read your em28xx list.)
+>
 
-no ... if the kernel supports it, uClibc supports ... if the kernel
-doesnt support, uClibc doesnt support it
+they can. Put technical issues infront of everything also see the
+whole picture that userspace tv applications have to support
+all the codecs which are available.
 
-adding a ghetto userspace implementation to workaround this is weak
-... that'll just mean random bugs may crop up on us that dont exist
-for any other architecture simply because we opted not to hook up the
-common kernel version
+> On for drivers/media/ OTOH you are just one developer among others,
+> and some of them choose to disagree with you. Even worse,
+> IIRC there wasn't even _a single_ other developer willing
+> to ACK your offending patch.
+>
 
-either we support it and have the kernel pull in the common one or we
-dont support ... no middle ground here
--mike
+there was not a single developer of the old crufted developers who
+didn't bring the project forward during the last 2 years.
+yes you're right.
+
+> Now, doesn't _that_ get you thinking?
+>
+
+it gets me thinking. Some core developers who I met during
+the last few weeks (kernel summit, suse conference in czech)
+told me to go on with it actually because the final plan isn't that
+bad.. I don't expect anyone of the old crufted v4l/dvb (well many
+of them already left the party) will join the game...
+(I'll leave that open here) spend some time read the whole history
+of this thread and it will show up what this all is targeting at.
+I'll answer your questions with technical reasons why I'm doing
+all that stuff that way if you'll just ask.
+Someone told me during the last 2 weeks
+ "but v4l2 was about to solve all those problems" it didn't. (point)
+and I think I explained good enough why all that crap still goes
+on as it is.
+
+Beside that I'm just curious how much did you contribute
+during the last 2 years to the lkml/linux kernel, and how much
+do you want to contribute in future? (also from my side
+talk is cheap (even for me) but getting something done costs
+quite some time and feedback from other people)
+
+Markus
