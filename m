@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbXIONQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbXIONVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbXIONQl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 09:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXIONQd
+	id S1754155AbXIONVP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 09:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXIONU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 09:16:33 -0400
-Received: from allen.werkleitz.de ([80.190.251.108]:45546 "EHLO
-	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbXIONQd (ORCPT
+	Sat, 15 Sep 2007 09:20:58 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39450 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbXIONU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 09:16:33 -0400
-Date: Sat, 15 Sep 2007 15:16:50 +0200
-From: Johannes Stezenbach <js@linuxtv.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Steven Toth <stoth@hauppauge.com>, Manu Abraham <abraham.manu@gmail.com>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Message-ID: <20070915131650.GA12531@linuxtv.org>
-References: <46E95C54.4060502@gmail.com> <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com> <46E99F36.8090809@hauppauge.com> <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com> <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com> <20070914113838.GA29962@linuxtv.org> <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com> <20070914204343.GA9058@linuxtv.org> <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
+	Sat, 15 Sep 2007 09:20:57 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46EBDC06.3030202@s5r6.in-berlin.de>
+Date: Sat, 15 Sep 2007 15:20:06 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 87.162.108.9
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+References: <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de> <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org> <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de>
+In-Reply-To: <20070915125055.GQ3563@stusta.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 15, 2007, Markus Rechberger wrote:
-> 
-> it gets me thinking. Some core developers who I met during
-> the last few weeks (kernel summit, suse conference in czech)
-> told me to go on with it actually because the final plan isn't that
-> bad..
+Adrian Bunk wrote:
+>>> There should first be the lowlevel SCSI, SATA, USB etc. drivers, these 
+>>> drivers should select CONFIG_SCSI, and then the menu offering support 
+>>> for disk, CD,...
+...
+> If users who don't need it now enable CONFIG_SCSI (and drivers/ide/ 
+> usage is not that uncommon) that's a regression in the user interface.
 
-I was referring to your code you posted for merging on linux-dvb,
-and which got rejected. Anyway, it's easy to agree with you if one
-has just heard _your_ version -- the purpose of this thread is to
-give people an alternate version of the story to complement
-yours, which would allow the people you talked to to think it over
-and change their mind. See if you can get of those people you
-talked to to post here to support you.
+Aha, first all interconnects/transports are configured.  If none of them
+'select'ed SCSI, the menu for sd, sr, st stays invisible.  Otherwise it
+is exposed.
 
-> Beside that I'm just curious how much did you contribute
-> during the last 2 years to the lkml/linux kernel, and how much
-> do you want to contribute in future? (also from my side
-> talk is cheap (even for me) but getting something done costs
-> quite some time and feedback from other people)
-
-IOW you say if I don't write code I should shut up?
-Is that also what you tell users on your em28xx list
-when they dare to disagree with you?
-
-Nice...
-
-
-Johannes
+It still doesn't entirely clarify whether users need sd, sr, st, and
+whether thy need sd for the disk with root filesystem.
+-- 
+Stefan Richter
+-=====-=-=== =--= -====
+http://arcgraph.de/sr/
