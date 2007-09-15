@@ -1,50 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbXIOOfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbXIOOnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbXIOOfa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 10:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbXIOOfU
+	id S1754608AbXIOOnk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 10:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbXIOOnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 10:35:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48321 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbXIOOfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 10:35:19 -0400
-Message-ID: <46EBEDA4.3070103@garzik.org>
-Date: Sat, 15 Sep 2007 10:35:16 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sat, 15 Sep 2007 10:43:32 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:56208 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751027AbXIOOna (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 10:43:30 -0400
+Date: Sat, 15 Sep 2007 16:43:41 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+Message-ID: <20070915144341.GT3563@stusta.de>
+References: <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org> <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de> <46EBDC06.3030202@s5r6.in-berlin.de> <20070915135314.GS3563@stusta.de> <46EBE821.2080300@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Robin Humble <rjh@cita.utoronto.ca>
-CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Move away from char device ioctls.
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070915135633.GA19482@lemming.cita.utoronto.ca>
-In-Reply-To: <20070915135633.GA19482@lemming.cita.utoronto.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46EBE821.2080300@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Humble wrote:
-> On Fri, Sep 14, 2007 at 03:07:46PM -0400, Jeff Garzik wrote:
->> It is my hope that you will put your skills towards a distributed 
->> filesystem :)  Of the current solutions, GFS (currently in kernel) 
->> scales poorly, and NFS v4.1 is amazingly bloated and overly complex.
->>
->> I've been waiting for years for a smart person to come along and write a 
->> POSIX-only distributed filesystem.
+On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
+> Adrian Bunk wrote:
+> > On Sat, Sep 15, 2007 at 03:20:06PM +0200, Stefan Richter wrote:
+> >> It still doesn't entirely clarify whether users need sd, sr, st, and
+> >> whether thy need sd for the disk with root filesystem.
+> > 
+> > If you want to do it in a really perfect way, help texts aren't the 
+> > solution. You'll have to make the options like CONFIG_BLK_DEV_SR no 
+> > longer be user visible and select'ed through dummy options like e.g.:
+> ...
+> > 	tristate "USB Mass Storage hard disk support"
+> > 	depends on USB_STORAGE
+> > 	select BLK_DEV_SD
+> ...
+> >         tristate "USB Mass Storage CD/DVD support"
+> >         depends on USB_STORAGE
+> > 	select BLK_DEV_SR
+> ...
 > 
-> it's called Lustre.
-> works well, scales well, is widely used, is GPL.
-> sadly it's not in mainline.
+> Perfect is in the eye of the beholder.  You would consequently have to
+> add such options into all menus which contain scsi low-level providers.
 
-Lustre is tilted far too much towards high-priced storage, and needs 
-improvement before it could be considered for mainline.
+Kconfig is a user interface, so perfect is what is best for the
+kconfig users.
 
-	Jeff
+> Also, one more question on whether CONFIG_SCSI ought to be 'select'ed:
+> Where do scsi-core options like CONFIG_SCSI_CONSTANTS go?
 
+The first question is whether it's for actual SCSI hardware [1] or for 
+the block layer functionality which the SCSI subsystem has become.
+The mixture of these two is the root of much user confusion.
 
+With the help text "The error messages regarding your SCSI hardware will 
+be easier to understand if you say Y here" a user wouldn't have expected 
+to see you using it in a firewire driver. But unless I miss anything, 
+the setting of SCSI_SCAN_ASYNC does only affect "real" SCSI hardware.
+
+If you check each option and place it either in the generic storage menu 
+or the SCSI lowlevel menu this would fix much possible user confusion.
+
+But these are relatively unimportant options compared to e.g.
+USB_STORAGE=y, BLK_DEV_SD=n, which is a misconfiguration many
+users run into, so having one menu somewhere with these advanced 
+options should be enough.
+
+> Stefan Richter
+
+cu
+Adrian
+
+[1] SCSI as in "sold as SCSI"
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
