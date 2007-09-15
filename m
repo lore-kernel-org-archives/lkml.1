@@ -1,98 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbXIOQ3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbXIOQmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbXIOQ3L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 12:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbXIOQ25
+	id S1754372AbXIOQmV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 12:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbXIOQmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 12:28:57 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:41370 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751172AbXIOQ24 (ORCPT
+	Sat, 15 Sep 2007 12:42:11 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56510 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751562AbXIOQmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 12:28:56 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 15 Sep 2007 12:27:07 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][RFC] Extend "memparse" to allow a NULL return pointer value.
-Message-ID: <Pine.LNX.4.64.0709151217530.16440@localhost.localdomain>
+	Sat, 15 Sep 2007 12:42:09 -0400
+Date: Sat, 15 Sep 2007 18:42:20 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+Message-ID: <20070915164219.GW3563@stusta.de>
+References: <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de> <46EBDC06.3030202@s5r6.in-berlin.de> <20070915135314.GS3563@stusta.de> <46EBE821.2080300@s5r6.in-berlin.de> <20070915144341.GT3563@stusta.de> <46EBF9DC.1000503@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46EBF9DC.1000503@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Sep 15, 2007 at 05:27:24PM +0200, Stefan Richter wrote:
+> Adrian Bunk wrote:
+> > On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
+> >> Perfect is in the eye of the beholder.  You would consequently have to
+> >> add such options into all menus which contain scsi low-level providers.
+> > 
+> > Kconfig is a user interface, so perfect is what is best for the
+> > kconfig users.
+> 
+> Duplicate options with different names in different menus, but which all
+> do the same, --- is this the best for users?
 
-Extend the memparse() routine to allow a caller to use NULL as the
-second parameter value if he has no interest in that returned value.
+Different to your approach of trying to achieve the same with one huge 
+help text I see a realistic chance of it working.
 
----
+What's other alternatives do we have?
 
-  there appear to be quite a number of calls to "memparse" which have
-no use for the value returned in the second parameter (the current
-pointer after the successful parse), but which are still forced to
-supply a valid char** address since they have no choice but to accept
-that value coming back.  in many cases, that value is accepted just
-before the end of the calling function, making it clear that the value
-is ignored entirely, anyway.
+Automatically select BLK_DEV_SD and BLK_DEV_SR if one driver that uses 
+the SCSI layer gets enabled by the user?
 
-  this patch simply allows NULL as a second parameter to show that the
-caller has no interest in that returned value, and it makes that
-visually more obvious as well.  theoretically, this extension is
-entirely backwards compatible.
+> >> Also, one more question on whether CONFIG_SCSI ought to be 'select'ed:
+> >> Where do scsi-core options like CONFIG_SCSI_CONSTANTS go?
+> > 
+> > The first question is whether it's for actual SCSI hardware [1] or for 
+> > the block layer functionality which the SCSI subsystem has become.
+> > The mixture of these two is the root of much user confusion.
+> > 
+> > With the help text "The error messages regarding your SCSI hardware will 
+> > be easier to understand if you say Y here" a user wouldn't have expected 
+> > to see you using it in a firewire driver.
+> 
+> FireWire hardware which implements SBP-2 is SCSI hardware...  But this
+> detail aside --- yes, of course this help text is old and misleading.
+> 
+> > But unless I miss anything, 
+> > the setting of SCSI_SCAN_ASYNC does only affect "real" SCSI hardware.
+> 
+> It affects every hardware which is driven by scsi low-level providers
+> which have been integrated with the SCSI_SCAN_ASYNC facility.
+> 
+> > If you check each option and place it either in the generic storage menu 
+> > or the SCSI lowlevel menu this would fix much possible user confusion.
+> > 
+> > But these are relatively unimportant options compared to e.g.
+> > USB_STORAGE=y, BLK_DEV_SD=n, which is a misconfiguration many
+> > users run into, so having one menu somewhere with these advanced 
+> > options should be enough.
+> 
+> True.
+> 
+> So,
+>     config SCSI_CONSTANTS
+>         "Kernel log messages from the SCSI subsystem will be easier to
+>         understand if you say Y here..."
+> would say what this option really does.  But to some degree the need to
+> explain what the SCSI subsystem or SCSI core is and which other
+> subsystems make use of it remains.  Maybe it's OK to provide
+> documentation of this kind outside of Kconfig help though.
 
-  compile-tested on i386.  not boot-time tested yet, but i'm just
-asking for feedback.
+This is a debug option and it's unlikely that users will need it unless 
+someone explicitely requested them to do so, so it's not such an 
+important issue.
 
+> > [1] SCSI as in "sold as SCSI"
+> 
+> Difficult.  Does e.g. hardware sold as SAS count as "sold as SCSI"?  How
+> about SBP-2 then?  ;-)
 
-diff --git a/lib/cmdline.c b/lib/cmdline.c
-index f596c08..53a668f 100644
---- a/lib/cmdline.c
-+++ b/lib/cmdline.c
-@@ -128,9 +128,11 @@ char *get_options(const char *str, int nints, int *ints)
+If SBP-2 is what you get in a shop when asking for an external
+Firewire disk enclosure then it's not sold as SCSI.
 
- unsigned long long memparse (char *ptr, char **retptr)
- {
--	unsigned long long ret = simple_strtoull (ptr, retptr, 0);
-+	char *localptr;
+> Stefan Richter
 
--	switch (**retptr) {
-+	unsigned long long ret = simple_strtoull (ptr, &localptr, 0);
-+
-+	switch (*localptr) {
- 	case 'G':
- 	case 'g':
- 		ret <<= 10;
-@@ -140,10 +142,15 @@ unsigned long long memparse (char *ptr, char **retptr)
- 	case 'K':
- 	case 'k':
- 		ret <<= 10;
--		(*retptr)++;
-+		localptr++;
- 	default:
- 		break;
- 	}
-+
-+	if (retptr) {
-+		*retptr = localptr;
-+	}
-+
- 	return ret;
- }
-
+cu
+Adrian
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
 
-http://crashcourse.ca
-========================================================================
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
