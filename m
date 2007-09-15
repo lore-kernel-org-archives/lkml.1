@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760331AbXIOBmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbXIOBtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760331AbXIOBmQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 21:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXIOBmD
+	id S932480AbXIOBtf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 21:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbXIOBt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 21:42:03 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26700 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbXIOBmC (ORCPT
+	Fri, 14 Sep 2007 21:49:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41089 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754940AbXIOBt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 21:42:02 -0400
-Date: Fri, 14 Sep 2007 18:40:17 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Wilder <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
-       SystemTAP <systemtap@sources.redhat.com>
-Subject: Re: [PATCH 1/2] Trace code and documentation
-Message-Id: <20070914184017.426e26b3.randy.dunlap@oracle.com>
-In-Reply-To: <20070914180840.579627ab.akpm@linux-foundation.org>
-References: <46E9CB14.7060000@us.ibm.com>
-	<20070914180840.579627ab.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 14 Sep 2007 21:49:26 -0400
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Johannes Stezenbach <js@linuxtv.org>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>
+In-Reply-To: <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
+References: <20070913131353.GB26972@linuxtv.org>
+	 <46E95C54.4060502@gmail.com>
+	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+	 <46E99F36.8090809@hauppauge.com>
+	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+	 <46E9DDC7.4000403@hauppauge.com>
+	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+	 <20070914113838.GA29962@linuxtv.org>
+	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+	 <20070914204343.GA9058@linuxtv.org>
+	 <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 14 Sep 2007 22:49:16 -0300
+Message-Id: <1189820956.5359.10.camel@gaivota>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.11.92-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007 18:08:40 -0700 Andrew Morton wrote:
+> Beside that I'm just curious how much did you contribute
+> during the last 2 years to the lkml/linux kernel, and how much
+> do you want to contribute in future? (also from my side
+> talk is cheap (even for me) but getting something done costs
+> quite some time and feedback from other people)
 
-> > Trace - Provides tracing primitives
-> > 
-> > ...
-> >
-> > +config TRACE
-> > +	bool "Trace setup and control"
-> > +	select RELAY
-> > +	select DEBUG_FS
-> > +	help
-> > +	  This option provides support for the setup, teardown and control
-> > +	  of tracing channels from kernel code.  It also provides trace
-> > +	  information and control to userspace via a set of debugfs control
-> > +	  files.  If unsure, say N.
-> > +
-> 
-> select is evil - you really want to avoid using it.
+Contributing doesn't necessarily means submitting patches. There are
+several good guys at the community offering very valuable contributions,
+like patchset reviews, good comments, userspace experiences, etc.
 
-I checked when I reviewed(?) this patch.  There are a few other
-places that select also (IIRC, the blktrace code does), but most of
-them use depends on.
+Johannes does a very impressive work of maintaining, almost alone,
+LinuxTV website, upgrading the system, monitoring disk spaces, taking
+backups, etc. Also, he is always available to discuss the most important
+changes at APIs and to defend the Open Source community, providing his
+very clear point of view.
 
-> The problem is where you select a symbol whose dependencies aren't met. 
-> Kconfig resolves this incompatibility by just not selecting the thing you
-> wanted, iirc.  So your CONFIG_SYSFS=n, CONFIG_TRACE=y kernel won't build.
-> 
-> > +/*
-> > + * Based on blktrace code, Copyright (C) 2006 Jens Axboe <axboe@suse.de>
-> 
-> So can we migrate blktrace to using this?
+Thank you, Johannes for all your good work!
 
-> > +static ssize_t sub_size_read(struct file *filp, char __user *buffer,
-> > +			     size_t count, loff_t *ppos)
-> > +{
-> > +	struct trace_info *trace = filp->private_data;
-> > +	char buf[32];
-> > +
-> > +	snprintf(buf, sizeof(buf), "%u\n",
-> > +		 (unsigned int)trace->rchan->subbuf_size);
-> 
-> Use %tu to print a size_t, rather than the typecast.
+-- 
+Cheers,
+Mauro
 
-Eh?
-Use %zu to print a size_t.  Use %tu to print a ptrdiff_t.
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
