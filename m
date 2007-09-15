@@ -1,178 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbXIOKsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbXIOKum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759596AbXIOKsq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 06:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbXIOKsi
+	id S1759213AbXIOKum (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 06:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXIOKuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 06:48:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50703 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751900AbXIOKsh (ORCPT
+	Sat, 15 Sep 2007 06:50:35 -0400
+Received: from ppsw-8.csi.cam.ac.uk ([131.111.8.138]:45704 "EHLO
+	ppsw-8.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbXIOKuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 06:48:37 -0400
-Date: Sat, 15 Sep 2007 03:48:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christian Volkmann <haveaniceday@cv-sv.de>
-Cc: linux-kernel@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.23-rc6: usb 1-1: device not accepting address 2, error -62
-Message-Id: <20070915034819.3e695370.akpm@linux-foundation.org>
-In-Reply-To: <46EAFCF7.1030907@cv-sv.de>
-References: <46EAFCF7.1030907@cv-sv.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 15 Sep 2007 06:50:35 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <1189850897.21778.301.camel@twins>
+References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk> <1189850897.21778.301.camel@twins>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C9A68AAE-0B37-4BB5-A9E6-66C186566940@cam.ac.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
 Content-Transfer-Encoding: 7bit
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: VM/VFS bug with large amount of memory and file systems?
+Date: Sat, 15 Sep 2007 11:50:23 +0100
+To: marc.smith@esmail.mcc.edu, Peter Zijlstra <peterz@infradead.org>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Let's cc the USB mailing list.
+Thanks for looking into this.
 
-On Fri, 14 Sep 2007 23:28:23 +0200 Christian Volkmann <haveaniceday@cv-sv.de> wrote:
-
-> Hi everybody,
-> 
-> I have an error message with 2.6.23-rc6.
-> This did not happen with 2.6.22.
-
-Another one for Michal's dirt file.
-
-> The kernel reports message like this:
->  <3>usb 1-1: device not accepting address 2, error -62
->  <3>hub 2-2.1:1.0: hub_port_status failed (err = -71)
-> 
-> Does this message harm or is something broken in 2.6.23-rc6 ?
-> I get this kind of messages also with 2.6.23-rc3
-
-Does the machine otherwise work OK?
-
-Even if it does, I don't think we should be (newly) spraying scary messages
-like that at people.
-
-> Best regards,
-> 
-> Christian
-> 
-> 
-> Please see below for:
-> 
-> grep -e hub -e usb boot.msg for a 2.6.23-rc6 boot. (that boot was without (err = -71)
-> grep -e hub -e usb boot.msg for a 2.6.22 boot.
-> lspci -vnn (2.6.22)
-> lsusb -v (2.6.22)
-> 
-> 
-> 2.6.23-rc6 boot.msg extract ( hub/usb )
-> 
-> <6>usbcore: registered new interface driver usbfs
-> <6>usbcore: registered new interface driver hub
-> <6>usbcore: registered new device driver usb
-> <6>usb usb1: configuration #1 chosen from 1 choice
-> <6>hub 1-0:1.0: USB hub found
-> <6>hub 1-0:1.0: 2 ports detected
-> <6>usb usb2: configuration #1 chosen from 1 choice
-> <6>hub 2-0:1.0: USB hub found
-> <6>hub 2-0:1.0: 2 ports detected
-> <6>usb 1-1: new low speed USB device using ohci_hcd and address 2
-> <6>usb usb3: configuration #1 chosen from 1 choice
-> <6>hub 3-0:1.0: USB hub found
-> <6>hub 3-0:1.0: 2 ports detected
-> <6>usb usb4: configuration #1 chosen from 1 choice
-> <6>hub 4-0:1.0: USB hub found
-> <6>hub 4-0:1.0: 6 ports detected
-> <6>usb usb5: configuration #1 chosen from 1 choice
-> <6>hub 5-0:1.0: USB hub found
-> <6>hub 5-0:1.0: 2 ports detected
-> <3>usb 1-1: device not accepting address 2, error -62
-> <6>usb 5-2: new full speed USB device using uhci_hcd and address 2
-> <6>usb usb6: configuration #1 chosen from 1 choice
-> <6>hub 6-0:1.0: USB hub found
-> <6>hub 6-0:1.0: 4 ports detected
-> <6>usb usb7: configuration #1 chosen from 1 choice
-> <6>hub 7-0:1.0: USB hub found
-> <6>hub 7-0:1.0: 2 ports detected
-> <6>usb 1-1: new low speed USB device using ohci_hcd and address 4
-> <6>usb 1-1: configuration #1 chosen from 1 choice
-> <6>usb 2-1: new full speed USB device using ohci_hcd and address 2
-> <6>usb 2-1: configuration #1 chosen from 1 choice
-> <6>usb 6-2: new high speed USB device using ehci_hcd and address 2
-> <6>usb 6-2: configuration #1 chosen from 1 choice
-> <6>hub 6-2:1.0: USB hub found
-> <6>hub 6-2:1.0: 2 ports detected
-> <6>usbcore: registered new interface driver hiddev
-> <6>input: USB HID v1.11 Mouse [USB Optical Mouse] on usb-0000:00:03.0-1
-> <6>usbcore: registered new interface driver usbhid
-> <6>drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
-> <7>usb-storage: device found at 2
-> <7>usb-storage: waiting for device to settle before scanning
-> <6>usb 6-2.1: new high speed USB device using ehci_hcd and address 3
-> <6>usb 6-2.1: configuration #1 chosen from 1 choice
-> <6>hub 6-2.1:1.0: USB hub found
-> <6>hub 6-2.1:1.0: 4 ports detected
-> <6>usb 6-2.1.1: new high speed USB device using ehci_hcd and address 4
-> <6>usb 6-2.1.1: configuration #1 chosen from 1 choice
-> <7>usb-storage: device found at 4
-> <7>usb-storage: waiting for device to settle before scanning
-> <6>usbcore: registered new interface driver usb-storage
-> <7>usb-storage: device scan complete
-> <7>usb-storage: device scan complete
-> 
-> 2.6.22 boot.msg extract ( hub/usb )
-> 
-> <6>usbcore: registered new interface driver usbfs
-> <6>usbcore: registered new interface driver hub
-> <6>usbcore: registered new device driver usb
-> <6>usb usb1: configuration #1 chosen from 1 choice
-> <6>hub 1-0:1.0: USB hub found
-> <6>hub 1-0:1.0: 2 ports detected
-> <6>usb usb2: configuration #1 chosen from 1 choice
-> <6>hub 2-0:1.0: USB hub found
-> <6>hub 2-0:1.0: 2 ports detected
-> <6>usb 1-1: new low speed USB device using ohci_hcd and address 2
-> <6>usb usb3: configuration #1 chosen from 1 choice
-> <6>hub 3-0:1.0: USB hub found
-> <6>hub 3-0:1.0: 2 ports detected
-> <6>usb 1-1: configuration #1 chosen from 1 choice
-> <6>usb usb4: configuration #1 chosen from 1 choice
-> <6>hub 4-0:1.0: USB hub found
-> <6>hub 4-0:1.0: 6 ports detected
-> <6>usb 1-1: USB disconnect, address 2
-> <6>usb usb5: configuration #1 chosen from 1 choice
-> <6>hub 5-0:1.0: USB hub found
-> <6>hub 5-0:1.0: 4 ports detected
-> <6>usb usb6: configuration #1 chosen from 1 choice
-> <6>hub 6-0:1.0: USB hub found
-> <6>hub 6-0:1.0: 2 ports detected
-> <6>usb usb7: configuration #1 chosen from 1 choice
-> <6>hub 7-0:1.0: USB hub found
-> <6>hub 7-0:1.0: 2 ports detected
-> <6>usb 5-2: new high speed USB device using ehci_hcd and address 2
-> <6>usb 5-2: configuration #1 chosen from 1 choice
-> <6>hub 5-2:1.0: USB hub found
-> <6>hub 5-2:1.0: 2 ports detected
-> <6>usb 1-1: new low speed USB device using ohci_hcd and address 3
-> <6>usb 1-1: configuration #1 chosen from 1 choice
-> <6>usbcore: registered new interface driver hiddev
-> <6>usb 2-1: new full speed USB device using ohci_hcd and address 2
-> <6>usb 2-1: configuration #1 chosen from 1 choice
-> <6>usb 5-2.1: new high speed USB device using ehci_hcd and address 3
-> <6>usb 5-2.1: configuration #1 chosen from 1 choice
-> <6>hub 5-2.1:1.0: USB hub found
-> <6>hub 5-2.1:1.0: 4 ports detected
-> <6>input: USB HID v1.11 Mouse [USB Optical Mouse] on usb-0000:00:03.0-1
-> <7>usb-storage: device found at 2
-> <7>usb-storage: waiting for device to settle before scanning
-> <6>usb 5-2.1.1: new high speed USB device using ehci_hcd and address 4
-> <6>usb 5-2.1.1: configuration #1 chosen from 1 choice
-> <6>usbcore: registered new interface driver usbhid
-> <7>usb-storage: device found at 4
-> <7>usb-storage: waiting for device to settle before scanning
-> <6>usbcore: registered new interface driver usb-storage
-> <6>drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
-> <7>usb-storage: device scan complete
-> <7>usb-storage: device scan complete
-> 
-> [system info snipped ]
+On 15 Sep 2007, at 11:08, Peter Zijlstra wrote:
+> On Sat, 2007-09-15 at 08:27 +0100, Anton Altaparmakov wrote:
 >
+> Please, don't word wrap log-files, they're hard enough to read without
+> it :-(
+>
+> ( I see people do this more and more often, *WHY*? is that because we
+> like 80 char lines, in code and email? )
+
+I haven't word wrapped it at all.  The lines appear as whole lines in  
+Apple Mail (my email client).  It must be your email client that is  
+wrapping them...
+
+> Anyway, looks like all of zone_normal is pinned in kernel allocations:
+>
+>> Sep 13 15:31:25 escabot Normal free:3648kB min:3744kB low:4680kB  
+>> high: 5616kB active:0kB inactive:3160kB present:894080kB  
+>> pages_scanned:5336 all_unreclaimable? yes
+>
+> Out of the 870 odd mb only 3 is on the lru.
+>
+> Would be grand it you could have a look at slabinfo and the like.
+
+Ok, Marc, would you be able to do the copy to /dev/null again (booted  
+without the ram=2G option) and when you see that most of the memory  
+has gone run:
+
+cat /proc/slabinfo > slabinfo.txt
+cat /proc/meminfo > meminfo.txt
+cat /proc/vmstat > vmstat.txt
+cat /proc/zoneinfo > zoneinfo.txt
+
+Then quickly abort the copy with "Ctrl+C" so hopefully you will not  
+get a kernel panic...
+
+Please send the content of the generated files.  Thanks.
+
+That should hopefully show what in the kernel has eaten all the low  
+memory...
+
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
+
