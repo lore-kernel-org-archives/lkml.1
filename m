@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbXIODFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932732AbXIODGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbXIODFz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 23:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXIODFr
+	id S932732AbXIODGW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 23:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759144AbXIODGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 23:05:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:39601 "EHLO ozlabs.org"
+	Fri, 14 Sep 2007 23:06:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:39615 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754690AbXIODFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 23:05:47 -0400
-Subject: Re: [PATCH] Refactor hypercall infrastructure
+	id S1754068AbXIODGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 23:06:13 -0400
+Subject: Re: [PATCH 2/3] Consolidate host virtualization support under
+	Virtualization menu
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Anthony Liguori <aliguori@us.ibm.com>, kvm-devel@lists.sourceforge.net,
-       Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>,
-       Dor Laor <dor.laor@qumranet.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <46EAF4C6.8090903@goop.org>
-References: <11897991353793-git-send-email-aliguori@us.ibm.com>
-	 <46EAF4C6.8090903@goop.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: jengelh@gmx.de, lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
+       Anthony Liguori <aliguori@us.ibm.com>
+In-Reply-To: <20070914091921.73007c5a.randy.dunlap@oracle.com>
+References: <1189747054.7262.34.camel@localhost.localdomain>
+	 <1189747124.7262.36.camel@localhost.localdomain>
+	 <20070914091921.73007c5a.randy.dunlap@oracle.com>
 Content-Type: text/plain
-Date: Sat, 15 Sep 2007 12:35:02 +1000
-Message-Id: <1189823702.7262.68.camel@localhost.localdomain>
+Date: Sat, 15 Sep 2007 13:05:04 +1000
+Message-Id: <1189825504.7262.75.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-14 at 13:53 -0700, Jeremy Fitzhardinge wrote:
-> Anthony Liguori wrote:
-> > This patch refactors the current hypercall infrastructure to better support live
-> > migration and SMP.  It eliminates the hypercall page by trapping the UD
-> > exception that would occur if you used the wrong hypercall instruction for the
-> > underlying architecture and replacing it with the right one lazily.
-> >   
+On Fri, 2007-09-14 at 09:19 -0700, Randy Dunlap wrote:
+> On Fri, 14 Sep 2007 15:18:44 +1000 Rusty Russell wrote:
 > 
-> I guess it would be pretty rude/unlikely for these opcodes to get reused
-> in other implementations...  But couldn't you make the page trap
-> instead, rather than relying on an instruction fault?
+> > We turn "Virtualization" into a menu, not a config option, since it's
+> > actually only used as a menu.  Then we move lguest under that menu.
+> 
+> so you want to revert the 2007-july-16 merge that changes
+> menu -> menuconfig and makes most of the menus consistent in
+> presentation.  I'd rather not, but I don't own it.
 
-That's a pain for inline hypercalls tho.  I was planning on moving
-lguest to this model (which is interesting, because AFAICT this insn
-will cause a #UD or #GP depending on whether VT is supported on this box
-so I have to look for both).
+Ok, I missed that one.  To me it seems gratuitous to create a config
+option simply to control a menu.  However if that is considered the
+Right Way, here is the "Just move lguest" variant.
 
-Cheers,
+> And Yes, lguest does need to be moved into a better location.
+
+Indeed,
 Rusty.
+===
+Move lguest under the virtualization menu.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r c2893801de2a drivers/Kconfig
+--- a/drivers/Kconfig	Fri Sep 14 13:24:46 2007 +1000
++++ b/drivers/Kconfig	Fri Sep 14 13:24:49 2007 +1000
+@@ -87,6 +87,4 @@ source "drivers/kvm/Kconfig"
+ source "drivers/kvm/Kconfig"
+ 
+ source "drivers/uio/Kconfig"
+-
+-source "drivers/lguest/Kconfig"
+ endmenu
+diff -r c2893801de2a drivers/kvm/Kconfig
+--- a/drivers/kvm/Kconfig	Fri Sep 14 13:24:46 2007 +1000
++++ b/drivers/kvm/Kconfig	Fri Sep 14 13:32:22 2007 +1000
+@@ -45,4 +36,8 @@ config KVM_AMD
+ 	  Provides support for KVM on AMD processors equipped with the AMD-V
+ 	  (SVM) extensions.
+ 
+-endif # VIRTUALIZATION
++# OK, it's a little counter-intuitive to do this, but it puts it neatly under
++# the virtualization menu.
++source drivers/lguest/Kconfig
++
++endif # VIRTUALIZATION
+
+
 
