@@ -1,70 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbXIOHLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbXIOHZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760272AbXIOHLy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 03:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbXIOHLq
+	id S1753382AbXIOHZv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 03:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXIOHZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 03:11:46 -0400
-Received: from mail-in-04.arcor-online.net ([151.189.21.44]:60524 "EHLO
-	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751038AbXIOHLp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 03:11:45 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Jon Ivar Rykkelid <jonry@pvv.org>
-Subject: Re: sata_nv issues with MCP51 SATA controller
-Date: Sat, 15 Sep 2007 09:12:28 +0200
-User-Agent: KMail/1.9.7
-Cc: Robert Hancock <hancockr@shaw.ca>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-References: <46E8EABF.3060409@pvv.org> <46EA97F0.9000300@pvv.org> <46EAF099.9070805@pvv.org>
-In-Reply-To: <46EAF099.9070805@pvv.org>
+	Sat, 15 Sep 2007 03:25:44 -0400
+Received: from web52012.mail.re2.yahoo.com ([206.190.48.28]:33614 "HELO
+	web52012.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751053AbXIOHZn convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 03:25:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=wlWoInOuNxptiKDyIMWng8WOpLqGXzfyR/N/rMw+3ShWno8KNj5XkxajfJT8m/XTQI6uNCV9bpCovO7HABKLYVMVeyOw23oZOe++wHBnsfK1W9Vuq8nuh3nUavbPQA7yQxgeIszHCBl4EMDSrMj2Sfn4+MAsEq9ySSyHfXUqK1Y=;
+X-YMail-OSG: .oE3da4VM1lX.h2SVksQEOlc3rw8Cq.0FD0pUZl.UOJYV46WQuXqYV9KJlwbTpBlEbcBP9Y9SqMQYKQwEjMuLobqTuB_9bInZTa79ACGxYYElMCyFjWwWy.1ZtpIOQ--
+X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
+Date: Sat, 15 Sep 2007 00:25:42 -0700 (PDT)
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: [PATCH] [Bug 9020] atomic_ops.txt has incorrect, misleading and insufficient information
+To: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4496046.INa2oGmIMX";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709150912.28358.prakash@punnoor.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <492914.76824.qm@web52012.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4496046.INa2oGmIMX
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
 
-On the day of Friday 14 September 2007 Jon Ivar Rykkelid hast written:
-> Hi, I'm getting inmore confident that the driver is the issue.
->
->
-> (Or have anyone EVER been successful with the latest kernel/driver on
-> this HW)?
+atomic_ops.txt has incorrect, misleading and insufficient
+information about semantics of initializer, atomic_set, atomic_read and atomic_xchg. 
+It also incorrectly implies that operations mentioned above are not actual atomic operations.
+Included is most of the patch Document non-semantics of atomic_read() and atomic_set() by Chris Snook, 
+except the word "assignment".
 
-I don't have exaclty the same hw, but the same chipset and I don't have any=
-=20
-problems - even with the swncq patch applied. Do you have an hpet? If not,=
-=20
-try booting with acpi_use_time_override. My system won't work with skipping=
-=20
-the override.
+Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+---
 
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+--- linux-2.6.23-rc6/Documentation-atomic_ops.txt    2007-09-14 23:49:20.126251500 +0300
++++ linux-2.6.23/Documentation-atomic_ops.txt    2007-09-15 09:56:16.136312500 +0300
+@@ -12,7 +12,11 @@ Also, it should be made opaque such that
+ C integer type will fail.  Something like the following should
+ suffice:
+ 
+-    typedef struct { volatile int counter; } atomic_t;
++    typedef struct { int counter; } atomic_t;
++
++    Historically, counter has been declared volatile.  This is now
++discouraged.  See Documentation/volatile-considered-harmful.txt for the
++complete rationale.
+ 
+     The first operations to implement for atomic_t's are the
+ initializers and plain reads.
+@@ -24,6 +28,13 @@ The first macro is used in definitions, 
+ 
+ static atomic_t my_counter = ATOMIC_INIT(1);
+ 
++The initializer is atomic in that the return values of the atomic
++operations are guaranteed to be correct reflecting the initialized
++value if the initializer is used before runtime. If the initializer
++is used at runtime, a proper implicit or explicit read memory barrier
++is needed before reading the value with atomic_read from another
++thread.
++
+ The second interface can be used at runtime, as in:
+ 
+     struct foo { atomic_t counter; };
+@@ -36,13 +47,45 @@ The second interface can be used at runt
+         return -ENOMEM;
+     atomic_set(&k->counter, 0);
+ 
++The setting is atomic in that the return values of the atomic
++operations by all threads are guaranteed to be correct reflecting
++either the value before the setting or the value that has been set
++with this setting. A proper implicit or explicit memory barrier is
++needed before the value set with the operation is guaranteed to be
++readable with atomic_read from another thread.
++
+ Next, we have:
+ 
+     #define atomic_read(v)    ((v)->counter)
+ 
+-which simply reads the current value of the counter.
++which simply reads the counter value currently visible to the calling
++thread. The read is atomic in that the return value is guaranteed to
++be one of the values initialized or modified with the interface
++operations if a proper implicit or explicit memory barrier is used
++after possible runtime initialization by any other thread and the
++value is modified only with the interface operations. atomic_read
++does not guarantee that the runtime initialization by any other
++thread is visible yet, so the user of the interface must take care of
++that with a proper implicit or explicit memory barrier.
++
++*** WARNING: atomic_read() and atomic_set() DO NOT IMPLY BARRIERS! ***
++
++Some architectures may choose to use the volatile keyword, barriers, or
++inline assembly to guarantee some degree of immediacy for atomic_read()
++and atomic_set().  This is not uniformly guaranteed, and may change in
++the future, so all users of atomic_t should treat atomic_read() and
++atomic_set() as simple C statements that may be reordered or
++optimized away entirely by the compiler or processor, and explicitly
++invoke the appropriate compiler and/or memory barrier for each use case.
++Failure to do so will result in code that may suddenly break when used with
++different architectures or compiler optimizations, or even changes in
++unrelated code which changes how the compiler optimizes the section
++accessing atomic_t variables.
+ 
+-Now, we move onto the actual atomic operation interfaces.
++*** YOU HAVE BEEN WARNED! ***
++
++Now, we move onto the atomic operation interfaces typically
++implemented with the help of assembly code.
+ 
+     void atomic_add(int i, atomic_t *v);
+     void atomic_sub(int i, atomic_t *v);
+@@ -117,6 +160,12 @@ operation.
+ 
+ Then:
+ 
++      int atomic_xchg(atomic_t *v, int new);
++
++This performs an atomic exchange operation on the atomic variable v,
++with the given new value. It returns the old value that the atomic
++variable v had just before the operation.
++
+     int atomic_cmpxchg(atomic_t *v, int old, int new);
+ 
+ This performs an atomic compare exchange operation on the atomic value v,
 
---nextPart4496046.INa2oGmIMX
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
 
-iD8DBQBG64XcxU2n/+9+t5gRAszKAKCnhayrG2I/H0lCgD+gXx9auiIuKwCgmfd1
-oHrcTXYb8G2k78izW1PwAHY=
-=pBJY
------END PGP SIGNATURE-----
 
---nextPart4496046.INa2oGmIMX--
+
+      Machen Sie Yahoo! zu Ihrer Startseite. Los geht's: 
+http://de.yahoo.com/set
