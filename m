@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbXIORm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbXIORuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbXIORm5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 13:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXIORmv
+	id S1755501AbXIORuM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 13:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbXIORuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 13:42:51 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:59120 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752207AbXIORmu (ORCPT
+	Sat, 15 Sep 2007 13:50:00 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:36530 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751562AbXIORuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 13:42:50 -0400
-Date: Sat, 15 Sep 2007 19:42:49 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-cc: Andreas Schwab <schwab@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add consts where appropriate in sound/pci/hda/*
-In-Reply-To: <200709151447.44890.vda.linux@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0709151942340.24423@fbirervta.pbzchgretzou.qr>
-References: <200709141848.06027.vda.linux@googlemail.com>
- <200709151242.38464.vda.linux@googlemail.com> <jeps0kyue5.fsf@sykes.suse.de>
- <200709151447.44890.vda.linux@googlemail.com>
+	Sat, 15 Sep 2007 13:50:00 -0400
+Message-ID: <46EC1B24.1010600@gmail.com>
+Date: Sat, 15 Sep 2007 19:49:24 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@osdl.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] lib/iomap.c:bad_io_access() -- print 0x hex prefix
+Content-Type: multipart/mixed;
+ boundary="------------040901020606030901050706"
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------040901020606030901050706
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Sep 15 2007 14:47, Denys Vlasenko wrote:
->> Try size -A instead.
->
->thanks, didn't know that.
->
->$ size -A busybox
->busybox  :
->section       size        addr
->.init           28   134512788
->addr in decimal?! wow...
+Hi Andrew.
 
-Try size -x instead.
+Trivial -- be explicit about printing hex.
+
+Rene
+
+--------------040901020606030901050706
+Content-Type: text/plain;
+ name="bad_io_access-hex.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bad_io_access-hex.diff"
+
+diff --git a/lib/iomap.c b/lib/iomap.c
+index a57d262..5dfcbde 100644
+--- a/lib/iomap.c
++++ b/lib/iomap.c
+@@ -40,7 +40,7 @@ static void bad_io_access(unsigned long port, const char *access)
+ 	static int count = 10;
+ 	if (count) {
+ 		count--;
+-		printk(KERN_ERR "Bad IO access at port %lx (%s)\n", port, access);
++		printk(KERN_ERR "Bad IO access at port %#lx (%s)\n", port, access);
+ 		WARN_ON(1);
+ 	}
+ }
+
+--------------040901020606030901050706--
