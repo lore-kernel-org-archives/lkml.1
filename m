@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXIOE2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbXIOEkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbXIOE2j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 00:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbXIOE2b
+	id S1760231AbXIOEkn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 00:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbXIOEke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 00:28:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59730 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750786AbXIOE2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 00:28:30 -0400
-Date: Fri, 14 Sep 2007 21:28:12 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: crashme fault
-In-Reply-To: <20070912222151.70d1fc7d.randy.dunlap@oracle.com>
-Message-ID: <alpine.LFD.0.999.0709142101140.16478@woody.linux-foundation.org>
-References: <20070912222151.70d1fc7d.randy.dunlap@oracle.com>
+	Sat, 15 Sep 2007 00:40:34 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:60646 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751148AbXIOEkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 00:40:32 -0400
+Date: Sat, 15 Sep 2007 00:40:30 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Move away from char device ioctls.
+Message-ID: <20070915044030.GA702@fieldses.org>
+References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070914211210.GB12444@fieldses.org> <46EAF9CD.1090808@garzik.org> <20070914211828.GC12444@fieldses.org> <46EB0BEB.2090808@garzik.org> <20070914224212.GJ12444@fieldses.org> <46EB5ACA.5000207@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46EB5ACA.5000207@garzik.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 12 Sep 2007, Randy Dunlap wrote:
+On Sat, Sep 15, 2007 at 12:08:42AM -0400, Jeff Garzik wrote:
+> J. Bruce Fields wrote:
+>> No, servers are required to support ordinary nfs operations to the
+>> metadata server.
+>> At least, that's the way it was last I heard, which was a while ago.  I
+>> agree that it'd stink (for any number of reasons) if you ever *had* to
+>> get a layout to access some file.
+>> Was that your main concern?
 >
-> I run almost-daily kernel testing.  I haven't seen 'crashme' cause a
-> kernel fault until today, and now I've seen it twice on 2.6.23-rc6-git2,
-> x86_64.  After the first fault, I ran 'crashme' about 10 more times
-> to get the second fault (usually for 10 minutes, one time for 30
-> minutes).
+> I just sorta assumed you could fall back to the NFSv4.0 mode of operation, 
+> going through the metadata server for all data accesses.
 
-Interesting. If this is reproducible for you, can you try to narrow down 
-(with bit-bisect) roughly when it started.
+Right.  So any two pNFS implementations *will* be able to talk to each
+other; they just may not be able to use the (possibly higher-bandwidth)
+read/write path that pNFS gives them.
 
-> There is very little helpful info.  RIP is strange, e.g.: 000000000051b446
-> The call stack is not printed.  No kernel symbols are printed,
-> even though I have CONFIG_KALLSYMS{_ALL}=y.
+> But look at that choice in practice:  you can either ditch pNFS completely, 
+> or use a proprietary solution.  The market incentives are CLEARLY tilted in 
+> favor of makers of proprietary solutions.
 
-It looks like it's a page fault as a result of a *user*space* access, and 
-most likely your machine would continue happily, except you have 
-"panic_on_oops" set, so when the oops happens, it shuts the system down.
+I doubt somebody would go to all the trouble to implement pNFS and then
+present their customers with that kind of choice.  But maybe I'm missing
+something.  What market incentives do you see that would make that more
+attractive than either 1) using a standard fully-specified layout type,
+or 2) just implementing your own proprietary protocol instead of pNFS?
 
-Now, the reason I say it looks like a user space access is that you have
+> Overall, my main concern is that NFSv4.1 is no longer an open architecture 
+> solution.  The "no-pNFS or proprietary platform" choice merely illustrate 
+> one of many negative aspects of this architecture.
 
-	RIP: 0033:[<0000000000510eea>]
-	RSP: 002b:00007fffc9a8ec10
+It's always been possible to extend NFS in various ways if you want.
+You could use sideband protocols with v2 and v3, for example.  People
+have done that.  Some of them have been standardized and widely
+implemented, some haven't.  You could probably add your own compound ops
+to v4 if you wanted, I guess.
 
-which are all user space segments. So the register contents clearly say 
-"page fault in user space".
+And there's advantages to experimenting with extensions first and then
+standardizing when you figure out what works.  I wish it happened that
+way more often.
 
-However, what makes the kernel oops (rather than just send a SIGSEGV) is 
-that the page fault "error code" is zero (that's the number that is 
-printed out just after the "Oops" string). For a normal user space access, 
-you should have bit #2 set in the error code.
+> Now, for the first time in NFS's history (AFAIK), the protocol is no longer 
+> completely specified, completely known.  No longer a "closed loop."  
+> Private layout types mean that it is _highly_ unlikely that any OS or 
+> appliance or implementation will be able to claim "full NFS compatibility."
 
-So the kernel thinks it's a kernel page fault, because the page fault 
-error code says so. But everything else seems to indicate that it's really 
-user mode.. It would be very interesting to hear when this started 
-happening.
+Do you know of any such "private layout types"?
 
-Even if you cannot bisect it down all the way, since you say that you do 
-almost daily kernel testing, is this really new to 2.6.23-rc6-git2, and 
-2.6.23-rc6-git1 was fine? 
+This is kind of a boring argument, isn't it?  I'd rather hear whatever
+ideas you have for a new distributed filesystem protocol.
 
-Andi, anything comes to mind?
-
-			Linus
-
----
-> [ 7487.208128] Unable to handle kernel paging request at 00000000ff019b53 RIP:
-> [ 7487.212752]  [<0000000000510eea>]
-> [ 7487.218537] PGD 10c1a2067 PUD 0
-> [ 7487.221811] Oops: 0000 [1] SMP
-> [ 7487.224989] CPU 2
-> [ 7487.227024] Modules linked in: loop
-> [ 7487.230550] Pid: 19139, comm: crashme Not tainted 2.6.23-rc6-git2 #1
-> [ 7487.236896] RIP: 0033:[<0000000000510eea>]  [<0000000000510eea>]
-> [ 7487.242925] RSP: 002b:00007fffc9a8ec10  EFLAGS: 00010e83
-> [ 7487.248234] RAX: 00000000ffff8c4a RBX: 00000000004014f1 RCX: 00002b20e11c8b37
-> [ 7487.255361] RDX: 0000000000510ee0 RSI: 0000000000000000 RDI: 000000000000000a
-> [ 7487.262489] RBP: 00007fffc9a8ec10 R08: 00007fffc9a8eb60 R09: 0000000000000000
-> [ 7487.269616] R10: 0000000000000008 R11: 0000000000000612 R12: 0000000000000000
-> [ 7487.276743] R13: 00007fffc9a8ee00 R14: 0000000000000000 R15: 0000000000000000
-> [ 7487.283871] FS:  00002b20e13676d0(0000) GS:ffff81011fc75840(0000) knlGS:0000000000000000
-> [ 7487.291952] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> [ 7487.297693] CR2: 00000000ff019b53 CR3: 000000005be6b000 CR4: 00000000000006e0
-> [ 7487.304821] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [ 7487.311949] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [ 7487.319076] Process crashme (pid: 19139, threadinfo ffff810106830000, task ffff810102cf5040)
-> [ 7487.327511]
-> [ 7487.329009] RIP  [<0000000000510eea>]
-> [ 7487.332690]  RSP <00007fffc9a8ec10>
-> [ 7487.336180] CR2: 00000000ff019b53
-> [ 7487.339810] Kernel panic - not syncing: Fatal exception
+--b.
