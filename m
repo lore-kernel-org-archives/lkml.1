@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbXIOLu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbXIOMGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbXIOLu2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 07:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXIOLuW
+	id S1752622AbXIOMGz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 08:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbXIOMGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 07:50:22 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:58553 "EHLO
+	Sat, 15 Sep 2007 08:06:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:51593 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbXIOLuV (ORCPT
+	with ESMTP id S1750816AbXIOMGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 07:50:21 -0400
-Message-ID: <46EBC6E8.7040808@cv-sv.de>
-Date: Sat, 15 Sep 2007 13:50:00 +0200
+	Sat, 15 Sep 2007 08:06:46 -0400
+Message-ID: <46EBCAB6.1070003@cv-sv.de>
+Date: Sat, 15 Sep 2007 14:06:14 +0200
 From: Christian Volkmann <haveaniceday@cv-sv.de>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.6) Gecko/20070803 SUSE/1.1.4-3.1 SeaMonkey/1.1.4
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org,
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        linux-usb-devel@lists.sourceforge.net, haveaniceday@cv-sv.de
 Subject: Re: 2.6.23-rc6: usb 1-1: device not accepting address 2, error -62
@@ -24,11 +23,26 @@ References: <46EAFCF7.1030907@cv-sv.de> <20070915034819.3e695370.akpm@linux-foun
 In-Reply-To: <20070915034819.3e695370.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/59b9w710+FenzM9AlaLYBFDWFyHtN/7QjuWc
- mpAHLkH5Qy6Hd9x+zcRwd1JeDRLjQKhQVwfQ/dPkvMYE7ONg5N
- QbMgXXuwK6XMMu3I4eBcw==
+X-Provags-ID: V01U2FsdGVkX1/U6JWAB6Do4L2SH+pN4y15BgBw5ovO6wpLBhi
+ U3NHw9DE3uHY0+iyYhf9WUCmsSR3huhKuE0rECKUbzv3Xvh3OW
+ stR4P5T1y94PGYL3fNxcg==
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Second try to send, after I created "postmaster" on my domain.
+Just to ensure the CC-list works correct. Sorry for this double posting.
+
+> 550-Postmaster verification failed while checking <haveaniceday@cv-sv.de>
+> 550-Called:   212.227.15.134
+> 550-Sent:     RCPT TO:<postmaster@cv-sv.de>
+> 550-Response: 550 <postmaster@cv-sv.de>: invalid address
+> 550-Several RFCs state that you are required to have a postmaster
+> 550-mailbox for each mail domain. This host does not accept mail
+> 550-from domains whose servers reject the postmaster address.
+>550 Sender verify failed
+
+
 
 > Does the machine otherwise work OK?
 >
@@ -194,4 +208,5 @@ Andrew Morton wrote:
 >> [system info snipped ]
 >>
 > 
+
 
