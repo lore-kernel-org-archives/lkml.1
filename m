@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbXIORc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbXIORdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbXIORc4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 13:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbXIORct
+	id S1753470AbXIORdu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 13:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbXIORdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 13:32:49 -0400
-Received: from jester.euphonynet.be ([212.87.96.13]:45442 "EHLO
-	mailpush2.euphonynet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbXIORcs (ORCPT
+	Sat, 15 Sep 2007 13:33:43 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:51560 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbXIORdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 13:32:48 -0400
-X-Greylist: delayed 2057 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Sep 2007 13:32:48 EDT
-Date: Sat, 15 Sep 2007 18:58:34 +0200
-From: Bernard Jungen <bern8817@euphonynet.be>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Markus Rechberger <mrechberger@gmail.com>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-Message-ID: <20070915165834.GA2054@euphonynet.be>
-References: <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com> <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com> <20070914113838.GA29962@linuxtv.org> <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com> <20070914204343.GA9058@linuxtv.org> <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com> <20070915131650.GA12531@linuxtv.org> <d9def9db0709150638o2e4026fbgd347eefc0fa4b3e6@mail.gmail.com> <1189865082.5271.91.camel@gaivota>
+	Sat, 15 Sep 2007 13:33:43 -0400
+Message-ID: <46EC1775.4000709@us.ibm.com>
+Date: Sat, 15 Sep 2007 12:33:41 -0500
+From: Anthony Liguori <aliguori@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070830)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1189865082.5271.91.camel@gaivota>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Zachary Amsden <zach@vmware.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
+Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure
+References: <11897991353793-git-send-email-aliguori@us.ibm.com> <46EAF4C6.8090903@goop.org>  <46EAF6FC.80207@codemonkey.ws> <1189804847.5982.137.camel@bodhitayantram.eng.vmware.com> <46EB00D8.3090903@codemonkey.ws> <1189827476.5982.143.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1189827476.5982.143.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 15, 2007 at 11:04:42AM -0300, Mauro Carvalho Chehab wrote:
-> With respect to your kernel-userspace API for xc3028, you made something
-> that seemed to be a dream: there's a consensus: not a single developer
-> believed that this is the better way; nobody seems that this is the
-> better approach.
-> 
-> So, or you are the only media developer with good sense in the face of
-> the Earth, or you're incapable of understand the obvious: you're wrong
-> with this approach. IMO, the answer is quite obvious.
+Zachary Amsden wrote:
+> On Fri, 2007-09-14 at 16:44 -0500, Anthony Liguori wrote:
+>
+>   
+>> So then each module creates a hypercall page using this magic MSR and 
+>> the hypervisor has to keep track of it so that it can appropriately 
+>> change the page on migration.  The page can only contain a single 
+>> instruction or else it cannot be easily changed (or you have to be able 
+>> to prevent the guest from being migrated while in the hypercall page).
+>>
+>> We're really talking about identical models.  Instead of an MSR, the #GP 
+>> is what tells the hypervisor to update the instruction.  The nice thing 
+>> about this is that you don't have to keep track of all the current 
+>> hypercall page locations in the hypervisor.
+>>     
+>
+> I agree, multiple hypercall pages is insane.  I was thinking more of a
+> single hypercall page, fixed in place by the hypervisor, not the kernel.
+>
+> Then each module can read an MSR saying what VA the hypercall page is
+> at, and the hypervisor can simply flip one page to switch architectures.
+>   
 
-Yes, as a newbie observer on the v4l list, the answer is obvious to me,
-at last, and the reason is not entirely technical. I can't read so many
-bogus arguments on so few lines without reacting.
+That requires a memory hole though.  In KVM, we don't have a memory hole.
 
-Rephrasing Mauro:
+Regards,
 
-"Not a single developer out of a few SEEMS to believe that it is the BETTER
-approach, so since the FEW represent ALL media developers in the world, and
-since there is only ONE RIGHT way to do things, and since the GROUP is
-always RIGHT and always knows better than the individual, then YOU're WRONG
-and I'm right. Conform to the group and do as the group says, whatever the
-consequences!"
+Anthony Liguori
 
-Geeks are decidedly as prone as others to blindly accept travelling on the
-slippery road of herd mentality and "obvious" conclusions based on
-appearances. Is this OPEN source development or a dictatorship or what?
+> Zach
+>
+>   
 
-So in the end Mauro will be right. And Markus will continue to develop and
-defend his stuff as HE sees fit. He knows his own work better than anyone
-else. It will be HIS way or nothing with his own stuff, it's his inalienable
-right.
-
-And don't be naive, if there's no solution more viable than Markus' one,
-then the latter will eventually be widely adopted somehow, sometime,
-whatever the amount of grumbling from the establishment. No
-dictatorship/forced consensus can decide future's direction, nor improve
-its already low own viability.
-
-Cheers,
-
-Bernard.
