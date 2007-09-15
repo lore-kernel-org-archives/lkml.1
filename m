@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbXIOTFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbXIOTM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbXIOTFv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 15:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXIOTFo
+	id S1755768AbXIOTM3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 15:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbXIOTMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 15:05:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49394 "EHLO ogre.sisk.pl"
+	Sat, 15 Sep 2007 15:12:23 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:34857 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbXIOTFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 15:05:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm] Hibernation: Resume consoles if hibernation_platform_enter fails
-Date: Sat, 15 Sep 2007 21:17:39 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	id S1751829AbXIOTMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 15:12:22 -0400
+X-Greylist: delayed 696 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Sep 2007 15:12:22 EDT
+Date: Sat, 15 Sep 2007 21:00:16 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: CPU usage for 10Gbps UDP transfers
+Message-ID: <20070915190016.GA3868@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-Message-Id: <200709152117.40581.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Envelope-To: linux-kernel@vger.kernel.org
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 15 Sep 2007 21:00:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[This is a fix on top of
-hibernation-enter-platform-hibernation-state-in-a-consistent-way-rev-4.patch]
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hello,
 
-If hibernation_platform_enter() fails, consoles should be resumed so that
-diagnostic information related to the failure is available to the user.
+is it expected that application sending 8900bytes datagram through 10Gbps NIC
+utilizes CPU to 100% and similarly the receiver also utilizes CPU to 100%.
+Is it something wrong or this is quite OK?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/disk.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+(The box is dual single core Opteron 2.4GHz with Myricom 10GE NIC.)
 
-Index: linux-2.6.23-rc6/kernel/power/disk.c
-===================================================================
---- linux-2.6.23-rc6.orig/kernel/power/disk.c
-+++ linux-2.6.23-rc6/kernel/power/disk.c
-@@ -293,7 +293,7 @@ int hibernation_platform_enter(void)
- 	suspend_console();
- 	error = device_suspend(PMSG_SUSPEND);
- 	if (error)
--		return error;
-+		goto Resume_console;
- 
- 	error = hibernation_ops->prepare();
- 	if (error)
-@@ -320,6 +320,8 @@ int hibernation_platform_enter(void)
- 	hibernation_ops->finish();
-  Resume_devices:
- 	device_resume();
-+ Resume_console:
-+	resume_console();
- 	return error;
- }
- 
+-- 
+Luká¹ Hejtmánek
