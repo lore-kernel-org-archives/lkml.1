@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760349AbXIOJBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbXIOJEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760349AbXIOJBj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 05:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbXIOJBd
+	id S1760711AbXIOJEW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 05:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbXIOJEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 05:01:33 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:59036 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbXIOJBc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 05:01:32 -0400
-Date: Sat, 15 Sep 2007 11:01:31 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Kees Cook <kees@ubuntu.com>, linux-kernel@vger.kernel.org,
-       Ben Collins <bcollins@ubuntu.com>, Michael Wu <flamingice@sourmilk.net>
-Subject: Re: [PATCH] pci: fix unterminated pci_device_id lists
-In-Reply-To: <46E8DBE3.7040204@garzik.org>
-Message-ID: <Pine.LNX.4.64.0709151101170.13411@fbirervta.pbzchgretzou.qr>
-References: <20070912064134.GO7910@outflux.net> <46E7C91D.3070001@garzik.org>
-  <b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com> 
- <20070912215356.GC23294@kroah.com>  <20070912160827.e359a53b.akpm@linux-foundation.org>
- <b6fcc0a0709122334qa31fffby4afbf857c92efb89@mail.gmail.com>
- <46E8DBE3.7040204@garzik.org>
+	Sat, 15 Sep 2007 05:04:16 -0400
+Received: from web52004.mail.re2.yahoo.com ([206.190.49.251]:47978 "HELO
+	web52004.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755269AbXIOJEP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 05:04:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=xe/DT6losEyELvJ11q7wZRzd6FVprJMiituGbCze5T24BU9/mBw6h62Sxy7UGGfV+JptlbVAJqO/3ajPhPifX5+8l0fnln8xvyS6ssaFlHqjIb/FQRjg9LN4LAcu0OtHnSdutbYZ1cRWLIIIMkVfPBMi7QX5bLuH/yqwLTcfn/s=;
+X-YMail-OSG: fMt8H8gVM1kSY1KxpcRoWNeRDjLQ6Et1JpV6HGg2QJv_GnHLy8ft6eWminzzD25BR8rJSDSJyb2KDen1wWVkeEHgeQ_7TCkT39wXJbUtgWbr3iFlm1Z3Q92nHuH1Pw--
+X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
+Date: Sat, 15 Sep 2007 02:04:13 -0700 (PDT)
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: include/linux/mutex.h file is unclear about software interrupts and mutex_trylock
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: mingo@redhat.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <79726.86356.qm@web52004.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
 
-On Sep 13 2007 02:42, Jeff Garzik wrote:
-> Alexey Dobriyan wrote:
->> -static struct pci_device_id rtl8139_pci_tbl[] = {
->> +PCI_MODULE_DEVICE_TABLE_BEGIN(rtl8139_pci_tbl)
->>   {0x10ec, 0x8139, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
->>   {0x10ec, 0x8138, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
->>   {0x1113, 0x1211, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
->> @@ -273,10 +273,7 @@ static struct pci_device_id rtl8139_pci_tbl[] = {
->>   {PCI_ANY_ID, 0x8139, 0x10ec, 0x8139, 0, 0, RTL8139 },
->>   {PCI_ANY_ID, 0x8139, 0x1186, 0x1300, 0, 0, RTL8139 },
->>   {PCI_ANY_ID, 0x8139, 0x13d1, 0xab06, 0, 0, RTL8139 },
->> -
->> -	{0,}
->> -};
->> -MODULE_DEVICE_TABLE (pci, rtl8139_pci_tbl);
->> +PCI_MODULE_DEVICE_TABLE_END
+include/linux/mutex.h file is unclear about software interrupts and the return value of mutex_trylock.
 
-That looks sooo... wxwidgets-like :)
+Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
 
-> I think the previous version looks better.
+---
 
-Nod.
+--- linux-2.6.23-rc6/include/linux/mutex.h    2007-09-09 09:55:34.917468000 +0300
++++ linux-2.6.23/include/linux/mutex.h    2007-09-15 11:49:28.353291500 +0300
+@@ -29,7 +29,8 @@
+  * - task may not exit with mutex held
+  * - memory areas where held locks reside must not be freed
+  * - held mutexes must not be reinitialized
+- * - mutexes may not be used in irq contexts
++ * - mutexes may not be used in hardware or software interrupt
++ *   contexts such as tasklets and timers
+  *
+  * These semantics are fully enforced when DEBUG_MUTEXES is
+  * enabled. Furthermore, besides enforcing the above rules, the mutex
+@@ -133,6 +134,7 @@ extern int __must_check mutex_lock_inter
+ #endif
+ 
+ /*
++ * mutex_trylock returns nonzero on success or 0 on failure to lock.
+  * NOTE: mutex_trylock() follows the spin_trylock() convention,
+  *       not the down_trylock() convention!
+  */
 
 
 
+
+
+
+      Die etwas anderen Infos rund um das Thema Reisen. BE A BETTER WELTENBUMMLER!  www.yahoo.de/clever
