@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXIOAOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbXIOAQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbXIOAOA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 20:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXIOANu
+	id S932506AbXIOAQS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 20:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXIOAQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 20:13:50 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:54381 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755189AbXIOANt (ORCPT
+	Fri, 14 Sep 2007 20:16:08 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:26185 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754508AbXIOAQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 20:13:49 -0400
-Date: Fri, 14 Sep 2007 14:09:48 -0700
-From: "Kok, Auke" <sofar@foo-projects.org>
-Subject: Re: [git patches] net driver fixes
-In-reply-to: <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
-To: Dan Williams <dcbw@redhat.com>, netdev@vger.kernel.org,
-       Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Message-id: <46EAF89C.4080808@foo-projects.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <20070913053022.GA16891@havoc.gtf.org>
- <1189793598.2508.4.camel@xo-3E-67-34.localdomain>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	Fri, 14 Sep 2007 20:16:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A0UU/PvGX3PY2K66Ok77ncWSmJmWD2wwm+X2wxAd3U/IvtErqeq9MJq+jJG4tRzzYrhmGk/ooeYaLopFJDwOhEAO0O14f4h2MnLXF+Mc1RBYT6S3uraqaVbQxZVZjgMtJHzdDKz6UeBRK/9b1vwFKwMVCDVnHSFtKu/ECRlDv4c=
+Message-ID: <a781481a0709141716n569d54eeqbe51746d3a5110ca@mail.gmail.com>
+Date: Sat, 15 Sep 2007 05:46:07 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/6] cpuset write dirty map
+Cc: "Ethan Solomita" <solo@google.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <20070914170733.dbe89493.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <469D3342.3080405@google.com> <46E741B1.4030100@google.com>
+	 <46E742A2.9040006@google.com>
+	 <20070914161536.3ec5c533.akpm@linux-foundation.org>
+	 <a781481a0709141647q3d019423s388c64bf6bed871a@mail.gmail.com>
+	 <20070914170733.dbe89493.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-> On Thu, 2007-09-13 at 01:30 -0400, Jeff Garzik wrote:
->> Please pull from 'upstream-linus' branch of
->> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
->>
->> to receive the following updates:
->>
->>  drivers/net/atl1/atl1_main.c |   19 +++++++------------
->>  drivers/net/ehea/ehea.h      |    5 ++++-
->>  drivers/net/ehea/ehea_main.c |   16 ++++++++++++++--
->>  drivers/net/phy/phy.c        |    4 ++--
->>  drivers/net/phy/phy_device.c |    4 ++--
->>  drivers/net/sky2.c           |    9 ++++++++-
->>  drivers/net/spider_net.c     |   12 ++++--------
->>  7 files changed, 41 insertions(+), 28 deletions(-)
->>
->> Hans-Jürgen Koch (1):
->>       Fix a lock problem in generic phy code
->>
->> Ishizaki Kou (1):
->>       spidernet: fix interrupt reason recognition
->>
->> Jan-Bernd Themann (2):
->>       ehea: propagate physical port state
->>       ehea: fix last_rx update
->>
+On 9/15/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sat, 15 Sep 2007 05:17:48 +0530
+> "Satyam Sharma" <satyam.sharma@gmail.com> wrote:
+>
+> > > It's unobvious why the break point is at MAX_NUMNODES = BITS_PER_LONG and
+> > > we might want to tweak that in the future.  Yet another argument for
+> > > centralising this comparison.
+> >
+> > Looks like just an optimization to me ... Ethan wants to economize and not bloat
+> > struct address_space too much.
+> >
+> > So, if sizeof(nodemask_t) == sizeof(long), i.e. when:
+> > MAX_NUMNODES <= BITS_PER_LONG, then we'll be adding only sizeof(long)
+> > extra bytes to the struct (by plonking the object itself into it).
+> >
+> > But even when MAX_NUMNODES > BITS_PER_LONG, because we're storing
+> > a pointer, and because sizeof(void *) == sizeof(long), so again the maximum
+> > bloat addition to struct address_space would only be sizeof(long) bytes.
+>
+> yup.
+>
+> Note that "It's unobvious" != "It's unobvious to me".  I review code for
+> understandability-by-others, not for understandability-by-me.
+>
+> > I didn't see the original mail, but if the #ifdeffery for this
+> > conditional is too much
+> > as a result of this optimization, Ethan should probably just do away
+> > with all of it
+> > entirely, and simply put a full nodemask_t object (irrespective of MAX_NUMNODES)
+> > into the struct. After all, struct task_struct does the same unconditionally ...
+> > but admittedly, there are several times more address_space struct's resident in
+> > memory at any given time than there are task_struct's, so this optimization does
+> > make sense too ...
+>
+> I think the optimisation is (probably) desirable, but it would be best to
+> describe the tradeoff in the changelog and to add some suitable
+> code-commentary for those who read the code in a year's time and to avoid
+> sprinkling the logic all over the tree.
 
-maybe a little bit late with this comment:
+True, the other option could be to put the /pointer/ in there unconditionally,
+but that would slow down the MAX_NUMNODES <= BITS_PER_LONG case,
+which (after grepping through defconfigs) appears to be the common case on
+all archs other than ia64. So I think your idea of making that conditional
+centralized in the code with an accompanying comment is the way to go here ...
 
->>  			ehea_error("Failed setting port speed");
->>  		}
->>  	}
->> -	netif_carrier_on(port->netdev);
->> +	if (!prop_carrier_state || (port->phy_link == EHEA_PHY_LINK_UP))
->> +		netif_carrier_on(port->netdev);
->> +
->>  	kfree(cb4);
->>  out:
->>  	return ret;
->> @@ -869,13 +875,19 @@ static void ehea_parse_eqe(struct ehea_adapter *adapter, u64 eqe)
->>  			}
->>  
->>  		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PORT_UP, eqe)) {
->> +			port->phy_link = EHEA_PHY_LINK_UP;
->>  			if (netif_msg_link(port))
->>  				ehea_info("%s: Physical port up",
->>  					  port->netdev->name);
->> +			if (prop_carrier_state)
->> +				netif_carrier_on(port->netdev);
->>  		} else {
->> +			port->phy_link = EHEA_PHY_LINK_DOWN;
->>  			if (netif_msg_link(port))
->>  				ehea_info("%s: Physical port down",
->>  					  port->netdev->name);
->> +			if (prop_carrier_state)
->> +				netif_carrier_off(port->netdev);
 
-maybe it was better to code this as 'ehea_carrier_off/on()' which then tests 
-(prop_carrier_state) - this now begs for regressions where this isn't properly 
-done in future commits, and on top of that there are all these extra conditions now.
-
-Cheers,
-
-Auke
-
+Satyam
