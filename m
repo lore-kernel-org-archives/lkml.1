@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbXIOEkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760019AbXIOEro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760231AbXIOEkn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 00:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbXIOEke
+	id S1760019AbXIOEro (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 00:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXIOErh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 00:40:34 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:60646 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751148AbXIOEkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 00:40:32 -0400
-Date: Sat, 15 Sep 2007 00:40:30 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Move away from char device ioctls.
-Message-ID: <20070915044030.GA702@fieldses.org>
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070914211210.GB12444@fieldses.org> <46EAF9CD.1090808@garzik.org> <20070914211828.GC12444@fieldses.org> <46EB0BEB.2090808@garzik.org> <20070914224212.GJ12444@fieldses.org> <46EB5ACA.5000207@garzik.org>
+	Sat, 15 Sep 2007 00:47:37 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38916 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbXIOErg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 00:47:36 -0400
+Message-ID: <46EB63E4.8060107@us.ibm.com>
+Date: Fri, 14 Sep 2007 21:47:32 -0700
+From: David Wilder <dwilder@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46EB5ACA.5000207@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, SystemTAP <systemtap@sources.redhat.com>
+Subject: Re: [PATCH 1/2] Trace code and documentation
+References: <46E9CB14.7060000@us.ibm.com> <20070914180840.579627ab.akpm@linux-foundation.org>
+In-Reply-To: <20070914180840.579627ab.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 15, 2007 at 12:08:42AM -0400, Jeff Garzik wrote:
-> J. Bruce Fields wrote:
->> No, servers are required to support ordinary nfs operations to the
->> metadata server.
->> At least, that's the way it was last I heard, which was a while ago.  I
->> agree that it'd stink (for any number of reasons) if you ever *had* to
->> get a layout to access some file.
->> Was that your main concern?
+Andrew Morton wrote:
+
+>> +/*
+>> + * Based on blktrace code, Copyright (C) 2006 Jens Axboe <axboe@suse.de>
+>>     
 >
-> I just sorta assumed you could fall back to the NFSv4.0 mode of operation, 
-> going through the metadata server for all data accesses.
+> So can we migrate blktrace to using this?
+>   
+Yes, a blktrace patch is comming.
 
-Right.  So any two pNFS implementations *will* be able to talk to each
-other; they just may not be able to use the (possibly higher-bandwidth)
-read/write path that pNFS gives them.
+>> +	int ret;
+>> +
+>> +	if (trace->flags & TRACE_DISABLE_STATE)
+>> +		return -EINVAL;
+>> +	
+>> +	if (count > sizeof(buf) - 1)
+>> +		return -EINVAL;
+>> +
+>> +	if (copy_from_user(buf, buffer, count))
+>> +		return -EFAULT;
+>> +
+>> +	buf[count] = '\0';
+>> +	
+>> +	if (strncmp(buf, "start", strlen("start")) == 0 ) {
+>> +		ret = trace_start(trace);
+>> +		if (ret)
+>> +			return ret;
+>> +	} else if (strncmp(buffer, "stop", strlen("stop")) == 0)
+>> +		trace_stop(trace);
+>> +	else
+>> +		return -EINVAL;
+>>     
+>
+> What's the above code doing?  Trying to cope with trailing chars after
+> "start" or "stop"?  Is that actually needed?   It's the \n, I assume?
+>   
 
-> But look at that choice in practice:  you can either ditch pNFS completely, 
-> or use a proprietary solution.  The market incentives are CLEARLY tilted in 
-> favor of makers of proprietary solutions.
+Yes, the typical usage is "echo start > state" and echo adds a \n.
 
-I doubt somebody would go to all the trouble to implement pNFS and then
-present their customers with that kind of choice.  But maybe I'm missing
-something.  What market incentives do you see that would make that more
-attractive than either 1) using a standard fully-specified layout type,
-or 2) just implementing your own proprietary protocol instead of pNFS?
 
-> Overall, my main concern is that NFSv4.1 is no longer an open architecture 
-> solution.  The "no-pNFS or proprietary platform" choice merely illustrate 
-> one of many negative aspects of this architecture.
+Thanks for the comments, I will make the changes and resubmit.
 
-It's always been possible to extend NFS in various ways if you want.
-You could use sideband protocols with v2 and v3, for example.  People
-have done that.  Some of them have been standardized and widely
-implemented, some haven't.  You could probably add your own compound ops
-to v4 if you wanted, I guess.
-
-And there's advantages to experimenting with extensions first and then
-standardizing when you figure out what works.  I wish it happened that
-way more often.
-
-> Now, for the first time in NFS's history (AFAIK), the protocol is no longer 
-> completely specified, completely known.  No longer a "closed loop."  
-> Private layout types mean that it is _highly_ unlikely that any OS or 
-> appliance or implementation will be able to claim "full NFS compatibility."
-
-Do you know of any such "private layout types"?
-
-This is kind of a boring argument, isn't it?  I'd rather hear whatever
-ideas you have for a new distributed filesystem protocol.
-
---b.
