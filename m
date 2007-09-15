@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbXIOMew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbXIOMkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbXIOMew (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 08:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXIOMem
+	id S1753776AbXIOMkQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 08:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXIOMkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 08:34:42 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:38880 "EHLO 2ka.mipt.ru"
+	Sat, 15 Sep 2007 08:40:06 -0400
+Received: from mx2.suse.de ([195.135.220.15]:54637 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751303AbXIOMel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 08:34:41 -0400
-Date: Sat, 15 Sep 2007 16:34:18 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Move away from char device ioctls.
-Message-ID: <20070915123418.GB25752@2ka.mipt.ru>
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <170fa0d20709141954m4cff4650pa3b2bfd347e23f74@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <170fa0d20709141954m4cff4650pa3b2bfd347e23f74@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	id S1751261AbXIOMkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 08:40:04 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add consts where appropriate in sound/pci/hda/*
+References: <200709141848.06027.vda.linux@googlemail.com>
+	<20070915101811.GA9934@uranus.ravnborg.org>
+	<Pine.LNX.4.64.0709151228360.13411@fbirervta.pbzchgretzou.qr>
+	<200709151242.38464.vda.linux@googlemail.com>
+X-Yow: Why don't you ever enter any CONTESTS, Marvin??
+ Don't you know your own ZIPCODE?
+Date: Sat, 15 Sep 2007 14:40:02 +0200
+In-Reply-To: <200709151242.38464.vda.linux@googlemail.com> (Denys Vlasenko's
+	message of "Sat\, 15 Sep 2007 12\:42\:38 +0100")
+Message-ID: <jeps0kyue5.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike.
+Denys Vlasenko <vda.linux@googlemail.com> writes:
 
-On Fri, Sep 14, 2007 at 10:54:56PM -0400, Mike Snitzer (snitzer@gmail.com) wrote:
-> This distributed storage is very much needed; even if it were to act
-> as a more capable/performant replacement for NBD (or MD+NBD) in the
-> near term.  Many high availability applications don't _need_ all the
-> additional complexity of a full distributed filesystem.  So given
-> that, its discouraging to see you trying to gently push Evgeniy away
-> from all the promising work he has published.
-> 
-> Evgeniy, please continue your current work.
+> ELF is not as rigid as old a.out (which had only one text, one data
+> and one bss segment per .o file IIRC), but size was born in a.out days,
+> so it sort of "translates" ELF into a.out.
 
-Thanks Mike, I work on this and will until feel it is completed.
+Try size -A instead.
 
-Distributed filesystem is a logical continuation of the whoe idea of
-storing data on the several remote nodes - DST and FS must exist
-together for the maximum performance, but that does not mean that block
-layer itself should be abandoned. As you probably noticed from my mail
-to Jeff, distributed storage was originally part of the overall
-filesystem design.
+Andreas.
 
 -- 
-	Evgeniy Polyakov
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
