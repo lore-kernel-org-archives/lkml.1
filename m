@@ -1,132 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbXIOUwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbXIOVQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbXIOUwA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 16:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXIOUvu
+	id S1753864AbXIOVQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 17:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbXIOVQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 16:51:50 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:41598 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910AbXIOUvt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 16:51:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=jXuSCIAqSUkGLaHMJ1sVtc++NAwQmy7SnNYChDSctydE+N3mepiNtEXzHs5WU1+3bQIBz0fuubLxdc6YseQSAwQWSPloxeNHdEGjwxid0FclUCxITbCPk4vGe43e+7BLJORWKASVU+nfWs8xERmWfbuaUXa+MonPyK/lp57wvUY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
-Date: Sat, 15 Sep 2007 22:54:14 +0200
-User-Agent: KMail/1.9.6
-Cc: Adrian Bunk <bunk@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       linux-scsi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org
-References: <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <200709151852.43157.bzolnier@gmail.com> <46EC2FCD.5080803@garzik.org>
-In-Reply-To: <46EC2FCD.5080803@garzik.org>
+	Sat, 15 Sep 2007 17:16:20 -0400
+Received: from depni.sinp.msu.ru ([213.131.7.21]:56568 "EHLO depni.sinp.msu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751329AbXIOVQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 17:16:19 -0400
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <ak@suse.de>, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: x86_64: Remove unnecessary cast in prefetch()
+References: <87tzq7cwnt.fsf@depni.sinp.msu.ru> <200709070818.03995.ak@suse.de>
+	<878x78ig85.fsf@depni.sinp.msu.ru>
+	<20070915200117.GC14501@one.firstfloor.org>
+From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Date: Sun, 16 Sep 2007 01:16:18 +0400
+In-Reply-To: <20070915200117.GC14501@one.firstfloor.org> (Andi Kleen's message of "Sat\, 15 Sep 2007 22\:01\:17 +0200")
+Message-ID: <87ejgziq8t.fsf@depni.sinp.msu.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200709152254.14879.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 September 2007, Jeff Garzik wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > On Saturday 15 September 2007, Adrian Bunk wrote:
-> >> On Sat, Sep 15, 2007 at 11:44:59AM -0400, Jeff Garzik wrote:
-> >>> Stefan Richter wrote:
-> >>>> Adrian Bunk wrote:
-> >>>>> On Sat, Sep 15, 2007 at 04:11:45PM +0200, Stefan Richter wrote:
-> >>>>>> Perfect is in the eye of the beholder.  You would consequently have to
-> >>>>>> add such options into all menus which contain scsi low-level providers.
-> >>>>> Kconfig is a user interface, so perfect is what is best for the
-> >>>>> kconfig users.
-> >>>> Duplicate options with different names in different menus, but which all
-> >>>> do the same, --- is this the best for users?
-> >>> I recognize it's a rhetorical question :)  The answer is of course "no".
-> >>>
-> >>> I hope the other participants of this thread register the severe 
-> >>> disinclination of the maintainers to change this stuff, as this is a 
-> >>> classic case of making a mountain out of a molehill[1].
-> >>>
-> >>> For the -vast majority- of people configuring the kernel, this is not a 
-> >>> problem.  Kernel people are -expected- to know what they're doing, 
-> >> I doubt your claim is true since the vast majority of kconfig users
-> >> are most likely not kernel developers.
-> > 
-> > Yes, we shouldn't be needlessly raising the bar for power users.
-> 
-> In this case, no bar is being "raised," for any user.
+Andi Kleen <andi@firstfloor.org> writes:
 
-It has already been raised by making SATA configuration counterintuitive
-(SATA has a separate Kconfig menu but depends on SCSI device drivers).
+...
+>> to make kernel work with GCC 4.3 and above.  (Also note that gcc 4.2 already
+>> smart enough to break that code, but kernel is just lucky currently).
+>
+> How would it break the code exactly?  It more sounded like an optimization
+> to me. Would it generate incorrect code without it?
 
-> >> @Greg:
-> >> Do you have any numbers regarding how your "Linux Kernel in a Nutshell" 
-> >> is selling?
-> >> Even download numbers?
-> >>
-> >>> especially when switching from one major subsystem to another.
-> >> It's not only about switching, the same problems awaits people when 
-> >> configuring a kernel for their hardware the first time.
-> > 
-> > *nods*
-> > 
-> >>> Therefore, all this is IMO wasted effort and hot air.  There are far more 
-> >>> important issues to deal with.
-> >> Why don't we dump kconfig and write the .config by hand?  ;-)
-> >>
-> >> More seriously:
-> >> Yes, there are many other important issues in the kernel.
-> >> But not fixing kconfig UI problems doesn't fix these issues faster.
-> > 
-> > Agreed, and actually not fixing Kconfig UI problems will make the other
-> > issues being fixed *slower* (because they result in *increased* workload
-> > on developers' side).
-> 
-> Irrelevant in this case, because there is no increased workload on the 
-> developer's side.
 
-This thread alone serves as a perfect counter-example. ;)
-
-> >> I have seen people running into problems because some required 
-> >> option wasn't set - in the simplest cases things like IDE without DMA 
-> >> because a help text wasn't updated when more hardware support was added 
-> >> to a driver.
-> > 
-> > This is why nowadays IDE DMA support is automatically selected by IDE
-> > host drivers that need it - a big relief for everybody.
-> 
-> Please don't take this any more off-topic than it already is.
-
-OK, I'll stop here and I'll just patiently wait till the SATA Kconfig
-issue comes up again on LKML (then I'll just smile and move on to
-the next post 8).
-
-> IDE DMA option was vastly different.  The options in question here 
-> affect whether or not you have a block device to use -- something that 
-> is immediately obviously and corrected quickly.
-
-Indeed -- completely different situation.
-
-> >> You might not care about the kconfig users.
-> >> But other people do.
-> > 
-> > ...and even if their attempts/solutions may not be proper yet they should
-> > not be discouraged to work on these problems...
-> 
-> There is no problem, in this case.
-
-Fine with me then.  The above was the most important part for me.
-
-> Otherwise, there would be more than a complaint or two per year.
-
-Thanks,
-Bart
+See http://gcc.gnu.org/PR33294 for testcase which fails if compiled with gcc 4.2
+and above.  Yes, incorrect code can be generated without the patch as demonstrated by
+testcase, but i didn't analyze why kernel appears to work with 4.2 currently.
