@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbXIOSYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbXIOSa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756415AbXIOSYb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 14:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbXIOSYU
+	id S1754640AbXIOSa0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 14:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXIOSaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 14:24:20 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46097
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755648AbXIOSYT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 14:24:19 -0400
-Date: Sat, 15 Sep 2007 11:23:16 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Paul Rolland <rol@as2917.net>
-cc: Adrian Bunk <bunk@kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <andi@firstfloor.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, rol@witbe.net
-Subject: Re: sata & scsi suggestion for make menuconfig
-In-Reply-To: <20070915080448.37457dcf@tux.DEF.witbe.net>
-Message-ID: <Pine.LNX.4.64.0709151122000.24221@asgard.lang.hm>
-References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de>
- <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org>
- <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de>
- <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de>
- <20070915080448.37457dcf@tux.DEF.witbe.net>
+	Sat, 15 Sep 2007 14:30:18 -0400
+Received: from smtp27.orange.fr ([80.12.242.95]:56966 "EHLO smtp27.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751919AbXIOSaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 14:30:16 -0400
+X-ME-UUID: 20070915183014695.A9D211C00085@mwinf2711.orange.fr
+Message-ID: <46EC24B6.2030709@free.fr>
+Date: Sat, 15 Sep 2007 20:30:14 +0200
+From: Eric Valette <eric.valette@free.fr>
+Reply-To: eric.valette@free.fr
+Organization: HOME
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Rob Hussey <robjhussey@gmail.com>
+Cc: flamingice@sourmilk.net, andreamrl@tiscali.it,
+       linux-kernel@vger.kernel.org, rol@witbe.net
+Subject: Re: rtl8187 driver in 2.6.23-rc6-git5: kernel panic if not used as
+ a module. Works as a module.
+References: <46EBE70C.2040201@free.fr> <46EBEBD2.7060502@free.fr> <6b8cef970709150928h25a7093md5f86d2bdcf677cc@mail.gmail.com>
+In-Reply-To: <6b8cef970709150928h25a7093md5f86d2bdcf677cc@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Sep 2007, Paul Rolland wrote:
-
-> On Fri, 14 Sep 2007 17:15:22 +0200
-> Adrian Bunk <bunk@kernel.org> wrote:
->
->> On Fri, Sep 14, 2007 at 04:54:07PM +0200, Stefan Richter wrote:
->>> Adrian Bunk wrote:
->>>> On Sun, Sep 09, 2007 at 05:11:44PM -0400, Jeff Garzik wrote:
->>>>> Let's step back a moment and consider the actual scale and impact of
->>>>> the problem at hand.
->> Do "make menuconfig" with the .config you are normally using, count the
->> number of options that are visible, and ask yourself whether we can
->> really expect users to read the help texts for every single option shown.
+Rob Hussey wrote:
+> On 9/15/07, Eric Valette <eric.valette@free.fr> wrote:
+>> Eric Valette wrote:
 >>
->> People mostly read help texts for options where they don't understand
->> what this option is about - and "Serial ATA" therefore is an option that
->> is likely to get enabled without the user looking at the help text.
->>
->
-> As a "make menuconfig" user, let me say that I agree. Of course, I'm used
-> to rebuild kernel, but sometimes, some options are not clear, and the help
-> text is searched for. But, getting too much of "No help text available"
-> usually results in people no more reading the help text.
->
-> What about splitting the screen to have the top half with the menu, and the
-> bottom half with the help ?
+>>> I can probably take a picture of the backtrace if you want.
+>> Just saw that just above my message in the LKML web interface, someone
+>> posted a backtrace. Mine is different but at least, we are at least two
+>> to have the crash.
+> 
+> This is the same thing I said to Paul Rolland, since I think your
+> problems are the same:
+> I had this problem as well. It has to do with mac80211, cfg80211 and
+> the rate control algorithm not initializing early enough in the boot
+> process. These two patches should fix it:
+> 
+> [PATCH] mac80211: fix initialisation when built-in
+> http://article.gmane.org/gmane.linux.kernel.wireless.general/5710/match=patch+mac80211+initialisation
+> 
+> [PATCH] cfg80211: fix initialisation if built-in
+> http://article.gmane.org/gmane.linux.network/71326/match=patch+cfg80211+initialisation
+> 
+> Regards,
+> Rob
 
-I useually have more screen space available to the side then above and 
-below the list of options.
+Thanks for your help: it does indeed fix the problem.
 
-David Lang
+Now I have two side questions:
+	- the code is no more symetric "subsys_initcall" -> "module_exit". Do
+not know if it is "normal" but I love symmetry in code :-). Did not test
+it still works as a module...
+	- Who takes the responsability to push a patch to Linus? I guess it is
+urgent unless he plans a rc7
+
+-- eric
+
