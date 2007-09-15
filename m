@@ -1,47 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbXIOMPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXIOMZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbXIOMPn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 08:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXIOMPV
+	id S1753327AbXIOMZW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 08:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXIOMZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 08:15:21 -0400
-Received: from cavan.codon.org.uk ([78.32.9.130]:39239 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751396AbXIOMPO (ORCPT
+	Sat, 15 Sep 2007 08:25:09 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37975 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751199AbXIOMZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 08:15:14 -0400
-Date: Sat, 15 Sep 2007 13:08:25 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, Andi Kleen <andi@firstfloor.org>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Message-ID: <20070915120824.GA21243@srcf.ucam.org>
-References: <46DF3BFF.9000809@redhat.com> <p73veao9gih.fsf@bingen.suse.de> <20070915003906.5fa6dc0f.akpm@linux-foundation.org> <200709151258.28745.ioe-lkml@rameria.de> <20070915040802.bb3c7093.akpm@linux-foundation.org>
+	Sat, 15 Sep 2007 08:25:07 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46EBCEF1.4030702@s5r6.in-berlin.de>
+Date: Sat, 15 Sep 2007 14:24:17 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070915040802.bb3c7093.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: Why do so many machines need "noapic"?
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+References: <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de> <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org> <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de>
+In-Reply-To: <20070915114055.GP3563@stusta.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 15, 2007 at 04:08:02AM -0700, Andrew Morton wrote:
+Adrian Bunk wrote:
+> On Fri, Sep 14, 2007 at 10:01:18PM +0200, Stefan Richter wrote:
+>>  drivers/Kconfig               |    4 
+>>  drivers/scsi/Kconfig          | 1589 ----------------------------------
+>>  drivers/scsi/Kconfig.lowlevel | 1578 +++++++++++++++++++++++++++++++++
+>>  3 files changed, 1588 insertions(+), 1583 deletions(-)
+> 
+> Nearly right.  ;-)
+> 
+> There are a few architectures not (yet) using drivers/Kconfig.
 
-> I believe that about two years ago we broke something which caused quite a
-> large number of people to need noapic.  Is that the case with any of your
-> machines?  Do you know if they run 2.6.ancient without noapic?
+Right, the patch is wrong for those architectures which include
+drivers/scsi/Kconfig directly, rather than indirectly via drivers/Kconfig.
 
-My recollection is that we shifted from "Enable the apic even if the 
-BIOS disabled it" to "Only use the apic if the BIOS didn't disable it" 
-around that time, which meant that distributions could actually turn on 
-apic-on-up support without breaking everything. That might correspond to 
-what you're seeing.
+[...]
+>>  # drivers/Kconfig
+>>  
+>> +source "drivers/scsi/Kconfig"
+>> +
+>>  menu "Device Drivers"
+>>  
+>>  source "drivers/base/Kconfig"
+>> @@ -22,7 +24,7 @@ source "drivers/misc/Kconfig"
+>>  
+>>  source "drivers/ide/Kconfig"
+>>  
+>> -source "drivers/scsi/Kconfig"
+>> +source "drivers/scsi/Kconfig.lowlevel"
+>>  
+>>  source "drivers/ata/Kconfig"
+>> ...
+> 
+> This way the order is wrong:
+> 
+> There should first be the lowlevel SCSI, SATA, USB etc. drivers, these 
+> drivers should select CONFIG_SCSI, and then the menu offering support 
+> for disk, CD,...
 
+The order was inspired by
+
+	# the protocols etc.
+	"Networking"
+
+	# the interconnects
+	"Device Drivers"/ "Network device support"
+
+So that order is wrong too?
+
+However, there is also precedence for the order which you suggest:  The
+partition and filesystems options come after device driver options.
+
+[...]
+>> +menu "Storage (core and SCSI commands)"
+>>  
+>>  config SCSI
+>> -	tristate "SCSI device support"
+>> +	tristate "Storage support (core and SCSI commands)"
+>>  	depends on BLOCK
+>>  	select SCSI_DMA if HAS_DMA
+>>  	---help---
+>> ...
+> 
+> What is "storage support"?
+> SATA?
+> PATA?
+> USB mass storage?
+> MMC?
+> MTD?
+
+What is "Networking"?  Ethernet?  Infiniband?  ...?
+
+> Whether or not a driver uses the SCSI layer is an implementation detail 
+> (it even differs for the two USB mass storage implementations and the 
+> two PATA implementations in the kernel) the user shouldn't have to know 
+> about.
+> 
+> I don't see any reason why CONFIG_SCSI should have to stay user-visible 
+> at all after your patch.
+
+Vice versa, I don't see any reason for "select SCSI" anywhere after my
+patch.
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Stefan Richter
+-=====-=-=== =--= -====
+http://arcgraph.de/sr/
