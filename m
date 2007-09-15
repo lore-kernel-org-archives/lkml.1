@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbXIONsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbXIONxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbXIONsB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 09:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXIONry
+	id S1754608AbXIONxT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 09:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXIONxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 09:47:54 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:10654 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983AbXIONrx (ORCPT
+	Sat, 15 Sep 2007 09:53:06 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56597 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751973AbXIONxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 09:47:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=ZiFjHPZvLIHWsMpEoSTKxNpc8m7f0TxNuTHIBK8pByzgdu/105Mjf1WLcSxxZPY8eXoRVD19D6bi69gQcamMNje7CBl7IzcofSAu27Z8zKrfIKxSMeiKWQT8j+EV74BV7iBdUHo++9VVwSzxIrvrfk9fB3Bt8/YbBEMsYw8I1tQ=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: [PATCH] add consts where appropriate in sound/pci/hda/*
-Date: Sat, 15 Sep 2007 14:47:44 +0100
-User-Agent: KMail/1.9.1
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Sam Ravnborg <sam@ravnborg.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-References: <200709141848.06027.vda.linux@googlemail.com> <200709151242.38464.vda.linux@googlemail.com> <jeps0kyue5.fsf@sykes.suse.de>
-In-Reply-To: <jeps0kyue5.fsf@sykes.suse.de>
+	Sat, 15 Sep 2007 09:53:04 -0400
+Date: Sat, 15 Sep 2007 15:53:14 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+Message-ID: <20070915135314.GS3563@stusta.de>
+References: <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de> <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org> <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de> <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de> <46EBDC06.3030202@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200709151447.44890.vda.linux@googlemail.com>
+In-Reply-To: <46EBDC06.3030202@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 September 2007 13:40, Andreas Schwab wrote:
-> Denys Vlasenko <vda.linux@googlemail.com> writes:
+On Sat, Sep 15, 2007 at 03:20:06PM +0200, Stefan Richter wrote:
+> Adrian Bunk wrote:
+> >>> There should first be the lowlevel SCSI, SATA, USB etc. drivers, these 
+> >>> drivers should select CONFIG_SCSI, and then the menu offering support 
+> >>> for disk, CD,...
+> ...
+> > If users who don't need it now enable CONFIG_SCSI (and drivers/ide/ 
+> > usage is not that uncommon) that's a regression in the user interface.
 > 
-> > ELF is not as rigid as old a.out (which had only one text, one data
-> > and one bss segment per .o file IIRC), but size was born in a.out days,
-> > so it sort of "translates" ELF into a.out.
+> Aha, first all interconnects/transports are configured.  If none of them
+> 'select'ed SCSI, the menu for sd, sr, st stays invisible.  Otherwise it
+> is exposed.
 > 
-> Try size -A instead.
+> It still doesn't entirely clarify whether users need sd, sr, st, and
+> whether thy need sd for the disk with root filesystem.
 
-thanks, didn't know that.
+If you want to do it in a really perfect way, help texts aren't the 
+solution. You'll have to make the options like CONFIG_BLK_DEV_SR no 
+longer be user visible and select'ed through dummy options like e.g.:
 
-$ size -A busybox
-busybox  :
-section       size        addr
-.init           28   134512788
-.text       633051   134512816
-.fini           23   135145867
-.rodata     139422   135145904
-.eh_frame      156   135285328
-.ctors           8   135286784
-.dtors           8   135286792
-.jcr             4   135286800
-.got.plt        12   135286804
-.data         1019   135286816
-.bss         10724   135287840
-Total       784455
+config USB_STORAGE
+        tristate "USB Mass Storage support"
+        depends on USB
+	select SCSI
+	help
+	  ...
 
-addr in decimal?! wow...
---
-vda
+config USB_STORAGE_SD
+	tristate "USB Mass Storage hard disk support"
+	depends on USB_STORAGE
+	select BLK_DEV_SD
+	help
+	  ...
+
+config USB_STORAGE_SR
+        tristate "USB Mass Storage CD/DVD support"
+        depends on USB_STORAGE
+	select BLK_DEV_SR
+        help
+          ...
+
+
+> Stefan Richter
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
