@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbXIOMP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbXIOMPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbXIOMP0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 08:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbXIOMPM
+	id S1753715AbXIOMPn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 08:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXIOMPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 08:15:12 -0400
-Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:37787 "EHLO
-	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750945AbXIOMPK (ORCPT
+	Sat, 15 Sep 2007 08:15:21 -0400
+Received: from cavan.codon.org.uk ([78.32.9.130]:39239 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbXIOMPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 08:15:10 -0400
-From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+	Sat, 15 Sep 2007 08:15:14 -0400
+Date: Sat, 15 Sep 2007 13:08:25 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <20070915014449.4f9cdb51.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Sat, 15 Sep 2007 01:44:49 -0700")
-References: <20070911060349.993975297@sgi.com>
-	<200709110452.20363.nickpiggin@yahoo.com.au>
-	<20070911121225.GE13132@lazybastard.org>
-	<20070915014449.4f9cdb51.akpm@linux-foundation.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-Date: Sat, 15 Sep 2007 14:14:42 +0200
-Message-ID: <87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>, Andi Kleen <andi@firstfloor.org>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-ID: <20070915120824.GA21243@srcf.ucam.org>
+References: <46DF3BFF.9000809@redhat.com> <p73veao9gih.fsf@bingen.suse.de> <20070915003906.5fa6dc0f.akpm@linux-foundation.org> <200709151258.28745.ioe-lkml@rameria.de> <20070915040802.bb3c7093.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070915040802.bb3c7093.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: Why do so many machines need "noapic"?
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Sat, Sep 15, 2007 at 04:08:02AM -0700, Andrew Morton wrote:
 
-> On Tue, 11 Sep 2007 14:12:26 +0200 Jörn Engel <joern@logfs.org> wrote:
->
->> While I agree with your concern, those numbers are quite silly.  The
->> chances of 99.8% of pages being free and the remaining 0.2% being
->> perfectly spread across all 2MB large_pages are lower than those of SHA1
->> creating a collision.
->
-> Actually it'd be pretty easy to craft an application which allocates seven
-> pages for pagecache, then one for <something>, then seven for pagecache, then
-> one for <something>, etc.
->
-> I've had test apps which do that sort of thing accidentally.  The result
-> wasn't pretty.
+> I believe that about two years ago we broke something which caused quite a
+> large number of people to need noapic.  Is that the case with any of your
+> machines?  Do you know if they run 2.6.ancient without noapic?
 
-Except that the applications 7 pages are movable and the <something>
-would have to be unmovable. And then they should not share the same
-memory region. At least they should never be allowed to interleave in
-such a pattern on a larger scale.
+My recollection is that we shifted from "Enable the apic even if the 
+BIOS disabled it" to "Only use the apic if the BIOS didn't disable it" 
+around that time, which meant that distributions could actually turn on 
+apic-on-up support without breaking everything. That might correspond to 
+what you're seeing.
 
-The only way a fragmentation catastroph can be (proovable) avoided is
-by having so few unmovable objects that size + max waste << ram
-size. The smaller the better. Allowing movable and unmovable objects
-to mix means that max waste goes way up. In your example waste would
-be 7*size. With 2MB uper order limit it would be 511*size.
-
-I keep coming back to the fact that movable objects should be moved
-out of the way for unmovable ones. Anything else just allows
-fragmentation to build up.
-
-MfG
-        Goswin
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
