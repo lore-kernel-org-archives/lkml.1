@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbXIOOEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbXIOOFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbXIOOEO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 10:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbXIOOD5
+	id S1755691AbXIOOFM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 10:05:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbXIOOFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 10:03:57 -0400
-Received: from smtp.opengridcomputing.com ([71.42.183.126]:41049 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750983AbXIOOD4 (ORCPT
+	Sat, 15 Sep 2007 10:05:00 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51560 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbXIOOE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 10:03:56 -0400
-Message-ID: <46EBE649.3040303@opengridcomputing.com>
-Date: Sat, 15 Sep 2007 09:03:53 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
-References: <adahclymos8.fsf@cisco.com>	<46E97BB0.9030106@opengridcomputing.com> <adaps0ml18e.fsf@cisco.com>
-In-Reply-To: <adaps0ml18e.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 15 Sep 2007 10:04:59 -0400
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Johannes Stezenbach <js@linuxtv.org>, Steven Toth <stoth@hauppauge.com>,
+       Manu Abraham <abraham.manu@gmail.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+In-Reply-To: <d9def9db0709150638o2e4026fbgd347eefc0fa4b3e6@mail.gmail.com>
+References: <46E95C54.4060502@gmail.com> <46E99F36.8090809@hauppauge.com>
+	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+	 <46E9DDC7.4000403@hauppauge.com>
+	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+	 <20070914113838.GA29962@linuxtv.org>
+	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+	 <20070914204343.GA9058@linuxtv.org>
+	 <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
+	 <20070915131650.GA12531@linuxtv.org>
+	 <d9def9db0709150638o2e4026fbgd347eefc0fa4b3e6@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 15 Sep 2007 11:04:42 -0300
+Message-Id: <1189865082.5271.91.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Everyone knows that there are some issues even some internal
+> ones which I'm not part of.
 
+With respect to your kernel-userspace API for xc3028, you made something
+that seemed to be a dream: there's a consensus: not a single developer
+believed that this is the better way; nobody seems that this is the
+better approach.
 
-Roland Dreier wrote:
->  > I was about to post v2 of my patch to avoid port space collisions with
->  > the native stack.  Can we get that 2.6.24?  It is high priority
->  > IMO. I've tried to solicit review on it, but I think folks are
->  > reluctant... ;-)
-> 
-> I would like to get this in, but I'm still at least a little
-> reluctant, since we would be committing to a user interface that seems
-> a little awkward at best, so I'd like to try and find something
-> better.  Just to summarize my understanding:
-> 
->  - your patch requires the administration to configure an ethX:iwY
->    alias address to use iwarp.  (By the way is there anything other
->    than "don't do that" that avoids assigning the same address to the
->    iwarp alias and a non-iwarp interface?)
-> 
+So, or you are the only media developer with good sense in the face of
+the Earth, or you're incapable of understand the obvious: you're wrong
+with this approach. IMO, the answer is quite obvious.
 
-Nope.  Its totally up to the admin to create the ethX:iwY interface 
--and- to segment his services so host TCP runs on the ethX subnet(s) and 
-the iwarp rdma ones run on ethX:iwY subnet(s).  Without changing the 
-core network serices, I don't see any way around this.
+-- 
+Cheers,
+Mauro
 
->  - it would be nicer to create the alias automatically, but an alias
->    without an address doesn't make sense.  Creating a whole separate
->    net device causes problems because the iwarp stuff still needs to
->    use the main net device to do ARP etc.
->
-
-I do log a warning if an iwarp application binds to address 0.0.0.0 and 
-there are no ethX:iwY address available.
-
->  - so I'm out of better ideas but I still want to push back a little
->    before we commit to something ugly.
-> 
-
-Me 2. :-(
-
-> I've been meaning to track down the bnx2 iscsi offload patch to look
-> and see if this issue is addressed, since the same problem seems to
-> exist: it seems an iscsi connection and a main stack tcp connection
-> might share the same 4-tuple unless something is done to avoid that
-> happening.
-> 
-> Also, I think it behooves us to get some agreement on this approach
-> with NetEffect and Kanoj (NetXen?) at least, since their iwarp drivers
-> seem to be imminent.
-> 
->  - R.
