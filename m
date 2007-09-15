@@ -1,82 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbXIONeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbXIONiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbXIONeL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 09:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbXIONd6
+	id S1753954AbXIONiS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 09:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbXIONiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 09:33:58 -0400
-Received: from allen.werkleitz.de ([80.190.251.108]:36809 "EHLO
-	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbXIONd5 (ORCPT
+	Sat, 15 Sep 2007 09:38:10 -0400
+Received: from qb-out-0506.google.com ([72.14.204.238]:13638 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbXIONiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 09:33:57 -0400
-Date: Sat, 15 Sep 2007 15:34:18 +0200
-From: Johannes Stezenbach <js@linuxtv.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Steven Toth <stoth@hauppauge.com>, Manu Abraham <abraham.manu@gmail.com>,
+	Sat, 15 Sep 2007 09:38:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TFYtAxPvA7TrtdgoxA9VjBzhHWI/kt5qrR5VXz0vHADSDKxJaBcykdIkqsClHXcUPyxSo3dfED7Q4V4wl8LD+W0CzvsPVtjGO5KVPnrH0oORtH1K75Yb4nN5Z96ghdX6cUyB/JfSQybb+ebjTwqJAvM0oC8jVhuRZmuTjjySJJc=
+Message-ID: <d9def9db0709150638o2e4026fbgd347eefc0fa4b3e6@mail.gmail.com>
+Date: Sat, 15 Sep 2007 15:38:06 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Johannes Stezenbach" <js@linuxtv.org>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+Cc: "Steven Toth" <stoth@hauppauge.com>,
+       "Manu Abraham" <abraham.manu@gmail.com>,
        "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
        "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Message-ID: <20070915133418.GB12531@linuxtv.org>
-References: <46E95C54.4060502@gmail.com> <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com> <46E99F36.8090809@hauppauge.com> <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com> <46E9DDC7.4000403@hauppauge.com> <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com> <20070914113838.GA29962@linuxtv.org> <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com> <20070914204343.GA9058@linuxtv.org> <d9def9db0709141849r4dc489c2h88ac99e3d4f56d50@mail.gmail.com>
+In-Reply-To: <20070915131650.GA12531@linuxtv.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <d9def9db0709141849r4dc489c2h88ac99e3d4f56d50@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 87.162.108.9
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
+References: <46E95C54.4060502@gmail.com> <46E99F36.8090809@hauppauge.com>
+	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+	 <46E9DDC7.4000403@hauppauge.com>
+	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
+	 <20070914113838.GA29962@linuxtv.org>
+	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
+	 <20070914204343.GA9058@linuxtv.org>
+	 <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
+	 <20070915131650.GA12531@linuxtv.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 15, 2007, Markus Rechberger wrote:
-> The main discussion in this thread was about drivers in userspace
-> are bad because the API will allow binary drivers. The guy
-> who works for Hauppauge (again I also have good contacts
-> at Hauppauge Europe) writes it's bad - for no technical reason.
+On 9/15/07, Johannes Stezenbach <js@linuxtv.org> wrote:
+> On Sat, Sep 15, 2007, Markus Rechberger wrote:
+> >
+> > it gets me thinking. Some core developers who I met during
+> > the last few weeks (kernel summit, suse conference in czech)
+> > told me to go on with it actually because the final plan isn't that
+> > bad..
+>
+> I was referring to your code you posted for merging on linux-dvb,
+> and which got rejected. Anyway, it's easy to agree with you if one
+> has just heard _your_ version -- the purpose of this thread is to
+> give people an alternate version of the story to complement
+> yours, which would allow the people you talked to to think it over
+> and change their mind. See if you can get of those people you
+> talked to to post here to support you.
+>
 
-It sends a shiver down my spine that seem to imply that you
-use your Hauppauge Europe contact to lobby against the
-efforts of Hauppauge USA employees to promote support for
-Open Source kernel drivers within their company.
+Everyone knows that there are some issues even some internal
+ones which I'm not part of.
+Not sure if you met some other kernel developers recently, all you
+can hear is "those crazy media guys" (which just includes everyone
+who works with media related drivers)
 
-> If someone points out that it is bad (after reading the whole thread)
-> why don't we put X.org, bash, well everything into the kernel?
-> GPL is the saviour seems to be the saviour for some people in this
-> world, but in the end it's still if people want to go that way.
-> Much work has been done by other people before, my work
-> is also just an additional contribution and I (again) don't intend to
-> release binary drivers. (also keep in mind that ubuntu takes
-> everything which makes things work - this matters to the enduser)
-> 
-> Hey I can also write I can help you to get things right with some other
-> people, and I can financially support people by giving away
-> hardware and even specs for free in some cases. Who is able
-> to do that from the old crufted v4l/dvb guys?
-> 
-> Manu throws his drivers over the wall to the OSS community, although
-> I don't mind.
-> Mauro is copying the logic of my code and writes I told him I'm ok with
-> taking my code without just adding a single line of how his driver
-> got developed. (I still wonder why he skipped some significant parts
-> of the driver .. because he used the existing one as logic template)
-> 
-> http://linuxtv.org/hg/~mchehab/tm6000-new/log/14352ab89146/linux/drivers/media/video/tuner-xc2028.c
-> (not looking at the specific changeset but he copied the firmware
-> loading instructions without taking care about the copyright?)
+> > Beside that I'm just curious how much did you contribute
+> > during the last 2 years to the lkml/linux kernel, and how much
+> > do you want to contribute in future? (also from my side
+> > talk is cheap (even for me) but getting something done costs
+> > quite some time and feedback from other people)
+>
+> IOW you say if I don't write code I should shut up?
+> Is that also what you tell users on your em28xx list
+> when they dare to disagree with you?
+>
+> Nice...
+>
 
-After you dismissed all arguments except your own as invalid, you've
-now moved on to the "post bullshit and personal accusations" stage.
-I hope this means we're now done with this "discussion".
+This is a free world you can write whatever you want,
+but if you want me to change my code you need to
+convince me that I should acknowlidge your ideas.
+And by not acknowlidging my requirements don't expect
+that I will go back to the start and try to reinvent the
+wheel. After almost 2 years I'm quite into those things
+and I know what I want for my project and what I'll try
+to achieve with what I'm doing.
 
-> > Now, doesn't _that_ get you thinking?
-> 
-> oh yes.
-
-Yeah, right.
-
-
-Johannes
+Markus
