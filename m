@@ -1,26 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbXIOBtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbXIOBt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932480AbXIOBtf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 21:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbXIOBt1
+	id S932760AbXIOBt4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 21:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbXIOBtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 21:49:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41089 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754940AbXIOBt0 (ORCPT
+	Fri, 14 Sep 2007 21:49:46 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:19845 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753447AbXIOBtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 21:49:26 -0400
+	Fri, 14 Sep 2007 21:49:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=epqQcpEsBWnig960USktzYGUGFIIdFVTOBIR484rLm84QOZlOc868474RRJf/L/I8I4Py0L+K/3Ndu4Z2BDRKIF0tlA/NdhkX2GZgJfq4LChtf9HIOsoJVJcVU18SWa7rzjEegdI1f5WyuT8L3JcQxrjfzP7WgTXxHmN/mV9EDE=
+Message-ID: <d9def9db0709141849r4dc489c2h88ac99e3d4f56d50@mail.gmail.com>
+Date: Sat, 15 Sep 2007 03:49:44 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Johannes Stezenbach" <js@linuxtv.org>
 Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Johannes Stezenbach <js@linuxtv.org>,
+Cc: "Steven Toth" <stoth@hauppauge.com>,
+       "Manu Abraham" <abraham.manu@gmail.com>,
        "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>
-In-Reply-To: <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
-References: <20070913131353.GB26972@linuxtv.org>
-	 <46E95C54.4060502@gmail.com>
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+In-Reply-To: <20070914204343.GA9058@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070913131353.GB26972@linuxtv.org> <46E95C54.4060502@gmail.com>
 	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
 	 <46E99F36.8090809@hauppauge.com>
 	 <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
@@ -29,37 +39,82 @@ References: <20070913131353.GB26972@linuxtv.org>
 	 <20070914113838.GA29962@linuxtv.org>
 	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
 	 <20070914204343.GA9058@linuxtv.org>
-	 <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 14 Sep 2007 22:49:16 -0300
-Message-Id: <1189820956.5359.10.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Beside that I'm just curious how much did you contribute
-> during the last 2 years to the lkml/linux kernel, and how much
-> do you want to contribute in future? (also from my side
-> talk is cheap (even for me) but getting something done costs
-> quite some time and feedback from other people)
+On 9/14/07, Johannes Stezenbach <js@linuxtv.org> wrote:
+> On Fri, Sep 14, 2007, Markus Rechberger wrote:
+> >
+> > people do contribute to the em28xx project.
+> ...
+> > there's also an active and even problem solving oriented ML available:
+> > http://mcentral.de/pipermail/em28xx/
+> >
+> > Also if you look at the mercurial code you'll see several people
+> > contributing to that project.
+>
+> Of course, people who own such a device and want to use
+> it with Linux have no choice but to work with you.
+> And you do a good job for your users, you support them
+> well and in return they contribute info and patches
+> to support new devices.
+>
+> But the thing is that at mcentral.de you're the man at the top,
 
-Contributing doesn't necessarily means submitting patches. There are
-several good guys at the community offering very valuable contributions,
-like patchset reviews, good comments, userspace experiences, etc.
+why is it mcentral.de at the moment? I started several discussions about
+the whole topic. The thing which is in v4l-dvb on linuxtv does not satisfy
+any requirements, also further additions will be hard to achieve with it.
 
-Johannes does a very impressive work of maintaining, almost alone,
-LinuxTV website, upgrading the system, monitoring disk spaces, taking
-backups, etc. Also, he is always available to discuss the most important
-changes at APIs and to defend the Open Source community, providing his
-very clear point of view.
+> and your users will hardly disagree with you on core
+> technical questions. (Well, admittedly I'm speculating
+> here as I don't read your em28xx list.)
+>
 
-Thank you, Johannes for all your good work!
+they can disagree, I even pointed out to design flaws lately when
+some users posted bugreports.
 
--- 
-Cheers,
-Mauro
+> On for drivers/media/ OTOH you are just one developer among others,
+> and some of them choose to disagree with you. Even worse,
+> IIRC there wasn't even _a single_ other developer willing
+> to ACK your offending patch.
+>
 
+the current patch isn't offending anymore, see it as a chance I'm
+giving you the chance to acknowlidge what has been done now from
+my side.
+The main discussion in this thread was about drivers in userspace
+are bad because the API will allow binary drivers. The guy
+who works for Hauppauge (again I also have good contacts
+at Hauppauge Europe) writes it's bad - for no technical reason.
+
+If someone points out that it is bad (after reading the whole thread)
+why don't we put X.org, bash, well everything into the kernel?
+GPL is the saviour seems to be the saviour for some people in this
+world, but in the end it's still if people want to go that way.
+Much work has been done by other people before, my work
+is also just an additional contribution and I (again) don't intend to
+release binary drivers. (also keep in mind that ubuntu takes
+everything which makes things work - this matters to the enduser)
+
+Hey I can also write I can help you to get things right with some other
+people, and I can financially support people by giving away
+hardware and even specs for free in some cases. Who is able
+to do that from the old crufted v4l/dvb guys?
+
+Manu throws his drivers over the wall to the OSS community, although
+I don't mind.
+Mauro is copying the logic of my code and writes I told him I'm ok with
+taking my code without just adding a single line of how his driver
+got developed. (I still wonder why he skipped some significant parts
+of the driver .. because he used the existing one as logic template)
+
+http://linuxtv.org/hg/~mchehab/tm6000-new/log/14352ab89146/linux/drivers/media/video/tuner-xc2028.c
+(not looking at the specific changeset but he copied the firmware
+loading instructions without taking care about the copyright?)
+
+> Now, doesn't _that_ get you thinking?
+>
+
+oh yes.
+
+Markus
