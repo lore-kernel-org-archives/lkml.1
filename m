@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbXIOTdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbXIOTdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbXIOTdA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 15:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbXIOTcq
+	id S1757195AbXIOTdZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 15:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbXIOTcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 15:32:46 -0400
+	Sat, 15 Sep 2007 15:32:52 -0400
 Received: from py-out-1112.google.com ([64.233.166.179]:7353 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753109AbXIOTco (ORCPT
+	with ESMTP id S1756653AbXIOTcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 15:32:44 -0400
+	Sat, 15 Sep 2007 15:32:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=mGEqKBDL3FGN5D9s4wkkaKP0UJhqdiU0Foq7+cczzM8Dddo83EHZPPrho7+YlAlxTFZiqNu6pJ0lhni5mNVlu/rWE0XAG3UIkwxATCszJoSGaepcL6jyctIIJ7ZZyyQopw8Ozn4mDQs+8Yhoz3JoAodB2PZjHZmBrgH11p5arxI=
-Message-ID: <8b67d60709151232i174d1985j125a62c9813b5118@mail.gmail.com>
-Date: Sat, 15 Sep 2007 20:32:43 +0100
+        b=MiShQctF3yZzIFjAottrm+CDTkzGwHfHXAt7jmLGO2dnXkwSOMWMf3hO1L7MFfdnEfzWbj56I//QrYj+1c3pDyfufnV63p4NrXMtIPpk2WJF2METiKVFr79aJXHP2G97zxXB/i20NeXC7sXs6NaYP1BBTi5Ugy6ZeoyjE/yUlt8=
+Message-ID: <8b67d60709151232y783da543pc284b1b9b69c570e@mail.gmail.com>
+Date: Sat, 15 Sep 2007 20:32:50 +0100
 From: "Adrian McMenamin" <lkmladrian@gmail.com>
 To: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
-Subject: [PATCH 1/2] Add Maple bus support for the SEGA Dreamcast - core maplebus
+Subject: [PATCH 2/2] Add Maple bus support for the SEGA Dreamcast - maple keyboard
 Cc: "Greg KH" <greg@kroah.com>, "Paul Mundt" <lethal@linux-sh.org>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Arjan van de Ven" <arjan@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -28,786 +29,305 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for the maple bus (SEGA's proprietary serial bus on
-the Dreamcast) to the kernel.
+This patch adds support for the keyboard on the SEGA Dreamcast
 
-Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+Signed-off by Adrian McMenamin <adrian@mcmen.demon.co.uk>
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 54878f0..077438f 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -702,6 +702,17 @@ config CF_BASE_ADDR
- 	default "0xb8000000" if CF_AREA6
- 	default "0xb4000000" if CF_AREA5
 
-+config MAPLE
-+	bool "Maple Bus Support"
-+	depends on SH_DREAMCAST
+diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
+index c97d5eb..056cc52 100644
+--- a/drivers/input/keyboard/Kconfig
++++ b/drivers/input/keyboard/Kconfig
+@@ -253,4 +253,14 @@ config KEYBOARD_GPIO
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called gpio-keys.
+
++
++config KEYBOARD_MAPLE
++	tristate "Maple bus keyboard"
++	depends on SH_DREAMCAST && MAPLE
 +	help
-+	  The Maple Bus is SEGA's serial communication bus for peripherals
-+	  on the Dreamcast. Without this bus support you won't be able to
-+	  get your Dreamcast keyboard etc to work, so most users
-+	  probably want to say 'Y' here, unless you are only using the
-+	  Dreamcast with a serial line terminal or a remote network
-+	  connection.
++	  Say Y here if you have a Dreamcast console running Linux and have
++	  a keyboard attached to its Maple bus.
 +
- source "arch/sh/drivers/pci/Kconfig"
++	  To compile this driver as a module, choose M here: the
++	  module will be called maple_keyb.	
+ endif
+diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
+index 28d211b..3f775ed 100644
+--- a/drivers/input/keyboard/Makefile
++++ b/drivers/input/keyboard/Makefile
+@@ -21,4 +21,5 @@ obj-$(CONFIG_KEYBOARD_OMAP)		+= omap-keypad.o
+ obj-$(CONFIG_KEYBOARD_PXA27x)		+= pxa27x_keyboard.o
+ obj-$(CONFIG_KEYBOARD_AAED2000)		+= aaed2000_kbd.o
+ obj-$(CONFIG_KEYBOARD_GPIO)		+= gpio_keys.o
++obj-$(CONFIG_KEYBOARD_MAPLE)		+= maple_keyb.o
 
- source "drivers/pci/Kconfig"
-diff --git a/drivers/sh/Makefile b/drivers/sh/Makefile
-index 8a14389..f0a1f4f 100644
---- a/drivers/sh/Makefile
-+++ b/drivers/sh/Makefile
-@@ -3,4 +3,5 @@
- #
-
- obj-$(CONFIG_SUPERHYWAY) += superhyway/
-+obj-$(CONFIG_MAPLE) += maple/
-
-diff --git a/drivers/sh/maple/Makefile b/drivers/sh/maple/Makefile
+diff --git a/drivers/input/keyboard/maple_keyb.c
+b/drivers/input/keyboard/maple_keyb.c
 new file mode 100644
-index 0000000..604ce33
+index 0000000..3bb58e1
 --- /dev/null
-+++ b/drivers/sh/maple/Makefile
-@@ -0,0 +1,3 @@
-+#Makefile for Maple Bus
-+
-+obj-$(CONFIG_MAPLE) := maplebus.o
-diff --git a/drivers/sh/maple/maplebus.c b/drivers/sh/maple/maplebus.c
-new file mode 100644
-index 0000000..48eeee6
---- /dev/null
-+++ b/drivers/sh/maple/maplebus.c
-@@ -0,0 +1,731 @@
-+/* maplebus.c
-+ * Core maple bus functionality
-+ * Original 2.4 code used here copyright
-+ * YAEGASHI Takeshi, Paul Mundt, M. R. Brown and others
++++ b/drivers/input/keyboard/maple_keyb.c
+@@ -0,0 +1,234 @@
++/*
++ * SEGA Dreamcast keyboard driver
++ * Based on drivers/usb/usbkbd.c
++ * Copyright YAEGASHI Takeshi, 2001
 + * Porting to 2.6 Copyright Adrian McMenamin, 2007
 + *
-+ * Licensed under version 2 of the GPL
-+ * See the COPYING file that came with this
-+ * distribution for more details.
-+ */
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++*/
 +
-+#include <linux/init.h>
 +#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/list.h>
-+#include <linux/io.h>
 +#include <linux/slab.h>
++#include <linux/input.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/timer.h>
 +#include <linux/maple.h>
-+#include <linux/dma-mapping.h>
-+#include <asm/cacheflush.h>
-+#include <asm/dma.h>
-+#include <asm/io.h>
-+#include <asm/mach/dma.h>
-+#include <asm/mach/sysasic.h>
 +#include <asm/mach/maple.h>
 +
-+MODULE_AUTHOR("Yaegshi Takeshi, Paul Mundt, MR Brown, Adrian McMenamin");
-+MODULE_DESCRIPTION("Maple bus driver for Dreamcast");
-+MODULE_LICENSE("GPL v2");
-+MODULE_SUPPORTED_DEVICE("{{SEGA, Dreamcast/Maple}}");
++/* Very simple mutex to ensure proper cleanup */
++static DEFINE_MUTEX(maple_keyb_mutex);
 +
-+static void maple_dma_handler(struct work_struct *work);
-+static void maple_vblank_handler(struct work_struct *work);
++#define NR_SCANCODES 256
 +
-+static DECLARE_WORK(maple_dma_process, maple_dma_handler);
-+static DECLARE_WORK(maple_vblank_process, maple_vblank_handler);
++MODULE_AUTHOR("YAEGASHI Takeshi, Adrian McMenamin");
++MODULE_DESCRIPTION("SEGA Dreamcast keyboard driver");
++MODULE_LICENSE("GPL");
 +
-+static LIST_HEAD(maple_waitq);
-+static LIST_HEAD(maple_sentq);
-+
-+static DEFINE_MUTEX(maple_list_lock);
-+
-+static struct maple_driver maple_dummy_driver;
-+static struct device maple_bus;
-+static int subdevice_map[MAPLE_PORTS];
-+static unsigned long *maple_sendbuf, *maple_sendptr, *maple_lastptr;
-+static unsigned long maple_pnp_time;
-+static int started, scanning, liststatus;
-+static struct kmem_cache *maple_queue_cache;
-+
-+struct maple_device_specify {
-+	int port;
-+	int unit;
++struct dc_kbd {
++	struct input_dev *dev;
++	unsigned char keycode[NR_SCANCODES];
++	unsigned char new[8];
++	unsigned char old[8];
 +};
 +
-+/**
-+ *  maple_driver_register - register a device driver
-+ *  automatically makes the driver bus a maple bus
-+ *  @drv: the driver to be registered
-+ */
-+int maple_driver_register(struct device_driver *drv)
-+{
-+	if (!drv)
-+		return -EINVAL;
-+	drv->bus = &maple_bus_type;
-+	return driver_register(drv);
-+}
++const static unsigned char dc_kbd_keycode[NR_SCANCODES] = {
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_A,
+KEY_B, KEY_C, KEY_D,
++	KEY_E, KEY_F, KEY_G, KEY_H, KEY_I, KEY_J, KEY_K, KEY_L,
++	KEY_M, KEY_N, KEY_O, KEY_P, KEY_Q, KEY_R, KEY_S, KEY_T,
++	KEY_U, KEY_V, KEY_W, KEY_X, KEY_Y, KEY_Z, KEY_1, KEY_2,
++	KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0,
++	KEY_ENTER, KEY_ESC, KEY_BACKSPACE, KEY_TAB, KEY_SPACE, KEY_MINUS,
+KEY_EQUAL, KEY_LEFTBRACE,
++	KEY_RIGHTBRACE, KEY_BACKSLASH, KEY_BACKSLASH, KEY_SEMICOLON,
+KEY_APOSTROPHE, KEY_GRAVE, KEY_COMMA,
++	KEY_DOT, KEY_SLASH, KEY_CAPSLOCK, KEY_F1, KEY_F2, KEY_F3, KEY_F4,
+KEY_F5, KEY_F6,
++	KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, KEY_SYSRQ,
++	KEY_SCROLLLOCK, KEY_PAUSE, KEY_INSERT, KEY_HOME, KEY_PAGEUP, KEY_DELETE,
++	KEY_END, KEY_PAGEDOWN, KEY_RIGHT, KEY_LEFT, KEY_DOWN, KEY_UP,
++	KEY_NUMLOCK, KEY_KPSLASH, KEY_KPASTERISK, KEY_KPMINUS, KEY_KPPLUS,
+KEY_KPENTER, KEY_KP1, KEY_KP2,
++	KEY_KP3, KEY_KP4, KEY_KP5, KEY_KP6, KEY_KP7, KEY_KP8, KEY_KP9,
+KEY_KP0, KEY_KPDOT,
++	KEY_102ND, KEY_COMPOSE, KEY_POWER, KEY_KPEQUAL, KEY_F13, KEY_F14, KEY_F15,
++	KEY_F16, KEY_F17, KEY_F18, KEY_F19, KEY_F20,
++	KEY_F21, KEY_F22, KEY_F23, KEY_F24, KEY_OPEN, KEY_HELP, KEY_PROPS, KEY_FRONT,
++	KEY_STOP, KEY_AGAIN, KEY_UNDO, KEY_CUT, KEY_COPY, KEY_PASTE,
+KEY_FIND, KEY_MUTE,
++	KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_KPCOMMA, KEY_RESERVED, KEY_RO, KEY_KATAKANAHIRAGANA
+, KEY_YEN,
++	KEY_HENKAN, KEY_MUHENKAN, KEY_KPJPCOMMA, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED,
++	KEY_HANGEUL, KEY_HANJA, KEY_KATAKANA, KEY_HIRAGANA,
+KEY_ZENKAKUHANKAKU, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
++	KEY_LEFTCTRL, KEY_LEFTSHIFT, KEY_LEFTALT, KEY_LEFTMETA,
+KEY_RIGHTCTRL, KEY_RIGHTSHIFT, KEY_RIGHTALT, KEY_RIGHTMETA,
++	KEY_PLAYPAUSE, KEY_STOPCD, KEY_PREVIOUSSONG, KEY_NEXTSONG,
+KEY_EJECTCD, KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_MUTE,
++	KEY_WWW, KEY_BACK, KEY_FORWARD, KEY_STOP, KEY_FIND, KEY_SCROLLUP,
+KEY_SCROLLDOWN, KEY_EDIT, KEY_SLEEP,
++	KEY_SCREENLOCK, KEY_REFRESH, KEY_CALC, KEY_RESERVED, KEY_RESERVED,
+KEY_RESERVED, KEY_RESERVED
++};
 +
-+EXPORT_SYMBOL_GPL(maple_driver_register);
-+
-+/* set hardware registers to enable next round of dma */
-+static void maplebus_dma_reset(void)
-+{
-+	ctrl_outl(MAPLE_MAGIC, MAPLE_RESET);
-+	/* set trig type to 0 for software trigger, 1 for hardware (VBLANK) */
-+	ctrl_outl(1, MAPLE_TRIGTYPE);
-+	ctrl_outl(MAPLE_2MBPS | MAPLE_TIMEOUT(50000), MAPLE_SPEED);
-+	ctrl_outl(PHYSADDR(maple_sendbuf), MAPLE_DMAADDR);
-+	ctrl_outl(1, MAPLE_ENABLE);
-+}
-+
-+/**
-+ * maple_getcond_callback - setup handling MAPLE_COMMAND_GETCOND
-+ * @dev: device responding
-+ * @callback: handler callback
-+ * @interval: interval in jiffies between callbacks
-+ * @function: the function code for the device
-+ */
-+void maple_getcond_callback(struct maple_device *dev,
-+			    void (*callback) (struct mapleq * mq),
-+			    unsigned long interval, unsigned long function)
-+{
-+	dev->callback = callback;
-+	dev->interval = interval;
-+	dev->function = cpu_to_be32(function);
-+	dev->when = jiffies;
-+}
-+EXPORT_SYMBOL_GPL(maple_getcond_callback);
-+
-+static int maple_dma_done(void)
-+{
-+	return (ctrl_inl(MAPLE_STATE) & 1) == 0;
-+}
-+
-+static void maple_release_device(struct device *dev)
-+{
-+	if (dev->type) {
-+		kfree(dev->type->name);
-+		kfree(dev->type);
-+	}
-+}
-+
-+/**
-+ * maple_add_packet - add a single instruction to the queue
-+ * @mq: instruction to add to waiting queue
-+ */
-+void maple_add_packet(struct mapleq *mq)
-+{
-+	mutex_lock(&maple_list_lock);
-+	list_add(&mq->list, &maple_waitq);
-+	mutex_unlock(&maple_list_lock);
-+}
-+EXPORT_SYMBOL_GPL(maple_add_packet);
-+
-+static struct mapleq *maple_allocq(struct maple_device *dev)
-+{
-+	struct mapleq *mq;
-+
-+	mq = kmalloc(sizeof(*mq), GFP_KERNEL);
-+	if (!mq)
-+		return NULL;
-+
-+	mq->dev = dev;
-+	mq->recvbufdcsp = kmem_cache_zalloc(maple_queue_cache, GFP_KERNEL);
-+	mq->recvbuf = (void *) P2SEGADDR(mq->recvbufdcsp);
-+	if (!mq->recvbuf) {
-+		kfree(mq);
-+		return NULL;
-+	}
-+
-+	return mq;
-+}
-+
-+static struct maple_device *maple_alloc_dev(int port, int unit)
-+{
-+	struct maple_device *dev;
-+
-+	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-+	if (!dev)
-+		return NULL;
-+
-+	dev->port = port;
-+	dev->unit = unit;
-+	dev->mq = maple_allocq(dev);
-+
-+	if (!dev->mq) {
-+		kfree(dev);
-+		return NULL;
-+	}
-+
-+	return dev;
-+}
-+
-+static void maple_free_dev(struct maple_device *mdev)
-+{
-+	if (!mdev)
-+		return;
-+	if (mdev->mq) {
-+		kmem_cache_free(maple_queue_cache, mdev->mq->recvbufdcsp);
-+		kfree(mdev->mq);
-+	}
-+	kfree(mdev);
-+}
-+
-+/* process the command queue into a maple command block
-+ * terminating command has bit 32 of first long set to 0
-+ */
-+static void maple_build_block(struct mapleq *mq)
-+{
-+	int port, unit, from, to, len;
-+	unsigned long *lsendbuf = mq->sendbuf;
-+
-+	port = mq->dev->port & 3;
-+	unit = mq->dev->unit;
-+	len = mq->length;
-+	from = port << 6;
-+	to = (port << 6) | (unit > 0 ? (1 << (unit - 1)) & 0x1f : 0x20);
-+
-+	*maple_lastptr &= 0x7fffffff;
-+	maple_lastptr = maple_sendptr;
-+
-+	*maple_sendptr++ = (port << 16) | len | 0x80000000;
-+	*maple_sendptr++ = PHYSADDR(mq->recvbuf);
-+	*maple_sendptr++ =
-+	    mq->command | (to << 8) | (from << 16) | (len << 24);
-+
-+	while (len-- > 0)
-+		*maple_sendptr++ = *lsendbuf++;
-+}
-+
-+/* build up command queue */
-+static void maple_send(void)
++static void dc_scan_kbd(struct dc_kbd *kbd)
 +{
 +	int i;
-+	int maple_packets;
-+	struct mapleq *mq, *nmq;
++	void *ptr;
++	struct input_dev *dev = kbd->dev;
 +
-+	if (!list_empty(&maple_sentq))
-+		return;
-+	if (list_empty(&maple_waitq) || !maple_dma_done())
-+		return;
-+	maple_packets = 0;
-+	maple_sendptr = maple_lastptr = maple_sendbuf;
-+	list_for_each_entry_safe(mq, nmq, &maple_waitq, list) {
-+		maple_build_block(mq);
-+		list_move(&mq->list, &maple_sentq);
-+		if (maple_packets++ > MAPLE_MAXPACKETS)
-+			break;
-+	}
-+	if (maple_packets > 0) {
-+		for (i = 0; i < (1 << MAPLE_DMA_PAGES); i++)
-+			dma_cache_sync(0, maple_sendbuf + i * PAGE_SIZE,
-+				       PAGE_SIZE, DMA_BIDIRECTIONAL);
-+	}
-+}
++	for (i = 0; i < 8; i++)
++		input_report_key(dev, kbd->keycode[i + 224],
++					(kbd->new[0] >> i) & 1);
 +
-+static int attach_matching_maple_driver(struct device_driver *driver,
-+					void *devptr)
-+{
-+	struct maple_driver *maple_drv;
-+	struct maple_device *mdev;
-+
-+	mdev = devptr;
-+	maple_drv = to_maple_driver(driver);
-+	if (mdev->devinfo.function & be32_to_cpu(maple_drv->function)) {
-+		if (maple_drv->connect(mdev) == 0) {
-+			mdev->driver = maple_drv;
-+			return 1;
++	for (i = 2; i < 8; i++) {
++		ptr = memchr(kbd->new + 2, kbd->old[i], 6);
++		if (kbd->old[i] > 3 && ptr == NULL) {
++			if (dc_kbd_keycode[kbd->old[i]])
++				input_report_key(dev, kbd->keycode[kbd->old[i]], 0);
++			else
++				printk (KERN_DEBUG "Unknown key (scancode %#x) released.", kbd->old[i]);
++		}
++		ptr = memchr(kbd->old + 2, kbd->new[i], 6);
++		if (kbd->new[i] > 3 && ptr) {
++			if (dc_kbd_keycode[kbd->new[i]])
++				input_report_key(dev, kbd->keycode[kbd->new[i]], 1);
++			else
++				printk(KERN_DEBUG "Unknown key (scancode %#x) pressed.", kbd->new[i]);
 +		}
 +	}
-+	return 0;
++	input_sync(dev);
++	memcpy(kbd->old, kbd->new, 8);
 +}
 +
-+static void maple_detach_driver(struct maple_device *mdev)
++static void dc_kbd_callback(struct mapleq *mq)
 +{
-+	if (!mdev)
++	struct maple_device *mapledev = mq->dev;
++	struct dc_kbd *kbd = mapledev->private_data;
++	unsigned long *buf = mq->recvbuf;
++
++	if (!mutex_trylock(&maple_keyb_mutex)) /* Can only be locked if
+already in cleanup */
 +		return;
-+	if (mdev->driver) {
-+		if (mdev->driver->disconnect)
-+			mdev->driver->disconnect(mdev);
++	if (buf[1] == mapledev->function) {
++		memcpy(kbd->new, buf + 2, 8);
++		dc_scan_kbd(kbd);
 +	}
-+	mdev->driver = NULL;
-+	if (mdev->registered) {
-+		maple_release_device(&mdev->dev);
-+		device_unregister(&mdev->dev);
-+	}
-+	mdev->registered = 0;
-+	maple_free_dev(mdev);
++	mutex_unlock(&maple_keyb_mutex);
 +}
 +
-+/* process initial MAPLE_COMMAND_DEVINFO for each device or port */
-+static void maple_attach_driver(struct maple_device *dev)
++static int dc_kbd_connect(struct maple_device *mdev)
 +{
-+	char *p;
++	int i, retval = 0;
++	struct dc_kbd *kbd;
++	struct input_dev *dev;
 +
-+	char *recvbuf;
-+	unsigned long function;
-+	int matched, retval;
++	if (!(mdev->function & MAPLE_FUNC_KEYBOARD))
++		return -EINVAL;
 +
-+	recvbuf = dev->mq->recvbuf;
-+	memcpy(&dev->devinfo, recvbuf + 4, sizeof(dev->devinfo));
-+	memcpy(dev->product_name, dev->devinfo.product_name, 30);
-+	memcpy(dev->product_licence, dev->devinfo.product_licence, 60);
-+	dev->product_name[30] = '\0';
-+	dev->product_licence[60] = '\0';
-+
-+	for (p = dev->product_name + 29; dev->product_name <= p; p--)
-+		if (*p == ' ')
-+			*p = '\0';
-+		else
-+			break;
-+
-+	for (p = dev->product_licence + 59; dev->product_licence <= p; p--)
-+		if (*p == ' ')
-+			*p = '\0';
-+		else
-+			break;
-+
-+	function = be32_to_cpu(dev->devinfo.function);
-+
-+	if (function > 0x200) {
-+		/* Do this silently - as not a real device */
-+		function = 0;
-+		dev->driver = &maple_dummy_driver;
-+		sprintf(dev->dev.bus_id, "%d:0.port", dev->port);
-+	} else {
-+		printk(KERN_INFO
-+		       "Maple bus at (%d, %d): Connected function 0x%lX\n",
-+		       dev->port, dev->unit, function);
-+
-+		matched =
-+		    bus_for_each_drv(&maple_bus_type, NULL, dev,
-+				     attach_matching_maple_driver);
-+
-+		if (matched == 0) {
-+			/* Driver does not exist yet */
-+			printk(KERN_INFO
-+			       "No maple driver found for this device\n");
-+			dev->driver = &maple_dummy_driver;
-+		}
-+
-+		sprintf(dev->dev.bus_id, "%d:0%d.%lX", dev->port,
-+			dev->unit, function);
-+	}
-+	dev->function = function;
-+	dev->dev.bus = &maple_bus_type;
-+	dev->dev.parent = &maple_bus;
-+	dev->dev.release = &maple_release_device;
-+	retval = device_register(&dev->dev);
-+	if (retval) {
-+		printk(KERN_INFO
-+		       "Maple bus: Attempt to register device (%x, %x) failed.\n",
-+		       dev->port, dev->unit);
-+		maple_free_dev(dev);
-+	}
-+	dev->registered = 1;
-+}
-+
-+/* if device has been registered for the given
-+ * port and unit then return 1 - allows identification
-+ * of which devices need to be attached or detached
-+ */
-+static int detach_maple_device(struct device *device, void *portptr)
-+{
-+	struct maple_device_specify *ds;
-+	struct maple_device *mdev;
-+
-+	ds = portptr;
-+	mdev = to_maple_dev(device);
-+	if (mdev->port == ds->port && mdev->unit == ds->unit)
-+		return 1;
-+	return 0;
-+}
-+
-+static int setup_maple_commands(struct device *device, void *ignored)
-+{
-+	struct maple_device *maple_dev = to_maple_dev(device);
-+
-+	if ((maple_dev->interval > 0)
-+	    && time_after(jiffies, maple_dev->when)) {
-+		maple_dev->when = jiffies + maple_dev->interval;
-+		maple_dev->mq->command = MAPLE_COMMAND_GETCOND;
-+		maple_dev->mq->sendbuf = &maple_dev->function;
-+		maple_dev->mq->length = 1;
-+		maple_add_packet(maple_dev->mq);
-+		liststatus++;
-+	} else {
-+		if (time_after(jiffies, maple_pnp_time)) {
-+			maple_dev->mq->command = MAPLE_COMMAND_DEVINFO;
-+			maple_dev->mq->length = 0;
-+			maple_add_packet(maple_dev->mq);
-+			liststatus++;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/* VBLANK bottom half - implemented via workqueue */
-+static void maple_vblank_handler(struct work_struct *work)
-+{
-+	if (!maple_dma_done())
-+		return;
-+	if (!list_empty(&maple_sentq))
-+		return;
-+	ctrl_outl(0, MAPLE_ENABLE);
-+	liststatus = 0;
-+	bus_for_each_dev(&maple_bus_type, NULL, NULL,
-+			 setup_maple_commands);
-+	if (time_after(jiffies, maple_pnp_time))
-+		maple_pnp_time = jiffies + MAPLE_PNP_INTERVAL;
-+	if (liststatus && list_empty(&maple_sentq)) {
-+		INIT_LIST_HEAD(&maple_sentq);
-+		maple_send();
-+	}
-+	maplebus_dma_reset();
-+}
-+
-+/* handle devices added via hotplugs - placing them on queue for DEVINFO*/
-+static void maple_map_subunits(struct maple_device *mdev, int submask)
-+{
-+	int retval, k, devcheck;
-+	struct maple_device *mdev_add;
-+	struct maple_device_specify ds;
-+
-+	for (k = 0; k < 5; k++) {
-+		ds.port = mdev->port;
-+		ds.unit = k + 1;
-+		retval =
-+		    bus_for_each_dev(&maple_bus_type, NULL, &ds,
-+				     detach_maple_device);
-+		if (retval) {
-+			submask = submask >> 1;
-+			continue;
-+		}
-+		devcheck = submask & 0x01;
-+		if (devcheck) {
-+			mdev_add = maple_alloc_dev(mdev->port, k + 1);
-+			if (!mdev_add)
-+				return;
-+			mdev_add->mq->command = MAPLE_COMMAND_DEVINFO;
-+			mdev_add->mq->length = 0;
-+			maple_add_packet(mdev_add->mq);
-+			scanning = 1;
-+		}
-+		submask = submask >> 1;
-+	}
-+}
-+
-+/* mark a device as removed */
-+static void maple_clean_submap(struct maple_device *mdev)
-+{
-+	int killbit;
-+
-+	killbit = (mdev->unit > 0 ? (1 << (mdev->unit - 1)) & 0x1f : 0x20);
-+	killbit = ~killbit;
-+	killbit &= 0xFF;
-+	subdevice_map[mdev->port] = subdevice_map[mdev->port] & killbit;
-+}
-+
-+/* handle empty port or hotplug removal */
-+static void maple_response_none(struct maple_device *mdev,
-+				struct mapleq *mq)
-+{
-+	if (mdev->unit != 0) {
-+		list_del(&mq->list);
-+		maple_clean_submap(mdev);
-+		printk(KERN_INFO
-+		       "Maple bus device detaching at (%d, %d)\n",
-+		       mdev->port, mdev->unit);
-+		maple_detach_driver(mdev);
-+		return;
-+	}
-+	if (!started) {
-+		printk(KERN_INFO "No maple devices attached to port %d\n",
-+		       mdev->port);
-+		return;
-+	}
-+	maple_clean_submap(mdev);
-+}
-+
-+/* preprocess hotplugs or scans */
-+static void maple_response_devinfo(struct maple_device *mdev,
-+				   char *recvbuf)
-+{
-+	char submask;
-+	if ((!started) || (scanning == 2)) {
-+		maple_attach_driver(mdev);
-+		return;
-+	}
-+	if (mdev->unit == 0) {
-+		submask = recvbuf[2] & 0x1F;
-+		if (submask ^ subdevice_map[mdev->port]) {
-+			maple_map_subunits(mdev, submask);
-+			subdevice_map[mdev->port] = submask;
-+		}
-+	}
-+}
-+
-+/* maple dma end bottom half - implemented via workqueue */
-+static void maple_dma_handler(struct work_struct *work)
-+{
-+	struct mapleq *mq, *nmq;
-+	struct maple_device *dev;
-+	char *recvbuf;
-+	enum maple_code code;
-+
-+	if (!maple_dma_done())
-+		return;
-+	ctrl_outl(0, MAPLE_ENABLE);
-+	if (!list_empty(&maple_sentq)) {
-+		list_for_each_entry_safe(mq, nmq, &maple_sentq, list) {
-+			recvbuf = mq->recvbuf;
-+			code = recvbuf[0];
-+			dev = mq->dev;
-+			switch (code) {
-+			case MAPLE_RESPONSE_NONE:
-+				maple_response_none(dev, mq);
-+				break;
-+
-+			case MAPLE_RESPONSE_DEVINFO:
-+				maple_response_devinfo(dev, recvbuf);
-+				break;
-+
-+			case MAPLE_RESPONSE_DATATRF:
-+				if (dev->callback)
-+					dev->callback(mq);
-+				break;
-+
-+			case MAPLE_RESPONSE_FILEERR:
-+			case MAPLE_RESPONSE_AGAIN:
-+			case MAPLE_RESPONSE_BADCMD:
-+			case MAPLE_RESPONSE_BADFUNC:
-+				printk(KERN_DEBUG
-+				       "Maple non-fatal error 0x%X\n",
-+				       code);
-+				break;
-+
-+			case MAPLE_RESPONSE_ALLINFO:
-+				printk(KERN_DEBUG
-+				       "Maple - extended device information not supported\n");
-+				break;
-+
-+			case MAPLE_RESPONSE_OK:
-+				break;
-+
-+			default:
-+				break;
-+			}
-+		}
-+		INIT_LIST_HEAD(&maple_sentq);
-+		if (scanning == 1) {
-+			maple_send();
-+			scanning = 2;
-+		} else
-+			scanning = 0;
-+
-+		if (started == 0)
-+			started = 1;
-+	}
-+	maplebus_dma_reset();
-+}
-+
-+static irqreturn_t maplebus_dma_interrupt(int irq, void *dev_id)
-+{
-+	/* Load everything into the bottom half */
-+	schedule_work(&maple_dma_process);
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t maplebus_vblank_interrupt(int irq, void *dev_id)
-+{
-+	schedule_work(&maple_vblank_process);
-+	return IRQ_HANDLED;
-+}
-+
-+static struct irqaction maple_dma_irq = {
-+	.name = "maple bus DMA handler",
-+	.handler = maplebus_dma_interrupt,
-+	.flags = IRQF_SHARED,
-+};
-+
-+static struct irqaction maple_vblank_irq = {
-+	.name = "maple bus VBLANK handler",
-+	.handler = maplebus_vblank_interrupt,
-+	.flags = IRQF_SHARED,
-+};
-+
-+static int maple_set_dma_interrupt_handler(void)
-+{
-+	return setup_irq(HW_EVENT_MAPLE_DMA, &maple_dma_irq);
-+}
-+
-+static int maple_set_vblank_interrupt_handler(void)
-+{
-+	return setup_irq(HW_EVENT_VSYNC, &maple_vblank_irq);
-+}
-+
-+static int maple_get_dma_buffer(void)
-+{
-+	maple_sendbuf =
-+	    (void *) __get_free_pages(GFP_KERNEL | __GFP_ZERO,
-+				      MAPLE_DMA_PAGES);
-+	if (!maple_sendbuf)
++	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
++	if (unlikely(!kbd))
 +		return -ENOMEM;
-+	return 0;
-+}
 +
-+static int match_maple_bus_driver(struct device *devptr,
-+				  struct device_driver *drvptr)
-+{
-+	struct maple_driver *maple_drv;
-+	struct maple_device *maple_dev;
++	mdev->private_data = kbd;
++	kbd->dev = input_allocate_device();
++	if (!kbd->dev){
++		retval = -ENODEV;
++		goto cleanup_memory;
++	}
 +
-+	maple_drv = container_of(drvptr, struct maple_driver, drv);
-+	maple_dev = container_of(devptr, struct maple_device, dev);
-+	/* Trap empty port case */
-+	if (maple_dev->devinfo.function == 0xFFFFFFFF)
-+		return 0;
-+	else if (maple_dev->devinfo.function &
-+		 be32_to_cpu(maple_drv->function))
-+		return 1;
-+	return 0;
-+}
++	dev = kbd->dev;
 +
-+static int maple_bus_uevent(struct device *dev, char **envp,
-+			    int num_envp, char *buffer, int buffer_size)
-+{
-+	return 0;
-+}
++	memcpy(kbd->keycode, dc_kbd_keycode, sizeof(kbd->keycode));
 +
-+static void maple_bus_release(struct device *dev)
-+{
-+}
++	dev->evbit[0] = BIT(EV_KEY) | BIT(EV_REP);
++	dev->keycodesize = sizeof (unsigned char);
++	dev->keycodemax = ARRAY_SIZE(kbd->keycode);
++	dev->keycode = kbd->keycode;
++	dev->dev.parent = &mdev->dev;
 +
-+static struct maple_driver maple_dummy_driver = {
-+	.drv = {
-+		.name =	"maple_dummy_driver",
-+		.bus =	&maple_bus_type,
-+	},
-+};
++	for (i = 0; i < NR_SCANCODES; i++)
++		set_bit(dc_kbd_keycode[i], dev->keybit);
 +
-+struct bus_type maple_bus_type = {
-+	.name = 	"maple",
-+	.match = 	match_maple_bus_driver,
-+	.uevent = 	maple_bus_uevent,
-+};
++	clear_bit(0, dev->keybit);
 +
-+EXPORT_SYMBOL_GPL(maple_bus_type);
++	input_set_drvdata(dev, kbd);
 +
-+static struct device maple_bus = {
-+	.bus_id = "maple",
-+	.release = maple_bus_release,
-+};
++	dev->name = mdev->product_name;
++	dev->id.bustype = BUS_HOST;
 +
-+static int __init maple_bus_init(void)
-+{
-+	int retval, i;
-+	struct maple_device *mdev[MAPLE_PORTS];
-+	ctrl_outl(0, MAPLE_STATE);
-+
-+	retval = device_register(&maple_bus);
++	retval = input_register_device(dev);
 +	if (retval)
 +		goto cleanup;
-+
-+	retval = bus_register(&maple_bus_type);
-+	if (retval)
-+		goto cleanup_device;
-+
-+	retval = driver_register(&maple_dummy_driver.drv);
-+
-+	if (retval)
-+		goto cleanup_bus;
-+
-+	/* allocate memory for maple bus dma */
-+	retval = maple_get_dma_buffer();
-+	if (retval) {
-+		printk(KERN_INFO
-+		       "Maple bus: Failed to allocate Maple DMA buffers\n");
-+		goto cleanup_basic;
-+	}
-+
-+	/* set up DMA interrupt handler */
-+	retval = maple_set_dma_interrupt_handler();
-+	if (retval) {
-+		printk(KERN_INFO
-+		       "Maple bus: Failed to grab maple DMA IRQ\n");
-+		goto cleanup_dma;
-+	}
-+
-+	/* set up VBLANK interrupt handler */
-+	retval = maple_set_vblank_interrupt_handler();
-+	if (retval) {
-+		printk(KERN_INFO "Maple bus: Failed to grab VBLANK IRQ\n");
-+		goto cleanup_irq;
-+	}
-+
-+	maple_queue_cache =
-+	    kmem_cache_create("maple_queue_cache", 0x400, 0,
-+			      SLAB_HWCACHE_ALIGN, NULL);
-+
-+	if (!maple_queue_cache)
-+		goto cleanup_bothirqs;
-+
-+	/* setup maple ports */
-+	for (i = 0; i < MAPLE_PORTS; i++) {
-+		mdev[i] = maple_alloc_dev(i, 0);
-+		if (!mdev[i]) {
-+			while (i-- > 0)
-+				maple_free_dev(mdev[i]);
-+			goto cleanup_cache;
-+		}
-+		mdev[i]->registered = 0;
-+		mdev[i]->mq->command = MAPLE_COMMAND_DEVINFO;
-+		mdev[i]->mq->length = 0;
-+		maple_attach_driver(mdev[i]);
-+		maple_add_packet(mdev[i]->mq);
-+		subdevice_map[i] = 0;
-+	}
-+
-+	/* setup maplebus hardware */
-+	maplebus_dma_reset();
-+
-+	/* initial detection */
-+	maple_send();
-+
-+	maple_pnp_time = jiffies;
-+
-+	printk(KERN_INFO "Maple bus core now registered.\n");
-+
-+	return 0;
-+
-+cleanup_cache:
-+	kmem_cache_destroy(maple_queue_cache);
-+
-+cleanup_bothirqs:
-+	free_irq(HW_EVENT_VSYNC, 0);
-+
-+cleanup_irq:
-+	free_irq(HW_EVENT_MAPLE_DMA, 0);
-+
-+cleanup_dma:
-+	free_pages((unsigned long) maple_sendbuf, MAPLE_DMA_PAGES);
-+
-+cleanup_basic:
-+	driver_unregister(&maple_dummy_driver.drv);
-+
-+cleanup_bus:
-+	bus_unregister(&maple_bus_type);
-+
-+cleanup_device:
-+	device_unregister(&maple_bus);
++	/* Maple polling is locked to VBLANK - which may be just 50/s */
++	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50, MAPLE_FUNC_KEYBOARD);
++	return retval;
 +
 +cleanup:
-+	printk(KERN_INFO "Maple bus registration failed\n");
++	input_free_device(kbd->dev);
++cleanup_memory:
++	kfree(kbd);
 +	return retval;
 +}
 +
-+subsys_initcall(maple_bus_init);
++static void dc_kbd_disconnect(struct maple_device *mdev)
++{
++	struct dc_kbd *kbd;
++
++	mutex_lock(&maple_keyb_mutex);
++	kbd = mdev->private_data;
++
++	input_unregister_device(kbd->dev);
++	kfree(kbd);
++	mutex_unlock(&maple_keyb_mutex);
++}
++
++/* allow the keyboard to be used */
++static int probe_maple_kbd(struct device *dev)
++{
++	struct maple_device *mdev;
++	struct maple_driver *mdrv;
++	int proberes;
++
++	mdev = to_maple_dev(dev);
++	mdrv = to_maple_driver(dev->driver);
++
++	proberes = dc_kbd_connect(mdev);
++	if (unlikely(proberes))
++		return proberes;
++	mdev->driver = mdrv;
++	mdev->registered = 1;
++	return 0;
++}
++
++static struct maple_driver dc_kbd_driver = {
++	.function = MAPLE_FUNC_KEYBOARD,
++	.connect = dc_kbd_connect,
++	.disconnect = dc_kbd_disconnect,
++	.drv = {
++		.name = "Dreamcast_keyboard",
++		.probe = probe_maple_kbd,
++		},
++};
++
++static int __init dc_kbd_init(void)
++{
++	return maple_driver_register(&dc_kbd_driver.drv);
++}
++
++static void __exit dc_kbd_exit(void)
++{
++	driver_unregister(&dc_kbd_driver.drv);
++}
++
++module_init(dc_kbd_init);
++module_exit(dc_kbd_exit);
