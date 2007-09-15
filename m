@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXIOMb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbXIOMew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbXIOMb2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 08:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXIOMbU
+	id S1753689AbXIOMew (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 08:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXIOMem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 08:31:20 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38219 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbXIOMbT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 08:31:19 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46EBD052.9090608@s5r6.in-berlin.de>
-Date: Sat, 15 Sep 2007 14:30:10 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: FUJITA Tomonori <tomof@acm.org>
-CC: lsorense@csclub.uwaterloo.ca, james.bottomley@steeleye.com,
-       linux-scsi@vger.kernel.org, jeff@garzik.org, andi@firstfloor.org,
-       folkert@vanheusden.com, bunk@kernel.org, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH update] SCSI: update Kconfig help text to indicate SCSI
- core's widespread usage
-References: <tkrat.0e73b94c1e80a481@s5r6.in-berlin.de>	<20070914031256T.tomof@acm.org>	<46EB78A3.9050404@s5r6.in-berlin.de> <20070914114042M.tomof@acm.org>
-In-Reply-To: <20070914114042M.tomof@acm.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Sep 2007 08:34:42 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:38880 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbXIOMel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 08:34:41 -0400
+Date: Sat, 15 Sep 2007 16:34:18 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Move away from char device ioctls.
+Message-ID: <20070915123418.GB25752@2ka.mipt.ru>
+References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <170fa0d20709141954m4cff4650pa3b2bfd347e23f74@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <170fa0d20709141954m4cff4650pa3b2bfd347e23f74@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Sat, 15 Sep 2007 08:16:03 +0200
-> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> Or would be "for newer SCSI transports such as Fibre Channel,
->> FireWire storage, iSCSI, SAS, and more," be OK?
+Hi Mike.
+
+On Fri, Sep 14, 2007 at 10:54:56PM -0400, Mike Snitzer (snitzer@gmail.com) wrote:
+> This distributed storage is very much needed; even if it were to act
+> as a more capable/performant replacement for NBD (or MD+NBD) in the
+> near term.  Many high availability applications don't _need_ all the
+> additional complexity of a full distributed filesystem.  So given
+> that, its discouraging to see you trying to gently push Evgeniy away
+> from all the promising work he has published.
 > 
-> scsi-ml has SPI, FC, iSCSI, SAS, and SRP transport classes (SRP is in
-> scsi-misc now). It's a bit strange to omit only SRP, I think. But I
-> might be too SRP-biased.
+> Evgeniy, please continue your current work.
 
-"such as... and more" suggests that there are indeed more SCSI
-transports supported by Linux than mentioned in this help text.
+Thanks Mike, I work on this and will until feel it is completed.
 
-We could also write "such as Fibre Channel, iSCSI, SAS, and more," if
-you suspect bias on my side. ;-)  Help texts should be concise.
+Distributed filesystem is a logical continuation of the whoe idea of
+storing data on the several remote nodes - DST and FS must exist
+together for the maximum performance, but that does not mean that block
+layer itself should be abandoned. As you probably noticed from my mail
+to Jeff, distributed storage was originally part of the overall
+filesystem design.
+
 -- 
-Stefan Richter
--=====-=-=== =--= -====
-http://arcgraph.de/sr/
+	Evgeniy Polyakov
