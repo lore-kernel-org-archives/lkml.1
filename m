@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbXIOLTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbXIOL3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724AbXIOLTR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 07:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbXIOLTI
+	id S1755431AbXIOL3w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 07:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbXIOL3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 07:19:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33030 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbXIOLTH (ORCPT
+	Sat, 15 Sep 2007 07:29:45 -0400
+Received: from mail-in-04.arcor-online.net ([151.189.21.44]:34513 "EHLO
+	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751565AbXIOL3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 07:19:07 -0400
-Subject: Re: VM/VFS bug with large amount of memory and file systems?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-Cc: marc.smith@esmail.mcc.edu,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-In-Reply-To: <C9A68AAE-0B37-4BB5-A9E6-66C186566940@cam.ac.uk>
-References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk>
-	 <1189850897.21778.301.camel@twins>
-	 <C9A68AAE-0B37-4BB5-A9E6-66C186566940@cam.ac.uk>
-Content-Type: text/plain
-Date: Sat, 15 Sep 2007 13:19:01 +0200
-Message-Id: <1189855141.21778.307.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sat, 15 Sep 2007 07:29:44 -0400
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Jon Ivar Rykkelid <jonry@pvv.org>
+Subject: Re: sata_nv issues with MCP51 SATA controller
+Date: Sat, 15 Sep 2007 13:30:11 +0200
+User-Agent: KMail/1.9.7
+Cc: Robert Hancock <hancockr@shaw.ca>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+References: <46E8EABF.3060409@pvv.org> <200709150912.28358.prakash@punnoor.de> <46EBA82C.6050000@pvv.org>
+In-Reply-To: <46EBA82C.6050000@pvv.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart4882541.kkO4aKOUF8";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200709151330.11967.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-15 at 11:50 +0100, Anton Altaparmakov wrote:
-> Hi,
-> 
-> Thanks for looking into this.
-> 
-> On 15 Sep 2007, at 11:08, Peter Zijlstra wrote:
-> > On Sat, 2007-09-15 at 08:27 +0100, Anton Altaparmakov wrote:
-> >
-> > Please, don't word wrap log-files, they're hard enough to read without
-> > it :-(
-> >
-> > ( I see people do this more and more often, *WHY*? is that because we
-> > like 80 char lines, in code and email? )
-> 
-> I haven't word wrapped it at all.  The lines appear as whole lines in  
-> Apple Mail (my email client).  It must be your email client that is  
-> wrapping them...
-> 
-> > Anyway, looks like all of zone_normal is pinned in kernel allocations:
-> >
-> >> Sep 13 15:31:25 escabot Normal free:3648kB min:3744kB low:4680kB  
-> >> high: 5616kB active:0kB inactive:3160kB present:894080kB  
-> >> pages_scanned:5336 all_unreclaimable? yes
-> >
+--nextPart4882541.kkO4aKOUF8
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Oddly, this line is still long in Andrew's reply but wrapped in yours.
-Must be some odd mailer interaction.
+On the day of Saturday 15 September 2007 Jon Ivar Rykkelid hast written:
+> Do you get the same error messages that I do if you're running without
+> the "acpi_use_timer_override" (this is how it is spelled, isn't it) ?
 
-/me apologises.
+I don't remeber which messages I get, but for me the kernel didn't boot wit=
+h=20
+certain versions. Any yes, you spelled it correctly.
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
 
-I guess I really have to start looking for a hackable GUI email client
-that has semi proper IMAP support.
+--nextPart4882541.kkO4aKOUF8
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBG68JDxU2n/+9+t5gRAoGZAKCpoD+JTV4oCXpK6tm8jxB13H9UsACg3znU
+bLFUP9zwR9JZBGF3pOJxieI=
+=OA0D
+-----END PGP SIGNATURE-----
+
+--nextPart4882541.kkO4aKOUF8--
