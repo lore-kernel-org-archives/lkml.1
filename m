@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbXIOTdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbXIOTjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757195AbXIOTdZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 15:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbXIOTcw
+	id S1756350AbXIOTjb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 15:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbXIOTjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 15:32:52 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:7353 "EHLO
+	Sat, 15 Sep 2007 15:39:24 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:13610 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756653AbXIOTcu (ORCPT
+	with ESMTP id S1752222AbXIOTjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 15:32:50 -0400
+	Sat, 15 Sep 2007 15:39:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=MiShQctF3yZzIFjAottrm+CDTkzGwHfHXAt7jmLGO2dnXkwSOMWMf3hO1L7MFfdnEfzWbj56I//QrYj+1c3pDyfufnV63p4NrXMtIPpk2WJF2METiKVFr79aJXHP2G97zxXB/i20NeXC7sXs6NaYP1BBTi5Ugy6ZeoyjE/yUlt8=
-Message-ID: <8b67d60709151232y783da543pc284b1b9b69c570e@mail.gmail.com>
-Date: Sat, 15 Sep 2007 20:32:50 +0100
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=CTv5OKqwXBBjD7qlFrFOW2nFlFWTbatrPfTglZ1oJaz96Khf2wPgUozm9M4+wWwHxjzWU4CTwlkVV2vgliRuBReo6y9lxiQYq9FmAe2UJlsBJ8mCT34JTqzoYCO/ygVTr2zrcpZl9m9Ax0U9WTxD8yXq0wAnTO8M3IFK9KIj+Hc=
+Message-ID: <8b67d60709151239w2f983e74t9a36eb0c566e09cc@mail.gmail.com>
+Date: Sat, 15 Sep 2007 20:39:21 +0100
 From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
-Subject: [PATCH 2/2] Add Maple bus support for the SEGA Dreamcast - maple keyboard
-Cc: "Greg KH" <greg@kroah.com>, "Paul Mundt" <lethal@linux-sh.org>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org, alsa-devel-request@alsa-project.org,
+       linuxsh-dev@lists.sourceforge.net
+Subject: [PATCH] Dreamcast AICA sound driver G2 bus handling
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -29,305 +27,328 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for the keyboard on the SEGA Dreamcast
+This patch handles instability on the Dreamcast G2 bus while PIO or
+DMA is underway on the System -> AICA channel.
 
-Signed-off by Adrian McMenamin <adrian@mcmen.demon.co.uk>
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Without the suspension of interrupts when PIO or DMA is underway the
+G2 bus is prone to timeouts leading to seemingly random crashes. This
+is particularly visible in cases such as maple bus (see
+http://lkml.org/lkml/2007/9/15/181) hotplugging but the patch is good
+for all conditions.
+
+Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 
 
-diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
-index c97d5eb..056cc52 100644
---- a/drivers/input/keyboard/Kconfig
-+++ b/drivers/input/keyboard/Kconfig
-@@ -253,4 +253,14 @@ config KEYBOARD_GPIO
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called gpio-keys.
-
-+
-+config KEYBOARD_MAPLE
-+	tristate "Maple bus keyboard"
-+	depends on SH_DREAMCAST && MAPLE
-+	help
-+	  Say Y here if you have a Dreamcast console running Linux and have
-+	  a keyboard attached to its Maple bus.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called maple_keyb.	
- endif
-diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
-index 28d211b..3f775ed 100644
---- a/drivers/input/keyboard/Makefile
-+++ b/drivers/input/keyboard/Makefile
-@@ -21,4 +21,5 @@ obj-$(CONFIG_KEYBOARD_OMAP)		+= omap-keypad.o
- obj-$(CONFIG_KEYBOARD_PXA27x)		+= pxa27x_keyboard.o
- obj-$(CONFIG_KEYBOARD_AAED2000)		+= aaed2000_kbd.o
- obj-$(CONFIG_KEYBOARD_GPIO)		+= gpio_keys.o
-+obj-$(CONFIG_KEYBOARD_MAPLE)		+= maple_keyb.o
-
-diff --git a/drivers/input/keyboard/maple_keyb.c
-b/drivers/input/keyboard/maple_keyb.c
-new file mode 100644
-index 0000000..3bb58e1
---- /dev/null
-+++ b/drivers/input/keyboard/maple_keyb.c
-@@ -0,0 +1,234 @@
-+/*
-+ * SEGA Dreamcast keyboard driver
-+ * Based on drivers/usb/usbkbd.c
-+ * Copyright YAEGASHI Takeshi, 2001
-+ * Porting to 2.6 Copyright Adrian McMenamin, 2007
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+*/
-+
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
-+#include <linux/input.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/timer.h>
+diff --git a/sound/sh/aica.c b/sound/sh/aica.c
+index 7397865..54aed1d 100644
+--- a/sound/sh/aica.c
++++ b/sound/sh/aica.c
+@@ -35,6 +35,7 @@
+ #include <linux/timer.h>
+ #include <linux/delay.h>
+ #include <linux/workqueue.h>
 +#include <linux/maple.h>
+ #include <sound/driver.h>
+ #include <sound/core.h>
+ #include <sound/control.h>
+@@ -43,7 +44,8 @@
+ #include <sound/info.h>
+ #include <asm/io.h>
+ #include <asm/dma.h>
+-#include <asm/dreamcast/sysasic.h>
++#include <asm/mach/sysasic.h>
 +#include <asm/mach/maple.h>
+ #include "aica.h"
+
+ MODULE_AUTHOR("Adrian McMenamin <adrian@mcmen.demon.co.uk>");
+@@ -106,11 +108,14 @@ static void spu_write_wait(void)
+ static void spu_memset(u32 toi, u32 what, int length)
+ {
+ 	int i;
++	unsigned long flags;
+ 	snd_assert(length % 4 == 0, return);
+ 	for (i = 0; i < length; i++) {
+ 		if (!(i % 8))
+ 			spu_write_wait();
++		local_irq_save(flags);
+ 		writel(what, toi + SPU_MEMORY_BASE);
++		local_irq_restore(flags);
+ 		toi++;
+ 	}
+ }
+@@ -118,6 +123,7 @@ static void spu_memset(u32 toi, u32 what, int length)
+ /* spu_memload - write to SPU address space */
+ static void spu_memload(u32 toi, void *from, int length)
+ {
++	unsigned long flags;
+ 	u32 *froml = from;
+ 	u32 __iomem *to = (u32 __iomem *) (SPU_MEMORY_BASE + toi);
+ 	int i;
+@@ -128,7 +134,9 @@ static void spu_memload(u32 toi, void *from, int length)
+ 		if (!(i % 8))
+ 			spu_write_wait();
+ 		val = *froml;
++		local_irq_save(flags);
+ 		writel(val, to);
++		local_irq_restore(flags);
+ 		froml++;
+ 		to++;
+ 	}
+@@ -138,28 +146,36 @@ static void spu_memload(u32 toi, void *from, int length)
+ static void spu_disable(void)
+ {
+ 	int i;
++	unsigned long flags;
+ 	u32 regval;
+ 	spu_write_wait();
+ 	regval = readl(ARM_RESET_REGISTER);
+ 	regval |= 1;
+ 	spu_write_wait();
++	local_irq_save(flags);
+ 	writel(regval, ARM_RESET_REGISTER);
++	local_irq_restore(flags);
+ 	for (i = 0; i < 64; i++) {
+ 		spu_write_wait();
+ 		regval = readl(SPU_REGISTER_BASE + (i * 0x80));
+ 		regval = (regval & ~0x4000) | 0x8000;
+ 		spu_write_wait();
++		local_irq_save(flags);
+ 		writel(regval, SPU_REGISTER_BASE + (i * 0x80));
++		local_irq_restore(flags);
+ 	}
+ }
+
+ /* spu_enable - set spu registers to enable sound output */
+ static void spu_enable(void)
+ {
++	unsigned long flags;
+ 	u32 regval = readl(ARM_RESET_REGISTER);
+ 	regval &= ~1;
+ 	spu_write_wait();
++	local_irq_save(flags);
+ 	writel(regval, ARM_RESET_REGISTER);
++	local_irq_restore(flags);
+ }
+
+ /*
+@@ -178,15 +194,21 @@ static void spu_reset(void)
+ /* aica_chn_start - write to spu to start playback */
+ static void aica_chn_start(void)
+ {
++	unsigned long flags;
+ 	spu_write_wait();
++	local_irq_save(flags);
+ 	writel(AICA_CMD_KICK | AICA_CMD_START, (u32 *) AICA_CONTROL_POINT);
++	local_irq_restore(flags);
+ }
+
+ /* aica_chn_halt - write to spu to halt playback */
+ static void aica_chn_halt(void)
+ {
++	unsigned long flags;
+ 	spu_write_wait();
++	local_irq_save(flags);
+ 	writel(AICA_CMD_KICK | AICA_CMD_STOP, (u32 *) AICA_CONTROL_POINT);
++	local_irq_restore(flags);
+ }
+
+ /* ALSA code below */
+@@ -211,6 +233,7 @@ static int aica_dma_transfer(int channels, int buffer_size,
+ 			     struct snd_pcm_substream *substream)
+ {
+ 	int q, err, period_offset;
++	unsigned long flags;
+ 	struct snd_card_aica *dreamcastcard;
+ 	struct snd_pcm_runtime *runtime;
+ 	err = 0;
+@@ -218,6 +241,7 @@ static int aica_dma_transfer(int channels, int buffer_size,
+ 	period_offset = dreamcastcard->clicks;
+ 	period_offset %= (AICA_PERIOD_NUMBER / channels);
+ 	runtime = substream->runtime;
++	local_irq_save(flags);	
+ 	for (q = 0; q < channels; q++) {
+ 		err = dma_xfer(AICA_DMA_CHANNEL,
+ 			       (unsigned long) (runtime->dma_area +
+@@ -232,6 +256,7 @@ static int aica_dma_transfer(int channels, int buffer_size,
+ 			break;
+ 		dma_wait_for_completion(AICA_DMA_CHANNEL);
+ 	}
++	local_irq_restore(flags);
+ 	return err;
+ }
+
+@@ -277,18 +302,21 @@ static void aica_period_elapsed(unsigned long timer_var)
+ {
+ 	/*timer function - so cannot sleep */
+ 	int play_period;
++	unsigned long flags;
+ 	struct snd_pcm_runtime *runtime;
+ 	struct snd_pcm_substream *substream;
+ 	struct snd_card_aica *dreamcastcard;
+ 	substream = (struct snd_pcm_substream *) timer_var;
+ 	runtime = substream->runtime;
+ 	dreamcastcard = substream->pcm->private_data;
+-	/* Have we played out an additional period? */
++	local_irq_save(flags);
++	/* now check if additional period has been played */
+ 	play_period =
+ 	    frames_to_bytes(runtime,
+ 			    readl
+ 			    (AICA_CONTROL_CHANNEL_SAMPLE_NUMBER)) /
+ 	    AICA_PERIOD_SIZE;
++	local_irq_restore(flags);
+ 	if (play_period == dreamcastcard->current_period) {
+ 		/* reschedule the timer */
+ 		mod_timer(&(dreamcastcard->timer), jiffies + 1);
+@@ -433,7 +461,7 @@ static int __init snd_aicapcmchip(struct snd_card_aica
+ 	err =
+ 	    snd_pcm_new(dreamcastcard->card, "AICA PCM", pcm_index, 1, 0,
+ 			&pcm);
+-	if (unlikely(err < 0))
++	if (err < 0)
+ 		return err;
+ 	pcm->private_data = dreamcastcard;
+ 	strcpy(pcm->name, "AICA PCM");
+@@ -493,7 +521,7 @@ static int aica_pcmvolume_get(struct snd_kcontrol *kcontrol,
+ {
+ 	struct snd_card_aica *dreamcastcard;
+ 	dreamcastcard = kcontrol->private_data;
+-	if (unlikely(!dreamcastcard->channel))
++	if (!dreamcastcard->channel)
+ 		return -ETXTBSY;	/* we've not yet been set up */
+ 	ucontrol->value.integer.value[0] = dreamcastcard->channel->vol;
+ 	return 0;
+@@ -504,10 +532,10 @@ static int aica_pcmvolume_put(struct
+snd_kcontrol *kcontrol,
+ {
+ 	struct snd_card_aica *dreamcastcard;
+ 	dreamcastcard = kcontrol->private_data;
+-	if (unlikely(!dreamcastcard->channel))
++	if (!dreamcastcard->channel)
+ 		return -ETXTBSY;
+-	if (unlikely(dreamcastcard->channel->vol ==
+-		     ucontrol->value.integer.value[0]))
++	if (dreamcastcard->channel->vol ==
++		     ucontrol->value.integer.value[0])
+ 		return 0;
+ 	dreamcastcard->channel->vol = ucontrol->value.integer.value[0];
+ 	dreamcastcard->master_volume = ucontrol->value.integer.value[0];
+@@ -537,15 +565,18 @@ static struct snd_kcontrol_new
+snd_aica_pcmvolume_control __devinitdata = {
+ static int load_aica_firmware(void)
+ {
+ 	int err;
++	unsigned long flags;
+ 	const struct firmware *fw_entry;
+ 	spu_reset();
+ 	err = request_firmware(&fw_entry, "aica_firmware.bin", &pd->dev);
+-	if (unlikely(err))
++	if (err)
+ 		return err;
+ 	/* write firware into memory */
++	local_irq_save(flags);
+ 	spu_disable();
+ 	spu_memload(0, fw_entry->data, fw_entry->size);
+ 	spu_enable();
++	local_irq_restore(flags);
+ 	release_firmware(fw_entry);
+ 	return err;
+ }
+@@ -557,12 +588,12 @@ static int __devinit
+add_aicamixer_controls(struct snd_card_aica
+ 	err = snd_ctl_add
+ 	    (dreamcastcard->card,
+ 	     snd_ctl_new1(&snd_aica_pcmvolume_control, dreamcastcard));
+-	if (unlikely(err < 0))
++	if (err < 0)
+ 		return err;
+ 	err = snd_ctl_add
+ 	    (dreamcastcard->card,
+ 	     snd_ctl_new1(&snd_aica_pcmswitch_control, dreamcastcard));
+-	if (unlikely(err < 0))
++	if (err < 0)
+ 		return err;
+ 	return 0;
+ }
+@@ -571,7 +602,7 @@ static int snd_aica_remove(struct platform_device *devptr)
+ {
+ 	struct snd_card_aica *dreamcastcard;
+ 	dreamcastcard = platform_get_drvdata(devptr);
+-	if (unlikely(!dreamcastcard))
++	if (!dreamcastcard)
+ 		return -ENODEV;
+ 	snd_card_free(dreamcastcard->card);
+ 	kfree(dreamcastcard);
+@@ -584,11 +615,11 @@ static int __init snd_aica_probe(struct
+platform_device *devptr)
+ 	int err;
+ 	struct snd_card_aica *dreamcastcard;
+ 	dreamcastcard = kmalloc(sizeof(struct snd_card_aica), GFP_KERNEL);
+-	if (unlikely(!dreamcastcard))
++	if (!dreamcastcard)
+ 		return -ENOMEM;
+ 	dreamcastcard->card =
+ 	    snd_card_new(index, SND_AICA_DRIVER, THIS_MODULE, 0);
+-	if (unlikely(!dreamcastcard->card)) {
++	if (!dreamcastcard->card) {
+ 		kfree(dreamcastcard);
+ 		return -ENODEV;
+ 	}
+@@ -600,27 +631,28 @@ static int __init snd_aica_probe(struct
+platform_device *devptr)
+ 	INIT_WORK(&(dreamcastcard->spu_dma_work), run_spu_dma);
+ 	/* Load the PCM 'chip' */
+ 	err = snd_aicapcmchip(dreamcastcard, 0);
+-	if (unlikely(err < 0))
++	if (err < 0)
+ 		goto freedreamcast;
+ 	snd_card_set_dev(dreamcastcard->card, &devptr->dev);
+ 	dreamcastcard->timer.data = 0;
+ 	dreamcastcard->channel = NULL;
+ 	/* Add basic controls */
+ 	err = add_aicamixer_controls(dreamcastcard);
+-	if (unlikely(err < 0))
++	if (err < 0)
+ 		goto freedreamcast;
+ 	/* Register the card with ALSA subsystem */
+ 	err = snd_card_register(dreamcastcard->card);
+-	if (unlikely(err < 0))
++	if (err < 0)
+ 		goto freedreamcast;
+ 	platform_set_drvdata(devptr, dreamcastcard);
+ 	aica_queue = create_workqueue(CARD_NAME);
+-	if (unlikely(!aica_queue))
++	if (!aica_queue)
+ 		goto freedreamcast;
+ 	snd_printk
+ 	    ("ALSA Driver for Yamaha AICA Super Intelligent Sound Processor\n");
+ 	return 0;
+-      freedreamcast:
 +
-+/* Very simple mutex to ensure proper cleanup */
-+static DEFINE_MUTEX(maple_keyb_mutex);
-+
-+#define NR_SCANCODES 256
-+
-+MODULE_AUTHOR("YAEGASHI Takeshi, Adrian McMenamin");
-+MODULE_DESCRIPTION("SEGA Dreamcast keyboard driver");
-+MODULE_LICENSE("GPL");
-+
-+struct dc_kbd {
-+	struct input_dev *dev;
-+	unsigned char keycode[NR_SCANCODES];
-+	unsigned char new[8];
-+	unsigned char old[8];
-+};
-+
-+const static unsigned char dc_kbd_keycode[NR_SCANCODES] = {
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_A,
-KEY_B, KEY_C, KEY_D,
-+	KEY_E, KEY_F, KEY_G, KEY_H, KEY_I, KEY_J, KEY_K, KEY_L,
-+	KEY_M, KEY_N, KEY_O, KEY_P, KEY_Q, KEY_R, KEY_S, KEY_T,
-+	KEY_U, KEY_V, KEY_W, KEY_X, KEY_Y, KEY_Z, KEY_1, KEY_2,
-+	KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0,
-+	KEY_ENTER, KEY_ESC, KEY_BACKSPACE, KEY_TAB, KEY_SPACE, KEY_MINUS,
-KEY_EQUAL, KEY_LEFTBRACE,
-+	KEY_RIGHTBRACE, KEY_BACKSLASH, KEY_BACKSLASH, KEY_SEMICOLON,
-KEY_APOSTROPHE, KEY_GRAVE, KEY_COMMA,
-+	KEY_DOT, KEY_SLASH, KEY_CAPSLOCK, KEY_F1, KEY_F2, KEY_F3, KEY_F4,
-KEY_F5, KEY_F6,
-+	KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, KEY_SYSRQ,
-+	KEY_SCROLLLOCK, KEY_PAUSE, KEY_INSERT, KEY_HOME, KEY_PAGEUP, KEY_DELETE,
-+	KEY_END, KEY_PAGEDOWN, KEY_RIGHT, KEY_LEFT, KEY_DOWN, KEY_UP,
-+	KEY_NUMLOCK, KEY_KPSLASH, KEY_KPASTERISK, KEY_KPMINUS, KEY_KPPLUS,
-KEY_KPENTER, KEY_KP1, KEY_KP2,
-+	KEY_KP3, KEY_KP4, KEY_KP5, KEY_KP6, KEY_KP7, KEY_KP8, KEY_KP9,
-KEY_KP0, KEY_KPDOT,
-+	KEY_102ND, KEY_COMPOSE, KEY_POWER, KEY_KPEQUAL, KEY_F13, KEY_F14, KEY_F15,
-+	KEY_F16, KEY_F17, KEY_F18, KEY_F19, KEY_F20,
-+	KEY_F21, KEY_F22, KEY_F23, KEY_F24, KEY_OPEN, KEY_HELP, KEY_PROPS, KEY_FRONT,
-+	KEY_STOP, KEY_AGAIN, KEY_UNDO, KEY_CUT, KEY_COPY, KEY_PASTE,
-KEY_FIND, KEY_MUTE,
-+	KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_KPCOMMA, KEY_RESERVED, KEY_RO, KEY_KATAKANAHIRAGANA
-, KEY_YEN,
-+	KEY_HENKAN, KEY_MUHENKAN, KEY_KPJPCOMMA, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED,
-+	KEY_HANGEUL, KEY_HANJA, KEY_KATAKANA, KEY_HIRAGANA,
-KEY_ZENKAKUHANKAKU, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_LEFTCTRL, KEY_LEFTSHIFT, KEY_LEFTALT, KEY_LEFTMETA,
-KEY_RIGHTCTRL, KEY_RIGHTSHIFT, KEY_RIGHTALT, KEY_RIGHTMETA,
-+	KEY_PLAYPAUSE, KEY_STOPCD, KEY_PREVIOUSSONG, KEY_NEXTSONG,
-KEY_EJECTCD, KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_MUTE,
-+	KEY_WWW, KEY_BACK, KEY_FORWARD, KEY_STOP, KEY_FIND, KEY_SCROLLUP,
-KEY_SCROLLDOWN, KEY_EDIT, KEY_SLEEP,
-+	KEY_SCREENLOCK, KEY_REFRESH, KEY_CALC, KEY_RESERVED, KEY_RESERVED,
-KEY_RESERVED, KEY_RESERVED
-+};
-+
-+static void dc_scan_kbd(struct dc_kbd *kbd)
-+{
-+	int i;
-+	void *ptr;
-+	struct input_dev *dev = kbd->dev;
-+
-+	for (i = 0; i < 8; i++)
-+		input_report_key(dev, kbd->keycode[i + 224],
-+					(kbd->new[0] >> i) & 1);
-+
-+	for (i = 2; i < 8; i++) {
-+		ptr = memchr(kbd->new + 2, kbd->old[i], 6);
-+		if (kbd->old[i] > 3 && ptr == NULL) {
-+			if (dc_kbd_keycode[kbd->old[i]])
-+				input_report_key(dev, kbd->keycode[kbd->old[i]], 0);
-+			else
-+				printk (KERN_DEBUG "Unknown key (scancode %#x) released.", kbd->old[i]);
-+		}
-+		ptr = memchr(kbd->old + 2, kbd->new[i], 6);
-+		if (kbd->new[i] > 3 && ptr) {
-+			if (dc_kbd_keycode[kbd->new[i]])
-+				input_report_key(dev, kbd->keycode[kbd->new[i]], 1);
-+			else
-+				printk(KERN_DEBUG "Unknown key (scancode %#x) pressed.", kbd->new[i]);
-+		}
-+	}
-+	input_sync(dev);
-+	memcpy(kbd->old, kbd->new, 8);
-+}
-+
-+static void dc_kbd_callback(struct mapleq *mq)
-+{
-+	struct maple_device *mapledev = mq->dev;
-+	struct dc_kbd *kbd = mapledev->private_data;
-+	unsigned long *buf = mq->recvbuf;
-+
-+	if (!mutex_trylock(&maple_keyb_mutex)) /* Can only be locked if
-already in cleanup */
-+		return;
-+	if (buf[1] == mapledev->function) {
-+		memcpy(kbd->new, buf + 2, 8);
-+		dc_scan_kbd(kbd);
-+	}
-+	mutex_unlock(&maple_keyb_mutex);
-+}
-+
-+static int dc_kbd_connect(struct maple_device *mdev)
-+{
-+	int i, retval = 0;
-+	struct dc_kbd *kbd;
-+	struct input_dev *dev;
-+
-+	if (!(mdev->function & MAPLE_FUNC_KEYBOARD))
-+		return -EINVAL;
-+
-+	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
-+	if (unlikely(!kbd))
-+		return -ENOMEM;
-+
-+	mdev->private_data = kbd;
-+	kbd->dev = input_allocate_device();
-+	if (!kbd->dev){
-+		retval = -ENODEV;
-+		goto cleanup_memory;
-+	}
-+
-+	dev = kbd->dev;
-+
-+	memcpy(kbd->keycode, dc_kbd_keycode, sizeof(kbd->keycode));
-+
-+	dev->evbit[0] = BIT(EV_KEY) | BIT(EV_REP);
-+	dev->keycodesize = sizeof (unsigned char);
-+	dev->keycodemax = ARRAY_SIZE(kbd->keycode);
-+	dev->keycode = kbd->keycode;
-+	dev->dev.parent = &mdev->dev;
-+
-+	for (i = 0; i < NR_SCANCODES; i++)
-+		set_bit(dc_kbd_keycode[i], dev->keybit);
-+
-+	clear_bit(0, dev->keybit);
-+
-+	input_set_drvdata(dev, kbd);
-+
-+	dev->name = mdev->product_name;
-+	dev->id.bustype = BUS_HOST;
-+
-+	retval = input_register_device(dev);
-+	if (retval)
-+		goto cleanup;
-+	/* Maple polling is locked to VBLANK - which may be just 50/s */
-+	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50, MAPLE_FUNC_KEYBOARD);
-+	return retval;
-+
-+cleanup:
-+	input_free_device(kbd->dev);
-+cleanup_memory:
-+	kfree(kbd);
-+	return retval;
-+}
-+
-+static void dc_kbd_disconnect(struct maple_device *mdev)
-+{
-+	struct dc_kbd *kbd;
-+
-+	mutex_lock(&maple_keyb_mutex);
-+	kbd = mdev->private_data;
-+
-+	input_unregister_device(kbd->dev);
-+	kfree(kbd);
-+	mutex_unlock(&maple_keyb_mutex);
-+}
-+
-+/* allow the keyboard to be used */
-+static int probe_maple_kbd(struct device *dev)
-+{
-+	struct maple_device *mdev;
-+	struct maple_driver *mdrv;
-+	int proberes;
-+
-+	mdev = to_maple_dev(dev);
-+	mdrv = to_maple_driver(dev->driver);
-+
-+	proberes = dc_kbd_connect(mdev);
-+	if (unlikely(proberes))
-+		return proberes;
-+	mdev->driver = mdrv;
-+	mdev->registered = 1;
-+	return 0;
-+}
-+
-+static struct maple_driver dc_kbd_driver = {
-+	.function = MAPLE_FUNC_KEYBOARD,
-+	.connect = dc_kbd_connect,
-+	.disconnect = dc_kbd_disconnect,
-+	.drv = {
-+		.name = "Dreamcast_keyboard",
-+		.probe = probe_maple_kbd,
-+		},
-+};
-+
-+static int __init dc_kbd_init(void)
-+{
-+	return maple_driver_register(&dc_kbd_driver.drv);
-+}
-+
-+static void __exit dc_kbd_exit(void)
-+{
-+	driver_unregister(&dc_kbd_driver.drv);
-+}
-+
-+module_init(dc_kbd_init);
-+module_exit(dc_kbd_exit);
++freedreamcast:
+ 	snd_card_free(dreamcastcard->card);
+ 	kfree(dreamcastcard);
+ 	return err;
+@@ -637,11 +669,11 @@ static int __init aica_init(void)
+ {
+ 	int err;
+ 	err = platform_driver_register(&snd_aica_driver);
+-	if (unlikely(err < 0))
++	if (err < 0)
+ 		return err;
+ 	pd = platform_device_register_simple(SND_AICA_DRIVER, -1,
+ 					     aica_memory_space, 2);
+-	if (unlikely(IS_ERR(pd))) {
++	if (IS_ERR(pd)) {
+ 		platform_driver_unregister(&snd_aica_driver);
+ 		return PTR_ERR(pd);
+ 	}
+@@ -653,7 +685,7 @@ static void __exit aica_exit(void)
+ {
+ 	/* Destroy the aica kernel thread            *
+ 	 * being extra cautious to check if it exists*/
+-	if (likely(aica_queue))
++	if (aica_queue)
+ 		destroy_workqueue(aica_queue);
+ 	platform_device_unregister(pd);
+ 	platform_driver_unregister(&snd_aica_driver);
