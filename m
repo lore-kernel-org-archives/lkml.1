@@ -1,93 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbXIOOS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXIOOUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbXIOOS1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 10:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXIOOST
+	id S1755234AbXIOOUZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 10:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXIOOUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 10:18:19 -0400
-Received: from mxsf05.insightbb.com ([74.128.0.75]:33515 "EHLO
-	mxsf05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbXIOOSS (ORCPT
+	Sat, 15 Sep 2007 10:20:10 -0400
+Received: from quail.cita.utoronto.ca ([128.100.76.6]:45661 "EHLO
+	quail.cita.utoronto.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbXIOOUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 10:18:18 -0400
-X-IronPort-AV: E=Sophos;i="4.20,258,1186372800"; 
-   d="scan'208";a="35728858"
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAP6F60ZKjlCP/2dsb2JhbACBVw
-X-IronPort-AV: E=Sophos;i="4.20,258,1186372800"; 
-   d="scan'208";a="116419458"
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: sysfs change of input/event devices in 2.6.23rc breaks udev
-Date: Sat, 15 Sep 2007 10:18:15 -0400
-User-Agent: KMail/1.9.3
-Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Anssi Hannula <anssi.hannula@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-References: <46E2D712.1010402@gmail.com> <d120d5000709100624s4fd7e68djf8654a4d591cbb5d@mail.gmail.com> <20070915010519.34bcb9ae.akpm@linux-foundation.org>
-In-Reply-To: <20070915010519.34bcb9ae.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Sep 2007 10:20:08 -0400
+X-Greylist: delayed 1396 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Sep 2007 10:20:08 EDT
+Date: Sat, 15 Sep 2007 09:56:33 -0400
+From: Robin Humble <rjh@cita.utoronto.ca>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Move away from char device ioctls.
+Message-ID: <20070915135633.GA19482@lemming.cita.utoronto.ca>
+References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709151018.16076.dtor@insightbb.com>
+In-Reply-To: <46EADC02.9070409@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 September 2007 04:05, Andrew Morton wrote:
-> On Mon, 10 Sep 2007 09:24:04 -0400 "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
-> 
-> > On 9/10/07, Greg KH <gregkh@suse.de> wrote:
-> > > On Mon, Sep 10, 2007 at 01:28:47AM -0400, Dmitry Torokhov wrote:
-> > > > On Sunday 09 September 2007 19:03, Kay Sievers wrote:
-> > > > > On 9/8/07, Anssi Hannula <anssi.hannula@gmail.com> wrote:
-> > > > > >
-> > > > > > However, the change that broke id_path of udev is that
-> > > > > > /sys/class/input/event5/device is now a symlink to the inputX directory
-> > > > > > instead of being the same as the device symlink in inputX directory,
-> > > > > > i.e. to ../../../devices/platform/pcspkr in this case.
-> > > > > >
-> > > > > > Udev id_path uses that directory to construct the ID_PATH variable.
-> > > > > > Should the sysfs structure be reverted or should udev be adapted to
-> > > > > > handle traversing /device symlink twice? I think the former, as there
-> > > > > > should be considerably more time to adapt udev for coming changes in sysfs.
-> > > > >
-> > > > > Udev's path_id script is too dumb to follow the "device" link of
-> > > > > stacked class devices in the CONFIG_SYSFS_DEPRECATED=y layout. Does
-> > > > > this change fix it for you?
-> > > > >   http://git.kernel.org/?p=linux/hotplug/udev.git;a=commitdiff_plain;h=b1ac36ff5e3756cefc79967a26280056da31bf6f
-> > > > >
-> > > >
-> > > > Hmm, fixing udev is good but users will not get the change in time. I think we
-> > > > need to adjust SYSFS_DEPRECATED code to produce old results. Something like the
-> > > > patch below. I wonder what Greg would think...
-> > >
-> > > Hm, I don't understand.  Didn't the original conversion of the input
-> > > layer by Kay not have this kind of problem?  What did your changes do
-> > > differently to cause this driver core change to be needed?
-> > >
-> > 
-> > If I understand it correctly Kay's convesion had the same issue. With
-> > class devices "device" link points to class_dev->device instead of
-> > class_dev->parent. If you want to keep compatibility with old sysfs
-> > layout when moving from class devices to regular devices then you need
-> > to "skip" couple of parents till you get to "real" device. This only
-> > matters for input because this was the only subsystem with class
-> > devices stacked.
-> > 
-> 
-> <wonders where the rest of this thread went to>
+On Fri, Sep 14, 2007 at 03:07:46PM -0400, Jeff Garzik wrote:
+>It is my hope that you will put your skills towards a distributed 
+>filesystem :)  Of the current solutions, GFS (currently in kernel) 
+>scales poorly, and NFS v4.1 is amazingly bloated and overly complex.
+>
+>I've been waiting for years for a smart person to come along and write a 
+>POSIX-only distributed filesystem.
 
-Limbo ;)
+it's called Lustre.
+works well, scales well, is widely used, is GPL.
+sadly it's not in mainline.
 
-Anssi, could you please tell me if the patch fixes the issue on your box?
-
-> 
-> Did this userspace-visible post-2.6.22 regression get fixed?
-> 
-
-I'd like the patch to go through Greg if he is OK with it.
-
--- 
-Dmitry
+cheers,
+robin
