@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbXIOCzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbXIODFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760653AbXIOCzO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 22:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbXIOCy6
+	id S1760690AbXIODFz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 23:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXIODFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 22:54:58 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:64227 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755487AbXIOCy4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 22:54:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DLlC05X4ChHp+NCLTrl01EBWSA9+IjeU8GFoE3zUj1uwn0tSbZF+zkxt/DHjjcbng88Sljk1W5JFTy9d8iezF5WhlcVlPWBx4zbIyQ2VJ9BzF6wdA1VfP7LvEwaSPz3yM0Dv/XlVGd64zbNgKuU8VX+ucP+qrkQreNmToYVXvaw=
-Message-ID: <170fa0d20709141954m4cff4650pa3b2bfd347e23f74@mail.gmail.com>
-Date: Fri, 14 Sep 2007 22:54:56 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: Distributed storage. Move away from char device ioctls.
-Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <46EADC02.9070409@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Sep 2007 23:05:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:39601 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754690AbXIODFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 23:05:47 -0400
+Subject: Re: [PATCH] Refactor hypercall infrastructure
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Anthony Liguori <aliguori@us.ibm.com>, kvm-devel@lists.sourceforge.net,
+       Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>,
+       Dor Laor <dor.laor@qumranet.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <46EAF4C6.8090903@goop.org>
+References: <11897991353793-git-send-email-aliguori@us.ibm.com>
+	 <46EAF4C6.8090903@goop.org>
+Content-Type: text/plain
+Date: Sat, 15 Sep 2007 12:35:02 +1000
+Message-Id: <1189823702.7262.68.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/14/07, Jeff Garzik <jeff@garzik.org> wrote:
-> Evgeniy Polyakov wrote:
-> > Hi.
-> >
-> > I'm pleased to announce fourth release of the distributed storage
-> > subsystem, which allows to form a storage on top of remote and local
-> > nodes, which in turn can be exported to another storage as a node to
-> > form tree-like storages.
-> >
-> > This release includes new configuration interface (kernel connector over
-> > netlink socket) and number of fixes of various bugs found during move
-> > to it (in error path).
-> >
-> > Further TODO list includes:
-> > * implement optional saving of mirroring/linear information on the remote
-> >       nodes (simple)
-> > * new redundancy algorithm (complex)
-> > * some thoughts about distributed filesystem tightly connected to DST
-> >       (far-far planes so far)
-> >
-> > Homepage:
-> > http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
-> >
-> > Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
->
-> My thoughts.  But first a disclaimer:   Perhaps you will recall me as
-> one of the people who really reads all your patches, and examines your
-> code and proposals closely.  So, with that in mind...
->
-> I question the value of distributed block services (DBS), whether its
-> your version or the others out there.  DBS are not very useful, because
-> it still relies on a useful filesystem sitting on top of the DBS.  It
-> devolves into one of two cases:  (1) multi-path much like today's SCSI,
-> with distributed filesystem arbitrarion to ensure coherency, or (2) the
-> filesystem running on top of the DBS is on a single host, and thus, a
-> single point of failure (SPOF).
+On Fri, 2007-09-14 at 13:53 -0700, Jeremy Fitzhardinge wrote:
+> Anthony Liguori wrote:
+> > This patch refactors the current hypercall infrastructure to better support live
+> > migration and SMP.  It eliminates the hypercall page by trapping the UD
+> > exception that would occur if you used the wrong hypercall instruction for the
+> > underlying architecture and replacing it with the right one lazily.
+> >   
+> 
+> I guess it would be pretty rude/unlikely for these opcodes to get reused
+> in other implementations...  But couldn't you make the page trap
+> instead, rather than relying on an instruction fault?
 
-This distributed storage is very much needed; even if it were to act
-as a more capable/performant replacement for NBD (or MD+NBD) in the
-near term.  Many high availability applications don't _need_ all the
-additional complexity of a full distributed filesystem.  So given
-that, its discouraging to see you trying to gently push Evgeniy away
-from all the promising work he has published.
+That's a pain for inline hypercalls tho.  I was planning on moving
+lguest to this model (which is interesting, because AFAICT this insn
+will cause a #UD or #GP depending on whether VT is supported on this box
+so I have to look for both).
 
-Evgeniy, please continue your current work.
+Cheers,
+Rusty.
 
-Mike
