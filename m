@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760343AbXIOC3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbXIOCaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760343AbXIOC3y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 22:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932263AbXIOC33
+	id S932963AbXIOCaU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 22:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932394AbXIOC3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 22:29:29 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:20484 "EHLO
+	Fri, 14 Sep 2007 22:29:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:20223 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760010AbXIOC30 (ORCPT
+	with ESMTP id S1760039AbXIOC31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 22:29:26 -0400
+	Fri, 14 Sep 2007 22:29:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=uLKOvfb0btP889mzVojDYg84uhoxFSWr13Xz65LGRE4UODBHMkwx4S7Cx2ZH95p1CP8wtcRrWhStFZf4/MupI/lUVgQlroN9MbgGrMcSRnXRuF1UIzxkh9JQjnzoIBjkRDns/3ywJarJt3Q7Ln86XSibPHwEA/5NN0XM6KiUCVU=
-Message-ID: <46EB4371.307@googlemail.com>
-Date: Sat, 15 Sep 2007 04:29:05 +0200
+        b=DmjpEncnEj6aRDiq9Mm/1tfi+feUbcYNIHI8UxjuWF/SDKpjXfb0gi+gpXAT5FeE4F1wDxpX8dWu1g3mObdjtlNq58BQVyD4S36i2z35821pRaOsPbx1uN3EaZ88fqm0Alu1GueCSDq8be/sfb6WNmhEdvuCPC9D8fakhqctC08=
+Message-ID: <46EB4374.50104@googlemail.com>
+Date: Sat, 15 Sep 2007 04:29:08 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       jfs-discussion@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
-       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       netdev@vger.kernel.org, Shish <shish@shishnet.org>,
-       Karl Meyer <adhocrocker@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, Daniel Drake <dsd@gentoo.org>,
-       Oliver Neukum <oliver@neukum.org>,
-       linux-usb-devel@lists.sourceforge.net, Florian Lohoff <flo@rfc822.org>,
-       =?ISO-8859-2?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
-Subject: Re: [2/3] 2.6.23-rc6: known regressions v2
-References: <46EB3E94.7080704@googlemail.com>
-In-Reply-To: <46EB3E94.7080704@googlemail.com>
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Thomas Voegtle <tv@lio96.de>, Soeren Sonnenburg <kernel@nn7.de>,
+       Christian Leber <christian@leber.de>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       Christian Volkmann <haveaniceday@cv-sv.de>
+Subject: Re: [3/3] 2.6.23-rc6: known regressions v2
+References: <46EB3EF8.6040103@googlemail.com>
+In-Reply-To: <46EB3EF8.6040103@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -67,58 +64,48 @@ Tejun Heo                              3
 
 
 
-FS
+Power management
 
-Subject         : hanging ext3 dbench tests
-References      : http://lkml.org/lkml/2007/9/11/176
+Subject         : powersaving degradation, (time spend in C0 goes up after a while)
+References      : http://lkml.org/lkml/2007/9/2/142
 Last known good : ?
-Submitter       : Andy Whitcroft <apw@shadowen.org>
-Caused-By       : ?
-Handled-By      : ?
-Status          : under test -- unreproducible at present
-
-Subject         : umount triggers a warning in jfs and takes almost a minute
-References      : http://lkml.org/lkml/2007/9/4/73
-Last known good : ?
-Submitter       : Oliver Neukum <oliver@neukum.org>
+Submitter       : Christian Leber <christian@leber.de>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-
-
-Networking
-
-Subject         : build #301 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/net/wireless/libertas/
-References      : http://lkml.org/lkml/2007/9/11/150
-Last known good : ?
-Submitter       : Toralf Förster <toralf.foerster@gmx.de>
+Subject         : something broke resume from s2ram on mbp c1d (??? :))
+References      : http://lkml.org/lkml/2007/8/28/67
+Last known good : 2.6.23-rc3
+Submitter       : Soeren Sonnenburg <kernel@nn7.de>
 Caused-By       : ?
-Handled-By      : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
 Status          : unknown
 
-Subject         : zd1211rw regression, device does not enumerate
-References      : http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
-                  http://bugzilla.kernel.org/show_bug.cgi?id=8972
+Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
+References      : http://lkml.org/lkml/2007/8/12/249
 Last known good : ?
-Submitter       : Oliver Neukum <oliver@neukum.org>
-Caused-By       : Daniel Drake <dsd@gentoo.org>
-                  commit 74553aedd46b3a2cae986f909cf2a3f99369decc
-Handled-By      : ?
-Status          : unknown
-
-Subject         : NETDEV WATCHDOG: eth0: transmit timed out
-References      : http://lkml.org/lkml/2007/8/13/737
-Last known good : ?
-Submitter       : Karl Meyer <adhocrocker@gmail.com>
+Submitter       : Thomas Voegtle <tv@lio96.de>
 Caused-By       : ?
-Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
 Status          : problem is being debugged
 
-Subject         : Weird network problems with 2.6.23-rc2
-References      : http://lkml.org/lkml/2007/8/11/40
+Subject         : resume from ram much slower
+References      : http://lkml.org/lkml/2007/8/10/275
+Last known good : 2.6.23-rc1 ?
+Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
+
+
+
+USB
+
+Subject         : usb 1-1: device not accepting address 2, error -62
+References      : http://lkml.org/lkml/2007/9/14/302
 Last known good : ?
-Submitter       : Shish <shish@shishnet.org>
+Submitter       : Christian Volkmann <haveaniceday@cv-sv.de>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
