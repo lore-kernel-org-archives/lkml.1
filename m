@@ -1,119 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbXIOMaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXIOMb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbXIOMaa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 08:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXIOMaP
+	id S1753997AbXIOMb2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 08:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXIOMbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 08:30:15 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:50538 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750927AbXIOMaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 08:30:13 -0400
-Date: Sat, 15 Sep 2007 16:29:57 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Move away from char device ioctls.
-Message-ID: <20070915122957.GA25752@2ka.mipt.ru>
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46EADC02.9070409@garzik.org>
-User-Agent: Mutt/1.5.9i
+	Sat, 15 Sep 2007 08:31:20 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:38219 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751805AbXIOMbT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 08:31:19 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46EBD052.9090608@s5r6.in-berlin.de>
+Date: Sat, 15 Sep 2007 14:30:10 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: FUJITA Tomonori <tomof@acm.org>
+CC: lsorense@csclub.uwaterloo.ca, james.bottomley@steeleye.com,
+       linux-scsi@vger.kernel.org, jeff@garzik.org, andi@firstfloor.org,
+       folkert@vanheusden.com, bunk@kernel.org, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH update] SCSI: update Kconfig help text to indicate SCSI
+ core's widespread usage
+References: <tkrat.0e73b94c1e80a481@s5r6.in-berlin.de>	<20070914031256T.tomof@acm.org>	<46EB78A3.9050404@s5r6.in-berlin.de> <20070914114042M.tomof@acm.org>
+In-Reply-To: <20070914114042M.tomof@acm.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff.
-
-On Fri, Sep 14, 2007 at 03:07:46PM -0400, Jeff Garzik (jeff@garzik.org) wrote:
-> >Further TODO list includes:
-> >* implement optional saving of mirroring/linear information on the remote
-> >	nodes (simple)
-> >* new redundancy algorithm (complex)
-> >* some thoughts about distributed filesystem tightly connected to DST
-> >	(far-far planes so far)
-> >
-> >Homepage:
-> >http://tservice.net.ru/~s0mbre/old/?section=projects&item=dst
-> >
-> >Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+FUJITA Tomonori wrote:
+> On Sat, 15 Sep 2007 08:16:03 +0200
+> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>> Or would be "for newer SCSI transports such as Fibre Channel,
+>> FireWire storage, iSCSI, SAS, and more," be OK?
 > 
-> My thoughts.  But first a disclaimer:   Perhaps you will recall me as 
-> one of the people who really reads all your patches, and examines your 
-> code and proposals closely.  So, with that in mind...
+> scsi-ml has SPI, FC, iSCSI, SAS, and SRP transport classes (SRP is in
+> scsi-misc now). It's a bit strange to omit only SRP, I think. But I
+> might be too SRP-biased.
 
-:)
+"such as... and more" suggests that there are indeed more SCSI
+transports supported by Linux than mentioned in this help text.
 
-> I question the value of distributed block services (DBS), whether its 
-> your version or the others out there.  DBS are not very useful, because 
-> it still relies on a useful filesystem sitting on top of the DBS.  It 
-> devolves into one of two cases:  (1) multi-path much like today's SCSI, 
-> with distributed filesystem arbitrarion to ensure coherency, or (2) the 
-> filesystem running on top of the DBS is on a single host, and thus, a 
-> single point of failure (SPOF).
-> 
-> It is quite logical to extend the concepts of RAID across the network, 
-> but ultimately you are still bound by the inflexibility and simplicity 
-> of the block device.
-
-Yes, block device itself is not able to scale well, but it is the place
-for redundancy, since filesystem will just fail if underlying device
-does not work correctly and FS actually does not know about where it
-should place redundancy bits - it might happen to be the same broken 
-disk, so I created a low-level device which distribute requests itself.
-It is not allowed to mount it via multiple points, that is where
-distributed filesystem must enter the show - multiple remote nodes
-export its devices via network, each client gets address of the remote
-node to work with, connect to it and process requests. All those bits
-are already in the DST, next logical step is to connect it with
-higher-layer filesystem.
-
-> In contrast, a distributed filesystem offers far more scalability, 
-> eliminates single points of failure, and offers more room for 
-> optimization and redundancy across the cluster.
-> 
-> A distributed filesystem is also much more complex, which is why 
-> distributed block devices are so appealing :)
-> 
-> With a redundant, distributed filesystem, you simply do not need any 
-> complexity at all at the block device level.  You don't even need RAID.
-> 
-> It is my hope that you will put your skills towards a distributed 
-> filesystem :)  Of the current solutions, GFS (currently in kernel) 
-> scales poorly, and NFS v4.1 is amazingly bloated and overly complex.
-> 
-> I've been waiting for years for a smart person to come along and write a 
-> POSIX-only distributed filesystem.
-
-Well, originally (about half a year ago) I started to draft a generic
-filesystem which would be just superior to existing designs, not
-overbloated like zfs, and just faster.
-I do believe it can be implemented.
-Further I added network capabilities (since what I saw that time 
-(AFS was proposed) I did not like - I'm not saying it is bad or 
-something like that at all, but I would implement things differently) 
-into design drafts.
-
-When Chris Mason announced btrfs, I found that quite a few new ideas 
-are already implemented there, so I postponed project (although
-direction of the developement of the btrfs seems to move to the zfs side
-with some questionable imho points, so I think I can jump to the wagon
-of new filesystems right now). 
-
-DST is low level for my (theoretical so far) filesystem (actually its 
-network part) like kevent was a low level system for network AIO (originally).
-
-No matter what filesystem works with network it implements some kind 
-of logic completed in DST.
-Sometimes it is very simple, sometimes a bit more complex, but
-eventually it is a network entity with parts of stuff I put into DST.
-Since I postponed the project (looking at btrfs and its results), I
-completed DST as a standalone block device.
-
-So, essentially, a filesystem with simple distributed facilities is on
-(my) radar, but so far you are first who requested it :)
-
+We could also write "such as Fibre Channel, iSCSI, SAS, and more," if
+you suspect bias on my side. ;-)  Help texts should be concise.
 -- 
-	Evgeniy Polyakov
+Stefan Richter
+-=====-=-=== =--= -====
+http://arcgraph.de/sr/
