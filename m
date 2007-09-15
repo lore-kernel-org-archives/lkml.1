@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbXIOMy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbXIOMzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbXIOMy6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 08:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXIOMyt
+	id S1755429AbXIOMzU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 08:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbXIOMyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 08:54:49 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:33634 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750839AbXIOMys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 08:54:50 -0400
+Received: from honk1.physik.uni-konstanz.de ([134.34.140.224]:36796 "EHLO
+	honk1.physik.uni-konstanz.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752133AbXIOMys (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 15 Sep 2007 08:54:48 -0400
-Date: Sat, 15 Sep 2007 21:53:55 +0900
-To: stefanr@s5r6.in-berlin.de
-Cc: tomof@acm.org, lsorense@csclub.uwaterloo.ca, james.bottomley@steeleye.com,
-       linux-scsi@vger.kernel.org, jeff@garzik.org, andi@firstfloor.org,
-       folkert@vanheusden.com, bunk@kernel.org, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH update] SCSI: update Kconfig help text to indicate SCSI
- core's widespread usage
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <46EBD052.9090608@s5r6.in-berlin.de>
-References: <46EB78A3.9050404@s5r6.in-berlin.de>
-	<20070914114042M.tomof@acm.org>
-	<46EBD052.9090608@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070914134236Q.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
+Date: Sat, 15 Sep 2007 14:54:11 +0200
+From: Guido Guenther <agx@sigxcpu.org>
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, Alan Cox <alan@redhat.com>,
+       David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.23-rc6-git1 -- termios *_1 compile failures on powerpc
+Message-ID: <20070915125411.GA6013@bogon.ms20.nix>
+References: <20070912115823.GG4835@shadowen.org> <625fc13d0709120733w32878f94oca2034f12f47c30c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <625fc13d0709120733w32878f94oca2034f12f47c30c@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Sep 2007 14:30:10 +0200
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> FUJITA Tomonori wrote:
-> > On Sat, 15 Sep 2007 08:16:03 +0200
-> > Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> >> Or would be "for newer SCSI transports such as Fibre Channel,
-> >> FireWire storage, iSCSI, SAS, and more," be OK?
-> > 
-> > scsi-ml has SPI, FC, iSCSI, SAS, and SRP transport classes (SRP is in
-> > scsi-misc now). It's a bit strange to omit only SRP, I think. But I
-> > might be too SRP-biased.
+On Wed, Sep 12, 2007 at 09:33:12AM -0500, Josh Boyer wrote:
+> On 9/12/07, Andy Whitcroft <apw@shadowen.org> wrote:
+> > The following commit just hit mainline and all my powerpc test boxes are
+> > failing during compilation:
+> >
+> >         commit f629307c857c030d5a3dd777fee37c8bb395e171
+> >         tty: termios locking functions break with new termios type
 > 
-> "such as... and more" suggests that there are indeed more SCSI
-> transports supported by Linux than mentioned in this help text.
+> I think this is already being discussed on the linuxppc-dev list.
+The same thing hits sparc64:
 
-I think that you can remove "such as" if you add SRP and SSA. "for
-SCSI transports such as Fibre Channel, FireWire, SAS, iSCSI, SRP, or
-SSA" should be fine. But I'm not sure that scsi-ml has a SSA hba
-driver. If not, we could remove SSA.
+  CC      drivers/char/tty_ioctl.o
+drivers/char/tty_ioctl.c: In function 'n_tty_ioctl':
+drivers/char/tty_ioctl.c:799: error: implicit declaration of function 'kernel_termios_to_user_termios_1'
+drivers/char/tty_ioctl.c:806: error: implicit declaration of function 'user_termios_to_kernel_termios_1'
+make[2]: *** [drivers/char/tty_ioctl.o] Error 1
+make[1]: *** [drivers/char] Error 2
+make: *** [drivers] Error 2
 
+Cheers,
+ -- Guido
 
-> We could also write "such as Fibre Channel, iSCSI, SAS, and more," if
-> you suspect bias on my side. ;-)  Help texts should be concise.
-> -- 
-> Stefan Richter
-> -=====-=-=== =--= -====
-> http://arcgraph.de/sr/
