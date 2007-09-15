@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbXIOBbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760331AbXIOBmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932794AbXIOBbh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Sep 2007 21:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbXIOBba
+	id S1760331AbXIOBmQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Sep 2007 21:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbXIOBmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Sep 2007 21:31:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47788 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752026AbXIOBb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Sep 2007 21:31:29 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Sep 2007 21:42:03 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:26700 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbXIOBmC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Sep 2007 21:42:02 -0400
+Date: Fri, 14 Sep 2007 18:40:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Wilder <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
+       SystemTAP <systemtap@sources.redhat.com>
+Subject: Re: [PATCH 1/2] Trace code and documentation
+Message-Id: <20070914184017.426e26b3.randy.dunlap@oracle.com>
+In-Reply-To: <20070914180840.579627ab.akpm@linux-foundation.org>
+References: <46E9CB14.7060000@us.ibm.com>
+	<20070914180840.579627ab.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-X-Fcc: ~/Mail/linus
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Dan Aloni <da-x@monatomic.org>,
-       Bernhard Walle <bwalle@suse.de>
-Subject: Re: [PATCH] Add ELF note with Linux version
-In-Reply-To: Jeremy Fitzhardinge's message of  Friday, 14 September 2007 14:31:27 -0700 <46EAFDAF.8000809@goop.org>
-References: <20070904150018.GA4357@suse.de>
-	<46DFD825.2020109@goop.org>
-	<20070913144228.2efcd5d9.akpm@linux-foundation.org>
-	<20070913221340.GA29181@uranus.ravnborg.org>
-	<46E9BD3D.4050102@goop.org>
-	<20070914060805.GA32169@uranus.ravnborg.org>
-	<46EAE534.5030900@goop.org>
-	<20070914210738.GA5031@uranus.ravnborg.org>
-	<46EAFDAF.8000809@goop.org>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20070915013052.578554D0424@magilla.localdomain>
-Date: Fri, 14 Sep 2007 18:30:52 -0700 (PDT)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, binutils can be pretty fragile with notes about.  In this case it
-> seems to be a specific problem with build-id; I'm not really sure what
-> build-id actually does.
+On Fri, 14 Sep 2007 18:08:40 -0700 Andrew Morton wrote:
 
-The thing about the build ID section that brings up issues with linking is
-that it is a SHF_ALLOC, SHT_NOTE section.  As you mentioned, this is a
-general, straightforward, and well-defined thing in ELF.  But in practice,
-there were not previously SHF_ALLOC note sections used with custom linker
-scripts like the kernel's.  (They are used every day in normal executables
-and DSOs, but those don't use custom linker scripts.)
+> > Trace - Provides tracing primitives
+> > 
+> > ...
+> >
+> > +config TRACE
+> > +	bool "Trace setup and control"
+> > +	select RELAY
+> > +	select DEBUG_FS
+> > +	help
+> > +	  This option provides support for the setup, teardown and control
+> > +	  of tracing channels from kernel code.  It also provides trace
+> > +	  information and control to userspace via a set of debugfs control
+> > +	  files.  If unsure, say N.
+> > +
+> 
+> select is evil - you really want to avoid using it.
+
+I checked when I reviewed(?) this patch.  There are a few other
+places that select also (IIRC, the blktrace code does), but most of
+them use depends on.
+
+> The problem is where you select a symbol whose dependencies aren't met. 
+> Kconfig resolves this incompatibility by just not selecting the thing you
+> wanted, iirc.  So your CONFIG_SYSFS=n, CONFIG_TRACE=y kernel won't build.
+> 
+> > +/*
+> > + * Based on blktrace code, Copyright (C) 2006 Jens Axboe <axboe@suse.de>
+> 
+> So can we migrate blktrace to using this?
+
+> > +static ssize_t sub_size_read(struct file *filp, char __user *buffer,
+> > +			     size_t count, loff_t *ppos)
+> > +{
+> > +	struct trace_info *trace = filp->private_data;
+> > +	char buf[32];
+> > +
+> > +	snprintf(buf, sizeof(buf), "%u\n",
+> > +		 (unsigned int)trace->rchan->subbuf_size);
+> 
+> Use %tu to print a size_t, rather than the typecast.
+
+Eh?
+Use %zu to print a size_t.  Use %tu to print a ptrdiff_t.
 
 
-Thanks,
-Roland
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
