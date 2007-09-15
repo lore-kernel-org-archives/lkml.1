@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751637AbXIOOBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbXIOOEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751637AbXIOOBx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 10:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbXIOOBp
+	id S1755200AbXIOOEO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 10:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbXIOOD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 10:01:45 -0400
-Received: from www.osadl.org ([213.239.205.134]:53610 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752835AbXIOOBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 10:01:44 -0400
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, rusty@rustycorp.com.au,
-       vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
-In-Reply-To: <20070915031858.70a3a331.akpm@linux-foundation.org>
-References: <20070827104350.GA2073@elf.ucw.cz>
-	 <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com>
-	 <20070903034720.GB3655@ucw.cz> <200709031219.12846.rjw@sisk.pl>
-	 <1188822917.3406.0.camel@chaos>
-	 <20070904072744.GA30474@atrey.karlin.mff.cuni.cz>
-	 <1189713695.3974.23.camel@chaos> <20070914123816.GE1671@elf.ucw.cz>
-	 <1189774257.3100.7.camel@chaos> <1189775743.3100.9.camel@chaos>
-	 <1189849781.4319.5.camel@chaos>
-	 <20070915031858.70a3a331.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 15 Sep 2007 15:28:23 +0200
-Message-Id: <1189862903.4319.7.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+	Sat, 15 Sep 2007 10:03:57 -0400
+Received: from smtp.opengridcomputing.com ([71.42.183.126]:41049 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750983AbXIOOD4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 10:03:56 -0400
+Message-ID: <46EBE649.3040303@opengridcomputing.com>
+Date: Sat, 15 Sep 2007 09:03:53 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
+References: <adahclymos8.fsf@cisco.com>	<46E97BB0.9030106@opengridcomputing.com> <adaps0ml18e.fsf@cisco.com>
+In-Reply-To: <adaps0ml18e.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-15 at 03:18 -0700, Andrew Morton wrote:
-> > http://git.kernel.org/?p=linux/kernel/git/tglx/linux-2.6-hrt.git;a=shortlog;h=for-2.6.23
-> > 
+
+
+Roland Dreier wrote:
+>  > I was about to post v2 of my patch to avoid port space collisions with
+>  > the native stack.  Can we get that 2.6.24?  It is high priority
+>  > IMO. I've tried to solicit review on it, but I think folks are
+>  > reluctant... ;-)
 > 
-> That patch fixes the resume-from-ram and suspend-to-ram regressions on the
-> Vaio.
+> I would like to get this in, but I'm still at least a little
+> reluctant, since we would be committing to a user interface that seems
+> a little awkward at best, so I'd like to try and find something
+> better.  Just to summarize my understanding:
 > 
-> I dropped the timekeeping.c hunks because they are an older version of
-> timekeeping-prevent-time-going-backwards-on-resume.patch which I already
-> had.
+>  - your patch requires the administration to configure an ethX:iwY
+>    alias address to use iwarp.  (By the way is there anything other
+>    than "don't do that" that avoids assigning the same address to the
+>    iwarp alias and a non-iwarp interface?)
 > 
-> Is this good to go?  Needs a bit of changelogging.
 
-Changelog it in the git tree. Please pull from there:
+Nope.  Its totally up to the admin to create the ethX:iwY interface 
+-and- to segment his services so host TCP runs on the ethX subnet(s) and 
+the iwarp rdma ones run on ethX:iwY subnet(s).  Without changing the 
+core network serices, I don't see any way around this.
 
-The following changes since commit 53a3f3087be361dacfc02e7a85b6d6142a41ce8a:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of master.kernel.org:/.../cooloney/blackfin-2.6
+>  - it would be nicer to create the alias automatically, but an alias
+>    without an address doesn't make sense.  Creating a whole separate
+>    net device causes problems because the iwarp stuff still needs to
+>    use the main net device to do ARP etc.
+>
 
-are available in the git repository at:
+I do log a warning if an iwarp application binds to address 0.0.0.0 and 
+there are no ethX:iwY address available.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git for-2.6.23
+>  - so I'm out of better ideas but I still want to push back a little
+>    before we commit to something ugly.
+> 
 
-Thomas Gleixner (6):
-      timekeeping: access rtc outside of xtime lock
-      timekeeping: Prevent time going backwards on resume
-      ACPI: Reevaluate C/P/T states when a cpu becomes online
-      clockevents: Enforce oneshot broadcast when broadcast mask is set on resume
-      clockevents: do not shutdown the oneshot broadcast device
-      clockevents: prevent stale tick update on offline cpu
+Me 2. :-(
 
- drivers/acpi/processor_core.c |   21 +++++++++++++++++++++
- kernel/time/tick-broadcast.c  |   24 ++++++++++++++++--------
- kernel/time/tick-sched.c      |   12 ++++++++++++
- kernel/time/timekeeping.c     |   10 +++++++++-
- 4 files changed, 58 insertions(+), 9 deletions(-)
-
-
+> I've been meaning to track down the bnx2 iscsi offload patch to look
+> and see if this issue is addressed, since the same problem seems to
+> exist: it seems an iscsi connection and a main stack tcp connection
+> might share the same 4-tuple unless something is done to avoid that
+> happening.
+> 
+> Also, I think it behooves us to get some agreement on this approach
+> with NetEffect and Kanoj (NetXen?) at least, since their iwarp drivers
+> seem to be imminent.
+> 
+>  - R.
