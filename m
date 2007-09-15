@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbXIOSot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbXIOSub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757000AbXIOSot (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 14:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbXIOSol
+	id S1756269AbXIOSub (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 14:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbXIOSuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 14:44:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:20231 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbXIOSok (ORCPT
+	Sat, 15 Sep 2007 14:50:24 -0400
+Received: from smtp120.sbc.mail.re3.yahoo.com ([66.196.96.93]:28403 "HELO
+	smtp120.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751452AbXIOSuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 14:44:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Ph/wlfuew4HIL11pBl0VbJSSknCU1uN08BrjKn++sZQB3C6/BaPHHmugil/uxWvMb6qGSZg14V1gvkC5vJV5mIUY3jwImWBL9vwhlJyDWEeo1fL6HlWUjEx6dJWNslSLmjl7E8CUZpRc7KZaTETQz9bWQUBWpkYQJwvNUJocV5E=
-From: Matej Laitl <strohel@gmail.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [PATCH v2] menuconfig: distinguish between selected-by-another options and comments
-Date: Sat, 15 Sep 2007 20:44:30 +0200
-User-Agent: KMail/1.9.7
-References: <200709152004.11930.strohel@gmail.com> <Pine.LNX.4.64.0709152037460.24423@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0709152037460.24423@fbirervta.pbzchgretzou.qr>
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Sat, 15 Sep 2007 14:50:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=yJe5lnn/pJ7recZUpICpLKS1RO8fq0kiLKzhgjWrfVVFxQQl7DNds8VnMLcR4lAxDmha3wFoShqmUGhsNRq8T/qamH3+ActLczovBniF5ll2iQ4XZTZKsqK5zpPMIUhFeIC80ZiusxH4p+5N4duMKJfcFAAT4HrxTtmPsXF8tpI=  ;
+X-YMail-OSG: e.tritgVM1mSphSLrmjxaMrdSkYIC0mJMu3Nf.xPVotpp3Psnao_1.494o.KDBZX4Hv8A_vdkw--
+Date: Sat, 15 Sep 2007 11:50:21 -0700
+From: David Brownell <david-b@pacbell.net>
+To: cebbert@redhat.com, akpm@linux-foundation.org
+Subject: Re: Two identical entries for "rtc" in /proc/devices
+Cc: linux-kernel@vger.kernel.org
+References: <46E07DDA.2040907@redhat.com>
+ <20070915004421.33d552d3.akpm@linux-foundation.org>
+In-Reply-To: <20070915004421.33d552d3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709152044.32188.strohel@gmail.com>
+Message-Id: <20070915185020.16BB51F9EAA@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 of September 2007 20:38:14 you wrote:
-> On Sep 15 2007 20:04, Matej Laitl wrote:
-> >This patch changes notation of selected-by-another items by introducing 2
-> > new representations for implied options:
-> >{*} or {M} for options selected by another modularized one, thus builtin
-> > or module capable,
-> >-*- or -M- for options that cannot be at the moment changed by user.
+> On Thu, 06 Sep 2007 18:23:22 -0400 Chuck Ebbert <cebbert@redhat.com> wrote:
 >
-> This gets rid of the ambiguous ---, does not it? (If so, nice!)
+> > # ls -li
+> > total 0
+> > 4026532007 -r--r--r-- 1 root root 0 Sep  6 18:18 nvram
+> > 4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
+> > 4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
+> > 4026532056 -rw-r--r-- 1 root root 0 Sep  6 18:18 snd-page-alloc
+>
+> Next -mm has
+>
+> procfs-detect-duplicate-names.patch
+> procfs-detect-duplicate-names-fix.patch
+> procfs-detect-duplicate-names-fix-fix-2.patch
+>
+> which will at least tell us who the second offender is.
 
-Definately. You may try it, the patch is against current Linus's HEAD, but may 
-apply cleanly also against 2.6.22 as none of the files changed since. (AFAIK, 
-too lazy to check it)
+Semes pretty clear that this must be procfs itself...
+when a filesystem sees a name in a directory, it should
+refuse to make another file with the same name.  And it
+should *never* reuse inode numbers...
 
-Regards,
-         Matej
+
