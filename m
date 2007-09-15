@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbXIOSxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbXIOTA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867AbXIOSxQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 14:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXIOSxF
+	id S1756108AbXIOTA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 15:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbXIOTAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 14:53:05 -0400
-Received: from smtp3-g19.free.fr ([212.27.42.29]:47636 "EHLO smtp3-g19.free.fr"
+	Sat, 15 Sep 2007 15:00:15 -0400
+Received: from smtp27.orange.fr ([80.12.242.95]:5571 "EHLO smtp27.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbXIOSxE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 14:53:04 -0400
-Date: Sat, 15 Sep 2007 20:51:24 +0200
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       balbir@in.ibm.com, jlan@engr.sgi.com, jlim@sgi.com
-Subject: Re: +
- taskstats-add-all-thread-stats-for-taskstats_cmd_attr_tgid.patch added to
- -mm tree
-Message-ID: <20070915205124.4ccac9a9@localhost.localdomain>
-In-Reply-To: <20070913124141.GA2673@tv-sign.ru>
-References: <200709130018.l8D0IgHl026136@imap1.linux-foundation.org>
-	<20070913124141.GA2673@tv-sign.ru>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
+	id S1751650AbXIOTAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Sep 2007 15:00:13 -0400
+X-ME-UUID: 20070915190012584.8EA201C0009A@mwinf2707.orange.fr
+Message-ID: <46EC2BBB.1030506@free.fr>
+Date: Sat, 15 Sep 2007 21:00:11 +0200
+From: Eric Valette <eric.valette@free.fr>
+Reply-To: eric.valette@free.fr
+Organization: HOME
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+MIME-Version: 1.0
+To: =?UTF-8?B?IlBhdWwgUm9sbGFuZCAo44Od44O844Or44O744Ot44Op44OzKSI=?= 
+	<rol@witbe.net>
+Cc: Rob Hussey <robjhussey@gmail.com>, flamingice@sourmilk.net,
+       andreamrl@tiscali.it, linux-kernel@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: rtl8187 driver in 2.6.23-rc6-git5: kernel panic if not used as
+ a module. Works as a module.
+References: <46EBE70C.2040201@free.fr>	<46EBEBD2.7060502@free.fr>	<6b8cef970709150928h25a7093md5f86d2bdcf677cc@mail.gmail.com>	<46EC24B6.2030709@free.fr> <20070915185153.08490a9b@tux.DEF.witbe.net>
+In-Reply-To: <20070915185153.08490a9b@tux.DEF.witbe.net>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Thu, 13 Sep 2007 16:41:41 +0400,
-Oleg Nesterov <oleg@tv-sign.ru> a écrit :
+Paul Rolland (ポール・ロラン) wrote:
+> Hi Eric,
 
-> (sorry, have no time to read the patch carefully, just a couple of
-> minor random "unless I misread this patch" nits)
+>> Now I have two side questions:
+>> 	- the code is no more symetric "subsys_initcall" -> "module_exit".
+>> Do not know if it is "normal" but I love symmetry in code :-). Did not test
+>> it still works as a module...
+> Symmetry is not broken, as we have :
+> #define subsys_initcall(fn)             module_init(fn)
+> in include/linux/init.h where compiling as a module, and when not compiling
+> as a module, I doubt the exit function is called unless you are shuting
+> down your machine...
 
-Thank you Oleg, hopefully I addressed all your comments in v4.
+I came to this conclusion too. But I would have preferred to have
+#define subsys_exit(fn)			modules_exit(fn)
 
-> > +	do
-> > +		if (!tsk->exit_state)
-> > +			add_tsk(stats, tsk);
-> > +	while_each_thread(first, tsk);
-> 
-> This reminds me. The "!tsk->exit_state" is not good and racy, it
-> can't prevent the double accounting (of course, I don't blame this
-> patch).
+in the case of a module and nop in the non module case...
 
-I documented this in v4, but I was wondering if always setting
-tsk->exit_state under the protection of lock_task_sighand() would fix
-the race.
 
-> > +	if (thread_group_leader(task)) {
-> > +		stats->ac_exitcode = task->exit_code;
-> > +		if (task->flags & PF_FORKNOEXEC)
-> >  			stats->ac_flag |= AFORK;
-> 
-> Actually, I can't understand this "thread_group_leader()" check, but
+-- eric
 
-Seems like this code was copied from kernel/acct.c:acct_collect():
-	if (thread_group_leader(current)) {
-		pacct->ac_exitcode = exitcode;
-		if (current->flags & PF_FORKNOEXEC)
-			pacct->ac_flag |= AFORK;
-	}
 
-> I don't know what ->ac_exitcode and AFORK means to the user-space.
 
->From include/linux/acct.h: executed fork, but did not exec
 
-Except that it talks about fork(2), not do_fork() hence the
-thread_group_leader() test to avoid flagging threads.
 
-> But it looks a bit suspicious. Perhaps we need
-> ->signal->group_exit_code, not task->exit_code?
-
-I put ->signal->group_exit_code if not null, otherwise
-leader->exit_code.
-
-Thank again to you and Andrew for the review.
-
--- 
-Guillaume
