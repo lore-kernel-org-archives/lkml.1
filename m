@@ -1,75 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbXIOUQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbXIOUUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbXIOUQV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 16:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXIOUQL
+	id S1756275AbXIOUUb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 16:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbXIOUUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 16:16:11 -0400
-Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:40561 "EHLO
-	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752938AbXIOUQK (ORCPT
+	Sat, 15 Sep 2007 16:20:25 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:45893 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753102AbXIOUUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 16:16:10 -0400
-From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-References: <20070911060349.993975297@sgi.com>
-	<200709110452.20363.nickpiggin@yahoo.com.au>
-	<20070911121225.GE13132@lazybastard.org>
-	<20070915014449.4f9cdb51.akpm@linux-foundation.org>
-	<87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
-	<20070915155100.GA21861@v2.random>
-Date: Sat, 15 Sep 2007 22:14:44 +0200
-In-Reply-To: <20070915155100.GA21861@v2.random> (Andrea Arcangeli's message of
-	"Sat, 15 Sep 2007 17:51:01 +0200")
-Message-ID: <87tzpvy9cb.fsf@informatik.uni-tuebingen.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Sat, 15 Sep 2007 16:20:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ei9pa5R3Fhi995+djxBkzafqEeuAwzNULMtFGFaYJX7ISDiDEG94C/82DcK91fJHE2UAmqYLb8ACcb45kJx7oTVYV4fQ9pMqbWCrVacLAXM3ZVbDys3s53wyh/szWzqIdloIjTGpUzveo1j9JhTxd7aLziun+w+rGQc5NDcn1RU=
+Message-ID: <8b67d60709151320h1f363b4cl57023627d8139680@mail.gmail.com>
+Date: Sat, 15 Sep 2007 21:20:22 +0100
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Latest git won't compile
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli <andrea@suse.de> writes:
-
-> On Sat, Sep 15, 2007 at 02:14:42PM +0200, Goswin von Brederlow wrote:
->> I keep coming back to the fact that movable objects should be moved
->> out of the way for unmovable ones. Anything else just allows
->
-> That's incidentally exactly what the slab does, no need to reinvent
-> the wheel for that, it's an old problem and there's room for
-> optimization in the slab partial-reuse logic too. Just boost the order
-> 0 page size and use the slab to get the 4k chunks. The sgi/defrag
-> design is backwards.
-
-How does that help? Will slabs move objects around to combine two
-partially filled slabs into nearly full one? If not consider this:
-
-- You create a slab for 4k objects based on 64k compound pages.
-  (first of all that wastes you a page already for the meta infos)
-- Something movable allocates a 14 4k page in there making the slab
-  partially filled.
-- Something unmovable alloactes a 4k page making the slab mixed and
-  full.
-- Repeat until out of memory.
-
-OR
-
-- Userspace allocates a lot of memory in those slabs.
-- Userspace frees one in every 15 4k chunks.
-- Userspace forks 1000 times causing an unmovable task structure to
-  appear in 1000 slabs. 
-
-MfG
-        Goswin
+CC      drivers/char/tty_ioctl.o
+drivers/char/tty_ioctl.c: In function 'n_tty_ioctl':
+drivers/char/tty_ioctl.c:799: error: implicit declaration of function
+'kernel_termios_to_user_termios_1'
+drivers/char/tty_ioctl.c:806: error: implicit declaration of function
+'user_termios_to_kernel_termios_1'
+make[2]: *** [drivers/char/tty_ioctl.o] Error 1
+make[1]: *** [drivers/char] Error 2
+make: *** [drivers] Error 2
