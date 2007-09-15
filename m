@@ -1,145 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbXIOLfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbXIOLkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbXIOLfn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 07:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbXIOLfg
+	id S1753907AbXIOLkz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Sep 2007 07:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXIOLkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 07:35:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:29635 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbXIOLff (ORCPT
+	Sat, 15 Sep 2007 07:40:47 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57261 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751169AbXIOLkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 07:35:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=k08DjlblblWXLSVC6ikP8BT8nyLBX70Wif14hlmw4lnRcR4KVKTs9didh57o7EamYgNEpBjCl4EHNeUTz6OldvXPhSOCi17IXzELSv3uVbyCsmvA2oUfAAAR5J1SHogLKby3RqcER2VqmANTf9rcZ/eZAMt9bjHO8sn8TyVgrS0=
-Subject: [Minor patch] Reduce __print_symbol/sprint_symbol stack usage.
-From: Gilboa Davara <gilboad@gmail.com>
-Reply-To: gilboad@gmail.com
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sat, 15 Sep 2007 14:35:29 +0300
-Message-Id: <1189856129.18191.11.camel@gilboa-home-dev.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Sat, 15 Sep 2007 07:40:45 -0400
+Date: Sat, 15 Sep 2007 13:40:55 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+Message-ID: <20070915114055.GP3563@stusta.de>
+References: <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de> <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de> <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de> <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org> <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <tkrat.552dbee831c88bbe@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Fri, Sep 14, 2007 at 10:01:18PM +0200, Stefan Richter wrote:
+> On 14 Sep, Adrian Bunk wrote:
+> > On Fri, Sep 14, 2007 at 09:00:33PM +0200, Sam Ravnborg wrote:
+> >> Hi Stefan.
+> >> 
+> >> Such a patch really calls for some minimal unifacation among
+> >> the architectures.
+> >> 
+> >> > 
+> >> >  arch/alpha/Kconfig            |    2 
+> >> >  arch/arm/Kconfig              |    2 
+> >> >  arch/avr32/Kconfig            |    2 
+> >> >  arch/blackfin/Kconfig         |    2 
+> >> >  arch/cris/Kconfig             |    2 
+> >> >  arch/frv/Kconfig              |    2 
+> >> >  arch/i386/Kconfig             |    2 
+> >> >  arch/ia64/Kconfig             |    2 
+> >> >  arch/m32r/Kconfig             |    2 
+> >> >  arch/m68k/Kconfig             |    2 
+> >> >  arch/m68knommu/Kconfig        |    2 
+> >> >  arch/mips/Kconfig             |    2 
+> >> >  arch/parisc/Kconfig           |    2 
+> >> >  arch/powerpc/Kconfig          |    2 
+> >> >  arch/ppc/Kconfig              |    2 
+> >> >  arch/s390/Kconfig             |    2 
+> >> >  arch/sh/Kconfig               |    2 
+> >> >  arch/sh64/Kconfig             |    2 
+> >> >  arch/sparc/Kconfig            |    2 
+> >> >  arch/sparc64/Kconfig          |    2 
+> >> >  arch/um/Kconfig               |    2 
+> >> >  arch/v850/Kconfig             |    2 
+> >> >  arch/x86_64/Kconfig           |    4 
+> >> >  arch/xtensa/Kconfig           |    2 
+> >> 
+> >> 
+> >> Exactly the same change for all architectures.
+> >> IT would be good to introduce a common file that contains
+> >> some of the shared stuff from the different architectures.
+> >> We could start out simple with:
+> >> 
+> >> arch/Kconfig.arch:
+> >>...
+> 
+> Yes, that would be good.  But Adrian has a point too.
+> 
+> > Stefan simply shouldn't move it out of drivers/Kconfig.
+>...
+>  drivers/Kconfig               |    4 
+>  drivers/scsi/Kconfig          | 1589 ----------------------------------
+>  drivers/scsi/Kconfig.lowlevel | 1578 +++++++++++++++++++++++++++++++++
+>  3 files changed, 1588 insertions(+), 1583 deletions(-)
 
-In a small exchange in fedora-kernel-list [1] Eric Sandeen has pointed
-out a possible stack overflow... when CONFIG_DEBUG_STACKOVERFLOW is
-enabled. (Though not limited to it)
+Nearly right.  ;-)
 
-Code path is simple: do_IRQ detects a a near stack overflow condition
-and calls show_trace_log_lvl which, down the line uses __print_symbol
-and sprint_symbol to print the call stack.
-However,  both __print_symbol + sprint_symbol are eating no-less then
-128+223 bytes on static char arrays, which, given the fact that this
-code path is actually generated by low stack warning (< 512 bytes),
-might turn a minor (?) problem (low stack) into a full blown crash.
+There are a few architectures not (yet) using drivers/Kconfig.
 
-The patch itself is fairly simple and non-intrusive. [2]
-Both functions allocate memory for their buffers - falling back to
-minimal address display if memory allocation fails.
+> Index: linux-2.6.23-rc6/drivers/Kconfig
+> ===================================================================
+> --- linux-2.6.23-rc6.orig/drivers/Kconfig
+> +++ linux-2.6.23-rc6/drivers/Kconfig
+> @@ -1,5 +1,7 @@
+>  # drivers/Kconfig
+>  
+> +source "drivers/scsi/Kconfig"
+> +
+>  menu "Device Drivers"
+>  
+>  source "drivers/base/Kconfig"
+> @@ -22,7 +24,7 @@ source "drivers/misc/Kconfig"
+>  
+>  source "drivers/ide/Kconfig"
+>  
+> -source "drivers/scsi/Kconfig"
+> +source "drivers/scsi/Kconfig.lowlevel"
+>  
+>  source "drivers/ata/Kconfig"
+>...
 
-P.S. Can anyone please point me to the maintainer of kernel/syms? (I
-rather not spam world + dog for such a minor patch)
+This way the order is wrong:
+
+There should first be the lowlevel SCSI, SATA, USB etc. drivers, these 
+drivers should select CONFIG_SCSI, and then the menu offering support 
+for disk, CD,...
+
+> Index: linux-2.6.23-rc6/drivers/scsi/Kconfig
+> ===================================================================
+> --- linux-2.6.23-rc6.orig/drivers/scsi/Kconfig
+> +++ linux-2.6.23-rc6/drivers/scsi/Kconfig
+> @@ -1,14 +1,7 @@
+> -menu "SCSI device support"
+> -
+> -config RAID_ATTRS
+> -	tristate "RAID Transport Class"
+> -	default n
+> -	depends on BLOCK
+> -	---help---
+> -	  Provides RAID
+> +menu "Storage (core and SCSI commands)"
+>  
+>  config SCSI
+> -	tristate "SCSI device support"
+> +	tristate "Storage support (core and SCSI commands)"
+>  	depends on BLOCK
+>  	select SCSI_DMA if HAS_DMA
+>  	---help---
+>...
+
+What is "storage support"?
+SATA?
+PATA?
+USB mass storage?
+MMC?
+MTD?
+
+Whether or not a driver uses the SCSI layer is an implementation detail 
+(it even differs for the two USB mass storage implementations and the 
+two PATA implementations in the kernel) the user shouldn't have to know 
+about.
+
+I don't see any reason why CONFIG_SCSI should have to stay user-visible 
+at all after your patch.
+
+> Stefan Richter
+
+cu
+Adrian
 
 -- 
-Gilboa Davara <gilboad@gmail.com>
 
-[1]
-http://www.mail-archive.com/fedora-kernel-list@redhat.com/msg00640.html
-
-[2]. In theory, there's a second option: pre-allocating memory on a
-per_cpu basis, however:
-A. dump_trace/stack are usually called when something bad has happened -
-reducing the need for performance optimizations.
-B. per_cpu allocation will also require local_irq_disable/enable as both
-functions are being called from multiple contexts. Too much hassle.
-
-
---- linux-2.6/kernel/kallsyms.orig	2007-09-15 11:46:54.000000000 +0300
-+++ linux-2.6/kernel/kallsyms.c	2007-09-15 14:25:21.000000000 +0300
-@@ -309,30 +309,62 @@ int lookup_symbol_attrs(unsigned long ad
- /* Look up a kernel symbol and return it in a text buffer. */
- int sprint_symbol(char *buffer, unsigned long address)
- {
--	char *modname;
--	const char *name;
- 	unsigned long offset, size;
--	char namebuf[KSYM_NAME_LEN];
-+	const char *name = NULL;
-+	char *namebuf = NULL;
-+	char *modname;
-+	int ret;
-+
-+
-+	/* Static buffer allocation.
-+	   Required in-order to reduce stack footprint on
-+	     do_IRQ/4KSTACK/i386 */
-+	namebuf = kmalloc(KSYM_NAME_LEN, GFP_ATOMIC);
-+	if (namebuf)
-+		name = kallsyms_lookup(address, &size, &offset,
-+					&modname, namebuf);
- 
--	name = kallsyms_lookup(address, &size, &offset, &modname, namebuf);
- 	if (!name)
--		return sprintf(buffer, "0x%lx", address);
-+		ret = sprintf(buffer, "0x%lx", address);
-+	else {
-+		if (modname)
-+			ret = sprintf(buffer, "%s+%#lx/%#lx [%s]",
-+					name, offset, size, modname);
-+		else
-+			ret = sprintf(buffer, "%s+%#lx/%#lx",
-+					name, offset, size);
-+	}
- 
--	if (modname)
--		return sprintf(buffer, "%s+%#lx/%#lx [%s]", name, offset,
--				size, modname);
--	else
--		return sprintf(buffer, "%s+%#lx/%#lx", name, offset, size);
-+	if (namebuf)
-+		kfree(namebuf);
-+
-+	return ret;
- }
- 
- /* Look up a kernel symbol and print it to the kernel messages. */
- void __print_symbol(const char *fmt, unsigned long address)
- {
--	char buffer[KSYM_SYMBOL_LEN];
-+	char *buffer = NULL;
- 
--	sprint_symbol(buffer, address);
- 
--	printk(fmt, buffer);
-+	/* Static buffer allocation.
-+	   Required in-order to reduce stack footprint on
-+	     do_IRQ/4KSTACK/i386 */
-+	buffer = kmalloc(KSYM_SYMBOL_LEN, GFP_ATOMIC);
-+	if (buffer) {
-+		sprint_symbol(buffer, address);
-+		printk(fmt, buffer);
-+		kfree(buffer);
-+	} else {
-+		/* Address + '0x' + NULL. */
-+		char sbuffer[(BITS_PER_LONG / 4) + 3];
-+
-+		/* Fall-back mode.
-+		   Memory allocation failed.
-+		   Convert the address to string and display it. */
-+		sprintf(sbuffer, "0x%lx", address);
-+		printk(fmt, sbuffer);
-+	}
- }
- 
- /* To avoid using get_symbol_offset for every symbol, we carry prefix
-along. */
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
