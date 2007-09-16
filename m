@@ -1,115 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbXIPNxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbXIPNzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbXIPNxY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 09:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbXIPNxR
+	id S1753668AbXIPNzV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 09:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXIPNzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 09:53:17 -0400
-Received: from new.law.columbia.edu ([128.59.177.252]:38377 "EHLO
-	new.law.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbXIPNxQ (ORCPT
+	Sun, 16 Sep 2007 09:55:06 -0400
+Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:45870 "EHLO
+	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752666AbXIPNzE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 09:53:16 -0400
-X-Greylist: delayed 2044 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Sep 2007 09:53:16 EDT
-Date: Sun, 16 Sep 2007 09:17:41 -0400
-Message-Id: <1993-Sun16Sep2007091741-0400-eben@softwarefreedom.org>
-X-Mailer: emacs 21.4.1 (via feedmail 8 I);
-	VM 7.19 under Emacs 21.4.1
+	Sun, 16 Sep 2007 09:55:04 -0400
+From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+References: <20070911060349.993975297@sgi.com>
+	<200709110452.20363.nickpiggin@yahoo.com.au>
+	<20070911121225.GE13132@lazybastard.org>
+	<20070915014449.4f9cdb51.akpm@linux-foundation.org>
+	<87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
+	<20070915155100.GA21861@v2.random>
+	<87tzpvy9cb.fsf@informatik.uni-tuebingen.de>
+	<20070915223032.GA6708@v2.random>
+Date: Sun, 16 Sep 2007 15:54:56 +0200
+In-Reply-To: <20070915223032.GA6708@v2.random> (Andrea Arcangeli's message of
+	"Sun, 16 Sep 2007 00:30:32 +0200")
+Message-ID: <87d4wi3ebz.fsf@informatik.uni-tuebingen.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-To: jcroberts@designtools.org
-Cc: jeff@garzik.org, mrmacman_g4@mac.com, jason@dixongroup.net,
-       misc@openbsd.org, lessig_from_web@pobox.com, bkuhn@softwarefreedom.org,
-       norwood@softwarefreedom.org, fontana@softwarefreedom.org,
-       karen@softwarefreedom.org, linux-kernel@vger.kernel.org
-Subject: Statement by SFLC (was Re: Wasting our Freedom)
-In-Reply-To: J.C. Roberts's message of Sun, 16 Sep 2007 02:17:53 -0700
-      <200709160217.55933.jcroberts@designtools.org>
-References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net>
-	<200709160052.45493.jcroberts@designtools.org>
-	<46ECE554.5030308@garzik.org>
-	<200709160217.55933.jcroberts@designtools.org>
-From: Eben Moglen <moglen@softwarefreedom.org>
-Reply-To: Eben Moglen <moglen@softwarefreedom.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 16 September 2007, J.C. Roberts wrote:
+Andrea Arcangeli <andrea@suse.de> writes:
 
-  Let's say 
-  someone took the linux kernel source from the official repository, 
-  removed the GPL license and dedicated the work to public domain or put 
-  it under any other license, and for kicks back-dated the files so they 
-  are older than the originals. 
+> On Sat, Sep 15, 2007 at 10:14:44PM +0200, Goswin von Brederlow wrote:
+>> - Userspace allocates a lot of memory in those slabs.
+>
+> If with slabs you mean slab/slub, I can't follow, there has never been
+> a single byte of userland memory allocated there since ever the slab
+> existed in linux.
 
-  Now take it one step further. For the sake of example, let's assume all 
-  of this atheros driver nonsense went to a German court and the 
-  GNU/FSF/SFLC/Linux or whoever you want to call yourselves lost a 
-  criminal copyright infringement suit. You have now been legally proven 
-  to be guilty code theft.
-  
-  After such a ruling let's assume some jerk was to do the all the 
-  horrific stuff mentioned in the first paragraph above to the linux 
-  source tree, along with a little regex magic to call it something other 
-  than "linux" and seeded the Internet with countless copies. 
+This and other comments in your reply show me that you completly
+misunderstood what I was talking about.
 
-None of this has happened.  What has happened is that people who do
-not have full possession of the facts and have no legal expertise--
-people whom from the very beginning we have been trying to help--have
-made irresponsible charges and threatened lawsuits, thus slowing down
-our efforts to help them.  It might be useful to recall the first
-stage of this process, when OpenBSD developers were accused of
-misappropriating Atheros code, and SFLC investigated and proved that
-no such misappropriation had occurred?  Wild accusations about our
-motives are even more silly than they are false.
+Look at
+http://www.skynet.ie/~mel/anti-frag/2007-02-28/page_type_distribution.jpg
 
-We understand that attribution issues are critically important to free
-software developers; we are accustomed to the strong feelings that are
-involved in such situations.  In the fifteen years I have spent giving
-free legal help to developers throughout the community, attribution
-disputes have been, always, the most emotionally charged.
+The red dots (pinned) are dentries, page tables, kernel stacks,
+whatever kernel stuff, right?
 
-But making threats of litigation and throwing around words like
-"theft" and "malpractice" was a Really Bad Idea, because once some
-people started using that language--thus making adversaries rather
-than collaborators of themselves--I had no choice but to ask my
-clients and my colleagues to stop communicating with them.
+The green dots (movable) are mostly userspace pages being mapped
+there, right?
 
-Let me therefore point out one last time that if the threats of
-litigation and bluster about crime and malpractice--none of which has
-the slightest basis in fact or law--were withdrawn, we would be able
-to resume detailed communication with everyone who has a stake in the
-outcome.
-
-Also, and again for the last time, let me state that SFLC's
-instructions from its clients are to establish all the facts
-concerning the development of the current relevant code (which means
-the painstaking reconstruction of several independent and overlapping
-lines of development, including forensic reconstruction through
-line-by-line code reviews where version control system information is
-not available), as well as to resolve all outstanding legal issues,
-and to make policy recommendations, if possible, that would result in
-all projects, under both GPL and ISC, having full access to all code
-on their preferred terms, on an *ongoing* basis, with full respect for
-everyone's legal rights.  We continue to believe those policy goals
-are achievable in this situation.  The required work has been made
-more arduous because some people have chosen not to cooperate in good
-faith.  But we will complete the work as soon as we can, and we will,
-as Mr Garvik says, follow the community's practice of complete
-publication, so everyone can see all the evidence.
-
-We will make no more public statements until the work is complete, and
-we will be neither hurried nor intimidated by people who shout at us
-instead of helping.
+What I was refering too is that because movable objects (green dots)
+aren't moved out of a mixed group (the boxes) when some unmovable
+object needs space all the groups become mixed over time. That means
+the unmovable objects are spread out over all the ram and the buddy
+system can't recombine regions when unmovable objects free them. There
+will nearly always be some movable objects in the other buddy. The
+system of having unmovable and movable groups breaks down and becomes
+useless.
 
 
+I'm assuming here that we want the possibility of larger order pages
+for unmovable objects (large continiuos regions for DMA for example)
+than the smallest order user space gets (or any movable object). If
+mmap() still works on 4k page bounaries then those will fragment all
+regions into 4k chunks in the worst case.
 
+Obviously if userspace has a minimum order of 64k chunks then it will
+never break any region smaller than 64k chunks and will never cause a
+fragmentation catastroph. I know that is verry roughly your aproach
+(make order 0 bigger), and I like it, but it has some limits as to how
+big you can make it. I don't think my system with 1GB ram would work
+so well with 2MB order 0 pages. But I wasn't refering to that but to
+the picture.
 
-
--- 
- Eben Moglen                            v: 212-461-1901 
- Professor of Law, Columbia Law School  f: 212-580-0898       moglen@
- Founding Director, Software Freedom Law Center            columbia.edu
- 1995 Broadway (68th Street), fl #17, NYC 10023        softwarefreedom.org
- 
+MfG
+        Goswin
