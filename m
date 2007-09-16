@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbXIPUCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbXIPUDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753471AbXIPUCS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 16:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXIPUCI
+	id S1753486AbXIPUDw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 16:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXIPUDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 16:02:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46999 "EHLO gate.crashing.org"
+	Sun, 16 Sep 2007 16:03:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51970 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751883AbXIPUCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 16:02:07 -0400
-Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
-       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070913151637.A1679@jurassic.park.msu.ru>
-References: <1189664467.17835.1.camel@sli10-conroe.sh.intel.com>
-	 <20070913073140.GA17367@parisc-linux.org>
-	 <1189668286.18361.3.camel@sli10-conroe.sh.intel.com>
-	 <20070913075536.GB17367@parisc-linux.org> <20070913095313.GA745@suse.de>
-	 <20070913151637.A1679@jurassic.park.msu.ru>
-Content-Type: text/plain
-Date: Sun, 16 Sep 2007 22:01:52 +0200
-Message-Id: <1189972912.6403.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1751882AbXIPUDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 16:03:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: regression: fireware causes oops during system
+Date: Sun, 16 Sep 2007 22:16:01 +0200
+User-Agent: KMail/1.9.5
+Cc: Ben Collins <ben.collins@ubuntu.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>
+References: <20070911190043.GA1577@elf.ucw.cz> <200709162152.24793.rjw@sisk.pl> <46ED8AD0.2040004@s5r6.in-berlin.de>
+In-Reply-To: <46ED8AD0.2040004@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709162216.02448.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-13 at 15:16 +0400, Ivan Kokshaysky wrote:
-> On Thu, Sep 13, 2007 at 02:53:13AM -0700, Greg KH wrote:
-> > On Thu, Sep 13, 2007 at 01:55:36AM -0600, Matthew Wilcox wrote:
-> > > Unfortunately if this patch does cause any machine to break, these will
-> > > be machines that worked fine up until this point, so that would be a
-> > > regression, which is worse.  Life sucks.
+On Sunday, 16 September 2007 21:58, Stefan Richter wrote:
+> Rafael J. Wysocki wrote:
+> >> Pavel Machek wrote:
+> >>> commit 831441862956fffa17b9801db37e6ea1650b0f69
+> >>> tree b0334921341f8f1734bdd3243de76d676329d21c
+> >>> parent 787d2214c19bcc9b6ac48af0ce098277a801eded
+> >>> author Rafael J. Wysocki <rjw@sisk.pl> Tue, 17 Jul 2007 04:03:35 -0700
+> >>> committer Linus Torvalds <torvalds@woody.linux-foundation.org> Tue, 17
+> >>> Jul 2007 10:23:02 -0700
+> >>>
+> >>>     Freezer: make kernel threads nonfreezable by default
 > > 
-> > If, after a while, you think the change should go into the -stable tree,
-> > I have no objection.
+> > Well, I don't think so.
+> > 
+> > nodemgr_host_thread() calls set_freezable() as it should.
 > 
-> I think it shouldn't - this change will almost certainly cause a regression.
-> There is a lot of system devices besides the host bridges that shouldn't be
-> disabled during BAR probe, like interrupt controllers, power management
-> controllers and so on.
+> This commit is certainly OK, as it should merely preserve status quo.
+> Also note that Pavel wrote in his initial post that the problem became
+> apparent way after -rc1.  Full quote:
 > 
-> We need a more sophisticated fix - I'm thinking of introducing "probe" field
-> in struct pci_dev which can be set by "early" quirk routines.
+> | I noticed empty suspend stopped working around 2.6.23-rc4, and it is
+> | still present in 2.6.23-rc6. To reproduce
+> |
+> | swapoff -a
+> | echo disk > /sys/power/state
+> | echo disk > /sys/power/state
+> |
+> | Unsetting
+> |
+> | CONFIG_IEEE1394=y
+> |
+> | solves the problem.
 
-Agreed. I have a similar problem on ppc where it's common to have things
-like the main PIC on a PCI device. Note that another problem is (or at
-least was, i haven't checked recently) the P2P bridge scanning code
-that, in a similar way, can block the path to all devices below it. I
--do- have a case for example with Apple Xserve G4's where the main Apple
-IO ASIC, which is a PCI device containing the PIC, the power management
-controller, and various low level system control IOs is behind a pair of
-P2P bridges.
+Yes.
 
-One solution for us (PPC) is to enforce those devices and bridges to be
-described in the OF tree, and generalize a bit the code we have for some
-64 bits machines, that synthetizes the pci_dev's from the OF nodes
-rather than probing. But that's not going to help other archs.
+I thought that there might be a later change that exposed a bug in it.
 
-In fact, that's a problem we also have with
-pci_assign_unassigned_resources() which will happily move things around
-that must not be moved, especially when sitting behind P2P bridges.
+Hm.  Pavel, can you do
 
-So the root of the issue is much deeper than just a quirk here I
-believe.
+# echo test > /sys/power/disk
+# echo disk > /sys/power/state
 
-Cheers,
-Ben.
+and see what happens?
 
-
+Greetings,
+Rafael
