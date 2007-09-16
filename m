@@ -1,92 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbXIPNzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbXIPOEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbXIPNzV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 09:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXIPNzG
+	id S1753509AbXIPOEp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 10:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXIPOEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 09:55:06 -0400
-Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:45870 "EHLO
-	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752666AbXIPNzE (ORCPT
+	Sun, 16 Sep 2007 10:04:37 -0400
+Received: from smtp-dmz-230-sunday.dmz.nerim.net ([195.5.254.230]:52139 "EHLO
+	kellthuzad.dmz.nerim.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751981AbXIPOEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 09:55:04 -0400
-From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-References: <20070911060349.993975297@sgi.com>
-	<200709110452.20363.nickpiggin@yahoo.com.au>
-	<20070911121225.GE13132@lazybastard.org>
-	<20070915014449.4f9cdb51.akpm@linux-foundation.org>
-	<87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
-	<20070915155100.GA21861@v2.random>
-	<87tzpvy9cb.fsf@informatik.uni-tuebingen.de>
-	<20070915223032.GA6708@v2.random>
-Date: Sun, 16 Sep 2007 15:54:56 +0200
-In-Reply-To: <20070915223032.GA6708@v2.random> (Andrea Arcangeli's message of
-	"Sun, 16 Sep 2007 00:30:32 +0200")
-Message-ID: <87d4wi3ebz.fsf@informatik.uni-tuebingen.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Sun, 16 Sep 2007 10:04:36 -0400
+Date: Sun, 16 Sep 2007 16:00:34 +0200
+From: Marc Espie <espie@nerim.net>
+To: Eben Moglen <moglen@softwarefreedom.org>
+Cc: jcroberts@designtools.org, jeff@garzik.org, mrmacman_g4@mac.com,
+       jason@dixongroup.net, misc@openbsd.org, lessig_from_web@pobox.com,
+       bkuhn@softwarefreedom.org, norwood@softwarefreedom.org,
+       fontana@softwarefreedom.org, karen@softwarefreedom.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Statement by SFLC (was Re: Wasting our Freedom)
+Message-ID: <20070916140034.GA238@lain.home>
+Reply-To: espie@nerim.net
+Mail-Followup-To: Eben Moglen <moglen@softwarefreedom.org>,
+	jcroberts@designtools.org, jeff@garzik.org, mrmacman_g4@mac.com,
+	jason@dixongroup.net, misc@openbsd.org, lessig_from_web@pobox.com,
+	bkuhn@softwarefreedom.org, norwood@softwarefreedom.org,
+	fontana@softwarefreedom.org, karen@softwarefreedom.org,
+	linux-kernel@vger.kernel.org
+References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net> <200709160052.45493.jcroberts@designtools.org> <46ECE554.5030308@garzik.org> <200709160217.55933.jcroberts@designtools.org> <1993-Sun16Sep2007091741-0400-eben@softwarefreedom.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1993-Sun16Sep2007091741-0400-eben@softwarefreedom.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli <andrea@suse.de> writes:
+On Sun, Sep 16, 2007 at 09:17:41AM -0400, Eben Moglen wrote:
+> We will make no more public statements until the work is complete, and
+> we will be neither hurried nor intimidated by people who shout at us
+> instead of helping.
 
-> On Sat, Sep 15, 2007 at 10:14:44PM +0200, Goswin von Brederlow wrote:
->> - Userspace allocates a lot of memory in those slabs.
->
-> If with slabs you mean slab/slub, I can't follow, there has never been
-> a single byte of userland memory allocated there since ever the slab
-> existed in linux.
+http://www.softwarefreedom.org/news/2007/jul/31/openhal/
 
-This and other comments in your reply show me that you completly
-misunderstood what I was talking about.
+As I said in a former email, this has several glaring problems.
 
-Look at
-http://www.skynet.ie/~mel/anti-frag/2007-02-28/page_type_distribution.jpg
+As far as I understand, this is a public statement, even if it predates
+the issue at hand.
 
-The red dots (pinned) are dentries, page tables, kernel stacks,
-whatever kernel stuff, right?
-
-The green dots (movable) are mostly userspace pages being mapped
-there, right?
-
-What I was refering too is that because movable objects (green dots)
-aren't moved out of a mixed group (the boxes) when some unmovable
-object needs space all the groups become mixed over time. That means
-the unmovable objects are spread out over all the ram and the buddy
-system can't recombine regions when unmovable objects free them. There
-will nearly always be some movable objects in the other buddy. The
-system of having unmovable and movable groups breaks down and becomes
-useless.
-
-
-I'm assuming here that we want the possibility of larger order pages
-for unmovable objects (large continiuos regions for DMA for example)
-than the smallest order user space gets (or any movable object). If
-mmap() still works on 4k page bounaries then those will fragment all
-regions into 4k chunks in the worst case.
-
-Obviously if userspace has a minimum order of 64k chunks then it will
-never break any region smaller than 64k chunks and will never cause a
-fragmentation catastroph. I know that is verry roughly your aproach
-(make order 0 bigger), and I like it, but it has some limits as to how
-big you can make it. I don't think my system with 1GB ram would work
-so well with 2MB order 0 pages. But I wasn't refering to that but to
-the picture.
-
-MfG
-        Goswin
+Please fix it in a timely manner, or take it down for now.
