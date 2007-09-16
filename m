@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbXIPVcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbXIPVfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbXIPVcR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 17:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbXIPVb7
+	id S1753919AbXIPVfa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 17:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbXIPVfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 17:31:59 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:55587 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752164AbXIPVb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 17:31:58 -0400
-Date: Sun, 16 Sep 2007 22:31:55 +0100
-To: J?rn Engel <joern@logfs.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070916213154.GG16406@skynet.ie>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <20070916175352.GB2393@lazybastard.org>
+	Sun, 16 Sep 2007 17:35:23 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:56868 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752297AbXIPVfW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 17:35:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=WeU8jh3c/WxQsezvr9OJKT3SF3pqXLMs58e9jrK5uq2uOOFhQL3OlZJ2KfvnQtCHcZglgxP7Y7UmECXq+JWt2Xx03A7ASyRW3wwTFGJ29vNxZnCi7VvQ48P/3hbyb3HkqrhfcE+5GI5+IZPPIVmLbq1Cyza278kpquffTlYwA7s=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove an unused variable from the Intel I/OAT DMA engine driver
+Date: Sun, 16 Sep 2007 23:31:50 +0200
+User-Agent: KMail/1.9.7
+Cc: Shannon Nelson <shannon.nelson@intel.com>,
+       Chris Leech <christopher.leech@intel.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070916175352.GB2393@lazybastard.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Message-Id: <200709162331.50784.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (16/09/07 19:53), J?rn Engel didst pronounce:
-> On Sat, 15 September 2007 01:44:49 -0700, Andrew Morton wrote:
-> > On Tue, 11 Sep 2007 14:12:26 +0200 Jörn Engel <joern@logfs.org> wrote:
-> > 
-> > > While I agree with your concern, those numbers are quite silly.  The
-> > > chances of 99.8% of pages being free and the remaining 0.2% being
-> > > perfectly spread across all 2MB large_pages are lower than those of SHA1
-> > > creating a collision.
-> > 
-> > Actually it'd be pretty easy to craft an application which allocates seven
-> > pages for pagecache, then one for <something>, then seven for pagecache, then
-> > one for <something>, etc.
-> > 
-> > I've had test apps which do that sort of thing accidentally.  The result
-> > wasn't pretty.
-> 
-> I bet!  My (false) assumption was the same as Goswin's.  If non-movable
-> pages are clearly seperated from movable ones and will evict movable
-> ones before polluting further mixed superpages, Nick's scenario would be
-> nearly infinitely impossible.
-> 
 
-It would be plain impossible from a fragmentation point-of-view but you
-meet interesting situations when a GFP_NOFS allocation has no kernel blocks
-available to use. It can't reclaim, maybe it can move but not with current
-code (it should be able to with the Memory Compaction patches).
+The 'u16 chanctrl' variable in 
+drivers/dma/ioatdma.c::ioat_dma_free_chan_resources() is completely 
+unused and gcc quite rightfully warns about it:
 
-> Assumption doesn't reflect current code.  Enforcing this assumption
-> would cost extra overhead.  The amount of effort to make Christoph's
-> approach work reliably seems substantial and I have no idea whether it
-> would be worth it.
-> 
+  drivers/dma/ioatdma.c:247: warning: unused variable 'chanctrl'
 
-Current code doesn't reflect your assumptions simply because the costs are so
-high. We'd need to be really sure it's worth it and if the answer is "yes",
-then we are looking at Andrea's approach (more likely) or I can check out
-evicting blocks of 16KB, 64KB or whatever the large block is.
+This patch removes the unused variable and silences the warning.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ ioatdma.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- linux-2.6/drivers/dma/ioatdma.c~	2007-09-16 23:24:20.000000000 +0200
++++ linux-2.6/drivers/dma/ioatdma.c	2007-09-16 23:24:20.000000000 +0200
+@@ -244,7 +244,6 @@ static void ioat_dma_free_chan_resources
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+ 	struct ioat_device *ioat_device = to_ioat_device(chan->device);
+ 	struct ioat_desc_sw *desc, *_desc;
+-	u16 chanctrl;
+ 	int in_use_descs = 0;
+ 
+ 	ioat_dma_memcpy_cleanup(ioat_chan);
+
+
