@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbXIPWvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbXIPWwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbXIPWvW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 18:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbXIPWvO
+	id S1754542AbXIPWwX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 18:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbXIPWwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 18:51:14 -0400
-Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:49010 "EHLO
+	Sun, 16 Sep 2007 18:52:13 -0400
+Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:49036 "EHLO
 	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753511AbXIPWvM (ORCPT
+	by vger.kernel.org with ESMTP id S1753379AbXIPWwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 18:51:12 -0400
+	Sun, 16 Sep 2007 18:52:11 -0400
 From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Joern Engel <joern@logfs.org>, Andrea Arcangeli <andrea@suse.de>,
+To: mel@skynet.ie (Mel Gorman)
+Cc: Andrea Arcangeli <andrea@suse.de>,
        Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
        totty.lu@gmail.com, hugh@veritas.com
 Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <alpine.LFD.0.999.0709161128350.16478@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Sun, 16 Sep 2007 11:44:09 -0700 (PDT)")
 References: <20070911060349.993975297@sgi.com>
 	<200709110452.20363.nickpiggin@yahoo.com.au>
 	<20070911121225.GE13132@lazybastard.org>
@@ -35,53 +34,79 @@ References: <20070911060349.993975297@sgi.com>
 	<20070915155100.GA21861@v2.random>
 	<87tzpvy9cb.fsf@informatik.uni-tuebingen.de>
 	<20070915223032.GA6708@v2.random>
-	<20070916174657.GA2393@lazybastard.org>
-	<alpine.LFD.0.999.0709161112410.16478@woody.linux-foundation.org>
-	<20070916182136.GC2393@lazybastard.org>
-	<alpine.LFD.0.999.0709161128350.16478@woody.linux-foundation.org>
+	<87d4wi3ebz.fsf@informatik.uni-tuebingen.de>
+	<20070916150831.GD6708@v2.random> <20070916210813.GD16406@skynet.ie>
+Date: Mon, 17 Sep 2007 00:48:57 +0200
+In-Reply-To: <20070916210813.GD16406@skynet.ie> (Mel Gorman's message of "Sun,
+	16 Sep 2007 22:08:13 +0100")
+Message-ID: <87veaa446e.fsf@informatik.uni-tuebingen.de>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-Date: Mon, 17 Sep 2007 00:51:06 +0200
-Message-ID: <87ps0i442t.fsf@informatik.uni-tuebingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+mel@skynet.ie (Mel Gorman) writes:
 
-> On Sun, 16 Sep 2007, Jörn Engel wrote:
+> On (16/09/07 17:08), Andrea Arcangeli didst pronounce:
+>> zooming in I see red pixels all over the squares mized with green
+>> pixels in the same square. This is exactly what happens with the
+>> variable order page cache and that's why it provides zero guarantees
+>> in terms of how much ram is really "free" (free as in "available").
 >> 
->> My approach is to have one for mount points and ramfs/tmpfs/sysfs/etc.
->> which are pinned for their entire lifetime and another for regular
->> files/inodes.  One could take a three-way approach and have
->> always-pinned, often-pinned and rarely-pinned.
->> 
->> We won't get never-pinned that way.
 >
-> That sounds pretty good. The problem, of course, is that most of the time, 
-> the actual dentry allocation itself is done before you really know which 
-> case the dentry will be in, and the natural place for actually giving the 
-> dentry lifetime hint is *not* at "d_alloc()", but when we "instantiate" 
-> it with d_add() or d_instantiate().
+> This picture is not grouping pages by mobility so that is hardly a
+> suprise. This picture is not running grouping pages by mobility. This is
+> what the normal kernel looks like. Look at the videos in
+> http://www.skynet.ie/~mel/anti-frag/2007-02-28 and see how list-based
+> compares to vanilla. These are from February when there was less control
+> over mixing blocks than there is today.
 >
-> But it turns out that most of the filesystems we care about already use a 
-> special case of "d_add()" that *already* replaces the dentry with another 
-> one in some cases: "d_splice_alias()".
+> In the current version mixing occurs in the lower blocks as much as possible
+> not the upper ones. So there are a number of mixed blocks but the number is
+> kept to a minimum.
 >
-> So I bet that if we just taught "d_splice_alias()" to look at the inode, 
-> and based on the inode just re-allocate the dentry to some other slab 
-> cache, we'd already handle a lot of the cases!
->
-> And yes, you'd end up with the reallocation overhead quite often, but at 
-> least it would now happen only when filling in a dentry, not in the 
-> (*much* more critical) cached lookup path.
->
-> 			Linus
+> The number of mixed blocks could have been enforced as 0, but I felt it was
+> better in the general case to fragment rather than regress performance.
+> That may be different for large blocks where you will want to take the
+> enforcement steps.
 
-You would only get it for dentries that live long (or your prediction
-is awfully wrong) and then the reallocation amortizes over time if you
-will. :)
+I agree that 0 is a bad value. But so is infinity. There should be
+some mixing but not a lot. You say "kept to a minimum". Is that
+actively done or already happens by itself. Hopefully the later which
+would be just splendid.
+
+>> With config-page-shift mmap works on 4k chunks but it's always backed
+>> by 64k or any other largesize that you choosed at compile time. And if
+
+But would mapping a random 4K page out of a file then consume 64k?
+That sounds like an awfull lot of internal fragmentation. I hope the
+unaligned bits and pices get put into a slab or something as you
+suggested previously.
+
+>> the virtual alignment of mmap matches the physical alignment of the
+>> physical largepage and is >= PAGE_SIZE (software PAGE_SIZE I mean) we
+>> could use the 62nd bit of the pte to use a 64k tlb (if future cpus
+>> will allow that). Nick also suggested to still set all ptes equal to
+>> make life easier for the tlb miss microcode.
+
+It is too bad that existing amd64 CPUs only allow such large physical
+pages. But it kind of makes sense to cut away a full level or page
+tables for the next bigger size each.
+
+>> > big you can make it. I don't think my system with 1GB ram would work
+>> > so well with 2MB order 0 pages. But I wasn't refering to that but to
+>> > the picture.
+>> 
+>> Sure! 2M is sure way excessive for a 1G system, 64k most certainly
+>> too, of course unless you're running a db or a multimedia streaming
+>> service, in which case it should be ideal.
+
+rtorrent, Xemacs/gnus, bash, xterm, zsh, make, gcc, galeon and the
+ocasional mplayer.
+
+I would mostly be concerned how rtorrents totaly random access of
+mmapped files negatively impacts such a 64k page system.
 
 MfG
-        Goswin
+     Goswin
