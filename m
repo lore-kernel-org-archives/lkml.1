@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754396AbXIPWjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbXIPWn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754396AbXIPWjS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 18:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbXIPWjJ
+	id S1754141AbXIPWn5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 18:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbXIPWns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 18:39:09 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:3459 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbXIPWjI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 18:39:08 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Wasting our Freedom
-Date: Sun, 16 Sep 2007 15:37:55 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKAEFGGNAC.davids@webmaster.com>
+	Sun, 16 Sep 2007 18:43:48 -0400
+Received: from mx1.suse.de ([195.135.220.2]:55893 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753197AbXIPWnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 18:43:47 -0400
+Date: Sun, 16 Sep 2007 13:12:59 -0700
+From: Greg KH <gregkh@suse.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+Message-ID: <20070916201259.GA11272@suse.de>
+References: <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de> <20070915125055.GQ3563@stusta.de> <46EBDC06.3030202@s5r6.in-berlin.de> <20070915135314.GS3563@stusta.de> <46EBE821.2080300@s5r6.in-berlin.de> <20070915144341.GT3563@stusta.de> <46EBF9DC.1000503@s5r6.in-berlin.de> <46EBFDFB.5040401@garzik.org> <20070915162313.GV3563@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070916211351.GB18232@stusta.de>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 15:38:46 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 15:38:46 -0700
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070915162313.GV3563@stusta.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Sep 15, 2007 at 06:23:13PM +0200, Adrian Bunk wrote:
+> 
+> @Greg:
+> Do you have any numbers regarding how your "Linux Kernel in a Nutshell" 
+> is selling?
 
-> Dual licenced code by definition explicitely states that you can choose 
-> the licence - otherwise it wouldn't be called dual-licenced.
+It is selling reasonably well for an O'Reilly book from what I have been
+told.  But I have not seen any real numbers yet.
 
-You can choose under which license you would like to receive the right to modify or distribute the code. But you cannot change the license that code itself is covered by.
+> Even download numbers?
 
-> Theo claimed it would "break the law" [1] to choose the GPL for
-> _this_ code. [2]
+The downloads are spread around all of the kernel.org mirrors so I have
+absolutely no idea what they are.
 
-He is quite right. You cannot choose the license under which someone else's code is offered. It would "break the law" not in the sense that you would be breaking the law, in the sense that it's impossible because the law does not allow it.
+Nor do I really want to, as it doesn't matter to me.
 
-You can, however, remove the BSD license notice if you'd like. While the BSD license prohibits you from removing it, you may choose to obtain the right to remove it from the GPL. The GPL does not prohibit removing a BSD license and explicitly grants you the right to make all modifications that it does not prohibit.
+thanks,
 
-Note that this removal has no effect on the license on the original code.
-
-Theo is right, you cannot choose the license on _this_ code. You can, of course, control the license on code that you contribute. Nothing prevents a derivative work from being under a different license from the original work.
-
-DS
-
-
+greg k-h
