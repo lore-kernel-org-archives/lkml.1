@@ -1,96 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbXIPSN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbXIPSNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbXIPSN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 14:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbXIPSNR
+	id S1754477AbXIPSNj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 14:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbXIPSNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 14:13:17 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43752 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751344AbXIPSNQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 14:13:16 -0400
-Date: Sun, 16 Sep 2007 19:13:13 +0100
-To: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joern Engel <joern@logfs.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070916181313.GA16406@skynet.ie>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
+	Sun, 16 Sep 2007 14:13:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44778 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752869AbXIPSNU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 14:13:20 -0400
+Date: Sun, 16 Sep 2007 11:12:23 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andi Kleen <andi@firstfloor.org>, lkml <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Zachary Amsden <zach@vmware.com>
+Subject: Re: crashme fault
+In-Reply-To: <alpine.LFD.0.999.0709161004080.16478@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0709161055070.16478@woody.linux-foundation.org>
+References: <20070912222151.70d1fc7d.randy.dunlap@oracle.com>
+ <alpine.LFD.0.999.0709142101140.16478@woody.linux-foundation.org>
+ <20070915183412.GA14501@one.firstfloor.org> <46EC2702.3090000@oracle.com>
+ <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0709151508590.16478@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0709151542340.16478@woody.linux-foundation.org>
+ <46EC6F2A.5090008@oracle.com> <alpine.LFD.0.999.0709151727180.16478@woody.linux-foundation.org>
+ <20070916094001.d87ed0f0.randy.dunlap@oracle.com>
+ <alpine.LFD.0.999.0709161004080.16478@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (15/09/07 14:14), Goswin von Brederlow didst pronounce:
-> Andrew Morton <akpm@linux-foundation.org> writes:
+
+
+On Sun, 16 Sep 2007, Linus Torvalds wrote:
 > 
-> > On Tue, 11 Sep 2007 14:12:26 +0200 Jörn Engel <joern@logfs.org> wrote:
-> >
-> >> While I agree with your concern, those numbers are quite silly.  The
-> >> chances of 99.8% of pages being free and the remaining 0.2% being
-> >> perfectly spread across all 2MB large_pages are lower than those of SHA1
-> >> creating a collision.
-> >
-> > Actually it'd be pretty easy to craft an application which allocates seven
-> > pages for pagecache, then one for <something>, then seven for pagecache, then
-> > one for <something>, etc.
-> >
-> > I've had test apps which do that sort of thing accidentally.  The result
-> > wasn't pretty.
-> 
-> Except that the applications 7 pages are movable and the <something>
-> would have to be unmovable. And then they should not share the same
-> memory region. At least they should never be allowed to interleave in
-> such a pattern on a larger scale.
-> 
+> I'm really starting to suspect some early EM64T bug, and I also suspect 
+> that it's harmless but that we should just do the trivial patch to say "if 
+> the register state is in user mode, we don't care if the CPU says it was a 
+> kernel access".
 
-It is actually really easy to force regions to never share. At the
-moment, there is a fallback list that determines a preference for what
-block to mix.
+Namely something like this..
 
-The reason why this isn't enforced is the cost of moving. On x86 and
-x86_64, a block of interest is usually 2MB or 4MB. Clearing out one of
-those pages to prevent any mixing would be bad enough. On PowerPC, it's
-potentially 16MB. On IA64, it's 1GB.
+The basic idea is that it's pointless to test for "error_code & PF_USER" 
+to decide whether we should oops or kill the process: the *real* issue is 
+whether we *can* kill the process or not. And that depends not on whether 
+the CPU claimed it was a user access or not, but on whether the register 
+state we'd return to is user-mode or not!
 
-As this was fragmentation avoidance, not guarantees, the decision was
-made to not strictly enforce the types of pages within a block as the
-cost cannot be made back unless the system was making agressive use of
-large pages. This is not the case with Linux.
+So anything that decides whether it should send a signal or do to the 
+"no_context" Ooops path should use "user_mode_vm(regs)" (yeah, I realize 
+that the "_vm" part is unnecessary on x86-64, but it doesn't hurt either, 
+and all of the issues are the same on 32/64-bit) which tests the right 
+thing.
 
-> The only way a fragmentation catastroph can be (proovable) avoided is
-> by having so few unmovable objects that size + max waste << ram
-> size. The smaller the better. Allowing movable and unmovable objects
-> to mix means that max waste goes way up. In your example waste would
-> be 7*size. With 2MB uper order limit it would be 511*size.
-> 
-> I keep coming back to the fact that movable objects should be moved
-> out of the way for unmovable ones. Anything else just allows
-> fragmentation to build up.
-> 
+Now, normally the USER bit in the error code should be the exact same 
+thing, except for
 
-This is easily achieved, just really really expensive because of the
-amount of copying that would have to take place. It would also compel
-that min_free_kbytes be at least one free PAGEBLOCK_NR_PAGES and likely
-MIGRATE_TYPES * PAGEBLOCK_NR_PAGES to reduce excessive copying. That is
-a lot of free memory to keep around which is why fragmentation avoidance
-doesn't do it.
+ - Some CPU bug (microcode issue, whatever) where some complex fault 
+   situation sets the wrong error code.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ - user space accesses that caused a system page fault (ie a page fault 
+   while handling another trap - possibly due to lazy page table setup 
+   and having the LDT or some other CPU data structure in vmalloc space)
+
+Now, the vmalloc space accesses should be handled separately anyway, so I 
+really wonder if it's some subtle CPU bug (I can't reproduce any problems 
+on my Core 2 Duo), but the point is that I think this patch really is 
+conceptually a real fix regardless, even if it _shouldn't_ matter.
+
+Comments?
+
+Randy, this replaces the hacky patch I sent, but also shuts up about the 
+odd thing you're hitting, so for testing your case further this may not be 
+the right thing. However, it would be nice to hear whether this just makes 
+"crashme" work properly for you without any side effects..
+
+		Linus
+
+----
+ arch/x86_64/mm/fault.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86_64/mm/fault.c b/arch/x86_64/mm/fault.c
+index 327c9f2..75270a0 100644
+--- a/arch/x86_64/mm/fault.c
++++ b/arch/x86_64/mm/fault.c
+@@ -87,7 +87,7 @@ static noinline int is_prefetch(struct pt_regs *regs, unsigned long addr,
+ 	instr = (unsigned char __user *)convert_rip_to_linear(current, regs);
+ 	max_instr = instr + 15;
+ 
+-	if (user_mode(regs) && instr >= (unsigned char *)TASK_SIZE)
++	if (user_mode_vm(regs) && instr >= (unsigned char *)TASK_SIZE)
+ 		return 0;
+ 
+ 	while (scan_more && instr < max_instr) { 
+@@ -320,7 +320,6 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 
+ 	info.si_code = SEGV_MAPERR;
+ 
+-
+ 	/*
+ 	 * We fault-in kernel-space virtual memory on-demand. The
+ 	 * 'reference' page table is init_mm.pgd.
+@@ -404,7 +403,7 @@ asmlinkage void __kprobes do_page_fault(struct pt_regs *regs,
+ 		goto good_area;
+ 	if (!(vma->vm_flags & VM_GROWSDOWN))
+ 		goto bad_area;
+-	if (error_code & 4) {
++	if (error_code & PF_USER) {
+ 		/* Allow userspace just enough access below the stack pointer
+ 		 * to let the 'enter' instruction work.
+ 		 */
+@@ -558,7 +557,7 @@ out_of_memory:
+ 		goto again;
+ 	}
+ 	printk("VM: killing process %s\n", tsk->comm);
+-	if (error_code & 4)
++	if (user_mode_vm(regs))
+ 		do_group_exit(SIGKILL);
+ 	goto no_context;
+ 
+@@ -566,7 +565,7 @@ do_sigbus:
+ 	up_read(&mm->mmap_sem);
+ 
+ 	/* Kernel mode? Handle exceptions or die */
+-	if (!(error_code & PF_USER))
++	if (!user_mode_vm(regs))
+ 		goto no_context;
+ 
+ 	tsk->thread.cr2 = address;
