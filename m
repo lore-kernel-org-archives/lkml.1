@@ -1,51 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbXIPOEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbXIPOXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbXIPOEp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 10:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXIPOEh
+	id S1753428AbXIPOXT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 10:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbXIPOXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 10:04:37 -0400
-Received: from smtp-dmz-230-sunday.dmz.nerim.net ([195.5.254.230]:52139 "EHLO
-	kellthuzad.dmz.nerim.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751981AbXIPOEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 10:04:36 -0400
-Date: Sun, 16 Sep 2007 16:00:34 +0200
-From: Marc Espie <espie@nerim.net>
-To: Eben Moglen <moglen@softwarefreedom.org>
-Cc: jcroberts@designtools.org, jeff@garzik.org, mrmacman_g4@mac.com,
-       jason@dixongroup.net, misc@openbsd.org, lessig_from_web@pobox.com,
-       bkuhn@softwarefreedom.org, norwood@softwarefreedom.org,
-       fontana@softwarefreedom.org, karen@softwarefreedom.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Statement by SFLC (was Re: Wasting our Freedom)
-Message-ID: <20070916140034.GA238@lain.home>
-Reply-To: espie@nerim.net
-Mail-Followup-To: Eben Moglen <moglen@softwarefreedom.org>,
-	jcroberts@designtools.org, jeff@garzik.org, mrmacman_g4@mac.com,
-	jason@dixongroup.net, misc@openbsd.org, lessig_from_web@pobox.com,
-	bkuhn@softwarefreedom.org, norwood@softwarefreedom.org,
-	fontana@softwarefreedom.org, karen@softwarefreedom.org,
-	linux-kernel@vger.kernel.org
-References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net> <200709160052.45493.jcroberts@designtools.org> <46ECE554.5030308@garzik.org> <200709160217.55933.jcroberts@designtools.org> <1993-Sun16Sep2007091741-0400-eben@softwarefreedom.org>
-MIME-Version: 1.0
+	Sun, 16 Sep 2007 10:23:03 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36598 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838AbXIPOXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 10:23:00 -0400
+Date: Sun, 16 Sep 2007 18:22:41 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: rdreier@cisco.com, sean.hefty@intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [PATCH v2] iw_cxgb3: Support "iwarp-only" interfaces to avoid 4-tuple conflicts.
+Message-ID: <20070916142241.GA26848@2ka.mipt.ru>
+References: <20070913191617.30937.95960.stgit@dell3.ogc.int> <20070914130941.GG18517@2ka.mipt.ru> <46EC00BE.3020801@opengridcomputing.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1993-Sun16Sep2007091741-0400-eben@softwarefreedom.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <46EC00BE.3020801@opengridcomputing.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 09:17:41AM -0400, Eben Moglen wrote:
-> We will make no more public statements until the work is complete, and
-> we will be neither hurried nor intimidated by people who shout at us
-> instead of helping.
+Hi Steve.
 
-http://www.softwarefreedom.org/news/2007/jul/31/openhal/
+On Sat, Sep 15, 2007 at 10:56:46AM -0500, Steve Wise (swise@opengridcomputing.com) wrote:
+> >>The iWARP driver must translate all listens on address 0.0.0.0 to the
+> >>set of rdma-only ip addresses for the device in question.  This prevents
+> >>incoming connect requests to the TCP ipaddresses from going up the
+> >>rdma stack.
+> >
+> >If the only solutions to solve a problem with hardware are to steal
+> >packets or became a real device, then real device is much more
+> >appropriate. Is that correct?
+> >
+> 
+> This is a real device.  I don't understand your question?  Packets 
+> aren't being stolen.
 
-As I said in a former email, this has several glaring problems.
+I meant port from main network stack. Sorry for confusion.
 
-As far as I understand, this is a public statement, even if it predates
-the issue at hand.
+> >>+static void insert_ifa(struct iwch_dev *rnicp, struct in_ifaddr *ifa)
+> >>+{
+> >>+	struct iwch_addrlist *addr;
+> >>+
+> >>+	addr = kmalloc(sizeof *addr, GFP_KERNEL);
+> >
+> >As a small nitpick: this wants to be sizeof(struct in_ifaddr)
+> >
+> 
+> No, insert_ifa() allocates a struct iwch_addrlist, which has 2 fields: a 
+> list_head for linking, and a struct in_ifaddr pointer.
 
-Please fix it in a timely manner, or take it down for now.
+sizeof(struct iwch_addrlist) of course, not (*addr).
+To simplify grep.
+ 
+> >>+	if (!addr) {
+> >>+		printk(KERN_ERR MOD "%s - failed to alloc memory!\n",
+> >>+		       __FUNCTION__);
+> >>+		return;
+> >>+	}
+> >>+	addr->ifa = ifa;
+> >>+	mutex_lock(&rnicp->mutex);
+> >>+	list_add_tail(&addr->entry, &rnicp->addrlist);
+> >>+	mutex_unlock(&rnicp->mutex);
+> >>+}
+> >
+> >What about providing error back to caller and fail to register?
+> >
+> 
+> There are two causes where this is called: 1) during module init to 
+> populate the list of iwarp addresses.  If we failed in that case then, I 
+> _could_ then not register.  2) we get called via the notifier mechanism 
+> when an address is added.  If that fails, the caller doesn't care (since 
+> we're on the notifier callout thread).  But the code could perhaps 
+> unregister the device.  I prefer just logging an error in case 2.  I'll 
+> look into not registering if we cannot get any address due to lack of 
+> memory.  But there's another case:  we load the module and the admin 
+> hasn't yet created the ethX:iw interface.
+> 
+> Perhaps I should change the code to only register as a working rdma 
+> device _when_ we get at least one ethX:iwY interface created?  Whatchathink?
+
+Does second case ends up with problem you described in the initial
+e-mail not being fixed?
+ 
+> >>+static inline int is_iwarp_label(char *label)
+> >>+{
+> >>+	char *colon;
+> >>+
+> >>+	colon = strchr(label, ':');
+> >>+	if (colon && !strncmp(colon+1, "iw", 2))
+> >>+		return 1;
+> >>+	return 0;
+> >>+}
+> >
+> >I.e. it is not allowed to create ':iw' alias for anyone else?
+> >Well, looks crappy, but if it is the only solution...
+> >
+> 
+> It is kinda crappy.  But I don't see a better solution.  Any ideas?
+
+Does creating the whole new netdevice is a too big overhead, or is it
+considered bad idea?
+
+> >>+static struct iwch_listen_entry *alloc_listener(struct iwch_listen_ep 
+> >>*ep,
+> >>+						  __be32 addr)
+> >
+> >Do you know, that cxgb3 function names suck? :)
+> >Especially get_skb().
+> >
+> >>+{
+> >>+	struct iwch_dev *h = to_iwch_dev(ep->com.cm_id->device);
+> >>+	struct iwch_listen_entry *le;
+> >>+
+> >>+	le = kmalloc(sizeof *le, GFP_KERNEL);
+> >
+> >Wants to be sizeof(struct iwch_listen_entry) and in other places too.
+> >
+> 
+> Do you mean I shouldn't use sizeof *le, but rather sizeof(struct 
+> iwch_listen_entry)?  Is that the preferred coding style?
+
+Yes, exactly.
+
+> >I skipped rdma internals of the patch, since I do not know it enough 
+> >to judge, but your approach looks good from core network point of view.
+> >Maybe you should automatically create an alias each time new interface
+> >is added so that admin would not care about proper aliases?
+> >
+> 
+> That would be much better IMO, but the problem is that I cannot create 
+> an alias without an actual ip address.  Unless we change the core 
+> services to allow it.
+> 
+> Thanks for reviewing!
+> 
+> Steve.
+> 
+
+-- 
+	Evgeniy Polyakov
