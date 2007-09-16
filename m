@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbXIPKrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750711AbXIPKrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbXIPKrY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 06:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXIPKrR
+	id S1750711AbXIPKrl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 06:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXIPKrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 06:47:17 -0400
-Received: from pne-smtpout4-sn2.hy.skanova.net ([81.228.8.154]:44771 "EHLO
-	pne-smtpout4-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751326AbXIPKrR (ORCPT
+	Sun, 16 Sep 2007 06:47:31 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:20413 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbXIPKra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 06:47:17 -0400
-Date: Sun, 16 Sep 2007 13:47:13 +0300
-From: Sami Farin <safari-kernel@safari.iki.fi>
-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: TSC && HPET calibration
-Message-ID: <20070916104713.i3gu2p43ciifjc55@m.safari.iki.fi>
-Mail-Followup-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sun, 16 Sep 2007 06:47:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qcqHG0SboxpNkmlR6XO7TqpUyMpeKa1EyDh3bksJz7QmCtscbaIUW3pf0iJzzm5VIdTdA4Fw7OQ6lr9l4EQITN8CrjJZet9d8N6Y6+CtUvwZlaPxX8W0fJpJJpfChTwvlOnxY3DHeTrF3QGNRhXcmtVkJ+dm2J0DDik84yZ/VCU=
+Message-ID: <a781481a0709160347t647fab9fs505dd053f3fe203d@mail.gmail.com>
+Date: Sun, 16 Sep 2007 16:17:29 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Timo Lindemann" <tlindemann@arcor.de>
+Subject: Re: PROBLEM: kernel hang in ohci init
+Cc: linux-kernel@vger.kernel.org, "David Brownell" <david-b@pacbell.net>
+In-Reply-To: <a781481a0709160343l530b067bg55a4679e1cf864ab@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-09-13)
+References: <4695EC25.6050003@arcor.de>
+	 <a781481a0707122015q48fd8a06m5d0e54b109708757@mail.gmail.com>
+	 <200707122040.36800.david-b@pacbell.net> <4699F9CB.5010407@arcor.de>
+	 <a781481a0707150418o35e4d60fs59cba3f835ebef67@mail.gmail.com>
+	 <a781481a0707150429y22b8b10bv413f5f6ba498d3e4@mail.gmail.com>
+	 <469A09C9.6000608@arcor.de>
+	 <a781481a0709160343l530b067bg55a4679e1cf864ab@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/var/log # grep -Ei "hpet|tsc" dmesg-2.6.19.7 dmesg.2.6.22.6-x86_64 
-dmesg-2.6.19.7:ACPI: HPET (v001 INTEL  DQ965GF  0x000015db MSFT 0x01000013) @ 0x3e6f2000
-dmesg-2.6.19.7:ACPI: HPET id: 0x8086a201 base: 0xfed00000
-dmesg-2.6.19.7:[   34.337155] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-dmesg-2.6.19.7:[   34.337296] hpet0: 3 64-bit timers, 14318180 Hz [*]
-dmesg-2.6.19.7:[   34.338350] Using HPET for base-timer
-dmesg-2.6.19.7:[   34.594096] checking TSC synchronization across 2 CPUs: passed.
-dmesg-2.6.19.7:[    0.215896] hpet_resources: 0xfed00000 is busy
-dmesg-2.6.19.7:[    7.794166] Time: tsc clocksource has been installed.
-dmesg.2.6.22.6-x86_64:ACPI: HPET 3E6F2000, 0038 (r1 INTEL  DQ965GF      1741 MSFT  1000013)
-dmesg.2.6.22.6-x86_64:ACPI: HPET id: 0x8086a201 base: 0xfed00000
-dmesg.2.6.22.6-x86_64:[    0.000000] hpet clockevent registered
-dmesg.2.6.22.6-x86_64:[    0.000000] TSC calibrated against HPET
-dmesg.2.6.22.6-x86_64:[   23.917469] checking TSC synchronization [CPU#0 -> CPU#1]:
-dmesg.2.6.22.6-x86_64:[   23.937970] Measured 196 cycles TSC warp between CPUs, turning off TSC clock.
-dmesg.2.6.22.6-x86_64:[   23.938030] Marking TSC unstable due to check_tsc_sync_source failed
-dmesg.2.6.22.6-x86_64:[   23.968187] Time: hpet clocksource has been installed.
-dmesg.2.6.22.6-x86_64:[   23.997754] hpet_acpi_add: no address or irqs in _CRS
+On 9/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> Hi Timo,
+>
+>
+> On 7/15/07, Timo Lindemann <tlindemann@arcor.de> wrote:
+> > To sum this up:
+> >
+> > the userspace 2.6.20.6 (the "good" kernel) and 2.6.22 (the "bad" kernel)
+> > were compiled in is exactly the same setup. I recompiled "good" to check
+> > for that, earlier, but "good" also works then.
+> >
+> > "good" does not exhibit the printks I placed in the section (the same
+> > ones I did for "bad"), making it plausible that the section is not
+> > executed at all.
+> >
+> > dmesg is not captured to disk, netconsole and serial console also do not
+> > work (they both did in the "good" kernel). Also, my keyboard does not
+> > work with "bad" during that phase -- Magic SysRq is also not working then.
+> >
+> > I can try to hook up the laptop to an external monitor to capture some
+> > more dmesg, and just shoot a photo, but I am right now trying to work
+> > with git, as Satyam suggested.
+>
+> Any updates on this for us? Or did the kernel start booting magically again
+> ca. 2.6.23-rc6? ;-)
 
-# grep MHz /proc/cpuinfo 
-cpu MHz         : 2797.203
-cpu MHz         : 2797.203
+Should again add that best would still be to simply git-bisect Linus' (mainline)
+kernel tree between 2.6.20 (not 2.6.20.6) and 2.6.22 and just find the commit
+after which your box stops booting ...
 
-# calc 2797203000/196
-        ~14271443.87755102040816326531 [*]
 
-so, does TSC calibration against HPET screw up TSC synchronization?
-
-I have Intel(R) Pentium(R) D CPU 2.80GHz and
-DQ965GF motherboard, BIOS v.5953.
-
--- 
-Do what you love because life is too short for anything else.
-
+> Anyway, it appears the bug got introduced sometime between 2.6.20 and
+> 2.6.22 so probably bugzilla becomes a better place to track this one. Could
+> you open up a bug report (similar to your original post) there?
+>
+> Thanks,
+>
+> Satyam
+>
