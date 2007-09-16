@@ -1,100 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbXIPJud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbXIPKFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbXIPJud (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 05:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXIPJuW
+	id S1752799AbXIPKFW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 06:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbXIPKFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 05:50:22 -0400
-Received: from fwil.voltaire.com ([193.47.165.2]:34173 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751540AbXIPJuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 05:50:21 -0400
-Message-ID: <46ECEE3F.60301@voltaire.com>
-Date: Sun, 16 Sep 2007 11:50:07 +0300
-From: Or Gerlitz <ogerlitz@voltaire.com>
-User-Agent: Thunderbird 1.4.1 (Windows/20051006)
+	Sun, 16 Sep 2007 06:05:10 -0400
+Received: from theseus.empoweringmedia.net ([67.72.106.11]:54182 "EHLO
+	theseus.empoweringmedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751293AbXIPKFI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 06:05:08 -0400
+From: "J.C. Roberts" <jcroberts@designtools.org>
+Organization: DesignTools.org
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Wasting our Freedom
+Date: Sun, 16 Sep 2007 03:05:00 -0700
+User-Agent: KMail/1.9.6
+Cc: Jason Dixon <jason@dixongroup.net>, misc@openbsd.org,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net> <200709160052.45493.jcroberts@designtools.org> <2D9F0E1E-0E7A-46A5-8251-209CCF458A5D@mac.com>
+In-Reply-To: <2D9F0E1E-0E7A-46A5-8251-209CCF458A5D@mac.com>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Jay Vosburgh <fubar@us.ibm.com>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
-References: <adahclymos8.fsf@cisco.com>
-In-Reply-To: <adahclymos8.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Sep 2007 09:50:14.0020 (UTC) FILETIME=[FAAA1C40:01C7F846]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709160305.00792.jcroberts@designtools.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> With 2.6.24 probably opening in the not-too-distant future, it's
-> probably a good time to review what my plans are for when the merge
-> window opens.
+On Sunday 16 September 2007, Kyle Moffett wrote:
+> Secondly, what the HELL is with you guys and the personal  
+> attacks?!?!?  You said I am "hopelessly misinformed, or a habitual  
+> liar"???  
 
-> Core:
->  - Sean's QoS changes.  These look fine at first glance, and I just
->    plan to understand the backwards compatibility story (ie how this
->    works with an old SM) and merge.  Anyone who objects let me know.
+You are right and I apologize. I've received plenty of personal attacks 
+from your group, and failed to hold my temper when dealing with you.
 
-Hi Roland,
+You and the rest of the linux kernel devs need to realize there are a 
+lot of angry people who are tired of being ignored by the powers that 
+be in the GNU/FSF/GPL/SFLC. The claimed distinction between the linux 
+kernel, the linux operating system, the various linux distros, the GNU 
+project, the FSF, and the SFLC is pedantic at best to the rest of the 
+outside world. As far as everyone else on the outside is concerned, you 
+are all one large project working together.
 
-I have reviewed the qos patches and provided comments which were 
-deployed in v2 of the series. I also tested it (ipoib and iser which is 
-rdma-cm based) against the Voltaire SM/SA to see that nothing was 
-broken. I will send you a "reviewed by:" signature.
+When some part of your project is indulging in code theft, it makes all 
+of you look bad, regardless if it's upstream, downstream, sidestream or 
+otherwise. When linux/gpl developers and linux/gpl lawyers refuse to 
+take a stance against code theft, you look like one big happy family 
+doing everything you can to put as much code as possible under your 
+preferred license regardless if it's illegal or immoral.
 
-> ULPs:
+I knew darn well that I wouldn't be winning any new friends in the 
+linux/gpl/gnu camp by voicing an unpopular opinion to your project, but 
+after being ignored, you too would want to find the people on the other 
+side with the spine to stand up and say code theft is wrong.
 
-> [ofa-general] [PATCH RFC] IB/ipoib: enable IGMP for userpsace multicast IB apps
-The IGMP enabling patch posted by me on September 2nd isn't on your list
-http://lists.openfabrics.org/pipermail/general/2007-September/040250.html
-can you add it?
+Would you stand by quietly, tolerate being ignored, and accept delay 
+tactics of unethical lawyers if the roles were reverse?
 
+Would you be willing to be called every untoward name in the book by 
+voicing your dissenting opinions clearly and loudly?
 
->  - Moni's IPoIB bonding support.  This seems mostly an issue of
->    getting the core bonding maintainer's attention.  However getting a
->    Reviewed-by: for the IPoIB changes wouldn't hurt too.
+I have.
 
-Jay Vosburgh, the bonding driver maintainer just sent an ack on all 
-patch series. As for the IPoIB changes, there are three patches, where 
-two of them, namely
-> [PATCH 02/11] IB/ipoib: Notify the world before doing unregister
-> [PATCH 04/11] IB/ipoib: Verify address handle validity on send
-are handling a corner-case problems pointed by Michael Tsirkin.
-Michael, will you be able to look on it and provide a reviewed-by 
-signature? the third patch
-> [PATCH 03/11] IB/ipoib: Bound the net device to the ipoib_neigh structue
-is somehow much more simple, I don't think more review is needed for it.
-
->  - Eli and Michael's IPoIB stateless offload (checksum offload, LSO,
->    LRO, etc).  It's a big series that makes quite a few core changes.
->    I think it needs some careful review and is probably at risk of
->    missing this merge window.  Sorting in order of invasiveness so we
->    can merge at least some of it (if splitting it makes sense) might
->    be a good idea.
-
-Just for the record, the 'etc' above relates to the interrupt moderation 
-support (mlx4, core, ipoib {config through ethertool, usage). Among 
-other things, what is not clear to me here is if/how this goes 
-hand-in-hand with NAPI.
-
-As you saw the patch adding checksum offload support had a long thread, 
-and I think the discussion has reached the point where Michael is 
-waiting for your take on it.
-
-As for the LSO, LRO patches, I did not see any review comment.
-
-I will see that I can review from the series, to begin with, will send 
-Eli some comments and questions.
-
-> HW specific:
->  - Jack and Michael's mlx4 FMR support.  Will merge I guess, although
->    I do hope to have time to address the DMA API abuse that is being
->    copied from mthca, so that mlx4 and mthca work in Xen domU.
-
-This patch series is somehow important as without them iser is useless 
-over connectx. Can be nice if you merge this and at max fix the abuse later.
-
-Or.
-
+jcr
