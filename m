@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbXIPUL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXIPURG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbXIPUL1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 16:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXIPULU
+	id S1753327AbXIPURG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 16:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbXIPUQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 16:11:20 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:40975 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751931AbXIPULU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 16:11:20 -0400
-Date: Sun, 16 Sep 2007 22:12:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, kbuild-devel@lists.sourceforge.net
-Subject: Re: Rename asm-offsets tool or not? (Re: [patch 01/03] kbuild, asm-values: infrastructure)
-Message-ID: <20070916201245.GA10000@uranus.ravnborg.org>
-References: <20070612233650.486224000@flower.upol.cz> <20070612234558.648949000@flower.upol.cz> <20070916182912.GA9630@uranus.ravnborg.org> <20070916193258.GD13543@flower.upol.cz>
+	Sun, 16 Sep 2007 16:16:54 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:39758 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbXIPUQx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 16:16:53 -0400
+Date: Sun, 16 Sep 2007 22:16:06 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric Van Hensbergen <ericvh@gmail.com>,
+       v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC][PATCH] 9p: add readahead support for loose mode
+Message-ID: <20070916221606.065e449f@lappy>
+In-Reply-To: <20070915034126.cd2c2073.akpm@linux-foundation.org>
+References: <11897857601214-git-send-email-ericvh@gmail.com>
+	<20070915034126.cd2c2073.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070916193258.GD13543@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 09:32:58PM +0200, Oleg Verych wrote:
-> On Sun, Sep 16, 2007 at 08:29:12PM +0200, Sam Ravnborg wrote:
-> > Hi Oleg.
-> 
-> Hallo. Nice, you are bringing it back. I'll try to have LKML-like
-> output this time, not a makefile mess and stuff:
-> 
-> []
-> > I see no value in renaming from asm_offset to asm_value - please drop it.
-> > Introducing the generic asm-values.h should wait and when you do
-> > you should be preapred to update all architectures (ecasue otherwise it
-> > will not happen).
-> 
-> All archs, are using same syntax. But.
-> 
-> Interesting exception is MIPS, where tokens are organized and implemented
-> more nicely, that is where *asm-values* name coming from, actually. One
-> can see all that text, size, constant tokens in addition to just offsets.
-> 
-> So, if name change isn't worth, then OK; filename compatibility check, as
-> one in `linux/Kbuild', is easy to hack as well to remove.
-> 
-> But nice feature/tool with meaningful name and functionality is just
-> another thing.
-> 
-> Opinions?
-Everyone and their cousin these days knows that asm-offset is constants
-generated from C and used in assembler.
-If we benefit from more values in the asm-offset file - let's do it.
-But there is no reason to change a name that has been used for this purpose
-for as long as I can remember.
+On Sat, 15 Sep 2007 03:41:26 -0700 Andrew Morton
+<akpm@linux-foundation.org> wrote:
 
-	Sam
+> eww, kmap.  Large amounts of them, apparently.
+> 
+> Be aware that kmap is a) slow and b) deadlockable.  The latter happens when
+> multiple tasks want to take more than one kmap simultaneously: they all
+> wait for someone else to release one.  Your code here seems especially
+> vulnerable to this.
+> 
+> Nick had a kmap-speedup patchset a while back which addressed a) but I
+> don't know if it addressed the deadlock.  But that patch seemed to die.
+
+That would've been me.
+
+What I did to address b) is to pre-allocate each kmap user a second
+kmap slot. Of course this isn't water-tight either.
+
+These patches are part of -rt, I could respin against mainline if there
+is interest.
