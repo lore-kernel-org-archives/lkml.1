@@ -1,122 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbXIPT7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbXIPUCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753651AbXIPT7P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 15:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbXIPT67
+	id S1753471AbXIPUCS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 16:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXIPUCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 15:58:59 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35305 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751802AbXIPT66 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 15:58:58 -0400
-Date: Sun, 16 Sep 2007 21:59:09 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Can E. Acar" <can.acar@pro-g.com.tr>
-Cc: misc@openbsd.org, linux-kernel@vger.kernel.org,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070916195909.GA18232@stusta.de>
-References: <46ED7A8F.1020304@pro-g.com.tr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46ED7A8F.1020304@pro-g.com.tr>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 16 Sep 2007 16:02:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46999 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751883AbXIPUCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 16:02:07 -0400
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070913151637.A1679@jurassic.park.msu.ru>
+References: <1189664467.17835.1.camel@sli10-conroe.sh.intel.com>
+	 <20070913073140.GA17367@parisc-linux.org>
+	 <1189668286.18361.3.camel@sli10-conroe.sh.intel.com>
+	 <20070913075536.GB17367@parisc-linux.org> <20070913095313.GA745@suse.de>
+	 <20070913151637.A1679@jurassic.park.msu.ru>
+Content-Type: text/plain
+Date: Sun, 16 Sep 2007 22:01:52 +0200
+Message-Id: <1189972912.6403.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 11:48:47AM -0700, Can E. Acar wrote:
->...
-> First, these developers got questionable advice from senior Linux kernel
-> developers, and SLFC (which is closely related to FSF) in the process.
-
-The most questionable legal advice in this thread was by Theo de Raadt 
-who claimed choosing one licence for _dual-licenced_ code was illegal...
-
-This was the first email that was forwarded to linux-kernel, and it made 
-it really hard to see at first that there was also an accidental 
-copyright violation in Jiri's (never merged) patch.
-
-> There have been complete silence from the leaders of their own
-> community (Linux Kernel developers, FSF, ...)
->...
-
-s/community/communities/
-
-This seems to be a common thinko by some people:
-
-The Linux kernel developers and the FSF are two very distinct 
-communities, and there are quite different views on some copyright 
-issues.
-
-There is no "GPL community" covering both, there might be some kind of
-"open source community" - but this would as well include OpenBSD.
-
-> This case illustrates some important issues that should interest ALL
-> free software developers:
+On Thu, 2007-09-13 at 15:16 +0400, Ivan Kokshaysky wrote:
+> On Thu, Sep 13, 2007 at 02:53:13AM -0700, Greg KH wrote:
+> > On Thu, Sep 13, 2007 at 01:55:36AM -0600, Matthew Wilcox wrote:
+> > > Unfortunately if this patch does cause any machine to break, these will
+> > > be machines that worked fine up until this point, so that would be a
+> > > regression, which is worse.  Life sucks.
+> > 
+> > If, after a while, you think the change should go into the -stable tree,
+> > I have no objection.
 > 
-> 1) How tricky code sharing between different projects can be even when
->    intents and goals are pretty much alike.
+> I think it shouldn't - this change will almost certainly cause a regression.
+> There is a lot of system devices besides the host bridges that shouldn't be
+> disabled during BAR probe, like interrupt controllers, power management
+> controllers and so on.
+> 
+> We need a more sophisticated fix - I'm thinking of introducing "probe" field
+> in struct pci_dev which can be set by "early" quirk routines.
 
-It should now be resolved how to incorporate BSD licenced code correctly 
-into GPL'ed code, or is there any unresolved legal problem?
+Agreed. I have a similar problem on ppc where it's common to have things
+like the main PIC on a PCI device. Note that another problem is (or at
+least was, i haven't checked recently) the P2P bridge scanning code
+that, in a similar way, can block the path to all devices below it. I
+-do- have a case for example with Apple Xserve G4's where the main Apple
+IO ASIC, which is a PCI device containing the PIC, the power management
+controller, and various low level system control IOs is behind a pair of
+P2P bridges.
 
-> 2) MANY developers on BOTH sides have NO clue about the  laws and ethics
->    associated with handling Copyrights and Licenses.
+One solution for us (PPC) is to enforce those devices and bridges to be
+described in the OF tree, and generalize a bit the code we have for some
+64 bits machines, that synthetizes the pci_dev's from the OF nodes
+rather than probing. But that's not going to help other archs.
 
-I agree with you regarding the laws.
+In fact, that's a problem we also have with
+pci_assign_unassigned_resources() which will happily move things around
+that must not be moved, especially when sitting behind P2P bridges.
 
-Regarding ethics - if you use the BSD licence for your code you state in 
-the licence text that it's OK that I take your code and never give 
-anything back.
+So the root of the issue is much deeper than just a quirk here I
+believe.
 
-Both Linux and Microsoft have used BSD licenced code according to this 
-licence.
+Cheers,
+Ben.
 
-Some people have the funny position of opposing the GPL which enforces 
-that you have to give back, but whining that people took their BSD 
-licenced code and don't give back.
-
-Everyone can choose the licence he likes for his own code, but if 
-intentions and licence text don't match that's the fault of the person 
-who licenced his code that way.
-
-> 3) The copyrights and licenses are the foundations of our work.
->    We put out great usually volunteer work, to create and improve.
->    The licenses specify the terms and conditions under which we allow
->    our work to be used. When we allow ANY license violation to occur,
->    it affects our own work, regardless of the license on it.
->...
-
-Who allowed any licence violation?
-
-Let's look at the facts:
-- Each year, at about two thousand different people contribute patches 
-  that get incorporated into the Linux kernel.
-- One of them made the mistake of accidentally sending a patch that 
-  would have wrongly deleted the BSD header from BSD code.
-- Other developers didn't notice this mistake when looking at the patch.
-- This patch has never been merged.
-
-A mistake.
-No bad intentions.
-Shit happens.
-Resolved as soon as people were made aware of the mistake.
-
-> Can
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
