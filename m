@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbXIPHo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbXIPHvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbXIPHo3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 03:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXIPHoW
+	id S1752188AbXIPHvS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 03:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXIPHvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 03:44:22 -0400
-Received: from ozlabs.org ([203.10.76.45]:34481 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbXIPHoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 03:44:22 -0400
-Subject: Re: [PATCH 2/3] Consolidate host virtualization support under
-	Virtualization menu
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Alexey Eremenko <al4321@gmail.com>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-In-Reply-To: <7fac565a0709150149kf55de62q92496cf74e7b0581@mail.gmail.com>
-References: <1189747054.7262.34.camel@localhost.localdomain>
-	 <1189747124.7262.36.camel@localhost.localdomain>
-	 <20070914091921.73007c5a.randy.dunlap@oracle.com>
-	 <1189825504.7262.75.camel@localhost.localdomain>
-	 <7fac565a0709150149kf55de62q92496cf74e7b0581@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 16 Sep 2007 17:43:37 +1000
-Message-Id: <1189928617.7262.98.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sun, 16 Sep 2007 03:51:04 -0400
+Received: from fwil.voltaire.com ([193.47.165.2]:44658 "EHLO exil.voltaire.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751336AbXIPHvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 03:51:01 -0400
+X-Greylist: delayed 984 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Sep 2007 03:51:00 EDT
+Message-ID: <46ECDC7F.2070805@voltaire.com>
+Date: Sun, 16 Sep 2007 10:34:23 +0300
+From: Or Gerlitz <ogerlitz@voltaire.com>
+User-Agent: Thunderbird 1.4.1 (Windows/20051006)
+MIME-Version: 1.0
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: Steve Wise <swise@opengridcomputing.com>, rdreier@cisco.com,
+       sean.hefty@intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH] RDMA/CMA: Use neigh_event_send() to initiate
+ neighbour discovery.
+References: <20070912100025.3190.89259.stgit@dell3.ogc.int>
+In-Reply-To: <20070912100025.3190.89259.stgit@dell3.ogc.int>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Sep 2007 07:34:32.0542 (UTC) FILETIME=[05F727E0:01C7F834]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-15 at 11:49 +0300, Alexey Eremenko wrote:
-> > We turn "Virtualization" into a menu, not a config option, since it's
-> > actually only used as a menu.  Then we move lguest under that menu.
+Steve Wise wrote:
+> RDMA/CMA: Use neigh_event_send() to initiate neighbour discovery.
 > 
-> What about containerization bits ?
+> Calling arp_send() to initiate neighbour discovery (ND) doesn't do the
+> full ND protocol.  Namely, it doesn't handle retransmitting the arp
+> request if it is dropped. The function neigh_event_send() does all this.
+> Without doing full ND, rdma address resolution fails in the presence of
+> dropped arp bcast packets.
+
+Jay,
+
+Is there a way to deploy something similar for the gratuitous arp being 
+sent by the bonding driver at bond_arp_send()?
+
+We have seen rare situations where the skb was dropped by the stack and 
+hence bonding fail-over was detected by the remote peer only when its 
+neighboring subsystem probe failures dictated that a new arp must be issued.
+
+Or.
 > 
-> IPC_Namespaces, *_Namespaces  - I think we should evaluate adding them
-> too to this menu.
-
-Well, containerization deserves its own menu, but the question is does i
-it belong under this menu?
-
-Rusty.
+> Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+> ---
+> 
+>  drivers/infiniband/core/addr.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/infiniband/core/addr.c b/drivers/infiniband/core/addr.c
+> index c5c33d3..5381c80 100644
+> --- a/drivers/infiniband/core/addr.c
+> +++ b/drivers/infiniband/core/addr.c
+> @@ -161,8 +161,7 @@ static void addr_send_arp(struct sockadd
+>  	if (ip_route_output_key(&rt, &fl))
+>  		return;
+>  
+> -	arp_send(ARPOP_REQUEST, ETH_P_ARP, rt->rt_gateway, rt->idev->dev,
+> -		 rt->rt_src, NULL, rt->idev->dev->dev_addr, NULL);
+> +	neigh_event_send(rt->u.dst.neighbour, NULL);
+>  	ip_rt_put(rt);
+>  }
 
