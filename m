@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbXIPVbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbXIPVcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbXIPVbm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 17:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbXIPVbd
+	id S1754306AbXIPVcR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 17:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbXIPVb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 17:31:33 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40981 "EHLO mx2.suse.de"
+	Sun, 16 Sep 2007 17:31:59 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:55587 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752164AbXIPVbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 17:31:32 -0400
-Date: Sun, 16 Sep 2007 23:31:26 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
+	id S1752164AbXIPVb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 17:31:58 -0400
+Date: Sun, 16 Sep 2007 22:31:55 +0100
+To: J?rn Engel <joern@logfs.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
        William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
        Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
@@ -25,98 +23,57 @@ Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
        Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
        totty.lu@gmail.com, hugh@veritas.com
 Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070916213126.GH6708@v2.random>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070915155100.GA21861@v2.random> <20070916181504.GB16406@skynet.ie> <20070916185052.GG6708@v2.random> <20070916205418.GC16406@skynet.ie>
+Message-ID: <20070916213154.GG16406@skynet.ie>
+References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <20070916175352.GB2393@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070916205418.GC16406@skynet.ie>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070916175352.GB2393@lazybastard.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 09:54:18PM +0100, Mel Gorman wrote:
-> The 16MB is the size of a hugepage, the size of interest as far as I am
-> concerned. Your idea makes sense for large block support, but much less
-> for huge pages because you are incurring a cost in the general case for
-> something that may not be used.
+On (16/09/07 19:53), J?rn Engel didst pronounce:
+> On Sat, 15 September 2007 01:44:49 -0700, Andrew Morton wrote:
+> > On Tue, 11 Sep 2007 14:12:26 +0200 Jörn Engel <joern@logfs.org> wrote:
+> > 
+> > > While I agree with your concern, those numbers are quite silly.  The
+> > > chances of 99.8% of pages being free and the remaining 0.2% being
+> > > perfectly spread across all 2MB large_pages are lower than those of SHA1
+> > > creating a collision.
+> > 
+> > Actually it'd be pretty easy to craft an application which allocates seven
+> > pages for pagecache, then one for <something>, then seven for pagecache, then
+> > one for <something>, etc.
+> > 
+> > I've had test apps which do that sort of thing accidentally.  The result
+> > wasn't pretty.
+> 
+> I bet!  My (false) assumption was the same as Goswin's.  If non-movable
+> pages are clearly seperated from movable ones and will evict movable
+> ones before polluting further mixed superpages, Nick's scenario would be
+> nearly infinitely impossible.
+> 
 
-Sorry for the misunderstanding, I totally agree!
+It would be plain impossible from a fragmentation point-of-view but you
+meet interesting situations when a GFP_NOFS allocation has no kernel blocks
+available to use. It can't reclaim, maybe it can move but not with current
+code (it should be able to with the Memory Compaction patches).
 
-> There is nothing to say that both can't be done. Raise the size of
-> order-0 for large block support and continue trying to group the block
-> to make hugepage allocations likely succeed during the lifetime of the
-> system.
+> Assumption doesn't reflect current code.  Enforcing this assumption
+> would cost extra overhead.  The amount of effort to make Christoph's
+> approach work reliably seems substantial and I have no idea whether it
+> would be worth it.
+> 
 
-Sure, I completely agree.
+Current code doesn't reflect your assumptions simply because the costs are so
+high. We'd need to be really sure it's worth it and if the answer is "yes",
+then we are looking at Andrea's approach (more likely) or I can check out
+evicting blocks of 16KB, 64KB or whatever the large block is.
 
-> At the risk of repeating, your approach will be adding a new and
-> significant dimension to the internal fragmentation problem where a
-> kernel allocation may fail because the larger order-0 pages are all
-> being pinned by userspace pages.
-
-This is exactly correct, some memory will be wasted. It'll reach 0
-free memory more quickly depending on which kind of applications are
-being run.
-
-> It improves the probabilty of hugepage allocations working because the
-> blocks with slab pages can be targetted and cleared if necessary.
-
-Agreed.
-
-> That suggestion was aimed at the large block support more than
-> hugepages. It helps large blocks because we'll be allocating and freeing
-> as more or less the same size. It certainly is easier to set
-> slub_min_order to the same size as what is needed for large blocks in
-> the system than introducing the necessary mechanics to allocate
-> pagetable pages and userspace pages from slab.
-
-Allocating userpages from slab in 4k chunks with a 64k PAGE_SIZE is
-really complex indeed. I'm not planning for that in the short term but
-it remains a possibility to make the kernel more generic. Perhaps it
-could worth it...
-
-Allocating ptes from slab is fairly simple but I think it would be
-better to allocate ptes in PAGE_SIZE (64k) chunks and preallocate the
-nearby ptes in the per-task local pagetable tree, to reduce the number
-of locks taken and not to enter the slab at all for that. Infact we
-could allocate the 4 levels (or anyway more than one level) in one
-single alloc_pages(0) and track the leftovers in the mm (or similar).
-
-> I'm not sure what you are getting at here. I think it would make more
-> sense if you said "when you read /proc/buddyinfo, you know the order-0
-> pages are really free for use with large blocks" with your approach.
-
-I'm unsure who reads /proc/buddyinfo (that can change a lot and that
-is not very significant information if the vm can defrag well inside
-the reclaim code), but it's not much different and it's more about
-knowing the real meaning of /proc/meminfo, freeable (unmapped) cache,
-anon ram, and free memory.
-
-The idea is that to succeed an mmap over a large xfs file with
-mlockall being invoked, those largepages must become available or
-it'll be oom despite there are still 512M free... I'm quite sure
-admins will gets confused if they get oom killer invoked with lots of
-ram still free.
-
-The overcommit feature will also break, just to make an example (so
-much for overcommit 2 guaranteeing -ENOMEM retvals instead of oom
-killage ;).
-
-> All this aside, there is nothing mutually exclusive with what you are proposing
-> and what grouping pages by mobility does. Your stuff can exist even if grouping
-> pages by mobility is in place. In fact, it'll help us by giving an important
-> comparison point as grouping pages by mobility can be trivially disabled with
-> a one-liner for the purposes of testing. If your approach is brought to being
-> a general solution that also helps hugepage allocation, then we can revisit
-> grouping pages by mobility by comparing kernels with it enabled and without.
-
-Yes, I totally agree. It sounds worthwhile to have a good defrag logic
-in the VM. Even allocating the kernel stack in today kernels should be
-able to benefit from your work. It's just comparing a fork() failure
-(something that will happen with ulimit -n too and that apps must be
-able to deal with) with an I/O failure that worries me a bit. I'm
-quite sure a db failing I/O will not recover too nicely. If fork fails
-that's most certainly ok... at worst a new client won't be able to
-connect and he can retry later. Plus order 1 isn't really a big deal,
-you know the probability to succeeds decreases exponentially with the
-order.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
