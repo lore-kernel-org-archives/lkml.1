@@ -1,75 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbXIPW4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbXIPXJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbXIPW4W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 18:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXIPW4N
+	id S1754207AbXIPXJd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 19:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbXIPXJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 18:56:13 -0400
-Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:49094 "EHLO
-	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753622AbXIPW4M (ORCPT
+	Sun, 16 Sep 2007 19:09:26 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47805 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751998AbXIPXJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 18:56:12 -0400
-From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Mel Gorman <mel@skynet.ie>,
-       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-References: <20070911060349.993975297@sgi.com>
-	<200709110452.20363.nickpiggin@yahoo.com.au>
-	<20070911121225.GE13132@lazybastard.org>
-	<20070915014449.4f9cdb51.akpm@linux-foundation.org>
-	<87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
-	<20070915155100.GA21861@v2.random> <20070916181504.GB16406@skynet.ie>
-	<20070916185052.GG6708@v2.random>
-Date: Mon, 17 Sep 2007 00:56:07 +0200
-In-Reply-To: <20070916185052.GG6708@v2.random> (Andrea Arcangeli's message of
-	"Sun, 16 Sep 2007 20:50:52 +0200")
-Message-ID: <87lkb643ug.fsf@informatik.uni-tuebingen.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Sun, 16 Sep 2007 19:09:25 -0400
+Date: Mon, 17 Sep 2007 01:09:36 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: David Schwartz <davids@webmaster.com>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070916230936.GC18232@stusta.de>
+References: <20070916211351.GB18232@stusta.de> <MDEHLPKNGKAHNMBLJOLKAEFGGNAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAEFGGNAC.davids@webmaster.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli <andrea@suse.de> writes:
+On Sun, Sep 16, 2007 at 03:37:55PM -0700, David Schwartz wrote:
+> 
+> > Dual licenced code by definition explicitely states that you can choose 
+> > the licence - otherwise it wouldn't be called dual-licenced.
+> 
+> You can choose under which license you would like to receive the right to modify or distribute the code. But you cannot change the license that code itself is covered by.
 
-> You ignore one other bit, when "/usr/bin/free" says 1G is free, with
-> config-page-shift it's free no matter what, same goes for not mlocked
-> cache. With variable order page cache, /usr/bin/free becomes mostly a
-> lie as long as there's no 4k fallback (like fsblock).
+You can choose the licence under which you distribute the code.
 
-% free
-             total       used       free     shared    buffers     cached
-Mem:       1398784    1372956      25828          0     225224     321504
--/+ buffers/cache:     826228     572556
-Swap:      1048568         20    1048548
+It's obvious that everyone else receiving the dual licenced code still 
+can choose for himself.
 
-When has free ever given any usefull "free" number? I can perfectly
-fine allocate another gigabyte of memory despide free saing 25MB. But
-that is because I know that the buffer/cached are not locked in.
+> > Theo claimed it would "break the law" [1] to choose the GPL for
+> > _this_ code. [2]
+> 
+> He is quite right. You cannot choose the license under which someone else's code is offered. It would "break the law" not in the sense that you would be breaking the law, in the sense that it's impossible because the law does not allow it.
+> 
+> You can, however, remove the BSD license notice if you'd like. While the BSD license prohibits you from removing it, you may choose to obtain the right to remove it from the GPL. The GPL does not prohibit removing a BSD license and explicitly grants you the right to make all modifications that it does not prohibit.
+> 
+> Note that this removal has no effect on the license on the original code.
+> 
+> Theo is right, you cannot choose the license on _this_ code. You can, of course, control the license on code that you contribute. Nothing prevents a derivative work from being under a different license from the original work.
 
-On the other hand 1GB can instantly vanish when I start a xen domain
-and anything relying on the free value would loose.
+It would have helped if you would have read the email I gave a link to...
 
+Theo was saying in his email:
 
-The only sensible thing for an application concerned with swapping is
-to whatch the swapping and then reduce itself. Not the amount
-free. Although I wish there were some kernel interface to get a
-preasure value of how valuable free pages would be right now. I would
-like that for fuse so a userspace filesystem can do caching without
-cripling the kernel.
+<-- snip  -->
 
-MfG
-        Goswin
+In http://lkml.org/lkml/2007/8/29/183, Alan Cox managed to summarize
+what Jiri Slaby and Luis Rodriguez were trying to do by proposing a
+modification of a Dual Licenced file without the consent of all the
+authors.  Alan asks "So whats the problem ?".  Well, Alan, I must
+caution you -- your post is advising people to break the law.
+
+<--  snip  -->
+
+Theo claims quite clearly that removing the BSD licence notice when 
+modifying BSD/GPL dual licenced code would break the law.
+
+> DS
+
+cu
+Adrian
+
+BTW: It is considered impolite on linux-kernel to remove Cc's.
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
