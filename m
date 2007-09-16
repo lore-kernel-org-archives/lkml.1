@@ -1,76 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750711AbXIPKrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbXIPLAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750711AbXIPKrl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 06:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXIPKrb
+	id S1753335AbXIPLAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 07:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbXIPLAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 06:47:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:20413 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbXIPKra (ORCPT
+	Sun, 16 Sep 2007 07:00:11 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:36342 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbXIPLAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 06:47:30 -0400
+	Sun, 16 Sep 2007 07:00:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qcqHG0SboxpNkmlR6XO7TqpUyMpeKa1EyDh3bksJz7QmCtscbaIUW3pf0iJzzm5VIdTdA4Fw7OQ6lr9l4EQITN8CrjJZet9d8N6Y6+CtUvwZlaPxX8W0fJpJJpfChTwvlOnxY3DHeTrF3QGNRhXcmtVkJ+dm2J0DDik84yZ/VCU=
-Message-ID: <a781481a0709160347t647fab9fs505dd053f3fe203d@mail.gmail.com>
-Date: Sun, 16 Sep 2007 16:17:29 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Timo Lindemann" <tlindemann@arcor.de>
-Subject: Re: PROBLEM: kernel hang in ohci init
-Cc: linux-kernel@vger.kernel.org, "David Brownell" <david-b@pacbell.net>
-In-Reply-To: <a781481a0709160343l530b067bg55a4679e1cf864ab@mail.gmail.com>
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RaNIP6/VBdxNWT3x8cpk+sSTysKIA6XAvMqD6w4s6699dJy5b2imbsoHs5a1gTMtphmiIBH7YgAZEvVvzjajtJLlZrMsnrWxZOtHboLuSeDZi3bZ1wk3G/Hub6qvFtupew2xK6/LGu4fQasACws2ie4H4iDbW0g2gx5SlKT8C8M=
+Message-ID: <8b67d60709160400u7219e825v2b4eb7ac0d2f2193@mail.gmail.com>
+Date: Sun, 16 Sep 2007 12:00:09 +0100
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Latest git won't compile
+In-Reply-To: <8b67d60709151320h1f363b4cl57023627d8139680@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4695EC25.6050003@arcor.de>
-	 <a781481a0707122015q48fd8a06m5d0e54b109708757@mail.gmail.com>
-	 <200707122040.36800.david-b@pacbell.net> <4699F9CB.5010407@arcor.de>
-	 <a781481a0707150418o35e4d60fs59cba3f835ebef67@mail.gmail.com>
-	 <a781481a0707150429y22b8b10bv413f5f6ba498d3e4@mail.gmail.com>
-	 <469A09C9.6000608@arcor.de>
-	 <a781481a0709160343l530b067bg55a4679e1cf864ab@mail.gmail.com>
+References: <8b67d60709151320h1f363b4cl57023627d8139680@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> Hi Timo,
+On 15/09/2007, Adrian McMenamin <lkmladrian@gmail.com> wrote:
+> CC      drivers/char/tty_ioctl.o
+> drivers/char/tty_ioctl.c: In function 'n_tty_ioctl':
+> drivers/char/tty_ioctl.c:799: error: implicit declaration of function
+> 'kernel_termios_to_user_termios_1'
+> drivers/char/tty_ioctl.c:806: error: implicit declaration of function
+> 'user_termios_to_kernel_termios_1'
+> make[2]: *** [drivers/char/tty_ioctl.o] Error 1
+> make[1]: *** [drivers/char] Error 2
+> make: *** [drivers] Error 2
 >
->
-> On 7/15/07, Timo Lindemann <tlindemann@arcor.de> wrote:
-> > To sum this up:
-> >
-> > the userspace 2.6.20.6 (the "good" kernel) and 2.6.22 (the "bad" kernel)
-> > were compiled in is exactly the same setup. I recompiled "good" to check
-> > for that, earlier, but "good" also works then.
-> >
-> > "good" does not exhibit the printks I placed in the section (the same
-> > ones I did for "bad"), making it plausible that the section is not
-> > executed at all.
-> >
-> > dmesg is not captured to disk, netconsole and serial console also do not
-> > work (they both did in the "good" kernel). Also, my keyboard does not
-> > work with "bad" during that phase -- Magic SysRq is also not working then.
-> >
-> > I can try to hook up the laptop to an external monitor to capture some
-> > more dmesg, and just shoot a photo, but I am right now trying to work
-> > with git, as Satyam suggested.
->
-> Any updates on this for us? Or did the kernel start booting magically again
-> ca. 2.6.23-rc6? ;-)
 
-Should again add that best would still be to simply git-bisect Linus' (mainline)
-kernel tree between 2.6.20 (not 2.6.20.6) and 2.6.22 and just find the commit
-after which your box stops booting ...
-
-
-> Anyway, it appears the bug got introduced sometime between 2.6.20 and
-> 2.6.22 so probably bugzilla becomes a better place to track this one. Could
-> you open up a bug report (similar to your original post) there?
->
-> Thanks,
->
-> Satyam
->
+This morning's git does compile (SH4) and I see a fix went in...
