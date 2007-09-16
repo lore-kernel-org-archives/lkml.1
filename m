@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbXIPDSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752047AbXIPEIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755458AbXIPDSw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Sep 2007 23:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbXIPDSp
+	id S1752047AbXIPEIk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 00:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbXIPEId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 23:18:45 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57735 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754638AbXIPDSo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 23:18:44 -0400
-Date: Sun, 16 Sep 2007 05:18:43 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Martin Mares <mj@ucw.cz>,
-       dean gaudet <dean@arctic.org>, Robert Richter <robert.richter@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used
-Message-ID: <20070916031843.GE14501@one.firstfloor.org>
-References: <200709121921.43950.yinghai.lu@sun.com> <200709131147.43446.ak@suse.de> <20070913104704.GA3878@kroah.com> <200709131353.15752.ak@suse.de> <86802c440709131001w4b758921r52a23f1732a6e9c8@mail.gmail.com> <46E97178.2040903@zytor.com>
+	Sun, 16 Sep 2007 00:08:33 -0400
+Received: from 1wt.eu ([62.212.114.60]:2506 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750952AbXIPEIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 00:08:32 -0400
+Date: Sun, 16 Sep 2007 06:08:29 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: David Schwartz <davids@webmaster.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: CPU usage for 10Gbps UDP transfers
+Message-ID: <20070916040829.GC10199@1wt.eu>
+References: <20070915190016.GA3868@ics.muni.cz> <MDEHLPKNGKAHNMBLJOLKMECDGNAC.davids@webmaster.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46E97178.2040903@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKMECDGNAC.davids@webmaster.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 10:20:56AM -0700, H. Peter Anvin wrote:
-> Yinghai Lu wrote:
-> > 
-> > BIOS guys also said that fam 10h need mmconfig via eax accessing, may
-> > need OS do sth, so it is safe to stay with MCFG entry for SB like
-> > mcp55...
-> > 
-> > but latest kernel already have that workaround to make mmconfig via eax...
-> > 
+On Sat, Sep 15, 2007 at 04:29:39PM -0700, David Schwartz wrote:
 > 
-> This is actually a good point.  Since the CPU vendor managed to
-> completely fuck up the operation of MMCONFIG itself on this CPU (it's a
-> *MEMORY REFERENCE*, guys!), it is actually to be expected and prudent
+> > Hello,
+> >
+> > is it expected that application sending 8900bytes datagram
+> > through 10Gbps NIC
+> > utilizes CPU to 100% and similarly the receiver also utilizes CPU to 100%.
+> > Is it something wrong or this is quite OK?
+> >
+> > (The box is dual single core Opteron 2.4GHz with Myricom 10GE NIC.)
+> 
+> It's extremely hard to understand what it is that you're saying. Perhaps if
+> I explain the two things I first thought when you posted this, it will
+> explain why your post is vague:
+> 
+> 1) *Any* task will use the CPU to 100% while it's running. Even if you ask
+> the computer to add 1 to 1, while it's doing that add for you, the task is
+> using 100% of the CPU.
+> 
+> 2) If you ask the CPU to do any task over and over again as quickly as it
+> can, and it has nothing else to do, that task will get 100% of the CPU?
+> 
+> So what are you really asking?
 
-It's quite possible that Windows MCFG code always ends up using EAX. 
-In fact many older Linux kernels ended up doing this by chance too.
+I think he means that his application saturates the 10Gbps NIC with 8900
+bytes datagrams and it consumes 100% of the CPU while doing this, and it's
+the same on the receiver side. I'm not surprized at all, considering that
+it means around 140kpps, or pauses of about 7 microseconds between each
+frame. Those pauses are too short to do anything else, resulting in the
+task to appear as taking 100% CPU. But IMHO, that does not mean that the
+machine is saturated; If the task had more work to do between each datagram,
+it would possibly be done. Same if it had to send shorter frames twice as
+fast.
 
--Andi
+Willy
+
