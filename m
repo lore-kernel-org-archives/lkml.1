@@ -1,98 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbXIPJIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228AbXIPJSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752374AbXIPJIq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 05:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbXIPJIi
+	id S1752228AbXIPJSV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 05:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbXIPJSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 05:08:38 -0400
-Received: from il.qumranet.com ([82.166.9.18]:45604 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751759AbXIPJIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 05:08:37 -0400
-Message-ID: <46ECF288.9080709@qumranet.com>
-Date: Sun, 16 Sep 2007 11:08:24 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 16 Sep 2007 05:18:14 -0400
+Received: from theseus.empoweringmedia.net ([67.72.106.11]:53512 "EHLO
+	theseus.empoweringmedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750993AbXIPJSN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 05:18:13 -0400
+From: "J.C. Roberts" <jcroberts@designtools.org>
+Organization: DesignTools.org
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: Wasting our Freedom
+Date: Sun, 16 Sep 2007 02:17:53 -0700
+User-Agent: KMail/1.9.6
+Cc: Kyle Moffett <mrmacman_g4@mac.com>, Jason Dixon <jason@dixongroup.net>,
+       misc@openbsd.org, moglen@softwarefreedom.org, lessig_from_web@pobox.com,
+       bkuhn@softwarefreedom.org, norwood@softwarefreedom.org,
+       fontana@softwarefreedom.org, karen@softwarefreedom.org,
+       linux-kernel@vger.kernel.org
+References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net> <200709160052.45493.jcroberts@designtools.org> <46ECE554.5030308@garzik.org>
+In-Reply-To: <46ECE554.5030308@garzik.org>
 MIME-Version: 1.0
-To: Anthony Liguori <aliguori@us.ibm.com>
-CC: kvm-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       Dor Laor <dor.laor@qumranet.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, Zachary Amsden <zach@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Muli Ben-Yehuda <muli@il.ibm.com>
-Subject: Re: [PATCH] Refactor hypercall infrastructure (v2)
-References: <11898788932902-git-send-email-aliguori@us.ibm.com>
-In-Reply-To: <11898788932902-git-send-email-aliguori@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709160217.55933.jcroberts@designtools.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> This patch refactors the current hypercall infrastructure to better support live
-> migration and SMP.  It eliminates the hypercall page by trapping the UD
-> exception that would occur if you used the wrong hypercall instruction for the
-> underlying architecture and replacing it with the right one lazily.
+On Sunday 16 September 2007, Jeff Garzik wrote:
+> J.C. Roberts wrote:
+> > http://marc.info/?l=linux-wireless&m=118857712529898&w=2
 >
-> It also introduces the infrastructure to probe for hypercall available via
-> CPUID leaves 0x40001000.  CPUID leaf 0x40001001 should be filled out by
-> userspace.
+> Link with outdated info.
 >
-> A fall-out of this patch is that the unhandled hypercalls no longer trap to
-> userspace.  There is very little reason though to use a hypercall to communicate
-> with userspace as PIO or MMIO can be used.  There is no code in tree that uses
-> userspace hypercalls.
+> > http://madwifi.org/browser/branches/ath5k
 >
-> Since the last patchset, I've changed the CPUID leaves to better avoid Xen's
-> CPUID range and fixed a bug spotted by Muli in masking off hypercall arguments.
+> Link with outdated info.
 >
-> Signed-off-by: Anthony Liguori <aliguori@us.ibm.com>
+> > I suggest actually taking the time to get the facts before making
+> > completely baseless statements. When you make obviously erroneous
+> > statements, it leaves everyone to believe you are either hopelessly
+> > misinformed, or a habitual liar. -Which is it?
 >
-> @@ -1721,6 +1657,18 @@ void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
->  	vcpu->regs[VCPU_REGS_RBX] = 0;
->  	vcpu->regs[VCPU_REGS_RCX] = 0;
->  	vcpu->regs[VCPU_REGS_RDX] = 0;
-> +
-> +	if (function == KVM_CPUID_SIGNATURE) {
-> +		u32 signature[3];
-> +
-> +		memcpy(signature, "LinuxPVLinux", 12);
-> +		vcpu->regs[VCPU_REGS_RAX] = 0;
-> +		vcpu->regs[VCPU_REGS_RBX] = signature[0];
-> +		vcpu->regs[VCPU_REGS_RCX] = signature[1];
-> +		vcpu->regs[VCPU_REGS_RDX] = signature[2];
-> +		goto out;
-> +	}
-> +
->   
+> Please take a moment to understand the Linux development process.
+>
+> A better place to look would be 'ath5k' branch of
+> git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-dev.g
+>it
+>
+> but nonethless, the fact remains that ath5k is STILL NOT UPSTREAM and
+> HAS NEVER BEEN UPSTREAM, as can be verified from
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> 	(official linux repo; nothing is official until it hits here)
+>
+> Part of the reason why ath5k is not upstream is that developers are
+> actively addressing these copyright concerns -- as can be clearly
+> seen by the changes being made over time.
+>
+> So let's everybody calm down, ok?
+>
+> Regards,
+>
+> 	Jeff
 
-This needs to be done from userspace, so that kvm can pretend not to 
-have this leaf.
+Jeff,
 
-(I have no objection to our userspace doing it unconditionally; but I 
-don't want to force it on others)
+Look at what you are saying from a different perspective. Let's say 
+someone took the linux kernel source from the official repository, 
+removed the GPL license and dedicated the work to public domain or put 
+it under any other license, and for kicks back-dated the files so they 
+are older than the originals. Then they took this illegal license 
+removal copy of your code and put it in a public repository somewhere.
 
-Also, the signature string is too generic.
+You'd be perfectly content with such a development because it had not 
+been officially brought "upstream" by the "offical" public domain or 
+whatever project?
 
-> diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-> index 18c2b2c..1362082 100644
-> --- a/drivers/kvm/x86_emulate.c
-> +++ b/drivers/kvm/x86_emulate.c
->   
+No, you would most likely be absolutely livid and extremely vocal 
+getting the problem fixed immediately, so your reasoning falls apart.
 
+If the people who could fix the problem continued to ignore you, and the 
+people in leadership roles tell you then intend to steal your code, 
+then you would continue to get more angry and vocal about it. 
 
-Please split out the emulator changes.
+Now take it one step further. For the sake of example, let's assume all 
+of this atheros driver nonsense went to a German court and the 
+GNU/FSF/SFLC/Linux or whoever you want to call yourselves lost a 
+criminal copyright infringement suit. You have now been legally proven 
+to be guilty code theft.
 
-> - *
-> - * 64-bit parameters 1-6 are in the standard gcc x86_64 calling convention
-> - * order: RDI, RSI, RDX, RCX, R8, R9.
-> - *
-> - * 32-bit index is EBX, parameters are: EAX, ECX, EDX, ESI, EDI, EBP.
-> - * (the first 3 are according to the gcc regparm calling convention)
->   
+After such a ruling let's assume some jerk was to do the all the 
+horrific stuff mentioned in the first paragraph above to the linux 
+source tree, along with a little regex magic to call it something other 
+than "linux" and seeded the Internet with countless copies. At this 
+point, the GNU, FSF, GPL and all of the hard working Linux devs are now 
+stuffed. A company could download the bogus source, violate the now 
+missing GPL license, claim you stole the code from someplace else on 
+the `net and illegally put your GPL license on it... Worst of all, they 
+now have your past conviction of criminal code theft to back up their 
+assertion about the way you normally operate.
 
-Please document the new ABI.
+You should be concerned. The above is an immoral and illegal but still 
+practical attack on the GPL and all of hard work by many great people. 
+By having some people within the GNU/FSF/GPL camp indulging in code 
+theft to push their preferred license and the reasonable folks in the 
+GNU/FSF/GPL camp refusing to voice a strong opinion against code theft, 
+you are weakening your own license.
 
--- 
-error compiling committee.c: too many arguments to function
-
+jcr
