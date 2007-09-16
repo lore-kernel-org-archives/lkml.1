@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbXIPSp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbXIPSvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089AbXIPSp2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 14:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXIPSpP
+	id S1753850AbXIPSvL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 14:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXIPSu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 14:45:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56607 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752186AbXIPSpN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 14:45:13 -0400
-Date: Sun, 16 Sep 2007 11:44:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?iso-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>
-cc: Andrea Arcangeli <andrea@suse.de>,
-       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
+	Sun, 16 Sep 2007 14:50:56 -0400
+Received: from ns.suse.de ([195.135.220.2]:46659 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752125AbXIPSuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 14:50:55 -0400
+Date: Sun, 16 Sep 2007 20:50:52 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Mel Gorman <mel@skynet.ie>
+Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
        totty.lu@gmail.com, hugh@veritas.com
 Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <20070916182136.GC2393@lazybastard.org>
-Message-ID: <alpine.LFD.0.999.0709161128350.16478@woody.linux-foundation.org>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au>
- <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org>
- <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070915155100.GA21861@v2.random>
- <87tzpvy9cb.fsf@informatik.uni-tuebingen.de> <20070915223032.GA6708@v2.random>
- <20070916174657.GA2393@lazybastard.org> <alpine.LFD.0.999.0709161112410.16478@woody.linux-foundation.org>
- <20070916182136.GC2393@lazybastard.org>
+Message-ID: <20070916185052.GG6708@v2.random>
+References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070915155100.GA21861@v2.random> <20070916181504.GB16406@skynet.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070916181504.GB16406@skynet.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Sep 16, 2007 at 07:15:04PM +0100, Mel Gorman wrote:
+> Except now as I've repeatadly pointed out, you have internal fragmentation
+> problems. If we went with the SLAB, we would need 16MB slabs on PowerPC for
+> example to get the same sort of results and a lot of copying and moving when
 
+Well not sure about the 16MB number, since I'm unsure what the size of
+the ram was. But clearly I agree there are fragmentation issues in the
+slab too, there have always been, except they're much less severe, and
+the slab is meant to deal with that regardless of the PAGE_SIZE. That
+is not a new problem, you are introducing a new problem instead.
 
-On Sun, 16 Sep 2007, Jörn Engel wrote:
-> 
-> My approach is to have one for mount points and ramfs/tmpfs/sysfs/etc.
-> which are pinned for their entire lifetime and another for regular
-> files/inodes.  One could take a three-way approach and have
-> always-pinned, often-pinned and rarely-pinned.
-> 
-> We won't get never-pinned that way.
+We can do a lot better than slab currently does without requiring any
+defrag move-or-shrink at all.
 
-That sounds pretty good. The problem, of course, is that most of the time, 
-the actual dentry allocation itself is done before you really know which 
-case the dentry will be in, and the natural place for actually giving the 
-dentry lifetime hint is *not* at "d_alloc()", but when we "instantiate" 
-it with d_add() or d_instantiate().
+slab is trying to defrag memory for small objects at nearly zero cost,
+by not giving pages away randomly. I thought you agreed that solving
+the slab fragmentation was going to provide better guarantees when in
+another email you suggested that you could start allocating order > 0
+pages in the slab to reduce the fragmentation (to achieve most of the
+guarantee provided by config-page-shift, but while still keeping the
+order 0 at 4k for whatever reason I can't see).
 
-But it turns out that most of the filesystems we care about already use a 
-special case of "d_add()" that *already* replaces the dentry with another 
-one in some cases: "d_splice_alias()".
+> a suitable slab page was not available.
 
-So I bet that if we just taught "d_splice_alias()" to look at the inode, 
-and based on the inode just re-allocate the dentry to some other slab 
-cache, we'd already handle a lot of the cases!
+You ignore one other bit, when "/usr/bin/free" says 1G is free, with
+config-page-shift it's free no matter what, same goes for not mlocked
+cache. With variable order page cache, /usr/bin/free becomes mostly a
+lie as long as there's no 4k fallback (like fsblock).
 
-And yes, you'd end up with the reallocation overhead quite often, but at 
-least it would now happen only when filling in a dentry, not in the 
-(*much* more critical) cached lookup path.
-
-			Linus
+And most important you're only tackling on the pagecache and I/O
+performance with the inefficient I/O devices, the whole kernel has no
+cahnce to get a speedup, infact you're making the fast paths slower,
+just the opposite of config-page-shift and original Hugh's large
+PAGE_SIZE ;).
