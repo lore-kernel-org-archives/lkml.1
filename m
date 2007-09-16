@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbXIPHvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbXIPHxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752188AbXIPHvS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 03:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXIPHvE
+	id S1752609AbXIPHxR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 03:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbXIPHxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 03:51:04 -0400
-Received: from fwil.voltaire.com ([193.47.165.2]:44658 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751336AbXIPHvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 03:51:01 -0400
-X-Greylist: delayed 984 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Sep 2007 03:51:00 EDT
-Message-ID: <46ECDC7F.2070805@voltaire.com>
-Date: Sun, 16 Sep 2007 10:34:23 +0300
-From: Or Gerlitz <ogerlitz@voltaire.com>
-User-Agent: Thunderbird 1.4.1 (Windows/20051006)
+	Sun, 16 Sep 2007 03:53:10 -0400
+Received: from theseus.empoweringmedia.net ([67.72.106.11]:51598 "EHLO
+	theseus.empoweringmedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751351AbXIPHxJ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 03:53:09 -0400
+From: "J.C. Roberts" <jcroberts@designtools.org>
+Organization: DesignTools.org
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Wasting our Freedom
+Date: Sun, 16 Sep 2007 00:52:43 -0700
+User-Agent: KMail/1.9.6
+Cc: Jason Dixon <jason@dixongroup.net>, misc@openbsd.org,
+       moglen@softwarefreedom.org, lessig_from_web@pobox.com,
+       bkuhn@softwarefreedom.org, norwood@softwarefreedom.org,
+       fontana@softwarefreedom.org, karen@softwarefreedom.org,
+       rmsemail@gnu.org, rms@gnu.org, linux-kernel@vger.kernel.org
+References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net> <200709150333.20384.jcroberts@designtools.org> <1B000B52-707E-4592-88CD-64BD88C6C9B2@mac.com>
+In-Reply-To: <1B000B52-707E-4592-88CD-64BD88C6C9B2@mac.com>
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: Steve Wise <swise@opengridcomputing.com>, rdreier@cisco.com,
-       sean.hefty@intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH] RDMA/CMA: Use neigh_event_send() to initiate
- neighbour discovery.
-References: <20070912100025.3190.89259.stgit@dell3.ogc.int>
-In-Reply-To: <20070912100025.3190.89259.stgit@dell3.ogc.int>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Sep 2007 07:34:32.0542 (UTC) FILETIME=[05F727E0:01C7F834]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709160052.45493.jcroberts@designtools.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Wise wrote:
-> RDMA/CMA: Use neigh_event_send() to initiate neighbour discovery.
-> 
-> Calling arp_send() to initiate neighbour discovery (ND) doesn't do the
-> full ND protocol.  Namely, it doesn't handle retransmitting the arp
-> request if it is dropped. The function neigh_event_send() does all this.
-> Without doing full ND, rdma address resolution fails in the presence of
-> dropped arp bcast packets.
+On Sunday 16 September 2007, Kyle Moffett wrote:
+> On Sep 15, 2007, at 06:33:18, J.C. Roberts wrote:
+> > Would Linus put up a fight if someone took his source tree and  
+> > relicensed the whole thing as GPLv3 without his permission? Yep,  
+> > you betcha he'd fight and he has already had to put up with a lot  
+> > of strong arm nonsense from the GPLv3/FSF zealots.
+>
+> OH COME FREAKING ON!!!!  Can you guys DROP it already?  There was NO
+>   VIOLATION because nobody actually changed the code!!!  The patch
+> that Jesper submitted was a *MISTAKE* and was *NEVER* *MERGED*!!!
 
-Jay,
+You are wrong.
 
-Is there a way to deploy something similar for the gratuitous arp being 
-sent by the bonding driver at bond_arp_send()?
+http://marc.info/?l=linux-wireless&m=118857712529898&w=2
+http://madwifi.org/browser/branches/ath5k
 
-We have seen rare situations where the skb was dropped by the stack and 
-hence bonding fail-over was detected by the remote peer only when its 
-neighboring subsystem probe failures dictated that a new arp must be issued.
+I suggest actually taking the time to get the facts before making 
+completely baseless statements. When you make obviously erroneous 
+statements, it leaves everyone to believe you are either hopelessly 
+misinformed, or a habitual liar. -Which is it?
 
-Or.
-> 
-> Signed-off-by: Steve Wise <swise@opengridcomputing.com>
-> ---
-> 
->  drivers/infiniband/core/addr.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/infiniband/core/addr.c b/drivers/infiniband/core/addr.c
-> index c5c33d3..5381c80 100644
-> --- a/drivers/infiniband/core/addr.c
-> +++ b/drivers/infiniband/core/addr.c
-> @@ -161,8 +161,7 @@ static void addr_send_arp(struct sockadd
->  	if (ip_route_output_key(&rt, &fl))
->  		return;
->  
-> -	arp_send(ARPOP_REQUEST, ETH_P_ARP, rt->rt_gateway, rt->idev->dev,
-> -		 rt->rt_src, NULL, rt->idev->dev->dev_addr, NULL);
-> +	neigh_event_send(rt->u.dst.neighbour, NULL);
->  	ip_rt_put(rt);
->  }
-
+jcr
