@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903AbXIPUIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbXIPUL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753903AbXIPUIz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 16:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXIPUIr
+	id S1753450AbXIPUL1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 16:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXIPULU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 16:08:47 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53503 "EHLO mail.dvmed.net"
+	Sun, 16 Sep 2007 16:11:20 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:40975 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752119AbXIPUIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 16:08:46 -0400
-Message-ID: <46ED8D46.1090109@garzik.org>
-Date: Sun, 16 Sep 2007 16:08:38 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Daniel Hazelton <dhazelton@enter.net>
-CC: "J.C. Roberts" <jcroberts@designtools.org>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Jason Dixon <jason@dixongroup.net>,
-       misc@openbsd.org, moglen@softwarefreedom.org, bkuhn@softwarefreedom.org,
-       norwood@softwarefreedom.org, fontana@softwarefreedom.org,
-       karen@softwarefreedom.org, linux-kernel@vger.kernel.org
-Subject: Re: Wasting our Freedom
-References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net> <46ECE554.5030308@garzik.org> <200709160217.55933.jcroberts@designtools.org> <200709161123.25911.dhazelton@enter.net>
-In-Reply-To: <200709161123.25911.dhazelton@enter.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1751931AbXIPULU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 16:11:20 -0400
+Date: Sun, 16 Sep 2007 22:12:45 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, kbuild-devel@lists.sourceforge.net
+Subject: Re: Rename asm-offsets tool or not? (Re: [patch 01/03] kbuild, asm-values: infrastructure)
+Message-ID: <20070916201245.GA10000@uranus.ravnborg.org>
+References: <20070612233650.486224000@flower.upol.cz> <20070612234558.648949000@flower.upol.cz> <20070916182912.GA9630@uranus.ravnborg.org> <20070916193258.GD13543@flower.upol.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070916193258.GD13543@flower.upol.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton wrote:
-> If the OpenBSD developers want to attack the Linux Kernel community over 
-> patches that were *NEVER* *ACCEPTED* by said community, it should be just as 
-> fair for the Linux Kernel community to complain about those (unspecified) 
-> times where OpenBSD replaced the GPL on code with the BSD license.
+On Sun, Sep 16, 2007 at 09:32:58PM +0200, Oleg Verych wrote:
+> On Sun, Sep 16, 2007 at 08:29:12PM +0200, Sam Ravnborg wrote:
+> > Hi Oleg.
 > 
-> And, as said before, the place to take these complaints is the MadWifi 
-> discussion area, since they are, apparently, the only people that accepted 
-> the patches in question.
-
-Although it's true the code is not yet upstream...
-
-Given that we want support for Atheros (whenever all this mess is 
-sorted), I think it's quite fair to discuss these issues [in a calm, 
-rational, paranoia-free manner] on LKML or linux-wireless@vger.kernel.org.
-
-
-> *WE*, the people on the Linux Kernel ML, *CANNOT* "fix the problem" with the 
-> *MADWIFI* code having accepted patches which violate Reyk's copyright.
-
-Given that we want it upstream, it is however relevant.  We want to make 
-sure we are aware of copyright problems, and we want to make sure any 
-copyright problems are fixed.
-
-On a side note:  "MadWifi" does not really describe the Linux ath5k 
-driver, the driver at issue here.  Some mistakes were made by Linux 
-wireless developers, and those mistakes were corrected.
-
-
-> Linux Kernel != FSF/GNU
+> Hallo. Nice, you are bringing it back. I'll try to have LKML-like
+> output this time, not a makefile mess and stuff:
 > 
-> If it was then RMS would not be attacking Linus and Linux with faulty claims 
-> just because Linus has publicly stated that the GPLv2 is a better license 
-> than v3
+> []
+> > I see no value in renaming from asm_offset to asm_value - please drop it.
+> > Introducing the generic asm-values.h should wait and when you do
+> > you should be preapred to update all architectures (ecasue otherwise it
+> > will not happen).
+> 
+> All archs, are using same syntax. But.
+> 
+> Interesting exception is MIPS, where tokens are organized and implemented
+> more nicely, that is where *asm-values* name coming from, actually. One
+> can see all that text, size, constant tokens in addition to just offsets.
+> 
+> So, if name change isn't worth, then OK; filename compatibility check, as
+> one in `linux/Kbuild', is easy to hack as well to remove.
+> 
+> But nice feature/tool with meaningful name and functionality is just
+> another thing.
+> 
+> Opinions?
+Everyone and their cousin these days knows that asm-offset is constants
+generated from C and used in assembler.
+If we benefit from more values in the asm-offset file - let's do it.
+But there is no reason to change a name that has been used for this purpose
+for as long as I can remember.
 
-Amen.  100% agreed.
-
-	Jeff
-
-
-
+	Sam
