@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbXIPWUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbXIPWfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbXIPWUv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 18:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbXIPWUn
+	id S1754043AbXIPWfa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 18:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbXIPWfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 18:20:43 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2922 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753074AbXIPWUm (ORCPT
+	Sun, 16 Sep 2007 18:35:11 -0400
+Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:48886 "EHLO
+	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753326AbXIPWfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 18:20:42 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Cc: <hannah@schlund.de>
-Subject: RE: Wasting our Freedom
-Date: Sun, 16 Sep 2007 15:19:41 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEFEGNAC.davids@webmaster.com>
+	Sun, 16 Sep 2007 18:35:07 -0400
+From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+To: Joern Engel <joern@logfs.org>
+Cc: Andrea Arcangeli <andrea@suse.de>,
+       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+In-Reply-To: <20070916174657.GA2393@lazybastard.org> (Joern Engel's message of
+	"Sun, 16 Sep 2007 19:46:58 +0200")
+References: <20070911060349.993975297@sgi.com>
+	<200709110452.20363.nickpiggin@yahoo.com.au>
+	<20070911121225.GE13132@lazybastard.org>
+	<20070915014449.4f9cdb51.akpm@linux-foundation.org>
+	<87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
+	<20070915155100.GA21861@v2.random>
+	<87tzpvy9cb.fsf@informatik.uni-tuebingen.de>
+	<20070915223032.GA6708@v2.random>
+	<20070916174657.GA2393@lazybastard.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+Date: Mon, 17 Sep 2007 00:06:24 +0200
+Message-ID: <87d4wi5kpr.fsf@informatik.uni-tuebingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-In-Reply-To: <20070916203926.GA17863@schlund.de>
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 15:20:31 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 15:20:31 -0700
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jörn Engel <joern@logfs.org> writes:
 
-> JFTR, I do *not* think that that assessment was questionable. Unless the
-> dual-licensing *explicitly* allows relicensing, relicensing is forbidden
-> by copyright law. The dual-licensing allows relicensing only if that's
-> *explicitly* stated, either in the statement offering the alternative, or
-> in one of the licenses.
+> On Sun, 16 September 2007 00:30:32 +0200, Andrea Arcangeli wrote:
+>> 
+>> Movable? I rather assume all slab allocations aren't movable. Then
+>> slab defrag can try to tackle on users like dcache and inodes. Keep in
+>> mind that with the exception of updatedb, those inodes/dentries will
+>> be pinned and you won't move them, which is why I prefer to consider
+>> them not movable too... since there's no guarantee they are.
 >
-> Neither GPL nor BSD/ISC allow relicensing in their well-known wordings.
+> I have been toying with the idea of having seperate caches for pinned
+> and movable dentries.  Downside of such a patch would be the number of
+> memcpy() operations when moving dentries from one cache to the other.
+> Upside is that a fair amount of slab cache can be made movable.
+> memcpy() is still faster than reading an object from disk.
+
+How probable is it that the dentry is needed again? If you copy it and
+it is not needed then you wasted time. If you throw it out and it is
+needed then you wasted time too. Depending on the probability one of
+the two is cheaper overall. Idealy I would throw away dentries that
+haven't been accessed recently and copy recently used ones.
+
+How much of a systems ram is spend on dentires? How much on task
+structures? Does anyone have some stats on that? If it is <10% of the
+total ram combined then I don't see much point in moving them. Just
+keep them out of the way of users memory so the buddy system can work
+effectively.
+
+> Most likely the current reaction to such a patch would be to shoot it
+> down due to overhead, so I didn't pursue it.  All I have is an old patch
+> to seperate never-cached from possibly-cached dentries.  It will
+> increase the odds of freeing a slab, but provide no guarantee.
 >
-> If you think that's questionable, you should at least provide arguments
-> (and be ready to have your interpretation of the law and the licenses
-> tested before court).
+> But the point here is: dentries/inodes can be made movable if there are
+> clear advantages to it.  Maybe they should?
+>
+> Jörn
 
-Nobody is relicensing anything, ever.
-
-If the author licenses a work under the GPL only, then that is forever how
-that work is licensed. If an author licenses a work under the BSD, then that
-is forever how that work is licensed. Same for a dual license. This applies
-until the copyright expires or the author offers the code under some other
-license.
-
-Nobody ever relicenses anything, ever.
-
-If I give you a copy of a work covered by the GPL, the BSD, a dual-license,
-or whatever, you get a license to every protectable element in that work
-from the original author of that element.
-
-Nobody ever relicenses anything, ever. Nobody ever modifies anybody else's
-license, ever.
-
-If you take work that's under a dual-license and remove one license notice
-from it when you create a derivative work, every recipient of that
-derivative work still receives a dual license from the original author to
-every protectable element still in the distributed work.
-
-The GPL is explicit about this in section 6. The BSD license is not, but
-it's the only way such a license could work.
-
-There are really only two ways you can screw up.
-
-1) You can take GPL-only bits and put them in BSD or dual-licensed code.
-(The GPL prohibits this.)
-
-2) You can remove a BSD license notice from BSD-only code. (The BSD license
-prohibits this.)
-
-DS
-
-
+MfG
+        Goswin
