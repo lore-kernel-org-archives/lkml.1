@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbXIPSZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbXIPS16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbXIPSZE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 14:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbXIPSYz
+	id S1753927AbXIPS16 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 14:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbXIPS1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 14:24:55 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:65417 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751766AbXIPSYy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 14:24:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=tmjvIqwOjh9MiOPVkj1vnPpCBl7e8Mv/sWUOL6VqYtx5OzSaaRQfOyJa0OEWpguxIQEwf4vG78Jp4qPgmASZIgSzwuTvBl200jIu7jSASSOdjtfVyk2L1BXHmdp4y1RStsV+CERaggwbDyIY+8wHM8IlYjj1YEmF8NcOnou8VcI=
-From: Matej Laitl <strohel@gmail.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH v3] menuconfig: distinguish between selected-by-another options and comments
-Date: Sun, 16 Sep 2007 20:24:47 +0200
-User-Agent: KMail/1.9.7
-Cc: Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200709152004.11930.strohel@gmail.com> <200709161944.31780.strohel@gmail.com> <Pine.LNX.4.64.0709161955340.1817@scrub.home>
-In-Reply-To: <Pine.LNX.4.64.0709161955340.1817@scrub.home>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	Sun, 16 Sep 2007 14:27:51 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:58067 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751525AbXIPS1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 14:27:50 -0400
+Date: Sun, 16 Sep 2007 20:29:12 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>,
+       kbuild-devel@lists.sourceforge.net
+Subject: Re: [patch 01/03] kbuild, asm-values: infrastructure
+Message-ID: <20070916182912.GA9630@uranus.ravnborg.org>
+References: <20070612233650.486224000@flower.upol.cz> <20070612234558.648949000@flower.upol.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709162024.48124.strohel@gmail.com>
+In-Reply-To: <20070612234558.648949000@flower.upol.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 16 of September 2007 19:59:56 Roman Zippel wrote:
-> Right now I prefer the previous version.
+Hi Oleg.
 
-The v2 was maybe more intuitive, but had at least one flaw, where it claimed
-the option was selected by another, while it was in fact only made
-unchangeable by 'bool "Enable block layer" if EMBEDDED', defaulting to y.
+On Wed, Jun 13, 2007 at 01:36:51AM +0200, Oleg Verych wrote:
+> 	* header with widely used value definitions
+> 	* handle all asm-related things in one file (Makefile.asm)
+> 	* move some asm bits from Makefile.build there
+> 	  (rule %.s:%.c)
+> 	* add script to generate headers from assembles output
+> 	  (hopefully better output, MIPS testing/joining to all arch
+> 	   probably needed)
+> 
 
-> This maximum value is overridden  
-> by the minimum value, so I wouldn't like it to be exported like this.
+Took a look at this patch at last.
+Your patch moves everything to Makefile.asm and uses a script
+to generate the offset file.
 
-Where exactly does this happen? There are cases when maximum < minimum, for
-example when you <M> THINKPAD_ACPI, then <N> BACKLIGHT_LCD_SUPPORT. After that,
-BACKLIGHT_CLASS_DEVICE has minimum of 1 (selected by THINKPAD_ACPI) and maximum
-0 (depends on BACKLIGHT_LCD_SUPPORT, which is n)
+Now where we go the step to use a script to generate the offset file
+a much simpler approach would be to move both steps to the shell script.
+So the script are called with the input file as one of the
+arguments and it spits out the resulting file to stdout.
 
-The function names are maybe suboptimal, I agree.
+Doing it this way would allow the caller to have full control
+on the filenames and the current call-site in top-level Kbuild
+would still be much simpler than today.
 
-> I would really like to see an example, where the new changes make a 
-> difference.
+Moving the bits from Makefile.build that is only used for asm-offset is
+a nice cleanup and this should the script version support too.
 
-Try saying <M> to MAC80211, wireless extensions were -*- with v2, now are (*) with v3.
-Also the symbols ( ), { } are changed and more well-defined in v3 IMHO.
+I see no value in renaming from asm_offset to asm_value - please drop it.
+Introducing the generic asm-values.h should wait and when you do
+you should be preapred to update all architectures (ecasue otherwise it
+will not happen).
 
-Regards,
-         Matěj
+Sorry for the late feedback.
+
+	Sam
