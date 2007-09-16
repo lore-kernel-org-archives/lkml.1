@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbXIPTSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbXIPTW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089AbXIPTSl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 15:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbXIPTSd
+	id S1753917AbXIPTW6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 15:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbXIPTWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 15:18:33 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:63823 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751033AbXIPTSc (ORCPT
+	Sun, 16 Sep 2007 15:22:45 -0400
+Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:54352
+	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751027AbXIPTWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 15:18:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YnOogNvp2b3gO+MntmO7FrO9+57oQkWPie8f1cJBIzs76XtQamwO3xsuDLbKzJtvtMsCMXbxXpv37fAtMM3v69YXMmrzbihB4VqW21dWNejX2EoE9+GnrTUbhiFg4SqldWeXyh7qQ7SPhrqNFOs9bXapOwmZSJltABkFDNVQXKA=
-Message-ID: <6ead893e0709161218w5c2b79b8u3af37f12015fea93@mail.gmail.com>
-Date: Sun, 16 Sep 2007 14:18:32 -0500
-From: bofh <goodb0fh@gmail.com>
-To: "J.C. Roberts" <jcroberts@designtools.org>,
-       "Eben Moglen" <moglen@softwarefreedom.org>, jeff@garzik.org,
-       mrmacman_g4@mac.com, jason@dixongroup.net, misc@openbsd.org,
-       lessig_from_web@pobox.com, bkuhn@softwarefreedom.org,
-       norwood@softwarefreedom.org, fontana@softwarefreedom.org,
-       karen@softwarefreedom.org, linux-kernel@vger.kernel.org
-Subject: Re: Statement by SFLC (was Re: Wasting our Freedom)
-In-Reply-To: <200709161111.13078.jcroberts@designtools.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 16 Sep 2007 15:22:44 -0400
+Date: Sun, 16 Sep 2007 12:22:17 -0700 (PDT)
+Message-Id: <20070916.122217.68050499.davem@davemloft.net>
+To: eswierk@arastra.com
+Cc: herbert@gondor.apana.org.au, netdev@vger.kernel.org, maxk@qualcomm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Configurable tap interface MTU
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <e6c711510709120954i29a8f86bg9ea7bb337a039b5a@mail.gmail.com>
+References: <e6c711510709110742v4d2da644ha63b0a6d47c1230b@mail.gmail.com>
+	<E1IVIv8-0003Uc-00@gondolin.me.apana.org.au>
+	<e6c711510709120954i29a8f86bg9ea7bb337a039b5a@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net>
-	 <200709160217.55933.jcroberts@designtools.org>
-	 <1993-Sun16Sep2007091741-0400-eben@softwarefreedom.org>
-	 <200709161111.13078.jcroberts@designtools.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't thinl this helps openbsd or anyone else.   As Theo is already
-working with the individuals involved, and hasn't asked for help, I
-think rather than saying "I think you're going to suck", let's see
-what happens.  Going ovewrboard isn't going to help anyone.
+From: "Ed Swierk" <eswierk@arastra.com>
+Date: Wed, 12 Sep 2007 09:54:35 -0700
 
+> On 9/11/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> > Please make it 65535 without an Ethernet header and 65521
+> > with an Ethernet header.
+> 
+> Here is a revised patch that allows MTUs up to 65535 for tap
+> interfaces and up to 65521 for tun interfaces.
+> 
+> (If I set the MTU to 65521 on a tun interface, ping complains "message
+> too long" when I send a 65521-byte packet; 65520 works okay, though.)
 
-On 9/16/07, J.C. Roberts <jcroberts@designtools.org> wrote:
-> On Sunday 16 September 2007, Eben Moglen wrote:
-> > Also, and again for the last time, let me state that SFLC's
-> > instructions from its clients are to establish all the facts
-> > concerning the development of the current relevant code (which means
-> > the painstaking reconstruction of several independent and overlapping
-> > lines of development, including forensic reconstruction through
-> > line-by-line code reviews where version control system information is
-> > not available), as well as to resolve all outstanding legal issues,
-> > and to make policy recommendations
->
-> Everyone is expecting yet another one of your lovely recommendations
-> which very simply reads: "steal and infect everything you possibly can
-> and refuse to pass on the rights that you have received."
-> http://lwn.net/Articles/248223/
->
-> As you do your imaginary "painstaking reconstruction" the whole world
-> can see you refuse to practice what you preach in the supposed "spirit"
-> of your "steal-alike" license because you refuse to pass on the rights
-> you have received.
->
-> > The required work has been made more arduous because some people have
-> > chosen not to cooperate in good faith.
->
-> When you stated you intend to secure as much code as possible under your
-> license of choice, you mistakenly told the world you had no intention
-> of cooperating in good faith with anyone.
->
-> > But making threats of litigation and throwing around words like
-> > "theft" and "malpractice" was a Really Bad Idea
->
-> Speaking of "Really Bad Ideas," you trained us. The only time we get any
-> form of response is when we continue to become more loud, more
-> abrasive, more aggressive, and more accusational. As long as people in
-> your camp continue to use your license and lawyers as a weapon to push
-> your "free as in koolaid" political agenda there will be people like me
-> who will stand up and fight against your theft, your malpractice, your
-> stalling tactics and your legal bullying.
->
-> I hope the name Pavlov rings a bell.
->
-> jcr
->
->
+Applied to net-2.6.24
 
+Please provide a proper Signed-off-by: line and a full
+changelog with every patch submission and revision in
+the future.
 
--- 
-"This officer's men seem to follow him merely out of idle curiosity."
--- Sandhurst officer cadet evaluation.
+Thanks.
+
