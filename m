@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbXIPUrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbXIPUyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbXIPUrH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 16:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbXIPUqy
+	id S1753534AbXIPUyR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 16:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbXIPUyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 16:46:54 -0400
-Received: from mxintern.schlund.de ([212.227.126.204]:58016 "EHLO
-	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbXIPUqx (ORCPT
+	Sun, 16 Sep 2007 16:54:05 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54602 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbXIPUyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 16:46:53 -0400
-X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Sep 2007 16:46:53 EDT
-Date: Sun, 16 Sep 2007 22:39:26 +0200
-From: Hannah Schroeter <hannah@schlund.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
-       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070916203926.GA17863@schlund.de>
-Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
-	"Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
-	linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-	Eben Moglen <moglen@softwarefreedom.org>,
-	Lawrence Lessig <lessig_from_web@pobox.com>,
-	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-	Matt Norwood <norwood@softwarefreedom.org>
-References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070916195909.GA18232@stusta.de>
-Organization: Schlund + Partner AG
-X-UI-Msg-Verification: f95605943fdd38b6e96a8e610e3165a9
+	Sun, 16 Sep 2007 16:54:04 -0400
+Message-ID: <46ED97D0.1090608@zytor.com>
+Date: Sun, 16 Sep 2007 13:53:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ACPI video mode patch review
+References: <46E9AD88.7070400@zytor.com> <200709162208.03768.rjw@sisk.pl>
+In-Reply-To: <200709162208.03768.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Rafael J. Wysocki wrote:
+> On Thursday, 13 September 2007 23:37, H. Peter Anvin wrote:
+>> Pavel, want to look at the patch before sending it to Linus?
+> 
+> Many thanks for taking care of this!
+> 
+> We already have a patch in -mm, s2ram-kill-old-debugging-junk.patch from Pavel
+> (http://marc.info/?l=linux-mm-commits&m=118737955611331&w=1), that removes the
+> #ifdefed blocks and it clashes with your first patch a bit.
+> 
+> FYI, I have rebased your first patch on top of the Pavel's patch:
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc6/patches/39-acpi-video-mode-fix.patch
+> 
 
-On Sun, Sep 16, 2007 at 09:59:09PM +0200, Adrian Bunk wrote:
->On Sun, Sep 16, 2007 at 11:48:47AM -0700, Can E. Acar wrote:
->>...
->> First, these developers got questionable advice from senior Linux kernel
->> developers, and SLFC (which is closely related to FSF) in the process.
+Thanks Rafael,
 
->The most questionable legal advice in this thread was by Theo de Raadt 
->who claimed choosing one licence for _dual-licenced_ code was illegal...
+However, I need to send something upstream to Linus for this kernel
+cycle, so I don't want to base it on an -mm patch.  There are two
+alternatives, obviously: 1. send my patch in now based on the "change as
+little as necessary to fix the immediate problem" and then rebase
+Pavel's patch on top of mine, or 2. for me to send both Pavel's patch
+and the rebased patch upstream.
 
-JFTR, I do *not* think that that assessment was questionable. Unless the
-dual-licensing *explicitly* allows relicensing, relicensing is forbidden
-by copyright law. The dual-licensing allows relicensing only if that's
-*explicitly* stated, either in the statement offering the alternative, or
-in one of the licenses.
+Personally, I would prefer to avoid strategy 2 at this late stage in the
+2.6.23-rc series.
 
-Neither GPL nor BSD/ISC allow relicensing in their well-known wordings.
+Please let me know what you think.
 
-If you think that's questionable, you should at least provide arguments
-(and be ready to have your interpretation of the law and the licenses
-tested before court).
-
->[...]
-
->Regarding ethics - if you use the BSD licence for your code you state in 
->the licence text that it's OK that I take your code and never give 
->anything back.
-
-But the BSDl does not allow you to relicense the original code, even
-while it allows you to license copyrightable additions/modifications
-under different terms with few restrictions.
-
-However, you say "regarding ethics" and just go back to the legal level.
-Is it really ethical, if you consider both Linux and OpenBSD part of one
-OSS "community", to share things only in one direction? To take the
-reverse engineered HAL but to not allow OpenBSD to take some
-modifications back?
-
->[...]
-
->Some people have the funny position of opposing the GPL which enforces 
->that you have to give back, but whining that people took their BSD 
->licenced code and don't give back.
-
-A difference is, GPL requires it under every circumstance. BSD does not,
-indeed. But how should one expect it from *OSS* people that even *they*
-don't give back? Do you really want to put yourself on the same level as
-closed-source companies?
-
->[...]
-
-Kind regards,
-
-Hannah.
+	-hpa
