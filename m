@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbXIPWPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbXIPWUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbXIPWPY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 18:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbXIPWPM
+	id S1754044AbXIPWUv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 18:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbXIPWUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 18:15:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60316 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753074AbXIPWPK (ORCPT
+	Sun, 16 Sep 2007 18:20:43 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2922 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753074AbXIPWUm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 18:15:10 -0400
-Date: Sun, 16 Sep 2007 15:14:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kees Cook <kees@ubuntu.com>
-Cc: Greg KH <greg@kroah.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Ben Collins <bcollins@ubuntu.com>, Michael Wu <flamingice@sourmilk.net>
-Subject: Re: [PATCH] modpost: detect unterminated device id lists
-Message-Id: <20070916151447.dc925a9e.akpm@linux-foundation.org>
-In-Reply-To: <20070913004937.GM8183@outflux.net>
-References: <20070912064134.GO7910@outflux.net>
-	<46E7C91D.3070001@garzik.org>
-	<b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com>
-	<20070912215356.GC23294@kroah.com>
-	<20070913004937.GM8183@outflux.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 16 Sep 2007 18:20:42 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Cc: <hannah@schlund.de>
+Subject: RE: Wasting our Freedom
+Date: Sun, 16 Sep 2007 15:19:41 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKCEFEGNAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+In-Reply-To: <20070916203926.GA17863@schlund.de>
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 15:20:31 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 15:20:31 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007 17:49:37 -0700 Kees Cook <kees@ubuntu.com> wrote:
 
-> This patch against 2.6.23-rc6 will cause modpost to fail if any device
-> id lists are incorrectly terminated, after reporting the offender.
+> JFTR, I do *not* think that that assessment was questionable. Unless the
+> dual-licensing *explicitly* allows relicensing, relicensing is forbidden
+> by copyright law. The dual-licensing allows relicensing only if that's
+> *explicitly* stated, either in the statement offering the alternative, or
+> in one of the licenses.
+>
+> Neither GPL nor BSD/ISC allow relicensing in their well-known wordings.
+>
+> If you think that's questionable, you should at least provide arguments
+> (and be ready to have your interpretation of the law and the licenses
+> tested before court).
 
-I'm getting this:
+Nobody is relicensing anything, ever.
 
-rusb2/pvrusb2: struct usb_device_id is 20 bytes.  The last of 3 is:
-0x03 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 
-FATAL: drivers/media/video/pvrusb2/pvrusb2: struct usb_device_id is not terminated with a NULL entry!
+If the author licenses a work under the GPL only, then that is forever how
+that work is licensed. If an author licenses a work under the BSD, then that
+is forever how that work is licensed. Same for a dual license. This applies
+until the copyright expires or the author offers the code under some other
+license.
 
-("rusb2/pvrusb2" ??)
+Nobody ever relicenses anything, ever.
 
-but:
+If I give you a copy of a work covered by the GPL, the BSD, a dual-license,
+or whatever, you get a license to every protectable element in that work
+from the original author of that element.
 
-struct usb_device_id pvr2_device_table[] = {
-	[PVR2_HDW_TYPE_29XXX] = { USB_DEVICE(0x2040, 0x2900) },
-	[PVR2_HDW_TYPE_24XXX] = { USB_DEVICE(0x2040, 0x2400) },
-	{ USB_DEVICE(0, 0) },
-};
-	
-looks OK?
+Nobody ever relicenses anything, ever. Nobody ever modifies anybody else's
+license, ever.
 
-Using plain old "{ }" shut the warning up.
+If you take work that's under a dual-license and remove one license notice
+from it when you create a derivative work, every recipient of that
+derivative work still receives a dual license from the original author to
+every protectable element still in the distributed work.
+
+The GPL is explicit about this in section 6. The BSD license is not, but
+it's the only way such a license could work.
+
+There are really only two ways you can screw up.
+
+1) You can take GPL-only bits and put them in BSD or dual-licensed code.
+(The GPL prohibits this.)
+
+2) You can remove a BSD license notice from BSD-only code. (The BSD license
+prohibits this.)
+
+DS
+
+
