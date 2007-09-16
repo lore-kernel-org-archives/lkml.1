@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbXIPUhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbXIPUqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbXIPUhb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 16:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbXIPUhY
+	id S1752126AbXIPUqh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 16:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbXIPUqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 16:37:24 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51066 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbXIPUhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 16:37:24 -0400
-Date: Sun, 16 Sep 2007 22:38:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       kbuild devel <kbuild-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild update
-Message-ID: <20070916203848.GA10365@uranus.ravnborg.org>
-References: <20070916094739.GA6672@uranus.ravnborg.org> <Pine.LNX.4.64.0709160856060.20489@localhost.localdomain> <20070916122343.59e8885d.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 16 Sep 2007 16:46:31 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:48781 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752119AbXIPUqa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 16:46:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ww/f3W96rDSPsTK+L34fJVan6o1AtUbY3iBnSatto/3OuK3JmQ/YYIykNbEpCKLoaomSpsBie8DakxIcxNBi10pBIoF85hI5QHtuKxnxkxSkpkVlF4CUXPTHe8i85clBUPlOWBsO+bEinjhh9t9R7koSUoLZCHoDke8+QqpQl3c=
+Message-ID: <a36005b50709161346t544d3927mfbca537c869c3c58@mail.gmail.com>
+Date: Sun, 16 Sep 2007 13:46:29 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Francis Moreau" <francis.moro@gmail.com>
+Subject: Re: x86_64: vsyscall vs vdso
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <38b2ab8a0709161324p6841c1f9h6f9422b0e6c4b5cd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070916122343.59e8885d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+References: <38b2ab8a0709161324p6841c1f9h6f9422b0e6c4b5cd@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 12:23:43PM -0700, Andrew Morton wrote:
-> On Sun, 16 Sep 2007 08:58:03 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
-> 
-> > On Sun, 16 Sep 2007, Sam Ravnborg wrote:
-> > 
-> > > A summary of what is planned to be submitted in next merge window for kbuild.
-> > > The shortlog below have additional details but the headlines are:
-> > ...
-> > > o add script to find unused kconfig symbols (try it!)
-> > 
-> > based on my experiences with this, unless you filter carefully, you're
-> > going to end up with a *whack* of false positives given the number of
-> > developers who elect to name their local macros starting with a prefix
-> > of "CONFIG_".  good luck dealing with *that*.  :-)
-> 
-> box:/usr/src/linux-2.6.23-rc6> grep -r '^[      ]*#[    ]*define[       ]*CONFIG_' . | wc -l
-> 415
-> 
-> bah.  They're all bugs - The CONFIG_foo namespace is (should be) reserved in
-> kernel coding.
+On 9/16/07, Francis Moreau <francis.moro@gmail.com> wrote:
+> I'm a bit puzzled because vdso doesn't seem to be used on my fedora 7:
+> I just compiled a trivial program which just call gettimeofday() and
+> ld.so resolves this call with vsyscall's gettimeofday.
+>
+> Now I'm wondering when vdso is used, could anybody give me a clue ?
 
-I get (after a bit more filtering 349 hits of which 182 are outside drivers/
+F7 was released before the vdso for x86_64 was upstream so you should
+not expect anything else.  F8 will use the available vdso.  This
+doesn't just happen magically, changes to libc are needed.
 
-Of the 182 the 25 of them are in arch specific code.
 
-I se no good reasons to address this unless we touch code in that area anyway.
-But avoiding new entries are good.
+> Another question: is vdso going to replace vsyscall at all ? If so how
+> are statically programs going to be handled ?
 
-	Sam
+Unfortunately the vsyscalls cannot ever go completely away.
+Statically linked apps, the bane of progress, will need them.  There
+are also people updating kernels but not the user userland code.
 
+What we will have to do in future is to make vsyscalls configurable.
+Both a compile time option and a runtime option (perhaps also under
+control of SELinux) are likely needed.
