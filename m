@@ -1,54 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbXIPNZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbXIPNoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbXIPNZi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 09:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbXIPNZa
+	id S1753415AbXIPNoh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 09:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbXIPNo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 09:25:30 -0400
-Received: from www.osadl.org ([213.239.205.134]:32864 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752213AbXIPNZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 09:25:29 -0400
-Subject: Re: [1/3] 2.6.23-rc6: known regressions v2 --- ieee1394, empty
-	suspend stopped working
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       linux1394-devel@lists.sourceforge.net,
-       Ben Collins <ben.collins@ubuntu.com>
-In-Reply-To: <20070916024159.c067dc1a.akpm@linux-foundation.org>
-References: <46EB436E.6030509@googlemail.com>
-	 <46ECF8C8.5040308@s5r6.in-berlin.de>
-	 <20070916024159.c067dc1a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 16 Sep 2007 15:25:24 +0200
-Message-Id: <1189949124.4319.13.camel@chaos>
+	Sun, 16 Sep 2007 09:44:26 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:48721 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751369AbXIPNoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 09:44:25 -0400
+Date: Sun, 16 Sep 2007 17:43:45 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andreas Dilger <adilger@clusterfs.com>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage. Move away from char device ioctls.
+Message-ID: <20070916134345.GA8059@2ka.mipt.ru>
+References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070915122957.GA25752@2ka.mipt.ru> <20070915172446.GC2990@schatzie.adilger.int>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070915172446.GC2990@schatzie.adilger.int>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-16 at 02:41 -0700, Andrew Morton wrote:
-> > I did a quick test on my main test machine, a Mac mini running x86-64
-> > Linux.  Regardless whether swap is on or off and whether ieee1394 and
-> > ohci1394 are loaded or not, it always behaves the same.  It does
-> > something, then ends up with power LED off but a non-blinking cursor,
-> > i.e. _, still shown on the text console.  Is this good or bad?  Note, I
-> > didn't try to resume and won't, because I'm out of spare time.
+On Sat, Sep 15, 2007 at 11:24:46AM -0600, Andreas Dilger (adilger@clusterfs.com) wrote:
+> > When Chris Mason announced btrfs, I found that quite a few new ideas 
+> > are already implemented there, so I postponed project (although
+> > direction of the developement of the btrfs seems to move to the zfs side
+> > with some questionable imho points, so I think I can jump to the wagon
+> > of new filesystems right now). 
 > 
-> When it is in this state, try hitting a key lots of times.  It Works For Me ;)
-> 
-> Try Thomas's hrt tree, below.  It Also Works For Me.
+> This is an area I'm always a bit sad about in OSS development - the need
+> everyone has to make a new {fs, editor, gui, etc} themselves instead of
+> spending more time improving the work we already have.  Imagine where the
 
-Will not help much. He is running x86-64 which is not affected by
-clockevents & Co. (yet).
+If that would be true, we would be still in the stone age. 
+Or not, actually I think the first cell in the universe would not bother 
+itself dividing into the two just because it could spent infinite time 
+trying to make itself better.
 
-	tglx
+> internet would be (or not) if there were 50 different network protocols
+> instead of TCP/IP?  If you don't like some things about btrfs, maybe you
+> can fix them?
 
+When some idea is implemented it is virtually impossible to change it,
+only recreate new one with fixed issues. So, we have multiple ext,
+reiser and many others. I do not say btrfs is broken or has design
+problems, it is really interesting filesystem, but all we have our own 
+opinions about how things should be done, that's it.
 
+Btw, we do have so many network protocols for different purposes, that
+number of (storage) filesystems is negligebly small compared to it. 
+Internet as is popular today is just a subset of where network is used.
+
+And we do invent new protocols each time we need something new, which
+does not fit into existing models (for example TCP by design can not
+work with very long-distance links with tooo long RTT). We have sctp to
+fix some tcp issues. Number of IP layer 'neighbours' is even more.
+Physical media layer has many different protocols too.
+And that is just what exists in the linux tree...
+
+> To be honest, developing a new filesystem that is actually widely useful
+> and used is a very time consuming task (see Reiserfs and Reiser4).  It
+> takes many years before the code is reliable enough for people to trust it,
+> so most likely any effort you put into this would be wasted unless you can
+> come up with something that is dramatically better than something existing.
+
+Yep, I know. 
+Wasting my time is one of the most pleasant things I ever tried in my life.
+
+> The part that bothers me is that this same effort could have been used to
+> improve something that more people would use (btrfs in this case).  Of
+> course, sometimes the new code is substantially better than what currently
+> exists, and I think btrfs may have laid claim to the current generation of
+> filesystems.
+
+Call me greedy bastard, but I do not care about world happiness, it is
+just impossible to achieve. So I like what I do right now.
+If it will be rest under the layer of dust I do not care, I like the
+process of creating, so if it will fail, I just will get new knowledge.
+
+:)
+
+> Cheers, Andreas
+> --
+> Andreas Dilger
+> Principal Software Engineer
+> Cluster File Systems, Inc.
+
+-- 
+	Evgeniy Polyakov
