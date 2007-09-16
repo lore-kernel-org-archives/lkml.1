@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbXIPT4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbXIPT6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbXIPT4R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 15:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbXIPT4F
+	id S1753242AbXIPT6l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 15:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXIPT6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 15:56:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51944 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751338AbXIPT4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 15:56:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: ACPI video mode patch review
-Date: Sun, 16 Sep 2007 22:08:03 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <46E9AD88.7070400@zytor.com>
-In-Reply-To: <46E9AD88.7070400@zytor.com>
+	Sun, 16 Sep 2007 15:58:33 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57097 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbXIPT6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 15:58:33 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46ED8AD0.2040004@s5r6.in-berlin.de>
+Date: Sun, 16 Sep 2007 21:58:08 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, Ben Collins <ben.collins@ubuntu.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>
+Subject: Re: regression: fireware causes oops during system
+References: <20070911190043.GA1577@elf.ucw.cz> <20070916175424.GB11983@elf.ucw.cz> <46ED78DF.2020609@s5r6.in-berlin.de> <200709162152.24793.rjw@sisk.pl>
+In-Reply-To: <200709162152.24793.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709162208.03768.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 13 September 2007 23:37, H. Peter Anvin wrote:
-> Pavel, want to look at the patch before sending it to Linus?
+Rafael J. Wysocki wrote:
+>> Pavel Machek wrote:
+>>> commit 831441862956fffa17b9801db37e6ea1650b0f69
+>>> tree b0334921341f8f1734bdd3243de76d676329d21c
+>>> parent 787d2214c19bcc9b6ac48af0ce098277a801eded
+>>> author Rafael J. Wysocki <rjw@sisk.pl> Tue, 17 Jul 2007 04:03:35 -0700
+>>> committer Linus Torvalds <torvalds@woody.linux-foundation.org> Tue, 17
+>>> Jul 2007 10:23:02 -0700
+>>>
+>>>     Freezer: make kernel threads nonfreezable by default
+> 
+> Well, I don't think so.
+> 
+> nodemgr_host_thread() calls set_freezable() as it should.
 
-Many thanks for taking care of this!
+This commit is certainly OK, as it should merely preserve status quo.
+Also note that Pavel wrote in his initial post that the problem became
+apparent way after -rc1.  Full quote:
 
-We already have a patch in -mm, s2ram-kill-old-debugging-junk.patch from Pavel
-(http://marc.info/?l=linux-mm-commits&m=118737955611331&w=1), that removes the
-#ifdefed blocks and it clashes with your first patch a bit.
+| I noticed empty suspend stopped working around 2.6.23-rc4, and it is
+| still present in 2.6.23-rc6. To reproduce
+|
+| swapoff -a
+| echo disk > /sys/power/state
+| echo disk > /sys/power/state
+|
+| Unsetting
+|
+| CONFIG_IEEE1394=y
+|
+| solves the problem.
 
-FYI, I have rebased your first patch on top of the Pavel's patch:
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc6/patches/39-acpi-video-mode-fix.patch
-
-Greetings,
-Rafael
+-- 
+Stefan Richter
+-=====-=-=== =--= =----
+http://arcgraph.de/sr/
