@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbXIPRYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753433AbXIPR2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379AbXIPRYM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 13:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXIPRX6
+	id S1753433AbXIPR2s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 13:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXIPR2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 13:23:58 -0400
-Received: from postfix1-g20.free.fr ([212.27.60.42]:54939 "EHLO
-	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbXIPRX6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 13:23:58 -0400
-Date: Sun, 16 Sep 2007 19:26:38 +0200
-From: FD Cami <francois.cami@free.fr>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: scheduler improvements : 2.6.21 vs 2.6.22-ck1 vs 2.6.23-rc6
-Message-Id: <20070916192638.c010a4fd.francois.cami@free.fr>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.10.14; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 16 Sep 2007 13:28:41 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1417 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751766AbXIPR2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 13:28:40 -0400
+Date: Sun, 16 Sep 2007 19:29:04 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Jan Beulich <jbeulich@novell.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tristate choices with mixed tristate and boolean values
+In-Reply-To: <46E55B7A.76E4.0078.0@novell.com>
+Message-ID: <Pine.LNX.4.64.0709161919350.1817@scrub.home>
+References: <46E55B7A.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Warning: I have not run any benchmarks. One thing I am (more or less)
-able to measure is my own ability to headshot in some games like UT99.
-The other thing is to see if flash videos stutter or die under load.
-Please remember, this is about desktop usage - not numbers. 
+On Mon, 10 Sep 2007, Jan Beulich wrote:
 
-my computer:
-PIII-S 1400 (512KB L2)
-TUSL2-C (i815ep)
-512MB PC133
-FireGL 8800 (~Radeon 8500 128MB) with dri drivers
+> --- linux-2.6.23-rc5/scripts/kconfig/menu.c	2007-09-07 16:48:23.000000000 +0200
+> +++ 2.6.23-rc5-tristate-choices/scripts/kconfig/menu.c	2007-09-03 10:29:41.000000000 +0200
+> @@ -235,16 +235,23 @@ void menu_finalize(struct menu *parent)
+>  	sym = parent->sym;
+>  	if (parent->list) {
+>  		if (sym && sym_is_choice(sym)) {
+> -			/* find the first choice value and find out choice type */
+> +			/* find out choice type */
+> +			enum symbol_type type = S_UNKNOWN;
+> +
+>  			for (menu = parent->list; menu; menu = menu->next) {
+> -				if (menu->sym) {
+> -					current_entry = parent;
+> -					menu_set_type(menu->sym->type);
+> -					current_entry = menu;
+> -					menu_set_type(sym->type);
+> -					break;
+> +				if (menu->sym && menu->sym->type != S_UNKNOWN) {
+> +					if (type == S_UNKNOWN)
+> +						type = menu->sym->type;
+> +					if (type != S_BOOLEAN)
+> +						break;
+> +					if (menu->sym->type == S_TRISTATE) {
+> +						type = S_TRISTATE;
+> +						break;
+> +					}
+>  				}
+>  			}
+> +			current_entry = parent;
+> +			menu_set_type(type);
+>  			parentdep = expr_alloc_symbol(sym);
+>  		} else if (parent->prompt)
+>  			parentdep = parent->prompt->visible.expr;
 
+If I understand it correctly this makes possible to override the type of 
+choice symbol, so this loop should only be done if the type is not 
+S_UNKNOWN.
 
-Hello Ingo, LKML,
+> @@ -253,7 +260,16 @@ void menu_finalize(struct menu *parent)
+>  
+>  		for (menu = parent->list; menu; menu = menu->next) {
+>  			basedep = expr_transform(menu->dep);
+> -			basedep = expr_alloc_and(expr_copy(parentdep), basedep);
+> +			dep = parentdep;
+> +			if (sym && sym_is_choice(sym) && menu->sym) {
+> +				enum symbol_type type = menu->sym->type;
+> +
+> +				if (type == S_UNKNOWN)
+> +					type = sym->type;
+> +			     if (type != S_TRISTATE)
+> +					dep = expr_alloc_comp(E_EQUAL, sym, &symbol_yes);
+> +			}
+> +			basedep = expr_alloc_and(expr_copy(dep), basedep);
+>  			basedep = expr_eliminate_dups(basedep);
+>  			menu->dep = basedep;
+>  			if (menu->sym)
 
-Here are the results of a few informal tests (flash videos, playing
-UT99, and looping kernel compilation in background).
+Hmm, if you want to do it this way, I'd prefer you add a parentdep_bool 
+and simply do:
 
-* 2.6.21.5 is OK but interactivity is not good (i.e. I sometimes
-  get "lag" under load).
+	dep = (menu->sym && menu->sym->type != S_TRISTATE) ? 
+		parentdep_bool : parentdep;
 
-* 2.6.22-ck1 is better, interactivity-wise, but becomes unusable under
-  load (i.e. a kernel compilation + desktop switch breaks flash
-  videos ; UT99 is too slow when compiling too).
+Otherwise it looks ok.
 
-* 2.6.23-rc6 is... perfect, as good as can be on my old PC. Flash never
-  breaks even on high I/O or compilation load (within reasonable
-  limits). Gaming is great, which wasn't the case before.
-
-Thanks for the good work.
-
-Best,
-
-François
+bye, Roman
