@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbXIPRDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbXIPRIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753205AbXIPRDY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 13:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbXIPRDR
+	id S1753286AbXIPRIY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 13:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbXIPRIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 13:03:17 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:7124 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413AbXIPRDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 13:03:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D7aTY07Vw1b2T4qLeG6OV+klnAqQIJOeOovDjwdzqVyjSFMfpuKlQBRt7i9TJzXfUpxnUFbUDWCcR6NOTcUAnLCpxHU/8hr77Zeh7m5Si2RifPrNea61240rqW83dSjRMzZKS8Ff3dluh0fPaGCFQ0a9rTL/m9Buh9GaStDKwe0=
-Message-ID: <8b67d60709161003y45acf119n2295914a4d8bdd0f@mail.gmail.com>
-Date: Sun, 16 Sep 2007 18:03:14 +0100
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: SPARC{,64}: kernel_termios_to_user_termios_1 missing
-Cc: "David Miller" <davem@davemloft.net>, vonbrand@inf.utfsm.cl,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070916004231.cf2df744.akpm@linux-foundation.org>
+	Sun, 16 Sep 2007 13:08:17 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1272 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751413AbXIPRIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 13:08:16 -0400
+Date: Sun, 16 Sep 2007 19:07:55 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Matej Laitl <strohel@gmail.com>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] menuconfig: distinguish between selected-by-another
+ options and comments
+In-Reply-To: <200709152004.11930.strohel@gmail.com>
+Message-ID: <Pine.LNX.4.64.0709161906440.1818@scrub.home>
+References: <200709152004.11930.strohel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200709152137.l8FLbtXP001446@laptop13.inf.utfsm.cl>
-	 <20070915.153602.74747413.davem@davemloft.net>
-	 <20070916004231.cf2df744.akpm@linux-foundation.org>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811837-936544445-1189962475=:1818"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/09/2007, Andrew Morton <akpm@linux-foundation.org> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->
-> Hopefully bb8bd3a52a5dbca8bea31bfc72dacfb384170e69 (merged six hours ago)
-> will have fixed this.  It Works For Me.
+---1463811837-936544445-1189962475=:1818
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-It also works on SH4
+Hi,
+
+On Sat, 15 Sep 2007, Matej Laitl wrote:
+
+> menuconfig currently represents options implied by another option ('selec=
+t'
+> directive in Kconfig) by prefixing them with '---'. Unfortunately the sam=
+e
+> notation is used for comments.
+>=20
+> This patch changes notation of selected-by-another items by introducing 2=
+ new
+> representations for implied options:
+> {*} or {M} for options selected by another modularized one, thus builtin =
+or
+> module capable,
+> -*- or -M- for options that cannot be at the moment changed by user.
+
+I shortly considered doing something like this, but initially I wanted to
+keep it simple. It's a compromise between overloading the user interface
+with information and keeping it simple. That's the only concern I have
+with it, but if everyone else likes I don't mind either. :)
+
+> Signed-off-by: Mat=C4=9Bj Laitl <strohel@gmail.com>
+
+Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+
+bye, Roman
+---1463811837-936544445-1189962475=:1818--
