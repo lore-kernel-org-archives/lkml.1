@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbXIPUDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbXIPUGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbXIPUDw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 16:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXIPUDp
+	id S1753818AbXIPUGf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 16:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXIPUG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 16:03:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51970 "EHLO ogre.sisk.pl"
+	Sun, 16 Sep 2007 16:06:28 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55080 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbXIPUDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 16:03:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: regression: fireware causes oops during system
-Date: Sun, 16 Sep 2007 22:16:01 +0200
-User-Agent: KMail/1.9.5
-Cc: Ben Collins <ben.collins@ubuntu.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux1394-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>
-References: <20070911190043.GA1577@elf.ucw.cz> <200709162152.24793.rjw@sisk.pl> <46ED8AD0.2040004@s5r6.in-berlin.de>
-In-Reply-To: <46ED8AD0.2040004@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1752192AbXIPUG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 16:06:27 -0400
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       Matthew Wilcox <matthew@wil.cx>, Shaohua Li <shaohua.li@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <46EA00DA.6010704@shaw.ca>
+References: <fa.ggBqx6W3i6hfs6jdfg64oXKSxW8@ifi.uio.no>
+	 <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no>
+	 <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no>
+	 <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no>
+	 <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no>
+	 <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no>  <46EA00DA.6010704@shaw.ca>
+Content-Type: text/plain
+Date: Sun, 16 Sep 2007 22:06:16 +0200
+Message-Id: <1189973176.6403.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709162216.02448.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 16 September 2007 21:58, Stefan Richter wrote:
-> Rafael J. Wysocki wrote:
-> >> Pavel Machek wrote:
-> >>> commit 831441862956fffa17b9801db37e6ea1650b0f69
-> >>> tree b0334921341f8f1734bdd3243de76d676329d21c
-> >>> parent 787d2214c19bcc9b6ac48af0ce098277a801eded
-> >>> author Rafael J. Wysocki <rjw@sisk.pl> Tue, 17 Jul 2007 04:03:35 -0700
-> >>> committer Linus Torvalds <torvalds@woody.linux-foundation.org> Tue, 17
-> >>> Jul 2007 10:23:02 -0700
-> >>>
-> >>>     Freezer: make kernel threads nonfreezable by default
-> > 
-> > Well, I don't think so.
-> > 
-> > nodemgr_host_thread() calls set_freezable() as it should.
+On Thu, 2007-09-13 at 21:32 -0600, Robert Hancock wrote:
 > 
-> This commit is certainly OK, as it should merely preserve status quo.
-> Also note that Pavel wrote in his initial post that the problem became
-> apparent way after -rc1.  Full quote:
-> 
-> | I noticed empty suspend stopped working around 2.6.23-rc4, and it is
-> | still present in 2.6.23-rc6. To reproduce
-> |
-> | swapoff -a
-> | echo disk > /sys/power/state
-> | echo disk > /sys/power/state
-> |
-> | Unsetting
-> |
-> | CONFIG_IEEE1394=y
-> |
-> | solves the problem.
+> If we do encounter other devices that choke on having the BAR
+> disabled 
+> during probing then we can add additional quirk logic, but we haven't 
+> run into anything like that yet.
 
-Yes.
+Well... if the device needs to be accessed to service an interrupt then
+you do have a problem. For example... the PIC :-)
 
-I thought that there might be a later change that exposed a bug in it.
+Problem is.. it's not practical nor really feasible generally to have
+IRQs off on all CPUs during PCI probing neither... Unless we define that
+the initial boot time probing is "special", and the first pass that
+actually probes devices (and doesn't muck around with the sysfs
+hierarchy etc...) can be run in a special context with all interrupt
+servicing disabled on the PIC, though that will require some arch
+support.
 
-Hm.  Pavel, can you do
+Ben.
 
-# echo test > /sys/power/disk
-# echo disk > /sys/power/state
 
-and see what happens?
-
-Greetings,
-Rafael
