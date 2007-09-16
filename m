@@ -1,95 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753433AbXIPR2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbXIPRf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753433AbXIPR2s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 13:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXIPR2l
+	id S1753524AbXIPRf2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 13:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXIPRfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 13:28:41 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1417 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbXIPR2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 13:28:40 -0400
-Date: Sun, 16 Sep 2007 19:29:04 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Jan Beulich <jbeulich@novell.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tristate choices with mixed tristate and boolean values
-In-Reply-To: <46E55B7A.76E4.0078.0@novell.com>
-Message-ID: <Pine.LNX.4.64.0709161919350.1817@scrub.home>
-References: <46E55B7A.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 16 Sep 2007 13:35:20 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:29460 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbXIPRfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 13:35:19 -0400
+Date: Sun, 16 Sep 2007 11:34:35 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+In-reply-to: <20070916151355.A18508@jurassic.park.msu.ru>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Message-id: <46ED692B.3010004@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no>
+ <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no>
+ <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no>
+ <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no>
+ <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no> <46EA00DA.6010704@shaw.ca>
+ <20070914151401.A5586@jurassic.park.msu.ru> <46EA9B23.7030709@shaw.ca>
+ <20070914192913.A6668@jurassic.park.msu.ru> <46EB1F16.8060209@shaw.ca>
+ <20070916151355.A18508@jurassic.park.msu.ru>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ivan Kokshaysky wrote:
+> On Fri, Sep 14, 2007 at 05:53:58PM -0600, Robert Hancock wrote:
+>> In the first one, Linus talks about a USB controller whose SMM code 
+>> chokes on the BAR being disabled. That explanation seems odd to me. If 
+>> it chokes on the BAR disabled, how doesn't it choke on the BAR being 
+>> moved to a different location, which is unavoidable during probing?
+> 
+> Here is an article with detailed explanation of that USB issue:
+> 
+>  http://support.microsoft.com/kb/250635
+> 
+> The most interesting fact there is that windows *does not* clear
+> PCI_COMMAND_MEMORY bits during PCI bus enumeration, so BIOS writers
+> have to rely on that. Yet another reason why your patch is unsafe.
 
-On Mon, 10 Sep 2007, Jan Beulich wrote:
+Windows 98 doesn't, it says. That doesn't say anything about what newer 
+versions of Windows are doing (like Vista, which is the first to 
+actually use MMCONFIG).
 
-> --- linux-2.6.23-rc5/scripts/kconfig/menu.c	2007-09-07 16:48:23.000000000 +0200
-> +++ 2.6.23-rc5-tristate-choices/scripts/kconfig/menu.c	2007-09-03 10:29:41.000000000 +0200
-> @@ -235,16 +235,23 @@ void menu_finalize(struct menu *parent)
->  	sym = parent->sym;
->  	if (parent->list) {
->  		if (sym && sym_is_choice(sym)) {
-> -			/* find the first choice value and find out choice type */
-> +			/* find out choice type */
-> +			enum symbol_type type = S_UNKNOWN;
-> +
->  			for (menu = parent->list; menu; menu = menu->next) {
-> -				if (menu->sym) {
-> -					current_entry = parent;
-> -					menu_set_type(menu->sym->type);
-> -					current_entry = menu;
-> -					menu_set_type(sym->type);
-> -					break;
-> +				if (menu->sym && menu->sym->type != S_UNKNOWN) {
-> +					if (type == S_UNKNOWN)
-> +						type = menu->sym->type;
-> +					if (type != S_BOOLEAN)
-> +						break;
-> +					if (menu->sym->type == S_TRISTATE) {
-> +						type = S_TRISTATE;
-> +						break;
-> +					}
->  				}
->  			}
-> +			current_entry = parent;
-> +			menu_set_type(type);
->  			parentdep = expr_alloc_symbol(sym);
->  		} else if (parent->prompt)
->  			parentdep = parent->prompt->visible.expr;
+> 
+>> Also, I think we do USB handoff from the BIOS much earlier than we used 
+>> to, which likely prevents these issues.
+> 
+> I don't think so. This can only be done in USB driver, which cannot run
+> before PCI device discovery.
 
-If I understand it correctly this makes possible to override the type of 
-choice symbol, so this loop should only be done if the type is not 
-S_UNKNOWN.
+Check the code. We have a quirk to handle this, in 
+drivers/usb/host/pci-quirks.c
 
-> @@ -253,7 +260,16 @@ void menu_finalize(struct menu *parent)
->  
->  		for (menu = parent->list; menu; menu = menu->next) {
->  			basedep = expr_transform(menu->dep);
-> -			basedep = expr_alloc_and(expr_copy(parentdep), basedep);
-> +			dep = parentdep;
-> +			if (sym && sym_is_choice(sym) && menu->sym) {
-> +				enum symbol_type type = menu->sym->type;
-> +
-> +				if (type == S_UNKNOWN)
-> +					type = sym->type;
-> +			     if (type != S_TRISTATE)
-> +					dep = expr_alloc_comp(E_EQUAL, sym, &symbol_yes);
-> +			}
-> +			basedep = expr_alloc_and(expr_copy(dep), basedep);
->  			basedep = expr_eliminate_dups(basedep);
->  			menu->dep = basedep;
->  			if (menu->sym)
+> 
+>> In the second one, he mentions that "So the secondary rule to "don't 
+>> turnoff MEM or IO accesses" is "never allocate real PCI BAR resources at 
+>> the top of memory". Well, unfortunately, the second one isn't possible 
+>> to meet given that we have boards with the MMCONFIG up there, so 
+>> disabling the decode is the only thing we can do. That whole discussion 
+>> was also based on the fact that it wasn't necessary to solve problems. 
+>> This is no longer a theoretical problem. We now have real problems that 
+>> we need this in order to solve.
+> 
+> I have suggested a *practical* solution that disables the decode only
+> when it's unavoidable. If it's not sufficient for some machines, it
+> can be extended quite easily.
+> 
+>>> No, it's impossible for several reasons. Most obvious one is that a PCI-E
+>>> bridge does isolate stuff quite nicely.
+>> It's not impossible at all. In fact I'm quite sure (Jesse can confirm) 
+>> that in the case of the board he was using, it was an add-in graphics 
+>> card where he saw this problem.
+> 
+> Again, it's impossible with AGP or PCI-E cards, which are always separated
+> from the root bus by AGP or PCI-E bridge. The bridge does decode in the
+> first place, so when you write the BAR with all ones, you move it outside
+> the bridge decoding window. Address collision isn't possible in this
+> case in principle.
 
-Hmm, if you want to do it this way, I'd prefer you add a parentdep_bool 
-and simply do:
+And yet, something was clearly happening to cause this. Jesse, what were 
+the bridge decode windows (shown in lspci -v) on one of those boards 
+that was having issues?
 
-	dep = (menu->sym && menu->sym->type != S_TRISTATE) ? 
-		parentdep_bool : parentdep;
+> 
+>> The fact is that in the case of MMCONFIG overlap with PCI BARs, which 
+>> one takes priority is completely undefined. In the case of this Intel 
+>> chipset, clearly the PCI Express device connected to the northbridge had 
+>> higher decode priority than the MMCONFIG aperture.
+> 
+> Another possible solution is not to use mmconfig for bar sizing at all,
+> if it's *that* broken. It would be more complicated though, since it
+> probably requires changes to all architectures.
 
-Otherwise it looks ok.
+It's not broken at all, it just requires that we not do silly things 
+like stick enabled decode regions over top of the aperture.
 
-bye, Roman
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
