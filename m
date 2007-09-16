@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbXIPTxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXIPTzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752957AbXIPTxQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 15:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbXIPTxB
+	id S1753199AbXIPTzI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 15:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXIPTy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 15:53:01 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52855 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbXIPTxA (ORCPT
+	Sun, 16 Sep 2007 15:54:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60768 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751196AbXIPTy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 15:53:00 -0400
-Date: Sun, 16 Sep 2007 13:52:59 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <gregkh@suse.de>,
-       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+	Sun, 16 Sep 2007 15:54:57 -0400
+Date: Sun, 16 Sep 2007 21:55:16 +0200
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
-Message-ID: <20070916195258.GC28350@parisc-linux.org>
-References: <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no> <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no> <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no> <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no> <46EA00DA.6010704@shaw.ca> <20070914151401.A5586@jurassic.park.msu.ru> <46EA9B23.7030709@shaw.ca> <20070914192913.A6668@jurassic.park.msu.ru> <46EB1F16.8060209@shaw.ca> <20070916151355.A18508@jurassic.park.msu.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070916151355.A18508@jurassic.park.msu.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fujitsu application panel driver (rev3)
+Message-ID: <20070916215516.2934abad@oldman.hemminger.net>
+In-Reply-To: <200709140130.59732.dtor@insightbb.com>
+References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
+	<20070907120220.GB3901@ucw.cz>
+	<20070912133836.5bc87768@oldman>
+	<200709140130.59732.dtor@insightbb.com>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 03:13:55PM +0400, Ivan Kokshaysky wrote:
-> Another possible solution is not to use mmconfig for bar sizing at all,
-> if it's *that* broken. It would be more complicated though, since it
-> probably requires changes to all architectures.
+On Fri, 14 Sep 2007 01:30:58 -0400
+Dmitry Torokhov <dtor@insightbb.com> wrote:
 
-I don't think it would be that complicated.  We could just delay probing
-for mmconfig until after the pci bus probes are done.  No changes to
-other architectures needed.
+> Hi Stephen,
+> 
+> On Wednesday 12 September 2007 07:38, Stephen Hemminger wrote:
+> > This driver supports the application buttons on some Fujitsu Lifebook laptops.
+> > It is based on the earlier apanel driver done by Jochen Eisenger, but
+> > with many changes.  The original driver used ioctl's and a separate
+> > user space program;  see http://apanel.sourceforge.net/tech.php
+> > This version hooks into the input subsystem so that the normal
+> > Gnome/KDE shortcuts work without any userspace changes.
+> > 
+> > The Mail Led is handled via leds class device.
+> > 
+> 
+> Thank you very much for convering the led to led subsystem. I tried
+> implementing loadable keymap support in the driver, could you please
+> try the patch below and if it still works for you then I will apply
+> it to my tree.
+> 
 
-I'm really disappointed with mmconfig.  Here was a great chance to get
-rid of all the sucky performance problems of the past, and BIOS writers
-and chipset designers have fucked up the implementation so much that
-it's now the ugliest method for getting to pci config space.  And it's
-the *only* method of getting to extended config space.
+Sorry, you are raising the bar for new drivers, higher than existing code.
+It is really bad (second system syndrome), if maintainers keep wanting
+new code to to more than existing drivers.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Please take driver AS IS. Go ahead and add loadable key map support,
+but fix all the other drivers in the tree at the same time that use the existing
+interface.
+
