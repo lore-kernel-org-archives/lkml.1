@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbXIPS3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbXIPSbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbXIPS3Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 14:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXIPS3D
+	id S1753986AbXIPSbs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 14:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXIPSbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 14:29:03 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48099 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752186AbXIPS3B (ORCPT
+	Sun, 16 Sep 2007 14:31:39 -0400
+Received: from lazybastard.de ([212.112.238.170]:58637 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbXIPSbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 14:29:01 -0400
-Date: Sun, 16 Sep 2007 20:28:59 +0200
-From: Andi Kleen <andi@firstfloor.org>
+	Sun, 16 Sep 2007 14:31:38 -0400
+Date: Sun, 16 Sep 2007 20:21:37 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: crashme fault
-Message-ID: <20070916182859.GF14501@one.firstfloor.org>
-References: <alpine.LFD.0.999.0709142101140.16478@woody.linux-foundation.org> <20070915183412.GA14501@one.firstfloor.org> <46EC2702.3090000@oracle.com> <alpine.LFD.0.999.0709151224400.16478@woody.linux-foundation.org> <alpine.LFD.0.999.0709151508590.16478@woody.linux-foundation.org> <alpine.LFD.0.999.0709151542340.16478@woody.linux-foundation.org> <46EC6F2A.5090008@oracle.com> <alpine.LFD.0.999.0709151727180.16478@woody.linux-foundation.org> <20070916094001.d87ed0f0.randy.dunlap@oracle.com> <alpine.LFD.0.999.0709161004080.16478@woody.linux-foundation.org>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Andrea Arcangeli <andrea@suse.de>,
+       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Message-ID: <20070916182136.GC2393@lazybastard.org>
+References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070915155100.GA21861@v2.random> <87tzpvy9cb.fsf@informatik.uni-tuebingen.de> <20070915223032.GA6708@v2.random> <20070916174657.GA2393@lazybastard.org> <alpine.LFD.0.999.0709161112410.16478@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709161004080.16478@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.0.999.0709161112410.16478@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 10:14:46AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sun, 16 Sep 2007, Randy Dunlap wrote:
+On Sun, 16 September 2007 11:15:36 -0700, Linus Torvalds wrote:
+> On Sun, 16 Sep 2007, Jörn Engel wrote:
 > > 
-> > I'll apply this patch today, but I haven't done so yet (for the 2
-> > bug reports below).
+> > I have been toying with the idea of having seperate caches for pinned
+> > and movable dentries.  Downside of such a patch would be the number of
+> > memcpy() operations when moving dentries from one cache to the other.
 > 
-> Actually, it's probably better that you don't change your situation 
-> unnecessarily, in case the bug goes away.
+> Totally inappropriate.
+> 
+> I bet 99% of all "dentry_lookup()" calls involve turning the last dentry 
+> from having a count of zero ("movable") to having a count of 1 ("pinned").
+> 
+> So such an approach would fundamentally be broken. It would slow down all 
+> normal dentry lookups, since the *common* case for leaf dentries is that 
+> they have a zero count.
 
-I checked the Prescott Specification Update, but didn't seen anything
-that could cause such strange faults.
+Why am I not surprised? :)
 
-I'm trying to reproduce it here.
+> So it's much better to do it on a "directory/file" basis, on the 
+> assumption that files are *mostly* movable (or just freeable). The fact 
+> that they aren't always (ie while kept open etc), is likely statistically 
+> not all that important.
 
--Andi
+My approach is to have one for mount points and ramfs/tmpfs/sysfs/etc.
+which are pinned for their entire lifetime and another for regular
+files/inodes.  One could take a three-way approach and have
+always-pinned, often-pinned and rarely-pinned.
 
+We won't get never-pinned that way.
+
+Jörn
+
+-- 
+The wise man seeks everything in himself; the ignorant man tries to get
+everything from somebody else.
+-- unknown
