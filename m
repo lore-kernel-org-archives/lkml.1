@@ -1,94 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbXIPNoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbXIPNo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753415AbXIPNoh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 09:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbXIPNo0
+	id S1753853AbXIPNo6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 09:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXIPNou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 09:44:26 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:48721 "EHLO 2ka.mipt.ru"
+	Sun, 16 Sep 2007 09:44:50 -0400
+Received: from www.tglx.de ([213.239.205.147]:40076 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbXIPNoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 09:44:25 -0400
-Date: Sun, 16 Sep 2007 17:43:45 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andreas Dilger <adilger@clusterfs.com>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Move away from char device ioctls.
-Message-ID: <20070916134345.GA8059@2ka.mipt.ru>
-References: <20070914185429.GA9439@2ka.mipt.ru> <46EADC02.9070409@garzik.org> <20070915122957.GA25752@2ka.mipt.ru> <20070915172446.GC2990@schatzie.adilger.int>
+	id S1752722AbXIPNot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 09:44:49 -0400
+X-Greylist: delayed 87384 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Sep 2007 09:44:49 EDT
+Subject: clockevents - regression fixes for 2.6.23
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 16 Sep 2007 15:44:47 +0200
+Message-Id: <1189950287.4319.18.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070915172446.GC2990@schatzie.adilger.int>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 15, 2007 at 11:24:46AM -0600, Andreas Dilger (adilger@clusterfs.com) wrote:
-> > When Chris Mason announced btrfs, I found that quite a few new ideas 
-> > are already implemented there, so I postponed project (although
-> > direction of the developement of the btrfs seems to move to the zfs side
-> > with some questionable imho points, so I think I can jump to the wagon
-> > of new filesystems right now). 
-> 
-> This is an area I'm always a bit sad about in OSS development - the need
-> everyone has to make a new {fs, editor, gui, etc} themselves instead of
-> spending more time improving the work we already have.  Imagine where the
+Linus,
 
-If that would be true, we would be still in the stone age. 
-Or not, actually I think the first cell in the universe would not bother 
-itself dividing into the two just because it could spent infinite time 
-trying to make itself better.
+please pull the clockevents regression fixes from my hrt tree.
 
-> internet would be (or not) if there were 50 different network protocols
-> instead of TCP/IP?  If you don't like some things about btrfs, maybe you
-> can fix them?
+Thanks,
+	tglx
 
-When some idea is implemented it is virtually impossible to change it,
-only recreate new one with fixed issues. So, we have multiple ext,
-reiser and many others. I do not say btrfs is broken or has design
-problems, it is really interesting filesystem, but all we have our own 
-opinions about how things should be done, that's it.
+The following changes since commit d0174640eedc1cd756754f03afe2dbb3d56de74e:
+  Linus Torvalds (1):
+        Merge branch 'upstream-linus' of master.kernel.org:/.../jgarzik/netdev-2.6
 
-Btw, we do have so many network protocols for different purposes, that
-number of (storage) filesystems is negligebly small compared to it. 
-Internet as is popular today is just a subset of where network is used.
+are available in the git repository at:
 
-And we do invent new protocols each time we need something new, which
-does not fit into existing models (for example TCP by design can not
-work with very long-distance links with tooo long RTT). We have sctp to
-fix some tcp issues. Number of IP layer 'neighbours' is even more.
-Physical media layer has many different protocols too.
-And that is just what exists in the linux tree...
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git for-2.6.23
 
-> To be honest, developing a new filesystem that is actually widely useful
-> and used is a very time consuming task (see Reiserfs and Reiser4).  It
-> takes many years before the code is reliable enough for people to trust it,
-> so most likely any effort you put into this would be wasted unless you can
-> come up with something that is dramatically better than something existing.
+Thomas Gleixner (5):
+      timekeeping: access rtc outside of xtime lock
+      timekeeping: Prevent time going backwards on resume
+      clockevents: Enforce oneshot broadcast when broadcast mask is set on resume
+      clockevents: do not shutdown the oneshot broadcast device
+      clockevents: prevent stale tick update on offline cpu
 
-Yep, I know. 
-Wasting my time is one of the most pleasant things I ever tried in my life.
+Venkatesh Pallipadi (1):
+      ACPI: Reevaluate C/P/T states when a cpu becomes online
 
-> The part that bothers me is that this same effort could have been used to
-> improve something that more people would use (btrfs in this case).  Of
-> course, sometimes the new code is substantially better than what currently
-> exists, and I think btrfs may have laid claim to the current generation of
-> filesystems.
+ drivers/acpi/processor_core.c |   21 +++++++++++++++++++++
+ kernel/time/tick-broadcast.c  |   24 ++++++++++++++++--------
+ kernel/time/tick-sched.c      |   12 ++++++++++++
+ kernel/time/timekeeping.c     |   10 +++++++++-
+ 4 files changed, 58 insertions(+), 9 deletions(-)
 
-Call me greedy bastard, but I do not care about world happiness, it is
-just impossible to achieve. So I like what I do right now.
-If it will be rest under the layer of dust I do not care, I like the
-process of creating, so if it will fail, I just will get new knowledge.
 
-:)
-
-> Cheers, Andreas
-> --
-> Andreas Dilger
-> Principal Software Engineer
-> Cluster File Systems, Inc.
-
--- 
-	Evgeniy Polyakov
