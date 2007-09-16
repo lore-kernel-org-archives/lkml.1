@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbXIPSSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbXIPSZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbXIPSSn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 14:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXIPSSe
+	id S1753833AbXIPSZE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 14:25:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbXIPSYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 14:18:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35020 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751773AbXIPSSd (ORCPT
+	Sun, 16 Sep 2007 14:24:55 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:65417 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbXIPSYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 14:18:33 -0400
-Date: Sun, 16 Sep 2007 11:15:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?iso-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>
-cc: Andrea Arcangeli <andrea@suse.de>,
-       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <20070916174657.GA2393@lazybastard.org>
-Message-ID: <alpine.LFD.0.999.0709161112410.16478@woody.linux-foundation.org>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au>
- <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org>
- <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070915155100.GA21861@v2.random>
- <87tzpvy9cb.fsf@informatik.uni-tuebingen.de> <20070915223032.GA6708@v2.random>
- <20070916174657.GA2393@lazybastard.org>
+	Sun, 16 Sep 2007 14:24:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=tmjvIqwOjh9MiOPVkj1vnPpCBl7e8Mv/sWUOL6VqYtx5OzSaaRQfOyJa0OEWpguxIQEwf4vG78Jp4qPgmASZIgSzwuTvBl200jIu7jSASSOdjtfVyk2L1BXHmdp4y1RStsV+CERaggwbDyIY+8wHM8IlYjj1YEmF8NcOnou8VcI=
+From: Matej Laitl <strohel@gmail.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [PATCH v3] menuconfig: distinguish between selected-by-another options and comments
+Date: Sun, 16 Sep 2007 20:24:47 +0200
+User-Agent: KMail/1.9.7
+Cc: Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200709152004.11930.strohel@gmail.com> <200709161944.31780.strohel@gmail.com> <Pine.LNX.4.64.0709161955340.1817@scrub.home>
+In-Reply-To: <Pine.LNX.4.64.0709161955340.1817@scrub.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200709162024.48124.strohel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 16 of September 2007 19:59:56 Roman Zippel wrote:
+> Right now I prefer the previous version.
 
+The v2 was maybe more intuitive, but had at least one flaw, where it claimed
+the option was selected by another, while it was in fact only made
+unchangeable by 'bool "Enable block layer" if EMBEDDED', defaulting to y.
 
-On Sun, 16 Sep 2007, Jörn Engel wrote:
-> 
-> I have been toying with the idea of having seperate caches for pinned
-> and movable dentries.  Downside of such a patch would be the number of
-> memcpy() operations when moving dentries from one cache to the other.
+> This maximum value is overridden  
+> by the minimum value, so I wouldn't like it to be exported like this.
 
-Totally inappropriate.
+Where exactly does this happen? There are cases when maximum < minimum, for
+example when you <M> THINKPAD_ACPI, then <N> BACKLIGHT_LCD_SUPPORT. After that,
+BACKLIGHT_CLASS_DEVICE has minimum of 1 (selected by THINKPAD_ACPI) and maximum
+0 (depends on BACKLIGHT_LCD_SUPPORT, which is n)
 
-I bet 99% of all "dentry_lookup()" calls involve turning the last dentry 
-from having a count of zero ("movable") to having a count of 1 ("pinned").
+The function names are maybe suboptimal, I agree.
 
-So such an approach would fundamentally be broken. It would slow down all 
-normal dentry lookups, since the *common* case for leaf dentries is that 
-they have a zero count.
+> I would really like to see an example, where the new changes make a 
+> difference.
 
-So it's much better to do it on a "directory/file" basis, on the 
-assumption that files are *mostly* movable (or just freeable). The fact 
-that they aren't always (ie while kept open etc), is likely statistically 
-not all that important.
+Try saying <M> to MAC80211, wireless extensions were -*- with v2, now are (*) with v3.
+Also the symbols ( ), { } are changed and more well-defined in v3 IMHO.
 
-			Linus
+Regards,
+         MatÄ›j
