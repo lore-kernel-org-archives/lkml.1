@@ -1,123 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbXIQTLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXIQTNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbXIQTLP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 15:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXIQTK7
+	id S1756181AbXIQTNa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 15:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXIQTNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 15:10:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48667 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752594AbXIQTK6 (ORCPT
+	Mon, 17 Sep 2007 15:13:22 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:57542 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995AbXIQTNW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 15:10:58 -0400
-Date: Mon, 17 Sep 2007 12:10:57 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Ethan Solomita <solo@google.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/6] cpuset write dirty map
-In-Reply-To: <20070914161536.3ec5c533.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0709171200360.27542@schroedinger.engr.sgi.com>
-References: <469D3342.3080405@google.com> <46E741B1.4030100@google.com>
- <46E742A2.9040006@google.com> <20070914161536.3ec5c533.akpm@linux-foundation.org>
+	Mon, 17 Sep 2007 15:13:22 -0400
+Message-ID: <46EED1A7.5080606@linux.vnet.ibm.com>
+Date: Tue, 18 Sep 2007 00:42:39 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH mm] fix swapoff breakage; however...
+References: <Pine.LNX.4.64.0709171947130.15413@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0709171947130.15413@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Sep 2007, Andrew Morton wrote:
-
-> It'd be nice to see some discussion regarding the memory consumption of
-> this patch and the associated tradeoffs.
-
-On small NUMA system < 64 nodes you basically have an additional word 
-added to the address_space structure. On large NUMA we may have to 
-allocate very large per node arrays of up to 1024 nodes which may result 
-in 128 bytes used. However, the very large systems are rare thus we want 
-to do the allocation dynamically.
-
-> afacit there is no code comment and no changelog text which explains the
-> above design decision?  There should be, please.
-
-Hmmmm... There was an extensive discussion on that one early in the year 
-and I had it in the overview of the earlier releases. Ethan: Maybe get 
-that piece into the overview?
-
-> There is talk of making cpusets available with CONFIG_SMP=n.  Will this new
-> feature be available in that case?  (it should be).
-
-Yes. Cpuset with CONFIG_SMP=n has been run for years on IA64 with Tony 
-Luck's special configurations.
-
-> >  EXPORT_SYMBOL_GPL(cpuset_mem_spread_node);
-> >  
-> > +#if MAX_NUMNODES > BITS_PER_LONG
+Hugh Dickins wrote:
+> rc4-mm1's memory-controller-memory-accounting-v7.patch broke swapoff:
+> it extended unuse_pte_range's boolean "found" return code to allow an
+> error return too; but ended up returning found (1) as an error.
+> Replace that by success (0) before it gets to the upper level.
 > 
-> waah.  In other places we do "MAX_NUMNODES <= BITS_PER_LONG"
-
-So 
-
-#if !(MAX_NUMNODES <= BITS_PER_LONG)
-
-> > +/*
-> > + * Special functions for NUMA systems with a large number of nodes.
-> > + * The nodemask is pointed to from the address space structures.
-> > + * The attachment of the dirty_node mask is protected by the
-> > + * tree_lock. The nodemask is freed only when the inode is cleared
-> > + * (and therefore unused, thus no locking necessary).
-> > + */
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> More fundamentally, it looks like any container brought over its limit in
+> unuse_pte will abort swapoff: that doesn't doesn't seem "contained" to me.
+> Maybe unuse_pte should just let containers go over their limits without
+> error?  Or swap should be counted along with RSS?  Needs reconsideration.
 > 
-> hmm, OK, there's a hint as to wghat's going on.
+>  mm/swapfile.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> It's unobvious why the break point is at MAX_NUMNODES = BITS_PER_LONG and
-> we might want to tweak that in the future.  Yet another argument for
-> centralising this comparison.
+> --- 2.6.23-rc4-mm1/mm/swapfile.c	2007-09-07 13:09:42.000000000 +0100
+> +++ linux/mm/swapfile.c	2007-09-17 15:14:47.000000000 +0100
+> @@ -642,7 +642,7 @@ static int unuse_mm(struct mm_struct *mm
+>  			break;
+>  	}
+>  	up_read(&mm->mmap_sem);
+> -	return ret;
+> +	return (ret < 0)? ret: 0;
 
-A pointer has the size of BITS_PER_LONG. If we have less nodes then we 
-just waste memory and processing by having a pointer there.
+Thanks, for the catching this. There are three possible solutions
+
+1. Account each RSS page with a probable swap cache page, double
+   the RSS accounting to ensure that swapoff will not fail.
+2. Account for the RSS page just once, do not account swap cache
+   pages
+3. Follow your suggestion and let containers go over their limits
+   without error
+
+With the current approach, a container over it's limit will not
+be able to call swapoff successfully, is that bad?
+
+We plan to implement per container/per cpuset swap in the future.
+Given that, isn't this expected functionality. You are over it's
+limit cannot really swapoff a swap device. If we allow pages to
+be unused, we could end up with a container that could exceed
+it's limit by a significant amount by calling swapoff.
 
 
-> > +void cpuset_update_dirty_nodes(struct address_space *mapping,
-> > +			struct page *page)
-> > +{
-> > +	nodemask_t *nodes = mapping->dirty_nodes;
-> > +	int node = page_to_nid(page);
-> > +
-> > +	if (!nodes) {
-> > +		nodes = kmalloc(sizeof(nodemask_t), GFP_ATOMIC);
+>  }
 > 
-> Does it have to be atomic?  atomic is weak and can fail.
-> 
-> If some callers can do GFP_KERNEL and some can only do GFP_ATOMIC then we
-> should at least pass the gfp_t into this function so it can do the stronger
-> allocation when possible.
+>  /*
 
-This is called from __set_page_dirty_nobuffers. There is no allocation 
-context available at that point. If the allocation fails then we do not 
-allocate a tracking structure which means that no targeted writeout occurs.
 
-> > +void cpuset_clear_dirty_nodes(struct address_space *mapping)
-> > +{
-> > +	nodemask_t *nodes = mapping->dirty_nodes;
-> > +
-> > +	if (nodes) {
-> > +		mapping->dirty_nodes = NULL;
-> > +		kfree(nodes);
-> > +	}
-> > +}
-> 
-> Can this race with cpuset_update_dirty_nodes()?  And with itself?  If not,
-> a comment which describes the locking requirements would be good.
-
-You just quoted the comment above that explains the locking requirements. 
-Here it is again:
-
-/*
-+ * Special functions for NUMA systems with a large number of nodes.
-+ * The nodemask is pointed to from the address space structures.
-+ * The attachment of the dirty_node mask is protected by the
-+ * tree_lock. The nodemask is freed only when the inode is cleared
-+ * (and therefore unused, thus no locking necessary).
-+ */
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
