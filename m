@@ -1,409 +1,451 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932541AbXIQWYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932726AbXIQWZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932541AbXIQWYR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 18:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbXIQWYA
+	id S932726AbXIQWZl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 18:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbXIQWZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 18:24:00 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:47229 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754196AbXIQWX7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 18:23:59 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.22.6] nfsd: fh_verify() `malloc failure' with lots of free memory leads to NFS hang
-From: Nix <nix@esperi.org.uk>
-Emacs: because editing your files should be a traumatic experience.
-Date: Mon, 17 Sep 2007 23:23:46 +0100
-Message-ID: <874phtkk25.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-dcc1-Metrics: hades 1182; Body=1 Fuz1=1 Fuz2=1
+	Mon, 17 Sep 2007 18:25:32 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:40371 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755967AbXIQWZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 18:25:31 -0400
+Date: Tue, 18 Sep 2007 00:23:39 +0200
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: balbir@linux.vnet.ibm.com, Jonathan Lim <jlim@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jay Lan <jlan@cthulhu.engr.sgi.com>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Add all thread stats for TASKSTATS_CMD_ATTR_TGID (v5)
+Message-ID: <20070918002339.4a989377@localhost.localdomain>
+In-Reply-To: <20070915204239.4a6af65e@localhost.localdomain>
+References: <200708310302.l7V32ZpV410222@sabah.engr.sgi.com>
+	<46D7C23F.7020509@linux.vnet.ibm.com>
+	<20070831143535.2e4709c7@localhost.localdomain>
+	<20070912171816.f0993440.akpm@linux-foundation.org>
+	<20070915204239.4a6af65e@localhost.localdomain>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Back in early 2006 I reported persistent hangs on the NFS server,
-whereby all of a sudden about ten minutes after boot my primary NFS
-server would cease responding to NFS requests until it was rebooted.
-<http://www.ussg.iu.edu/hypermail/linux/kernel/0601.3/1631.html>
+TASKSTATS_CMD_ATTR_TGID used to return only the delay accounting stats, not
+the basic and extended accounting.  With this patch,
+TASKSTATS_CMD_ATTR_TGID also aggregates the accounting info for all threads
+of a thread group.  This makes TASKSTATS_CMD_ATTR_TGID usable in a similar
+fashion to TASKSTATS_CMD_ATTR_PID, for commands like iotop -P
+(http://guichaz.free.fr/misc/iotop.py).
 
-That time, the problem vanished when I switched to NFS-over-TCP:
-<http://www.ussg.iu.edu/hypermail/linux/kernel/0601.3/1773.html>
+Changelog since V4 (http://lkml.org/lkml/2007/9/15/171):
+- Revert gratuitous user interface change (returning exit_code >> 8 instead of
+exit_code). Thanks Oleg Nesterov.
+- Revert useless heavyweight locking (lock_task_sighand() in fill_tgid_exit).
+Thanks Oleg.
+- Correctly fill the TGID in taskstats_exit(). Thanks Oleg.
 
-Well, I just rebooted --- post-glibc-upgrade from 2.5 to 2.6.1, no
-kernel upgrade or anything, so this bug has been latent during at
-least my last three weeks of uptime. And it's back. (I've been
-seeing strange long pauses doing things like ls, and I suspect
-they are related: see below.)
+Changelog since V3 (http://lkml.org/lkml/2007/8/31/121):
+- Removed userspace example, either it gets accepted in util-linux-ng or I'll
+maintain it elsewhere.
+- Added kerneldoc for fill_threadgroup() and add_tsk().
+- Removed useless {get,put}_task_struct(leader) as spotted by Andrew Morton
+and Oleg Nesterov.
+- Use lock_task_sighand() instead of spin_lock_irqsave(&tsk->sighand->siglock)
+for consistency with the locking of task->signal->stats in fill_tgid().
+- Removed useless check for a NULL taskstats in fill_tgid_exit(). Thanks Oleg.
+- Documented double accounting race seen by Oleg.
+- Rephrased the fill_tgid_exit() comment as per Oleg's recommendation.
+- Documented the special case for the AFORK ac_flag.
+- Use the exit status (code >> 8) instead of the exit code as documented in
+Documentation/accounting/taskstats-struct.txt.
+- Use signal->group_exit_code if set for stats->ac_exitcode on a TGID as
+suggested by Oleg.
 
-/proc/sys/nfsd/exports on the freezing server:
+Changelog since V2 (http://lkml.org/lkml/2007/8/19/96):
+- Added a testcase
+- Added an indirection between the stats producer and consumer:
+add_task() & fill_threadgroup()
+- TGID stats are either summed from all the threads or taken from the leader
 
-# Version 1.1
-# Path Client(Flags) # IPs
-/usr/packages.bin/non-free      hades.wkstn.nix(rw,no_root_squash,async,wdelay,no_subtree_check,uuid=90a98d8a:a8be4806:aea3a4e1:fe3437a0)
-/home/.loki.wkstn.nix   esperi.srvr.nix(rw,root_squash,async,wdelay,no_subtree_check,uuid=8ff32fd3:a6114840:ab968da8:25b41721)
-/home/.loki.wkstn.nix   hades.wkstn.nix(rw,no_root_squash,async,wdelay,no_subtree_check,uuid=8ff32fd3:a6114840:ab968da8:25b41721)
-/usr/lib/X11/fonts      hades.wkstn.nix(ro,root_squash,async,wdelay,uuid=87553c5b:d84740fc:b7d9f7e8:4f749689)
-/usr/share/xplanet      hades.wkstn.nix(ro,root_squash,async,wdelay,uuid=87553c5b:d84740fc:b7d9f7e8:4f749689)
-/usr/share/xemacs       hades.wkstn.nix(rw,no_root_squash,async,wdelay,uuid=87553c5b:d84740fc:b7d9f7e8:4f749689)
-/usr/packages   hades.wkstn.nix(rw,no_root_squash,async,wdelay,no_subtree_check,uuid=2a35f82a:cca144df:a1123587:23527f53)
+Changelog since V1 (http://lkml.org/lkml/2007/8/2/185):
+- Update combined stats of exited threads in fill_tgid_exit() as
+suggested by Balbir Singh.
+- Very light cleanup of fill_tgid_exit() by the way.
+- bacct fields are also combined for all threads.
+- Instead of assuming memory stats are identical for all threads, we
+take the max of all threads.
 
-I turned on ALL-class nfsd debugging and here's what I see as it freezes
-up:
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: Balbir Singh <balbir@in.ibm.com>
+Cc: Jay Lan <jlan@engr.sgi.com>
+Cc: Jonathan Lim <jlim@sgi.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+---
 
-Sep 17 22:57:00 loki warning: kernel: nfsd_dispatch: vers 3 proc 1
-Sep 17 22:57:00 loki warning: kernel: nfsd: GETATTR(3)  36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab
-Sep 17 22:57:00 loki warning: kernel: nfsd: fh_verify(36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab)
-Sep 17 22:57:44 loki warning: kernel: nfsd_dispatch: vers 3 proc 4
-Sep 17 22:57:44 loki warning: kernel: nfsd: ACCESS(3)   36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab 0x1f
-Sep 17 22:57:44 loki warning: kernel: nfsd: fh_verify(36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab)
-Sep 17 22:57:45 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:57:52 loki warning: kernel: nfsd_dispatch: vers 3 proc 4
-Sep 17 22:57:52 loki warning: kernel: nfsd: ACCESS(3)   36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab 0x1f
-Sep 17 22:57:52 loki warning: kernel: nfsd: fh_verify(36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab)
-Sep 17 22:57:52 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:57:55 loki warning: kernel: nfsd_dispatch: vers 3 proc 4
-Sep 17 22:57:55 loki warning: kernel: nfsd: ACCESS(3)   36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab 0x1f
-Sep 17 22:57:55 loki warning: kernel: nfsd: fh_verify(36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab)
-Sep 17 22:57:55 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:58:50 hades notice: kernel: nfs: server loki not responding, still trying
-Sep 17 22:58:50 hades notice: kernel: nfs: server loki not responding, still trying
-Sep 17 22:58:55 hades notice: kernel: nfs: server loki not responding, still trying
-Sep 17 22:59:40 hades notice: kernel: nfs: server loki not responding, still trying
+ include/linux/tsacct_kern.h |   12 ++-
+ kernel/taskstats.c          |  135 +++++++++++++++++++++-------------
+ kernel/tsacct.c             |  113 ++++++++++++++++------------
+ 3 files changed, 159 insertions(+), 101 deletions(-)
 
-
->From then on, *every* fh_verify() request fails the same way, and
-obviously if you can't verify any fds you can't do much with NFS.
-
-Looking back in the log I see intermittent malloc failures starting
-almost as soon as I've booted (allowing a couple of minutes for me to
-turn debugging on):
-
-Sep 17 22:25:50 hades notice: kernel: nfs: server loki OK
-[...]
-Sep 17 22:28:09 loki warning: kernel: nfsd_dispatch: vers 3 proc 19
-Sep 17 22:28:09 loki warning: kernel: nfsd: FSINFO(3)   28: 00070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab
-Sep 17 22:28:09 loki warning: kernel: nfsd: fh_verify(28: 00070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab)
-Sep 17 22:28:09 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-
-A while later we start seeing runs of malloc failures, which I think
-correlated with the unexplained pauses in NFS response:
-
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 20480 bytes at 4096
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 28672 bytes at 53248
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 8192 bytes at 86016
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 8192 bytes at 98304
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 65536 bytes at 110592
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 65536 bytes at 176128
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 65536 bytes at 241664
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 53248 bytes at 307200
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 8192 bytes at 397312
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 12288 bytes at 413696
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:33:59 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:33:59 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 42652 bytes at 430080
-Sep 17 22:33:59 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:33:59 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-Sep 17 22:34:02 loki warning: kernel: found domain hades.wkstn.nix
-Sep 17 22:34:02 loki warning: kernel: found fsidtype 7
-Sep 17 22:34:02 loki warning: kernel: found fsid length 24
-Sep 17 22:34:02 loki warning: kernel: Path seems to be </usr/lib/X11/fonts>
-Sep 17 22:34:02 loki warning: kernel: Found the path /usr/lib/X11/fonts
-Sep 17 22:34:02 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-Sep 17 22:34:02 loki warning: kernel: nfsd: READ(3) 44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7 42652 bytes at 430080
-Sep 17 22:34:02 loki warning: kernel: nfsd: fh_verify(44: 02070001 0001ce75 00000000 5b3c5587 fc4047d8 e8f7d9b7)
-Sep 17 22:34:02 loki warning: kernel: nfsd_dispatch: vers 3 proc 6
-
-Fifteen minutes after that the whole thing seized up with malloc
-failures as the only response.
-
-We've obviously got some sort of resource leak (although why it's
-suddenly appeared I have no idea). There's buckets of memory, though.
-The system's not swapping or under especially high memory pressure
-(indeed as I've just rebooted it and hardly started anything but the
-usual daemon swarm and LVM/MD stuff, it's under rather *low* pressure by
-its standards). (Dumps of /proc/meminfo, /proc/zoneinfo and
-/proc/slabinfo below.)
-
-
-I note that this error can be caused by both ENOMEM and EAGAIN, and that
-there are numerous points in fh_verify() whose failure can lead to this
-error. I'm just instrumenting them now so I can tell which is failing.
-
-
-
-MemTotal:       321172 kB
-MemFree:          6152 kB
-Buffers:          2540 kB
-Cached:         106840 kB
-SwapCached:          0 kB
-Active:         277004 kB
-Inactive:         4692 kB
-SwapTotal:     1851368 kB
-SwapFree:      1851188 kB
-Dirty:             160 kB
-Writeback:           0 kB
-AnonPages:      172340 kB
-Mapped:          72692 kB
-Slab:            12764 kB
-SReclaimable:     4852 kB
-SUnreclaim:       7912 kB
-PageTables:       2616 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:   2011952 kB
-Committed_AS:   492284 kB
-VmallocTotal:   712684 kB
-VmallocUsed:      2648 kB
-VmallocChunk:   710008 kB
-HugePages_Total:     0
-HugePages_Free:      0
-HugePages_Rsvd:      0
-Hugepagesize:     4096 kB
-
-Node 0, zone      DMA
-  pages free     337
-        min      28
-        low      35
-        high     42
-        scanned  0 (a: 23 i: 24)
-        spanned  4096
-        present  4064
-    nr_free_pages 337
-    nr_inactive  0
-    nr_active    2811
-    nr_anon_pages 1788
-    nr_mapped    885
-    nr_file_pages 1023
-    nr_dirty     0
-    nr_writeback 0
-    nr_slab_reclaimable 47
-    nr_slab_unreclaimable 32
-    nr_page_table_pages 11
-    nr_unstable  0
-    nr_bounce    0
-    nr_vmscan_write 421
-        protection: (0, 301)
-  pagesets
-    cpu: 0 pcp: 0
-              count: 0
-              high:  0
-              batch: 1
-    cpu: 0 pcp: 1
-              count: 0
-              high:  0
-              batch: 1
-  all_unreclaimable: 0
-  prev_priority:     12
-  start_pfn:         0
-Node 0, zone   Normal
-  pages free     1227
-        min      541
-        low      676
-        high     811
-        scanned  0 (a: 0 i: 0)
-        spanned  77804
-        present  77197
-    nr_free_pages 1227
-    nr_inactive  5698
-    nr_active    61811
-    nr_anon_pages 40341
-    nr_mapped    19329
-    nr_file_pages 27174
-    nr_dirty     13
-    nr_writeback 0
-    nr_slab_reclaimable 1049
-    nr_slab_unreclaimable 2047
-    nr_page_table_pages 698
-    nr_unstable  0
-    nr_bounce    0
-    nr_vmscan_write 4904
-        protection: (0, 0)
-  pagesets
-    cpu: 0 pcp: 0
-              count: 66
-              high:  90
-              batch: 15
-    cpu: 0 pcp: 1
-              count: 5
-              high:  30
-              batch: 7
-  all_unreclaimable: 0
-  prev_priority:     12
-  start_pfn:         4096
-
-# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
-jbd_4k                 0      0   4096    1    1 : tunables   24   12    0 : slabdata      0      0      0
-jbd_1k                 0      0   1024    4    1 : tunables   54   27    0 : slabdata      0      0      0
-jbd_2k                 0      0   2048    2    1 : tunables   24   12    0 : slabdata      0      0      0
-raid5-md2            512    517    344   11    1 : tunables   54   27    0 : slabdata     47     47      0
-raid5-md1            512    517    344   11    1 : tunables   54   27    0 : slabdata     47     47      0
-rpc_buffers            8      8   2048    2    1 : tunables   24   12    0 : slabdata      4      4      0
-rpc_tasks              8     24    160   24    1 : tunables  120   60    0 : slabdata      1      1      0
-rpc_inode_cache       20     20    384   10    1 : tunables   54   27    0 : slabdata      2      2      0
-bridge_fdb_cache       8     59     64   59    1 : tunables  120   60    0 : slabdata      1      1      0
-UNIX                  91    100    384   10    1 : tunables   54   27    0 : slabdata     10     10      0
-dm-snapshot-in       128    134     56   67    1 : tunables  120   60    0 : slabdata      2      2      0
-dm-snapshot-ex         0      0     16  203    1 : tunables  120   60    0 : slabdata      0      0      0
-dm-crypt_io            0      0     36  101    1 : tunables  120   60    0 : slabdata      0      0      0
-dm_tio              4366   4669     16  203    1 : tunables  120   60    0 : slabdata     23     23      0
-dm_io               4366   4563     20  169    1 : tunables  120   60    0 : slabdata     27     27      0
-uhci_urb_priv          4    127     28  127    1 : tunables  120   60    0 : slabdata      1      1      0
-scsi_cmd_cache        39     39    288   13    1 : tunables   54   27    0 : slabdata      3      3      0
-cfq_io_context       250    288     80   48    1 : tunables  120   60    0 : slabdata      6      6      0
-cfq_queue            247    264     88   44    1 : tunables  120   60    0 : slabdata      6      6      0
-mqueue_inode_cache      1      8    480    8    1 : tunables   54   27    0 : slabdata      1      1      0
-fuse_request           0      0    360   11    1 : tunables   54   27    0 : slabdata      0      0      0
-fuse_inode             0      0    352   11    1 : tunables   54   27    0 : slabdata      0      0      0
-nfs_write_data        36     36    448    9    1 : tunables   54   27    0 : slabdata      4      4      0
-nfs_read_data         32     36    416    9    1 : tunables   54   27    0 : slabdata      4      4      0
-nfs_inode_cache       15     21    560    7    1 : tunables   54   27    0 : slabdata      3      3      0
-nfs_page               0      0     64   59    1 : tunables  120   60    0 : slabdata      0      0      0
-isofs_inode_cache      0      0    324   12    1 : tunables   54   27    0 : slabdata      0      0      0
-hugetlbfs_inode_cache      1     13    296   13    1 : tunables   54   27    0 : slabdata      1      1      0
-ext2_inode_cache       5      9    424    9    1 : tunables   54   27    0 : slabdata      1      1      0
-ext2_xattr             0      0     44   84    1 : tunables  120   60    0 : slabdata      0      0      0
-journal_handle         1    169     20  169    1 : tunables  120   60    0 : slabdata      1      1      0
-journal_head          98    360     52   72    1 : tunables  120   60    0 : slabdata      5      5      0
-revoke_table          20    254     12  254    1 : tunables  120   60    0 : slabdata      1      1      0
-revoke_record          0      0     16  203    1 : tunables  120   60    0 : slabdata      0      0      0
-ext3_inode_cache    2392   3429    440    9    1 : tunables   54   27    0 : slabdata    381    381      0
-ext3_xattr             0      0     44   84    1 : tunables  120   60    0 : slabdata      0      0      0
-reiser_inode_cache    172    180    384   10    1 : tunables   54   27    0 : slabdata     18     18      0
-configfs_dir_cache      0      0     48   78    1 : tunables  120   60    0 : slabdata      0      0      0
-dnotify_cache          1    169     20  169    1 : tunables  120   60    0 : slabdata      1      1      0
-dquot                 17     30    128   30    1 : tunables  120   60    0 : slabdata      1      1      0
-inotify_event_cache      0      0     28  127    1 : tunables  120   60    0 : slabdata      0      0      0
-inotify_watch_cache      4     92     40   92    1 : tunables  120   60    0 : slabdata      1      1      0
-kioctx                 1     24    160   24    1 : tunables  120   60    0 : slabdata      1      1      0
-kiocb                  0      0    160   24    1 : tunables  120   60    0 : slabdata      0      0      0
-fasync_cache           3    203     16  203    1 : tunables  120   60    0 : slabdata      1      1      0
-shmem_inode_cache    950    950    396   10    1 : tunables   54   27    0 : slabdata     95     95      0
-posix_timers_cache      0      0    100   39    1 : tunables  120   60    0 : slabdata      0      0      0
-uid_cache             15     59     64   59    1 : tunables  120   60    0 : slabdata      1      1      0
-UDP-Lite               0      0    480    8    1 : tunables   54   27    0 : slabdata      0      0      0
-tcp_bind_bucket       37    203     16  203    1 : tunables  120   60    0 : slabdata      1      1      0
-inet_peer_cache        1     59     64   59    1 : tunables  120   60    0 : slabdata      1      1      0
-ip_fib_alias          12    113     32  113    1 : tunables  120   60    0 : slabdata      1      1      0
-ip_fib_hash           11    113     32  113    1 : tunables  120   60    0 : slabdata      1      1      0
-ip_dst_cache          31     90    256   15    1 : tunables  120   60    0 : slabdata      6      6      0
-arp_cache              5     30    128   30    1 : tunables  120   60    0 : slabdata      1      1      0
-RAW                    2      9    448    9    1 : tunables   54   27    0 : slabdata      1      1      0
-UDP                   29     32    480    8    1 : tunables   54   27    0 : slabdata      4      4      0
-tw_sock_TCP            0      0     96   40    1 : tunables  120   60    0 : slabdata      0      0      0
-request_sock_TCP       0      0     64   59    1 : tunables  120   60    0 : slabdata      0      0      0
-TCP                   45     49   1056    7    2 : tunables   24   12    0 : slabdata      7      7      0
-eventpoll_pwq          2    101     36  101    1 : tunables  120   60    0 : slabdata      1      1      0
-eventpoll_epi          2     40     96   40    1 : tunables  120   60    0 : slabdata      1      1      0
-sgpool-128             2      2   2048    2    1 : tunables   24   12    0 : slabdata      1      1      0
-sgpool-64              2      4   1024    4    1 : tunables   54   27    0 : slabdata      1      1      0
-sgpool-32              2      8    512    8    1 : tunables   54   27    0 : slabdata      1      1      0
-sgpool-16              2     15    256   15    1 : tunables  120   60    0 : slabdata      1      1      0
-sgpool-8              30     30    128   30    1 : tunables  120   60    0 : slabdata      1      1      0
-scsi_io_context        0      0    104   37    1 : tunables  120   60    0 : slabdata      0      0      0
-blkdev_ioc            96    113     32  113    1 : tunables  120   60    0 : slabdata      1      1      0
-blkdev_queue          26     27    892    9    2 : tunables   54   27    0 : slabdata      3      3      0
-blkdev_requests      142    242    176   22    1 : tunables  120   60    0 : slabdata     11     11      0
-biovec-256           274    274   3072    2    2 : tunables   24   12    0 : slabdata    137    137      0
-biovec-128           274    275   1536    5    2 : tunables   24   12    0 : slabdata     55     55      0
-biovec-64            274    275    768    5    1 : tunables   54   27    0 : slabdata     55     55      0
-biovec-16            274    280    192   20    1 : tunables  120   60    0 : slabdata     14     14      0
-biovec-4             274    295     64   59    1 : tunables  120   60    0 : slabdata      5      5      0
-biovec-1             321    609     16  203    1 : tunables  120   60    0 : slabdata      3      3      0
-bio                  319    354     64   59    1 : tunables  120   60    0 : slabdata      6      6      0
-sock_inode_cache     178    187    352   11    1 : tunables   54   27    0 : slabdata     17     17      0
-skbuff_fclone_cache      9     12    320   12    1 : tunables   54   27    0 : slabdata      1      1      0
-skbuff_head_cache     75    120    160   24    1 : tunables  120   60    0 : slabdata      5      5      0
-file_lock_cache        4     42     92   42    1 : tunables  120   60    0 : slabdata      1      1      0
-proc_inode_cache     168    168    312   12    1 : tunables   54   27    0 : slabdata     14     14      0
-sigqueue               8     27    144   27    1 : tunables  120   60    0 : slabdata      1      1      0
-radix_tree_node     1734   3250    288   13    1 : tunables   54   27    0 : slabdata    250    250      0
-bdev_cache            44     45    416    9    1 : tunables   54   27    0 : slabdata      5      5      0
-sysfs_dir_cache     3254   3276     48   78    1 : tunables  120   60    0 : slabdata     42     42      0
-mnt_cache             67     90    128   30    1 : tunables  120   60    0 : slabdata      3      3      0
-inode_cache          801    871    296   13    1 : tunables   54   27    0 : slabdata     67     67      0
-dentry              4131   6300    128   30    1 : tunables  120   60    0 : slabdata    210    210      0
-filp                1332   1392    160   24    1 : tunables  120   60    0 : slabdata     58     58      0
-names_cache            4      4   4096    1    1 : tunables   24   12    0 : slabdata      4      4      0
-idr_layer_cache      152    174    136   29    1 : tunables  120   60    0 : slabdata      6      6      0
-buffer_head         4991  27144     52   72    1 : tunables  120   60    0 : slabdata    377    377      0
-mm_struct            126    126    416    9    1 : tunables   54   27    0 : slabdata     14     14      0
-vm_area_struct     12759  13570     84   46    1 : tunables  120   60    0 : slabdata    295    295      0
-fs_cache             108    113     32  113    1 : tunables  120   60    0 : slabdata      1      1      0
-files_cache           93    100    192   20    1 : tunables  120   60    0 : slabdata      5      5      0
-signal_cache         135    135    416    9    1 : tunables   54   27    0 : slabdata     15     15      0
-sighand_cache        129    129   1312    3    1 : tunables   24   12    0 : slabdata     43     43      0
-task_struct          135    135   1280    3    1 : tunables   24   12    0 : slabdata     45     45      0
-anon_vma            1179   1356      8  339    1 : tunables  120   60    0 : slabdata      4      4      0
-pid                  150    202     36  101    1 : tunables  120   60    0 : slabdata      2      2      0
-size-4194304(DMA)      0      0 4194304    1 1024 : tunables    1    1    0 : slabdata      0      0      0
-size-4194304           0      0 4194304    1 1024 : tunables    1    1    0 : slabdata      0      0      0
-size-2097152(DMA)      0      0 2097152    1  512 : tunables    1    1    0 : slabdata      0      0      0
-size-2097152           0      0 2097152    1  512 : tunables    1    1    0 : slabdata      0      0      0
-size-1048576(DMA)      0      0 1048576    1  256 : tunables    1    1    0 : slabdata      0      0      0
-size-1048576           0      0 1048576    1  256 : tunables    1    1    0 : slabdata      0      0      0
-size-524288(DMA)       0      0 524288    1  128 : tunables    1    1    0 : slabdata      0      0      0
-size-524288            0      0 524288    1  128 : tunables    1    1    0 : slabdata      0      0      0
-size-262144(DMA)       0      0 262144    1   64 : tunables    1    1    0 : slabdata      0      0      0
-size-262144            0      0 262144    1   64 : tunables    1    1    0 : slabdata      0      0      0
-size-131072(DMA)       0      0 131072    1   32 : tunables    8    4    0 : slabdata      0      0      0
-size-131072            0      0 131072    1   32 : tunables    8    4    0 : slabdata      0      0      0
-size-65536(DMA)        0      0  65536    1   16 : tunables    8    4    0 : slabdata      0      0      0
-size-65536             1      1  65536    1   16 : tunables    8    4    0 : slabdata      1      1      0
-size-32768(DMA)        0      0  32768    1    8 : tunables    8    4    0 : slabdata      0      0      0
-size-32768             0      0  32768    1    8 : tunables    8    4    0 : slabdata      0      0      0
-size-16384(DMA)        0      0  16384    1    4 : tunables    8    4    0 : slabdata      0      0      0
-size-16384             0      0  16384    1    4 : tunables    8    4    0 : slabdata      0      0      0
-size-8192(DMA)         0      0   8192    1    2 : tunables    8    4    0 : slabdata      0      0      0
-size-8192              5      5   8192    1    2 : tunables    8    4    0 : slabdata      5      5      0
-size-4096(DMA)         0      0   4096    1    1 : tunables   24   12    0 : slabdata      0      0      0
-size-4096             96     96   4096    1    1 : tunables   24   12    0 : slabdata     96     96      0
-size-2048(DMA)         0      0   2048    2    1 : tunables   24   12    0 : slabdata      0      0      0
-size-2048            126    134   2048    2    1 : tunables   24   12    0 : slabdata     67     67      0
-size-1024(DMA)         0      0   1024    4    1 : tunables   54   27    0 : slabdata      0      0      0
-size-1024            128    128   1024    4    1 : tunables   54   27    0 : slabdata     32     32      0
-size-512(DMA)          0      0    512    8    1 : tunables   54   27    0 : slabdata      0      0      0
-size-512             416    416    512    8    1 : tunables   54   27    0 : slabdata     52     52      0
-size-256(DMA)          0      0    256   15    1 : tunables  120   60    0 : slabdata      0      0      0
-size-256             446    465    256   15    1 : tunables  120   60    0 : slabdata     31     31      0
-size-192(DMA)          0      0    192   20    1 : tunables  120   60    0 : slabdata      0      0      0
-size-192             133    140    192   20    1 : tunables  120   60    0 : slabdata      7      7      0
-size-128(DMA)          0      0    128   30    1 : tunables  120   60    0 : slabdata      0      0      0
-size-128             707   1140    128   30    1 : tunables  120   60    0 : slabdata     38     38      0
-size-96(DMA)           0      0     96   40    1 : tunables  120   60    0 : slabdata      0      0      0
-size-96              517    800     96   40    1 : tunables  120   60    0 : slabdata     20     20      0
-size-64(DMA)           0      0     64   59    1 : tunables  120   60    0 : slabdata      0      0      0
-size-32(DMA)           0      0     32  113    1 : tunables  120   60    0 : slabdata      0      0      0
-size-64             3140   3776     64   59    1 : tunables  120   60    0 : slabdata     64     64      0
-size-32             2339   2825     32  113    1 : tunables  120   60    0 : slabdata     25     25      0
-kmem_cache           143    160     96   40    1 : tunables  120   60    0 : slabdata      4      4      0
+diff -r 2908770b8fc2 include/linux/tsacct_kern.h
+--- a/include/linux/tsacct_kern.h	Sun Sep 16 22:24:49 2007 -0700
++++ b/include/linux/tsacct_kern.h	Tue Aug 28 20:35:27 2007 +0200
+@@ -10,17 +10,23 @@
+ #include <linux/taskstats.h>
+ 
+ #ifdef CONFIG_TASKSTATS
+-extern void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk);
++void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task);
++void bacct_add_tsk(struct taskstats *stats, struct task_struct *task);
+ #else
+-static inline void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
++static inline void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task)
++{}
++static inline void bacct_add_tsk(struct taskstats *stats, struct task_struct *task)
+ {}
+ #endif /* CONFIG_TASKSTATS */
+ 
+ #ifdef CONFIG_TASK_XACCT
+-extern void xacct_add_tsk(struct taskstats *stats, struct task_struct *p);
++void xacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task);
++void xacct_add_tsk(struct taskstats *stats, struct task_struct *p);
+ extern void acct_update_integrals(struct task_struct *tsk);
+ extern void acct_clear_integrals(struct task_struct *tsk);
+ #else
++static inline void xacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task)
++{}
+ static inline void xacct_add_tsk(struct taskstats *stats, struct task_struct *p)
+ {}
+ static inline void acct_update_integrals(struct task_struct *tsk)
+diff -r 2908770b8fc2 kernel/taskstats.c
+--- a/kernel/taskstats.c	Sun Sep 16 22:24:49 2007 -0700
++++ b/kernel/taskstats.c	Mon Sep 17 22:55:04 2007 +0200
+@@ -168,6 +168,68 @@ static void send_cpu_listeners(struct sk
+ 	up_write(&listeners->sem);
+ }
+ 
++/**
++ * fill_threadgroup - initialize some common stats for the thread group
++ * @stats: the taskstats to write into
++ * @task: the thread representing the whole group
++ *
++ * There are two types of taskstats fields when considering a thread group:
++ *	- those that can be aggregated from each thread in the group (like CPU
++ *	times),
++ *	- those that cannot be aggregated (like UID) or are identical (like
++ *	memory usage), so are taken from the group leader.
++ * XXX_threadgroup() methods deal with the first type while XXX_add_tsk() with
++ * the second.
++ */
++static void fill_threadgroup(struct taskstats *stats, struct task_struct *task)
++{
++	/*
++	 * Each accounting subsystem adds calls to its functions to initialize
++	 * relevant parts of struct taskstsats for a single tgid as follows:
++	 *
++	 *	per-task-foo-fill_threadgroup(stats, task);
++	 */
++
++	stats->version = TASKSTATS_VERSION;
++
++	/* fill in basic acct fields */
++	bacct_fill_threadgroup(stats, task);
++
++	/* fill in extended acct fields */
++	xacct_fill_threadgroup(stats, task);
++}
++
++/**
++ * add_tsk - combine some thread specific stats in a taskstats
++ * @stats: the taskstats to write into
++ * @task: the thread to combine
++ *
++ * Stats specific to each thread in the thread group. Stats of @task should be
++ * combined with those already present in @stats. add_tsk() works in
++ * conjunction with fill_threadgroup(), taskstats fields should not be touched
++ * by both functions.
++ */
++static void add_tsk(struct taskstats *stats, struct task_struct *task)
++{
++	/*
++	 * Each accounting subsystem adds calls to its functions to combine
++	 * relevant parts of struct taskstsats for a single pid as follows:
++	 *
++	 *	per-task-foo-add_tsk(stats, task);
++	 */
++	stats->nvcsw  += task->nvcsw;
++	stats->nivcsw += task->nivcsw;
++
++	/* fill in delay acct fields */
++	delayacct_add_tsk(stats, task);
++
++	/* fill in basic acct fields */
++	bacct_add_tsk(stats, task);
++
++	/* fill in extended acct fields */
++	xacct_add_tsk(stats, task);
++}
++
+ static int fill_pid(pid_t pid, struct task_struct *tsk,
+ 		struct taskstats *stats)
+ {
+@@ -185,23 +247,8 @@ static int fill_pid(pid_t pid, struct ta
+ 		get_task_struct(tsk);
+ 
+ 	memset(stats, 0, sizeof(*stats));
+-	/*
+-	 * Each accounting subsystem adds calls to its functions to
+-	 * fill in relevant parts of struct taskstsats as follows
+-	 *
+-	 *	per-task-foo(stats, tsk);
+-	 */
+-
+-	delayacct_add_tsk(stats, tsk);
+-
+-	/* fill in basic acct fields */
+-	stats->version = TASKSTATS_VERSION;
+-	stats->nvcsw = tsk->nvcsw;
+-	stats->nivcsw = tsk->nivcsw;
+-	bacct_add_tsk(stats, tsk);
+-
+-	/* fill in extended acct fields */
+-	xacct_add_tsk(stats, tsk);
++	fill_threadgroup(stats, tsk);
++	add_tsk(stats, tsk);
+ 
+ 	/* Define err: label here if needed */
+ 	put_task_struct(tsk);
+@@ -232,32 +279,25 @@ static int fill_tgid(pid_t tgid, struct 
+ 	else
+ 		memset(stats, 0, sizeof(*stats));
+ 
++	fill_threadgroup(stats, first->group_leader);
++
+ 	tsk = first;
+-	do {
+-		if (tsk->exit_state)
+-			continue;
+-		/*
+-		 * Accounting subsystem can call its functions here to
+-		 * fill in relevant parts of struct taskstsats as follows
+-		 *
+-		 *	per-task-foo(stats, tsk);
+-		 */
+-		delayacct_add_tsk(stats, tsk);
+-
+-		stats->nvcsw += tsk->nvcsw;
+-		stats->nivcsw += tsk->nivcsw;
+-	} while_each_thread(first, tsk);
++	do
++		if (!tsk->exit_state)
++			/*
++			 * This check is racy as a thread could exit just right
++			 * now and have its statistics accounted twice.
++			 */
++			add_tsk(stats, tsk);
++	while_each_thread(first, tsk);
++
++	if (first->signal->group_exit_code)
++		stats->ac_exitcode = first->signal->group_exit_code;
+ 
+ 	unlock_task_sighand(first, &flags);
+ 	rc = 0;
+ out:
+ 	rcu_read_unlock();
+-
+-	stats->version = TASKSTATS_VERSION;
+-	/*
+-	 * Accounting subsytems can also add calls here to modify
+-	 * fields of taskstats.
+-	 */
+ 	return rc;
+ }
+ 
+@@ -267,19 +307,14 @@ static void fill_tgid_exit(struct task_s
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&tsk->sighand->siglock, flags);
+-	if (!tsk->signal->stats)
+-		goto ret;
+-
+-	/*
+-	 * Each accounting subsystem calls its functions here to
+-	 * accumalate its per-task stats for tsk, into the per-tgid structure
+-	 *
+-	 *	per-task-foo(tsk->signal->stats, tsk);
+-	 */
+-	delayacct_add_tsk(tsk->signal->stats, tsk);
+-ret:
++
++	/*
++	 * The fill_threadgroup() part of the statistics will be added by the
++	 * stats requester, i.e. fill_tgid()
++	 */
++	add_tsk(tsk->signal->stats, tsk);
++
+ 	spin_unlock_irqrestore(&tsk->sighand->siglock, flags);
+-	return;
+ }
+ 
+ static int add_del_listener(pid_t pid, cpumask_t *maskp, int isadd)
+@@ -508,7 +543,7 @@ void taskstats_exit(struct task_struct *
+ 	if (!stats)
+ 		goto err;
+ 
+-	memcpy(stats, tsk->signal->stats, sizeof(*stats));
++	fill_tgid(tsk->pid, tsk, stats);
+ 
+ send:
+ 	send_cpu_listeners(rep_skb, listeners);
+diff -r 2908770b8fc2 kernel/tsacct.c
+--- a/kernel/tsacct.c	Sun Sep 16 22:24:49 2007 -0700
++++ b/kernel/tsacct.c	Mon Sep 17 20:44:05 2007 +0200
+@@ -22,50 +22,65 @@
+ #include <linux/acct.h>
+ #include <linux/jiffies.h>
+ 
+-/*
+- * fill in basic accounting fields
+- */
+-void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
++static void fill_wall_times(struct taskstats *stats, struct task_struct *task)
+ {
+ 	struct timespec uptime, ts;
+ 	s64 ac_etime;
+ 
+-	BUILD_BUG_ON(TS_COMM_LEN < TASK_COMM_LEN);
+-
+ 	/* calculate task elapsed time in timespec */
+ 	do_posix_clock_monotonic_gettime(&uptime);
+-	ts = timespec_sub(uptime, tsk->start_time);
++	ts = timespec_sub(uptime, task->start_time);
+ 	/* rebase elapsed time to usec */
+ 	ac_etime = timespec_to_ns(&ts);
+ 	do_div(ac_etime, NSEC_PER_USEC);
+-	stats->ac_etime = ac_etime;
+-	stats->ac_btime = get_seconds() - ts.tv_sec;
+-	if (thread_group_leader(tsk)) {
+-		stats->ac_exitcode = tsk->exit_code;
+-		if (tsk->flags & PF_FORKNOEXEC)
+-			stats->ac_flag |= AFORK;
+-	}
+-	if (tsk->flags & PF_SUPERPRIV)
++	stats->ac_etime	= ac_etime;
++	stats->ac_btime	= get_seconds() - ts.tv_sec;
++}
++
++/*
++ * fill in basic accounting fields
++ */
++
++void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task)
++{
++	BUILD_BUG_ON(TS_COMM_LEN < TASK_COMM_LEN);
++
++	rcu_read_lock();
++	stats->ac_ppid	= pid_alive(task) ?
++				rcu_dereference(task->real_parent)->tgid : 0;
++	rcu_read_unlock();
++
++	fill_wall_times(stats, task);
++
++	stats->ac_exitcode	= task->exit_code;
++	stats->ac_nice		= task_nice(task);
++	stats->ac_sched		= task->policy;
++	stats->ac_uid		= task->uid;
++	stats->ac_gid		= task->gid;
++	stats->ac_pid		= task->pid;
++
++	strncpy(stats->ac_comm, task->comm, sizeof(stats->ac_comm));
++}
++
++void bacct_add_tsk(struct taskstats *stats, struct task_struct *task)
++{
++	if (task->flags & PF_SUPERPRIV)
+ 		stats->ac_flag |= ASU;
+-	if (tsk->flags & PF_DUMPCORE)
++	if (task->flags & PF_DUMPCORE)
+ 		stats->ac_flag |= ACORE;
+-	if (tsk->flags & PF_SIGNALED)
++	if (task->flags & PF_SIGNALED)
+ 		stats->ac_flag |= AXSIG;
+-	stats->ac_nice	 = task_nice(tsk);
+-	stats->ac_sched	 = tsk->policy;
+-	stats->ac_uid	 = tsk->uid;
+-	stats->ac_gid	 = tsk->gid;
+-	stats->ac_pid	 = tsk->pid;
+-	rcu_read_lock();
+-	stats->ac_ppid	 = pid_alive(tsk) ?
+-				rcu_dereference(tsk->real_parent)->tgid : 0;
+-	rcu_read_unlock();
+-	stats->ac_utime	 = cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
+-	stats->ac_stime	 = cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
+-	stats->ac_minflt = tsk->min_flt;
+-	stats->ac_majflt = tsk->maj_flt;
++	if (thread_group_leader(task) && (task->flags & PF_FORKNOEXEC))
++		/*
++		 * Threads are created by do_fork() and don't exec but not in
++		 * the AFORK sense, as the latter involves fork(2).
++		 */
++		stats->ac_flag |= AFORK;
+ 
+-	strncpy(stats->ac_comm, tsk->comm, sizeof(stats->ac_comm));
++	stats->ac_utime	 += cputime_to_msecs(task->utime) * USEC_PER_MSEC;
++	stats->ac_stime	 += cputime_to_msecs(task->stime) * USEC_PER_MSEC;
++	stats->ac_minflt += task->min_flt;
++	stats->ac_majflt += task->maj_flt;
+ }
+ 
+ 
+@@ -76,32 +91,34 @@ void bacct_add_tsk(struct taskstats *sta
+ /*
+  * fill in extended accounting fields
+  */
+-void xacct_add_tsk(struct taskstats *stats, struct task_struct *p)
++void xacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task)
+ {
+ 	struct mm_struct *mm;
+ 
+-	/* convert pages-jiffies to Mbyte-usec */
+-	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
+-	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
+-	mm = get_task_mm(p);
++	mm = get_task_mm(task);
+ 	if (mm) {
+ 		/* adjust to KB unit */
+ 		stats->hiwater_rss   = mm->hiwater_rss * PAGE_SIZE / KB;
+-		stats->hiwater_vm    = mm->hiwater_vm * PAGE_SIZE / KB;
++		stats->hiwater_vm    = mm->hiwater_vm  * PAGE_SIZE / KB;
+ 		mmput(mm);
+ 	}
+-	stats->read_char	= p->rchar;
+-	stats->write_char	= p->wchar;
+-	stats->read_syscalls	= p->syscr;
+-	stats->write_syscalls	= p->syscw;
++}
++
++void xacct_add_tsk(struct taskstats *stats, struct task_struct *p)
++{
++	/* convert pages-jiffies to Mbyte-usec */
++	stats->coremem	+= jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
++	stats->virtmem	+= jiffies_to_usecs(p->acct_vm_mem1)  * PAGE_SIZE / MB;
++
++	stats->read_char	+= p->rchar;
++	stats->write_char	+= p->wchar;
++	stats->read_syscalls	+= p->syscr;
++	stats->write_syscalls	+= p->syscw;
++
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+-	stats->read_bytes	= p->ioac.read_bytes;
+-	stats->write_bytes	= p->ioac.write_bytes;
+-	stats->cancelled_write_bytes = p->ioac.cancelled_write_bytes;
+-#else
+-	stats->read_bytes	= 0;
+-	stats->write_bytes	= 0;
+-	stats->cancelled_write_bytes = 0;
++	stats->read_bytes		+= p->ioac.read_bytes;
++	stats->write_bytes		+= p->ioac.write_bytes;
++	stats->cancelled_write_bytes	+= p->ioac.cancelled_write_bytes;
+ #endif
+ }
+ #undef KB
