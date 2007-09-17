@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXIQNzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbXIQN4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbXIQNzz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 09:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbXIQNzs
+	id S1755290AbXIQN4W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 09:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbXIQN4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 09:55:48 -0400
-Received: from pat.uio.no ([129.240.10.15]:57061 "EHLO pat.uio.no"
+	Mon, 17 Sep 2007 09:56:12 -0400
+Received: from nn7.de ([85.214.94.156]:34731 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754059AbXIQNzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 09:55:47 -0400
-Subject: Re: [PATCH] Wake up mandatory locks waiter on chmod (v2)
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, "J. Bruce Fields" <bfields@fieldses.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-In-Reply-To: <46EE3724.80200@openvz.org>
-References: <46EE3724.80200@openvz.org>
+	id S1754798AbXIQN4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 09:56:09 -0400
+Subject: Re: 2.6.22.6: kernel BUG at fs/locks.c:171
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200709161815.39633.nickpiggin@yahoo.com.au>
+References: <1189675222.5352.10.camel@localhost>
+	 <1189849627.4270.12.camel@localhost> <1189851735.4270.19.camel@localhost>
+	 <200709161815.39633.nickpiggin@yahoo.com.au>
 Content-Type: text/plain
-Date: Mon, 17 Sep 2007 09:55:31 -0400
-Message-Id: <1190037331.6700.14.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, AWL=0.020)
-X-UiO-Scanned: 43676BF14A2869C492B0503A8AD53250815FC696
-X-UiO-Ratelimit-Test: Ratelimit
-X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1963 total 3924233 max/h 8345 blacklist 0 greylist 0 ratelimit 1
+Date: Mon, 17 Sep 2007 15:43:39 +0200
+Message-Id: <1190036619.4757.8.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-17 at 12:13 +0400, Pavel Emelyanov wrote:
-> When the process is blocked on mandatory lock and someone changes 
-> the inode's permissions, so that the lock is no longer mandatory,
-> nobody wakes up the blocked process, but probably should.
+On Sun, 2007-09-16 at 18:15 +1000, Nick Piggin wrote:
+> On Saturday 15 September 2007 20:22, Soeren Sonnenburg wrote:
+> > On Sat, 2007-09-15 at 09:47 +0000, Soeren Sonnenburg wrote:
+> 
+> > > Memtest did not find anything after 16 passes so I finally stopped
+> it
+> > > applied your patch and used
+> > >
+> > > CONFIG_DEBUG_SLAB=y
+> > > CONFIG_DEBUG_SLAB_LEAK=y
+> > >
+> > > and booted into the new kernel.
+> > >
+> > > A few hours later the machine hung (due to nmi watchdog rebooted),
+> so I
+[...]
+> > > swap_dup: Bad swap file entry 28c8af9d
+> 
+> Hmm, this is another telltale symptom of either bad hardware
+> or a memory scribbling bug.
 
-Please explain in more detail why we need this patch.
+Since this morning, the machine is running with the dvb driver for that
+certain card unloaded...
 
-I don't see why changing a file from taking mandatory locks to advisory
-locks is really a useful operation that we need to support. For one
-thing, we don't support changing a file from using advisory locking to
-mandatory locking on-the-fly. Secondly, changing the locking type
-certainly isn't a documented operation and quite frankly, it doesn't
-even appear to make sense: if the file needs mandatory locking, then
-that means that you have a need to protect against some untrusted
-application that isn't following the locking rules. Then suddenly, you
-declare that you will trust that application after all???
+Anyway you convinced me that it is the bad saa7134_dvb drivers (driving
+the asus p7131) fault. As the driver seems huge, I wonder whether there
+are a) other config debug options that could aid in debugging b) what
+the names of certain io functions are that may cause this...
 
-Cheers,
-  Trond
-
+Thanks a lot!
+Soeren
+-- 
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
