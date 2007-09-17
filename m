@@ -1,99 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbXIQNFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbXIQNIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbXIQNFi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 09:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbXIQNFa
+	id S1754759AbXIQNIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 09:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbXIQNIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 09:05:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53428 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752891AbXIQNF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 09:05:29 -0400
-Date: Mon, 17 Sep 2007 15:05:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rob Hussey <robjhussey@gmail.com>
-Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-Subject: Re: Scheduler benchmarks - a follow-up
-Message-ID: <20070917130524.GA10707@elte.hu>
-References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 17 Sep 2007 09:08:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:25409 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753518AbXIQNIH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 09:08:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=VVTV+hGRUhS/T/b2lY55Vek0kkR+DFWioMF+dRW0VwOeFLxMDK0x7gMv0roZ4mj1tSOs5dMaUt2Z2Un/5cgj+9yPUgyOkNw7LbXwHfnamESw0uVtcA7GpA3qt1iTio3LqwmKav9T/aFu91a3QDN/P/iOMLoExa4EugDCv+grYvg=
+Subject: Re: 2.6.22.1: Enabling IO-APIC = APIC error on CPU0: 40(40)
+From: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
+Reply-To: konstantin.sharlaimov@gmail.com
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0707140758110.22713@p34.internal.lan>
+References: <Pine.LNX.4.64.0707140758110.22713@p34.internal.lan>
+Content-Type: text/plain
+Date: Tue, 18 Sep 2007 00:07:56 +1100
+Message-Id: <1190034476.8152.8.camel@traveler>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I am experiencing the similar problem on my Acer Aspire 5000 laptop -
+once in a while a bunch of "APIC error on CPU0: 40(40)" messages are
+showing up in dmesg.
 
-* Rob Hussey <robjhussey@gmail.com> wrote:
+After few experiments and a lot of googling, I identified a cause - it
+was my built-in wireless card! Disabling IO-APIC helped, besides a
+single "Spurious 8259A interrupt: IRQ7" message while booting up there
+was nothing unusual.
 
-> http://www.healthcarelinen.com/misc/benchmarks/BOUND_hackbench_benchmark2.png
+A did some further experiments on various hardware and from my
+experience I can tell that "APIC error" messages are entirely hardware
+related.
 
-heh - am i the only one impressed by the consistency of the blue line in 
-this graph? :-) [ and the green line looks a bit like a .. staircase? ]
+Regards,
+Konstantin
 
-i've meanwhile tested hackbench 90 and the performance difference 
-between -ck and -cfs-devel seems to be mostly down to the more precise 
-(but slower) sched_clock() introduced in v2.6.23 and to the startup 
-penalty of freshly created tasks.
+On Sat, 2007-07-14 at 08:09 -0400, Justin Piszcz wrote:
+> I have an older MSI motherboard and when I enable the following option:
+> 
+> >From lshw:
+>         description: Motherboard
+>         product: MS-6730
+> 
+> [*]   IO-APIC support on uniprocessors
+> 
+> I get the following errors in dmesg:
+> 
+> [  247.177372] APIC error on CPU0: 00(40)
+> [  247.556741] APIC error on CPU0: 40(40)
+> [  262.010412] APIC error on CPU0: 40(40)
+> [  262.765553] APIC error on CPU0: 40(40)
+> [  263.876481] APIC error on CPU0: 40(40)
+> [  264.191962] APIC error on CPU0: 40(40)
+> [  265.040566] APIC error on CPU0: 40(40)
+> [  267.959689] APIC error on CPU0: 40(40)
+> [  269.446029] APIC error on CPU0: 40(40)
+> [  269.853344] APIC error on CPU0: 40(40)
+> [  271.122825] APIC error on CPU0: 40(40)
+> [  271.287051] APIC error on CPU0: 40(40)
+> [  273.825237] APIC error on CPU0: 40(40)
+> [  274.373737] APIC error on CPU0: 40(40)
+> [  275.355775] APIC error on CPU0: 40(40)
+> [  275.982087] APIC error on CPU0: 40(40)
+> [  276.101181] APIC error on CPU0: 40(40)
+> [  276.173611] APIC error on CPU0: 40(40)
+> [  276.970970] APIC error on CPU0: 40(40)
+> [  277.561575] APIC error on CPU0: 40(40)
+> [  278.694486] APIC error on CPU0: 40(40)
+> [  279.353573] APIC error on CPU0: 40(40)
+> [  281.779398] APIC error on CPU0: 40(40)
+> [  283.625457] APIC error on CPU0: 40(40)
+> [  284.749322] APIC error on CPU0: 40(40)
+> [  284.983013] APIC error on CPU0: 40(40)
+> [  285.126394] APIC error on CPU0: 40(40)
+> 
+> I normally do not use this option (which also gets rid of the errors*1), 
+> but I am curious, why do these errors occur?  I remember them with the early
+> 2.6.x series and they are still re-occurring in 2.6.22.1.
+> 
+> The weird part-- is when IO-APIC is disabled, I see this on boot:
+> 
+> IO-APIC DISABLED:
+> 
+> [   46.902712] XFS mounting filesystem md0
+> [   47.017322] spurious 8259A interrupt: IRQ7.
+> [   47.273009] Ending clean XFS mount for filesystem: md0
+> 
+> IO-APIC ENABLED:
+> 
+> [   46.851012] XFS mounting filesystem md0
+> [   47.103066] Ending clean XFS mount for filesystem: md0
+> 
+> * 1 Anytime I see a spurious interrupt on (usually older hardware) 
+> especially during file I/O this usually means corruption (from what I 
+> have seen) that is why I don't really want to trust anything on this host.
+> 
+> Anyone have any idea what's going on here?
+> 
+> Justin.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-Putting back the 2.6.22 version and tweaking the startup penalty gives 
-this:
-
-                             [hackbench 90, smaller is better]
-
-            sched-devel.git      sched-devel.git+lowres-sched-clock+dsp
-            ---------------      --------------------------------------
-                      5.555                  5.149
-                      5.641                  5.149
-                      5.572                  5.171
-                      5.583                  5.155
-                      5.532                  5.111
-                      5.540                  5.138
-                      5.617                  5.176
-                      5.542                  5.119
-                      5.587                  5.159
-                      5.553                  5.177
-            --------------------------------------
-                 avg: 5.572             avg: 5.150 (-8.1%)
-
-('lowres-sched-clock' is the patch i sent in the previous mail. 'dsp' is 
-a disable-startup-penalty patch that is in the latest sched-devel.git)
-
-i have used your .config to conduct this test.
-
-can you reproduce this with the (very-) latest sched-devel git tree:
-
-  git-pull git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
-
-plus with the low-res-sched-clock patch (re-) attached below?
-
-	Ingo
----
- arch/i386/kernel/tsc.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux/arch/i386/kernel/tsc.c
-===================================================================
---- linux.orig/arch/i386/kernel/tsc.c
-+++ linux/arch/i386/kernel/tsc.c
-@@ -110,9 +110,9 @@ unsigned long long native_sched_clock(vo
- 	 *   very important for it to be as fast as the platform
- 	 *   can achive it. )
- 	 */
--	if (unlikely(!tsc_enabled && !tsc_unstable))
-+	if (1 || unlikely(!tsc_enabled && !tsc_unstable))
- 		/* No locking but a rare wrong value is not a big deal: */
--		return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
-+		return jiffies_64 * (1000000000 / HZ);
- 
- 	/* read the Time Stamp Counter: */
- 	rdtscll(this_offset);
