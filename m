@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbXIQRDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbXIQRF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbXIQRDx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 13:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbXIQRDq
+	id S1755160AbXIQRF4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 13:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXIQRFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 13:03:46 -0400
-Received: from pat.uio.no ([129.240.10.15]:40255 "EHLO pat.uio.no"
+	Mon, 17 Sep 2007 13:05:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38988 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752799AbXIQRDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 13:03:45 -0400
-Subject: Re: [PATCH 5/5][NFS] Cleanup explicit check for mandatory locks
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>,
+	id S1751312AbXIQRFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 13:05:47 -0400
+Message-ID: <46EEB3AC.20205@redhat.com>
+Date: Mon, 17 Sep 2007 13:04:44 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Anton Altaparmakov <aia21@cam.ac.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-In-Reply-To: <46EE335C.3010106@openvz.org>
-References: <46EE335C.3010106@openvz.org>
-Content-Type: text/plain
-Date: Mon, 17 Sep 2007 13:03:40 -0400
-Message-Id: <1190048620.6700.100.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+       Linux Memory Management List <linux-mm@kvack.org>,
+       marc.smith@esmail.mcc.edu
+Subject: Re: VM/VFS bug with large amount of memory and file systems?
+References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk> <13126578-A4F8-43EA-9B0D-A3BCBFB41FEC@cam.ac.uk> <DC408F26-E53F-4F27-9DEF-E996401D95FB@cam.ac.uk> <200709170828.01098.nickpiggin@yahoo.com.au>
+In-Reply-To: <200709170828.01098.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.1, required=12.0, autolearn=disabled, AWL=0.094)
-X-UiO-Scanned: 7B8188429626CF4228FA956C9274F75256C052F5
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 1 maxlevel 200 minaction 2 bait 0 mail/h: 49 total 3928033 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-17 at 11:57 +0400, Pavel Emelyanov wrote:
-> The __mandatory_lock(inode) macro makes the same check, but
-> makes the code more readable.
+Nick Piggin wrote:
 
-Could we please avoid using underscores in macros. Also, why are we
-breaking the usual convention of capitalising macro names?
+> (Rik has a patch sitting in -mm I believe which would make this problem
+> even worse, by doing even less highmem scanning in response to lowmem
+> allocations). 
 
-Cheers
-  Trond
+My patch should not make any difference here, since
+balance_pgdat() already scans the zones from high to
+low and sets an end_zone variable that determines the
+highest zone to scan.
 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
-> 
-> ---
-> 
->  fs/nfs/file.c |    3 +--
->  1 files changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-> index 73ddd2e..7a07be1 100644
-> --- a/fs/nfs/file.c
-> +++ b/fs/nfs/file.c
-> @@ -605,8 +605,7 @@ static int nfs_lock(struct file *filp, i
->  	nfs_inc_stats(inode, NFSIOS_VFSLOCK);
->  
->  	/* No mandatory locks over NFS */
-> -	if ((inode->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID &&
-> -	    fl->fl_type != F_UNLCK)
-> +	if (__mandatory_lock(inode) && fl->fl_type != F_UNLCK)
->  		return -ENOLCK;
->  
->  	if (IS_GETLK(cmd))
-> 
+All my patch does is make sure that we do not try to
+reclaim excessive amounts of dma or low memory when
+a higher zone is full.
 
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
