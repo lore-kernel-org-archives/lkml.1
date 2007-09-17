@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbXIQJJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760683AbXIQJJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759441AbXIQJJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 05:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbXIQIeV
+	id S1760683AbXIQJJo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 05:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbXIQIke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 04:34:21 -0400
-Received: from il.qumranet.com ([82.166.9.18]:45249 "EHLO il.qumranet.com"
+	Mon, 17 Sep 2007 04:40:34 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53763 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752853AbXIQIcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 04:32:24 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH 008/104] KVM: Trivial: Comment spelling may escape grep
-Date: Mon, 17 Sep 2007 10:30:50 +0200
-Message-Id: <11900179462917-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.3
-In-Reply-To: <11900179463203-git-send-email-avi@qumranet.com>
-References: <11900179463203-git-send-email-avi@qumranet.com>
+	id S1755490AbXIQIkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 04:40:33 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [RFC -mm 0/2] i386/x86_64 boot: 32-bit boot protocol
+Date: Mon, 17 Sep 2007 10:40:26 +0200
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+References: <1190017572.5866.20.camel@caritas-dev.intel.com>
+In-Reply-To: <1190017572.5866.20.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709171040.27043.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
+On Monday 17 September 2007 10:26:12 Huang, Ying wrote:
+> For machine with some new BIOS other than legacy BIOS, such as EFI,
+> LinuxBIOS, etc, and kexec, the 16-bit real mode setup code in kernel
+> based on legacy BIOS can not be used, so a 32-bit boot protocol need
+> to be defined.
 
-Speling error in comment.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- drivers/kvm/x86_emulate.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index f5e4644..db9f955 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -6,7 +6,7 @@
-  * Copyright (c) 2005 Keir Fraser
-  *
-  * Linux coding style, mod r/m decoder, segment base fixes, real-mode
-- * privieged instructions:
-+ * privileged instructions:
-  *
-  * Copyright (C) 2006 Qumranet
-  *
--- 
-1.5.3
-
+The patch doesn't seem to be what you advertise in the description.
+Can you start with a patch that just implements the new boot protocol
+parsing for better review? The EFI code should be all in separate 
+patches.
+-Andi
