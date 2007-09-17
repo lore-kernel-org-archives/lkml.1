@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbXIQLsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbXIQLue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbXIQLsc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 07:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXIQLsT
+	id S1755493AbXIQLue (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 07:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbXIQLu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 07:48:19 -0400
-Received: from mailout10.sul.t-online.de ([194.25.134.21]:52235 "EHLO
-	mailout10.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755124AbXIQLsS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 07:48:18 -0400
-Message-ID: <46EE60C1.7030507@t-online.de>
-Date: Mon, 17 Sep 2007 13:10:57 +0200
-From: Bernd Schmidt <bernds_cb1@t-online.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070810)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Mel Gorman <mel@csn.ul.ie>,
-       andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-References: <20070911060349.993975297@sgi.com> <200709111606.10873.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709111448430.27023@schroedinger.engr.sgi.com> <200709120407.48344.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709121551340.4204@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0709121551340.4204@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ID: ZB2+h0ZQ8heIYngtl4BQsRrKG5MsxTm-zCQz1qabFDaccGRiwfh33u8SzLFktaTZxM
-X-TOI-MSGID: e4ab883a-b1b6-4c1b-bc80-f5d8709cfcb4
+	Mon, 17 Sep 2007 07:50:27 -0400
+Received: from mx.freeshell.ORG ([192.94.73.19]:62282 "EHLO sdf.lonestar.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753446AbXIQLu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 07:50:26 -0400
+Date: Mon, 17 Sep 2007 11:50:19 +0000
+From: Jacob Meuser <jakemsr@sdf.lonestar.org>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
+       "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917115019.GA12790@SDF.LONESTAR.ORG>
+Mail-Followup-To: Helge Hafting <helge.hafting@aitel.hist.no>,
+	Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
+	"Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+	linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+	Eben Moglen <moglen@softwarefreedom.org>,
+	Lawrence Lessig <lessig_from_web@pobox.com>,
+	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+	Matt Norwood <norwood@softwarefreedom.org>
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070916231633.GB10339@SDF.LONESTAR.ORG> <46EE311F.5040107@aitel.hist.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46EE311F.5040107@aitel.hist.no>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> True. That is why we want to limit the number of unmovable allocations and 
-> that is why ZONE_MOVABLE exists to limit those. However, unmovable 
-> allocations are already rare today. The overwhelming majority of 
-> allocations are movable and reclaimable. You can see that f.e. by looking 
-> at /proc/meminfo and see how high SUnreclaim: is (does not catch 
-> everything but its a good indicator).
+On Mon, Sep 17, 2007 at 09:47:43AM +0200, Helge Hafting wrote:
 
-Just to inject another factor into the discussion, please remember that 
-Linux also runs on nommu systems, where things like user space 
-allocations are neither movable nor reclaimable.
+> Your problem seems to be with the BSD licence,
+> and the power to alter that licence lies in the BSD community.
 
+I hope you can understand that this mentality is _exactly_ what has
+some in the BSD community so upset.
 
-Bernd
+when I see the linux community start to take credit for works they
+did not create and I see the linux community respond to warnings
+that people in the community are going overboard and jeopardizing
+the linux community, which we do all benefit from, with a more or
+less "whatever" attitude, it makes me sad.  it would be like losing
+a friend.  I don't like losing friends, so I get vocal.
+
+I don't understand why the linux community can't seem to say, "We
+can accept BSD licensed code.  There's no need to add the GPL to
+it."  and maybe even, "Although we strongly prefer the GPL,
+respect for other licenses is every bit as important as respect
+for the GPL."
+
+I could be wrong, but I strongly believe that if the above was
+truly accepted and believed by the community, the actions that
+started and spread this whole debacle^Wdebate would not have
+happened in the first place.
+
+look, the GPL legally forces others to keep the same license.
+the BSD community is asking the linux community do the same.
+and when the linux community refuses, what do you expect the
+recourse to be?
 
 -- 
-This footer brought to you by insane German lawmakers.
-Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
-Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
-Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
+jakemsr@sdf.lonestar.org
+SDF Public Access UNIX System - http://sdf.lonestar.org
