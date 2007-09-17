@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760796AbXIQV5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbXIQV6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760796AbXIQV5o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760914AbXIQV51
+	id S933121AbXIQV6d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759235AbXIQV6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:57:27 -0400
-Received: from namei.org ([69.55.235.186]:38662 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760883AbXIQV50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:57:26 -0400
-Date: Mon, 17 Sep 2007 14:56:46 -0700 (PDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Stephen Smalley <sds@tycho.nsa.gov>
-cc: Yuichi Nakamura <ynakam@hitachisoft.jp>, selinux@tycho.nsa.gov,
-       Eric Paris <eparis@parisplace.org>, kaigai@ak.jp.nec.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] selinux: Improving SELinux read/write performance
-In-Reply-To: <1190061915.4034.78.camel@moss-spartans.epoch.ncsc.mil>
-Message-ID: <Xine.LNX.4.64.0709171456150.16840@us.intercode.com.au>
-References: <20070914092048.C8F1.YNAKAM@hitachisoft.jp>
- <1190061915.4034.78.camel@moss-spartans.epoch.ncsc.mil>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 17 Sep 2007 17:58:19 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:32897 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758082AbXIQV6Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 17:58:16 -0400
+Subject: Re: [PATCH] JBD slab cleanups
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: cmm@us.ibm.com
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1190057391.3845.22.camel@localhost.localdomain>
+References: <20070828190735.292638294@sgi.com>
+	 <1188432669.3799.35.camel@localhost.localdomain>
+	 <1188434857.3799.76.camel@localhost.localdomain>
+	 <1188605538.3837.51.camel@localhost.localdomain>
+	 <20070901183922.GA12907@infradead.org>
+	 <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
+	 <20070902152801.GA19962@infradead.org>
+	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
+	 <20070903134043.GB28962@infradead.org>
+	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
+	 <20070903193308.GA7771@infradead.org>
+	 <1189796027.3841.6.camel@localhost.localdomain>
+	 <1190057391.3845.22.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 17 Sep 2007 15:01:06 -0700
+Message-Id: <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007, Stephen Smalley wrote:
-
-> > It reduces the selinux overhead on read/write by only revalidating
-> > permissions in selinux_file_permission if the task or inode labels have
-> > changed or the policy has changed since the open-time check.  A new LSM
-> > hook, security_dentry_open, is added to capture the necessary state at
-> > open time to allow this optimization.
+On Mon, 2007-09-17 at 12:29 -0700, Mingming Cao wrote:
+> On Fri, 2007-09-14 at 11:53 -0700, Mingming Cao wrote:
+> > jbd/jbd2: Replace slab allocations with page cache allocations
 > > 
-> > Signed-off-by: Yuichi Nakamura<ynakam@hitachisoft.jp>
+> > From: Christoph Lameter <clameter@sgi.com>
+> > 
+> > JBD should not pass slab pages down to the block layer.
+> > Use page allocator pages instead. This will also prepare
+> > JBD for the large blocksize patchset.
+> > 
 > 
-> Thanks, looks good.
+> Currently memory allocation for committed_data(and frozen_buffer) for
+> bufferhead is done through jbd slab management, as Christoph Hellwig
+> pointed out that this is broken as jbd should not pass slab pages down
+> to IO layer. and suggested to use get_free_pages() directly.
 > 
-> Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
+> The problem with this patch, as Andreas Dilger pointed today in ext4
+> interlock call, for 1k,2k block size ext2/3/4, get_free_pages() waste
+> 1/3-1/2 page space. 
+> 
+> What was the originally intention to set up slabs for committed_data(and
+> frozen_buffer) in JBD? Why not using kmalloc?
+> 
+> Mingming
 
-Applied to 
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-akpm
+Looks good. Small suggestion is to get rid of all kmalloc() usages and
+consistently use jbd_kmalloc() or jbd2_kmalloc().
 
+Thanks,
+Badari
 
--- 
-James Morris
-<jmorris@namei.org>
