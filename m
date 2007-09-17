@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbXIQTht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbXIQTlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757638AbXIQTht (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 15:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbXIQThm
+	id S1757240AbXIQTlw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 15:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbXIQTlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 15:37:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51478 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755184AbXIQThl (ORCPT
+	Mon, 17 Sep 2007 15:41:45 -0400
+Received: from outbound-mail-78.bluehost.com ([69.89.22.27]:40619 "HELO
+	outbound-mail-78.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753766AbXIQTlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 15:37:41 -0400
-Date: Mon, 17 Sep 2007 12:37:40 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       ak@suse.de, eric.whitney@hp.com, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH]  2.6.23-rc6:  Fix NUMA Memory Policy Reference Counting
-In-Reply-To: <1190057534.5460.131.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0709171235190.28178@schroedinger.engr.sgi.com>
-References: <20070830185053.22619.96398.sendpatchset@localhost>
- <1190057534.5460.131.camel@localhost>
+	Mon, 17 Sep 2007 15:41:44 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Lossy interrupts on x86_64
+Date: Mon, 17 Sep 2007 12:40:54 -0700
+User-Agent: KMail/1.9.7
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+References: <200709120833.15980.jbarnes@virtuousgeek.org> <200709171213.21511.jbarnes@virtuousgeek.org> <1190056703.2995.11.camel@chaos>
+In-Reply-To: <1190056703.2995.11.camel@chaos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709171240.55260.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.88.206.99 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007, Lee Schermerhorn wrote:
+On Monday, September 17, 2007, Thomas Gleixner wrote:
+> On Mon, 2007-09-17 at 12:13 -0700, Jesse Barnes wrote:
+> > On Wednesday, September 12, 2007, Thomas Gleixner wrote:
+> > > does it make any difference when you boot the box with:
+> > >
+> > > nohz=off
+> > >
+> > > on the kernel command line ?
+> >
+> > Yeah, that makes a difference:  the box hangs when I start
+> > receiving vblank interrupts instead.  However it's not a hard hang,
+> > I think X just becomes unresponsive.  I can still hit the power
+> > button on the laptop and the machine shuts down gracefully, but
+> > ctl-alt-delete and ctl-alt-backspace don't work.  So X is probably
+> > still up and in charge of input but may not be getting any more
+> > timeslices or something.
+>
+> Eeek, that sounds scary. Can you add "highres=off" as well ?
 
-> Here is the 23-rc6 verison of the patch.  Andi considers it a high
-> priority bug fix for .23.  I'm a bit uncomfortable with this, this late
-> in the 23 cycle.  I've not heard of problems w/o this patch, but then,
-> maybe no one notices if they leak a memory policy struct now and then,
-> or occasionally allocate memory on the wrong node because they used a
-> prematurely freed memory policy.
+with nohz=off and highres=off I get a similar but not quite identical 
+hang:  the mouse pointer still moves around but my desktop is still 
+hung and glxgears doesn't come up.  Behavior is identical without boot 
+options and with highres=off however (i.e. lossy interrupts in both 
+cases).
 
-The patch does require concurrent increments and decrements in the main 
-fault patch. The potential is to create another bouncing cacheline for 
-concurrent faults. This looks like it would cause a performance issue.
-
-> Kernel Build [16cpu, 32GB, ia64] - average of 10 runs:
-> 
-> 		w/o patch	w/ refcount patch
-> 	    Avg	  Std Devn	   Avg	  Std Devn
-> Real:	 100.59	    0.38	 100.63	    0.43
-> User:	1209.60	    0.37	1209.91	    0.31
-> System:   81.52	    0.42	  81.64	    0.34
-
-Single threaded build? I would suggest to try concurrently faulting memory 
-from multiple processors. You may not see this on a kernel build even if 
-this is run with -j16 because concurrent faults are rare.
-
+Jesse
