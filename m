@@ -1,141 +1,788 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbXIQT16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbXIQTaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759062AbXIQT16 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 15:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbXIQT1s
+	id S1758323AbXIQTaN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 15:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbXIQT34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 15:27:48 -0400
-Received: from despair.weirdnet.nl ([193.202.115.165]:13177 "EHLO
-	despair.weirdnet.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758205AbXIQT1p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 15:27:45 -0400
-Date: Mon, 17 Sep 2007 21:27:42 +0200
-From: Paul de Weerd <weerd@weirdnet.nl>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Paul de Weerd <weerd@weirdnet.nl>, "Can E. Acar" <can.acar@pro-g.com.tr>,
-       misc@openbsd.org, linux-kernel@vger.kernel.org,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070917192742.GY18186@despair.weirdnet.nl>
-References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211351.GB18232@stusta.de> <20070917092019.GC23002@schlund.de> <20070917133845.GJ18232@stusta.de> <20070917151505.GV18186@despair.weirdnet.nl> <20070917153846.GO18232@stusta.de> <20070917180230.GW18186@despair.weirdnet.nl> <20070917183234.GR18232@stusta.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="53TzBEXPl5+8hjUY"
-Content-Disposition: inline
-In-Reply-To: <20070917183234.GR18232@stusta.de>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Mon, 17 Sep 2007 15:29:56 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:41843 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754345AbXIQT3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 15:29:53 -0400
+Subject: Re: [PATCH] JBD slab cleanups
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Christoph Hellwig <hch@infradead.org>, pbadari@us.ibm.com
+Cc: Christoph Lameter <clameter@sgi.com>, linux-fsdevel@vger.kernel.org,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1189796027.3841.6.camel@localhost.localdomain>
+References: <20070828190735.292638294@sgi.com>
+	 <1188432669.3799.35.camel@localhost.localdomain>
+	 <1188434857.3799.76.camel@localhost.localdomain>
+	 <1188605538.3837.51.camel@localhost.localdomain>
+	 <20070901183922.GA12907@infradead.org>
+	 <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
+	 <20070902152801.GA19962@infradead.org>
+	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
+	 <20070903134043.GB28962@infradead.org>
+	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
+	 <20070903193308.GA7771@infradead.org>
+	 <1189796027.3841.6.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Mon, 17 Sep 2007 12:29:51 -0700
+Message-Id: <1190057391.3845.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-09-14 at 11:53 -0700, Mingming Cao wrote:
+> jbd/jbd2: Replace slab allocations with page cache allocations
+> 
+> From: Christoph Lameter <clameter@sgi.com>
+> 
+> JBD should not pass slab pages down to the block layer.
+> Use page allocator pages instead. This will also prepare
+> JBD for the large blocksize patchset.
+> 
 
---53TzBEXPl5+8hjUY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Currently memory allocation for committed_data(and frozen_buffer) for
+bufferhead is done through jbd slab management, as Christoph Hellwig
+pointed out that this is broken as jbd should not pass slab pages down
+to IO layer. and suggested to use get_free_pages() directly.
 
-On Mon, Sep 17, 2007 at 08:32:35PM +0200, Adrian Bunk wrote:
-| > I'm not making any arguments against any (commercial) user of BSD
-| > licenced code on moral (or legal or other) grounds that they should
-| > give back. I am (and I think others too, but I do not wish to speak
-| > for them) trying to make an argument based on the 'share'-nature of
-| > the GPL that doesn't give back the freedom of BSD licenced code.
-|=20
-| GPL has a "share and protect" nature.
+The problem with this patch, as Andreas Dilger pointed today in ext4
+interlock call, for 1k,2k block size ext2/3/4, get_free_pages() waste
+1/3-1/2 page space. 
 
-Yes, and I was talking about the 'share' part. The protect part is
-fine with me, I understand the reasoning behind it. I would not choose
-it as my own licence, but that is a matter of personal choice.
+What was the originally intention to set up slabs for committed_data(and
+frozen_buffer) in JBD? Why not using kmalloc?
 
-| > I'm clearly not saying you must give back, legally [but still, IANAL].
-| > I'm saying you should give back as freely as you received, out of
-| > respect. Someone else already mentioned it : Just because you can take
-| > BSD licenced code and do (almost) whatever you wish, doesn't mean you
-| > should. Leave that up to the Big Evil Corps (the ones that also use
-| > GPL'ed code without giving back, btw).
-|=20
-| If a corporation violates the terms of the GPL lawyers and courts can=20
-| force them to do so.
+Mingming
 
-The exact same is true for the BSD Licence. If a corporation (or
-anyone else for that matter) violates the terms of the BSD licence,
-courts can make them stop these violations. It's just easier to
-violate the GPL, because it has more restrictions. [I'm still not a
-lawyer, btw]
+> Tested on 2.6.23-rc6 with fsx runs fine.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> ---
+>  fs/jbd/checkpoint.c   |    2 
+>  fs/jbd/commit.c       |    6 +-
+>  fs/jbd/journal.c      |  107 ++++---------------------------------------------
+>  fs/jbd/transaction.c  |   10 ++--
+>  fs/jbd2/checkpoint.c  |    2 
+>  fs/jbd2/commit.c      |    6 +-
+>  fs/jbd2/journal.c     |  109 ++++----------------------------------------------
+>  fs/jbd2/transaction.c |   18 ++++----
+>  include/linux/jbd.h   |   23 +++++++++-
+>  include/linux/jbd2.h  |   28 ++++++++++--
+>  10 files changed, 83 insertions(+), 228 deletions(-)
+> 
+> Index: linux-2.6.23-rc5/fs/jbd/journal.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/fs/jbd/journal.c	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/fs/jbd/journal.c	2007-09-13 13:45:39.000000000 -0700
+> @@ -83,7 +83,6 @@ EXPORT_SYMBOL(journal_force_commit);
+> 
+>  static int journal_convert_superblock_v1(journal_t *, journal_superblock_t *);
+>  static void __journal_abort_soft (journal_t *journal, int errno);
+> -static int journal_create_jbd_slab(size_t slab_size);
+> 
+>  /*
+>   * Helper function used to manage commit timeouts
+> @@ -334,10 +333,10 @@ repeat:
+>  		char *tmp;
+> 
+>  		jbd_unlock_bh_state(bh_in);
+> -		tmp = jbd_slab_alloc(bh_in->b_size, GFP_NOFS);
+> +		tmp = jbd_alloc(bh_in->b_size, GFP_NOFS);
+>  		jbd_lock_bh_state(bh_in);
+>  		if (jh_in->b_frozen_data) {
+> -			jbd_slab_free(tmp, bh_in->b_size);
+> +			jbd_free(tmp, bh_in->b_size);
+>  			goto repeat;
+>  		}
+> 
+> @@ -679,7 +678,7 @@ static journal_t * journal_init_common (
+>  	/* Set up a default-sized revoke table for the new mount. */
+>  	err = journal_init_revoke(journal, JOURNAL_REVOKE_DEFAULT_HASH);
+>  	if (err) {
+> -		kfree(journal);
+> +		jbd_kfree(journal);
+>  		goto fail;
+>  	}
+>  	return journal;
+> @@ -728,7 +727,7 @@ journal_t * journal_init_dev(struct bloc
+>  	if (!journal->j_wbuf) {
+>  		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
+>  			__FUNCTION__);
+> -		kfree(journal);
+> +		jbd_kfree(journal);
+>  		journal = NULL;
+>  		goto out;
+>  	}
+> @@ -782,7 +781,7 @@ journal_t * journal_init_inode (struct i
+>  	if (!journal->j_wbuf) {
+>  		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
+>  			__FUNCTION__);
+> -		kfree(journal);
+> +		jbd_kfree(journal);
+>  		return NULL;
+>  	}
+> 
+> @@ -791,7 +790,7 @@ journal_t * journal_init_inode (struct i
+>  	if (err) {
+>  		printk(KERN_ERR "%s: Cannnot locate journal superblock\n",
+>  		       __FUNCTION__);
+> -		kfree(journal);
+> +		jbd_kfree(journal);
+>  		return NULL;
+>  	}
+> 
+> @@ -1095,13 +1094,6 @@ int journal_load(journal_t *journal)
+>  		}
+>  	}
+> 
+> -	/*
+> -	 * Create a slab for this blocksize
+> -	 */
+> -	err = journal_create_jbd_slab(be32_to_cpu(sb->s_blocksize));
+> -	if (err)
+> -		return err;
+> -
+>  	/* Let the recovery code check whether it needs to recover any
+>  	 * data from the journal. */
+>  	if (journal_recover(journal))
+> @@ -1166,7 +1158,7 @@ void journal_destroy(journal_t *journal)
+>  	if (journal->j_revoke)
+>  		journal_destroy_revoke(journal);
+>  	kfree(journal->j_wbuf);
+> -	kfree(journal);
+> +	jbd_kfree(journal);
+>  }
+> 
+> 
+> @@ -1615,86 +1607,6 @@ int journal_blocks_per_page(struct inode
+>  }
+> 
+>  /*
+> - * Simple support for retrying memory allocations.  Introduced to help to
+> - * debug different VM deadlock avoidance strategies.
+> - */
+> -void * __jbd_kmalloc (const char *where, size_t size, gfp_t flags, int retry)
+> -{
+> -	return kmalloc(size, flags | (retry ? __GFP_NOFAIL : 0));
+> -}
+> -
+> -/*
+> - * jbd slab management: create 1k, 2k, 4k, 8k slabs as needed
+> - * and allocate frozen and commit buffers from these slabs.
+> - *
+> - * Reason for doing this is to avoid, SLAB_DEBUG - since it could
+> - * cause bh to cross page boundary.
+> - */
+> -
+> -#define JBD_MAX_SLABS 5
+> -#define JBD_SLAB_INDEX(size)  (size >> 11)
+> -
+> -static struct kmem_cache *jbd_slab[JBD_MAX_SLABS];
+> -static const char *jbd_slab_names[JBD_MAX_SLABS] = {
+> -	"jbd_1k", "jbd_2k", "jbd_4k", NULL, "jbd_8k"
+> -};
+> -
+> -static void journal_destroy_jbd_slabs(void)
+> -{
+> -	int i;
+> -
+> -	for (i = 0; i < JBD_MAX_SLABS; i++) {
+> -		if (jbd_slab[i])
+> -			kmem_cache_destroy(jbd_slab[i]);
+> -		jbd_slab[i] = NULL;
+> -	}
+> -}
+> -
+> -static int journal_create_jbd_slab(size_t slab_size)
+> -{
+> -	int i = JBD_SLAB_INDEX(slab_size);
+> -
+> -	BUG_ON(i >= JBD_MAX_SLABS);
+> -
+> -	/*
+> -	 * Check if we already have a slab created for this size
+> -	 */
+> -	if (jbd_slab[i])
+> -		return 0;
+> -
+> -	/*
+> -	 * Create a slab and force alignment to be same as slabsize -
+> -	 * this will make sure that allocations won't cross the page
+> -	 * boundary.
+> -	 */
+> -	jbd_slab[i] = kmem_cache_create(jbd_slab_names[i],
+> -				slab_size, slab_size, 0, NULL);
+> -	if (!jbd_slab[i]) {
+> -		printk(KERN_EMERG "JBD: no memory for jbd_slab cache\n");
+> -		return -ENOMEM;
+> -	}
+> -	return 0;
+> -}
+> -
+> -void * jbd_slab_alloc(size_t size, gfp_t flags)
+> -{
+> -	int idx;
+> -
+> -	idx = JBD_SLAB_INDEX(size);
+> -	BUG_ON(jbd_slab[idx] == NULL);
+> -	return kmem_cache_alloc(jbd_slab[idx], flags | __GFP_NOFAIL);
+> -}
+> -
+> -void jbd_slab_free(void *ptr,  size_t size)
+> -{
+> -	int idx;
+> -
+> -	idx = JBD_SLAB_INDEX(size);
+> -	BUG_ON(jbd_slab[idx] == NULL);
+> -	kmem_cache_free(jbd_slab[idx], ptr);
+> -}
+> -
+> -/*
+>   * Journal_head storage management
+>   */
+>  static struct kmem_cache *journal_head_cache;
+> @@ -1881,13 +1793,13 @@ static void __journal_remove_journal_hea
+>  				printk(KERN_WARNING "%s: freeing "
+>  						"b_frozen_data\n",
+>  						__FUNCTION__);
+> -				jbd_slab_free(jh->b_frozen_data, bh->b_size);
+> +				jbd_free(jh->b_frozen_data, bh->b_size);
+>  			}
+>  			if (jh->b_committed_data) {
+>  				printk(KERN_WARNING "%s: freeing "
+>  						"b_committed_data\n",
+>  						__FUNCTION__);
+> -				jbd_slab_free(jh->b_committed_data, bh->b_size);
+> +				jbd_free(jh->b_committed_data, bh->b_size);
+>  			}
+>  			bh->b_private = NULL;
+>  			jh->b_bh = NULL;	/* debug, really */
+> @@ -2042,7 +1954,6 @@ static void journal_destroy_caches(void)
+>  	journal_destroy_revoke_caches();
+>  	journal_destroy_journal_head_cache();
+>  	journal_destroy_handle_cache();
+> -	journal_destroy_jbd_slabs();
+>  }
+> 
+>  static int __init journal_init(void)
+> Index: linux-2.6.23-rc5/include/linux/jbd.h
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/include/linux/jbd.h	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/include/linux/jbd.h	2007-09-13 13:42:27.000000000 -0700
+> @@ -71,9 +71,26 @@ extern int journal_enable_debug;
+>  #define jbd_debug(f, a...)	/**/
+>  #endif
+> 
+> -extern void * __jbd_kmalloc (const char *where, size_t size, gfp_t flags, int retry);
+> -extern void * jbd_slab_alloc(size_t size, gfp_t flags);
+> -extern void jbd_slab_free(void *ptr, size_t size);
+> +static inline void *__jbd_kmalloc(const char *where, size_t size,
+> +						gfp_t flags, int retry)
+> +{
+> +	return kmalloc(size, flags | (retry ? __GFP_NOFAIL : 0));
+> +}
+> +
+> +static inline void jbd_kfree(void *ptr)
+> +{
+> +	return kfree(ptr);
+> +}
+> +
+> +static inline void *jbd_alloc(size_t size, gfp_t flags)
+> +{
+> +	return (void *)__get_free_pages(flags, get_order(size));
+> +}
+> +
+> +static inline void jbd_free(void *ptr, size_t size)
+> +{
+> +	free_pages((unsigned long)ptr, get_order(size));
+> +};
+> 
+>  #define jbd_kmalloc(size, flags) \
+>  	__jbd_kmalloc(__FUNCTION__, (size), (flags), journal_oom_retry)
+> Index: linux-2.6.23-rc5/include/linux/jbd2.h
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/include/linux/jbd2.h	2007-09-13 13:37:58.000000000 -0700
+> +++ linux-2.6.23-rc5/include/linux/jbd2.h	2007-09-13 13:51:49.000000000 -0700
+> @@ -71,11 +71,27 @@ extern u8 jbd2_journal_enable_debug;
+>  #define jbd_debug(f, a...)	/**/
+>  #endif
+> 
+> -extern void * __jbd2_kmalloc (const char *where, size_t size, gfp_t flags, int retry);
+> -extern void * jbd2_slab_alloc(size_t size, gfp_t flags);
+> -extern void jbd2_slab_free(void *ptr, size_t size);
+> +static inline void *__jbd2_kmalloc(const char *where, size_t size,
+> +						gfp_t flags, int retry)
+> +{
+> +	return kmalloc(size, flags | (retry ? __GFP_NOFAIL : 0));
+> +}
+> +static inline void jbd2_kfree(void *ptr)
+> +{
+> +	return kfree(ptr);
+> +}
+> +
+> +static inline void *jbd2_alloc(size_t size, gfp_t flags)
+> +{
+> +	return (void *)__get_free_pages(flags, get_order(size));
+> +}
+> +
+> +static inline void jbd2_free(void *ptr, size_t size)
+> +{
+> +	free_pages((unsigned long)ptr, get_order(size));
+> +};
+> 
+> -#define jbd_kmalloc(size, flags) \
+> +#define jbd2_kmalloc(size, flags) \
+>  	__jbd2_kmalloc(__FUNCTION__, (size), (flags), journal_oom_retry)
+>  #define jbd_rep_kmalloc(size, flags) \
+>  	__jbd2_kmalloc(__FUNCTION__, (size), (flags), 1)
+> @@ -959,12 +975,12 @@ void jbd2_journal_put_journal_head(struc
+>   */
+>  extern struct kmem_cache *jbd2_handle_cache;
+> 
+> -static inline handle_t *jbd_alloc_handle(gfp_t gfp_flags)
+> +static inline handle_t *jbd2_alloc_handle(gfp_t gfp_flags)
+>  {
+>  	return kmem_cache_alloc(jbd2_handle_cache, gfp_flags);
+>  }
+> 
+> -static inline void jbd_free_handle(handle_t *handle)
+> +static inline void jbd2_free_handle(handle_t *handle)
+>  {
+>  	kmem_cache_free(jbd2_handle_cache, handle);
+>  }
+> Index: linux-2.6.23-rc5/fs/jbd2/journal.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/fs/jbd2/journal.c	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/fs/jbd2/journal.c	2007-09-13 14:00:17.000000000 -0700
+> @@ -84,7 +84,6 @@ EXPORT_SYMBOL(jbd2_journal_force_commit)
+> 
+>  static int journal_convert_superblock_v1(journal_t *, journal_superblock_t *);
+>  static void __journal_abort_soft (journal_t *journal, int errno);
+> -static int jbd2_journal_create_jbd_slab(size_t slab_size);
+> 
+>  /*
+>   * Helper function used to manage commit timeouts
+> @@ -335,10 +334,10 @@ repeat:
+>  		char *tmp;
+> 
+>  		jbd_unlock_bh_state(bh_in);
+> -		tmp = jbd2_slab_alloc(bh_in->b_size, GFP_NOFS);
+> +		tmp = jbd2_alloc(bh_in->b_size, GFP_NOFS);
+>  		jbd_lock_bh_state(bh_in);
+>  		if (jh_in->b_frozen_data) {
+> -			jbd2_slab_free(tmp, bh_in->b_size);
+> +			jbd2_free(tmp, bh_in->b_size);
+>  			goto repeat;
+>  		}
+> 
+> @@ -655,7 +654,7 @@ static journal_t * journal_init_common (
+>  	journal_t *journal;
+>  	int err;
+> 
+> -	journal = jbd_kmalloc(sizeof(*journal), GFP_KERNEL);
+> +	journal = jbd2_kmalloc(sizeof(*journal), GFP_KERNEL);
+>  	if (!journal)
+>  		goto fail;
+>  	memset(journal, 0, sizeof(*journal));
+> @@ -680,7 +679,7 @@ static journal_t * journal_init_common (
+>  	/* Set up a default-sized revoke table for the new mount. */
+>  	err = jbd2_journal_init_revoke(journal, JOURNAL_REVOKE_DEFAULT_HASH);
+>  	if (err) {
+> -		kfree(journal);
+> +		jbd2_kfree(journal);
+>  		goto fail;
+>  	}
+>  	return journal;
+> @@ -729,7 +728,7 @@ journal_t * jbd2_journal_init_dev(struct
+>  	if (!journal->j_wbuf) {
+>  		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
+>  			__FUNCTION__);
+> -		kfree(journal);
+> +		jbd2_kfree(journal);
+>  		journal = NULL;
+>  		goto out;
+>  	}
+> @@ -783,7 +782,7 @@ journal_t * jbd2_journal_init_inode (str
+>  	if (!journal->j_wbuf) {
+>  		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
+>  			__FUNCTION__);
+> -		kfree(journal);
+> +		jbd2_kfree(journal);
+>  		return NULL;
+>  	}
+> 
+> @@ -792,7 +791,7 @@ journal_t * jbd2_journal_init_inode (str
+>  	if (err) {
+>  		printk(KERN_ERR "%s: Cannnot locate journal superblock\n",
+>  		       __FUNCTION__);
+> -		kfree(journal);
+> +		jbd2_kfree(journal);
+>  		return NULL;
+>  	}
+> 
+> @@ -1096,13 +1095,6 @@ int jbd2_journal_load(journal_t *journal
+>  		}
+>  	}
+> 
+> -	/*
+> -	 * Create a slab for this blocksize
+> -	 */
+> -	err = jbd2_journal_create_jbd_slab(be32_to_cpu(sb->s_blocksize));
+> -	if (err)
+> -		return err;
+> -
+>  	/* Let the recovery code check whether it needs to recover any
+>  	 * data from the journal. */
+>  	if (jbd2_journal_recover(journal))
+> @@ -1167,7 +1159,7 @@ void jbd2_journal_destroy(journal_t *jou
+>  	if (journal->j_revoke)
+>  		jbd2_journal_destroy_revoke(journal);
+>  	kfree(journal->j_wbuf);
+> -	kfree(journal);
+> +	jbd2_kfree(journal);
+>  }
+> 
+> 
+> @@ -1627,86 +1619,6 @@ size_t journal_tag_bytes(journal_t *jour
+>  }
+> 
+>  /*
+> - * Simple support for retrying memory allocations.  Introduced to help to
+> - * debug different VM deadlock avoidance strategies.
+> - */
+> -void * __jbd2_kmalloc (const char *where, size_t size, gfp_t flags, int retry)
+> -{
+> -	return kmalloc(size, flags | (retry ? __GFP_NOFAIL : 0));
+> -}
+> -
+> -/*
+> - * jbd slab management: create 1k, 2k, 4k, 8k slabs as needed
+> - * and allocate frozen and commit buffers from these slabs.
+> - *
+> - * Reason for doing this is to avoid, SLAB_DEBUG - since it could
+> - * cause bh to cross page boundary.
+> - */
+> -
+> -#define JBD_MAX_SLABS 5
+> -#define JBD_SLAB_INDEX(size)  (size >> 11)
+> -
+> -static struct kmem_cache *jbd_slab[JBD_MAX_SLABS];
+> -static const char *jbd_slab_names[JBD_MAX_SLABS] = {
+> -	"jbd2_1k", "jbd2_2k", "jbd2_4k", NULL, "jbd2_8k"
+> -};
+> -
+> -static void jbd2_journal_destroy_jbd_slabs(void)
+> -{
+> -	int i;
+> -
+> -	for (i = 0; i < JBD_MAX_SLABS; i++) {
+> -		if (jbd_slab[i])
+> -			kmem_cache_destroy(jbd_slab[i]);
+> -		jbd_slab[i] = NULL;
+> -	}
+> -}
+> -
+> -static int jbd2_journal_create_jbd_slab(size_t slab_size)
+> -{
+> -	int i = JBD_SLAB_INDEX(slab_size);
+> -
+> -	BUG_ON(i >= JBD_MAX_SLABS);
+> -
+> -	/*
+> -	 * Check if we already have a slab created for this size
+> -	 */
+> -	if (jbd_slab[i])
+> -		return 0;
+> -
+> -	/*
+> -	 * Create a slab and force alignment to be same as slabsize -
+> -	 * this will make sure that allocations won't cross the page
+> -	 * boundary.
+> -	 */
+> -	jbd_slab[i] = kmem_cache_create(jbd_slab_names[i],
+> -				slab_size, slab_size, 0, NULL);
+> -	if (!jbd_slab[i]) {
+> -		printk(KERN_EMERG "JBD: no memory for jbd_slab cache\n");
+> -		return -ENOMEM;
+> -	}
+> -	return 0;
+> -}
+> -
+> -void * jbd2_slab_alloc(size_t size, gfp_t flags)
+> -{
+> -	int idx;
+> -
+> -	idx = JBD_SLAB_INDEX(size);
+> -	BUG_ON(jbd_slab[idx] == NULL);
+> -	return kmem_cache_alloc(jbd_slab[idx], flags | __GFP_NOFAIL);
+> -}
+> -
+> -void jbd2_slab_free(void *ptr,  size_t size)
+> -{
+> -	int idx;
+> -
+> -	idx = JBD_SLAB_INDEX(size);
+> -	BUG_ON(jbd_slab[idx] == NULL);
+> -	kmem_cache_free(jbd_slab[idx], ptr);
+> -}
+> -
+> -/*
+>   * Journal_head storage management
+>   */
+>  static struct kmem_cache *jbd2_journal_head_cache;
+> @@ -1893,13 +1805,13 @@ static void __journal_remove_journal_hea
+>  				printk(KERN_WARNING "%s: freeing "
+>  						"b_frozen_data\n",
+>  						__FUNCTION__);
+> -				jbd2_slab_free(jh->b_frozen_data, bh->b_size);
+> +				jbd2_free(jh->b_frozen_data, bh->b_size);
+>  			}
+>  			if (jh->b_committed_data) {
+>  				printk(KERN_WARNING "%s: freeing "
+>  						"b_committed_data\n",
+>  						__FUNCTION__);
+> -				jbd2_slab_free(jh->b_committed_data, bh->b_size);
+> +				jbd2_free(jh->b_committed_data, bh->b_size);
+>  			}
+>  			bh->b_private = NULL;
+>  			jh->b_bh = NULL;	/* debug, really */
+> @@ -2040,7 +1952,6 @@ static void jbd2_journal_destroy_caches(
+>  	jbd2_journal_destroy_revoke_caches();
+>  	jbd2_journal_destroy_jbd2_journal_head_cache();
+>  	jbd2_journal_destroy_handle_cache();
+> -	jbd2_journal_destroy_jbd_slabs();
+>  }
+> 
+>  static int __init journal_init(void)
+> Index: linux-2.6.23-rc5/fs/jbd/commit.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/fs/jbd/commit.c	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/fs/jbd/commit.c	2007-09-13 13:40:03.000000000 -0700
+> @@ -375,7 +375,7 @@ void journal_commit_transaction(journal_
+>  			struct buffer_head *bh = jh2bh(jh);
+> 
+>  			jbd_lock_bh_state(bh);
+> -			jbd_slab_free(jh->b_committed_data, bh->b_size);
+> +			jbd_free(jh->b_committed_data, bh->b_size);
+>  			jh->b_committed_data = NULL;
+>  			jbd_unlock_bh_state(bh);
+>  		}
+> @@ -792,14 +792,14 @@ restart_loop:
+>  		 * Otherwise, we can just throw away the frozen data now.
+>  		 */
+>  		if (jh->b_committed_data) {
+> -			jbd_slab_free(jh->b_committed_data, bh->b_size);
+> +			jbd_free(jh->b_committed_data, bh->b_size);
+>  			jh->b_committed_data = NULL;
+>  			if (jh->b_frozen_data) {
+>  				jh->b_committed_data = jh->b_frozen_data;
+>  				jh->b_frozen_data = NULL;
+>  			}
+>  		} else if (jh->b_frozen_data) {
+> -			jbd_slab_free(jh->b_frozen_data, bh->b_size);
+> +			jbd_free(jh->b_frozen_data, bh->b_size);
+>  			jh->b_frozen_data = NULL;
+>  		}
+> 
+> Index: linux-2.6.23-rc5/fs/jbd2/commit.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/fs/jbd2/commit.c	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/fs/jbd2/commit.c	2007-09-13 13:40:03.000000000 -0700
+> @@ -384,7 +384,7 @@ void jbd2_journal_commit_transaction(jou
+>  			struct buffer_head *bh = jh2bh(jh);
+> 
+>  			jbd_lock_bh_state(bh);
+> -			jbd2_slab_free(jh->b_committed_data, bh->b_size);
+> +			jbd2_free(jh->b_committed_data, bh->b_size);
+>  			jh->b_committed_data = NULL;
+>  			jbd_unlock_bh_state(bh);
+>  		}
+> @@ -801,14 +801,14 @@ restart_loop:
+>  		 * Otherwise, we can just throw away the frozen data now.
+>  		 */
+>  		if (jh->b_committed_data) {
+> -			jbd2_slab_free(jh->b_committed_data, bh->b_size);
+> +			jbd2_free(jh->b_committed_data, bh->b_size);
+>  			jh->b_committed_data = NULL;
+>  			if (jh->b_frozen_data) {
+>  				jh->b_committed_data = jh->b_frozen_data;
+>  				jh->b_frozen_data = NULL;
+>  			}
+>  		} else if (jh->b_frozen_data) {
+> -			jbd2_slab_free(jh->b_frozen_data, bh->b_size);
+> +			jbd2_free(jh->b_frozen_data, bh->b_size);
+>  			jh->b_frozen_data = NULL;
+>  		}
+> 
+> Index: linux-2.6.23-rc5/fs/jbd/transaction.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/fs/jbd/transaction.c	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/fs/jbd/transaction.c	2007-09-13 13:46:23.000000000 -0700
+> @@ -229,7 +229,7 @@ repeat_locked:
+>  	spin_unlock(&journal->j_state_lock);
+>  out:
+>  	if (unlikely(new_transaction))		/* It's usually NULL */
+> -		kfree(new_transaction);
+> +		jbd_kfree(new_transaction);
+>  	return ret;
+>  }
+> 
+> @@ -668,7 +668,7 @@ repeat:
+>  				JBUFFER_TRACE(jh, "allocate memory for buffer");
+>  				jbd_unlock_bh_state(bh);
+>  				frozen_buffer =
+> -					jbd_slab_alloc(jh2bh(jh)->b_size,
+> +					jbd_alloc(jh2bh(jh)->b_size,
+>  							 GFP_NOFS);
+>  				if (!frozen_buffer) {
+>  					printk(KERN_EMERG
+> @@ -728,7 +728,7 @@ done:
+> 
+>  out:
+>  	if (unlikely(frozen_buffer))	/* It's usually NULL */
+> -		jbd_slab_free(frozen_buffer, bh->b_size);
+> +		jbd_free(frozen_buffer, bh->b_size);
+> 
+>  	JBUFFER_TRACE(jh, "exit");
+>  	return error;
+> @@ -881,7 +881,7 @@ int journal_get_undo_access(handle_t *ha
+> 
+>  repeat:
+>  	if (!jh->b_committed_data) {
+> -		committed_data = jbd_slab_alloc(jh2bh(jh)->b_size, GFP_NOFS);
+> +		committed_data = jbd_alloc(jh2bh(jh)->b_size, GFP_NOFS);
+>  		if (!committed_data) {
+>  			printk(KERN_EMERG "%s: No memory for committed data\n",
+>  				__FUNCTION__);
+> @@ -908,7 +908,7 @@ repeat:
+>  out:
+>  	journal_put_journal_head(jh);
+>  	if (unlikely(committed_data))
+> -		jbd_slab_free(committed_data, bh->b_size);
+> +		jbd_free(committed_data, bh->b_size);
+>  	return err;
+>  }
+> 
+> Index: linux-2.6.23-rc5/fs/jbd2/transaction.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/fs/jbd2/transaction.c	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/fs/jbd2/transaction.c	2007-09-13 13:59:20.000000000 -0700
+> @@ -96,7 +96,7 @@ static int start_this_handle(journal_t *
+> 
+>  alloc_transaction:
+>  	if (!journal->j_running_transaction) {
+> -		new_transaction = jbd_kmalloc(sizeof(*new_transaction),
+> +		new_transaction = jbd2_kmalloc(sizeof(*new_transaction),
+>  						GFP_NOFS);
+>  		if (!new_transaction) {
+>  			ret = -ENOMEM;
+> @@ -229,14 +229,14 @@ repeat_locked:
+>  	spin_unlock(&journal->j_state_lock);
+>  out:
+>  	if (unlikely(new_transaction))		/* It's usually NULL */
+> -		kfree(new_transaction);
+> +		jbd2_kfree(new_transaction);
+>  	return ret;
+>  }
+> 
+>  /* Allocate a new handle.  This should probably be in a slab... */
+>  static handle_t *new_handle(int nblocks)
+>  {
+> -	handle_t *handle = jbd_alloc_handle(GFP_NOFS);
+> +	handle_t *handle = jbd2_alloc_handle(GFP_NOFS);
+>  	if (!handle)
+>  		return NULL;
+>  	memset(handle, 0, sizeof(*handle));
+> @@ -282,7 +282,7 @@ handle_t *jbd2_journal_start(journal_t *
+> 
+>  	err = start_this_handle(journal, handle);
+>  	if (err < 0) {
+> -		jbd_free_handle(handle);
+> +		jbd2_free_handle(handle);
+>  		current->journal_info = NULL;
+>  		handle = ERR_PTR(err);
+>  	}
+> @@ -668,7 +668,7 @@ repeat:
+>  				JBUFFER_TRACE(jh, "allocate memory for buffer");
+>  				jbd_unlock_bh_state(bh);
+>  				frozen_buffer =
+> -					jbd2_slab_alloc(jh2bh(jh)->b_size,
+> +					jbd2_alloc(jh2bh(jh)->b_size,
+>  							 GFP_NOFS);
+>  				if (!frozen_buffer) {
+>  					printk(KERN_EMERG
+> @@ -728,7 +728,7 @@ done:
+> 
+>  out:
+>  	if (unlikely(frozen_buffer))	/* It's usually NULL */
+> -		jbd2_slab_free(frozen_buffer, bh->b_size);
+> +		jbd2_free(frozen_buffer, bh->b_size);
+> 
+>  	JBUFFER_TRACE(jh, "exit");
+>  	return error;
+> @@ -881,7 +881,7 @@ int jbd2_journal_get_undo_access(handle_
+> 
+>  repeat:
+>  	if (!jh->b_committed_data) {
+> -		committed_data = jbd2_slab_alloc(jh2bh(jh)->b_size, GFP_NOFS);
+> +		committed_data = jbd2_alloc(jh2bh(jh)->b_size, GFP_NOFS);
+>  		if (!committed_data) {
+>  			printk(KERN_EMERG "%s: No memory for committed data\n",
+>  				__FUNCTION__);
+> @@ -908,7 +908,7 @@ repeat:
+>  out:
+>  	jbd2_journal_put_journal_head(jh);
+>  	if (unlikely(committed_data))
+> -		jbd2_slab_free(committed_data, bh->b_size);
+> +		jbd2_free(committed_data, bh->b_size);
+>  	return err;
+>  }
+> 
+> @@ -1411,7 +1411,7 @@ int jbd2_journal_stop(handle_t *handle)
+>  		spin_unlock(&journal->j_state_lock);
+>  	}
+> 
+> -	jbd_free_handle(handle);
+> +	jbd2_free_handle(handle);
+>  	return err;
+>  }
+> 
+> Index: linux-2.6.23-rc5/fs/jbd/checkpoint.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/fs/jbd/checkpoint.c	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/fs/jbd/checkpoint.c	2007-09-14 09:57:21.000000000 -0700
+> @@ -693,5 +693,5 @@ void __journal_drop_transaction(journal_
+>  	J_ASSERT(journal->j_running_transaction != transaction);
+> 
+>  	jbd_debug(1, "Dropping transaction %d, all done\n", transaction->t_tid);
+> -	kfree(transaction);
+> +	jbd_kfree(transaction);
+>  }
+> Index: linux-2.6.23-rc5/fs/jbd2/checkpoint.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/fs/jbd2/checkpoint.c	2007-09-13 13:37:57.000000000 -0700
+> +++ linux-2.6.23-rc5/fs/jbd2/checkpoint.c	2007-09-14 09:57:03.000000000 -0700
+> @@ -693,5 +693,5 @@ void __jbd2_journal_drop_transaction(jou
+>  	J_ASSERT(journal->j_running_transaction != transaction);
+> 
+>  	jbd_debug(1, "Dropping transaction %d, all done\n", transaction->t_tid);
+> -	kfree(transaction);
+> +	jbd2_kfree(transaction);
+>  }
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Big Evil Corps can however use GPL'ed code without giving back and
-without violating the GPL. Also the same as with the BSD licence.
-
-| BSD people tend to consider the BSD licence as being more free than the
-| GPL because it allows to take without having to give back.
-|=20
-| When people then demand getting code back based on "ethics" or "morale"=
-=20
-| they are using the wrong licence.
-
-Why ? BSD people give their code away for free. They put hard work
-into writing quality software and they have their own ethics or
-morale. They do not *demand* getting code back, at least I have not
-seen any indication of such demands. So then why are they using the
-wrong licence ? I was merely pointing out a matter of mutual respect.
-
-| Your licence puts you in the position that you always depend on the=20
-| goodwill of the persons from whom you want to get code back.
-
-And the people using the BSD licence are completely aware of this [I
-assume, again I do not wish to speak for anyone but myself]. At least
-I was surprised that fellow open source / free software developers are
-not giving back. I've come to expect this from certain companies, but
-to me the free and open software community as a whole (here I'm
-lumping everyone and their mother together, I know) should have some
-respect towards eachother and the licence they choose and acknowledge
-the contributions of other parties, giving back as freely as they've
-been given. Not because it is required but because it's just right.
-
-The GPL requires I give changes I distribute back under the same
-licence. But if I ever were to change such a program, I would not give
-these changes back because of this requirement but because it just
-makes sense.
-
-| And BTW:
-| Many contributions to the Linux kernel come from people payed by
-| Big Evil Corps. [1]
-
-There's also contributions to OpenBSD from people paid by Big Evil
-Corps. The same is true for Net- and FreeBSD. Of course, not all Big
-Evil Corps are, in fact, Evil.
-
-| First of all, for some developers it wouldn't make a difference whether
-| their code was published under the terms of the GPL or under the terms
-| of the BSD licence.
-|=20
-| And there are many people who are aware when code comes from *BSD and=20
-| that giving code back in these cases would be friendly.
-
-Of course, like I said, on a case-by-case basis, there's nothing to
-lose.
-
-Paul 'WEiRD' de Weerd
-
---=20
->++++++++[<++++++++++>-]<+++++++.>+++[<------>-]<.>+++[<+
-+++++++++++>-]<.>++[<------------>-]<+.--------------.[-]
-                 http://www.weirdnet.nl/                =20
-
---53TzBEXPl5+8hjUY
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (OpenBSD)
-
-iD8DBQFG7tUumw12l2HFcK0RAm5cAJ9KfEYgqarQZDdMlCDlRjfai9Zz7wCdG+7L
-ORIlb7SD7MpYWgMtqW8x3mA=
-=iLGa
------END PGP SIGNATURE-----
-
---53TzBEXPl5+8hjUY--
