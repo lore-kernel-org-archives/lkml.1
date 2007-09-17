@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbXIQPbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbXIQPcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401AbXIQPbY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 11:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756419AbXIQPbM
+	id S1756475AbXIQPcl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 11:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbXIQPce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 11:31:12 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56848 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756393AbXIQPbK (ORCPT
+	Mon, 17 Sep 2007 11:32:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35920 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754091AbXIQPcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 11:31:10 -0400
-Message-ID: <46EE9BCF.3040303@sgi.com>
-Date: Mon, 17 Sep 2007 08:22:55 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 17 Sep 2007 11:32:33 -0400
+Message-ID: <46EE9E08.60604@zytor.com>
+Date: Mon, 17 Sep 2007 08:32:24 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sparclinux@vger.kernel.org
-Subject: Re: [PATCH 09/10] ppc64: Convert cpu_sibling_map to a per_cpu data
- array (v3)
-References: <20070912015644.927677070@sgi.com>	<20070912015647.486500682@sgi.com> <20070917162831.b2a9d675.sfr@canb.auug.org.au>
-In-Reply-To: <20070917162831.b2a9d675.sfr@canb.auug.org.au>
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: EDD still failing on some systems with 2.6.23-rc6-git2
+References: <46EAA9A1.1080100@redhat.com> <46EAB179.4030805@zytor.com> <46EE99C0.5020106@redhat.com>
+In-Reply-To: <46EE99C0.5020106@redhat.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> On Tue, 11 Sep 2007 18:56:53 -0700 travis@sgi.com wrote:
->> Convert cpu_sibling_map to a per_cpu cpumask_t array for the ppc64
->> architecture.  This fixes build errors in block/blktrace.c and
->> kernel/sched.c when CONFIG_SCHED_SMT is defined.
->>
->> Note: these changes have not been built nor tested.
+Chuck Ebbert wrote:
 > 
-> After applying all 10 patches, the ppc64_defconfig builds but:
+> Still fails. And apparently fails on disk 0, because it hangs right
+> after printing a zero:
 > 
-> 	vmlinux is larger:
+> --- linux-2.6.22.noarch.orig/arch/i386/boot/edd.c
+> +++ linux-2.6.22.noarch/arch/i386/boot/edd.c
+> @@ -151,6 +151,7 @@ void query_edd(void)
+>                  * Scan the BIOS-supported hard disks and query EDD
+>                  * information...
+>                  */
+> +               putchar('0' + (devno - 0x80) % 10);
+>                 get_edd_info(devno, &ei);
 > 
->    text    data     bss     dec     hex filename
-> 7705776 1756984  504624 9967384  981718 ppc64/vmlinux
-> 7706228 1757120  504624 9967972  981964 trav.bld/vmlinux
-> 
-> 	the topology (on my POWERPC5+ box) is not correct:
-> 
-> cpu0/topology/thread_siblings:0000000f
-> cpu1/topology/thread_siblings:0000000f
-> cpu2/topology/thread_siblings:0000000f
-> cpu3/topology/thread_siblings:0000000f
-> 
-> it used to be:
-> 
-> cpu0/topology/thread_siblings:00000003
-> cpu1/topology/thread_siblings:00000003
-> cpu2/topology/thread_siblings:0000000c
-> cpu3/topology/thread_siblings:0000000c
-> 
-> Similarly on my iSeries box, the topology is displayed as above
-> while it used to be:
-> 
-> cpu0/topology/thread_siblings:00000001
-> cpu1/topology/thread_siblings:00000002
-> cpu2/topology/thread_siblings:00000004
-> cpu3/topology/thread_siblings:00000008
-> 
+>                 if (boot_params.eddbuf_entries < EDDMAXNR) {
 
-Thanks Stephen for the feedback.  It may be the same situation
-that some of the other arch's encounter in that the per_cpu
-area is being accessed before it's setup.  I'll investigate
-that a bit more.
+You know... we actually do have printf()... you don't have to play this
+kind of games; you can just printf("Drive %x...\n", devno);
 
-Mike
+So does this happen ONLY when booting from CD-ROM, or is there any other
+case when it fails, too?
+
+	-hpa
