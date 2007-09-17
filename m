@@ -1,128 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbXIQS1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXIQS1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbXIQS1f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbXIQS1N
+	id S1756057AbXIQS1y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbXIQS1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:27:13 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43867 "EHLO e4.ny.us.ibm.com"
+	Mon, 17 Sep 2007 14:27:23 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43828 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754544AbXIQS1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:27:12 -0400
-Message-ID: <46EEC6FE.5060306@us.ibm.com>
-Date: Mon, 17 Sep 2007 13:27:10 -0500
-From: Anthony Liguori <aliguori@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070830)
-MIME-Version: 1.0
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, kvm-devel@lists.sourceforge.net,
-       Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH] Refactor hypercall infrastructure
-References: <11897991353793-git-send-email-aliguori@us.ibm.com><46EAF4C6.8090903@goop.org> <46EAF6FC.80207@codemonkey.ws><46EAFBA0.4020503@goop.org> <46EB0136.6080105@codemonkey.ws><46EB02BA.6030909@goop.org> <46EB0657.40603@codemonkey.ws> <97D612E30E1F88419025B06CB4CF1BE10379EBF9@scsmsx412.amr.corp.intel.com> <46EB1285.5050807@goop.org> <97D612E30E1F88419025B06CB4CF1BE10379ED0A@scsmsx412.amr.corp.intel.com> <46EB2716.1070908@goop.org> <97D612E30E1F88419025B06CB4CF1BE10379ED4C@scsmsx412.amr.corp.intel.com> <46EB6556.5020506@goop.org> <97D612E30E1F88419025B06CB4CF1BE10379EDA0@scsmsx412.amr.corp.intel.com> <46EC233B.5010209@us.ibm.com> <97D612E30E1F88419025B06CB4CF1BE1037F83EC@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <97D612E30E1F88419025B06CB4CF1BE1037F83EC@scsmsx412.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755798AbXIQS1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:27:22 -0400
+Subject: [PATCH 00/24] Read-only bind mounts
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
+       Dave Hansen <haveblue@us.ibm.com>
+From: Dave Hansen <haveblue@us.ibm.com>
+Date: Mon, 17 Sep 2007 11:27:18 -0700
+Message-Id: <20070917182718.70494C9B@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nakajima, Jun wrote:
->> I don't understand the purpose of returning the max leaf.  Who is that
->> information useful for?
->>     
->
-> Well, this is the key info to the user of CPUID. It tells which leaves
-> are valid to use. Otherwise, the user cannot tell whether the results of
-> CPUID.0x4000000N are valid or not (i.e. junk). BTW, this is what we are
-> doing on the native (for the leaf 0, 0x80000000, for example). The fact
-> that Xen returns 0x40000002 means it only uses 3 leaves today. 
->   
+If we can't pull the entire series into -mm, can we just put the
+first three patches for now?  They can stand on their own.
 
-Then it's just a version ID.  You pretty much have to treat it as a 
-version id because if it returns 0x4000 0003 and you only know what 0002 
-is, then you can't actually use it.
+---
 
-I much prefer the current use of CPUID in KVM.  If 1000 returns the KVM 
-signature, then 1001 *must* be valid and contain a set of feature bits.  
-If we wish to use additional CPUID leaves in the future, then we can 
-just use a feature bit.  The real benefit to us is that we can use a 
-discontiguous set of leaves whereas the Xen approach is forced to use a 
-linear set (at least for the result to be meaningful).
+Why do we need r/o bind mounts?
 
->> I like Jeremy's suggesting of starting with 0x40001000 for KVM.  Xen
->>     
-> has
->   
->> an established hypercall interface and that isn't going to change.
->> However, in the future, if other Operating Systems (like the BSDs)
->> choose to implement the KVM paravirtualization interface, then that
->> leaves open the possibility for Xen to also support this interface to
->> get good performance for those OSes.  It's necessary to be able to
->> support both at once if you wish to support these interfaces without
->> user interaction.
->>     
->
-> Using CPUID.0x4000000N (N > 2) does not prevent Xen from doing that,
-> either. If you use 0x40001000, 1) you need to say the leaves from
-> 0x40000000 through 0x40001000 are all valid, OR 2) you create/fork a
-> new/odd leaf (with 0x1000 offset) repeating the detection redundantly. 
->   
+This feature allows a read-only view into a read-write filesystem.
+In the process of doing that, it also provides infrastructure for
+keeping track of the number of writers to any given mount.
 
-Why do 0000-1000 have to be valid?  Xen is not going to change what they 
-have today--they can't.  However, if down the road, they decided that 
-since so many guests use KVM's paravirtualization interface other than 
-Linux, there's value in supporting it, by using 1000, they can.
+This has a number of uses.  It allows chroots to have parts of
+filesystems writable.  It will be useful for containers in the future
+because users may have root inside a container, but should not
+be allowed to write to somefilesystems.  This also replaces 
+patches that vserver has had out of the tree for several years.
 
->> There's no tangible benefit to us to use 0x40000000.  Therefore I'm
->> inclined to lean toward making things easier for others.
->>     
->
-> Again, 0x40000000 is not Xen specific. If the leaf 0x40000000 is used
-> for any guest to detect any hypervisor, that would be compelling
-> benefit. For future Xen-specific features, it's safe for Xen to use
-> other bigger leaves (like 0x40001000) because the guest starts looking
-> at them after detection of Xen. 
->   
+It allows security enhancement by making sure that parts of
+your filesystem read-only (such as when you don't trust your
+FTP server), when you don't want to have entire new filesystems
+mounted, or when you want atime selectively updated.
+I've been using the following script to test that the feature is
+working as desired.  It takes a directory and makes a regular
+bind and a r/o bind mount of it.  It then performs some normal
+filesystem operations on the three directories, including ones
+that are expected to fail, like creating a file on the r/o
+mount.
 
-I'm starting to lean toward just using 0000.  If for no other reason 
-than the hypercall space is unsharable.
-
-Regards,
-
-Anthony Liguori
-
-> Likewise if KVM paravirtualization interface (as kind of "open source
-> paravirtualization interface") is detected in the generic areas (not in
-> vender-specific), any guest can check the features available without
-> knowing which hypervisor uses which CPUID for that. 
->
->   
->> Regards,
->>
->> Anthony Liguori
->>
->>     
->>>  And like CPUID.1, CPUID.0x40000001 returns the version number in
->>> eax, and each VMM should be able to define a number of VMM-specific
->>> features available in ebx, ecx, and edx returned (which are
->>>       
-> reserved, i.e.
->   
->>> not used in Xen today). 
->>>
->>> Suppose we knew (i.e. tested) Xen and KVM supported Linux
->>> paravirtualization, the Linux code does:
->>> 1. detect Xen or KVM <the list> using CPUID.0x40000000
->>> 2. Check the version if necessary using CPUID.0x40000001
->>> 3. Check the Linux paravirtualization features available using
->>> CPUID.0x4000000Y. 
->>>
->>> Jun
->>> ---
->>> Intel Open Source Technology Center
->>>       
->
-> Jun
-> ---
-> Intel Open Source Technology Center
->   
-
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
