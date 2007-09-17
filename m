@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbXIQUmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758694AbXIQUnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbXIQUmx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 16:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbXIQUmq
+	id S1758694AbXIQUnh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 16:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756401AbXIQUna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 16:42:46 -0400
-Received: from 1wt.eu ([62.212.114.60]:2531 "EHLO 1wt.eu"
+	Mon, 17 Sep 2007 16:43:30 -0400
+Received: from THUNK.ORG ([69.25.196.29]:54958 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbXIQUmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 16:42:46 -0400
-Date: Mon, 17 Sep 2007 22:42:27 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>,
-       Rob Hussey <robjhussey@gmail.com>, efault@gmx.de,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org
-Subject: Re: Scheduler benchmarks - a follow-up
-Message-ID: <20070917204227.GA20620@1wt.eu>
-References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com> <20070917112707.GA24583@elte.hu> <E1IXMXf-0000uG-ID@flower> <20070917194342.GB20271@1wt.eu> <20070917200639.GA24301@flower.upol.cz>
-Mime-Version: 1.0
+	id S1756311AbXIQUn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 16:43:28 -0400
+Date: Mon, 17 Sep 2007 16:43:18 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Claudio Jeker <cjeker@diehard.n-r-g.com>, Adrian Bunk <bunk@kernel.org>,
+       "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917204318.GE18360@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Claudio Jeker <cjeker@diehard.n-r-g.com>,
+	Adrian Bunk <bunk@kernel.org>,
+	"Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+	linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+	Eben Moglen <moglen@softwarefreedom.org>,
+	Lawrence Lessig <lessig_from_web@pobox.com>,
+	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+	Matt Norwood <norwood@softwarefreedom.org>
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070917200639.GA24301@flower.upol.cz>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070917192341.GB30119@diehard.n-r-g.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 10:06:40PM +0200, Oleg Verych wrote:
-> On Mon, Sep 17, 2007 at 09:43:42PM +0200, Willy Tarreau wrote:
-> > 
-> > On Mon, Sep 17, 2007 at 09:45:59PM +0200, Oleg Verych wrote:
-> > > The copy list, removed by Ingo is restored. Playing fair game, Willy!
-> > 
-> > Sorry Oleg, I don't understand why you added me to this thread. And I
-> > don't understand at all what your intent was :-/
-> > 
-> > I've left others Cc too since they wonder like me.
-> 
-> Why? Answer: <http://mid.gmane.org/20070913230836.GA16536@1wt.eu>
-> 
-> IMHO you shouldn't leave public lists in the reply like this. Whatever.
+On Mon, Sep 17, 2007 at 09:23:41PM +0200, Claudio Jeker wrote:
+> Because they put their copyright plus license on code that they barely
+> modified. If they would have added substantial work into the OpenHAL code
+> and by doing that creating something new I would not say much.
 
-Nothing prevents Roman and I to exchange our respective points of views
-on LKML when those are about other activities on the list, I don't get
-your point.
+Number 1, some of the Linux wireless developers screwed up earlier
+versions.  No denying that, the problems were pointed out during the
+patch reviewed problem, AND THEY WERE FIXED.
 
-I find particularly weird the way you hijacked an existing thread
-adding references to a 4-days old mail and adding people in Cc just
-as one would add fuel to try to start any sort of flamewar.
+Number 2, if you take a look at their latest set of changes (which
+have still not been accepted), the HAL code is under a pure BSD
+license (ath5k_hw.c).  Other portions are dual licensed, but not the
+HAL --- if people would only take a look at
 
-Sorry for you, but this has no chance to succeed. First, don't consider
-that people are ennemies just because they use harsh words to tell each
-other what they feel about a specific subject (otherwise, you'd find
-hundreds of ennemies of everyone here). Second, if there are some aspects
-of the mail above that you want explained, you can mail us privately,
-you're not necessarily forced to hijack an unrelated discussion.
+http://git.kernel.org/?p=linux/kernel/git/linville/wireless-dev.git;a=tree;f=drivers/net/wireless;h=2d6caeba0924c34b9539960b9ab568ab3d193fc8;hb=everything
 
-Now I'm not interested in following up into this thread, it's already
-polluted. Please let people here discuss numbers and experiments.
+And yet, the BSD folks seem to continue to nurse the above mantra
+(which was true, but quickly corrected) combined with the "and the
+Linux folks aren't listening", which is manifestly not true.  We might
+not agree with everything you are saying, and we might think you're
+being highly hypocritical, but we are listening.
 
-Thanks,
-Willy
+> All the comercial code I have ever seen did not do this stunt of adding a
+> new copyright and license to barely modified files. Perhaps the "evil"
+> companies have more ethics or better understanding of copyright.
 
+In the original BSD 4.3 code, if I recall correctly, /bin/true was 12
+lines of AT&T copyright and the standard "this is proprietary
+non-published trade secret" legalease with the standard threats of
+bazillions and bazillions of damage due to AT&T's irreparable harm if
+the file was ever disclosed....  followed by "exit 0".  :-)
+
+Personally, I find that issues of copyright are much more easily
+discussed if people keep a sense of balance and humor.  
+
+						- Ted
