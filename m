@@ -1,115 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759052AbXIQVBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbXIQVC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759052AbXIQVBy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbXIQVBo
+	id S1759688AbXIQVC2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbXIQVCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:01:44 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:45945 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755428AbXIQVBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:01:43 -0400
-Message-ID: <46EEEAE6.8050106@hp.com>
-Date: Mon, 17 Sep 2007 17:00:22 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Mon, 17 Sep 2007 17:02:19 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48737 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753869AbXIQVCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 17:02:18 -0400
+Cc: corbet@lwn.net, jengelh@computergmbh.de, hch@lst.de, stable@kernel.org,
+       drepper@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, rdunlap@xenotime.net,
+       vda.linux@googlemail.com, davidel@xmailserver.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 17 Sep 2007 23:02:16 +0200
+From: "Michael Kerrisk" <mtk-manpages@gmx.net>
+In-Reply-To: <20070917134315.968c1902.akpm@linux-foundation.org>
+Message-ID: <20070917210216.284780@gmx.net>
 MIME-Version: 1.0
-To: "Denis V. Lunev" <den@sw.ru>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, ajwade+00@andrew.wade.mooo.com,
-       Satyam Sharma <satyam@infradead.org>, thunder7@xs4all.nl,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.23-rc4-mm1 OOPS in forcedeth?
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070901181352.GA4156@amd64.of.nowhere> <46D9B7EF.2050109@garzik.org> <alpine.LFD.0.999.0709020610590.20781@enigma.security.iitk.ac.in> <20070902061900.GA5595@amd64.of.nowhere> <alpine.LFD.0.999.0709021504550.22654@enigma.security.iitk.ac.in> <20070913235133.0df3c590.ajwade+00@andrew.wade.networklinux.net> <20070917135729.GA19802@linux.vnet.ibm.com> <46EE8A13.1070102@sw.ru>
-In-Reply-To: <46EE8A13.1070102@sw.ru>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+References: <46EEB252.30003@gmx.net>
+ <20070917134315.968c1902.akpm@linux-foundation.org>
+Subject: Re: [PATCH] remove timerd() syscall number
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Authenticated: #24879014
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1+9dPxXFy29LKTeiJ8C/v2lzYkQGGw5PI8Ei6aufM
+ D/7BVGXRMChCB4dYy6GTBfKgFUwl4uJ3JulA== 
 Content-Transfer-Encoding: 7bit
+X-GMX-UID: OYeFLnc6TlI8Ss76DGlrQBhOU2poZRkc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis V. Lunev wrote:
-> I have also seen this OOPS on e1000 card. So, looks like driver independent.
+> > I hope I've done this right...  This patch, against 2.6.23-rc6,
+> > removes the timerfd() syscall (which in any case had a bug
+> > on its 2.6.22 release) from all architectures, so that we
+> > can have some breathing space to think about the API design.
+> > All of the existing timerfd() code is left intact.
 > 
-> By the way, this one has been triggered in a semi-stable way by the
-> 'git-pull'
-
-Do you have this patch:
-
-commit 5c127c58ae9bf196d787815b1bd6b0aec5aee816
-Author: David S. Miller <davem@sunset.davemloft.net>
-Date:   Fri Aug 31 14:39:44 2007 -0700
-
-    [TCP]: 'dst' can be NULL in tcp_rto_min()
-    
-    Reported by Rick Jones.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 1ee7212..bbad2cd 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -560,7 +560,7 @@ static u32 tcp_rto_min(struct sock *sk)
-        struct dst_entry *dst = __sk_dst_get(sk);
-        u32 rto_min = TCP_RTO_MIN;
- 
--       if (dst_metric_locked(dst, RTAX_RTO_MIN))
-+       if (dst && dst_metric_locked(dst, RTAX_RTO_MIN))
-                rto_min = dst->metrics[RTAX_RTO_MIN-1];
-        return rto_min;
- }
-
-
-
+> I think a minimally-intrusive implementation would be
 > 
-> Regards,
-> 	Den
+> --- a/fs/timerfd.c~a
+> +++ a/fs/timerfd.c
+> @@ -159,6 +159,8 @@ asmlinkage long sys_timerfd(int ufd, int
+>  	struct inode *inode;
+>  	struct itimerspec ktmr;
+>  
+> +	return -ENOSYS;
+> +
+>  	if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
+>  		return -EFAULT;
+>  
+> _
 > 
-> Dhaval Giani wrote:
->> On Thu, Sep 13, 2007 at 11:51:33PM -0400, Andrew James Wade wrote:
->>> I have an Oops that may be related:
->>>
->>> BUG: unable to handle kernel NULL pointer dereference at virtual address 00000025
->>> printing eip: c037d81b *pde = 00000000
->>> Oops: 0000 [#1]
->>> last sysfs file: /devices/pci0000:00/0000:00:01.0/0000:01:00.0/class
->>>
->>> Pid: 0, comm: swapper Not tainted (2.6.23-rc4-mm1-config2 #2)
->>> EIP: 0060:[<c037d81b>] EFLAGS: 00010246 CPU: 0
->>> EIP is at tcp_rto_min+0xb/0x15
->>> EAX: 00000032 EBX: c4c98b68 ECX: fffffffe EDX: 00000000
->>> ESI: c4c98b68 EDI: c055f600 EBP: c4432e40 ESP: c0596dec
->>>  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
->>> Process swapper (pid: 0, ti=c0596000 task=c052a340 task.ti=c0568000)
->>> Stack: c037d8de c4c98b68 c4c98b68 c037e0ec 00000001 c037f879 c052a8b4 c052a340
->>>        00000000 00000001 c25e1e60 00000000 00000000 00000001 8c176265 8c17678a
->>>        00000000 00000001 00000001 00000000 8c17678a 86000000 ffffffff 007d8b21
->>> Call Trace:
->>>  [<c037d8de>] tcp_rtt_estimator+0xb9/0xfe
->>>  [<c037e0ec>] tcp_ack_saw_tstamp+0x14/0x43
->>>  [<c037f879>] tcp_ack+0x6b8/0x17b8
->>>  [<c03833cc>] tcp_rcv_established+0x519/0x5f1
->>>  [<c038838d>] tcp_v4_do_rcv+0x28/0x2f8
->>>  [<c038a4ce>] tcp_v4_rcv+0x7df/0x83d
->>>  [<c0372542>] ip_local_deliver+0xcc/0x148
->>>  [<c0372975>] ip_rcv+0x3b7/0x3de
->>>  [<c035fa0e>] netif_receive_skb+0x17a/0x1c2
->>>  [<c02cc121>] rtl8139_poll+0x2d9/0x425
->>>  [<c03616d7>] net_rx_action+0xa8/0xc8
->>>  [<c011e8e0>] __do_softirq+0x40/0x90
->>>  [<c010635d>] do_softirq+0x4d/0xb6
->>>  =======================
->>> INFO: lockdep is turned off.
->>> Code: 24 8b 82 88 03 00 00 89 82 40 05 00 00 a1 a0 23 53 c0 89 82 44 05 00 00 83 c4 0c 5b 5e 5f 5d c3 8b 90 88 00 00 00 b8 32 00 00 00 <f6> 42 25 20 74 03 8b 42 54 c3 56
->>>  85 d2 b9 01 00 00 00 0f 45 ca
->>> EIP: [<c037d81b>] tcp_rto_min+0xb/0x15 SS:ESP 0068:c0596dec
->>> Kernel panic - not syncing: Fatal exception in interrupt
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> or, better,
 > 
+> --- a/init/Kconfig~a
+> +++ a/init/Kconfig
+> @@ -491,6 +491,7 @@ config SIGNALFD
+>  
+>  config TIMERFD
+>  	bool "Enable timerfd() system call" if EMBEDDED
+> +	depends on BROKEN
+>  	select ANON_INODES
+>  	default y
+>  	help
+> _
+
+Cough!  Right then.  I take it you'll apply one of those then?
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+
+Want to help with man page maintenance?  
+Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages , 
+read the HOWTOHELP file and grep the source 
+files for 'FIXME'.
 
