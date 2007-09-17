@@ -1,55 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759137AbXIQVEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbXIQVFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759137AbXIQVEJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbXIQVD4
+	id S1756943AbXIQVFK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbXIQVE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:03:56 -0400
-Received: from www.osadl.org ([213.239.205.134]:38528 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753869AbXIQVDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:03:55 -0400
-Subject: Re: [3/3] 2.6.23-rc6: known regressions v2
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
-       Thomas Voegtle <tv@lio96.de>, Soeren Sonnenburg <kernel@nn7.de>
-In-Reply-To: <200709172251.07769.arekm@maven.pl>
-References: <46EB3EF8.6040103@googlemail.com>
-	 <200709172144.43761.arekm@maven.pl> <1190058463.2995.14.camel@chaos>
-	 <200709172251.07769.arekm@maven.pl>
-Content-Type: text/plain
-Date: Mon, 17 Sep 2007 23:03:48 +0200
-Message-Id: <1190063028.2995.53.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Sep 2007 17:04:58 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:51785 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752874AbXIQVE5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 17:04:57 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:references:user-agent:date:from:to:cc:
+	subject:content-disposition;
+	b=rsSQIE0Mx0gTmdIdy6yAJRZFxyx/GNJYyPAAploe/uIlNG4E1EvFPDzEtkdOQqd6m
+	g/Cr8p5T46z25EJHBQzsQ==
+Message-Id: <20070917210428.222009000@menage.corp.google.com>
+References: <20070917210307.116234000@menage.corp.google.com>
+User-Agent: quilt/0.45-1
+Date: Mon, 17 Sep 2007 14:03:20 -0700
+From: Paul Menage <menage@google.com>
+To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       David Rientjes <rientjes@google.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, pj@sgi.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 13/33] task containersv11 simple task container debug info subsystem
+Content-Disposition: inline; filename=task-containersv11-simple-task-container-debug-info-subsystem.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-17 at 22:51 +0200, Arkadiusz Miskiewicz wrote:
-> > >     clockevents: fix resume logic
-> >
-> > Linus pulled a series of patches which are addressing this issue into
-> > his tree yesterday. Can you please retest against current git ?
-> 
-> Looks like the problem is fixed in current git for me. Thanks!
+This example subsystem exports debugging information as an aid to diagnosing
+refcount leaks, etc, in the cgroup framework.
 
-Thanks for testing.
+Signed-off-by: Paul Menage <menage@google.com>
+---
 
-> ps. The description about vaio not resuming without key pressing matches what 
-> I was seeing here on thinkpad z60m, too.
+ include/linux/cgroup_subsys.h |    4 +
+ init/Kconfig                     |   10 ++
+ kernel/Makefile                  |    1 
+ kernel/cgroup_debug.c         |   97 +++++++++++++++++++++++++++++
+ 4 files changed, 112 insertions(+)
 
-Sigh, there were several subtle reason why you would need to press keys
-during resume. The one you are referring to is the one which is the most
-obscure. It would be nice if you could revert that particular one and
-check whether it still works on your box.
+diff -puN include/linux/cgroup_subsys.h~task-cgroupsv11-simple-task-cgroup-debug-info-subsystem include/linux/cgroup_subsys.h
+--- a/include/linux/cgroup_subsys.h~task-cgroupsv11-simple-task-cgroup-debug-info-subsystem
++++ a/include/linux/cgroup_subsys.h
+@@ -19,4 +19,8 @@ SUBSYS(cpuacct)
+ 
+ /* */
+ 
++#ifdef CONFIG_CGROUP_DEBUG
++SUBSYS(debug)
++#endif
++
+ /* */
+diff -puN init/Kconfig~task-cgroupsv11-simple-task-cgroup-debug-info-subsystem init/Kconfig
+--- a/init/Kconfig~task-cgroupsv11-simple-task-cgroup-debug-info-subsystem
++++ a/init/Kconfig
+@@ -282,6 +282,16 @@ config CGROUPS
+ 
+ 	  Say N if unsure.
+ 
++config CGROUP_DEBUG
++	bool "Example debug cgroup subsystem"
++	depends on CGROUPS
++	help
++	  This option enables a simple cgroup subsystem that
++	  exports useful debugging information about the cgroups
++	  framework
++
++	  Say N if unsure
++
+ config CPUSETS
+ 	bool "Cpuset support"
+ 	depends on SMP && CGROUPS
+diff -puN kernel/Makefile~task-cgroupsv11-simple-task-cgroup-debug-info-subsystem kernel/Makefile
+--- a/kernel/Makefile~task-cgroupsv11-simple-task-cgroup-debug-info-subsystem
++++ a/kernel/Makefile
+@@ -39,6 +39,7 @@ obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
+ obj-$(CONFIG_KEXEC) += kexec.o
+ obj-$(CONFIG_COMPAT) += compat.o
+ obj-$(CONFIG_CGROUPS) += cgroup.o
++obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
+ obj-$(CONFIG_CPUSETS) += cpuset.o
+ obj-$(CONFIG_CGROUP_CPUACCT) += cpu_acct.o
+ obj-$(CONFIG_IKCONFIG) += configs.o
+diff -puN /dev/null kernel/cgroup_debug.c
+--- /dev/null
++++ a/kernel/cgroup_debug.c
+@@ -0,0 +1,97 @@
++/*
++ * kernel/ccontainer_debug.c - Example cgroup subsystem that
++ * exposes debug info
++ *
++ * Copyright (C) Google Inc, 2007
++ *
++ * Developed by Paul Menage (menage@google.com)
++ *
++ */
++
++#include <linux/cgroup.h>
++#include <linux/fs.h>
++#include <linux/slab.h>
++#include <linux/rcupdate.h>
++
++#include <asm/atomic.h>
++
++static struct cgroup_subsys_state *debug_create(struct cgroup_subsys *ss,
++						   struct cgroup *cont)
++{
++	struct cgroup_subsys_state *css = kzalloc(sizeof(*css), GFP_KERNEL);
++
++	if (!css)
++		return ERR_PTR(-ENOMEM);
++
++	return css;
++}
++
++static void debug_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	kfree(cont->subsys[debug_subsys_id]);
++}
++
++static u64 cgroup_refcount_read(struct cgroup *cont, struct cftype *cft)
++{
++	return atomic_read(&cont->count);
++}
++
++static u64 taskcount_read(struct cgroup *cont, struct cftype *cft)
++{
++	u64 count;
++
++	cgroup_lock();
++	count = cgroup_task_count(cont);
++	cgroup_unlock();
++	return count;
++}
++
++static u64 current_css_set_read(struct cgroup *cont, struct cftype *cft)
++{
++	return (u64)(long)current->cgroups;
++}
++
++static u64 current_css_set_refcount_read(struct cgroup *cont,
++					   struct cftype *cft)
++{
++	u64 count;
++
++	rcu_read_lock();
++	count = atomic_read(&current->cgroups->ref.refcount);
++	rcu_read_unlock();
++	return count;
++}
++
++static struct cftype files[] =  {
++	{
++		.name = "cgroup_refcount",
++		.read_uint = cgroup_refcount_read,
++	},
++	{
++		.name = "taskcount",
++		.read_uint = taskcount_read,
++	},
++
++	{
++		.name = "current_css_set",
++		.read_uint = current_css_set_read,
++	},
++
++	{
++		.name = "current_css_set_refcount",
++		.read_uint = current_css_set_refcount_read,
++	},
++};
++
++static int debug_populate(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	return cgroup_add_files(cont, ss, files, ARRAY_SIZE(files));
++}
++
++struct cgroup_subsys debug_subsys = {
++	.name = "debug",
++	.create = debug_create,
++	.destroy = debug_destroy,
++	.populate = debug_populate,
++	.subsys_id = debug_subsys_id,
++};
+_
 
-	tglx
-
-
+--
