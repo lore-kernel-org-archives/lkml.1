@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbXIQAB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbXIQAVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbXIQAB3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 20:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbXIQABW
+	id S1754425AbXIQAVq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 20:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbXIQAVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 20:01:22 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40493 "EHLO mail.dvmed.net"
+	Sun, 16 Sep 2007 20:21:38 -0400
+Received: from gate.crashing.org ([63.228.1.57]:48735 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754000AbXIQABV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 20:01:21 -0400
-Message-ID: <46EDC3C4.2030602@pobox.com>
-Date: Sun, 16 Sep 2007 20:01:08 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: david@lang.hm
-CC: Jacob Meuser <jakemsr@sdf.lonestar.org>, Theodore Tso <tytso@mit.edu>,
-       Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
-       misc@openbsd.org, linux-kernel@vger.kernel.org,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070916231633.GB10339@SDF.LONESTAR.ORG> <Pine.LNX.4.64.0709161632500.24221@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0709161632500.24221@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751260AbXIQAVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 20:21:38 -0400
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       Matthew Wilcox <matthew@wil.cx>, Shaohua Li <shaohua.li@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <46EDBE39.4090704@shaw.ca>
+References: <fa.ggBqx6W3i6hfs6jdfg64oXKSxW8@ifi.uio.no>
+	 <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no>
+	 <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no>
+	 <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no>
+	 <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no>
+	 <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no> <46EA00DA.6010704@shaw.ca>
+	 <1189973176.6403.20.camel@localhost.localdomain> <46EDBE39.4090704@shaw.ca>
+Content-Type: text/plain
+Date: Mon, 17 Sep 2007 02:21:20 +0200
+Message-Id: <1189988480.6403.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> you claim that it's unethical for the linux community to use the code, 
-> but brag about NetApp useing the code. what makes NetApp ok and Linux 
-> evil? many people honestly don't understand the logic behind this. 
-> please explain it.
+On Sun, 2007-09-16 at 17:37 -0600, Robert Hancock wrote:
+> We would already have this problem, though. If it causes problems to 
+> disable decode on the BAR because we try to access it in interrupt 
+> context, we would already have problems because we move the thing to 
+> 0xFFFFFFFF during probing anyway.. 
 
+Yes, it's not a new problem, I was just pointing out the fact that there
+are deeper issues already there in the same area.
 
-There are two highly relevant angles to this that nobody is mentioning:
+Today, we mostly get lucky because we rarely take an irq during boot
+time PCI probe but I've seen it happen (one easy way to screw things up
+on -many- machines is to enable the DEBUG stuff in the PCI probe code
+and use a serial console for example, especially if access to the device
+with the serial ports in it gets temporarily cut off).
 
-1) Does it make sense to share code, at a technical level?
-
-The fact is, BSD and Linux wireless stacks are quite different.  Linux 
-also has a technical requirement that "Linux drivers look like Linux 
-drivers."  This enables a vast array of source code checking tools like 
-Coverity and sparse, as well as maximizing human reviewer bandwidth.
-
-Therefore, there is a strong /technical/ motivation for the source code 
-to diverge.  That's quite natural.
-
-
-2) Information sharing is both rampant and healthy.
-
-Linux and BSD projects share a vast amount of hardware knowledge, 
-information on how to properly program hardware.  Linux folks use BSD 
-code as /reference documentation/, and BSD folks do the same with Linux 
-code.
-
-This is far more efficient in many cases, due to the natural divergence 
-of the respective codebases.  It is often easier to look at codebase A, 
-and then mentally translate that into code for codebase B, than to 
-directly copy and reuse code.
-
-	Jeff
+Cheers,
+Ben.
 
 
