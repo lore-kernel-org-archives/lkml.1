@@ -1,139 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbXIQIXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbXIQIYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753562AbXIQIXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 04:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbXIQIWx
+	id S1753843AbXIQIYl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 04:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbXIQIYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 04:22:53 -0400
-Received: from theseus.empoweringmedia.net ([67.72.106.11]:59804 "EHLO
-	theseus.empoweringmedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752309AbXIQIWw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 04:22:52 -0400
-From: "J.C. Roberts" <jcroberts@designtools.org>
-Organization: DesignTools.org
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: Wasting our Freedom
-Date: Mon, 17 Sep 2007 01:22:28 -0700
-User-Agent: KMail/1.9.6
-Cc: Daniel Hazelton <dhazelton@enter.net>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Jason Dixon <jason@dixongroup.net>, misc@openbsd.org,
-       moglen@softwarefreedom.org, bkuhn@softwarefreedom.org,
-       norwood@softwarefreedom.org, fontana@softwarefreedom.org,
-       karen@softwarefreedom.org, linux-kernel@vger.kernel.org
-References: <5C8C3794-C62A-4935-8267-81080CCF6867@dixongroup.net> <200709161123.25911.dhazelton@enter.net> <46ED8D46.1090109@garzik.org>
-In-Reply-To: <46ED8D46.1090109@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200709170122.31204.jcroberts@designtools.org>
+	Mon, 17 Sep 2007 04:24:31 -0400
+Received: from mga03.intel.com ([143.182.124.21]:58768 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752616AbXIQIYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 04:24:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,263,1186383600"; 
+   d="scan'208";a="280593371"
+Subject: [RFC -mm 1/2] i386/x86_64 boot: setup data
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 17 Sep 2007 16:26:18 +0800
+Message-Id: <1190017578.5866.21.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 17 Sep 2007 08:24:24.0837 (UTC) FILETIME=[27ECE350:01C7F904]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 16 September 2007, Jeff Garzik wrote:
-> Daniel Hazelton wrote:
-> > If the OpenBSD developers want to attack the Linux Kernel community
-> > over patches that were *NEVER* *ACCEPTED* by said community, it
-> > should be just as fair for the Linux Kernel community to complain
-> > about those (unspecified) times where OpenBSD replaced the GPL on
-> > code with the BSD license.
-> >
-> > And, as said before, the place to take these complaints is the
-> > MadWifi discussion area, since they are, apparently, the only
-> > people that accepted the patches in question.
->
-> Although it's true the code is not yet upstream...
->
-> Given that we want support for Atheros (whenever all this mess is
-> sorted), I think it's quite fair to discuss these issues [in a calm,
-> rational, paranoia-free manner] on LKML or
-> linux-wireless@vger.kernel.org.
->
-> > *WE*, the people on the Linux Kernel ML, *CANNOT* "fix the problem"
-> > with the *MADWIFI* code having accepted patches which violate
-> > Reyk's copyright.
->
-> Given that we want it upstream, it is however relevant.  We want to
-> make sure we are aware of copyright problems, and we want to make
-> sure any copyright problems are fixed.
->
-> On a side note:  "MadWifi" does not really describe the Linux ath5k
-> driver, the driver at issue here.  Some mistakes were made by Linux
-> wireless developers, and those mistakes were corrected.
->
-> > Linux Kernel != FSF/GNU
-> >
-> > If it was then RMS would not be attacking Linus and Linux with
-> > faulty claims just because Linus has publicly stated that the GPLv2
-> > is a better license than v3
->
-> Amen.  100% agreed.
->
->         Jeff
+This patch add a field of 64-bit physical pointer to NULL terminated
+single linked list of struct setup_data to real-mode kernel
+header. This is used to define a more extensible boot parameters
+passing mechanism.
 
-Thanks Jeff. I've been told both on list and off, as well as both 
-politely and impolitely that including the Linux kernel mailing list 
-was the wrong thing to do. Though I certainly do take serious issue 
-with a handful of people at the GNU/FSF/SFLC who have been acting in 
-bad faith, the code in question is per se "intended" to become part of 
-the Linux kernel. The code has not been "accepted upstream" as you say 
-but that is still the intended goal.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Saying something like:
-    "Linux Kernel != FSF/GNU" 
+---
 
-is quite similar to saying:
-    "Windows != Microsoft"
+ arch/i386/Kconfig            |    3 ---
+ arch/i386/boot/header.S      |    6 ++++++
+ arch/i386/kernel/setup.c     |   20 ++++++++++++++++++++
+ arch/x86_64/kernel/setup.c   |   19 +++++++++++++++++++
+ include/asm-i386/bootparam.h |   15 +++++++++++++++
+ include/asm-i386/io.h        |    7 +++++++
+ 6 files changed, 67 insertions(+), 3 deletions(-)
 
-In both cases, the pairs of terms may not be "equal" but they are 
-certainly related. Also in both cases, the former term is most often 
-considered part of the latter term. Just as the Linux kernel is under 
-the GPL of the FSF/GNU, equally Windows is under EULA of Microsoft. You 
-are correct in stating a distinction technically exists, yet in common 
-language of everyday people, the terms are interchangeable even though 
-it is pedantically incorrect to do so.
-
-Please pardon the comparison with Microsoft, it is not intended as an 
-insult in any way, but does serve nicely as an example.
-
-There are some extremely talented and altruistic people who put their 
-hard work under the GPL license. Some of the Linux kernel developers 
-are on my personal list of ubergeeks deserving hero worship for their 
-continuous contributions. I am certain some of them are far more fair 
-minded and well thought than I will ever be.
-
-With that said, if you had been ignored and even stone walled by the 
-GNU/FSF/SFLC and you wanted to reach the more pragmatic and free 
-thinking minds which use the GPL license where would you go?
-
-The linux kernel mailing list is the best answer.
-
-As much as you may have disliked my action of involving the Linux kernel 
-mailing list, please understand it was not an attack, but instead it's 
-a plea for help on an issue which will, eventually, affect you.
-
-If some of the outstanding members of the linux kernel development team 
-were to contact the people who have been illegally messing with 
-licenses on the atheros code and ask them to quit messing around, it 
-could do a lot of good towards resolving this issue. In doing so, 
-you'll not only end the current pointless waste of time between 
-GPL/GNU/BSD, but you'll also prevent the pointless waste of time of 
-discussing this to death on lkml when the time comes to move the code 
-upstream so you have better atheros support.
-
-The people who have done this illegal license swapping nonsense will not 
-listen to Reyk, will not listen to Theo (which some will say is a 
-difficult thing to do) and will not listen to me (which is probably 
-more difficult than listening to Theo). All of three us are in 
-the "wrong camp" simply because we use a different license.
-
-My hope is the people responsible for the illegal license swapping will 
-hopefully listen to you, the Linux kernel developers. If you'd like to 
-see all of this end, rather than carry on and on and on until it winds 
-up in court, please do something. Please try asking the people 
-responsible to quit messing with licenses.
-
-kind regards,
-jcr
+Index: linux-2.6.23-rc4/include/asm-i386/bootparam.h
+===================================================================
+--- linux-2.6.23-rc4.orig/include/asm-i386/bootparam.h	2007-09-17 14:18:24.000000000 +0800
++++ linux-2.6.23-rc4/include/asm-i386/bootparam.h	2007-09-17 15:02:33.000000000 +0800
+@@ -9,6 +9,17 @@
+ #include <asm/ist.h>
+ #include <video/edid.h>
+ 
++/* setup data types */
++#define SETUP_NONE			0
++
++/* extensible setup data list node */
++struct setup_data {
++	u64 next;
++	u32 type;
++	u32 len;
++	u8 data[0];
++} __attribute__((packed));
++
+ struct setup_header {
+ 	u8	setup_sects;
+ 	u16	root_flags;
+@@ -41,6 +52,10 @@
+ 	u32	initrd_addr_max;
+ 	u32	kernel_alignment;
+ 	u8	relocatable_kernel;
++	u8	_pad2[3];
++	u32	cmdline_size;
++	u32	_pad3;
++	u64	setup_data;
+ } __attribute__((packed));
+ 
+ struct sys_desc_table {
+Index: linux-2.6.23-rc4/arch/i386/boot/header.S
+===================================================================
+--- linux-2.6.23-rc4.orig/arch/i386/boot/header.S	2007-09-17 14:17:32.000000000 +0800
++++ linux-2.6.23-rc4/arch/i386/boot/header.S	2007-09-17 14:18:32.000000000 +0800
+@@ -214,6 +214,12 @@
+                                                 #added with boot protocol
+                                                 #version 2.06
+ 
++pad4:			.long 0
++
++setup_data:		.quad 0			# 64-bit physical pointer to
++						# single linked list of
++						# struct setup_data
++
+ # End of setup header #####################################################
+ 
+ 	.section ".inittext", "ax"
+Index: linux-2.6.23-rc4/arch/x86_64/kernel/setup.c
+===================================================================
+--- linux-2.6.23-rc4.orig/arch/x86_64/kernel/setup.c	2007-09-17 14:18:23.000000000 +0800
++++ linux-2.6.23-rc4/arch/x86_64/kernel/setup.c	2007-09-17 15:02:33.000000000 +0800
+@@ -221,6 +221,23 @@
+ 		ebda_size = 64*1024;
+ }
+ 
++void __init parse_setup_data(void)
++{
++	struct setup_data *setup_data;
++	unsigned long pa_setup_data;
++
++	pa_setup_data = boot_params.hdr.setup_data;
++	while (pa_setup_data) {
++		setup_data = early_ioremap(pa_setup_data, PAGE_SIZE);
++		switch (setup_data->type) {
++		default:
++			break;
++		}
++		pa_setup_data = setup_data->next;
++		early_iounmap(setup_data, PAGE_SIZE);
++	}
++}
++
+ void __init setup_arch(char **cmdline_p)
+ {
+ 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+@@ -256,6 +273,8 @@
+ 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
+ 	*cmdline_p = command_line;
+ 
++	parse_setup_data();
++
+ 	parse_early_param();
+ 
+ 	finish_e820_parsing();
+Index: linux-2.6.23-rc4/arch/i386/kernel/setup.c
+===================================================================
+--- linux-2.6.23-rc4.orig/arch/i386/kernel/setup.c	2007-09-17 14:18:23.000000000 +0800
++++ linux-2.6.23-rc4/arch/i386/kernel/setup.c	2007-09-17 14:18:32.000000000 +0800
+@@ -496,6 +496,23 @@
+ 	return machine_specific_memory_setup();
+ }
+ 
++void __init parse_setup_data(void)
++{
++	struct setup_data *setup_data;
++	unsigned long pa_setup_data, pa_next;
++
++	pa_setup_data = boot_params.hdr.setup_data;
++	while (pa_setup_data) {
++		setup_data = boot_ioremap(pa_setup_data, PAGE_SIZE);
++		pa_next = setup_data->next;
++		switch (setup_data->type) {
++		default:
++			break;
++		}
++		pa_setup_data = pa_next;
++	}
++}
++
+ /*
+  * Determine if we were loaded by an EFI loader.  If so, then we have also been
+  * passed the efi memmap, systab, etc., so we should use these data structures
+@@ -544,6 +561,9 @@
+ 	rd_prompt = ((boot_params.hdr.ram_size & RAMDISK_PROMPT_FLAG) != 0);
+ 	rd_doload = ((boot_params.hdr.ram_size & RAMDISK_LOAD_FLAG) != 0);
+ #endif
++
++	parse_setup_data();
++
+ 	ARCH_SETUP
+ 	if (efi_enabled)
+ 		efi_init();
+Index: linux-2.6.23-rc4/include/asm-i386/io.h
+===================================================================
+--- linux-2.6.23-rc4.orig/include/asm-i386/io.h	2007-09-17 14:17:32.000000000 +0800
++++ linux-2.6.23-rc4/include/asm-i386/io.h	2007-09-17 15:02:44.000000000 +0800
+@@ -126,6 +126,13 @@
+ extern void iounmap(volatile void __iomem *addr);
+ 
+ /*
++ * boot_ioremap is for temporary early boot-time mappings, before
++ * paging_init(), when the boot-time page tables are still in use.
++ * The mapping is currently limited to at most 4 pages.
++ */
++extern void *boot_ioremap(unsigned long offset, unsigned long size);
++
++/*
+  * bt_ioremap() and bt_iounmap() are for temporary early boot-time
+  * mappings, before the real ioremap() is functional.
+  * A boot-time mapping is currently limited to at most 16 pages.
+Index: linux-2.6.23-rc4/arch/i386/Kconfig
+===================================================================
+--- linux-2.6.23-rc4.orig/arch/i386/Kconfig	2007-09-17 14:18:36.000000000 +0800
++++ linux-2.6.23-rc4/arch/i386/Kconfig	2007-09-17 14:18:43.000000000 +0800
+@@ -772,11 +772,8 @@
+  	  The default yes will allow the kernel to do irq load balancing.
+ 	  Saying no will keep the kernel from doing irq load balancing.
+ 
+-# turning this on wastes a bunch of space.
+-# Summit needs it only when NUMA is on
+ config BOOT_IOREMAP
+ 	bool
+-	depends on (((X86_SUMMIT || X86_GENERICARCH) && NUMA) || (X86 && EFI))
+ 	default y
+ 
+ config SECCOMP
