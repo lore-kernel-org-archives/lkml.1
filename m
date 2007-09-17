@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760281AbXIQVHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbXIQVHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760281AbXIQVHL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbXIQVFu
+	id S1758280AbXIQVHl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760079AbXIQVGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:05:50 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:51920 "EHLO
+	Mon, 17 Sep 2007 17:06:41 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:52008 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759973AbXIQVFs (ORCPT
+	with ESMTP id S1760188AbXIQVGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:05:48 -0400
+	Mon, 17 Sep 2007 17:06:39 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=TuMX+lgLFJ0ns/7rO+ytWc7Eaj7YrDuaMoPrErBDe9qjdKg+8H4CIsPxGDAL7NlVd
-	sgyPbqD4HWTAZ+7uRkGFg==
-Message-Id: <20070917210428.062596000@menage.corp.google.com>
+	b=OgJuCzvaFCUBhJeJKH8TmZpiMK5blAIWJbOpLp4ny/JAw1ZN2KmfNfrjcizteGaHN
+	CGBK551S2/C4bMGIHfFIQ==
+Message-Id: <20070917210427.058101000@menage.corp.google.com>
 References: <20070917210307.116234000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Sep 2007 14:03:19 -0700
+Date: Mon, 17 Sep 2007 14:03:13 -0700
 From: Paul Menage <menage@google.com>
 To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
        "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
@@ -29,328 +29,236 @@ To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, pj@sgi.com,
        containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 12/33] task containersv11 example cpu accounting subsystem
-Content-Disposition: inline; filename=task-containersv11-example-cpu-accounting-subsystem.patch
+Subject: [PATCH 06/33] task containersv11 add procfs interface
+Content-Disposition: inline; filename=task-containersv11-add-procfs-interface.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This example demonstrates how to use the generic cgroup subsystem for a
-simple resource tracker that counts, for the processes in a cgroup, the
-total CPU time used and the %CPU used in the last complete 10 second interval.
+Add:
 
-Portions contributed by Balbir Singh <balbir@in.ibm.com>
+/proc/cgroups - general system info
+
+/proc/*/cgroup - per-task cgroup membership info
 
 Signed-off-by: Paul Menage <menage@google.com>
+
 ---
 
- include/linux/cgroup_subsys.h |    6 
- include/linux/cpu_acct.h         |   14 ++
- init/Kconfig                     |    7 +
- kernel/Makefile                  |    1 
- kernel/cpu_acct.c                |  186 +++++++++++++++++++++++++++++
- kernel/sched.c                   |   14 +-
- 6 files changed, 225 insertions(+), 3 deletions(-)
+ fs/proc/base.c            |    7 +
+ include/linux/cgroup.h |    2 
+ kernel/cgroup.c        |  132 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 141 insertions(+)
 
-diff -puN include/linux/cgroup_subsys.h~task-cgroupsv11-example-cpu-accounting-subsystem include/linux/cgroup_subsys.h
---- a/include/linux/cgroup_subsys.h~task-cgroupsv11-example-cpu-accounting-subsystem
-+++ a/include/linux/cgroup_subsys.h
-@@ -13,4 +13,10 @@ SUBSYS(cpuset)
- 
- /* */
- 
-+#ifdef CONFIG_CGROUP_CPUACCT
-+SUBSYS(cpuacct)
-+#endif
-+
-+/* */
-+
- /* */
-diff -puN /dev/null include/linux/cpu_acct.h
---- /dev/null
-+++ a/include/linux/cpu_acct.h
-@@ -0,0 +1,14 @@
-+
-+#ifndef _LINUX_CPU_ACCT_H
-+#define _LINUX_CPU_ACCT_H
-+
+diff -puN fs/proc/base.c~task-cgroupsv11-add-procfs-interface fs/proc/base.c
+--- a/fs/proc/base.c~task-cgroupsv11-add-procfs-interface
++++ a/fs/proc/base.c
+@@ -67,6 +67,7 @@
+ #include <linux/mount.h>
+ #include <linux/security.h>
+ #include <linux/ptrace.h>
 +#include <linux/cgroup.h>
-+#include <asm/cputime.h>
-+
-+#ifdef CONFIG_CGROUP_CPUACCT
-+extern void cpuacct_charge(struct task_struct *, cputime_t cputime);
-+#else
-+static void inline cpuacct_charge(struct task_struct *p, cputime_t cputime) {}
-+#endif
-+
-+#endif
-diff -puN init/Kconfig~task-cgroupsv11-example-cpu-accounting-subsystem init/Kconfig
---- a/init/Kconfig~task-cgroupsv11-example-cpu-accounting-subsystem
-+++ a/init/Kconfig
-@@ -318,6 +318,13 @@ config PROC_PID_CPUSET
- 	depends on CPUSETS
- 	default y
- 
-+config CGROUP_CPUACCT
-+	bool "Simple CPU accounting cgroup subsystem"
-+	depends on CGROUPS
-+	help
-+	  Provides a simple Resource Controller for monitoring the
-+	  total CPU consumed by the tasks in a cgroup
-+
- config RELAY
- 	bool "Kernel->user space relay support (formerly relayfs)"
- 	help
-diff -puN kernel/Makefile~task-cgroupsv11-example-cpu-accounting-subsystem kernel/Makefile
---- a/kernel/Makefile~task-cgroupsv11-example-cpu-accounting-subsystem
-+++ a/kernel/Makefile
-@@ -40,6 +40,7 @@ obj-$(CONFIG_KEXEC) += kexec.o
- obj-$(CONFIG_COMPAT) += compat.o
- obj-$(CONFIG_CGROUPS) += cgroup.o
- obj-$(CONFIG_CPUSETS) += cpuset.o
-+obj-$(CONFIG_CGROUP_CPUACCT) += cpu_acct.o
- obj-$(CONFIG_IKCONFIG) += configs.o
- obj-$(CONFIG_STOP_MACHINE) += stop_machine.o
- obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
-diff -puN /dev/null kernel/cpu_acct.c
---- /dev/null
-+++ a/kernel/cpu_acct.c
-@@ -0,0 +1,186 @@
-+/*
-+ * kernel/cpu_acct.c - CPU accounting cgroup subsystem
-+ *
-+ * Copyright (C) Google Inc, 2006
-+ *
-+ * Developed by Paul Menage (menage@google.com) and Balbir Singh
-+ * (balbir@in.ibm.com)
-+ *
-+ */
-+
-+/*
-+ * Example cgroup subsystem for reporting total CPU usage of tasks in a
-+ * cgroup, along with percentage load over a time interval
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/cgroup.h>
-+#include <linux/fs.h>
-+#include <linux/rcupdate.h>
-+
-+#include <asm/div64.h>
-+
-+struct cpuacct {
-+	struct cgroup_subsys_state css;
-+	spinlock_t lock;
-+	/* total time used by this class */
-+	cputime64_t time;
-+
-+	/* time when next load calculation occurs */
-+	u64 next_interval_check;
-+
-+	/* time used in current period */
-+	cputime64_t current_interval_time;
-+
-+	/* time used in last period */
-+	cputime64_t last_interval_time;
-+};
-+
-+struct cgroup_subsys cpuacct_subsys;
-+
-+static inline struct cpuacct *cgroup_ca(struct cgroup *cont)
-+{
-+	return container_of(cgroup_subsys_state(cont, cpuacct_subsys_id),
-+			    struct cpuacct, css);
-+}
-+
-+static inline struct cpuacct *task_ca(struct task_struct *task)
-+{
-+	return container_of(task_subsys_state(task, cpuacct_subsys_id),
-+			    struct cpuacct, css);
-+}
-+
-+#define INTERVAL (HZ * 10)
-+
-+static inline u64 next_interval_boundary(u64 now)
-+{
-+	/* calculate the next interval boundary beyond the
-+	 * current time */
-+	do_div(now, INTERVAL);
-+	return (now + 1) * INTERVAL;
-+}
-+
-+static struct cgroup_subsys_state *cpuacct_create(
-+	struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-+
-+	if (!ca)
-+		return ERR_PTR(-ENOMEM);
-+	spin_lock_init(&ca->lock);
-+	ca->next_interval_check = next_interval_boundary(get_jiffies_64());
-+	return &ca->css;
-+}
-+
-+static void cpuacct_destroy(struct cgroup_subsys *ss,
-+			    struct cgroup *cont)
-+{
-+	kfree(cgroup_ca(cont));
-+}
-+
-+/* Lazily update the load calculation if necessary. Called with ca locked */
-+static void cpuusage_update(struct cpuacct *ca)
-+{
-+	u64 now = get_jiffies_64();
-+
-+	/* If we're not due for an update, return */
-+	if (ca->next_interval_check > now)
-+		return;
-+
-+	if (ca->next_interval_check <= (now - INTERVAL)) {
-+		/* If it's been more than an interval since the last
-+		 * check, then catch up - the last interval must have
-+		 * been zero load */
-+		ca->last_interval_time = 0;
-+		ca->next_interval_check = next_interval_boundary(now);
-+	} else {
-+		/* If a steal takes the last interval time negative,
-+		 * then we just ignore it */
-+		if ((s64)ca->current_interval_time > 0)
-+			ca->last_interval_time = ca->current_interval_time;
-+		else
-+			ca->last_interval_time = 0;
-+		ca->next_interval_check += INTERVAL;
-+	}
-+	ca->current_interval_time = 0;
-+}
-+
-+static u64 cpuusage_read(struct cgroup *cont, struct cftype *cft)
-+{
-+	struct cpuacct *ca = cgroup_ca(cont);
-+	u64 time;
-+
-+	spin_lock_irq(&ca->lock);
-+	cpuusage_update(ca);
-+	time = cputime64_to_jiffies64(ca->time);
-+	spin_unlock_irq(&ca->lock);
-+
-+	/* Convert 64-bit jiffies to seconds */
-+	time *= 1000;
-+	do_div(time, HZ);
-+	return time;
-+}
-+
-+static u64 load_read(struct cgroup *cont, struct cftype *cft)
-+{
-+	struct cpuacct *ca = cgroup_ca(cont);
-+	u64 time;
-+
-+	/* Find the time used in the previous interval */
-+	spin_lock_irq(&ca->lock);
-+	cpuusage_update(ca);
-+	time = cputime64_to_jiffies64(ca->last_interval_time);
-+	spin_unlock_irq(&ca->lock);
-+
-+	/* Convert time to a percentage, to give the load in the
-+	 * previous period */
-+	time *= 100;
-+	do_div(time, INTERVAL);
-+
-+	return time;
-+}
-+
-+static struct cftype files[] = {
-+	{
-+		.name = "usage",
-+		.read_uint = cpuusage_read,
-+	},
-+	{
-+		.name = "load",
-+		.read_uint = load_read,
-+	}
-+};
-+
-+static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	return cgroup_add_files(cont, ss, files, ARRAY_SIZE(files));
-+}
-+
-+void cpuacct_charge(struct task_struct *task, cputime_t cputime)
-+{
-+
-+	struct cpuacct *ca;
-+	unsigned long flags;
-+
-+	if (!cpuacct_subsys.active)
-+		return;
-+	rcu_read_lock();
-+	ca = task_ca(task);
-+	if (ca) {
-+		spin_lock_irqsave(&ca->lock, flags);
-+		cpuusage_update(ca);
-+		ca->time = cputime64_add(ca->time, cputime);
-+		ca->current_interval_time =
-+			cputime64_add(ca->current_interval_time, cputime);
-+		spin_unlock_irqrestore(&ca->lock, flags);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+struct cgroup_subsys cpuacct_subsys = {
-+	.name = "cpuacct",
-+	.create = cpuacct_create,
-+	.destroy = cpuacct_destroy,
-+	.populate = cpuacct_populate,
-+	.subsys_id = cpuacct_subsys_id,
-+};
-diff -puN kernel/sched.c~task-cgroupsv11-example-cpu-accounting-subsystem kernel/sched.c
---- a/kernel/sched.c~task-cgroupsv11-example-cpu-accounting-subsystem
-+++ a/kernel/sched.c
-@@ -51,6 +51,7 @@
- #include <linux/cpu.h>
  #include <linux/cpuset.h>
- #include <linux/percpu.h>
-+#include <linux/cpu_acct.h>
- #include <linux/kthread.h>
- #include <linux/seq_file.h>
- #include <linux/sysctl.h>
-@@ -3268,9 +3269,13 @@ void account_user_time(struct task_struc
- {
- 	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
- 	cputime64_t tmp;
-+	struct rq *rq = this_rq();
+ #include <linux/audit.h>
+ #include <linux/poll.h>
+@@ -2051,6 +2052,9 @@ static const struct pid_entry tgid_base_
+ #ifdef CONFIG_CPUSETS
+ 	REG("cpuset",     S_IRUGO, cpuset),
+ #endif
++#ifdef CONFIG_CGROUPS
++	REG("cgroup",  S_IRUGO, cgroup),
++#endif
+ 	INF("oom_score",  S_IRUGO, oom_score),
+ 	REG("oom_adj",    S_IRUGO|S_IWUSR, oom_adjust),
+ #ifdef CONFIG_AUDITSYSCALL
+@@ -2340,6 +2344,9 @@ static const struct pid_entry tid_base_s
+ #ifdef CONFIG_CPUSETS
+ 	REG("cpuset",    S_IRUGO, cpuset),
+ #endif
++#ifdef CONFIG_CGROUPS
++	REG("cgroup",  S_IRUGO, cgroup),
++#endif
+ 	INF("oom_score", S_IRUGO, oom_score),
+ 	REG("oom_adj",   S_IRUGO|S_IWUSR, oom_adjust),
+ #ifdef CONFIG_AUDITSYSCALL
+diff -puN include/linux/cgroup.h~task-cgroupsv11-add-procfs-interface include/linux/cgroup.h
+--- a/include/linux/cgroup.h~task-cgroupsv11-add-procfs-interface
++++ a/include/linux/cgroup.h
+@@ -29,6 +29,8 @@ extern void cgroup_fork(struct task_s
+ extern void cgroup_fork_callbacks(struct task_struct *p);
+ extern void cgroup_exit(struct task_struct *p, int run_callbacks);
  
- 	p->utime = cputime_add(p->utime, cputime);
- 
-+	if (p != rq->idle)
-+		cpuacct_charge(p, cputime);
++extern struct file_operations proc_cgroup_operations;
 +
- 	/* Add user time to cpustat. */
- 	tmp = cputime_to_cputime64(cputime);
- 	if (TASK_NICE(p) > 0)
-@@ -3300,9 +3305,10 @@ void account_system_time(struct task_str
- 		cpustat->irq = cputime64_add(cpustat->irq, tmp);
- 	else if (softirq_count())
- 		cpustat->softirq = cputime64_add(cpustat->softirq, tmp);
--	else if (p != rq->idle)
-+	else if (p != rq->idle) {
- 		cpustat->system = cputime64_add(cpustat->system, tmp);
--	else if (atomic_read(&rq->nr_iowait) > 0)
-+		cpuacct_charge(p, cputime);
-+	} else if (atomic_read(&rq->nr_iowait) > 0)
- 		cpustat->iowait = cputime64_add(cpustat->iowait, tmp);
- 	else
- 		cpustat->idle = cputime64_add(cpustat->idle, tmp);
-@@ -3327,8 +3333,10 @@ void account_steal_time(struct task_stru
- 			cpustat->iowait = cputime64_add(cpustat->iowait, tmp);
- 		else
- 			cpustat->idle = cputime64_add(cpustat->idle, tmp);
--	} else
-+	} else {
- 		cpustat->steal = cputime64_add(cpustat->steal, tmp);
-+		cpuacct_charge(p, -tmp);
-+	}
+ /* Per-subsystem/per-cgroup state maintained by the system. */
+ struct cgroup_subsys_state {
+ 	/* The cgroup that this subsystem is attached to. Useful
+diff -puN kernel/cgroup.c~task-cgroupsv11-add-procfs-interface kernel/cgroup.c
+--- a/kernel/cgroup.c~task-cgroupsv11-add-procfs-interface
++++ a/kernel/cgroup.c
+@@ -33,6 +33,7 @@
+ #include <linux/mutex.h>
+ #include <linux/mount.h>
+ #include <linux/pagemap.h>
++#include <linux/proc_fs.h>
+ #include <linux/rcupdate.h>
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
+@@ -247,6 +248,7 @@ static int cgroup_mkdir(struct inode 
+ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry);
+ static int cgroup_populate_dir(struct cgroup *cont);
+ static struct inode_operations cgroup_dir_inode_operations;
++static struct file_operations proc_cgroupstats_operations;
+ 
+ static struct inode *cgroup_new_inode(mode_t mode, struct super_block *sb)
+ {
+@@ -1576,6 +1578,7 @@ int __init cgroup_init(void)
+ {
+ 	int err;
+ 	int i;
++	struct proc_dir_entry *entry;
+ 
+ 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+ 		struct cgroup_subsys *ss = subsys[i];
+@@ -1587,10 +1590,139 @@ int __init cgroup_init(void)
+ 	if (err < 0)
+ 		goto out;
+ 
++	entry = create_proc_entry("cgroups", 0, NULL);
++	if (entry)
++		entry->proc_fops = &proc_cgroupstats_operations;
++
+ out:
+ 	return err;
  }
  
- /*
++/*
++ * proc_cgroup_show()
++ *  - Print task's cgroup paths into seq_file, one line for each hierarchy
++ *  - Used for /proc/<pid>/cgroup.
++ *  - No need to task_lock(tsk) on this tsk->cgroup reference, as it
++ *    doesn't really matter if tsk->cgroup changes after we read it,
++ *    and we take cgroup_mutex, keeping attach_task() from changing it
++ *    anyway.  No need to check that tsk->cgroup != NULL, thanks to
++ *    the_top_cgroup_hack in cgroup_exit(), which sets an exiting tasks
++ *    cgroup to top_cgroup.
++ */
++
++/* TODO: Use a proper seq_file iterator */
++static int proc_cgroup_show(struct seq_file *m, void *v)
++{
++	struct pid *pid;
++	struct task_struct *tsk;
++	char *buf;
++	int retval;
++	struct cgroupfs_root *root;
++
++	retval = -ENOMEM;
++	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!buf)
++		goto out;
++
++	retval = -ESRCH;
++	pid = m->private;
++	tsk = get_pid_task(pid, PIDTYPE_PID);
++	if (!tsk)
++		goto out_free;
++
++	retval = 0;
++
++	mutex_lock(&cgroup_mutex);
++
++	for_each_root(root) {
++		struct cgroup_subsys *ss;
++		struct cgroup *cont;
++		int subsys_id;
++		int count = 0;
++
++		/* Skip this hierarchy if it has no active subsystems */
++		if (!root->actual_subsys_bits)
++			continue;
++		for_each_subsys(root, ss)
++			seq_printf(m, "%s%s", count++ ? "," : "", ss->name);
++		seq_putc(m, ':');
++		get_first_subsys(&root->top_cgroup, NULL, &subsys_id);
++		cont = task_cgroup(tsk, subsys_id);
++		retval = cgroup_path(cont, buf, PAGE_SIZE);
++		if (retval < 0)
++			goto out_unlock;
++		seq_puts(m, buf);
++		seq_putc(m, '\n');
++	}
++
++out_unlock:
++	mutex_unlock(&cgroup_mutex);
++	put_task_struct(tsk);
++out_free:
++	kfree(buf);
++out:
++	return retval;
++}
++
++static int cgroup_open(struct inode *inode, struct file *file)
++{
++	struct pid *pid = PROC_I(inode)->pid;
++	return single_open(file, proc_cgroup_show, pid);
++}
++
++struct file_operations proc_cgroup_operations = {
++	.open		= cgroup_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++/* Display information about each subsystem and each hierarchy */
++static int proc_cgroupstats_show(struct seq_file *m, void *v)
++{
++	int i;
++	struct cgroupfs_root *root;
++
++	mutex_lock(&cgroup_mutex);
++	seq_puts(m, "Hierarchies:\n");
++	for_each_root(root) {
++		struct cgroup_subsys *ss;
++		int first = 1;
++		seq_printf(m, "%p: bits=%lx cgroups=%d (", root,
++			   root->subsys_bits, root->number_of_cgroups);
++		for_each_subsys(root, ss) {
++			seq_printf(m, "%s%s", first ? "" : ", ", ss->name);
++			first = false;
++		}
++		seq_putc(m, ')');
++		if (root->sb) {
++			seq_printf(m, " s_active=%d",
++				   atomic_read(&root->sb->s_active));
++		}
++		seq_putc(m, '\n');
++	}
++	seq_puts(m, "Subsystems:\n");
++	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
++		struct cgroup_subsys *ss = subsys[i];
++		seq_printf(m, "%d: name=%s hierarchy=%p\n",
++			   i, ss->name, ss->root);
++	}
++	mutex_unlock(&cgroup_mutex);
++	return 0;
++}
++
++static int cgroupstats_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, proc_cgroupstats_show, 0);
++}
++
++static struct file_operations proc_cgroupstats_operations = {
++	.open = cgroupstats_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
++};
++
+ /**
+  * cgroup_fork - attach newly forked task to its parents cgroup.
+  * @tsk: pointer to task_struct of forking parent process.
 _
 
 --
