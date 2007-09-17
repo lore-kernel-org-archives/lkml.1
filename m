@@ -1,102 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbXIQNEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbXIQNFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbXIQNEM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 09:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbXIQND4
+	id S1754709AbXIQNFi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 09:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbXIQNFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 09:03:56 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:59265 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbXIQNDz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 09:03:55 -0400
-Message-ID: <46EE7026.2070203@linux.vnet.ibm.com>
-Date: Mon, 17 Sep 2007 17:46:38 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 17 Sep 2007 09:05:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53428 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752891AbXIQNF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 09:05:29 -0400
+Date: Mon, 17 Sep 2007 15:05:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rob Hussey <robjhussey@gmail.com>
+Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+Subject: Re: Scheduler benchmarks - a follow-up
+Message-ID: <20070917130524.GA10707@elte.hu>
+References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [2.6.23-rc4-mm1][Bug] kernel BUG at include/linux/netdevice.h:339!
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-Kernel Bug is hit with 2.6.23-rc4-mm1 kernel on ppc64 machine.
+* Rob Hussey <robjhussey@gmail.com> wrote:
 
-kernel BUG at include/linux/netdevice.h:339!
-Oops: Exception in kernel mode, sig: 5 [#1]
-SMP NR_CPUS=128 NUMA pSeries
-Modules linked in: ipv6 binfmt_misc dm_mirror dm_mod sr_mod sg st
-NIP: c00000000035e980 LR: c00000000035e960 CTR: 0000000000000000
-REGS: c00000000ffffaa0 TRAP: 0700   Not tainted  (2.6.23-rc4-mm1-autokern1)
-MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 24008824  XER: 20000018
-TASK = c000000006789fc0[22628] 'growfiles' THREAD: c00000000b870000 CPU: 0
-GPR00: 0000000000000001 c00000000ffffd20 c0000000007338f8 0000000000000001 
-GPR04: 0000000000000000 ffffffffffffffff 800000000270ea00 0000000000000000 
-GPR08: 0000000000000004 0000000000000000 0000000000000000 8000000000135d10 
-GPR12: 0000000000004000 c000000000646280 00000000100df9d8 00000000100faf88 
-GPR16: 00000000ffffffff 00000000ffffffff 00000000ffff9008 0000000000000000 
-GPR20: 0000000000000000 000000000ff56ff8 0000000000000167 0000000000000002 
-GPR24: 0000000000000000 c000000000604b90 c000000003121000 c000000003121790 
-GPR28: 000000000000012c 0000000000000000 c0000000006eb660 c000000003121780 
-NIP [c00000000035e980] .ibmveth_poll+0x144/0x448
-LR [c00000000035e960] .ibmveth_poll+0x124/0x448
-Call Trace:
-[c00000000ffffd20] [c00000000035e948] .ibmveth_poll+0x10c/0x448 (unreliable)
-[c00000000ffffe00] [c00000000040496c] .net_rx_action+0x174/0x29c
-[c00000000ffffed0] [c00000000005d5e0] .__do_softirq+0xdc/0x194
-[c00000000fffff90] [c0000000000265f0] .call_do_softirq+0x14/0x24
-[c00000000b873c90] [c00000000000bc70] .do_softirq+0xb4/0xc0
-[c00000000b873d20] [c00000000005d74c] .irq_exit+0x70/0x88
-[c00000000b873da0] [c00000000000b9d8] .do_IRQ+0x100/0x204
-[c00000000b873e30] [c000000000004780] hardware_interrupt_entry+0x18/0x98
-Instruction dump:
-38a00001 38600104 80890010 4bcd97c5 60000000 38000000 886d01da 980d01da 
-e93b0010 792007e1 7c000026 54001ffe <0b000000> 7c0004ac 3ba00001 381b0010 
-Kernel panic - not syncing: Fatal exception in interrupt
+> http://www.healthcarelinen.com/misc/benchmarks/BOUND_hackbench_benchmark2.png
 
-------------[ cut here ]------------
-Badness at arch/powerpc/kernel/smp.c:202
-NIP: c000000000028648 LR: c000000000055060 CTR: 80000000000f97dc
-REGS: c00000000ffff4b0 TRAP: 0700   Tainted: G      D  (2.6.23-rc4-mm1-autokern1)
-MSR: 8000000000021032 <ME,IR,DR>  CR: 22008822  XER: 0000000a
-TASK = c000000006789fc0[22628] 'growfiles' THREAD: c00000000b870000 CPU: 0
-GPR00: 0000000000000001 c00000000ffff730 c0000000007338f8 c0000000006f14b8 
-GPR04: 0000000000000000 0000000000000001 0000000000000000 0000000000000003 
-GPR08: 0000000000000000 0000000000000000 00000000000041eb c0000000008259c0 
-GPR12: 0000000022008822 c000000000646280 00000000100df9d8 00000000100faf88 
-GPR16: 00000000ffffffff 00000000ffffffff 00000000ffff9008 0000000000000000 
-GPR20: 0000000000000000 000000000ff56ff8 0000000000000167 0000000000000002 
-GPR24: 0000000000000000 c000000000604b90 0000000000000005 ffffffffffffffff 
-GPR28: c00000000ffffaa0 c00000000052b118 c0000000006d9d68 0000000000000000 
-NIP [c000000000028648] .smp_call_function_map+0x40/0x2c0
-LR [c000000000055060] .panic+0x84/0x19c
-Call Trace:
-[c00000000ffff730] [0000000000000005] 0x5 (unreliable)
-[c00000000ffff7f0] [c000000000055060] .panic+0x84/0x19c
-[c00000000ffff880] [c0000000000244b4] .die+0x1c4/0x234
-[c00000000ffff920] [c00000000002456c] ._exception+0x48/0x13c
-[c00000000ffffa30] [c000000000004a84] program_check_common+0x104/0x180
---- Exception: 700 at .ibmveth_poll+0x144/0x448
-    LR = .ibmveth_poll+0x124/0x448
-[c00000000ffffd20] [c00000000035e948] .ibmveth_poll+0x10c/0x448 (unreliable)
-[c00000000ffffe00] [c00000000040496c] .net_rx_action+0x174/0x29c
-[c00000000ffffed0] [c00000000005d5e0] .__do_softirq+0xdc/0x194
-[c00000000fffff90] [c0000000000265f0] .call_do_softirq+0x14/0x24
-[c00000000b873c90] [c00000000000bc70] .do_softirq+0xb4/0xc0
-[c00000000b873d20] [c00000000005d74c] .irq_exit+0x70/0x88
-[c00000000b873da0] [c00000000000b9d8] .do_IRQ+0x100/0x204
-[c00000000b873e30] [c000000000004780] hardware_interrupt_entry+0x18/0x98
-Instruction dump:
-fba1ffe8 fbc1fff0 3b60ffff fbe1fff8 f8010010 91810008 f821ff41 f8e10110 
-f9010118 880d01da 21200000 7c090114 <0b000000> eb82a488 e81c0000 2fa00000 
+heh - am i the only one impressed by the consistency of the blue line in 
+this graph? :-) [ and the green line looks a bit like a .. staircase? ]
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+i've meanwhile tested hackbench 90 and the performance difference 
+between -ck and -cfs-devel seems to be mostly down to the more precise 
+(but slower) sched_clock() introduced in v2.6.23 and to the startup 
+penalty of freshly created tasks.
 
+Putting back the 2.6.22 version and tweaking the startup penalty gives 
+this:
+
+                             [hackbench 90, smaller is better]
+
+            sched-devel.git      sched-devel.git+lowres-sched-clock+dsp
+            ---------------      --------------------------------------
+                      5.555                  5.149
+                      5.641                  5.149
+                      5.572                  5.171
+                      5.583                  5.155
+                      5.532                  5.111
+                      5.540                  5.138
+                      5.617                  5.176
+                      5.542                  5.119
+                      5.587                  5.159
+                      5.553                  5.177
+            --------------------------------------
+                 avg: 5.572             avg: 5.150 (-8.1%)
+
+('lowres-sched-clock' is the patch i sent in the previous mail. 'dsp' is 
+a disable-startup-penalty patch that is in the latest sched-devel.git)
+
+i have used your .config to conduct this test.
+
+can you reproduce this with the (very-) latest sched-devel git tree:
+
+  git-pull git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+
+plus with the low-res-sched-clock patch (re-) attached below?
+
+	Ingo
+---
+ arch/i386/kernel/tsc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux/arch/i386/kernel/tsc.c
+===================================================================
+--- linux.orig/arch/i386/kernel/tsc.c
++++ linux/arch/i386/kernel/tsc.c
+@@ -110,9 +110,9 @@ unsigned long long native_sched_clock(vo
+ 	 *   very important for it to be as fast as the platform
+ 	 *   can achive it. )
+ 	 */
+-	if (unlikely(!tsc_enabled && !tsc_unstable))
++	if (1 || unlikely(!tsc_enabled && !tsc_unstable))
+ 		/* No locking but a rare wrong value is not a big deal: */
+-		return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
++		return jiffies_64 * (1000000000 / HZ);
+ 
+ 	/* read the Time Stamp Counter: */
+ 	rdtscll(this_offset);
