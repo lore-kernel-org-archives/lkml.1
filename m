@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbXIQIkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbXIQIkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbXIQIkV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 04:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXIQIcn
+	id S1756033AbXIQIkp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 04:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbXIQIco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 04:32:43 -0400
-Received: from il.qumranet.com ([82.166.9.18]:45250 "EHLO il.qumranet.com"
+	Mon, 17 Sep 2007 04:32:44 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45248 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753649AbXIQIc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753639AbXIQIc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 17 Sep 2007 04:32:28 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH 038/104] KVM: Use alignment properties of vcpu to simplify FPU ops
-Date: Mon, 17 Sep 2007 10:31:20 +0200
-Message-Id: <11900179471354-git-send-email-avi@qumranet.com>
+Subject: [PATCH 037/104] KVM: Use kmem cache for allocating vcpus
+Date: Mon, 17 Sep 2007 10:31:19 +0200
+Message-Id: <11900179472013-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <11900179463203-git-send-email-avi@qumranet.com>
 References: <11900179463203-git-send-email-avi@qumranet.com>
@@ -23,190 +23,141 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
-Now we use a kmem cache for allocating vcpus, we can get the 16-byte
-alignment required by fxsave & fxrstor instructions, and avoid
-manually aligning the buffer.
+Avi wants the allocations of vcpus centralized again.  The easiest way
+is to add a "size" arg to kvm_init_arch, and expose the thus-prepared
+cache to the modules.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h      |   13 ++++---------
- drivers/kvm/kvm_main.c |   45 +++++++++++++++++----------------------------
- drivers/kvm/svm.c      |    8 ++++----
- 3 files changed, 25 insertions(+), 41 deletions(-)
+ drivers/kvm/kvm.h      |    4 +++-
+ drivers/kvm/kvm_main.c |   16 +++++++++++++++-
+ drivers/kvm/svm.c      |    5 +++--
+ drivers/kvm/vmx.c      |    4 ++--
+ 4 files changed, 23 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index b362e8f..7a34706 100644
+index 030b93b..b362e8f 100644
 --- a/drivers/kvm/kvm.h
 +++ b/drivers/kvm/kvm.h
-@@ -45,10 +45,6 @@
- #define KVM_REFILL_PAGES 25
- #define KVM_MAX_CPUID_ENTRIES 40
+@@ -141,6 +141,7 @@ struct kvm_mmu_page {
+ };
  
--#define FX_IMAGE_SIZE 512
--#define FX_IMAGE_ALIGN 16
--#define FX_BUF_SIZE (2 * FX_IMAGE_SIZE + FX_IMAGE_ALIGN)
--
- #define DE_VECTOR 0
- #define NM_VECTOR 7
- #define DF_VECTOR 8
-@@ -342,9 +338,8 @@ struct kvm_vcpu {
+ struct kvm_vcpu;
++extern struct kmem_cache *kvm_vcpu_cache;
  
- 	struct kvm_guest_debug guest_debug;
+ /*
+  * x86 supports 3 paging modes (4-level 64-bit, 3-level 64-bit, and 2-level
+@@ -483,7 +484,8 @@ extern struct kvm_arch_ops *kvm_arch_ops;
+ int kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id);
+ void kvm_vcpu_uninit(struct kvm_vcpu *vcpu);
  
--	char fx_buf[FX_BUF_SIZE];
--	char *host_fx_image;
--	char *guest_fx_image;
-+	struct i387_fxsave_struct host_fx_image;
-+	struct i387_fxsave_struct guest_fx_image;
- 	int fpu_active;
- 	int guest_fpu_loaded;
+-int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module);
++int kvm_init_arch(struct kvm_arch_ops *ops, unsigned int vcpu_size,
++		  struct module *module);
+ void kvm_exit_arch(void);
  
-@@ -704,12 +699,12 @@ static inline unsigned long read_msr(unsigned long msr)
- }
- #endif
- 
--static inline void fx_save(void *image)
-+static inline void fx_save(struct i387_fxsave_struct *image)
- {
- 	asm ("fxsave (%0)":: "r" (image));
- }
- 
--static inline void fx_restore(void *image)
-+static inline void fx_restore(struct i387_fxsave_struct *image)
- {
- 	asm ("fxrstor (%0)":: "r" (image));
- }
+ int kvm_mmu_module_init(void);
 diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 4166a08..bfb1b6d 100644
+index 4bbd89e..4166a08 100644
 --- a/drivers/kvm/kvm_main.c
 +++ b/drivers/kvm/kvm_main.c
-@@ -154,8 +154,8 @@ void kvm_load_guest_fpu(struct kvm_vcpu *vcpu)
- 		return;
+@@ -53,6 +53,8 @@ static LIST_HEAD(vm_list);
+ static cpumask_t cpus_hardware_enabled;
  
- 	vcpu->guest_fpu_loaded = 1;
--	fx_save(vcpu->host_fx_image);
--	fx_restore(vcpu->guest_fx_image);
-+	fx_save(&vcpu->host_fx_image);
-+	fx_restore(&vcpu->guest_fx_image);
+ struct kvm_arch_ops *kvm_arch_ops;
++struct kmem_cache *kvm_vcpu_cache;
++EXPORT_SYMBOL_GPL(kvm_vcpu_cache);
+ 
+ static __read_mostly struct preempt_ops kvm_preempt_ops;
+ 
+@@ -3104,7 +3106,8 @@ static void kvm_sched_out(struct preempt_notifier *pn,
+ 	kvm_arch_ops->vcpu_put(vcpu);
  }
- EXPORT_SYMBOL_GPL(kvm_load_guest_fpu);
  
-@@ -165,8 +165,8 @@ void kvm_put_guest_fpu(struct kvm_vcpu *vcpu)
- 		return;
- 
- 	vcpu->guest_fpu_loaded = 0;
--	fx_save(vcpu->guest_fx_image);
--	fx_restore(vcpu->host_fx_image);
-+	fx_save(&vcpu->guest_fx_image);
-+	fx_restore(&vcpu->host_fx_image);
- }
- EXPORT_SYMBOL_GPL(kvm_put_guest_fpu);
- 
-@@ -262,10 +262,6 @@ int kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
- 	}
- 	vcpu->pio_data = page_address(page);
- 
--	vcpu->host_fx_image = (char*)ALIGN((hva_t)vcpu->fx_buf,
--					   FX_IMAGE_ALIGN);
--	vcpu->guest_fx_image = vcpu->host_fx_image + FX_IMAGE_SIZE;
--
- 	r = kvm_mmu_create(vcpu);
- 	if (r < 0)
- 		goto fail_free_pio_data;
-@@ -615,30 +611,20 @@ EXPORT_SYMBOL_GPL(set_cr8);
- 
- void fx_init(struct kvm_vcpu *vcpu)
+-int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
++int kvm_init_arch(struct kvm_arch_ops *ops, unsigned int vcpu_size,
++		  struct module *module)
  {
--	struct __attribute__ ((__packed__)) fx_image_s {
--		u16 control; //fcw
--		u16 status; //fsw
--		u16 tag; // ftw
--		u16 opcode; //fop
--		u64 ip; // fpu ip
--		u64 operand;// fpu dp
--		u32 mxcsr;
--		u32 mxcsr_mask;
--
--	} *fx_image;
-+	unsigned after_mxcsr_mask;
+ 	int r;
  
- 	/* Initialize guest FPU by resetting ours and saving into guest's */
- 	preempt_disable();
--	fx_save(vcpu->host_fx_image);
-+	fx_save(&vcpu->host_fx_image);
- 	fpu_init();
--	fx_save(vcpu->guest_fx_image);
--	fx_restore(vcpu->host_fx_image);
-+	fx_save(&vcpu->guest_fx_image);
-+	fx_restore(&vcpu->host_fx_image);
- 	preempt_enable();
+@@ -3142,6 +3145,14 @@ int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
+ 	if (r)
+ 		goto out_free_3;
  
--	fx_image = (struct fx_image_s *)vcpu->guest_fx_image;
--	fx_image->mxcsr = 0x1f80;
--	memset(vcpu->guest_fx_image + sizeof(struct fx_image_s),
--	       0, FX_IMAGE_SIZE - sizeof(struct fx_image_s));
-+	after_mxcsr_mask = offsetof(struct i387_fxsave_struct, st_space);
-+	vcpu->guest_fx_image.mxcsr = 0x1f80;
-+	memset((void *)&vcpu->guest_fx_image + after_mxcsr_mask,
-+	       0, sizeof(struct i387_fxsave_struct) - after_mxcsr_mask);
- }
- EXPORT_SYMBOL_GPL(fx_init);
- 
-@@ -2356,6 +2342,9 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
- 
- 	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
- 
-+	/* We do fxsave: this must be aligned. */
-+	BUG_ON((unsigned long)&vcpu->host_fx_image & 0xF);
++	/* A kmem cache lets us meet the alignment requirements of fx_save. */
++	kvm_vcpu_cache = kmem_cache_create("kvm_vcpu", vcpu_size,
++					   __alignof__(struct kvm_vcpu), 0, 0);
++	if (!kvm_vcpu_cache) {
++		r = -ENOMEM;
++		goto out_free_4;
++	}
 +
- 	vcpu_load(vcpu);
- 	r = kvm_mmu_setup(vcpu);
- 	vcpu_put(vcpu);
-@@ -2468,7 +2457,7 @@ struct fxsave {
+ 	kvm_chardev_ops.owner = module;
  
- static int kvm_vcpu_ioctl_get_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
+ 	r = misc_register(&kvm_dev);
+@@ -3156,6 +3167,8 @@ int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
+ 	return r;
+ 
+ out_free:
++	kmem_cache_destroy(kvm_vcpu_cache);
++out_free_4:
+ 	sysdev_unregister(&kvm_sysdev);
+ out_free_3:
+ 	sysdev_class_unregister(&kvm_sysdev_class);
+@@ -3173,6 +3186,7 @@ out:
+ void kvm_exit_arch(void)
  {
--	struct fxsave *fxsave = (struct fxsave *)vcpu->guest_fx_image;
-+	struct fxsave *fxsave = (struct fxsave *)&vcpu->guest_fx_image;
- 
- 	vcpu_load(vcpu);
- 
-@@ -2488,7 +2477,7 @@ static int kvm_vcpu_ioctl_get_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
- 
- static int kvm_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
- {
--	struct fxsave *fxsave = (struct fxsave *)vcpu->guest_fx_image;
-+	struct fxsave *fxsave = (struct fxsave *)&vcpu->guest_fx_image;
- 
- 	vcpu_load(vcpu);
- 
+ 	misc_deregister(&kvm_dev);
++	kmem_cache_destroy(kvm_vcpu_cache);
+ 	sysdev_unregister(&kvm_sysdev);
+ 	sysdev_class_unregister(&kvm_sysdev_class);
+ 	unregister_reboot_notifier(&kvm_reboot_notifier);
 diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 8193651..5277084 100644
+index b25f4e1..8193651 100644
 --- a/drivers/kvm/svm.c
 +++ b/drivers/kvm/svm.c
-@@ -1557,8 +1557,8 @@ again:
- 	}
+@@ -577,7 +577,7 @@ static struct kvm_vcpu *svm_create_vcpu(struct kvm *kvm, unsigned int id)
+ 	struct page *page;
+ 	int err;
  
- 	if (vcpu->fpu_active) {
--		fx_save(vcpu->host_fx_image);
--		fx_restore(vcpu->guest_fx_image);
-+		fx_save(&vcpu->host_fx_image);
-+		fx_restore(&vcpu->guest_fx_image);
- 	}
+-	svm = kzalloc(sizeof *svm, GFP_KERNEL);
++	svm = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL);
+ 	if (!svm) {
+ 		err = -ENOMEM;
+ 		goto out;
+@@ -1849,7 +1849,8 @@ static struct kvm_arch_ops svm_arch_ops = {
  
- 	asm volatile (
-@@ -1670,8 +1670,8 @@ again:
- 	vcpu->guest_mode = 0;
+ static int __init svm_init(void)
+ {
+-	return kvm_init_arch(&svm_arch_ops, THIS_MODULE);
++	return kvm_init_arch(&svm_arch_ops, sizeof(struct vcpu_svm),
++			      THIS_MODULE);
+ }
  
- 	if (vcpu->fpu_active) {
--		fx_save(vcpu->guest_fx_image);
--		fx_restore(vcpu->host_fx_image);
-+		fx_save(&vcpu->guest_fx_image);
-+		fx_restore(&vcpu->host_fx_image);
- 	}
+ static void __exit svm_exit(void)
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index f770f55..2b30274 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -2365,7 +2365,7 @@ static void vmx_free_vcpu(struct kvm_vcpu *vcpu)
+ static struct kvm_vcpu *vmx_create_vcpu(struct kvm *kvm, unsigned int id)
+ {
+ 	int err;
+-	struct vcpu_vmx *vmx = kzalloc(sizeof(*vmx), GFP_KERNEL);
++	struct vcpu_vmx *vmx = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL);
+ 	int cpu;
  
- 	if ((svm->vmcb->save.dr7 & 0xff))
+ 	if (!vmx)
+@@ -2490,7 +2490,7 @@ static int __init vmx_init(void)
+ 	memset(iova, 0xff, PAGE_SIZE);
+ 	kunmap(vmx_io_bitmap_b);
+ 
+-	r = kvm_init_arch(&vmx_arch_ops, THIS_MODULE);
++	r = kvm_init_arch(&vmx_arch_ops, sizeof(struct vcpu_vmx), THIS_MODULE);
+ 	if (r)
+ 		goto out1;
+ 
 -- 
 1.5.3
 
