@@ -1,226 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbXIQIyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbXIQIy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbXIQIyj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 04:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbXIQIde
+	id S1755196AbXIQIy5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 04:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXIQIdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 04:33:34 -0400
-Received: from il.qumranet.com ([82.166.9.18]:45250 "EHLO il.qumranet.com"
+	Mon, 17 Sep 2007 04:33:35 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45258 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbXIQIch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752639AbXIQIch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 17 Sep 2007 04:32:37 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Nitin A Kamble <nitin.a.kamble@intel.com>
-Subject: [PATCH 097/104] KVM: x86 emulator: sort opcodes into ascending order
-Date: Mon, 17 Sep 2007 10:32:19 +0200
-Message-Id: <11900179492229-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
+Subject: [PATCH 096/104] KVM: Improve emulation failure reporting
+Date: Mon, 17 Sep 2007 10:32:18 +0200
+Message-Id: <1190017949507-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <11900179463203-git-send-email-avi@qumranet.com>
 References: <11900179463203-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nitin A Kamble <nitin.a.kamble@intel.com>
+Report failed opcodes from all locations.
 
-Signed-off-by: Nitin A Kamble <nitin.a.kamble@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/x86_emulate.c |   99 ++++++++++++++++++++++-----------------------
- 1 files changed, 49 insertions(+), 50 deletions(-)
+ drivers/kvm/kvm.h      |    1 +
+ drivers/kvm/kvm_main.c |   16 ++++++++--------
+ drivers/kvm/svm.c      |    2 +-
+ drivers/kvm/vmx.c      |    2 +-
+ 4 files changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 18c2b2c..e4ce34c 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -978,19 +978,8 @@ push:
- 		dst.val = src.val;
- 		lock_prefix = 1;
- 		break;
--	case 0xa0 ... 0xa1:	/* mov */
--		dst.ptr = (unsigned long *)&_regs[VCPU_REGS_RAX];
--		dst.val = src.val;
--		_eip += ad_bytes;	/* skip src displacement */
--		break;
--	case 0xa2 ... 0xa3:	/* mov */
--		dst.val = (unsigned long)_regs[VCPU_REGS_RAX];
--		_eip += ad_bytes;	/* skip dst displacement */
--		break;
- 	case 0x88 ... 0x8b:	/* mov */
--	case 0xc6 ... 0xc7:	/* mov (sole member of Grp11) */
--		dst.val = src.val;
--		break;
-+		goto mov;
- 	case 0x8f:		/* pop (sole member of Grp1a) */
- 		/* 64-bit mode: POP always pops a 64-bit operand. */
- 		if (mode == X86EMUL_MODE_PROT64)
-@@ -1001,6 +990,15 @@ push:
- 			goto done;
- 		register_address_increment(_regs[VCPU_REGS_RSP], dst.bytes);
- 		break;
-+	case 0xa0 ... 0xa1:	/* mov */
-+		dst.ptr = (unsigned long *)&_regs[VCPU_REGS_RAX];
-+		dst.val = src.val;
-+		_eip += ad_bytes;	/* skip src displacement */
-+		break;
-+	case 0xa2 ... 0xa3:	/* mov */
-+		dst.val = (unsigned long)_regs[VCPU_REGS_RAX];
-+		_eip += ad_bytes;	/* skip dst displacement */
-+		break;
- 	case 0xc0 ... 0xc1:
- 	      grp2:		/* Grp2 */
- 		switch (modrm_reg) {
-@@ -1028,6 +1026,10 @@ push:
- 			break;
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index d93ab48..ad08138 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -558,6 +558,7 @@ enum emulation_result {
+ 
+ int emulate_instruction(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			unsigned long cr2, u16 error_code);
++void kvm_report_emulation_failure(struct kvm_vcpu *cvpu, const char *context);
+ void realmode_lgdt(struct kvm_vcpu *vcpu, u16 size, unsigned long address);
+ void realmode_lidt(struct kvm_vcpu *vcpu, u16 size, unsigned long address);
+ void realmode_lmsw(struct kvm_vcpu *vcpu, unsigned long msw,
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index e6301ce..99e4917 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -1240,25 +1240,25 @@ int emulator_set_dr(struct x86_emulate_ctxt *ctxt, int dr, unsigned long value)
+ 	return X86EMUL_CONTINUE;
+ }
+ 
+-static void report_emulation_failure(struct x86_emulate_ctxt *ctxt)
++void kvm_report_emulation_failure(struct kvm_vcpu *vcpu, const char *context)
+ {
+ 	static int reported;
+ 	u8 opcodes[4];
+-	unsigned long rip = ctxt->vcpu->rip;
++	unsigned long rip = vcpu->rip;
+ 	unsigned long rip_linear;
+ 
+-	rip_linear = rip + get_segment_base(ctxt->vcpu, VCPU_SREG_CS);
++	rip_linear = rip + get_segment_base(vcpu, VCPU_SREG_CS);
+ 
+ 	if (reported)
+ 		return;
+ 
+-	emulator_read_std(rip_linear, (void *)opcodes, 4, ctxt->vcpu);
++	emulator_read_std(rip_linear, (void *)opcodes, 4, vcpu);
+ 
+-	printk(KERN_ERR "emulation failed but !mmio_needed?"
+-	       " rip %lx %02x %02x %02x %02x\n",
+-	       rip, opcodes[0], opcodes[1], opcodes[2], opcodes[3]);
++	printk(KERN_ERR "emulation failed (%s) rip %lx %02x %02x %02x %02x\n",
++	       context, rip, opcodes[0], opcodes[1], opcodes[2], opcodes[3]);
+ 	reported = 1;
+ }
++EXPORT_SYMBOL_GPL(kvm_report_emulation_failure);
+ 
+ struct x86_emulate_ops emulate_ops = {
+ 	.read_std            = emulator_read_std,
+@@ -1323,7 +1323,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
+ 		if (kvm_mmu_unprotect_page_virt(vcpu, cr2))
+ 			return EMULATE_DONE;
+ 		if (!vcpu->mmio_needed) {
+-			report_emulation_failure(&emulate_ctxt);
++			kvm_report_emulation_failure(vcpu, "mmio");
+ 			return EMULATE_FAIL;
  		}
- 		break;
-+	case 0xc6 ... 0xc7:	/* mov (sole member of Grp11) */
-+	mov:
-+		dst.val = src.val;
-+		break;
- 	case 0xd0 ... 0xd1:	/* Grp2 */
- 		src.val = 1;
- 		goto grp2;
-@@ -1186,6 +1188,17 @@ special_insn:
- 		dst.ptr = (void *) register_address(
- 			ctxt->ss_base, _regs[VCPU_REGS_RSP]);
- 		break;
-+	case 0x58 ... 0x5f: /* pop reg */
-+		dst.ptr = (unsigned long *)&_regs[b & 0x7];
-+	pop_instruction:
-+		if ((rc = ops->read_std(register_address(ctxt->ss_base,
-+			_regs[VCPU_REGS_RSP]), dst.ptr, op_bytes, ctxt->vcpu))
-+			!= 0)
-+			goto done;
-+
-+		register_address_increment(_regs[VCPU_REGS_RSP], op_bytes);
-+		no_wb = 1; /* Disable writeback. */
-+		break;
- 	case 0x6c:		/* insb */
- 	case 0x6d:		/* insw/insd */
- 		 if (kvm_emulate_pio_string(ctxt->vcpu, NULL,
-@@ -1217,12 +1230,15 @@ special_insn:
- 				) == 0)
- 			return -1;
+ 		return EMULATE_DO_MMIO;
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index 95681ea..729f1cd 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -960,7 +960,7 @@ static int pf_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ 		++svm->vcpu.stat.mmio_exits;
  		return 0;
--
- 	case 0x9c: /* pushf */
- 		src.val =  (unsigned long) _eflags;
- 		goto push;
--		break;
--
-+	case 0xc3: /* ret */
-+		dst.ptr = &_eip;
-+		goto pop_instruction;
-+	case 0xf4:              /* hlt */
-+		ctxt->vcpu->halt_request = 1;
-+		goto done;
- 	}
- 	if (rep_prefix) {
- 		if (_regs[VCPU_REGS_RCX] == 0) {
-@@ -1271,24 +1287,7 @@ special_insn:
- 	case 0xae ... 0xaf:	/* scas */
- 		DPRINTF("Urk! I don't handle SCAS.\n");
- 		goto cannot_emulate;
--	case 0xf4:              /* hlt */
--		ctxt->vcpu->halt_request = 1;
--		goto done;
--	case 0xc3: /* ret */
--		dst.ptr = &_eip;
--		goto pop_instruction;
--	case 0x58 ... 0x5f: /* pop reg */
--		dst.ptr = (unsigned long *)&_regs[b & 0x7];
--
--pop_instruction:
--		if ((rc = ops->read_std(register_address(ctxt->ss_base,
--			_regs[VCPU_REGS_RSP]), dst.ptr, op_bytes, ctxt->vcpu))
--			!= 0)
--			goto done;
- 
--		register_address_increment(_regs[VCPU_REGS_RSP], op_bytes);
--		no_wb = 1; /* Disable writeback. */
--		break;
- 	}
- 	goto writeback;
- 
-@@ -1382,6 +1381,16 @@ twobyte_insn:
- 		/* Odd cmov opcodes (lsb == 1) have inverted sense. */
- 		no_wb ^= b & 1;
+ 	case EMULATE_FAIL:
+-		vcpu_printf(&svm->vcpu, "%s: emulate fail\n", __FUNCTION__);
++		kvm_report_emulation_failure(&svm->vcpu, "pagetable");
  		break;
-+	case 0xa3:
-+	      bt:		/* bt */
-+		src.val &= (dst.bytes << 3) - 1; /* only subword offset */
-+		emulate_2op_SrcV_nobyte("bt", src, dst, _eflags);
-+		break;
-+	case 0xab:
-+	      bts:		/* bts */
-+		src.val &= (dst.bytes << 3) - 1; /* only subword offset */
-+		emulate_2op_SrcV_nobyte("bts", src, dst, _eflags);
-+		break;
- 	case 0xb0 ... 0xb1:	/* cmpxchg */
- 		/*
- 		 * Save real source value, then compare EAX against
-@@ -1399,30 +1408,15 @@ twobyte_insn:
- 			dst.ptr = (unsigned long *)&_regs[VCPU_REGS_RAX];
- 		}
- 		break;
--	case 0xa3:
--	      bt:		/* bt */
--		src.val &= (dst.bytes << 3) - 1; /* only subword offset */
--		emulate_2op_SrcV_nobyte("bt", src, dst, _eflags);
--		break;
- 	case 0xb3:
- 	      btr:		/* btr */
- 		src.val &= (dst.bytes << 3) - 1; /* only subword offset */
- 		emulate_2op_SrcV_nobyte("btr", src, dst, _eflags);
- 		break;
--	case 0xab:
--	      bts:		/* bts */
--		src.val &= (dst.bytes << 3) - 1; /* only subword offset */
--		emulate_2op_SrcV_nobyte("bts", src, dst, _eflags);
--		break;
- 	case 0xb6 ... 0xb7:	/* movzx */
- 		dst.bytes = op_bytes;
- 		dst.val = (d & ByteOp) ? (u8) src.val : (u16) src.val;
- 		break;
--	case 0xbb:
--	      btc:		/* btc */
--		src.val &= (dst.bytes << 3) - 1; /* only subword offset */
--		emulate_2op_SrcV_nobyte("btc", src, dst, _eflags);
--		break;
- 	case 0xba:		/* Grp8 */
- 		switch (modrm_reg & 3) {
- 		case 0:
-@@ -1435,6 +1429,11 @@ twobyte_insn:
- 			goto btc;
- 		}
- 		break;
-+	case 0xbb:
-+	      btc:		/* btc */
-+		src.val &= (dst.bytes << 3) - 1; /* only subword offset */
-+		emulate_2op_SrcV_nobyte("btc", src, dst, _eflags);
-+		break;
- 	case 0xbe ... 0xbf:	/* movsx */
- 		dst.bytes = op_bytes;
- 		dst.val = (d & ByteOp) ? (s8) src.val : (s16) src.val;
-@@ -1446,14 +1445,14 @@ twobyte_special_insn:
- 	/* Disable writeback. */
- 	no_wb = 1;
- 	switch (b) {
-+	case 0x06:
-+		emulate_clts(ctxt->vcpu);
-+		break;
- 	case 0x09:		/* wbinvd */
- 		break;
- 	case 0x0d:		/* GrpP (prefetch) */
- 	case 0x18:		/* Grp16 (prefetch/nop) */
- 		break;
--	case 0x06:
--		emulate_clts(ctxt->vcpu);
--		break;
- 	case 0x20: /* mov cr, reg */
- 		if (modrm_mod != 3)
- 			goto cannot_emulate;
+ 	default:
+ 		BUG();
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index c44c9ac..4f115a8 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -1798,7 +1798,7 @@ static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 			++vcpu->stat.mmio_exits;
+ 			return 0;
+ 		 case EMULATE_FAIL:
+-			vcpu_printf(vcpu, "%s: emulate fail\n", __FUNCTION__);
++			kvm_report_emulation_failure(vcpu, "pagetable");
+ 			break;
+ 		default:
+ 			BUG();
 -- 
 1.5.3
 
