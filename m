@@ -1,131 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXIQXgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbXIQXlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbXIQXgb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 19:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbXIQXgW
+	id S1756995AbXIQXlK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 19:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbXIQXk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 19:36:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59430 "EHLO
+	Mon, 17 Sep 2007 19:40:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52152 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755118AbXIQXgV (ORCPT
+	with ESMTP id S1753611AbXIQXk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 19:36:21 -0400
-Subject: Re: [PATCH] modpost: detect unterminated device id lists
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, Kees Cook <kees@ubuntu.com>,
-       Greg KH <greg@kroah.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Ben Collins <bcollins@ubuntu.com>, Michael Wu <flamingice@sourmilk.net>
-In-Reply-To: <20070917145029.26370d6f.akpm@linux-foundation.org>
-References: <20070912064134.GO7910@outflux.net>
-	 <46E7C91D.3070001@garzik.org>
-	 <b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com>
-	 <20070912215356.GC23294@kroah.com> <20070913004937.GM8183@outflux.net>
-	 <20070916151447.dc925a9e.akpm@linux-foundation.org>
-	 <a781481a0709161724r6cf664e6q453331911cd0b493@mail.gmail.com>
-	 <20070916234657.6548efe3.akpm@linux-foundation.org>
-	 <alpine.LFD.0.999.0709180253320.6159@enigma.security.iitk.ac.in>
-	 <20070917145029.26370d6f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 17 Sep 2007 20:36:48 -0300
-Message-Id: <1190072208.6281.31.camel@areia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.91-1mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 17 Sep 2007 19:40:57 -0400
+Date: Tue, 18 Sep 2007 05:13:40 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Paul Mackerras <paulus@samba.org>
+cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] powerpc: Avoid pointless WARN_ON(irqs_disabled()) from panic
+ codepath
+In-Reply-To: <a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
+Message-ID: <alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
+References: <46EA5CEB.7020104@linux.vnet.ibm.com>
+ <a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-Em Seg, 2007-09-17 às 14:50 -0700, Andrew Morton escreveu:
-> On Tue, 18 Sep 2007 03:15:14 +0530 (IST)
-> Satyam Sharma <satyam@infradead.org> wrote:
-> 
-> > 
-> > 
-> > On Sun, 16 Sep 2007, Andrew Morton wrote:
-> > 
-> > > On Mon, 17 Sep 2007 05:54:45 +0530 "Satyam Sharma" <satyam.sharma@gmail.com> wrote:
-> > > 
-> > > > On 9/17/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > >
-> > > > > I'm getting this:
-> > > > >
-> > > > > rusb2/pvrusb2: struct usb_device_id is 20 bytes.  The last of 3 is:
-> > > > > 0x03 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
-> > > > > 0x00 0x00 0x00 0x00 0x00
-> > > > > FATAL: drivers/media/video/pvrusb2/pvrusb2: struct usb_device_id is not terminated
-> > > > > with a NULL entry!
-> > > > >
-> > > > > ("rusb2/pvrusb2" ??)
-> > > > 
-> > > > Hmm? Are you sure you didn't see any "drivers/media/video/pv" before the
-> > > > "rusb2/pvrusb2" bit?
-> > > 
-> > > Fairly.  I looked twice.
-> > 
-> > "drivers/media/video/pvrusb2/pvrusb2" comes out correctly here ...
-> > 
-> > 
-> > > > Looking at Kees' patch (and the existing code), I've no
-> > > > clue how/why this should happen ... will try to reproduce here ...
-> > > > 
-> > > > 
-> > > > > but:
-> > > > >
-> > > > > struct usb_device_id pvr2_device_table[] = {
-> > > > >         [PVR2_HDW_TYPE_29XXX] = { USB_DEVICE(0x2040, 0x2900) },
-> > > > >         [PVR2_HDW_TYPE_24XXX] = { USB_DEVICE(0x2040, 0x2400) },
-> > > > >         { USB_DEVICE(0, 0) },
-> > > > > };
-> > > > >
-> > > > > looks OK?
-> > > > >
-> > > > > Using plain old "{ }" shut the warning up.
-> > > > 
-> > > > USB_DEVICE(0, 0) is not empty termination, actually, and this looks like
-> > > > a genuine bug caught by the patch. As that dump shows, USB_DEVICE(0, 0)
-> > > > assigns "0x03 0x00" (in little endian) to usb_device_id.match_flags. And
-> > > > I don't think the USB code treats such an entry as an empty entry (?)
-> > > > 
-> > > > Interestingly, the "USB_DEVICE(0, 0)" thing is absent from latest -git
-> > > > tree and also in my copy of 23-rc4-mm1 -- so this looks like something
-> > > > you must've merged recently.
-> > > 
-> > > git-dvb very carefully does
-> > > 
-> > > --- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c~git-dvb
-> > > +++ a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-> > > @@ -44,7 +44,7 @@
-> > >  struct usb_device_id pvr2_device_table[] = {
-> > >  		[PVR2_HDW_TYPE_29XXX] = { USB_DEVICE(0x2040, 0x2900) },
-> > >  		[PVR2_HDW_TYPE_24XXX] = { USB_DEVICE(0x2040, 0x2400) },
-> > > -       { }
-> > > +       { USB_DEVICE(0, 0) },
-> > > };
-> > > 	 
-> > > MODULE_DEVICE_TABLE(usb, pvr2_device_table);
-> > 
-> > Ok, this is a false positive indeed, the core USB code does in fact
-> > treat such an entry as an empty entry (usb_match_id() tests only the
-> > .idVendor, .bDeviceClass, .bInterfaceClass and .driver_info members
-> > for non-zero and not the .match_flags member).
-> > 
-> > However, a quick-grep-and-glance tells us that none of the other 2213
-> > occurrences of USB_DEVICE() in the tree ever do this "(0,0)" thing,
-> > so it does make sense to change this one to a simple "{ }" as well --
-> > that's clearer style anyway, and the "standard" way to empty-terminate
-> > in the rest of the tree, if nothing else.
-> > 
-> 
-> yeah, I think so.  Mauro, could you please drop that change?
+> ------------[ cut here ]------------
+> Badness at arch/powerpc/kernel/smp.c:202
 
-Patch dropped from my tree.
+comes when smp_call_function_map() has been called with irqs disabled,
+which is illegal. However, there is a special case, the panic() codepath,
+when we do not want to warn about this -- warning at that time is pointless
+anyway, and only serves to scroll away the *real* cause of the panic and
+distracts from the real bug.
 
-Cheers,
-Mauro.
+* So let's extract the WARN_ON() from smp_call_function_map() into all its
+  callers -- smp_call_function() and smp_call_function_single()
 
+* Also, introduce another caller of smp_call_function_map(), namely
+  __smp_call_function() (and make smp_call_function() a wrapper over this)
+  which does *not* warn about disabled irqs
+
+* Use this __smp_call_function() from the panic codepath's smp_send_stop()
+
+We also end having to move code of smp_send_stop() below the definition
+of __smp_call_function().
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+
+---
+
+Untested (not even compile-tested) patch.
+Could someone point me to ppc32/64 cross-compilers for i386?
+
+ arch/powerpc/kernel/smp.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 1ea4316..b24dcba 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -152,11 +152,6 @@ static void stop_this_cpu(void *dummy)
+ 		;
+ }
+ 
+-void smp_send_stop(void)
+-{
+-	smp_call_function(stop_this_cpu, NULL, 1, 0);
+-}
+-
+ /*
+  * Structure and data for smp_call_function(). This is designed to minimise
+  * static memory requirements. It also looks cleaner.
+@@ -198,9 +193,6 @@ int smp_call_function_map(void (*func) (void *info), void *info, int nonatomic,
+ 	int cpu;
+ 	u64 timeout;
+ 
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+ 	if (unlikely(smp_ops == NULL))
+ 		return ret;
+ 
+@@ -270,10 +262,19 @@ int smp_call_function_map(void (*func) (void *info), void *info, int nonatomic,
+ 	return ret;
+ }
+ 
++static int __smp_call_function(void (*func)(void *info), void *info,
++			       int nonatomic, int wait)
++{
++	return smp_call_function_map(func,info,nonatomic,wait,cpu_online_map);
++}
++
+ int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+ 			int wait)
+ {
+-	return smp_call_function_map(func,info,nonatomic,wait,cpu_online_map);
++	/* Can deadlock when called with interrupts disabled */
++	WARN_ON(irqs_disabled());
++
++	return __smp_call_function(func, info, nonatomic, wait);
+ }
+ EXPORT_SYMBOL(smp_call_function);
+ 
+@@ -283,6 +284,9 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
+ 	cpumask_t map = CPU_MASK_NONE;
+ 	int ret = 0;
+ 
++	/* Can deadlock when called with interrupts disabled */
++	WARN_ON(irqs_disabled());
++
+ 	if (!cpu_online(cpu))
+ 		return -EINVAL;
+ 
+@@ -299,6 +303,11 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
+ }
+ EXPORT_SYMBOL(smp_call_function_single);
+ 
++void smp_send_stop(void)
++{
++	__smp_call_function(stop_this_cpu, NULL, 1, 0);
++}
++
+ void smp_call_function_interrupt(void)
+ {
+ 	void (*func) (void *info);
