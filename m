@@ -1,131 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXIQWgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759900AbXIQWhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbXIQWgR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 18:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbXIQWgE
+	id S1759900AbXIQWhx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 18:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbXIQWhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 18:36:04 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:60101 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757319AbXIQWgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 18:36:03 -0400
-Date: Mon, 17 Sep 2007 18:36:00 -0400
-To: Nix <nix@esperi.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22.6] nfsd: fh_verify() `malloc failure' with lots of
-	free memory leads to NFS hang
-Message-ID: <20070917223600.GA30350@fieldses.org>
-References: <874phtkk25.fsf@hades.wkstn.nix>
+	Mon, 17 Sep 2007 18:37:45 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49895 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753573AbXIQWhp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 18:37:45 -0400
+Date: Mon, 17 Sep 2007 23:36:38 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH mm] fix swapoff breakage; however...
+In-Reply-To: <46EEE81A.1010404@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0709172312390.19506@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0709171947130.15413@blonde.wat.veritas.com>
+ <46EED1A7.5080606@linux.vnet.ibm.com> <Pine.LNX.4.64.0709172038090.25512@blonde.wat.veritas.com>
+ <46EEE81A.1010404@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <874phtkk25.fsf@hades.wkstn.nix>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 11:23:46PM +0100, Nix wrote:
-> Sep 17 22:57:55 loki warning: kernel: nfsd_dispatch: vers 3 proc 4
-> Sep 17 22:57:55 loki warning: kernel: nfsd: ACCESS(3)   36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab 0x1f
-> Sep 17 22:57:55 loki warning: kernel: nfsd: fh_verify(36: 01070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab)
-> Sep 17 22:57:55 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-> Sep 17 22:58:50 hades notice: kernel: nfs: server loki not responding, still trying
-> Sep 17 22:58:50 hades notice: kernel: nfs: server loki not responding, still trying
-> Sep 17 22:58:55 hades notice: kernel: nfs: server loki not responding, still trying
-> Sep 17 22:59:40 hades notice: kernel: nfs: server loki not responding, still trying
+On Tue, 18 Sep 2007, Balbir Singh wrote:
+> Hugh Dickins wrote:
+> > 
+> > What would make sense is (what I meant when I said swap counted
+> > along with RSS) not to count pages out and back in as they are
+> > go out to swap and back in, just keep count of instantiated pages
+> > 
 > 
-> 
-> >From then on, *every* fh_verify() request fails the same way, and
-> obviously if you can't verify any fds you can't do much with NFS.
-> 
-> Looking back in the log I see intermittent malloc failures starting
-> almost as soon as I've booted (allowing a couple of minutes for me to
-> turn debugging on):
-> 
-> Sep 17 22:25:50 hades notice: kernel: nfs: server loki OK
-> [...]
-> Sep 17 22:28:09 loki warning: kernel: nfsd_dispatch: vers 3 proc 19
-> Sep 17 22:28:09 loki warning: kernel: nfsd: FSINFO(3)   28: 00070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab
-> Sep 17 22:28:09 loki warning: kernel: nfsd: fh_verify(28: 00070001 000fb001 00000000 d32ff38f 404811a6 a88d96ab)
-> Sep 17 22:28:09 loki warning: kernel: nfsd: Dropping request due to malloc failure!
-> 
-> A while later we start seeing runs of malloc failures, which I think
-> correlated with the unexplained pauses in NFS response:
+> I am not sure how you define instantiated pages. I suspect that
+> you mean RSS + pages swapped out (swap_pte)?
 
-Actually, they're nothing to do with malloc failures--the message
-printed here is misleading, and isn't even an error; it gets printed
-whenever an upcall to mountd is made.  The problem is almost certainly a
-problem with kernel<->mountd communication--the kernel depends on mountd
-to answer questions about exported filesystems as part of the fh_verify
-code.
+That's it.  (Whereas file pages counted out when paged out,
+then counted back in when paged back in.)
 
-It's just a shot in the dark, but you might try the latest nfs-utils
-(get the latest out of git://linux-nfs.org/nfs-utils if you're already
-on the most recent your distro will give you).  Or just apply the
-following--which did fix a problem whose symptoms varied depending on
-libc behavior.
+> If a swapoff is going to push a container over it's limit, then
+> we break the container and the isolation it provides.
 
-If that doesn't work, I'd try
+Is it just my traditional bias, that makes me prefer you break
+your container than my swapoff?  I'm not sure.
 
-	strace -s0 `pidof rpc.mountd`
+> Upon swapoff
+> failure, may be we could get the container to print a nice
+> little warning so that anyone else with CAP_SYS_ADMIN can fix the
+> container limit and retry swapoff.
 
-and also look at the contents of /proc/net/rpc/nfsd.fh/contents.
+And then they hit the next one... rather like trying to work out
+the dependencies of packages for oneself: a very tedious process.
 
---b.
+If the swapoff succeeds, that does mean there was actually room
+in memory (+ other swap) for everyone, even if some have gone over
+their nominal limits.  (But if the swapoff runs out of memory in
+the middle, yes, it might well have assigned the memory unfairly.)
 
-commit dd087896285da9e160e13ee9f7d75381b67895e3
-Author: J. Bruce Fields <bfields@citi.umich.edu>
-Date:   Thu Jul 26 16:30:46 2007 -0400
+The appropriate answer may depend on what you do when a container
+tries to fault in one more page than its limit.  Apparently just
+fail it (no attempt to page out another page from that container).
 
-    Use __fpurge to ensure single-line writes to cache files
-    
-    On a recent Debian/Sid machine, I saw libc retrying stdio writes that
-    returned write errors.  The result is that if an export downcall returns
-    an error (which it can in normal operation, since it currently
-    (incorrectly) returns -ENOENT on any negative downcall), then subsequent
-    downcalls will write multiple lines (including the original line that
-    received the error).
-    
-    The result is that the server fails to respond to any rpc call that
-    refers to an unexported mount point (such as a readdir of a directory
-    containing such a mountpoint), so client commands hang.
-    
-    I don't know whether this libc behavior is correct or expected, but it
-    seems safest to add the __fpurge() (suggested by Neil) to ensure data is
-    thrown away.
-    
-    Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
-    Signed-off-by: Neil Brown <neilb@suse.de>
+So, if the whole system is under memory pressure, kswapd will
+be keeping the RSS of all tasks low, and they won't reach their
+limits; whereas if the system is not under memory pressure,
+tasks will easily approach their limits and so fail.
 
-diff --git a/support/nfs/cacheio.c b/support/nfs/cacheio.c
-index a76915b..9d271cd 100644
---- a/support/nfs/cacheio.c
-+++ b/support/nfs/cacheio.c
-@@ -17,6 +17,7 @@
- 
- #include <nfslib.h>
- #include <stdio.h>
-+#include <stdio_ext.h>
- #include <ctype.h>
- #include <unistd.h>
- #include <sys/types.h>
-@@ -111,7 +112,18 @@ void qword_printint(FILE *f, int num)
- 
- int qword_eol(FILE *f)
- {
-+	int err;
-+
- 	fprintf(f,"\n");
-+	err = fflush(f);
-+	/*
-+	 * We must send one line (and one line only) in a single write
-+	 * call.  In case of a write error, libc may accumulate the
-+	 * unwritten data and try to write it again later, resulting in a
-+	 * multi-line write.  So we must explicitly ask it to throw away
-+	 * any such cached data:
-+	 */
-+	__fpurge(f);
- 	return fflush(f);
- }
- 
+Please tell me my understanding is wrong!
+
+Hugh
