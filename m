@@ -1,125 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbXIQUzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbXIQU4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbXIQUzo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 16:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbXIQUzh
+	id S1759448AbXIQU4U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 16:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXIQU4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 16:55:37 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:22691 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753838AbXIQUzg (ORCPT
+	Mon, 17 Sep 2007 16:56:11 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:25239 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbXIQU4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 16:55:36 -0400
-Message-ID: <46EEE8C1.5040506@linux-kernel.at>
-Date: Mon, 17 Sep 2007 22:51:13 +0200
-From: Oliver Falk <oliver@linux-kernel.at>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Linux on Alpha processors <axp-list@redhat.com>
-CC: linux-kernel@vger.kernel.org, Jay Estabrook <jay.estabrook@hp.com>,
-       ac-admin@lists.anotherbloody.com
-Subject: Re: 2.6.23 alpha unistd.h changes
-References: <46EEE483.4020209@linux-kernel.at>
-In-Reply-To: <46EEE483.4020209@linux-kernel.at>
-Content-Type: multipart/mixed;
- boundary="------------070706080706090801000000"
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.399, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -2.60)
-X-MailScanner-From: oliver@linux-kernel.at
+	Mon, 17 Sep 2007 16:56:10 -0400
+Date: Mon, 17 Sep 2007 13:55:22 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/7] Immediate Values - Documentation
+Message-Id: <20070917135522.b2e0fd99.randy.dunlap@oracle.com>
+In-Reply-To: <20070917184321.186874558@polymtl.ca>
+References: <20070917184224.549435917@polymtl.ca>
+	<20070917184321.186874558@polymtl.ca>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070706080706090801000000
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Mon, 17 Sep 2007 14:42:30 -0400 Mathieu Desnoyers wrote:
 
-Oliver Falk schrieb:
-> Hi!
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> ---
+>  Documentation/immediate.txt |  228 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 228 insertions(+)
 > 
-> At Alphacore we used to patch the kernel headers for a while now; We
-> added syscalls __NR_openat (447) until __NR_tee (466).
-> 
-> However, since 2.6.23 these syscall where added upstream, but with
-> different syscall numbers; What happens is the following:
-> 
-> * glibc 2.6.90 compiled with 2.6.23 headers installed
-> * kernel 2.6.21 (our patched headers in place, different syscall
-> 'ordering'/numbers) installed
-> 
-> [root@tyskie ~]# uname -r; touch x; rm -f x
-> 2.6.23-0.145.rc4.fc8
-> rm: cannot remove `x': File exists
-> 
-> :-( I don't want to live without rm :-P and chmod doesn't work as well...
-> 
-> If I start 2.6.15, where these syscalls where not in place, it works
-> just fine. If I install old glibc 2.6 (compiled against 2.6.21 headers)
-> and kernel 2.6.21 also everything is fine.
-> 
-> Final test was now:
-> * Boot kernel 2.6.23 and glibc 2.6.90 (compiled against 2.6.23 headers),
-> also everything seems to work.
-> 
-> As these additions are quite new to upstream kernel, but at Alphacore we
-> have patched it since a while now (I don't know about other Alpha ports;
-> Debian folks may speak up now!), I would suggest to use the same
-> 'ordering' of the syscalls upstream and add the new syscalls that we had
-> not in place, but are now upstream to the end of our 'old' list.
-> 
-> I have attached our patch that we used for 2.6.21.
-> 
-> 
-> Please let me know if that's fine everyone and keep me posted directly
-> and only via m/l, as I might miss the mail then...
+> Index: linux-2.6-lttng/Documentation/immediate.txt
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-lttng/Documentation/immediate.txt	2007-09-17 14:03:09.000000000 -0400
+> @@ -0,0 +1,228 @@
+> +		        Using the Immediate Values
+> +
+> +			    Mathieu Desnoyers
+> +
+> +
+> +This document introduces Immediate Values and their use.
+> +
+> +* Purpose of immediate values
+> +
+[snip]
+> +
+> +If you have to read the immediate values from a function declared as __init or
+> +__exit, you should explicitly use _immediate_read(), which will fall back on a
+> +global variable read. Failing to do so will leave a reference to the __init
+> +section after it is freed (it would generate a modpost warning).
+> +
+> +The prefered idiom to dynamically enable compiled-in code is to use
 
-Attached patch should bring ordering back to what we had at AC.
-systbls.S should be ordered as well, but from functional perspective, I
-don't worry about that for now :-P
+       preferred
 
--of
+> +immediate_if (&this_immediate), which may eventually use gcc improvements to
+> +provide a jump instruction patching based condition instead of a immediate value
 
---------------070706080706090801000000
-Content-Type: application/octet-stream;
- name="unistd.h.old_syscall_ordering.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="unistd.h.old_syscall_ordering.patch"
+                                                                  an
 
-LS0tIHVuaXN0ZC5oLm9sZF9zeXNjYWxsX29yZGVyaW5nCTIwMDctMDktMTcgMjI6Mzc6MTEu
-MDAwMDAwMDAwICswMjAwCisrKyB1bmlzdGQuaAkyMDA3LTA5LTE3IDIyOjQyOjA2LjAwMDAw
-MDAwMCArMDIwMApAQCAtNDAxLDMwICs0MDEsMzAgQEAKICNkZWZpbmUgX19OUl9pbm90aWZ5
-X2luaXQJCTQ0NAogI2RlZmluZSBfX05SX2lub3RpZnlfYWRkX3dhdGNoCQk0NDUKICNkZWZp
-bmUgX19OUl9pbm90aWZ5X3JtX3dhdGNoCQk0NDYKLSNkZWZpbmUgX19OUl9mZGF0YXN5bmMJ
-CQk0NDcKLSNkZWZpbmUgX19OUl9rZXhlY19sb2FkCQkJNDQ4Ci0jZGVmaW5lIF9fTlJfbWln
-cmF0ZV9wYWdlcwkJNDQ5Ci0jZGVmaW5lIF9fTlJfb3BlbmF0CQkJNDUwCi0jZGVmaW5lIF9f
-TlJfbWtkaXJhdAkJCTQ1MQotI2RlZmluZSBfX05SX21rbm9kYXQJCQk0NTIKLSNkZWZpbmUg
-X19OUl9mY2hvd25hdAkJCTQ1MwotI2RlZmluZSBfX05SX2Z1dGltZXNhdAkJCTQ1NAotI2Rl
-ZmluZSBfX05SX2ZzdGF0YXQ2NAkJCTQ1NQotI2RlZmluZSBfX05SX3VubGlua2F0CQkJNDU2
-Ci0jZGVmaW5lIF9fTlJfcmVuYW1lYXQJCQk0NTcKLSNkZWZpbmUgX19OUl9saW5rYXQJCQk0
-NTgKLSNkZWZpbmUgX19OUl9zeW1saW5rYXQJCQk0NTkKLSNkZWZpbmUgX19OUl9yZWFkbGlu
-a2F0CQkJNDYwCi0jZGVmaW5lIF9fTlJfZmNobW9kYXQJCQk0NjEKLSNkZWZpbmUgX19OUl9m
-YWNjZXNzYXQJCQk0NjIKLSNkZWZpbmUgX19OUl9wc2VsZWN0NgkJCTQ2MwotI2RlZmluZSBf
-X05SX3Bwb2xsCQkJNDY0Ci0jZGVmaW5lIF9fTlJfdW5zaGFyZQkJCTQ2NQotI2RlZmluZSBf
-X05SX3NldF9yb2J1c3RfbGlzdAkJNDY2Ci0jZGVmaW5lIF9fTlJfZ2V0X3JvYnVzdF9saXN0
-CQk0NjcKLSNkZWZpbmUgX19OUl9zcGxpY2UJCQk0NjgKLSNkZWZpbmUgX19OUl9zeW5jX2Zp
-bGVfcmFuZ2UJCTQ2OQotI2RlZmluZSBfX05SX3RlZQkJCTQ3MAorI2RlZmluZSBfX05SX29w
-ZW5hdAkJCTQ0NworI2RlZmluZSBfX05SX21rZGlyYXQJCQk0NDgKKyNkZWZpbmUgX19OUl9t
-a25vZGF0CQkJNDQ5CisjZGVmaW5lIF9fTlJfZmNob3duYXQJCQk0NTAKKyNkZWZpbmUgX19O
-Ul9mdXRpbWVzYXQJCQk0NTEKKyNkZWZpbmUgX19OUl91bmxpbmthdAkJCTQ1MgorI2RlZmlu
-ZSBfX05SX3JlbmFtZWF0CQkJNDUzCisjZGVmaW5lIF9fTlJfbGlua2F0CQkJNDU0CisjZGVm
-aW5lIF9fTlJfc3ltbGlua2F0CQkJNDU1CisjZGVmaW5lIF9fTlJfcmVhZGxpbmthdAkJCTQ1
-NgorI2RlZmluZSBfX05SX2ZjaG1vZGF0CQkJNDU3CisjZGVmaW5lIF9fTlJfZmFjY2Vzc2F0
-CQkJNDU4CisjZGVmaW5lIF9fTlJfcHNlbGVjdDYJCQk0NTkKKyNkZWZpbmUgX19OUl9wcG9s
-bAkJCTQ2MAorI2RlZmluZSBfX05SX3Vuc2hhcmUJCQk0NjEKKyNkZWZpbmUgX19OUl9zZXRf
-cm9idXN0X2xpc3QJCTQ2MgorI2RlZmluZSBfX05SX2dldF9yb2J1c3RfbGlzdAkJNDYzCisj
-ZGVmaW5lIF9fTlJfc3BsaWNlCQkJNDY0CisjZGVmaW5lIF9fTlJfc3luY19maWxlX3Jhbmdl
-CQk0NjUKKyNkZWZpbmUgX19OUl90ZWUJCQk0NjYKKyNkZWZpbmUgX19OUl9mZGF0YXN5bmMJ
-CQk0NjcKKyNkZWZpbmUgX19OUl9rZXhlY19sb2FkCQkJNDY4CisjZGVmaW5lIF9fTlJfbWln
-cmF0ZV9wYWdlcwkJNDY5CisjZGVmaW5lIF9fTlJfZnN0YXRhdDY0CQkJNDcwCiAjZGVmaW5l
-IF9fTlJfdm1zcGxpY2UJCQk0NzEKICNkZWZpbmUgX19OUl9tb3ZlX3BhZ2VzCQkJNDcyCiAj
-ZGVmaW5lIF9fTlJfZ2V0Y3B1CQkJNDczCg==
---------------070706080706090801000000--
+> +feeding a conditional jump. You should use _immediate_if () instead of
+> +immediate_if () in functions marked __init or __exit.
+> +
+> +immediate_set_early() should be used only at early kernel boot time, before SMP
+> +is activated. It provides no locking, does not take care of clearing the
+> +write-protection bits when touching executable pages and does not take care or
+
+                                                           does not take care of ??
+
+> +SMP errata on the i386 and x86_64 architectures. By not doing so, it can update
+> +the immediate values very early at kernel boot time and require the minimalistic
+
+                                                          require only the
+
+> +infrastructure available at that point.
+> +
+> +You can choose to set an initial static value to the immediate by using, for
+> +instance:
+> +
+> +DEFINE_IMMEDIATE(long, myptr) = 10;
+> +
+> +
+[snip]
+> +
+> +(15348 exec/s) * (7.84 cycles/exec) / (3G cycles/s) = 0.00004
+> +For a 0.004% slowdown.
+> +
+> +If we plan to use this for memory allocation, spinlock, and all sort of
+
+                                                              all sorts of
+
+> +very high event rate tracing, we can assume it will execute 10 to 100
+> +times more sites per second, which brings us to 0.4% slowdown with the
+> +instruction stream based test compared to 29% slowdown with the memory
+> +load based test on a system with high memory pressure.
+> +
+> +
+[snip]
+> +
+> +
+> +- Test redone with less iterations, but with error estimates
+> +
+> +10 runs of 100 iterations each: Tests done on a 3GHz P4. Here I run getppid with
+> +syscall trace inactive, comparing the case with memory pressure and withou
+
+                                                  last word:  without
+
+> +memory pressure. (sorry, my system is not setup to execute syscall_trace this
+> +time, but it will make the point anyway).
+> +
+[snip]
+> +
+> +
+> +Therefore, not only is it interesting to use the immediate values to dynamically
+> +activate dormant code such as the markers, but I think it should also be
+> +considered as a replacement for many of the "read mostly" static variables.
+
+                                               "read-mostly"
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
