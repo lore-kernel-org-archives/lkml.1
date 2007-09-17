@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbXIQSTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbXIQSVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbXIQSTs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbXIQSTl
+	id S1755924AbXIQSVw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbXIQSVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:19:41 -0400
-Received: from il.qumranet.com ([82.166.9.18]:39003 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753166AbXIQSTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:19:40 -0400
-Message-ID: <46EEC52B.8080101@qumranet.com>
-Date: Mon, 17 Sep 2007 20:19:23 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 17 Sep 2007 14:21:45 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:58842 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753630AbXIQSVp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:21:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=JlB39703CVhYGJ4LG4ckYaIuUFk4CZArN0bu113aI4eLtTxWMnNhq2qQ3lLMBmMnv
+	SiJUJ9CL9ifMBExnVsUcA==
+Message-ID: <6599ad830709171121r1ded056j7dc676bb6f37e231@mail.gmail.com>
+Date: Mon, 17 Sep 2007 11:21:35 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add a refcount check in dput()
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20070915013913.880b4c70.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Christoph Hellwig <hch@infradead.org>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Nguyen Anh Quynh <aquynh@gmail.com>
-Subject: Re: [PATCH 001/104] KVM: Fix *nopage() in kvm_main.c
-References: <11900179463203-git-send-email-avi@qumranet.com> <46EE45C3.8040302@qumranet.com> <46EE4683.7070205@qumranet.com> <200709170729.24835.nickpiggin@yahoo.com.au>
-In-Reply-To: <200709170729.24835.nickpiggin@yahoo.com.au>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Mon, 17 Sep 2007 20:19:24 +0200 (IST)
+Content-Disposition: inline
+References: <20070910221319.302473D66CF@localhost>
+	 <20070915013913.880b4c70.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
->>
->> I should mention that the converting to use ->fault() is a 15-minute
->> change; the tricky part is adding backwards compatibility for the
->> external module package.
->>     
+On 9/15/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > +     BUG_ON(!atomic_read(&dentry->d_count));
+> >  repeat:
+> >       if (atomic_read(&dentry->d_count) == 1)
+> >               might_sleep();
 >
-> It should be mostly possible to ifdef a nopage() handler, which is
-> just a wrapper function to translate arguments then call your new
-> ->fault() handler. With luck, fault would mostly inline into nopage,
-> and do some constant folding to make it cheaper...
->
-> I'm planning to go through and convert the rest of the in-tree users
-> at some point soon, so if you do get a chance to convert your
-> upstream code before I try, it would nice ;)
->
->   
+> eek, much too aggressive.
 
-In kvm I don't add compatibility #ifdefs to mainline, instead I have an
-awk script that massages the sources into something that all kernels can
-grok.
+How about the equivalent BUG_ON() in dget()? I figure that they ought
+to both be of the same strictness.
 
-It isn't pretty but it works.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Paul
