@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbXIQSIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbXIQSMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbXIQSIS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbXIQSIL
+	id S1755618AbXIQSMF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbXIQSLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:08:11 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:57659 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753522AbXIQSIK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:08:10 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=u4tUOb7O/YXcpzXchRJJw1knD5IGYtZk3WeDGlIuYkWCnhMETRAnTAkd8n2pRciCr
-	M7X/pxsUsV0G6wxYLsYIw==
-Message-ID: <6599ad830709171108n2927d1fegcf05d564d4be0f6f@mail.gmail.com>
-Date: Mon, 17 Sep 2007 11:08:03 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH] task containersv11 enable containers by default in some configs
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070915072904.30468.73201.sendpatchset@jackhammer.engr.sgi.com>
+	Mon, 17 Sep 2007 14:11:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:59780 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753649AbXIQSLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:11:55 -0400
+Message-ID: <46EEC368.1040308@goop.org>
+Date: Mon, 17 Sep 2007 11:11:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
+To: David Madore <david.madore@ens.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: patch/option to wipe memory at boot?
+References: <20070917155149.GA5453@clipper.ens.fr>
+In-Reply-To: <20070917155149.GA5453@clipper.ens.fr>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070915072904.30468.73201.sendpatchset@jackhammer.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/15/07, Paul Jackson <pj@sgi.com> wrote:
-> From: Paul Jackson <pj@sgi.com>
+David Madore wrote:
+> Is there a patch or a boot option or something which wipes all
+> available (physical) RAM at boot (or better, fills it with a fixed
+> signature like 0xdeadbeef)?  I'm getting phony ECC errors and I'd like
+> to test whether they go away when the RAM is properly initialized.
+> Also, I'd like to know exactly which parts of RAM are being used and
+> which are untouched since boot (hence the 0xdeadbeef signature).
 >
-> Paul Menage - in pre-container cpusets, a few config files enabled
-> cpusets by default.  Could you blend the following patch into your
-> container patch set, so that cpusets continue to be configured by
-> default for those same configurations?
+> If this patch/option doesn't exist, can anyone give me a hint as to
+> where and how it would be best to add this?  (I'm afraid I'm very
+> ignorant as to how Linux sets up its RAM mapping.)  I'm concerned
+> about x86 and x86_64.
 >
+> PS: I'm not finicky: it's all right if a couple of megabytes at the
+> bottom of RAM are not scrubbed (I'm more interested about the top
+> gigabyte-or-so), especially if they're guaranteed to be used by the
+> kernel.
+>   
 
-OK, I'll take care of that.
+Boot memtest86 for a little while before booting the kernel?  And if you
+haven't already run it for a while, then that would be your first step
+anyway.
 
-After talking with akpm, it sounds as though some of the nasty aspects
-of "select" in Kconfig rules can be avoided as long as no config
-option is controlled by both "select" and "depends". So I'll probably
-go back to making things like CONFIG_CPUSETS select CONFIG_CGROUPS,
-and enforce that CONFIG_CGROUPS can't depend on anything.
-
-Paul
+    J
