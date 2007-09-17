@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbXIQWDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbXIQWEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759850AbXIQWDW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 18:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758948AbXIQWDL
+	id S1760259AbXIQWEt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 18:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbXIQWEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 18:03:11 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35290 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758860AbXIQWDJ (ORCPT
+	Mon, 17 Sep 2007 18:04:40 -0400
+Received: from mail.pro-g.com.tr ([81.214.24.101]:55540 "EHLO
+	mail.pro-g.com.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754047AbXIQWEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 18:03:09 -0400
-Date: Mon, 17 Sep 2007 15:03:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, andrea@suse.de,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <20070916175352.GB2393@lazybastard.org>
-Message-ID: <Pine.LNX.4.64.0709171501520.29993@schroedinger.engr.sgi.com>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au>
- <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org>
- <20070916175352.GB2393@lazybastard.org>
+	Mon, 17 Sep 2007 18:04:39 -0400
+Message-ID: <46EEFA6D.9080708@pro-g.com.tr>
+Date: Mon, 17 Sep 2007 15:06:37 -0700
+From: "Can E. Acar" <can.acar@pro-g.com.tr>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070729)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-134139651-1190066587=:29993"
+To: Theodore Tso <tytso@mit.edu>, Claudio Jeker <cjeker@diehard.n-r-g.com>,
+       Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
+       misc@openbsd.org, linux-kernel@vger.kernel.org,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org>
+In-Reply-To: <20070917204318.GE18360@thunk.org>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Theodore Tso wrote:
+> On Mon, Sep 17, 2007 at 09:23:41PM +0200, Claudio Jeker wrote:
+>> Because they put their copyright plus license on code that they barely
+>> modified. If they would have added substantial work into the OpenHAL code
+>> and by doing that creating something new I would not say much.
+> 
+> Number 1, some of the Linux wireless developers screwed up earlier
+> versions.  No denying that, the problems were pointed out during the
+> patch reviewed problem, AND THEY WERE FIXED.
 
----1700579579-134139651-1190066587=:29993
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Not all, see below:
 
-On Sun, 16 Sep 2007, J=F6rn Engel wrote:
+> Number 2, if you take a look at their latest set of changes (which
+> have still not been accepted), the HAL code is under a pure BSD
+> license (ath5k_hw.c).  Other portions are dual licensed, but not the
+> HAL --- if people would only take a look at
+> 
+> http://git.kernel.org/?p=linux/kernel/git/linville/wireless-dev.git;a=tree;f=drivers/net/wireless;h=2d6caeba0924c34b9539960b9ab568ab3d193fc8;hb=everything
+> 
 
-> I bet!  My (false) assumption was the same as Goswin's.  If non-movable
-> pages are clearly seperated from movable ones and will evict movable
-> ones before polluting further mixed superpages, Nick's scenario would be
-> nearly infinitely impossible.
->=20
-> Assumption doesn't reflect current code.  Enforcing this assumption
-> would cost extra overhead.  The amount of effort to make Christoph's
-> approach work reliably seems substantial and I have no idea whether it
-> would be worth it.
+from latest ath5k_hw.c:
 
-My approach is based on Mel's code and is already working the way you=20
-describe. Page cache allocs are marked __GFP_MOVABLE by Mel's work.
+* Copyright (c) 2004-2007 Reyk Floeter <reyk@openbsd.org>
+* Copyright (c) 2006-2007 Nick Kossifidis <mickflemm@gmail.com>
+* Copyright (c) 2007 Jiri Slaby <jirislaby@gmail.com>
+[snip rest of BSD license]
 
+The only remaining issue is whether Nick & Jiri have enough
+original contributions to the code to be added to the Copyright.
 
----1700579579-134139651-1190066587=:29993--
+I believe this needs to be resolved between Reyk and Nick and Jiri.
+
+The main reason of Theo's message, linked earlier, was the
+lack of response on this issue. It seems that the SFLC is
+dismissing this issue, and thus stalling its resolution by the
+developers.
+
+The rest is, as you say, history.
+
+Can
+
+-- 
+In theory, there is no difference between theory and practice.
+But, in practice, there is.
