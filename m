@@ -1,112 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbXIQJKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbXIQJK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757469AbXIQJKg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 05:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbXIQIq2
+	id S1756629AbXIQJK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 05:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757372AbXIQIsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 04:46:28 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:23140 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757177AbXIQIq0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 04:46:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AbR1uhlEepF85UQgBwshqZ84uwn5YDD7nnxHBACt9Akduk5h3GJK/uFHiQ6bgiZd12M87Jx/hxwC0J33wnFCQRAWenXM71aHKVJgwpiowaUIyIv1wwRD1aSSSwLbKJjQddbg+8ZLywq0KO73TPX2FpLJ0siSE5O2HTvonuoUNNM=
-Message-ID: <d9def9db0709170146u7827d43axf4f2dcf8bb80b352@mail.gmail.com>
-Date: Mon, 17 Sep 2007 10:46:25 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Bernard Jungen" <bern8817@euphonynet.be>
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>
-In-Reply-To: <20070915165834.GA2054@euphonynet.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Sep 2007 04:48:25 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:53458
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757369AbXIQIsY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 04:48:24 -0400
+Message-Id: <46EE5BAB.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 17 Sep 2007 09:49:15 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Roman Zippel" <zippel@linux-m68k.org>
+Cc: <sam@ravnborg.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tristate choices with mixed tristate and boolean
+	values
+References: <46E55B7A.76E4.0078.0@novell.com>
+ <Pine.LNX.4.64.0709161919350.1817@scrub.home>
+In-Reply-To: <Pine.LNX.4.64.0709161919350.1817@scrub.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
-	 <d9def9db0709132338v64ecdcf2ib4e69f1a9c986a5c@mail.gmail.com>
-	 <20070914113838.GA29962@linuxtv.org>
-	 <d9def9db0709140936u64041927p9e472f70d5a036c5@mail.gmail.com>
-	 <20070914204343.GA9058@linuxtv.org>
-	 <d9def9db0709141829w449eb9eek9b7b6a714793cede@mail.gmail.com>
-	 <20070915131650.GA12531@linuxtv.org>
-	 <d9def9db0709150638o2e4026fbgd347eefc0fa4b3e6@mail.gmail.com>
-	 <1189865082.5271.91.camel@gaivota>
-	 <20070915165834.GA2054@euphonynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/15/07, Bernard Jungen <bern8817@euphonynet.be> wrote:
-> On Sat, Sep 15, 2007 at 11:04:42AM -0300, Mauro Carvalho Chehab wrote:
-> > With respect to your kernel-userspace API for xc3028, you made something
-> > that seemed to be a dream: there's a consensus: not a single developer
-> > believed that this is the better way; nobody seems that this is the
-> > better approach.
-> >
-> > So, or you are the only media developer with good sense in the face of
-> > the Earth, or you're incapable of understand the obvious: you're wrong
-> > with this approach. IMO, the answer is quite obvious.
+>>> Roman Zippel <zippel@linux-m68k.org> 16.09.07 19:29 >>>
+>On Mon, 10 Sep 2007, Jan Beulich wrote:
 >
-> Yes, as a newbie observer on the v4l list, the answer is obvious to me,
-> at last, and the reason is not entirely technical. I can't read so many
-> bogus arguments on so few lines without reacting.
+>> --- linux-2.6.23-rc5/scripts/kconfig/menu.c	2007-09-07 16:48:23.000000000 +0200
+>> +++ 2.6.23-rc5-tristate-choices/scripts/kconfig/menu.c	2007-09-03 10:29:41.000000000 +0200
+>> @@ -235,16 +235,23 @@ void menu_finalize(struct menu *parent)
+>>  	sym = parent->sym;
+>>  	if (parent->list) {
+>>  		if (sym && sym_is_choice(sym)) {
+>> -			/* find the first choice value and find out choice type */
+>> +			/* find out choice type */
+>> +			enum symbol_type type = S_UNKNOWN;
+>> +
+>>  			for (menu = parent->list; menu; menu = menu->next) {
+>> -				if (menu->sym) {
+>> -					current_entry = parent;
+>> -					menu_set_type(menu->sym->type);
+>> -					current_entry = menu;
+>> -					menu_set_type(sym->type);
+>> -					break;
+>> +				if (menu->sym && menu->sym->type != S_UNKNOWN) {
+>> +					if (type == S_UNKNOWN)
+>> +						type = menu->sym->type;
+>> +					if (type != S_BOOLEAN)
+>> +						break;
+>> +					if (menu->sym->type == S_TRISTATE) {
+>> +						type = S_TRISTATE;
+>> +						break;
+>> +					}
+>>  				}
+>>  			}
+>> +			current_entry = parent;
+>> +			menu_set_type(type);
+>>  			parentdep = expr_alloc_symbol(sym);
+>>  		} else if (parent->prompt)
+>>  			parentdep = parent->prompt->visible.expr;
 >
-> Rephrasing Mauro:
->
-> "Not a single developer out of a few SEEMS to believe that it is the BETTER
-> approach, so since the FEW represent ALL media developers in the world, and
-> since there is only ONE RIGHT way to do things, and since the GROUP is
-> always RIGHT and always knows better than the individual, then YOU're WRONG
-> and I'm right. Conform to the group and do as the group says, whatever the
-> consequences!"
->
-> Geeks are decidedly as prone as others to blindly accept travelling on the
-> slippery road of herd mentality and "obvious" conclusions based on
-> appearances. Is this OPEN source development or a dictatorship or what?
->
-> So in the end Mauro will be right. And Markus will continue to develop and
-> defend his stuff as HE sees fit. He knows his own work better than anyone
-> else. It will be HIS way or nothing with his own stuff, it's his inalienable
-> right.
->
-> And don't be naive, if there's no solution more viable than Markus' one,
-> then the latter will eventually be widely adopted somehow, sometime,
-> whatever the amount of grumbling from the establishment. No
-> dictatorship/forced consensus can decide future's direction, nor improve
-> its already low own viability.
->
+>If I understand it correctly this makes possible to override the type of 
+>choice symbol, so this loop should only be done if the type is not 
+>S_UNKNOWN.
 
-I see it exactly the same way.
+I think it is better to do it this way, as it results in a (correct) warning from
+menu_set_type() if the choice type is inconsistently being overridden.
 
-Well I will continue to provide an alternative stack with alternative drivers.
-The peer review shows that it doesn't work too well without people participating
-fixing problems, the initial drivers were inkernel based and due some updates in
-modules which are used by the em28xx some devices which previously worked
-don't work anymore in the kernel.
+>> @@ -253,7 +260,16 @@ void menu_finalize(struct menu *parent)
+>>  
+>>  		for (menu = parent->list; menu; menu = menu->next) {
+>>  			basedep = expr_transform(menu->dep);
+>> -			basedep = expr_alloc_and(expr_copy(parentdep), basedep);
+>> +			dep = parentdep;
+>> +			if (sym && sym_is_choice(sym) && menu->sym) {
+>> +				enum symbol_type type = menu->sym->type;
+>> +
+>> +				if (type == S_UNKNOWN)
+>> +					type = sym->type;
+>> +			     if (type != S_TRISTATE)
+>> +					dep = expr_alloc_comp(E_EQUAL, sym, &symbol_yes);
+>> +			}
+>> +			basedep = expr_alloc_and(expr_copy(dep), basedep);
+>>  			basedep = expr_eliminate_dups(basedep);
+>>  			menu->dep = basedep;
+>>  			if (menu->sym)
+>
+>Hmm, if you want to do it this way, I'd prefer you add a parentdep_bool 
+>and simply do:
+>
+>	dep = (menu->sym && menu->sym->type != S_TRISTATE) ? 
+>		parentdep_bool : parentdep;
 
-As for the em28xx the driver will use userspace i2c based tuners, decoders and
-demodulators.
-The userspace modules will use unaltered sample drivers which are provided by
-several companies, which also saves alot time in future for that project.
-Those drivers will also officially be provided and recommended by the
-manufacturing company of those devices, including the proper firmware.
-Personally I won't spend any time on reinventing the wheel and fixing drivers
-which get broken by not taking care of it.
+That would lose the S_UNKNOWN compare (menu->sym->type may not be set
+at this point, yet, and would later get defaulted to tristate if the choice is such).
 
-Beside that people are welcome to contribute without having to fear a political
-overhead of discussing requirements and other issues when changing the
-corresponding alternative core code. The project and how it will/should go on
-is documented at mcentral.de.
+>Otherwise it looks ok.
 
-I also see that as a good way for the community, that way the linuxtv guys
-have to prove that they can be open to other people without adding too
-much noise and overhead otherwise people will contribute to the alternative
-project as some already do.
+Jan
 
-Markus
