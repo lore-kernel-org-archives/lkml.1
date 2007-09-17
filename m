@@ -1,56 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbXIQSm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbXIQSnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758182AbXIQSm5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbXIQSmi
+	id S1758374AbXIQSnV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbXIQSmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:42:38 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:50046 "EHLO smtp.polymtl.ca"
+	Mon, 17 Sep 2007 14:42:43 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:50058 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757368AbXIQSmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:42:37 -0400
-Message-Id: <20070917184208.704840978@polymtl.ca>
+	id S1755262AbXIQSmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:42:42 -0400
+Message-Id: <20070917184208.397567007@polymtl.ca>
 References: <20070917184031.211525416@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 17 Sep 2007 14:40:34 -0400
+Date: Mon, 17 Sep 2007 14:40:33 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
-       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
-Subject: [patch 03/11] Kprobes - declare kprobe_mutex static
-Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 17 Sep 2007 18:42:09 +0000
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: [patch 02/11] Kprobes - do not use kprobes mutex in arch code
+Content-Disposition: inline; filename=kprobes-dont-use-kprobes-mutex-in-arch-code.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 17 Sep 2007 18:42:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it will not be used by other kernel objects, it makes sense to declare it
-static.
+Remove the kprobes mutex from kprobes.h, since it does not belong there. Also
+remove all use of this mutex in the architecture specific code, replacing it by
+a proper mutex lock/unlock in the architecture agnostic code.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: hch@infradead.org
 CC: prasanna@in.ibm.com
 CC: anil.s.keshavamurthy@intel.com
 CC: davem@davemloft.net
 ---
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/i386/kernel/kprobes.c    |    2 --
+ arch/ia64/kernel/kprobes.c    |    2 --
+ arch/powerpc/kernel/kprobes.c |    2 --
+ arch/s390/kernel/kprobes.c    |    2 --
+ arch/x86_64/kernel/kprobes.c  |    2 --
+ include/linux/kprobes.h       |    2 --
+ kernel/kprobes.c              |    2 ++
+ 7 files changed, 2 insertions(+), 12 deletions(-)
 
+Index: linux-2.6-lttng/include/linux/kprobes.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/kprobes.h	2007-09-04 12:10:31.000000000 -0400
++++ linux-2.6-lttng/include/linux/kprobes.h	2007-09-04 12:10:34.000000000 -0400
+@@ -35,7 +35,6 @@
+ #include <linux/percpu.h>
+ #include <linux/spinlock.h>
+ #include <linux/rcupdate.h>
+-#include <linux/mutex.h>
+ 
+ #ifdef CONFIG_KPROBES
+ #include <asm/kprobes.h>
+@@ -183,7 +182,6 @@ static inline void kretprobe_assert(stru
+ }
+ 
+ extern spinlock_t kretprobe_lock;
+-extern struct mutex kprobe_mutex;
+ extern int arch_prepare_kprobe(struct kprobe *p);
+ extern void arch_arm_kprobe(struct kprobe *p);
+ extern void arch_disarm_kprobe(struct kprobe *p);
+Index: linux-2.6-lttng/arch/i386/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/kernel/kprobes.c	2007-09-04 12:10:31.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/kprobes.c	2007-09-04 12:10:34.000000000 -0400
+@@ -187,9 +187,7 @@ void __kprobes arch_disarm_kprobe(struct
+ 
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, (p->ainsn.boostable == 1));
+-	mutex_unlock(&kprobe_mutex);
+ }
+ 
+ static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
 Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
-@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
- /* NOTE: change this value only with kprobe_mutex held */
- static bool kprobe_enabled;
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-09-04 12:10:33.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-09-04 12:10:34.000000000 -0400
+@@ -644,7 +644,9 @@ valid_p:
+ 			list_del_rcu(&p->list);
+ 			kfree(old_p);
+ 		}
++		mutex_lock(&kprobe_mutex);
+ 		arch_remove_kprobe(p);
++		mutex_unlock(&kprobe_mutex);
+ 	} else {
+ 		mutex_lock(&kprobe_mutex);
+ 		if (p->break_handler)
+Index: linux-2.6-lttng/arch/ia64/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/ia64/kernel/kprobes.c	2007-09-04 12:10:31.000000000 -0400
++++ linux-2.6-lttng/arch/ia64/kernel/kprobes.c	2007-09-04 12:10:34.000000000 -0400
+@@ -567,9 +567,7 @@ void __kprobes arch_disarm_kprobe(struct
  
--DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
-+static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
- DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
- static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, 0);
+-	mutex_unlock(&kprobe_mutex);
+ }
+ /*
+  * We are resuming execution after a single step fault, so the pt_regs
+Index: linux-2.6-lttng/arch/powerpc/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/kernel/kprobes.c	2007-09-04 12:10:31.000000000 -0400
++++ linux-2.6-lttng/arch/powerpc/kernel/kprobes.c	2007-09-04 12:10:34.000000000 -0400
+@@ -88,9 +88,7 @@ void __kprobes arch_disarm_kprobe(struct
  
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, 0);
+-	mutex_unlock(&kprobe_mutex);
+ }
+ 
+ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+Index: linux-2.6-lttng/arch/s390/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/s390/kernel/kprobes.c	2007-09-04 12:10:31.000000000 -0400
++++ linux-2.6-lttng/arch/s390/kernel/kprobes.c	2007-09-04 12:10:34.000000000 -0400
+@@ -220,9 +220,7 @@ void __kprobes arch_disarm_kprobe(struct
+ 
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, 0);
+-	mutex_unlock(&kprobe_mutex);
+ }
+ 
+ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+Index: linux-2.6-lttng/arch/x86_64/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86_64/kernel/kprobes.c	2007-09-04 12:10:31.000000000 -0400
++++ linux-2.6-lttng/arch/x86_64/kernel/kprobes.c	2007-09-04 12:10:34.000000000 -0400
+@@ -226,9 +226,7 @@ void __kprobes arch_disarm_kprobe(struct
+ 
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+-	mutex_lock(&kprobe_mutex);
+ 	free_insn_slot(p->ainsn.insn, 0);
+-	mutex_unlock(&kprobe_mutex);
+ }
+ 
+ static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
 
 -- 
 Mathieu Desnoyers
