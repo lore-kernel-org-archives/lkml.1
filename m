@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbXIQStL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbXIQSuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759258AbXIQStL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXIQSs4
+	id S1759075AbXIQSuR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbXIQSuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:48:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:44966 "EHLO mail.goop.org"
+	Mon, 17 Sep 2007 14:50:01 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:51435 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753418AbXIQSsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:48:54 -0400
-Message-ID: <46EECC16.10501@goop.org>
-Date: Mon, 17 Sep 2007 11:48:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: bbpetkov@yahoo.de
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] unify DMA_..BIT_MASK definitions
-References: <20070917175139.GA4941@gollum.tnic> <46EEC418.6070005@goop.org> <20070917183346.GA9006@gollum.tnic>
-In-Reply-To: <20070917183346.GA9006@gollum.tnic>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1752570AbXIQSuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:50:00 -0400
+Message-Id: <20070917184600.593943988@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 17 Sep 2007 14:46:00 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/4] Linux Kernel Markers
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 17 Sep 2007 18:49:56 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> That is more compact, I agree. However, the XXBIT_MASK macros have the
-> better readability, imho. And also, doing 
->
-> $grep -Prin 'DMA_..BIT_MASK' * | wc -l
->
-> returns 383 on the 23-rc6 tree so removing them should be quite the logistical
-> challenge for the kernel janitors :). What do the others think?
->   
+Hi Andrew,
 
-Well, even defining the existing macros in terms of DMA_BIT_MASK would
-be an improvement.  It's certainly not obvious at first glance that
-0x00000007ffffffffULL is a correct 35-bit mask - it's something that the
-compiler is perfectly happy to compute for us.
+Here are the updated Linux Kernel Markers.
 
-    J
+It depends on :
+Text Edit Lock
+Immediate Values
+Sorted module list
+Merge Kconfig instrumentation menu
+
+It applies to 2.6.23-rc4-mm1, in this order:
+
+linux-kernel-markers-architecture-independent-code.patch
+linux-kernel-markers-instrumentation-menu.patch
+linux-kernel-markers-documentation.patch
+linux-kernel-markers-port-blktrace-to-markers.patch
+
+
+You can find a tarball of this patch and all its dependencies at:
+http://ltt.polymtl.ca/markers/markers-patches-for-2.6.23-rc4-mm1-17-09-2007.tar.bz2
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
