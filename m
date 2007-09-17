@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbXIQONz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbXIQOSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756082AbXIQONz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 10:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbXIQONr
+	id S1755160AbXIQOSR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 10:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXIQOSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 10:13:47 -0400
-Received: from pat.uio.no ([129.240.10.15]:51574 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754154AbXIQONr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 10:13:47 -0400
-Subject: Re: Floating point computations in kernel modules
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
+	Mon, 17 Sep 2007 10:18:05 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:48735 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbXIQOSE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 10:18:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ad9aDr1EukdT37hVHfosGOOMVmpk8ndr6UzKSAnpT31h/9mxwTx5GJtC82lj8x0+ZvCedJe2jfUN7iN3BUJNftHt2fC6Dmd3yboHdg0gZR+Nd9gf5SUzhzYzPV9pGT+tSNZ0I5PmH7nvcgqdM4nIlEmIceb5XpzoYE8yx4GoiO4=
+Message-ID: <d9def9db0709170717t1aeb9bf5t38182bb6bbef816c@mail.gmail.com>
+Date: Mon, 17 Sep 2007 16:17:59 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
 To: Ram <vshrirama@gmail.com>
+Subject: Re: Floating point computations in kernel modules
 Cc: linux-kernel@vger.kernel.org
 In-Reply-To: <8bf247760709170706j6025bb14k8ab28f9467972c76@mail.gmail.com>
-References: <8bf247760709170706j6025bb14k8ab28f9467972c76@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 17 Sep 2007 10:13:43 -0400
-Message-Id: <1190038423.6700.17.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.1, required=12.0, autolearn=disabled, AWL=0.098)
-X-UiO-Scanned: 18A67A01D8EBE4CED395FF2863997A291E35810A
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 1 maxlevel 200 minaction 2 bait 0 mail/h: 414 total 3924776 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+References: <8bf247760709170706j6025bb14k8ab28f9467972c76@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-17 at 19:36 +0530, Ram wrote:
+Hi,
+
+On 9/17/07, Ram <vshrirama@gmail.com> wrote:
 > Hi,
-> 
+>
 >    I am trying to write a driver which uses double, float. I am using
 > an arm11 with gcc 3.4.4
-> 
+>
 >    When i try to compile my modules (with float variables) i get the error
-> 
+>
 >    WARNING: "__extendsfdf2" undefined!
 >    WARNING: "__mulsf3"undefined!
 >    WARNING: "__fixsfsi"undefined!
 >    WARNING: "__floatsisf"undefined!
-> 
+>
 >    Can we use float, double in kernel modules?.
-> 
+>
+
+in general you shouldn't use floating point in the kernel since there's no
+portable way which will work among different architectures.
+
 >   Obviously it is a linking error, I am using soft-float. I tried with
 > -msoft-float but got the same   result.
-> 
+>
 >   I suspect that its a toolchain issue.  However i am able to compile
 > my applications
 >   with float, double variables.
-> 
-> 
+>
+>
 >   Please do advice.
-> 
-> 
-> Regards,
-> sriram
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Feel free to peruse the Documentation directory before posting. More
-specifically, Documentation/DocBook/kernel-hacking.tmpl has a chapter
-called 'Some Basic Rules' which addresses your question.
+if you need a solution inkernel best would be to try to get around by converting
+your algorithm to integer.
 
-Trond
+although you might have a look at:
+http://www.fi.muni.cz/~xslaby/unpr.html
+http://www.mail-archive.com/linuxppc-embedded%40ozlabs.org/msg01291.html
 
+Markus
