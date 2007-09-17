@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbXIQUpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbXIQUrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbXIQUpj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 16:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbXIQUpU
+	id S1759063AbXIQUrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 16:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbXIQUrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 16:45:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48522 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759133AbXIQUpS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 16:45:18 -0400
-Date: Mon, 17 Sep 2007 13:43:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-Cc: davidel@xmailserver.org, vda.linux@googlemail.com, rdunlap@xenotime.net,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, drepper@redhat.com, stable@kernel.org,
-       hch@lst.de, jengelh@computergmbh.de, corbet@lwn.net
-Subject: Re: [PATCH] remove timerd() syscall number
-Message-Id: <20070917134315.968c1902.akpm@linux-foundation.org>
-In-Reply-To: <46EEB252.30003@gmx.net>
-References: <46EEB252.30003@gmx.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Sep 2007 16:47:07 -0400
+Received: from z2.cat.iki.fi ([212.16.98.133]:38417 "EHLO z2.cat.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751918AbXIQUrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 16:47:06 -0400
+Date: Mon, 17 Sep 2007 23:47:01 +0300
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: Junio C Hamano <gitster@pobox.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: Re: git-send-email creates duplicate Message-Id's
+Message-ID: <20070917204701.GU6372@mea-ext.zmailer.org>
+References: <11900179463203-git-send-email-avi@qumranet.com> <20070917155901.GP18232@stusta.de> <7vejgxyrde.fsf@gitster.siamese.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7vejgxyrde.fsf@gitster.siamese.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007 18:58:58 +0200
-Michael Kerrisk <mtk-manpages@gmx.net> wrote:
+On Mon, Sep 17, 2007 at 01:22:05PM -0700, Junio C Hamano wrote:
+> Adrian Bunk <bunk@kernel.org> writes:
+> 
+> > The following might be a bug in git-send-email (git maintainers Cc'ed
+> > and KVM list removed from Cc): 
+> >
+> > Patch 54 got the same Message-Id as patch 61 and patch 89 got the same 
+> > Message-Id as patch 104.
+> > ...
+> > The emails are:
+> > http://marc.info/?l=linux-kernel&m=119002061330270&w=2
+> > http://marc.info/?l=linux-kernel&m=119002059626434&w=2
+> > http://marc.info/?l=linux-kernel&m=119002060011801&w=2
+> > http://marc.info/?l=linux-kernel&m=119002060318915&w=2
+> 
+> The old code generated rand(4200) for each message and appended
+> it to the timestamp.  I do not know where the original author
+> got 4200 from, but I think if you send many messages within a
+> single second it is possible to get collisions.
+> 
+> I guess something like this patch is an improvement?  It
+> generates a single prefix from timestamp and random, and appends
+> a number that is incremented for each message.
 
-> I hope I've done this right...  This patch, against 2.6.23-rc6,
-> removes the timerfd() syscall (which in any case had a bug
-> on its 2.6.22 release) from all architectures, so that we
-> can have some breathing space to think about the API design.
-> All of the existing timerfd() code is left intact.
+Much better.   You may also consider a possibility of
+letting your local MTA do the  Message-ID generation, unless
+you are tracking something with it and thus need to know the
+generated values.  .. but apparently git much prefers sending
+email by SMTP, where the message-id must be present, or one
+really should block any such emails..  (except that systems
+like qmail send error messages without message-id ...)
 
-I think a minimally-intrusive implementation would be
+My own recipe is:
+       sprintf("%d-%d-%d", time , getpid, ++localsequence)
+catenate on that your favourite domain name where that recipe
+is likely to be valid, and you are all set.
 
---- a/fs/timerfd.c~a
-+++ a/fs/timerfd.c
-@@ -159,6 +159,8 @@ asmlinkage long sys_timerfd(int ufd, int
- 	struct inode *inode;
- 	struct itimerspec ktmr;
- 
-+	return -ENOSYS;
-+
- 	if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
- 		return -EFAULT;
- 
-_
 
-or, better,
-
---- a/init/Kconfig~a
-+++ a/init/Kconfig
-@@ -491,6 +491,7 @@ config SIGNALFD
- 
- config TIMERFD
- 	bool "Enable timerfd() system call" if EMBEDDED
-+	depends on BROKEN
- 	select ANON_INODES
- 	default y
- 	help
-_
-
+  /Matti Aarnio  --  one of  <postmaster@vger.kernel.org>
