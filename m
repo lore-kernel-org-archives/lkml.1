@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXIQS1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbXIQS2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbXIQS1y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbXIQS1X
+	id S1756245AbXIQS2O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXIQS1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:27:23 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:43828 "EHLO e3.ny.us.ibm.com"
+	Mon, 17 Sep 2007 14:27:25 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:43983 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755798AbXIQS1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:27:22 -0400
-Subject: [PATCH 00/24] Read-only bind mounts
+	id S1755958AbXIQS1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:27:23 -0400
+Subject: [PATCH 02/24] rearrange may_open() to be r/o friendly
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Mon, 17 Sep 2007 11:27:18 -0700
-Message-Id: <20070917182718.70494C9B@kernel>
+Date: Mon, 17 Sep 2007 11:27:20 -0700
+References: <20070917182718.70494C9B@kernel>
+In-Reply-To: <20070917182718.70494C9B@kernel>
+Message-Id: <20070917182720.A41D6484@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we can't pull the entire series into -mm, can we just put the
-first three patches for now?  They can stand on their own.
 
----
+may_open() calls vfs_permission() before it does checks for
+IS_RDONLY(inode).  It checks _again_ inside of vfs_permission().
 
-Why do we need r/o bind mounts?
+The check inside of vfs_permission() is going away eventually.
+With the mnt_want/drop_write() functions, all of the r/o
+checks (except for this one) are consistently done before
+calling permission().  Because of this, I'd like to use
+permission() to hold a debugging check to make sure that
+the mnt_want/drop_write() calls are actually being made.
 
-This feature allows a read-only view into a read-write filesystem.
-In the process of doing that, it also provides infrastructure for
-keeping track of the number of writers to any given mount.
+So, to do this:
+1. remove the IS_RDONLY() check from permission()
+2. enforce that you must mnt_want_write() before
+   even calling permission()
+3. enable a debugging in permission()
 
-This has a number of uses.  It allows chroots to have parts of
-filesystems writable.  It will be useful for containers in the future
-because users may have root inside a container, but should not
-be allowed to write to somefilesystems.  This also replaces 
-patches that vserver has had out of the tree for several years.
-
-It allows security enhancement by making sure that parts of
-your filesystem read-only (such as when you don't trust your
-FTP server), when you don't want to have entire new filesystems
-mounted, or when you want atime selectively updated.
-I've been using the following script to test that the feature is
-working as desired.  It takes a directory and makes a regular
-bind and a r/o bind mount of it.  It then performs some normal
-filesystem operations on the three directories, including ones
-that are expected to fail, like creating a file on the r/o
-mount.
+We need to rearrange may_open().  Here's the patch.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+---
+
+ lxc-dave/fs/namei.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff -puN fs/namei.c~rearrange-permission-and-ro-checks-in-may_open fs/namei.c
+--- lxc/fs/namei.c~rearrange-permission-and-ro-checks-in-may_open	2007-09-17 09:43:56.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-09-17 09:43:56.000000000 -0700
+@@ -228,6 +228,10 @@ int generic_permission(struct inode *ino
+ int permission(struct inode *inode, int mask, struct nameidata *nd)
+ {
+ 	int retval, submask;
++	struct vfsmount *mnt = NULL;
++
++	if (nd)
++		mnt = nd->mnt;
+ 
+ 	if (mask & MAY_WRITE) {
+ 		umode_t mode = inode->i_mode;
+@@ -251,7 +255,7 @@ int permission(struct inode *inode, int 
+ 		 * MAY_EXEC on regular files is denied if the fs is mounted
+ 		 * with the "noexec" flag.
+ 		 */
+-		if (nd && nd->mnt && (nd->mnt->mnt_flags & MNT_NOEXEC))
++		if (mnt && (mnt->mnt_flags & MNT_NOEXEC))
+ 			return -EACCES;
+ 	}
+ 
+@@ -1604,10 +1608,6 @@ int may_open(struct nameidata *nd, int a
+ 	if (S_ISDIR(inode->i_mode) && (flag & FMODE_WRITE))
+ 		return -EISDIR;
+ 
+-	error = vfs_permission(nd, acc_mode);
+-	if (error)
+-		return error;
+-
+ 	/*
+ 	 * FIFO's, sockets and device files are special: they don't
+ 	 * actually live on the filesystem itself, and as such you
+@@ -1622,6 +1622,10 @@ int may_open(struct nameidata *nd, int a
+ 		flag &= ~O_TRUNC;
+ 	} else if (IS_RDONLY(inode) && (flag & FMODE_WRITE))
+ 		return -EROFS;
++
++	error = vfs_permission(nd, acc_mode);
++	if (error)
++		return error;
+ 	/*
+ 	 * An append-only file must be opened in append mode for writing.
+ 	 */
+_
