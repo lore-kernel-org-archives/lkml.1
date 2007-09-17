@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXIQOdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbXIQOeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbXIQOdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 10:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbXIQOdK
+	id S1756179AbXIQOeL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 10:34:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbXIQOd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 10:33:10 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:34204 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754531AbXIQOdJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 10:33:09 -0400
-Date: Mon, 17 Sep 2007 16:32:57 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       marc.smith@esmail.mcc.edu
-Subject: Re: VM/VFS bug with large amount of memory and file systems?
-Message-ID: <20070917163257.331c7605@twins>
-In-Reply-To: <13126578-A4F8-43EA-9B0D-A3BCBFB41FEC@cam.ac.uk>
-References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk>
-	<1189850897.21778.301.camel@twins>
-	<20070915035228.8b8a7d6d.akpm@linux-foundation.org>
-	<13126578-A4F8-43EA-9B0D-A3BCBFB41FEC@cam.ac.uk>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Mon, 17 Sep 2007 10:33:56 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:60465 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754279AbXIQOdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 10:33:54 -0400
+Date: Mon, 17 Sep 2007 23:32:58 +0900
+To: jens.axboe@oracle.com
+Cc: tomof@acm.org, pj@sgi.com, apw@shadowen.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mel@csn.ul.ie, linux-scsi@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: 2.6.23-rc4-mm1
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <20070917132819.GC25592@kernel.dk>
+References: <20070914211635.4774c971.pj@sgi.com>
+	<20070914104157D.tomof@acm.org>
+	<20070917132819.GC25592@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20070917192528E.tomof@acm.org>
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007 15:04:05 +0100 Anton Altaparmakov <aia21@cam.ac.uk>
-wrote:
+On Mon, 17 Sep 2007 15:28:19 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> They files  
-> are attached this time rather than inlined so people don't complain  
-> about line wrapping!  (No doubt people will not complain about them  
-> being attached!  )-:)
-
-I switched mailer after I learnt about flowed stuffs. Still,
-appreciated.
-
-> If I read it correctly it appears all of low memory is eaten up by  
-> buffer_heads.
+> On Sat, Sep 15 2007, FUJITA Tomonori wrote:
+> > On Fri, 14 Sep 2007 21:16:35 -0700
+> > Paul Jackson <pj@sgi.com> wrote:
+> > 
+> > > FUJITA Tomonori wrote:
+> > > > Can you try this patch (against 2.6.23-rc4-mm1)?
+> > > > 
+> > > > >From 592bd2049cb3e6e1f1dde7cf631879f26ddffeaa Mon Sep 17 00:00:00 2001
+> > > > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > > Date: Mon, 10 Sep 2007 04:17:13 +0100
+> > > > Subject: [PATCH] qla1280: sg chaining fixes
+> > > > 
+> > > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > > ---
+> > > >  drivers/scsi/qla1280.c |    5 ++++-
+> > > >  1 files changed, 4 insertions(+), 1 deletions(-)
+> > > 
+> > > This patch works for me.
+> > > 
+> > > I was getting the scsi errors reported earlier in
+> > > this thread, running 2.6.23-rc4-mm1 on one of our
+> > > big SGI Altix systems.
+> > > 
+> > > Applying this patch fixed it, so far as I can tell,
+> > > which is to say my system boots cleanly once again.
+> > 
+> > Thanks for testing!
+> > 
+> > Jens, we could enable use_sg_chaining option for qla1280.
 > 
-> <quote>
-> # name            <active_objs> <num_objs> <objsize> <objperslab>  
-> <pagesperslab>
-> : tunables <limit> <batchcount> <sharedfactor> : slabdata  
-> <active_slabs> <num_s
-> labs> <sharedavail>
-> buffer_head       12569528 12569535     56   67    1 : tunables   
-> 120   60    8 :
-> slabdata 187605 187605      0
-> </quote>
-> 
-> That is 671MiB of low memory in buffer_heads.
-> 
-> But why is the kernel not reclaiming them by getting rid of the page  
-> cache pages they are attached to or even leaving the pages around but  
-> killing their buffers?
+> Added, thanks!
 
-Well, you see, you have this very odd configuration where:
+Thanks.
 
-11GB highmem
- 1GB normal
+BTW, please don't forget to integrate the following patches:
 
-pagecache pages go into highmem
-buggerheads go into normal
 
-I'm guessing there is no pressure at all on zone_highmem so the
-kernel will not try to reclaim pagecache. And because the pagecache
-pages are happily sitting there, the buggerheads are pinned and do not
-get reclaimed.
+- revert sg segment size ifdefs
+
+http://marc.info/?l=linux-scsi&m=118881264013097&w=2
+
+- remove sglist_len
+
+http://marc.info/?l=linux-scsi&m=118907920405100&w=2
