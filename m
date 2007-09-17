@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbXIQVXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbXIQVX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758116AbXIQVXI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759473AbXIQVWu
+	id S1759829AbXIQVX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbXIQVXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:22:50 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:41165 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759408AbXIQVWt (ORCPT
+	Mon, 17 Sep 2007 17:23:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59585 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757994AbXIQVXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:22:49 -0400
-Date: Mon, 17 Sep 2007 23:22:57 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Oliver Falk <oliver@linux-kernel.at>, Richard Henderson <rth@twiddle.net>
-Cc: linux-kernel@vger.kernel.org, axp-list@redhat.com,
-       Jay Estabrook <jay.estabrook@hp.com>, ac-admin@lists.anotherbloody.com,
-       ink@jurassic.park.msu.ru
-Subject: Re: 2.6.23 alpha unistd.h changes
-Message-ID: <20070917212257.GA27980@stusta.de>
-References: <46EEE483.4020209@linux-kernel.at>
+	Mon, 17 Sep 2007 17:23:08 -0400
+Date: Mon, 17 Sep 2007 14:23:05 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       ak@suse.de, eric.whitney@hp.com, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH]  2.6.23-rc6:  Fix NUMA Memory Policy Reference Counting
+In-Reply-To: <1190060393.5460.143.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0709171420330.29704@schroedinger.engr.sgi.com>
+References: <20070830185053.22619.96398.sendpatchset@localhost> 
+ <1190057534.5460.131.camel@localhost>  <Pine.LNX.4.64.0709171235190.28178@schroedinger.engr.sgi.com>
+ <1190060393.5460.143.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46EEE483.4020209@linux-kernel.at>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 10:33:07PM +0200, Oliver Falk wrote:
-> Hi!
+On Mon, 17 Sep 2007, Lee Schermerhorn wrote:
 
-Hi Oliver!
+> Only for vma policy, right?  show_numa_maps() isn't a performance path,
+> and shared policies are already reference counted--just not unref'd!
 
-> At Alphacore we used to patch the kernel headers for a while now; We
-> added syscalls __NR_openat (447) until __NR_tee (466).
+Right.
 
-Why did your numbers differ from the numbers that were used in the 
-upstream kernel?
+> I do have some ideas for enhancements to memtoy to test vma policies in
+> a multi-threaded task.  I have the basic multi-threading infrastructure
+> that binds threads to cpus, allocates node local stacks, thread state
+> structs, ... in my mmtrace tool that I can probably hack for use in
+> memtoy to provoke cacheline bouncing of the mem policy.  But, if pft
+> does the trick, I won't rush the memtoy enhancments...
 
-The Alpha maintainers (Cc's added) might now better what happened here.
+Well pft is old and limited in what it can do. I'd be glad if you could 
+put it into memtoy. Then it may perhaps be useful in the future.
+ 
+> Meanwhile, we do have a mem policy ref counting bug in the mainline.
 
-> However, since 2.6.23 these syscall where added upstream, but with
-> different syscall numbers; What happens is the following:
->...
+But we have had this ref counting issue forever with no ill effect. Memory 
+policies were designed to have almost no overhead for the default 
+allocation paths. Incrementing and decrementing refcounters makes that 
+design no longer light weight as it was intended to be.
 
-These syscalls were added in 2.6.22, not 2.6.23, and are therefore in 
-the officially released kernel since more than two months.
-
-Changing a userspace ABI that has already been part of an officially 
-released kernel because someone patched other syscall numbers into his 
-private kernel doesn't sound like a good solution.
-
-> Best,
->  Oliver
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
