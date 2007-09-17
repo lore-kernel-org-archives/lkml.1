@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932362AbXIQVL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbXIQVLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932362AbXIQVL2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760305AbXIQVHe
+	id S932444AbXIQVLr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760320AbXIQVHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:07:34 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9227 "EHLO
+	Mon, 17 Sep 2007 17:07:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9245 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760298AbXIQVH3 (ORCPT
+	with ESMTP id S1760299AbXIQVHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:07:29 -0400
+	Mon, 17 Sep 2007 17:07:34 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=u6/TngfQZkCuI4nUkop1kQdWyJkqPAcT9h2F8Z8hf28gdTr0jB8Uz8vadEEgTHq5j
-	q8WBVsnoFJLRz1jMSpyvA==
-Message-Id: <20070917210429.524831000@menage.corp.google.com>
+	b=OPvh3j0pTcjb1OQl33jWDtF0ORmQ9HGAU34EpenzO7N4j0Xh7g91+Gj3/XHm6S6KT
+	bFWNAWTw2QOtU5bPJSC7g==
+Message-Id: <20070917210429.690425000@menage.corp.google.com>
 References: <20070917210307.116234000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Sep 2007 14:03:28 -0700
+Date: Mon, 17 Sep 2007 14:03:29 -0700
 From: Paul Menage <menage@google.com>
 To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
        "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
@@ -29,288 +29,47 @@ To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, pj@sgi.com,
        containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 21/33] memory controller resource counters v7
-Content-Disposition: inline; filename=memory-controller-resource-counters-v7.patch
+Subject: [PATCH 22/33] memory controller resource counters v7 fix
+Content-Disposition: inline; filename=memory-controller-resource-counters-v7-fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pavel Emelianov <xemul@openvz.org>
+From: David Rientjes <rientjes@google.com>
 (container->cgroup renaming by Paul Menage <menage@google.com>)
 
-Introduce generic structures and routines for resource accounting.
+There's a gotcha in res_counter_charge_locked() because of C99 6.3.1.8(1)
+since both counter->limit and 'val' are of unsigned long type, the result
+of the subtraction will be the same; no promotion is required.  So if
+'val' is greater than counter->limit, it will always be larger than
+counter->usage and the conditional will fail.  Simply casting this to
+signed doesn't work since counter->usage is also unsigned and thus the
+result of the subtraction will be promoted to unsigned since the ranks are
+the same.
 
-Each resource accounting cgroup is supposed to aggregate it,
-cgroup_subsystem_state and its resource-specific members within.
+Even though the only (current) use of res_counter_charge() is with a 'val'
+actual of 1, this still fails if you set counter->limit to 0.  No chance
+of overflow unless you're running on a machine with 4KB pages and 16TB of
+memory.
 
-Signed-off-by: Pavel Emelianov <xemul@openvz.org>
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
 Signed-off-by: Paul Menage <menage@google.com>
 ---
 
- include/linux/res_counter.h |  102 ++++++++++++++++++++++++++++
- init/Kconfig                |    7 +
- kernel/Makefile             |    1 
- kernel/res_counter.c        |  120 ++++++++++++++++++++++++++++++++++
- 4 files changed, 230 insertions(+)
+ kernel/res_counter.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-diff -puN /dev/null include/linux/res_counter.h
---- /dev/null
-+++ a/include/linux/res_counter.h
-@@ -0,0 +1,102 @@
-+#ifndef __RES_COUNTER_H__
-+#define __RES_COUNTER_H__
-+
-+/*
-+ * Resource Counters
-+ * Contain common data types and routines for resource accounting
-+ *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ *
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-+ */
-+
-+#include <linux/cgroup.h>
-+
-+/*
-+ * The core object. the cgroup that wishes to account for some
-+ * resource may include this counter into its structures and use
-+ * the helpers described beyond
-+ */
-+
-+struct res_counter {
-+	/*
-+	 * the current resource consumption level
-+	 */
-+	unsigned long usage;
-+	/*
-+	 * the limit that usage cannot exceed
-+	 */
-+	unsigned long limit;
-+	/*
-+	 * the number of unsuccessful attempts to consume the resource
-+	 */
-+	unsigned long failcnt;
-+	/*
-+	 * the lock to protect all of the above.
-+	 * the routines below consider this to be IRQ-safe
-+	 */
-+	spinlock_t lock;
-+};
-+
-+/*
-+ * Helpers to interact with userspace
-+ * res_counter_read/_write - put/get the specified fields from the
-+ * res_counter struct to/from the user
-+ *
-+ * @counter:     the counter in question
-+ * @member:  the field to work with (see RES_xxx below)
-+ * @buf:     the buffer to opeate on,...
-+ * @nbytes:  its size...
-+ * @pos:     and the offset.
-+ */
-+
-+ssize_t res_counter_read(struct res_counter *counter, int member,
-+		const char __user *buf, size_t nbytes, loff_t *pos);
-+ssize_t res_counter_write(struct res_counter *counter, int member,
-+		const char __user *buf, size_t nbytes, loff_t *pos);
-+
-+/*
-+ * the field descriptors. one for each member of res_counter
-+ */
-+
-+enum {
-+	RES_USAGE,
-+	RES_LIMIT,
-+	RES_FAILCNT,
-+};
-+
-+/*
-+ * helpers for accounting
-+ */
-+
-+void res_counter_init(struct res_counter *counter);
-+
-+/*
-+ * charge - try to consume more resource.
-+ *
-+ * @counter: the counter
-+ * @val: the amount of the resource. each controller defines its own
-+ *       units, e.g. numbers, bytes, Kbytes, etc
-+ *
-+ * returns 0 on success and <0 if the counter->usage will exceed the
-+ * counter->limit _locked call expects the counter->lock to be taken
-+ */
-+
-+int res_counter_charge_locked(struct res_counter *counter, unsigned long val);
-+int res_counter_charge(struct res_counter *counter, unsigned long val);
-+
-+/*
-+ * uncharge - tell that some portion of the resource is released
-+ *
-+ * @counter: the counter
-+ * @val: the amount of the resource
-+ *
-+ * these calls check for usage underflow and show a warning on the console
-+ * _locked call expects the counter->lock to be taken
-+ */
-+
-+void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val);
-+void res_counter_uncharge(struct res_counter *counter, unsigned long val);
-+
-+#endif
-diff -puN init/Kconfig~memory-controller-resource-counters-v7 init/Kconfig
---- a/init/Kconfig~memory-controller-resource-counters-v7
-+++ a/init/Kconfig
-@@ -319,6 +319,13 @@ config CPUSETS
- 
- 	  Say N if unsure.
- 
-+config RESOURCE_COUNTERS
-+	bool "Resource counters"
-+	help
-+	  This option enables controller independent resource accounting
-+          infrastructure that works with cgroups
-+	depends on CGROUPS
-+
- config SYSFS_DEPRECATED
- 	bool "Create deprecated sysfs files"
- 	default y
-diff -puN kernel/Makefile~memory-controller-resource-counters-v7 kernel/Makefile
---- a/kernel/Makefile~memory-controller-resource-counters-v7
-+++ a/kernel/Makefile
-@@ -59,6 +59,7 @@ obj-$(CONFIG_RELAY) += relay.o
- obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
-+obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
- 
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-diff -puN /dev/null kernel/res_counter.c
---- /dev/null
+diff -puN kernel/res_counter.c~memory-controller-resource-counters-v7-fix kernel/res_counter.c
+--- a/kernel/res_counter.c~memory-controller-resource-counters-v7-fix
 +++ a/kernel/res_counter.c
-@@ -0,0 +1,120 @@
-+/*
-+ * resource cgroups
-+ *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ *
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/parser.h>
-+#include <linux/fs.h>
-+#include <linux/res_counter.h>
-+#include <linux/uaccess.h>
-+
-+void res_counter_init(struct res_counter *counter)
-+{
-+	spin_lock_init(&counter->lock);
-+	counter->limit = (unsigned long)LONG_MAX;
-+}
-+
-+int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
-+{
-+	if (counter->usage > (counter->limit - val)) {
-+		counter->failcnt++;
-+		return -ENOMEM;
-+	}
-+
-+	counter->usage += val;
-+	return 0;
-+}
-+
-+int res_counter_charge(struct res_counter *counter, unsigned long val)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&counter->lock, flags);
-+	ret = res_counter_charge_locked(counter, val);
-+	spin_unlock_irqrestore(&counter->lock, flags);
-+	return ret;
-+}
-+
-+void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val)
-+{
-+	if (WARN_ON(counter->usage < val))
-+		val = counter->usage;
-+
-+	counter->usage -= val;
-+}
-+
-+void res_counter_uncharge(struct res_counter *counter, unsigned long val)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&counter->lock, flags);
-+	res_counter_uncharge_locked(counter, val);
-+	spin_unlock_irqrestore(&counter->lock, flags);
-+}
-+
-+
-+static inline unsigned long *res_counter_member(struct res_counter *counter,
-+						int member)
-+{
-+	switch (member) {
-+	case RES_USAGE:
-+		return &counter->usage;
-+	case RES_LIMIT:
-+		return &counter->limit;
-+	case RES_FAILCNT:
-+		return &counter->failcnt;
-+	};
-+
-+	BUG();
-+	return NULL;
-+}
-+
-+ssize_t res_counter_read(struct res_counter *counter, int member,
-+		const char __user *userbuf, size_t nbytes, loff_t *pos)
-+{
-+	unsigned long *val;
-+	char buf[64], *s;
-+
-+	s = buf;
-+	val = res_counter_member(counter, member);
-+	s += sprintf(s, "%lu\n", *val);
-+	return simple_read_from_buffer((void __user *)userbuf, nbytes,
-+			pos, buf, s - buf);
-+}
-+
-+ssize_t res_counter_write(struct res_counter *counter, int member,
-+		const char __user *userbuf, size_t nbytes, loff_t *pos)
-+{
-+	int ret;
-+	char *buf, *end;
-+	unsigned long tmp, *val;
-+
-+	buf = kmalloc(nbytes + 1, GFP_KERNEL);
-+	ret = -ENOMEM;
-+	if (buf == NULL)
-+		goto out;
-+
-+	buf[nbytes] = '\0';
-+	ret = -EFAULT;
-+	if (copy_from_user(buf, userbuf, nbytes))
-+		goto out_free;
-+
-+	ret = -EINVAL;
-+	tmp = simple_strtoul(buf, &end, 10);
-+	if (*end != '\0')
-+		goto out_free;
-+
-+	val = res_counter_member(counter, member);
-+	*val = tmp;
-+	ret = nbytes;
-+out_free:
-+	kfree(buf);
-+out:
-+	return ret;
-+}
+@@ -21,7 +21,7 @@ void res_counter_init(struct res_counter
+ 
+ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+ {
+-	if (counter->usage > (counter->limit - val)) {
++	if (counter->usage + val > counter->limit) {
+ 		counter->failcnt++;
+ 		return -ENOMEM;
+ 	}
 _
 
 --
