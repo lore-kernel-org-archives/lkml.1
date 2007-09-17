@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbXIQRg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbXIQRzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbXIQRg2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 13:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbXIQRgV
+	id S1754659AbXIQRzM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 13:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbXIQRzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 13:36:21 -0400
-Received: from il.qumranet.com ([82.166.9.18]:42008 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753154AbXIQRgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 13:36:20 -0400
-Message-ID: <46EEBAFF.2040505@qumranet.com>
-Date: Mon, 17 Sep 2007 19:35:59 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 17 Sep 2007 13:55:01 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41928 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751409AbXIQRzA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 13:55:00 -0400
+Date: Mon, 17 Sep 2007 10:54:59 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Configurable reclaim batch size
+In-Reply-To: <1189812002.5826.31.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0709171053040.26860@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0709141519230.14894@schroedinger.engr.sgi.com>
+ <1189812002.5826.31.camel@lappy>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 045/104] KVM: Fix defined but not used warning
- in drivers/kvm/vmx.c
-References: <11900179463203-git-send-email-avi@qumranet.com>	<11900179473956-git-send-email-avi@qumranet.com> <20070917.092708.112622378.davem@davemloft.net>
-In-Reply-To: <20070917.092708.112622378.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Mon, 17 Sep 2007 19:35:59 +0200 (IST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> You've got to be kidding me.
->
-> 104 patches is way over the top, post them in smaller chunks
-> please instead of killing vger.kernel.org as it has to crunch
-> out every single one of these 104 patches to several thousand
-> recipients.
->
->   
+On Sat, 15 Sep 2007, Peter Zijlstra wrote:
 
-I can understand the load on the humans (and will split into several
-rounds in the future), but why is vger.kernel.org so badly affected? 
-Shouldn't the mta throttle itself instead of dying?
+> It increases the lock hold times though. Otoh it might work out with the
+> lock placement.
 
-Just curious.
+Yeah may be good for NUMA.
+ 
+> Do you have any numbers that show this is worthwhile?
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Tried to run AIM7 but the improvements are in the noise. I need a tests 
+that really does large memory allocation and stresses the LRU. I could 
+code something up but then Lee's patch addresses some of the same issues.
+Is there any standard test that shows LRU handling regressions?
 
