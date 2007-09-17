@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbXIQLue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbXIQL6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493AbXIQLue (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 07:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbXIQLu1
+	id S1754895AbXIQL6S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 07:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXIQL6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 07:50:27 -0400
-Received: from mx.freeshell.ORG ([192.94.73.19]:62282 "EHLO sdf.lonestar.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753446AbXIQLu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 07:50:26 -0400
-Date: Mon, 17 Sep 2007 11:50:19 +0000
-From: Jacob Meuser <jakemsr@sdf.lonestar.org>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
-       "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
-       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070917115019.GA12790@SDF.LONESTAR.ORG>
-Mail-Followup-To: Helge Hafting <helge.hafting@aitel.hist.no>,
-	Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
-	"Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
-	linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-	Eben Moglen <moglen@softwarefreedom.org>,
-	Lawrence Lessig <lessig_from_web@pobox.com>,
-	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-	Matt Norwood <norwood@softwarefreedom.org>
-References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070916231633.GB10339@SDF.LONESTAR.ORG> <46EE311F.5040107@aitel.hist.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46EE311F.5040107@aitel.hist.no>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 17 Sep 2007 07:58:04 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3669 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbXIQL6D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 07:58:03 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <hannah@schlund.de>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Wasting our Freedom
+Date: Mon, 17 Sep 2007 04:57:29 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEEIDGNAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <20070917112004.GB31443@schlund.de>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 17 Sep 2007 04:58:09 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 17 Sep 2007 04:58:10 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 09:47:43AM +0200, Helge Hafting wrote:
 
-> Your problem seems to be with the BSD licence,
-> and the power to alter that licence lies in the BSD community.
+> On Sun, Sep 16, 2007 at 03:19:41PM -0700, David Schwartz wrote:
+> >[...]
+>
+> >If you take work that's under a dual-license and remove one
+> >license notice
+> >from it when you create a derivative work, every recipient of that
+> >derivative work still receives a dual license from the original author to
+> >every protectable element still in the distributed work.
 
-I hope you can understand that this mentality is _exactly_ what has
-some in the BSD community so upset.
+> But you may *not* remove the license notices on GPL/BSD dual-licensed
+> works. *Both* forbid removing the licensing terms.
 
-when I see the linux community start to take credit for works they
-did not create and I see the linux community respond to warnings
-that people in the community are going overboard and jeopardizing
-the linux community, which we do all benefit from, with a more or
-less "whatever" attitude, it makes me sad.  it would be like losing
-a friend.  I don't like losing friends, so I get vocal.
+No, I'm sorry, this is not correct. The GPL gives you the right to remove
+the BSD license. Read the GPL and please tell me where it says you must keep
+the BSD license notice intact.
 
-I don't understand why the linux community can't seem to say, "We
-can accept BSD licensed code.  There's no need to add the GPL to
-it."  and maybe even, "Although we strongly prefer the GPL,
-respect for other licenses is every bit as important as respect
-for the GPL."
+> >2) You can remove a BSD license notice from BSD-only code. (The
+> >BSD license
+> >prohibits this.)
 
-I could be wrong, but I strongly believe that if the above was
-truly accepted and believed by the community, the actions that
-started and spread this whole debacle^Wdebate would not have
-happened in the first place.
+> The BSD license prohibits this anyway, regardless of whether BSD is the
+> only license or not (dual-licensing). Heck, copyright law itself forbids
+> it unless explicitly allowed.
 
-look, the GPL legally forces others to keep the same license.
-the BSD community is asking the linux community do the same.
-and when the linux community refuses, what do you expect the
-recourse to be?
+It doesn't matter that the BSD license prohibits it, its terms only apply to
+you if you agree to it. Generally, you agree to it implicitly by doing
+something that only the BSD license could give you the right to do, such as
+modify or distribute a BSD-only work.
 
--- 
-jakemsr@sdf.lonestar.org
-SDF Public Access UNIX System - http://sdf.lonestar.org
+But in the case of a dual-licensed work, you can obtain the right to modify
+or distribute it from the GPL. In that case, you can totally ignore anything
+the BSD license says. You are under no obligation to comply with it.
+
+As for copyright law prohibiting it, the GPL is quite clear about allowing
+it. The GPL permits all modifications except those it specifically restricts
+(and none of those rules would prohibit removing a BSD license). In fact,
+the GPL specifically prohibits the imposition of "additional restrictions".
+
+Copyright law permits you to impose all kinds of restrictions on what people
+can do with your work. However, when you offer a work under the GPL, you
+lose any right to insist that the work remain in any particular form or
+contain any particular elements, except the GPL itself. The GPL grants
+modification rights limited only by the restrictions in the GPL itself.
+
+You cannot use any form of subterfuge to get something into a GPL-compatible
+file that I cannot remove, by any means. (Other than the GPL license, of
+course.) See GPL section 6.
+
+DS
+
+
