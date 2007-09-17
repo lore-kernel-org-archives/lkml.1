@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761095AbXIQJMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760917AbXIQJNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761095AbXIQJMp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 05:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbXIQJKp
+	id S1760917AbXIQJNJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 05:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760626AbXIQJL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 05:10:45 -0400
-Received: from il.qumranet.com ([82.166.9.18]:33014 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759438AbXIQJKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 05:10:42 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, Jan Engelhardt <jengelh@computergmbh.de>
-Subject: [PATCH -rc] KVM: Fix virtualization menu help text
-Date: Mon, 17 Sep 2007 11:10:45 +0200
-Message-Id: <11900202451420-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.3
+	Mon, 17 Sep 2007 05:11:29 -0400
+Received: from mxintern.schlund.de ([212.227.126.204]:63393 "EHLO
+	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760775AbXIQJL2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 05:11:28 -0400
+Date: Mon, 17 Sep 2007 11:10:38 +0200
+From: Hannah Schroeter <hannah@schlund.de>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
+       misc@openbsd.org, linux-kernel@vger.kernel.org,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917091038.GB23002@schlund.de>
+Mail-Followup-To: Daniel Hazelton <dhazelton@enter.net>,
+	Adrian Bunk <bunk@kernel.org>,
+	"Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+	linux-kernel@vger.kernel.org,
+	Eben Moglen <moglen@softwarefreedom.org>,
+	Lawrence Lessig <lessig_from_web@pobox.com>,
+	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+	Matt Norwood <norwood@softwarefreedom.org>
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <200709161711.05836.dhazelton@enter.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709161711.05836.dhazelton@enter.net>
+Organization: Schlund + Partner AG
+X-UI-Msg-Verification: cac75a931cd950f3729695ac2889a9d8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What guest drivers?
+Hi!
 
-Cc: Jan Engelhardt <jengelh@computergmbh.de>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
+On Sun, Sep 16, 2007 at 05:11:05PM -0400, Daniel Hazelton wrote:
+>On Sunday 16 September 2007 16:39:26 Hannah Schroeter wrote:
 
-An August 18 patch from Jan Engelhardt (06bfb7e) added help text for the virtualization menu.
-Unfortunately the text is misleading, as "guest drivers" are usually interpreted to
-mean "drivers running inside the guest", which is not the case for kvm.
+>> On Sun, Sep 16, 2007 at 09:59:09PM +0200, Adrian Bunk wrote:
+>> >On Sun, Sep 16, 2007 at 11:48:47AM -0700, Can E. Acar wrote:
+>> >>...
+>> >> First, these developers got questionable advice from senior Linux kernel
+>> >> developers, and SLFC (which is closely related to FSF) in the process.
 
-Linus, please apply.
+>> >The most questionable legal advice in this thread was by Theo de Raadt
+>> >who claimed choosing one licence for _dual-licenced_ code was illegal...
 
- drivers/kvm/Kconfig |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+>> JFTR, I do *not* think that that assessment was questionable. Unless the
+>> dual-licensing *explicitly* allows relicensing, relicensing is forbidden
+>> by copyright law. The dual-licensing allows relicensing only if that's
+>> *explicitly* stated, either in the statement offering the alternative, or
+>> in one of the licenses.
 
-diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
-index 9b72f33..8749fa4 100644
---- a/drivers/kvm/Kconfig
-+++ b/drivers/kvm/Kconfig
-@@ -6,7 +6,8 @@ menuconfig VIRTUALIZATION
- 	depends on X86
- 	default y
- 	---help---
--	  Say Y here to get to see options for virtualization guest drivers.
-+	  Say Y here to get to see options for using your Linux host to run other
-+	  operating systems inside virtual machines (guests).
- 	  This option alone does not add any kernel code.
- 
- 	  If you say N, all options in this submenu will be skipped and disabled.
--- 
-1.5.3
+>That advice wasn't regarding relicensing. Dual-licensed code allows 
+>distribution and use under either license. If I get BSD/GPL code, I can 
+>follow the GPL exclusively and I don't have to follow the BSD license at all. 
+>And the alternative is also true. (ie: follow the BSD license exclusively and 
+>ignore the GPL)
 
+>It's not "relicensing" - it's following *WHICH* of the offered terms are more 
+>agreeable.
+
+The original issue *was* about illegal relicensing (i.e. not just
+choosing which terms to follow, but removing the other terms
+altogether).
+
+>I'll just snip the rest, since you seem confused.
+
+Refrain from personal attacks.
+
+Regards,
+
+Hannah.
