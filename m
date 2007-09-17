@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbXIQJ7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbXIQKAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbXIQJ7h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 05:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXIQJ73
+	id S1755199AbXIQKAp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 06:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbXIQKAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 05:59:29 -0400
-Received: from goblin.aladdin.com ([192.118.129.192]:33312 "HELO
-	Goblin.aladdin.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752786AbXIQJ72 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 05:59:28 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 17 Sep 2007 06:00:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59473 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753115AbXIQKAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 06:00:34 -0400
+Message-ID: <46EE5033.7060708@garzik.org>
+Date: Mon, 17 Sep 2007 06:00:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: kernel thread id 
-Date: Mon, 17 Sep 2007 11:59:26 +0200
-Message-ID: <C4A438513D3F12459455E5D43FD54783017F780C@extlv102.eAladdin.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: kernel thread id 
-Thread-Index: Acf5EWtJe2OUdwU2TXWuSJBKnKlRVA==
-From: "Yishai Hadas" <Yishai.Hadas@aladdin.com>
-To: <linux-kernel@vger.kernel.org>
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: 
+To: Tejun Heo <htejun@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>,
+       Jeff Norden <jeff@math.tntech.edu>, alan@redhat.com,
+       linux-kernel@vger.kernel.org, Albert CC Lee <albertcc@tw.ibm.com>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH 1/1] pata_it821x: fix lost interrupt with atapi devices
+References: <200709041607.l84G7KsT032647@norden.math.tntech.edu>	<18141.42848.537873.349518@alkaid.it.uu.se> <20070906013929.1621849d@the-village.bc.nu> <46EE09D3.9010201@gmail.com>
+In-Reply-To: <46EE09D3.9010201@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi List,
+Tejun Heo wrote:
+> [cc'ing Albert and linux-ide]
+> 
+> Alan Cox wrote:
+>> /from the media. */
+>>>  > +	if (qc->nbytes < 2048)
+>>>  > +		return -EOPNOTSUPP;
+>>>  > +
+>>>  >  	/* No ATAPI DMA in smart mode */
+>>>  >  	if (itdev->smart)
+>>>  >  		return -EOPNOTSUPP;
+>>>  > 
+>>>
+>>> This looks like a gross hack. Aren't you supposed to inspect
+>>> the command instead and whitelist the ones you know are OK,
+>>> like pata_pdc2027x.c and sata_promise.c do?
+>> It does seem to be about transfer size in the IT821x case not commands.
+>> It may be to do with how we issue ATAPI command transfer sizes from high
+>> up (patch went to Jeff) but for now this is definitely the right approach
+>>
+>> Reviewed-by: Alan Cox <alan@redhat.com>
+> 
+> I wonder whether we should be using similar check in generic path too.
+> We have quite a few cases where MWDMA ATAPI devices choking on commands
+> with small transfer sizes.  I don't think we'll experience significant
+> performance regression with this applied and even if there is some, it's
+> far better to have slightly slower working device.
+> 
+> What do you guys think?
 
-I'm using NPTL multi-threaded library and kernel 2.4.
+Need to look at, or know, a standard profile of submitted commands. 
+It's quite possible some high performance commands want this, where 
+possible.
 
-When a new thread is created using the pthread_create call the returned
-thread handle is pthread_t.
+	Jeff
 
-I want to get the kernel thread id for this pthread - means similar to
-what gettid returns when it's called by the thread itself.
-
-How can achieve this information from the creator thread?
-
-
-
-Any help is appreciated.
-
-Yishai.
-
-**********************************************************************************************
-
-The contents of this email and any attachments are confidential.
-It is intended for the named recipient(s) only.
-If you have received this email in error please notify the system manager or  the 
-sender immediately and do not disclose the contents to anyone or make copies.
-** eSafe scanned this email for viruses, vandals and malicious content **
-
-**********************************************************************************************
 
