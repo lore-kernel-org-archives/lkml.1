@@ -1,120 +1,475 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbXIQVvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbXIQVvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932179AbXIQVvN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760202AbXIQVuz
+	id S932324AbXIQVvb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932194AbXIQVvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:50:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51550 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760193AbXIQVuy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:50:54 -0400
-Date: Mon, 17 Sep 2007 14:50:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>, Kees Cook <kees@ubuntu.com>,
-       Greg KH <greg@kroah.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Ben Collins <bcollins@ubuntu.com>, Michael Wu <flamingice@sourmilk.net>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PATCH] modpost: detect unterminated device id lists
-Message-Id: <20070917145029.26370d6f.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709180253320.6159@enigma.security.iitk.ac.in>
-References: <20070912064134.GO7910@outflux.net>
-	<46E7C91D.3070001@garzik.org>
-	<b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com>
-	<20070912215356.GC23294@kroah.com>
-	<20070913004937.GM8183@outflux.net>
-	<20070916151447.dc925a9e.akpm@linux-foundation.org>
-	<a781481a0709161724r6cf664e6q453331911cd0b493@mail.gmail.com>
-	<20070916234657.6548efe3.akpm@linux-foundation.org>
-	<alpine.LFD.0.999.0709180253320.6159@enigma.security.iitk.ac.in>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Sep 2007 17:51:14 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:38956 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759801AbXIQVvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 17:51:11 -0400
+Date: Mon, 17 Sep 2007 16:46:32 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       ecryptfs-devel@lists.sourceforge.net
+Subject: [PATCH 3/11] eCryptfs: read_write.c routines
+Message-ID: <20070917214632.GK13679@halcrow.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <20070917214436.GH13679@halcrow.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070917214436.GH13679@halcrow.austin.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 03:15:14 +0530 (IST)
-Satyam Sharma <satyam@infradead.org> wrote:
+Add a set of functions through which all I/O to lower files is
+consolidated. This patch adds a new inode_info reference to a
+persistent lower file for each eCryptfs inode; another patch later in
+this series will set that up. This persistent lower file is what the
+read_write.c functions use to call vfs_read() and vfs_write() on the
+lower filesystem, so even when reads and writes come in through
+aops->readpage and aops->writepage, we can satisfy them without
+resorting to direct access to the lower inode's address space.
+Several function declarations are going to be changing with this
+patchset. For now, in order to keep from breaking the build, I am
+putting dummy parameters in for those functions.
 
-> 
-> 
-> On Sun, 16 Sep 2007, Andrew Morton wrote:
-> 
-> > On Mon, 17 Sep 2007 05:54:45 +0530 "Satyam Sharma" <satyam.sharma@gmail.com> wrote:
-> > 
-> > > On 9/17/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > >
-> > > > I'm getting this:
-> > > >
-> > > > rusb2/pvrusb2: struct usb_device_id is 20 bytes.  The last of 3 is:
-> > > > 0x03 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
-> > > > 0x00 0x00 0x00 0x00 0x00
-> > > > FATAL: drivers/media/video/pvrusb2/pvrusb2: struct usb_device_id is not terminated
-> > > > with a NULL entry!
-> > > >
-> > > > ("rusb2/pvrusb2" ??)
-> > > 
-> > > Hmm? Are you sure you didn't see any "drivers/media/video/pv" before the
-> > > "rusb2/pvrusb2" bit?
-> > 
-> > Fairly.  I looked twice.
-> 
-> "drivers/media/video/pvrusb2/pvrusb2" comes out correctly here ...
-> 
-> 
-> > > Looking at Kees' patch (and the existing code), I've no
-> > > clue how/why this should happen ... will try to reproduce here ...
-> > > 
-> > > 
-> > > > but:
-> > > >
-> > > > struct usb_device_id pvr2_device_table[] = {
-> > > >         [PVR2_HDW_TYPE_29XXX] = { USB_DEVICE(0x2040, 0x2900) },
-> > > >         [PVR2_HDW_TYPE_24XXX] = { USB_DEVICE(0x2040, 0x2400) },
-> > > >         { USB_DEVICE(0, 0) },
-> > > > };
-> > > >
-> > > > looks OK?
-> > > >
-> > > > Using plain old "{ }" shut the warning up.
-> > > 
-> > > USB_DEVICE(0, 0) is not empty termination, actually, and this looks like
-> > > a genuine bug caught by the patch. As that dump shows, USB_DEVICE(0, 0)
-> > > assigns "0x03 0x00" (in little endian) to usb_device_id.match_flags. And
-> > > I don't think the USB code treats such an entry as an empty entry (?)
-> > > 
-> > > Interestingly, the "USB_DEVICE(0, 0)" thing is absent from latest -git
-> > > tree and also in my copy of 23-rc4-mm1 -- so this looks like something
-> > > you must've merged recently.
-> > 
-> > git-dvb very carefully does
-> > 
-> > --- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c~git-dvb
-> > +++ a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-> > @@ -44,7 +44,7 @@
-> >  struct usb_device_id pvr2_device_table[] = {
-> >  		[PVR2_HDW_TYPE_29XXX] = { USB_DEVICE(0x2040, 0x2900) },
-> >  		[PVR2_HDW_TYPE_24XXX] = { USB_DEVICE(0x2040, 0x2400) },
-> > -       { }
-> > +       { USB_DEVICE(0, 0) },
-> > };
-> > 	 
-> > MODULE_DEVICE_TABLE(usb, pvr2_device_table);
-> 
-> Ok, this is a false positive indeed, the core USB code does in fact
-> treat such an entry as an empty entry (usb_match_id() tests only the
-> .idVendor, .bDeviceClass, .bInterfaceClass and .driver_info members
-> for non-zero and not the .match_flags member).
-> 
-> However, a quick-grep-and-glance tells us that none of the other 2213
-> occurrences of USB_DEVICE() in the tree ever do this "(0,0)" thing,
-> so it does make sense to change this one to a simple "{ }" as well --
-> that's clearer style anyway, and the "standard" way to empty-terminate
-> in the rest of the tree, if nothing else.
-> 
+Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
+---
+ fs/ecryptfs/Makefile          |    2 +-
+ fs/ecryptfs/ecryptfs_kernel.h |   18 ++
+ fs/ecryptfs/mmap.c            |    2 +-
+ fs/ecryptfs/read_write.c      |  359 +++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 379 insertions(+), 2 deletions(-)
+ create mode 100644 fs/ecryptfs/read_write.c
 
-yeah, I think so.  Mauro, could you please drop that change?
+diff --git a/fs/ecryptfs/Makefile b/fs/ecryptfs/Makefile
+index 1f11072..7688570 100644
+--- a/fs/ecryptfs/Makefile
++++ b/fs/ecryptfs/Makefile
+@@ -4,4 +4,4 @@
+ 
+ obj-$(CONFIG_ECRYPT_FS) += ecryptfs.o
+ 
+-ecryptfs-objs := dentry.o file.o inode.o main.o super.o mmap.o crypto.o keystore.o messaging.o netlink.o debug.o
++ecryptfs-objs := dentry.o file.o inode.o main.o super.o mmap.o read_write.o crypto.o keystore.o messaging.o netlink.o debug.o
+diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
+index a618ab7..e6a68a8 100644
+--- a/fs/ecryptfs/ecryptfs_kernel.h
++++ b/fs/ecryptfs/ecryptfs_kernel.h
+@@ -260,6 +260,8 @@ struct ecryptfs_crypt_stat {
+ struct ecryptfs_inode_info {
+ 	struct inode vfs_inode;
+ 	struct inode *wii_inode;
++	struct file *lower_file;
++	struct mutex lower_file_mutex;
+ 	struct ecryptfs_crypt_stat crypt_stat;
+ };
+ 
+@@ -653,5 +655,21 @@ int ecryptfs_keyring_auth_tok_for_sig(struct key **auth_tok_key,
+ 				      char *sig);
+ int ecryptfs_write_zeros(struct file *file, pgoff_t index, int start,
+ 			 int num_zeros);
++int ecryptfs_write_lower(struct inode *ecryptfs_inode, char *data,
++			 loff_t offset, size_t size);
++int ecryptfs_write_lower_page_segment(struct inode *ecryptfs_inode,
++				      struct page *page_for_lower,
++				      size_t offset_in_page, size_t size);
++int ecryptfs_write(struct file *ecryptfs_file, char *data, loff_t offset,
++		   size_t size);
++int ecryptfs_read_lower(char *data, loff_t offset, size_t size,
++			struct inode *ecryptfs_inode);
++int ecryptfs_read_lower_page_segment(struct page *page_for_ecryptfs,
++				     pgoff_t page_index,
++				     size_t offset_in_page, size_t size,
++				     struct inode *ecryptfs_inode);
++int ecryptfs_read(char *data, loff_t offset, size_t size,
++		  struct file *ecryptfs_file);
++struct page *ecryptfs_get1page(struct file *file, loff_t index);
+ 
+ #endif /* #ifndef ECRYPTFS_KERNEL_H */
+diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
+index 307f7ee..0c53320 100644
+--- a/fs/ecryptfs/mmap.c
++++ b/fs/ecryptfs/mmap.c
+@@ -44,7 +44,7 @@ struct kmem_cache *ecryptfs_lower_page_cache;
+  * Returns unlocked and up-to-date page (if ok), with increased
+  * refcnt.
+  */
+-static struct page *ecryptfs_get1page(struct file *file, int index)
++struct page *ecryptfs_get1page(struct file *file, loff_t index)
+ {
+ 	struct dentry *dentry;
+ 	struct inode *inode;
+diff --git a/fs/ecryptfs/read_write.c b/fs/ecryptfs/read_write.c
+new file mode 100644
+index 0000000..e59c94a
+--- /dev/null
++++ b/fs/ecryptfs/read_write.c
+@@ -0,0 +1,359 @@
++/**
++ * eCryptfs: Linux filesystem encryption layer
++ *
++ * Copyright (C) 2007 International Business Machines Corp.
++ *   Author(s): Michael A. Halcrow <mahalcro@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
++ * 02111-1307, USA.
++ */
++
++#include <linux/fs.h>
++#include <linux/pagemap.h>
++#include "ecryptfs_kernel.h"
++
++/**
++ * ecryptfs_write_lower
++ * @ecryptfs_inode: The eCryptfs inode
++ * @data: Data to write
++ * @offset: Byte offset in the lower file to which to write the data
++ * @size: Number of bytes from @data to write at @offset in the lower
++ *        file
++ *
++ * Write data to the lower file.
++ *
++ * Returns zero on success; non-zero on error
++ */
++int ecryptfs_write_lower(struct inode *ecryptfs_inode, char *data,
++			 loff_t offset, size_t size)
++{
++	struct ecryptfs_inode_info *inode_info;
++	ssize_t octets_written;
++	mm_segment_t fs_save;
++	int rc = 0;
++
++	inode_info = ecryptfs_inode_to_private(ecryptfs_inode);
++	mutex_lock(&inode_info->lower_file_mutex);
++	BUG_ON(!inode_info->lower_file);
++	inode_info->lower_file->f_pos = offset;
++	fs_save = get_fs();
++	set_fs(get_ds());
++	octets_written = vfs_write(inode_info->lower_file, data, size,
++				   &inode_info->lower_file->f_pos);
++	set_fs(fs_save);
++	if (octets_written < 0) {
++		printk(KERN_ERR "%s: octets_written = [%td]; "
++		       "expected [%td]\n", __FUNCTION__, octets_written, size);
++		rc = -EINVAL;
++	}
++	mutex_unlock(&inode_info->lower_file_mutex);
++	mark_inode_dirty_sync(ecryptfs_inode);
++	return rc;
++}
++
++/**
++ * ecryptfs_write_lower_page_segment
++ * @ecryptfs_inode: The eCryptfs inode
++ * @page_for_lower: The page containing the data to be written to the
++ *                  lower file
++ * @offset_in_page: The offset in the @page_for_lower from which to
++ *                  start writing the data
++ * @size: The amount of data from @page_for_lower to write to the
++ *        lower file
++ *
++ * Determines the byte offset in the file for the given page and
++ * offset within the page, maps the page, and makes the call to write
++ * the contents of @page_for_lower to the lower inode.
++ *
++ * Returns zero on success; non-zero otherwise
++ */
++int ecryptfs_write_lower_page_segment(struct inode *ecryptfs_inode,
++				      struct page *page_for_lower,
++				      size_t offset_in_page, size_t size)
++{
++	char *virt;
++	loff_t offset;
++	int rc;
++
++	offset = (page_for_lower->index << PAGE_CACHE_SHIFT) + offset_in_page;
++	virt = kmap(page_for_lower);
++	rc = ecryptfs_write_lower(ecryptfs_inode, virt, offset, size);
++	kunmap(page_for_lower);
++	return rc;
++}
++
++/**
++ * ecryptfs_write
++ * @ecryptfs_file: The eCryptfs file into which to write
++ * @data: Virtual address where data to write is located
++ * @offset: Offset in the eCryptfs file at which to begin writing the
++ *          data from @data
++ * @size: The number of bytes to write from @data
++ *
++ * Write an arbitrary amount of data to an arbitrary location in the
++ * eCryptfs inode page cache. This is done on a page-by-page, and then
++ * by an extent-by-extent, basis; individual extents are encrypted and
++ * written to the lower page cache (via VFS writes). This function
++ * takes care of all the address translation to locations in the lower
++ * filesystem; it also handles truncate events, writing out zeros
++ * where necessary.
++ *
++ * Returns zero on success; non-zero otherwise
++ */
++int ecryptfs_write(struct file *ecryptfs_file, char *data, loff_t offset,
++		   size_t size)
++{
++	struct page *ecryptfs_page;
++	char *ecryptfs_page_virt;
++	u64 ecryptfs_file_size = i_size_read(ecryptfs_file->f_dentry->d_inode);
++	loff_t data_offset = 0;
++	loff_t pos;
++	int rc = 0;
++
++	if (offset > ecryptfs_file_size)
++		pos = ecryptfs_file_size;
++	else
++		pos = offset;
++	while (pos < (offset + size)) {
++		pgoff_t ecryptfs_page_idx = (pos >> PAGE_CACHE_SHIFT);
++		size_t start_offset_in_page = (pos & ~PAGE_CACHE_MASK);
++		size_t num_bytes = (PAGE_CACHE_SIZE - start_offset_in_page);
++		size_t total_remaining_bytes = ((offset + size) - pos);
++
++		if (num_bytes > total_remaining_bytes)
++			num_bytes = total_remaining_bytes;
++		if (pos < offset) {
++			size_t total_remaining_zeros = (offset - pos);
++
++			if (num_bytes > total_remaining_zeros)
++				num_bytes = total_remaining_zeros;
++		}
++		ecryptfs_page = ecryptfs_get1page(ecryptfs_file,
++						  ecryptfs_page_idx);
++		if (IS_ERR(ecryptfs_page)) {
++			rc = PTR_ERR(ecryptfs_page);
++			printk(KERN_ERR "%s: Error getting page at "
++			       "index [%ld] from eCryptfs inode "
++			       "mapping; rc = [%d]\n", __FUNCTION__,
++			       ecryptfs_page_idx, rc);
++			goto out;
++		}
++		if (start_offset_in_page) {
++			/* Read in the page from the lower
++			 * into the eCryptfs inode page cache,
++			 * decrypting */
++			if ((rc = ecryptfs_decrypt_page(NULL, /* placeholder for git-bisect */
++							ecryptfs_page))) {
++				printk(KERN_ERR "%s: Error decrypting "
++				       "page; rc = [%d]\n",
++				       __FUNCTION__, rc);
++				page_cache_release(ecryptfs_page);
++				goto out;
++			}
++		}
++		ecryptfs_page_virt = kmap_atomic(ecryptfs_page, KM_USER0);
++		if (pos >= offset) {
++			memcpy(((char *)ecryptfs_page_virt
++				+ start_offset_in_page),
++			       (data + data_offset), num_bytes);
++			data_offset += num_bytes;
++		} else {
++			/* We are extending past the previous end of the file.
++			 * Fill in zero values up to the start of where we
++			 * will be writing data. */
++			memset(((char *)ecryptfs_page_virt
++				+ start_offset_in_page), 0, num_bytes);
++		}
++		kunmap_atomic(ecryptfs_page_virt, KM_USER0);
++		flush_dcache_page(ecryptfs_page);
++		rc = ecryptfs_encrypt_page(NULL /* placeholder for git-bisect */);
++		if (rc) {
++			printk(KERN_ERR "%s: Error encrypting "
++			       "page; rc = [%d]\n", __FUNCTION__, rc);
++			page_cache_release(ecryptfs_page);
++			goto out;
++		}
++		page_cache_release(ecryptfs_page);
++		pos += num_bytes;
++	}
++	if ((offset + size) > ecryptfs_file_size) {
++		i_size_write(ecryptfs_file->f_dentry->d_inode, (offset + size));
++		rc = ecryptfs_write_inode_size_to_metadata(NULL, NULL, NULL,
++							   NULL, 0); /* placeholders for git-bisect */
++		if (rc) {
++			printk(KERN_ERR	"Problem with "
++			       "ecryptfs_write_inode_size_to_metadata; "
++			       "rc = [%d]\n", rc);
++			goto out;
++		}
++	}
++out:
++	return rc;
++}
++
++/**
++ * ecryptfs_read_lower
++ * @data: The read data is stored here by this function
++ * @offset: Byte offset in the lower file from which to read the data
++ * @size: Number of bytes to read from @offset of the lower file and
++ *        store into @data
++ * @ecryptfs_inode: The eCryptfs inode
++ *
++ * Read @size bytes of data at byte offset @offset from the lower
++ * inode into memory location @data.
++ *
++ * Returns zero on success; non-zero on error
++ */
++int ecryptfs_read_lower(char *data, loff_t offset, size_t size,
++			struct inode *ecryptfs_inode)
++{
++	struct ecryptfs_inode_info *inode_info =
++		ecryptfs_inode_to_private(ecryptfs_inode);
++	ssize_t octets_read;
++	mm_segment_t fs_save;
++	size_t i;
++	int rc = 0;
++
++	mutex_lock(&inode_info->lower_file_mutex);
++	BUG_ON(!inode_info->lower_file);
++	inode_info->lower_file->f_pos = offset;
++	fs_save = get_fs();
++	set_fs(get_ds());
++	octets_read = vfs_read(inode_info->lower_file, data, size,
++			       &inode_info->lower_file->f_pos);
++	set_fs(fs_save);
++	if (octets_read < 0) {
++		printk(KERN_ERR "%s: octets_read = [%td]; "
++		       "expected [%td]\n", __FUNCTION__, octets_read, size);
++		rc = -EINVAL;
++	}
++	mutex_unlock(&inode_info->lower_file_mutex);
++	for (i = 0; i < size; i += PAGE_CACHE_SIZE) {
++		struct page *data_page;
++
++		data_page = virt_to_page(data + i);
++		flush_dcache_page(data_page);
++		if (rc)
++			ClearPageUptodate(data_page);
++		else
++			SetPageUptodate(data_page);
++	}
++	return rc;
++}
++
++/**
++ * ecryptfs_read_lower_page_segment
++ * @page_for_ecryptfs: The page into which data for eCryptfs will be
++ *                     written
++ * @offset_in_page: Offset in @page_for_ecryptfs from which to start
++ *                  writing
++ * @size: The number of bytes to write into @page_for_ecryptfs
++ * @ecryptfs_inode: The eCryptfs inode
++ *
++ * Determines the byte offset in the file for the given page and
++ * offset within the page, maps the page, and makes the call to read
++ * the contents of @page_for_ecryptfs from the lower inode.
++ *
++ * Returns zero on success; non-zero otherwise
++ */
++int ecryptfs_read_lower_page_segment(struct page *page_for_ecryptfs,
++				     pgoff_t page_index,
++				     size_t offset_in_page, size_t size,
++				     struct inode *ecryptfs_inode)
++{
++	char *virt;
++	loff_t offset;
++	int rc;
++
++	offset = ((page_index << PAGE_CACHE_SHIFT) + offset_in_page);
++	virt = kmap(page_for_ecryptfs);
++	rc = ecryptfs_read_lower(virt, offset, size, ecryptfs_inode);
++	kunmap(page_for_ecryptfs);
++	return rc;
++}
++
++/**
++ * ecryptfs_read
++ * @data: The virtual address into which to write the data read (and
++ *        possibly decrypted) from the lower file
++ * @offset: The offset in the decrypted view of the file from which to
++ *          read into @data
++ * @size: The number of bytes to read into @data
++ * @ecryptfs_file: The eCryptfs file from which to read
++ *
++ * Read an arbitrary amount of data from an arbitrary location in the
++ * eCryptfs page cache. This is done on an extent-by-extent basis;
++ * individual extents are decrypted and read from the lower page
++ * cache (via VFS reads). This function takes care of all the
++ * address translation to locations in the lower filesystem.
++ *
++ * Returns zero on success; non-zero otherwise
++ */
++int ecryptfs_read(char *data, loff_t offset, size_t size,
++		  struct file *ecryptfs_file)
++{
++	struct page *ecryptfs_page;
++	char *ecryptfs_page_virt;
++	u64 ecryptfs_file_size = i_size_read(ecryptfs_file->f_dentry->d_inode);
++	loff_t data_offset = 0;
++	loff_t pos;
++	int rc = 0;
++
++	if ((offset + size) > ecryptfs_file_size) {
++		rc = -EINVAL;
++		printk(KERN_ERR "%s: Attempt to read data past the end of the "
++			"file; offset = [%lld]; size = [%td]; "
++		       "ecryptfs_file_size = [%lld]\n",
++		       __FUNCTION__, offset, size, ecryptfs_file_size);
++		goto out;
++	}
++	pos = offset;
++	while (pos < (offset + size)) {
++		pgoff_t ecryptfs_page_idx = (pos >> PAGE_CACHE_SHIFT);
++		size_t start_offset_in_page = (pos & ~PAGE_CACHE_MASK);
++		size_t num_bytes = (PAGE_CACHE_SIZE - start_offset_in_page);
++		size_t total_remaining_bytes = ((offset + size) - pos);
++
++		if (num_bytes > total_remaining_bytes)
++			num_bytes = total_remaining_bytes;
++		ecryptfs_page = ecryptfs_get1page(ecryptfs_file,
++						  ecryptfs_page_idx);
++		if (IS_ERR(ecryptfs_page)) {
++			rc = PTR_ERR(ecryptfs_page);
++			printk(KERN_ERR "%s: Error getting page at "
++			       "index [%ld] from eCryptfs inode "
++			       "mapping; rc = [%d]\n", __FUNCTION__,
++			       ecryptfs_page_idx, rc);
++			goto out;
++		}
++		rc = ecryptfs_decrypt_page(NULL /* placeholder for git-bisect */, ecryptfs_page);
++		if (rc) {
++			printk(KERN_ERR "%s: Error decrypting "
++			       "page; rc = [%d]\n", __FUNCTION__, rc);
++			page_cache_release(ecryptfs_page);
++			goto out;
++		}
++		ecryptfs_page_virt = kmap_atomic(ecryptfs_page, KM_USER0);
++		memcpy((data + data_offset),
++		       ((char *)ecryptfs_page_virt + start_offset_in_page),
++		       num_bytes);
++		kunmap_atomic(ecryptfs_page_virt, KM_USER0);
++		page_cache_release(ecryptfs_page);
++		pos += num_bytes;
++		data_offset += num_bytes;
++	}
++out:
++	return rc;
++}
+-- 
+1.5.1.6
+
