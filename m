@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbXIQGk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbXIQGkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752831AbXIQGk0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 02:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXIQGkM
+	id S1752178AbXIQGkk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 02:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbXIQGk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 02:40:12 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40302 "EHLO smtps.tip.net.au"
+	Mon, 17 Sep 2007 02:40:28 -0400
+Received: from sacred.ru ([62.205.161.221]:38711 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbXIQGkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 02:40:10 -0400
-Date: Mon, 17 Sep 2007 16:39:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: travis@sgi.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sparclinux@vger.kernel.org
-Subject: Re: [PATCH 09/10] ppc64: Convert cpu_sibling_map to a per_cpu data
- array (v3)
-Message-Id: <20070917163954.1c3b91fd.sfr@canb.auug.org.au>
-In-Reply-To: <20070917162831.b2a9d675.sfr@canb.auug.org.au>
-References: <20070912015644.927677070@sgi.com>
-	<20070912015647.486500682@sgi.com>
-	<20070917162831.b2a9d675.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh"
+	id S1752796AbXIQGk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 02:40:26 -0400
+Message-ID: <46EE20C4.1060405@openvz.org>
+Date: Mon, 17 Sep 2007 10:37:56 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
+Subject: Re: [PATCH] Wake up mandatory locks waiter on chmod
+References: <46E94993.3090506@openvz.org> <20070916194135.GC31801@fieldses.org>
+In-Reply-To: <20070916194135.GC31801@fieldses.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 17 Sep 2007 10:40:16 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+J. Bruce Fields wrote:
+> On Thu, Sep 13, 2007 at 06:30:43PM +0400, Pavel Emelyanov wrote:
+>> When the process is blocked on mandatory lock and someone changes
+>> the inode's permissions, so that the lock is no longer mandatory,
+>> nobody wakes up the blocked process, but probably should.
+> 
+> I suppose so.  Does anyone actually use mandatory locking?
 
-On Mon, 17 Sep 2007 16:28:31 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> 	the topology (on my POWERPC5+ box) is not correct:
->=20
-> cpu0/topology/thread_siblings:0000000f
-> cpu1/topology/thread_siblings:0000000f
-> cpu2/topology/thread_siblings:0000000f
-> cpu3/topology/thread_siblings:0000000f
->=20
-> it used to be:
->=20
-> cpu0/topology/thread_siblings:00000003
-> cpu1/topology/thread_siblings:00000003
-> cpu2/topology/thread_siblings:0000000c
-> cpu3/topology/thread_siblings:0000000c
+:) Good question.
 
-This would be because we are setting up the cpu_sibling map before we
-call setup_per_cpu_areas().
+> Would it be worth adding a
+> 
+> 	if (MANDATORY_LOCK(inode))
+> 		return;
+> 
+> to the beginning of locks_wakeup_mandatory() to avoid walking the list
+> of locks in that case?  Perhaps setattr is rare enough that this just
+> isn't worth caring about.
+> 
+> Is there a small chance that a lock may be applied after this check:
+> 
+>> +	mandatory = (inode->i_flock && MANDATORY_LOCK(inode));
+>> +
+> 
+> but early enough that someone can still block on the lock while the file
+> is still marked for mandatory locking?  (And is the inode->i_flock check
+> there really necessary?)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+There is, but as you have noticed:
 
---Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh
-Content-Type: application/pgp-signature
+> Well, there are probably worse races in the mandatory locking code.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+...there are. The inode->i_lock is protected with lock_kernel() only
+and is not in sync with any other checks for inodes. This is sad :(
+but a good locking for locks is to be done...
 
-iD8DBQFG7iFATgG2atn1QN8RAnoiAJ4p0Hk26M2K13DgUt0wVOd2o5fJAACfQD5+
-XWiCERDNRgIjs6BvH/3Ffcs=
-=wQi8
------END PGP SIGNATURE-----
+> (For example, my impression is that a mandatory lock can be applied just
+> after the locks_mandatory_area() checks but before the io actually
+> completes.)
+> 
+> --b.
 
---Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh--
+Thanks,
+Pavel
