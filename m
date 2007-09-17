@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXIQSgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbXIQSmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbXIQSgk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbXIQSfO
+	id S1756045AbXIQSmZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbXIQSmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:35:14 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44998 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757433AbXIQSfK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:35:10 -0400
-Message-Id: <20070917183507.332345000@sgi.com>
+	Mon, 17 Sep 2007 14:42:18 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:49967 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753364AbXIQSmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:42:17 -0400
+Message-Id: <20070917184031.211525416@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 17 Sep 2007 11:35:07 -0700
-From: travis@sgi.com
-To: sfr@canb.auug.org.au, Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 0/1] ppc64: Convert cpu_sibling_map to a per_cpu data array ppc64 v2
+Date: Mon, 17 Sep 2007 14:40:31 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 00/11] Text Edit Lock
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 17 Sep 2007 18:42:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew,
 
-Stephen Rothwell wrote:
-> On Mon, 17 Sep 2007 16:28:31 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->> 	the topology (on my POWERPC5+ box) is not correct:
->>
->> cpu0/topology/thread_siblings:0000000f
->> cpu1/topology/thread_siblings:0000000f
->> cpu2/topology/thread_siblings:0000000f
->> cpu3/topology/thread_siblings:0000000f
->>
->> it used to be:
->>
->> cpu0/topology/thread_siblings:00000003
->> cpu1/topology/thread_siblings:00000003
->> cpu2/topology/thread_siblings:0000000c
->> cpu3/topology/thread_siblings:0000000c
-> 
-> This would be because we are setting up the cpu_sibling map before we
-> call setup_per_cpu_areas().
+Here are the text edit lock patches, updated following last discussions. You
+will find the changelogs in the individual patch headers.
 
-The following patch hopefully should fix this problem.  I'm
-not able to build or test it but the few references to 
-cpu_sibling_map seem to all occur well after setup_per_cpu_areas
-is called.
+It applies to 2.6.23-rc4-mm1.
 
-Thanks Stephen for checking this out!
+Patch order:
+
+kprobes-use-mutex-for-insn-pages.patch
+kprobes-dont-use-kprobes-mutex-in-arch-code.patch
+kprobes-declare-kprobes-mutex-static.patch
+declare-array.patch
+text-edit-lock-architecture-independent-code.patch
+text-edit-lock-alternative-i386-and-x86_64.patch
+text-edit-lock-kprobes-architecture-independent.patch
+text-edit-lock-kprobes-i386.patch
+text-edit-lock-kprobes-x86_64.patch
+text-edit-lock-i386-standardize-debug-rodata.patch
+text-edit-lock-x86_64-standardize-debug-rodata.patch
 
 -- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
