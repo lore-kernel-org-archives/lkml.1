@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbXIQDYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbXIQDc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbXIQDYf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 23:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXIQDYZ
+	id S1754079AbXIQDc0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 23:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXIQDcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 23:24:25 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:14926 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbXIQDYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 23:24:24 -0400
-X-IronPort-AV: i="4.20,262,1186372800"; 
-   d="scan'208"; a="51588334:sNHT32141375"
-Subject: [PATCH] Blackfin EMAC driver: add a select for the PHYLIB of this
-	driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Robin Getz <rgetz@blackfin.uclinux.org>, jeff@garzik.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <200709162251.01558.rgetz@blackfin.uclinux.org>
-References: <1189911475.9901.8.camel@roc-laptop>
-	 <200709162251.01558.rgetz@blackfin.uclinux.org>
-Content-Type: text/plain
+	Sun, 16 Sep 2007 23:32:19 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37431 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751319AbXIQDcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 23:32:18 -0400
+Message-ID: <46EDF539.6010805@pobox.com>
+Date: Sun, 16 Sep 2007 23:32:09 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: "Can E. Acar" <can.acar@pro-g.com.tr>
+CC: Daniel Hazelton <dhazelton@enter.net>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+References: <46ED7A8F.1020304@pro-g.com.tr> <200709161632.21927.dhazelton@enter.net> <46EDEDB9.1000104@pro-g.com.tr>
+In-Reply-To: <46EDEDB9.1000104@pro-g.com.tr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Mon, 17 Sep 2007 11:20:20 +0800
-Message-Id: <1189999220.7800.4.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 17 Sep 2007 03:24:21.0561 (UTC) FILETIME=[3D22FA90:01C7F8DA]
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we are adding requirement for the PHYLIB for this driver, there should be a select for that
+Can E. Acar wrote:
+> Furthermore, since it is compatible with the binary HAL from
+> Atheros, the interface is fixed and the same both in Linux and
+> *BSD.
 
-Cc: Robin Getz <robin.getz@analog.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- drivers/net/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Hardly.  It is software; the interface most definitely can and will change.
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 5b9e17b..5eef224 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -843,6 +843,8 @@ config BFIN_MAC
- 	tristate "Blackfin 536/537 on-chip mac support"
- 	depends on NET_ETHERNET && (BF537 || BF536) && (!BF537_PORT_H)
- 	select CRC32
-+	select MII
-+	select PHYLIB
- 	select BFIN_MAC_USE_L1 if DMA_UNCACHED_NONE
- 	help
- 	  This is the driver for blackfin on-chip mac device. Say Y if you want it
--- 
-1.5.2
+	Jeff
+
 
