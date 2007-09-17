@@ -1,99 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbXIQT1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbXIQT16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758042AbXIQT1m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 15:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbXIQT1e
+	id S1759062AbXIQT16 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 15:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbXIQT1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 15:27:34 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:30571 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755736AbXIQT1d (ORCPT
+	Mon, 17 Sep 2007 15:27:48 -0400
+Received: from despair.weirdnet.nl ([193.202.115.165]:13177 "EHLO
+	despair.weirdnet.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758205AbXIQT1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 15:27:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:reply-to:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=kCpFG/cbggc0pJLOi7EmDMjLQIfijxd/s6vhxTAvDF8fDJEG9aNX50ojrWbCVrK8ca8g8yjJKCYcZB3heyq3CQadfDqZVr/jVCrZcq5mtgEgW5HgcIuUe9/cYUqCldcV1l2sSpKbhJvfXWs84d1y7JaRieunq68nMtbE6p3TJoU=
-Reply-To: mark.hagger@ntlworld.com
-To: linux-kernel@vger.kernel.org, mxhaard@users.sourceforge.net
-Subject: kernel oops with 2.6.2x kernels and gspca module
-Date: Mon, 17 Sep 2007 20:27:26 +0100
-User-Agent: KMail/1.9.7
+	Mon, 17 Sep 2007 15:27:45 -0400
+Date: Mon, 17 Sep 2007 21:27:42 +0200
+From: Paul de Weerd <weerd@weirdnet.nl>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Paul de Weerd <weerd@weirdnet.nl>, "Can E. Acar" <can.acar@pro-g.com.tr>,
+       misc@openbsd.org, linux-kernel@vger.kernel.org,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917192742.GY18186@despair.weirdnet.nl>
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211351.GB18232@stusta.de> <20070917092019.GC23002@schlund.de> <20070917133845.GJ18232@stusta.de> <20070917151505.GV18186@despair.weirdnet.nl> <20070917153846.GO18232@stusta.de> <20070917180230.GW18186@despair.weirdnet.nl> <20070917183234.GR18232@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="53TzBEXPl5+8hjUY"
 Content-Disposition: inline
-Message-Id: <200709172027.26325.mark.hagger@ntlworld.com>
-From: Mark Hagger <chhagger@googlemail.com>
+In-Reply-To: <20070917183234.GR18232@stusta.de>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm unable to use the gscpa module to drive my webcam.  As soon as the webcam is plugged in the following
-sort of kernel crash happens.  With much older kernels (2.6.19 or so) from earlier this year I did have this
-camera working for a while, but since upgrading to later kernels I've had no luck at all.
+--53TzBEXPl5+8hjUY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
+On Mon, Sep 17, 2007 at 08:32:35PM +0200, Adrian Bunk wrote:
+| > I'm not making any arguments against any (commercial) user of BSD
+| > licenced code on moral (or legal or other) grounds that they should
+| > give back. I am (and I think others too, but I do not wish to speak
+| > for them) trying to make an argument based on the 'share'-nature of
+| > the GPL that doesn't give back the freedom of BSD licenced code.
+|=20
+| GPL has a "share and protect" nature.
 
-Mark
+Yes, and I was talking about the 'share' part. The protect part is
+fine with me, I understand the reasoning behind it. I would not choose
+it as my own licence, but that is a matter of personal choice.
 
+| > I'm clearly not saying you must give back, legally [but still, IANAL].
+| > I'm saying you should give back as freely as you received, out of
+| > respect. Someone else already mentioned it : Just because you can take
+| > BSD licenced code and do (almost) whatever you wish, doesn't mean you
+| > should. Leave that up to the Big Evil Corps (the ones that also use
+| > GPL'ed code without giving back, btw).
+|=20
+| If a corporation violates the terms of the GPL lawyers and courts can=20
+| force them to do so.
 
-Linux whisky.alcohol 2.6.22.2-42_1.cubbi_suspend2.fc6 #1 SMP Mon Aug 20 01:28:07 CEST 2007 i686 athlon i386 GNU/Linux
+The exact same is true for the BSD Licence. If a corporation (or
+anyone else for that matter) violates the terms of the BSD licence,
+courts can make them stop these violations. It's just easier to
+violate the GPL, because it has more restrictions. [I'm still not a
+lawyer, btw]
 
-Sep 17 20:14:24 whisky kernel: usb 2-2: new full speed USB device using uhci_hcd and address 2
-Sep 17 20:14:24 whisky kernel: usb 2-2: configuration #1 chosen from 1 choice
-Sep 17 20:14:25 whisky kernel: v4l1_compat: no version for "struct_module" found: kernel tainted.
-Sep 17 20:14:25 whisky kernel: Linux video capture interface: v2.00
-Sep 17 20:14:25 whisky kernel: /var/tmp/bach-build/BUILD/gspcav1-20070508/gspca_core.c: USB GSPCA camera found.(SPCA561A)
-Sep 17 20:14:25 whisky kernel: /var/tmp/bach-build/BUILD/gspcav1-20070508/gspca_core.c: [spca5xx_probe:4098] Camera type S561
-Sep 17 20:14:25 whisky kernel: /var/tmp/bach-build/BUILD/gspcav1-20070508/gspca_core.c: [spca5xx_getcapability:1215] maxw 352 maxh 288 minw 160 minh 120
-Sep 17 20:14:25 whisky kernel: BUG: unable to handle kernel NULL pointer dereference at virtual address 00000075
-Sep 17 20:14:25 whisky kernel:  printing eip:
-Sep 17 20:14:25 whisky kernel: c063826e
-Sep 17 20:14:25 whisky kernel: *pde = 2314b067
-Sep 17 20:14:25 whisky kernel: *pte = 00000000
-Sep 17 20:14:25 whisky kernel: Oops: 0002 [#1]
-Sep 17 20:14:25 whisky kernel: SMP
-Sep 17 20:14:25 whisky kernel: last sysfs file: /devices/pci0000:00/0000:00:10.1/usb2/2-2/dev
-Sep 17 20:14:25 whisky kernel: Modules linked in: gspca(F)(U) videodev(F)(U) v4l2_common(F)(U) v4l1_compat(F)(U) arc4 ecb blkcipher ppp_mppe ppp_async crc_
-ccitt ppp_generic slhc nfsd exportfs lockd nfs_acl w83627ehf i2c_isa eeprom ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack nfnetlink ip_t
-ables x_tables hidp l2cap bluetooth sunrpc cpufreq_ondemand video sbs button dock battery ac ipv6 lp snd_hda_intel snd_seq_dummy snd_seq_oss snd_seq_midi_e
-vent snd_seq floppy snd_seq_device snd_pcm_oss snd_mixer_oss sg snd_pcm snd_timer snd soundcore k8temp i2c_viapro snd_page_alloc hwmon via_rhine ohci1394 i
-2c_core mii parport_pc parport ide_cd rtc_cmos serio_raw cdrom dm_snapshot dm_zero dm_mirror dm_mod sata_via libata sd_mod scsi_mod ext3 jbd mbcache ehci_h
-cd ohci_hcd uhci_hcd
-Sep 17 20:14:25 whisky kernel: CPU:    0
-Sep 17 20:14:25 whisky kernel: EIP:    0060:[<c063826e>]    Tainted: GF      VLI
-Sep 17 20:14:25 whisky kernel: EFLAGS: 00010246   (2.6.22.2-42_1.cubbi_suspend2.fc6 #1)
-Sep 17 20:14:25 whisky kernel: EIP is at mutex_lock+0x1d/0x29
-Sep 17 20:14:25 whisky kernel: eax: 00000075   ebx: 00000075   ecx: 00000004   edx: e579a000
-Sep 17 20:14:25 whisky kernel: esi: c07444c0   edi: ffffffef   ebp: c0563413   esp: e579ad64
-Sep 17 20:14:25 whisky kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Sep 17 20:14:25 whisky kernel: Process modprobe (pid: 4047, ti=e579a000 task=e432ac00 task.ti=e579a000)
-Sep 17 20:14:25 whisky kernel: Stack: df8089d0 f8e8a454 c04bc721 f8da52ca df808a50 00000004 f8da0124 00000000
-Sep 17 20:14:25 whisky kernel:        00000000 f8da9047 e4728000 df8089c8 df808a5c 00000160 f8e5bf2c f8e6edf0
-Sep 17 20:14:25 whisky kernel:        f8e6bd00 f8e6816d 000004bf 00000160 00000120 000000a0 00000078 e306ee00
-Sep 17 20:14:25 whisky kernel: Call Trace:
-Sep 17 20:14:25 whisky kernel:  [<c04bc721>] sysfs_add_file+0x2a/0x70
-Sep 17 20:14:25 whisky kernel:  [<f8da52ca>] video_register_device+0x1af/0x220 [videodev]
-Sep 17 20:14:25 whisky kernel:  [<f8e5bf2c>] spca5xx_probe+0x44a/0x5f1 [gspca]
-Sep 17 20:14:25 whisky kernel:  [<c059d037>] usb_probe_interface+0x81/0xb2
-Sep 17 20:14:25 whisky kernel:  [<c05623bf>] driver_probe_device+0xea/0x168
-Sep 17 20:14:25 whisky kernel:  [<c05624e3>] __driver_attach+0x0/0xa5
-Sep 17 20:14:25 whisky kernel:  [<c0562553>] __driver_attach+0x70/0xa5
-Sep 17 20:14:25 whisky kernel:  [<c0561938>] bus_for_each_dev+0x39/0x5b
-Sep 17 20:14:25 whisky kernel:  [<c056221a>] driver_attach+0x16/0x18
-Sep 17 20:14:25 whisky kernel:  [<c05624e3>] __driver_attach+0x0/0xa5
-Sep 17 20:14:25 whisky kernel:  [<c0561c1c>] bus_add_driver+0x6d/0x16d
-Sep 17 20:14:25 whisky kernel:  [<c059cb85>] usb_register_driver+0x6d/0xd4
-Sep 17 20:14:25 whisky kernel:  [<f88db017>] usb_spca5xx_init+0x17/0x42 [gspca]
-Sep 17 20:14:25 whisky kernel:  [<c0431b86>] blocking_notifier_call_chain+0x17/0x1a
-Sep 17 20:14:25 whisky kernel:  [<c04446d3>] sys_init_module+0x169a/0x17d3
-Sep 17 20:14:25 whisky kernel:  [<c0474ff2>] do_munmap+0x193/0x1ac
-Sep 17 20:14:25 whisky kernel:  [<c04853d2>] vfs_read+0xa6/0x158
-Sep 17 20:14:25 whisky kernel:  [<c0404f5e>] syscall_call+0x7/0xb
-Sep 17 20:14:25 whisky kernel:  =======================
-Sep 17 20:14:25 whisky kernel: Code: c1 03 48 79 05 89 d8 5b eb 2d 5b 31 c0 c3 53 ba 56 00 00 00 89 c3 83 ec 04 b8 16 aa 6d c0 e8 17 9b de ff e8 e5 f7 ff f
-f 89 d8 90 <ff> 08 79 05 e8 c4 00 00 00 58 5b c3 57 56 89 c6 53 83 ec 0c 8d
-Sep 17 20:14:25 whisky kernel: EIP: [<c063826e>] mutex_lock+0x1d/0x29 SS:ESP 0068:e579ad64
+Big Evil Corps can however use GPL'ed code without giving back and
+without violating the GPL. Also the same as with the BSD licence.
+
+| BSD people tend to consider the BSD licence as being more free than the
+| GPL because it allows to take without having to give back.
+|=20
+| When people then demand getting code back based on "ethics" or "morale"=
+=20
+| they are using the wrong licence.
+
+Why ? BSD people give their code away for free. They put hard work
+into writing quality software and they have their own ethics or
+morale. They do not *demand* getting code back, at least I have not
+seen any indication of such demands. So then why are they using the
+wrong licence ? I was merely pointing out a matter of mutual respect.
+
+| Your licence puts you in the position that you always depend on the=20
+| goodwill of the persons from whom you want to get code back.
+
+And the people using the BSD licence are completely aware of this [I
+assume, again I do not wish to speak for anyone but myself]. At least
+I was surprised that fellow open source / free software developers are
+not giving back. I've come to expect this from certain companies, but
+to me the free and open software community as a whole (here I'm
+lumping everyone and their mother together, I know) should have some
+respect towards eachother and the licence they choose and acknowledge
+the contributions of other parties, giving back as freely as they've
+been given. Not because it is required but because it's just right.
+
+The GPL requires I give changes I distribute back under the same
+licence. But if I ever were to change such a program, I would not give
+these changes back because of this requirement but because it just
+makes sense.
+
+| And BTW:
+| Many contributions to the Linux kernel come from people payed by
+| Big Evil Corps. [1]
+
+There's also contributions to OpenBSD from people paid by Big Evil
+Corps. The same is true for Net- and FreeBSD. Of course, not all Big
+Evil Corps are, in fact, Evil.
+
+| First of all, for some developers it wouldn't make a difference whether
+| their code was published under the terms of the GPL or under the terms
+| of the BSD licence.
+|=20
+| And there are many people who are aware when code comes from *BSD and=20
+| that giving code back in these cases would be friendly.
+
+Of course, like I said, on a case-by-case basis, there's nothing to
+lose.
+
+Paul 'WEiRD' de Weerd
+
+--=20
+>++++++++[<++++++++++>-]<+++++++.>+++[<------>-]<.>+++[<+
++++++++++++>-]<.>++[<------------>-]<+.--------------.[-]
+                 http://www.weirdnet.nl/                =20
+
+--53TzBEXPl5+8hjUY
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (OpenBSD)
+
+iD8DBQFG7tUumw12l2HFcK0RAm5cAJ9KfEYgqarQZDdMlCDlRjfai9Zz7wCdG+7L
+ORIlb7SD7MpYWgMtqW8x3mA=
+=iLGa
+-----END PGP SIGNATURE-----
+
+--53TzBEXPl5+8hjUY--
