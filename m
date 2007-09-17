@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbXIQUGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbXIQUQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246AbXIQUGG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 16:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbXIQUFo
+	id S1756534AbXIQUQZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 16:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbXIQUQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 16:05:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53548 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757989AbXIQUFn (ORCPT
+	Mon, 17 Sep 2007 16:16:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40369 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753553AbXIQUQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 16:05:43 -0400
-Date: Mon, 17 Sep 2007 13:05:43 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>
-Subject: Re: [PATCH] Configurable reclaim batch size
-In-Reply-To: <20070917215615.685a5378@lappy>
-Message-ID: <Pine.LNX.4.64.0709171304310.28864@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0709141519230.14894@schroedinger.engr.sgi.com>
- <1189812002.5826.31.camel@lappy> <Pine.LNX.4.64.0709171053040.26860@schroedinger.engr.sgi.com>
- <20070917215615.685a5378@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 17 Sep 2007 16:16:17 -0400
+Date: Mon, 17 Sep 2007 13:15:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Anton Altaparmakov <aia21@cam.ac.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       marc.smith@esmail.mcc.edu
+Subject: Re: VM/VFS bug with large amount of memory and file systems?
+Message-Id: <20070917131526.e8db80fe.akpm@linux-foundation.org>
+In-Reply-To: <46EEB532.3060804@redhat.com>
+References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk>
+	<1189850897.21778.301.camel@twins>
+	<20070915035228.8b8a7d6d.akpm@linux-foundation.org>
+	<13126578-A4F8-43EA-9B0D-A3BCBFB41FEC@cam.ac.uk>
+	<20070917163257.331c7605@twins>
+	<46EEB532.3060804@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007, Peter Zijlstra wrote:
+On Mon, 17 Sep 2007 13:11:14 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-> > Tried to run AIM7 but the improvements are in the noise. I need a tests 
-> > that really does large memory allocation and stresses the LRU. I could 
-> > code something up but then Lee's patch addresses some of the same issues.
-> > Is there any standard test that shows LRU handling regressions?
+> > I'm guessing there is no pressure at all on zone_highmem so the
+> > kernel will not try to reclaim pagecache. And because the pagecache
+> > pages are happily sitting there, the buggerheads are pinned and do not
+> > get reclaimed.
+
+yeah, this got pretty unavoidably broken when we killed the global LRU
+in 2.5.early. It's odd that it took this long for someone to hit it.
+
+> I've got code for this in RHEL 3, but never bothered to
+> merge it upstream since I thought people with large memory
+> systems would be running 64 bit kernels by now.
 > 
-> hehe, I wish. I was just hoping you'd done this patch as a result of an
-> actual problem and not a hunch.
+> Obviously I was wrong.  Andrew, are you interested in a
+> fix for this problem?
+> 
+> IIRC I simply kept a list of all buffer heads and walked
+> that to reclaim pages when the number of buffer heads is
+> too high (and we need memory).  This list can be maintained
+> in places where we already hold the lock for the buffer head
+> freelist, so there should be no additional locking overhead
+> (again, IIRC).
 
-It was Andrew's hunch. I'd rather see Lee's approach go forward because 
-I think it has the potential of solving the issue in a more general way. 
-If I get some spare time with a problem system then I will test the patch.
-
+Christoph's slab defragmentation code should permit us to fix this:
+grab a page of buffer_heads off the slab lists, trylock the page,
+strip the buffer_heads.  I think that would be a better approach
+if we can get it going because it's more general.
