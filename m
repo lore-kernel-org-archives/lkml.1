@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932958AbXIQVSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932910AbXIQVTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932958AbXIQVSj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932809AbXIQVRa
+	id S932910AbXIQVTQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760208AbXIQVS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:17:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34920 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760990AbXIQVR2 (ORCPT
+	Mon, 17 Sep 2007 17:18:56 -0400
+Received: from mail-in-06.arcor-online.net ([151.189.21.46]:33255 "EHLO
+	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758147AbXIQVSy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:17:28 -0400
-Date: Mon, 17 Sep 2007 14:16:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [2.6.23-rc4-mm1][Bug] kernel BUG at
- include/linux/netdevice.h:339!
-Message-Id: <20070917141622.330b27b8.akpm@linux-foundation.org>
-In-Reply-To: <46EE7026.2070203@linux.vnet.ibm.com>
-References: <46EE7026.2070203@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Sep 2007 17:18:54 -0400
+Date: Mon, 17 Sep 2007 23:20:17 +0200
+From: Andreas Herrmann <aherrman@arcor.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] mac_hid: fix build error if MAC_EMUMOUSEBTN && !INPUT
+Message-ID: <20070917212017.GB22458@devil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007 17:46:38 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Hi,
 
-> Kernel Bug is hit with 2.6.23-rc4-mm1 kernel on ppc64 machine.
-> 
-> kernel BUG at include/linux/netdevice.h:339!
+With current git an invalid kernel configuration is
+selectable which leads to kernel build errors for mac_hid.
+To prevent this selection I suggest follwoing patch.
 
-(please cc netdev@vger.kernel.org on networking-related matters)
+Regards,
 
-You died here:
+Andreas
+-- 
+Build error if MAC_EMUMOUSEBTN && !INPUT:
 
-static inline void napi_complete(struct napi_struct *n)
-{
-        BUG_ON(!test_bit(NAPI_STATE_SCHED, &n->state));
+  LD      .tmp_vmlinux1
+drivers/built-in.o: In function `input_report_key':
+include/linux/input.h:1158: undefined reference to `input_event'
+    ...
 
-The NAPI changes have had a few problems and hopefully things have
-been fixed up since then.  I'll try to get rc6-mm1 out this evening,
-so please retest that?
+Auto-select INPUT for MAC_EMUMOUSEBTN option.
+
+Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
+---
+ drivers/macintosh/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index 56cd899..77f50b6 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -172,6 +172,7 @@ config INPUT_ADBHID
+ 
+ config MAC_EMUMOUSEBTN
+ 	bool "Support for mouse button 2+3 emulation"
++	select INPUT
+ 	help
+ 	  This provides generic support for emulating the 2nd and 3rd mouse
+ 	  button with keypresses.  If you say Y here, the emulation is still
+-- 
+1.5.3
+
+
