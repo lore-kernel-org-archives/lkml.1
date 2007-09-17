@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbXIQLaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbXIQLad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbXIQLaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 07:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXIQL32
+	id S1755539AbXIQLad (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 07:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbXIQL3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 07:29:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36697 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753881AbXIQL30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 07:29:26 -0400
-Date: Mon, 17 Sep 2007 07:29:10 -0400
-Message-Id: <200709171129.l8HBTA7D024365@dantu.rdu.redhat.com>
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 1/7] ecryptfs: allow lower fs to interpret ATTR_KILL_S*ID
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
-       ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
-       unionfs@filesystems.org
+	Mon, 17 Sep 2007 07:29:36 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:54070 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754986AbXIQL3c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 07:29:32 -0400
+Date: Mon, 17 Sep 2007 12:29:23 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] SCSI: split Kconfig menu into two
+In-Reply-To: <46EBCEF1.4030702@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64N.0709171217350.17606@blysk.ds.pg.gda.pl>
+References: <46E46190.6080607@garzik.org> <20070912224655.GC3563@stusta.de>
+ <46EAA08F.30703@s5r6.in-berlin.de> <20070914151522.GL3563@stusta.de>
+ <46EAAAC1.3050409@s5r6.in-berlin.de> <tkrat.d922469e152fe0f3@s5r6.in-berlin.de>
+ <tkrat.913e8b183cdf7888@s5r6.in-berlin.de> <20070914190033.GA4003@uranus.ravnborg.org>
+ <20070914190609.GN3563@stusta.de> <tkrat.552dbee831c88bbe@s5r6.in-berlin.de>
+ <20070915114055.GP3563@stusta.de> <46EBCEF1.4030702@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes sure ecryptfs doesn't trip the BUG() in notify_change.
-It also allows the lower filesystem to interpret ATTR_KILL_S*ID in its
-own way.
+On Sat, 15 Sep 2007, Stefan Richter wrote:
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/ecryptfs/inode.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+> >> +menu "Storage (core and SCSI commands)"
+> >>  
+> >>  config SCSI
+> >> -	tristate "SCSI device support"
+> >> +	tristate "Storage support (core and SCSI commands)"
+> >>  	depends on BLOCK
+> >>  	select SCSI_DMA if HAS_DMA
+> >>  	---help---
+> >> ...
+> > 
+> > What is "storage support"?
+> > SATA?
+> > PATA?
+> > USB mass storage?
+> > MMC?
+> > MTD?
+> 
+> What is "Networking"?  Ethernet?  Infiniband?  ...?
 
-diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-index 131954b..dac4199 100644
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -959,6 +959,14 @@ static int ecryptfs_setattr(struct dentry *dentry, struct iattr *ia)
- 		if (rc < 0)
- 			goto out;
- 	}
-+
-+	/*
-+	 * mode change is for clearing setuid/setgid bits. Allow lower fs
-+	 * to interpret this in its own way.
-+	 */
-+	if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
-+		ia->ia_valid &= ~ATTR_MODE;
-+
- 	rc = notify_change(lower_dentry, ia);
- out:
- 	fsstack_copy_attr_all(inode, lower_inode, NULL);
--- 
-1.5.2.1
+ SCSI is a generic peripheral bus (recall the expansion of the acronym).  
+Even though probably the most common, storage is one of its applications 
+only (think scanners for an immediately obvious other one).  I find 
+describing CONFIG_SCSI as "storage support" misleading and inappropriate.
 
+ Referring to your example it is like calling generic networking (i.e. 
+CONFIG_NET) "Ethernet support".
+
+  Maciej
