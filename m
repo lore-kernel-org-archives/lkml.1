@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbXIQUWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbXIQUWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757244AbXIQUWX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 16:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755886AbXIQUWK
+	id S1758028AbXIQUWg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 16:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbXIQUWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 16:22:10 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:56810 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755582AbXIQUWI (ORCPT
+	Mon, 17 Sep 2007 16:22:18 -0400
+Received: from rune.sasl.smtp.pobox.com ([208.210.124.37]:40860 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756929AbXIQUWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 16:22:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=OTS6TOinMfrnkQpYMrxMwuqDI/Z0lpD1esZ1NW87Zx5CTZ11samCn8MUUqljyo1WJROA/VoxYDE3SOoE69dDnQocsBrTCLQtTIRnOP0mvxGlEsCMLT5fDzqOx2OKY+aA96/ug7mZVi+ZGKC98xeOT9tnhMKgHUSsnz04d2w3ZgE=
-Message-ID: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
-Date: Mon, 17 Sep 2007 16:22:07 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>
+	Mon, 17 Sep 2007 16:22:17 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: git-send-email creates duplicate Message-Id's
+References: <11900179463203-git-send-email-avi@qumranet.com>
+	<20070917155901.GP18232@stusta.de>
+Date: Mon, 17 Sep 2007 13:22:05 -0700
+In-Reply-To: <20070917155901.GP18232@stusta.de> (Adrian Bunk's message of
+	"Mon, 17 Sep 2007 17:59:01 +0200")
+Message-ID: <7vejgxyrde.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_15876_26305641.1190060527274"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_15876_26305641.1190060527274
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Adrian Bunk <bunk@kernel.org> writes:
 
-This patch updates the pci_iomap() kernel-doc to make it clarify the
-case when read*()/write*() can be called over ioread*/iowrite*(). When
-driver writers read this documenation sometimes it is assumed you just
-*need* to use ioread*()/iorwrite*(). We have an exception so lets just
-clarify this is not true for the exception.
+> The following might be a bug in git-send-email (git maintainers Cc'ed
+> and KVM list removed from Cc): 
+>
+> Patch 54 got the same Message-Id as patch 61 and patch 89 got the same 
+> Message-Id as patch 104.
+> ...
+> The emails are:
+> http://marc.info/?l=linux-kernel&m=119002061330270&w=2
+> http://marc.info/?l=linux-kernel&m=119002059626434&w=2
+> http://marc.info/?l=linux-kernel&m=119002060011801&w=2
+> http://marc.info/?l=linux-kernel&m=119002060318915&w=2
 
- lib/iomap.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+The old code generated rand(4200) for each message and appended
+it to the timestamp.  I do not know where the original author
+got 4200 from, but I think if you send many messages within a
+single second it is possible to get collisions.
 
-Signed-off-by: Luis R. Rodriguez <mcgrof@gmail.com>
+I guess something like this patch is an improvement?  It
+generates a single prefix from timestamp and random, and appends
+a number that is incremented for each message.
 
-  Luis
-
-------=_Part_15876_26305641.1190060527274
-Content-Type: text/x-patch; name="pci_iomap-doc-clarification.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="pci_iomap-doc-clarification.diff"
-X-Attachment-Id: f_f6pfahct
-
-ZGlmZiAtLWdpdCBhL2xpYi9pb21hcC5jIGIvbGliL2lvbWFwLmMKaW5kZXggODY0ZjJlYy4uMzM2
-NTFmOCAxMDA2NDQKLS0tIGEvbGliL2lvbWFwLmMKKysrIGIvbGliL2lvbWFwLmMKQEAgLTI0Nyw5
-ICsyNDcsMTQgQEAgRVhQT1JUX1NZTUJPTChpb3BvcnRfdW5tYXApOwogICogQG1heGxlbjogbGVu
-Z3RoIG9mIHRoZSBtZW1vcnkgdG8gbWFwCiAgKgogICogVXNpbmcgdGhpcyBmdW5jdGlvbiB5b3Ug
-d2lsbCBnZXQgYSBfX2lvbWVtIGFkZHJlc3MgdG8geW91ciBkZXZpY2UgQkFSLgotICogWW91IGNh
-biBhY2Nlc3MgaXQgdXNpbmcgaW9yZWFkKigpIGFuZCBpb3dyaXRlKigpLiBUaGVzZSBmdW5jdGlv
-bnMgaGlkZQotICogdGhlIGRldGFpbHMgaWYgdGhpcyBpcyBhIE1NSU8gb3IgUElPIGFkZHJlc3Mg
-c3BhY2UgYW5kIHdpbGwganVzdCBkbyB3aGF0Ci0gKiB5b3UgZXhwZWN0IGZyb20gdGhlbSBpbiB0
-aGUgY29ycmVjdCB3YXkuCisgKiBJZiB5b3UgdXNlIHBjaV9pb21hcCgpIGl0IGlzIHJlY29tbWVu
-ZGVkIHlvdSB1c2UgaW9yZWFkKigpIGFuZCBpb3dyaXRlKigpLiBJZgorICogeW91ciBkZXZpY2Ug
-aXMgTU1JTy1vbmx5IGFuZCBhcyBsb25nIGFzIGZ1dHVyZSBhcmNoaXRlY3R1cmVzIGRvbid0IGJy
-ZWFrIHRoZQorICogYXNzdW1wdGlvbiB0aGF0IHBjaW9faW9tYXAoKS1yZXR1cm5lZCBjb29raWUg
-Y2FuIGJlIHVzZWQgYnkgcmVhZCooKS93cml0ZSooKQorICogdGhlbiB5b3UgY2FuIHVzZSByZWFk
-KigpL3dyaXRlKigpIGluc3RlYWQuIFRoZSBpb3JlYWQqKCkgYW5kIGlvd3JpdGUqKCkgCisgKiBm
-dW5jdGlvbnMgaGlkZSB0aGUgZGV0YWlscyBpZiB0aGlzIGlzIGEgTU1JTyBvciBQSU8gYWRkcmVz
-cyBzcGFjZSBhbmQgd2lsbAorICoganVzdCBkbyB3aGF0IHlvdSBleHBlY3QgZnJvbSB0aGVtIGlu
-IHRoZSBjb3JyZWN0IHdheS4gRHJpdmVycyBmb3IgTU1JTy1vbmx5IAorICogZGV2aWNlcyB3b3Vs
-ZCB1c2UgdGhpcyBvbmx5IHRvIHNhdmUgdGhlbXNlbHZlcyBmcm9tIGhhdmluZyB0byBjYWxsIAor
-ICogJnBjaV9yZXNvdXJjZV9zdGFydCgpLgogICoKICAqIEBtYXhsZW4gc3BlY2lmaWVzIHRoZSBt
-YXhpbXVtIGxlbmd0aCB0byBtYXAuIElmIHlvdSB3YW50IHRvIGdldCBhY2Nlc3MgdG8KICAqIHRo
-ZSBjb21wbGV0ZSBCQVIgd2l0aG91dCBjaGVja2luZyBmb3IgaXRzIGxlbmd0aCBmaXJzdCwgcGFz
-cyAlMCBoZXJlLgo=
-------=_Part_15876_26305641.1190060527274--
+---
+diff --git a/git-send-email.perl b/git-send-email.perl
+index dd7560b..e250732 100755
+--- a/git-send-email.perl
++++ b/git-send-email.perl
+@@ -477,10 +477,18 @@ sub extract_valid_address {
+ 
+ # We'll setup a template for the message id, using the "from" address:
+ 
++my ($message_id_stamp, $message_id_serial);
+ sub make_message_id
+ {
+-	my $date = time;
+-	my $pseudo_rand = int (rand(4200));
++	my $uniq;
++	if (!defined $message_id_stamp) {
++		$message_id_stamp = sprintf("%s-%s", time, int(rand(4200)));
++		$message_id_serial = 0;
++	}
++	$message_id_serial++;
++
++	$uniq = "$message_id_stamp-$message_id_serial";
++
+ 	my $du_part;
+ 	for ($sender, $repocommitter, $repoauthor) {
+ 		$du_part = extract_valid_address(sanitize_address($_));
+@@ -490,8 +498,8 @@ sub make_message_id
+ 		use Sys::Hostname qw();
+ 		$du_part = 'user@' . Sys::Hostname::hostname();
+ 	}
+-	my $message_id_template = "<%s-git-send-email-$du_part>";
+-	$message_id = sprintf $message_id_template, "$date$pseudo_rand";
++	my $message_id_template = "<%s-git-send-email-%s>";
++	$message_id = sprintf($message_id_template, $uniq, $du_part);
+ 	#print "new message id = $message_id\n"; # Was useful for debugging
+ }
+ 
