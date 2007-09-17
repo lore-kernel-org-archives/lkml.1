@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbXIQA5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbXIQA6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754343AbXIQA5b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 20:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbXIQA5Y
+	id S1754588AbXIQA6R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 20:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbXIQA6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 20:57:24 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:55055 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752052AbXIQA5X (ORCPT
+	Sun, 16 Sep 2007 20:58:05 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:4837 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753671AbXIQA6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 20:57:23 -0400
-Date: Mon, 17 Sep 2007 02:57:34 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: David Schwartz <davids@webmaster.com>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070917005734.GE18232@stusta.de>
-References: <20070916230936.GC18232@stusta.de> <MDEHLPKNGKAHNMBLJOLKOEFKGNAC.davids@webmaster.com>
+	Sun, 16 Sep 2007 20:58:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=ZVUEXlf6wFbGLWjLnxGCD9xn+vF7z9GIHwTIqNxfFWaWCRI9A8sz4r+6JIz6DC7BYHVYWvTuwDwpCgkiNVotvNiLvf/tsXb2e2NAE9r1zbiqJDAkQDv0J3OdrsiM7GivQpH8odwIJUe1PqSWqpxhQok/UFyHS015HHjMBl1sIAo=
+Message-ID: <46EDD114.7010403@gmail.com>
+Date: Mon, 17 Sep 2007 09:57:56 +0900
+From: shinkoi2005a <shinkoi2005a@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070615 Fedora/2.0.0.4-1.fc7 Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEFKGNAC.davids@webmaster.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: linux-kernel@vger.kernel.org
+Subject: printk format "%4.4s"
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 05:29:56PM -0700, David Schwartz wrote:
+Hi, all
 
->...
-> Again, one more time:
-> 
-> 1) You can obtain, from the GPL, the right to remove a BSD license notice.
->...
+I have a question about printk format.
 
-I hope noone believes this bullshit you are spreading.
+Can printk format use "%4.4s"?
+This format is used following source.
 
-When you incorporate BSD licenced code into a GPL'ed project it's 
-impossible that the GPL could give you any permission to remove the 
-BSD licence notice.
+#############
+drivers/acpi/tables/tbinstal.c
+                ACPI_ERROR((AE_INFO,
+                            "Table has invalid signature [%4.4s], must be SSDT, PSDT or OEMx",
+                            table_desc->pointer->signature));
 
-> > BTW: It is considered impolite on linux-kernel to remove Cc's.
-> 
-> Really? On almost every other forum I know of, the rule is the reverse. It is rude to CC posts to people who are most likely on the list anyway.
+##############
+At least, my dmesg is buggy output like that..
 
-linux-kernel is not "almost every other forum I know of".
-
-Considering how long you are already trolling [1] on linux-kernel
-I'm surprised you haven't heard about this before.
-
-> DS
-
-cu
-Adrian
-
-[1] Have you ever contributed any patch to the Linux kernel?
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+##############
+$ dmesg
+(snip)
+ACPI Warning (tbutils-0158): Incorrect checksum in table [  ^E礑 -  00, should b
+e F6 [20070126]
+ACPI Error (tbinstal-0134): Table has invalid signature [  ^E礑, must be SSDT, P
+SDT or OEMx [20070126]
+(snip)
+##############
 
