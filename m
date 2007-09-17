@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbXIQVPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760856AbXIQVPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760778AbXIQVPU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760271AbXIQVIi
+	id S1760856AbXIQVPr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760302AbXIQVIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:08:38 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:52223 "EHLO
+	Mon, 17 Sep 2007 17:08:43 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:52232 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932148AbXIQVIg (ORCPT
+	with ESMTP id S1760443AbXIQVIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:08:36 -0400
+	Mon, 17 Sep 2007 17:08:41 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=wEm1DPleVYZDCsVvPwyG0Q3Nr4g4P4U1/sVUbmoM2ya6LpTCEu5RTZYbCjCUG0Nfz
-	Dd9+kRkbQmC3jt1T4VlnQ==
-Message-Id: <20070917210428.382957000@menage.corp.google.com>
+	b=uvzyINmRtDAtjnhZfDHDZBEP4d5cfuGSJTTvQiVdSl2dweeOwoaAoypHoUH5go18j
+	Hsm4VWmEI0SYWPSs6mp8A==
+Message-Id: <20070917210429.199259000@menage.corp.google.com>
 References: <20070917210307.116234000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Sep 2007 14:03:21 -0700
+Date: Mon, 17 Sep 2007 14:03:26 -0700
 From: Paul Menage <menage@google.com>
 To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
        "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
@@ -29,96 +29,81 @@ To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, pj@sgi.com,
        containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 14/33] task-containersv11-basic-task-container-framework-containers-fix-refcount-bug
-Content-Disposition: inline; filename=fixoops1.patch
+Subject: [PATCH 19/33] containers implement namespace tracking subsystem fix order of container subsystems in init kconfig
+Content-Disposition: inline; filename=containers-implement-namespace-tracking-subsystem-fix-order-of-container-subsystems-in-init-kconfig.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a reference counting bug in cgroupfs
+From: Cedric Le Goater <clg@fr.ibm.com>
+(container->cgroup renaming by Paul Menage <menage@google.com>)
 
-As part of the extraction of cpusetfs to cgroupfs, a call to
-cpuset_get_dentry() was lost (justified by the fact that the dentry in
-question was now being passed down by the caller).  Since
-cpuset_get_dentry() called lookup_one_len(), this resulted in a reference
-count being missed from the directory dentry.
+some cosmetic changes to init/Kconfig to make the subsystem list
+under cgroups look nicer when CONFIG_CGROUPS=y.
 
-This patch removes cgroup_get_dentry() and replaces it with direct calls
-to lookup_one_len(); the initialization of cgroupfs dentry ops is done
-now in cgroup_create_file() at dentry creation time.
+also changed the 'select' to 'depends on' for the namespace
+subsystem.
 
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
 Signed-off-by: Paul Menage <menage@google.com>
-
 ---
- kernel/cgroup.c |   24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
 
-Index: linux-2.6.23-rc4-mm1-new/kernel/cgroup.c
-===================================================================
---- linux-2.6.23-rc4-mm1-new.orig/kernel/cgroup.c
-+++ linux-2.6.23-rc4-mm1-new/kernel/cgroup.c
-@@ -604,19 +604,6 @@ static void cgroup_diput(struct dentry *
- 	iput(inode);
- }
+ init/Kconfig |   32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff -puN init/Kconfig~cgroups-implement-namespace-tracking-subsystem-fix-order-of-cgroup-subsystems-in-init-kconfig init/Kconfig
+--- a/init/Kconfig~cgroups-implement-namespace-tracking-subsystem-fix-order-of-cgroup-subsystems-in-init-kconfig
++++ a/init/Kconfig
+@@ -292,6 +292,22 @@ config CGROUP_DEBUG
  
--static struct dentry *cgroup_get_dentry(struct dentry *parent,
--					   const char *name)
--{
--	struct dentry *d = lookup_one_len(name, parent, strlen(name));
--	static struct dentry_operations cgroup_dops = {
--		.d_iput = cgroup_diput,
--	};
--
--	if (!IS_ERR(d))
--		d->d_op = &cgroup_dops;
--	return d;
--}
--
- static void remove_dir(struct dentry *d)
- {
- 	struct dentry *parent = dget(d->d_parent);
-@@ -1507,6 +1494,10 @@ static struct inode_operations cgroup_di
- static int cgroup_create_file(struct dentry *dentry, int mode,
- 				struct super_block *sb)
- {
-+	static struct dentry_operations cgroup_dops = {
-+		.d_iput = cgroup_diput,
-+	};
+ 	  Say N if unsure
+ 
++config CGROUP_NS
++        bool "Namespace cgroup subsystem"
++        depends on CGROUPS
++        help
++          Provides a simple namespace cgroup subsystem to
++          provide hierarchical naming of sets of namespaces,
++          for instance virtual servers and checkpoint/restart
++          jobs.
 +
- 	struct inode *inode;
++config CGROUP_CPUACCT
++	bool "Simple CPU accounting cgroup subsystem"
++	depends on CGROUPS
++	help
++	  Provides a simple Resource Controller for monitoring the
++	  total CPU consumed by the tasks in a cgroup
++
+ config CPUSETS
+ 	bool "Cpuset support"
+ 	depends on SMP && CGROUPS
+@@ -323,27 +339,11 @@ config SYSFS_DEPRECATED
+ 	  If you are using a distro that was released in 2006 or later,
+ 	  it should be safe to say N here.
  
- 	if (!dentry)
-@@ -1532,7 +1523,7 @@ static int cgroup_create_file(struct den
- 		inode->i_size = 0;
- 		inode->i_fop = &cgroup_file_operations;
- 	}
+-config CGROUP_NS
+-        bool "Namespace cgroup subsystem"
+-        select CGROUPS
+-        help
+-          Provides a simple namespace cgroup subsystem to
+-          provide hierarchical naming of sets of namespaces,
+-          for instance virtual servers and checkpoint/restart
+-          jobs.
 -
-+	dentry->d_op = &cgroup_dops;
- 	d_instantiate(dentry, inode);
- 	dget(dentry);	/* Extra count - pin the dentry in core */
- 	return 0;
-@@ -1553,13 +1544,12 @@ static int cgroup_create_dir(struct cgro
- 	int error = 0;
+ config PROC_PID_CPUSET
+ 	bool "Include legacy /proc/<pid>/cpuset file"
+ 	depends on CPUSETS
+ 	default y
  
- 	parent = cont->parent->dentry;
--	if (IS_ERR(dentry))
--		return PTR_ERR(dentry);
- 	error = cgroup_create_file(dentry, S_IFDIR | mode, cont->root->sb);
- 	if (!error) {
- 		dentry->d_fsdata = cont;
- 		inc_nlink(parent->d_inode);
- 		cont->dentry = dentry;
-+		dget(dentry);
- 	}
- 	dput(dentry);
- 
-@@ -1581,7 +1571,7 @@ int cgroup_add_file(struct cgroup *cont,
- 	}
- 	strcat(name, cft->name);
- 	BUG_ON(!mutex_is_locked(&dir->d_inode->i_mutex));
--	dentry = cgroup_get_dentry(dir, name);
-+	dentry = lookup_one_len(name, dir, strlen(name));
- 	if (!IS_ERR(dentry)) {
- 		error = cgroup_create_file(dentry, 0644 | S_IFREG,
- 						cont->root->sb);
+-config CGROUP_CPUACCT
+-	bool "Simple CPU accounting cgroup subsystem"
+-	depends on CGROUPS
+-	help
+-	  Provides a simple Resource Controller for monitoring the
+-	  total CPU consumed by the tasks in a cgroup
+-
+ config RELAY
+ 	bool "Kernel->user space relay support (formerly relayfs)"
+ 	help
+_
 
 --
