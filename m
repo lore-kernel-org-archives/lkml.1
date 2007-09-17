@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXIQSml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbXIQSm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561AbXIQSml (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbXIQSmU
+	id S1758182AbXIQSm5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbXIQSmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:42:20 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46958 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754942AbXIQSmT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:42:19 -0400
-Date: Mon, 17 Sep 2007 20:42:17 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Avi Kivity <avi@qumranet.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -rc] KVM: Fix virtualization menu help text
-In-Reply-To: <11900202451420-git-send-email-avi@qumranet.com>
-Message-ID: <Pine.LNX.4.64.0709172041270.21412@fbirervta.pbzchgretzou.qr>
-References: <11900202451420-git-send-email-avi@qumranet.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 17 Sep 2007 14:42:38 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:50046 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757368AbXIQSmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:42:37 -0400
+Message-Id: <20070917184208.704840978@polymtl.ca>
+References: <20070917184031.211525416@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 17 Sep 2007 14:40:34 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: [patch 03/11] Kprobes - declare kprobe_mutex static
+Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 17 Sep 2007 18:42:09 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Since it will not be used by other kernel objects, it makes sense to declare it
+static.
 
-On Sep 17 2007 11:10, Avi Kivity wrote:
->
->What guest drivers?
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: hch@infradead.org
+CC: prasanna@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
+---
+ kernel/kprobes.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Well, why is lguest called lguest? :)
+Index: linux-2.6-lttng/kernel/kprobes.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
+@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
+ /* NOTE: change this value only with kprobe_mutex held */
+ static bool kprobe_enabled;
+ 
+-DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
++static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
+ DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
+ static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
+ 
 
-But yeah, ack.
-
->Cc: Jan Engelhardt <jengelh@computergmbh.de>
->Signed-off-by: Avi Kivity <avi@qumranet.com>
->---
->diff --git a/drivers/kvm/Kconfig b/drivers/kvm/Kconfig
->index 9b72f33..8749fa4 100644
->--- a/drivers/kvm/Kconfig
->+++ b/drivers/kvm/Kconfig
->@@ -6,7 +6,8 @@ menuconfig VIRTUALIZATION
-> 	depends on X86
-> 	default y
-> 	---help---
->-	  Say Y here to get to see options for virtualization guest drivers.
->+	  Say Y here to get to see options for using your Linux host to run other
->+	  operating systems inside virtual machines (guests).
-> 	  This option alone does not add any kernel code.
-> 
-> 	  If you say N, all options in this submenu will be skipped and disabled.
->-- 
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
