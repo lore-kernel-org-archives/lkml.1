@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbXIQVNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932541AbXIQVNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760636AbXIQVNO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760386AbXIQVHq
+	id S932541AbXIQVNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760382AbXIQVHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:07:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9266 "EHLO
+	Mon, 17 Sep 2007 17:07:48 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:52137 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757746AbXIQVHj (ORCPT
+	with ESMTP id S1760353AbXIQVHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:07:39 -0400
+	Mon, 17 Sep 2007 17:07:40 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=ONUyd01FEJXH+wbUbttioie193kjWQa8wi2cP/gUgY1ayyfK4pN9/I2hGRkDkQW49
-	ZQ2md7Z8baqjbglN7olig==
-Message-Id: <20070917210427.719535000@menage.corp.google.com>
+	b=dakixjRiGWj+2PE34Lcso5FciEp88DukX2KUvif8GpJo2zEaZMeBf5aCJ5qKbFgaH
+	F0CGPu6zMhNw2D0NVz7DQ==
+Message-Id: <20070917210426.579524000@menage.corp.google.com>
 References: <20070917210307.116234000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Sep 2007 14:03:17 -0700
+Date: Mon, 17 Sep 2007 14:03:10 -0700
 From: Paul Menage <menage@google.com>
 To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
        "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
@@ -29,752 +29,440 @@ To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, pj@sgi.com,
        containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 10/33] task containersv11 automatic userspace notification of idle containers
-Content-Disposition: inline; filename=task-containersv11-automatic-userspace-notification-of-idle-containers.patch
+Subject: [PATCH 03/33] task containersv11 add tasks file interface
+Content-Disposition: inline; filename=task-containersv11-add-tasks-file-interface.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the following files to the cgroup filesystem:
-
-notify_on_release - configures/reports whether the cgroup subsystem should
-attempt to run a release script when this cgroup becomes unused
-
-release_agent - configures/reports the release agent to be used for this
-hierarchy (top level in each hierarchy only)
-
-releasable - reports whether this cgroup would have been auto-released if
-notify_on_release was true and a release agent was configured (mainly useful
-for debugging)
-
-To avoid locking issues, invoking the userspace release agent is done via a
-workqueue task; cgroups that need to have their release agents invoked by
-the workqueue task are linked on to a list.
+Add the per-directory "tasks" file for cgroupfs mounts; this allows the
+user to determine which tasks are members of a cgroup by reading a
+cgroup's "tasks", and to move a task into a cgroup by writing its pid to
+its "tasks".
 
 Signed-off-by: Paul Menage <menage@google.com>
 ---
 
- include/linux/cgroup.h |   11 
- kernel/cgroup.c        |  425 ++++++++++++++++++++++++++++++++----
- 2 files changed, 393 insertions(+), 43 deletions(-)
+ include/linux/cgroup.h |   10 +
+ kernel/cgroup.c        |  359 +++++++++++++++++++++++++++++++++++-
+ 2 files changed, 368 insertions(+), 1 deletion(-)
 
-diff -puN include/linux/cgroup.h~task-cgroupsv11-automatic-userspace-notification-of-idle-cgroups include/linux/cgroup.h
---- a/include/linux/cgroup.h~task-cgroupsv11-automatic-userspace-notification-of-idle-cgroups
+diff -puN include/linux/cgroup.h~task-cgroupsv11-add-tasks-file-interface include/linux/cgroup.h
+--- a/include/linux/cgroup.h~task-cgroupsv11-add-tasks-file-interface
 +++ a/include/linux/cgroup.h
-@@ -77,10 +77,11 @@ static inline void css_get(struct contai
-  * css_get()
-  */
+@@ -144,6 +144,16 @@ int cgroup_is_removed(const struct co
  
-+extern void __css_put(struct cgroup_subsys_state *css);
- static inline void css_put(struct cgroup_subsys_state *css)
- {
- 	if (!test_bit(CSS_ROOT, &css->flags))
--		atomic_dec(&css->refcnt);
-+		__css_put(css);
- }
+ int cgroup_path(const struct cgroup *cont, char *buf, int buflen);
  
- struct cgroup {
-@@ -112,6 +113,13 @@ struct cgroup {
- 	 * tasks in this cgroup. Protected by css_set_lock
- 	 */
- 	struct list_head css_sets;
++int __cgroup_task_count(const struct cgroup *cont);
++static inline int cgroup_task_count(const struct cgroup *cont)
++{
++	int task_count;
++	rcu_read_lock();
++	task_count = __cgroup_task_count(cont);
++	rcu_read_unlock();
++	return task_count;
++}
 +
-+	/*
-+	 * Linked list running through all cgroups that can
-+	 * potentially be reaped by the release agent. Protected by
-+	 * release_list_lock
-+	 */
-+	struct list_head release_list;
- };
+ /* Return true if the cgroup is a descendant of the current cgroup */
+ int cgroup_is_descendant(const struct cgroup *cont);
  
- /* A css_set is a structure holding pointers to a set of
-@@ -285,7 +293,6 @@ struct task_struct *cgroup_iter_next(
- 					struct cgroup_iter *it);
- void cgroup_iter_end(struct cgroup *cont, struct cgroup_iter *it);
- 
--
- #else /* !CONFIG_CGROUPS */
- 
- static inline int cgroup_init_early(void) { return 0; }
-diff -puN kernel/cgroup.c~task-cgroupsv11-automatic-userspace-notification-of-idle-cgroups kernel/cgroup.c
---- a/kernel/cgroup.c~task-cgroupsv11-automatic-userspace-notification-of-idle-cgroups
+diff -puN kernel/cgroup.c~task-cgroupsv11-add-tasks-file-interface kernel/cgroup.c
+--- a/kernel/cgroup.c~task-cgroupsv11-add-tasks-file-interface
 +++ a/kernel/cgroup.c
-@@ -44,6 +44,8 @@
- #include <linux/sort.h>
+@@ -40,7 +40,7 @@
+ #include <linux/magic.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
+-
++#include <linux/sort.h>
  #include <asm/atomic.h>
  
-+static DEFINE_MUTEX(cgroup_mutex);
-+
  /* Generate an array of cgroup subsystem pointers */
- #define SUBSYS(_x) &_x ## _subsys,
+@@ -713,6 +713,127 @@ int cgroup_path(const struct containe
+ 	return 0;
+ }
  
-@@ -82,6 +84,13 @@ struct cgroupfs_root {
- 
- 	/* Hierarchy-specific flags */
- 	unsigned long flags;
++/*
++ * Return the first subsystem attached to a cgroup's hierarchy, and
++ * its subsystem id.
++ */
 +
-+	/* The path to use for release notifications. No locking
-+	 * between setting and use - so if userspace updates this
-+	 * while child cgroups exist, you could miss a
-+	 * notification. We ensure that it's always a valid
-+	 * NUL-terminated string */
-+	char release_agent_path[PATH_MAX];
- };
- 
- 
-@@ -109,7 +118,13 @@ static int need_forkexit_callback;
- 
- /* bits in struct cgroup flags field */
- enum {
-+	/* Control Group is dead */
- 	CONT_REMOVED,
-+	/* Control Group has previously had a child cgroup or a task,
-+	 * but no longer (only if CONT_NOTIFY_ON_RELEASE is set) */
-+	CONT_RELEASABLE,
-+	/* Control Group requires release notifications to userspace */
-+	CONT_NOTIFY_ON_RELEASE,
- };
- 
- /* convenient tests for these bits */
-@@ -123,6 +138,19 @@ enum {
- 	ROOT_NOPREFIX, /* mounted subsystems have no named prefix */
- };
- 
-+inline int cgroup_is_releasable(const struct cgroup *cont)
++static void get_first_subsys(const struct cgroup *cont,
++			struct cgroup_subsys_state **css, int *subsys_id)
 +{
-+	const int bits =
-+		(1 << CONT_RELEASABLE) |
-+		(1 << CONT_NOTIFY_ON_RELEASE);
-+	return (cont->flags & bits) == bits;
++	const struct cgroupfs_root *root = cont->root;
++	const struct cgroup_subsys *test_ss;
++	BUG_ON(list_empty(&root->subsys_list));
++	test_ss = list_entry(root->subsys_list.next,
++			     struct cgroup_subsys, sibling);
++	if (css) {
++		*css = cont->subsys[test_ss->subsys_id];
++		BUG_ON(!*css);
++	}
++	if (subsys_id)
++		*subsys_id = test_ss->subsys_id;
 +}
 +
-+inline int notify_on_release(const struct cgroup *cont)
++/*
++ * Attach task 'tsk' to cgroup 'cont'
++ *
++ * Call holding cgroup_mutex.  May take task_lock of
++ * the task 'pid' during call.
++ */
++static int attach_task(struct cgroup *cont, struct task_struct *tsk)
 +{
-+	return test_bit(CONT_NOTIFY_ON_RELEASE, &cont->flags);
-+}
-+
- /*
-  * for_each_subsys() allows you to iterate on each subsystem attached to
-  * an active hierarchy
-@@ -134,6 +162,14 @@ list_for_each_entry(_ss, &_root->subsys_
- #define for_each_root(_root) \
- list_for_each_entry(_root, &roots, root_list)
- 
-+/* the list of cgroups eligible for automatic release. Protected by
-+ * release_list_lock */
-+static LIST_HEAD(release_list);
-+static DEFINE_SPINLOCK(release_list_lock);
-+static void cgroup_release_agent(struct work_struct *work);
-+static DECLARE_WORK(release_agent_work, cgroup_release_agent);
-+static void check_for_release(struct cgroup *cont);
-+
- /* Link structure for associating css_set objects with cgroups */
- struct cg_cgroup_link {
- 	/*
-@@ -188,11 +224,8 @@ static int use_task_css_set_links;
- /*
-  * unlink a css_set from the list and free it
-  */
--static void release_css_set(struct kref *k)
-+static void unlink_css_set(struct css_set *cg)
- {
--	struct css_set *cg = container_of(k, struct css_set, ref);
--	int i;
--
- 	write_lock(&css_set_lock);
- 	list_del(&cg->list);
- 	css_set_count--;
-@@ -205,11 +238,39 @@ static void release_css_set(struct kre
- 		kfree(link);
- 	}
- 	write_unlock(&css_set_lock);
--	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++)
--		atomic_dec(&cg->subsys[i]->cgroup->count);
-+}
-+
-+static void __release_css_set(struct kref *k, int taskexit)
-+{
++	int retval = 0;
++	struct cgroup_subsys *ss;
++	struct cgroup *oldcont;
++	struct css_set *cg = &tsk->cgroups;
++	struct cgroupfs_root *root = cont->root;
 +	int i;
-+	struct css_set *cg = container_of(k, struct css_set, ref);
++	int subsys_id;
 +
-+	unlink_css_set(cg);
++	get_first_subsys(cont, NULL, &subsys_id);
 +
-+	rcu_read_lock();
++	/* Nothing to do if the task is already in that cgroup */
++	oldcont = task_cgroup(tsk, subsys_id);
++	if (cont == oldcont)
++		return 0;
++
++	for_each_subsys(root, ss) {
++		if (ss->can_attach) {
++			retval = ss->can_attach(ss, cont, tsk);
++			if (retval) {
++				return retval;
++			}
++		}
++	}
++
++	task_lock(tsk);
++	if (tsk->flags & PF_EXITING) {
++		task_unlock(tsk);
++		return -ESRCH;
++	}
++	/* Update the css_set pointers for the subsystems in this
++	 * hierarchy */
 +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+		struct cgroup *cont = cg->subsys[i]->cgroup;
-+		if (atomic_dec_and_test(&cont->count) &&
-+		    notify_on_release(cont)) {
-+			if (taskexit)
-+				set_bit(CONT_RELEASABLE, &cont->flags);
-+			check_for_release(cont);
++		if (root->subsys_bits & (1ull << i)) {
++			/* Subsystem is in this hierarchy. So we want
++			 * the subsystem state from the new
++			 * cgroup. Transfer the refcount from the
++			 * old to the new */
++			atomic_inc(&cont->count);
++			atomic_dec(&cg->subsys[i]->cgroup->count);
++			rcu_assign_pointer(cg->subsys[i], cont->subsys[i]);
 +		}
 +	}
-+	rcu_read_unlock();
- 	kfree(cg);
- }
- 
-+static void release_css_set(struct kref *k)
-+{
-+	__release_css_set(k, 0);
-+}
++	task_unlock(tsk);
 +
-+static void release_css_set_taskexit(struct kref *k)
-+{
-+	__release_css_set(k, 1);
-+}
-+
- /*
-  * refcounted get/put for css_set objects
-  */
-@@ -223,6 +284,11 @@ static inline void put_css_set(struct 
- 	kref_put(&cg->ref, release_css_set);
- }
- 
-+static inline void put_css_set_taskexit(struct css_set *cg)
-+{
-+	kref_put(&cg->ref, release_css_set_taskexit);
-+}
-+
- /*
-  * find_existing_css_set() is a helper for
-  * find_css_set(), and checks to see whether an existing
-@@ -464,8 +530,6 @@ static struct css_set *find_css_set(
-  * update of a tasks cgroup pointer by attach_task()
-  */
- 
--static DEFINE_MUTEX(cgroup_mutex);
--
- /**
-  * cgroup_lock - lock out any changes to cgroup structures
-  *
-@@ -524,6 +588,13 @@ static void cgroup_diput(struct dentr
- 	if (S_ISDIR(inode->i_mode)) {
- 		struct cgroup *cont = dentry->d_fsdata;
- 		BUG_ON(!(cgroup_is_removed(cont)));
-+		/* It's possible for external users to be holding css
-+		 * reference counts on a cgroup; css_put() needs to
-+		 * be able to access the cgroup after decrementing
-+		 * the reference count in order to know if it needs to
-+		 * queue the cgroup to be handled by the release
-+		 * agent */
-+		synchronize_rcu();
- 		kfree(cont);
- 	}
- 	iput(inode);
-@@ -668,6 +739,8 @@ static int cgroup_show_options(struct
- 		seq_printf(seq, ",%s", ss->name);
- 	if (test_bit(ROOT_NOPREFIX, &root->flags))
- 		seq_puts(seq, ",noprefix");
-+	if (strlen(root->release_agent_path))
-+		seq_printf(seq, ",release_agent=%s", root->release_agent_path);
- 	mutex_unlock(&cgroup_mutex);
- 	return 0;
- }
-@@ -675,6 +748,7 @@ static int cgroup_show_options(struct
- struct cgroup_sb_opts {
- 	unsigned long subsys_bits;
- 	unsigned long flags;
-+	char *release_agent;
- };
- 
- /* Convert a hierarchy specifier into a bitmask of subsystems and
-@@ -686,6 +760,7 @@ static int parse_cgroupfs_options(cha
- 
- 	opts->subsys_bits = 0;
- 	opts->flags = 0;
-+	opts->release_agent = NULL;
- 
- 	while ((token = strsep(&o, ",")) != NULL) {
- 		if (!*token)
-@@ -694,6 +769,15 @@ static int parse_cgroupfs_options(cha
- 			opts->subsys_bits = (1 << CGROUP_SUBSYS_COUNT) - 1;
- 		} else if (!strcmp(token, "noprefix")) {
- 			set_bit(ROOT_NOPREFIX, &opts->flags);
-+		} else if (!strncmp(token, "release_agent=", 14)) {
-+			/* Specifying two release agents is forbidden */
-+			if (opts->release_agent)
-+				return -EINVAL;
-+			opts->release_agent = kzalloc(PATH_MAX, GFP_KERNEL);
-+			if (!opts->release_agent)
-+				return -ENOMEM;
-+			strncpy(opts->release_agent, token + 14, PATH_MAX - 1);
-+			opts->release_agent[PATH_MAX - 1] = 0;
- 		} else {
- 			struct cgroup_subsys *ss;
- 			int i;
-@@ -743,7 +827,11 @@ static int cgroup_remount(struct supe
- 	if (!ret)
- 		cgroup_populate_dir(cont);
- 
-+	if (opts.release_agent)
-+		strcpy(root->release_agent_path, opts.release_agent);
-  out_unlock:
-+	if (opts.release_agent)
-+		kfree(opts.release_agent);
- 	mutex_unlock(&cgroup_mutex);
- 	mutex_unlock(&cont->dentry->d_inode->i_mutex);
- 	return ret;
-@@ -767,6 +855,7 @@ static void init_cgroup_root(struct c
- 	INIT_LIST_HEAD(&cont->sibling);
- 	INIT_LIST_HEAD(&cont->children);
- 	INIT_LIST_HEAD(&cont->css_sets);
-+	INIT_LIST_HEAD(&cont->release_list);
- }
- 
- static int cgroup_test_super(struct super_block *sb, void *data)
-@@ -841,8 +930,11 @@ static int cgroup_get_sb(struct file_
- 
- 	/* First find the desired set of subsystems */
- 	ret = parse_cgroupfs_options(data, &opts);
--	if (ret)
-+	if (ret) {
-+		if (opts.release_agent)
-+			kfree(opts.release_agent);
- 		return ret;
++	for_each_subsys(root, ss) {
++		if (ss->attach) {
++			ss->attach(ss, cont, oldcont, tsk);
++		}
 +	}
- 
- 	root = kzalloc(sizeof(*root), GFP_KERNEL);
- 	if (!root)
-@@ -851,6 +943,10 @@ static int cgroup_get_sb(struct file_
- 	init_cgroup_root(root);
- 	root->subsys_bits = opts.subsys_bits;
- 	root->flags = opts.flags;
-+	if (opts.release_agent) {
-+		strcpy(root->release_agent_path, opts.release_agent);
-+		kfree(opts.release_agent);
++
++	synchronize_rcu();
++	return 0;
++}
++
++/*
++ * Attach task with pid 'pid' to cgroup 'cont'. Call with
++ * cgroup_mutex, may take task_lock of task
++ */
++static int attach_task_by_pid(struct cgroup *cont, char *pidbuf)
++{
++	pid_t pid;
++	struct task_struct *tsk;
++	int ret;
++
++	if (sscanf(pidbuf, "%d", &pid) != 1)
++		return -EIO;
++
++	if (pid) {
++		rcu_read_lock();
++		tsk = find_task_by_pid(pid);
++		if (!tsk || tsk->flags & PF_EXITING) {
++			rcu_read_unlock();
++			return -ESRCH;
++		}
++		get_task_struct(tsk);
++		rcu_read_unlock();
++
++		if ((current->euid) && (current->euid != tsk->uid)
++		    && (current->euid != tsk->suid)) {
++			put_task_struct(tsk);
++			return -EACCES;
++		}
++	} else {
++		tsk = current;
++		get_task_struct(tsk);
 +	}
++
++	ret = attach_task(cont, tsk);
++	put_task_struct(tsk);
++	return ret;
++}
++
+ /* The various types of files and directories in a cgroup file system */
  
- 	sb = sget(fs_type, cgroup_test_super, cgroup_set_super, root);
- 
-@@ -1131,7 +1227,7 @@ static int attach_task(struct cgroup 
- 			ss->attach(ss, cont, oldcont, tsk);
- 		}
- 	}
--
-+	set_bit(CONT_RELEASABLE, &oldcont->flags);
- 	synchronize_rcu();
- 	put_css_set(cg);
- 	return 0;
-@@ -1181,6 +1277,9 @@ enum cgroup_filetype {
- 	FILE_ROOT,
- 	FILE_DIR,
+ enum cgroup_filetype {
+@@ -721,6 +842,55 @@ enum cgroup_filetype {
  	FILE_TASKLIST,
-+	FILE_NOTIFY_ON_RELEASE,
-+	FILE_RELEASABLE,
-+	FILE_RELEASE_AGENT,
  };
  
- static ssize_t cgroup_common_file_write(struct cgroup *cont,
-@@ -1218,6 +1317,32 @@ static ssize_t cgroup_common_file_wri
- 	case FILE_TASKLIST:
- 		retval = attach_task_by_pid(cont, buffer);
- 		break;
-+	case FILE_NOTIFY_ON_RELEASE:
-+		clear_bit(CONT_RELEASABLE, &cont->flags);
-+		if (simple_strtoul(buffer, NULL, 10) != 0)
-+			set_bit(CONT_NOTIFY_ON_RELEASE, &cont->flags);
-+		else
-+			clear_bit(CONT_NOTIFY_ON_RELEASE, &cont->flags);
-+		break;
-+	case FILE_RELEASE_AGENT:
-+	{
-+		struct cgroupfs_root *root = cont->root;
-+		/* Strip trailing newline */
-+		if (nbytes && (buffer[nbytes-1] == '\n')) {
-+			buffer[nbytes-1] = 0;
-+		}
-+		if (nbytes < sizeof(root->release_agent_path)) {
-+			/* We never write anything other than '\0'
-+			 * into the last char of release_agent_path,
-+			 * so it always remains a NUL-terminated
-+			 * string */
-+			strncpy(root->release_agent_path, buffer, nbytes);
-+			root->release_agent_path[nbytes] = 0;
-+		} else {
-+			retval = -ENOSPC;
-+		}
-+		break;
-+	}
- 	default:
- 		retval = -EINVAL;
- 		goto out2;
-@@ -1258,6 +1383,49 @@ static ssize_t cgroup_read_uint(struc
- 	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
- }
- 
-+static ssize_t cgroup_common_file_read(struct cgroup *cont,
-+					  struct cftype *cft,
-+					  struct file *file,
-+					  char __user *buf,
-+					  size_t nbytes, loff_t *ppos)
++static ssize_t cgroup_common_file_write(struct cgroup *cont,
++					   struct cftype *cft,
++					   struct file *file,
++					   const char __user *userbuf,
++					   size_t nbytes, loff_t *unused_ppos)
 +{
 +	enum cgroup_filetype type = cft->private;
-+	char *page;
-+	ssize_t retval = 0;
-+	char *s;
++	char *buffer;
++	int retval = 0;
 +
-+	if (!(page = (char *)__get_free_page(GFP_KERNEL)))
++	if (nbytes >= PATH_MAX)
++		return -E2BIG;
++
++	/* +1 for nul-terminator */
++	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
++	if (buffer == NULL)
 +		return -ENOMEM;
 +
-+	s = page;
++	if (copy_from_user(buffer, userbuf, nbytes)) {
++		retval = -EFAULT;
++		goto out1;
++	}
++	buffer[nbytes] = 0;	/* nul-terminate */
++
++	mutex_lock(&cgroup_mutex);
++
++	if (cgroup_is_removed(cont)) {
++		retval = -ENODEV;
++		goto out2;
++	}
 +
 +	switch (type) {
-+	case FILE_RELEASE_AGENT:
-+	{
-+		struct cgroupfs_root *root;
-+		size_t n;
-+		mutex_lock(&cgroup_mutex);
-+		root = cont->root;
-+		n = strnlen(root->release_agent_path,
-+			    sizeof(root->release_agent_path));
-+		n = min(n, (size_t) PAGE_SIZE);
-+		strncpy(s, root->release_agent_path, n);
-+		mutex_unlock(&cgroup_mutex);
-+		s += n;
++	case FILE_TASKLIST:
++		retval = attach_task_by_pid(cont, buffer);
 +		break;
-+	}
 +	default:
 +		retval = -EINVAL;
-+		goto out;
++		goto out2;
 +	}
-+	*s++ = '\n';
 +
-+	retval = simple_read_from_buffer(buf, nbytes, ppos, page, s - page);
-+out:
-+	free_page((unsigned long)page);
++	if (retval == 0)
++		retval = nbytes;
++out2:
++	mutex_unlock(&cgroup_mutex);
++out1:
++	kfree(buffer);
 +	return retval;
 +}
 +
- static ssize_t cgroup_file_read(struct file *file, char __user *buf,
- 				   size_t nbytes, loff_t *ppos)
+ static ssize_t cgroup_file_write(struct file *file, const char __user *buf,
+ 						size_t nbytes, loff_t *ppos)
  {
-@@ -1673,16 +1841,49 @@ static int cgroup_tasks_release(struc
+@@ -924,6 +1094,189 @@ int cgroup_add_files(struct cgroup
  	return 0;
  }
  
-+static u64 cgroup_read_notify_on_release(struct cgroup *cont,
-+					    struct cftype *cft)
++/* Count the number of tasks in a cgroup. Could be made more
++ * time-efficient but less space-efficient with more linked lists
++ * running through each cgroup and the css_set structures that
++ * referenced it. Must be called with tasklist_lock held for read or
++ * write or in an rcu critical section.
++ */
++int __cgroup_task_count(const struct cgroup *cont)
 +{
-+	return notify_on_release(cont);
++	int count = 0;
++	struct task_struct *g, *p;
++	struct cgroup_subsys_state *css;
++	int subsys_id;
++
++	get_first_subsys(cont, &css, &subsys_id);
++	do_each_thread(g, p) {
++		if (task_subsys_state(p, subsys_id) == css)
++			count ++;
++	} while_each_thread(g, p);
++	return count;
 +}
 +
-+static u64 cgroup_read_releasable(struct cgroup *cont, struct cftype *cft)
-+{
-+	return test_bit(CONT_RELEASABLE, &cont->flags);
-+}
-+
- /*
-  * for the common functions, 'private' gives the type of file
-  */
--static struct cftype cft_tasks = {
--	.name = "tasks",
--	.open = cgroup_tasks_open,
--	.read = cgroup_tasks_read,
-+static struct cftype files[] = {
-+	{
-+		.name = "tasks",
-+		.open = cgroup_tasks_open,
-+		.read = cgroup_tasks_read,
-+		.write = cgroup_common_file_write,
-+		.release = cgroup_tasks_release,
-+		.private = FILE_TASKLIST,
-+	},
-+
-+	{
-+		.name = "notify_on_release",
-+		.read_uint = cgroup_read_notify_on_release,
-+		.write = cgroup_common_file_write,
-+		.private = FILE_NOTIFY_ON_RELEASE,
-+	},
-+
-+	{
-+		.name = "releasable",
-+		.read_uint = cgroup_read_releasable,
-+		.private = FILE_RELEASABLE,
-+	}
++/*
++ * Stuff for reading the 'tasks' file.
++ *
++ * Reading this file can return large amounts of data if a cgroup has
++ * *lots* of attached tasks. So it may need several calls to read(),
++ * but we cannot guarantee that the information we produce is correct
++ * unless we produce it entirely atomically.
++ *
++ * Upon tasks file open(), a struct ctr_struct is allocated, that
++ * will have a pointer to an array (also allocated here).  The struct
++ * ctr_struct * is stored in file->private_data.  Its resources will
++ * be freed by release() when the file is closed.  The array is used
++ * to sprintf the PIDs and then used by read().
++ */
++struct ctr_struct {
++	char *buf;
++	int bufsz;
 +};
 +
-+static struct cftype cft_release_agent = {
-+	.name = "release_agent",
-+	.read = cgroup_common_file_read,
- 	.write = cgroup_common_file_write,
--	.release = cgroup_tasks_release,
--	.private = FILE_TASKLIST,
-+	.private = FILE_RELEASE_AGENT,
- };
- 
- static int cgroup_populate_dir(struct cgroup *cont)
-@@ -1693,10 +1894,15 @@ static int cgroup_populate_dir(struct
- 	/* First clear out any existing files */
- 	cgroup_clear_directory(cont->dentry);
- 
--	err = cgroup_add_file(cont, NULL, &cft_tasks);
-+	err = cgroup_add_files(cont, NULL, files, ARRAY_SIZE(files));
- 	if (err < 0)
- 		return err;
- 
-+	if (cont == cont->top_cgroup) {
-+		if ((err = cgroup_add_file(cont, NULL, &cft_release_agent)) < 0)
-+			return err;
-+	}
-+
- 	for_each_subsys(cont->root, ss) {
- 		if (ss->populate && (err = ss->populate(ss, cont)) < 0)
- 			return err;
-@@ -1753,6 +1959,7 @@ static long cgroup_create(struct cont
- 	INIT_LIST_HEAD(&cont->sibling);
- 	INIT_LIST_HEAD(&cont->children);
- 	INIT_LIST_HEAD(&cont->css_sets);
-+	INIT_LIST_HEAD(&cont->release_list);
- 
- 	cont->parent = parent;
- 	cont->root = parent->root;
-@@ -1814,6 +2021,38 @@ static int cgroup_mkdir(struct inode 
- 	return cgroup_create(c_parent, dentry, mode | S_IFDIR);
- }
- 
-+static inline int cgroup_has_css_refs(struct cgroup *cont)
++/*
++ * Load into 'pidarray' up to 'npids' of the tasks using cgroup
++ * 'cont'.  Return actual number of pids loaded.  No need to
++ * task_lock(p) when reading out p->cgroup, since we're in an RCU
++ * read section, so the css_set can't go away, and is
++ * immutable after creation.
++ */
++static int pid_array_load(pid_t *pidarray, int npids, struct cgroup *cont)
 +{
-+	/* Check the reference count on each subsystem. Since we
-+	 * already established that there are no tasks in the
-+	 * cgroup, if the css refcount is also 0, then there should
-+	 * be no outstanding references, so the subsystem is safe to
-+	 * destroy. We scan across all subsystems rather than using
-+	 * the per-hierarchy linked list of mounted subsystems since
-+	 * we can be called via check_for_release() with no
-+	 * synchronization other than RCU, and the subsystem linked
-+	 * list isn't RCU-safe */
-+	int i;
-+	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+		struct cgroup_subsys *ss = subsys[i];
-+		struct cgroup_subsys_state *css;
-+		/* Skip subsystems not in this hierarchy */
-+		if (ss->root != cont->root)
-+			continue;
-+		css = cont->subsys[ss->subsys_id];
-+		/* When called from check_for_release() it's possible
-+		 * that by this point the cgroup has been removed
-+		 * and the css deleted. But a false-positive doesn't
-+		 * matter, since it can only happen if the cgroup
-+		 * has been deleted and hence no longer needs the
-+		 * release agent to be called anyway. */
-+		if (css && atomic_read(&css->refcnt)) {
-+			return 1;
++	int n = 0;
++	struct task_struct *g, *p;
++	struct cgroup_subsys_state *css;
++	int subsys_id;
++
++	get_first_subsys(cont, &css, &subsys_id);
++	rcu_read_lock();
++	do_each_thread(g, p) {
++		if (task_subsys_state(p, subsys_id) == css) {
++			pidarray[n++] = pid_nr(task_pid(p));
++			if (unlikely(n == npids))
++				goto array_full;
 +		}
++	} while_each_thread(g, p);
++
++array_full:
++	rcu_read_unlock();
++	return n;
++}
++
++static int cmppid(const void *a, const void *b)
++{
++	return *(pid_t *)a - *(pid_t *)b;
++}
++
++/*
++ * Convert array 'a' of 'npids' pid_t's to a string of newline separated
++ * decimal pids in 'buf'.  Don't write more than 'sz' chars, but return
++ * count 'cnt' of how many chars would be written if buf were large enough.
++ */
++static int pid_array_to_buf(char *buf, int sz, pid_t *a, int npids)
++{
++	int cnt = 0;
++	int i;
++
++	for (i = 0; i < npids; i++)
++		cnt += snprintf(buf + cnt, max(sz - cnt, 0), "%d\n", a[i]);
++	return cnt;
++}
++
++/*
++ * Handle an open on 'tasks' file.  Prepare a buffer listing the
++ * process id's of tasks currently attached to the cgroup being opened.
++ *
++ * Does not require any specific cgroup mutexes, and does not take any.
++ */
++static int cgroup_tasks_open(struct inode *unused, struct file *file)
++{
++	struct cgroup *cont = __d_cont(file->f_dentry->d_parent);
++	struct ctr_struct *ctr;
++	pid_t *pidarray;
++	int npids;
++	char c;
++
++	if (!(file->f_mode & FMODE_READ))
++		return 0;
++
++	ctr = kmalloc(sizeof(*ctr), GFP_KERNEL);
++	if (!ctr)
++		goto err0;
++
++	/*
++	 * If cgroup gets more users after we read count, we won't have
++	 * enough space - tough.  This race is indistinguishable to the
++	 * caller from the case that the additional cgroup users didn't
++	 * show up until sometime later on.
++	 */
++	npids = cgroup_task_count(cont);
++	if (npids) {
++		pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
++		if (!pidarray)
++			goto err1;
++
++		npids = pid_array_load(pidarray, npids, cont);
++		sort(pidarray, npids, sizeof(pid_t), cmppid, NULL);
++
++		/* Call pid_array_to_buf() twice, first just to get bufsz */
++		ctr->bufsz = pid_array_to_buf(&c, sizeof(c), pidarray, npids) + 1;
++		ctr->buf = kmalloc(ctr->bufsz, GFP_KERNEL);
++		if (!ctr->buf)
++			goto err2;
++		ctr->bufsz = pid_array_to_buf(ctr->buf, ctr->bufsz, pidarray, npids);
++
++		kfree(pidarray);
++	} else {
++		ctr->buf = 0;
++		ctr->bufsz = 0;
++	}
++	file->private_data = ctr;
++	return 0;
++
++err2:
++	kfree(pidarray);
++err1:
++	kfree(ctr);
++err0:
++	return -ENOMEM;
++}
++
++static ssize_t cgroup_tasks_read(struct cgroup *cont,
++				    struct cftype *cft,
++				    struct file *file, char __user *buf,
++				    size_t nbytes, loff_t *ppos)
++{
++	struct ctr_struct *ctr = file->private_data;
++
++	return simple_read_from_buffer(buf, nbytes, ppos, ctr->buf, ctr->bufsz);
++}
++
++static int cgroup_tasks_release(struct inode *unused_inode,
++					struct file *file)
++{
++	struct ctr_struct *ctr;
++
++	if (file->f_mode & FMODE_READ) {
++		ctr = file->private_data;
++		kfree(ctr->buf);
++		kfree(ctr);
 +	}
 +	return 0;
 +}
 +
- static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
- {
- 	struct cgroup *cont = dentry->d_fsdata;
-@@ -1822,7 +2061,6 @@ static int cgroup_rmdir(struct inode 
- 	struct cgroup_subsys *ss;
- 	struct super_block *sb;
- 	struct cgroupfs_root *root;
--	int css_busy = 0;
- 
- 	/* the vfs holds both inode->i_mutex already */
- 
-@@ -1840,20 +2078,7 @@ static int cgroup_rmdir(struct inode 
- 	root = cont->root;
- 	sb = root->sb;
- 
--	/* Check the reference count on each subsystem. Since we
--	 * already established that there are no tasks in the
--	 * cgroup, if the css refcount is also 0, then there should
--	 * be no outstanding references, so the subsystem is safe to
--	 * destroy */
--	for_each_subsys(root, ss) {
--		struct cgroup_subsys_state *css;
--		css = cont->subsys[ss->subsys_id];
--		if (atomic_read(&css->refcnt)) {
--			css_busy = 1;
--			break;
--		}
--	}
--	if (css_busy) {
-+	if (cgroup_has_css_refs(cont)) {
- 		mutex_unlock(&cgroup_mutex);
- 		return -EBUSY;
- 	}
-@@ -1863,7 +2088,11 @@ static int cgroup_rmdir(struct inode 
- 			ss->destroy(ss, cont);
- 	}
- 
-+	spin_lock(&release_list_lock);
- 	set_bit(CONT_REMOVED, &cont->flags);
-+	if (!list_empty(&cont->release_list))
-+		list_del(&cont->release_list);
-+	spin_unlock(&release_list_lock);
- 	/* delete my sibling from parent->children */
- 	list_del(&cont->sibling);
- 	spin_lock(&cont->dentry->d_lock);
-@@ -1875,6 +2104,9 @@ static int cgroup_rmdir(struct inode 
- 	dput(d);
- 	root->number_of_cgroups--;
- 
-+	set_bit(CONT_RELEASABLE, &parent->flags);
-+	check_for_release(parent);
-+
- 	mutex_unlock(&cgroup_mutex);
- 	/* Drop the active superblock reference that we took when we
- 	 * created the cgroup */
-@@ -1912,15 +2144,15 @@ static void cgroup_init_subsys(struct
-  	/* If this subsystem requested that it be notified with fork
-  	 * events, we should send it one now for every process in the
-  	 * system */
-- 	if (ss->fork) {
-- 		struct task_struct *g, *p;
-+	if (ss->fork) {
-+		struct task_struct *g, *p;
- 
-- 		read_lock(&tasklist_lock);
-- 		do_each_thread(g, p) {
-- 			ss->fork(ss, p);
-- 		} while_each_thread(g, p);
-- 		read_unlock(&tasklist_lock);
-- 	}
-+		read_lock(&tasklist_lock);
-+		do_each_thread(g, p) {
-+			ss->fork(ss, p);
-+		} while_each_thread(g, p);
-+		read_unlock(&tasklist_lock);
-+	}
- 
- 	need_forkexit_callback |= ss->fork || ss->exit;
- 
-@@ -2247,7 +2479,7 @@ void cgroup_exit(struct task_struct *
- 	tsk->cgroups = &init_css_set;
- 	task_unlock(tsk);
- 	if (cg)
--		put_css_set(cg);
-+		put_css_set_taskexit(cg);
- }
- 
- /**
-@@ -2358,7 +2590,10 @@ int cgroup_clone(struct task_struct *
- 
-  out_release:
- 	mutex_unlock(&inode->i_mutex);
-+
-+	mutex_lock(&cgroup_mutex);
- 	put_css_set(cg);
-+	mutex_unlock(&cgroup_mutex);
- 	deactivate_super(parent->root->sb);
- 	return ret;
- }
-@@ -2388,3 +2623,111 @@ int cgroup_is_descendant(const struct
- 	ret = (cont == target);
- 	return ret;
- }
-+
-+static void check_for_release(struct cgroup *cont)
-+{
-+	/* All of these checks rely on RCU to keep the cgroup
-+	 * structure alive */
-+	if (cgroup_is_releasable(cont) && !atomic_read(&cont->count)
-+	    && list_empty(&cont->children) && !cgroup_has_css_refs(cont)) {
-+		/* Control Group is currently removeable. If it's not
-+		 * already queued for a userspace notification, queue
-+		 * it now */
-+		int need_schedule_work = 0;
-+		spin_lock(&release_list_lock);
-+		if (!cgroup_is_removed(cont) &&
-+		    list_empty(&cont->release_list)) {
-+			list_add(&cont->release_list, &release_list);
-+			need_schedule_work = 1;
-+		}
-+		spin_unlock(&release_list_lock);
-+		if (need_schedule_work)
-+			schedule_work(&release_agent_work);
-+	}
-+}
-+
-+void __css_put(struct cgroup_subsys_state *css)
-+{
-+	struct cgroup *cont = css->cgroup;
-+	rcu_read_lock();
-+	if (atomic_dec_and_test(&css->refcnt) && notify_on_release(cont)) {
-+		set_bit(CONT_RELEASABLE, &cont->flags);
-+		check_for_release(cont);
-+	}
-+	rcu_read_unlock();
-+}
-+
 +/*
-+ * Notify userspace when a cgroup is released, by running the
-+ * configured release agent with the name of the cgroup (path
-+ * relative to the root of cgroup file system) as the argument.
-+ *
-+ * Most likely, this user command will try to rmdir this cgroup.
-+ *
-+ * This races with the possibility that some other task will be
-+ * attached to this cgroup before it is removed, or that some other
-+ * user task will 'mkdir' a child cgroup of this cgroup.  That's ok.
-+ * The presumed 'rmdir' will fail quietly if this cgroup is no longer
-+ * unused, and this cgroup will be reprieved from its death sentence,
-+ * to continue to serve a useful existence.  Next time it's released,
-+ * we will get notified again, if it still has 'notify_on_release' set.
-+ *
-+ * The final arg to call_usermodehelper() is UMH_WAIT_EXEC, which
-+ * means only wait until the task is successfully execve()'d.  The
-+ * separate release agent task is forked by call_usermodehelper(),
-+ * then control in this thread returns here, without waiting for the
-+ * release agent task.  We don't bother to wait because the caller of
-+ * this routine has no use for the exit status of the release agent
-+ * task, so no sense holding our caller up for that.
-+ *
++ * for the common functions, 'private' gives the type of file
 + */
++static struct cftype cft_tasks = {
++	.name = "tasks",
++	.open = cgroup_tasks_open,
++	.read = cgroup_tasks_read,
++	.write = cgroup_common_file_write,
++	.release = cgroup_tasks_release,
++	.private = FILE_TASKLIST,
++};
 +
-+static void cgroup_release_agent(struct work_struct *work)
-+{
-+	BUG_ON(work != &release_agent_work);
-+	mutex_lock(&cgroup_mutex);
-+	spin_lock(&release_list_lock);
-+	while (!list_empty(&release_list)) {
-+		char *argv[3], *envp[3];
-+		int i;
-+		char *pathbuf;
-+		struct cgroup *cont = list_entry(release_list.next,
-+						    struct cgroup,
-+						    release_list);
-+		list_del_init(&cont->release_list);
-+		spin_unlock(&release_list_lock);
-+		pathbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+		if (!pathbuf) {
-+			spin_lock(&release_list_lock);
-+			continue;
-+		}
+ static int cgroup_populate_dir(struct cgroup *cont)
+ {
+ 	int err;
+@@ -932,6 +1285,10 @@ static int cgroup_populate_dir(struct
+ 	/* First clear out any existing files */
+ 	cgroup_clear_directory(cont->dentry);
+ 
++	err = cgroup_add_file(cont, NULL, &cft_tasks);
++	if (err < 0)
++		return err;
 +
-+		if (cgroup_path(cont, pathbuf, PAGE_SIZE) < 0) {
-+			kfree(pathbuf);
-+			spin_lock(&release_list_lock);
-+			continue;
-+		}
-+
-+		i = 0;
-+		argv[i++] = cont->root->release_agent_path;
-+		argv[i++] = (char *)pathbuf;
-+		argv[i] = NULL;
-+
-+		i = 0;
-+		/* minimal command environment */
-+		envp[i++] = "HOME=/";
-+		envp[i++] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
-+		envp[i] = NULL;
-+
-+		/* Drop the lock while we invoke the usermode helper,
-+		 * since the exec could involve hitting disk and hence
-+		 * be a slow process */
-+		mutex_unlock(&cgroup_mutex);
-+		call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
-+		kfree(pathbuf);
-+		mutex_lock(&cgroup_mutex);
-+		spin_lock(&release_list_lock);
-+	}
-+	spin_unlock(&release_list_lock);
-+	mutex_unlock(&cgroup_mutex);
-+}
+ 	for_each_subsys(cont->root, ss) {
+ 		if (ss->populate && (err = ss->populate(ss, cont)) < 0)
+ 			return err;
 _
 
 --
