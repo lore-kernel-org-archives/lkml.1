@@ -1,195 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbXIQSrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbXIQSrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759267AbXIQSrf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 14:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbXIQSoc
+	id S1759301AbXIQSrv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 14:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759067AbXIQSqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 14:44:32 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:50400 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758727AbXIQSoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 14:44:30 -0400
-Message-Id: <20070917184423.703322145@polymtl.ca>
-References: <20070917184335.904338974@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Mon, 17 Sep 2007 14:43:37 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 2/2] Sort module list by pointer address to get coherent sleepable seq_file iterators
-Content-Disposition: inline; filename=module.c-sort-module-list.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 17 Sep 2007 18:44:24 +0000
+	Mon, 17 Sep 2007 14:46:01 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47639 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759055AbXIQSp7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 14:45:59 -0400
+Message-ID: <46EEC978.9080303@sgi.com>
+Date: Mon, 17 Sep 2007 11:37:44 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Ethan Solomita <solo@google.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 1/6] cpuset write dirty map
+References: <469D3342.3080405@google.com> <46E741B1.4030100@google.com>	 <46E742A2.9040006@google.com>	 <20070914161536.3ec5c533.akpm@linux-foundation.org>	 <a781481a0709141647q3d019423s388c64bf6bed871a@mail.gmail.com>	 <20070914170733.dbe89493.akpm@linux-foundation.org> <a781481a0709141716n569d54eeqbe51746d3a5110ca@mail.gmail.com>
+In-Reply-To: <a781481a0709141716n569d54eeqbe51746d3a5110ca@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A race that appears both in /proc/modules and in kallsyms: if, between the
-seq file reads, the process is put to sleep and at this moment a module is
-or removed from the module list, the listing will skip an amount of
-modules/symbols corresponding to the amount of elements present in the unloaded
-module, but at the current position in the list if the iteration is located
-after the removed module.
+Satyam Sharma wrote:
+ > True, the other option could be to put the /pointer/ in there unconditionally,
+> but that would slow down the MAX_NUMNODES <= BITS_PER_LONG case,
+> which (after grepping through defconfigs) appears to be the common case on
+> all archs other than ia64. So I think your idea of making that conditional
+> centralized in the code with an accompanying comment is the way to go here ...
 
-The cleanest way I found to deal with this problem is to sort the module list.
-We can then keep the old struct module * as the old iterator, knowing the it may
-be removed between the seq file reads, but we only use it as "get next". If it
-is not present in the module list, the next pointer will be used.
+It won't be long before arch's other than ia64 will have
+MAX_NUMNODES > BITS_PER_LONG. While it won't be the norm,
+we should account for it now.
 
-By doing this, removing a given module will now only fuzz the output related to
-this specific module, not any random module anymore. Since modprobe uses
-/proc/modules, it might be important to make sure multiple concurrent running
-modprobes won't interfere with each other.
-
-
-Small test program for this:
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#define BUFSIZE 1024
-
-int main()
-{
-	int fd = open("/proc/modules", O_RDONLY);
-	char buf[BUFSIZE];
-	ssize_t size;
-
-	do {
-		size = read(fd, buf, 1);
-		printf("%c", buf[0]);
-		usleep(100000);
-	} while(size > 0);
-
-	close(fd);
-	return 0;
-}
-
-
-Actual test (kernel 2.6.23-rc3):
-
-dijkstra:~# lsmod
-Module                  Size  Used by
-pl2303                 18564  0
-usbserial              29032  1 pl2303
-ppdev                   7844  0
-sky2                   37476  0
-skge                   36368  0
-rtc                    10104  0
-snd_hda_intel         265628  0
-
-  (here, while we are printing the 2nd line, I rmmod pl2303)
-compudj@dijkstra:~/test$ ./module
-pl2303 18564 0 - Live 0xf886e000
-usbserial 29032 1 pl2303, Live 0xf8865000
-sky2 37476 0 - Live 0xf884f000
-skge 36368 0 - Live 0xf8838000
-rtc 10104 0 - Live 0xf8825000
-
-We see the the 2nd line is garbage.
-
-Now, with my patch applied:
-  (here, while we are printing the rtc module, I rmmod rtc)
-nd_hda_intel 268708 0 - Live 0xf8820000
-ltt_control 2372 0 - Live 0xf8866000
-rtc 10392 0 - Live 0xf886d000
-skge 36768 0 - Live 0xf8871000
-ltt_statedump 8516 0 - Live 0xf887b000
-
-We see that since the rtc line was already in the buffer, it has been
-printed completely.
-
-
-  (here, while we are printing the skge module, I rmmod rtc)
-snd_hda_intel 268708 0 - Live 0xf8820000
-ltt_control 2372 0 - Live 0xf8866000
-rtc 10392 0 - Live 0xf886d000
-skge 36768 0 - Live 0xf8871000
-ltt_statedump 8516 0 - Live 0xf887b000
-sky2 38420 0 - Live 0xf88cd000
-
-We see that the iteration continued at the same position even though the
-rtc module, located in earlier addresses, was removed.
-
-Changelog:
-
-When reading the data by small chunks (i.e. byte by byte), the index (ppos) is
-incremented by seq_read() directly and no "next" callback is called when going
-to the next module.
-
-Therefore, use ppos instead of m->private to deal with the fact that this index
-is incremented directly to pass to the next module in seq_read() after the
-buffer has been emptied.
-
-Before fix, it prints the first module indefinitely. The patch fixes
-this.
-
-Changelog:
-- Remove module_mutex usage: depend on functions implemented in module.c for
-  that.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- kernel/module.c |   23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
-
-Index: linux-2.6-lttng/kernel/module.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-09-13 17:24:46.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2007-09-13 17:25:26.000000000 -0400
-@@ -64,7 +64,8 @@ extern int module_sysfs_initialized;
- #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
- 
- /* List of modules, protected by module_mutex or preempt_disable
-- * (add/delete uses stop_machine). */
-+ * (add/delete uses stop_machine). Sorted by ascending list node address.
-+ */
- static DEFINE_MUTEX(module_mutex);
- static LIST_HEAD(modules);
- static DECLARE_MUTEX(notify_mutex);
-@@ -2130,10 +2131,24 @@ nomodsectinfo:
- /*
-  * link the module with the whole machine is stopped with interrupts off
-  * - this defends against kallsyms not taking locks
-+ * We sort the modules by struct module pointer address to permit correct
-+ * iteration over modules of, at least, kallsyms for preemptible operations,
-+ * such as read(). Sorting by struct module pointer address is equivalent to
-+ * sort by list node address.
-  */
- static int __link_module(void *_mod)
- {
--	struct module *mod = _mod;
-+	struct module *mod = _mod, *iter;
-+
-+	list_for_each_entry_reverse(iter, &modules, list) {
-+		BUG_ON(iter == mod);	/* Should never be in the list twice */
-+		if (iter < mod) {
-+			/* We belong to the location right after iter. */
-+			list_add(&mod->list, &iter->list);
-+			return 0;
-+		}
-+	}
-+	/* We should be added at the head of the list */
- 	list_add(&mod->list, &modules);
- 	return 0;
- }
-@@ -2398,12 +2413,12 @@ unsigned long module_kallsyms_lookup_nam
- static void *m_start(struct seq_file *m, loff_t *pos)
- {
- 	mutex_lock(&module_mutex);
--	return seq_list_start(&modules, *pos);
-+	return seq_sorted_list_start(&modules, pos);
- }
- 
- static void *m_next(struct seq_file *m, void *p, loff_t *pos)
- {
--	return seq_list_next(p, &modules, pos);
-+	return seq_sorted_list_next(p, &modules, pos);
- }
- 
- static void m_stop(struct seq_file *m, void *p)
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks,
+Mike
