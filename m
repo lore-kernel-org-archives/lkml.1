@@ -1,242 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbXIQQ7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbXIQRBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbXIQQ7e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 12:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbXIQQ7Y
+	id S1754339AbXIQRBZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 13:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbXIQRBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 12:59:24 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48675 "HELO mail.gmx.net"
+	Mon, 17 Sep 2007 13:01:17 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45056 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751726AbXIQQ7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 12:59:23 -0400
+	id S1751918AbXIQRBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 13:01:16 -0400
 X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX18SIk5DHGgStrEWOw2jPuPokaKq+ONelMG8sWmbwJ
-	e8HTME+EJWEI0b
-Message-ID: <46EEB1E5.3000306@gmx.net>
-Date: Mon, 17 Sep 2007 18:57:09 +0200
+X-Provags-ID: V01U2FsdGVkX1+SOcVLAbSSbTyghiujKfVDDx4ECtm8NQJJ8TcXib
+	kwFHHSHszYLUBR
+Message-ID: <46EEB252.30003@gmx.net>
+Date: Mon, 17 Sep 2007 18:58:58 +0200
 From: Michael Kerrisk <mtk-manpages@gmx.net>
 User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: man-pages-2.65 is released
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: davidel@xmailserver.org, vda.linux@googlemail.com, rdunlap@xenotime.net,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, drepper@redhat.com, stable@kernel.org,
+       hch@lst.de, jengelh@computergmbh.de, corbet@lwn.net, stable@kernel.org
+Subject: [PATCH] remove timerd() syscall number
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+Hi Andrew
 
-I recently released man-pages-2.65.
+I hope I've done this right...  This patch, against 2.6.23-rc6,
+removes the timerfd() syscall (which in any case had a bug
+on its 2.6.22 release) from all architectures, so that we
+can have some breathing space to think about the API design.
+All of the existing timerfd() code is left intact.
 
-This release is now available for download at:
-
-    http://www.kernel.org/pub/linux/docs/manpages
-    or ftp://ftp.kernel.org/pub/linux/docs/manpages
-
-Changes in this release that may be of interest to readers of this list are
-noted below.
+Please apply, so that 2.6.23 does not expose timerfd().
 
 Cheers,
 
 Michael
-(man-pages maintenance is supported by Google, as a Google engineer 20%
-project.)
 
-==================== Changes in man-pages-2.65 ====================
+diff -pur linux-2.6.23-rc6/include/asm/unistd.h linux-2.6.23-rc6-new/include/asm/unistd.h
+--- linux-2.6.23-rc6/include/asm/unistd.h	2007-09-13 18:43:41.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm/unistd.h	2007-09-14 10:51:38.000000000 +0200
+@@ -327,7 +327,8 @@
+ #define __NR_epoll_pwait	319
+ #define __NR_utimensat		320
+ #define __NR_signalfd		321
+-#define __NR_timerfd		322
++/* Let's pause a moment before we decide on the final timerfd API */
++/* #define __NR_timerfd		322 */
+ #define __NR_eventfd		323
+ #define __NR_fallocate		324
+
+diff -pur linux-2.6.23-rc6/include/asm-alpha/unistd.h linux-2.6.23-rc6-new/include/asm-alpha/unistd.h
+--- linux-2.6.23-rc6/include/asm-alpha/unistd.h	2007-07-28 23:59:39.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-alpha/unistd.h	2007-09-13 22:12:18.000000000 +0200
+@@ -431,7 +431,7 @@
+ #define __NR_epoll_pwait		474
+ #define __NR_utimensat			475
+ #define __NR_signalfd			476
+-#define __NR_timerfd			477
++/* #define __NR_timerfd			477 */
+ #define __NR_eventfd			478
+
+ #ifdef __KERNEL__
+diff -pur linux-2.6.23-rc6/include/asm-arm/unistd.h linux-2.6.23-rc6-new/include/asm-arm/unistd.h
+--- linux-2.6.23-rc6/include/asm-arm/unistd.h	2007-09-13 18:43:40.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-arm/unistd.h	2007-09-13 22:12:22.000000000 +0200
+@@ -376,7 +376,7 @@
+ #define __NR_kexec_load			(__NR_SYSCALL_BASE+347)
+ #define __NR_utimensat			(__NR_SYSCALL_BASE+348)
+ #define __NR_signalfd			(__NR_SYSCALL_BASE+349)
+-#define __NR_timerfd			(__NR_SYSCALL_BASE+350)
++/* #define __NR_timerfd			(__NR_SYSCALL_BASE+350) */
+ #define __NR_eventfd			(__NR_SYSCALL_BASE+351)
+
+ /*
+diff -pur linux-2.6.23-rc6/include/asm-avr32/unistd.h linux-2.6.23-rc6-new/include/asm-avr32/unistd.h
+--- linux-2.6.23-rc6/include/asm-avr32/unistd.h	2007-07-28 23:59:46.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-avr32/unistd.h	2007-09-13 22:12:29.000000000 +0200
+@@ -297,7 +297,7 @@
+
+ #define __NR_utimensat		278
+ #define __NR_signalfd		279
+-#define __NR_timerfd		280
++/* #define __NR_timerfd		280 */
+ #define __NR_eventfd		281
+
+ #ifdef __KERNEL__
+diff -pur linux-2.6.23-rc6/include/asm-frv/unistd.h linux-2.6.23-rc6-new/include/asm-frv/unistd.h
+--- linux-2.6.23-rc6/include/asm-frv/unistd.h	2007-09-13 18:43:41.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-frv/unistd.h	2007-09-13 22:12:53.000000000 +0200
+@@ -328,7 +328,7 @@
+ #define __NR_epoll_pwait	319
+ #define __NR_utimensat		320
+ #define __NR_signalfd		321
+-#define __NR_timerfd		322
++/* #define __NR_timerfd		322 */
+ #define __NR_eventfd		323
+ #define __NR_fallocate		324
+
+diff -pur linux-2.6.23-rc6/include/asm-i386/unistd.h linux-2.6.23-rc6-new/include/asm-i386/unistd.h
+--- linux-2.6.23-rc6/include/asm-i386/unistd.h	2007-09-13 18:43:41.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-i386/unistd.h	2007-09-14 10:51:38.000000000 +0200
+@@ -327,7 +327,8 @@
+ #define __NR_epoll_pwait	319
+ #define __NR_utimensat		320
+ #define __NR_signalfd		321
+-#define __NR_timerfd		322
++/* Let's pause a moment before we decide on the final timerfd API */
++/* #define __NR_timerfd		322 */
+ #define __NR_eventfd		323
+ #define __NR_fallocate		324
+
+diff -pur linux-2.6.23-rc6/include/asm-ia64/unistd.h linux-2.6.23-rc6-new/include/asm-ia64/unistd.h
+--- linux-2.6.23-rc6/include/asm-ia64/unistd.h	2007-09-13 18:43:41.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-ia64/unistd.h	2007-09-13 22:13:03.000000000 +0200
+@@ -297,7 +297,7 @@
+ #define __NR_epoll_pwait		1305
+ #define __NR_utimensat			1306
+ #define __NR_signalfd			1307
+-#define __NR_timerfd			1308
++/* #define __NR_timerfd			1308 */
+ #define __NR_eventfd			1309
+
+ #ifdef __KERNEL__
+diff -pur linux-2.6.23-rc6/include/asm-mips/unistd.h linux-2.6.23-rc6-new/include/asm-mips/unistd.h
+--- linux-2.6.23-rc6/include/asm-mips/unistd.h	2007-09-13 18:43:42.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-mips/unistd.h	2007-09-13 22:13:16.000000000 +0200
+@@ -338,7 +338,7 @@
+ #define __NR_ioprio_get			(__NR_Linux + 315)
+ #define __NR_utimensat			(__NR_Linux + 316)
+ #define __NR_signalfd			(__NR_Linux + 317)
+-#define __NR_timerfd			(__NR_Linux + 318)
++/* #define __NR_timerfd			(__NR_Linux + 318) */
+ #define __NR_eventfd			(__NR_Linux + 319)
+ #define __NR_fallocate			(__NR_Linux + 320)
+
+@@ -635,7 +635,7 @@
+ #define __NR_ioprio_get			(__NR_Linux + 274)
+ #define __NR_utimensat			(__NR_Linux + 275)
+ #define __NR_signalfd			(__NR_Linux + 276)
+-#define __NR_timerfd			(__NR_Linux + 277)
++/* #define __NR_timerfd			(__NR_Linux + 277) */
+ #define __NR_eventfd			(__NR_Linux + 278)
+ #define __NR_fallocate			(__NR_Linux + 279)
+
+@@ -936,7 +936,7 @@
+ #define __NR_ioprio_get			(__NR_Linux + 278)
+ #define __NR_utimensat			(__NR_Linux + 279)
+ #define __NR_signalfd			(__NR_Linux + 280)
+-#define __NR_timerfd			(__NR_Linux + 281)
++/* #define __NR_timerfd			(__NR_Linux + 281) */
+ #define __NR_eventfd			(__NR_Linux + 282)
+ #define __NR_fallocate			(__NR_Linux + 283)
+
+diff -pur linux-2.6.23-rc6/include/asm-parisc/unistd.h linux-2.6.23-rc6-new/include/asm-parisc/unistd.h
+--- linux-2.6.23-rc6/include/asm-parisc/unistd.h	2007-07-28 23:59:57.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-parisc/unistd.h	2007-09-13 22:13:23.000000000 +0200
+@@ -795,7 +795,7 @@
+ #define __NR_kexec_load		(__NR_Linux + 300)
+ #define __NR_utimensat		(__NR_Linux + 301)
+ #define __NR_signalfd		(__NR_Linux + 302)
+-#define __NR_timerfd		(__NR_Linux + 303)
++/* #define __NR_timerfd		(__NR_Linux + 303) */
+ #define __NR_eventfd		(__NR_Linux + 304)
+
+ #define __NR_Linux_syscalls	(__NR_eventfd + 1)
+diff -pur linux-2.6.23-rc6/include/asm-powerpc/unistd.h linux-2.6.23-rc6-new/include/asm-powerpc/unistd.h
+--- linux-2.6.23-rc6/include/asm-powerpc/unistd.h	2007-09-13 18:43:43.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-powerpc/unistd.h	2007-09-13 22:13:27.000000000 +0200
+@@ -328,7 +328,7 @@
+ #define __NR_epoll_pwait	303
+ #define __NR_utimensat		304
+ #define __NR_signalfd		305
+-#define __NR_timerfd		306
++/* #define __NR_timerfd		306 */
+ #define __NR_eventfd		307
+ #define __NR_sync_file_range2	308
+ #define __NR_fallocate		309
+diff -pur linux-2.6.23-rc6/include/asm-s390/unistd.h linux-2.6.23-rc6-new/include/asm-s390/unistd.h
+--- linux-2.6.23-rc6/include/asm-s390/unistd.h	2007-09-13 18:43:43.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-s390/unistd.h	2007-09-13 22:13:30.000000000 +0200
+@@ -254,7 +254,7 @@
+ #define __NR_fallocate		314
+ #define __NR_utimensat		315
+ #define __NR_signalfd		316
+-#define __NR_timerfd		317
++/* #define __NR_timerfd		317 */
+ #define __NR_eventfd		318
+ #define NR_syscalls 319
+
+diff -pur linux-2.6.23-rc6/include/asm-sh/unistd.h linux-2.6.23-rc6-new/include/asm-sh/unistd.h
+--- linux-2.6.23-rc6/include/asm-sh/unistd.h	2007-09-13 18:43:43.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-sh/unistd.h	2007-09-13 22:13:34.000000000 +0200
+@@ -330,7 +330,7 @@
+ #define __NR_epoll_pwait	319
+ #define __NR_utimensat		320
+ #define __NR_signalfd		321
+-#define __NR_timerfd		322
++/* #define __NR_timerfd		322 */
+ #define __NR_eventfd		323
+ #define __NR_fallocate		324
+
+diff -pur linux-2.6.23-rc6/include/asm-sh64/unistd.h linux-2.6.23-rc6-new/include/asm-sh64/unistd.h
+--- linux-2.6.23-rc6/include/asm-sh64/unistd.h	2007-09-13 18:43:43.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-sh64/unistd.h	2007-09-13 22:13:43.000000000 +0200
+@@ -372,7 +372,7 @@
+ #define __NR_epoll_pwait	347
+ #define __NR_utimensat		348
+ #define __NR_signalfd		349
+-#define __NR_timerfd		350
++/* #define __NR_timerfd		350 */
+ #define __NR_eventfd		351
+ #define __NR_fallocate		352
+
+diff -pur linux-2.6.23-rc6/include/asm-sparc/unistd.h linux-2.6.23-rc6-new/include/asm-sparc/unistd.h
+--- linux-2.6.23-rc6/include/asm-sparc/unistd.h	2007-09-13 18:43:43.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-sparc/unistd.h	2007-09-13 22:13:48.000000000 +0200
+@@ -327,7 +327,7 @@
+ #define __NR_epoll_pwait	309
+ #define __NR_utimensat		310
+ #define __NR_signalfd		311
+-#define __NR_timerfd		312
++/* #define __NR_timerfd		312 */
+ #define __NR_eventfd		313
+ #define __NR_fallocate		314
+
+diff -pur linux-2.6.23-rc6/include/asm-sparc64/unistd.h linux-2.6.23-rc6-new/include/asm-sparc64/unistd.h
+--- linux-2.6.23-rc6/include/asm-sparc64/unistd.h	2007-09-13 18:43:43.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-sparc64/unistd.h	2007-09-13 22:13:59.000000000 +0200
+@@ -329,7 +329,7 @@
+ #define __NR_epoll_pwait	309
+ #define __NR_utimensat		310
+ #define __NR_signalfd		311
+-#define __NR_timerfd		312
++/* #define __NR_timerfd		312 */
+ #define __NR_eventfd		313
+ #define __NR_fallocate		314
+
+diff -pur linux-2.6.23-rc6/include/asm-x86_64/unistd.h linux-2.6.23-rc6-new/include/asm-x86_64/unistd.h
+--- linux-2.6.23-rc6/include/asm-x86_64/unistd.h	2007-09-13 18:43:44.000000000 +0200
++++ linux-2.6.23-rc6-new/include/asm-x86_64/unistd.h	2007-09-13 22:14:09.000000000 +0200
+@@ -626,8 +626,8 @@ __SYSCALL(__NR_utimensat, sys_utimensat)
+ __SYSCALL(__NR_epoll_pwait, sys_epoll_pwait)
+ #define __NR_signalfd		282
+ __SYSCALL(__NR_signalfd, sys_signalfd)
+-#define __NR_timerfd		283
+-__SYSCALL(__NR_timerfd, sys_timerfd)
++/* #define __NR_timerfd		283
++__SYSCALL(__NR_timerfd, sys_timerfd) */
+ #define __NR_eventfd		284
+ __SYSCALL(__NR_eventfd, sys_eventfd)
+ #define __NR_fallocate		285
 
 
-New pages
----------
-
-timeradd.3
-    mtk
-        Description of timeradd(), timersub(), timerclear(),
-        timerisset(), timercmp() macros for operating on
-        struct timeval.
-
-
-Changes to individual pages
----------------------------
-
-get_mempolicy.2
-    Lee Schermerhorn
-        changed the "policy" parameter to "mode" through out the
-        descriptions in an attempt to promote the concept that the memory
-        policy is a tuple consisting of a mode and optional set of nodes.
-
-        added requirement to link '-lnuma' to synopsis
-
-        rewrite portions of description for clarification.
-
-        added all errors currently returned by sys call.
-
-        removed cautionary note that use of MPOL_F_NODE|MPOL_F_ADDR
-        is not supported.  This is no longer true.
-
-        added mmap(2) to See Also list.
-
-getitimer.2
-    mtk
-       Since kernel 2.6.22, Linux setitimer() now conforms to POSIX.1,
-       giving an EINVAL error for a non-canonical tv_usec value.
-
-mbind.2
-    Lee Schermerhorn
-
-        changed the "policy" parameter to "mode" throughout the
-        descriptions in an attempt to promote the concept that the memory
-        policy is a tuple consisting of a mode and optional set of nodes.
-
-        rewrite portions of description for clarification.
-
-            clarify interaction of policy with mmap()'d files and shared
-            memory regions, including SHM_HUGE regions.
-
-            defined how "empty set of nodes" specified and what this
-            means for MPOL_PREFERRED.
-
-            mention what happens if local/target node contains no
-            free memory.
-
-            clarify semantics of multiple nodes to BIND policy.
-            Note:  subject to change.  We'll fix the man pages when/if
-                   this happens.
-
-        added all errors currently returned by sys call.
-
-        added mmap(2), shmget(2), shmat(2) to See Also list.
-
-mmap.2
-mprotect.2
-    François Diakhate
-        Add text noting that PROT_WRITE may (and on x86 does)
-        imply PROT_READ.
-        See Debian bug 441387.
-
-sched_setscheduler.2
-    Carsten Emde
-        Add text on real-time features of mainline Linux kernel.
-
-set_mempolicy.2
-    Lee Schermerhorn
-
-        changed the "policy" parameter to "mode" throughout the
-        descriptions in an attempt to promote the concept that the memory
-        policy is a tuple consisting of a mode and optional set of nodes.
-
-        added requirement to link '-lnuma' to synopsis
-
-        rewrite portions of description for clarification.
-
-            clarify interaction of policy with mmap()'d files.
-
-            defined how "empty set of nodes" specified and what this
-            means for MPOL_PREFERRED.
-
-            mention what happens if local/target node contains no
-            free memory.
-
-            clarify semantics of multiple nodes to BIND policy.
-            Note:  subject to change.  We'll fix the man pages when/if
-                   this happens.
-
-        added all errors currently returned by sys call.
-
-        added mmap(2) to See Also list.
-
-stat.2
-    mtk
-        Improve text describing underlying system calls.
-
-uname.2
-    mtk
-        Improve text describing underlying system calls.
-
-utime.2
-    Vincent Lefevre / mtk
-        Clarify utimes() behaviour when 'times' is NULL.
-
-gethostbyaddr.3
-    Mats Wichmann
-        Add documentation for gethostbyaddr_r().
-        Plus a few other small fixes.
-
-longjmp.3
-    Paul Brook / mtk
-        After a call to longjmp(), the values of modified, non-volatile
-        variables in the function that called setjmp() are unspecified.
-
-opendir.3
-    Ulrich Drepper; some edits and additional text by mtk
-        Document fdopendir().
-
-readdir.3
-    mtk, after a note by Andi Kleen
-        Document DT_* constants for d_type.
-    Ulrich Drepper / mtk
-        Rework discussion of non-standard structure fields.
-
-proc.5
-    mtk
-        Improve description of num_threads field under /proc/PID/stat.
-    Maxime Vaudequin
-        Fix path error (s%proc/sys%proc/sys/kernel%) in mentions of
-        /proc/sys/ostype, /proc/sys/osrelease and proc/sys/version.
-    Maxime Vaudequin
-        I noticed things to correct and to clarify in subsection
-        "/proc/filesystems" of proc.5:
-        - clarify filesystems listing: not only FS compiled
-          into the kernel, also FS kernel modules currently loaded
-        - add a reference to fs(5)
-        - add an explanation for FS marked with "nodev"
-        - s/mount(1)/mount(8)/, also corrected in section "SEE ALSO"
-        - clarify usage by mount: the current wording may lead to
-          think /proc/filesystems is always used by mount when no FS
-          is specified. So, usage of "may" which IMHO is more
-          appropriate + additional explanations
-          In mount(8) we can see:
-
-               If no -t option is given, or if the auto type is
-               specified, mount will try to guess the desired type.
-               If mount was compiled with the blkid library, the
-               guessing is done by this library. Otherwise, mount
-               guesses itself by probing the superblock; if that
-               does not turn up anything that looks familiar,
-               mount will try to read the file /etc/filesystems,
-               or, if that does not exist, /proc/filesystems.
-               All of the filesystem types listed there will be
-               tried, except for those that are labeled "nodev"
-               (e.g., devpts, proc and nfs). If /etc/filesystems
-               ends in a line with a single * only, mount will
-               read /proc/filesystems afterwards.
-    Samuel Thibault
-        Since linux 2.6.11, /proc/stat has an eighth value for cpu
-        lines: stolen time, which is the time spent in other operating
-        systems when running in a virtualized environment.
-
-credentials.7
-    mtk
-        Add words to note that file system ID is Linux specific.
-
-pthreads.7
-    mtk
-        Update text about modern threading implementations
-        (NPTL vs LinuxThreads).
-
-socket.7
-    mtk, after a note by Andi Kleen
-        Clarify that SO_SNDTIMEO and SO_RCVTIMEO only have effect for
-        socket I/O calls; not for multiplexing system calls like
-        select() and poll().
-
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
 
