@@ -1,40 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbXIQQJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbXIQQN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbXIQQJW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 12:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXIQQJL
+	id S1755583AbXIQQN1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 12:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXIQQNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 12:09:11 -0400
-Received: from mga10.intel.com ([192.55.52.92]:20307 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752399AbXIQQJK (ORCPT
+	Mon, 17 Sep 2007 12:13:20 -0400
+Received: from mga03.intel.com ([143.182.124.21]:58696 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751991AbXIQQNT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 12:09:10 -0400
+	Mon, 17 Sep 2007 12:13:19 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.20,265,1186383600"; 
-   d="scan'208";a="141456492"
-Message-ID: <46EEA6A2.2080001@ichips.intel.com>
-Date: Mon, 17 Sep 2007 09:09:06 -0700
-From: Sean Hefty <mshefty@ichips.intel.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+   d="scan'208";a="280793715"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Steve Wise <swise@opengridcomputing.com>
-CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       rdreier@cisco.com, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ofa-general] Re: [PATCH v2] iw_cxgb3: Support "iwarp-only" interfaces
- to avoid 4-tuple conflicts.
-References: <20070913191617.30937.95960.stgit@dell3.ogc.int>	<20070914130941.GG18517@2ka.mipt.ru> <46EC00BE.3020801@opengridcomputing.com>
-In-Reply-To: <46EC00BE.3020801@opengridcomputing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Remove an unused variable from the Intel I/OAT DMA engine driver
+Date: Mon, 17 Sep 2007 09:13:05 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C030BB505@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <200709162331.50784.jesper.juhl@gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Remove an unused variable from the Intel I/OAT DMA engine driver
+thread-index: Acf4qXznhpdYB6qqRo67Ah8c6eriXwAnAxHw
+References: <200709162331.50784.jesper.juhl@gmail.com>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 17 Sep 2007 16:13:17.0943 (UTC) FILETIME=[A8903070:01C7F945]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> +    addr = kmalloc(sizeof *addr, GFP_KERNEL);
->>
->> As a small nitpick: this wants to be sizeof(struct in_ifaddr)
+ 
 
-See chapter 14 of CodingStyle document.  kmalloc(sizeof *addr... is correct.
+>-----Original Message-----
+>From: Jesper Juhl [mailto:jesper.juhl@gmail.com] 
+>Sent: Sunday, September 16, 2007 2:32 PM
+>To: linux-kernel@vger.kernel.org
+>Cc: Nelson, Shannon; Leech, Christopher; Jesper Juhl
+>Subject: [PATCH] Remove an unused variable from the Intel 
+>I/OAT DMA engine driver
+>
+>
+>The 'u16 chanctrl' variable in 
+>drivers/dma/ioatdma.c::ioat_dma_free_chan_resources() is completely 
+>unused and gcc quite rightfully warns about it:
+>
+>  drivers/dma/ioatdma.c:247: warning: unused variable 'chanctrl'
+>
+>This patch removes the unused variable and silences the warning.
+>
+>
+>Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+>---
+>
+> ioatdma.c |    1 -
+> 1 file changed, 1 deletion(-)
+>
+>--- linux-2.6/drivers/dma/ioatdma.c~	2007-09-16 
+>23:24:20.000000000 +0200
+>+++ linux-2.6/drivers/dma/ioatdma.c	2007-09-16 
+>23:24:20.000000000 +0200
+>@@ -244,7 +244,6 @@ static void ioat_dma_free_chan_resources
+> 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+> 	struct ioat_device *ioat_device = to_ioat_device(chan->device);
+> 	struct ioat_desc_sw *desc, *_desc;
+>-	u16 chanctrl;
+> 	int in_use_descs = 0;
+> 
+> 	ioat_dma_memcpy_cleanup(ioat_chan);
+>
 
-- Sean
+Yep, thanks.  That's actually used in an internal version of the driver
+and got missed in the stipping.  I'll be sure it is properly taken care
+of in the future.
+
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
