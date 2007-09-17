@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbXIQWA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760563AbXIQWCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932263AbXIQWA6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 18:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbXIQWAr
+	id S1760563AbXIQWCz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 18:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbXIQWCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 18:00:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33600 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756943AbXIQWAq (ORCPT
+	Mon, 17 Sep 2007 18:02:47 -0400
+Received: from mail.tmr.com ([64.65.253.246]:50911 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755443AbXIQWCq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 18:00:46 -0400
-Date: Mon, 17 Sep 2007 15:00:42 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Mel Gorman <mel@skynet.ie>,
-       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joern Engel <joern@logfs.org>, andrea@suse.de,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <200709161903.37295.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0709171458541.29993@schroedinger.engr.sgi.com>
-References: <20070911060349.993975297@sgi.com> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de>
- <20070916181313.GA16406@skynet.ie> <200709161903.37295.nickpiggin@yahoo.com.au>
+	Mon, 17 Sep 2007 18:02:46 -0400
+Message-ID: <46EEFA34.9000508@tmr.com>
+Date: Mon, 17 Sep 2007 18:05:40 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: =?ISO-8859-1?Q?D=E2niel_Fraga?= <fragabr@gmail.com>
+CC: linux-dvb@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Userspace tuner
+References: <46C1BCC5.9090709@amd.com> <1189626560.5160.57.camel@gaivota>	<d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>	<d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com> <rjsmr4-rc8.ln1@tux.abusar.org>
+In-Reply-To: <rjsmr4-rc8.ln1@tux.abusar.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Sep 2007, Nick Piggin wrote:
+Dâniel Fraga wrote:
+> 	Well, I'd like to see Linus' opinion about this, because while
+> programmers keep discussing this, users are waiting forever... so if
+> Markus has a concrete and better solution, why don't use it?
+> 
+> 	And as far as I know, Markus is the programmer who is most
+> interested in this code. I didn't see anybody else in the world doing
+> his work...
+> 
+> 	And I always had a impression that if most of things could be
+> done in user space, than it will be better (for example, devfs -> udev).
+> Why do everything in kernel space? Lets put *less* code in the kernel,
+> not more code. And besides that, code in user space can be changed
+> easily. Code in kernel has to wait a long time for Linus to accept (*if*
+> he accepts).
+> 
+The problem with user space drivers is that it encourages binary only 
+drivers, drivers which work only for a limited set of hardware, and 
+other means to reduce choice for the user. There's a reason why binary 
+modules make the kernel tainted, I have to feel that this is more and 
+worse of same.
 
-> I don't know how it would prevent fragmentation from building up
-> anyway. It's commonly the case that potentially unmovable objects
-> are allowed to fill up all of ram (dentries, inodes, etc).
+Linus will have an opinion, no doubt.
 
-Not in 2.6.23 with ZONE_MOVABLE. Unmovable objects are not allocated from 
-ZONE_MOVABLE and thus the memory that can be allocated for them is 
-limited.
-
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
