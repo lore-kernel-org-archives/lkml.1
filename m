@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbXIQDc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbXIQDhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbXIQDc0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 23:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXIQDcT
+	id S1753623AbXIQDhN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 23:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXIQDhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 23:32:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37431 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751319AbXIQDcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 23:32:18 -0400
-Message-ID: <46EDF539.6010805@pobox.com>
-Date: Sun, 16 Sep 2007 23:32:09 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sun, 16 Sep 2007 23:37:00 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2690 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbXIQDhA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 23:37:00 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <bunk@kernel.org>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Wasting our Freedom
+Date: Sun, 16 Sep 2007 20:37:02 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKCEGBGNAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: "Can E. Acar" <can.acar@pro-g.com.tr>
-CC: Daniel Hazelton <dhazelton@enter.net>, misc@openbsd.org,
-       linux-kernel@vger.kernel.org, Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-References: <46ED7A8F.1020304@pro-g.com.tr> <200709161632.21927.dhazelton@enter.net> <46EDEDB9.1000104@pro-g.com.tr>
-In-Reply-To: <46EDEDB9.1000104@pro-g.com.tr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <20070917015140.GG18232@stusta.de>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 20:37:38 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 20:37:39 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can E. Acar wrote:
-> Furthermore, since it is compatible with the binary HAL from
-> Atheros, the interface is fixed and the same both in Linux and
-> *BSD.
 
-Hardly.  It is software; the interface most definitely can and will change.
+> You did say otherwise.
+> 
+> Your claim was that "You can obtain, *from the GPL*, the right to remove
+> a BSD license notice."
+> 
+> This claim is bullshit.
 
-	Jeff
+No, it's not.
+ 
+> You can get this right from the copyright holder, e.g. when he
+> dual-licenced his code, but you can not get this right from the GPL.
+
+By that argument, the GPL never grants anyone any rights, they always come from the copyright holder. For dual-licensed code, it's the GPL that gives you the right to remove the BSD license notice.
+
+The copyright holder says you may distribute and modify the code under either license. That doesn't let you remove the text of the other license by itself. For example, if both the BSD and the GPL licenses said you could not modify *any* license text, then you still couldn't remove the other license since neither one would give you that right.
+
+However, both the GPL and the BSD license grant the right to modify. Neither requires you to keep any license notices intact except those that refer to that same license.
+
+If you read the GPL carefully, you will see that it requires you to keep intact all notices that refer to *this* license, that is, the GPL. Similary, the BSD license requires you to keep the BSD license notice intact, but not any other licenses.
+
+That is, the original author, by permitting you to obtain the right to modify his work from the GPL, has indirectly granted you the right to remove the BSD license. The GPL grants this right, and the author has permitted you to opt for that license.
+
+DS
 
 
