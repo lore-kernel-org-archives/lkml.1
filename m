@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbXIQUWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbXIQUXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbXIQUWu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 16:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757062AbXIQUWU
+	id S1758325AbXIQUXV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 16:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbXIQUXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 16:22:20 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:15214 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757143AbXIQUWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 16:22:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uChReWdq8bGkJuVDvW9A3FXGmuMO8kZ625Ptrpmm/RgLobkITD/91e3bW1+u7KCeK6iuuUXogTBsLNEaVvXH5Jrqw5yCKN0OKqkNYGxTPUaR+cUlfNfeCrerQSoWS+4lPn371qiHXaIrNFErUrO4NIvOq4wN01QRWvVB9RuVrLo=
-Message-ID: <38b2ab8a0709171322v75c5a597of9d90919f456767c@mail.gmail.com>
-Date: Mon, 17 Sep 2007 22:22:17 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Ulrich Drepper" <drepper@gmail.com>
-Subject: Re: x86_64: vsyscall vs vdso
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <a36005b50709170735p7c98608ftf12398f7080131b9@mail.gmail.com>
+	Mon, 17 Sep 2007 16:23:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51921 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756000AbXIQUXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 16:23:09 -0400
+Date: Mon, 17 Sep 2007 22:22:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: Rob Hussey <robjhussey@gmail.com>, efault@gmx.de, a.p.zijlstra@chello.nl,
+       zippel@linux-m68k.org, linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+Subject: Re: Scheduler benchmarks - a follow-up
+Message-ID: <20070917202259.GA18027@elte.hu>
+References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com> <200709170712.03679.edt@aei.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <38b2ab8a0709161324p6841c1f9h6f9422b0e6c4b5cd@mail.gmail.com>
-	 <a36005b50709161346t544d3927mfbca537c869c3c58@mail.gmail.com>
-	 <38b2ab8a0709170030k2b5dad5dja31edebf12ad9626@mail.gmail.com>
-	 <a36005b50709170735p7c98608ftf12398f7080131b9@mail.gmail.com>
+In-Reply-To: <200709170712.03679.edt@aei.ca>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/17/07, Ulrich Drepper <drepper@gmail.com> wrote:
-> On 9/17/07, Francis Moreau <francis.moro@gmail.com> wrote:
-> > I think signal trampolines will still need them too. So making
-> > vsyscalls configurable doesn't seem to work, does it ?
->
-> vsyscalls aren't used for that.  We have a restorer in libc and could
-> easily use one in the vdso.  That's what is done on x86.
->
 
-Sorry for my ignorance but what' is 'a restorer' ?
+* Ed Tomlinson <edt@aei.ca> wrote:
 
--- 
-Francis
+> Rob,
+> 
+> I gather this was with the complete -ck patchset?  It would be 
+> interesting to see if just SD performed as well.  If it does, CFS 
+> needs more work. if not there are other things in -ck that really do 
+> improve performance and should be looked into.
+
+yeah. The biggest item in -ck besides SD is swap-prefetch, but that 
+shouldnt have an effect in this case. I _think_ that most of the 
+measured difference is due to scheduler details though. Right now my 
+estimation is that with the patch i sent to Rob, and with latest 
+sched-devel.git, CFS should perform as good or better than SD, even in 
+these micro-benchmarks. (but i cannot tell what will happen on Rob's 
+machine - so i'm keeping an open mind towards any other fixables :-) I'm 
+curious about the next round of numbers (if Rob has time to do them).
+
+	Ingo
