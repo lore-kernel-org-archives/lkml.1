@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbXIQUXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbXIQUaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758325AbXIQUXV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 16:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbXIQUXL
+	id S1757288AbXIQUaw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 16:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbXIQUal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 16:23:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51921 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756000AbXIQUXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 16:23:09 -0400
-Date: Mon, 17 Sep 2007 22:22:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ed Tomlinson <edt@aei.ca>
-Cc: Rob Hussey <robjhussey@gmail.com>, efault@gmx.de, a.p.zijlstra@chello.nl,
-       zippel@linux-m68k.org, linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-Subject: Re: Scheduler benchmarks - a follow-up
-Message-ID: <20070917202259.GA18027@elte.hu>
-References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com> <200709170712.03679.edt@aei.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709170712.03679.edt@aei.ca>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 17 Sep 2007 16:30:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55423 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753842AbXIQUak (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 16:30:40 -0400
+Date: Mon, 17 Sep 2007 13:30:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       hooanon05@yahoo.co.jp, "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH] ext34: ensure do_split leaves enough free space in both
+ blocks
+Message-Id: <20070917133020.5fc4650c.akpm@linux-foundation.org>
+In-Reply-To: <46EEB7A4.9040903@sandeen.net>
+References: <46EEA5F4.3030806@redhat.com>
+	<46EEB7A4.9040903@sandeen.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 17 Sep 2007 12:21:40 -0500
+Eric Sandeen <sandeen@sandeen.net> wrote:
 
-* Ed Tomlinson <edt@aei.ca> wrote:
-
-> Rob,
+> Eric Sandeen wrote:
+> > The do_split() function for htree dir blocks is intended to split a
+> > leaf block to make room for a new entry.  It sorts the entries in the
+> > original block by hash value, then moves the last half of the entries to 
+> > the new block - without accounting for how much space this actually moves.  
+> > (IOW, it moves half of the entry *count* not half of the entry *space*).
+> > If by chance we have both large & small entries, and we move only the 
+> > smallest entries, and we have a large new entry to insert, we may not have 
+> > created enough space for it.
 > 
-> I gather this was with the complete -ck patchset?  It would be 
-> interesting to see if just SD performed as well.  If it does, CFS 
-> needs more work. if not there are other things in -ck that really do 
-> improve performance and should be looked into.
+> (btw, the upshot of this is that in add_dirent_to_buf(),
+> memcpy(de->name, name, namelen) will overshoot the buffer and actually
+> corrupt memory.)
 
-yeah. The biggest item in -ck besides SD is swap-prefetch, but that 
-shouldnt have an effect in this case. I _think_ that most of the 
-measured difference is due to scheduler details though. Right now my 
-estimation is that with the patch i sent to Rob, and with latest 
-sched-devel.git, CFS should perform as good or better than SD, even in 
-these micro-benchmarks. (but i cannot tell what will happen on Rob's 
-machine - so i'm keeping an open mind towards any other fixables :-) I'm 
-curious about the next round of numbers (if Rob has time to do them).
+Nice!
 
-	Ingo
+So this looks like 2.6.22 and 2.6.23 material, but the timing is getting
+pretty squeezy.  Could people please give this change an extra-close
+review, let me know?
+
+Thanks.
