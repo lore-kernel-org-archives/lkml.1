@@ -1,275 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761191AbXIQVYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbXIQVk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761191AbXIQVYs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757107AbXIQVYf
+	id S1757514AbXIQVk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbXIQVkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:24:35 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10594 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761161AbXIQVYd (ORCPT
+	Mon, 17 Sep 2007 17:40:20 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:41695 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752879AbXIQVkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:24:33 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:references:user-agent:date:from:to:cc:
-	subject:content-disposition;
-	b=fLRXBDE4ykcEV1aIUewnDj6HNxPscw61Nn3avPr3luMj66HXaOdiQj6KwHsJfq5UY
-	PlszfJD4El+KXynPbAhHA==
-Message-Id: <20070917210429.032498000@menage.corp.google.com>
-References: <20070917210307.116234000@menage.corp.google.com>
-User-Agent: quilt/0.45-1
-Date: Mon, 17 Sep 2007 14:03:25 -0700
-From: Paul Menage <menage@google.com>
-To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       David Rientjes <rientjes@google.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, pj@sgi.com,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 18/33] containers implement namespace tracking subsystem
-Content-Disposition: inline; filename=containers-implement-namespace-tracking-subsystem.patch
+	Mon, 17 Sep 2007 17:40:18 -0400
+X-IronPort-AV: E=Sophos;i="4.20,265,1186383600"; 
+   d="scan'208";a="176443163"
+To: john.blackwood@ccur.com
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH] [WORKAROUND] CONFIG_PREEMPT_RT and ib_umad_close() issue
+X-Message-Flag: Warning: May contain useful information
+References: <46EEB715.7060509@ccur.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 17 Sep 2007 14:40:08 -0700
+In-Reply-To: <46EEB715.7060509@ccur.com> (John Blackwood's message of "Mon, 17 Sep 2007 13:19:17 -0400")
+Message-ID: <adair69nf7r.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Sep 2007 21:40:08.0966 (UTC) FILETIME=[51A4D260:01C7F973]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-(container->cgroup renaming by Paul Menage <menage@google.com>)
+Thanks for the explanation...
 
-When a task enters a new namespace via a clone() or unshare(), a new cgroup
-is created and the task moves into it.
+ > But basically, with CONFIG_PREEMPT_RT enabled, the lock points, such as
+ > aqcuiring a spinlock, potentially become places where the current task
+ > may be context switched out / preempted.
+ > 
+ > Therefore, when a call is made to lock a spinlock for example, the
+ > caller should not currently have irqs disabled, or preemption disabled,
+ > since a context switch may occur.
 
-This version names cgroups which are automatically created using
-cgroup_clone() as "node_<pid>" where pid is the pid of the unsharing or
-cloned process.  (Thanks Pavel for the idea) This is safe because if the
-process unshares again, it will create
+this doesn't seem relevant here...
 
-	/cgroups/(...)/node_<pid>/node_<pid>
+ > void fastcall rt_downgrade_write(struct rw_semaphore *rwsem)
+ > {
+ >         BUG();
+ > }
 
-The only possibilities (AFAICT) for a -EEXIST on unshare are
+this seems to be the problem... the -rt patch turns downgrade_write()
+into a BUG().
 
-	1. pid wraparound
-	2. a process fails an unshare, then tries again.
+I need to look at the locking in user_mad.c again, but I think it may
+be possible to replace both places that do downgrade_write() with
+up_write() followed by down_read().
 
-Case 1 is unlikely enough that I ignore it (at least for now).  In case 2, the
-node_<pid> will be empty and can be rmdir'ed to make the subsequent unshare()
-succeed.
-
-Changelog:
-	Name cloned cgroups as "node_<pid>".
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Signed-off-by: Paul Menage <menage@google.com>
-
----
-
- include/linux/cgroup_subsys.h |    6 +
- include/linux/nsproxy.h          |    7 ++
- init/Kconfig                     |    9 ++
- kernel/Makefile                  |    1 
- kernel/ns_cgroup.c            |  100 +++++++++++++++++++++++++++++
- kernel/nsproxy.c                 |   17 ++++
- 6 files changed, 139 insertions(+), 1 deletion(-)
-
-diff -puN include/linux/cgroup_subsys.h~cgroups-implement-namespace-tracking-subsystem include/linux/cgroup_subsys.h
---- a/include/linux/cgroup_subsys.h~cgroups-implement-namespace-tracking-subsystem
-+++ a/include/linux/cgroup_subsys.h
-@@ -24,3 +24,9 @@ SUBSYS(debug)
- #endif
- 
- /* */
-+
-+#ifdef CONFIG_CGROUP_NS
-+SUBSYS(ns)
-+#endif
-+
-+/* */
-diff -puN include/linux/nsproxy.h~cgroups-implement-namespace-tracking-subsystem include/linux/nsproxy.h
---- a/include/linux/nsproxy.h~cgroups-implement-namespace-tracking-subsystem
-+++ a/include/linux/nsproxy.h
-@@ -55,4 +55,11 @@ static inline void exit_task_namespaces(
- 		put_nsproxy(ns);
- 	}
- }
-+
-+#ifdef CONFIG_CGROUP_NS
-+int ns_cgroup_clone(struct task_struct *tsk);
-+#else
-+static inline int ns_cgroup_clone(struct task_struct *tsk) { return 0; }
-+#endif
-+
- #endif
-diff -puN init/Kconfig~cgroups-implement-namespace-tracking-subsystem init/Kconfig
---- a/init/Kconfig~cgroups-implement-namespace-tracking-subsystem
-+++ a/init/Kconfig
-@@ -323,6 +323,15 @@ config SYSFS_DEPRECATED
- 	  If you are using a distro that was released in 2006 or later,
- 	  it should be safe to say N here.
- 
-+config CGROUP_NS
-+        bool "Namespace cgroup subsystem"
-+        select CGROUPS
-+        help
-+          Provides a simple namespace cgroup subsystem to
-+          provide hierarchical naming of sets of namespaces,
-+          for instance virtual servers and checkpoint/restart
-+          jobs.
-+
- config PROC_PID_CPUSET
- 	bool "Include legacy /proc/<pid>/cpuset file"
- 	depends on CPUSETS
-diff -puN kernel/Makefile~cgroups-implement-namespace-tracking-subsystem kernel/Makefile
---- a/kernel/Makefile~cgroups-implement-namespace-tracking-subsystem
-+++ a/kernel/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
- obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
- obj-$(CONFIG_CPUSETS) += cpuset.o
- obj-$(CONFIG_CGROUP_CPUACCT) += cpu_acct.o
-+obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
- obj-$(CONFIG_IKCONFIG) += configs.o
- obj-$(CONFIG_STOP_MACHINE) += stop_machine.o
- obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
-diff -puN /dev/null kernel/ns_cgroup.c
---- /dev/null
-+++ a/kernel/ns_cgroup.c
-@@ -0,0 +1,100 @@
-+/*
-+ * ns_cgroup.c - namespace cgroup subsystem
-+ *
-+ * Copyright 2006, 2007 IBM Corp
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/cgroup.h>
-+#include <linux/fs.h>
-+
-+struct ns_cgroup {
-+	struct cgroup_subsys_state css;
-+	spinlock_t lock;
-+};
-+
-+struct cgroup_subsys ns_subsys;
-+
-+static inline struct ns_cgroup *cgroup_to_ns(
-+		struct cgroup *cgroup)
-+{
-+	return container_of(cgroup_subsys_state(cgroup, ns_subsys_id),
-+			    struct ns_cgroup, css);
-+}
-+
-+int ns_cgroup_clone(struct task_struct *task)
-+{
-+	return cgroup_clone(task, &ns_subsys);
-+}
-+
-+/*
-+ * Rules:
-+ *   1. you can only enter a cgroup which is a child of your current
-+ *     cgroup
-+ *   2. you can only place another process into a cgroup if
-+ *     a. you have CAP_SYS_ADMIN
-+ *     b. your cgroup is an ancestor of task's destination cgroup
-+ *       (hence either you are in the same cgroup as task, or in an
-+ *        ancestor cgroup thereof)
-+ */
-+static int ns_can_attach(struct cgroup_subsys *ss,
-+		struct cgroup *new_cgroup, struct task_struct *task)
-+{
-+	struct cgroup *orig;
-+
-+	if (current != task) {
-+		if (!capable(CAP_SYS_ADMIN))
-+			return -EPERM;
-+
-+		if (!cgroup_is_descendant(new_cgroup))
-+			return -EPERM;
-+	}
-+
-+	if (atomic_read(&new_cgroup->count) != 0)
-+		return -EPERM;
-+
-+	orig = task_cgroup(task, ns_subsys_id);
-+	if (orig && orig != new_cgroup->parent)
-+		return -EPERM;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Rules: you can only create a cgroup if
-+ *     1. you are capable(CAP_SYS_ADMIN)
-+ *     2. the target cgroup is a descendant of your own cgroup
-+ */
-+static struct cgroup_subsys_state *ns_create(struct cgroup_subsys *ss,
-+						struct cgroup *cgroup)
-+{
-+	struct ns_cgroup *ns_cgroup;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return ERR_PTR(-EPERM);
-+	if (!cgroup_is_descendant(cgroup))
-+		return ERR_PTR(-EPERM);
-+
-+	ns_cgroup = kzalloc(sizeof(*ns_cgroup), GFP_KERNEL);
-+	if (!ns_cgroup)
-+		return ERR_PTR(-ENOMEM);
-+	spin_lock_init(&ns_cgroup->lock);
-+	return &ns_cgroup->css;
-+}
-+
-+static void ns_destroy(struct cgroup_subsys *ss,
-+			struct cgroup *cgroup)
-+{
-+	struct ns_cgroup *ns_cgroup;
-+
-+	ns_cgroup = cgroup_to_ns(cgroup);
-+	kfree(ns_cgroup);
-+}
-+
-+struct cgroup_subsys ns_subsys = {
-+	.name = "ns",
-+	.can_attach = ns_can_attach,
-+	.create = ns_create,
-+	.destroy  = ns_destroy,
-+	.subsys_id = ns_subsys_id,
-+};
-diff -puN kernel/nsproxy.c~cgroups-implement-namespace-tracking-subsystem kernel/nsproxy.c
---- a/kernel/nsproxy.c~cgroups-implement-namespace-tracking-subsystem
-+++ a/kernel/nsproxy.c
-@@ -146,7 +146,14 @@ int copy_namespaces(unsigned long flags,
- 		goto out;
- 	}
- 
-+	err = ns_cgroup_clone(tsk);
-+	if (err) {
-+		put_nsproxy(new_ns);
-+		goto out;
-+	}
-+
- 	tsk->nsproxy = new_ns;
-+
- out:
- 	put_nsproxy(old_ns);
- 	return err;
-@@ -185,8 +192,16 @@ int unshare_nsproxy_namespaces(unsigned 
- 
- 	*new_nsp = create_new_namespaces(unshare_flags, current,
- 				new_fs ? new_fs : current->fs);
--	if (IS_ERR(*new_nsp))
-+	if (IS_ERR(*new_nsp)) {
- 		err = PTR_ERR(*new_nsp);
-+		goto out;
-+	}
-+
-+	err = ns_cgroup_clone(current);
-+	if (err)
-+		put_nsproxy(*new_nsp);
-+
-+out:
- 	return err;
- }
- 
-_
-
---
+ - R.
