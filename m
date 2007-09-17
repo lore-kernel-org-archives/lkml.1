@@ -1,54 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbXIQA6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbXIQBT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbXIQA6R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 20:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbXIQA6F
+	id S1754159AbXIQBT1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 21:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbXIQBTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 20:58:05 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:4837 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753671AbXIQA6D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 20:58:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=ZVUEXlf6wFbGLWjLnxGCD9xn+vF7z9GIHwTIqNxfFWaWCRI9A8sz4r+6JIz6DC7BYHVYWvTuwDwpCgkiNVotvNiLvf/tsXb2e2NAE9r1zbiqJDAkQDv0J3OdrsiM7GivQpH8odwIJUe1PqSWqpxhQok/UFyHS015HHjMBl1sIAo=
-Message-ID: <46EDD114.7010403@gmail.com>
-Date: Mon, 17 Sep 2007 09:57:56 +0900
-From: shinkoi2005a <shinkoi2005a@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070615 Fedora/2.0.0.4-1.fc7 Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
+	Sun, 16 Sep 2007 21:19:20 -0400
+Received: from THUNK.ORG ([69.25.196.29]:38076 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751240AbXIQBTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 21:19:19 -0400
+Date: Sun, 16 Sep 2007 21:19:14 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Schwartz <davids@webmaster.com>
+Cc: bunk@kernel.org,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917011914.GE5502@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Schwartz <davids@webmaster.com>, bunk@kernel.org,
+	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <20070916230936.GC18232@stusta.de> <MDEHLPKNGKAHNMBLJOLKOEFKGNAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: printk format "%4.4s"
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEFKGNAC.davids@webmaster.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all
+On Sun, Sep 16, 2007 at 05:29:56PM -0700, David Schwartz wrote:
+> In responses and posts, there is over and over a huge confusion
+> between two completely different issues. One is about whether you
+> can modify licenses, the other is about whether you can modify
+> license *notices*.
+> 
+> Again, one more time:
+> 
+> 1) You can obtain, from the GPL, the right to remove a BSD license notice.
+> 
+> 2) You can obtain, from the BSD license, the right to remove a GPL
+> license notice.
+> 
+> 3) Neither of these actions has any effect on the fact that these
+> licenses still exist from the original author and still grant rights
+> to anyone who comes into lawful possession of the work.
+> 
+> Of course, if you take a dual-licensed file, remove the BSD notice,
+> and then add more to it, those contributions can be offered *by*
+> *their* *original* *authors* under only the GPL.
 
-I have a question about printk format.
+Careful; the devil is really in the details on this one.  If you have
+a file where all of the code was originally dual licensed (say, like
+drivers/char/random.c, which was written by me and deliberately dual
+licensed because I wanted other OS's to be able to use it), then this
+might be true.
 
-Can printk format use "%4.4s"?
-This format is used following source.
+However, consider a file which was originally BSD licensed.  Now
+suppose it is modified (i.e., a derived work was created) and another
+author slaps on a BSD/GPL dual notice.  That's fine, so far; the BSD
+license on the original file permits that.  The new code is licensed
+under either BSD or GPL (user's choice), and the original code is
+under the BSD license, which is compatible with the GPL code, so
+regardless of whether the user choose the BSD or GPL license.
 
-#############
-drivers/acpi/tables/tbinstal.c
-                ACPI_ERROR((AE_INFO,
-                            "Table has invalid signature [%4.4s], must be SSDT, PSDT or OEMx",
-                            table_desc->pointer->signature));
+However, in such a case it is **NOT** kosher to remove the BSD license
+notification.  Why?  Because the lines of code from the original file
+was originally licensed under the BSD only.  The second author who
+added the BSD/GPL'ed dual license only has the authority to release
+the the code which he or she added under the BSD/GPL dual license.
+The original code remains only licensed under the BSD license, but
+that was OK because the BSD license is compatible with the GPL (but
+not vice versa).
 
-##############
-At least, my dmesg is buggy output like that..
 
-##############
-$ dmesg
-(snip)
-ACPI Warning (tbutils-0158): Incorrect checksum in table [  ^E礑 -  00, should b
-e F6 [20070126]
-ACPI Error (tbinstal-0134): Table has invalid signature [  ^E礑, must be SSDT, P
-SDT or OEMx [20070126]
-(snip)
-##############
+Now, in the case of the Atheros wireless code, the original author
+(Sam Leffler) has stated that as far as *his* code was concerned, he
+was willing to dual license it.  However, in this case, he agreed to
+have the code dual-licensed three years after the project was started.
+He was amused and had no objections to people retroactively applying
+the licensing changes to code that was 3 years old.[1]
 
+HOWEVER, he can only speak for himself.  If anyone in the first 3
+years of the project made significant code contributions, they would
+have reasonably expected them to be made under the BSD license, and
+Sam's agreement to dual-license his code wouldn't apply to some other
+major contributor.  And if there is any code which was not written by
+Sam contributed dring the first 3 years, then it could only be
+distributed under the terms of the BSD license, regardless of Sam's
+statements.
+
+This may be one of the reasons why Eben said that very careful
+research needs to be done before making any definitive statement on
+the subject.  Personally, my recommendation would just be to include
+the original copyright statement (removing attribution is bad ju-ju)
+and also to leave BSD permission statement in place.  Yes, maybe after
+doing a huge amount of research we might be able to determine that all
+of the code belonged to Sam at the point when he agreed to dual
+license it, but is it worth it to make 100% sure of this question?
+Why not just leave the BSD statement in place, and be done with it.
+We've done this before; for example, take a look at drivers/net/slhc.c
+as evidence of the fact that we do have some BSD code in the Linux
+kernel, and having the BSD permission notice really doesn't hurt
+anyone.
+
+
+[1]  http://lkml.org/lkml/2007/9/1/160
+
+						- Ted
