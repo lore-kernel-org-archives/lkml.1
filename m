@@ -1,259 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbXIQKFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbXIQKNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbXIQKFa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 06:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbXIQKFW
+	id S1754606AbXIQKNX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 06:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbXIQKNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 06:05:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39361 "EHLO mx1.redhat.com"
+	Mon, 17 Sep 2007 06:13:12 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40593 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753354AbXIQKFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 06:05:21 -0400
-Date: Mon, 17 Sep 2007 06:05:09 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: iunique() fails to return ino_t (after commit 866b04fccbf125cd)
-Message-Id: <20070917060509.2c41b2fe.jlayton@redhat.com>
-In-Reply-To: <a781481a0709161936g16c5b3e8q8698670e2e6eba8b@mail.gmail.com>
-References: <a781481a0709161228t216322dcq5dfd60062bb825be@mail.gmail.com>
-	<20070916195308.90635230.jlayton@redhat.com>
-	<a781481a0709161936g16c5b3e8q8698670e2e6eba8b@mail.gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752973AbXIQKNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 06:13:10 -0400
+Date: Mon, 17 Sep 2007 11:13:07 +0100
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Message-ID: <20070917101307.GD25706@skynet.ie>
+References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070915155100.GA21861@v2.random> <20070916181504.GB16406@skynet.ie> <20070916185052.GG6708@v2.random> <20070916205418.GC16406@skynet.ie> <20070916213126.GH6708@v2.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070916213126.GH6708@v2.random>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007 08:06:15 +0530
-"Satyam Sharma" <satyam.sharma@gmail.com> wrote:
-
-> On 9/17/07, Jeff Layton <jlayton@redhat.com> wrote:
-> > On Mon, 17 Sep 2007 00:58:54 +0530
-> > "Satyam Sharma" <satyam.sharma@gmail.com> wrote:
-> >
-> > > Hi Jeff,
-> > >
-> > > I think commit 866b04fccbf125cd39f2bdbcfeaa611d39a061a8 was wrong, and
-> > > introduced a regression.
-> > >
-> > > The "relevant" changelog [*] of that patch says:
-> > >
-> > >
-> > > >  on filesystems w/o permanent inode numbers, i_ino values can be larger
-> > > >  than 32 bits, which can cause problems for some 32 bit userspace programs
-> > > >  on a 64 bit kernel.  We can't do anything for filesystems that have
-> > > >  actual >32-bit inode numbers, but on filesystems that generate i_ino
-> > > >  values on the fly, we should try to have them fit in 32 bits.  We could
-> > > >  trivially fix this by making the static counters in new_inode and iunique
-> > > >  32 bits [...]
-> > > >
-> > > > [...]
-> > > > When a 32-bit program that was not compiled with large file offsets does a
-> > > > stat and gets a st_ino value back that won't fit in the 32 bit field, glibc
-> > > > (correctly) generates an EOVERFLOW error.  We can't do anything about fs's
-> > > > with larger permanent inode numbers, but when we generate them on the fly,
-> > > > we ought to try and have them fit within a 32 bit field.
-> > > >
-> > > > This patch takes the first step toward this by making the static counters
-> > > > in these two functions be 32 bits.
-> > >
-> > >
-> > > 1. First and foremost, there was nothing wrong with the existing code that
-> > >    needed to be "fixed" at all, i.e. there was no "problem" to be solved in
-> > >    the first place. As was said, glibc *correctly* returns EOVERFLOW when a
-> > >    userspace application built *without* _FILE_OFFSET_BITS == 64 (i.e.
-> > >    ino_t != __ino64_t) tries to stat(2) a file whose serial number does not
-> > >    fit in the "st_ino" member of struct stat. This behaviour is (1) correct,
-> > >    (2) explicitly mandated by the Single UNIX Specification, and, (3) all
-> > >    userspace programs *must* be prepared to deal with it. [ Should probably
-> > >    mention here that other implementations, such as Solaris, do conform with
-> > >    SUS here. ]
-> > >
-> >
-> > The ideal situation is that everyone would recompile their programs
-> > with LFS defines. Unfortunately people have old userspace programs to
-> > which they don't have sources, or that can't easily be recompiled this way.
-> > These programs would occasionally break when run on 64 bit kernels
-> > for the reasons I've described.
+On (16/09/07 23:31), Andrea Arcangeli didst pronounce:
+> On Sun, Sep 16, 2007 at 09:54:18PM +0100, Mel Gorman wrote:
+> > The 16MB is the size of a hugepage, the size of interest as far as I am
+> > concerned. Your idea makes sense for large block support, but much less
+> > for huge pages because you are incurring a cost in the general case for
+> > something that may not be used.
 > 
-> That's a bad excuse! Such userspace programs are buggy, period.
-> Let's fix *them*. And, seriously, are you *really* talking of "supporting"
-> userspace programs whose even *sources* are no longer available ?
-> 
-> The standard is clear and simple -- calls from userspace programs (that
-> don't define LFS) to stat(2) on a file whose serial number is >2**32 must
-> see EOVERFLOW. This is *not* a kernel problem that needs "fixing".
-> 
-> Moreover, changing a kernel function such as iunique() (which was expressly
-> *written* to be used by filesystems to assign ino_t to inodes) to return only
-> values <= 2**32 to satisfy such buggy programs is just ... bad.
-> 
-> BTW, you might've as well changed the type of "res" in iunique() in that
-> patch to "unsigned int" too. What's the point of declaring it "ino_t" if we
-> never assign it any value in the (ino_t - unsigned int) set in the first place?
-> 
-> 
-> > > 2. The patch has nothing to do with "32-bit userspace on 64-bit kernels" or
-> > >    compatibility modes whatsoever. It is unrelated and tangential that this
-> > >    behaviour is easy to reproduce on the above mentioned setup. Simply put,
-> > >    the issue is that a userspace program built *without* LFS tried to
-> > >    stat(2) a file with serial number > 2**32. Needless to say, this issue
-> > >    must be solved in the userspace program itself (either by (1) defining
-> > >    LFS, or, (2) making it aware of EOVERFLOW), and not in the kernel.
-> > >
-> >
-> > It most certainly does have something to do with 32 bit userspace on 64
-> > bit kernels.
-> 
-> No, it doesn't ...
-> 
-> > On a 32 bit kernel, new_inode and iunique generate no
-> > inode numbers >32 bits. On a 64 bit kernel, they do.
-> 
-> This is *unrelated*. It's completely immaterial how an inode managed to
-> get a serial number > 2**32. Whether it used iunique() running on a 64-bit
-> kernel, or it's own little implementation, or whatever. The *real* issue is with
-> the *userspace program* and not the kernel ... that's the whole point.
-> 
-> [ Also, you're assuming sizeof(long) == sizeof(int) for 32-bit kernels
->   here, but okay, probably that's true for all supported targets ... ]
-> 
-> 
-> > This means that
-> > programs that are built this way may eventually fail on a 64 bit kernel
-> > when the inode counter grows large enough. Those programs will work
-> > indefinitely on a 32 bit kernel.
-> 
-> See below, for why such programs are buggy ...
-> 
-> 
-> > > 3. Solving a problem at a place where it does not exist naturally leads to
-> > >    other breakage. After 866b04fccbf125cd, iunique() no longer returns an
-> > >    ino_t, but only values <= 2**32, which limits the number of inodes on
-> > >    all filesystems that use that function. Needless to say, this is a
-> > >    *regression* w.r.t. previous kernels before that commit went in.
-> > >
-> >
-> > Why is this a problem? Filesystems that truly need that many more inodes
-> > are certainly able to generate one using a different scheme.
-> 
-> iunique() was (before you changed it) expressly written as a "free"
-> implementation for filesystems to allow them to assign serial numbers
-> to inodes. Before your patch went in, it allowed such filesystems (regardless
-> of whether they're persistent storage based or not) to have more than 2**32
-> inodes. After the said commit, not anymore. And all that, to solve a "problem"
-> that never existed in the kernel in the first place!
-> 
-> 
-> > Typically,
->   ^^^^^^^^^
-> > the inode numbers generated by iunique and new_inode are only used by
-> > filesystems that have no permanent inode numbers of their own. In many
-> > cases, inode number uniqueness isn't even an issue as evidenced by the
-> > number of filesystems that simply use the number assigned by new_inode.
-> 
-> Nobody's discussing inode number "uniqueness" here ... again, that's
-> unrelated.
-> 
-> > This patch seems like a reasonable compromise to me. It allows us to
-> > keep these inode numbers below 32 bits on filesystems that don't care
-> > too much about what inode number they're using.
-> 
-> It also unjustly limits the number of inodes on filesystems that use
-> iunique() ...
-> 
-> > > 4. Last but not the least, the sample testcase program that was discussed
-> > >    on LKML last year to show this "problem" was buggy and wrong. A program
-> > >    built without LFS will also suffer EOVERFLOW when stat(2)'ing a file
-> > >    due to other reasons, such as filesize not fitting inside the "st_size"
-> > >    member. Do we propose to "fix" that "problem" in the kernel too ?
-> > >    Of course not!
-> > >
-> >
-> > Right, but that situation is the same regardless of whether you run it
-> > on a 32 or 64 bit kernel. The issue of inode numbers generated by
-> > new_inode and iunique crossing the 32-bit boundary, however, is not.
-> 
-> The point was that you still haven't eliminated EOVERFLOW for stat(2)
-> calls without LFS. And the point was also that *trying* to eliminate/avoid
-> the EOVERFLOW itself is a pointless activity, because there's nothing
-> wrong with that return.
-> 
-> 
-> > Can you elaborate why this testcase was buggy and wrong?
-> 
-> Because anybody who:
-> 
-> 1. stat(2)'s on a file whose serial number is > 2**32, *and*,
-> 2. also does not define _FILE_OFFSET_BITS == 64, *and*,
-> 3. also does not deal with / be prepared to see an EOVERFLOW return
->    from stat(2),
-> 
-> is obviously asking for trouble. That's where the bug is ... plain and simple
-> reading of the standard.
-> 
-> 
-> > It seems to me
-> > that it correctly demonstrated the issue. Just because there are other
-> > reasons that a program might get an EOVERFLOW doesn't mean that that one
-> > is invalid.
-> 
-> No, please read the standard. There is nothing "invalid" about the inode-number-
-> not-fitting-into-st_ino-giving-an-EOVERFLOW reason.
-> 
-> 
-> > > IMHO it's bad to change the kernel's behaviour to avoid buggy userspace
-> > > programs from seeing standard-mandated errors being returned from stat(2).
-> > >
-> > > So please reconsider that patch -- IMHO it clearly wasn't correct.
-> > >
-> >
-> > Again, I have to ask why you feel the current patch to be a problem.
-> > Ripping this patch out will reintroduce the problem already
-> > described.
-> 
-> It was never a problem (definitely not the kernel's) ... :-)
-> 
-> > Since I'm not clear on the issue you're seeing as a
-> > result of this patch, I'm not comfortable agreeing that it should
-> > be removed.
-> 
-> I'll turn this around. Please name one *real world* userspace application
-> for which your patch was a fix (so that I can go fix *that*, of course! :-)
+> Sorry for the misunderstanding, I totally agree!
 > 
 
-I understand your reasoning, but I have to respectfully disagree...
+Great. It's clear that we had different use cases in mind when we were
+poking holes in each approach.
 
-Users have an expectation that their programs will run reasonably the
-same on a 64 bit kernel in compatability mode as they do when run on a
-32 bit kernel. This is an expectation that I think we have a duty to
-try and respect as best we can. You can argue that these programs are
-buggy (and I agree), but the fact is people have these programs and
-expect them to continue to work.
+> > There is nothing to say that both can't be done. Raise the size of
+> > order-0 for large block support and continue trying to group the block
+> > to make hugepage allocations likely succeed during the lifetime of the
+> > system.
+> 
+> Sure, I completely agree.
+> 
+> > At the risk of repeating, your approach will be adding a new and
+> > significant dimension to the internal fragmentation problem where a
+> > kernel allocation may fail because the larger order-0 pages are all
+> > being pinned by userspace pages.
+> 
+> This is exactly correct, some memory will be wasted. It'll reach 0
+> free memory more quickly depending on which kind of applications are
+> being run.
+> 
 
-This particular problem was in a place where there was a clear
-difference when such a program was run on a 64 bit kernel. It's not
-even a nice "break immediately" sort of problem, but rather a "work
-fine for several months and then break and require a reboot to fix"
-sort of problem.
+I look forward to seeing how you deal with it. When/if you get to trying
+to move pages out of slabs, I suggest you take a look at the Memory
+Compaction patches or the memory unplug patches for simple examples of
+how to use  page migration.
 
-I don't think we should break userspace programs (even buggy ones)
-without good reason. I don't see a good reason to break them here, even
-when people move to a new platform. When we have the luxury to do so
-(and in this case, I'd argue that we do), we should try to accomodate
-existing software, regardless of whether it was compiled with LFS
-defines or not.
+> > It improves the probabilty of hugepage allocations working because the
+> > blocks with slab pages can be targetted and cleared if necessary.
+> 
+> Agreed.
+> 
+> > That suggestion was aimed at the large block support more than
+> > hugepages. It helps large blocks because we'll be allocating and freeing
+> > as more or less the same size. It certainly is easier to set
+> > slub_min_order to the same size as what is needed for large blocks in
+> > the system than introducing the necessary mechanics to allocate
+> > pagetable pages and userspace pages from slab.
+> 
+> Allocating userpages from slab in 4k chunks with a 64k PAGE_SIZE is
+> really complex indeed. I'm not planning for that in the short term but
+> it remains a possibility to make the kernel more generic. Perhaps it
+> could worth it...
+> 
 
-There is little benefit to allowing inode numbers generated by iunique
-or new_inode to cross the 32 bit boundary. These inode numbers are
-temporary. In the case of iunique, a filesystem would have to have 2^32
-hashed inodes in order for this numerical space to run out. I don't
-think that's a reasonable situation at this point in time. If it were,
-then I'd be more willing to agree with you.
+Perhaps.
+
+> Allocating ptes from slab is fairly simple but I think it would be
+> better to allocate ptes in PAGE_SIZE (64k) chunks and preallocate the
+> nearby ptes in the per-task local pagetable tree, to reduce the number
+> of locks taken and not to enter the slab at all for that.
+
+It runs the risk of pinning up to 60K of data per task that is unusable for
+any other purpose. On average, it'll be more like 32K but worth keeping
+in mind.
+
+> Infact we
+> could allocate the 4 levels (or anyway more than one level) in one
+> single alloc_pages(0) and track the leftovers in the mm (or similar).
+> 
+> > I'm not sure what you are getting at here. I think it would make more
+> > sense if you said "when you read /proc/buddyinfo, you know the order-0
+> > pages are really free for use with large blocks" with your approach.
+> 
+> I'm unsure who reads /proc/buddyinfo (that can change a lot and that
+> is not very significant information if the vm can defrag well inside
+> the reclaim code),
+
+I read it although as you say, it's difficult to know what will happen if
+you try and reclaim memory. It's why there is also a /proc/pagetypeinfo so
+one can see the number of movable blocks that exist. That leads to better
+guessing. In -mm, you can also see the number of mixed blocks but that will
+not be available in mainline.
+
+> but it's not much different and it's more about
+> knowing the real meaning of /proc/meminfo, freeable (unmapped) cache,
+> anon ram, and free memory.
+> 
+> The idea is that to succeed an mmap over a large xfs file with
+> mlockall being invoked, those largepages must become available or
+> it'll be oom despite there are still 512M free... I'm quite sure
+> admins will gets confused if they get oom killer invoked with lots of
+> ram still free.
+> 
+> The overcommit feature will also break, just to make an example (so
+> much for overcommit 2 guaranteeing -ENOMEM retvals instead of oom
+> killage ;).
+> 
+> > All this aside, there is nothing mutually exclusive with what you are proposing
+> > and what grouping pages by mobility does. Your stuff can exist even if grouping
+> > pages by mobility is in place. In fact, it'll help us by giving an important
+> > comparison point as grouping pages by mobility can be trivially disabled with
+> > a one-liner for the purposes of testing. If your approach is brought to being
+> > a general solution that also helps hugepage allocation, then we can revisit
+> > grouping pages by mobility by comparing kernels with it enabled and without.
+> 
+> Yes, I totally agree. It sounds worthwhile to have a good defrag logic
+> in the VM. Even allocating the kernel stack in today kernels should be
+> able to benefit from your work. It's just comparing a fork() failure
+> (something that will happen with ulimit -n too and that apps must be
+> able to deal with) with an I/O failure that worries me a bit.
+
+I agree here with the IO failure. It's why I've been saying that Nick's
+approach is what was needed to make large blocks a fully supported
+feature. Your approach may work out as well. While those are in development,
+Christoph's approach will let us know how regularly these failures actually
+occur so we'll know in advance how often the slower paths in both Nick's
+and your approach will be exercised.
+
+> I'm
+> quite sure a db failing I/O will not recover too nicely. If fork fails
+> that's most certainly ok... at worst a new client won't be able to
+> connect and he can retry later. Plus order 1 isn't really a big deal,
+> you know the probability to succeeds decreases exponentially with the
+> order.
+> 
 
 -- 
-Jeff Layton <jlayton@redhat.com>
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
