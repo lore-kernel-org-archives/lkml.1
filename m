@@ -1,85 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbXIQBfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbXIQBhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbXIQBfu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 21:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXIQBfn
+	id S1754515AbXIQBhl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 21:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXIQBhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 21:35:43 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1607 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbXIQBfm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 21:35:42 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <bunk@kernel.org>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Wasting our Freedom
-Date: Sun, 16 Sep 2007 18:35:12 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEFNGNAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070917005734.GE18232@stusta.de>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 18:35:57 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 18:35:58 -0700
+	Sun, 16 Sep 2007 21:37:34 -0400
+Received: from mga11.intel.com ([192.55.52.93]:19300 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751560AbXIQBhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Sep 2007 21:37:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,262,1186383600"; 
+   d="scan'208";a="309834314"
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+From: Shaohua Li <shaohua.li@intel.com>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Robert Hancock <hancockr@shaw.ca>, Greg KH <gregkh@suse.de>,
+       Matthew Wilcox <matthew@wil.cx>, lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <20070916151355.A18508@jurassic.park.msu.ru>
+References: <fa.o5cJ0O7pLVWRzUiVPDEZL6nKqA8@ifi.uio.no>
+	 <fa.tyYt4GOpTOmJTUbzsxpiCAObJPQ@ifi.uio.no>
+	 <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no>
+	 <fa.tAIuIM02CoL+ixB11n9Fmcqyz9M@ifi.uio.no>
+	 <fa.pxFYhTaUz2NVN7Vux7b5xVRrKTw@ifi.uio.no> <46EA00DA.6010704@shaw.ca>
+	 <20070914151401.A5586@jurassic.park.msu.ru> <46EA9B23.7030709@shaw.ca>
+	 <20070914192913.A6668@jurassic.park.msu.ru> <46EB1F16.8060209@shaw.ca>
+	 <20070916151355.A18508@jurassic.park.msu.ru>
+Content-Type: text/plain
+Date: Mon, 17 Sep 2007 09:21:47 +0800
+Message-Id: <1189992107.26772.4.camel@sli10-conroe.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> On Sun, Sep 16, 2007 at 05:29:56PM -0700, David Schwartz wrote:
+On Sun, 2007-09-16 at 15:13 +0400, Ivan Kokshaysky wrote:
+> On Fri, Sep 14, 2007 at 05:53:58PM -0600, Robert Hancock wrote:
+> > In the first one, Linus talks about a USB controller whose SMM code 
+> > chokes on the BAR being disabled. That explanation seems odd to me. If 
+> > it chokes on the BAR disabled, how doesn't it choke on the BAR being 
+> > moved to a different location, which is unavoidable during probing?
 > 
-> >...
-> > Again, one more time:
-> > 
-> > 1) You can obtain, from the GPL, the right to remove a BSD 
-> > license notice.
-> >...
- 
-> I hope noone believes this bullshit you are spreading.
-
-How do you figure?
-
-> When you incorporate BSD licenced code into a GPL'ed project it's 
-> impossible that the GPL could give you any permission to remove the 
-> BSD licence notice.
-
-That's right. I never said otherwise. I did not say that under all conceivable circumstances, the GPL gives you the right to remove a BSD license notice.
-
-The example I was talking about was a dual-licensed work. If you choose to make modifications under the GPL, then you are not obtaining any righst under the BSD license and are under no obligation to comply with its terms. In that case, the GPL gives you the right to remove the BSD license notice. (The license remains, of course, only the notice is gone.)
-
-You are quite correct in the case of a BSD-only work. Since you still need the right to modify and distribute that work and can only get it from the BSD license, you must comply with the terms of the BSD license. One of those terms is not removing the license *notice*.
-
-You are quite correct that if a work is offered under only the BSD license, the BSD license notice must remain in there forever, you cannot remove it because the license says you can't.
-
-> > > BTW: It is considered impolite on linux-kernel to remove Cc's.
-> > 
-> > Really? On almost every other forum I know of, the rule is the 
-> > reverse. It is rude to CC posts to people who are most likely on 
-> > the list anyway.
- 
-> linux-kernel is not "almost every other forum I know of".
+> Here is an article with detailed explanation of that USB issue:
 > 
-> Considering how long you are already trolling [1] on linux-kernel
-> I'm surprised you haven't heard about this before.
+>  http://support.microsoft.com/kb/250635
+> 
+> The most interesting fact there is that windows *does not* clear
+> PCI_COMMAND_MEMORY bits during PCI bus enumeration, so BIOS writers
+> have to rely on that. Yet another reason why your patch is unsafe.
+> 
+> > Also, I think we do USB handoff from the BIOS much earlier than we used 
+> > to, which likely prevents these issues.
+> 
+> I don't think so. This can only be done in USB driver, which cannot run
+> before PCI device discovery.
+Most BIOS has an option called legacy emulation, which will emulate USB
+mouse as legacy mouse. BIOS is using USB before driver is loaded.
 
-I find offensive your characterization of my attempt at honest debate as trolling.
+If moving BAR work, disabling BAR should work too.
 
-> [1] Have you ever contributed any patch to the Linux kernel?
+> > In the second one, he mentions that "So the secondary rule to "don't 
+> > turnoff MEM or IO accesses" is "never allocate real PCI BAR resources at 
+> > the top of memory". Well, unfortunately, the second one isn't possible 
+> > to meet given that we have boards with the MMCONFIG up there, so 
+> > disabling the decode is the only thing we can do. That whole discussion 
+> > was also based on the fact that it wasn't necessary to solve problems. 
+> > This is no longer a theoretical problem. We now have real problems that 
+> > we need this in order to solve.
+> 
+> I have suggested a *practical* solution that disables the decode only
+> when it's unavoidable. If it's not sufficient for some machines, it
+> can be extended quite easily.
+If you just want to workaroud the issue at hand, I'd take the method to
+not use mmcfg at probe stage.
 
-Yes, as a matter of fact. A long time ago, I contributed patches to allow the Sony CDU-535 driver to work as a module. For those who forgot, the Sony CDU-535 was one of the very first CD-ROM devices, almost 1X and with a proprietary interface -- an external drive that required a custom ISA card. For some reason, it's still there, though I find it hard to believe anyone has used it in years.
+> > > No, it's impossible for several reasons. Most obvious one is that a PCI-E
+> > > bridge does isolate stuff quite nicely.
+> > 
+> > It's not impossible at all. In fact I'm quite sure (Jesse can confirm) 
+> > that in the case of the board he was using, it was an add-in graphics 
+> > card where he saw this problem.
+> 
+> Again, it's impossible with AGP or PCI-E cards, which are always
+> separated
+> from the root bus by AGP or PCI-E bridge. The bridge does decode in
+> the
+> first place, so when you write the BAR with all ones, you move it
+> outside
+> the bridge decoding window. Address collision isn't possible in this
+> case in principle.
+I can confirm this is an add-in graphics card. the bfd is 00:02.0, so
+it's not behind any AGP/PCI-E bridge.
 
-DS
-
-
+Thanks,
+Shaohua
