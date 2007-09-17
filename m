@@ -1,58 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbXIQGmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbXIQGra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753372AbXIQGmK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 02:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXIQGl5
+	id S1752567AbXIQGra (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 02:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbXIQGrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 02:41:57 -0400
-Received: from mail.pro-g.com.tr ([81.214.24.101]:59532 "EHLO
-	mail.pro-g.com.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752163AbXIQGl4 (ORCPT
+	Mon, 17 Sep 2007 02:47:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60738 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752725AbXIQGrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 02:41:56 -0400
-Message-ID: <46EE2226.2090203@pro-g.com.tr>
-Date: Sun, 16 Sep 2007 23:43:50 -0700
-From: "Can E. Acar" <can.acar@pro-g.com.tr>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070729)
-MIME-Version: 1.0
-To: Daniel Hazelton <dhazelton@enter.net>
-CC: misc@openbsd.org, linux-kernel@vger.kernel.org,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-References: <46ED7A8F.1020304@pro-g.com.tr> <200709161632.21927.dhazelton@enter.net> <46EDEDB9.1000104@pro-g.com.tr> <200709170133.17025.dhazelton@enter.net>
-In-Reply-To: <200709170133.17025.dhazelton@enter.net>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 17 Sep 2007 02:47:19 -0400
+Date: Sun, 16 Sep 2007 23:46:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Cc: "Kees Cook" <kees@ubuntu.com>, "Greg KH" <greg@kroah.com>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       "Ben Collins" <bcollins@ubuntu.com>,
+       "Michael Wu" <flamingice@sourmilk.net>
+Subject: Re: [PATCH] modpost: detect unterminated device id lists
+Message-Id: <20070916234657.6548efe3.akpm@linux-foundation.org>
+In-Reply-To: <a781481a0709161724r6cf664e6q453331911cd0b493@mail.gmail.com>
+References: <20070912064134.GO7910@outflux.net>
+	<46E7C91D.3070001@garzik.org>
+	<b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com>
+	<20070912215356.GC23294@kroah.com>
+	<20070913004937.GM8183@outflux.net>
+	<20070916151447.dc925a9e.akpm@linux-foundation.org>
+	<a781481a0709161724r6cf664e6q453331911cd0b493@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton wrote:
-> On Sunday 16 September 2007 23:00:09 Can E. Acar wrote:
-[snip]
->> Theo summarized the latest situation here, some days ago:
->>
->>   http://marc.info/?l=openbsd-misc&m=118963284332223&w=2
->>
->> and here is a very brief summary:
->>
->>   http://marc.info/?l=openbsd-misc&m=118965266709012&w=2
->>
->> If you really want to know the latest situation, please read these
->> links, and think about it.
+On Mon, 17 Sep 2007 05:54:45 +0530 "Satyam Sharma" <satyam.sharma@gmail.com> wrote:
+
+> On 9/17/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Wed, 12 Sep 2007 17:49:37 -0700 Kees Cook <kees@ubuntu.com> wrote:
+> >
+> > > This patch against 2.6.23-rc6 will cause modpost to fail if any device
+> > > id lists are incorrectly terminated, after reporting the offender.
+> >
+> > I'm getting this:
+> >
+> > rusb2/pvrusb2: struct usb_device_id is 20 bytes.  The last of 3 is:
+> > 0x03 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+> > 0x00 0x00 0x00 0x00 0x00
+> > FATAL: drivers/media/video/pvrusb2/pvrusb2: struct usb_device_id is not terminated
+> > with a NULL entry!
+> >
+> > ("rusb2/pvrusb2" ??)
 > 
-> No need. Here are the facts:
+> Hmm? Are you sure you didn't see any "drivers/media/video/pv" before the
+> "rusb2/pvrusb2" bit?
 
-It is now obvious that you have no interest in facts,
-You blindly repeat what you made yourself to believe.
+Fairly.  I looked twice.
 
-I will waste no more time with you.
+> Looking at Kees' patch (and the existing code), I've no
+> clue how/why this should happen ... will try to reproduce here ...
+> 
+> 
+> > but:
+> >
+> > struct usb_device_id pvr2_device_table[] = {
+> >         [PVR2_HDW_TYPE_29XXX] = { USB_DEVICE(0x2040, 0x2900) },
+> >         [PVR2_HDW_TYPE_24XXX] = { USB_DEVICE(0x2040, 0x2400) },
+> >         { USB_DEVICE(0, 0) },
+> > };
+> >
+> > looks OK?
+> >
+> > Using plain old "{ }" shut the warning up.
+> 
+> USB_DEVICE(0, 0) is not empty termination, actually, and this looks like
+> a genuine bug caught by the patch. As that dump shows, USB_DEVICE(0, 0)
+> assigns "0x03 0x00" (in little endian) to usb_device_id.match_flags. And
+> I don't think the USB code treats such an entry as an empty entry (?)
+> 
+> Interestingly, the "USB_DEVICE(0, 0)" thing is absent from latest -git
+> tree and also in my copy of 23-rc4-mm1 -- so this looks like something
+> you must've merged recently.
 
-Can
+git-dvb very carefully does
 
--- 
-In theory, there is no difference between theory and practice.
-But, in practice, there is.
+--- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c~git-dvb
++++ a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
+@@ -44,7 +44,7 @@
+ struct usb_device_id pvr2_device_table[] = {
+ 		[PVR2_HDW_TYPE_29XXX] = { USB_DEVICE(0x2040, 0x2900) },
+ 		[PVR2_HDW_TYPE_24XXX] = { USB_DEVICE(0x2040, 0x2400) },
+-       { }
++       { USB_DEVICE(0, 0) },
+};
+	 
+MODULE_DEVICE_TABLE(usb, pvr2_device_table);
+	
