@@ -1,169 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbXIQPZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbXIQPZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755779AbXIQPZV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 11:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbXIQPZI
+	id S1756120AbXIQPZk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 11:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbXIQPZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 11:25:08 -0400
-Received: from smtp.opengridcomputing.com ([71.42.183.126]:35136 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753187AbXIQPZG (ORCPT
+	Mon, 17 Sep 2007 11:25:27 -0400
+Received: from despair.weirdnet.nl ([193.202.115.165]:21878 "EHLO
+	despair.weirdnet.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755821AbXIQPZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 11:25:06 -0400
-Message-ID: <46EE9C50.7070406@opengridcomputing.com>
-Date: Mon, 17 Sep 2007 10:25:04 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 17 Sep 2007 11:25:23 -0400
+X-Greylist: delayed 615 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Sep 2007 11:25:22 EDT
+Date: Mon, 17 Sep 2007 17:15:05 +0200
+From: Paul de Weerd <weerd@weirdnet.nl>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917151505.GV18186@despair.weirdnet.nl>
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211351.GB18232@stusta.de> <20070917092019.GC23002@schlund.de> <20070917133845.GJ18232@stusta.de>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: rdreier@cisco.com, sean.hefty@intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [PATCH v2] iw_cxgb3: Support "iwarp-only" interfaces to avoid
- 4-tuple conflicts.
-References: <20070913191617.30937.95960.stgit@dell3.ogc.int> <20070914130941.GG18517@2ka.mipt.ru> <46EC00BE.3020801@opengridcomputing.com> <20070916142241.GA26848@2ka.mipt.ru>
-In-Reply-To: <20070916142241.GA26848@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="aX6oBa4COn3eIhlv"
+Content-Disposition: inline
+In-Reply-To: <20070917133845.GJ18232@stusta.de>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--aX6oBa4COn3eIhlv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Evgeniy Polyakov wrote:
-> Hi Steve.
-> 
-> On Sat, Sep 15, 2007 at 10:56:46AM -0500, Steve Wise (swise@opengridcomputing.com) wrote:
->>>> The iWARP driver must translate all listens on address 0.0.0.0 to the
->>>> set of rdma-only ip addresses for the device in question.  This prevents
->>>> incoming connect requests to the TCP ipaddresses from going up the
->>>> rdma stack.
->>> If the only solutions to solve a problem with hardware are to steal
->>> packets or became a real device, then real device is much more
->>> appropriate. Is that correct?
->>>
->> This is a real device.  I don't understand your question?  Packets 
->> aren't being stolen.
-> 
-> I meant port from main network stack. Sorry for confusion.
-> 
->>>> +static void insert_ifa(struct iwch_dev *rnicp, struct in_ifaddr *ifa)
->>>> +{
->>>> +	struct iwch_addrlist *addr;
->>>> +
->>>> +	addr = kmalloc(sizeof *addr, GFP_KERNEL);
->>> As a small nitpick: this wants to be sizeof(struct in_ifaddr)
->>>
->> No, insert_ifa() allocates a struct iwch_addrlist, which has 2 fields: a 
->> list_head for linking, and a struct in_ifaddr pointer.
-> 
-> sizeof(struct iwch_addrlist) of course, not (*addr).
-> To simplify grep.
->  
->>>> +	if (!addr) {
->>>> +		printk(KERN_ERR MOD "%s - failed to alloc memory!\n",
->>>> +		       __FUNCTION__);
->>>> +		return;
->>>> +	}
->>>> +	addr->ifa = ifa;
->>>> +	mutex_lock(&rnicp->mutex);
->>>> +	list_add_tail(&addr->entry, &rnicp->addrlist);
->>>> +	mutex_unlock(&rnicp->mutex);
->>>> +}
->>> What about providing error back to caller and fail to register?
->>>
->> There are two causes where this is called: 1) during module init to 
->> populate the list of iwarp addresses.  If we failed in that case then, I 
->> _could_ then not register.  2) we get called via the notifier mechanism 
->> when an address is added.  If that fails, the caller doesn't care (since 
->> we're on the notifier callout thread).  But the code could perhaps 
->> unregister the device.  I prefer just logging an error in case 2.  I'll 
->> look into not registering if we cannot get any address due to lack of 
->> memory.  But there's another case:  we load the module and the admin 
->> hasn't yet created the ethX:iw interface.
->>
->> Perhaps I should change the code to only register as a working rdma 
->> device _when_ we get at least one ethX:iwY interface created?  Whatchathink?
-> 
-> Does second case ends up with problem you described in the initial
-> e-mail not being fixed?
+On Mon, Sep 17, 2007 at 03:38:45PM +0200, Adrian Bunk wrote:
+| It's not about lazyness of BSD developers, many people who consider the=
+=20
+| BSD licence more free than the GPL argue that the advantage of the BSD=20
+| licence is that it does not require you to give back.
+|=20
+| Something is wrong if your licence text clearly states that you do not=20
+| require getting anything back but you then argue on moral grounds that
+| something has to be given back.
 
-No, the 2nd case (a failure to get the list of iwarp-only ip addresses) 
-will cause rdma apps to not receive any incoming connections.
+Something is wrong if your licence text clearly states that you MUST
+give back, but then you don't return the favour on grounds that "hey,
+they don't require it, so we don't have to".
 
-Consider we have eth1 with 1.1.1.1/24.  Next, the admin creates the 
-iwarp interface thusly:
+It may be perfectly legal, but it's "interesting" to say the least.
+No, you do not have to give back. But weren't you open source / free
+software developers ? Why did you pick the GPL ? Because you didn't
+want someone to run of with your code ? You wanted code to be given
+back ? Why not do it yourself ? By not giving back you're giving a
+strange signal.
 
-ifconfig eth1:iw 2.2.2.2 netmask 255.255.255.0 up
+Paul 'WEiRD' de Weerd
 
-The iw_cxgb3 driver gets a netblock notifier event for the addition of 
-the eth1:iw interface, but FAILS to alloc the memory to keep track that 
-2.2.2.2 is the iwarp-only address.
+PS: Yes, I know .. but your "giving back" attaches new strings that
+weren't there in the first place.
 
-Next an rdma app binds to 0.0.0.0, port X.  The iw_cxgb3 attempts to map 
-0.0.0.0 to the set of valid iwarp addresses, but there are none. 
-iw_cxgb3 logs a warning saying no addresses are available.  The 
-application ends up not listening to any address.
+--=20
+>++++++++[<++++++++++>-]<+++++++.>+++[<------>-]<.>+++[<+
++++++++++++>-]<.>++[<------------>-]<+.--------------.[-]
+                 http://www.weirdnet.nl/                =20
 
-So TCP apps aren't affected.
+--aX6oBa4COn3eIhlv
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-Also, if the admin notes the error log entry, and re-initializes the 
-eth1:iw interface -and- this time the kmalloc() works, then the existing 
-rdma app bound to 0.0.0.0 port X will then start receiving connect 
-requests to 2.2.2.2 port X.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (OpenBSD)
 
-Hope this makes sense.
+iD8DBQFG7pn5mw12l2HFcK0RApeXAJ9ADdZL8MPw+6MSOX4vDHesdL+KFgCfeJHx
+aSNPg4O5a9OOwVAjs+E0+PE=
+=4tGG
+-----END PGP SIGNATURE-----
 
->  
->>>> +static inline int is_iwarp_label(char *label)
->>>> +{
->>>> +	char *colon;
->>>> +
->>>> +	colon = strchr(label, ':');
->>>> +	if (colon && !strncmp(colon+1, "iw", 2))
->>>> +		return 1;
->>>> +	return 0;
->>>> +}
->>> I.e. it is not allowed to create ':iw' alias for anyone else?
->>> Well, looks crappy, but if it is the only solution...
->>>
->> It is kinda crappy.  But I don't see a better solution.  Any ideas?
-> 
-> Does creating the whole new netdevice is a too big overhead, or is it
-> considered bad idea?
-
-I think its too big overhead, and pretty invasive on the low level cxgb3 
-driver.  I think having a device in the 'ifconfig -a' after iw_cxgb3 is 
-loaded and devices discovered would be a good thing for the admin.  This 
-is the angle Roland suggested.  I'm just not sure how to implement it.
-
-But if someone could explain how I might create this full netdevice as a 
-pseudo device on top of the real one, maybe I could implement it.
-
-Note that non TCP traffic still needs to utilize this interface for ND 
-to work properly with the RDMA core.
-
-
-> 
->>>> +static struct iwch_listen_entry *alloc_listener(struct iwch_listen_ep 
->>>> *ep,
->>>> +						  __be32 addr)
->>> Do you know, that cxgb3 function names suck? :)
->>> Especially get_skb().
->>>
->>>> +{
->>>> +	struct iwch_dev *h = to_iwch_dev(ep->com.cm_id->device);
->>>> +	struct iwch_listen_entry *le;
->>>> +
->>>> +	le = kmalloc(sizeof *le, GFP_KERNEL);
->>> Wants to be sizeof(struct iwch_listen_entry) and in other places too.
->>>
->> Do you mean I shouldn't use sizeof *le, but rather sizeof(struct 
->> iwch_listen_entry)?  Is that the preferred coding style?
-> 
-> Yes, exactly.
->
-
-Ok, now I get it. :)
-
-
-Steve.
+--aX6oBa4COn3eIhlv--
