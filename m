@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXIQOHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbXIQOJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755933AbXIQOHu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 10:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbXIQOHk
+	id S1755857AbXIQOJs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 10:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbXIQOJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 10:07:40 -0400
-Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:51297 "EHLO iris"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753460AbXIQOHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 10:07:38 -0400
-Message-ID: <46EE8A13.1070102@sw.ru>
-Date: Mon, 17 Sep 2007 18:07:15 +0400
-From: "Denis V. Lunev" <den@sw.ru>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
-MIME-Version: 1.0
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-CC: ajwade+00@andrew.wade.mooo.com, Satyam Sharma <satyam@infradead.org>,
-       thunder7@xs4all.nl, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.23-rc4-mm1 OOPS in forcedeth?
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070901181352.GA4156@amd64.of.nowhere> <46D9B7EF.2050109@garzik.org> <alpine.LFD.0.999.0709020610590.20781@enigma.security.iitk.ac.in> <20070902061900.GA5595@amd64.of.nowhere> <alpine.LFD.0.999.0709021504550.22654@enigma.security.iitk.ac.in> <20070913235133.0df3c590.ajwade+00@andrew.wade.networklinux.net> <20070917135729.GA19802@linux.vnet.ibm.com>
-In-Reply-To: <20070917135729.GA19802@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 17 Sep 2007 10:09:41 -0400
+Received: from ppsw-8.csi.cam.ac.uk ([131.111.8.138]:50065 "EHLO
+	ppsw-8.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753194AbXIQOJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 10:09:40 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <13126578-A4F8-43EA-9B0D-A3BCBFB41FEC@cam.ac.uk>
+References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk> <1189850897.21778.301.camel@twins> <20070915035228.8b8a7d6d.akpm@linux-foundation.org> <13126578-A4F8-43EA-9B0D-A3BCBFB41FEC@cam.ac.uk>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <DC408F26-E53F-4F27-9DEF-E996401D95FB@cam.ac.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       marc.smith@esmail.mcc.edu
 Content-Transfer-Encoding: 7bit
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: VM/VFS bug with large amount of memory and file systems?
+Date: Mon, 17 Sep 2007 15:09:24 +0100
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have also seen this OOPS on e1000 card. So, looks like driver independent.
-
-By the way, this one has been triggered in a semi-stable way by the
-'git-pull'
-
-Regards,
-	Den
-
-Dhaval Giani wrote:
-> On Thu, Sep 13, 2007 at 11:51:33PM -0400, Andrew James Wade wrote:
->> I have an Oops that may be related:
+On 17 Sep 2007, at 15:04, Anton Altaparmakov wrote:
+> On 15 Sep 2007, at 11:52, Andrew Morton wrote:
+>> On Sat, 15 Sep 2007 12:08:17 +0200 Peter Zijlstra  
+>> <peterz@infradead.org> wrote:
+>>> Anyway, looks like all of zone_normal is pinned in kernel  
+>>> allocations:
+>>>
+>>>> Sep 13 15:31:25 escabot Normal free:3648kB min:3744kB low:4680kB  
+>>>> high: 5616kB active:0kB inactive:3160kB present:894080kB  
+>>>> pages_scanned:5336 all_unreclaimable? yes
+>>>
+>>> Out of the 870 odd mb only 3 is on the lru.
+>>>
+>>> Would be grand it you could have a look at slabinfo and the like.
 >>
->> BUG: unable to handle kernel NULL pointer dereference at virtual address 00000025
->> printing eip: c037d81b *pde = 00000000
->> Oops: 0000 [#1]
->> last sysfs file: /devices/pci0000:00/0000:00:01.0/0000:01:00.0/class
+>> Definitely.
 >>
->> Pid: 0, comm: swapper Not tainted (2.6.23-rc4-mm1-config2 #2)
->> EIP: 0060:[<c037d81b>] EFLAGS: 00010246 CPU: 0
->> EIP is at tcp_rto_min+0xb/0x15
->> EAX: 00000032 EBX: c4c98b68 ECX: fffffffe EDX: 00000000
->> ESI: c4c98b68 EDI: c055f600 EBP: c4432e40 ESP: c0596dec
->>  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
->> Process swapper (pid: 0, ti=c0596000 task=c052a340 task.ti=c0568000)
->> Stack: c037d8de c4c98b68 c4c98b68 c037e0ec 00000001 c037f879 c052a8b4 c052a340
->>        00000000 00000001 c25e1e60 00000000 00000000 00000001 8c176265 8c17678a
->>        00000000 00000001 00000001 00000000 8c17678a 86000000 ffffffff 007d8b21
->> Call Trace:
->>  [<c037d8de>] tcp_rtt_estimator+0xb9/0xfe
->>  [<c037e0ec>] tcp_ack_saw_tstamp+0x14/0x43
->>  [<c037f879>] tcp_ack+0x6b8/0x17b8
->>  [<c03833cc>] tcp_rcv_established+0x519/0x5f1
->>  [<c038838d>] tcp_v4_do_rcv+0x28/0x2f8
->>  [<c038a4ce>] tcp_v4_rcv+0x7df/0x83d
->>  [<c0372542>] ip_local_deliver+0xcc/0x148
->>  [<c0372975>] ip_rcv+0x3b7/0x3de
->>  [<c035fa0e>] netif_receive_skb+0x17a/0x1c2
->>  [<c02cc121>] rtl8139_poll+0x2d9/0x425
->>  [<c03616d7>] net_rx_action+0xa8/0xc8
->>  [<c011e8e0>] __do_softirq+0x40/0x90
->>  [<c010635d>] do_softirq+0x4d/0xb6
->>  =======================
->> INFO: lockdep is turned off.
->> Code: 24 8b 82 88 03 00 00 89 82 40 05 00 00 a1 a0 23 53 c0 89 82 44 05 00 00 83 c4 0c 5b 5e 5f 5d c3 8b 90 88 00 00 00 b8 32 00 00 00 <f6> 42 25 20 74 03 8b 42 54 c3 56
->>  85 d2 b9 01 00 00 00 0f 45 ca
->> EIP: [<c037d81b>] tcp_rto_min+0xb/0x15 SS:ESP 0068:c0596dec
->> Kernel panic - not syncing: Fatal exception in interrupt
+>>>> Sep 13 15:31:25 escabot free:1090395 slab:198893 mapped:988
+>>>> pagetables:129 bounce:0
+>>
+>> 814,665,728 bytes of slab.
+>
+> Marc emailed me the contents of /proc/ 
+> {slabinfo,meminfo,vmstat,zoneinfo} taken just a few seconds before  
+> the machine panic()ed due to running OOM completely...  They files  
+> are attached this time rather than inlined so people don't complain  
+> about line wrapping!  (No doubt people will not complain about them  
+> being attached!  )-:)
+>
+> If I read it correctly it appears all of low memory is eaten up by  
+> buffer_heads.
+>
+> <quote>
+> # name            <active_objs> <num_objs> <objsize> <objperslab>  
+> <pagesperslab>
+> : tunables <limit> <batchcount> <sharedfactor> : slabdata  
+> <active_slabs> <num_s
+> labs> <sharedavail>
+> buffer_head       12569528 12569535     56   67    1 : tunables   
+> 120   60    8 :
+> slabdata 187605 187605      0
+> </quote>
+>
+> That is 671MiB of low memory in buffer_heads.
+
+I meant that is 732MiB of low memory in buffer_heads.  (12569535  
+num_objs / 67 objperslab * 1 pagesperslab * 4096 PAGE_SIZE)
+
+> But why is the kernel not reclaiming them by getting rid of the  
+> page cache pages they are attached to or even leaving the pages  
+> around but killing their buffers?
+>
+> I don't think I am doing anything in NTFS to cause this problem to  
+> happen...  Other than using buffer heads for my page cache pages  
+> that is but that is hardly a crime!  /-;
+
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
+
