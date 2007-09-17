@@ -1,120 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbXIQIy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbXIQIzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbXIQIy5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 04:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXIQIdf
+	id S1758393AbXIQIzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 04:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXIQIdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 17 Sep 2007 04:33:35 -0400
-Received: from il.qumranet.com ([82.166.9.18]:45258 "EHLO il.qumranet.com"
+Received: from il.qumranet.com ([82.166.9.18]:45331 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639AbXIQIch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753390AbXIQIch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 17 Sep 2007 04:32:37 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 096/104] KVM: Improve emulation failure reporting
-Date: Mon, 17 Sep 2007 10:32:18 +0200
-Message-Id: <1190017949507-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Nitin A Kamble <nitin.a.kamble@intel.com>
+Subject: [PATCH 095/104] KVM: x86 emulator: pushf
+Date: Mon, 17 Sep 2007 10:32:17 +0200
+Message-Id: <11900179492320-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <11900179463203-git-send-email-avi@qumranet.com>
 References: <11900179463203-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Report failed opcodes from all locations.
+From: Nitin A Kamble <nitin.a.kamble@intel.com>
 
+Implement emulation of instruction
+	pushf
+	opcode: 0x9c
+
+Signed-off-by: Nitin A Kamble <nitin.a.kamble@intel.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h      |    1 +
- drivers/kvm/kvm_main.c |   16 ++++++++--------
- drivers/kvm/svm.c      |    2 +-
- drivers/kvm/vmx.c      |    2 +-
- 4 files changed, 11 insertions(+), 10 deletions(-)
+ drivers/kvm/x86_emulate.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index d93ab48..ad08138 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -558,6 +558,7 @@ enum emulation_result {
- 
- int emulate_instruction(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			unsigned long cr2, u16 error_code);
-+void kvm_report_emulation_failure(struct kvm_vcpu *cvpu, const char *context);
- void realmode_lgdt(struct kvm_vcpu *vcpu, u16 size, unsigned long address);
- void realmode_lidt(struct kvm_vcpu *vcpu, u16 size, unsigned long address);
- void realmode_lmsw(struct kvm_vcpu *vcpu, unsigned long msw,
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index e6301ce..99e4917 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1240,25 +1240,25 @@ int emulator_set_dr(struct x86_emulate_ctxt *ctxt, int dr, unsigned long value)
- 	return X86EMUL_CONTINUE;
- }
- 
--static void report_emulation_failure(struct x86_emulate_ctxt *ctxt)
-+void kvm_report_emulation_failure(struct kvm_vcpu *vcpu, const char *context)
- {
- 	static int reported;
- 	u8 opcodes[4];
--	unsigned long rip = ctxt->vcpu->rip;
-+	unsigned long rip = vcpu->rip;
- 	unsigned long rip_linear;
- 
--	rip_linear = rip + get_segment_base(ctxt->vcpu, VCPU_SREG_CS);
-+	rip_linear = rip + get_segment_base(vcpu, VCPU_SREG_CS);
- 
- 	if (reported)
- 		return;
- 
--	emulator_read_std(rip_linear, (void *)opcodes, 4, ctxt->vcpu);
-+	emulator_read_std(rip_linear, (void *)opcodes, 4, vcpu);
- 
--	printk(KERN_ERR "emulation failed but !mmio_needed?"
--	       " rip %lx %02x %02x %02x %02x\n",
--	       rip, opcodes[0], opcodes[1], opcodes[2], opcodes[3]);
-+	printk(KERN_ERR "emulation failed (%s) rip %lx %02x %02x %02x %02x\n",
-+	       context, rip, opcodes[0], opcodes[1], opcodes[2], opcodes[3]);
- 	reported = 1;
- }
-+EXPORT_SYMBOL_GPL(kvm_report_emulation_failure);
- 
- struct x86_emulate_ops emulate_ops = {
- 	.read_std            = emulator_read_std,
-@@ -1323,7 +1323,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 		if (kvm_mmu_unprotect_page_virt(vcpu, cr2))
- 			return EMULATE_DONE;
- 		if (!vcpu->mmio_needed) {
--			report_emulation_failure(&emulate_ctxt);
-+			kvm_report_emulation_failure(vcpu, "mmio");
- 			return EMULATE_FAIL;
- 		}
- 		return EMULATE_DO_MMIO;
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 95681ea..729f1cd 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -960,7 +960,7 @@ static int pf_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
- 		++svm->vcpu.stat.mmio_exits;
- 		return 0;
- 	case EMULATE_FAIL:
--		vcpu_printf(&svm->vcpu, "%s: emulate fail\n", __FUNCTION__);
-+		kvm_report_emulation_failure(&svm->vcpu, "pagetable");
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index 9f1772f..18c2b2c 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -123,7 +123,7 @@ static u8 opcode_table[256] = {
+ 	ByteOp | DstReg | SrcMem | ModRM | Mov, DstReg | SrcMem | ModRM | Mov,
+ 	0, 0, 0, DstMem | SrcNone | ModRM | Mov,
+ 	/* 0x90 - 0x9F */
+-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ImplicitOps, 0, 0, 0,
+ 	/* 0xA0 - 0xA7 */
+ 	ByteOp | DstReg | SrcMem | Mov, DstReg | SrcMem | Mov,
+ 	ByteOp | DstMem | SrcReg | Mov, DstMem | SrcReg | Mov,
+@@ -928,7 +928,8 @@ push:
+ 		dst.bytes = op_bytes;
+ 		dst.val = src.val;
+ 		register_address_increment(_regs[VCPU_REGS_RSP], -op_bytes);
+-		dst.ptr = register_address(ctxt->ss_base, _regs[VCPU_REGS_RSP]);
++		dst.ptr = (void *) register_address(ctxt->ss_base,
++							_regs[VCPU_REGS_RSP]);
  		break;
- 	default:
- 		BUG();
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index c44c9ac..4f115a8 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -1798,7 +1798,7 @@ static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 			++vcpu->stat.mmio_exits;
- 			return 0;
- 		 case EMULATE_FAIL:
--			vcpu_printf(vcpu, "%s: emulate fail\n", __FUNCTION__);
-+			kvm_report_emulation_failure(vcpu, "pagetable");
- 			break;
- 		default:
- 			BUG();
+ 	case 0x80 ... 0x83:	/* Grp1 */
+ 		switch (modrm_reg) {
+@@ -1216,6 +1217,12 @@ special_insn:
+ 				) == 0)
+ 			return -1;
+ 		return 0;
++
++	case 0x9c: /* pushf */
++		src.val =  (unsigned long) _eflags;
++		goto push;
++		break;
++
+ 	}
+ 	if (rep_prefix) {
+ 		if (_regs[VCPU_REGS_RCX] == 0) {
 -- 
 1.5.3
 
