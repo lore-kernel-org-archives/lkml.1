@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbXIQO7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbXIQPOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbXIQO7n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 10:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbXIQO7g
+	id S1754849AbXIQPOU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 11:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbXIQPOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 10:59:36 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:55315 "EHLO fieldses.org"
+	Mon, 17 Sep 2007 11:14:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52149 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753586AbXIQO7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 10:59:35 -0400
-Date: Mon, 17 Sep 2007 10:59:34 -0400
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
-Subject: Re: [PATCH] Wake up mandatory locks waiter on chmod
-Message-ID: <20070917145934.GA4957@fieldses.org>
-References: <46E94993.3090506@openvz.org> <20070916194135.GC31801@fieldses.org> <46EE20C4.1060405@openvz.org>
+	id S1751904AbXIQPOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 11:14:11 -0400
+Message-ID: <46EE99C0.5020106@redhat.com>
+Date: Mon, 17 Sep 2007 11:14:08 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46EE20C4.1060405@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: EDD still failing on some systems with 2.6.23-rc6-git2
+References: <46EAA9A1.1080100@redhat.com> <46EAB179.4030805@zytor.com>
+In-Reply-To: <46EAB179.4030805@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 10:37:56AM +0400, Pavel Emelyanov wrote:
-> J. Bruce Fields wrote:
-> > Is there a small chance that a lock may be applied after this check:
-> > 
-> >> +	mandatory = (inode->i_flock && MANDATORY_LOCK(inode));
-> >> +
-> > 
-> > but early enough that someone can still block on the lock while the file
-> > is still marked for mandatory locking?  (And is the inode->i_flock check
-> > there really necessary?)
+On 09/14/2007 12:06 PM, H. Peter Anvin wrote:
+> Chuck Ebbert wrote:
+>> I added debugging code to print a letter for each step in i386 setup,
+>> and it gets to 'J', then it hangs:
+>>
+>>         /* Query EDD information */
+>> #if defined(CONFIG_EDD) || defined(CONFIG_EDD_MODULE)
+>>         putchar('J');
+>>         query_edd();
+>> #endif
+>>
+>> Multiple reports of this happening on 2.6.23-rc6 can be found at
+>> the end of:
+>>
+>> https://bugzilla.redhat.com/show_bug.cgi?id=251724
+>> https://bugzilla.redhat.com/show_bug.cgi?id=239585
 > 
-> There is, but as you have noticed:
-
-OK, but why not just remove the inode->i_flock check there?  I can't see
-how it helps anyway.
-
-> > Well, there are probably worse races in the mandatory locking code.
+> I just attached a test patch to the bug report shown above.  If someone
+> with access to the relevant hardware could test out the patch, I would
+> greatly appreciate it.
 > 
-> ...there are. The inode->i_lock is protected with lock_kernel() only
-> and is not in sync with any other checks for inodes. This is sad :(
-> but a good locking for locks is to be done...
 
-I would also prefer a locking scheme that didn't rely on the BKL.  That
-said, except for this race:
+Still fails. And apparently fails on disk 0, because it hangs right
+after printing a zero:
 
-> > (For example, my impression is that a mandatory lock can be applied just
-> > after the locks_mandatory_area() checks but before the io actually
-> > completes.)
+--- linux-2.6.22.noarch.orig/arch/i386/boot/edd.c
++++ linux-2.6.22.noarch/arch/i386/boot/edd.c
+@@ -151,6 +151,7 @@ void query_edd(void)
+                 * Scan the BIOS-supported hard disks and query EDD
+                 * information...
+                 */
++               putchar('0' + (devno - 0x80) % 10);
+                get_edd_info(devno, &ei);
 
-... I'm not aware of other races in the existing file-locking code.  It
-sounds like you might be.  Could you give specific examples?
-
---b.
+                if (boot_params.eddbuf_entries < EDDMAXNR) {
