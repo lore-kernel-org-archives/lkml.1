@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbXIQC6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbXIQDP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754281AbXIQC6V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 22:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbXIQC6N
+	id S1754097AbXIQDP7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 23:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXIQDPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 22:58:13 -0400
-Received: from mail.pro-g.com.tr ([81.214.24.101]:61684 "EHLO
-	mail.pro-g.com.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbXIQC6M (ORCPT
+	Sun, 16 Sep 2007 23:15:49 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:2609 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbXIQDPs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 22:58:12 -0400
-Message-ID: <46EDEDB9.1000104@pro-g.com.tr>
-Date: Sun, 16 Sep 2007 20:00:09 -0700
-From: "Can E. Acar" <can.acar@pro-g.com.tr>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070729)
-MIME-Version: 1.0
-To: Daniel Hazelton <dhazelton@enter.net>
-CC: misc@openbsd.org, linux-kernel@vger.kernel.org,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-References: <46ED7A8F.1020304@pro-g.com.tr> <200709161632.21927.dhazelton@enter.net>
-In-Reply-To: <200709161632.21927.dhazelton@enter.net>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 16 Sep 2007 23:15:48 -0400
+X-IronPort-AV: i="4.20,262,1186372800"; 
+   d="scan'208"; a="39732916:sNHT27030563"
+Subject: Re: [PATCH 3/3] Blackfin EMAC driver: Add phyabstraction layer
+	supporting in bfin_emac driver
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: bryan.wu@analog.com, jeff@garzik.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <200709162251.01558.rgetz@blackfin.uclinux.org>
+References: <1189911475.9901.8.camel@roc-laptop>
+	 <200709162251.01558.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Mon, 17 Sep 2007 11:11:44 +0800
+Message-Id: <1189998704.7800.1.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 17 Sep 2007 03:15:43.0981 (UTC) FILETIME=[08A289D0:01C7F8D9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton wrote:
-> On Sunday 16 September 2007 14:48:47 Can E. Acar wrote:
-[snip]
->>
->> First, these developers got questionable advice from senior Linux kernel
->> developers, and SLFC (which is closely related to FSF) in the process.
+On Sun, 2007-09-16 at 22:51 -0400, Robin Getz wrote:
+> On Sat 15 Sep 2007 22:57, Bryan Wu pondered:
+> > 
+> >  - add MDIO functions and register mdio bus
+> >  - add phy abstraction layer (PAL) functions and use PAL API
+> >  - test on STAMP537 board
 > 
-> IIRC, the advice was "Yes, it is legal to choose to follow only one of 
-> multiple offered licenses on a project" - nothing else. They looked at the 
-> patches and said "Wait, you've changed the license on files that aren't under 
-> a dual license."
+> Today, the Kconfig for the Blackfin just includes:
 > 
-> Hence, no problems here - no questionable advice only.
+> > config BFIN_MAC
+> >         tristate "Blackfin 536/537 on-chip mac support"
+> >         depends on NET_ETHERNET && (BF537 || BF536) && (!BF537_PORT_H)
+> >         select CRC32
+> >         select BFIN_MAC_USE_L1 if DMA_UNCACHED_NONE
+> >         help
+> >           This is the driver for blackfin on-chip mac device. Say Y if you
+> > want it compiled into the kernel. This driver is also available as a module
+> > ( = code which can be inserted in and removed from the running kernel
+> > whenever you want). The module will be called bfin_mac.
+> 
+> Since you are adding requirement for the PHYLIB with this patch, should there
+> be a select for that?
+> 
+> -Robin
 
-The replies suggest that some (most?) people are not aware of the
-recent developments, and that it is a dual licensing issue.
+OK, I will send a patch for  this update, since some people failed to
+compile the kernel without select the PHYLIB.
 
-This has very little to do with dual licensing right now,
-there has been other developments, more "advice" from SLFC.
-
-The code in question is Reyk's open source HAL work.
-I want to emphasize. This work was NOT ever dual licensed.
-
-Furthermore, since it is compatible with the binary HAL from
-Atheros, the interface is fixed and the same both in Linux and
-*BSD.  So, even the latst code divergence arguments do not
-apply here. The improvements to this piece of code improve
-the Open Source Atheros support, and is important for both
-Linux and BSD.
-
-Theo summarized the latest situation here, some days ago:
-
-  http://marc.info/?l=openbsd-misc&m=118963284332223&w=2
-
-and here is a very brief summary:
-
-  http://marc.info/?l=openbsd-misc&m=118965266709012&w=2
-
-If you really want to know the latest situation, please read these
-links, and think about it.
-
-Do you believe re-arranging code, renaming functions, splitting code
-to multiple files, adding some adaptation code is original enough
-to be a derivative work and deserve its own copyright?
-
-
-Can
-
--- 
-In theory, there is no difference between theory and practice.
-But, in practice, there is.
+Thanks
+-Bryan Wu
