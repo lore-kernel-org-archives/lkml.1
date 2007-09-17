@@ -1,63 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbXIQKWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbXIQK5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbXIQKWs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 06:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXIQKWk
+	id S1753530AbXIQK5Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 06:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXIQK5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 06:22:40 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:55033 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752188AbXIQKWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 06:22:39 -0400
-Date: Mon, 17 Sep 2007 14:22:41 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
-       Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
-Message-ID: <20070917142241.C21399@jurassic.park.msu.ru>
-References: <1189664467.17835.1.camel@sli10-conroe.sh.intel.com> <20070913073140.GA17367@parisc-linux.org> <1189668286.18361.3.camel@sli10-conroe.sh.intel.com> <20070913075536.GB17367@parisc-linux.org> <20070913095313.GA745@suse.de> <20070913151637.A1679@jurassic.park.msu.ru> <1189972912.6403.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-In-Reply-To: <1189972912.6403.16.camel@localhost.localdomain>; from benh@kernel.crashing.org on Sun, Sep 16, 2007 at 10:01:52PM +0200
+	Mon, 17 Sep 2007 06:57:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54163 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751581AbXIQK5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 06:57:17 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070914165938.9a429e02.akpm@linux-foundation.org>
+References: <20070914165938.9a429e02.akpm@linux-foundation.org> <20070912142508.19311.45995.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org, kwc@citi.umich.edu,
+       Trond.Myklebust@netapp.com, linux-kernel@vger.kernel.org,
+       smfrench@gmail.com, nfsv4@linux-nfs.org
+Subject: Re: [PATCH] KEYS: Make request_key() and co fundamentally asynchronous
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Mon, 17 Sep 2007 11:56:00 +0100
+Message-ID: <16559.1190026560@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 16, 2007 at 10:01:52PM +0200, Benjamin Herrenschmidt wrote:
-> Agreed. I have a similar problem on ppc where it's common to have things
-> like the main PIC on a PCI device. Note that another problem is (or at
-> least was, i haven't checked recently) the P2P bridge scanning code
-> that, in a similar way, can block the path to all devices below it. I
-> -do- have a case for example with Apple Xserve G4's where the main Apple
-> IO ASIC, which is a PCI device containing the PIC, the power management
-> controller, and various low level system control IOs is behind a pair of
-> P2P bridges.
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I think the P2P probing code is pretty safe now - there are read-only
-accesses to the bridge config, unless you request to reassign the bus
-numbers. Though it won't be safe anymore with the patch in question.
+> So who's going to review this?  Nobody?  Well gee, maybe it was my turn
+> anyway.
 
-> One solution for us (PPC) is to enforce those devices and bridges to be
-> described in the OF tree, and generalize a bit the code we have for some
-> 64 bits machines, that synthetizes the pci_dev's from the OF nodes
-> rather than probing. But that's not going to help other archs.
+Well, Kevin Coffman has reviewed it and tested it against his NFS keys patches.
 
-If you can get reliable PCI info from firmware, it should be relatively easy
-to avoid at least a bar sizing. You can install an "early" fixup for
-PCI_ANY_ID and fill the resource fields of the pci_dev with values obtained
-from firmware. Then all we need in probe.c is just to check that the resource
-is already non-zero and skip the sizing of respective BAR, if so.
+> checkpatch generates a pile of warnings, all of which afacit are legit.
 
-> In fact, that's a problem we also have with
-> pci_assign_unassigned_resources() which will happily move things around
-> that must not be moved, especially when sitting behind P2P bridges.
+For this warning:
 
-It's not supposed to do that. Certainly, there were problems of that sort,
-but hopefully they are in the past.
+ERROR: need space after that ',' (ctx:WxV)
+#627: FILE: security/keys/internal.h:28:
++#define kenter(FMT, ...) no_printk("==> %s("FMT")\n",__FUNCTION__ ,##__VA_ARGS__)
 
-Ivan.
+                                                                   ^
+
+This is with good reason.  Some versions of cpp get the ## resolution "wrong"
+if __VA_ARGS__ is empty (ie: there are no arguments to the macro that
+correspond to the "...").  This can be worked around by abutting the "," the
+"##" and the "__VA_ARGS__" with no spaces, and inserting a space before the
+comma.
+
+If I remember correctly, the comma won't be removed if it doesn't abut the
+##__VA_ARGS__, and the comma and everthing that abuts it on its LHS can be
+removed if there's also no space.  Without the "##", the comma isn't removed.
+
+Consider the result of doing x("a"); where x(y, ...) is #defined to each of the
+folowing:
+
+	DEFINITION			RESULT
+	===============================	=======================
+	printk(y, __VA_ARGS__)		print(y, );
+	printk(y ,__VA_ARGS__)		print(y ,);
+	printk(y,##__VA_ARGS__)		print();
+	printk(y, ##__VA_ARGS__)	print(y, );
+	printk(y ,##__VA_ARGS__)	print(y );
+
+> It'd be nice to add a comment explaining to the long-suffering reader why
+> down_write_nested() is used here.
+
+I'll change the comment to:
+
+	/* make sure no one's trying to change or use the key when we mark it
+	 * - we tell lockdep that we might nest because we might be revoking an
+	 *   authorisation key whilst holding the sem on a key we've just
+	 *   instantiated
+	 */
+
+> You could actually use kstrdup() here, I think.
+
+I could, but that potentially wastes time in two ways: firstly, there can be an
+error before we've finished setting up, and that can lead to us having wasted
+the time spent making the copy; and secondly, the call to kstrdup itself wastes
+a bit of time because of the extra call made.
+
+On the other hand, the code might end up a bit shorter, and isn't particularly
+fast path anyway.
+
+> rka->callout_info gets leaked later on (goto auth_key_revoked)
+
+Fixed.
+
+> Apart from that the changes look reasonable to me, but I am not a suitable
+> reviewer for keys, NFS or rxrpc stuff.  Who is??
+
+Kevin Coffman and Trond for the NFS stuff, both of whom are CC'd.
+
+David
