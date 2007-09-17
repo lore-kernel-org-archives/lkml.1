@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXIQNMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbXIQNQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbXIQNMU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 09:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbXIQNML
+	id S1754585AbXIQNQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 09:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbXIQNQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 09:12:11 -0400
-Received: from mx1.dixongroup.net ([38.98.104.248]:19213 "EHLO
-	mx1.dixongroup.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753618AbXIQNMJ (ORCPT
+	Mon, 17 Sep 2007 09:16:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:37751 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752850AbXIQNQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 09:12:09 -0400
-In-Reply-To: <20070917125714.GI18232@stusta.de>
-References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070916231633.GB10339@SDF.LONESTAR.ORG> <Pine.LNX.4.64.0709161632500.24221@asgard.lang.hm> <20070917093011.GX32213@nudo.bsws.de> <20070917125714.GI18232@stusta.de>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DE2147A0-E64F-43E9-ACB2-34E271E4293A@dixongroup.net>
-Cc: david@lang.hm, Jacob Meuser <jakemsr@sdf.lonestar.org>,
-       Theodore Tso <tytso@mit.edu>, "Can E. Acar" <can.acar@pro-g.com.tr>,
-       misc@openbsd.org, linux-kernel@vger.kernel.org,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
+	Mon, 17 Sep 2007 09:16:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=YY3bTUIu+nm7gEyxRGILgLNRqcwS/34LsfoQFBOD96tL/UpwzA1+pr1HImkYMHTzUwLIFsQSE5gtrAFwH8qb88RrnAUdY66NEotYMTPp6VVxdbM+s9ddN8v6eqY8FYwPorJmdGW/5C3OnJjxeTxOhDFpSgdZMzhP2rrYD3BStqE=
+Subject: Re: 2.6.22.1: Enabling IO-APIC = APIC error on CPU0: 40(40)
+From: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
+Reply-To: konstantin.sharlaimov@gmail.com
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0709170909520.8681@p34.internal.lan>
+References: <Pine.LNX.4.64.0707140758110.22713@p34.internal.lan>
+	 <1190034476.8152.8.camel@traveler>
+	 <Pine.LNX.4.64.0709170909520.8681@p34.internal.lan>
+Content-Type: text/plain
+Date: Tue, 18 Sep 2007 00:16:31 +1100
+Message-Id: <1190034991.8152.14.camel@traveler>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-From: Jason Dixon <jason@dixongroup.net>
-Subject: Re: Wasting our Freedom
-Date: Mon, 17 Sep 2007 09:15:31 -0400
-To: Adrian Bunk <bunk@stusta.de>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 17, 2007, at 8:57 AM, Adrian Bunk wrote:
+I agree, this is probably somehow related with SiS chipset - my laptop
+has one of these SiS 760 host controllers inside. 
 
-> On Mon, Sep 17, 2007 at 11:30:11AM +0200, Henning Brauer wrote:
->> * david@lang.hm <david@lang.hm> [2007-09-17 02:29]:
->>> you claim that it's unethical for the linux community to use the  
->>> code, but
->>> brag about NetApp useing the code. what makes NetApp ok and Linux  
->>> evil?
->>
->> NetApp does not pretend to be free and open and save the world etc
->
-> GPL and BSD are two different philosophies of freedom.
->
-> Some people (e.g. me) consider the BSD licence a less free licence
-> since it doesn't defend that the code stays free.
+I'll probably do some digging to figure out if this is indeed chipset
+related. I wonder if this error occurs under Windows (Win does not
+report much, yet it's kernel must be aware of such error).
 
-Sure it does.  My code under BSD license continues to remain free,  
-regardless of what Company X(1) does with their *copy* of my code.     
-The only restrictions on my code is that copyright and attribution  
-must remain intact.  All users of my code have the same rights,  
-regardless of what Company X does with their *copy*.
+Konstantin
 
-The GPL places additional restrictions on code.  It is therefore less  
-free than the BSD.
-
-Free code + restrictions = non-free code.
-
-
-(1) GPL advocates deep-down really like the BSD license.   
-Unfortunately, they keep getting hung up on the idea of the Evil  
-Corporation (TM) "stealing" my code.  Nobody has stolen anything.   
-That corporation is entitled to the same rights as Joe User.  Neither  
-EC or JU are required to redistribute any of their changes to their  
-*copy* of my code.  They are only required to keep attribution  
-intact.  Does that make MY CODE any less free?  OF COURSE NOT!
-
----
-Jason Dixon
-DixonGroup Consulting
-http://www.dixongroup.net
-
+On Mon, 2007-09-17 at 09:10 -0400, Justin Piszcz wrote:
+> 
+> On Tue, 18 Sep 2007, Konstantin Sharlaimov wrote:
+> 
+> > I am experiencing the similar problem on my Acer Aspire 5000 laptop -
+> > once in a while a bunch of "APIC error on CPU0: 40(40)" messages are
+> > showing up in dmesg.
+> >
+> > After few experiments and a lot of googling, I identified a cause - it
+> > was my built-in wireless card! Disabling IO-APIC helped, besides a
+> > single "Spurious 8259A interrupt: IRQ7" message while booting up there
+> > was nothing unusual.
+> >
+> > A did some further experiments on various hardware and from my
+> > experience I can tell that "APIC error" messages are entirely hardware
+> > related.
+> >
+> > Regards,
+> > Konstantin
+> 
+> Thanks for the follow-up, yeah its probably one of the Promise
+> controllers or some such that is causing the problem, although I
+> remmeber I used to get the error with only the motherboard, memory and
+> video card, something tells me that MSI board with (SiS) chipset is
+> not quite supported in Linux with APIC enabled.
+> 
+> Justin.
+> 
+> 
 
