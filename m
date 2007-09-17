@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbXIQBlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbXIQBol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbXIQBlS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Sep 2007 21:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbXIQBlJ
+	id S1754559AbXIQBol (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Sep 2007 21:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbXIQBoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Sep 2007 21:41:09 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1852 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbXIQBlI (ORCPT
+	Sun, 16 Sep 2007 21:44:34 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36567 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751930AbXIQBod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Sep 2007 21:41:08 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <tytso@thunk.org>
-Cc: <bunk@kernel.org>,
+	Sun, 16 Sep 2007 21:44:33 -0400
+Date: Mon, 17 Sep 2007 03:44:45 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Theodore Tso <tytso@mit.edu>, David Schwartz <davids@webmaster.com>,
        "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Wasting our Freedom
-Date: Sun, 16 Sep 2007 18:40:21 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEFOGNAC.davids@webmaster.com>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917014445.GF18232@stusta.de>
+References: <20070916230936.GC18232@stusta.de> <MDEHLPKNGKAHNMBLJOLKOEFKGNAC.davids@webmaster.com> <20070917011914.GE5502@thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 In-Reply-To: <20070917011914.GE5502@thunk.org>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 18:41:07 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 16 Sep 2007 18:41:09 -0700
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Sep 16, 2007 at 09:19:14PM -0400, Theodore Tso wrote:
+>...
+> Now, in the case of the Atheros wireless code, the original author
+> (Sam Leffler) has stated that as far as *his* code was concerned, he
+> was willing to dual license it.  However, in this case, he agreed to
+> have the code dual-licensed three years after the project was started.
+> He was amused and had no objections to people retroactively applying
+> the licensing changes to code that was 3 years old.[1]
+>...
 
-Theodore Tso wrote:
+It's actually the other way round:
 
-Essentially, I agree with you. My only disagremeent with you is that I think
-the problem starts sooner:
+Sam changed the licence from dual 3-clause BSD and GPL to 2-clause BSD.
 
-> However, consider a file which was originally BSD licensed.  Now
-> suppose it is modified (i.e., a derived work was created) and another
-> author slaps on a BSD/GPL dual notice.  That's fine, so far; the BSD
-> license on the original file permits that.  The new code is licensed
-> under either BSD or GPL (user's choice), and the original code is
-> under the BSD license, which is compatible with the GPL code, so
-> regardless of whether the user choose the BSD or GPL license.
+> 						- Ted
 
-I would argue that it's really not so fine so far. You need to careful to
-make sure that anybody who receives this file understands that they *must*
-comply with the BSD license in addition to the GPL.
+cu
+Adrian
 
-There choices are not "BSD or GPL" they are "BSD or BSD+GPL". They may
-choose to comply with just the terms of the BSD license, or they may choose
-to in addition require those who make further derivatives to comply with the
-GPL *as* *well*.
+-- 
 
-But this is not really dual-licensed as you cannot choose just the GPL.
-
-DS
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
