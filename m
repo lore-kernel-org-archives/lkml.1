@@ -1,80 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbXIQUVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbXIQUVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbXIQUVU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 16:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbXIQUVL
+	id S1757437AbXIQUVc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 16:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756575AbXIQUVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 16:21:11 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:33528 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754328AbXIQUVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 16:21:09 -0400
-Subject: Re: [PATCH]  2.6.23-rc6:  Fix NUMA Memory Policy Reference Counting
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       ak@suse.de, eric.whitney@hp.com, Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <Pine.LNX.4.64.0709171235190.28178@schroedinger.engr.sgi.com>
-References: <20070830185053.22619.96398.sendpatchset@localhost>
-	 <1190057534.5460.131.camel@localhost>
-	 <Pine.LNX.4.64.0709171235190.28178@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Mon, 17 Sep 2007 16:19:53 -0400
-Message-Id: <1190060393.5460.143.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 17 Sep 2007 16:21:19 -0400
+Received: from pils.linux-kernel.at ([213.129.242.82]:31479 "EHLO
+	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756021AbXIQUVR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 16:21:17 -0400
+X-Greylist: delayed 454 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Sep 2007 16:21:16 EDT
+Message-ID: <46EEDF1B.6040309@linux-kernel.at>
+Date: Mon, 17 Sep 2007 22:10:03 +0200
+From: Oliver Falk <oliver@linux-kernel.at>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, axp-list@redhat.com
+Subject: Re: aboot fixes for 2.6.23
+References: <20070814180457.GA24179@twiddle.net>
+In-Reply-To: <20070814180457.GA24179@twiddle.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-lkernAT-MailScanner-Information: Please contact the ISP for more information
+X-lkernAT-MailScanner: Found to be clean
+X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-4.399, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -2.60)
+X-MailScanner-From: oliver@linux-kernel.at
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-17 at 12:37 -0700, Christoph Lameter wrote:
-> On Mon, 17 Sep 2007, Lee Schermerhorn wrote:
+Tested and it works fine!
+
+Thx Richard!
+
+-of
+
+Richard Henderson schrieb:
+> Recent build changes have added a PT_NOTE entry to the kernel's
+> ELF header.  A perfectly valid change, but Alpha's aboot loader
+> is none too bright about examining these headers.
 > 
-> > Here is the 23-rc6 verison of the patch.  Andi considers it a high
-> > priority bug fix for .23.  I'm a bit uncomfortable with this, this late
-> > in the 23 cycle.  I've not heard of problems w/o this patch, but then,
-> > maybe no one notices if they leak a memory policy struct now and then,
-> > or occasionally allocate memory on the wrong node because they used a
-> > prematurely freed memory policy.
+> The following patch to aboot-1.0_pre20040408.tar.bz2 makes it
+> so that only PT_LOAD entries are considered for loading, as well
+> as several other changes required to get the damned thing to
+> build again.
 > 
-> The patch does require concurrent increments and decrements in the main 
-> fault patch. The potential is to create another bouncing cacheline for 
-> concurrent faults. This looks like it would cause a performance issue.
-
-Only for vma policy, right?  show_numa_maps() isn't a performance path,
-and shared policies are already reference counted--just not unref'd!
-
 > 
-> > Kernel Build [16cpu, 32GB, ia64] - average of 10 runs:
-> > 
-> > 		w/o patch	w/ refcount patch
-> > 	    Avg	  Std Devn	   Avg	  Std Devn
-> > Real:	 100.59	    0.38	 100.63	    0.43
-> > User:	1209.60	    0.37	1209.91	    0.31
-> > System:   81.52	    0.42	  81.64	    0.34
+> r~
 > 
-> Single threaded build? I would suggest to try concurrently faulting memory 
-> from multiple processors. You may not see this on a kernel build even if 
-> this is run with -j16 because concurrent faults are rare.
-
-Well, it was a 32-way parallel build [-j32] on a 16-cpu system--my usual
-build method.  But, I'm guessing that all of the build tools are single
-threaded and all using default policy, so no reference counting is
-needed.
-
-I'm taking a look at your 'pft' program, and I'll try that.
-
-I do have some ideas for enhancements to memtoy to test vma policies in
-a multi-threaded task.  I have the basic multi-threading infrastructure
-that binds threads to cpus, allocates node local stacks, thread state
-structs, ... in my mmtrace tool that I can probably hack for use in
-memtoy to provoke cacheline bouncing of the mem policy.  But, if pft
-does the trick, I won't rush the memtoy enhancments...
-
-Meanwhile, we do have a mem policy ref counting bug in the mainline.
-
-Later,
-Lee
-
+> 
+> diff -rup aboot-1.0_pre20040408/Makefile aboot-local/Makefile
+> --- aboot-1.0_pre20040408/Makefile	2004-04-08 08:19:01.000000000 -0700
+> +++ aboot-local/Makefile	2007-08-13 16:08:01.000000000 -0700
+> @@ -32,15 +32,15 @@ export
+>  #
+>  LOADADDR	= 20000000
+>  
+> -ABOOT_LDFLAGS = -static -N -Taboot.lds
+> +ABOOT_LDFLAGS = -static -N -Taboot.lds --relax
+>  
+>  CC		= gcc
+>  TOP		= $(shell pwd)
+>  ifeq ($(TESTING),)
+> -CPPFLAGS	= $(CFGDEFS) -I$(TOP)/include
+> -CFLAGS		= $(CPPFLAGS) -D__KERNEL__ -Os -Wall -fno-builtin -mno-fp-regs -ffixed-8
+> +CPPFLAGS	= $(CFGDEFS) -I$(TOP)/include -I$(KSRC)/include
+> +CFLAGS		= $(CPPFLAGS) -D__KERNEL__ -Os -Wall -fno-builtin -mno-fp-regs
+>  else
+> -CPPFLAGS	= -DTESTING $(CFGDEFS) -I$(TOP)/include
+> +CPPFLAGS	= -DTESTING $(CFGDEFS) -I$(TOP)/include -I$(KSRC)/include
+>  CFLAGS		= $(CPPFLAGS) -O -g3 -Wall -D__KERNEL__ -ffixed-8
+>  endif
+>  ASFLAGS		= $(CPPFLAGS)
+> diff -rup aboot-1.0_pre20040408/aboot.c aboot-local/aboot.c
+> --- aboot-1.0_pre20040408/aboot.c	2004-04-08 10:53:57.000000000 -0700
+> +++ aboot-local/aboot.c	2007-08-13 15:46:33.000000000 -0700
+> @@ -19,14 +19,13 @@
+>   * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+>   */
+>  
+> -#include <linux/elf.h>
+>  #include <linux/kernel.h>
+>  #include <linux/version.h>
+> -
+>  #include <asm/console.h>
+>  #include <asm/hwrpb.h>
+>  #include <asm/system.h>
+>  
+> +#include <elf.h>
+>  #include <alloca.h>
+>  #include <errno.h>
+>  
+> @@ -37,16 +36,6 @@
+>  #include "utils.h"
+>  #include "string.h"
+>  
+> -#ifndef elf_check_arch
+> -# define aboot_elf_check_arch(e)	1
+> -#else
+> -# if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,0)
+> -#  define aboot_elf_check_arch(e)        elf_check_arch(e)
+> -# else
+> -#  define aboot_elf_check_arch(e)        elf_check_arch(e->e_machine)
+> -# endif
+> -#endif
+> -
+>  struct bootfs *	bfs = 0;		/* filesystem to boot from */
+>  char *		dest_addr = 0;
+>  jmp_buf		jump_buffer;
+> @@ -83,77 +72,86 @@ static unsigned long entry_addr = START_
+>  long
+>  first_block (const char *buf, long blocksize)
+>  {
+> -	struct elfhdr *elf;
+> -	struct elf_phdr *phdrs;
+> +	Elf64_Ehdr *elf;
+> +	Elf64_Phdr *phdrs;
+> +	int i, j;
+>  
+> -	elf  = (struct elfhdr *) buf;
+> +	elf  = (Elf64_Ehdr *) buf;
+>  	
+> -	if (elf->e_ident[0] == 0x7f
+> -	    && strncmp(elf->e_ident + 1, "ELF", 3) == 0)
+> -	{
+> -		int i;
+> -		/* looks like an ELF binary: */
+> -		if (elf->e_type != ET_EXEC) {
+> -			printf("aboot: not an executable ELF file\n");
+> -			return -1;
+> -		}
+> -		if (!aboot_elf_check_arch(elf)) {
+> -			printf("aboot: ELF executable not for this machine\n");
+> -			return -1;
+> -		}
+> -		if (elf->e_phoff + elf->e_phnum * sizeof(*phdrs) > (unsigned) blocksize) {
+> -			printf("aboot: "
+> -			       "ELF program headers not in first block (%ld)\n",
+> -			       (long) elf->e_phoff);
+> +	if (elf->e_ident[0] != 0x7f
+> +	    || elf->e_ident[1] != 'E'
+> +	    || elf->e_ident[2] != 'L'
+> +	    || elf->e_ident[3] != 'F') {
+> +		/* Fail silently, it might be a compressed file */
+> +		return -1;
+> +	}
+> +	if (elf->e_ident[EI_CLASS] != ELFCLASS64
+> +	    || elf->e_ident[EI_DATA] != ELFDATA2LSB
+> +	    || elf->e_machine != EM_ALPHA) {
+> +		printf("aboot: ELF executable not for this machine\n");
+> +		return -1;
+> +	}
+> +
+> +	/* Looks like an ELF binary. */
+> +	if (elf->e_type != ET_EXEC) {
+> +		printf("aboot: not an executable ELF file\n");
+> +		return -1;
+> +	}
+> +
+> +	if (elf->e_phoff + elf->e_phnum * sizeof(*phdrs)
+> +	    > (unsigned) blocksize) {
+> +		printf("aboot: ELF program headers not in first block (%ld)\n",
+> +		       (long) elf->e_phoff);
+> +		return -1;
+> +	}
+> +
+> +	phdrs = (struct elf_phdr *) (buf + elf->e_phoff);
+> +	chunks = malloc(sizeof(struct segment) * elf->e_phnum);
+> +	start_addr = phdrs[0].p_vaddr; /* assume they are sorted */
+> +	entry_addr = elf->e_entry;
+> +
+> +	for (i = j = 0; i < elf->e_phnum; ++i) {
+> +		int status;
+> +
+> +		if (phdrs[i].p_type != PT_LOAD)
+> +			continue;
+> +
+> +		chunks[j].addr   = phdrs[i].p_vaddr;
+> +		chunks[j].offset = phdrs[i].p_offset;
+> +		chunks[j].size   = phdrs[i].p_filesz;
+> +		printf("aboot: PHDR %d vaddr %#lx offset %#lx size %#lx\n",
+> +		       i, chunks[j].addr, chunks[j].offset, chunks[j].size);
+> +
+> +		status = check_memory(chunks[j].addr, chunks[j].size);
+> +		if (status) {
+> +			printf("aboot: Can't load kernel.\n"
+> +			       "  Memory at %lx - %lx (PHDR %i) "
+> +			         "is %s\n",
+> +			       chunks[j].addr,
+> +			       chunks[j].addr + chunks[j].size - 1,
+> +			       i,
+> +			       (status == -ENOMEM) ?
+> +			          "Not Found" :
+> +				  "Busy (Reserved)");
+>  			return -1;
+>  		}
+> -		phdrs = (struct elf_phdr *) (buf + elf->e_phoff);
+> -		chunks = malloc(sizeof(struct segment) * elf->e_phnum);
+> -		nchunks = elf->e_phnum;
+> -		start_addr = phdrs[0].p_vaddr; /* assume they are sorted */
+> -		entry_addr = elf->e_entry;
+> -#ifdef DEBUG
+> -		printf("aboot: %d program headers, start address %#lx, entry %#lx\n",
+> -		       nchunks, start_addr, entry_addr);
+> -#endif
+> -		for (i = 0; i < elf->e_phnum; ++i) {
+> -			int status;
+> -
+> -			chunks[i].addr   = phdrs[i].p_vaddr;
+> -			chunks[i].offset = phdrs[i].p_offset;
+> -			chunks[i].size   = phdrs[i].p_filesz;
+> -#ifdef DEBUG
+> -			printf("aboot: segment %d vaddr %#lx offset %#lx size %#lx\n",
+> -			       i, chunks[i].addr, chunks[i].offset, chunks[i].size);
+> -#endif
+> -
+> -#ifndef TESTING
+> -			status = check_memory(chunks[i].addr, chunks[i].size);
+> -			if (status) {
+> +
+> +		if (phdrs[i].p_memsz > phdrs[i].p_filesz) {
+> +			if (bss_size > 0) {
+>  				printf("aboot: Can't load kernel.\n"
+> -				       "  Memory at %lx - %lx (chunk %i) "
+> -				         "is %s\n",
+> -				       chunks[i].addr,
+> -				       chunks[i].addr + chunks[i].size - 1,
+> -				       i,
+> -				       (status == -ENOMEM) ?
+> -				          "Not Found" :
+> -					  "Busy (Reserved)");
+> +				       "  Multiple BSS segments"
+> +				       " (PHDR %d)\n", i);
+>  				return -1;
+>  			}
+> -#endif
+> +			bss_start = (char *) (phdrs[i].p_vaddr +
+> +					      phdrs[i].p_filesz);
+> +			bss_size = phdrs[i].p_memsz - phdrs[i].p_filesz;
+>  		}
+> -		bss_start = (char *) (phdrs[elf->e_phnum - 1].p_vaddr +
+> -				      phdrs[elf->e_phnum - 1].p_filesz);
+> -		bss_size = (phdrs[elf->e_phnum - 1].p_memsz -
+> -			    phdrs[elf->e_phnum - 1].p_filesz);
+> -#ifdef DEBUG
+> -		printf("aboot: bss at 0x%p, size %#lx\n", bss_start, bss_size);
+> -#endif
+> -	} else {
+> -		/* Fail silently, it might be a compressed file */
+> -		return -1;
+> +
+> +		j++;
+>  	}
+> +	nchunks = j;
+> +	printf("aboot: bss at 0x%p, size %#lx\n", bss_start, bss_size);
+>  
+>  	return 0;
+>  }
+> diff -rup aboot-1.0_pre20040408/aboot.lds aboot-local/aboot.lds
+> --- aboot-1.0_pre20040408/aboot.lds	2001-10-08 16:03:50.000000000 -0700
+> +++ aboot-local/aboot.lds	2007-08-13 15:59:46.000000000 -0700
+> @@ -1,22 +1,25 @@
+>  OUTPUT_FORMAT("elf64-alpha")
+>  ENTRY(__start)
+> +PHDRS { kernel PT_LOAD; }
+>  SECTIONS
+>  {
+>    . = 0x20000000;
+> -  .text : { *(.text) }
+> +  .text : { *(.text) } :kernel
+>    _etext = .;
+>    PROVIDE (etext = .);
+> -  .rodata : { *(.rodata) }
+> -  .data : { *(.data) CONSTRUCTORS }
+> -  .got : { *(.got) }
+> -  .sdata : { *(.sdata) }
+> +  .rodata : { *(.rodata*) } :kernel
+> +  .data : { *(.data*) } :kernel
+> +  .got : { *(.got) } :kernel
+> +  .sdata : { *(.sdata) } :kernel
+>    _edata = .;
+>    PROVIDE (edata = .);
+> -  .sbss : { *(.sbss) *(.scommon) }
+> -  .bss : { *(.bss) *(COMMON) }
+> +  .sbss : { *(.sbss) *(.scommon) } :kernel
+> +  .bss : { *(.bss) *(COMMON) } :kernel
+>    _end = . ;
+>    PROVIDE (end = .);
+>  
+> +  /DISCARD/ : { *(.eh_frame) } 
+> +
+>    .mdebug 0 : { *(.mdebug) }
+>    .note 0 : { *(.note) }
+>    .comment 0 : { *(.comment) }
+> diff -rup aboot-1.0_pre20040408/cons.c aboot-local/cons.c
+> --- aboot-1.0_pre20040408/cons.c	2003-11-30 19:56:34.000000000 -0800
+> +++ aboot-local/cons.c	2007-08-13 15:48:45.000000000 -0700
+> @@ -1,5 +1,3 @@
+> -#include <alloca.h>
+> -
+>  #include <linux/kernel.h>
+>  
+>  #include <asm/console.h>
+> @@ -20,7 +18,7 @@
+>  #endif
+>  
+>  long cons_dev;			/* console device */
+> -extern long int dispatch();	/* Need the full 64 bit return here...*/
+> +extern long int dispatch(long, ...);	/* Need the full 64 bit return here...*/
+>  
+>  long
+>  cons_puts(const char *str, long len)
+> @@ -82,7 +80,7 @@ cons_getenv(long index, char *envval, lo
+>  	 * allocated on the stack (which guaranteed to by 8 byte
+>  	 * aligned).
+>  	 */
+> -	char * tmp = alloca(maxlen);
+> +	char tmp[maxlen];
+>  	long len;
+>  
+>  	len = dispatch(CCB_GET_ENV, index, tmp, maxlen - 1);
+> diff -rup aboot-1.0_pre20040408/disk.c aboot-local/disk.c
+> --- aboot-1.0_pre20040408/disk.c	2004-04-08 11:14:06.000000000 -0700
+> +++ aboot-local/disk.c	2007-08-13 15:50:22.000000000 -0700
+> @@ -113,7 +113,7 @@ int
+>  load_uncompressed (int fd)
+>  {
+>  	long nread, nblocks;
+> -	unsigned char *buf;
+> +	char *buf;
+>  	int i;
+>  
+>  	buf = malloc(bfs->blocksize);
+> @@ -131,7 +131,7 @@ load_uncompressed (int fd)
+>  	
+>  		for(i = 0; i < 16; i++) {
+>  			for (j = 0; j < 16; j++)
+> -				printf("%02X ", buf[j+16*i]);
+> +				printf("%02X ", (unsigned char) buf[j+16*i]);
+>  			for(j = 0; j < 16; j++) {
+>  				c = buf[j+16*i];
+>  				printf("%c", (c >= ' ') ? c : ' ');
+> diff -rup aboot-1.0_pre20040408/head.S aboot-local/head.S
+> --- aboot-1.0_pre20040408/head.S	2001-10-08 16:03:51.000000000 -0700
+> +++ aboot-local/head.S	2007-08-13 16:03:57.000000000 -0700
+> @@ -19,8 +19,7 @@ __start:
+>  	.quad	0,0,0,0,0,0,0,0
+>  1:	br	$27,2f
+>  2:	ldgp	$29,0($27)
+> -	lda	$27,main_
+> -	jsr	$26,($27),main_
+> +	bsr	$26,main_	!samegp
+>  	call_pal PAL_halt
+>  	.end __start
+>  
+> @@ -170,4 +169,4 @@ run_kernel:
+>  	mov	$16,$27
+>  	mov	$17,$30
+>  	jmp	$31,($27)
+> -	.end run_kernel
+> \ No newline at end of file
+> +	.end run_kernel
+> 
+> _______________________________________________
+> axp-list mailing list
+> axp-list@redhat.com
+> https://www.redhat.com/mailman/listinfo/axp-list
 
