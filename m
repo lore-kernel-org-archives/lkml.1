@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbXIQN0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbXIQN2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbXIQN0P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 09:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbXIQNZ6
+	id S1754639AbXIQN2B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 09:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbXIQN1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 09:25:58 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:44216 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753320AbXIQNZ5 (ORCPT
+	Mon, 17 Sep 2007 09:27:54 -0400
+Received: from bay0-omc2-s28.bay0.hotmail.com ([65.54.246.164]:64030 "EHLO
+	bay0-omc2-s28.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752758AbXIQN1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 09:25:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=GUn9v1RDQSpUa4henYg3mj56FMzyZfOiR61ctbdgAfDvrbnLazNkunqOdB0bSGrejQ7Pn5Yom6lTqBWAkbTnDZFjZo5Z5nW5mc4ngKwc6csdSLsyTp3LGthOXvrO/AKRt2Tkm6GZ4dmwuDxeyy31Z8RDEl6t5E6+hZHbTUOFed8=  ;
-X-YMail-OSG: QogbW.oVM1mqCWE.dHrhL6WPxetNTgUPilUvYhUMrlPkzqZyoqcNzsE1fOa7i2XDf4dnH1enkg--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Date: Mon, 17 Sep 2007 07:13:30 +1000
-User-Agent: KMail/1.9.5
-Cc: Mel Gorman <mel@skynet.ie>, Christoph Lameter <clameter@sgi.com>,
-       andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-References: <20070911060349.993975297@sgi.com> <200709140648.56184.nickpiggin@yahoo.com.au> <20070917040710.GA23367404@sgi.com>
-In-Reply-To: <20070917040710.GA23367404@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 17 Sep 2007 09:27:53 -0400
+X-Originating-IP: [70.50.39.212]
+X-Originating-Email: [seanlkml@sympatico.ca]
+Date: Mon, 17 Sep 2007 09:27:50 -0400
+From: Sean <seanlkml@sympatico.ca>
+To: Jason Dixon <jason@dixongroup.net>
+Cc: Adrian Bunk <bunk@stusta.de>, david@lang.hm,
+       Jacob Meuser <jakemsr@sdf.lonestar.org>, Theodore Tso <tytso@mit.edu>,
+       "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-Id: <20070917092750.740cf0cd.seanlkml@sympatico.ca>
+In-Reply-To: <DE2147A0-E64F-43E9-ACB2-34E271E4293A@dixongroup.net>
+References: <46ED7A8F.1020304@pro-g.com.tr>
+	<20070916195909.GA18232@stusta.de>
+	<20070916203926.GA17863@schlund.de>
+	<20070916211208.GC5502@thunk.org>
+	<20070916231633.GB10339@SDF.LONESTAR.ORG>
+	<Pine.LNX.4.64.0709161632500.24221@asgard.lang.hm>
+	<20070917093011.GX32213@nudo.bsws.de>
+	<20070917125714.GI18232@stusta.de>
+	<DE2147A0-E64F-43E9-ACB2-34E271E4293A@dixongroup.net>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709170713.31945.nickpiggin@yahoo.com.au>
+X-OriginalArrivalTime: 17 Sep 2007 13:29:49.0921 (UTC) FILETIME=[D286CD10:01C7F92E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 17 September 2007 14:07, David Chinner wrote:
-> On Fri, Sep 14, 2007 at 06:48:55AM +1000, Nick Piggin wrote:
+On Mon, 17 Sep 2007 09:15:31 -0400
+Jason Dixon <jason@dixongroup.net> wrote:
 
-> > OK, the vunmap batching code wipes your TLB flushing and IPIs off
-> > the table. Diffstat below, but the TLB portions are here (besides that
-> > _everything_ is probably lower due to less TLB misses caused by the
-> > TLB flushing):
-> >
-> >       -170   -99.4% sn2_send_IPI
-> >       -343  -100.0% sn_send_IPI_phys
-> >     -17911   -99.9% smp_call_function
-> >
-> > Total performance went up by 30% on a 64-way system (248 seconds to
-> > 172 seconds to run parallel finds over different huge directories).
->
-> Good start, Nick ;)
+> Sure it does.  My code under BSD license continues to remain free,  
+> regardless of what Company X(1) does with their *copy* of my code.     
+> The only restrictions on my code is that copyright and attribution  
+> must remain intact.  All users of my code have the same rights,  
+> regardless of what Company X does with their *copy*.
+> 
+> The GPL places additional restrictions on code.  It is therefore less  
+> free than the BSD.
+> 
+> Free code + restrictions = non-free code.
+> 
+> (1) GPL advocates deep-down really like the BSD license.   
+> Unfortunately, they keep getting hung up on the idea of the Evil  
+> Corporation (TM) "stealing" my code.  Nobody has stolen anything.   
+> That corporation is entitled to the same rights as Joe User.  Neither  
+> EC or JU are required to redistribute any of their changes to their  
+> *copy* of my code.  They are only required to keep attribution  
+> intact.  Does that make MY CODE any less free?  OF COURSE NOT!
+ 
 
-I didn't have the chance to test against a 16K directory block size to find
-the "optimal" performance, but it is something I will do (I'm sure it will be
-still a _lot_ faster than 172 seconds :)).
+Your post is incredibly ironic considering how up in arms all the
+BSD folks are right now.  Many of them claiming that their code
+is being "stolen".
 
+Instead of worrying about Evil Corporation "stealing" their code,
+they're worrying about Evil GPL folks "stealing".   Why don't you
+take a moment to email them with a reminder that whatever GPL group X
+does with their *copy*, all users of the code have the same rights.
+If they really believe in the BSD license they will then calm down
+and we can all go back to work.
 
-> >      23012  54790.5% _read_lock
-> >       9427   329.0% __get_vm_area_node
-> >       5792     0.0% __find_vm_area
-> >       1590  53000.0% __vunmap
->
-> ....
->
-> _read_lock? I though vmap() and vunmap() only took the vmlist_lock in
-> write mode.....
-
-Yeah, it is a slight change... the lazy vunmap only has to take it for read.
-In practice, I'm not sure that it helps a great deal because everything else
-still takes the lock for write. But that explains why it's popped up in the
-profile.
-
-
-> > Next I have some patches to scale the vmap locks and data
-> > structures better, but they're not quite ready yet. This looks like it
-> > should result in a further speedup of several times when combined
-> > with the TLB flushing reductions here...
->
-> Sounds promising - when you have patches that work, send them my
-> way and I'll run some tests on them.
-
-Still away from home (for the next 2 weeks), so I'll be going a bit slow :P
-I'm thinking about various scalable locking schemes and I'll definitely
-ping you when I've made a bit of progress.
-
-Thanks,
-Nick
+Regards,
+S.
