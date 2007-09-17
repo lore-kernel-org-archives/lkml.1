@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756372AbXIQQRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbXIQQRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756372AbXIQQRR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 12:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbXIQQRF
+	id S1756555AbXIQQRp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 12:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbXIQQRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 12:17:05 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4484 "EHLO perches.com"
+	Mon, 17 Sep 2007 12:17:32 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:49481 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752032AbXIQQRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 12:17:04 -0400
-Subject: Re: [PATCH 048/104] KVM: Add and use pr_unimpl for standard
-	formatting of unimplemented features
-From: Joe Perches <joe@perches.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <11900179481707-git-send-email-avi@qumranet.com>
-References: <11900179463203-git-send-email-avi@qumranet.com>
-	 <11900179481707-git-send-email-avi@qumranet.com>
-Content-Type: text/plain
-Date: Mon, 17 Sep 2007 09:16:18 -0700
-Message-Id: <1190045778.19708.211.camel@localhost>
+	id S1752072AbXIQQRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 12:17:31 -0400
+Date: Mon, 17 Sep 2007 20:17:07 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Sean Hefty <mshefty@ichips.intel.com>
+Cc: Steve Wise <swise@opengridcomputing.com>, netdev@vger.kernel.org,
+       rdreier@cisco.com, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] Re: [PATCH v2] iw_cxgb3: Support "iwarp-only" interfaces to avoid 4-tuple conflicts.
+Message-ID: <20070917161706.GA28431@2ka.mipt.ru>
+References: <20070913191617.30937.95960.stgit@dell3.ogc.int> <20070914130941.GG18517@2ka.mipt.ru> <46EC00BE.3020801@opengridcomputing.com> <46EEA6A2.2080001@ichips.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46EEA6A2.2080001@ichips.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-17 at 10:31 +0200, Avi Kivity wrote:
-> diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-> index cfda3ab..6d25826 100644
-> --- a/drivers/kvm/kvm.h
-> +++ b/drivers/kvm/kvm.h
-> @@ -474,6 +474,14 @@ struct kvm_arch_ops {
->  
->  extern struct kvm_arch_ops *kvm_arch_ops;
->  
-> +/* The guest did something we don't support. */
-> +#define pr_unimpl(vcpu, fmt, ...)					\
-> + do {									\
-> +	if (printk_ratelimit())						\
-> +		printk(KERN_ERR "kvm: %i: cpu%i " fmt,			\
-> +		       current->tgid, (vcpu)->vcpu_id , ## __VA_ARGS__); \
-> + } while(0)
-> +
->  #define kvm_printf(kvm, fmt ...) printk(KERN_DEBUG fmt)
->  #define vcpu_printf(vcpu, fmt...) kvm_printf(vcpu->kvm, fmt)
->  
+On Mon, Sep 17, 2007 at 09:09:06AM -0700, Sean Hefty (mshefty@ichips.intel.com) wrote:
+> >>>+    addr = kmalloc(sizeof *addr, GFP_KERNEL);
+> >>
+> >>As a small nitpick: this wants to be sizeof(struct in_ifaddr)
+> 
+> See chapter 14 of CodingStyle document.  kmalloc(sizeof *addr... is correct.
 
-This converts all KERN_<level> uses to KERN_ERR.
-It seems better to add a <level> argument to kvm_printf.
-pr_unimpl is perhaps a poor name choice.
-perhaps vcpu_printk_ratelimit(vcpu, level, fmt, ...)
+Come on, do not start a flame war about how parameters into kmalloc
+should be provided - there are much more serious issues unresolved yes. It
+does help grepping the code, but if you feel that this is a serious threat,
+then use your preferred way.
 
-
+-- 
+	Evgeniy Polyakov
