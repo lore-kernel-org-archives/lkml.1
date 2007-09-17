@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbXIQNCC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbXIQNCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbXIQNCC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 09:02:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbXIQNBK
+	id S1754774AbXIQNCu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 09:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbXIQNCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 09:01:10 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:39643 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753737AbXIQNBG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 09:01:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=pYu8SWJEDvAbSZqP5epLo4s8C4cpHz8qlQS0XOkitDQ8TPNKgVHuJSm1kq5b9g73K1Lh5MmvtGeZNbWGiBR+SmfgECZf13xerADN5L28OyCDeVhbNeKkzo4YqJW5S1qkhnTm36Lw4WP9HWIOAStWOpKscmyzJAKmMyJ/NPeUSts=  ;
-X-YMail-OSG: 5T1YErIVM1moPR6ANVLXGwY3t1_oYQyNYKnYaIpOpjUm.1QgJ1QVJabzop9tKgcz54o4R3e1MQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mel Gorman <mel@skynet.ie>
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Date: Sun, 16 Sep 2007 19:03:36 +1000
-User-Agent: KMail/1.9.5
-Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joern Engel <joern@logfs.org>, Christoph Lameter <clameter@sgi.com>,
-       andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-References: <20070911060349.993975297@sgi.com> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070916181313.GA16406@skynet.ie>
-In-Reply-To: <20070916181313.GA16406@skynet.ie>
+	Mon, 17 Sep 2007 09:02:39 -0400
+Received: from diehard.n-r-g.com ([62.48.3.9]:19481 "EHLO diehard.n-r-g.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753058AbXIQNCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 09:02:38 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Sep 2007 09:02:38 EDT
+Date: Mon, 17 Sep 2007 14:55:54 +0200
+From: Claudio Jeker <cjeker@diehard.n-r-g.com>
+To: Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
+       "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917125554.GB13179@diehard.n-r-g.com>
+Mail-Followup-To: Claudio Jeker <cjeker@diehard.n-r-g.com>,
+	Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
+	"Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+	linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+	Eben Moglen <moglen@softwarefreedom.org>,
+	Lawrence Lessig <lessig_from_web@pobox.com>,
+	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+	Matt Norwood <norwood@softwarefreedom.org>
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709161903.37295.nickpiggin@yahoo.com.au>
+In-Reply-To: <20070916211208.GC5502@thunk.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 17 September 2007 04:13, Mel Gorman wrote:
-> On (15/09/07 14:14), Goswin von Brederlow didst pronounce:
+On Sun, Sep 16, 2007 at 05:12:08PM -0400, Theodore Tso wrote:
+> On Sun, Sep 16, 2007 at 10:39:26PM +0200, Hannah Schroeter wrote:
+> > >The most questionable legal advice in this thread was by Theo de Raadt 
+> > >who claimed choosing one licence for _dual-licenced_ code was illegal...
+> > 
+> > JFTR, I do *not* think that that assessment was questionable. Unless the
+> > dual-licensing *explicitly* allows relicensing, relicensing is forbidden
+> > by copyright law. The dual-licensing allows relicensing only if that's
+> > *explicitly* stated, either in the statement offering the alternative, or
+> > in one of the licenses.
+> > 
+> > Neither GPL nor BSD/ISC allow relicensing in their well-known wordings.
+> > 
+> > If you think that's questionable, you should at least provide arguments
+> > (and be ready to have your interpretation of the law and the licenses
+> > tested before court).
+> 
+> Hannah,
+> 
+> What is going on whenever someone changes a code is that they make a
+> "derivative work".  Whether or not you can even make a derivative
+> work, and under what terms the derivitive work can be licensed, is
+> strictly up to the license of the original.  For example, the BSD
+> license says:
+> 
+>   Redistribution and use in source and binary forms, with or without
+>   modification, are permitted provided that the following conditions
+>   are met....
+> 
+> Note the "with or without modification".  This is what allows people
+> to change BSD licensed code and redistribute said changes.  The
+> conditions specified by the BSD license do not mention anything about
+> licening terms --- just that if you meet these three conditions, you
+> are allowed to redistribute them.  So for example, this is what allows
+> Network Appliances to take BSD code, change it, and add a restrictive,
+> proprietary copyright.
+> 
+> So for code which is single-licensed under a BSD license, someone can
+> create a new derived work, and redistribute it under a more
+> restrictive license --- either one as restrictive as NetApp's (where
+> no one is allowed to get binary unless they are a NetApp customer, or
+> source only after signing an NDA), or a GPL license.  It is not a
+> relicencing, per se, since the original version of the file is still
+> available under the original copyright; it is only the derived work
+> which is under the more restrictive copyright.   
+> 
 
-> > I keep coming back to the fact that movable objects should be moved
-> > out of the way for unmovable ones. Anything else just allows
-> > fragmentation to build up.
->
-> This is easily achieved, just really really expensive because of the
-> amount of copying that would have to take place. It would also compel
-> that min_free_kbytes be at least one free PAGEBLOCK_NR_PAGES and likely
-> MIGRATE_TYPES * PAGEBLOCK_NR_PAGES to reduce excessive copying. That is
-> a lot of free memory to keep around which is why fragmentation avoidance
-> doesn't do it.
+Wohoho! Slow here please. NDA have nothing to do with licenses and
+especially with copyright. NetApp even though their stuff is under their
+copyright and license does hopefully not modify the copyrights of imported
+BSD/ISC code. That would be against the law and I hope their leagal
+departement is smart enough to not do this mistake especially because the
+BSD license those not hinder them in any way.
 
-I don't know how it would prevent fragmentation from building up
-anyway. It's commonly the case that potentially unmovable objects
-are allowed to fill up all of ram (dentries, inodes, etc).
+Now comes the funny part, as the BSD code in NetApp is available
+from public sources -- for example from OpenBSD -- it is actually not
+covered by the NDA. NDAs can only cover information that is not
+publicly available -- you can only forbit disclosure of information that
+is secret in the first place.
 
-And of course,  if you craft your exploit nicely with help from higher
-ordered unmovable memory (eg. mm structs or unix sockets), then
-you don't even need to fill all memory with unmovables before you
-can have them take over all groups.
+Finally most companies know they benefit from open source and give often
+the code changes most likely bugfixes to this imported code back.
+Unlike most GPL people we're happy with that especially we do not require
+them to release any of their own code. Sure their WAFL file system is cool
+but even in my wildest dreams I would not require them to publish their
+code just because the used some of my code.
+-- 
+:wq Claudio
