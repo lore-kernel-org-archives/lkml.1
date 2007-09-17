@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbXIQVFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbXIQVGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760026AbXIQVFw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758632AbXIQVFT
+	id S1757200AbXIQVGO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbXIQVFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:05:19 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:8989 "EHLO
+	Mon, 17 Sep 2007 17:05:25 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:51869 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758507AbXIQVFQ (ORCPT
+	with ESMTP id S1758758AbXIQVFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:05:16 -0400
+	Mon, 17 Sep 2007 17:05:23 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=JFCGz0mx7lanTcl6lNdzc1awkTTMATd/T42y41WZf05N82n54zALhNbQL5Hr5Bx5A
-	OfWdKL6bk3JDeekH0zzUQ==
-Message-Id: <20070917210428.705765000@menage.corp.google.com>
+	b=Lb8XATMRGD2PFvVh/Th+3PkFJRJdSJYL668nCecxd+n7SjbKLfBERT/3uJmlFs69f
+	DkaR07cJwuYw7HFDCmX2g==
+Message-Id: <20070917210431.502755000@menage.corp.google.com>
 References: <20070917210307.116234000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Sep 2007 14:03:23 -0700
+Date: Mon, 17 Sep 2007 14:03:40 -0700
 From: Paul Menage <menage@google.com>
 To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
        "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
@@ -29,443 +29,276 @@ To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, pj@sgi.com,
        containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 16/33] add containerstats v3
-Content-Disposition: inline; filename=add-containerstats-v3.patch
+Subject: [PATCH 33/33] memory-controller-make-charging-gfp-mask-aware
+Content-Disposition: inline; filename=memcontroller1.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 (container->cgroup renaming by Paul Menage <menage@google.com>)
 
-This patch is inspired by the discussion at
-http://lkml.org/lkml/2007/4/11/187 and implements per cgroup statistics
-as suggested by Andrew Morton in http://lkml.org/lkml/2007/4/11/263.  The
-patch is on top of 2.6.21-mm1 with Paul's cgroups v9 patches (forward
-ported)
+Nick Piggin pointed out that swap cache and page cache addition routines
+could be called from non GFP_KERNEL contexts.  This patch makes the
+charging routine aware of the gfp context.  Charging might fail if the
+cgroup is over it's limit, in which case a suitable error is returned.
 
-This patch implements per cgroup statistics infrastructure and re-uses
-code from the taskstats interface.  A new set of cgroup operations are
-registered with commands and attributes.  It should be very easy to
-*extend* per cgroup statistics, by adding members to the cgroupstats
-structure.
-
-The current model for cgroupstats is a pull, a push model (to post
-statistics on interesting events), should be very easy to add.  Currently
-user space requests for statistics by passing the cgroup file
-descriptor.  Statistics about the state of all the tasks in the cgroup
-is returned to user space.
-
-TODO's/NOTE:
-
-This patch provides an infrastructure for implementing cgroup statistics.
-Based on the needs of each controller, we can incrementally add more statistics,
-event based support for notification of statistics, accumulation of taskstats
-into cgroup statistics in the future.
-
-Sample output
-
-# ./cgroupstats -C /cgroup/a
-sleeping 2, blocked 0, running 1, stopped 0, uninterruptible 0
-
-# ./cgroupstats -C /cgroup/
-sleeping 154, blocked 0, running 0, stopped 0, uninterruptible 0
-
-If the approach looks good, I'll enhance and post the user space utility for
-the same
-
-Feedback, comments, test results are always welcome!
+This patch was tested on a Powerpc box.  I am still looking at being able
+to test the path, through which allocations happen in non GFP_KERNEL
+contexts.
 
 Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 Signed-off-by: Paul Menage <menage@google.com>
-
 ---
 
- Documentation/accounting/cgroupstats.txt |   27 ++++++
- include/linux/Kbuild                        |    1 
- include/linux/cgroup.h                   |    8 ++
- include/linux/cgroupstats.h              |   70 ++++++++++++++++++
- include/linux/delayacct.h                   |   13 +++
- kernel/cgroup.c                          |   55 ++++++++++++++
- kernel/taskstats.c                          |   66 ++++++++++++++++
- 7 files changed, 240 insertions(+)
+ include/linux/memcontrol.h |   12 ++++++++----
+ include/linux/swap.h       |    3 ++-
+ mm/filemap.c               |    2 +-
+ mm/memcontrol.c            |   24 +++++++++++++++++-------
+ mm/memory.c                |   10 +++++-----
+ mm/migrate.c               |    2 +-
+ mm/swap_state.c            |    2 +-
+ mm/swapfile.c              |    2 +-
+ mm/vmscan.c                |    5 +++--
+ 9 files changed, 39 insertions(+), 23 deletions(-)
 
-diff -puN /dev/null Documentation/accounting/cgroupstats.txt
---- /dev/null
-+++ a/Documentation/accounting/cgroupstats.txt
-@@ -0,0 +1,27 @@
-+Control Groupstats is inspired by the discussion at
-+http://lkml.org/lkml/2007/4/11/187 and implements per cgroup statistics as
-+suggested by Andrew Morton in http://lkml.org/lkml/2007/4/11/263.
-+
-+Per cgroup statistics infrastructure re-uses code from the taskstats
-+interface. A new set of cgroup operations are registered with commands
-+and attributes specific to cgroups. It should be very easy to
-+extend per cgroup statistics, by adding members to the cgroupstats
-+structure.
-+
-+The current model for cgroupstats is a pull, a push model (to post
-+statistics on interesting events), should be very easy to add. Currently
-+user space requests for statistics by passing the cgroup path.
-+Statistics about the state of all the tasks in the cgroup is returned to
-+user space.
-+
-+NOTE: We currently rely on delay accounting for extracting information
-+about tasks blocked on I/O. If CONFIG_TASK_DELAY_ACCT is disabled, this
-+information will not be available.
-+
-+To extract cgroup statistics a utility very similar to getdelays.c
-+has been developed, the sample output of the utility is shown below
-+
-+~/balbir/cgroupstats # ./getdelays  -C "/cgroup/a"
-+sleeping 1, blocked 0, running 1, stopped 0, uninterruptible 0
-+~/balbir/cgroupstats # ./getdelays  -C "/cgroup"
-+sleeping 155, blocked 0, running 1, stopped 0, uninterruptible 2
-diff -puN include/linux/Kbuild~add-cgroupstats-v3 include/linux/Kbuild
---- a/include/linux/Kbuild~add-cgroupstats-v3
-+++ a/include/linux/Kbuild
-@@ -47,6 +47,7 @@ header-y += coda_psdev.h
- header-y += coff.h
- header-y += comstats.h
- header-y += const.h
-+header-y += cgroupstats.h
- header-y += cycx_cfm.h
- header-y += dlm_device.h
- header-y += dlm_netlink.h
-diff -puN include/linux/cgroup.h~add-cgroupstats-v3 include/linux/cgroup.h
---- a/include/linux/cgroup.h~add-cgroupstats-v3
-+++ a/include/linux/cgroup.h
-@@ -13,6 +13,7 @@
- #include <linux/cpumask.h>
- #include <linux/nodemask.h>
- #include <linux/rcupdate.h>
-+#include <linux/cgroupstats.h>
+diff -puN include/linux/memcontrol.h~memory-controller-make-charging-gfp-mask-aware include/linux/memcontrol.h
+--- a/include/linux/memcontrol.h~memory-controller-make-charging-gfp-mask-aware
++++ a/include/linux/memcontrol.h
+@@ -32,7 +32,8 @@ extern void mm_free_cgroup(struct mm_
+ extern void page_assign_page_cgroup(struct page *page,
+ 					struct page_cgroup *pc);
+ extern struct page_cgroup *page_get_page_cgroup(struct page *page);
+-extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm);
++extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
++				gfp_t gfp_mask);
+ extern void mem_cgroup_uncharge(struct page_cgroup *pc);
+ extern void mem_cgroup_move_lists(struct page_cgroup *pc, bool active);
+ extern unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
+@@ -42,7 +43,8 @@ extern unsigned long mem_cgroup_isola
+ 					struct mem_cgroup *mem_cont,
+ 					int active);
+ extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem);
+-extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm);
++extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
++					gfp_t gfp_mask);
+ extern struct mem_cgroup *mm_cgroup(struct mm_struct *mm);
  
- #ifdef CONFIG_CGROUPS
- 
-@@ -29,6 +30,8 @@ extern void cgroup_fork(struct task_s
- extern void cgroup_fork_callbacks(struct task_struct *p);
- extern void cgroup_post_fork(struct task_struct *p);
- extern void cgroup_exit(struct task_struct *p, int run_callbacks);
-+extern int cgroupstats_build(struct cgroupstats *stats,
-+				struct dentry *dentry);
- 
- extern struct file_operations proc_cgroup_operations;
- 
-@@ -305,6 +308,11 @@ static inline void cgroup_exit(struct
- 
- static inline void cgroup_lock(void) {}
- static inline void cgroup_unlock(void) {}
-+static inline int cgroupstats_build(struct cgroupstats *stats,
-+					struct dentry *dentry)
-+{
-+	return -EINVAL;
-+}
- 
- #endif /* !CONFIG_CGROUPS */
- 
-diff -puN /dev/null include/linux/cgroupstats.h
---- /dev/null
-+++ a/include/linux/cgroupstats.h
-@@ -0,0 +1,70 @@
-+/* cgroupstats.h - exporting per-cgroup statistics
-+ *
-+ * Copyright IBM Corporation, 2007
-+ * Author Balbir Singh <balbir@linux.vnet.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of version 2.1 of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it would be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ */
-+
-+#ifndef _LINUX_CGROUPSTATS_H
-+#define _LINUX_CGROUPSTATS_H
-+
-+#include <linux/taskstats.h>
-+
-+/*
-+ * Data shared between user space and kernel space on a per cgroup
-+ * basis. This data is shared using taskstats.
-+ *
-+ * Most of these states are derived by looking at the task->state value
-+ * For the nr_io_wait state, a flag in the delay accounting structure
-+ * indicates that the task is waiting on IO
-+ *
-+ * Each member is aligned to a 8 byte boundary.
-+ */
-+struct cgroupstats {
-+	__u64	nr_sleeping;		/* Number of tasks sleeping */
-+	__u64	nr_running;		/* Number of tasks running */
-+	__u64	nr_stopped;		/* Number of tasks in stopped state */
-+	__u64	nr_uninterruptible;	/* Number of tasks in uninterruptible */
-+					/* state */
-+	__u64	nr_io_wait;		/* Number of tasks waiting on IO */
-+};
-+
-+/*
-+ * Commands sent from userspace
-+ * Not versioned. New commands should only be inserted at the enum's end
-+ * prior to __CGROUPSTATS_CMD_MAX
-+ */
-+
-+enum {
-+	CGROUPSTATS_CMD_UNSPEC = __TASKSTATS_CMD_MAX,	/* Reserved */
-+	CGROUPSTATS_CMD_GET,		/* user->kernel request/get-response */
-+	CGROUPSTATS_CMD_NEW,		/* kernel->user event */
-+	__CGROUPSTATS_CMD_MAX,
-+};
-+
-+#define CGROUPSTATS_CMD_MAX (__CGROUPSTATS_CMD_MAX - 1)
-+
-+enum {
-+	CGROUPSTATS_TYPE_UNSPEC = 0,	/* Reserved */
-+	CGROUPSTATS_TYPE_CGROUP_STATS,	/* contains name + stats */
-+	__CGROUPSTATS_TYPE_MAX,
-+};
-+
-+#define CGROUPSTATS_TYPE_MAX (__CGROUPSTATS_TYPE_MAX - 1)
-+
-+enum {
-+	CGROUPSTATS_CMD_ATTR_UNSPEC = 0,
-+	CGROUPSTATS_CMD_ATTR_FD,
-+	__CGROUPSTATS_CMD_ATTR_MAX,
-+};
-+
-+#define CGROUPSTATS_CMD_ATTR_MAX (__CGROUPSTATS_CMD_ATTR_MAX - 1)
-+
-+#endif /* _LINUX_CGROUPSTATS_H */
-diff -puN include/linux/delayacct.h~add-cgroupstats-v3 include/linux/delayacct.h
---- a/include/linux/delayacct.h~add-cgroupstats-v3
-+++ a/include/linux/delayacct.h
-@@ -26,6 +26,7 @@
-  * Used to set current->delays->flags
-  */
- #define DELAYACCT_PF_SWAPIN	0x00000001	/* I am doing a swapin */
-+#define DELAYACCT_PF_BLKIO	0x00000002	/* I am waiting on IO */
- 
- #ifdef CONFIG_TASK_DELAY_ACCT
- 
-@@ -39,6 +40,14 @@ extern void __delayacct_blkio_end(void);
- extern int __delayacct_add_tsk(struct taskstats *, struct task_struct *);
- extern __u64 __delayacct_blkio_ticks(struct task_struct *);
- 
-+static inline int delayacct_is_task_waiting_on_io(struct task_struct *p)
-+{
-+	if (p->delays)
-+		return (p->delays->flags & DELAYACCT_PF_BLKIO);
-+	else
-+		return 0;
-+}
-+
- static inline void delayacct_set_flag(int flag)
- {
- 	if (current->delays)
-@@ -71,6 +80,7 @@ static inline void delayacct_tsk_free(st
- 
- static inline void delayacct_blkio_start(void)
- {
-+	delayacct_set_flag(DELAYACCT_PF_BLKIO);
- 	if (current->delays)
- 		__delayacct_blkio_start();
- }
-@@ -79,6 +89,7 @@ static inline void delayacct_blkio_end(v
- {
- 	if (current->delays)
- 		__delayacct_blkio_end();
-+	delayacct_clear_flag(DELAYACCT_PF_BLKIO);
- }
- 
- static inline int delayacct_add_tsk(struct taskstats *d,
-@@ -116,6 +127,8 @@ static inline int delayacct_add_tsk(stru
- { return 0; }
- static inline __u64 delayacct_blkio_ticks(struct task_struct *tsk)
- { return 0; }
-+static inline int delayacct_is_task_waiting_on_io(struct task_struct *p)
-+{ return 0; }
- #endif /* CONFIG_TASK_DELAY_ACCT */
- 
- #endif
-diff -puN kernel/cgroup.c~add-cgroupstats-v3 kernel/cgroup.c
---- a/kernel/cgroup.c~add-cgroupstats-v3
-+++ a/kernel/cgroup.c
-@@ -42,6 +42,9 @@
- #include <linux/spinlock.h>
- #include <linux/string.h>
- #include <linux/sort.h>
-+#include <linux/delayacct.h>
-+#include <linux/cgroupstats.h>
-+
- #include <asm/atomic.h>
- 
- static DEFINE_MUTEX(cgroup_mutex);
-@@ -1739,6 +1742,58 @@ static int pid_array_load(pid_t *pidarra
- 	return n;
- }
- 
-+/**
-+ * Build and fill cgroupstats so that taskstats can export it to user
-+ * space.
-+ *
-+ * @stats: cgroupstats to fill information into
-+ * @dentry: A dentry entry belonging to the cgroup for which stats have
-+ * been requested.
-+ */
-+int cgroupstats_build(struct cgroupstats *stats, struct dentry *dentry)
-+{
-+	int ret = -EINVAL;
-+	struct cgroup *cont;
-+	struct cgroup_iter it;
-+	struct task_struct *tsk;
-+	/*
-+	 * Validate dentry by checking the superblock operations
-+	 */
-+	if (dentry->d_sb->s_op != &cgroup_ops)
-+		 goto err;
-+
-+	ret = 0;
-+	cont = dentry->d_fsdata;
-+	rcu_read_lock();
-+
-+	cgroup_iter_start(cont, &it);
-+	while ((tsk = cgroup_iter_next(cont, &it))) {
-+		switch (tsk->state) {
-+		case TASK_RUNNING:
-+			stats->nr_running++;
-+			break;
-+		case TASK_INTERRUPTIBLE:
-+			stats->nr_sleeping++;
-+			break;
-+		case TASK_UNINTERRUPTIBLE:
-+			stats->nr_uninterruptible++;
-+			break;
-+		case TASK_STOPPED:
-+			stats->nr_stopped++;
-+			break;
-+		default:
-+			if (delayacct_is_task_waiting_on_io(tsk))
-+				stats->nr_io_wait++;
-+			break;
-+		}
-+	}
-+	cgroup_iter_end(cont, &it);
-+
-+	rcu_read_unlock();
-+err:
-+	return ret;
-+}
-+
- static int cmppid(const void *a, const void *b)
- {
- 	return *(pid_t *)a - *(pid_t *)b;
-diff -puN kernel/taskstats.c~add-cgroupstats-v3 kernel/taskstats.c
---- a/kernel/taskstats.c~add-cgroupstats-v3
-+++ a/kernel/taskstats.c
-@@ -22,6 +22,9 @@
- #include <linux/delayacct.h>
- #include <linux/cpumask.h>
- #include <linux/percpu.h>
-+#include <linux/cgroupstats.h>
-+#include <linux/cgroup.h>
-+#include <linux/file.h>
- #include <net/genetlink.h>
- #include <asm/atomic.h>
- 
-@@ -49,6 +52,11 @@ __read_mostly = {
- 	[TASKSTATS_CMD_ATTR_REGISTER_CPUMASK] = { .type = NLA_STRING },
- 	[TASKSTATS_CMD_ATTR_DEREGISTER_CPUMASK] = { .type = NLA_STRING },};
- 
-+static struct nla_policy
-+cgroupstats_cmd_get_policy[CGROUPSTATS_CMD_ATTR_MAX+1] __read_mostly = {
-+	[CGROUPSTATS_CMD_ATTR_FD] = { .type = NLA_U32 },
-+};
-+
- struct listener {
- 	struct list_head list;
- 	pid_t pid;
-@@ -374,6 +382,51 @@ err:
+ static inline void mem_cgroup_uncharge_page(struct page *page)
+@@ -70,7 +72,8 @@ static inline struct page_cgroup *pag
  	return NULL;
  }
  
-+static int cgroupstats_user_cmd(struct sk_buff *skb, struct genl_info *info)
-+{
-+	int rc = 0;
-+	struct sk_buff *rep_skb;
-+	struct cgroupstats *stats;
-+	struct nlattr *na;
-+	size_t size;
-+	u32 fd;
-+	struct file *file;
-+	int fput_needed;
-+
-+	na = info->attrs[CGROUPSTATS_CMD_ATTR_FD];
-+	if (!na)
-+		return -EINVAL;
-+
-+	fd = nla_get_u32(info->attrs[CGROUPSTATS_CMD_ATTR_FD]);
-+	file = fget_light(fd, &fput_needed);
-+	if (file) {
-+		size = nla_total_size(sizeof(struct cgroupstats));
-+
-+		rc = prepare_reply(info, CGROUPSTATS_CMD_NEW, &rep_skb,
-+					size);
-+		if (rc < 0)
-+			goto err;
-+
-+		na = nla_reserve(rep_skb, CGROUPSTATS_TYPE_CGROUP_STATS,
-+					sizeof(struct cgroupstats));
-+		stats = nla_data(na);
-+		memset(stats, 0, sizeof(*stats));
-+
-+		rc = cgroupstats_build(stats, file->f_dentry);
-+		if (rc < 0)
-+			goto err;
-+
-+		fput_light(file, fput_needed);
-+		return send_reply(rep_skb, info->snd_pid);
-+	}
-+
-+err:
-+	if (file)
-+		fput_light(file, fput_needed);
-+	nlmsg_free(rep_skb);
-+	return rc;
-+}
-+
- static int taskstats_user_cmd(struct sk_buff *skb, struct genl_info *info)
+-static inline int mem_cgroup_charge(struct page *page, struct mm_struct *mm)
++static inline int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
++					gfp_t gfp_mask)
  {
- 	int rc = 0;
-@@ -524,6 +577,12 @@ static struct genl_ops taskstats_ops = {
- 	.policy		= taskstats_cmd_get_policy,
- };
+ 	return 0;
+ }
+@@ -89,7 +92,8 @@ static inline void mem_cgroup_move_li
+ }
  
-+static struct genl_ops cgroupstats_ops = {
-+	.cmd		= CGROUPSTATS_CMD_GET,
-+	.doit		= cgroupstats_user_cmd,
-+	.policy		= cgroupstats_cmd_get_policy,
-+};
-+
- /* Needed early in initialization */
- void __init taskstats_init_early(void)
+ static inline int mem_cgroup_cache_charge(struct page *page,
+-						struct mm_struct *mm)
++						struct mm_struct *mm,
++						gfp_t gfp_mask)
  {
-@@ -548,8 +607,15 @@ static int __init taskstats_init(void)
- 	if (rc < 0)
+ 	return 0;
+ }
+diff -puN include/linux/swap.h~memory-controller-make-charging-gfp-mask-aware include/linux/swap.h
+--- a/include/linux/swap.h~memory-controller-make-charging-gfp-mask-aware
++++ a/include/linux/swap.h
+@@ -191,7 +191,8 @@ extern void swap_setup(void);
+ /* linux/mm/vmscan.c */
+ extern unsigned long try_to_free_pages(struct zone **zones, int order,
+ 					gfp_t gfp_mask);
+-extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem);
++extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem,
++							gfp_t gfp_mask);
+ extern int __isolate_lru_page(struct page *page, int mode);
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+diff -puN mm/filemap.c~memory-controller-make-charging-gfp-mask-aware mm/filemap.c
+--- a/mm/filemap.c~memory-controller-make-charging-gfp-mask-aware
++++ a/mm/filemap.c
+@@ -444,7 +444,7 @@ int add_to_page_cache(struct page *page,
+ 
+ 	if (error == 0) {
+ 
+-		error = mem_cgroup_cache_charge(page, current->mm);
++		error = mem_cgroup_cache_charge(page, current->mm, gfp_mask);
+ 		if (error)
+ 			goto out;
+ 
+diff -puN mm/memcontrol.c~memory-controller-make-charging-gfp-mask-aware mm/memcontrol.c
+--- a/mm/memcontrol.c~memory-controller-make-charging-gfp-mask-aware
++++ a/mm/memcontrol.c
+@@ -261,7 +261,8 @@ unsigned long mem_cgroup_isolate_page
+  * 0 if the charge was successful
+  * < 0 if the cgroup is over its limit
+  */
+-int mem_cgroup_charge(struct page *page, struct mm_struct *mm)
++int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
++				gfp_t gfp_mask)
+ {
+ 	struct mem_cgroup *mem;
+ 	struct page_cgroup *pc, *race_pc;
+@@ -287,7 +288,7 @@ int mem_cgroup_charge(struct page *pa
+ 
+ 	unlock_page_cgroup(page);
+ 
+-	pc = kzalloc(sizeof(struct page_cgroup), GFP_KERNEL);
++	pc = kzalloc(sizeof(struct page_cgroup), gfp_mask);
+ 	if (pc == NULL)
  		goto err;
  
-+	rc = genl_register_ops(&family, &cgroupstats_ops);
-+	if (rc < 0)
-+		goto err_cgroup_ops;
+@@ -314,7 +315,14 @@ int mem_cgroup_charge(struct page *pa
+ 	 * the cgroup limit.
+ 	 */
+ 	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
+-		if (try_to_free_mem_cgroup_pages(mem))
++		bool is_atomic = gfp_mask & GFP_ATOMIC;
++		/*
++		 * We cannot reclaim under GFP_ATOMIC, fail the charge
++		 */
++		if (is_atomic)
++			goto noreclaim;
 +
- 	family_registered = 1;
-+	printk("registered taskstats version %d\n", TASKSTATS_GENL_VERSION);
- 	return 0;
-+err_cgroup_ops:
-+	genl_unregister_ops(&family, &taskstats_ops);
- err:
- 	genl_unregister_family(&family);
- 	return rc;
-_
++		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
+ 			continue;
+ 
+ 		/*
+@@ -338,9 +346,10 @@ int mem_cgroup_charge(struct page *pa
+ 			congestion_wait(WRITE, HZ/10);
+ 			continue;
+ 		}
+-
++noreclaim:
+ 		css_put(&mem->css);
+-		mem_cgroup_out_of_memory(mem);
++		if (!is_atomic)
++			mem_cgroup_out_of_memory(mem);
+ 		goto free_pc;
+ 	}
+ 
+@@ -381,7 +390,8 @@ err:
+ /*
+  * See if the cached pages should be charged at all?
+  */
+-int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm)
++int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
++				gfp_t gfp_mask)
+ {
+ 	struct mem_cgroup *mem;
+ 	if (!mm)
+@@ -389,7 +399,7 @@ int mem_cgroup_cache_charge(struct pa
+ 
+ 	mem = rcu_dereference(mm->mem_cgroup);
+ 	if (mem->control_type == MEM_CGROUP_TYPE_ALL)
+-		return mem_cgroup_charge(page, mm);
++		return mem_cgroup_charge(page, mm, gfp_mask);
+ 	else
+ 		return 0;
+ }
+diff -puN mm/memory.c~memory-controller-make-charging-gfp-mask-aware mm/memory.c
+--- a/mm/memory.c~memory-controller-make-charging-gfp-mask-aware
++++ a/mm/memory.c
+@@ -1137,7 +1137,7 @@ static int insert_page(struct mm_struct 
+ 	pte_t *pte;
+ 	spinlock_t *ptl;
+ 
+-	retval = mem_cgroup_charge(page, mm);
++	retval = mem_cgroup_charge(page, mm, GFP_KERNEL);
+ 	if (retval)
+ 		goto out;
+ 
+@@ -1638,7 +1638,7 @@ gotten:
+ 		goto oom;
+ 	cow_user_page(new_page, old_page, address, vma);
+ 
+-	if (mem_cgroup_charge(new_page, mm))
++	if (mem_cgroup_charge(new_page, mm, GFP_KERNEL))
+ 		goto oom_free_new;
+ 
+ 	/*
+@@ -2101,7 +2101,7 @@ static int do_swap_page(struct mm_struct
+ 	}
+ 
+ 	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+-	if (mem_cgroup_charge(page, mm)) {
++	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+ 		ret = VM_FAULT_OOM;
+ 		goto out;
+ 	}
+@@ -2185,7 +2185,7 @@ static int do_anonymous_page(struct mm_s
+ 	if (!page)
+ 		goto oom;
+ 
+-	if (mem_cgroup_charge(page, mm))
++	if (mem_cgroup_charge(page, mm, GFP_KERNEL))
+ 		goto oom_free_page;
+ 
+ 	entry = mk_pte(page, vma->vm_page_prot);
+@@ -2320,7 +2320,7 @@ static int __do_fault(struct mm_struct *
+ 
+ 	}
+ 
+-	if (mem_cgroup_charge(page, mm)) {
++	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+ 		ret = VM_FAULT_OOM;
+ 		goto out;
+ 	}
+diff -puN mm/migrate.c~memory-controller-make-charging-gfp-mask-aware mm/migrate.c
+--- a/mm/migrate.c~memory-controller-make-charging-gfp-mask-aware
++++ a/mm/migrate.c
+@@ -158,7 +158,7 @@ static void remove_migration_pte(struct 
+  		return;
+  	}
+ 
+-	if (mem_cgroup_charge(new, mm)) {
++	if (mem_cgroup_charge(new, mm, GFP_KERNEL)) {
+ 		pte_unmap(ptep);
+ 		return;
+ 	}
+diff -puN mm/swapfile.c~memory-controller-make-charging-gfp-mask-aware mm/swapfile.c
+--- a/mm/swapfile.c~memory-controller-make-charging-gfp-mask-aware
++++ a/mm/swapfile.c
+@@ -510,7 +510,7 @@ unsigned int count_swap_pages(int type, 
+ static int unuse_pte(struct vm_area_struct *vma, pte_t *pte,
+ 		unsigned long addr, swp_entry_t entry, struct page *page)
+ {
+-	if (mem_cgroup_charge(page, vma->vm_mm))
++	if (mem_cgroup_charge(page, vma->vm_mm, GFP_KERNEL))
+ 		return -ENOMEM;
+ 
+ 	inc_mm_counter(vma->vm_mm, anon_rss);
+diff -puN mm/swap_state.c~memory-controller-make-charging-gfp-mask-aware mm/swap_state.c
+--- a/mm/swap_state.c~memory-controller-make-charging-gfp-mask-aware
++++ a/mm/swap_state.c
+@@ -81,7 +81,7 @@ static int __add_to_swap_cache(struct pa
+ 	error = radix_tree_preload(gfp_mask);
+ 	if (!error) {
+ 
+-		error = mem_cgroup_cache_charge(page, current->mm);
++		error = mem_cgroup_cache_charge(page, current->mm, gfp_mask);
+ 		if (error)
+ 			goto out;
+ 
+diff -puN mm/vmscan.c~memory-controller-make-charging-gfp-mask-aware mm/vmscan.c
+--- a/mm/vmscan.c~memory-controller-make-charging-gfp-mask-aware
++++ a/mm/vmscan.c
+@@ -1350,10 +1350,11 @@ unsigned long try_to_free_pages(struct z
+ #define ZONE_USERPAGES ZONE_NORMAL
+ #endif
+ 
+-unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont)
++unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
++						gfp_t gfp_mask)
+ {
+ 	struct scan_control sc = {
+-		.gfp_mask = GFP_KERNEL,
++		.gfp_mask = gfp_mask,
+ 		.may_writepage = !laptop_mode,
+ 		.may_swap = 1,
+ 		.swap_cluster_max = SWAP_CLUSTER_MAX,
 
 --
