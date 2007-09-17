@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbXIQVMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932490AbXIQVMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760696AbXIQVMU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 17:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760363AbXIQVHl
+	id S932490AbXIQVMt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 17:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760370AbXIQVHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 17:07:41 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9262 "EHLO
+	Mon, 17 Sep 2007 17:07:44 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9267 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760331AbXIQVHi (ORCPT
+	with ESMTP id S1760339AbXIQVHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 17:07:38 -0400
+	Mon, 17 Sep 2007 17:07:39 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=ViyP4yJxvH/EGC4igel45jYVGWuHMcdqztoRTmbUOJLfNM3VaEJp9HJhDUXeg1Unt
-	+zDgrPXtaqfItc8JjW/MQ==
-Message-Id: <20070917210431.179207000@menage.corp.google.com>
+	b=udsr/T8+IRQJUkoxwYRaMCFZy6HDEQYjucC1B0WJA7V/D6uEO+YllqLjGngvupv4S
+	OHV56Gyf+DB6ryiWkJwIQ==
+Message-Id: <20070917210431.338814000@menage.corp.google.com>
 References: <20070917210307.116234000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 17 Sep 2007 14:03:38 -0700
+Date: Mon, 17 Sep 2007 14:03:39 -0700
 From: Paul Menage <menage@google.com>
 To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
        "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
@@ -29,199 +29,279 @@ To: akpm@linuxfoundation.org, balbir@linux.vnet.ibm.com,
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, pj@sgi.com,
        containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 31/33] memory controller make page_referenced container aware v7
-Content-Disposition: inline; filename=memory-controller-make-page_referenced-container-aware-v7.patch
+Subject: [PATCH 32/33] memory-controller-improve-user-interface
+Content-Disposition: inline; filename=memcontroller0.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 (container->cgroup renaming by Paul Menage <menage@google.com>)
 
-Make page_referenced() cgroup aware.  Without this patch, page_referenced()
-can cause a page to be skipped while reclaiming pages.  This patch ensures
-that other cgroups do not hold pages in a particular cgroup hostage.  It
-is required to ensure that shared pages are freed from a cgroup when they
-are not actively referenced from the cgroup that brought them in
+Change the interface to use bytes instead of pages.  Page sizes can vary
+across platforms and configurations.  A new strategy routine has been added
+to the resource counters infrastructure to format the data as desired.
+
+Suggested by David Rientjes, Andrew Morton and Herbert Poetzl
+
+Tested on a UML setup with the config for memory control enabled.
 
 Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 Signed-off-by: Paul Menage <menage@google.com>
+
 ---
 
- include/linux/memcontrol.h |    6 ++++++
- include/linux/rmap.h       |    5 +++--
- mm/memcontrol.c            |    5 +++++
- mm/rmap.c                  |   30 ++++++++++++++++++++++++------
- mm/vmscan.c                |    4 ++--
- 5 files changed, 40 insertions(+), 10 deletions(-)
+ Documentation/controllers/memory.txt |   29 +++++++++++++++++---
+ include/linux/res_counter.h          |   12 +++++---
+ kernel/res_counter.c                 |   34 ++++++++++++++++--------
+ mm/memcontrol.c                      |   35 +++++++++++++++++--------
+ 4 files changed, 79 insertions(+), 31 deletions(-)
 
-diff -puN include/linux/memcontrol.h~memory-controller-make-page_referenced-cgroup-aware-v7 include/linux/memcontrol.h
---- a/include/linux/memcontrol.h~memory-controller-make-page_referenced-cgroup-aware-v7
-+++ a/include/linux/memcontrol.h
-@@ -43,6 +43,7 @@ extern unsigned long mem_cgroup_isola
- 					int active);
- extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem);
- extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm);
-+extern struct mem_cgroup *mm_cgroup(struct mm_struct *mm);
+diff -puN Documentation/controllers/memory.txt~memory-controller-improve-user-interface Documentation/controllers/memory.txt
+--- a/Documentation/controllers/memory.txt~memory-controller-improve-user-interface
++++ a/Documentation/controllers/memory.txt
+@@ -165,11 +165,30 @@ c. Enable CONFIG_CGROUP_MEM_CONT
  
- static inline void mem_cgroup_uncharge_page(struct page *page)
+ Since now we're in the 0 cgroup,
+ We can alter the memory limit:
+-# echo -n 6000 > /cgroups/0/memory.limit
++# echo -n 4M > /cgroups/0/memory.limit_in_bytes
++
++NOTE: We can use a suffix (k, K, m, M, g or G) to indicate values in kilo,
++mega or gigabytes.
++
++# cat /cgroups/0/memory.limit_in_bytes
++4194304 Bytes
++
++NOTE: The interface has now changed to display the usage in bytes
++instead of pages
+ 
+ We can check the usage:
+-# cat /cgroups/0/memory.usage
+-25
++# cat /cgroups/0/memory.usage_in_bytes
++1216512 Bytes
++
++A successful write to this file does not guarantee a successful set of
++this limit to the value written into the file.  This can be due to a
++number of factors, such as rounding up to page boundaries or the total
++availability of memory on the system.  The user is required to re-read
++this file after a write to guarantee the value committed by the kernel.
++
++# echo -n 1 > memory.limit_in_bytes
++# cat memory.limit_in_bytes
++4096 Bytes
+ 
+ The memory.failcnt field gives the number of times that the cgroup limit was
+ exceeded.
+@@ -206,8 +225,8 @@ cgroup might have some charge associa
+ tasks have migrated away from it. If some pages are still left, after following
+ the steps listed in sections 4.1 and 4.2, check the Swap Cache usage in
+ /proc/meminfo to see if the Swap Cache usage is showing up in the
+-cgroups memory.usage counter. A simple test of swapoff -a and swapon -a
+-should free any pending Swap Cache usage.
++cgroups memory.usage_in_bytes counter. A simple test of swapoff -a and
++swapon -a should free any pending Swap Cache usage.
+ 
+ 4.4 Choosing what to account  -- Page Cache (unmapped) vs RSS (mapped)?
+ 
+diff -puN include/linux/res_counter.h~memory-controller-improve-user-interface include/linux/res_counter.h
+--- a/include/linux/res_counter.h~memory-controller-improve-user-interface
++++ a/include/linux/res_counter.h
+@@ -23,15 +23,15 @@ struct res_counter {
+ 	/*
+ 	 * the current resource consumption level
+ 	 */
+-	unsigned long usage;
++	unsigned long long usage;
+ 	/*
+ 	 * the limit that usage cannot exceed
+ 	 */
+-	unsigned long limit;
++	unsigned long long limit;
+ 	/*
+ 	 * the number of unsuccessful attempts to consume the resource
+ 	 */
+-	unsigned long failcnt;
++	unsigned long long failcnt;
+ 	/*
+ 	 * the lock to protect all of the above.
+ 	 * the routines below consider this to be IRQ-safe
+@@ -52,9 +52,11 @@ struct res_counter {
+  */
+ 
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+-		const char __user *buf, size_t nbytes, loff_t *pos);
++		const char __user *buf, size_t nbytes, loff_t *pos,
++		int (*read_strategy)(unsigned long long val, char *s));
+ ssize_t res_counter_write(struct res_counter *counter, int member,
+-		const char __user *buf, size_t nbytes, loff_t *pos);
++		const char __user *buf, size_t nbytes, loff_t *pos,
++		int (*write_strategy)(char *buf, unsigned long long *val));
+ 
+ /*
+  * the field descriptors. one for each member of res_counter
+diff -puN kernel/res_counter.c~memory-controller-improve-user-interface kernel/res_counter.c
+--- a/kernel/res_counter.c~memory-controller-improve-user-interface
++++ a/kernel/res_counter.c
+@@ -16,7 +16,7 @@
+ void res_counter_init(struct res_counter *counter)
  {
-@@ -93,6 +94,11 @@ static inline int mem_cgroup_cache_ch
- 	return 0;
+ 	spin_lock_init(&counter->lock);
+-	counter->limit = (unsigned long)LONG_MAX;
++	counter->limit = (unsigned long long)LLONG_MAX;
  }
  
-+static inline struct mem_cgroup *mm_cgroup(struct mm_struct *mm)
-+{
-+	return NULL;
-+}
+ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+@@ -59,8 +59,8 @@ void res_counter_uncharge(struct res_cou
+ }
+ 
+ 
+-static inline unsigned long *res_counter_member(struct res_counter *counter,
+-						int member)
++static inline unsigned long long *
++res_counter_member(struct res_counter *counter, int member)
+ {
+ 	switch (member) {
+ 	case RES_USAGE:
+@@ -76,24 +76,29 @@ static inline unsigned long *res_counter
+ }
+ 
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+-		const char __user *userbuf, size_t nbytes, loff_t *pos)
++		const char __user *userbuf, size_t nbytes, loff_t *pos,
++		int (*read_strategy)(unsigned long long val, char *st_buf))
+ {
+-	unsigned long *val;
++	unsigned long long *val;
+ 	char buf[64], *s;
+ 
+ 	s = buf;
+ 	val = res_counter_member(counter, member);
+-	s += sprintf(s, "%lu\n", *val);
++	if (read_strategy)
++		s += read_strategy(*val, s);
++	else
++		s += sprintf(s, "%llu\n", *val);
+ 	return simple_read_from_buffer((void __user *)userbuf, nbytes,
+ 			pos, buf, s - buf);
+ }
+ 
+ ssize_t res_counter_write(struct res_counter *counter, int member,
+-		const char __user *userbuf, size_t nbytes, loff_t *pos)
++		const char __user *userbuf, size_t nbytes, loff_t *pos,
++		int (*write_strategy)(char *st_buf, unsigned long long *val))
+ {
+ 	int ret;
+ 	char *buf, *end;
+-	unsigned long tmp, *val;
++	unsigned long long tmp, *val;
+ 
+ 	buf = kmalloc(nbytes + 1, GFP_KERNEL);
+ 	ret = -ENOMEM;
+@@ -106,9 +111,16 @@ ssize_t res_counter_write(struct res_cou
+ 		goto out_free;
+ 
+ 	ret = -EINVAL;
+-	tmp = simple_strtoul(buf, &end, 10);
+-	if (*end != '\0')
+-		goto out_free;
 +
- #endif /* CONFIG_CGROUP_MEM_CONT */
++	if (write_strategy) {
++		if (write_strategy(buf, &tmp)) {
++			goto out_free;
++		}
++	} else {
++		tmp = simple_strtoull(buf, &end, 10);
++		if (*end != '\0')
++			goto out_free;
++	}
  
- #endif /* _LINUX_MEMCONTROL_H */
-diff -puN include/linux/rmap.h~memory-controller-make-page_referenced-cgroup-aware-v7 include/linux/rmap.h
---- a/include/linux/rmap.h~memory-controller-make-page_referenced-cgroup-aware-v7
-+++ a/include/linux/rmap.h
-@@ -8,6 +8,7 @@
- #include <linux/slab.h>
- #include <linux/mm.h>
- #include <linux/spinlock.h>
-+#include <linux/memcontrol.h>
- 
- /*
-  * The anon_vma heads a list of private "related" vmas, to scan if
-@@ -86,7 +87,7 @@ static inline void page_dup_rmap(struct 
- /*
-  * Called from mm/vmscan.c to handle paging out
-  */
--int page_referenced(struct page *, int is_locked);
-+int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
- int try_to_unmap(struct page *, int ignore_refs);
- 
- /*
-@@ -114,7 +115,7 @@ int page_mkclean(struct page *);
- #define anon_vma_prepare(vma)	(0)
- #define anon_vma_link(vma)	do {} while (0)
- 
--#define page_referenced(page,l) TestClearPageReferenced(page)
-+#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
- #define try_to_unmap(page, refs) SWAP_FAIL
- 
- static inline int page_mkclean(struct page *page)
-diff -puN mm/memcontrol.c~memory-controller-make-page_referenced-cgroup-aware-v7 mm/memcontrol.c
---- a/mm/memcontrol.c~memory-controller-make-page_referenced-cgroup-aware-v7
+ 	val = res_counter_member(counter, member);
+ 	*val = tmp;
+diff -puN mm/memcontrol.c~memory-controller-improve-user-interface mm/memcontrol.c
+--- a/mm/memcontrol.c~memory-controller-improve-user-interface
 +++ a/mm/memcontrol.c
-@@ -109,6 +109,11 @@ struct mem_cgroup *mem_cgroup_from
- 				struct mem_cgroup, css);
+@@ -296,7 +296,7 @@ int mem_cgroup_charge(struct page *pa
+ 	 * If we created the page_cgroup, we should free it on exceeding
+ 	 * the cgroup limit.
+ 	 */
+-	while (res_counter_charge(&mem->res, 1)) {
++	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
+ 		if (try_to_free_mem_cgroup_pages(mem))
+ 			continue;
+ 
+@@ -335,7 +335,7 @@ int mem_cgroup_charge(struct page *pa
+ 		kfree(pc);
+ 		pc = race_pc;
+ 		atomic_inc(&pc->ref_cnt);
+-		res_counter_uncharge(&mem->res, 1);
++		res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 		css_put(&mem->css);
+ 		goto done;
+ 	}
+@@ -380,7 +380,7 @@ void mem_cgroup_uncharge(struct page_
+ 		css_put(&mem->css);
+ 		page_assign_page_cgroup(page, NULL);
+ 		unlock_page_cgroup(page);
+-		res_counter_uncharge(&mem->res, 1);
++		res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 
+  		spin_lock_irqsave(&mem->lru_lock, flags);
+  		list_del_init(&pc->lru);
+@@ -389,12 +389,26 @@ void mem_cgroup_uncharge(struct page_
+ 	}
  }
  
-+inline struct mem_cgroup *mm_cgroup(struct mm_struct *mm)
+-static ssize_t mem_cgroup_read(struct cgroup *cont, struct cftype *cft,
+-			struct file *file, char __user *userbuf, size_t nbytes,
+-			loff_t *ppos)
++int mem_cgroup_write_strategy(char *buf, unsigned long long *tmp)
 +{
-+	return rcu_dereference(mm->mem_cgroup);
++	*tmp = memparse(buf, &buf);
++	if (*buf != '\0')
++		return -EINVAL;
++
++	/*
++	 * Round up the value to the closest page size
++	 */
++	*tmp = ((*tmp + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
++	return 0;
 +}
 +
- void mm_init_cgroup(struct mm_struct *mm, struct task_struct *p)
++static ssize_t mem_cgroup_read(struct cgroup *cont,
++			struct cftype *cft, struct file *file,
++			char __user *userbuf, size_t nbytes, loff_t *ppos)
  {
- 	struct mem_cgroup *mem;
-diff -puN mm/rmap.c~memory-controller-make-page_referenced-cgroup-aware-v7 mm/rmap.c
---- a/mm/rmap.c~memory-controller-make-page_referenced-cgroup-aware-v7
-+++ a/mm/rmap.c
-@@ -299,7 +299,8 @@ out:
- 	return referenced;
+ 	return res_counter_read(&mem_cgroup_from_cont(cont)->res,
+-				cft->private, userbuf, nbytes, ppos);
++				cft->private, userbuf, nbytes, ppos,
++				NULL);
  }
  
--static int page_referenced_anon(struct page *page)
-+static int page_referenced_anon(struct page *page,
-+				struct mem_cgroup *mem_cont)
+ static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
+@@ -402,5 +416,6 @@ static ssize_t mem_cgroup_write(struc
+ 				size_t nbytes, loff_t *ppos)
  {
- 	unsigned int mapcount;
- 	struct anon_vma *anon_vma;
-@@ -312,6 +313,13 @@ static int page_referenced_anon(struct p
+ 	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
+-				cft->private, userbuf, nbytes, ppos);
++				cft->private, userbuf, nbytes, ppos,
++				mem_cgroup_write_strategy);
+ }
+@@ -407,12 +422,12 @@
  
- 	mapcount = page_mapcount(page);
- 	list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-+		/*
-+		 * If we are reclaiming on behalf of a cgroup, skip
-+		 * counting on behalf of references from different
-+		 * cgroups
-+		 */
-+		if (mem_cont && (mm_cgroup(vma->vm_mm) != mem_cont))
-+			continue;
- 		referenced += page_referenced_one(page, vma, &mapcount);
- 		if (!mapcount)
- 			break;
-@@ -332,7 +340,8 @@ static int page_referenced_anon(struct p
-  *
-  * This function is only called from page_referenced for object-based pages.
-  */
--static int page_referenced_file(struct page *page)
-+static int page_referenced_file(struct page *page,
-+				struct mem_cgroup *mem_cont)
- {
- 	unsigned int mapcount;
- 	struct address_space *mapping = page->mapping;
-@@ -365,6 +374,13 @@ static int page_referenced_file(struct p
- 	mapcount = page_mapcount(page);
- 
- 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
-+		/*
-+		 * If we are reclaiming on behalf of a cgroup, skip
-+		 * counting on behalf of references from different
-+		 * cgroups
-+		 */
-+		if (mem_cont && (mm_cgroup(vma->vm_mm) != mem_cont))
-+			continue;
- 		if ((vma->vm_flags & (VM_LOCKED|VM_MAYSHARE))
- 				  == (VM_LOCKED|VM_MAYSHARE)) {
- 			referenced++;
-@@ -387,7 +403,8 @@ static int page_referenced_file(struct p
-  * Quick test_and_clear_referenced for all mappings to a page,
-  * returns the number of ptes which referenced the page.
-  */
--int page_referenced(struct page *page, int is_locked)
-+int page_referenced(struct page *page, int is_locked,
-+			struct mem_cgroup *mem_cont)
- {
- 	int referenced = 0;
- 
-@@ -399,14 +416,15 @@ int page_referenced(struct page *page, i
- 
- 	if (page_mapped(page) && page->mapping) {
- 		if (PageAnon(page))
--			referenced += page_referenced_anon(page);
-+			referenced += page_referenced_anon(page, mem_cont);
- 		else if (is_locked)
--			referenced += page_referenced_file(page);
-+			referenced += page_referenced_file(page, mem_cont);
- 		else if (TestSetPageLocked(page))
- 			referenced++;
- 		else {
- 			if (page->mapping)
--				referenced += page_referenced_file(page);
-+				referenced +=
-+					page_referenced_file(page, mem_cont);
- 			unlock_page(page);
- 		}
- 	}
-diff -puN mm/vmscan.c~memory-controller-make-page_referenced-cgroup-aware-v7 mm/vmscan.c
---- a/mm/vmscan.c~memory-controller-make-page_referenced-cgroup-aware-v7
-+++ a/mm/vmscan.c
-@@ -503,7 +503,7 @@ static unsigned long shrink_page_list(st
- 				goto keep_locked;
- 		}
- 
--		referenced = page_referenced(page, 1);
-+		referenced = page_referenced(page, 1, sc->mem_cgroup);
- 		/* In active use or really unfreeable?  Activate it. */
- 		if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
- 					referenced && page_mapping_inuse(page))
-@@ -1057,7 +1057,7 @@ force_reclaim_mapped:
- 		if (page_mapped(page)) {
- 			if (!reclaim_mapped ||
- 			    (total_swap_pages == 0 && PageAnon(page)) ||
--			    page_referenced(page, 0)) {
-+			    page_referenced(page, 0, sc->mem_cgroup)) {
- 				list_add(&page->lru, &l_active);
- 				continue;
- 			}
-_
+ static struct cftype mem_cgroup_files[] = {
+ 	{
+-		.name = "usage",
++		.name = "usage_in_bytes",
+ 		.private = RES_USAGE,
+ 		.read = mem_cgroup_read,
+ 	},
+ 	{
+-		.name = "limit",
++		.name = "limit_in_bytes",
+ 		.private = RES_LIMIT,
+ 		.write = mem_cgroup_write,
+ 		.read = mem_cgroup_read,
 
 --
