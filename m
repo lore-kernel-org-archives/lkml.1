@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbXIQQWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbXIQQ1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756179AbXIQQWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 12:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXIQQWj
+	id S1756105AbXIQQ1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 12:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbXIQQ1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 12:22:39 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:43227 "EHLO mail.screens.ru"
+	Mon, 17 Sep 2007 12:27:17 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:1127 "EHLO nef2.ens.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751945AbXIQQWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 12:22:38 -0400
-Date: Mon, 17 Sep 2007 20:26:27 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       balbir@in.ibm.com, jlan@engr.sgi.com, jlim@sgi.com
-Subject: Re: + taskstats-add-all-thread-stats-for-taskstats_cmd_attr_tgid.patch added to -mm tree
-Message-ID: <20070917162627.GB1398@tv-sign.ru>
-References: <200709130018.l8D0IgHl026136@imap1.linux-foundation.org> <20070913124141.GA2673@tv-sign.ru> <20070915205124.4ccac9a9@localhost.localdomain>
+	id S1752070AbXIQQ1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 12:27:17 -0400
+X-Greylist: delayed 2120 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Sep 2007 12:27:17 EDT
+Date: Mon, 17 Sep 2007 17:51:49 +0200
+From: David Madore <david.madore@ens.fr>
+To: linux-kernel@vger.kernel.org
+Subject: patch/option to wipe memory at boot?
+Message-ID: <20070917155149.GA5453@clipper.ens.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070915205124.4ccac9a9@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Mon, 17 Sep 2007 17:51:50 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/15, Guillaume Chazarain wrote:
->
-> Le Thu, 13 Sep 2007 16:41:41 +0400,
-> Oleg Nesterov <oleg@tv-sign.ru> a ??crit :
-> 
-> > > +	do
-> > > +		if (!tsk->exit_state)
-> > > +			add_tsk(stats, tsk);
-> > > +	while_each_thread(first, tsk);
-> > 
-> > This reminds me. The "!tsk->exit_state" is not good and racy, it
-> > can't prevent the double accounting (of course, I don't blame this
-> > patch).
-> 
-> I documented this in v4, but I was wondering if always setting
-> tsk->exit_state under the protection of lock_task_sighand() would fix
-> the race.
+Hi,
 
-No, this is not enough. There is a window between do_exit()->taskstats_exit()
-and do_exit()->exit_notify() which sets ->exit_state. Probably, we can
-shift taskstats_exit() into exit_notify() but this is not good.
+Is there a patch or a boot option or something which wipes all
+available (physical) RAM at boot (or better, fills it with a fixed
+signature like 0xdeadbeef)?  I'm getting phony ECC errors and I'd like
+to test whether they go away when the RAM is properly initialized.
+Also, I'd like to know exactly which parts of RAM are being used and
+which are untouched since boot (hence the 0xdeadbeef signature).
 
-Oleg.
+If this patch/option doesn't exist, can anyone give me a hint as to
+where and how it would be best to add this?  (I'm afraid I'm very
+ignorant as to how Linux sets up its RAM mapping.)  I'm concerned
+about x86 and x86_64.
 
+PS: I'm not finicky: it's all right if a couple of megabytes at the
+bottom of RAM are not scrubbed (I'm more interested about the top
+gigabyte-or-so), especially if they're guaranteed to be used by the
+kernel.
+
+Happy hacking,
+
+-- 
+     David A. Madore
+    (david.madore@ens.fr,
+     http://www.madore.org/~david/ )
