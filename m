@@ -1,269 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbXIQQG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbXIQQJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbXIQQG2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 12:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbXIQQGU
+	id S1756257AbXIQQJW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 12:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXIQQJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 12:06:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48432 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754181AbXIQQGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 12:06:18 -0400
-Message-ID: <46EEA5F4.3030806@redhat.com>
-Date: Mon, 17 Sep 2007 11:06:12 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Mon, 17 Sep 2007 12:09:11 -0400
+Received: from mga10.intel.com ([192.55.52.92]:20307 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752399AbXIQQJK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 12:09:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,265,1186383600"; 
+   d="scan'208";a="141456492"
+Message-ID: <46EEA6A2.2080001@ichips.intel.com>
+Date: Mon, 17 Sep 2007 09:09:06 -0700
+From: Sean Hefty <mshefty@ichips.intel.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: ext4 development <linux-ext4@vger.kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       hooanon05@yahoo.co.jp, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] ext34: ensure do_split leaves enough free space in both blocks
-Content-Type: text/plain; charset=ISO-8859-1
+To: Steve Wise <swise@opengridcomputing.com>
+CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       rdreier@cisco.com, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] Re: [PATCH v2] iw_cxgb3: Support "iwarp-only" interfaces
+ to avoid 4-tuple conflicts.
+References: <20070913191617.30937.95960.stgit@dell3.ogc.int>	<20070914130941.GG18517@2ka.mipt.ru> <46EC00BE.3020801@opengridcomputing.com>
+In-Reply-To: <46EC00BE.3020801@opengridcomputing.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The do_split() function for htree dir blocks is intended to split a
-leaf block to make room for a new entry.  It sorts the entries in the
-original block by hash value, then moves the last half of the entries to 
-the new block - without accounting for how much space this actually moves.  
-(IOW, it moves half of the entry *count* not half of the entry *space*).
-If by chance we have both large & small entries, and we move only the 
-smallest entries, and we have a large new entry to insert, we may not have 
-created enough space for it.
+>>> +    addr = kmalloc(sizeof *addr, GFP_KERNEL);
+>>
+>> As a small nitpick: this wants to be sizeof(struct in_ifaddr)
 
-The patch below stores each record size when calculating the dx_map,
-and then walks the hash-sorted dx_map, calculating how many entries must 
-be moved to more evenly split the existing entries between the old block 
-and the new block, guaranteeing enough space for the new entry.
+See chapter 14 of CodingStyle document.  kmalloc(sizeof *addr... is correct.
 
-The dx_map "offs" member is reduced to u16 so that the overall map
-size does not change - it is temporarily stored at the end of the new 
-block, and if it grows too large it may be overwritten.  By making offs
-and size both u16, we won't grow the map size.
-
-Also add a few comments to the functions involved.
-
-This fixes the testcase reported by hooanon05@yahoo.co.jp on the 
-linux-ext4 list, "ext3 dir_index causes an error"
-
-Thanks to Andreas Dilger for discussing the problem & solution with me.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-
-Index: linux-2.6.22-rc4/fs/ext3/namei.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext3/namei.c
-+++ linux-2.6.22-rc4/fs/ext3/namei.c
-@@ -140,7 +140,8 @@ struct dx_frame
- struct dx_map_entry
- {
- 	u32 hash;
--	u32 offs;
-+	u16 offs;
-+	u16 size;
- };
- 
- #ifdef CONFIG_EXT3_INDEX
-@@ -697,6 +698,10 @@ errout:
-  * Directory block splitting, compacting
-  */
- 
-+/*
-+ * Create map of hash values, offsets, and sizes, stored at end of block.
-+ * Returns number of entries mapped.
-+ */
- static int dx_make_map (struct ext3_dir_entry_2 *de, int size,
- 			struct dx_hash_info *hinfo, struct dx_map_entry *map_tail)
- {
-@@ -710,7 +715,8 @@ static int dx_make_map (struct ext3_dir_
- 			ext3fs_dirhash(de->name, de->name_len, &h);
- 			map_tail--;
- 			map_tail->hash = h.hash;
--			map_tail->offs = (u32) ((char *) de - base);
-+			map_tail->offs = (u16) ((char *) de - base);
-+			map_tail->size = le16_to_cpu(de->rec_len);
- 			count++;
- 			cond_resched();
- 		}
-@@ -720,6 +726,7 @@ static int dx_make_map (struct ext3_dir_
- 	return count;
- }
- 
-+/* Sort map by hash value */
- static void dx_sort_map (struct dx_map_entry *map, unsigned count)
- {
-         struct dx_map_entry *p, *q, *top = map + count - 1;
-@@ -1117,6 +1124,10 @@ static inline void ext3_set_de_type(stru
- }
- 
- #ifdef CONFIG_EXT3_INDEX
-+/*
-+ * Move count entries from end of map between two memory locations.
-+ * Returns pointer to last entry moved.
-+ */
- static struct ext3_dir_entry_2 *
- dx_move_dirents(char *from, char *to, struct dx_map_entry *map, int count)
- {
-@@ -1135,6 +1146,10 @@ dx_move_dirents(char *from, char *to, st
- 	return (struct ext3_dir_entry_2 *) (to - rec_len);
- }
- 
-+/*
-+ * Compact each dir entry in the range to the minimal rec_len.
-+ * Returns pointer to last entry in range.
-+ */
- static struct ext3_dir_entry_2* dx_pack_dirents(char *base, int size)
- {
- 	struct ext3_dir_entry_2 *next, *to, *prev, *de = (struct ext3_dir_entry_2 *) base;
-@@ -1157,6 +1172,11 @@ static struct ext3_dir_entry_2* dx_pack_
- 	return prev;
- }
- 
-+/*
-+ * Split a full leaf block to make room for a new dir entry.
-+ * Allocate a new block, and move entries so that they are approx. equally full.
-+ * Returns pointer to de in block into which the new entry will be inserted.
-+ */
- static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
- 			struct buffer_head **bh,struct dx_frame *frame,
- 			struct dx_hash_info *hinfo, int *error)
-@@ -1168,7 +1188,7 @@ static struct ext3_dir_entry_2 *do_split
- 	u32 hash2;
- 	struct dx_map_entry *map;
- 	char *data1 = (*bh)->b_data, *data2;
--	unsigned split;
-+	unsigned split, move, size, i;
- 	struct ext3_dir_entry_2 *de = NULL, *de2;
- 	int	err = 0;
- 
-@@ -1196,8 +1216,19 @@ static struct ext3_dir_entry_2 *do_split
- 	count = dx_make_map ((struct ext3_dir_entry_2 *) data1,
- 			     blocksize, hinfo, map);
- 	map -= count;
--	split = count/2; // need to adjust to actual middle
- 	dx_sort_map (map, count);
-+	/* Split the existing block in the middle, size-wise */
-+	size = 0;
-+	move = 0;
-+	for (i = count-1; i >= 0; i--) {
-+		/* is more than half of this entry in 2nd half of the block? */
-+		if (size + map[i].size/2 > blocksize/2)
-+			break;
-+		size += map[i].size;
-+		move++;
-+	}
-+	/* map index at which we will split */
-+	split = count - move;
- 	hash2 = map[split].hash;
- 	continued = hash2 == map[split - 1].hash;
- 	dxtrace(printk("Split block %i at %x, %i/%i\n",
-Index: linux-2.6.22-rc4/fs/ext4/namei.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/namei.c
-+++ linux-2.6.22-rc4/fs/ext4/namei.c
-@@ -140,7 +140,8 @@ struct dx_frame
- struct dx_map_entry
- {
- 	u32 hash;
--	u32 offs;
-+	u16 offs;
-+	u16 size;
- };
- 
- #ifdef CONFIG_EXT4_INDEX
-@@ -697,6 +698,10 @@ errout:
-  * Directory block splitting, compacting
-  */
- 
-+/*
-+ * Create map of hash values, offsets, and sizes, stored at end of block.
-+ * Returns number of entries mapped.
-+ */
- static int dx_make_map (struct ext4_dir_entry_2 *de, int size,
- 			struct dx_hash_info *hinfo, struct dx_map_entry *map_tail)
- {
-@@ -710,7 +715,8 @@ static int dx_make_map (struct ext4_dir_
- 			ext4fs_dirhash(de->name, de->name_len, &h);
- 			map_tail--;
- 			map_tail->hash = h.hash;
--			map_tail->offs = (u32) ((char *) de - base);
-+			map_tail->offs = (u16) ((char *) de - base);
-+			map_tail->size = le16_to_cpu(de->rec_len);
- 			count++;
- 			cond_resched();
- 		}
-@@ -720,6 +726,7 @@ static int dx_make_map (struct ext4_dir_
- 	return count;
- }
- 
-+/* Sort map by hash value */
- static void dx_sort_map (struct dx_map_entry *map, unsigned count)
- {
- 	struct dx_map_entry *p, *q, *top = map + count - 1;
-@@ -1115,6 +1122,10 @@ static inline void ext4_set_de_type(stru
- }
- 
- #ifdef CONFIG_EXT4_INDEX
-+/*
-+ * Move count entries from end of map between two memory locations.
-+ * Returns pointer to last entry moved.
-+ */
- static struct ext4_dir_entry_2 *
- dx_move_dirents(char *from, char *to, struct dx_map_entry *map, int count)
- {
-@@ -1133,6 +1144,10 @@ dx_move_dirents(char *from, char *to, st
- 	return (struct ext4_dir_entry_2 *) (to - rec_len);
- }
- 
-+/*
-+ * Compact each dir entry in the range to the minimal rec_len.
-+ * Returns pointer to last entry in range.
-+ */
- static struct ext4_dir_entry_2* dx_pack_dirents(char *base, int size)
- {
- 	struct ext4_dir_entry_2 *next, *to, *prev, *de = (struct ext4_dir_entry_2 *) base;
-@@ -1155,6 +1170,11 @@ static struct ext4_dir_entry_2* dx_pack_
- 	return prev;
- }
- 
-+/*
-+ * Split a full leaf block to make room for a new dir entry.
-+ * Allocate a new block, and move entries so that they are approx. equally full.
-+ * Returns pointer to de in block into which the new entry will be inserted.
-+ */
- static struct ext4_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
- 			struct buffer_head **bh,struct dx_frame *frame,
- 			struct dx_hash_info *hinfo, int *error)
-@@ -1166,7 +1186,7 @@ static struct ext4_dir_entry_2 *do_split
- 	u32 hash2;
- 	struct dx_map_entry *map;
- 	char *data1 = (*bh)->b_data, *data2;
--	unsigned split;
-+	unsigned split, move, size, i;
- 	struct ext4_dir_entry_2 *de = NULL, *de2;
- 	int	err = 0;
- 
-@@ -1194,8 +1214,19 @@ static struct ext4_dir_entry_2 *do_split
- 	count = dx_make_map ((struct ext4_dir_entry_2 *) data1,
- 			     blocksize, hinfo, map);
- 	map -= count;
--	split = count/2; // need to adjust to actual middle
- 	dx_sort_map (map, count);
-+	/* Split the existing block in the middle, size-wise */
-+	size = 0;
-+	move = 0;
-+	for (i = count-1; i >= 0; i--) {
-+		/* is more than half of this entry in 2nd half of the block? */
-+		if (size + map[i].size/2 > blocksize/2)
-+			break;
-+		size += map[i].size;
-+		move++;
-+	}
-+	/* map index at which we will split */
-+	split = count - move;
- 	hash2 = map[split].hash;
- 	continued = hash2 == map[split - 1].hash;
- 	dxtrace(printk("Split block %i at %x, %i/%i\n",
-
-
+- Sean
