@@ -1,73 +1,1587 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbXIQNQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbXIQNSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbXIQNQt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 09:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbXIQNQm
+	id S1754356AbXIQNSi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 09:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbXIQNSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 09:16:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:37751 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752850AbXIQNQl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 09:16:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=YY3bTUIu+nm7gEyxRGILgLNRqcwS/34LsfoQFBOD96tL/UpwzA1+pr1HImkYMHTzUwLIFsQSE5gtrAFwH8qb88RrnAUdY66NEotYMTPp6VVxdbM+s9ddN8v6eqY8FYwPorJmdGW/5C3OnJjxeTxOhDFpSgdZMzhP2rrYD3BStqE=
-Subject: Re: 2.6.22.1: Enabling IO-APIC = APIC error on CPU0: 40(40)
-From: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
-Reply-To: konstantin.sharlaimov@gmail.com
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0709170909520.8681@p34.internal.lan>
-References: <Pine.LNX.4.64.0707140758110.22713@p34.internal.lan>
-	 <1190034476.8152.8.camel@traveler>
-	 <Pine.LNX.4.64.0709170909520.8681@p34.internal.lan>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 00:16:31 +1100
-Message-Id: <1190034991.8152.14.camel@traveler>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 17 Sep 2007 09:18:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41647 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752242AbXIQNS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 09:18:28 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] KEYS: Make request_key() and co fundamentally asynchronous
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: kwc@citi.umich.edu, Trond.Myklebust@netapp.com,
+       linux-kernel@vger.kernel.org, smfrench@gmail.com, nfsv4@linux-nfs.org,
+       dhowells@redhat.com
+Date: Mon, 17 Sep 2007 14:17:39 +0100
+Message-ID: <20070917131739.10474.39032.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I agree, this is probably somehow related with SiS chipset - my laptop
-has one of these SiS 760 host controllers inside. 
+Make request_key() and co fundamentally asynchronous to make it easier for NFS
+to make use of them.  There are now accessor functions that do asynchronous
+constructions, a wait function to wait for construction to complete, and a
+completion function for the key type to indicate completion of construction.
 
-I'll probably do some digging to figure out if this is indeed chipset
-related. I wonder if this error occurs under Windows (Win does not
-report much, yet it's kernel must be aware of such error).
+Note that the construction queue is now gone.  Instead, keys under construction
+are linked in to the appropriate keyring in advance, and that anyone
+encountering one must wait for it to be complete before they can use it.  This
+is done automatically for userspace.
 
-Konstantin
+The following auxiliary changes are also made:
 
-On Mon, 2007-09-17 at 09:10 -0400, Justin Piszcz wrote:
-> 
-> On Tue, 18 Sep 2007, Konstantin Sharlaimov wrote:
-> 
-> > I am experiencing the similar problem on my Acer Aspire 5000 laptop -
-> > once in a while a bunch of "APIC error on CPU0: 40(40)" messages are
-> > showing up in dmesg.
-> >
-> > After few experiments and a lot of googling, I identified a cause - it
-> > was my built-in wireless card! Disabling IO-APIC helped, besides a
-> > single "Spurious 8259A interrupt: IRQ7" message while booting up there
-> > was nothing unusual.
-> >
-> > A did some further experiments on various hardware and from my
-> > experience I can tell that "APIC error" messages are entirely hardware
-> > related.
-> >
-> > Regards,
-> > Konstantin
-> 
-> Thanks for the follow-up, yeah its probably one of the Promise
-> controllers or some such that is causing the problem, although I
-> remmeber I used to get the error with only the motherboard, memory and
-> video card, something tells me that MSI board with (SiS) chipset is
-> not quite supported in Linux with APIC enabled.
-> 
-> Justin.
-> 
-> 
+ (1) Key type implementation stuff is split from linux/key.h into
+     linux/key-type.h.
+
+ (2) AF_RXRPC provides a way to allocate null rxrpc-type keys so that AFS does
+     not need to call key_instantiate_and_link() directly.
+
+ (3) Adjust the debugging macros so that they're -Wformat checked even if they
+     are disabled, and make it so they can be enabled simply by defining
+     __KDEBUG to be consistent with other code of mine.
+
+ (4) Documentation.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ Documentation/keys-request-key.txt |   25 +-
+ Documentation/keys.txt             |   91 +++++-
+ Documentation/networking/rxrpc.txt |    7 
+ fs/afs/cell.c                      |   17 -
+ include/keys/rxrpc-type.h          |    2 
+ include/linux/key-type.h           |  112 +++++++
+ include/linux/key.h                |   99 +-----
+ net/rxrpc/af_rxrpc.c               |    1 
+ net/rxrpc/ar-key.c                 |   32 ++
+ security/keys/internal.h           |   35 +-
+ security/keys/key.c                |   34 +-
+ security/keys/process_keys.c       |   16 +
+ security/keys/request_key.c        |  556 ++++++++++++++++++------------------
+ security/keys/request_key_auth.c   |   11 +
+ 14 files changed, 604 insertions(+), 434 deletions(-)
+
+diff --git a/Documentation/keys-request-key.txt b/Documentation/keys-request-key.txt
+index c1f64fd..266955d 100644
+--- a/Documentation/keys-request-key.txt
++++ b/Documentation/keys-request-key.txt
+@@ -20,6 +20,19 @@ or:
+ 					     const char *callout_string,
+ 					     void *aux);
+ 
++or:
++
++	struct key *request_key_async(const struct key_type *type,
++				      const char *description,
++				      const char *callout_string);
++
++or:
++
++	struct key *request_key_async_with_auxdata(const struct key_type *type,
++						   const char *description,
++						   const char *callout_string,
++						   void *aux);
++
+ Or by userspace invoking the request_key system call:
+ 
+ 	key_serial_t request_key(const char *type,
+@@ -32,10 +45,14 @@ does not need to link the key to a keyring to prevent it from being immediately
+ destroyed.  The kernel interface returns a pointer directly to the key, and
+ it's up to the caller to destroy the key.
+ 
+-The request_key_with_auxdata() call is like the in-kernel request_key() call,
+-except that it permits auxiliary data to be passed to the upcaller (the default
+-is NULL).  This is only useful for those key types that define their own upcall
+-mechanism rather than using /sbin/request-key.
++The request_key*_with_auxdata() calls are like the in-kernel request_key*()
++calls, except that they permit auxiliary data to be passed to the upcaller (the
++default is NULL).  This is only useful for those key types that define their
++own upcall mechanism rather than using /sbin/request-key.
++
++The two async in-kernel calls may return keys that are still in the process of
++being constructed.  The two non-async ones will wait for construction to
++complete first.
+ 
+ The userspace interface links the key to a keyring associated with the process
+ to prevent the key from going away, and returns the serial number of the key to
+diff --git a/Documentation/keys.txt b/Documentation/keys.txt
+index 947d57d..9a83173 100644
+--- a/Documentation/keys.txt
++++ b/Documentation/keys.txt
+@@ -726,6 +726,15 @@ call, and the key released upon close. How to deal with conflicting keys due to
+ two different users opening the same file is left to the filesystem author to
+ solve.
+ 
++To access the key manager, the following header must be #included:
++
++	<linux/key.h>
++
++Specific key types should have a header file under include/keys/ that should be
++used to access that type.  For keys of type "user", for example, that would be:
++
++	<keys/user-type.h>
++
+ Note that there are two different types of pointers to keys that may be
+ encountered:
+ 
+@@ -791,6 +800,36 @@ payload contents" for more information.
+     passed to the key_type->request_key() op if it exists.
+ 
+ 
++(*) A key can be requested asynchronously by calling one of:
++
++	struct key *request_key_async(const struct key_type *type,
++				      const char *description,
++				      const char *callout_string);
++
++    or:
++
++	struct key *request_key_async_with_auxdata(const struct key_type *type,
++						   const char *description,
++						   const char *callout_string,
++					     	   void *aux);
++
++    which are asynchronous equivalents of request_key() and
++    request_key_with_auxdata() respectively.
++
++    These two functions return with the key potentially still under
++    construction.  To wait for contruction completion, the following should be
++    called:
++
++	int wait_for_key_construction(struct key *key, bool intr);
++
++    The function will wait for the key to finish being constructed and then
++    invokes key_validate() to return an appropriate value to indicate the state
++    of the key (0 indicates the key is usable).
++
++    If intr is true, then the wait can be interrupted by a signal, in which
++    case error ERESTARTSYS will be returned.
++
++
+ (*) When it is no longer required, the key should be released using:
+ 
+ 	void key_put(struct key *key);
+@@ -924,7 +963,11 @@ DEFINING A KEY TYPE
+ 
+ A kernel service may want to define its own key type. For instance, an AFS
+ filesystem might want to define a Kerberos 5 ticket key type. To do this, it
+-author fills in a struct key_type and registers it with the system.
++author fills in a key_type struct and registers it with the system.
++
++Source files that implement key types should include the following header file:
++
++	<linux/key-type.h>
+ 
+ The structure has a number of fields, some of which are mandatory:
+ 
+@@ -1053,22 +1096,44 @@ The structure has a number of fields, some of which are mandatory:
+      as might happen when the userspace buffer is accessed.
+ 
+ 
+- (*) int (*request_key)(struct key *key, struct key *authkey, const char *op,
++ (*) int (*request_key)(struct key_construction *cons, const char *op,
+ 			void *aux);
+ 
+-     This method is optional.  If provided, request_key() and
+-     request_key_with_auxdata() will invoke this function rather than
+-     upcalling to /sbin/request-key to operate upon a key of this type.
++     This method is optional.  If provided, request_key() and friends will
++     invoke this function rather than upcalling to /sbin/request-key to operate
++     upon a key of this type.
++
++     The aux parameter is as passed to request_key_async_with_auxdata() and
++     similar or is NULL otherwise.  Also passed are the construction record for
++     the key to be operated upon and the operation type (currently only
++     "create").
++
++     This method is permitted to return before the upcall is complete, but the
++     following function must be called under all circumstances to complete the
++     instantiation process, whether or not it succeeds, whether or not there's
++     an error:
++
++	void complete_request_key(struct key_construction *cons, int error);
++
++     The error parameter should be 0 on success, -ve on error.  The
++     construction record is destroyed by this action and the authorisation key
++     will be revoked.  If an error is indicated, the key under construction
++     will be negatively instantiated if it wasn't already instantiated.
++
++     If this method returns an error, that error will be returned to the
++     caller of request_key*().  complete_request_key() must be called prior to
++     returning.
++
++     The key under construction and the authorisation key can be found in the
++     key_construction struct pointed to by cons:
++
++     (*) struct key *key;
++
++     	 The key under construction.
+ 
+-     The aux parameter is as passed to request_key_with_auxdata() or is NULL
+-     otherwise.  Also passed are the key to be operated upon, the
+-     authorisation key for this operation and the operation type (currently
+-     only "create").
++     (*) struct key *authkey;
+ 
+-     This function should return only when the upcall is complete.  Upon return
+-     the authorisation key will be revoked, and the target key will be
+-     negatively instantiated if it is still uninstantiated.  The error will be
+-     returned to the caller of request_key*().
++     	 The authorisation key.
+ 
+ 
+ ============================
+diff --git a/Documentation/networking/rxrpc.txt b/Documentation/networking/rxrpc.txt
+index cae231b..c36b64b 100644
+--- a/Documentation/networking/rxrpc.txt
++++ b/Documentation/networking/rxrpc.txt
+@@ -857,3 +857,10 @@ The kernel interface functions are as follows:
+ 
+      This is used to extract the error number from a message indicating either
+      a local error occurred or a network error occurred.
++
++ (*) Allocate a null key for doing anonymous security.
++
++	struct key *rxrpc_get_null_key(const char *keyname);
++
++     This is used to allocate a null RxRPC key that can be used to indicate
++     anonymous security for a particular domain.
+diff --git a/fs/afs/cell.c b/fs/afs/cell.c
+index 175a567..7895e84 100644
+--- a/fs/afs/cell.c
++++ b/fs/afs/cell.c
+@@ -33,6 +33,7 @@ static struct afs_cell *afs_cell_root;
+ static struct afs_cell *afs_cell_alloc(const char *name, char *vllist)
+ {
+ 	struct afs_cell *cell;
++	struct key *key;
+ 	size_t namelen;
+ 	char keyname[4 + AFS_MAXCELLNAME + 1], *cp, *dp, *next;
+ 	int ret;
+@@ -89,20 +90,14 @@ static struct afs_cell *afs_cell_alloc(const char *name, char *vllist)
+ 	do {
+ 		*dp++ = toupper(*cp);
+ 	} while (*cp++);
+-	cell->anonymous_key = key_alloc(&key_type_rxrpc, keyname, 0, 0, current,
+-					KEY_POS_SEARCH, KEY_ALLOC_NOT_IN_QUOTA);
+-	if (IS_ERR(cell->anonymous_key)) {
+-		_debug("no key");
+-		ret = PTR_ERR(cell->anonymous_key);
+-		goto error;
+-	}
+ 
+-	ret = key_instantiate_and_link(cell->anonymous_key, NULL, 0,
+-				       NULL, NULL);
+-	if (ret < 0) {
+-		_debug("instantiate failed");
++	key = rxrpc_get_null_key(keyname);
++	if (IS_ERR(key)) {
++		_debug("no key");
++		ret = PTR_ERR(key);
+ 		goto error;
+ 	}
++	cell->anonymous_key = key;
+ 
+ 	_debug("anon key %p{%x}",
+ 	       cell->anonymous_key, key_serial(cell->anonymous_key));
+diff --git a/include/keys/rxrpc-type.h b/include/keys/rxrpc-type.h
+index e2ee73a..4ea429b 100644
+--- a/include/keys/rxrpc-type.h
++++ b/include/keys/rxrpc-type.h
+@@ -19,4 +19,6 @@
+  */
+ extern struct key_type key_type_rxrpc;
+ 
++extern struct key *rxrpc_get_null_key(const char *);
++
+ #endif /* _KEYS_USER_TYPE_H */
+diff --git a/include/linux/key-type.h b/include/linux/key-type.h
+new file mode 100644
+index 0000000..65833d4
+--- /dev/null
++++ b/include/linux/key-type.h
+@@ -0,0 +1,112 @@
++/* Definitions for key type implementations
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++
++#ifndef _LINUX_KEY_TYPE_H
++#define _LINUX_KEY_TYPE_H
++
++#include <linux/key.h>
++
++#ifdef CONFIG_KEYS
++
++/*
++ * key under-construction record
++ * - passed to the request_key actor if supplied
++ */
++struct key_construction {
++	struct key	*key;	/* key being constructed */
++	struct key	*authkey;/* authorisation for key being constructed */
++};
++
++typedef int (*request_key_actor_t)(struct key_construction *key,
++				   const char *op, void *aux);
++
++/*
++ * kernel managed key type definition
++ */
++struct key_type {
++	/* name of the type */
++	const char *name;
++
++	/* default payload length for quota precalculation (optional)
++	 * - this can be used instead of calling key_payload_reserve(), that
++	 *   function only needs to be called if the real datalen is different
++	 */
++	size_t def_datalen;
++
++	/* instantiate a key of this type
++	 * - this method should call key_payload_reserve() to determine if the
++	 *   user's quota will hold the payload
++	 */
++	int (*instantiate)(struct key *key, const void *data, size_t datalen);
++
++	/* update a key of this type (optional)
++	 * - this method should call key_payload_reserve() to recalculate the
++	 *   quota consumption
++	 * - the key must be locked against read when modifying
++	 */
++	int (*update)(struct key *key, const void *data, size_t datalen);
++
++	/* match a key against a description */
++	int (*match)(const struct key *key, const void *desc);
++
++	/* clear some of the data from a key on revokation (optional)
++	 * - the key's semaphore will be write-locked by the caller
++	 */
++	void (*revoke)(struct key *key);
++
++	/* clear the data from a key (optional) */
++	void (*destroy)(struct key *key);
++
++	/* describe a key */
++	void (*describe)(const struct key *key, struct seq_file *p);
++
++	/* read a key's data (optional)
++	 * - permission checks will be done by the caller
++	 * - the key's semaphore will be readlocked by the caller
++	 * - should return the amount of data that could be read, no matter how
++	 *   much is copied into the buffer
++	 * - shouldn't do the copy if the buffer is NULL
++	 */
++	long (*read)(const struct key *key, char __user *buffer, size_t buflen);
++
++	/* handle request_key() for this type instead of invoking
++	 * /sbin/request-key (optional)
++	 * - key is the key to instantiate
++	 * - authkey is the authority to assume when instantiating this key
++	 * - op is the operation to be done, usually "create"
++	 * - the call must not return until the instantiation process has run
++	 *   its course
++	 */
++	request_key_actor_t request_key;
++
++	/* internal fields */
++	struct list_head	link;		/* link in types list */
++};
++
++extern struct key_type key_type_keyring;
++
++extern int register_key_type(struct key_type *ktype);
++extern void unregister_key_type(struct key_type *ktype);
++
++extern int key_payload_reserve(struct key *key, size_t datalen);
++extern int key_instantiate_and_link(struct key *key,
++				    const void *data,
++				    size_t datalen,
++				    struct key *keyring,
++				    struct key *instkey);
++extern int key_negate_and_link(struct key *key,
++			       unsigned timeout,
++			       struct key *keyring,
++			       struct key *instkey);
++extern void complete_request_key(struct key_construction *cons, int error);
++
++#endif /* CONFIG_KEYS */
++#endif /* _LINUX_KEY_TYPE_H */
+diff --git a/include/linux/key.h b/include/linux/key.h
+index a9220e7..fcdbd5e 100644
+--- a/include/linux/key.h
++++ b/include/linux/key.h
+@@ -1,6 +1,6 @@
+-/* key.h: authentication token and access key management
++/* Authentication token and access key management
+  *
+- * Copyright (C) 2004 Red Hat, Inc. All Rights Reserved.
++ * Copyright (C) 2004, 2007 Red Hat, Inc. All Rights Reserved.
+  * Written by David Howells (dhowells@redhat.com)
+  *
+  * This program is free software; you can redistribute it and/or
+@@ -175,78 +175,6 @@ struct key {
+ 	} payload;
+ };
+ 
+-/*****************************************************************************/
+-/*
+- * kernel managed key type definition
+- */
+-typedef int (*request_key_actor_t)(struct key *key, struct key *authkey,
+-				   const char *op, void *aux);
+-
+-struct key_type {
+-	/* name of the type */
+-	const char *name;
+-
+-	/* default payload length for quota precalculation (optional)
+-	 * - this can be used instead of calling key_payload_reserve(), that
+-	 *   function only needs to be called if the real datalen is different
+-	 */
+-	size_t def_datalen;
+-
+-	/* instantiate a key of this type
+-	 * - this method should call key_payload_reserve() to determine if the
+-	 *   user's quota will hold the payload
+-	 */
+-	int (*instantiate)(struct key *key, const void *data, size_t datalen);
+-
+-	/* update a key of this type (optional)
+-	 * - this method should call key_payload_reserve() to recalculate the
+-	 *   quota consumption
+-	 * - the key must be locked against read when modifying
+-	 */
+-	int (*update)(struct key *key, const void *data, size_t datalen);
+-
+-	/* match a key against a description */
+-	int (*match)(const struct key *key, const void *desc);
+-
+-	/* clear some of the data from a key on revokation (optional)
+-	 * - the key's semaphore will be write-locked by the caller
+-	 */
+-	void (*revoke)(struct key *key);
+-
+-	/* clear the data from a key (optional) */
+-	void (*destroy)(struct key *key);
+-
+-	/* describe a key */
+-	void (*describe)(const struct key *key, struct seq_file *p);
+-
+-	/* read a key's data (optional)
+-	 * - permission checks will be done by the caller
+-	 * - the key's semaphore will be readlocked by the caller
+-	 * - should return the amount of data that could be read, no matter how
+-	 *   much is copied into the buffer
+-	 * - shouldn't do the copy if the buffer is NULL
+-	 */
+-	long (*read)(const struct key *key, char __user *buffer, size_t buflen);
+-
+-	/* handle request_key() for this type instead of invoking
+-	 * /sbin/request-key (optional)
+-	 * - key is the key to instantiate
+-	 * - authkey is the authority to assume when instantiating this key
+-	 * - op is the operation to be done, usually "create"
+-	 * - the call must not return until the instantiation process has run
+-	 *   its course
+-	 */
+-	request_key_actor_t request_key;
+-
+-	/* internal fields */
+-	struct list_head	link;		/* link in types list */
+-};
+-
+-extern struct key_type key_type_keyring;
+-
+-extern int register_key_type(struct key_type *ktype);
+-extern void unregister_key_type(struct key_type *ktype);
+-
+ extern struct key *key_alloc(struct key_type *type,
+ 			     const char *desc,
+ 			     uid_t uid, gid_t gid,
+@@ -259,16 +187,6 @@ extern struct key *key_alloc(struct key_type *type,
+ #define KEY_ALLOC_QUOTA_OVERRUN	0x0001	/* add to quota, permit even if overrun */
+ #define KEY_ALLOC_NOT_IN_QUOTA	0x0002	/* not in quota */
+ 
+-extern int key_payload_reserve(struct key *key, size_t datalen);
+-extern int key_instantiate_and_link(struct key *key,
+-				    const void *data,
+-				    size_t datalen,
+-				    struct key *keyring,
+-				    struct key *instkey);
+-extern int key_negate_and_link(struct key *key,
+-			       unsigned timeout,
+-			       struct key *keyring,
+-			       struct key *instkey);
+ extern void key_revoke(struct key *key);
+ extern void key_put(struct key *key);
+ 
+@@ -293,6 +211,17 @@ extern struct key *request_key_with_auxdata(struct key_type *type,
+ 					    const char *callout_info,
+ 					    void *aux);
+ 
++extern struct key *request_key_async(struct key_type *type,
++				     const char *description,
++				     const char *callout_info);
++
++extern struct key *request_key_async_with_auxdata(struct key_type *type,
++						  const char *description,
++						  const char *callout_info,
++						  void *aux);
++
++extern int wait_for_key_construction(struct key *key, bool intr);
++
+ extern int key_validate(struct key *key);
+ 
+ extern key_ref_t key_create_or_update(key_ref_t keyring,
+@@ -328,8 +257,6 @@ extern int keyring_add_key(struct key *keyring,
+ 
+ extern struct key *key_lookup(key_serial_t id);
+ 
+-extern void keyring_replace_payload(struct key *key, void *replacement);
+-
+ #define key_serial(key) ((key) ? (key)->serial : 0)
+ 
+ /*
+diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
+index c58fa0d..fa64b18 100644
+--- a/net/rxrpc/af_rxrpc.c
++++ b/net/rxrpc/af_rxrpc.c
+@@ -14,6 +14,7 @@
+ #include <linux/skbuff.h>
+ #include <linux/poll.h>
+ #include <linux/proc_fs.h>
++#include <linux/key-type.h>
+ #include <net/sock.h>
+ #include <net/af_rxrpc.h>
+ #include "ar-internal.h"
+diff --git a/net/rxrpc/ar-key.c b/net/rxrpc/ar-key.c
+index 7e049ff..9a8ff68 100644
+--- a/net/rxrpc/ar-key.c
++++ b/net/rxrpc/ar-key.c
+@@ -15,7 +15,7 @@
+ #include <linux/module.h>
+ #include <linux/net.h>
+ #include <linux/skbuff.h>
+-#include <linux/key.h>
++#include <linux/key-type.h>
+ #include <linux/crypto.h>
+ #include <net/sock.h>
+ #include <net/af_rxrpc.h>
+@@ -40,7 +40,6 @@ struct key_type key_type_rxrpc = {
+ 	.destroy	= rxrpc_destroy,
+ 	.describe	= rxrpc_describe,
+ };
+-
+ EXPORT_SYMBOL(key_type_rxrpc);
+ 
+ /*
+@@ -330,5 +329,32 @@ error:
+ 	_leave(" = -ENOMEM [ins %d]", ret);
+ 	return -ENOMEM;
+ }
+-
+ EXPORT_SYMBOL(rxrpc_get_server_data_key);
++
++/**
++ * rxrpc_get_null_key - Generate a null RxRPC key
++ * @keyname: The name to give the key.
++ *
++ * Generate a null RxRPC key that can be used to indicate anonymous security is
++ * required for a particular domain.
++ */
++struct key *rxrpc_get_null_key(const char *keyname)
++{
++	struct key *key;
++	int ret;
++
++	key = key_alloc(&key_type_rxrpc, keyname, 0, 0, current,
++			KEY_POS_SEARCH, KEY_ALLOC_NOT_IN_QUOTA);
++	if (IS_ERR(key))
++		return key;
++
++	ret = key_instantiate_and_link(key, NULL, 0, NULL, NULL);
++	if (ret < 0) {
++		key_revoke(key);
++		key_put(key);
++		return ERR_PTR(ret);
++	}
++
++	return key;
++}
++EXPORT_SYMBOL(rxrpc_get_null_key);
+diff --git a/security/keys/internal.h b/security/keys/internal.h
+index 1bb416f..d36d693 100644
+--- a/security/keys/internal.h
++++ b/security/keys/internal.h
+@@ -1,6 +1,6 @@
+ /* internal.h: authentication token and access key management internal defs
+  *
+- * Copyright (C) 2003-5 Red Hat, Inc. All Rights Reserved.
++ * Copyright (C) 2003-5, 2007 Red Hat, Inc. All Rights Reserved.
+  * Written by David Howells (dhowells@redhat.com)
+  *
+  * This program is free software; you can redistribute it and/or
+@@ -12,17 +12,28 @@
+ #ifndef _INTERNAL_H
+ #define _INTERNAL_H
+ 
+-#include <linux/key.h>
++#include <linux/key-type.h>
+ #include <linux/key-ui.h>
+ 
+-#if 0
+-#define kenter(FMT, a...)	printk("==> %s("FMT")\n",__FUNCTION__ , ## a)
+-#define kleave(FMT, a...)	printk("<== %s()"FMT"\n",__FUNCTION__ , ## a)
+-#define kdebug(FMT, a...)	printk(FMT"\n" , ## a)
++static inline __attribute__((format(printf, 1, 2)))
++void no_printk(const char *fmt, ...)
++{
++}
++
++#ifdef __KDEBUG
++#define kenter(FMT, ...) \
++	printk(KERN_DEBUG "==> %s("FMT")\n", __FUNCTION__, ##__VA_ARGS__)
++#define kleave(FMT, ...) \
++	printk(KERN_DEBUG "<== %s()"FMT"\n", __FUNCTION__, ##__VA_ARGS__)
++#define kdebug(FMT, ...) \
++	printk(KERN_DEBUG "xxx" FMT"yyy\n", ##__VA_ARGS__)
+ #else
+-#define kenter(FMT, a...)	do {} while(0)
+-#define kleave(FMT, a...)	do {} while(0)
+-#define kdebug(FMT, a...)	do {} while(0)
++#define kenter(FMT, ...) \
++	no_printk(KERN_DEBUG "==> %s("FMT")\n", __FUNCTION__, ##__VA_ARGS__)
++#define kleave(FMT, ...) \
++	no_printk(KERN_DEBUG "<== %s()"FMT"\n", __FUNCTION__, ##__VA_ARGS__)
++#define kdebug(FMT, ...) \
++	no_printk(KERN_DEBUG FMT"\n", ##__VA_ARGS__)
+ #endif
+ 
+ extern struct key_type key_type_user;
+@@ -36,7 +47,7 @@ extern struct key_type key_type_user;
+  */
+ struct key_user {
+ 	struct rb_node		node;
+-	struct list_head	consq;		/* construction queue */
++	struct mutex		cons_lock;	/* construction initiation lock */
+ 	spinlock_t		lock;
+ 	atomic_t		usage;		/* for accessing qnkeys & qnbytes */
+ 	atomic_t		nkeys;		/* number of keys */
+@@ -62,7 +73,7 @@ extern void key_user_put(struct key_user *user);
+ extern struct rb_root key_serial_tree;
+ extern spinlock_t key_serial_lock;
+ extern struct semaphore key_alloc_sem;
+-extern struct rw_semaphore key_construction_sem;
++extern struct mutex key_construction_mutex;
+ extern wait_queue_head_t request_key_conswq;
+ 
+ 
+@@ -109,7 +120,7 @@ extern struct key *request_key_and_link(struct key_type *type,
+ struct request_key_auth {
+ 	struct key		*target_key;
+ 	struct task_struct	*context;
+-	const char		*callout_info;
++	char			*callout_info;
+ 	pid_t			pid;
+ };
+ 
+diff --git a/security/keys/key.c b/security/keys/key.c
+index 01bbc6d..fdd5ca6 100644
+--- a/security/keys/key.c
++++ b/security/keys/key.c
+@@ -1,6 +1,6 @@
+-/* key.c: basic authentication token and access key management
++/* Basic authentication token and access key management
+  *
+- * Copyright (C) 2004-6 Red Hat, Inc. All Rights Reserved.
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
+  * Written by David Howells (dhowells@redhat.com)
+  *
+  * This program is free software; you can redistribute it and/or
+@@ -34,7 +34,7 @@ static void key_cleanup(struct work_struct *work);
+ static DECLARE_WORK(key_cleanup_task, key_cleanup);
+ 
+ /* we serialise key instantiation and link */
+-DECLARE_RWSEM(key_construction_sem);
++DEFINE_MUTEX(key_construction_mutex);
+ 
+ /* any key who's type gets unegistered will be re-typed to this */
+ static struct key_type key_type_dead = {
+@@ -104,7 +104,7 @@ struct key_user *key_user_lookup(uid_t uid)
+ 	candidate->qnkeys = 0;
+ 	candidate->qnbytes = 0;
+ 	spin_lock_init(&candidate->lock);
+-	INIT_LIST_HEAD(&candidate->consq);
++	mutex_init(&candidate->cons_lock);
+ 
+ 	rb_link_node(&candidate->node, parent, p);
+ 	rb_insert_color(&candidate->node, &key_user_tree);
+@@ -418,7 +418,7 @@ static int __key_instantiate_and_link(struct key *key,
+ 	awaken = 0;
+ 	ret = -EBUSY;
+ 
+-	down_write(&key_construction_sem);
++	mutex_lock(&key_construction_mutex);
+ 
+ 	/* can't instantiate twice */
+ 	if (!test_bit(KEY_FLAG_INSTANTIATED, &key->flags)) {
+@@ -443,11 +443,11 @@ static int __key_instantiate_and_link(struct key *key,
+ 		}
+ 	}
+ 
+-	up_write(&key_construction_sem);
++	mutex_unlock(&key_construction_mutex);
+ 
+ 	/* wake up anyone waiting for a key to be constructed */
+ 	if (awaken)
+-		wake_up_all(&request_key_conswq);
++		wake_up_bit(&key->flags, KEY_FLAG_USER_CONSTRUCT);
+ 
+ 	return ret;
+ 
+@@ -500,7 +500,7 @@ int key_negate_and_link(struct key *key,
+ 	if (keyring)
+ 		down_write(&keyring->sem);
+ 
+-	down_write(&key_construction_sem);
++	mutex_lock(&key_construction_mutex);
+ 
+ 	/* can't instantiate twice */
+ 	if (!test_bit(KEY_FLAG_INSTANTIATED, &key->flags)) {
+@@ -525,14 +525,14 @@ int key_negate_and_link(struct key *key,
+ 			key_revoke(instkey);
+ 	}
+ 
+-	up_write(&key_construction_sem);
++	mutex_unlock(&key_construction_mutex);
+ 
+ 	if (keyring)
+ 		up_write(&keyring->sem);
+ 
+ 	/* wake up anyone waiting for a key to be constructed */
+ 	if (awaken)
+-		wake_up_all(&request_key_conswq);
++		wake_up_bit(&key->flags, KEY_FLAG_USER_CONSTRUCT);
+ 
+ 	return ret;
+ 
+@@ -899,12 +899,14 @@ void key_revoke(struct key *key)
+ {
+ 	key_check(key);
+ 
+-	/* make sure no one's trying to change or use the key when we mark
+-	 * it */
+-	down_write(&key->sem);
+-	set_bit(KEY_FLAG_REVOKED, &key->flags);
+-
+-	if (key->type->revoke)
++	/* make sure no one's trying to change or use the key when we mark it
++	 * - we tell lockdep that we might nest because we might be revoking an
++	 *   authorisation key whilst holding the sem on a key we've just
++	 *   instantiated
++	 */
++	down_write_nested(&key->sem, 1);
++	if (!test_and_set_bit(KEY_FLAG_REVOKED, &key->flags) &&
++	    key->type->revoke)
+ 		key->type->revoke(key);
+ 
+ 	up_write(&key->sem);
+diff --git a/security/keys/process_keys.c b/security/keys/process_keys.c
+index b6f8680..2a0eb94 100644
+--- a/security/keys/process_keys.c
++++ b/security/keys/process_keys.c
+@@ -26,7 +26,7 @@ static DEFINE_MUTEX(key_session_mutex);
+ /* the root user's tracking struct */
+ struct key_user root_key_user = {
+ 	.usage		= ATOMIC_INIT(3),
+-	.consq		= LIST_HEAD_INIT(root_key_user.consq),
++	.cons_lock	= __MUTEX_INITIALIZER(root_key_user.cons_lock),
+ 	.lock		= __SPIN_LOCK_UNLOCKED(root_key_user.lock),
+ 	.nkeys		= ATOMIC_INIT(2),
+ 	.nikeys		= ATOMIC_INIT(2),
+@@ -679,8 +679,18 @@ key_ref_t lookup_user_key(struct task_struct *context, key_serial_t id,
+ 		break;
+ 	}
+ 
+-	/* check the status */
+-	if (perm) {
++	if (!partial) {
++		ret = wait_for_key_construction(key, true);
++		switch (ret) {
++		case -ERESTARTSYS:
++			goto invalid_key;
++		default:
++			if (perm)
++				goto invalid_key;
++		case 0:
++			break;
++		}
++	} else if (perm) {
+ 		ret = key_validate(key);
+ 		if (ret < 0)
+ 			goto invalid_key;
+diff --git a/security/keys/request_key.c b/security/keys/request_key.c
+index 5575001..6381e61 100644
+--- a/security/keys/request_key.c
++++ b/security/keys/request_key.c
+@@ -1,6 +1,6 @@
+-/* request_key.c: request a key from userspace
++/* Request a key from userspace
+  *
+- * Copyright (C) 2004-6 Red Hat, Inc. All Rights Reserved.
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
+  * Written by David Howells (dhowells@redhat.com)
+  *
+  * This program is free software; you can redistribute it and/or
+@@ -18,27 +18,54 @@
+ #include <linux/keyctl.h>
+ #include "internal.h"
+ 
+-struct key_construction {
+-	struct list_head	link;	/* link in construction queue */
+-	struct key		*key;	/* key being constructed */
+-};
++/*
++ * wait_on_bit() sleep function for uninterruptible waiting
++ */
++static int key_wait_bit(void *flags)
++{
++	schedule();
++	return 0;
++}
++
++/*
++ * wait_on_bit() sleep function for interruptible waiting
++ */
++static int key_wait_bit_intr(void *flags)
++{
++	schedule();
++	return signal_pending(current) ? -ERESTARTSYS : 0;
++}
++
++/*
++ * call to complete the construction of a key
++ */
++void complete_request_key(struct key_construction *cons, int error)
++{
++	kenter("{%d,%d},%d", cons->key->serial, cons->authkey->serial, error);
+ 
+-/* when waiting for someone else's keys, you get added to this */
+-DECLARE_WAIT_QUEUE_HEAD(request_key_conswq);
++	if (error < 0)
++		key_negate_and_link(cons->key, key_negative_timeout, NULL,
++				    cons->authkey);
++	else
++		key_revoke(cons->authkey);
++
++	key_put(cons->key);
++	key_put(cons->authkey);
++	kfree(cons);
++}
++EXPORT_SYMBOL(complete_request_key);
+ 
+-/*****************************************************************************/
+ /*
+  * request userspace finish the construction of a key
+  * - execute "/sbin/request-key <op> <key> <uid> <gid> <keyring> <keyring> <keyring>"
+  */
+-static int call_sbin_request_key(struct key *key,
+-				 struct key *authkey,
++static int call_sbin_request_key(struct key_construction *cons,
+ 				 const char *op,
+ 				 void *aux)
+ {
+ 	struct task_struct *tsk = current;
+ 	key_serial_t prkey, sskey;
+-	struct key *keyring;
++	struct key *key = cons->key, *authkey = cons->authkey, *keyring;
+ 	char *argv[9], *envp[3], uid_str[12], gid_str[12];
+ 	char key_str[12], keyring_str[3][12];
+ 	char desc[20];
+@@ -82,8 +109,7 @@ static int call_sbin_request_key(struct key *key,
+ 		rcu_read_lock();
+ 		sskey = rcu_dereference(tsk->signal->session_keyring)->serial;
+ 		rcu_read_unlock();
+-	}
+-	else {
++	} else {
+ 		sskey = tsk->user->session_keyring->serial;
+ 	}
+ 
+@@ -110,228 +136,77 @@ static int call_sbin_request_key(struct key *key,
+ 	/* do it */
+ 	ret = call_usermodehelper_keys(argv[0], argv, envp, keyring,
+ 				       UMH_WAIT_PROC);
++	kdebug("usermode -> 0x%x", ret);
++	if (ret >= 0) {
++		/* ret is the exit/wait code */
++		if (test_bit(KEY_FLAG_USER_CONSTRUCT, &key->flags) ||
++		    key_validate(key) < 0)
++			ret = -ENOKEY;
++		else
++			/* ignore any errors from userspace if the key was
++			 * instantiated */
++			ret = 0;
++	}
+ 
+ error_link:
+ 	key_put(keyring);
+ 
+ error_alloc:
+ 	kleave(" = %d", ret);
++	complete_request_key(cons, ret);
+ 	return ret;
++}
+ 
+-} /* end call_sbin_request_key() */
+-
+-/*****************************************************************************/
+ /*
+- * call out to userspace for the key
+- * - called with the construction sem held, but the sem is dropped here
++ * call out to userspace for key construction
+  * - we ignore program failure and go on key status instead
+  */
+-static struct key *__request_key_construction(struct key_type *type,
+-					      const char *description,
+-					      const char *callout_info,
+-					      void *aux,
+-					      unsigned long flags)
++static int construct_key(struct key *key, const char *callout_info, void *aux)
+ {
++	struct key_construction *cons;
+ 	request_key_actor_t actor;
+-	struct key_construction cons;
+-	struct timespec now;
+-	struct key *key, *authkey;
+-	int ret, negated;
++	struct key *authkey;
++	int ret;
+ 
+-	kenter("%s,%s,%s,%lx", type->name, description, callout_info, flags);
++	kenter("%d,%s,%p", key->serial, callout_info, aux);
+ 
+-	/* create a key and add it to the queue */
+-	key = key_alloc(type, description,
+-			current->fsuid, current->fsgid, current, KEY_POS_ALL,
+-			flags);
+-	if (IS_ERR(key))
+-		goto alloc_failed;
+-
+-	set_bit(KEY_FLAG_USER_CONSTRUCT, &key->flags);
+-
+-	cons.key = key;
+-	list_add_tail(&cons.link, &key->user->consq);
+-
+-	/* we drop the construction sem here on behalf of the caller */
+-	up_write(&key_construction_sem);
++	cons = kmalloc(sizeof(*cons), GFP_KERNEL);
++	if (!cons)
++		return -ENOMEM;
+ 
+ 	/* allocate an authorisation key */
+ 	authkey = request_key_auth_new(key, callout_info);
+ 	if (IS_ERR(authkey)) {
++		kfree(cons);
+ 		ret = PTR_ERR(authkey);
+ 		authkey = NULL;
+-		goto alloc_authkey_failed;
+-	}
+-
+-	/* make the call */
+-	actor = call_sbin_request_key;
+-	if (type->request_key)
+-		actor = type->request_key;
+-	ret = actor(key, authkey, "create", aux);
+-	if (ret < 0)
+-		goto request_failed;
+-
+-	/* if the key wasn't instantiated, then we want to give an error */
+-	ret = -ENOKEY;
+-	if (!test_bit(KEY_FLAG_INSTANTIATED, &key->flags))
+-		goto request_failed;
+-
+-	key_revoke(authkey);
+-	key_put(authkey);
+-
+-	down_write(&key_construction_sem);
+-	list_del(&cons.link);
+-	up_write(&key_construction_sem);
+-
+-	/* also give an error if the key was negatively instantiated */
+-check_not_negative:
+-	if (test_bit(KEY_FLAG_NEGATIVE, &key->flags)) {
+-		key_put(key);
+-		key = ERR_PTR(-ENOKEY);
+-	}
+-
+-out:
+-	kleave(" = %p", key);
+-	return key;
+-
+-request_failed:
+-	key_revoke(authkey);
+-	key_put(authkey);
+-
+-alloc_authkey_failed:
+-	/* it wasn't instantiated
+-	 * - remove from construction queue
+-	 * - mark the key as dead
+-	 */
+-	negated = 0;
+-	down_write(&key_construction_sem);
+-
+-	list_del(&cons.link);
+-
+-	/* check it didn't get instantiated between the check and the down */
+-	if (!test_bit(KEY_FLAG_INSTANTIATED, &key->flags)) {
+-		set_bit(KEY_FLAG_NEGATIVE, &key->flags);
+-		set_bit(KEY_FLAG_INSTANTIATED, &key->flags);
+-		negated = 1;
+-	}
+-
+-	clear_bit(KEY_FLAG_USER_CONSTRUCT, &key->flags);
+-
+-	up_write(&key_construction_sem);
+-
+-	if (!negated)
+-		goto check_not_negative; /* surprisingly, the key got
+-					  * instantiated */
+-
+-	/* set the timeout and store in the session keyring if we can */
+-	now = current_kernel_time();
+-	key->expiry = now.tv_sec + key_negative_timeout;
+-
+-	if (current->signal->session_keyring) {
+-		struct key *keyring;
+-
+-		rcu_read_lock();
+-		keyring = rcu_dereference(current->signal->session_keyring);
+-		atomic_inc(&keyring->usage);
+-		rcu_read_unlock();
+-
+-		key_link(keyring, key);
+-		key_put(keyring);
+-	}
+-
+-	key_put(key);
+-
+-	/* notify anyone who was waiting */
+-	wake_up_all(&request_key_conswq);
+-
+-	key = ERR_PTR(ret);
+-	goto out;
+-
+-alloc_failed:
+-	up_write(&key_construction_sem);
+-	goto out;
+-
+-} /* end __request_key_construction() */
+-
+-/*****************************************************************************/
+-/*
+- * call out to userspace to request the key
+- * - we check the construction queue first to see if an appropriate key is
+- *   already being constructed by userspace
+- */
+-static struct key *request_key_construction(struct key_type *type,
+-					    const char *description,
+-					    const char *callout_info,
+-					    void *aux,
+-					    struct key_user *user,
+-					    unsigned long flags)
+-{
+-	struct key_construction *pcons;
+-	struct key *key, *ckey;
+-
+-	DECLARE_WAITQUEUE(myself, current);
+-
+-	kenter("%s,%s,{%d},%s,%lx",
+-	       type->name, description, user->uid, callout_info, flags);
+-
+-	/* see if there's such a key under construction already */
+-	down_write(&key_construction_sem);
+-
+-	list_for_each_entry(pcons, &user->consq, link) {
+-		ckey = pcons->key;
+-
+-		if (ckey->type != type)
+-			continue;
+-
+-		if (type->match(ckey, description))
+-			goto found_key_under_construction;
++	} else {
++		cons->authkey = key_get(authkey);
++		cons->key = key_get(key);
++
++		/* make the call */
++		actor = call_sbin_request_key;
++		if (key->type->request_key)
++			actor = key->type->request_key;
++
++		ret = actor(cons, "create", aux);
++
++		/* check that the actor called complete_request_key() prior to
++		 * returning an error */
++		WARN_ON(ret < 0 &&
++			!test_bit(KEY_FLAG_REVOKED, &authkey->flags));
++		key_put(authkey);
+ 	}
+ 
+-	/* see about getting userspace to construct the key */
+-	key = __request_key_construction(type, description, callout_info, aux,
+-					 flags);
+- error:
+-	kleave(" = %p", key);
+-	return key;
+-
+-	/* someone else has the same key under construction
+-	 * - we want to keep an eye on their key
+-	 */
+- found_key_under_construction:
+-	atomic_inc(&ckey->usage);
+-	up_write(&key_construction_sem);
+-
+-	/* wait for the key to be completed one way or another */
+-	add_wait_queue(&request_key_conswq, &myself);
+-
+-	for (;;) {
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		if (!test_bit(KEY_FLAG_USER_CONSTRUCT, &ckey->flags))
+-			break;
+-		if (signal_pending(current))
+-			break;
+-		schedule();
+-	}
+-
+-	set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&request_key_conswq, &myself);
+-
+-	/* we'll need to search this process's keyrings to see if the key is
+-	 * now there since we can't automatically assume it's also available
+-	 * there */
+-	key_put(ckey);
+-	ckey = NULL;
+-
+-	key = NULL; /* request a retry */
+-	goto error;
+-
+-} /* end request_key_construction() */
++	kleave(" = %d", ret);
++	return ret;
++}
+ 
+-/*****************************************************************************/
+ /*
+- * link a freshly minted key to an appropriate destination keyring
++ * link a key to the appropriate destination keyring
++ * - the caller must hold a write lock on the destination keyring
+  */
+-static void request_key_link(struct key *key, struct key *dest_keyring)
++static void construct_key_make_link(struct key *key, struct key *dest_keyring)
+ {
+ 	struct task_struct *tsk = current;
+ 	struct key *drop = NULL;
+@@ -363,11 +238,11 @@ static void request_key_link(struct key *key, struct key *dest_keyring)
+ 				break;
+ 
+ 		case KEY_REQKEY_DEFL_USER_SESSION_KEYRING:
+-			dest_keyring = current->user->session_keyring;
++			dest_keyring = tsk->user->session_keyring;
+ 			break;
+ 
+ 		case KEY_REQKEY_DEFL_USER_KEYRING:
+-			dest_keyring = current->user->uid_keyring;
++			dest_keyring = tsk->user->uid_keyring;
+ 			break;
+ 
+ 		case KEY_REQKEY_DEFL_GROUP_KEYRING:
+@@ -377,15 +252,115 @@ static void request_key_link(struct key *key, struct key *dest_keyring)
+ 	}
+ 
+ 	/* and attach the key to it */
+-	key_link(dest_keyring, key);
+-
++	__key_link(dest_keyring, key);
+ 	key_put(drop);
+-
+ 	kleave("");
++}
+ 
+-} /* end request_key_link() */
++/*
++ * allocate a new key in under-construction state and attempt to link it in to
++ * the requested place
++ * - may return a key that's already under construction instead
++ */
++static int construct_alloc_key(struct key_type *type,
++			       const char *description,
++			       struct key *dest_keyring,
++			       unsigned long flags,
++			       struct key_user *user,
++			       struct key **_key)
++{
++	struct key *key;
++	key_ref_t key_ref;
++
++	kenter("%s,%s,,,", type->name, description);
++
++	mutex_lock(&user->cons_lock);
++
++	key = key_alloc(type, description,
++			current->fsuid, current->fsgid, current, KEY_POS_ALL,
++			flags);
++	if (IS_ERR(key))
++		goto alloc_failed;
++
++	set_bit(KEY_FLAG_USER_CONSTRUCT, &key->flags);
++
++	if (dest_keyring)
++		down_write(&dest_keyring->sem);
++
++	/* attach the key to the destination keyring under lock, but we do need
++	 * to do another check just in case someone beat us to it whilst we
++	 * waited for locks */
++	mutex_lock(&key_construction_mutex);
++
++	key_ref = search_process_keyrings(type, description, type->match,
++					  current);
++	if (!IS_ERR(key_ref))
++		goto key_already_present;
++
++	if (dest_keyring)
++		construct_key_make_link(key, dest_keyring);
++
++	mutex_unlock(&key_construction_mutex);
++	if (dest_keyring)
++		up_write(&dest_keyring->sem);
++	mutex_unlock(&user->cons_lock);
++	*_key = key;
++	kleave(" = 0 [%d]", key_serial(key));
++	return 0;
++
++key_already_present:
++	mutex_unlock(&key_construction_mutex);
++	if (dest_keyring)
++		up_write(&dest_keyring->sem);
++	mutex_unlock(&user->cons_lock);
++	key_put(key);
++	*_key = key = key_ref_to_ptr(key_ref);
++	kleave(" = -EINPROGRESS [%d]", key_serial(key));
++	return -EINPROGRESS;
++
++alloc_failed:
++	mutex_unlock(&user->cons_lock);
++	*_key = NULL;
++	kleave(" = %ld", PTR_ERR(key));
++	return PTR_ERR(key);
++}
++
++/*
++ * commence key construction
++ */
++static struct key *construct_key_and_link(struct key_type *type,
++					  const char *description,
++					  const char *callout_info,
++					  void *aux,
++					  struct key *dest_keyring,
++					  unsigned long flags)
++{
++	struct key_user *user;
++	struct key *key;
++	int ret;
++
++	user = key_user_lookup(current->fsuid);
++	if (!user)
++		return ERR_PTR(-ENOMEM);
++
++	ret = construct_alloc_key(type, description, dest_keyring, flags, user,
++				  &key);
++	key_user_put(user);
++
++	if (ret == 0) {
++		ret = construct_key(key, callout_info, aux);
++		if (ret < 0)
++			goto construction_failed;
++	}
++
++	return key;
++
++construction_failed:
++	key_negate_and_link(key, key_negative_timeout, NULL, NULL);
++	key_put(key);
++	return ERR_PTR(ret);
++}
+ 
+-/*****************************************************************************/
+ /*
+  * request a key
+  * - search the process's keyrings
+@@ -400,7 +375,6 @@ struct key *request_key_and_link(struct key_type *type,
+ 				 struct key *dest_keyring,
+ 				 unsigned long flags)
+ {
+-	struct key_user *user;
+ 	struct key *key;
+ 	key_ref_t key_ref;
+ 
+@@ -412,112 +386,124 @@ struct key *request_key_and_link(struct key_type *type,
+ 	key_ref = search_process_keyrings(type, description, type->match,
+ 					  current);
+ 
+-	kdebug("search 1: %p", key_ref);
+-
+ 	if (!IS_ERR(key_ref)) {
+ 		key = key_ref_to_ptr(key_ref);
+-	}
+-	else if (PTR_ERR(key_ref) != -EAGAIN) {
++	} else if (PTR_ERR(key_ref) != -EAGAIN) {
+ 		key = ERR_PTR(PTR_ERR(key_ref));
+-	}
+-	else  {
++	} else  {
+ 		/* the search failed, but the keyrings were searchable, so we
+ 		 * should consult userspace if we can */
+ 		key = ERR_PTR(-ENOKEY);
+ 		if (!callout_info)
+ 			goto error;
+ 
+-		/* - get hold of the user's construction queue */
+-		user = key_user_lookup(current->fsuid);
+-		if (!user)
+-			goto nomem;
+-
+-		for (;;) {
+-			if (signal_pending(current))
+-				goto interrupted;
+-
+-			/* ask userspace (returns NULL if it waited on a key
+-			 * being constructed) */
+-			key = request_key_construction(type, description,
+-						       callout_info, aux,
+-						       user, flags);
+-			if (key)
+-				break;
+-
+-			/* someone else made the key we want, so we need to
+-			 * search again as it might now be available to us */
+-			key_ref = search_process_keyrings(type, description,
+-							  type->match,
+-							  current);
+-
+-			kdebug("search 2: %p", key_ref);
+-
+-			if (!IS_ERR(key_ref)) {
+-				key = key_ref_to_ptr(key_ref);
+-				break;
+-			}
+-
+-			if (PTR_ERR(key_ref) != -EAGAIN) {
+-				key = ERR_PTR(PTR_ERR(key_ref));
+-				break;
+-			}
+-		}
+-
+-		key_user_put(user);
+-
+-		/* link the new key into the appropriate keyring */
+-		if (!IS_ERR(key))
+-			request_key_link(key, dest_keyring);
++		key = construct_key_and_link(type, description, callout_info,
++					     aux, dest_keyring, flags);
+ 	}
+ 
+ error:
+ 	kleave(" = %p", key);
+ 	return key;
++}
+ 
+-nomem:
+-	key = ERR_PTR(-ENOMEM);
+-	goto error;
+-
+-interrupted:
+-	key_user_put(user);
+-	key = ERR_PTR(-EINTR);
+-	goto error;
++/*
++ * wait for construction of a key to complete
++ */
++int wait_for_key_construction(struct key *key, bool intr)
++{
++	int ret;
+ 
+-} /* end request_key_and_link() */
++	ret = wait_on_bit(&key->flags, KEY_FLAG_USER_CONSTRUCT,
++			  intr ? key_wait_bit_intr : key_wait_bit,
++			  intr ? TASK_INTERRUPTIBLE : TASK_UNINTERRUPTIBLE);
++	if (ret < 0)
++		return ret;
++	return key_validate(key);
++}
++EXPORT_SYMBOL(wait_for_key_construction);
+ 
+-/*****************************************************************************/
+ /*
+  * request a key
+  * - search the process's keyrings
+  * - check the list of keys being created or updated
+  * - call out to userspace for a key if supplementary info was provided
++ * - waits uninterruptible for creation to complete
+  */
+ struct key *request_key(struct key_type *type,
+ 			const char *description,
+ 			const char *callout_info)
+ {
+-	return request_key_and_link(type, description, callout_info, NULL,
+-				    NULL, KEY_ALLOC_IN_QUOTA);
+-
+-} /* end request_key() */
+-
++	struct key *key;
++	int ret;
++
++	key = request_key_and_link(type, description, callout_info, NULL,
++				   NULL, KEY_ALLOC_IN_QUOTA);
++	if (!IS_ERR(key)) {
++		ret = wait_for_key_construction(key, false);
++		if (ret < 0) {
++			key_put(key);
++			return ERR_PTR(ret);
++		}
++	}
++	return key;
++}
+ EXPORT_SYMBOL(request_key);
+ 
+-/*****************************************************************************/
+ /*
+  * request a key with auxiliary data for the upcaller
+  * - search the process's keyrings
+  * - check the list of keys being created or updated
+  * - call out to userspace for a key if supplementary info was provided
++ * - waits uninterruptible for creation to complete
+  */
+ struct key *request_key_with_auxdata(struct key_type *type,
+ 				     const char *description,
+ 				     const char *callout_info,
+ 				     void *aux)
+ {
+-	return request_key_and_link(type, description, callout_info, aux,
+-				    NULL, KEY_ALLOC_IN_QUOTA);
++	struct key *key;
++	int ret;
++
++	key = request_key_and_link(type, description, callout_info, aux,
++				   NULL, KEY_ALLOC_IN_QUOTA);
++	if (!IS_ERR(key)) {
++		ret = wait_for_key_construction(key, false);
++		if (ret < 0) {
++			key_put(key);
++			return ERR_PTR(ret);
++		}
++	}
++	return key;
++}
++EXPORT_SYMBOL(request_key_with_auxdata);
+ 
+-} /* end request_key_with_auxdata() */
++/*
++ * request a key (allow async construction)
++ * - search the process's keyrings
++ * - check the list of keys being created or updated
++ * - call out to userspace for a key if supplementary info was provided
++ */
++struct key *request_key_async(struct key_type *type,
++			      const char *description,
++			      const char *callout_info)
++{
++	return request_key_and_link(type, description, callout_info, NULL,
++				    NULL, KEY_ALLOC_IN_QUOTA);
++}
++EXPORT_SYMBOL(request_key_async);
+ 
+-EXPORT_SYMBOL(request_key_with_auxdata);
++/*
++ * request a key with auxiliary data for the upcaller (allow async construction)
++ * - search the process's keyrings
++ * - check the list of keys being created or updated
++ * - call out to userspace for a key if supplementary info was provided
++ */
++struct key *request_key_async_with_auxdata(struct key_type *type,
++					   const char *description,
++					   const char *callout_info,
++					   void *aux)
++{
++	return request_key_and_link(type, description, callout_info, aux,
++				    NULL, KEY_ALLOC_IN_QUOTA);
++}
++EXPORT_SYMBOL(request_key_async_with_auxdata);
+diff --git a/security/keys/request_key_auth.c b/security/keys/request_key_auth.c
+index cbf58a9..510f7be 100644
+--- a/security/keys/request_key_auth.c
++++ b/security/keys/request_key_auth.c
+@@ -127,6 +127,7 @@ static void request_key_auth_destroy(struct key *key)
+ 	}
+ 
+ 	key_put(rka->target_key);
++	kfree(rka->callout_info);
+ 	kfree(rka);
+ 
+ } /* end request_key_auth_destroy() */
+@@ -151,6 +152,12 @@ struct key *request_key_auth_new(struct key *target, const char *callout_info)
+ 		kleave(" = -ENOMEM");
+ 		return ERR_PTR(-ENOMEM);
+ 	}
++	rka->callout_info = kmalloc(strlen(callout_info) + 1, GFP_KERNEL);
++	if (!rka->callout_info) {
++		kleave(" = -ENOMEM");
++		kfree(rka);
++		return ERR_PTR(-ENOMEM);
++	}
+ 
+ 	/* see if the calling process is already servicing the key request of
+ 	 * another process */
+@@ -179,7 +186,7 @@ struct key *request_key_auth_new(struct key *target, const char *callout_info)
+ 	}
+ 
+ 	rka->target_key = key_get(target);
+-	rka->callout_info = callout_info;
++	strcpy(rka->callout_info, callout_info);
+ 
+ 	/* allocate the auth key */
+ 	sprintf(desc, "%x", target->serial);
+@@ -203,6 +210,7 @@ struct key *request_key_auth_new(struct key *target, const char *callout_info)
+ 
+ auth_key_revoked:
+ 	up_read(&current->request_key_auth->sem);
++	kfree(rka->callout_info);
+ 	kfree(rka);
+ 	kleave("= -EKEYREVOKED");
+ 	return ERR_PTR(-EKEYREVOKED);
+@@ -212,6 +220,7 @@ error_inst:
+ 	key_put(authkey);
+ error_alloc:
+ 	key_put(rka->target_key);
++	kfree(rka->callout_info);
+ 	kfree(rka);
+ 	kleave("= %d", ret);
+ 	return ERR_PTR(ret);
 
