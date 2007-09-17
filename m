@@ -1,52 +1,45 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbXIOP6S (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 15 Sep 2007 11:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbXIOP6F
+	id S1753457AbXIQGrQ (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 17 Sep 2007 02:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbXIQGq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Sep 2007 11:58:05 -0400
-Received: from smtp-out2.libero.it ([212.52.84.42]:50292 "EHLO
-	smtp-out2.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbXIOP6E convert rfc822-to-8bit (ORCPT
+	Mon, 17 Sep 2007 02:46:59 -0400
+Received: from dsl88-244-6082.ttnet.net.tr ([88.224.23.194]:2995 "HELO
+	home-a4a1e01e16.local" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with SMTP id S1752179AbXIQGq6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Sep 2007 11:58:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAF+e60bAqBA6/2dsb2JhbAAM
-Date: Sat, 15 Sep 2007 17:58:02 +0200
-Message-Id: <JOF30Q$F82DCE76C5B2C476A9E56776DAD84A67@libero.it>
-Subject: Mrs.Emma Jones
+	Mon, 17 Sep 2007 02:46:58 -0400
+X-Greylist: delayed 1588 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Sep 2007 02:46:58 EDT
+Reply-To: x19emrah19@gmail.com
+Message-ID: <04daa0d1727f35f00b7d33bd1633ad90@gmail.com>
+From: "tezbank odev arsivi" <x19emrah19@gmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: 3 YTL ye Program-egitim cd si gordunuzmu?
+Date: Mon, 17 Sep 2007 09:40:55 +0300
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=iso-8859-9
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-From: "infomailerespa" <infomailerespa@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl19)
-X-SenderIP: 81.202.184.2
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756164AbXIOP6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753457AbXIQGrQ@vger.kernel.org>
 
-Sir/Madam
+arkadaslar gercekten para kazanmak istiyormusunuz oyleyse asagidaki lin=
+ki tikla arkadaslarini uye yap cep telefonuna gelen reklam sms lerinden=
+ para kazan.. mailine gelen reklamlardan para kazan... isin acigi sen i=
+stesende istemesende bu reklamlar sana geliyor.. en iyisimi para kazan =
+hemde gercekten tatmin edici bir miktar bu.... asagidaki linke benim re=
+feransim ile uye olursan avantlarimdan faydalanirsin.... fazladan 45 yt=
+l lik uyelik pirimin benden... bunuda istedigin gibi harcamak sana kalm=
+is... ister alisveris yap... ister biriktir.. tek yapman gereken uye ol=
+mak icin asagidaki line t=FDklamak bilgileri girmek
 
-You have won =80760,000.00 Euro in EURO MILLION ONLINE INT S.L
-SPAIN.Forfurther development for Clarification and procedure. please Co=
-ntact Mr.Martin john
- Email:info_martinjohnsp@ozu.es=20
-(1) Tic Nr: 6460DGH
-(2) Sr Nr: 0909AOB09
-(3) LU Nr: 726726XZJHN
-(4) BT Nr: 2GH267XZZ1-5-42
-(5) RF Nr 9527BCV-33-7-7-7
-The Validity period of the winnings is for 14 working days hence you ar=
-e expected to make your claims immediately.
-Regards.
-Mrs.Emma Jones
+
+https://www.superteklif.com/super-uye-formu.aspx?rid=3DOmFKi07lchY_____=
+eql____
 
 
 
-------------------------------------------------------
-Leggi GRATIS le tue mail con il telefonino i-mode=99 di Wind
-http://i-mode.wind.it/
+
 
 -
 To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
