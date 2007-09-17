@@ -1,125 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbXIQTYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbXIQTY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbXIQTYn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 15:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbXIQTWX
+	id S1758740AbXIQTY7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 15:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbXIQTXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 15:22:23 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:1364 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757907AbXIQTWW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 15:22:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:references;
-	b=XYoNkq1fmkywtHvGKD6PUHBlzNzR19q1yXqp/xDSmmCvH98GlN9tp8gD20lN+oNWs
-	QEh6wwoJCZ6tUINfiR/7g==
-Message-ID: <6599ad830709171222u5fb6344aof3777931de7ec8d1@mail.gmail.com>
-Date: Mon, 17 Sep 2007 12:22:14 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: task containersv11 kernel BUG at include/linux/dcache.h:323
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070917121347.345b7d05.pj@sgi.com>
+	Mon, 17 Sep 2007 15:23:45 -0400
+Received: from diehard.n-r-g.com ([62.48.3.9]:28559 "EHLO diehard.n-r-g.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758665AbXIQTXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Sep 2007 15:23:44 -0400
+Date: Mon, 17 Sep 2007 21:23:41 +0200
+From: Claudio Jeker <cjeker@diehard.n-r-g.com>
+To: Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
+       "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070917192341.GB30119@diehard.n-r-g.com>
+Mail-Followup-To: Claudio Jeker <cjeker@diehard.n-r-g.com>,
+	Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
+	"Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+	linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+	Eben Moglen <moglen@softwarefreedom.org>,
+	Lawrence Lessig <lessig_from_web@pobox.com>,
+	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+	Matt Norwood <norwood@softwarefreedom.org>
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_14493_11565400.1190056934491"
-References: <20070916045438.9585.46625.sendpatchset@jackhammer.engr.sgi.com>
-	 <6599ad830709171126l7f178404tbb37e916767a3956@mail.gmail.com>
-	 <20070917121347.345b7d05.pj@sgi.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070917133458.GA18360@thunk.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_14493_11565400.1190056934491
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, Sep 17, 2007 at 09:34:58AM -0400, Theodore Tso wrote:
+> On Mon, Sep 17, 2007 at 02:55:54PM +0200, Claudio Jeker wrote:
+> > Wohoho! Slow here please. NDA have nothing to do with licenses and
+> > especially with copyright. NetApp even though their stuff is under their
+> > copyright and license does hopefully not modify the copyrights of imported
+> > BSD/ISC code. That would be against the law and I hope their leagal
+> > departement is smart enough to not do this mistake especially because the
+> > BSD license those not hinder them in any way.
+> 
+> Yes, NDA doesn't have anything to do with license and copyrights, and
+> I never said that NetApp is modfying a copyright; but they *are*
+> putting a proprietary copyright license on their modifications ---
+> which is exactly what the Linux wireless developers had proposed to do
+> (modulo mistakes about removing copyright notices and attribution
+> which have already been acknowledged and fixed), except instead of
+> using a proprietary license which means you'll never see the WAFL
+> sources (at least without signing an NDA and acknowledging their
+> proprietary copyright license over their changes), it will be under a
+> GPL license with which you have philosophical differences, but still
+> allows you to see the source.
+> 
 
-On 9/17/07, Paul Jackson <pj@sgi.com> wrote:
-> Paul M wrote:
-> > This is already fixed in -mm
->
-> I'm missing a clue ... the latest *-mm below
->
->   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/
->
-> I see is:
->
->   2.6.23-rc4/2.6.23-rc4-mm1/
->
-> dated two weeks ago, without this fix.
->
-> I also don't see any mention of this fix in any recent
-> lkml or linux-mm mailing list messages.
->
-> What am I missing?  Where is this patch?
+You assume a lot about what NetApp did. While they can use BSD licensed
+code in their system without any issue they can not slam a new copyright
+on that code unless the changes create a derivative work.
+If you just do an adaption of the code you have no right to add an
+additional copyright. You need to make substantial extensions to the
+original work. Now adapting code to make it run under linux is in my
+opinion not a substantial work. It can be compared to translate a book to
+a different language -- which neither allows you to assign copyright on
+the result.
+I very much doubt that WAFL is a simple adaption of UFS/FFS. So it should
+be clear that this work has it's own copyright. Maybe some parts of their
+code is using BSD work that they just adapted. On that code they can not
+add an additional copyright as the modifications are not substantial
+enough.
 
-It was just last week - it went to the containers list and not the
-entire lkml. I've attached the patch.
+> > Finally most companies know they benefit from open source and give often
+> > the code changes most likely bugfixes to this imported code back.
+> > Unlike most GPL people we're happy with that especially we do not require
+> > them to release any of their own code. Sure their WAFL file system is cool
+> > but even in my wildest dreams I would not require them to publish their
+> > code just because the used some of my code.
+> 
+> So why are you complaining when people want to use some of your code
+> and put the combined work under a mixed BSD/GPL license?  You can't
+> use WAFL; you can't use the GPL'ed enhancements.  What's the
+> difference between those two cases?  Somehow a mixed BSD/Proprietary
+> license is better?
+> 
 
-Paul
+Because they put their copyright plus license on code that they barely
+modified. If they would have added substantial work into the OpenHAL code
+and by doing that creating something new I would not say much.
 
-------=_Part_14493_11565400.1190056934491
-Content-Type: text/x-patch; name="fixoops.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="fixoops.patch"
-X-Attachment-Id: f_f6pd4xn6
+All the comercial code I have ever seen did not do this stunt of adding a
+new copyright and license to barely modified files. Perhaps the "evil"
+companies have more ethics or better understanding of copyright.
 
-Rml4IGEgcmVmZXJlbmNlIGNvdW50aW5nIGJ1ZyBpbiBjb250YWluZXJmcwoKQXMgcGFydCBvZiB0
-aGUgZXh0cmFjdGlvbiBvZiBjcHVzZXRmcyB0byBjb250YWluZXJmcywgYSBjYWxsIHRvCmNwdXNl
-dF9nZXRfZGVudHJ5KCkgd2FzIGxvc3QgKGp1c3RpZmllZCBieSB0aGUgZmFjdCB0aGF0IHRoZSBk
-ZW50cnkgaW4KcXVlc3Rpb24gd2FzIG5vdyBiZWluZyBwYXNzZWQgZG93biBieSB0aGUgY2FsbGVy
-KS4gU2luY2UKY3B1c2V0X2dldF9kZW50cnkoKSBjYWxsZWQgbG9va3VwX29uZV9sZW4oKSwgdGhp
-cyByZXN1bHRlZCBpbiBhCnJlZmVyZW5jZSBjb3VudCBiZWluZyBtaXNzZWQgZnJvbSB0aGUgZGly
-ZWN0b3J5IGRlbnRyeS4KClRoaXMgcGF0Y2ggcmVtb3ZlcyBjb250YWluZXJfZ2V0X2RlbnRyeSgp
-IGFuZCByZXBsYWNlcyBpdCB3aXRoIGRpcmVjdApjYWxscyB0byBsb29rdXBfb25lX2xlbigpOyB0
-aGUgaW5pdGlhbGl6YXRpb24gb2YgY29udGFpbmVyZnMgZGVudHJ5Cm9wcyBpcyBkb25lIG5vdyBp
-biBjb250YWluZXJfY3JlYXRlX2ZpbGUoKSBhdCBkZW50cnkgY3JlYXRpb24gdGltZS4KClNpZ25l
-ZC1vZmYtYnk6IFBhdWwgTWVuYWdlIDxtZW5hZ2VAZ29vZ2xlLmNvbT4KCi0tLQoga2VybmVsL2Nv
-bnRhaW5lci5jIHwgICAyNiArKysrKysrKy0tLS0tLS0tLS0tLS0tLS0tLQogMSBmaWxlIGNoYW5n
-ZWQsIDggaW5zZXJ0aW9ucygrKSwgMTggZGVsZXRpb25zKC0pCgpJbmRleDogY29udGFpbmVyLTIu
-Ni4yMy1yYzQtbW0xL2tlcm5lbC9jb250YWluZXIuYwo9PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBjb250YWluZXIt
-Mi42LjIzLXJjNC1tbTEub3JpZy9rZXJuZWwvY29udGFpbmVyLmMKKysrIGNvbnRhaW5lci0yLjYu
-MjMtcmM0LW1tMS9rZXJuZWwvY29udGFpbmVyLmMKQEAgLTYwNCwxOSArNjA0LDYgQEAgc3RhdGlj
-IHZvaWQgY29udGFpbmVyX2RpcHV0KHN0cnVjdCBkZW50cgogCWlwdXQoaW5vZGUpOwogfQogCi1z
-dGF0aWMgc3RydWN0IGRlbnRyeSAqY29udGFpbmVyX2dldF9kZW50cnkoc3RydWN0IGRlbnRyeSAq
-cGFyZW50LAotCQkJCQkgICBjb25zdCBjaGFyICpuYW1lKQotewotCXN0cnVjdCBkZW50cnkgKmQg
-PSBsb29rdXBfb25lX2xlbihuYW1lLCBwYXJlbnQsIHN0cmxlbihuYW1lKSk7Ci0Jc3RhdGljIHN0
-cnVjdCBkZW50cnlfb3BlcmF0aW9ucyBjb250YWluZXJfZG9wcyA9IHsKLQkJLmRfaXB1dCA9IGNv
-bnRhaW5lcl9kaXB1dCwKLQl9OwotCi0JaWYgKCFJU19FUlIoZCkpCi0JCWQtPmRfb3AgPSAmY29u
-dGFpbmVyX2RvcHM7Ci0JcmV0dXJuIGQ7Ci19Ci0KIHN0YXRpYyB2b2lkIHJlbW92ZV9kaXIoc3Ry
-dWN0IGRlbnRyeSAqZCkKIHsKIAlzdHJ1Y3QgZGVudHJ5ICpwYXJlbnQgPSBkZ2V0KGQtPmRfcGFy
-ZW50KTsKQEAgLTE1MDcsNiArMTQ5NCwxMCBAQCBzdGF0aWMgc3RydWN0IGlub2RlX29wZXJhdGlv
-bnMgY29udGFpbmVyCiBzdGF0aWMgaW50IGNvbnRhaW5lcl9jcmVhdGVfZmlsZShzdHJ1Y3QgZGVu
-dHJ5ICpkZW50cnksIGludCBtb2RlLAogCQkJCXN0cnVjdCBzdXBlcl9ibG9jayAqc2IpCiB7CisJ
-c3RhdGljIHN0cnVjdCBkZW50cnlfb3BlcmF0aW9ucyBjb250YWluZXJfZG9wcyA9IHsKKwkJLmRf
-aXB1dCA9IGNvbnRhaW5lcl9kaXB1dCwKKwl9OworCiAJc3RydWN0IGlub2RlICppbm9kZTsKIAog
-CWlmICghZGVudHJ5KQpAQCAtMTUzMiw3ICsxNTIzLDcgQEAgc3RhdGljIGludCBjb250YWluZXJf
-Y3JlYXRlX2ZpbGUoc3RydWN0IAogCQlpbm9kZS0+aV9zaXplID0gMDsKIAkJaW5vZGUtPmlfZm9w
-ID0gJmNvbnRhaW5lcl9maWxlX29wZXJhdGlvbnM7CiAJfQotCisJZGVudHJ5LT5kX29wID0gJmNv
-bnRhaW5lcl9kb3BzOwogCWRfaW5zdGFudGlhdGUoZGVudHJ5LCBpbm9kZSk7CiAJZGdldChkZW50
-cnkpOwkvKiBFeHRyYSBjb3VudCAtIHBpbiB0aGUgZGVudHJ5IGluIGNvcmUgKi8KIAlyZXR1cm4g
-MDsKQEAgLTE1NTMsMTMgKzE1NDQsMTIgQEAgc3RhdGljIGludCBjb250YWluZXJfY3JlYXRlX2Rp
-cihzdHJ1Y3QgYwogCWludCBlcnJvciA9IDA7CiAKIAlwYXJlbnQgPSBjb250LT5wYXJlbnQtPmRl
-bnRyeTsKLQlpZiAoSVNfRVJSKGRlbnRyeSkpCi0JCXJldHVybiBQVFJfRVJSKGRlbnRyeSk7CiAJ
-ZXJyb3IgPSBjb250YWluZXJfY3JlYXRlX2ZpbGUoZGVudHJ5LCBTX0lGRElSIHwgbW9kZSwgY29u
-dC0+cm9vdC0+c2IpOwogCWlmICghZXJyb3IpIHsKIAkJZGVudHJ5LT5kX2ZzZGF0YSA9IGNvbnQ7
-CiAJCWluY19ubGluayhwYXJlbnQtPmRfaW5vZGUpOwogCQljb250LT5kZW50cnkgPSBkZW50cnk7
-CisJCWRnZXQoZGVudHJ5KTsKIAl9CiAJZHB1dChkZW50cnkpOwogCkBAIC0xNTgxLDcgKzE1NzEs
-NyBAQCBpbnQgY29udGFpbmVyX2FkZF9maWxlKHN0cnVjdCBjb250YWluZXIgCiAJfQogCXN0cmNh
-dChuYW1lLCBjZnQtPm5hbWUpOwogCUJVR19PTighbXV0ZXhfaXNfbG9ja2VkKCZkaXItPmRfaW5v
-ZGUtPmlfbXV0ZXgpKTsKLQlkZW50cnkgPSBjb250YWluZXJfZ2V0X2RlbnRyeShkaXIsIG5hbWUp
-OworCWRlbnRyeSA9IGxvb2t1cF9vbmVfbGVuKG5hbWUsIGRpciwgc3RybGVuKG5hbWUpKTsKIAlp
-ZiAoIUlTX0VSUihkZW50cnkpKSB7CiAJCWVycm9yID0gY29udGFpbmVyX2NyZWF0ZV9maWxlKGRl
-bnRyeSwgMDY0NCB8IFNfSUZSRUcsCiAJCQkJCQljb250LT5yb290LT5zYik7CkBAIC0yNTg3LDcg
-KzI1NzcsNyBAQCBpbnQgY29udGFpbmVyX2Nsb25lKHN0cnVjdCB0YXNrX3N0cnVjdCAqCiAJLyog
-SG9sZCB0aGUgcGFyZW50IGRpcmVjdG9yeSBtdXRleCBhY3Jvc3MgdGhpcyBvcGVyYXRpb24gdG8K
-IAkgKiBzdG9wIGFueW9uZSBlbHNlIGRlbGV0aW5nIHRoZSBuZXcgY29udGFpbmVyICovCiAJbXV0
-ZXhfbG9jaygmaW5vZGUtPmlfbXV0ZXgpOwotCWRlbnRyeSA9IGNvbnRhaW5lcl9nZXRfZGVudHJ5
-KHBhcmVudC0+ZGVudHJ5LCBub2RlbmFtZSk7CisJZGVudHJ5ID0gbG9va3VwX29uZV9sZW4obm9k
-ZW5hbWUsIHBhcmVudC0+ZGVudHJ5LCBzdHJsZW4obm9kZW5hbWUpKTsKIAlpZiAoSVNfRVJSKGRl
-bnRyeSkpIHsKIAkJcHJpbnRrKEtFUk5fSU5GTwogCQkgICAgICAgIkNvdWxkbid0IGFsbG9jYXRl
-IGRlbnRyeSBmb3IgJXM6ICVsZFxuIiwgbm9kZW5hbWUsCg==
-------=_Part_14493_11565400.1190056934491--
+-- 
+:wq Claudio
