@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbXIRB7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbXIRCRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756765AbXIRB7o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 21:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbXIRB7h
+	id S1756740AbXIRCRX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 22:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbXIRCRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 21:59:37 -0400
-Received: from uni21mr.unity.ncsu.edu ([152.1.2.137]:50005 "EHLO
-	uni21mr.unity.ncsu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754901AbXIRB7g (ORCPT
+	Mon, 17 Sep 2007 22:17:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:5697 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753021AbXIRCRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 21:59:36 -0400
-Message-ID: <46EF3104.8080805@ncsu.edu>
-Date: Mon, 17 Sep 2007 21:59:32 -0400
-From: Casey Dahlin <cjdahlin@ncsu.edu>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG:] forcedeth: MCP55 not allowing DHCP
-References: <20070908200523.GA16204@askeshav-devel.jf.intel.com> <18148.12140.21118.252581@cargo.ozlabs.ibm.com> <20070911174231.GC24627@askeshav-devel.jf.intel.com> <20070912192854.GA32610@askeshav-devel.jf.intel.com> <18150.61732.490669.269794@cargo.ozlabs.ibm.com> <20070912215523.GA510@askeshav-devel.jf.intel.com> <46E7111B.2050303@ncsu.edu>
-In-Reply-To: <46E7111B.2050303@ncsu.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.313940, Antispam-Data: 2007.9.17.183226
+	Mon, 17 Sep 2007 22:17:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=FymCguchkqdh1K4AnSi6IChmvQzdjhBLdiBDC1Y71a5MT4VS9BQrSojGgKYurdAg4hnLtmeVYcM4uJUCLiRJDUnuVxbnCqCtGns2Q7rD4oxFL9OQDvUpya/Y+7VNdWdQ+6rOCsG3VWorFzJtoXy8a4F7M2sesbFEK6jcV2aqnxo=
+Date: Tue, 18 Sep 2007 10:16:17 +0800
+From: lepton <ytht.net@gmail.com>
+To: netdev@vger.kernel.org
+Cc: lkm <linux-kernel@vger.kernel.org>
+Subject: [PATCH] 2.6.22.6 NETWORKING [IPV4]: Always use source addr in skb to reply packet
+Message-ID: <20070918021617.GA15540@router.lepton.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Dahlin wrote:
-> I have an Asus Striker Extreme motherboard with two built in MCP55 
-> GigE interfaces. When I build with the original Fedora 7 release 
-> kernel ( 
-> ftp://ftp.belnet.be/linux/fedora/linux/releases/7/Fedora/i386/os/Fedora/kernel-2.6.21-1.3194.fc7.i686.rpm 
-> ) everything works fine. However, when I boot with any updated kernels 
-> or any other kernel (have tried building from several points in the 
-> linus git tree between 2.6.20 and .23-rc3, and 2.6.21.2 in -stable) I 
-> cannot get an IP address via dhcp. There is no error in dmesg. The 
-> card shows a link and otherwise appears to be working, but it is as if 
-> the dhcp server has been removed from the network.
->
-> On a running system there is no indication that this is a kernel bug 
-> at all, however by varying only the kernel the bug appears and 
-> disappears. I've run all these tests repeatedly with no intervening 
-> updates of any other packages.
->
-> As I said I attempted to build 2.6.21.2 ( the point of divergence 
-> between the Fedora kernel in question and -stable ) and still the card 
-> did not work. I will next attempt to manually build the rpm for the 
-> release kernel. If this works I will try experimenting with the 
-> included patches to narrow it down, but at this point I'm at a 
-> complete loss.
->
-> -Casey Dahlin
->
+Hi,
+  In some situation, icmp_reply and ip_send_reply will send
+  out packet with the wrong source addr, the following patch
+  will fix this.
 
-Is there any feedback to be had on this? I've gotten no reply whatsoever 
-from several sources now.
+  I don't understand why we must use rt->rt_src in the current
+  code, if this is a wrong fix, please correct me.
+
+Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+
+diff -X linux-2.6.22.6/Documentation/dontdiff -pru linux-2.6.22.6/net/ipv4/icmp.c linux-2.6.22.6-lepton/net/ipv4/icmp.c
+--- linux-2.6.22.6/net/ipv4/icmp.c	2007-09-14 17:41:18.000000000 +0800
++++ linux-2.6.22.6-lepton/net/ipv4/icmp.c	2007-09-18 09:57:30.000000000 +0800
+@@ -382,6 +382,7 @@ static void icmp_reply(struct icmp_bxm *
+ 	struct ipcm_cookie ipc;
+ 	struct rtable *rt = (struct rtable *)skb->dst;
+ 	__be32 daddr;
++ 	struct iphdr *ip = ip_hdr(skb);
+ 
+ 	if (ip_options_echo(&icmp_param->replyopts, skb))
+ 		return;
+@@ -393,7 +394,7 @@ static void icmp_reply(struct icmp_bxm *
+ 	icmp_out_count(icmp_param->data.icmph.type);
+ 
+ 	inet->tos = ip_hdr(skb)->tos;
+-	daddr = ipc.addr = rt->rt_src;
++ 	daddr = ipc.addr = ip->saddr;
+ 	ipc.opt = NULL;
+ 	if (icmp_param->replyopts.optlen) {
+ 		ipc.opt = &icmp_param->replyopts;
+diff -X linux-2.6.22.6/Documentation/dontdiff -pru linux-2.6.22.6/net/ipv4/ip_output.c linux-2.6.22.6-lepton/net/ipv4/ip_output.c
+--- linux-2.6.22.6/net/ipv4/ip_output.c	2007-09-14 17:41:18.000000000 +0800
++++ linux-2.6.22.6-lepton/net/ipv4/ip_output.c	2007-09-18 09:57:13.000000000 +0800
+@@ -1337,11 +1337,12 @@ void ip_send_reply(struct sock *sk, stru
+ 	struct ipcm_cookie ipc;
+ 	__be32 daddr;
+ 	struct rtable *rt = (struct rtable*)skb->dst;
++	struct iphdr *ip = ip_hdr(skb);
+ 
+ 	if (ip_options_echo(&replyopts.opt, skb))
+ 		return;
+ 
+-	daddr = ipc.addr = rt->rt_src;
++	daddr = ipc.addr = ip->saddr;
+ 	ipc.opt = NULL;
+ 
+ 	if (replyopts.opt.optlen) {
