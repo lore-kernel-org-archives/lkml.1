@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbXIRE2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbXIREaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755631AbXIRE2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 00:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbXIRE2I
+	id S1756875AbXIREaM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 00:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbXIRE37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 00:28:08 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:33109 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751505AbXIRE2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 00:28:05 -0400
-Date: Tue, 18 Sep 2007 09:58:22 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, pete@bluelane.com,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Matt Mackall <mpm@selenic.com>, Amit Kale <amitkale@linsyssoft.com>,
-       Dave Anderson <anderson@redhat.com>, kdb@oss.sgi.com, jlan@sgi.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: My position on general ``RAS'' tool support infrastructure
-Message-ID: <20070918042822.GA4842@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <46E8B06D.9080006@bluelane.com> <m1abrq7lbt.fsf@ebiederm.dsl.xmission.com> <20070917183853.42f29393.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 18 Sep 2007 00:29:59 -0400
+Received: from smtp101.plus.mail.re1.yahoo.com ([69.147.102.64]:28909 "HELO
+	smtp101.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751672AbXIRE36 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 00:29:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
+  b=v1GWMOJYBWMcIvNFkFcl2VDFeIG6gfbGBNnn2qiiiXixY4O+0xoLy/jk81TyH7GkG9DfHm/yGZ3L+upvk+xbd47c1Ox58ZIo/Ldxiu70Ph553NH2cmgkNC2l/S24kPkR3h9RyCoa17vWEAmp6zALjoiLdMdF7ZMciiUMVw2RcU0=  ;
+X-YMail-OSG: B6cWOUoVM1lIj_5JlypQUr3Wypd3eOCO6XDlggD2dYEZU8DO20l85si0TbNB0Y45SxLBw1ht3g--
+Date: Tue, 18 Sep 2007 06:29:19 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: linux-kernel@vger.kernel.org
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH 0/2] unify DMA_..BIT_MASK definitions: v1
+Message-ID: <20070918042919.GA8998@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070917183853.42f29393.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 06:38:53PM -0700, Randy Dunlap wrote:
-> On Thu, 13 Sep 2007 07:21:10 -0600 Eric W. Biederman wrote:
-> 
-> > Pete/Piet Delaney <pete@bluelane.com> writes:
-> > 
-> > > Jason, Eric:
-> > >
-> > > Did you read Keith Owens suggestion on RAS tools from:
-> 
-> 
-> Yes.  and I re-read it.
-> 
-> There are several things in Keith's email that make sense:
-> 
-> a.  all RAS tools should use a common interface
-> b.  it's not the kernel's job to decide which RAS tool runs first
-> 
-> 
-> Eric makes some good points too.  I'm mostly similar to Eric:
-> paranoid about trusting software/hardware after a panic (or oops).
-> 
-> So if someone wants to use multiple RAS tools on a panic event,
-> enabling an admin to set priorities is OK with me, but I'll only
-> trust the first one that is used, and even that one may have
-> problems.  IOW, I don't see a big need to support multiple RAS
-> tools at one time.  (speaking for myself)
-> 
+These patches remove redundant DMA_..BIT_MASK definitions across two drivers.
+In this version of the patches, the computation of the bitmasks is done by
+the compiler.
 
-I would be nice to have a kernel debugger co-exist with crash dumping.
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
 
-I like Eric's idea of debugger putting a break point on panic(). This
-would mean that rest of the post panic() actions have to be performed
-by second kernel which can perform those actions much more reliably.
+--
+Index: 23-rc6/include/linux/dma-mapping.h
+===================================================================
+--- 23-rc6/include/linux/dma-mapping.h.orig	2007-09-17 17:48:20.000000000 +0200
++++ 23-rc6/include/linux/dma-mapping.h	2007-09-18 06:12:33.000000000 +0200
+@@ -13,16 +13,19 @@
+ 	DMA_NONE = 3,
+ };
+ 
+-#define DMA_64BIT_MASK	0xffffffffffffffffULL
+-#define DMA_48BIT_MASK	0x0000ffffffffffffULL
+-#define DMA_40BIT_MASK	0x000000ffffffffffULL
+-#define DMA_39BIT_MASK	0x0000007fffffffffULL
+-#define DMA_32BIT_MASK	0x00000000ffffffffULL
+-#define DMA_31BIT_MASK	0x000000007fffffffULL
+-#define DMA_30BIT_MASK	0x000000003fffffffULL
+-#define DMA_29BIT_MASK	0x000000001fffffffULL
+-#define DMA_28BIT_MASK	0x000000000fffffffULL
+-#define DMA_24BIT_MASK	0x0000000000ffffffULL
++#define DMA_BIT_MASK(n)	((1ULL<<(n))-1)
++
++#define DMA_64BIT_MASK	DMA_BIT_MASK(64)
++#define DMA_48BIT_MASK	DMA_BIT_MASK(48)
++#define DMA_40BIT_MASK	DMA_BIT_MASK(40)
++#define DMA_39BIT_MASK	DMA_BIT_MASK(39)
++#define DMA_35BIT_MASK	DMA_BIT_MASK(35)
++#define DMA_32BIT_MASK	DMA_BIT_MASK(32)
++#define DMA_31BIT_MASK	DMA_BIT_MASK(31)
++#define DMA_30BIT_MASK	DMA_BIT_MASK(30)
++#define DMA_29BIT_MASK	DMA_BIT_MASK(29)
++#define DMA_28BIT_MASK	DMA_BIT_MASK(28)
++#define DMA_24BIT_MASK	DMA_BIT_MASK(24)
+ 
+ static inline int valid_dma_direction(int dma_direction)
+ {
 
-But this also brings in the additional requirement of passing all the
-required context to second kernel. For example, in the past somebody wanted
-to send a message to a remote node that sytem crashed so that standby can
-take over.  If the same job has to be done in second kernel, it requires all
-the relavant information like remote host IP, port etc passed to the second
-kernel which I think makes the job little harder. May be one can pre-configure
-these parameters in user space and let the job be done either from initrd
-or user space scripts in second kernel.
-
-Thanks
-Vivek
+-- 
+Regards/Gruß,
+    Boris.
