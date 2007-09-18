@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbXIRTEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbXIRTFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbXIRTEU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbXIRTEF
+	id S1757911AbXIRTFB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:05:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbXIRTEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:04:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57790 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756694AbXIRTED (ORCPT
+	Tue, 18 Sep 2007 15:04:50 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58163 "EHLO
+	caffeine.uwaterloo.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755308AbXIRTEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:04:03 -0400
-Date: Tue, 18 Sep 2007 12:03:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
-In-Reply-To: <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>
-References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com> 
- <20070918113401.6a8a737f@the-village.bc.nu>
- <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com>
+	Tue, 18 Sep 2007 15:04:49 -0400
+Date: Tue, 18 Sep 2007 15:04:47 -0400
+To: "Can E. Acar" <can.acar@pro-g.com.tr>
+Cc: Theodore Tso <tytso@mit.edu>, Claudio Jeker <cjeker@diehard.n-r-g.com>,
+       Adrian Bunk <bunk@kernel.org>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070918190447.GI5386@csclub.uwaterloo.ca>
+References: <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <46EEFA6D.9080708@pro-g.com.tr> <20070917234726.GG18360@thunk.org> <46F01F21.4050009@pro-g.com.tr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F01F21.4050009@pro-g.com.tr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 18, 2007 at 11:55:29AM -0700, Can E. Acar wrote:
+> Well, they can add their names *anywhere* in the whole file, *except*
+> these two lines. See, these lines have a whole different meaning
+> when it comes to laws.  When they make sufficient contribution, they
+> sure can add their names. What is so difficult to understand here?
 
+Please define "Sufficient contribution".  And in what juristiction that
+definition applies.
 
-On Tue, 18 Sep 2007, Luis R. Rodriguez wrote:
-> 
-> Alright, here is the same patch inline with s/recommended/required/ language:
-
-Well, the thing is, I'm not at all sure that I agree with this.
-
-If you use ioport_map/unmap, then you really *should* access them with the 
-proper iomem accessors (ioread/iowrite). The fact that it may happen to 
-work (when using the default lib/iomap.c implementation, at least) on 
-some architectures and with the current implementation still doesn't mean 
-that you should necessarily use readb/writeb.
-
-After all, you cannot use "inb/outb" on it, even if would happen to be an 
-IO address.
-
-So what is this usage that wants to use the bogus accessor? Why not fix 
-that instead of adding documentation for something that is very arguably 
-something we want to *avoid* having people do!
-
-		Linus
+--
+Len Sorensen
