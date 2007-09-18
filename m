@@ -1,127 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbXIROJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbXIROKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbXIROJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 10:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbXIROJP
+	id S1757238AbXIROKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbXIROKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 10:09:15 -0400
-Received: from crawleyone.elekta.com ([193.235.128.13]:4371 "EHLO
-	crawleyone.elekta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754557AbXIROJO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 10:09:14 -0400
-In-Reply-To: <Pine.LNX.4.61.0709180955360.6632@chaos.analogic.com>
-Subject: Re: PCI Interrupt
-To: "Linux kernel" <linux-kernel@vger.kernel.org>
-X-Mailer: Lotus Notes Release 6.5.1 January 21, 2004
-Message-ID: <OF8D17B2FD.EFB025F4-ON8025735A.004DB087-8025735A.004DB743@elekta.com>
-From: Duncan.Perrett@elekta.com
-Date: Tue, 18 Sep 2007 15:08:46 +0100
-X-MIMETrack: Serialize by Router on CrawleyOne/Servers/Elekta(Release 6.5.1|January 21, 2004) at
- 09/18/2007 03:09:14 PM
+	Tue, 18 Sep 2007 10:10:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59458 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754703AbXIROKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 10:10:08 -0400
+To: linux-kernel@vger.kernel.org
+Cc: James Pearson <james-p@moving-picture.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: 4096 byte limit to /proc/PID/environ ?
+References: <E1ITKMm-0002eD-S1@moving-picture.com>
+From: Anton Arapov <aarapov@redhat.com>
+X-URL: http://people.redhat.com/aarapov
+Date: Tue, 18 Sep 2007 16:09:30 +0200
+In-Reply-To: <E1ITKMm-0002eD-S1@moving-picture.com> (James Pearson's message of "Thu\,  6 Sep 2007 17\:38\:04 +0100")
+Message-ID: <h8k5qoqd45.fsf@pepelac.englab.brq.redhat.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver already does that ...
+  Hi fellas! What we can do for this patch? It looks like ignored at
+  all? I want reinitiate this thread because I want to have the
+  answer!
 
-result =
-        request_irq(irq, can_pci_interrupt, SA_INTERRUPT | SA_SHIRQ,
-                    pDevice->au8IrqName, pDevice);
+  What do you think?
 
-
-Any other ideas?
-
-Duncan
-
-
-
-                                                                           
-             "linux-os \(Dick                                              
-             Johnson\)"                                                    
-             <linux-os@analogi                                          To 
-             c.com>                    <Duncan.Perrett@elekta.com>         
-                                                                        cc 
-             18/09/2007 14:57          "Linux kernel"                      
-                                       <linux-kernel@vger.kernel.org>      
-                                                                   Subject 
-             Please respond to         Re: PCI Interrupt                   
-             "linux-os \(Dick                                              
-                Johnson\)"                                                 
-             <linux-os@analogi                                             
-                  c.com>                                                   
-                                                                           
-                                                                           
-
-
-
-
-
-On Tue, 18 Sep 2007 Duncan.Perrett@elekta.com wrote:
-
+"James Pearson" <james-p@moving-picture.com> writes:
+> H. Peter Anvin wrote:
+>> Right, also please use use checkpatch.pl.
+> OK - how about:
 >
-> I have a CAN PCI card installed on my Ubuntu box.
-> I understand that PCI interrupts should be level rather than edge
-> triggered.
+> /proc/PID/environ currently truncates at 4096 characters, patch based on 
+> the /proc/PID/mem code.
 >
-> The output of cat /proc/interrupts is :-
+> Patch against 2.6.23-rc5
 >
->           CPU0
->  0:    1614601    IO-APIC-edge  timer
->  1:        164    IO-APIC-edge  i8042
->  8:          3    IO-APIC-edge  rtc
->  9:          1   IO-APIC-level  acpi
-> 12:          0    IO-APIC-edge  CAN-ACx-PCI_01
-> 14:      65786    IO-APIC-edge  ide0
-> 169:       3220   IO-APIC-level  eth0, i915@pci:0000:00:02.0
-> 177:      46459   IO-APIC-level  eth1
-> 209:          0   IO-APIC-level  uhci_hcd:usb3, eth2
-> 217:          2   IO-APIC-level  uhci_hcd:usb1, ehci_hcd:usb4
-> 225:        697   IO-APIC-level  uhci_hcd:usb2
-> NMI:          0
-> LOC:    1614399
-> ERR:          0
-> MIS:          0
->
-> You see that irq 12 CAN-ACx-PCI_01 is edge triggered.
-> Is there any way of forcing the BIOS to see the interrupt as a
-> level-triggered one?
+> Signed-off-by: James Pearson <james-p@moving-picture.com>
+[...patch_skipped...]
 
-It's done in the driver. IRQ12 can be shared, so the driver
-needs to request the IRQ as a shared interrupt.
-
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be
-privileged.  Any review, retransmission, dissemination, or other use of
-this information by persons or entities other than the intended recipient
-is prohibited.  If you are not the intended recipient, please notify
-Analogic Corporation immediately - by replying to this message or by
-sending an email to DeliveryErrors@analogic.com - and destroy all copies of
-this information, including any attachments, without reading or disclosing
-them.
-
-Thank you.
-
-
-
-
-*******************Internet Email Confidentiality Footer*******************
-The contents of this e-mail message (including any attachments hereto) are
-confidential to and are intended to be conveyed for the use of the
-recipient to whom it is addressed only. If you receive this transmission in
-error, please notify the sender of this immediately and delete the message
-from your system. Any distribution, reproduction or use of this message by
-someone other than recipient is not authorized and may be unlawful.
-Elekta Limited is a company registered in England and Wales whose
-registered number is 3244454 and whose registered address is Linac House,
-Fleming Way, Crawley, West Sussex, RH10 9RR
-
+-- 
+Anton Arapov, <aarapov@redhat.com>
