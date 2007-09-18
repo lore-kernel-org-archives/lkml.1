@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbXIROlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbXIROmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758923AbXIROlt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 10:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbXIROlj
+	id S1759140AbXIROmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758817AbXIROm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 10:41:39 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:44112 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758784AbXIROlh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 10:41:37 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: [2/3] 2.6.23-rc6: known regressions v2
-Date: Tue, 18 Sep 2007 16:42:02 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       jfs-discussion@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
-       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       netdev@vger.kernel.org, Shish <shish@shishnet.org>,
-       Karl Meyer <adhocrocker@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, Daniel Drake <dsd@gentoo.org>,
-       linux-usb-devel@lists.sourceforge.net, Florian Lohoff <flo@rfc822.org>,
-       Toralf F?rster <toralf.foerster@gmx.de>
-References: <46EB3E94.7080704@googlemail.com> <46EB4371.307@googlemail.com> <20070918142443.GA13304@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20070918142443.GA13304@atrey.karlin.mff.cuni.cz>
+	Tue, 18 Sep 2007 10:42:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42639 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758845AbXIROm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 10:42:28 -0400
+Message-ID: <46EFE3AE.9040909@redhat.com>
+Date: Tue, 18 Sep 2007 10:41:50 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200709181642.04053.oliver@neukum.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Anton Altaparmakov <aia21@cam.ac.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       marc.smith@esmail.mcc.edu
+Subject: Re: VM/VFS bug with large amount of memory and file systems?
+References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk> <200709170828.01098.nickpiggin@yahoo.com.au> <46EEB3AC.20205@redhat.com> <200709180312.31937.nickpiggin@yahoo.com.au>
+In-Reply-To: <200709180312.31937.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 18 September 2007 schrieb Jan Kara:
-> > Subject         : umount triggers a warning in jfs and takes almost a minute
-> > References      : http://lkml.org/lkml/2007/9/4/73
-> > Last known good : ?
-> > Submitter       : Oliver Neukum <oliver@neukum.org>
-> > Caused-By       : ?
-> > Handled-By      : ?
-> > Status          : unknown
->   I thought Shaggy asked Oliver about some details (and he did not
-> answer so far) so I'd assume Shaggy is handling this.
+Nick Piggin wrote:
+> On Tuesday 18 September 2007 03:04, Rik van Riel wrote:
+>> Nick Piggin wrote:
+>>> (Rik has a patch sitting in -mm I believe which would make this problem
+>>> even worse, by doing even less highmem scanning in response to lowmem
+>>> allocations).
+>> My patch should not make any difference here, since
+>> balance_pgdat() already scans the zones from high to
+>> low and sets an end_zone variable that determines the
+>> highest zone to scan.
+>>
+>> All my patch does is make sure that we do not try to
+>> reclaim excessive amounts of dma or low memory when
+>> a higher zone is full.
+> 
+> Sorry, yeah I had it the wrong way around. Your patch would not
+> increase the probability of this problem.
+> 
+> We could have some logic in there to scan highmem when buffer
+> heads are over limit. But that really kind of sucks in that it introduces
+> some arbitrary point where reclaim behaviour completely changes...
+> Adding a shrinker for buffer heads is the "logical" approach 
 
-I was without access to the hardware for a week. Testing will start
-tomorrow.
+Christoph Lameter's slab defragmenting patch set does
+this.  One reason Andrew has not merged that code yet
+is a lack of reviewers, so I am going through it with
+a fine comb and hope to have the patches reviewed by
+the end of today.
 
-	Regards
-		Oliver
+Lets get this bug fixed the right way.
 
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
