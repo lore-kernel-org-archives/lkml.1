@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbXIROof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbXIROro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759257AbXIROof (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 10:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbXIROoZ
+	id S1759360AbXIROro (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbXIROrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 10:44:25 -0400
-Received: from mail.tmr.com ([64.65.253.246]:51485 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758879AbXIROoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 10:44:24 -0400
-Message-ID: <46EFE3F5.5070201@tmr.com>
-Date: Tue, 18 Sep 2007 10:43:01 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 18 Sep 2007 10:47:36 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:53937 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758152AbXIROrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 10:47:35 -0400
+Date: Tue, 18 Sep 2007 16:47:34 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: iso9660 vs udf
+Message-ID: <20070918144734.GB13304@atrey.karlin.mff.cuni.cz>
+References: <20070915214926.GA31416@mette>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.network,gmane.linux.kernel
-To: David Miller <davem@davemloft.net>
-CC: ytht.net@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 2.6.22.6 NETWORKING [IPV4]: Always use source addr in
-   skb to reply packet
-References: <20070918021617.GA15540@router.lepton.home> <20070917.192044.48396034.davem@davemloft.net>
-In-Reply-To: <20070917.192044.48396034.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070915214926.GA31416@mette>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: lepton <ytht.net@gmail.com>
-> Date: Tue, 18 Sep 2007 10:16:17 +0800
+> Today I got a CD. MacOS does not mount it and Linux does not
+> mount it without an explicit filesystemtype option.
+> That is,
+> 	# mount /dev/hdc /dir -t iso9660
+> works fine, but
+> 	# mount /dev/hdc /dir
+> 	mount: you didn't specify a filesystem type for /dev/hdc
+>                I will try type udf
+>         mount: wrong fs type, bad option, bad superblock on /dev/hdc,
+>                missing codepage or other error
+>                In some cases useful info is found in syslog - try
+>                dmesg | tail  or so
+> 	# dmesg | tail
+>         UDF-fs INFO UDF 0.9.8.1 (2004/29/09) Mounting volume 'Wisk1956-82', timestamp 2006/03/07 16:26 (1078)
+>         udf: udf_read_inode(ino 547) failed !bh
+>         UDF-fs: Error in udf_iget, block=1, partition=1
 > 
->> Hi,
->>   In some situation, icmp_reply and ip_send_reply will send
->>   out packet with the wrong source addr, the following patch
->>   will fix this.
->>
->>   I don't understand why we must use rt->rt_src in the current
->>   code, if this is a wrong fix, please correct me.
->>
->> Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+> Google gave me half a dozen other people that mentioned the same
+> problem (with the same inode 547). Clearly some CD mastering software
+> produces a format that Linux and MacOS do not handle easily.
 > 
-> That the address is wrong is your opinion only :-)
+> One result of this letter will be that people with the same problem
+> learn via Google that using the "-t iso9660" option may help.
+> 
+> What goes wrong on the mount side is that when it hesitates between
+> iso9660 and udf it decides for udf when seeing "NSR02".
+> Maybe the heuristics in mount should be tuned.
+  Yes, this seems like a mount problem but you should contact mount
+maintainer for that... I guess hardly anyone will help you with this on
+this list.
 
-Mine too, since an ICMP reply from an unexpected source IP is likely to 
-be logged as a probe and dropped.
+> On the other hand, this filesystem announces itself as UDF
+> ("CD-RTOS" "CD-BRIDGE" "CDUDF File System - Adaptec Inc"),
+> perhaps the kernel code should be more robust.
 > 
-> Source address selection is a rather complex topic, and
-> here we are definitely purposefully using the source
-> address selected by the routing lookup for the reply.
+> If anybody feels responsible for mount and/or this kernel area
+> we might discuss.
+  I'm kind of taking care about UDF in kernel. What do you find
+inappropriate on the kernel reaction? You mean we should produce some
+better error message into the log?
 
+									Honza
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
