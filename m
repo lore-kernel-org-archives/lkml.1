@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760630AbXIRVPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbXIRVPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760630AbXIRVPW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbXIRVPE
+	id S1760979AbXIRVPn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760009AbXIRVPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:15:04 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55187 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754018AbXIRVPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:15:03 -0400
-Message-Id: <20070918211324.161373216@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Sep 2007 17:13:24 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 0/4] Linux Kernel Markers for 2.6.23-rc6-mm1
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 18 Sep 2007 21:14:59 +0000
+	Tue, 18 Sep 2007 17:15:14 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40941 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759307AbXIRVPL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 17:15:11 -0400
+Date: Tue, 18 Sep 2007 14:14:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
+In-Reply-To: <43e72e890709181402x7335d0acp306cf576fac6c070@mail.gmail.com>
+Message-ID: <alpine.LFD.0.999.0709181408390.16478@woody.linux-foundation.org>
+References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com> 
+ <20070918113401.6a8a737f@the-village.bc.nu> 
+ <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com> 
+ <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org> 
+ <43e72e890709181207j7c85dc29sb355a9f5a4207411@mail.gmail.com> 
+ <alpine.LFD.0.999.0709181219020.16478@woody.linux-foundation.org> 
+ <43e72e890709181312sf2b421cn49be3389b3786a2a@mail.gmail.com> 
+ <alpine.LFD.0.999.0709181323260.16478@woody.linux-foundation.org>
+ <43e72e890709181402x7335d0acp306cf576fac6c070@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-Here are the updated Linux Kernel Markers.
 
-It depends on :
-Text Edit Lock
-Immediate Values
-Sorted module list
-Merge Kconfig instrumentation menu
+On Tue, 18 Sep 2007, Luis R. Rodriguez wrote:
+> 
+> ACK but do we really need to benchmark this if we *know* we are
+> creating unnecessary branches? How about Jeff's suggestion of
+> introducing pci_mmio_map() ?
 
-It applies to 2.6.23-rc4-mm1, in this order:
+Here's the counter-argument:
 
-linux-kernel-markers-architecture-independent-code.patch
-linux-kernel-markers-instrumentation-menu.patch
-linux-kernel-markers-documentation.patch
-linux-kernel-markers-port-blktrace-to-markers.patch
+ - the run-time expense of this is basically *zero*
 
-You can find a tarball of this patch and all its dependencies at:
-http://ltt.polymtl.ca/markers/markers-patches-for-2.6.23-rc6-mm1-18-09-2007.tar.bz2
+ - the expense of badly written drivers is absolutely *huge*
 
-Mathieu
+The fewer "clever" interfaces we have for no good reason, and the less 
+unnecessary stuff that really doesn't matter, the more we help the 
+*second* case.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The fact is, for device drivers, the *true* performance issues are nowhere 
+*near* the actual IO accessor functions, and are all at a much higher 
+level for all but a very very limited set of drivers. And I think you're 
+making the important issues *worse*.
+
+Really. "pci_mmio_map()" may not be a bad interface, but you're simply 
+working on entirely the wrong problem. The problem is not an out-of-line 
+IO accessor function - the problem is that you're making it even more 
+complicated to write drivers.
+
+The whole point of the "iomap()" interface was *never* about making the 
+driver interfaces faster. It was about making them *cleaner*. And you're 
+screwing that up!
+
+The old situation with SATA drivers that had
+
+	if (iomem)
+		writel(..)
+	else
+		outl(..)
+
+in the cases that needed it (and used hardcoded writel/outl in the cases 
+that didn't) was an example of code that "in theory" is faster. But 
+dammit, in practice that mattered not one whit, and what iomap() tries to 
+do is to attack the _real_ problem we had in that area. 
+
+Which had nothing what-so-ever to do with any branches.
+
+		Linus
