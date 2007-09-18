@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbXIRWhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbXIRWht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbXIRWhK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbXIRWg6
+	id S1758922AbXIRWht (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbXIRWhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:36:58 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58993 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbXIRWg5 (ORCPT
+	Tue, 18 Sep 2007 18:37:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37519 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753783AbXIRWhk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:36:57 -0400
-Message-ID: <46F0521F.10302@zytor.com>
-Date: Tue, 18 Sep 2007 15:33:03 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 18 Sep 2007 18:37:40 -0400
+Date: Tue, 18 Sep 2007 15:36:23 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
+In-Reply-To: <1190154117.6403.127.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.0.999.0709181533370.16478@woody.linux-foundation.org>
+References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com> 
+ <20070918113401.6a8a737f@the-village.bc.nu> 
+ <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com> 
+ <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org> 
+ <43e72e890709181207j7c85dc29sb355a9f5a4207411@mail.gmail.com> 
+ <alpine.LFD.0.999.0709181219020.16478@woody.linux-foundation.org> 
+ <43e72e890709181312sf2b421cn49be3389b3786a2a@mail.gmail.com> 
+ <alpine.LFD.0.999.0709181323260.16478@woody.linux-foundation.org>
+ <1190154117.6403.127.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
-References: <20070918210747.828804366@polymtl.ca>	<20070918210853.588573678@polymtl.ca> <46F04856.3010808@goop.org> <p73myvjwri3.fsf@bingen.suse.de> <46F0515E.2010608@goop.org>
-In-Reply-To: <46F0515E.2010608@goop.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
->> Jeremy Fitzhardinge <jeremy@goop.org> writes:
->>   
->>> It's a pity that gas seems to generate plain 0x90 nops rather than
->>> long-nop forms here.  I thought it could do that.
->>>     
->> .p2align does it
-> 
-> Just .p2align?  Not align, balign, org or skip?  Seems... strange.
-> 
 
-Probably it works for .align and .balign too, but not .org.
 
-	-hpa
+On Wed, 19 Sep 2007, Benjamin Herrenschmidt wrote:
+> 
+> Also, I've been told that modern x86 chipsets have the ability to remap
+> IO space in the CPU physical address space. Is that true ? That would
+> allow even x86 to get rid of the condition and just use some magic
+> offset at map time.
+
+I've not seen that, but I wouldn't be entirely surprised if IO 
+virtualization eventually causes something like this to happen: 
+virtualizing PIO is just damn painful right now, due to the lack of any 
+way to remap it.
+
+I *think* you may be confused with the PCI config cycles, where the new 
+MMIO configuration was introduced (for similar virtualization reasons). 
+But it's also possible that this is one of those undocumented areas and 
+CPU's actually do have some IO remapping facility.
+
+		Linus
