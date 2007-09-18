@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760398AbXIRQGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbXIRQKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760398AbXIRQGM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 12:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760162AbXIRQFt
+	id S1760158AbXIRQKh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 12:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758461AbXIRQKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 12:05:49 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53423 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759433AbXIRQFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 12:05:48 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linuxppc-dev@ozlabs.org
-Cc: netdev@vger.kernel.org
+	Tue, 18 Sep 2007 12:10:30 -0400
+Received: from herkules.vianova.fi ([194.100.28.129]:51104 "HELO
+	mail.vianova.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757136AbXIRQK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 12:10:29 -0400
+Date: Tue, 18 Sep 2007 19:09:49 +0300
+From: Ville Herva <v@iki.fi>
+To: Jan Kara <jack@ucw.cz>
 Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH 2/2] [FS_ENET] Add polling support
-Date: Tue, 18 Sep 2007 20:05:35 +0400
-Message-ID: <20070918160535.13525.28254.stgit@localhost.localdomain>
-In-Reply-To: <20070918160527.13525.80935.stgit@localhost.localdomain>
-References: <20070918160527.13525.80935.stgit@localhost.localdomain>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Subject: Re: 2.4.35 SMP: ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal
+Message-ID: <20070918160949.GR29062@vianova.fi>
+Reply-To: v@iki.fi
+References: <20070918122314.GL29062@vianova.fi> <20070918151206.GC13304@atrey.karlin.mff.cuni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070918151206.GC13304@atrey.karlin.mff.cuni.cz>
+X-Operating-System: Linux herkules.vianova.fi 2.4.35
+User-Agent: Mutt/1.5.10i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 18, 2007 at 05:12:06PM +0200, you [Jan Kara] wrote:
+>   Hello,
+> 
+> > I got a bunch of these into dmesg:
+> > 
+> > EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323880: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
+> > EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
+> > EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323882: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
+> > 
+> > The kernel is 2.4.35 SMP, dual-processor. The scsi driver is Fusion MPT SCSI
+> > Host driver 2.05.16.
+> > 
+> > The device is /dev/sda2, root fs.
+> > 
+> > One line per each directory had dropped into dmesg each night (I think
+> > during updatedb) before I noticed.
+>   Interesting. Can you look (using debugfs) on the content of the
+> /usr/share/doc/ directory? It seems like parts of it have been zeroed
+> out...
 
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+Unfortunately, no. I removed those directories because those were the only
+ones causing problems and wasn't able to reboot for a proper fsck
+immediately. The rm -rf command gave no errors (to stdout or dmesg), and a
+read-only fsck right after that gave no errors on the directory structure.
 
----
-
- drivers/net/fs_enet/fs_enet-main.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+Sorry for the sparse details, but when you have these kind of problems on
+live servers, you tend to forget the debuggability...
 
 
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index 927cd9e..0e2d2b2 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -61,6 +61,9 @@ module_param(fs_enet_debug, int, 0);
- MODULE_PARM_DESC(fs_enet_debug,
- 		 "Freescale bitmapped debugging message enable value");
- 
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+static void fs_enet_netpoll(struct net_device *dev);
-+#endif
- 
- static void fs_set_multicast_list(struct net_device *dev)
- {
-@@ -1049,6 +1052,10 @@ static struct net_device *fs_init_instance(struct device *dev,
- 	ndev->stop = fs_enet_close;
- 	ndev->get_stats = fs_enet_get_stats;
- 	ndev->set_multicast_list = fs_set_multicast_list;
-+
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+       ndev->poll_controller = fs_enet_netpoll;
-+#endif
- 	if (fpi->use_napi) {
- 		ndev->poll = fs_enet_rx_napi;
- 		ndev->weight = fpi->napi_weight;
-@@ -1275,6 +1282,15 @@ static void __exit fs_cleanup(void)
- 	cleanup_immap();
- }
- 
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+static void fs_enet_netpoll(struct net_device *dev)
-+{
-+       disable_irq(dev->irq);
-+       fs_enet_interrupt(dev->irq, dev, NULL);
-+       enable_irq(dev->irq);
-+}
-+#endif
-+
- /**************************************************************************************/
- 
- module_init(fs_init);
+
+-- v -- 
+
+v@iki.fi
 
