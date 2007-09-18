@@ -1,47 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbXIRWjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758963AbXIRWmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbXIRWjJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbXIRWi6
+	id S1758963AbXIRWmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756049AbXIRWmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:38:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:15298 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755625AbXIRWi5 (ORCPT
+	Tue, 18 Sep 2007 18:42:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:63624 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbXIRWmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:38:57 -0400
+	Tue, 18 Sep 2007 18:42:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HQF+3HkTDpBEATEj44X6TwbqEtha+hzqzCyeJjA3LGBt/QqpuZxIFUQSOUbTI0AtSV7Zl2lZItXQ6hpvNF1YP+llIG3+URgLe79S6ht7sx2UfFEi35KHXRIm48cAzoOgXrUHTFglDwr9rwXcBTMHPomcEOrbkc90fdjCMeXAZOM=
-Message-ID: <13426df10709181538u3dfc01acwe900fcfc9d33a7e8@mail.gmail.com>
-Date: Tue, 18 Sep 2007 15:38:55 -0700
-From: "ron minnich" <rminnich@gmail.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: [Lguest] [PATCH] Introduce "used_vectors" bitmap which can be used to reserve vectors.
-Cc: "Andi Kleen" <ak@muc.de>, lguest <lguest@ozlabs.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1189746849.7262.29.camel@localhost.localdomain>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=ML8xZYhk2J4Ue05GSK1z6rDHruoHXD6p8gzqDMwEtrBnLXFTpz88AZFC8FMfGXNRjrxiwovU5yTLehhEFtBOwueYBxYCRLVTmAJh9HBploObUmAxgKyybzjljqOaFLDRuc1IIMJ+nr/oGBHnEUJ1XLqUWrwNfTcOIrOZRbysLhE=
+Message-ID: <46F05378.8020907@googlemail.com>
+Date: Wed, 19 Sep 2007 00:38:48 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Miles Lane <miles.lane@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: 2.6.23-rc6-mm1
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <a44ae5cd0709180827w7156dc17q13853c3f2c127142@mail.gmail.com> <20070918191741.GA27725@uranus.ravnborg.org> <a44ae5cd0709181242j517e39e0xc3f78224bcda360a@mail.gmail.com> <20070918202654.GA27836@uranus.ravnborg.org>
+In-Reply-To: <20070918202654.GA27836@uranus.ravnborg.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1189746849.7262.29.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/13/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> Hi Andi and everyone,
->
->         Wanted to get your thoughts on this patch.  lguest now supports plan9
-> guests which use 0x40 for system calls.  We want to let the guests use
-> that vector if available, but have no way to stop io_apic from
-> clobbering it.  This does that, and also simplifies the current code a
-> little.
+Sam Ravnborg wrote:
+> On Tue, Sep 18, 2007 at 03:42:58PM -0400, Miles Lane wrote:
+>> On 9/18/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+>>> Hi Miles.
+>>> On Tue, Sep 18, 2007 at 11:27:23AM -0400, Miles Lane wrote:
+>>>> Selecting Help for "Subarchitecture Type" causes "make menuconfig" to
+>>>> crash, and the bash display settings have to be reset.
+>>> Not reproduceable here.
+>>> But I noticed that we pass a null pointer to a vsprintf function which
+>>> in the cases you pointed out printed a (null) at my system.
+>>> Could you plase try if attached patch fix your system.
+>> Sorry, it still crashes.  I am running Ubuntu pre-6.10 (Gutsy -- the
+>> development version of the distro).  Maybe I should try "make
+>> mrproper" first?
+> 
+> make mrproper should not do any difference here.
+> I rather think you hit some ncurses bug.
+> 
+> If you could add '-g' to HOSTCFLAGS in top-level Makefile
+> and then do:
+> rm scripts/kconfig/mconf.o scripts/kconfig/mconf
+> make menuconfig
+> 
+> (to build mconf and to check that the error is still reproduceable).
+> And then run it in a debugger like this:
+> gdb scripts/kconfig/mconf
+> run arch/x86_64/Kconfig
+>          ^^^^^^ replace with your actual arch
+> 
+> Provoke the error and get a back-trace with 'bt'.
 
-I can confirm that this patch supports Plan 9 perfectly as a guest.
+Hi Sam,
 
-thanks
+I can reproduce this bug on Frugalware Linux. 
 
-ron
+Here the bt:
+
+Program received signal SIGSEGV, Segmentation fault.                                                     
+0xb7dc4143 in strlen () from /lib/libc.so.6                                                                                                                                       
+(gdb) bt                                                                                                                                                                          
+#0  0xb7dc4143 in strlen () from /lib/libc.so.6                                                                                                                                   
+#1  0x0804fd60 in str_append (gs=0xbfe4f6e8, s=0x0) at scripts/kconfig/util.c:87                                                                                                  
+#2  0x0804e0cb in expr_print (e=0x8e22df8, fn=0x804fda0 <expr_print_gstr_helper>, data=0xbfe4f6e8, prevtoken=0) at scripts/kconfig/expr.c:1037                                    
+#3  0x0804e1e7 in expr_gstr_print (e=0x8e22df8, gs=0xbfe4f6e8) at scripts/kconfig/expr.c:1099                                                                                     
+#4  0x0804a07e in get_symbol_str (r=0xbfe4f6e8, sym=0x8b54ee8) at scripts/kconfig/mconf.c:334                                                                                     
+#5  0x0804a363 in show_help (menu=0x8b54f88) at scripts/kconfig/mconf.c:738                                                                                                       
+#6  0x0804acec in conf (menu=0x8b69480) at scripts/kconfig/mconf.c:781                                                                                                            
+#7  0x0804a971 in conf (menu=0x8063c40) at scripts/kconfig/mconf.c:703                                                                                                            
+#8  0x0804af8a in main (ac=Cannot access memory at address 0x0                                                                                                                    
+) at scripts/kconfig/mconf.c:917
+
+
+Looks somewhat strange -> http://194.231.229.228/menuconfig.png
+
+PS: Is without the patch you posted , I'll try with in a bit
+
+
+> 
+> Thanks,
+> 	Sam
+
+Gabriel
