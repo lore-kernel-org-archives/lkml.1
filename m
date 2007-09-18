@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbXIRKZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbXIRK1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755426AbXIRKZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 06:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbXIRKZV
+	id S1755896AbXIRK1Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 06:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbXIRK1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 06:25:21 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:58432 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752236AbXIRKZU (ORCPT
+	Tue, 18 Sep 2007 06:27:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42126 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754616AbXIRK1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 06:25:20 -0400
-Message-ID: <46EFA8DC.2020909@bull.net>
-Date: Tue, 18 Sep 2007 12:30:52 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-References: <20070918091728.GA6766@localhost.sw.ru> <20070918031723.05689e92.akpm@linux-foundation.org>
-In-Reply-To: <20070918031723.05689e92.akpm@linux-foundation.org>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 18/09/2007 12:31:07,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 18/09/2007 12:31:08,
-	Serialize complete at 18/09/2007 12:31:08
+	Tue, 18 Sep 2007 06:27:15 -0400
+Date: Tue, 18 Sep 2007 11:34:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
+Message-ID: <20070918113401.6a8a737f@the-village.bc.nu>
+In-Reply-To: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
+References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 18 Sep 2007 13:17:28 +0400 Alexey Dobriyan <adobriyan@sw.ru> wrote:
-> 
-> 
->>I'm getting tons of this, and X fails to start
->>
->>CONFIG_SYSVIPC=y
->>CONFIG_SYSVIPC_SYSCTL=y
->># CONFIG_PREEMPT_NONE is not set
->># CONFIG_PREEMPT_VOLUNTARY is not set
->>CONFIG_PREEMPT=y
->>CONFIG_PREEMPT_BKL=y
->>CONFIG_DEBUG_PREEMPT=y
->>
->>BUG: sleeping function called from invalid context at kernel/rwsem.c:47
->>in_atomic():1, irqs_disabled():0
->>no locks held by X/5879.
->> [<c012bcb1>] down_write+0x15/0x50
->> [<c01b53af>] do_shmat+0x235/0x3a0
->> [<c0106be2>] sys_ipc+0x146/0x263
->> [<c0102892>] sysenter_past_esp+0xa7/0xb5
->> [<c0102856>] sysenter_past_esp+0x6b/0xb5
->> =======================
-> 
-> 
-> Here's a bug:
-> 
-> --- a/ipc/util.c~ipc-integrate-ipc_checkid-into-ipc_lock-fix-2
-> +++ a/ipc/util.c
-> @@ -691,7 +691,7 @@ struct kern_ipc_perm *ipc_lock(struct ip
->  		rcu_read_unlock();
->  		return ERR_PTR(-EINVAL);
->  	}
-> -
-> +	rcu_read_unlock();
->  	return out;
->  }
->  
+On Mon, 17 Sep 2007 16:22:07 -0400
+"Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
 
-Andrew,
+> This patch updates the pci_iomap() kernel-doc to make it clarify the
+> case when read*()/write*() can be called over ioread*/iowrite*(). When
+> driver writers read this documenation sometimes it is assumed you just
+> *need* to use ioread*()/iorwrite*(). We have an exception so lets just
+> clarify this is not true for the exception.
+> 
+>  lib/iomap.c |   11 ++++++++---
+>  1 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> Signed-off-by: Luis R. Rodriguez <mcgrof@gmail.com>
 
-Actually the rcu_read_lock is released in ipc_unlock(). So I think we 
-shouldn't add an rcu_read_unlock() before leaving ipc_lock().
-This is a part that has not changed since the ref code.
+Reviewed-by: Alan Cox <alan@redhat.com>
 
-I'm looking also on my side.
+Although I would say s/recommended/required/
 
-Regards,
-Nadia
-
+Alan
