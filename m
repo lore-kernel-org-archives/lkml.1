@@ -1,115 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbXIRQlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbXIRQmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932174AbXIRQlk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 12:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759628AbXIRQl3
+	id S1760665AbXIRQmQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 12:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbXIRQmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 12:41:29 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:55388 "EHLO gir.skynet.ie"
+	Tue, 18 Sep 2007 12:42:00 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38796 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759142AbXIRQl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 12:41:28 -0400
-Date: Tue, 18 Sep 2007 17:41:26 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, themann@de.ibm.com, netdev@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/net/ehea/ehea_main.c
-Message-ID: <20070918164126.GB1804@skynet.ie>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070918162039.GA1804@skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	id S1759628AbXIRQl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 12:41:59 -0400
+Date: Tue, 18 Sep 2007 22:11:54 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: Re: [patch 08/11] Text Edit Lock - kprobes i386
+Message-ID: <20070918164154.GA14594@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20070917184031.211525416@polymtl.ca> <20070917184210.454982104@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070918162039.GA1804@skynet.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+In-Reply-To: <20070917184210.454982104@polymtl.ca>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My apologies for the repost, this should have gone to netdev and Dave Miller
-as well.
+On Mon, Sep 17, 2007 at 02:40:39PM -0400, Mathieu Desnoyers wrote:
+> Make kprobes use text_set instead of text_poke.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-On (18/09/07 17:20), Mel Gorman didst pronounce:
-> Hi Andrew,
-> 
-> PPC64 failed to build with the driver drivers/net/ehea with the
-> following error
-> 
->   CC [M]  drivers/net/ehea/ehea_main.o
-> drivers/net/ehea/ehea_main.c: In function `ehea_open':
-> drivers/net/ehea/ehea_main.c:2322: error: implicit declaration of function `port_napi_enable'
-> drivers/net/ehea/ehea_main.c: At top level:
-> drivers/net/ehea/ehea_main.c:2340: error: conflicting types for 'port_napi_enable'
-> drivers/net/ehea/ehea_main.c:2322: error: previous implicit declaration of 'port_napi_enable' was here
-> make[1]: *** [drivers/net/ehea/ehea_main.o] Error 1
-> 
-> It's buried in git-net.patch and I've cc'd a potential owner based simply
-> on the mention of EHEA in a leader. I've included a candidate fix for the
-> error. It seems to be a simple case of port_napi_enable being defined in
-> the wrong place.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> 
+Tested-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+
+> CC: Andi Kleen <andi@firstfloor.org>
+> CC: prasanna@in.ibm.com
+> CC: ananth@in.ibm.com
+> CC: anil.s.keshavamurthy@intel.com
+> CC: davem@davemloft.net
 > ---
->  ehea_main.c |   32 ++++++++++++++++----------------
->  1 file changed, 16 insertions(+), 16 deletions(-)
+>  arch/i386/kernel/kprobes.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
-> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc6-mm1-005_fix-rpadlpar_sysfs/drivers/net/ehea/ehea_main.c linux-2.6.23-rc6-mm1-010_fix_ehea_main/drivers/net/ehea/ehea_main.c
-> --- linux-2.6.23-rc6-mm1-005_fix-rpadlpar_sysfs/drivers/net/ehea/ehea_main.c	2007-09-18 11:29:28.000000000 +0100
-> +++ linux-2.6.23-rc6-mm1-010_fix_ehea_main/drivers/net/ehea/ehea_main.c	2007-09-18 17:15:27.000000000 +0100
-> @@ -2307,6 +2307,22 @@ out:
->  	return ret;
->  }
->  
-> +static void port_napi_disable(struct ehea_port *port)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < port->num_def_qps; i++)
-> +		napi_disable(&port->port_res[i].napi);
-> +}
-> +
-> +static void port_napi_enable(struct ehea_port *port)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < port->num_def_qps; i++)
-> +		napi_enable(&port->port_res[i].napi);
-> +}
-> +
->  static int ehea_open(struct net_device *dev)
+> Index: linux-2.6-lttng/arch/i386/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/i386/kernel/kprobes.c	2007-09-11 15:47:50.000000000 -0400
+> +++ linux-2.6-lttng/arch/i386/kernel/kprobes.c	2007-09-11 15:48:52.000000000 -0400
+> @@ -177,12 +177,13 @@ int __kprobes arch_prepare_kprobe(struct
+> 
+>  void __kprobes arch_arm_kprobe(struct kprobe *p)
 >  {
->  	int ret;
-> @@ -2328,22 +2344,6 @@ static int ehea_open(struct net_device *
->  	return ret;
+> -	text_poke(p->addr, ((unsigned char []){BREAKPOINT_INSTRUCTION}), 1);
+> +	text_poke(p->addr, INIT_ARRAY(unsigned char, BREAKPOINT_INSTRUCTION, 1),
+> +			1);
 >  }
->  
-> -static void port_napi_disable(struct ehea_port *port)
-> -{
-> -	int i;
-> -
-> -	for (i = 0; i < port->num_def_qps; i++)
-> -		napi_disable(&port->port_res[i].napi);
-> -}
-> -
-> -static void port_napi_enable(struct ehea_port *port)
-> -{
-> -	int i;
-> -
-> -	for (i = 0; i < port->num_def_qps; i++)
-> -		napi_enable(&port->port_res[i].napi);
-> -}
-> -
->  static int ehea_down(struct net_device *dev)
+> 
+>  void __kprobes arch_disarm_kprobe(struct kprobe *p)
 >  {
->  	int ret;
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> -	text_poke(p->addr, &p->opcode, 1);
+> +	text_poke(p->addr, INIT_ARRAY(unsigned char, p->opcode, 1), 1);
+>  }
+> 
+>  void __kprobes arch_remove_kprobe(struct kprobe *p)
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
