@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbXIROKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXIROKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757238AbXIROKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 10:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbXIROKJ
+	id S1757545AbXIROKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757310AbXIROKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 10:10:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59458 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754703AbXIROKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 10:10:08 -0400
-To: linux-kernel@vger.kernel.org
-Cc: James Pearson <james-p@moving-picture.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: 4096 byte limit to /proc/PID/environ ?
-References: <E1ITKMm-0002eD-S1@moving-picture.com>
-From: Anton Arapov <aarapov@redhat.com>
-X-URL: http://people.redhat.com/aarapov
-Date: Tue, 18 Sep 2007 16:09:30 +0200
-In-Reply-To: <E1ITKMm-0002eD-S1@moving-picture.com> (James Pearson's message of "Thu\,  6 Sep 2007 17\:38\:04 +0100")
-Message-ID: <h8k5qoqd45.fsf@pepelac.englab.brq.redhat.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.50 (gnu/linux)
+	Tue, 18 Sep 2007 10:10:25 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37529 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757268AbXIROKX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 10:10:23 -0400
+Date: Tue, 18 Sep 2007 16:10:36 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: David Miller <davem@davemloft.net>
+Cc: hch@infradead.org, akpm@linux-foundation.org, perex@suse.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport sys_{open,read}
+Message-ID: <20070918141036.GE27980@stusta.de>
+References: <20070909202527.GT3563@stusta.de> <20070909203920.GA11764@infradead.org> <20070910.051838.41660444.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070910.051838.41660444.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi fellas! What we can do for this patch? It looks like ignored at
-  all? I want reinitiate this thread because I want to have the
-  answer!
+On Mon, Sep 10, 2007 at 05:18:38AM -0700, David Miller wrote:
+> From: Christoph Hellwig <hch@infradead.org>
+> Date: Sun, 9 Sep 2007 21:39:20 +0100
+> 
+> > On Sun, Sep 09, 2007 at 10:25:28PM +0200, Adrian Bunk wrote:
+> > > sys_{open,read} can finally be unexported.
+> > 
+> > Andrew, can you please put this in?  Having these exports for syscalls around
+> > hsa been a long-time annoyance that can finally be fixed now.
+> 
+> I'm happy to see this go too, but please add the necessary
+> export to arch/sparc64/kernel/sparc64_ksyms.S so that the
+> solaris system call table reference in
+> arch/sparc64/solaris/systbls.S can be satisfied.
+>...
 
-  What do you think?
+This module calls neither sys_open() nor sys_read() directly.
 
-"James Pearson" <james-p@moving-picture.com> writes:
-> H. Peter Anvin wrote:
->> Right, also please use use checkpatch.pl.
-> OK - how about:
->
-> /proc/PID/environ currently truncates at 4096 characters, patch based on 
-> the /proc/PID/mem code.
->
-> Patch against 2.6.23-rc5
->
-> Signed-off-by: James Pearson <james-p@moving-picture.com>
-[...patch_skipped...]
+cu
+Adrian
 
 -- 
-Anton Arapov, <aarapov@redhat.com>
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
