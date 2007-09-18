@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbXIRKdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbXIRKeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbXIRKdh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 06:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbXIRKdb
+	id S1756713AbXIRKeO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 06:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbXIRKd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 06:33:31 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:37390 "EHLO relay.sw.ru"
+	Tue, 18 Sep 2007 06:33:58 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35728 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753206AbXIRKdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 06:33:31 -0400
-Date: Tue, 18 Sep 2007 14:32:47 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: nadia.derbey@bull.net, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-Message-ID: <20070918103247.GA6787@localhost.sw.ru>
-References: <20070918091728.GA6766@localhost.sw.ru> <20070918032727.c07aa521.akpm@linux-foundation.org>
+	id S1755099AbXIRKd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 06:33:57 -0400
+Date: Tue, 18 Sep 2007 16:14:37 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: containers@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
+       ckrm-tech@lists.sourceforge.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Hookup group-scheduler with task container infrastructure
+Message-ID: <20070918104437.GA18221@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070910171049.GA16048@linux.vnet.ibm.com> <20070918171945.d0593a08.kamezawa.hiroyu@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070918032727.c07aa521.akpm@linux-foundation.org>
+In-Reply-To: <20070918171945.d0593a08.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 03:27:27AM -0700, Andrew Morton wrote:
-> On Tue, 18 Sep 2007 13:17:28 +0400 Alexey Dobriyan <adobriyan@sw.ru> wrote:
+On Tue, Sep 18, 2007 at 05:19:45PM +0900, KAMEZAWA Hiroyuki wrote:
+> Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> > +	tg->cfs_rq = kzalloc(sizeof(cfs_rq) * num_possible_cpus(), GFP_KERNEL);
+> > +	if (!tg->cfs_rq)
+> > +		goto err;
+> > +	tg->se = kzalloc(sizeof(se) * num_possible_cpus(), GFP_KERNEL);
+> > +	if (!tg->se)
+> > +		goto err;
+> Sorry for very lazy responce..
 > 
-> > I'm getting tons of this, and X fails to start
-> > 
-> > CONFIG_SYSVIPC=y
-> > CONFIG_SYSVIPC_SYSCTL=y
-> > # CONFIG_PREEMPT_NONE is not set
-> > # CONFIG_PREEMPT_VOLUNTARY is not set
-> > CONFIG_PREEMPT=y
-> > CONFIG_PREEMPT_BKL=y
-> > CONFIG_DEBUG_PREEMPT=y
-> > 
-> > BUG: sleeping function called from invalid context at kernel/rwsem.c:47
-> > in_atomic():1, irqs_disabled():0
-> 
-> OK, this fixes the locking here:
+> num_possible_cpus() just returns # of possible cpus. Then it will not return
+> Max-cpu-id to be used. I think just use NR_CPUS here is an easy way.
 
-Ditto. Thanks!
-[puts mental note to read IPC patches]
+Good catch! Yes, you are right, the pointer array needs to be NR_CPUS
+size.
 
-> --- a/ipc/util.c~ipc-integrate-ipc_checkid-into-ipc_lock-fix-2
-> +++ a/ipc/util.c
-> @@ -295,7 +295,6 @@ int ipc_addid(struct ipc_ids* ids, struc
->  
->  	spin_lock_init(&new->lock);
->  	new->deleted = 0;
-> -	rcu_read_lock();
->  	spin_lock(&new->lock);
->  	return id;
->  }
-> @@ -691,7 +690,7 @@ struct kern_ipc_perm *ipc_lock(struct ip
->  		rcu_read_unlock();
->  		return ERR_PTR(-EINVAL);
->  	}
-> -
-> +	rcu_read_unlock();
->  	return out;
->  }
+On closer examination, I think I can simply use alloc_percpu() here.
+Will send a patch after some testing.
 
+-- 
+Regards,
+vatsa
