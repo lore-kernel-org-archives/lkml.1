@@ -1,53 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759326AbXIRP0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbXIRP1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759326AbXIRP0m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 11:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbXIRP0f
+	id S1759568AbXIRP1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 11:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbXIRP1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 11:26:35 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:45902 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756105AbXIRP0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 11:26:34 -0400
-Date: Tue, 18 Sep 2007 19:29:41 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: Andrew Morton <akpm@linux-foundation.org>, balbir@linux.vnet.ibm.com,
-       Jonathan Lim <jlim@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jay Lan <jlan@cthulhu.engr.sgi.com>
-Subject: Re: Add all thread stats for TASKSTATS_CMD_ATTR_TGID (v5)
-Message-ID: <20070918152941.GA177@tv-sign.ru>
-References: <200708310302.l7V32ZpV410222@sabah.engr.sgi.com> <46D7C23F.7020509@linux.vnet.ibm.com> <20070831143535.2e4709c7@localhost.localdomain> <20070912171816.f0993440.akpm@linux-foundation.org> <20070915204239.4a6af65e@localhost.localdomain> <20070918002339.4a989377@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 18 Sep 2007 11:27:24 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:7950 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756504AbXIRP1X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 11:27:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QlUwC9BfVNJniBhWroI2uD1H7FppF/Cpicai75SdsYlTp9E91L+prhzn+LPPqll9eMYROYECmSjVHdnKhja5zl8pBcyw8sO9f2sqXpyKDApaDN23mr5pi55D0m5KxF64EVAv0gU/iZix2NJY6zeWJovfRTnOm3oVXS+zPHBiTuY=
+Message-ID: <a44ae5cd0709180827w7156dc17q13853c3f2c127142@mail.gmail.com>
+Date: Tue, 18 Sep 2007 11:27:23 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc6-mm1
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070918002339.4a989377@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/18, Guillaume Chazarain wrote:
->
-> @@ -508,7 +543,7 @@ void taskstats_exit(struct task_struct *
->  	if (!stats)
->  		goto err;
->  
-> -	memcpy(stats, tsk->signal->stats, sizeof(*stats));
-> +	fill_tgid(tsk->pid, tsk, stats);
+Selecting Help for "Subarchitecture Type" causes "make menuconfig" to
+crash, and the bash display settings have to be reset.
 
-No, no, this is wrong.
-
-tsk->signal->stats contains the accumulated info about the already exited
-threads, we shouldn't throw it out.
-
-Also, fill_tgid() doesn't make sense here, current is the last live sub-thread.
-
-
-Hmm. We have another race here. There is no guarantee that tsk->signal->stats
-covers all sub-threads, as it is supposed to be. It is quite possible that
-another sub-thread decremented ->signal->live before us, but didn't complete
-taskstats_exit()->fill_tgid_exit() yet.
-
-Oleg.
-
+       Miles
