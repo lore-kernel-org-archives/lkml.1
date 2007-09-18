@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbXIRM5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbXIRNK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbXIRM5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 08:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXIRM5P
+	id S1755410AbXIRNK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 09:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbXIRNKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 08:57:15 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44645 "EHLO thunker.thunk.org"
+	Tue, 18 Sep 2007 09:10:17 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45061 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752236AbXIRM5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 08:57:14 -0400
-Date: Tue, 18 Sep 2007 08:56:47 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Marco Peereboom <slash@peereboom.us>
-Cc: misc@openbsd.org, Claudio Jeker <cjeker@diehard.n-r-g.com>,
-       Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
-       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070918125647.GH18360@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Marco Peereboom <slash@peereboom.us>, misc@openbsd.org,
-	Claudio Jeker <cjeker@diehard.n-r-g.com>,
-	Adrian Bunk <bunk@kernel.org>,
-	"Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
-	Daniel Hazelton <dhazelton@enter.net>,
-	Eben Moglen <moglen@softwarefreedom.org>,
-	Lawrence Lessig <lessig_from_web@pobox.com>,
-	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-	Matt Norwood <norwood@softwarefreedom.org>
-References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <20070918090013.GU32213@nudo.bsws.de> <20070918112947.GA31223@peereboom.us>
+	id S1752236AbXIRNKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 09:10:16 -0400
+Message-ID: <46EFCE2A.1020105@qumranet.com>
+Date: Tue, 18 Sep 2007 15:10:02 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070918112947.GA31223@peereboom.us>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Anthony Liguori <aliguori@us.ibm.com>
+CC: kvm-devel@lists.sourceforge.net, Zachary Amsden <zach@vmware.com>,
+       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [kvm-devel] [PATCH 2/3] Refactor hypercall infrastructure (v3)
+References: <1190059071649-git-send-email-aliguori@us.ibm.com> <11900590723438-git-send-email-aliguori@us.ibm.com>
+In-Reply-To: <11900590723438-git-send-email-aliguori@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 06:29:48AM -0500, Marco Peereboom wrote:
-> Now if they'd fix the copyright message to only mention Reyk all would
-> be good.
+Anthony Liguori wrote:
+> This patch refactors the current hypercall infrastructure to better support live
+> migration and SMP.  It eliminates the hypercall page by trapping the UD
+> exception that would occur if you used the wrong hypercall instruction for the
+> underlying architecture and replacing it with the right one lazily.
+>
+> It also introduces the infrastructure to probe for hypercall available via
+> CPUID leaves 0x40000000.  CPUID leaf 0x40000001 should be filled out by
+> userspace.
+>
+> A fall-out of this patch is that the unhandled hypercalls no longer trap to
+> userspace.  There is very little reason though to use a hypercall to communicate
+> with userspace as PIO or MMIO can be used.  There is no code in tree that uses
+> userspace hypercalls.
+>
+>   
 
-It *does* mention Reyk, if you would bother to look.  The thing which
-Theo is kvetching about, and which apparently is enough to cause the
-*BSD zombies to start attacking without actually _checking_ _for_
-_themselves_ is whether or not Jiri and Nick did enough to work so
-they should have their names listed in the headers.  In other words,
-all of the megabytes and megabhytes of flamewar is over these two
-lines:
 
-> * Copyright (c) 2006-2007 Nick Kossifidis <mickflemm@gmail.com>
-> * Copyright (c) 2007 Jiri Slaby <jirislaby@gmail.com>
+Surprisingly, this patch kills Windows XP (ACPI HAL).  I'll try to find 
+out why.
 
-Petty, isn't it?  Let's just say it's b.s. like this which is why, 16
-years ago, I decided to work with Linux instead of BSD.
 
-						- Ted
+-- 
+error compiling committee.c: too many arguments to function
 
-P.S.  And yes, before those two lines is:
-
-> * Copyright (c) 2004-2007 Reyk Floeter <reyk@openbsd.org>
-
-and after those two lines is the BSD permission notice.
