@@ -1,59 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbXIRWLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbXIRWOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbXIRWLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXIRWLE
+	id S1758119AbXIRWOj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbXIRWOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:11:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41506
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753599AbXIRWLC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:11:02 -0400
-Date: Tue, 18 Sep 2007 14:31:34 -0700 (PDT)
-Message-Id: <20070918.143134.112198097.davem@davemloft.net>
-To: w@1wt.eu
-Cc: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070918213025.GF10199@1wt.eu>
-References: <1190145951.9540.230.camel@dell>
-	<20070918.122150.124083496.davem@davemloft.net>
-	<20070918213025.GF10199@1wt.eu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Sep 2007 18:14:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40620 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750765AbXIRWOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 18:14:32 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
+References: <20070918210747.828804366@polymtl.ca>
+	<20070918210853.588573678@polymtl.ca> <46F04856.3010808@goop.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 19 Sep 2007 00:14:28 +0200
+In-Reply-To: <46F04856.3010808@goop.org>
+Message-ID: <p73myvjwri3.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Willy Tarreau <w@1wt.eu>
-Date: Tue, 18 Sep 2007 23:30:25 +0200
-
-> On Tue, Sep 18, 2007 at 12:21:50PM -0700, David Miller wrote:
-> > From: "Michael Chan" <mchan@broadcom.com>
-> > Date: Tue, 18 Sep 2007 13:05:51 -0700
-> > 
-> > > The bnx2 firmware changes quite frequently.  A new driver quite often
-> > > requires new firmware to work correctly.  Splitting them up makes things
-> > > difficult for the user.
-> > > 
-> > > The firmware in tg3 is a lot more mature and I don't expect it to
-> > > change.  I think tg3 is better suited for using request_firmware().
-> > 
-> > Like I said, I think neither should change and the driver should
-> > be fully functional when built statically into the kernel.
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 > 
-> Michael, doesn't a functional-yet-suboptimal firmware exist ? I mean,
-> just the same principle as we all have kernels, boot CDs, statically
-> built tools, etc... which run everywhere. If you have such a beast,
-> maybe it would be a good start to have it in the kernel, and provide
-> the users with the ability to upgrade the firmware once the system
-> is able to do more complex things.
-> 
-> Just a thought...
+> It's a pity that gas seems to generate plain 0x90 nops rather than
+> long-nop forms here.  I thought it could do that.
 
-So let's save 60K instead of 80K.
+.p2align does it.
 
-I mean, the entire discussion is just plain silly :)
+-Andi
