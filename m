@@ -1,104 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758515AbXIRUbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbXIRUcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758515AbXIRUbb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 16:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbXIRUbQ
+	id S1758047AbXIRUcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 16:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbXIRUcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 16:31:16 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:36656 "EHLO pasmtpA.tele.dk"
+	Tue, 18 Sep 2007 16:32:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54898 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756714AbXIRUbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 16:31:15 -0400
-Date: Tue, 18 Sep 2007 22:32:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1 - Mostly working, with a kbuild oddity
-Message-ID: <20070918203239.GB27836@uranus.ravnborg.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <7319.1190143977@turing-police.cc.vt.edu>
-Mime-Version: 1.0
+	id S1752758AbXIRUcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 16:32:13 -0400
+Date: Tue, 18 Sep 2007 22:22:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: dimm <dmitry.adamushko@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [git] CFS-devel, group scheduler, fixes
+Message-ID: <20070918202243.GD1632@elte.hu>
+References: <1190144190.5204.24.camel@earth>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7319.1190143977@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1190144190.5204.24.camel@earth>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 03:32:57PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 18 Sep 2007 01:18:41 PDT, Andrew Morton said:
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
+
+* dimm <dmitry.adamushko@gmail.com> wrote:
+
+> [ well, don't expect to find here anything like RDCFS (no, 'D' does 
+> not stand for 'dumb'!). I was focused on more prosaic things in the 
+> mean time so just didn't have time for writing it.. ]
 > 
-> % uname -a
-> Linux turing-police.cc.vt.edu 2.6.23-rc6-mm1 #1 SMP PREEMPT Tue Sep 18 12:32:13 EDT 2007 x86_64 x86_64 x86_64 GNU/Linux
-> % uptime
->  15:11:48 up 36 min,  1 user,  load average: 0.05, 0.11, 0.09
+> here is a few cleanup/simplification/optimization(s) based on the 
+> recent modifications in the sched-dev tree.
 > 
-> Had a few issues, all self-inflicted (the biggie was 2 iptables modules that
-> needed fixing for the net namespace changes in git-net.patch - stuck an
-> &init_net in the right 2 places, a new #include line, and all was good).
-> 
-> I *did* have an odd issue with an out-of-tree GPL driver for a webcam.
-> (It's from http://mxhaard.free.fr/ if anybody cares).
-> 
-> The Makefile does this:
-> 
-> make -C /lib/modules/`uname -r`/build SUBDIRS=/home/valdis/src/gspcav1-20070508 CC=cc modules
-> 
-> and has this sort of stuff in it:
-> 
-> DEFINES   += -DGSPCA_ENABLE_DEBUG
-> DEFINES   += -DCONFIG_USB_GSPCA_MODULE=1 -DMODULE -D__KERNEL__
-> DEFINES   += -DVID_HARDWARE_GSPCA=0xFF -DGSPCA_VERSION=\"$(VERSION)\"
-> 
-> In -rc4-mm1, $DEFINES got added to the compile command - in -rc6-mm1, I
-> had to namually add a 'CFLAGS += $(DEFINES)' or GSPCA_VERSION came up undefined.
-> 
-> The actual problematic code in the Makefile:
-> 
-> -- begin Makefile snippet
-> ifneq ($(KERNELRELEASE),)   # We were called by kbuild
-> CFLAGS += $(DEFINES)
-> obj-m += gspca.o
-> gspca-objs := gspca_core.o decoder/gspcadecoder.o
+> (1) optimize task_new_fair()
+> (2) simplify yield_task()
+> (3) rework enqueue/dequeue_entity() to get rid of
+>     sched_class::set_curr_task()
 
-So the external module were fiddeling with CFLAGS which is wrong.
-Yes - it worked before by accident.
+the queue with your enhancements and simplifications applied looks good 
+here, and it booted fine on two testboxes. I've updated the 
+sched-devel.git tree:
 
->From Documentation/kbuild/makefiles.txt:
-=====================================================================
---- 3.7 Compilation flags
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
 
-    EXTRA_CFLAGS, EXTRA_AFLAGS, EXTRA_LDFLAGS, EXTRA_ARFLAGS
+(below is the full shortlog over current upstream.)
 
-        All the EXTRA_ variables apply only to the kbuild makefile
-        where they are assigned. The EXTRA_ variables apply to all
-        commands executed in the kbuild makefile.
+(I have not tested the group scheduling bits but perhaps Srivatsa would 
+like to do that?)
 
-        $(EXTRA_CFLAGS) specifies options for compiling C files with
-        $(CC).
+	Ingo
 
-        Example:
-                # drivers/sound/emu10k1/Makefile
-                EXTRA_CFLAGS += -I$(obj)
-                ifdef DEBUG
-                    EXTRA_CFLAGS += -DEMU10K1_DEBUG
-                endif
+------------------>
+Dmitry Adamushko (9):
+      sched: clean up struct load_stat
+      sched: clean up schedstat block in dequeue_entity()
+      sched: sched_setscheduler() fix
+      sched: add set_curr_task() calls
+      sched: do not keep current in the tree and get rid of sched_entity::fair_key
+      sched: yield-workaround update
+      sched: optimize task_new_fair()
+      sched: simplify sched_class::yield_task()
+      sched: rework enqueue/dequeue_entity() to get rid of set_curr_task()
 
+Ingo Molnar (29):
+      sched: fix new-task method
+      sched: resched task in task_new_fair()
+      sched: small sched_debug cleanup
+      sched: debug: track maximum 'slice'
+      sched: uniform tunings
+      sched: use constants if !CONFIG_SCHED_DEBUG
+      sched: remove stat_gran
+      sched: remove precise CPU load
+      sched: remove precise CPU load calculations #2
+      sched: track cfs_rq->curr on !group-scheduling too
+      sched: cleanup: simplify cfs_rq_curr() methods
+      sched: uninline __enqueue_entity()/__dequeue_entity()
+      sched: speed up update_load_add/_sub()
+      sched: clean up calc_weighted()
+      sched: introduce se->vruntime
+      sched: move sched_feat() definitions
+      sched: optimize vruntime based scheduling
+      sched: simplify check_preempt() methods
+      sched: wakeup granularity fix
+      sched: add se->vruntime debugging
+      sched: sync up ->min_vruntime when going idle
+      sched: add more vruntime statistics
+      sched: debug: update exec_clock only when SCHED_DEBUG
+      sched: remove wait_runtime limit
+      sched: remove wait_runtime fields and features
+      sched: x86: allow single-depth wchan output
+      sched: yield workaround
+      sched: fix delay accounting performance regression
+      sched: disable START_DEBIT
 
-        This variable is necessary because the top Makefile owns the
-        variable $(KBUILD_CFLAGS) and uses it for compilation flags for the
-        entire tree.
-=====================================================================
+Matthias Kaehlcke (1):
+      sched: use list_for_each_entry_safe() in __wake_up_common()
 
-Nowhere are the use of CFLAGS documented.
-The use of EXTRA_CFLAGS has been working as far back as I remember so
-there is no backward compatibility issues to my best knowledge.
+Mike Galbraith (1):
+      sched: fix SMP migration latencies
 
-Pelase ask the author of the module to either fix it or even better
-submit the driver for inclusion because then we will find it during
-the review pahse.
+Peter Zijlstra (7):
+      sched: simplify SCHED_FEAT_* code
+      sched: new task placement for vruntime
+      sched: simplify adaptive latency
+      sched: clean up new task placement
+      sched: add tree based averages
+      sched: handle vruntime overflow
+      sched: better min_vruntime tracking
 
-But anyway - thanks for reporting an issue related to an external module.
+Srivatsa Vaddagiri (1):
+      sched: group-scheduler core
 
-	Sam
+ arch/i386/Kconfig     |   11 
+ include/linux/sched.h |   24 -
+ init/Kconfig          |    9 
+ kernel/sched.c        |  544 ++++++++++++++++++++++++------------
+ kernel/sched_debug.c  |  100 ++----
+ kernel/sched_fair.c   |  752 ++++++++++++++++++++------------------------------
+ kernel/sched_rt.c     |    4 
+ kernel/sched_stats.h  |    4 
+ kernel/sysctl.c       |   35 +-
+ 9 files changed, 763 insertions(+), 720 deletions(-)
