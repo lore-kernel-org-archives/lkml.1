@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbXIRN6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbXIROHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbXIRN6p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 09:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbXIRN6i
+	id S1756630AbXIROHf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbXIROH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 09:58:38 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:4547 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754735AbXIRN6h convert rfc822-to-8bit (ORCPT
+	Tue, 18 Sep 2007 10:07:28 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37520 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753695AbXIROH1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 09:58:37 -0400
+	Tue, 18 Sep 2007 10:07:27 -0400
+Date: Tue, 18 Sep 2007 16:07:39 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Oliver Falk <oliver@linux-kernel.at>
+Cc: linux-kernel@vger.kernel.org, axp-list@redhat.com,
+       Jay Estabrook <jay.estabrook@hp.com>, ac-admin@lists.anotherbloody.com
+Subject: Re: 2.6.23 alpha unistd.h changes
+Message-ID: <20070918140738.GD27980@stusta.de>
+References: <46EEE483.4020209@linux-kernel.at> <20070917214107.GB27980@stusta.de> <46EF90A3.2050109@linux-kernel.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 18 Sep 2007 13:57:11.0497 (UTC) FILETIME=[CF652B90:01C7F9FB]
-Content-class: urn:content-classes:message
-Subject: Re: PCI Interrupt
-Date: Tue, 18 Sep 2007 09:57:57 -0400
-Message-ID: <Pine.LNX.4.61.0709180955360.6632@chaos.analogic.com>
-In-Reply-To: <OF031C3237.A0A88CB3-ON8025735A.0048E354-8025735A.00490635@elekta.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: PCI Interrupt
-Thread-Index: Acf5+8+L7MBbnZSATmK5vRAggBSwrA==
-References: <OF031C3237.A0A88CB3-ON8025735A.0048E354-8025735A.00490635@elekta.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: <Duncan.Perrett@elekta.com>
-Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46EF90A3.2050109@linux-kernel.at>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 18, 2007 at 10:47:31AM +0200, Oliver Falk wrote:
+> On 09/17/2007 11:41 PM, Adrian Bunk wrote:
+> > On Mon, Sep 17, 2007 at 10:33:07PM +0200, Oliver Falk wrote:
+> >> Hi!
+> > 
+> > Hi Oliver!
+> > 
+> >> ...
+> >> As these additions are quite new to upstream kernel, but at Alphacore we
+> >> have patched it since a while now (I don't know about other Alpha ports;
+> >> Debian folks may speak up now!), I would suggest to use the same
+> >> 'ordering' of the syscalls upstream and add the new syscalls that we had
+> >> not in place, but are now upstream to the end of our 'old' list.
+> >> ...
+> > 
+> > I just checked:
+> > 
+> > It seems Debian didn't patch them into the kernel at all, and since two 
+> > months Debian unstable ships kernel 2.6.22 with the upstream syscall 
+> > numbers.
+> 
+> That's possible a problem. Right. Someone with contacts to Debian here?
+> If Debian hasn't rebuilt glibc against the new headers, we could change
+> it without problems.
+>...
 
-On Tue, 18 Sep 2007 Duncan.Perrett@elekta.com wrote:
+According to the Debian auto-builder database [1], the Alpha glibc 
+package in Debian unstable has been rebuilt 8 times since the 2.6.22 
+kernel packages entered Debian unstable.
 
->
-> I have a CAN PCI card installed on my Ubuntu box.
-> I understand that PCI interrupts should be level rather than edge
-> triggered.
->
-> The output of cat /proc/interrupts is :-
->
->           CPU0
->  0:    1614601    IO-APIC-edge  timer
->  1:        164    IO-APIC-edge  i8042
->  8:          3    IO-APIC-edge  rtc
->  9:          1   IO-APIC-level  acpi
-> 12:          0    IO-APIC-edge  CAN-ACx-PCI_01
-> 14:      65786    IO-APIC-edge  ide0
-> 169:       3220   IO-APIC-level  eth0, i915@pci:0000:00:02.0
-> 177:      46459   IO-APIC-level  eth1
-> 209:          0   IO-APIC-level  uhci_hcd:usb3, eth2
-> 217:          2   IO-APIC-level  uhci_hcd:usb1, ehci_hcd:usb4
-> 225:        697   IO-APIC-level  uhci_hcd:usb2
-> NMI:          0
-> LOC:    1614399
-> ERR:          0
-> MIS:          0
->
-> You see that irq 12 CAN-ACx-PCI_01 is edge triggered.
-> Is there any way of forcing the BIOS to see the interrupt as a
-> level-triggered one?
+And it's not only Debian, at least Gentoo also offers an Alpha port.
 
-It's done in the driver. IRQ12 can be shared, so the driver
-needs to request the IRQ as a shared interrupt.
+> Best,
+>  Oliver
 
+cu
+Adrian
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+[1] http://buildd.debian.org/build.php?arch=alpha&pkg=glibc
 
+-- 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Thank you.
