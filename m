@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbXIRXe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbXIRXmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbXIRXe6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 19:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbXIRXev
+	id S1751801AbXIRXmV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 19:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbXIRXmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 19:34:51 -0400
-Received: from mx.freeshell.ORG ([192.94.73.19]:65064 "EHLO sdf.lonestar.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750939AbXIRXeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 19:34:50 -0400
-Date: Tue, 18 Sep 2007 23:34:39 +0000
-From: Jacob Meuser <jakemsr@sdf.lonestar.org>
-To: misc@openbsd.org
-Cc: Theodore Tso <tytso@mit.edu>, Marco Peereboom <slash@peereboom.us>,
-       Claudio Jeker <cjeker@diehard.n-r-g.com>, Adrian Bunk <bunk@kernel.org>,
-       "Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070918233439.GA27907@SDF.LONESTAR.ORG>
-Mail-Followup-To: misc@openbsd.org, Theodore Tso <tytso@mit.edu>,
-	Marco Peereboom <slash@peereboom.us>,
-	Claudio Jeker <cjeker@diehard.n-r-g.com>,
-	Adrian Bunk <bunk@kernel.org>,
-	"Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
-	Daniel Hazelton <dhazelton@enter.net>,
-	Eben Moglen <moglen@softwarefreedom.org>,
-	Lawrence Lessig <lessig_from_web@pobox.com>,
-	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-	Matt Norwood <norwood@softwarefreedom.org>
-References: <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <20070918090013.GU32213@nudo.bsws.de> <20070918112947.GA31223@peereboom.us> <20070918125647.GH18360@thunk.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070918125647.GH18360@thunk.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 18 Sep 2007 19:42:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49192 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbXIRXmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 19:42:13 -0400
+Date: Wed, 19 Sep 2007 05:14:59 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Kyle Moffett <mrmacman_g4@mac.com>
+cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: NFS4 authentification / fsuid
+In-Reply-To: <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com>
+Message-ID: <alpine.LFD.0.999.0709190503250.26241@enigma.security.iitk.ac.in>
+References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr>
+ <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org>
+ <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr>
+ <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org>
+ <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in>
+ <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com>
+ <1189121714.6672.38.camel@heimdal.trondhjem.org>
+ <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 08:56:47AM -0400, Theodore Tso wrote:
 
-> all of the megabytes and megabhytes of flamewar is over these two
-> lines:
+
+On Thu, 6 Sep 2007, Kyle Moffett wrote:
 > 
-> > * Copyright (c) 2006-2007 Nick Kossifidis <mickflemm@gmail.com>
-> > * Copyright (c) 2007 Jiri Slaby <jirislaby@gmail.com>
+> On Sep 06, 2007, at 19:35:14, Trond Myklebust wrote:
+> > 
+> > On Thu, 2007-09-06 at 19:30 -0400, Kyle Moffett wrote:
+> > > 
+> > > On Sep 06, 2007, at 11:06:16, J. Bruce Fields wrote:
+> > > > The question of how to protect against someone with *physical*
+                                               ^^^^^^^^^^^^^^^^^^^^^^^
+> > > > access certainly is more difficult, but surely that's a separate
+        ^^^^^^
+
+> > > > problem.
+> > > 
+> > > Actually, that's a fairly simple problem (barring disassembling the system
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+> > > and attaching a hardware debugger).  You encrypt the root filesystem and
+> > > require a password to boot (See: LUKS).  Debian has built-in support for
+> > > installing onto fs-on-LVM-on-crypt-on-RAID, and it works quite well on all
+> > > the laptops I use regularly.  It's not even much of a speed penalty; once
+> > > you take the overhead of hitting a 5400RPM laptop drive you can chew
+> > > thousands of cycles of CPU without anybody noticing (much).  Then all you
+> > > have to do is burn a copy of your /boot with bootloader onto some
+> > > read-only media (like a finalized CDROM/DVDROM) and you're set to go.
+> > 
+> > Disconnect battery, and watch boot password go 'poof!'.
 > 
-> Petty, isn't it?  Let's just say it's b.s. like this which is why, 16
-> years ago, I decided to work with Linux instead of BSD.
+> Umm, I did say "encrypt the root filesystem", didn't I?  Booting my laptops
+                                                                      ^^^^^^^
 
-copyright assertion == claim of ownership, or posession.
+The whole *point* here is to secure against physical access -- then how
+can you assume "barring disassembling the system"? If you're not
+considering attacks such as those, then how _are_ you solving the
+physical access problem in the first place? :-)
 
-posession is 9/10 of the law.
 
-was it petty of UCB to claim copyrights over code USL claimed ownersip
-of?
+> this way follows this procedure:
+>  1) Enter BIOS boot menu
+>  2) Insert /boot CDROM
+>  3) Select the "CDROM" entry
+>  4) Wait for kernel to start and run through initramfs
+>  5) Type password into the initramfs prompt so that it can DECRYPT THE ROOT
+> FILESYSTEM
+>  6) Continue to boot the system.
+> 
+> Under this setup, tinkering with my BIOS does virtually nothing; the only
+> avenues of attack are strictly of the "Install a hardware keylogger" variety.
 
-was it also petty of Novell to claim that they, and not SCO, owned
-the copyright to UNIX?
-
-sorry, but calling attribution claims of any sort "petty" is nothing
-short of dangerous ignorance.
-
--- 
-jakemsr@sdf.lonestar.org
-SDF Public Access UNIX System - http://sdf.lonestar.org
+Doesn't flashing/replacing your BIOS firmware/chip count as tinkering?
+Then I don't really need a "hardware keylogger", do I ...
