@@ -1,98 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbXIRIMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXIRINx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbXIRIMY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 04:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbXIRIMN
+	id S1753957AbXIRINx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 04:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXIRINj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 04:12:13 -0400
-Received: from hoefnix.telenet-ops.be ([195.130.132.54]:40080 "EHLO
-	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbXIRIMK (ORCPT
+	Tue, 18 Sep 2007 04:13:39 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:1626 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbXIRINi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 04:12:10 -0400
-Date: Tue, 18 Sep 2007 10:11:11 +0200
-From: Wouter Verhelst <w@uter.be>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Mike Snitzer <snitzer@gmail.com>, Christoph Lameter <clameter@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-Message-ID: <20070918081111.GA4847@country.grep.be>
-References: <20070814142103.204771292@sgi.com> <200709171728.26180.phillips@phunq.net> <170fa0d20709172027g3b83d606k6a8e641f71848c3@mail.gmail.com> <200709172211.26493.phillips@phunq.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709172211.26493.phillips@phunq.net>
-X-Speed: Gates' Law: Every 18 months, the speed of software halves.
-Organization: none
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 18 Sep 2007 04:13:38 -0400
+X-IronPort-AV: i="4.20,267,1186372800"; 
+   d="scan'208"; a="39818026:sNHT34585320"
+Subject: [PATCH] binfmt_flat: minimum support for the Blackfin relocations
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Bernd Schmidt <bernd.schmidt@analog.com>,
+       David McCullough <davidm@snapgear.com>,
+       Greg Ungerer <gerg@snapgear.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Tue, 18 Sep 2007 16:09:25 +0800
+Message-Id: <1190102965.4406.9.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 18 Sep 2007 08:13:30.0190 (UTC) FILETIME=[CC236EE0:01C7F9CB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 10:11:25PM -0700, Daniel Phillips wrote:
-> On Monday 17 September 2007 20:27, Mike Snitzer wrote:
-> > >   - Statically prove bounded memory use of all code in the writeout
-> > >     path.
-> > >
-> > >   - Implement any special measures required to be able to make such
-> > > a proof.
-> >
-> > Once the memory requirements of a userspace daemon (e.g. nbd-server)
-> > are known; should one mlockall() the memory similar to how is done in
-> > heartbeat daemon's realtime library?
-> 
-> Yes, and also inspect the code to ensure it doesn't violate mlock_all by execing programs (no shell scripts!), dynamically loading libraries, etc.
+From: Bernd Schmidt <bernd.schmidt@analog.com>
 
-In nbd-server, there's no dlopen(), and I do not currently plan to add
-that. Are there problems with using libraries that are sharedly linked
-at compile time that I'm not aware of?
+This just adds minimum support for the Blackfin relocations,
+since we don't have enough space in each reloc. The idea
+is to store a value with one relocation so that subsequent ones can
+access it.
 
-There are plans to add the possibility for shell script callouts, but
-those would always be optional. I see no reason why we couldn't make any
-mlockall() call an option, too; preferably one that would be
-incompatible with the shell script callout stuff.
+Actually, this patch is required for Blackfin. Currently if BINFMT_FLAT 
+is enabled, git-tree kernel will fail to compile. Please consider to
+accept it.
 
-> > Bigger question for me is what kind of hell am I (or others) in for
-> > to try to cap nbd-server's memory usage?  All those glib-gone-wild
-> > changes over the recent past feel problematic but I'll look to work
-> > with Wouter to see if we can get things bounded.
-> 
-> Avoiding glib is a good start.  Look at your library dependencies and
-> prune them merclilessly.  Just don't use any libraries that you can
-> code up yourself in a few hundred bytes of program text for the
-> functionalituy you need.
-
-I'm currently using glib because I wanted some utility functions that it
-provides, and since I already knew glib; to me, it feels stupid to
-reimplement the same things over and over again if there are libraries
-that provide them.
-
-If using glib is problematic for whatever reason, I'll certainly be
-willing to switch to "something else"; I just didn't feel like
-reinventing the wheel for no particular reason.
-
-[...]
-> > to get nbd-server to to run in PF_MEMALLOC mode (could've just used
-> > the _POSIX_PRIORITY_SCHEDULING hack instead right?)... it didn't help
-> > on its own; I likely didn't have enough of the stars aligned to see
-> > my MD+NBD mke2fs test not deadlock.
-> 
-> You do need the block IO throttling, and you need to bypass the dirty
-> page limiting.
-> 
-> Without throttling, your block driver will quickly consume any amount
-> of reserve memory you have, and you are dead.  Without an exemption
-> from dirty page limiting, the number of pages your user space daemon
-> can allocate without deadlocking is zero, which makes life very
-> difficult.
-
-Would having the server use O_DIRECT help here? I would think that it
-would avoid it marking pages as dirty, but I'm not very familiar with
-the in-kernel bits.
-
+Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+Cc: David McCullough <davidm@snapgear.com>
+Cc: Greg Ungerer <gerg@snapgear.com>
+---
+ fs/binfmt_flat.c             |    5 ++++-
+ include/asm-h8300/flat.h     |    3 ++-
+ include/asm-m32r/flat.h      |    3 ++-
+ include/asm-m68knommu/flat.h |    3 ++-
+ include/asm-sh/flat.h        |    3 ++-
+ include/asm-v850/flat.h      |    4 +++-
+ 6 files changed, 15 insertions(+), 6 deletions(-)
+diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+index 7b0265d..13b58f8 100644
+--- a/fs/binfmt_flat.c
++++ b/fs/binfmt_flat.c
+@@ -742,6 +742,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 	 * __start to address 4 so that is okay).
+ 	 */
+ 	if (rev > OLD_FLAT_VERSION) {
++		unsigned long persistent = 0;
+ 		for (i=0; i < relocs; i++) {
+ 			unsigned long addr, relval;
+ 
+@@ -749,6 +750,8 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 			   relocated (of course, the address has to be
+ 			   relocated first).  */
+ 			relval = ntohl(reloc[i]);
++			if (flat_set_persistent (relval, &persistent))
++				continue;
+ 			addr = flat_get_relocate_addr(relval);
+ 			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
+ 			if (rp == (unsigned long *)RELOC_FAILED) {
+@@ -757,7 +760,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 			}
+ 
+ 			/* Get the pointer's value.  */
+-			addr = flat_get_addr_from_rp(rp, relval, flags);
++			addr = flat_get_addr_from_rp(rp, relval, flags, &persistent);
+ 			if (addr != 0) {
+ 				/*
+ 				 * Do the relocation.  PIC relocs in the data section are
+diff --git a/include/asm-h8300/flat.h b/include/asm-h8300/flat.h
+index c20eee7..2a87350 100644
+--- a/include/asm-h8300/flat.h
++++ b/include/asm-h8300/flat.h
+@@ -9,6 +9,7 @@
+ #define	flat_argvp_envp_on_stack()		1
+ #define	flat_old_ram_flag(flags)		1
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
++#define	flat_set_persistent(relval, p)		0
+ 
+ /*
+  * on the H8 a couple of the relocations have an instruction in the
+@@ -18,7 +19,7 @@
+  */
+ 
+ #define	flat_get_relocate_addr(rel)		(rel)
+-#define flat_get_addr_from_rp(rp, relval, flags) \
++#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+         (get_unaligned(rp) & ((flags & FLAT_FLAG_GOTPIC) ? 0xffffffff: 0x00ffffff))
+ #define flat_put_addr_at_rp(rp, addr, rel) \
+ 	put_unaligned (((*(char *)(rp)) << 24) | ((addr) & 0x00ffffff), rp)
+diff --git a/include/asm-m32r/flat.h b/include/asm-m32r/flat.h
+index 1b285f6..d851cf0 100644
+--- a/include/asm-m32r/flat.h
++++ b/include/asm-m32r/flat.h
+@@ -15,9 +15,10 @@
+ #define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
+ #define	flat_argvp_envp_on_stack()		0
+ #define	flat_old_ram_flag(flags)		(flags)
++#define	flat_set_persistent(relval, p)		0
+ #define	flat_reloc_valid(reloc, size)		\
+ 	(((reloc) - textlen_for_m32r_lo16_data) <= (size))
+-#define flat_get_addr_from_rp(rp, relval, flags) \
++#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+ 	m32r_flat_get_addr_from_rp(rp, relval, (text_len) )
+ 
+ #define flat_put_addr_at_rp(rp, addr, relval) \
+diff --git a/include/asm-m68knommu/flat.h b/include/asm-m68knommu/flat.h
+index 2d836ed..814b517 100644
+--- a/include/asm-m68knommu/flat.h
++++ b/include/asm-m68knommu/flat.h
+@@ -9,8 +9,9 @@
+ #define	flat_argvp_envp_on_stack()		1
+ #define	flat_old_ram_flag(flags)		(flags)
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+-#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
++#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
+ #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
+ #define	flat_get_relocate_addr(rel)		(rel)
++#define	flat_set_persistent(relval, p)		0
+ 
+ #endif /* __M68KNOMMU_FLAT_H__ */
+diff --git a/include/asm-sh/flat.h b/include/asm-sh/flat.h
+index 0d5cc04..dc4f595 100644
+--- a/include/asm-sh/flat.h
++++ b/include/asm-sh/flat.h
+@@ -16,8 +16,9 @@
+ #define	flat_argvp_envp_on_stack()		0
+ #define	flat_old_ram_flag(flags)		(flags)
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+-#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
++#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
+ #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
+ #define	flat_get_relocate_addr(rel)		(rel)
++#define	flat_set_persistent(relval, p)		0
+ 
+ #endif /* __ASM_SH_FLAT_H */
+diff --git a/include/asm-v850/flat.h b/include/asm-v850/flat.h
+index 3888f59..17f0ea5 100644
+--- a/include/asm-v850/flat.h
++++ b/include/asm-v850/flat.h
+@@ -25,6 +25,7 @@
+ #define	flat_stack_align(sp)		/* nothing needed */
+ #define	flat_argvp_envp_on_stack()	0
+ #define	flat_old_ram_flag(flags)	(flags)
++#define	flat_set_persistent(relval, p)	0
+ 
+ /* We store the type of relocation in the top 4 bits of the `relval.' */
+ 
+@@ -46,7 +47,8 @@ flat_get_relocate_addr (unsigned long relval)
+    For the v850, RP should always be half-word aligned.  */
+ static inline unsigned long flat_get_addr_from_rp (unsigned long *rp,
+ 						   unsigned long relval,
+-						   unsigned long flags)
++						   unsigned long flags,
++						   unsigned long *persistent)
+ {
+ 	short *srp = (short *)rp;
+ 
 -- 
-<Lo-lan-do> Home is where you have to wash the dishes.
-  -- #debian-devel, Freenode, 2004-09-22
+1.5.2
