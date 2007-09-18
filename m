@@ -1,142 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbXIRHCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbXIRHFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755295AbXIRHCT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 03:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbXIRHCI
+	id S1755500AbXIRHFd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 03:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbXIRHFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 03:02:08 -0400
-Received: from mail.dgt.com.pl ([195.117.141.2]:39053 "EHLO dgt.com.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753095AbXIRHCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 03:02:07 -0400
-DGT-Virus-Scanned: amavisd-new at dgt.com.pl
-Message-ID: <46EF77D8.3090808@dgt.com.pl>
-Date: Tue, 18 Sep 2007 09:01:44 +0200
-From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); pl-PL; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	Tue, 18 Sep 2007 03:05:23 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:62468 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754087AbXIRHFW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 03:05:22 -0400
+From: Jack Morgenstein <jackm@dev.mellanox.co.il>
+Organization: Mellanox
+To: general@lists.openfabrics.org
+Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
+Date: Tue, 18 Sep 2007 09:09:49 +0200
+User-Agent: KMail/1.9.1
+Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, tziporet@mellanox.co.il
+References: <adahclymos8.fsf@cisco.com>
+In-Reply-To: <adahclymos8.fsf@cisco.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Intel-Quad on GA-P35-S3 motherboard with 4*2GB
-References: <46EA4B50.7040904@dgt.com.pl> <20070914131859.GC5386@csclub.uwaterloo.ca>
-In-Reply-To: <20070914131859.GC5386@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709180909.50029.jackm@dev.mellanox.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 13 September 2007 20:57, Roland Dreier wrote:
+> HW specific:
+> 
+>  - I already merged patches to enable MSI-X by default for mthca and
+>    mlx4.  I hope there aren't too many systems that get hosed if a
+>    MSI-X interrupt is generated.
+> 
+>  - Jack and Michael's mlx4 FMR support.  Will merge I guess, although
+>    I do hope to have time to address the DMA API abuse that is being
+>    copied from mthca, so that mlx4 and mthca work in Xen domU.
+> 
+>  - ehca patch queue.  Will merge, pending fixes for the few minor
+>    issues I commented on.
+> 
+>  - Steve's mthca router mode support.  Would be nice to see a review
+>    from someone at Mellanox.
+> 
+>  - Arthur's mthca doorbell alignment fixes.  I will experiment with a
+>    few different approaches and post what I like (and fix mlx4 as
+>    well).  I hope Arthur can review.
+> 
+>  - Michael's mlx4 WQE shrinking patch.  Not sure yet; I'll reply to
+>    the latest patch directly.
+> 
+Missing from this list (IMPORTANT patch!):
+[ofa-general] [PATCH 2 of 2] IB/mlx4: Handle new FW requirement for send request prefetching, for WQE sg lists
+(Posted by me to list on Sept 4)
+{patch header: 
+This is an addendum to Roland's commit 0e6e74162164d908edf7889ac66dca09e7505745
+(June 18). This addendum adds prefetch headroom marking processing for s/g segments.
 
-> What does your mtrr look like?  How about dmesg?  Might be the stupid
-> mtrr setup some bioses have been doing on intel chips where it would do:
-> 4GB range at 4GB
-> 1GB range at 8GB
-> 512MB range at 9GB
-> 256MB range at 9.5GB
-> etc.
->
-> And then it runs out of entries (which pisses of X).
->
-> The simple solution would have been to assign an 8GB range at 4GB or
-> maybe a 4GB range at 4GB and a 2GB range at 8GB to cover all the ram.
-> Without the mtrr coverage you get no caching of that memory which makes
-> use that that section of memory slow.  To make the system useable there
-> is code in the kernel to discard any memory the BIOS didn't correctly
-> cover with an mtrr cachable entry.
->
->
->   
-I have  2.6.22.6 kernel
+We write s/g segments in reverse order into the WQE, in order to guarantee
+that the first dword of all cachelines containing s/g segments is written last
+(overwriting the headroom invalidation pattern). The entire cacheline will thus
+contain valid data when the invalidation pattern is overwritten.
+}
+This patch series (1 of 2 is for libmlx4, the same issue).
+============================================================
 
-First MTRR looks good for me.
-Why it was rejected?
-And how to force using it?
+Also, I'm now posting (in a separate post) the following patch to mlx4, which is important:
+  display the following device information via sysfs:
+  board_id, fw_ver, hw_rev, hca_type.
 
-here are more details
+  The info is displayed under directory /sys/class/infiniband/mlx4_x, where x is
+  the pci bus sequence number (starting from zero).
 
-[root@kromblack ~]# cat /proc/mtrr
-reg00: base=0x100000000 (4096MB), size=8192MB: write-back, count=1
-reg01: base=0x280000000 (10240MB), size=2048MB: uncachable, count=1
-reg02: base=0x260000000 (9728MB), size= 512MB: uncachable, count=1
-reg03: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
-reg04: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
-reg05: base=0xa0000000 (2560MB), size= 512MB: uncachable, count=1
-reg06: base=0x9ff00000 (2559MB), size=   1MB: write-through, count=1
+  This patch makes information available to ibstat and ibv_devinfo under the
+  same directory as is used for tavor/arbel/sinai -- thus requiring no userspace
+  modifications.
 
-[root@kromblack ~]# dmesg|grep mtrr
-mtrr: your CPUs had inconsistent variable MTRR settings
-mtrr: probably your BIOS does not setup all CPUs.
-mtrr: corrected configuration.
-
-
-and other interesting dmesg fragments:
-
-Entering add_active_range(0, 0, 159) 0 entries of 3200 used
-Entering add_active_range(0, 256, 655072) 1 entries of 3200 used
-Entering add_active_range(0, 1048576, 2097152) 2 entries of 3200 used
-end_pfn_map = 2097152
-DMI 2.4 present.
-ACPI: RSDP 000F6F10, 0014 (r0 GBT   )
-ACPI: RSDT 9FEE3040, 003C (r1 GBT    GBTUACPI 42302E31 GBTU  1010101)
-ACPI: FACP 9FEE30C0, 0074 (r1 GBT    GBTUACPI 42302E31 GBTU  1010101)
-ACPI: DSDT 9FEE3180, 4A88 (r1 GBT    GBTUACPI     1000 MSFT  100000C)
-ACPI: FACS 9FEE0000, 0040
-ACPI: HPET 9FEE7D80, 0038 (r1 GBT    GBTUACPI 42302E31 GBTU       98)
-ACPI: MCFG 9FEE7E00, 003C (r1 GBT    GBTUACPI 42302E31 GBTU  1010101)
-ACPI: APIC 9FEE7C80, 0084 (r1 GBT    GBTUACPI 42302E31 GBTU  1010101)
-ACPI: SSDT 9FEE7E80, 015C (r1  PmRef  Cpu0Ist     3000 INTL 20040311)
-ACPI: SSDT 9FEE8430, 0275 (r1  PmRef    CpuPm     3000 INTL 20040311)
-No NUMA configuration found
-Faking a node at 0000000000000000-0000000200000000
-Entering add_active_range(0, 0, 159) 0 entries of 3200 used
-Entering add_active_range(0, 256, 655072) 1 entries of 3200 used
-Entering add_active_range(0, 1048576, 2097152) 2 entries of 3200 used
-Bootmem setup node 0 0000000000000000-0000000200000000
-Zone PFN ranges:
- DMA             0 ->     4096
- DMA32        4096 ->  1048576
- Normal    1048576 ->  2097152
-early_node_map[3] active PFN ranges
-   0:        0 ->      159
-   0:      256 ->   655072
-   0:  1048576 ->  2097152
-On node 0 totalpages: 1703551
- DMA zone: 56 pages used for memmap
- DMA zone: 1125 pages reserved
- DMA zone: 2818 pages, LIFO batch:0
- DMA32 zone: 14280 pages used for memmap
- DMA32 zone: 636696 pages, LIFO batch:31
- Normal zone: 14336 pages used for memmap
- Normal zone: 1034240 pages, LIFO batch:31
-
-
-ACPI: HPET id: 0x8086a201 base: 0xfed00000
-Using ACPI (MADT) for SMP configuration information
-swsusp: Registered nosave memory region: 000000000009f000 - 
-00000000000a0000
-swsusp: Registered nosave memory region: 00000000000a0000 - 
-00000000000f0000
-swsusp: Registered nosave memory region: 00000000000f0000 - 
-0000000000100000
-swsusp: Registered nosave memory region: 000000009fee0000 - 
-000000009fee3000
-swsusp: Registered nosave memory region: 000000009fee3000 - 
-000000009fef0000
-swsusp: Registered nosave memory region: 000000009fef0000 - 
-000000009ff00000
-swsusp: Registered nosave memory region: 000000009ff00000 - 
-00000000c0000000
-swsusp: Registered nosave memory region: 00000000c0000000 - 
-00000000c4000000
-swsusp: Registered nosave memory region: 00000000c4000000 - 
-00000000fec00000
-swsusp: Registered nosave memory region: 00000000fec00000 - 
-0000000100000000
-Allocating PCI resources starting at c8000000 (gap: c4000000:3ac00000)
-SMP: Allowing 4 CPUs, 0 hotplug CPUs
-PERCPU: Allocating 36744 bytes of per cpu data
-Built 1 zonelists.  Total pages: 1673754
-
-
-
-
+- Jack
 
 
