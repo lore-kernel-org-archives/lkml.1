@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbXIRSXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbXIRSZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbXIRSXz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 14:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbXIRSXq
+	id S1758668AbXIRSZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 14:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbXIRSZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 14:23:46 -0400
-Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:42123
-	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753563AbXIRSXp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 14:23:45 -0400
-Date: Tue, 18 Sep 2007 11:23:37 -0700 (PDT)
-Message-Id: <20070918.112337.74737433.davem@davemloft.net>
-To: mchan@broadcom.com
-Cc: vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1190141114.9540.216.camel@dell>
-References: <200709181823.26429.vda.linux@googlemail.com>
-	<1190141114.9540.216.camel@dell>
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Sep 2007 14:25:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38065 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755630AbXIRSZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 14:25:21 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1190138621.6656.39.camel@heimdal.trondhjem.org>
+References: <1190138621.6656.39.camel@heimdal.trondhjem.org> <336243.38765.qm@web36610.mail.mud.yahoo.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: dhowells@redhat.com, casey@schaufler-ca.com, viro@ftp.linux.org.uk,
+       hch@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: Credentials test patch
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Tue, 18 Sep 2007 19:24:45 +0100
+Message-ID: <6388.1190139885@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Michael Chan" <mchan@broadcom.com>
-Date: Tue, 18 Sep 2007 11:45:14 -0700
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-> On Tue, 2007-09-18 at 18:23 +0100, Denys Vlasenko wrote:
-> > Do you have any plans to switch to request_firmware() interface,
-> > which will allow you to avoid keeping firmware in unswappable kernel
-> > memory and thus free ~80k?
+> > What I don't really understand is what value is gained by this exercise.
+> > Are the savings sufficiently significant to justify the effort?
 > 
-> Matching the correct version of the firmware with the driver is the main
-> issue.
-> 
-> David, what's your opinion on this?
+> It is not about savings, but about new functionality. Basically, the
+> existence of reference-counted credentials will allow AFS and NFS to
+> cache that information and use it for deferred writes etc.
 
-I don't like it because it means people have to setup full initrd's
-in order to do network booting with such network cards.
+And also make it easier for cachefiles and hopefully NFSd to override the
+active security.
 
-But the days of my opinion mattering on that issue are long gone,
-the momentum is just too greatly behind using request_firmware()
-across the board, so there is no reason for bnx2 to be any different.
+There's a comment somewhere in, I think, the SunRPC code in the Linux kernel
+bemoaning the lack of this very feature:-)
+
+David
