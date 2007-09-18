@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbXIRPz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbXIRPzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759947AbXIRPz0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 11:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758999AbXIRPzR
+	id S1760192AbXIRPzv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 11:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759512AbXIRPzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 11:55:17 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46776 "EHLO pasmtpA.tele.dk"
+	Tue, 18 Sep 2007 11:55:42 -0400
+Received: from integer.obiit.org ([195.168.92.92]:16432 "EHLO obiit.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759301AbXIRPzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 11:55:15 -0400
-Date: Tue, 18 Sep 2007 17:56:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Gabriel C <nix.or.die@googlemail.com>, v4l-dvb-maintainer@linuxtv.org,
-       linux-dvb@linuxtv.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: modpost errors ( Re: 2.6.23-rc6-mm1)
-Message-ID: <20070918155639.GC26539@uranus.ravnborg.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46EFF227.4080603@googlemail.com>
+	id S1758999AbXIRPzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 11:55:41 -0400
+Date: Tue, 18 Sep 2007 17:55:40 +0200
+From: frantisek holop <minusf@obiit.org>
+To: Theodore Tso <tytso@mit.edu>, Marco Peereboom <slash@peereboom.us>,
+       misc@openbsd.org, Claudio Jeker <cjeker@diehard.n-r-g.com>,
+       Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070918155540.GH13370@obiit.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Marco Peereboom <slash@peereboom.us>, misc@openbsd.org,
+	Claudio Jeker <cjeker@diehard.n-r-g.com>,
+	Adrian Bunk <bunk@kernel.org>,
+	"Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
+	Daniel Hazelton <dhazelton@enter.net>,
+	Eben Moglen <moglen@softwarefreedom.org>,
+	Lawrence Lessig <lessig_from_web@pobox.com>,
+	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+	Matt Norwood <norwood@softwarefreedom.org>
+References: <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <20070918090013.GU32213@nudo.bsws.de> <20070918112947.GA31223@peereboom.us> <20070918125647.GH18360@thunk.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46EFF227.4080603@googlemail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070918125647.GH18360@thunk.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please cc: relevant people.
+hmm, on Tue, Sep 18, 2007 at 08:56:47AM -0400, Theodore Tso said that
+> On Tue, Sep 18, 2007 at 06:29:48AM -0500, Marco Peereboom wrote:
+> > Now if they'd fix the copyright message to only mention Reyk all would
+> > be good.
+> 
+> It *does* mention Reyk, if you would bother to look.  The thing which
 
-On Tue, Sep 18, 2007 at 05:43:35PM +0200, Gabriel C wrote:
-> Hi,
+the keyword is `only'.  only = him and noone else (at the moment)
+
+> Theo is kvetching about, and which apparently is enough to cause the
+> *BSD zombies to start attacking without actually _checking_ _for_
+> _themselves_ is whether or not Jiri and Nick did enough to work so
+> they should have their names listed in the headers.  In other words,
+
+are you publicly stating that you have checked, and found the amount
+of work done justifying a (c) addition of not even one but 2 persons?
+
+> all of the megabytes and megabhytes of flamewar is over these two
+> lines:
 > 
-> I get modpost errors here :
+> > * Copyright (c) 2006-2007 Nick Kossifidis <mickflemm@gmail.com>
+> > * Copyright (c) 2007 Jiri Slaby <jirislaby@gmail.com>
 > 
-> ...
-> 
-> ERROR: "dvb_dmx_init" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_unregister_adapter" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_register_frontend" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_unregister_frontend" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_net_release" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_frontend_detach" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_dmxdev_release" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_dmx_swfilter" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_net_init" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_dmx_release" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_register_adapter" [drivers/media/video/video-buf-dvb.ko] undefined!
-> ERROR: "dvb_dmxdev_init" [drivers/media/video/video-buf-dvb.ko] undefined!
+> Petty, isn't it?  Let's just say it's b.s. like this which is why, 16
+> years ago, I decided to work with Linux instead of BSD.
 
-dvb issue so dvb added.
-
-> ERROR: "mt2131_attach" [drivers/media/video/cx23885/cx23885.ko] undefined!
-> ERROR: "s5h1409_attach" [drivers/media/video/cx23885/cx23885.ko] undefined!
-
-Was not sure who maintain this stuff..
-It's not in the git-tree I had around.
-
-	Sam
+so you don't mind if a couple of us go around adding say 10 lines
+of code to files you authored, and then put our copyrights under
+your name?  good!  i am glad to hear that.  a bit of additional
+"undeserved credit" is always welcome anyway.
+would look good in my cv.
 
 
->   CC      arch/i386/boot/mca.o
->   CC      arch/i386/boot/memory.o
->   CC      arch/i386/boot/pm.o
-> make[1]: *** [__modpost] Fehler 1
-> make: *** [modules] Fehler 2
-> 
-> ...
-> 
-> 
-> config there : http://194.231.229.228/MM/2.6.23-rc6-mm1/config-modpost-errors
-> 
-> 
-> Regards,
-> 
-> Gabriel
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+it is not just a bit of undeserved credit.  the (c) owners will
+be asked in the future regarding any legal aspects of the files
+they hold copyrights to.  i don't think those 2 gentlemen have
+earned that yet.
+
+-f
+-- 
+dum spiro spero --  as long as i breathe i hope
