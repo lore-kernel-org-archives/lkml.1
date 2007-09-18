@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbXIRSZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbXIRS3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbXIRSZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 14:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbXIRSZW
+	id S1757630AbXIRS3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 14:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbXIRS33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 14:25:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38065 "EHLO mx1.redhat.com"
+	Tue, 18 Sep 2007 14:29:29 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:56534 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755630AbXIRSZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 14:25:21 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1190138621.6656.39.camel@heimdal.trondhjem.org>
-References: <1190138621.6656.39.camel@heimdal.trondhjem.org> <336243.38765.qm@web36610.mail.mud.yahoo.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: dhowells@redhat.com, casey@schaufler-ca.com, viro@ftp.linux.org.uk,
-       hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: Credentials test patch
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Tue, 18 Sep 2007 19:24:45 +0100
-Message-ID: <6388.1190139885@redhat.com>
+	id S1754334AbXIRS32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 14:29:28 -0400
+Date: Tue, 18 Sep 2007 11:29:24 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Nadia Derbey <Nadia.Derbey@bull.net>, Alexey Dobriyan <adobriyan@sw.ru>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-ID: <20070918182924.GF8665@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070918091728.GA6766@localhost.sw.ru> <20070918031723.05689e92.akpm@linux-foundation.org> <46EFA8DC.2020909@bull.net> <20070918033400.495b02dd.akpm@linux-foundation.org> <20070918142451.418b3b51@twins> <20070918161337.GC8665@linux.vnet.ibm.com> <20070918095715.05899d12.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070918095715.05899d12.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-
-> > What I don't really understand is what value is gained by this exercise.
-> > Are the savings sufficiently significant to justify the effort?
+On Tue, Sep 18, 2007 at 09:57:15AM -0700, Andrew Morton wrote:
+> On Tue, 18 Sep 2007 09:13:37 -0700 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> It is not about savings, but about new functionality. Basically, the
-> existence of reference-counted credentials will allow AFS and NFS to
-> cache that information and use it for deferred writes etc.
+> > On Tue, Sep 18, 2007 at 02:24:51PM +0200, Peter Zijlstra wrote:
+> > > On Tue, 18 Sep 2007 03:34:00 -0700 Andrew Morton
+> > > <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > Well, it was an optimisation.  spin_lock() implies rcu_read_lock().  That's
+> > > > a bit dirty and we might choose to not do that.
+> > > 
+> > > Not true for the preemptible-rcu work. All such sites should be fixed,
+> > > or at the very least heavily annotated.
+> > 
+> > What he said!!!
+> > 
+> 
+> What he said!
+> 
+> How are you going to find all such sites?
 
-And also make it easier for cachefiles and hopefully NFSd to override the
-active security.
+A first step would be to look for patches in -rt that add rcu_read_lock()
+or friends.  A second step would be to look for rcu_dereference() without
+an enclosing rcu_read_lock(), rcu_read_lock_bh(), or preempt_disable().
 
-There's a comment somewhere in, I think, the SunRPC code in the Linux kernel
-bemoaning the lack of this very feature:-)
+Beyond a certain point, this reduces to the problem of finding places
+where spin_lock() was omitted, right?
 
-David
+							Thanx, Paul
