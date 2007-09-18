@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbXIRJZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbXIRJ1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756509AbXIRJZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 05:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbXIRJZd
+	id S1756331AbXIRJ1i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 05:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXIRJ1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 05:25:33 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:48580 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753462AbXIRJZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 05:25:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=my0ZNB4uJHvBM7xlSy20kUbQCxow7Hu3A+ytjZb8D3LokUrTAhyf485EtaMDXhjNkxo4nC5yeU3OWSh38/SbkalbadHZAo2gJjBc3ws6R1nYRkO2S0htMoUwttUKv94endk0h/1l9hYCAuP+cWzJUsr1a0YyARkwiftLlfkHkjM=  ;
-X-YMail-OSG: DaDNuNcVM1ljHPawtUOlSx2PfCx7hqHmfKLsFYjXHzcHEFbYXgvSBVQpbHXDoK13ABKIS8dWGw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Subject: Re: [PATCH 001/104] KVM: Fix *nopage() in kvm_main.c
-Date: Tue, 18 Sep 2007 03:17:06 +1000
-User-Agent: KMail/1.9.5
-Cc: Christoph Hellwig <hch@infradead.org>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Nguyen Anh Quynh <aquynh@gmail.com>
-References: <11900179463203-git-send-email-avi@qumranet.com> <200709170729.24835.nickpiggin@yahoo.com.au> <46EEC52B.8080101@qumranet.com>
-In-Reply-To: <46EEC52B.8080101@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 18 Sep 2007 05:27:31 -0400
+Received: from www.osadl.org ([213.239.205.134]:51242 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754548AbXIRJ1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 05:27:30 -0400
+Subject: Re: RFC: A revised timerfd API
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: "\"David" =?ISO-8859-1?Q?H=E4rdeman=22?= <david@hardeman.nu>,
+       lee.schermerhorn@hp.com, torvalds@linux-foundation.org,
+       vda.linux@googlemail.com, rdunlap@xenotime.net, corbet@lwn.net,
+       hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       geoff@gclare.org.uk, drepper@redhat.com, davidel@xmailserver.org
+In-Reply-To: <20070918090110.235160@gmx.net>
+References: <46EF7DDA.2070401@gmx.net> <46EF7E82.8040503@gmx.net>
+	 <38485.145.64.134.222.1190102719.squirrel@www.hardeman.nu>
+	 <20070918090110.235160@gmx.net>
+Content-Type: text/plain
+Date: Tue, 18 Sep 2007 11:27:15 +0200
+Message-Id: <1190107635.2995.109.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709180317.07055.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 September 2007 04:19, Avi Kivity wrote:
-> Nick Piggin wrote:
-> >> I should mention that the converting to use ->fault() is a 15-minute
-> >> change; the tricky part is adding backwards compatibility for the
-> >> external module package.
-> >
-> > It should be mostly possible to ifdef a nopage() handler, which is
-> > just a wrapper function to translate arguments then call your new
-> > ->fault() handler. With luck, fault would mostly inline into nopage,
-> > and do some constant folding to make it cheaper...
-> >
-> > I'm planning to go through and convert the rest of the in-tree users
-> > at some point soon, so if you do get a chance to convert your
-> > upstream code before I try, it would nice ;)
->
-> In kvm I don't add compatibility #ifdefs to mainline, instead I have an
-> awk script that massages the sources into something that all kernels can
-> grok.
+On Tue, 2007-09-18 at 11:01 +0200, Michael Kerrisk wrote:
+> > With solution c) you have to keep two
+> > references to the same timer around and use one of them depending on what
+> > you want to do with the timer.
+> 
+> Yes.  (And the same for option (d).)
+> 
+> > Also, if the timerfd is close():d, does that remove the underlying timer
+> > (invalidate the timerid) as well?
+> 
+> My gut feeling would be to say that closing the timerfd would not
+> remove the underlying timer (so the timerid would remain valid).
+> One could even do things like recreating a file descriptor
+> for the timer using another timerfd() call.  
+> 
+> But now that raises the question: what are the semantics if
+> timerfd() is called  more than once on the same timerid? 
+> Perhaps a read() from any one of them (destructively)
+> reads the expiration count, as though one had read from a 
+> dup()ed the file descriptor.  All in all, solution (c) 
+> starts to look overly complex, and maybe suffers from 
+> various dirty corners in the API.  (Solution (d) feels 
+> slightly better, because the creation of the file descriptor
+> and the timerid are integrated into a single call, and the
+> fact that it integrates with an existing API, but
+> it still has the limitation you describe above.)
 
-Sure, but my suggestion is just a way to make it possible without having
-to maintain a lot of duplicated code. The point is simply that we'll be
-getting rid of nopage from mainline sooner or later, and it will probably
-be less painful for your out of tree stuff if you do it rather than me. Maybe.
+I don't think it is a big problem to have several open file descriptors
+on a single posix timer without having destructive reads, we just need
+to store the event count per file descriptor in file->private_data. We
+solved this in the UIO code already and it works perfectly fine.
+
+	tglx
 
 
-> It isn't pretty but it works.
-
-It is pretty for mainline :) I appreciate you going out of your way to make
-the code nicer rather than just make your life easier.
