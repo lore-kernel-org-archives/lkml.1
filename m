@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbXIRLzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbXIRMFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757305AbXIRLzE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 07:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbXIRLyz
+	id S1756716AbXIRMFN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 08:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbXIRMFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 07:54:55 -0400
-Received: from [212.176.242.38] ([212.176.242.38]:60132 "EHLO
-	vaxon.spb.rtsoft.ru" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754915AbXIRLyy (ORCPT
+	Tue, 18 Sep 2007 08:05:00 -0400
+Received: from smtp23.orange.fr ([80.12.242.97]:13143 "EHLO smtp23.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755730AbXIRMFA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 07:54:54 -0400
-X-Greylist: delayed 2170 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 07:54:53 EDT
-Date: Tue, 18 Sep 2007 15:17:37 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] pci: Fix e100 interrupt quirk
-Message-ID: <20070918111737.GA7026@ru.mvista.com>
+	Tue, 18 Sep 2007 08:05:00 -0400
+X-ME-UUID: 20070918120457797.C2C667000086@mwinf2359.orange.fr
+Subject: Re: Wasting our Bandwidth
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Marco Peereboom <slash@peereboom.us>
+Cc: misc@openbsd.org, Theodore Tso <tytso@mit.edu>,
+       Claudio Jeker <cjeker@diehard.n-r-g.com>, Adrian Bunk <bunk@kernel.org>,
+       "Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+In-Reply-To: <20070918112947.GA31223@peereboom.us>
+References: <46ED7A8F.1020304@pro-g.com.tr>
+	 <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de>
+	 <20070916211208.GC5502@thunk.org>
+	 <20070917125554.GB13179@diehard.n-r-g.com>
+	 <20070917133458.GA18360@thunk.org>
+	 <20070917192341.GB30119@diehard.n-r-g.com>
+	 <20070917204318.GE18360@thunk.org> <20070918090013.GU32213@nudo.bsws.de>
+	 <20070918112947.GA31223@peereboom.us>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Tue, 18 Sep 2007 14:04:46 +0200
+Message-Id: <1190117086.11726.0.camel@bip.parateam.prv>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI memory space may have a 64-bit offset on some architectures
-(for example, PowerPC 440) and the actual PCI memory address
-has to fixed up (an offset to PCI mem space shuld be added)
-before remapping. So, pci_iomap should be used instead of
-reading and remapping PCI BAR directly. This has been tested
-on Sequoia PowerPC 440EPx board.
+Le mardi 18 septembre 2007 à 06:29 -0500, Marco Peereboom a écrit :
+> Now if they'd fix the copyright message to only mention Reyk all would
+> be good. 
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
+All this mess so easily solved ? Too good to be true.
 
---- linux-2.6.orig/drivers/pci/quirks.c	2007-09-04 21:15:43.000000000 +0400
-+++ linux-2.6.bld/drivers/pci/quirks.c	2007-09-05 20:46:14.000000000 +0400
-@@ -1444,9 +1444,9 @@
- static void __devinit quirk_e100_interrupt(struct pci_dev *dev)
- {
- 	u16 command;
--	u32 bar;
- 	u8 __iomem *csr;
- 	u8 cmd_hi;
-+	int rc;
- 
- 	switch (dev->device) {
- 	/* PCI IDs taken from drivers/net/e100.c */
-@@ -1476,16 +1476,17 @@
- 	 * re-enable them when it's ready.
- 	 */
- 	pci_read_config_word(dev, PCI_COMMAND, &command);
--	pci_read_config_dword(dev, PCI_BASE_ADDRESS_0, &bar);
- 
--	if (!(command & PCI_COMMAND_MEMORY) || !bar)
-+	rc = pci_request_region(dev, 0, "e100_quirk");
-+
-+	if (!(command & PCI_COMMAND_MEMORY) || (rc < 0))
- 		return;
- 
--	csr = ioremap(bar, 8);
-+	csr = pci_iomap(dev, 0, 8);
- 	if (!csr) {
- 		printk(KERN_WARNING "PCI: Can't map %s e100 registers\n",
- 			pci_name(dev));
--		return;
-+		goto e100_quirk_exit;
- 	}
- 
- 	cmd_hi = readb(csr + 3);
-@@ -1495,7 +1496,9 @@
- 		writeb(1, csr + 3);
- 	}
- 
--	iounmap(csr);
-+	pci_iounmap(dev, csr);
-+e100_quirk_exit:
-+	pci_release_region(dev, 0);
- }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, quirk_e100_interrupt);
- 
+	Xav
+
+
