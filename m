@@ -1,65 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbXIRWDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbXIRWFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbXIRWDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbXIRWDd
+	id S1758032AbXIRWFg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXIRWF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:03:33 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:39983 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753702AbXIRWDd (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:03:33 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1 - Mostly working, with a kbuild oddity
-In-Reply-To: Your message of "Tue, 18 Sep 2007 22:32:39 +0200."
-             <20070918203239.GB27836@uranus.ravnborg.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <7319.1190143977@turing-police.cc.vt.edu>
-            <20070918203239.GB27836@uranus.ravnborg.org>
+	Tue, 18 Sep 2007 18:05:28 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54635 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbXIRWF2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 18:05:28 -0400
+Subject: Re: [v4l-dvb-maintainer] modpost errors ( Re: 2.6.23-rc6-mm1)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: mkrufky@linuxtv.org
+Cc: sam@ravnborg.org, nix.or.die@googlemail.com,
+       v4l-dvb-maintainer@linuxtv.org, linux-dvb@linuxtv.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <46EFFEBC.9020706@linuxtv.org>
+References: <46EFFEBC.9020706@linuxtv.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 18 Sep 2007 19:06:11 -0300
+Message-Id: <1190153171.7883.1.camel@areia>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190153008_4811P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 18 Sep 2007 18:03:28 -0400
-Message-ID: <15592.1190153008@turing-police.cc.vt.edu>
+X-Mailer: Evolution 2.11.91-1mdv2008.0 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190153008_4811P
-Content-Type: text/plain; charset=us-ascii
+Applied at my -git tree.
 
-On Tue, 18 Sep 2007 22:32:39 +0200, Sam Ravnborg said:
+Cheers,
+Mauro.
 
-> So the external module were fiddeling with CFLAGS which is wrong.
-> Yes - it worked before by accident.
+Em Ter, 2007-09-18 às 12:37 -0400, mkrufky@linuxtv.org escreveu:
+> Sam Ravnborg wrote:
+> > Please cc: relevant people.
+> >
+> > On Tue, Sep 18, 2007 at 05:43:35PM +0200, Gabriel C wrote:
+> >   
+> >> Hi,
+> >>
+> >> I get modpost errors here :
+> >>
+> >> ...
+> >>
+> >> ERROR: "dvb_dmx_init" [drivers/media/video/video-buf-dvb.ko] undefined!
+> >> ERROR: "dvb_unregister_adapter" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_register_frontend" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_unregister_frontend" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_net_release" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_frontend_detach" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_dmxdev_release" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_dmx_swfilter" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_net_init" [drivers/media/video/video-buf-dvb.ko] undefined!
+> >> ERROR: "dvb_dmx_release" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_register_adapter" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >> ERROR: "dvb_dmxdev_init" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> >>     
+> >
+> > dvb issue so dvb added.
+> >
+> >   
+> >> ERROR: "mt2131_attach" [drivers/media/video/cx23885/cx23885.ko]
+> undefined!
+> >> ERROR: "s5h1409_attach" [drivers/media/video/cx23885/cx23885.ko]
+> undefined!
+> >>     
+> >
+> > Was not sure who maintain this stuff..
+> > It's not in the git-tree I had around.
+> 
+> Sam,
+> 
+> This stuff is in -mm only right now.
+> 
+> It was a dependency problem, where a new driver (cx23885) is missing the 
+> dependency on DVB_CORE.
+> 
+> The fix is in this changeset:
+> 
+> http://linuxtv.org/hg/~mkrufky/build-fix/rev/67acaa106a99
+> 
+> Mauro,
+> 
+> Please pull from:
+> 
+> http://linuxtv.org/hg/~mkrufky/build-fix
+> 
+> for:
+> 
+> - VIDEO_CX23885 depends on DVB_CORE
+> 
+>  Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Regards,
+> 
+> Mike Krufky
 
-OK, I can deal with that diagnosis. ;)
-
-> Pelase ask the author of the module to either fix it or even better
-> submit the driver for inclusion because then we will find it during
-> the review pahse.
-
-I'll take it up with the author, and see what happens...
-
-> But anyway - thanks for reporting an issue related to an external module.
-
-I had a few issues with some other modules, but they're evil binaries so
-I'm taking those up directly with the companies involved.. ;)
-
-
---==_Exmh_1190153008_4811P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG8EswcC3lWbTT17ARAuZbAKCxTYV6bnI+D89e+gJiZfXzReMHZgCeN7FL
-OWfh7P4Xr4IP/O9ef+h0/IE=
-=hg2o
------END PGP SIGNATURE-----
-
---==_Exmh_1190153008_4811P--
