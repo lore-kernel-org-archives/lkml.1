@@ -1,48 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759991AbXIRPti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbXIRPuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759991AbXIRPti (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 11:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759303AbXIRPtb
+	id S1760084AbXIRPuv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 11:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758907AbXIRPuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 11:49:31 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38678 "EHLO pasmtpB.tele.dk"
+	Tue, 18 Sep 2007 11:50:44 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39236 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759255AbXIRPta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 11:49:30 -0400
-Date: Tue, 18 Sep 2007 17:50:46 +0200
+	id S1757914AbXIRPun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 11:50:43 -0400
+Date: Tue, 18 Sep 2007 17:52:03 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: Re: 2.6.23-rc6-mm1
-Message-ID: <20070918155046.GA26539@uranus.ravnborg.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20159.1190128043@turing-police.cc.vt.edu>
+Message-ID: <20070918155203.GB26539@uranus.ravnborg.org>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <a44ae5cd0709180827w7156dc17q13853c3f2c127142@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20159.1190128043@turing-police.cc.vt.edu>
+In-Reply-To: <a44ae5cd0709180827w7156dc17q13853c3f2c127142@mail.gmail.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 11:07:23AM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 18 Sep 2007 01:18:41 PDT, Andrew Morton said:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
-> 
-> > +gregkh-driver-driver-core-add-config_uevent_helper_path.patch
-> 
-> So I do a 'make silentoldconfig', and I get:
-> 
-> *
-> * Generic Driver Options
-> *
-> path to uevent helper (UEVENT_HELPER_PATH) [/sbin/hotplug] (NEW)
-> 
-> (Hey wow - the patch has a 'help' section, but no '?' listed because it's not a
-> bool or tristate. You can apparently get help during 'make menuconfig' but not
-> 'make *oldconfig'. That rocks. ;)
-Please cc: relevant people next time you complain about kconfig.
+On Tue, Sep 18, 2007 at 11:27:23AM -0400, Miles Lane wrote:
+> Selecting Help for "Subarchitecture Type" causes "make menuconfig" to
+> crash, and the bash display settings have to be reset.
+
+Please cc: relevant people next time.
+I will take a look.
 
 Thanks,
 	Sam
