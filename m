@@ -1,90 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbXIRIEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbXIRIMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735AbXIRIEb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 04:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbXIRIET
+	id S1753532AbXIRIMY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 04:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbXIRIMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 04:04:19 -0400
-Received: from mail-in-08.arcor-online.net ([151.189.21.48]:36327 "EHLO
-	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751240AbXIRIER (ORCPT
+	Tue, 18 Sep 2007 04:12:13 -0400
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:40080 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbXIRIMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 04:04:17 -0400
-Date: Tue, 18 Sep 2007 10:05:37 +0200
-From: Andreas Herrmann <aherrman@arcor.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL
-Message-ID: <20070918080537.GA14882@devil>
+	Tue, 18 Sep 2007 04:12:10 -0400
+Date: Tue, 18 Sep 2007 10:11:11 +0200
+From: Wouter Verhelst <w@uter.be>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Mike Snitzer <snitzer@gmail.com>, Christoph Lameter <clameter@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+Message-ID: <20070918081111.GA4847@country.grep.be>
+References: <20070814142103.204771292@sgi.com> <200709171728.26180.phillips@phunq.net> <170fa0d20709172027g3b83d606k6a8e641f71848c3@mail.gmail.com> <200709172211.26493.phillips@phunq.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <200709172211.26493.phillips@phunq.net>
+X-Speed: Gates' Law: Every 18 months, the speed of software halves.
+Organization: none
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix compile error if !CONFIG_SYSCTL:
+On Mon, Sep 17, 2007 at 10:11:25PM -0700, Daniel Phillips wrote:
+> On Monday 17 September 2007 20:27, Mike Snitzer wrote:
+> > >   - Statically prove bounded memory use of all code in the writeout
+> > >     path.
+> > >
+> > >   - Implement any special measures required to be able to make such
+> > > a proof.
+> >
+> > Once the memory requirements of a userspace daemon (e.g. nbd-server)
+> > are known; should one mlockall() the memory similar to how is done in
+> > heartbeat daemon's realtime library?
+> 
+> Yes, and also inspect the code to ensure it doesn't violate mlock_all by execing programs (no shell scripts!), dynamically loading libraries, etc.
 
-    ...
-  LD      .tmp_vmlinux1
-net/built-in.o: In function `init_p9':
-net/9p/mod.c:59: undefined reference to `p9_sysctl_register'
-net/built-in.o: In function `exit_p9':
-net/9p/mod.c:75: undefined reference to `p9_sysctl_unregister'
-make: *** [.tmp_vmlinux1] Error 1
-    ...
+In nbd-server, there's no dlopen(), and I do not currently plan to add
+that. Are there problems with using libraries that are sharedly linked
+at compile time that I'm not aware of?
 
-Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
----
- include/net/9p/9p.h |    4 ++++
- net/9p/mod.c        |    4 ++++
- 2 files changed, 8 insertions(+), 0 deletions(-)
+There are plans to add the possibility for shell script callouts, but
+those would always be optional. I see no reason why we couldn't make any
+mlockall() call an option, too; preferably one that would be
+incompatible with the shell script callout stuff.
 
-diff --git a/include/net/9p/9p.h b/include/net/9p/9p.h
-index 88884d3..f723a03 100644
---- a/include/net/9p/9p.h
-+++ b/include/net/9p/9p.h
-@@ -412,6 +412,10 @@ int p9_idpool_check(int id, struct p9_idpool *p);
- 
- int p9_error_init(void);
- int p9_errstr2errno(char *, int);
-+
-+#ifdef CONFIG_SYSCTL
- int __init p9_sysctl_register(void);
- void __exit p9_sysctl_unregister(void);
-+#endif
-+
- #endif /* NET_9P_H */
-diff --git a/net/9p/mod.c b/net/9p/mod.c
-index 4f9e1d2..b4d435c 100644
---- a/net/9p/mod.c
-+++ b/net/9p/mod.c
-@@ -56,11 +56,13 @@ static int __init init_p9(void)
- 		return ret;
- 	}
- 
-+#ifdef CONFIG_SYSCTL
- 	ret = p9_sysctl_register();
- 	if (ret) {
- 		printk(KERN_WARNING "9p: registering sysctl failed\n");
- 		return ret;
- 	}
-+#endif
- 
- 	return ret;
- }
-@@ -72,7 +74,9 @@ static int __init init_p9(void)
- 
- static void __exit exit_p9(void)
- {
-+#ifdef CONFIG_SYSCTL
- 	p9_sysctl_unregister();
-+#endif
- 	p9_mux_global_exit();
- }
- 
+> > Bigger question for me is what kind of hell am I (or others) in for
+> > to try to cap nbd-server's memory usage?  All those glib-gone-wild
+> > changes over the recent past feel problematic but I'll look to work
+> > with Wouter to see if we can get things bounded.
+> 
+> Avoiding glib is a good start.  Look at your library dependencies and
+> prune them merclilessly.  Just don't use any libraries that you can
+> code up yourself in a few hundred bytes of program text for the
+> functionalituy you need.
+
+I'm currently using glib because I wanted some utility functions that it
+provides, and since I already knew glib; to me, it feels stupid to
+reimplement the same things over and over again if there are libraries
+that provide them.
+
+If using glib is problematic for whatever reason, I'll certainly be
+willing to switch to "something else"; I just didn't feel like
+reinventing the wheel for no particular reason.
+
+[...]
+> > to get nbd-server to to run in PF_MEMALLOC mode (could've just used
+> > the _POSIX_PRIORITY_SCHEDULING hack instead right?)... it didn't help
+> > on its own; I likely didn't have enough of the stars aligned to see
+> > my MD+NBD mke2fs test not deadlock.
+> 
+> You do need the block IO throttling, and you need to bypass the dirty
+> page limiting.
+> 
+> Without throttling, your block driver will quickly consume any amount
+> of reserve memory you have, and you are dead.  Without an exemption
+> from dirty page limiting, the number of pages your user space daemon
+> can allocate without deadlocking is zero, which makes life very
+> difficult.
+
+Would having the server use O_DIRECT help here? I would think that it
+would avoid it marking pages as dirty, but I'm not very familiar with
+the in-kernel bits.
+
 -- 
-1.5.3
-
-
+<Lo-lan-do> Home is where you have to wash the dishes.
+  -- #debian-devel, Freenode, 2004-09-22
