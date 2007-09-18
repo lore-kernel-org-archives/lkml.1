@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbXIRMae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbXIRMbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbXIRMae (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 08:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbXIRMa1
+	id S1757593AbXIRMbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 08:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbXIRMbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 08:30:27 -0400
-Received: from herkules.vianova.fi ([194.100.28.129]:49834 "HELO
-	mail.vianova.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755933AbXIRMa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 08:30:26 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 08:30:26 EDT
-Date: Tue, 18 Sep 2007 15:23:14 +0300
-From: Ville Herva <v@iki.fi>
-To: linux-kernel@vger.kernel.org
-Subject: 2.4.35 SMP: ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal
-Message-ID: <20070918122314.GL29062@vianova.fi>
-Reply-To: v@iki.fi
-Mime-Version: 1.0
+	Tue, 18 Sep 2007 08:31:36 -0400
+Received: from adsl-67-64-89-177.dsl.austtx.swbell.net ([67.64.89.177]:53781
+	"EHLO dev.peereboom.us" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755874AbXIRMbf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 08:31:35 -0400
+Date: Tue, 18 Sep 2007 07:24:47 -0500
+From: Marco Peereboom <slash@peereboom.us>
+To: Xavier Bestel <xavier.bestel@free.fr>
+Cc: misc@openbsd.org, Theodore Tso <tytso@mit.edu>,
+       Claudio Jeker <cjeker@diehard.n-r-g.com>, Adrian Bunk <bunk@kernel.org>,
+       "Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Bandwidth
+Message-ID: <20070918122447.GB31223@peereboom.us>
+References: <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <20070918090013.GU32213@nudo.bsws.de> <20070918112947.GA31223@peereboom.us> <1190117086.11726.0.camel@bip.parateam.prv>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Operating-System: Linux herkules.vianova.fi 2.4.35
-User-Agent: Mutt/1.5.10i
+In-Reply-To: <1190117086.11726.0.camel@bip.parateam.prv>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, 
+That's it; that easy.
 
-I got a bunch of these into dmesg:
-
-EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323880: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323882: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-
-The kernel is 2.4.35 SMP, dual-processor. The scsi driver is Fusion MPT SCSI
-Host driver 2.05.16.
-
-The device is /dev/sda2, root fs.
-
-One line per each directory had dropped into dmesg each night (I think
-during updatedb) before I noticed.
-
-The directories in question have not been written to for ages:
-
->debugfs /dev/sda2
-debugfs:  ncheck 323888
-Inode   Pathname
-323888  /usr/share/doc/logcheck-1.1.1
-debugfs:  ncheck 323882
-Inode   Pathname
-323882  /usr/share/doc/dev86-0.15.5
-debugfs:  ncheck 323880
-Inode   Pathname
-323880  /usr/share/doc/mod_put-1.3
-
-
-The hardware _should_ be solid, although I can never 100% sure rule out disk
-level corruption.
-
-Does this ring any bells to anyone, short of block level corruption?
-
-
-
--- v -- 
-
-v@iki.fi
-
+On Tue, Sep 18, 2007 at 02:04:46PM +0200, Xavier Bestel wrote:
+> Le mardi 18 septembre 2007 ` 06:29 -0500, Marco Peereboom a icrit :
+> > Now if they'd fix the copyright message to only mention Reyk all would
+> > be good.
+> 
+> All this mess so easily solved ? Too good to be true.
+> 
+> 	Xav
+> 
