@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbXIRIxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbXIRIxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053AbXIRIxY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 04:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXIRIxQ
+	id S1755412AbXIRIxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 04:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXIRIxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 04:53:16 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:32842 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264AbXIRIxP (ORCPT
+	Tue, 18 Sep 2007 04:53:42 -0400
+Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:47265 "EHLO
+	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751240AbXIRIxl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 04:53:15 -0400
-Message-ID: <46EF90A3.2050109@linux-kernel.at>
-Date: Tue, 18 Sep 2007 10:47:31 +0200
-From: Oliver Falk <oliver@linux-kernel.at>
-Organization: Linux kernel Austria
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070615 Fedora/2.0.0.4-1.fc7 Thunderbird/2.0.0.4 Mnenhy/0.7.5.666
+	Tue, 18 Sep 2007 04:53:41 -0400
+X-Greylist: delayed 2886 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 04:53:41 EDT
+Message-ID: <38485.145.64.134.222.1190102719.squirrel@www.hardeman.nu>
+In-Reply-To: <46EF7E82.8040503@gmx.net>
+References: <46EF7DDA.2070401@gmx.net> <46EF7E82.8040503@gmx.net>
+Date: Tue, 18 Sep 2007 10:05:19 +0200 (CEST)
+Subject: Re: RFC: A revised timerfd API
+From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+To: "Michael Kerrisk" <mtk-manpages@gmx.net>
+Cc: "Davide Libenzi" <davidel@xmailserver.org>,
+       "Ulrich Drepper" <drepper@redhat.com>, geoff@gclare.org.uk,
+       "lkml" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Christoph Hellwig" <hch@lst.de>, "Jonathan Corbet" <corbet@lwn.net>,
+       "Randy Dunlap" <rdunlap@xenotime.net>, vda.linux@googlemail.com,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Lee Schermerhorn" <lee.schermerhorn@hp.com>
+User-Agent: SquirrelMail/1.4.9a
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-kernel@vger.kernel.org, axp-list@redhat.com,
-       Jay Estabrook <jay.estabrook@hp.com>, ac-admin@lists.anotherbloody.com
-Subject: Re: 2.6.23 alpha unistd.h changes
-References: <46EEE483.4020209@linux-kernel.at> <20070917214107.GB27980@stusta.de>
-In-Reply-To: <20070917214107.GB27980@stusta.de>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.399, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -2.60)
-X-MailScanner-From: oliver@linux-kernel.at
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/17/2007 11:41 PM, Adrian Bunk wrote:
-> On Mon, Sep 17, 2007 at 10:33:07PM +0200, Oliver Falk wrote:
->> Hi!
-> 
-> Hi Oliver!
-> 
->> ...
->> As these additions are quite new to upstream kernel, but at Alphacore we
->> have patched it since a while now (I don't know about other Alpha ports;
->> Debian folks may speak up now!), I would suggest to use the same
->> 'ordering' of the syscalls upstream and add the new syscalls that we had
->> not in place, but are now upstream to the end of our 'old' list.
->> ...
-> 
-> I just checked:
-> 
-> It seems Debian didn't patch them into the kernel at all, and since two 
-> months Debian unstable ships kernel 2.6.22 with the upstream syscall 
-> numbers.
+On Tue, September 18, 2007 09:30, Michael Kerrisk wrote:
+> ====> b) Create a timerfd interface analogous to POSIX timers
+>
+> Create an interface analogous to POSIX timers:
+> fd = timerfd_create(clockid, flags);
+> timerfd_settime(fd, flags, newtimervalue, &time_to_next_expire);
+> timerfd_gettime(fd, &time_to_next_expire);
+...
+> ====> c) Integrate timerfd with POSIX timers
+>
+> Make a very simple timerfd call that is integrated with the
+> POSIX timers API.  The POSIX timers API is detailed here:
+> http://linux.die.net/man/3/timer_create
+> http://linux.die.net/man/3/timer_settime
+>
+> Under the POSIX timers API, a new timer is created using:
+>
+> int timer_create(clockid_t clockid, struct sigevent *evp,
+>         timer_t *timerid);
+>
+> We could then have a timerfd() call that returns a file descriptor
+> for the newly created 'timerid':
+>
+> fd = timerfd(timer_t timerid);
 
-That's possible a problem. Right. Someone with contacts to Debian here?
-If Debian hasn't rebuilt glibc against the new headers, we could change
-it without problems.
+Wouldn't this remove some of the usefulness of the timerfd?
 
-If not, we have a problem on AC... Anyone with a glibc that was compiled
-against our patched unistd.h (so including the new syscall numbers),
-will not be able to upgrade the kernel, but also needs to upgrade glibc
-and then *must* reboot :-(
+For example, if a timerfd is one of the fd's that is returned by a
+epoll_wait syscall, you manually need to do the mapping between the
+timerfd and the timerid in order to be able to modify the timer.
 
-Best,
- Oliver
+The advantage of solution b) above is that the fd is everything that is
+needed to work with the timer. With solution c) you have to keep two
+references to the same timer around and use one of them depending on what
+you want to do with the timer.
+
+Also, if the timerfd is close():d, does that remove the underlying timer
+(invalidate the timerid) as well?
+
+-- 
+David Härdeman
+
