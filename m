@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbXIRK1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbXIRK2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896AbXIRK1Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 06:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbXIRK1Q
+	id S1756365AbXIRK2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 06:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbXIRK2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 06:27:16 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42126 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754616AbXIRK1P (ORCPT
+	Tue, 18 Sep 2007 06:28:39 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55056 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754949AbXIRK2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 06:27:15 -0400
-Date: Tue, 18 Sep 2007 11:34:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
-Message-ID: <20070918113401.6a8a737f@the-village.bc.nu>
-In-Reply-To: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
-References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 18 Sep 2007 06:28:39 -0400
+Date: Tue, 18 Sep 2007 03:27:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: nadia.derbey@bull.net, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-Id: <20070918032727.c07aa521.akpm@linux-foundation.org>
+In-Reply-To: <20070918091728.GA6766@localhost.sw.ru>
+References: <20070918091728.GA6766@localhost.sw.ru>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007 16:22:07 -0400
-"Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
+On Tue, 18 Sep 2007 13:17:28 +0400 Alexey Dobriyan <adobriyan@sw.ru> wrote:
 
-> This patch updates the pci_iomap() kernel-doc to make it clarify the
-> case when read*()/write*() can be called over ioread*/iowrite*(). When
-> driver writers read this documenation sometimes it is assumed you just
-> *need* to use ioread*()/iorwrite*(). We have an exception so lets just
-> clarify this is not true for the exception.
+> I'm getting tons of this, and X fails to start
 > 
->  lib/iomap.c |   11 ++++++++---
->  1 files changed, 8 insertions(+), 3 deletions(-)
+> CONFIG_SYSVIPC=y
+> CONFIG_SYSVIPC_SYSCTL=y
+> # CONFIG_PREEMPT_NONE is not set
+> # CONFIG_PREEMPT_VOLUNTARY is not set
+> CONFIG_PREEMPT=y
+> CONFIG_PREEMPT_BKL=y
+> CONFIG_DEBUG_PREEMPT=y
 > 
-> Signed-off-by: Luis R. Rodriguez <mcgrof@gmail.com>
+> BUG: sleeping function called from invalid context at kernel/rwsem.c:47
+> in_atomic():1, irqs_disabled():0
 
-Reviewed-by: Alan Cox <alan@redhat.com>
+OK, this fixes the locking here:
 
-Although I would say s/recommended/required/
+--- a/ipc/util.c~ipc-integrate-ipc_checkid-into-ipc_lock-fix-2
++++ a/ipc/util.c
+@@ -295,7 +295,6 @@ int ipc_addid(struct ipc_ids* ids, struc
+ 
+ 	spin_lock_init(&new->lock);
+ 	new->deleted = 0;
+-	rcu_read_lock();
+ 	spin_lock(&new->lock);
+ 	return id;
+ }
+@@ -691,7 +690,7 @@ struct kern_ipc_perm *ipc_lock(struct ip
+ 		rcu_read_unlock();
+ 		return ERR_PTR(-EINVAL);
+ 	}
+-
++	rcu_read_unlock();
+ 	return out;
+ }
+ 
+_
 
-Alan
+But I'm not very confident in what's happening in there.  The patches take
+away a _lot_ of the RCU locking, and it's unlear what's protecting the idr
+tree.  Is it rcu, or is it the mutex?  The code seems confused and the
+comments are all wrong.
