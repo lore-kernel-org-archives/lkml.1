@@ -1,100 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbXIRKfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbXIRKjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbXIRKfb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 06:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbXIRKfX
+	id S1756432AbXIRKjm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 06:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbXIRKjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 06:35:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51821 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755048AbXIRKfX (ORCPT
+	Tue, 18 Sep 2007 06:39:36 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45091 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752282AbXIRKjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 06:35:23 -0400
-Date: Tue, 18 Sep 2007 03:34:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-Message-Id: <20070918033400.495b02dd.akpm@linux-foundation.org>
-In-Reply-To: <46EFA8DC.2020909@bull.net>
-References: <20070918091728.GA6766@localhost.sw.ru>
-	<20070918031723.05689e92.akpm@linux-foundation.org>
-	<46EFA8DC.2020909@bull.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 18 Sep 2007 06:39:35 -0400
+Date: Tue, 18 Sep 2007 20:39:16 +1000
+From: David Chinner <dgc@sgi.com>
+To: Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: 2.6.20 (XFS? related) crash after uptime of > 180 days during apt-get dist-upgrade on Debian Testing
+Message-ID: <20070918103916.GV23367404@sgi.com>
+References: <Pine.LNX.4.64.0709171315210.22156@p34.internal.lan> <20070918014537.GK23367404@sgi.com> <20070918092013.GA1352@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070918092013.GA1352@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 12:30:52 +0200 Nadia Derbey <Nadia.Derbey@bull.net> wrote:
-
-> Andrew Morton wrote:
-> > On Tue, 18 Sep 2007 13:17:28 +0400 Alexey Dobriyan <adobriyan@sw.ru> wrote:
-> > 
-> > 
-> >>I'm getting tons of this, and X fails to start
-> >>
-> >>CONFIG_SYSVIPC=y
-> >>CONFIG_SYSVIPC_SYSCTL=y
-> >># CONFIG_PREEMPT_NONE is not set
-> >># CONFIG_PREEMPT_VOLUNTARY is not set
-> >>CONFIG_PREEMPT=y
-> >>CONFIG_PREEMPT_BKL=y
-> >>CONFIG_DEBUG_PREEMPT=y
-> >>
-> >>BUG: sleeping function called from invalid context at kernel/rwsem.c:47
-> >>in_atomic():1, irqs_disabled():0
-> >>no locks held by X/5879.
-> >> [<c012bcb1>] down_write+0x15/0x50
-> >> [<c01b53af>] do_shmat+0x235/0x3a0
-> >> [<c0106be2>] sys_ipc+0x146/0x263
-> >> [<c0102892>] sysenter_past_esp+0xa7/0xb5
-> >> [<c0102856>] sysenter_past_esp+0x6b/0xb5
-> >> =======================
-> > 
-> > 
-> > Here's a bug:
-> > 
-> > --- a/ipc/util.c~ipc-integrate-ipc_checkid-into-ipc_lock-fix-2
-> > +++ a/ipc/util.c
-> > @@ -691,7 +691,7 @@ struct kern_ipc_perm *ipc_lock(struct ip
-> >  		rcu_read_unlock();
-> >  		return ERR_PTR(-EINVAL);
-> >  	}
-> > -
-> > +	rcu_read_unlock();
-> >  	return out;
-> >  }
-> >  
+On Tue, Sep 18, 2007 at 10:20:13AM +0100, Christoph Hellwig wrote:
+> On Tue, Sep 18, 2007 at 11:45:37AM +1000, David Chinner wrote:
+> > No idea - it looks like dkpg was trying to remove a directory on the
+> > same path the lookup was and both have gone splat in __d_lookup on
+> > the same dentry. Something happened in  those 180 days that left a
+> > landmine that was tripped over here, I think. I can't see any way of
+> > tracking it down from this, but thanks for reporting it anyway,
 > 
-> Andrew,
-> 
-> Actually the rcu_read_lock is released in ipc_unlock().
+> This looks a lot like the i_sem leak that Vlad debugged.  Do you remember
+> where this was fixed?
 
-I agree it should be, but it isn't.
+The i_sem leak was hitting us on sles9 - 2.6.5 base kernel - and it was fixed
+before the i_sem -> i_mutex conversion in mainline. Some time around 2.6.16,
+IIRC. Given this was a 2.6.20 kernel, there'd be an almighty kaboom if that
+bug still existed after the i_mutex conversion....
 
-> So I think we 
-> shouldn't add an rcu_read_unlock() before leaving ipc_lock().
-> This is a part that has not changed since the ref code.
-> 
+Cheers,
 
-Well, it was an optimisation.  spin_lock() implies rcu_read_lock().  That's
-a bit dirty and we might choose to not do that.
-
-Would be interested in knowing the locking rules in there.  For example,
-this:
-
-/**
- *	ipc_findkey	-	find a key in an ipc identifier set	
- *	@ids: Identifier set
- *	@key: The key to find
- *	
- *	Requires ipc_ids.mutex locked.
- *	Returns the LOCKED pointer to the ipc structure if found or NULL
- *	if not.
- *	If key is found ipc contains its ipc structure
- */
-
-appears to be hopelessly out of date?
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
