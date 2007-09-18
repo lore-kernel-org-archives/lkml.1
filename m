@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbXIRJfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbXIRJnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755643AbXIRJfZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 05:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbXIRJfN
+	id S1755292AbXIRJnN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 05:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbXIRJm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 05:35:13 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2935 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754407AbXIRJfM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 05:35:12 -0400
-Date: Tue, 18 Sep 2007 10:34:44 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.23-rc6-mm1
-Message-ID: <20070918093444.GB973@shadowen.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46EF96CC.1080807@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46EF96CC.1080807@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+	Tue, 18 Sep 2007 05:42:58 -0400
+Received: from www.osadl.org ([213.239.205.134]:59464 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751102AbXIRJm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 05:42:57 -0400
+Subject: Re: RFC: A revised timerfd API
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: Lee.Schermerhorn@hp.com, torvalds@linux-foundation.org,
+       vda.linux@googlemail.com, rdunlap@xenotime.net, corbet@lwn.net,
+       hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       geoff@gclare.org.uk, drepper@redhat.com, davidel@xmailserver.org,
+       David =?ISO-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+In-Reply-To: <20070918093007.223350@gmx.net>
+References: <46EF7DDA.2070401@gmx.net>  <46EF7E82.8040503@gmx.net>
+	 <1190106607.2995.97.camel@chaos>  <20070918093007.223350@gmx.net>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 18 Sep 2007 11:42:22 +0200
+Message-Id: <1190108542.2995.112.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 02:43:48PM +0530, Kamalesh Babulal wrote:
-> Andrew Morton wrote:
-> >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
-> >
-> >2.6.23-rc6-mm1 is a 29MB diff against 2.6.23-rc6.
-> >
-> >  
-> <snip>
+On Tue, 2007-09-18 at 11:30 +0200, Michael Kerrisk wrote:
+> > This way we have it nicely integrated into the posix timer code and keep
+> > the existing semantics of posix timers intact.
+> > 
+> > We need to think about the open file descriptor in the timer_delete()
+> > case as well, but this should be not too hard to sort out.
 > 
-> Hi Andrew,
-> 
-> The 2.6.23-rc6-mm1build fails at
-> 
->  CC      drivers/pci/hotplug/rpadlpar_core.o
->  CC      drivers/pci/hotplug/rpadlpar_sysfs.o
-> drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field `name' 
-> specified in initializer
-> drivers/pci/hotplug/rpadlpar_sysfs.c: In function `dlpar_sysfs_init':
-> drivers/pci/hotplug/rpadlpar_sysfs.c:142: error: structure has no member 
-> named `name'
-> make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
-> make[2]: *** [drivers/pci/hotplug] Error 2
-> make[1]: *** [drivers/pci] Error 2
-> make: *** [drivers] Error 2
+> This seems like a workable idea also.  But note David Härdeman's
+> critique of options c & d: the existence of a coupled timerfd 
+> and a timerid means that the application must maintain a mapping
+> between the two, so that after an epoll call (for example) that 
+> says the timerfd is ready, the timer can be manipulated using
+> the corresponding timerfd.  This isn't IMO a fatal flaw, but
+> it does make the API a little more clumsy.
 
-This seems to be occuring across a number of the powerpc systems we test
-with.  That driver is a power dynamic lpar IO partitioning driver.
+Hmm, we might do something like:
 
-Relevant Cc: added.
+	timer_gettime(fd | POSIX_TIMER_FD, .....);
 
--apw
+So the kernel looks up the fd in order to figure out the timer_id, which
+needs to be referenced in filep->private_data anyway.
+
+	tglx
+
+
