@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbXIRPpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbXIRPps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759587AbXIRPpf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 11:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbXIRPp2
+	id S1759905AbXIRPps (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 11:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759679AbXIRPpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 11:45:28 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:5605 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754437AbXIRPp1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 11:45:27 -0400
-Message-ID: <46EFF244.5070202@linux-kernel.at>
-Date: Tue, 18 Sep 2007 17:44:04 +0200
-From: Oliver Falk <oliver@linux-kernel.at>
-Organization: Linux kernel Austria
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070615 Fedora/2.0.0.4-1.fc7 Thunderbird/2.0.0.4 Mnenhy/0.7.5.666
+	Tue, 18 Sep 2007 11:45:39 -0400
+Received: from mout.perfora.net ([74.208.4.195]:50921 "EHLO mout.perfora.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759668AbXIRPpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 11:45:38 -0400
+Message-ID: <46EFF173.4010104@rlworkman.net>
+Date: Tue, 18 Sep 2007 10:40:35 -0500
+From: Robby Workman <rw@rlworkman.net>
+Organization: http://rlworkman.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-kernel@vger.kernel.org, axp-list@redhat.com,
-       Jay Estabrook <jay.estabrook@hp.com>, ac-admin@lists.anotherbloody.com
-Subject: Re: 2.6.23 alpha unistd.h changes
-References: <46EEE483.4020209@linux-kernel.at> <20070917214107.GB27980@stusta.de> <46EF90A3.2050109@linux-kernel.at> <20070918140738.GD27980@stusta.de>
-In-Reply-To: <20070918140738.GD27980@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: CPU too old panic on Centrino proc - 2.6.22.6
 X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.399, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -2.60)
-X-MailScanner-From: oliver@linux-kernel.at
+X-Provags-ID: V01U2FsdGVkX1/2G+x6VjloWYFJD3R/ElXvyEnGywcPZAyGQMG
+ LU+O5D8vfNiNsRpLaXIJEyH5/54lfO5ihUJ52dPL0+gdDKWTl3
+ T1WPR40IS+SlOar/o4qQg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/18/2007 04:07 PM, Adrian Bunk wrote:
-> On Tue, Sep 18, 2007 at 10:47:31AM +0200, Oliver Falk wrote:
->> On 09/17/2007 11:41 PM, Adrian Bunk wrote:
->>> On Mon, Sep 17, 2007 at 10:33:07PM +0200, Oliver Falk wrote:
->>>> Hi!
->>> Hi Oliver!
->>>
->>>> ...
->>>> As these additions are quite new to upstream kernel, but at Alphacore we
->>>> have patched it since a while now (I don't know about other Alpha ports;
->>>> Debian folks may speak up now!), I would suggest to use the same
->>>> 'ordering' of the syscalls upstream and add the new syscalls that we had
->>>> not in place, but are now upstream to the end of our 'old' list.
->>>> ...
->>> I just checked:
->>>
->>> It seems Debian didn't patch them into the kernel at all, and since two 
->>> months Debian unstable ships kernel 2.6.22 with the upstream syscall 
->>> numbers.
->> That's possible a problem. Right. Someone with contacts to Debian here?
->> If Debian hasn't rebuilt glibc against the new headers, we could change
->> it without problems.
->> ...
-> 
-> According to the Debian auto-builder database [1], the Alpha glibc 
-> package in Debian unstable has been rebuilt 8 times since the 2.6.22 
-> kernel packages entered Debian unstable.
-> 
-> And it's not only Debian, at least Gentoo also offers an Alpha port.
+Please CC any replies; not subscribed to list
 
-Well. As I said. I'll step back and let it be as it is. Debian was to
-fast. :-)
+I found this thread: http://lkml.org/lkml/2007/5/16/499
+but it doesn't seem to apply here (bear in mind that I'm probably
+not qualified to determine that though :))
 
--of
+On booting a 2.6.22.6 kernel with SMP support, I get a panic
+immediately:
+  PANIC: CPU too old for this kernel
+This panic does not occur on a non-SMP kernel having almost
+identical configuration.
+
+This is on a Thinkpad T41:
+  /proc/cpuinfo --> http://rlworkman.net/cpuinfo
+  dmesg --> http://rlworkman.net/dmesg
+  kernel config --> http://rlworkman.net/config-2.6.22.6
+
+The 2.6.21.5 SMP kernels from Slackware 12.0 all boot properly, and
+the config for this 2.6.22.6 SMP kernel is based on the one from 12.0.
+
+I'm basically reaching for clues at this point -- is this a PEBKAC on
+my part?  What other information would be useful?
+
+(Please CC me on replies)
+
+Thanks,
+-RW
+
+
+
+
