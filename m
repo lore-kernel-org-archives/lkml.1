@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXIRM1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbXIRMae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbXIRM1U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 08:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbXIRM1L
+	id S1757499AbXIRMae (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 08:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbXIRMa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 08:27:11 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:58492 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755982AbXIRM1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 08:27:09 -0400
-Date: Tue, 18 Sep 2007 21:25:56 +0900
-To: jens.axboe@oracle.com, michaelc@cs.wisc.edu
-Cc: tomof@acm.org, pj@sgi.com, apw@shadowen.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mel@csn.ul.ie, linux-scsi@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: 2.6.23-rc4-mm1
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <20070918101840.GN25592@kernel.dk>
-References: <20070917132819.GC25592@kernel.dk>
-	<20070917192528E.tomof@acm.org>
-	<20070918101840.GN25592@kernel.dk>
+	Tue, 18 Sep 2007 08:30:27 -0400
+Received: from herkules.vianova.fi ([194.100.28.129]:49834 "HELO
+	mail.vianova.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755933AbXIRMa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 08:30:26 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 08:30:26 EDT
+Date: Tue, 18 Sep 2007 15:23:14 +0300
+From: Ville Herva <v@iki.fi>
+To: linux-kernel@vger.kernel.org
+Subject: 2.4.35 SMP: ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal
+Message-ID: <20070918122314.GL29062@vianova.fi>
+Reply-To: v@iki.fi
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070918123238X.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux herkules.vianova.fi 2.4.35
+User-Agent: Mutt/1.5.10i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 12:18:40 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Hello, 
 
-> On Mon, Sep 17 2007, FUJITA Tomonori wrote:
-> > On Mon, 17 Sep 2007 15:28:19 +0200
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Sat, Sep 15 2007, FUJITA Tomonori wrote:
-> > > > On Fri, 14 Sep 2007 21:16:35 -0700
-> > > > Paul Jackson <pj@sgi.com> wrote:
-> > > > 
-> > > > > FUJITA Tomonori wrote:
-> > > > > > Can you try this patch (against 2.6.23-rc4-mm1)?
-> > > > > > 
-> > > > > > >From 592bd2049cb3e6e1f1dde7cf631879f26ddffeaa Mon Sep 17 00:00:00 2001
-> > > > > > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > > > Date: Mon, 10 Sep 2007 04:17:13 +0100
-> > > > > > Subject: [PATCH] qla1280: sg chaining fixes
-> > > > > > 
-> > > > > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > > > ---
-> > > > > >  drivers/scsi/qla1280.c |    5 ++++-
-> > > > > >  1 files changed, 4 insertions(+), 1 deletions(-)
-> > > > > 
-> > > > > This patch works for me.
-> > > > > 
-> > > > > I was getting the scsi errors reported earlier in
-> > > > > this thread, running 2.6.23-rc4-mm1 on one of our
-> > > > > big SGI Altix systems.
-> > > > > 
-> > > > > Applying this patch fixed it, so far as I can tell,
-> > > > > which is to say my system boots cleanly once again.
-> > > > 
-> > > > Thanks for testing!
-> > > > 
-> > > > Jens, we could enable use_sg_chaining option for qla1280.
-> > > 
-> > > Added, thanks!
-> > 
-> > Thanks.
-> > 
-> > BTW, please don't forget to integrate the following patches:
-> > 
-> > 
-> > - revert sg segment size ifdefs
-> > 
-> > http://marc.info/?l=linux-scsi&m=118881264013097&w=2
-> > 
-> > - remove sglist_len
-> > 
-> > http://marc.info/?l=linux-scsi&m=118907920405100&w=2
-> 
-> Added, and I rebased the sglist-* branches to current again. So
-> everything should be fully uptodate once more.
+I got a bunch of these into dmesg:
 
-Thanks, here are a few more things.
+EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323880: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
+EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
+EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323882: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
 
-- please drop the iscsi patch since Mike has major changes to iscsi
-I/O path.
+The kernel is 2.4.35 SMP, dual-processor. The scsi driver is Fusion MPT SCSI
+Host driver 2.05.16.
 
-- ipr sg chaining need to be disabled since libata is not ready.
+The device is /dev/sda2, root fs.
 
-- you can add Doug's ACK to scsi_debug patch:
+One line per each directory had dropped into dmesg each night (I think
+during updatedb) before I noticed.
 
-http://marc.info/?l=linux-scsi&m=118926325931801&w=2
+The directories in question have not been written to for ages:
+
+>debugfs /dev/sda2
+debugfs:  ncheck 323888
+Inode   Pathname
+323888  /usr/share/doc/logcheck-1.1.1
+debugfs:  ncheck 323882
+Inode   Pathname
+323882  /usr/share/doc/dev86-0.15.5
+debugfs:  ncheck 323880
+Inode   Pathname
+323880  /usr/share/doc/mod_put-1.3
+
+
+The hardware _should_ be solid, although I can never 100% sure rule out disk
+level corruption.
+
+Does this ring any bells to anyone, short of block level corruption?
+
+
+
+-- v -- 
+
+v@iki.fi
+
