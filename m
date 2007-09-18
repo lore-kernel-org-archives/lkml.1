@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758104AbXIRTIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbXIRTMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758104AbXIRTIy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbXIRTIq
+	id S1757844AbXIRTMB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbXIRTLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:08:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51619
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752355AbXIRTIp (ORCPT
+	Tue, 18 Sep 2007 15:11:54 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:44591 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755652AbXIRTLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:08:45 -0400
-Date: Tue, 18 Sep 2007 12:08:44 -0700 (PDT)
-Message-Id: <20070918.120844.89387648.davem@davemloft.net>
-To: mel@skynet.ie
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       themann@de.ibm.com
-Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64
- drivers/net/ehea/ehea_main.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070918162039.GA1804@skynet.ie>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070918162039.GA1804@skynet.ie>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 18 Sep 2007 15:11:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NmPn+ks5rz83HkbwUbYf7AAbs0WjjekgZaWS+9Ru/pHvExeQ3CQVXRo1+Z6w77nN1Rnmenzv2W4IxWlDcMFK3fkDiWtIeLNCSolomp6wIE/Z9bmyPP3y5lu542GC8w4ah+AXzvBXf+bkLyog05VQTRS7UyJkuO+Bumn8nrEz56s=
+Message-ID: <d120d5000709181211v4ab07e04y16166616ed5f0501@mail.gmail.com>
+Date: Tue, 18 Sep 2007 15:11:51 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Nicolas Pitre" <nico@cam.org>
+Subject: Re: [PATCH] ucb1400_ts.c -- replace an interruptible sleep with an uninterruptible one
+Cc: "Rene Herman" <rene.herman@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.9999.0709181338040.26525@xanadu.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46EFE66A.9090400@gmail.com>
+	 <alpine.LFD.0.9999.0709181203190.26525@xanadu.home>
+	 <46F00AA8.4090806@gmail.com>
+	 <alpine.LFD.0.9999.0709181338040.26525@xanadu.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: mel@skynet.ie (Mel Gorman)
-Date: Tue, 18 Sep 2007 17:20:39 +0100
+On 9/18/07, Nicolas Pitre <nico@cam.org> wrote:
+> On Tue, 18 Sep 2007, Rene Herman wrote:
+>
+> > On 09/18/2007 06:03 PM, Nicolas Pitre wrote:
+> >
+> > > On Tue, 18 Sep 2007, Rene Herman wrote:
+> > >
+> > > > Hi Nicolas.
+> > > >
+> > > > Given that it's not checking for signals, I believe this one should be an
+> > > > uninterruptible sleep instead?
+> > >
+> > > Probably.
+> >
+> > Thanks. Should I send it somewhere or will you or Dmitry grab it?
+>
+> Please send it to Dmitry  with my ACK.
+>
 
-> Hi Andrew,
-> 
-> PPC64 failed to build with the driver drivers/net/ehea with the
-> following error
-> 
->   CC [M]  drivers/net/ehea/ehea_main.o
-> drivers/net/ehea/ehea_main.c: In function `ehea_open':
-> drivers/net/ehea/ehea_main.c:2322: error: implicit declaration of function `port_napi_enable'
-> drivers/net/ehea/ehea_main.c: At top level:
-> drivers/net/ehea/ehea_main.c:2340: error: conflicting types for 'port_napi_enable'
-> drivers/net/ehea/ehea_main.c:2322: error: previous implicit declaration of 'port_napi_enable' was here
-> make[1]: *** [drivers/net/ehea/ehea_main.o] Error 1
-> 
-> It's buried in git-net.patch and I've cc'd a potential owner based simply
-> on the mention of EHEA in a leader. I've included a candidate fix for the
-> error. It seems to be a simple case of port_napi_enable being defined in
-> the wrong place.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+I have it, thanks.
 
-Thanks for this fix, I'll merge it into the net-2.6.24 tree.
+Next time please use my gmail or mail.ru account -
+dtor_core@ameritech.net is dead.
+
+-- 
+Dmitry
