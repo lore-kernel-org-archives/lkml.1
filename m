@@ -1,90 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbXIRLRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbXIRLZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757151AbXIRLRB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 07:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbXIRLQx
+	id S1755859AbXIRLZJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 07:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbXIRLY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 07:16:53 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:60956 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754997AbXIRLQw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 07:16:52 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Wasting our Freedom
-To: Paul de Weerd <weerd@weirdnet.nl>, Adrian Bunk <bunk@kernel.org>,
-       Paul de Weerd <weerd@weirdnet.nl>,
-       "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
-       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Reply-To: 7eggert@gmx.de
-Date: Tue, 18 Sep 2007 13:16:16 +0200
-References: <947Fl-2qO-1@gated-at.bofh.it> <948rP-3pK-5@gated-at.bofh.it> <949e6-4Ed-3@gated-at.bofh.it> <949Hd-5vb-19@gated-at.bofh.it> <94l5J-6gO-3@gated-at.bofh.it> <94oZy-3Sa-1@gated-at.bofh.it> <94qIg-6Ft-21@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Tue, 18 Sep 2007 07:24:58 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43914 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753567AbXIRLY5 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 07:24:57 -0400
+Date: Tue, 18 Sep 2007 21:24:47 +1000
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.23
+User-Agent: nail 11.25 7/29/05
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IXb3x-0000dT-0K@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+0p+cKs7WS/r2mUItg/LiJKZOxIPd63C9dcMn
- wgYTobAHvBbPQF+7g3hc+U+0Oo2UM6nN1gYaXRnnPeqFj3F6DB
- eCBXaiw6O38ppxpVw0+Rg==
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070918112447.4315C58C4C09@chook.melbourne.sgi.com>
+From: tes@sgi.com (Tim Shimmin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul de Weerd <weerd@weirdnet.nl> wrote:
-> On Mon, Sep 17, 2007 at 03:38:45PM +0200, Adrian Bunk wrote:
+Hi Linus,
 
-> | It's not about lazyness of BSD developers, many people who consider the
-> | BSD licence more free than the GPL argue that the advantage of the BSD
-> | licence is that it does not require you to give back.
-> | 
-> | Something is wrong if your licence text clearly states that you do not
-> | require getting anything back but you then argue on moral grounds that
-> | something has to be given back.
-> 
-> Something is wrong if your licence text clearly states that you MUST
-> give back, but then you don't return the favour on grounds that "hey,
-> they don't require it, so we don't have to".
-
-If you may demand me to give back, why should I(*) not demand the same thing
-for my contributions?
-
-You're not only asking to contribute to your project, but you're asking me
-to throw my code to the feet of Apple amd Microsoft, who will user it, make
-big bucks and lock out alternatives as far as possible, especially free ones.
-This happens to not be my idea of sharing code.
-
-You may say it's morally correct for them because they never claimed they'd
-not suck your blood, but did the GPL people claim not to demand others to
-give back? Au contrair, and if it's OK for companies to do what they say
-they would, it will be OK for them and for me, too.
+A couple of fixes for potential fs corruption.
+And one fix to ensure that xfs_mru_cache is not
+doing anything unless the cache has active objects.
 
 
-*) I did not yet work on a BSD licensed project, but let's asume I did
+Please pull from the for-linus branch:
+    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-> It may be perfectly legal, but it's "interesting" to say the least.
-> No, you do not have to give back. But weren't you open source / free
-> software developers ? Why did you pick the GPL ? Because you didn't
-> want someone to run of with your code ? You wanted code to be given
-> back ? Why not do it yourself ?
+This will update the following files:
 
-> By not giving back you're giving a strange signal.
+ fs/xfs/linux-2.6/xfs_aops.c  |    1 +
+ fs/xfs/linux-2.6/xfs_super.c |    4 ++-
+ fs/xfs/xfs_buf_item.h        |    5 +++
+ fs/xfs/xfs_filestream.c      |    3 +-
+ fs/xfs/xfs_log_recover.c     |   51 ++++++++++++++++++++++++++++--
+ fs/xfs/xfs_mru_cache.c       |   72 ++++++++++++++++-------------------------
+ fs/xfs/xfs_mru_cache.h       |    6 +--
+ fs/xfs/xfs_trans_buf.c       |    1 +
+ fs/xfs/xfs_vnodeops.c        |   20 +++++++-----
+ 9 files changed, 101 insertions(+), 62 deletions(-)
 
-Gee, since you're demanding back anyway, you can use the GPL for your
-project and use my contribution. Problem solved.
+through these commits:
 
-Oh, you want people to be free not to share? Freedom includes having the
-moral right to do something. Am I free not to share? Or is this "freedom"
-just an empty shell?
+commit b394e43e995d08821588a22561c6a71a63b4ff27
+Author: Lachlan McIlroy <lachlan@sgi.com>
+Date:   Fri Sep 14 15:23:04 2007 +1000
 
--- 
-Funny quotes:
-36. You never really learn to swear until you learn to drive.
+    [XFS] Avoid replaying inode buffer initialisation log items if on-disk version is newer.
+    
+    SGI-PV: 969656
+    SGI-Modid: xfs-linux-melb:xfs-kern:29676a
+    
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Tim Shimmin <tes@sgi.com>
 
-Friﬂ, Spammer: zdhC.nb1l@w.7eggert.dyndns.org I@7eggert.dyndns.org
+commit 776a75fa5cfb8f3602d3ca9d221dc34497133f4b
+Author: Lachlan McIlroy <lachlan@sgi.com>
+Date:   Fri Sep 14 15:22:50 2007 +1000
+
+    [XFS] Ensure file size updates have been completed before writing inode to disk.
+    
+    SGI-PV: 968767
+    SGI-Modid: xfs-linux-melb:xfs-kern:29675a
+    
+    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Tim Shimmin <tes@sgi.com>
+
+commit 65de5567564e70edd01b6d4e95e548d7ba284872
+Author: David Chinner <dgc@sgi.com>
+Date:   Thu Aug 16 15:21:11 2007 +1000
+
+    [XFS] On-demand reaping of the MRU cache
+    
+    Instead of running the mru cache reaper all the time based on a timeout,
+    we should only run it when the cache has active objects. This allows CPUs
+    to sleep when there is no activity rather than be woken repeatedly just to
+    check if there is anything to do.
+    
+    SGI-PV: 968554
+    SGI-Modid: xfs-linux-melb:xfs-kern:29305a
+    
+    Signed-off-by: David Chinner <dgc@sgi.com>
+    Signed-off-by: Donald Douwsma <donaldd@sgi.com>
+    Signed-off-by: Tim Shimmin <tes@sgi.com>
+
+--Tim
