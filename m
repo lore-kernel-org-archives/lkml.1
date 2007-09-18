@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbXIRRXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbXIRRYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761236AbXIRRXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 13:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759635AbXIRRXi
+	id S1761326AbXIRRYB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 13:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760301AbXIRRXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 13:23:38 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:22912 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759694AbXIRRXg (ORCPT
+	Tue, 18 Sep 2007 13:23:39 -0400
+Received: from smtp.opengridcomputing.com ([71.42.183.126]:56850 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760269AbXIRRXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Sep 2007 13:23:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=IkVi8oojEGjZaHR7XqeeNpGueg+ZakP8LnPVgR62QmcANTQVbNr8A+oL0eM6VDGxXQ1ewCKbCyiNqWSlqe/aTrTDz4uKBXXNHvC1SGDuECSnb/6yxQu0ulMOYYne2+PDkSJPrEsEufODVhH5sQPh5DFwaPtG6Dzz8my19DblxNw=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Michael Chan <mchan@broadcom.com>
-Subject: bnx2 dirver's firmware images
-Date: Tue, 18 Sep 2007 18:23:26 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org
+Message-ID: <46F00993.9080706@opengridcomputing.com>
+Date: Tue, 18 Sep 2007 12:23:31 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Sean Hefty <sean.hefty@intel.com>
+CC: rdreier@cisco.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH] RDMA/CMA: Use neigh_event_send() to initiate neighbour
+ discovery.
+References: <20070912100025.3190.89259.stgit@dell3.ogc.int> <000101c7f568$9275b520$ff0da8c0@amr.corp.intel.com>
+In-Reply-To: <000101c7f568$9275b520$ff0da8c0@amr.corp.intel.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709181823.26429.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+Once this is applied upstream, I can pull it back in to ofed-1.2.5 and 
+ofed-1.3.
 
-In bnx2_fw.h I see the following:
+Steve.
 
-static u32 bnx2_RXP_b06FwBss[(0x13dc/4) + 1] = { 0x0 };
-
-static struct fw_info bnx2_rxp_fw_06 = {
-...
-        .bss                            = bnx2_RXP_b06FwBss,
-...
-};
-
-I grepped for the usage of .bss member (grepped for '[.>]bss[^_]')
-and it is used only here:
-
-        if (fw->bss) {
-                int j;
-
-                for (j = 0; j < (fw->bss_len/4); j++, offset += 4) {
-                        REG_WR_IND(bp, offset, fw->bss[j]);
-                }
-        }
-
-If I understand it correctly, you read zero words one by one from
-bnx2_RXP_b06FwBss and writing them into the card. This is very
-suboptimal usage of nearly 5k of kernel unswappable memory.
-
-Do you plan to fix it?
-
-Do you have any plans to switch to request_firmware() interface,
-which will allow you to avoid keeping firmware in unswappable kernel
-memory and thus free ~80k?
-
-$ size bnx2.o
-   text    data     bss     dec     hex filename
-  52255   81551    6360  140166   22386 bnx2.o
---
-vda
+Sean Hefty wrote:
+>> RDMA/CMA: Use neigh_event_send() to initiate neighbour discovery.
+>>
+>> Calling arp_send() to initiate neighbour discovery (ND) doesn't do the
+>> full ND protocol.  Namely, it doesn't handle retransmitting the arp
+>> request if it is dropped. The function neigh_event_send() does all this.
+>> Without doing full ND, rdma address resolution fails in the presence of
+>> dropped arp bcast packets.
+>>
+>> Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+> 
+> Acked-by: Sean Hefty <sean.hefty@intel.com>
+> 
+> Roland - can you please queue this up for 2.6.24?
