@@ -1,103 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbXIRLvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbXIRLyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbXIRLvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 07:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbXIRLvh
+	id S1756868AbXIRLyg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 07:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbXIRLy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 07:51:37 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:56476 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754628AbXIRLvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 07:51:36 -0400
-Subject: [LTP] Validating exact PASS and FAIL scenarios for LTP
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: ltp-list@lists.sourceforge.net
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070702085054.0efb79ff.rdunlap@xenotime.net>
-References: <4688A22A.2090907@linux.vnet.ibm.com>
-	 <20070702085054.0efb79ff.rdunlap@xenotime.net>
-Content-Type: text/plain; charset=UTF-8
-Organization: IBM
-Date: Tue, 18 Sep 2007 17:21:31 +0530
-Message-Id: <1190116291.4763.52.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 8bit
+	Tue, 18 Sep 2007 07:54:29 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:51766 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754915AbXIRLy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 07:54:28 -0400
+Date: Tue, 18 Sep 2007 13:55:04 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] increase AT_VECTOR_SIZE to terminate saved_auxv properly
+Message-ID: <20070918115504.GA609@aepfle.de>
+References: <20070914110057.GA10088@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070914110057.GA10088@aepfle.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
 
-It may be a little high time for us to visit the way LTP defines itś
-PASS and FAILURES. We know that each of LTP Test cases reports certain
-keywords. Now, we need to define properly how each of these Keywords
-needs to be interpreted in context to the addition information these
-test-cases report, so that, we can arrive at saying that:
-1) this information means that TEST has passed (and in such scenario the
-test-case is bound to exit(0) to pan), and,
-2) That set of information means that the TEST has failed (and in such
-scenario the test-case is bound to exit(non-zero) to pan)
+include/asm-powerpc/elf.h has 6 entries in ARCH_DLINFO.
+fs/binfmt_elf.c has 14 unconditional NEW_AUX_ENT entries and 2
+conditional NEW_AUX_ENT entries.
+So in the worst case, saved_auxv does not get an AT_NULL entry at the
+end.
 
-There are several reported incidents where there is ambiguity in judging
-whether the test is a PASS or FAIL. Now we have come to a point where we
-need to discuss and debate this out and say that:
-1) These are the situations where the test should report exit(0) to pan
-irrespective of what it has reported to logs through INFO:, and,
-2) These are the situations where the test should immediately terminate
-with exit(non-zero) to pan.
+The saved_auxv array must be terminated with an AT_NULL entry.
+Make the size of mm_struct->saved_auxv arch dependend,
+based on the number of ARCH_DLINFO entries.
 
-We also need to decide where these keywords like
-PASS
-WARN
-BROK
-FAIL
-RETR
-CONF
-INFO
-should be placed, and under what context ??
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-I hope all of you will contribute to this debate, where we finally seal
-LTP´s fate as a:
-1) Broken test-suite, or,
-2) a glorious one.
+---
+ include/asm-alpha/system.h   |    1 +
+ include/asm-i386/system.h    |    1 +
+ include/asm-ia64/system.h    |    2 ++
+ include/asm-powerpc/system.h |    1 +
+ include/asm-sh/system.h      |    1 +
+ include/linux/auxvec.h       |    4 +++-
+ include/linux/elf.h          |    1 -
+ include/linux/sched.h        |    6 +++++-
+ 8 files changed, 14 insertions(+), 3 deletions(-)
 
---Regards--
-Subrata
-
-On Mon, 2007-07-02 at 08:50 -0700, Randy Dunlap wrote:
-> On Mon, 02 Jul 2007 12:28:50 +0530 Subrata Modak wrote:
-> 
-> >   :-) *Dear All*,
-> >  
-> > *Note(s) from the Maintainer: *
-> > generates now and whether/how you would like it to be in future
-> 
-> I don't know if this qualifies as an input for the output, but
->
-> ltprun-summary.sh is attached.  It uses prtag2tag.pl, which is also
-> attached.  (I also do this summary SCORE for the Open Posix Test suite.)
-> 
-> Example summary + SCORE:
-> 
-> Using logfile=/cruc/runs/1789/test_output/ltp.log
-> build errors:  0 lines
-> PASS:          2225
-> WARNing:       1
-> BROKen:        1
-> RETiRed:       0
-> FAIL:          0
-> CONFig error:  11
-> SCORE.ltp:        99.5
-> 
-> 
-> > *Please also see the ChangeLog Below (June 2007):* *
-> 
-> so "[PATCH] float tests: use standard test results output"
-> (http://sourceforge.net/mailarchive/forum.php?thread_name=20070622214652.d137d055.rdunlap%40xenotime.net&forum_name=ltp-list)
-> will be added next month?
-> 
-> ---
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-
+--- a/include/asm-alpha/system.h
++++ b/include/asm-alpha/system.h
+@@ -48,6 +48,7 @@
+ 
+ #ifndef __ASSEMBLY__
+ #include <linux/kernel.h>
++#define AT_VECTOR_SIZE_ARCH 4
+ 
+ /*
+  * This is the logout header that should be common to all platforms
+--- a/include/asm-i386/system.h
++++ b/include/asm-i386/system.h
+@@ -7,6 +7,7 @@
+ #include <asm/cmpxchg.h>
+ 
+ #ifdef __KERNEL__
++#define AT_VECTOR_SIZE_ARCH 2
+ 
+ struct task_struct;	/* one of the stranger aspects of C forward declarations.. */
+ extern struct task_struct * FASTCALL(__switch_to(struct task_struct *prev, struct task_struct *next));
+--- a/include/asm-ia64/system.h
++++ b/include/asm-ia64/system.h
+@@ -32,6 +32,8 @@
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ 
++#define AT_VECTOR_SIZE_ARCH 2
++
+ struct pci_vector_struct {
+ 	__u16 segment;	/* PCI Segment number */
+ 	__u16 bus;	/* PCI Bus number */
+--- a/include/asm-powerpc/system.h
++++ b/include/asm-powerpc/system.h
+@@ -40,6 +40,7 @@
+ #define set_mb(var, value)	do { var = value; mb(); } while (0)
+ 
+ #ifdef __KERNEL__
++#define AT_VECTOR_SIZE_ARCH 6
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
+ #define smp_rmb()	rmb()
+--- a/include/asm-sh/system.h
++++ b/include/asm-sh/system.h
+@@ -11,6 +11,7 @@
+ #include <asm/types.h>
+ #include <asm/ptrace.h>
+ 
++#define AT_VECTOR_SIZE_ARCH 1
+ /*
+  *	switch_to() should switch tasks to task nr n, first
+  */
+--- a/include/linux/auxvec.h
++++ b/include/linux/auxvec.h
+@@ -26,6 +26,8 @@
+ 
+ #define AT_SECURE 23   /* secure mode boolean */
+ 
+-#define AT_VECTOR_SIZE  44 /* Size of auxiliary table.  */
++#ifdef __KERNEL__
++#define AT_VECTOR_SIZE_BASE  (14 + 2) /* generic entries in auxiliary table. */
++#endif
+ 
+ #endif /* _LINUX_AUXVEC_H */
+--- a/include/linux/elf.h
++++ b/include/linux/elf.h
+@@ -2,7 +2,6 @@
+ #define _LINUX_ELF_H
+ 
+ #include <linux/types.h>
+-#include <linux/auxvec.h>
+ #include <linux/elf-em.h>
+ #include <asm/elf.h>
+ 
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1,7 +1,6 @@
+ #ifndef _LINUX_SCHED_H
+ #define _LINUX_SCHED_H
+ 
+-#include <linux/auxvec.h>	/* For AT_VECTOR_SIZE */
+ 
+ /*
+  * cloning flags:
+@@ -90,6 +89,11 @@ struct exec_domain;
+ struct futex_pi_state;
+ struct bio;
+ 
++#include <linux/auxvec.h>
++#ifndef AT_VECTOR_SIZE_ARCH
++#define AT_VECTOR_SIZE_ARCH 0
++#endif
++#define AT_VECTOR_SIZE (2*(AT_VECTOR_SIZE_ARCH + AT_VECTOR_SIZE_BASE + 1))
+ /*
+  * List of flags we want to share for kernel threads,
+  * if only because they are not used by them anyway.
