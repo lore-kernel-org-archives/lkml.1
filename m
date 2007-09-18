@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbXIRUIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbXIRUJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757808AbXIRUIX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 16:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXIRUIN
+	id S1758406AbXIRUJu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 16:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbXIRUJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 16:08:13 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59653
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754951AbXIRUIN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 16:08:13 -0400
-Date: Tue, 18 Sep 2007 13:08:10 -0700 (PDT)
-Message-Id: <20070918.130810.78161599.davem@davemloft.net>
-To: hpa@zytor.com
-Cc: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46F02688.8030507@zytor.com>
-References: <46F01BDE.6020902@zytor.com>
-	<20070918.122034.83625273.davem@davemloft.net>
-	<46F02688.8030507@zytor.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 18 Sep 2007 16:09:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60084 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753728AbXIRUJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 16:09:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325
+Date: Tue, 18 Sep 2007 22:21:53 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709182221.53513.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Tue, 18 Sep 2007 12:27:04 -0700
-
-> Well, what I was referring to here, of course, was the initramfs
-> integrated in the kernel image, so it all comes out of the kernel build
-> tree and produces a single bootable image.  The fact that part of it
-> contains userspace code is in that way invisible.
+On Tuesday, 18 September 2007 10:18, Andrew Morton wrote:
 > 
-> That was kind of the point here, and the only reason for pushing klibc
-> into the kernel build tree at all.  Under the "distros use external
-> initrd anyway" school of thought, whatever libc used for that can be
-> external anyway.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
+> 
+> 2.6.23-rc6-mm1 is a 29MB diff against 2.6.23-rc6.
+> 
+> It took me over two solid days to get this lot compiling and booting on a few
+> boxes.  This required around ninety fixup patches and patch droppings.  There
+> are several bugs in here which I know of (details below) and presumably many
+> more which I don't know of.  I have to say that this just isn't working any
+> more.
+> 
+> - The Vaio hangs when quitting X due to x86_64-mm-cpa-clflush.patch, but
+>   I didn't drop that patch because the iommu patch series depends on it.
+> 
+> - The Vaio also hangs during resume-from-RAM, due to git-acpi.patch
+> 
+> - And it hangs during suspend-to-RAM, due to git-acpi.patch
 
-Sounds good to me :)
+On my HP nx6325 it only boots with "noacpitimer nohpet" on the command line,
+but then it works.  Suspend-to-RAM and hibernation work too. :-)
+
+Since 2.6.23-rc4-mm1 only booted with nohpet because of
+
+x86_64-convert-to-clockevents.patch
+
+I guess that the boot problems with this one result from the same patch.
+
+Greetings,
+Rafael
