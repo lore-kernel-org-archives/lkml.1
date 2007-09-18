@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761526AbXIRVrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbXIRVv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761526AbXIRVrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXIRVrb
+	id S1759481AbXIRVv2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbXIRVvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:47:31 -0400
-Received: from 1wt.eu ([62.212.114.60]:2568 "EHLO 1wt.eu"
+	Tue, 18 Sep 2007 17:51:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:42296 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbXIRVra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:47:30 -0400
-Date: Tue, 18 Sep 2007 23:47:05 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ville Herva <v@iki.fi>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: 2.4.35 SMP: ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal
-Message-ID: <20070918214705.GG10199@1wt.eu>
-References: <20070918122314.GL29062@vianova.fi> <20070918151206.GC13304@atrey.karlin.mff.cuni.cz> <20070918160949.GR29062@vianova.fi> <20070918162256.GA3280@atrey.karlin.mff.cuni.cz> <20070918163326.GT29062@vianova.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070918163326.GT29062@vianova.fi>
-User-Agent: Mutt/1.5.11
+	id S1753920AbXIRVvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 17:51:19 -0400
+Message-ID: <46F04856.3010808@goop.org>
+Date: Tue, 18 Sep 2007 14:51:18 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
+References: <20070918210747.828804366@polymtl.ca> <20070918210853.588573678@polymtl.ca>
+In-Reply-To: <20070918210853.588573678@polymtl.ca>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ville,
+Mathieu Desnoyers wrote:
 
-On Tue, Sep 18, 2007 at 07:33:26PM +0300, Ville Herva wrote:
-> On Tue, Sep 18, 2007 at 06:22:56PM +0200, you [Jan Kara] wrote:
-> > > Sorry for the sparse details, but when you have these kind of problems on
-> > > live servers, you tend to forget the debuggability...
-> >   Yes, I can understand that :). It's just that now it's hard to find
-> > out what has really happened. Anyway, thanks for your report.
-> 
-> If we are really lucky or unlucky it will happen again. 
-> 
-> Zeroed-out block just might be a kernel problem (SMP race, whatever) -
-> random corruption would more likely be a hardware problem. There were no IO
-> error either. But, 2.4 ext3 has been pretty extensively tested, so I don't
-> suppose that's likely either. And judging from
-> http://www.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.3[45] there
-> haven't been many changes to ext3 lately either.
+> +#define immediate_read(name)						\
+> +	({								\
+> +		__typeof__(name##__immediate) value;			\
+> +		switch (sizeof(value)) {				\
+> +		case 1:							\
+> +			asm (	".section __immediate, \"a\", @progbits;\n\t" \
+> +					".long %1, (0f)+1, 1;\n\t"	\
+> +					".previous;\n\t"		\
+> +					"0:\n\t"			\
+> +					"mov %2,%0;\n\t"		\
 
-Thanks for your report. Unfortunately, I've rechecked the recent changelogs
-and see nothing related either. At least, in order to keep trace of the
-incident, would you please post some info about your config (CPU, RAM,
-chipset, .config, gcc, and any possible patches you may have applied) ?
-Maybe some of these info may remind old bad memories to some people.
+Given that you're relying on the exact instruction that this mov
+generates, it might be better to explicitly put the opcodes in with
+.byte.  That way you're protected from the assembler deciding to
+generate some other form of the instruction (for whatever reason).  I
+guess substituting in different registers would be a pain.
 
-Also, do you know if this server has ECC memory ? I would more easily
-bet for side effects of one random bit flip in memory than for some
-massive block corruption.
+Aside from that,  is there any reason not to just put $0 in there rather
+than use %2?
 
-I vaguely remember about very old reports of people sometimes observing
-zeroed out blocks during writes, which were attributed to chipset bugs
-if my memory serves me. But I would rule this out as recent chipsets
-look more stable than 5-10 years ago !
 
-Regards,
-Willy
+> +					".long %1, (0f)+1, 4;\n\t"	\
+> +					".previous;\n\t"		\
+> +					"1:\n\t"			\
+> +					".org (1b)+(3-((1b)%%4)), 0x90;\n\t" \
+>   
+Seems a little complex, but I couldn't come up with anything much better:
 
+	.org . + 3 - (. & 3), 0x90
+
+You can use . rather than needing to define 1:, it doesn't need quite so
+many parens, and using &3 avoids the %% wart. 
+
+It's a pity that gas seems to generate plain 0x90 nops rather than
+long-nop forms here.  I thought it could do that.
+
+    J
