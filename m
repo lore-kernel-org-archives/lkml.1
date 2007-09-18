@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbXIRTWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbXIRTXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbXIRTWR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbXIRTV5
+	id S1758746AbXIRTXW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbXIRTXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:21:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42492
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755028AbXIRTVz (ORCPT
+	Tue, 18 Sep 2007 15:23:10 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42896 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754938AbXIRTXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:21:55 -0400
-Date: Tue, 18 Sep 2007 12:21:50 -0700 (PDT)
-Message-Id: <20070918.122150.124083496.davem@davemloft.net>
-To: mchan@broadcom.com
-Cc: vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1190145951.9540.230.camel@dell>
-References: <1190141114.9540.216.camel@dell>
-	<20070918.112337.74737433.davem@davemloft.net>
-	<1190145951.9540.230.camel@dell>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Sep 2007 15:23:08 -0400
+Date: Tue, 18 Sep 2007 12:22:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
+In-Reply-To: <43e72e890709181207j7c85dc29sb355a9f5a4207411@mail.gmail.com>
+Message-ID: <alpine.LFD.0.999.0709181219020.16478@woody.linux-foundation.org>
+References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com> 
+ <20070918113401.6a8a737f@the-village.bc.nu> 
+ <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com> 
+ <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>
+ <43e72e890709181207j7c85dc29sb355a9f5a4207411@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Michael Chan" <mchan@broadcom.com>
-Date: Tue, 18 Sep 2007 13:05:51 -0700
 
-> The bnx2 firmware changes quite frequently.  A new driver quite often
-> requires new firmware to work correctly.  Splitting them up makes things
-> difficult for the user.
+
+On Tue, 18 Sep 2007, Luis R. Rodriguez wrote:
 > 
-> The firmware in tg3 is a lot more mature and I don't expect it to
-> change.  I think tg3 is better suited for using request_firmware().
+> ACK -- driver developers use this just to save themselves a few lines
+> from calling pci_resource_start() and friends. How about having an
+> inline which does what pci_iomap() does except it doesn't call
+> ioport_map() ? I am just not sure where this would go..
 
-Like I said, I think neither should change and the driver should
-be fully functional when built statically into the kernel.
+I'm not understanding what the problem is?
 
-:-)
+Why don't these people just use "ioread*()/iowrite*()"? 
+
+In other words, the whole point of *not* using "read*/write*()" is that 
+you get a whole slew of much nicer interfaces.
+
+So can people explain this fundamental issue? Why do people insist on 
+using the old interfaces (and matching them with the new setup)?
+
+			Linus
