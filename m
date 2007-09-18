@@ -1,88 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbXIRSqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbXIRSxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbXIRSqw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 14:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbXIRSqo
+	id S1756006AbXIRSxo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 14:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXIRSxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 14:46:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:4582 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752334AbXIRSqn (ORCPT
+	Tue, 18 Sep 2007 14:53:36 -0400
+Received: from mail.pro-g.com.tr ([81.214.24.101]:60912 "EHLO
+	mail.pro-g.com.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbXIRSxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 14:46:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lKxTixadYJiFDQJnYMPbOFSEWG8sANrs8pCTUgEKYIVv+bMeFfgE0fqA5hv8rDQSPaTlUIplmSCVNMyUpASB4pu3J0+uteLhvtHK+X9g1DJb8UJDwgzLGQ1kHkQAZ0vVfqk4maHXJ8N/n/UnxeZeYyVeIYFQlNh+BH3JnCx4djY=
-Message-ID: <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com>
-Date: Tue, 18 Sep 2007 14:46:40 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <20070918113401.6a8a737f@the-village.bc.nu>
+	Tue, 18 Sep 2007 14:53:35 -0400
+Message-ID: <46F01F21.4050009@pro-g.com.tr>
+Date: Tue, 18 Sep 2007 11:55:29 -0700
+From: "Can E. Acar" <can.acar@pro-g.com.tr>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070729)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Theodore Tso <tytso@mit.edu>, "Can E. Acar" <can.acar@pro-g.com.tr>,
+       Claudio Jeker <cjeker@diehard.n-r-g.com>, Adrian Bunk <bunk@kernel.org>,
+       misc@openbsd.org, linux-kernel@vger.kernel.org,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <46EEFA6D.9080708@pro-g.com.tr> <20070917234726.GG18360@thunk.org>
+In-Reply-To: <20070917234726.GG18360@thunk.org>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
-	 <20070918113401.6a8a737f@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/18/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Mon, 17 Sep 2007 16:22:07 -0400
-> "Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
->
-> > This patch updates the pci_iomap() kernel-doc to make it clarify the
-> > case when read*()/write*() can be called over ioread*/iowrite*(). When
-> > driver writers read this documenation sometimes it is assumed you just
-> > *need* to use ioread*()/iorwrite*(). We have an exception so lets just
-> > clarify this is not true for the exception.
-> >
-> >  lib/iomap.c |   11 ++++++++---
-> >  1 files changed, 8 insertions(+), 3 deletions(-)
-> >
-> > Signed-off-by: Luis R. Rodriguez <mcgrof@gmail.com>
->
-> Reviewed-by: Alan Cox <alan@redhat.com>
->
-> Although I would say s/recommended/required/
+Theodore Tso wrote:
+> On Mon, Sep 17, 2007 at 03:06:37PM -0700, Can E. Acar wrote:
+>> The only remaining issue is whether Nick & Jiri have enough
+>> original contributions to the code to be added to the Copyright.
+>>
+>> I believe this needs to be resolved between Reyk and Nick and Jiri.
+>>
+>> The main reason of Theo's message, linked earlier, was the
+>> lack of response on this issue. It seems that the SFLC is
+>> dismissing this issue, and thus stalling its resolution by the
+>> developers.
+> 
+> OK, so all of this flaming, and digging up of "licenses ripped off",
+> and chaff thrown up in the air, and moaning and bewailing about
+> "theft", is now down to these two lines regarding Nick and Jiri:
 
-Alright, here is the same patch inline with s/recommended/required/ language:
+Yes, quite an improvement, considering how it all started, dont you think?
+Pity it took so much pushing and dragging to get people to do the right
+thing.
+There is just one little step to go. It is can not be that hard, can it?
 
-Signed-off-by: Luis R. Rodriguez <mcgrof@gmail.com>
 
-  Luis
+>> * Copyright (c) 2004-2007 Reyk Floeter <reyk@openbsd.org>
+>> * Copyright (c) 2006-2007 Nick Kossifidis <mickflemm@gmail.com>
+>> * Copyright (c) 2007 Jiri Slaby <jirislaby@gmail.com>
+>> [snip rest of BSD license]
+> 
+> It's under a BSD license; what material difference does those two
+> lines make, for goodness sake?  It's under a BSD license, so it's not
+> like anything won't be "given back".
 
----
- lib/iomap.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+As a programmer, you sure would know what difference any "two lines"
+would make on your program. When it comes to law, you seem to lose
+that intuition.
 
-diff --git a/lib/iomap.c b/lib/iomap.c
-index 864f2ec..33651f8 100644
---- a/lib/iomap.c
-+++ b/lib/iomap.c
-@@ -247,9 +247,14 @@ EXPORT_SYMBOL(ioport_unmap);
-  * @maxlen: length of the memory to map
-  *
-  * Using this function you will get a __iomem address to your device BAR.
-- * You can access it using ioread*() and iowrite*(). These functions hide
-- * the details if this is a MMIO or PIO address space and will just do what
-- * you expect from them in the correct way.
-+ * If you use pci_iomap() it is recommended you use ioread*() and
-iowrite*(). If
-+ * your device is MMIO-only and as long as future architectures don't break the
-+ * assumption that pcio_iomap()-returned cookie can be used by read*()/write*()
-+ * then you can use read*()/write*() instead. The ioread*() and iowrite*()
-+ * functions hide the details if this is a MMIO or PIO address space and will
-+ * just do what you expect from them in the correct way. Drivers for MMIO-only
-+ * devices would use this only to save themselves from having to call
-+ * &pci_resource_start().
-  *
-  * @maxlen specifies the maximum length to map. If you want to get access to
-  * the complete BAR without checking for its length first, pass %0 here.
+
+> Whether or not they have made
+> enough for changes is really a question for the lawyers, and may
+> differ from one jurisdiction to another
+> --- but whether or not they have now, or maybe will not make until later ---
+
+Well, they can add their names *anywhere* in the whole file, *except*
+these two lines. See, these lines have a whole different meaning
+when it comes to laws.  When they make sufficient contribution, they
+sure can add their names. What is so difficult to understand here?
+
+I have seen some academic papers, where the first author did all the work,
+the second author is the professor who funded the work, and the remaining
+five "authors" are just coming along for a ride.  You know what the
+difference is? The original author *allows* them to put their names as
+authors.
+
+Here, you are adding names, and say "why not". It is both unethical and
+illegal.
+
+> does it really make a
+> difference?  Who gets hurt if someone gets they get a bit more credit
+> than they deserve?  Certainly the most important thing is that Reyk is
+> given proper credit, right?
+
+As long as it is not a derived work, Reyk gets to decide who is in the
+copyright. Even if it is a derived work, it is polite to ask.
+
+If, at the beginning, Nick and Jiri, and others asked Reyk to be included
+in the Copyright for the adaptation work they did on the HAL. I do not
+believe he would have refused. I can not talk for him, but things would
+be have been resolved in a much nicer and positive way.
+
+Instead they chose to push Reyk for months to dual license his code,
+then attempted to change the whole license. Even now, when there is
+just a small issue left, people are still dragging and resisting.
+
+I am really disappointed by all this.  I would have expected that once
+such a patch is suggested (let alone being committed to some public place)
+some senior/respected/responsible Linux person would tell them what they
+are doing is wrong.  Right from the start.  I now see this is not how
+things work around here.  Senior developers are either too busy or
+reluctant to get their hands dirty. In OpenBSD, (which, I accept is a
+much smaller community) when one developer does something wrong,
+the clue stick is there to be used by one of the more experienced
+developers.
+Which means, issues are resolved quickly and with much less pain.
+
+
+Can
+
+-- 
+In theory, there is no difference between theory and practice.
+But, in practice, there is.
