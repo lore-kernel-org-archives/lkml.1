@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbXIRUlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbXIRUlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbXIRUlX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 16:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbXIRUlL
+	id S1758749AbXIRUlt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 16:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbXIRUll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 16:41:11 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37809 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752391AbXIRUlK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 16:41:10 -0400
-Message-ID: <46F037D7.5020202@zytor.com>
-Date: Tue, 18 Sep 2007 13:40:55 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 18 Sep 2007 16:41:41 -0400
+Received: from ns.suse.de ([195.135.220.2]:47194 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754070AbXIRUll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 16:41:41 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Charles N Wyble <charles@thewybles.com>
+Subject: Re: [PATCH 3/3] Time to make CONFIG_PARAVIRT non-experimental.
+Date: Tue, 18 Sep 2007 22:41:37 +0200
+User-Agent: KMail/1.9.6
+Cc: virtualization@lists.linux-foundation.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <1189747054.7262.34.camel@localhost.localdomain> <200709182220.27311.ak@suse.de> <46F034A8.2070801@thewybles.com>
+In-Reply-To: <46F034A8.2070801@thewybles.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: David Miller <davem@davemloft.net>, mchan@broadcom.com,
-       vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-References: <46F01BDE.6020902@zytor.com> <20070918.122034.83625273.davem@davemloft.net> <46F02688.8030507@zytor.com> <20070918.130810.78161599.davem@davemloft.net> <20070918203530.GC27836@uranus.ravnborg.org>
-In-Reply-To: <20070918203530.GC27836@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709182241.37771.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> 
-> Except there seems to be great resistance to include userland code in the
-> kernel as demonstrated at last KS. Or this is maybe just a single vocal
-> person and the topic were brought up late?
-> 
-> Anyway - if we again consider klibc I will do my best to make the
-> build stuff as smooth as possible.
-> 
+ 
+> Actually if I understand the functionality of paravirt correctly that is
+> not correct. I believe that will turn on the paravirt bits which allow
+> it to run under things such as VMI or Xen.
 
-At least as of the last merged tree it was very smooth indeed, thanks to
-your help.
+You don't understand it correctly then.
 
-	-hpa
+-Andi
