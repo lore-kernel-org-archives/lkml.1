@@ -1,178 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXIRINx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbXIRISk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbXIRINx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 04:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXIRINj
+	id S1753518AbXIRISk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 04:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbXIRIS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 04:13:39 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:1626 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbXIRINi (ORCPT
+	Tue, 18 Sep 2007 04:18:27 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39777 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751102AbXIRISZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 04:13:38 -0400
-X-IronPort-AV: i="4.20,267,1186372800"; 
-   d="scan'208"; a="39818026:sNHT34585320"
-Subject: [PATCH] binfmt_flat: minimum support for the Blackfin relocations
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Bernd Schmidt <bernd.schmidt@analog.com>,
-       David McCullough <davidm@snapgear.com>,
-       Greg Ungerer <gerg@snapgear.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Tue, 18 Sep 2007 16:09:25 +0800
-Message-Id: <1190102965.4406.9.camel@roc-desktop>
+	Tue, 18 Sep 2007 04:18:25 -0400
+Date: Tue, 18 Sep 2007 17:19:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: vatsa@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       ckrm-tech@lists.sourceforge.net
+Subject: Re: [PATCH] Hookup group-scheduler with task container
+ infrastructure
+Message-Id: <20070918171945.d0593a08.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070910171049.GA16048@linux.vnet.ibm.com>
+References: <20070910171049.GA16048@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 18 Sep 2007 08:13:30.0190 (UTC) FILETIME=[CC236EE0:01C7F9CB]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bernd Schmidt <bernd.schmidt@analog.com>
+On Mon, 10 Sep 2007 22:40:49 +0530
+Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+> +	tg->cfs_rq = kzalloc(sizeof(cfs_rq) * num_possible_cpus(), GFP_KERNEL);
+> +	if (!tg->cfs_rq)
+> +		goto err;
+> +	tg->se = kzalloc(sizeof(se) * num_possible_cpus(), GFP_KERNEL);
+> +	if (!tg->se)
+> +		goto err;
+Sorry for very lazy responce..
 
-This just adds minimum support for the Blackfin relocations,
-since we don't have enough space in each reloc. The idea
-is to store a value with one relocation so that subsequent ones can
-access it.
+num_possible_cpus() just returns # of possible cpus. Then it will not return
+Max-cpu-id to be used. I think just use NR_CPUS here is an easy way.
 
-Actually, this patch is required for Blackfin. Currently if BINFMT_FLAT 
-is enabled, git-tree kernel will fail to compile. Please consider to
-accept it.
+Thanks,
+-Kame
 
-Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-Cc: David McCullough <davidm@snapgear.com>
-Cc: Greg Ungerer <gerg@snapgear.com>
----
- fs/binfmt_flat.c             |    5 ++++-
- include/asm-h8300/flat.h     |    3 ++-
- include/asm-m32r/flat.h      |    3 ++-
- include/asm-m68knommu/flat.h |    3 ++-
- include/asm-sh/flat.h        |    3 ++-
- include/asm-v850/flat.h      |    4 +++-
- 6 files changed, 15 insertions(+), 6 deletions(-)
-diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
-index 7b0265d..13b58f8 100644
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -742,6 +742,7 @@ static int load_flat_file(struct linux_binprm * bprm,
- 	 * __start to address 4 so that is okay).
- 	 */
- 	if (rev > OLD_FLAT_VERSION) {
-+		unsigned long persistent = 0;
- 		for (i=0; i < relocs; i++) {
- 			unsigned long addr, relval;
- 
-@@ -749,6 +750,8 @@ static int load_flat_file(struct linux_binprm * bprm,
- 			   relocated (of course, the address has to be
- 			   relocated first).  */
- 			relval = ntohl(reloc[i]);
-+			if (flat_set_persistent (relval, &persistent))
-+				continue;
- 			addr = flat_get_relocate_addr(relval);
- 			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
- 			if (rp == (unsigned long *)RELOC_FAILED) {
-@@ -757,7 +760,7 @@ static int load_flat_file(struct linux_binprm * bprm,
- 			}
- 
- 			/* Get the pointer's value.  */
--			addr = flat_get_addr_from_rp(rp, relval, flags);
-+			addr = flat_get_addr_from_rp(rp, relval, flags, &persistent);
- 			if (addr != 0) {
- 				/*
- 				 * Do the relocation.  PIC relocs in the data section are
-diff --git a/include/asm-h8300/flat.h b/include/asm-h8300/flat.h
-index c20eee7..2a87350 100644
---- a/include/asm-h8300/flat.h
-+++ b/include/asm-h8300/flat.h
-@@ -9,6 +9,7 @@
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		1
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-+#define	flat_set_persistent(relval, p)		0
- 
- /*
-  * on the H8 a couple of the relocations have an instruction in the
-@@ -18,7 +19,7 @@
-  */
- 
- #define	flat_get_relocate_addr(rel)		(rel)
--#define flat_get_addr_from_rp(rp, relval, flags) \
-+#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
-         (get_unaligned(rp) & ((flags & FLAT_FLAG_GOTPIC) ? 0xffffffff: 0x00ffffff))
- #define flat_put_addr_at_rp(rp, addr, rel) \
- 	put_unaligned (((*(char *)(rp)) << 24) | ((addr) & 0x00ffffff), rp)
-diff --git a/include/asm-m32r/flat.h b/include/asm-m32r/flat.h
-index 1b285f6..d851cf0 100644
---- a/include/asm-m32r/flat.h
-+++ b/include/asm-m32r/flat.h
-@@ -15,9 +15,10 @@
- #define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
-+#define	flat_set_persistent(relval, p)		0
- #define	flat_reloc_valid(reloc, size)		\
- 	(((reloc) - textlen_for_m32r_lo16_data) <= (size))
--#define flat_get_addr_from_rp(rp, relval, flags) \
-+#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
- 	m32r_flat_get_addr_from_rp(rp, relval, (text_len) )
- 
- #define flat_put_addr_at_rp(rp, addr, relval) \
-diff --git a/include/asm-m68knommu/flat.h b/include/asm-m68knommu/flat.h
-index 2d836ed..814b517 100644
---- a/include/asm-m68knommu/flat.h
-+++ b/include/asm-m68knommu/flat.h
-@@ -9,8 +9,9 @@
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
--#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
-+#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
- #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
- #define	flat_get_relocate_addr(rel)		(rel)
-+#define	flat_set_persistent(relval, p)		0
- 
- #endif /* __M68KNOMMU_FLAT_H__ */
-diff --git a/include/asm-sh/flat.h b/include/asm-sh/flat.h
-index 0d5cc04..dc4f595 100644
---- a/include/asm-sh/flat.h
-+++ b/include/asm-sh/flat.h
-@@ -16,8 +16,9 @@
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
--#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
-+#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
- #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
- #define	flat_get_relocate_addr(rel)		(rel)
-+#define	flat_set_persistent(relval, p)		0
- 
- #endif /* __ASM_SH_FLAT_H */
-diff --git a/include/asm-v850/flat.h b/include/asm-v850/flat.h
-index 3888f59..17f0ea5 100644
---- a/include/asm-v850/flat.h
-+++ b/include/asm-v850/flat.h
-@@ -25,6 +25,7 @@
- #define	flat_stack_align(sp)		/* nothing needed */
- #define	flat_argvp_envp_on_stack()	0
- #define	flat_old_ram_flag(flags)	(flags)
-+#define	flat_set_persistent(relval, p)	0
- 
- /* We store the type of relocation in the top 4 bits of the `relval.' */
- 
-@@ -46,7 +47,8 @@ flat_get_relocate_addr (unsigned long relval)
-    For the v850, RP should always be half-word aligned.  */
- static inline unsigned long flat_get_addr_from_rp (unsigned long *rp,
- 						   unsigned long relval,
--						   unsigned long flags)
-+						   unsigned long flags,
-+						   unsigned long *persistent)
- {
- 	short *srp = (short *)rp;
- 
--- 
-1.5.2
