@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbXIRJHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbXIRJIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbXIRJHM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 05:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbXIRJHB
+	id S1755405AbXIRJIK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 05:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXIRJHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 05:07:01 -0400
-Received: from smtp.bsws.de ([80.86.183.51]:5398 "EHLO smtp.bsws.de"
+	Tue, 18 Sep 2007 05:07:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58679 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751264AbXIRJG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 05:06:59 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 05:06:58 EDT
-Date: Tue, 18 Sep 2007 11:00:13 +0200
-From: Henning Brauer <henning@openbsd.org>
-To: misc@openbsd.org
-Cc: Theodore Tso <tytso@mit.edu>, Claudio Jeker <cjeker@diehard.n-r-g.com>,
-       Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
-       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070918090013.GU32213@nudo.bsws.de>
-Mail-Followup-To: misc@openbsd.org, Theodore Tso <tytso@mit.edu>,
-	Claudio Jeker <cjeker@diehard.n-r-g.com>,
-	Adrian Bunk <bunk@kernel.org>,
-	"Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
-	Daniel Hazelton <dhazelton@enter.net>,
-	Eben Moglen <moglen@softwarefreedom.org>,
-	Lawrence Lessig <lessig_from_web@pobox.com>,
-	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-	Matt Norwood <norwood@softwarefreedom.org>
-References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org>
-MIME-Version: 1.0
+	id S1750968AbXIRJHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 05:07:53 -0400
+Date: Tue, 18 Sep 2007 05:07:15 -0400
+From: Alan Cox <alan@redhat.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>,
+       Jeff Norden <jeff@math.tntech.edu>, alan@redhat.com,
+       linux-kernel@vger.kernel.org, Albert CC Lee <albertcc@tw.ibm.com>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH 1/1] pata_it821x: fix lost interrupt with atapi devices
+Message-ID: <20070918090715.GA13425@devserv.devel.redhat.com>
+References: <200709041607.l84G7KsT032647@norden.math.tntech.edu> <18141.42848.537873.349518@alkaid.it.uu.se> <20070906013929.1621849d@the-village.bc.nu> <46EE09D3.9010201@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070917204318.GE18360@thunk.org>
-X-PGP-Key: 3A83DF32
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <46EE09D3.9010201@gmail.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Theodore Tso <tytso@mit.edu> [2007-09-17 23:04]:
-> Number 2, if you take a look at their latest set of changes (which
-> have still not been accepted), the HAL code is under a pure BSD
-> license (ath5k_hw.c).  Other portions are dual licensed, but not the
-> HAL
+On Mon, Sep 17, 2007 at 07:00:03AM +0200, Tejun Heo wrote:
+> I wonder whether we should be using similar check in generic path too.
+> We have quite a few cases where MWDMA ATAPI devices choking on commands
+> with small transfer sizes.  I don't think we'll experience significant
+> performance regression with this applied and even if there is some, it's
+> far better to have slightly slower working device.
+> 
+> What do you guys think?
 
-if that is true and stays that way - excellenty!
+I think to start with someone should fix the ATAPI state machine. Stick
+a BUG() in the driver if dma start is called when the atapi command data 
+size is zero
 
--- 
-Henning Brauer, hb@bsws.de, henning@openbsd.org
-BS Web Services, http://bsws.de
-Full-Service ISP - Secure Hosting, Mail and DNS Services
-Dedicated Servers, Rootservers, Application Hosting - Hamburg & Amsterdam
+Alan
+
