@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbXIRCZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbXIRC3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbXIRCZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 22:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbXIRCZP
+	id S1757452AbXIRC3R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 22:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbXIRC3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 22:25:15 -0400
-Received: from yue.linux-ipv6.org ([203.178.140.15]:44083 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754566AbXIRCZN (ORCPT
+	Mon, 17 Sep 2007 22:29:07 -0400
+Received: from [209.180.55.243] ([209.180.55.243]:53639 "EHLO
+	jdub.homelinux.org" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754750AbXIRC3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 22:25:13 -0400
-Date: Tue, 18 Sep 2007 11:26:44 +0900 (JST)
-Message-Id: <20070918.112644.28694997.yoshfuji@linux-ipv6.org>
-To: ytht.net@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, davem@davemloft.net,
-       yoshfuji@linux-ipv6.org
-Subject: Re: [PATCH] 2.6.22.6 NETWORKING [IPV4]: Always use source addr in
- skb to reply packet
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <20070917.192044.48396034.davem@davemloft.net>
-References: <20070918021617.GA15540@router.lepton.home>
-	<20070917.192044.48396034.davem@davemloft.net>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+	Mon, 17 Sep 2007 22:29:06 -0400
+X-Greylist: delayed 2535 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Sep 2007 22:29:06 EDT
+Date: Mon, 17 Sep 2007 20:46:25 -0500
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Satyam Sharma <satyam@infradead.org>, linuxppc-dev@ozlabs.org,
+       Linux@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Mailing List <linux-kernel@vger.kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Avoid pointless WARN_ON(irqs_disabled()) from
+ panic codepath
+Message-ID: <20070917204625.64b97392@vader.jdub.homelinux.org>
+In-Reply-To: <20070917183749.fd690505.randy.dunlap@oracle.com>
+References: <46EA5CEB.7020104@linux.vnet.ibm.com>
+	<a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
+	<alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
+	<20070917183749.fd690505.randy.dunlap@oracle.com>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <20070917.192044.48396034.davem@davemloft.net> (at Mon, 17 Sep 2007 19:20:44 -0700 (PDT)), David Miller <davem@davemloft.net> says:
+On Mon, 17 Sep 2007 18:37:49 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> From: lepton <ytht.net@gmail.com>
-> Date: Tue, 18 Sep 2007 10:16:17 +0800
+> On Tue, 18 Sep 2007 05:13:40 +0530 (IST) Satyam Sharma wrote:
 > 
-> > Hi,
-> >   In some situation, icmp_reply and ip_send_reply will send
-> >   out packet with the wrong source addr, the following patch
-> >   will fix this.
-> > 
-> >   I don't understand why we must use rt->rt_src in the current
-> >   code, if this is a wrong fix, please correct me.
-> > 
-> > Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+> > Untested (not even compile-tested) patch.
+> > Could someone point me to ppc32/64 cross-compilers for i386?
 > 
-> That the address is wrong is your opinion only :-)
+> OSDL had some, but those are gone now.
+> I downloaded all of them and still use them, although it would
+> be good to have some more recent versions of them.
 > 
-> Source address selection is a rather complex topic, and
-> here we are definitely purposefully using the source
-> address selected by the routing lookup for the reply.
+> I put the power* compiler tarballs here:
+> 
+> http://userweb.kernel.org/~rdunlap/cross-compilers/
 
-And, if you do think something is "wrong", you need to describe it
-in detail, at least.
+Crosstool is widely used.  It'll build several combinations of
+gcc/binutils/glibc for you.  
 
---yoshfuji
+http://www.kegel.com/crosstool/
+
+There's also the ELDK from Denx:  
+
+http://www.denx.de/en/view/Software/WebHome#Embedded_Linux_Development_Kit
+
+josh
