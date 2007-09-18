@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbXIRWHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbXIRWLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759101AbXIRWHy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXIRWHo
+	id S1758240AbXIRWLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXIRWLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:07:44 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52556 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755030AbXIRWHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:07:43 -0400
-Message-ID: <46F04C2A.20500@garzik.org>
-Date: Tue, 18 Sep 2007 18:07:38 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: bryan.wu@analog.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH 1/3] Blackfin EMAC driver: add function to change the
- MAC	address
-References: <1189911423.9901.4.camel@roc-laptop>
-In-Reply-To: <1189911423.9901.4.camel@roc-laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 18 Sep 2007 18:11:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41506
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753599AbXIRWLC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 18:11:02 -0400
+Date: Tue, 18 Sep 2007 14:31:34 -0700 (PDT)
+Message-Id: <20070918.143134.112198097.davem@davemloft.net>
+To: w@1wt.eu
+Cc: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: bnx2 dirver's firmware images
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070918213025.GF10199@1wt.eu>
+References: <1190145951.9540.230.camel@dell>
+	<20070918.122150.124083496.davem@davemloft.net>
+	<20070918213025.GF10199@1wt.eu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Wu wrote:
->>From 157dfddae50708a716c2a42a314eccb9621d8793 Mon Sep 17 00:00:00 2001
-> From: Alex Landau <lirsb@yahoo.com>
-> Date: Sun, 5 Aug 2007 15:58:03 +0800
-> Subject: [PATCH] Blackfin Ethernet MAC driver: add function to change the MAC address
+From: Willy Tarreau <w@1wt.eu>
+Date: Tue, 18 Sep 2007 23:30:25 +0200
+
+> On Tue, Sep 18, 2007 at 12:21:50PM -0700, David Miller wrote:
+> > From: "Michael Chan" <mchan@broadcom.com>
+> > Date: Tue, 18 Sep 2007 13:05:51 -0700
+> > 
+> > > The bnx2 firmware changes quite frequently.  A new driver quite often
+> > > requires new firmware to work correctly.  Splitting them up makes things
+> > > difficult for the user.
+> > > 
+> > > The firmware in tg3 is a lot more mature and I don't expect it to
+> > > change.  I think tg3 is better suited for using request_firmware().
+> > 
+> > Like I said, I think neither should change and the driver should
+> > be fully functional when built statically into the kernel.
 > 
-> Alex Landau writes in the forums:
->   Previously, changing the MAC address (e.g. via ifconfig) resulted
->   in a generic function to be called that only changed a variable in
->   memory. This patch also updated the Blackfin MAC address registers
->   to filter the correct new MAC.
+> Michael, doesn't a functional-yet-suboptimal firmware exist ? I mean,
+> just the same principle as we all have kernels, boot CDs, statically
+> built tools, etc... which run everywhere. If you have such a beast,
+> maybe it would be a good start to have it in the kernel, and provide
+> the users with the ability to upgrade the firmware once the system
+> is able to do more complex things.
 > 
-> Signed-off-by: Alex Landau <lirsb@yahoo.com>
-> Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> Just a thought...
 
-ACK patches 1-3... but can you regenerate them against 
-netdev-2.6.git#upstream (or davem/net-2.6.24.git)?
+So let's save 60K instead of 80K.
 
-
+I mean, the entire discussion is just plain silly :)
