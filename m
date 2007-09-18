@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbXIRVbC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758293AbXIRVf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbXIRVbC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:31:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbXIRVaw
+	id S1758293AbXIRVf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbXIRVfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:30:52 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43687 "EHLO mail.dvmed.net"
+	Tue, 18 Sep 2007 17:35:17 -0400
+Received: from ozlabs.org ([203.10.76.45]:37830 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbXIRVav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:30:51 -0400
-Message-ID: <46F04386.8010209@garzik.org>
-Date: Tue, 18 Sep 2007 17:30:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
-References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>  <20070918113401.6a8a737f@the-village.bc.nu>  <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com>  <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>  <43e72e890709181207j7c85dc29sb355a9f5a4207411@mail.gmail.com>  <alpine.LFD.0.999.0709181219020.16478@woody.linux-foundation.org>  <43e72e890709181312sf2b421cn49be3389b3786a2a@mail.gmail.com>  <alpine.LFD.0.999.0709181323260.16478@woody.linux-foundation.org> <43e72e890709181402x7335d0acp306cf576fac6c070@mail.gmail.com> <alpine.LFD.0.999.0709181408390.16478@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709181408390.16478@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750981AbXIRVfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 17:35:16 -0400
+Subject: Re: [PATCH 3/3] Time to make CONFIG_PARAVIRT non-experimental.
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <ak@suse.de>
+Cc: virtualization@lists.linux-foundation.org,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <200709181257.41530.ak@suse.de>
+References: <1189747054.7262.34.camel@localhost.localdomain>
+	 <1189747124.7262.36.camel@localhost.localdomain>
+	 <1189747280.7262.39.camel@localhost.localdomain>
+	 <200709181257.41530.ak@suse.de>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 07:34:32 +1000
+Message-Id: <1190151272.7262.175.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> The old situation with SATA drivers that had
+On Tue, 2007-09-18 at 12:57 +0200, Andi Kleen wrote:
+> On Friday 14 September 2007 07:21, Rusty Russell wrote:
+> > It's pretty widely used,
 > 
-> 	if (iomem)
-> 		writel(..)
-> 	else
-> 		outl(..)
+> Is it? By whom?
+
+Hi Andi,
+
+	Please stop asking for facts!  It's was easy claim to make, and hard to
+disprove 8)
+
+> > and the distributions will turn it on. 
 > 
-> in the cases that needed it (and used hardcoded writel/outl in the cases 
-> that didn't) was an example of code that "in theory" is faster. But 
-> dammit, in practice that mattered not one whit, and what iomap() tries to 
-> do is to attack the _real_ problem we had in that area. 
-> 
-> Which had nothing what-so-ever to do with any branches.
+> That's no reason to make it default y. Please undo that. default y
+> is near always a bad idea.
 
-And none of those issues are a factor at all in ath5k (which spawned 
-this sub-discussion), or indeed many other drivers.  The above code you 
-cite is -generic-, hardware agnostic code.
+How about a "select" based on Xen, lguest or VMI?  There's no other
+reason to enable it, after all.
 
-Most new hardware is MMIO-only, making ioread32() only for drivers that 
-care about legacy IO support, something that is being slowly phased out. 
-  e.g. legacy IDE, legacy 10/100 mbps ethernet NICs with the dual 
-MMIO/PIO register spaces.
+> Also I would still consider it experimental.
 
-	Jeff
+After 9 months in mainline and three kernel versions, I'd hope not.
+It's been pretty damn stable (ok, you broke it once, but maybe that's
+because you consider it experimental).
 
-
+Cheers,
+Rusty.
 
