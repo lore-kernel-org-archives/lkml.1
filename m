@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbXIRTny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbXIRTpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758914AbXIRTny (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbXIRTnq
+	id S1758761AbXIRTpY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbXIRTpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:43:46 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:34629 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755469AbXIRTnp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:43:45 -0400
-Date: Tue, 18 Sep 2007 21:41:52 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>, Alexey Dobriyan <adobriyan@sw.ru>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-Message-ID: <20070918214152.3698a787@lappy>
-In-Reply-To: <20070918182924.GF8665@linux.vnet.ibm.com>
-References: <20070918091728.GA6766@localhost.sw.ru>
-	<20070918031723.05689e92.akpm@linux-foundation.org>
-	<46EFA8DC.2020909@bull.net>
-	<20070918033400.495b02dd.akpm@linux-foundation.org>
-	<20070918142451.418b3b51@twins>
-	<20070918161337.GC8665@linux.vnet.ibm.com>
-	<20070918095715.05899d12.akpm@linux-foundation.org>
-	<20070918182924.GF8665@linux.vnet.ibm.com>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Sep 2007 15:45:12 -0400
+Received: from mout.perfora.net ([74.208.4.194]:58230 "EHLO mout.perfora.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754583AbXIRTpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 15:45:10 -0400
+Message-ID: <46F02AC0.7090607@rlworkman.net>
+Date: Tue, 18 Sep 2007 14:45:04 -0500
+From: Robby Workman <rw@rlworkman.net>
+Organization: http://rlworkman.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [SOLVED] CPU too old panic on Centrino proc - 2.6.22.6
+References: <46EFF173.4010104@rlworkman.net> <p73sl5bx2an.fsf@bingen.suse.de>
+In-Reply-To: <p73sl5bx2an.fsf@bingen.suse.de>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19piATe7wOOC4Z0RGXGFmYv65ap0Q2t1PKavT6
+ xKY3WqGGKhnZN0v0/LJafg94eaxxERwqvvRsypQpfzK68TAoFQ
+ ACKjJ92RincuQH3kLF91w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 11:29:24 -0700 "Paul E. McKenney"
-<paulmck@linux.vnet.ibm.com> wrote:
-
-> On Tue, Sep 18, 2007 at 09:57:15AM -0700, Andrew Morton wrote:
-> > On Tue, 18 Sep 2007 09:13:37 -0700 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Tue, Sep 18, 2007 at 02:24:51PM +0200, Peter Zijlstra wrote:
-> > > > On Tue, 18 Sep 2007 03:34:00 -0700 Andrew Morton
-> > > > <akpm@linux-foundation.org> wrote:
-> > > > 
-> > > > > Well, it was an optimisation.  spin_lock() implies rcu_read_lock().  That's
-> > > > > a bit dirty and we might choose to not do that.
-> > > > 
-> > > > Not true for the preemptible-rcu work. All such sites should be fixed,
-> > > > or at the very least heavily annotated.
-> > > 
-> > > What he said!!!
-> > > 
-> > 
-> > What he said!
-> > 
-> > How are you going to find all such sites?
+Andi Kleen wrote:
+> Robby Workman <rw@rlworkman.net> writes:
 > 
-> A first step would be to look for patches in -rt that add rcu_read_lock()
-> or friends.  A second step would be to look for rcu_dereference() without
-> an enclosing rcu_read_lock(), rcu_read_lock_bh(), or preempt_disable().
+>> On booting a 2.6.22.6 kernel with SMP support, I get a panic
+>> immediately:
+>>   PANIC: CPU too old for this kernel
+>> This panic does not occur on a non-SMP kernel having almost
+>> identical configuration.
+>>
+>> This is on a Thinkpad T41:
+>>   /proc/cpuinfo --> http://rlworkman.net/cpuinfo
+>>   dmesg --> http://rlworkman.net/dmesg
+>>   kernel config --> http://rlworkman.net/config-2.6.22.6
+>>
+>> The 2.6.21.5 SMP kernels from Slackware 12.0 all boot properly, and
+>> the config for this 2.6.22.6 SMP kernel is based on the one from 12.0.
+>>
+>> I'm basically reaching for clues at this point -- is this a PEBKAC on
+>> my part?  What other information would be useful?
+> 
+> Most likely you enabled CONFIG_HIGHMEM64G. Banias didn't support 
+> PAE.
 
-I could perhaps do that with that rcu_read_lock lockdep annotation. If
-I add a check for holding rcu_read_lock in rcu_dereference().
+
+Thanks, Andi - that was indeed the problem.  Of course, things like
+this are never solved until asked about on a mailing list :)
+
+HIGHMEM4G rather than HIGHMEM64G (not sure why I had that marked),
+no PAE, and I was using the 64-bit memory/IO (EXPERIMENTAL).  Now it's
+off.  A side effect was CONFIG_X86_CMPXCHG64 disappearing from the
+.config, which I thought might have also been part of the problem
+based on that other thread.
+
+Either way, thanks for the response!
+
+-RW
+
