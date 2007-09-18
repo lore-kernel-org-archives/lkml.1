@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbXIRUmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759114AbXIRUm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755678AbXIRUmX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 16:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbXIRUmN
+	id S1759114AbXIRUm4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 16:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbXIRUmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 16:42:13 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35848 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755451AbXIRUmM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 16:42:12 -0400
-Date: Tue, 18 Sep 2007 13:42:09 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Mel Gorman <mel@csn.ul.ie>, andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <200709181010.28043.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0709181337460.4318@schroedinger.engr.sgi.com>
-References: <20070911060349.993975297@sgi.com> <200709161822.47879.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709171504150.29993@schroedinger.engr.sgi.com>
- <200709181010.28043.nickpiggin@yahoo.com.au>
+	Tue, 18 Sep 2007 16:42:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60175 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755371AbXIRUmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 16:42:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325
+Date: Tue, 18 Sep 2007 22:54:54 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <200709182221.53513.rjw@sisk.pl>
+In-Reply-To: <200709182221.53513.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709182254.55409.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007, Nick Piggin wrote:
+On Tuesday, 18 September 2007 22:21, Rafael J. Wysocki wrote:
+> On Tuesday, 18 September 2007 10:18, Andrew Morton wrote:
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
+> > 
+> > 2.6.23-rc6-mm1 is a 29MB diff against 2.6.23-rc6.
+> > 
+> > It took me over two solid days to get this lot compiling and booting on a few
+> > boxes.  This required around ninety fixup patches and patch droppings.  There
+> > are several bugs in here which I know of (details below) and presumably many
+> > more which I don't know of.  I have to say that this just isn't working any
+> > more.
+> > 
+> > - The Vaio hangs when quitting X due to x86_64-mm-cpa-clflush.patch, but
+> >   I didn't drop that patch because the iommu patch series depends on it.
+> > 
+> > - The Vaio also hangs during resume-from-RAM, due to git-acpi.patch
+> > 
+> > - And it hangs during suspend-to-RAM, due to git-acpi.patch
 
-> > We can avoid all doubt in this patchset as well by adding support for
-> > fallback to a vmalloced compound page.
+Sorry, I was wrong.
+
+> On my HP nx6325 it only boots with "noacpitimer nohpet" on the command line,
+> but then it works.
+
+It _sometimes_ boots with "noacpitimer nohpet" and that's if I press the power
+button for a couple of times during boot (before any messages appear on the
+console).
+
+> Suspend-to-RAM and hibernation work too. :-) 
+
+No, they don't (I must have booted -rc6 instead of it by mistake, sigh).
+
+> Since 2.6.23-rc4-mm1 only booted with nohpet because of
 > 
-> How would you do a vmapped fallback in your patchset? How would
-> you keep track of pages 2..N if they don't exist in the radix tree?
+> x86_64-convert-to-clockevents.patch
+> 
+> I guess that the boot problems with this one result from the same patch.
 
-Through the vmalloc structures and through the conventions established for 
-compound pages?
+Not sure any more ...
 
-> What if they don't even exist in the kernel's linear mapping? It seems
-> you would also require more special casing in the fault path and special
-> casing in the block layer to do this.
+I'll try to compile it with NO_HZ and HIGH_RES_TIMERS unset.
 
-Well yeah there is some sucky part about vmapping things (same as in yours,
-possibly more in mine since its general and not specific to the page 
-cache). On the other hand a generic vcompound fallback will allow us to 
-use the page allocator in many places where we currently have to use 
-vmalloc because the allocations are too big. It will allow us to get rid 
-of most of the vmalloc uses and thereby reduce TLB pressure somewhat.
-
-The vcompound patchset is almost ready..... Maybe bits and pieces may 
-even help fsblock.
+Greetings,
+Rafael
