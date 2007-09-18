@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbXIREcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757617AbXIREgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbXIREcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 00:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbXIREcK
+	id S1757617AbXIREgL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 00:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbXIREf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 00:32:10 -0400
-Received: from smtp108.plus.mail.re1.yahoo.com ([69.147.102.71]:38142 "HELO
-	smtp108.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753469AbXIREcJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 00:32:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
-  b=4zihntPLGp2wRap6td0oCHc26GAzS+oRx5oyUnp5YiB/kgdSiNAP135lnzKKAkvD/msuq8rRjc6CqGYx1hAoDkMLi8wr5iVAcUKxXkki60KoX44eIh16FPwj5AKw77NgXnhCJSbgod7of2n5WZhH/pRpP6d8QyUl+wbs/6hLW2k=  ;
-X-YMail-OSG: LEU0UlMVM1luXtSXny9l41m6Uj02ScZDAynzO6626t7XlWa1C8eCS94_eTX01Ywo6yp0fKPZBw--
-Date: Tue, 18 Sep 2007 06:31:32 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: linux-kernel@vger.kernel.org
-Cc: achim_leubner@adaptec.com, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 2/2] unify DMA_..BIT_MASK definitions v1: cleanup
-	drivers/scsi/gdth.c
-Message-ID: <20070918043132.GA9340@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 18 Sep 2007 00:35:56 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38267 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753979AbXIREfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 00:35:55 -0400
+Date: Tue, 18 Sep 2007 10:06:07 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: kexec@lists.infradead.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/7] Use extended crashkernel command line on i386
+Message-ID: <20070918043607.GB4842@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070913161428.343951643@strauss.suse.de> <20070913161429.087964162@strauss.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070913161429.087964162@strauss.suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move dma bitmask definitions into the dma-mappings header.
+On Thu, Sep 13, 2007 at 06:14:30PM +0200, Bernhard Walle wrote:
+> -
+>  void arch_crash_save_vmcoreinfo(void)
+>  {
+>  #ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
+> --- a/arch/i386/kernel/setup.c
+> +++ b/arch/i386/kernel/setup.c
+> @@ -381,6 +381,33 @@ extern unsigned long __init setup_memory
+>  extern void zone_sizes_init(void);
+>  #endif /* !CONFIG_NEED_MULTIPLE_NODES */
+> 
+> +#ifdef CONFIG_KEXEC
+> +static void reserve_crashkernel(void)
+> +{
+> +	unsigned long long 	free_mem;
+> +	unsigned long long 	crash_size, crash_base;
+> +	int			ret;
+> +
+> +	free_mem = (max_low_pfn + highend_pfn - highstart_pfn) << PAGE_SHIFT;
+> +
+> +	ret = parse_crashkernel(boot_command_line, free_mem,
+> +			&crash_size, &crash_base);
+> +	if (ret == 0 && crash_size > 0 && crash_base > 0) {
+> +		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
+> +				"for crashkernel (System RAM: %ldMB)\n",
+> +				(unsigned long)(crash_size >> 20),
+> +				(unsigned long)(crash_base >> 20),
+> +				(unsigned long)(free_mem >> 20));
+> +		crashk_res.start = crash_base;
+> +		crashk_res.end   = crash_base + crash_size - 1;
+> +		reserve_bootmem(crash_base, crash_size);
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Hi Bernhard,
 
---
-Index: 23-rc6/drivers/scsi/gdth.c
-===================================================================
---- 23-rc6/drivers/scsi/gdth.c.orig	2007-09-17 17:53:26.000000000 +0200
-+++ 23-rc6/drivers/scsi/gdth.c	2007-09-17 17:53:49.000000000 +0200
-@@ -392,12 +392,7 @@
- #include <linux/proc_fs.h>
- #include <linux/time.h>
- #include <linux/timer.h>
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,6)
- #include <linux/dma-mapping.h>
--#else
--#define DMA_32BIT_MASK	0x00000000ffffffffULL
--#define DMA_64BIT_MASK	0xffffffffffffffffULL
--#endif
- 
- #ifdef GDTH_RTC
- #include <linux/mc146818rtc.h>
+I think we might need to do more here. Because [offset] is optional, one
+would assume that things will work even if offset is not specified. But
+in this patchset, that's not the case for i386 and x86_64. It will silently
+fail if a user does not specify the offset. No memory will be reserved for
+capture kernel.
 
--- 
-Regards/Gruﬂ,
-    Boris.
+I think we either need to make offset mandatory or put in additional
+intelligence here to choose the offset automatically based on the memory
+available.
+
+Thanks
+Vivek
