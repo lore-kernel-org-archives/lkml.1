@@ -1,64 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbXIRSb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbXIRSfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbXIRSb7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 14:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbXIRSbt
+	id S1757219AbXIRSfA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 14:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXIRSex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 14:31:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42853 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753364AbXIRSbs (ORCPT
+	Tue, 18 Sep 2007 14:34:53 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:2943 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbXIRSew (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 14:31:48 -0400
-Date: Tue, 18 Sep 2007 11:30:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       andrea@suse.de, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <200709181116.22573.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org>
-References: <20070911060349.993975297@sgi.com> <200709161853.12050.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com>
- <200709181116.22573.nickpiggin@yahoo.com.au>
+	Tue, 18 Sep 2007 14:34:52 -0400
+Message-ID: <46F01A39.3010104@linuxtv.org>
+From: mkrufky@linuxtv.org
+To: miles.lane@gmail.com
+Cc: akpm@linux-foundation.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] 2.6.23-rc6-mm1 -- "dvb_dmx_swfilter"	[dr
+	ivers/media/video/video-buf-dvb.ko] undefined!
+Date: Tue, 18 Sep 2007 14:34:33 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+X-Mailer: Internet Mail Service (5.5.2657.72)
+user-agent: Thunderbird 2.0.0.6 (Windows/20070728)
+in-reply-to: <a44ae5cd0709181117k7a563e66y8e01a64e5877cac8@mail.gmail.com>
+x-originalarrivaltime: 18 Sep 2007 18:17:13.0159 (UTC) FILETIME=[22B5DD70:01C7FA20]
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_000_01C7FA20.229D9A80"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
+
+------_=_NextPart_000_01C7FA20.229D9A80
+Content-Type: text/plain;
+	charset="iso-8859-1"
+
+Miles Lane wrote:
+> ERROR: "dvb_dmx_swfilter" [drivers/media/video/video-buf-dvb.ko]
+undefined!
+> ERROR: "dvb_net_init" [drivers/media/video/video-buf-dvb.ko] undefined!
+> ERROR: "dvb_dmxdev_init" [drivers/media/video/video-buf-dvb.ko] undefined!
+> ERROR: "dvb_dmx_init" [drivers/media/video/video-buf-dvb.ko] undefined!
+> ERROR: "dvb_register_frontend" [drivers/media/video/video-buf-dvb.ko]
+undefined!
+> ERROR: "dvb_register_adapter" [drivers/media/video/video-buf-dvb.ko]
+undefined!
+> ERROR: "dvb_unregister_adapter" [drivers/media/video/video-buf-dvb.ko]
+> undefined!
+> ERROR: "dvb_frontend_detach" [drivers/media/video/video-buf-dvb.ko]
+undefined!
+> ERROR: "dvb_unregister_frontend"
+> [drivers/media/video/video-buf-dvb.ko] undefined!
+> ERROR: "dvb_dmx_release" [drivers/media/video/video-buf-dvb.ko] undefined!
+> ERROR: "dvb_dmxdev_release" [drivers/media/video/video-buf-dvb.ko]
+undefined!
+> ERROR: "dvb_net_release" [drivers/media/video/video-buf-dvb.ko] undefined!
+> ERROR: "mt2131_attach" [drivers/media/video/cx23885/cx23885.ko] undefined!
+> ERROR: "s5h1409_attach" [drivers/media/video/cx23885/cx23885.ko]
+undefined!
+>   
+
+The attached fix should fix the problem.
+
+Cheers,
+
+Mike Krufky
 
 
-On Tue, 18 Sep 2007, Nick Piggin wrote:
-> 
-> ROFL! Yeah of course, how could I have forgotten about our trusty OOM killer
-> as the solution to the fragmentation problem? It would only have been funnier
-> if you had said to reboot every so often when memory gets fragmented :)
+------_=_NextPart_000_01C7FA20.229D9A80
+Content-Type: text/plain;
+	name="video-cx23885-depends-on-dvb-core.patch.txt"
+Content-Disposition: attachment;
+	filename="video-cx23885-depends-on-dvb-core.patch.txt"
 
-Can we please stop this *idiotic* thread.
+# HG changeset patch
+# User Michael Krufky <mkrufky@linuxtv.org>
+# Date 1190132745 14400
+# Node ID 67acaa106a99149264582873b12d0a46056a636c
+# Parent  9c4007a4d0bdf54f807b78f8455a49e40577340d
+VIDEO_CX23885 depends on DVB_CORE
 
-Nick, you and some others seem to be arguing based on a totally flawed 
-base, namely:
- - we can guarantee anything at all in the VM
- - we even care about the 16kB blocksize
- - second-class citizenry is "bad"
+From: Michael Krufky <mkrufky@linuxtv.org>
 
-The fact is, *none* of those things are true. The VM doesn't guarantee 
-anything, and is already very much about statistics in many places. You 
-seem to be arguing as if Christoph was introducing something new and 
-unacceptable, when it's largely just more of the same.
+Fix the following dependency issue:
 
-And the fact is, nobody but SGI customers would ever want the 16kB 
-blocksize. IOW - NONE OF THIS MATTERS!
+ERROR: "dvb_dmx_init" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_unregister_adapter" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_register_frontend" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_unregister_frontend" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_net_release" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_frontend_detach" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_dmxdev_release" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_dmx_swfilter" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_net_init" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_dmx_release" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_register_adapter" [drivers/media/video/video-buf-dvb.ko] undefined!
+ERROR: "dvb_dmxdev_init" [drivers/media/video/video-buf-dvb.ko] undefined!
 
-Can you guys stop this inane thread already, or at least take it private 
-between you guys, instead of forcing everybody else to listen in on your 
-flamefest.
+ERROR: "mt2131_attach" [drivers/media/video/cx23885/cx23885.ko] undefined!
+ERROR: "s5h1409_attach" [drivers/media/video/cx23885/cx23885.ko] undefined!
 
-			Linus
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Steve Toth <stoth@hauppauge.com>
+
+diff -r 9c4007a4d0bd -r 67acaa106a99 linux/drivers/media/video/cx23885/Kconfig
+--- a/linux/drivers/media/video/cx23885/Kconfig	Tue Sep 18 10:06:25 2007 -0300
++++ b/linux/drivers/media/video/cx23885/Kconfig	Tue Sep 18 12:25:45 2007 -0400
+@@ -1,6 +1,6 @@ config VIDEO_CX23885
+ config VIDEO_CX23885
+ 	tristate "Conexant cx23885 (2388x successor) support"
+-	depends on VIDEO_DEV && PCI && I2C
++	depends on DVB_CORE && VIDEO_DEV && PCI && I2C
+ 	select I2C_ALGOBIT
+ 	select FW_LOADER
+ 	select VIDEO_BTCX
+
+------_=_NextPart_000_01C7FA20.229D9A80--
