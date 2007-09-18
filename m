@@ -1,78 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbXIREaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbXIREad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756875AbXIREaM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 00:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbXIRE37
+	id S1757770AbXIREad (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 00:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbXIREaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 00:29:59 -0400
-Received: from smtp101.plus.mail.re1.yahoo.com ([69.147.102.64]:28909 "HELO
-	smtp101.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751672AbXIRE36 (ORCPT
+	Tue, 18 Sep 2007 00:30:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:50877 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754985AbXIREaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 00:29:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
-  b=v1GWMOJYBWMcIvNFkFcl2VDFeIG6gfbGBNnn2qiiiXixY4O+0xoLy/jk81TyH7GkG9DfHm/yGZ3L+upvk+xbd47c1Ox58ZIo/Ldxiu70Ph553NH2cmgkNC2l/S24kPkR3h9RyCoa17vWEAmp6zALjoiLdMdF7ZMciiUMVw2RcU0=  ;
-X-YMail-OSG: B6cWOUoVM1lIj_5JlypQUr3Wypd3eOCO6XDlggD2dYEZU8DO20l85si0TbNB0Y45SxLBw1ht3g--
-Date: Tue, 18 Sep 2007 06:29:19 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: linux-kernel@vger.kernel.org
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 0/2] unify DMA_..BIT_MASK definitions: v1
-Message-ID: <20070918042919.GA8998@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
+	Tue, 18 Sep 2007 00:30:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bTNEsxlc1KQUQbx2D1B19TvJqKm9kwRRr/0A3nJHldOnRsJ+UZS1oIEJKlKOU2+icsIbfZ4lghrkCTSj8uT5mePtmq+sXFCRrAz6xxeZlQDfNRWTASgLkA1DtRm6nZOnLS7EYyqKnTgexhPVdWzejFd1akPAX6hNB1FhQXIIF20=
+Message-ID: <6b8cef970709172130v317a6c48h814ef5a1488f798e@mail.gmail.com>
+Date: Tue, 18 Sep 2007 00:30:05 -0400
+From: "Rob Hussey" <robjhussey@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Scheduler benchmarks - a follow-up
+Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+In-Reply-To: <20070917203607.GA20564@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com>
+	 <20070917130524.GA10707@elte.hu> <20070917203607.GA20564@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches remove redundant DMA_..BIT_MASK definitions across two drivers.
-In this version of the patches, the computation of the bitmasks is done by
-the compiler.
+On 9/17/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+> > i've meanwhile tested hackbench 90 and the performance difference
+> > between -ck and -cfs-devel seems to be mostly down to the more precise
+> > (but slower) sched_clock() introduced in v2.6.23 and to the startup
+> > penalty of freshly created tasks.
+>
+> Rob, another thing i just noticed in your .configs: you have
+> CONFIG_PREEMPT=y enabled. Would it be possible to get a testrun with
+> that disabled? That gives the best throughput and context-switch latency
+> numbers. (CONFIG_PREEMPT might also have preemption artifacts - there's
+> one report of it having _worse_ desktop latencies on certain hardware
+> than !CONFIG_PREEMPT.)
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+I reverted the patch from before since it didn't seem to help. Do you
+think it may have to do with my system having Hyper-Threading enabled?
+I should have pointed out before that I don't really have a dual-core
+system, just a P4 with Hyper-Threading (I loosely used core to refer
+to processor).
 
---
-Index: 23-rc6/include/linux/dma-mapping.h
-===================================================================
---- 23-rc6/include/linux/dma-mapping.h.orig	2007-09-17 17:48:20.000000000 +0200
-+++ 23-rc6/include/linux/dma-mapping.h	2007-09-18 06:12:33.000000000 +0200
-@@ -13,16 +13,19 @@
- 	DMA_NONE = 3,
- };
- 
--#define DMA_64BIT_MASK	0xffffffffffffffffULL
--#define DMA_48BIT_MASK	0x0000ffffffffffffULL
--#define DMA_40BIT_MASK	0x000000ffffffffffULL
--#define DMA_39BIT_MASK	0x0000007fffffffffULL
--#define DMA_32BIT_MASK	0x00000000ffffffffULL
--#define DMA_31BIT_MASK	0x000000007fffffffULL
--#define DMA_30BIT_MASK	0x000000003fffffffULL
--#define DMA_29BIT_MASK	0x000000001fffffffULL
--#define DMA_28BIT_MASK	0x000000000fffffffULL
--#define DMA_24BIT_MASK	0x0000000000ffffffULL
-+#define DMA_BIT_MASK(n)	((1ULL<<(n))-1)
-+
-+#define DMA_64BIT_MASK	DMA_BIT_MASK(64)
-+#define DMA_48BIT_MASK	DMA_BIT_MASK(48)
-+#define DMA_40BIT_MASK	DMA_BIT_MASK(40)
-+#define DMA_39BIT_MASK	DMA_BIT_MASK(39)
-+#define DMA_35BIT_MASK	DMA_BIT_MASK(35)
-+#define DMA_32BIT_MASK	DMA_BIT_MASK(32)
-+#define DMA_31BIT_MASK	DMA_BIT_MASK(31)
-+#define DMA_30BIT_MASK	DMA_BIT_MASK(30)
-+#define DMA_29BIT_MASK	DMA_BIT_MASK(29)
-+#define DMA_28BIT_MASK	DMA_BIT_MASK(28)
-+#define DMA_24BIT_MASK	DMA_BIT_MASK(24)
- 
- static inline int valid_dma_direction(int dma_direction)
- {
+Some new numbers for 2.6.23-rc6-cfs-devel (!CONFIG_PREEMPT and bound
+to single processor)
 
--- 
-Regards/Gruß,
-    Boris.
+lat_ctx:
+
+15  2.73
+16  2.74
+17  2.81
+18  2.74
+19  2.74
+20  2.73
+21  2.60
+22  2.74
+23  2.72
+24  2.74
+25  2.74
+
+hackbench:
+
+80 11.578
+81 11.991
+82 11.914
+83 12.026
+84 12.226
+85 12.347
+86 12.552
+87 12.655
+88 13.011
+89 12.941
+90 13.237
+
+pipe-test:
+
+1  9.58
+2  9.58
+3  9.58
+4  9.58
+5  9.58
+6  9.58
+7  9.58
+8  9.58
+9  9.58
+10 9.58
+
+The obligatory graphs:
+http://www.healthcarelinen.com/misc/benchmarks/BOUND_NOPREEMPT_lat_ctx_benchmark.png
+http://www.healthcarelinen.com/misc/benchmarks/BOUND_NOPREEMPT_hackbench_benchmark.png
+http://www.healthcarelinen.com/misc/benchmarks/BOUND_NOPREEMPT_pipe-test_benchmark.png
+
+A cursory glance suggests that performance wrt lat_ctx and hackbench
+has increased (lower numbers), but degraded quite a lot for pipe-test.
+The numbers for  pipe-test are extremely stable though, while the
+numbers for hackbench are more erratic (which isn't saying much since
+the original numbers gave nearly a straight line). I'm still willing
+to try out any more ideas.
+
+Regards,
+Rob
