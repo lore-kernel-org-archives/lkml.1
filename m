@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbXIRMXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbXIRMXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323AbXIRMXS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 08:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbXIRMXI
+	id S1757483AbXIRMXs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 08:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbXIRMXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 08:23:08 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:5377 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755813AbXIRMXH (ORCPT
+	Tue, 18 Sep 2007 08:23:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:32289 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755973AbXIRMXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 08:23:07 -0400
-Message-ID: <46EFC2A8.9070009@linux-kernel.at>
-Date: Tue, 18 Sep 2007 14:20:56 +0200
-From: Oliver Falk <oliver@linux-kernel.at>
-Organization: Linux kernel Austria
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070615 Fedora/2.0.0.4-1.fc7 Thunderbird/2.0.0.4 Mnenhy/0.7.5.666
+	Tue, 18 Sep 2007 08:23:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Sk+6txck40Pw4//Lvzo8PNz/lL/a7Xq47Mr6LkRKrYYsKgobGO7RMgYBEzlVzqdR+jHwYFty4dzN77XXG91Lcim6lS1EG8pQfrkL9qUi/NcUuTaq005PqNBQMRYxNaAJINZvyr8TBpuwI2WXEsc+/a2tb6wH6/uEpkMKcnlg88Y=
+Message-ID: <a44ae5cd0709180523p646024b1u43269816e5328c9f@mail.gmail.com>
+Date: Tue, 18 Sep 2007 08:23:38 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: What can be done to reduce the huge number of build fixes required to release an MM tree?
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Sergey Tikhonov <tsv@solvo.ru>
-CC: Linux on Alpha processors <axp-list@redhat.com>,
-       ac-admin@lists.anotherbloody.com, Adrian Bunk <bunk@kernel.org>,
-       ink@jurassic.park.msu.ru, linux-kernel@vger.kernel.org,
-       Jay Estabrook <jay.estabrook@hp.com>
-Subject: Re: [AC-Admin] Re: 2.6.23 alpha unistd.h changes
-References: <46EEE483.4020209@linux-kernel.at>	<20070917212257.GA27980@stusta.de>	<46EF922A.4030206@linux-kernel.at> <46EF962E.9010706@solvo.ru>
-In-Reply-To: <46EF962E.9010706@solvo.ru>
-X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.399, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -2.60)
-X-MailScanner-From: oliver@linux-kernel.at
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/18/2007 11:11 AM, Sergey Tikhonov wrote:
-> Oliver Falk wrote:
->> On 09/17/2007 11:22 PM, Adrian Bunk wrote:
->>  
->>> On Mon, Sep 17, 2007 at 10:33:07PM +0200, Oliver Falk wrote:
->>>    
->>>> At Alphacore we used to patch the kernel headers for a while now; We
->>>> added syscalls __NR_openat (447) until __NR_tee (466).
->>>>       
->>> Why did your numbers differ from the numbers that were used in the
->>> upstream kernel?
->>>     
->>
->> Afaik, our patch was done a while ago and nobody every submitted it
->> upstream - don't know why...
->>   
-> Yes, it was done by me and I had no info how to push the updates to
-> upstream, sorry. (by that time,
-> there were no latest "distribution" available with those changes).
->> At AC, we follow RH/Fedora packages and there we had glibc-kernheaders -
->> where our patch originates. When the glibc/kernel packages changed and
->> glibc-kernheaders died, I patched the syscalls into kernel headers; Not
->> thinking that I better submit it upstream. :-(
->>   
-> Yea, now there is more interest and it is better to do it right. :)
+Hello Andrew and all,
 
-To make it easy for everyone....
+What can be done to reduce the huge number of build fixes required to
+release an MM tree?
 
-There should not be many AC users that run the latest versions of
-everything.
+Perhaps it would be helpful if you identified specific individuals who
+send you patches that break the build.  If necessary, we could keep a
+running total.  The main thought is that maybe we need to identify who
+regularly sends troublesome patches.  There are three metrics that
+might be good to know:  1) Who sends patches that are regularly
+broken, but sends patches rarely?  2) Who sends patches all the time,
+and once in while causes trouble?  And 3) Who is causing the most
+cumulative trouble?
 
-I will keep the sorting of the syscalls as they are - no change required
-upstream.
+Is there any possibility that we ought to refuse patches from people
+who break the build too often?
 
-People who want new kernel or new glibc will then also need to update
-the other. DOT. POINT. END. :-)
+Another area that might be helpful might be how the patches break
+things.  Are there major groupings of errors that developers could be
+educated about?
 
-Kernel 2.6.23 will also require new aboot.... So many things....
 
-Since online upgrading from AC3 to FC8axp will not be supported anyway
-(because of various reasons and now 2 more of them), I can live with
-that decision finally.
+I am sorry you are having to work so hard to do your job, Andrew.
 
-Thx everyone...
-
-Best,
- Oliver
+                Miles
