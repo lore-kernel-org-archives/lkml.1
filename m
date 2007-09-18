@@ -1,75 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbXIROHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbXIROJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbXIROHf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 10:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbXIROH2
+	id S1756893AbXIROJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbXIROJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 10:07:28 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37520 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753695AbXIROH1 (ORCPT
+	Tue, 18 Sep 2007 10:09:15 -0400
+Received: from crawleyone.elekta.com ([193.235.128.13]:4371 "EHLO
+	crawleyone.elekta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754557AbXIROJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 10:07:27 -0400
-Date: Tue, 18 Sep 2007 16:07:39 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Oliver Falk <oliver@linux-kernel.at>
-Cc: linux-kernel@vger.kernel.org, axp-list@redhat.com,
-       Jay Estabrook <jay.estabrook@hp.com>, ac-admin@lists.anotherbloody.com
-Subject: Re: 2.6.23 alpha unistd.h changes
-Message-ID: <20070918140738.GD27980@stusta.de>
-References: <46EEE483.4020209@linux-kernel.at> <20070917214107.GB27980@stusta.de> <46EF90A3.2050109@linux-kernel.at>
+	Tue, 18 Sep 2007 10:09:14 -0400
+In-Reply-To: <Pine.LNX.4.61.0709180955360.6632@chaos.analogic.com>
+Subject: Re: PCI Interrupt
+To: "Linux kernel" <linux-kernel@vger.kernel.org>
+X-Mailer: Lotus Notes Release 6.5.1 January 21, 2004
+Message-ID: <OF8D17B2FD.EFB025F4-ON8025735A.004DB087-8025735A.004DB743@elekta.com>
+From: Duncan.Perrett@elekta.com
+Date: Tue, 18 Sep 2007 15:08:46 +0100
+X-MIMETrack: Serialize by Router on CrawleyOne/Servers/Elekta(Release 6.5.1|January 21, 2004) at
+ 09/18/2007 03:09:14 PM
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46EF90A3.2050109@linux-kernel.at>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 10:47:31AM +0200, Oliver Falk wrote:
-> On 09/17/2007 11:41 PM, Adrian Bunk wrote:
-> > On Mon, Sep 17, 2007 at 10:33:07PM +0200, Oliver Falk wrote:
-> >> Hi!
-> > 
-> > Hi Oliver!
-> > 
-> >> ...
-> >> As these additions are quite new to upstream kernel, but at Alphacore we
-> >> have patched it since a while now (I don't know about other Alpha ports;
-> >> Debian folks may speak up now!), I would suggest to use the same
-> >> 'ordering' of the syscalls upstream and add the new syscalls that we had
-> >> not in place, but are now upstream to the end of our 'old' list.
-> >> ...
-> > 
-> > I just checked:
-> > 
-> > It seems Debian didn't patch them into the kernel at all, and since two 
-> > months Debian unstable ships kernel 2.6.22 with the upstream syscall 
-> > numbers.
-> 
-> That's possible a problem. Right. Someone with contacts to Debian here?
-> If Debian hasn't rebuilt glibc against the new headers, we could change
-> it without problems.
->...
+The driver already does that ...
 
-According to the Debian auto-builder database [1], the Alpha glibc 
-package in Debian unstable has been rebuilt 8 times since the 2.6.22 
-kernel packages entered Debian unstable.
+result =
+        request_irq(irq, can_pci_interrupt, SA_INTERRUPT | SA_SHIRQ,
+                    pDevice->au8IrqName, pDevice);
 
-And it's not only Debian, at least Gentoo also offers an Alpha port.
 
-> Best,
->  Oliver
+Any other ideas?
 
-cu
-Adrian
+Duncan
 
-[1] http://buildd.debian.org/build.php?arch=alpha&pkg=glibc
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+                                                                           
+             "linux-os \(Dick                                              
+             Johnson\)"                                                    
+             <linux-os@analogi                                          To 
+             c.com>                    <Duncan.Perrett@elekta.com>         
+                                                                        cc 
+             18/09/2007 14:57          "Linux kernel"                      
+                                       <linux-kernel@vger.kernel.org>      
+                                                                   Subject 
+             Please respond to         Re: PCI Interrupt                   
+             "linux-os \(Dick                                              
+                Johnson\)"                                                 
+             <linux-os@analogi                                             
+                  c.com>                                                   
+                                                                           
+                                                                           
+
+
+
+
+
+On Tue, 18 Sep 2007 Duncan.Perrett@elekta.com wrote:
+
+>
+> I have a CAN PCI card installed on my Ubuntu box.
+> I understand that PCI interrupts should be level rather than edge
+> triggered.
+>
+> The output of cat /proc/interrupts is :-
+>
+>           CPU0
+>  0:    1614601    IO-APIC-edge  timer
+>  1:        164    IO-APIC-edge  i8042
+>  8:          3    IO-APIC-edge  rtc
+>  9:          1   IO-APIC-level  acpi
+> 12:          0    IO-APIC-edge  CAN-ACx-PCI_01
+> 14:      65786    IO-APIC-edge  ide0
+> 169:       3220   IO-APIC-level  eth0, i915@pci:0000:00:02.0
+> 177:      46459   IO-APIC-level  eth1
+> 209:          0   IO-APIC-level  uhci_hcd:usb3, eth2
+> 217:          2   IO-APIC-level  uhci_hcd:usb1, ehci_hcd:usb4
+> 225:        697   IO-APIC-level  uhci_hcd:usb2
+> NMI:          0
+> LOC:    1614399
+> ERR:          0
+> MIS:          0
+>
+> You see that irq 12 CAN-ACx-PCI_01 is edge triggered.
+> Is there any way of forcing the BIOS to see the interrupt as a
+> level-triggered one?
+
+It's done in the driver. IRQ12 can be shared, so the driver
+needs to request the IRQ as a shared interrupt.
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be
+privileged.  Any review, retransmission, dissemination, or other use of
+this information by persons or entities other than the intended recipient
+is prohibited.  If you are not the intended recipient, please notify
+Analogic Corporation immediately - by replying to this message or by
+sending an email to DeliveryErrors@analogic.com - and destroy all copies of
+this information, including any attachments, without reading or disclosing
+them.
+
+Thank you.
+
+
+
+
+*******************Internet Email Confidentiality Footer*******************
+The contents of this e-mail message (including any attachments hereto) are
+confidential to and are intended to be conveyed for the use of the
+recipient to whom it is addressed only. If you receive this transmission in
+error, please notify the sender of this immediately and delete the message
+from your system. Any distribution, reproduction or use of this message by
+someone other than recipient is not authorized and may be unlawful.
+Elekta Limited is a company registered in England and Wales whose
+registered number is 3244454 and whose registered address is Linac House,
+Fleming Way, Crawley, West Sussex, RH10 9RR
 
