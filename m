@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbXIRGjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbXIRGlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbXIRGjR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 02:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbXIRGjD
+	id S1756893AbXIRGlE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 02:41:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbXIRGky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 02:39:03 -0400
-Received: from sacred.ru ([62.205.161.221]:55232 "EHLO sacred.ru"
+	Tue, 18 Sep 2007 02:40:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43185 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754077AbXIRGjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 02:39:01 -0400
-Message-ID: <46EF71F0.9010606@openvz.org>
-Date: Tue, 18 Sep 2007 10:36:32 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1754819AbXIRGkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 02:40:53 -0400
+Date: Tue, 18 Sep 2007 08:40:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rob Hussey <robjhussey@gmail.com>
+Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+Subject: Re: Scheduler benchmarks - a follow-up
+Message-ID: <20070918064046.GD5138@elte.hu>
+References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com> <20070917130524.GA10707@elte.hu> <20070917203607.GA20564@elte.hu> <6b8cef970709172130v317a6c48h814ef5a1488f798e@mail.gmail.com>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
-Subject: Re: [PATCH] Wake up mandatory locks waiter on chmod
-References: <46E94993.3090506@openvz.org> <20070916194135.GC31801@fieldses.org> <46EE20C4.1060405@openvz.org> <20070917145934.GA4957@fieldses.org>
-In-Reply-To: <20070917145934.GA4957@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 18 Sep 2007 10:38:51 +0400 (MSD)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6b8cef970709172130v317a6c48h814ef5a1488f798e@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Mon, Sep 17, 2007 at 10:37:56AM +0400, Pavel Emelyanov wrote:
->> J. Bruce Fields wrote:
->>> Is there a small chance that a lock may be applied after this check:
->>>
->>>> +	mandatory = (inode->i_flock && MANDATORY_LOCK(inode));
->>>> +
->>> but early enough that someone can still block on the lock while the file
->>> is still marked for mandatory locking?  (And is the inode->i_flock check
->>> there really necessary?)
->> There is, but as you have noticed:
-> 
-> OK, but why not just remove the inode->i_flock check there?  I can't see
-> how it helps anyway.
-> 
->>> Well, there are probably worse races in the mandatory locking code.
->> ...there are. The inode->i_lock is protected with lock_kernel() only
->> and is not in sync with any other checks for inodes. This is sad :(
->> but a good locking for locks is to be done...
-> 
-> I would also prefer a locking scheme that didn't rely on the BKL.  That
-> said, except for this race:
 
-I would as well :) But I don't know the locking code good enough to
-start fixing. Besides, even if I send a patch series that handles this,
-I don't think that anyone will accept it, due to "this changes too much
-code", "can you prove you fixed all the places" and so on...
+* Rob Hussey <robjhussey@gmail.com> wrote:
 
->>> (For example, my impression is that a mandatory lock can be applied just
->>> after the locks_mandatory_area() checks but before the io actually
->>> completes.)
-> 
-> ... I'm not aware of other races in the existing file-locking code.  It
-> sounds like you might be.  Could you give specific examples?
+> A cursory glance suggests that performance wrt lat_ctx and hackbench 
+> has increased (lower numbers), but degraded quite a lot for pipe-test. 
+> The numbers for pipe-test are extremely stable though, while the 
+> numbers for hackbench are more erratic (which isn't saying much since 
+> the original numbers gave nearly a straight line). I'm still willing 
+> to try out any more ideas.
 
-Well, there's a long standing BUG in leases code - when we made all the
-checks in inserting lease, we call the locks_alloc_lock() and may fall
-asleep. Bu after the wakeup nobody re-checks for the things to change.
+pipe-test is a very stable workload, and is thus quite sensitive to the 
+associativity of the CPU cache. Even killing the task and repeating the 
+same test isnt enough to get rid of the systematic skew that this can 
+cause. I've seen divergence of up to 10% in pipe-test. One way to test 
+it is to run pipe-test, then to stop it, then to "ssh localhost" (this 
+in itself uses up a couple of pipe objects and file objects and changes 
+the cache layout picture), then run pipe-test again, then again "ssh 
+localhost", etc. Via this trick one can often see cache-layout 
+artifacts. How much 'skew' does pipe-test have on your system if you try 
+this manually?
 
-I suspect there are other bad places.
-
-> --b.
-> 
-
+	Ingo
