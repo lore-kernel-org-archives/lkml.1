@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbXIRH3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbXIRHdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbXIRH3u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 03:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbXIRH3m
+	id S1755611AbXIRHdf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 03:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbXIRHd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 03:29:42 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41920 "HELO mail.gmx.net"
+	Tue, 18 Sep 2007 03:33:28 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38629 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754159AbXIRH3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 03:29:41 -0400
+	id S1754093AbXIRHd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 03:33:27 -0400
 X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX1+AEdsA3jeA5Q3qId08WvUVTODftRap4Na2mhWJhB
-	cne2sVw+Yx3L1g
-Message-ID: <46EF7DDA.2070401@gmx.net>
-Date: Tue, 18 Sep 2007 09:27:22 +0200
+X-Provags-ID: V01U2FsdGVkX1/Szr0TNEbSQh2c3Y3pi6uU/nxfkCEa4AMM2Zc5bG
+	FukLvIe5iRrQJN
+Message-ID: <46EF7E82.8040503@gmx.net>
+Date: Tue, 18 Sep 2007 09:30:10 +0200
 From: Michael Kerrisk <mtk-manpages@gmx.net>
 User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Ulrich Drepper <drepper@redhat.com>, geoff@glare.org.uk,
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Ulrich Drepper <drepper@redhat.com>, geoff@gclare.org.uk,
        lkml <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, Christoph Hellwig <hch@lst.de>,
@@ -26,12 +27,16 @@ CC: Ulrich Drepper <drepper@redhat.com>, geoff@glare.org.uk,
        vda.linux@googlemail.com,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: RFC: A revised timerfd API
+Subject: Re: RFC: A revised timerfd API
+References: <46EF7DDA.2070401@gmx.net>
+In-Reply-To: <46EF7DDA.2070401@gmx.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+[Resend, because I got one email address wrong in the earlier send]
 
 After my earlier mail (full thread here:
 http://thread.gmane.org/gmane.linux.kernel/574430/focus=579368 )
@@ -213,3 +218,4 @@ That's it.  I welcome people's thoughts on these designs.
 Cheers,
 
 Michael
+
