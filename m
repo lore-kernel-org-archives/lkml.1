@@ -1,74 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757617AbXIREgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbXIRExo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757617AbXIREgL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 00:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbXIREf4
+	id S1756350AbXIRExo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 00:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbXIRExh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 00:35:56 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38267 "EHLO e2.ny.us.ibm.com"
+	Tue, 18 Sep 2007 00:53:37 -0400
+Received: from 1wt.eu ([62.212.114.60]:2542 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753979AbXIREfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 00:35:55 -0400
-Date: Tue, 18 Sep 2007 10:06:07 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: kexec@lists.infradead.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/7] Use extended crashkernel command line on i386
-Message-ID: <20070918043607.GB4842@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070913161428.343951643@strauss.suse.de> <20070913161429.087964162@strauss.suse.de>
+	id S1752276AbXIRExg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 00:53:36 -0400
+Date: Tue, 18 Sep 2007 06:53:28 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Rob Hussey <robjhussey@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       ck@vds.kolivas.org
+Subject: Re: Scheduler benchmarks - a follow-up
+Message-ID: <20070918045328.GD10199@1wt.eu>
+References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com> <20070917130524.GA10707@elte.hu> <20070917203607.GA20564@elte.hu> <6b8cef970709172130v317a6c48h814ef5a1488f798e@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070913161429.087964162@strauss.suse.de>
+In-Reply-To: <6b8cef970709172130v317a6c48h814ef5a1488f798e@mail.gmail.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 06:14:30PM +0200, Bernhard Walle wrote:
-> -
->  void arch_crash_save_vmcoreinfo(void)
->  {
->  #ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
-> --- a/arch/i386/kernel/setup.c
-> +++ b/arch/i386/kernel/setup.c
-> @@ -381,6 +381,33 @@ extern unsigned long __init setup_memory
->  extern void zone_sizes_init(void);
->  #endif /* !CONFIG_NEED_MULTIPLE_NODES */
-> 
-> +#ifdef CONFIG_KEXEC
-> +static void reserve_crashkernel(void)
-> +{
-> +	unsigned long long 	free_mem;
-> +	unsigned long long 	crash_size, crash_base;
-> +	int			ret;
-> +
-> +	free_mem = (max_low_pfn + highend_pfn - highstart_pfn) << PAGE_SHIFT;
-> +
-> +	ret = parse_crashkernel(boot_command_line, free_mem,
-> +			&crash_size, &crash_base);
-> +	if (ret == 0 && crash_size > 0 && crash_base > 0) {
-> +		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-> +				"for crashkernel (System RAM: %ldMB)\n",
-> +				(unsigned long)(crash_size >> 20),
-> +				(unsigned long)(crash_base >> 20),
-> +				(unsigned long)(free_mem >> 20));
-> +		crashk_res.start = crash_base;
-> +		crashk_res.end   = crash_base + crash_size - 1;
-> +		reserve_bootmem(crash_base, crash_size);
+Hi Rob,
 
-Hi Bernhard,
+On Tue, Sep 18, 2007 at 12:30:05AM -0400, Rob Hussey wrote:
+> I should have pointed out before that I don't really have a dual-core
+> system, just a P4 with Hyper-Threading (I loosely used core to refer
+> to processor).
 
-I think we might need to do more here. Because [offset] is optional, one
-would assume that things will work even if offset is not specified. But
-in this patchset, that's not the case for i386 and x86_64. It will silently
-fail if a user does not specify the offset. No memory will be reserved for
-capture kernel.
+Just for reference, we call them "siblings", not "cores" on HT. I believe
+that a line "Sibling:" appears in /proc/cpuinfo BTW.
 
-I think we either need to make offset mandatory or put in additional
-intelligence here to choose the offset automatically based on the memory
-available.
+Regards,
+Willy
 
-Thanks
-Vivek
