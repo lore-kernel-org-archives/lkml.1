@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbXIRMbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbXIRMcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbXIRMbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 08:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbXIRMbg
+	id S1757845AbXIRMcS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 08:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755326AbXIRMcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 08:31:36 -0400
-Received: from adsl-67-64-89-177.dsl.austtx.swbell.net ([67.64.89.177]:53781
-	"EHLO dev.peereboom.us" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755874AbXIRMbf (ORCPT
+	Tue, 18 Sep 2007 08:32:00 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55192 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756361AbXIRMb7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 08:31:35 -0400
-Date: Tue, 18 Sep 2007 07:24:47 -0500
-From: Marco Peereboom <slash@peereboom.us>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: misc@openbsd.org, Theodore Tso <tytso@mit.edu>,
-       Claudio Jeker <cjeker@diehard.n-r-g.com>, Adrian Bunk <bunk@kernel.org>,
-       "Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Bandwidth
-Message-ID: <20070918122447.GB31223@peereboom.us>
-References: <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <20070918090013.GU32213@nudo.bsws.de> <20070918112947.GA31223@peereboom.us> <1190117086.11726.0.camel@bip.parateam.prv>
-MIME-Version: 1.0
+	Tue, 18 Sep 2007 08:31:59 -0400
+Date: Tue, 18 Sep 2007 22:31:07 +1000
+From: David Chinner <dgc@sgi.com>
+To: Mel Gorman <mel@skynet.ie>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joern Engel <joern@logfs.org>, andrea@suse.de,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Message-ID: <20070918123107.GW23367404@sgi.com>
+References: <20070911060349.993975297@sgi.com> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070916181313.GA16406@skynet.ie> <200709161903.37295.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709171458541.29993@schroedinger.engr.sgi.com> <20070918100040.GB2035@skynet.ie>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1190117086.11726.0.camel@bip.parateam.prv>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20070918100040.GB2035@skynet.ie>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That's it; that easy.
+On Tue, Sep 18, 2007 at 11:00:40AM +0100, Mel Gorman wrote:
+> We still lack data on what sort of workloads really benefit from large
+> blocks (assuming there are any that cannot also be solved by improving
+> order-0).
 
-On Tue, Sep 18, 2007 at 02:04:46PM +0200, Xavier Bestel wrote:
-> Le mardi 18 septembre 2007 ` 06:29 -0500, Marco Peereboom a icrit :
-> > Now if they'd fix the copyright message to only mention Reyk all would
-> > be good.
-> 
-> All this mess so easily solved ? Too good to be true.
-> 
-> 	Xav
-> 
+No we don't. All workloads benefit from larger block sizes when
+you've got a btree tracking 20 million inodes and a create has to
+search that tree for a free inode.  The tree gets much wider and
+hence we take fewer disk seeks to traverse the tree. Same for large
+directories, btree's tracking free space, etc - everything goes
+faster with a larger filesystem block size because we spent less
+time doing metadata I/O.
+
+And the other advantage is that sequential I/O speeds also tend to
+increase with larger block sizes. e.g. XFS on an Altix (16k pages)
+using 16k block size is about 20-25% faster on writes than 4k block
+size. See the graphs at the top of page 12:
+
+http://oss.sgi.com/projects/xfs/papers/ols2006/ols-2006-paper.pdf
+
+The benefits are really about scalability and with terabyte sized
+disks on the market.....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
