@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbXIRSEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761800AbXIRSFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932309AbXIRSEj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 14:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbXIRSE2
+	id S1761800AbXIRSFT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 14:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760510AbXIRSE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 14:04:28 -0400
-Received: from evilkittens.org ([72.232.81.178]:45652 "EHLO evilkittens.org"
+	Tue, 18 Sep 2007 14:04:57 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:36914 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760901AbXIRSE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 14:04:27 -0400
-X-Greylist: delayed 2076 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 14:04:26 EDT
-Date: Tue, 18 Sep 2007 06:28:49 -0500
-From: Gilles Chehade <gilles@openbsd.org>
-To: Theodore Tso <tytso@mit.edu>, Marco Peereboom <slash@peereboom.us>,
-       misc@openbsd.org, Claudio Jeker <cjeker@diehard.n-r-g.com>,
-       Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
-       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070918112849.GA14076@evilkittens.org>
-References: <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <20070918090013.GU32213@nudo.bsws.de> <20070918112947.GA31223@peereboom.us> <20070918125647.GH18360@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070918125647.GH18360@thunk.org>
-X-Operating-System: OpenBSD evilkittens.org 4.1 EVILKITTENS
-User-Agent: Mutt/1.5.12-2006-07-14
+	id S1759834AbXIRSEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 14:04:55 -0400
+Subject: Re: [PATCH] JBD slab cleanups
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: cmm@us.ibm.com
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1190133347.3819.6.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
+	 <20070902152801.GA19962@infradead.org>
+	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
+	 <20070903134043.GB28962@infradead.org>
+	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
+	 <20070903193308.GA7771@infradead.org>
+	 <1189796027.3841.6.camel@localhost.localdomain>
+	 <1190057391.3845.22.camel@localhost.localdomain>
+	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
+	 <1190069851.6725.6.camel@localhost.localdomain>
+	 <20070918090407.GA671@infradead.org>
+	 <1190133347.3819.6.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 18 Sep 2007 13:04:50 -0500
+Message-Id: <1190138690.6528.23.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 08:56:47AM -0400, Theodore Tso wrote:
->
-> [...]
->
-> Petty, isn't it?  Let's just say it's b.s. like this which is why, 16
-> years ago, I decided to work with Linux instead of BSD.
+On Tue, 2007-09-18 at 09:35 -0700, Mingming Cao wrote:
+> On Tue, 2007-09-18 at 10:04 +0100, Christoph Hellwig wrote:
+> > On Mon, Sep 17, 2007 at 03:57:31PM -0700, Mingming Cao wrote:
+> > > Here is the incremental small cleanup patch. 
+> > > 
+> > > Remove kamlloc usages in jbd/jbd2 and consistently use jbd_kmalloc/jbd2_malloc.
+> > 
+> > Shouldn't we kill jbd_kmalloc instead?
+> > 
 > 
+> It seems useful to me to keep jbd_kmalloc/jbd_free. They are central
+> places to handle memory (de)allocation(<page size) via kmalloc/kfree, so
+> in the future if we need to change memory allocation in jbd(e.g. not
+> using kmalloc or using different flag), we don't need to touch every
+> place in the jbd code calling jbd_kmalloc.
 
-Fortunately, no one seems to miss you so much in the BSD camp ;-)
+I disagree.  Why would jbd need to globally change the way it allocates
+memory?  It currently uses kmalloc (and jbd_kmalloc) for allocating a
+variety of structures.  Having to change one particular instance won't
+necessarily mean we want to change all of them.  Adding unnecessary
+wrappers only obfuscates the code making it harder to understand.  You
+wouldn't want every subsystem to have it's own *_kmalloc() that took
+different arguments.  Besides, there aren't that many calls to kmalloc
+and kfree in the jbd code, so there wouldn't be much pain in changing
+GFP flags or whatever, if it ever needed to be done.
 
-Gilles
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
