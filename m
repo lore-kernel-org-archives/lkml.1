@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXIRVql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761526AbXIRVrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbXIRVql (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbXIRVqa
+	id S1761526AbXIRVrk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXIRVrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:46:30 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37019 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755034AbXIRVq3 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:46:29 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Combine instrumentation menus in kernel/Kconfig.instrumentation
-In-Reply-To: Your message of "Tue, 18 Sep 2007 17:12:59 EDT."
-             <20070918211259.GA14927@Krystal>
-From: Valdis.Kletnieks@vt.edu
-References: <20070918211259.GA14927@Krystal>
+	Tue, 18 Sep 2007 17:47:31 -0400
+Received: from 1wt.eu ([62.212.114.60]:2568 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751435AbXIRVra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 17:47:30 -0400
+Date: Tue, 18 Sep 2007 23:47:05 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ville Herva <v@iki.fi>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: 2.4.35 SMP: ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal
+Message-ID: <20070918214705.GG10199@1wt.eu>
+References: <20070918122314.GL29062@vianova.fi> <20070918151206.GC13304@atrey.karlin.mff.cuni.cz> <20070918160949.GR29062@vianova.fi> <20070918162256.GA3280@atrey.karlin.mff.cuni.cz> <20070918163326.GT29062@vianova.fi>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190151939_4811P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 18 Sep 2007 17:45:39 -0400
-Message-ID: <14754.1190151939@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070918163326.GT29062@vianova.fi>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190151939_4811P
-Content-Type: text/plain; charset=us-ascii
+Hi Ville,
 
-On Tue, 18 Sep 2007 17:12:59 EDT, Mathieu Desnoyers said:
+On Tue, Sep 18, 2007 at 07:33:26PM +0300, Ville Herva wrote:
+> On Tue, Sep 18, 2007 at 06:22:56PM +0200, you [Jan Kara] wrote:
+> > > Sorry for the sparse details, but when you have these kind of problems on
+> > > live servers, you tend to forget the debuggability...
+> >   Yes, I can understand that :). It's just that now it's hard to find
+> > out what has really happened. Anyway, thanks for your report.
+> 
+> If we are really lucky or unlucky it will happen again. 
+> 
+> Zeroed-out block just might be a kernel problem (SMP race, whatever) -
+> random corruption would more likely be a hardware problem. There were no IO
+> error either. But, 2.4 ext3 has been pretty extensively tested, so I don't
+> suppose that's likely either. And judging from
+> http://www.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.3[45] there
+> haven't been many changes to ext3 lately either.
 
-> +++ linux-2.6-lttng/kernel/Kconfig.instrumentation	2007-09-18 13:18:17.000
-000000 -0400
-> @@ -0,0 +1,40 @@
-> +menuconfig INSTRUMENTATION
-> +	bool "Instrumentation Support"
-> +	default y
-> +	---help---
-> +	  Say Y here to get to see options related to performance measurement,
-> +	  debugging, and testing. This option alone does not add any kernel code.
-> +
-> +	  If you say N, all options in this submenu will be skipped and disabled.
+Thanks for your report. Unfortunately, I've rechecked the recent changelogs
+and see nothing related either. At least, in order to keep trace of the
+incident, would you please post some info about your config (CPU, RAM,
+chipset, .config, gcc, and any possible patches you may have applied) ?
+Maybe some of these info may remind old bad memories to some people.
 
-OK, I'll bite - given the mention of 'debugging' there, do we want to go for
-broke and *also* suck in the 'Kernel Hacking' menu as well?
+Also, do you know if this server has ECC memory ? I would more easily
+bet for side effects of one random bit flip in memory than for some
+massive block corruption.
 
---==_Exmh_1190151939_4811P
-Content-Type: application/pgp-signature
+I vaguely remember about very old reports of people sometimes observing
+zeroed out blocks during writes, which were attributed to chipset bugs
+if my memory serves me. But I would rule this out as recent chipsets
+look more stable than 5-10 years ago !
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Regards,
+Willy
 
-iD8DBQFG8EcDcC3lWbTT17ARAqgHAKC/IvJGyJK8DlAOlA+HZg5zKhueEwCgrdbn
-4GH5l6zC6OGaa83eaDxjyeo=
-=egQB
------END PGP SIGNATURE-----
-
---==_Exmh_1190151939_4811P--
