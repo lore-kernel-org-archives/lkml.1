@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbXIRVFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbXIRVHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbXIRVFf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXIRVF2
+	id S1754626AbXIRVHr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbXIRVHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:05:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42285 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751399AbXIRVF0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:05:26 -0400
-Date: Tue, 18 Sep 2007 14:05:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       sparclinux@vger.kernel.org,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: 2.6.23-rc6-mm1 sparc build error
-Message-Id: <20070918140508.e2c56212.akpm@linux-foundation.org>
-In-Reply-To: <20070918205403.GA13650@Krystal>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070918205403.GA13650@Krystal>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Sep 2007 17:07:40 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54328 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751747AbXIRVHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 17:07:39 -0400
+Message-Id: <20070918210601.028313546@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Sep 2007 17:06:01 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 00/11] Text Edit Lock for 2.6.23-rc6-mm1
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 18 Sep 2007 21:07:34 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 16:54:03 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Hi Andrew,
 
-> I got the following error when building 2.6.23-rc6-mm1 on sparc:
-> 
-> 
->   /opt/crosstool/gcc-4.1.1-glibc-2.3.6/sparc-unknown-linux-gnu/bin/sparc-unknown-linux-gnu-gcc -Wp,-MD,drivers/serial/.serial_core.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.1.1-glibc-2.3.6/sparc-unknown-linux-gnu/lib/gcc/sparc-unknown-linux-gnu/4.1.1/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h  -I/home/compudj/git/linux-2.6-lttng/drivers/serial -Idrivers/serial -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7 -fomit-frame-pointer -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(serial_core)"  -D"KBUILD_MODNAME=KBUILD_STR(serial_core)" -c -o drivers/serial/.tmp_serial_core.o /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c
-> /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c: In function 'uart_suspend_port':
-> /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c:1980: error: implicit declaration of function 'enable_irq_wake'
-> /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c: In function 'uart_resume_port':
-> /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c:2035: error: implicit declaration of function 'disable_irq_wake'
+Here are the text edit lock patches ported to 2.6.23-rc6-mm1.
 
-hm, I wonder why I didn't hit that.
+Patch order:
 
-enable_irq_wake() was added by wake-up-from-a-serial-port.patch
+kprobes-use-mutex-for-insn-pages.patch
+kprobes-dont-use-kprobes-mutex-in-arch-code.patch
+kprobes-declare-kprobes-mutex-static.patch
+declare-array.patch
+text-edit-lock-architecture-independent-code.patch
+text-edit-lock-alternative-i386-and-x86_64.patch
+text-edit-lock-kprobes-architecture-independent.patch
+text-edit-lock-kprobes-i386.patch
+text-edit-lock-kprobes-x86_64.patch
+text-edit-lock-i386-standardize-debug-rodata.patch
+text-edit-lock-x86_64-standardize-debug-rodata.patch
 
-I note that git-input adds a call too, and might have a problem
-with !CONFIG_GENERIC_HARDIRQS.
+Mathieu
 
-Not sure what the best fix is here.  We could sprinkle ifdefs all
-over the code, or just add the suitable empty stubs for enable_irq_wake(),
-etc.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
