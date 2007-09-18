@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbXIRMuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbXIRM5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbXIRMuu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 08:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbXIRMuk
+	id S1755287AbXIRM5X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 08:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXIRM5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 08:50:40 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:4987 "EHLO kernel.dk"
+	Tue, 18 Sep 2007 08:57:15 -0400
+Received: from THUNK.ORG ([69.25.196.29]:44645 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751102AbXIRMuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 08:50:39 -0400
-Date: Tue, 18 Sep 2007 14:51:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: michaelc@cs.wisc.edu, pj@sgi.com, apw@shadowen.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie,
-       linux-scsi@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: 2.6.23-rc4-mm1
-Message-ID: <20070918125103.GR25592@kernel.dk>
-References: <20070917132819.GC25592@kernel.dk> <20070917192528E.tomof@acm.org> <20070918101840.GN25592@kernel.dk> <20070918123238X.tomof@acm.org>
+	id S1752236AbXIRM5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 08:57:14 -0400
+Date: Tue, 18 Sep 2007 08:56:47 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Marco Peereboom <slash@peereboom.us>
+Cc: misc@openbsd.org, Claudio Jeker <cjeker@diehard.n-r-g.com>,
+       Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+Message-ID: <20070918125647.GH18360@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Marco Peereboom <slash@peereboom.us>, misc@openbsd.org,
+	Claudio Jeker <cjeker@diehard.n-r-g.com>,
+	Adrian Bunk <bunk@kernel.org>,
+	"Can E. Acar" <can.acar@pro-g.com.tr>, linux-kernel@vger.kernel.org,
+	Daniel Hazelton <dhazelton@enter.net>,
+	Eben Moglen <moglen@softwarefreedom.org>,
+	Lawrence Lessig <lessig_from_web@pobox.com>,
+	"Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+	Matt Norwood <norwood@softwarefreedom.org>
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <20070918090013.GU32213@nudo.bsws.de> <20070918112947.GA31223@peereboom.us>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070918123238X.tomof@acm.org>
+In-Reply-To: <20070918112947.GA31223@peereboom.us>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18 2007, FUJITA Tomonori wrote:
-> On Tue, 18 Sep 2007 12:18:40 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Mon, Sep 17 2007, FUJITA Tomonori wrote:
-> > > On Mon, 17 Sep 2007 15:28:19 +0200
-> > > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > On Sat, Sep 15 2007, FUJITA Tomonori wrote:
-> > > > > On Fri, 14 Sep 2007 21:16:35 -0700
-> > > > > Paul Jackson <pj@sgi.com> wrote:
-> > > > > 
-> > > > > > FUJITA Tomonori wrote:
-> > > > > > > Can you try this patch (against 2.6.23-rc4-mm1)?
-> > > > > > > 
-> > > > > > > >From 592bd2049cb3e6e1f1dde7cf631879f26ddffeaa Mon Sep 17 00:00:00 2001
-> > > > > > > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > > > > Date: Mon, 10 Sep 2007 04:17:13 +0100
-> > > > > > > Subject: [PATCH] qla1280: sg chaining fixes
-> > > > > > > 
-> > > > > > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > > > > ---
-> > > > > > >  drivers/scsi/qla1280.c |    5 ++++-
-> > > > > > >  1 files changed, 4 insertions(+), 1 deletions(-)
-> > > > > > 
-> > > > > > This patch works for me.
-> > > > > > 
-> > > > > > I was getting the scsi errors reported earlier in
-> > > > > > this thread, running 2.6.23-rc4-mm1 on one of our
-> > > > > > big SGI Altix systems.
-> > > > > > 
-> > > > > > Applying this patch fixed it, so far as I can tell,
-> > > > > > which is to say my system boots cleanly once again.
-> > > > > 
-> > > > > Thanks for testing!
-> > > > > 
-> > > > > Jens, we could enable use_sg_chaining option for qla1280.
-> > > > 
-> > > > Added, thanks!
-> > > 
-> > > Thanks.
-> > > 
-> > > BTW, please don't forget to integrate the following patches:
-> > > 
-> > > 
-> > > - revert sg segment size ifdefs
-> > > 
-> > > http://marc.info/?l=linux-scsi&m=118881264013097&w=2
-> > > 
-> > > - remove sglist_len
-> > > 
-> > > http://marc.info/?l=linux-scsi&m=118907920405100&w=2
-> > 
-> > Added, and I rebased the sglist-* branches to current again. So
-> > everything should be fully uptodate once more.
-> 
-> Thanks, here are a few more things.
-> 
-> - please drop the iscsi patch since Mike has major changes to iscsi
-> I/O path.
-> 
-> - ipr sg chaining need to be disabled since libata is not ready.
-> 
-> - you can add Doug's ACK to scsi_debug patch:
-> 
-> http://marc.info/?l=linux-scsi&m=118926325931801&w=2
+On Tue, Sep 18, 2007 at 06:29:48AM -0500, Marco Peereboom wrote:
+> Now if they'd fix the copyright message to only mention Reyk all would
+> be good.
 
-All done.
+It *does* mention Reyk, if you would bother to look.  The thing which
+Theo is kvetching about, and which apparently is enough to cause the
+*BSD zombies to start attacking without actually _checking_ _for_
+_themselves_ is whether or not Jiri and Nick did enough to work so
+they should have their names listed in the headers.  In other words,
+all of the megabytes and megabhytes of flamewar is over these two
+lines:
 
--- 
-Jens Axboe
+> * Copyright (c) 2006-2007 Nick Kossifidis <mickflemm@gmail.com>
+> * Copyright (c) 2007 Jiri Slaby <jirislaby@gmail.com>
 
+Petty, isn't it?  Let's just say it's b.s. like this which is why, 16
+years ago, I decided to work with Linux instead of BSD.
+
+						- Ted
+
+P.S.  And yes, before those two lines is:
+
+> * Copyright (c) 2004-2007 Reyk Floeter <reyk@openbsd.org>
+
+and after those two lines is the BSD permission notice.
