@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbXIRIoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbXIRIsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbXIRIoa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 04:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbXIRIoX
+	id S1754245AbXIRIsm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 04:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbXIRIsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 04:44:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:8444 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751114AbXIRIoW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 04:44:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=unJPWVVPrc0Yu8xZffH+HjkfqXMJBfZKg4LLdysazypLCm2N741PShzINOcvYTou74nUeCJZC1yBguAnlZQNa284bn+UMA97/JL7vbIp5xGZOBkO4QbLZAzq0t/0N9IZMFPUujEYafldAt+Y+YvDwiItBlnRdAVw04uPli55NnU=
-Subject: Re: VGA text console display problem with kernel 2.6.23-rc5/6
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: lnx-kern@soo.com
-Cc: Kernel Mailing list <linux-kernel@vger.kernel.org>
-In-Reply-To: <46EF7DAD.3080502@soo.com>
-References: <46EF7DAD.3080502@soo.com>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 16:44:15 +0800
-Message-Id: <1190105055.6446.2.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Sep 2007 04:48:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51342 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752067AbXIRIse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 04:48:34 -0400
+Date: Tue, 18 Sep 2007 10:48:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rob Hussey <robjhussey@gmail.com>
+Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+Subject: Re: Scheduler benchmarks - a follow-up
+Message-ID: <20070918084825.GA25803@elte.hu>
+References: <6b8cef970709170221s4301e896x2ee123a149c05c3a@mail.gmail.com> <20070917130524.GA10707@elte.hu> <20070917203607.GA20564@elte.hu> <6b8cef970709172130v317a6c48h814ef5a1488f798e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6b8cef970709172130v317a6c48h814ef5a1488f798e@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-18 at 03:26 -0400, ben soo wrote:
-> i've 2 servers with old PCI VGA cards, one using X86_64 kernel 
-> version 2.6.23-rc5 and one with i386 kernel version 2.6.23-rc6,
-> both wired into the same CRT via a KVM switch.
 
-Is this new? If yes, what's the version of the last working kernel?
+* Rob Hussey <robjhussey@gmail.com> wrote:
 
-> 
-> No matter what text screen size i set on both these machines (using 
-> resizecons) the shell line where i type in commands is past the 
-> bottom of the screen, invisible.
-> 
-> Another box connected to the same KVM displays fine, and it runs 
-> 2.6.22-rc7.
-> 
-> i also have a box running kernel 2.6.23-rc5 where the console 
-> display is fine: it uses a GeForce 8500 PCI-E vidcard driving a LCD 
-> screen.
+> The obligatory graphs:
+> http://www.healthcarelinen.com/misc/benchmarks/BOUND_NOPREEMPT_lat_ctx_benchmark.png
+> http://www.healthcarelinen.com/misc/benchmarks/BOUND_NOPREEMPT_hackbench_benchmark.png
+> http://www.healthcarelinen.com/misc/benchmarks/BOUND_NOPREEMPT_pipe-test_benchmark.png
 
-Can you post dmesg and output of stty -a?
+btw., it's likely that if you turn off CONFIG_PREEMPT for .21 and for 
+.22-ck1 they'll improve a bit too - so it's not fair to put the .23 
+!PREEMPT numbers on the graph as the PREEMPT numbers of the other 
+kernels. (it shows the .23 scheduler being faster than it really is)
 
-Tony
+> A cursory glance suggests that performance wrt lat_ctx and hackbench 
+> has increased (lower numbers), but degraded quite a lot for pipe-test. 
+> The numbers for pipe-test are extremely stable though, while the 
+> numbers for hackbench are more erratic (which isn't saying much since 
+> the original numbers gave nearly a straight line). I'm still willing 
+> to try out any more ideas.
 
+the pipe-test behavior looks like an outlier. !PREEMPT only removes code 
+(which makes the code faster), so this could be a cache layout artifact. 
+(or perhaps we preempt at a different point which is disadvantageous to 
+caching?) Pipe-test is equivalent to "lat_ctx -s 0 2" so if there was a 
+genuine slowdown it would show up in the lat_ctx graph - but the graph 
+shows a speedup.
 
+	Ingo
