@@ -1,61 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbXIRU0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbXIRU0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbXIRU0j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 16:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbXIRU0c
+	id S1757544AbXIRU0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 16:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbXIRU0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 16:26:32 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59436 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754037AbXIRU0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 16:26:31 -0400
-Date: Tue, 18 Sep 2007 22:26:54 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: 2.6.23-rc6-mm1
-Message-ID: <20070918202654.GA27836@uranus.ravnborg.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <a44ae5cd0709180827w7156dc17q13853c3f2c127142@mail.gmail.com> <20070918191741.GA27725@uranus.ravnborg.org> <a44ae5cd0709181242j517e39e0xc3f78224bcda360a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a44ae5cd0709181242j517e39e0xc3f78224bcda360a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 18 Sep 2007 16:26:47 -0400
+Received: from pool-71-118-246-34.lsanca.dsl-w.verizon.net ([71.118.246.34]:59592
+	"EHLO www.thewybles.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754070AbXIRU0r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 16:26:47 -0400
+Message-ID: <46F034A8.2070801@thewybles.com>
+Date: Tue, 18 Sep 2007 13:27:20 -0700
+From: Charles N Wyble <charles@thewybles.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: virtualization@lists.linux-foundation.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] Time to make CONFIG_PARAVIRT non-experimental.
+References: <1189747054.7262.34.camel@localhost.localdomain> <200709181257.41530.ak@suse.de> <46F02F50.5000001@thewybles.com> <200709182220.27311.ak@suse.de>
+In-Reply-To: <200709182220.27311.ak@suse.de>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 03:42:58PM -0400, Miles Lane wrote:
-> On 9/18/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > Hi Miles.
-> > On Tue, Sep 18, 2007 at 11:27:23AM -0400, Miles Lane wrote:
-> > > Selecting Help for "Subarchitecture Type" causes "make menuconfig" to
-> > > crash, and the bash display settings have to be reset.
-> >
-> > Not reproduceable here.
-> > But I noticed that we pass a null pointer to a vsprintf function which
-> > in the cases you pointed out printed a (null) at my system.
-> > Could you plase try if attached patch fix your system.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+
+
+Andi Kleen wrote:
 > 
-> Sorry, it still crashes.  I am running Ubuntu pre-6.10 (Gutsy -- the
-> development version of the distro).  Maybe I should try "make
-> mrproper" first?
+>> 	Why is making something default y a bad idea? 
+>> Those most likely to care can turn it off. Is there a harmful effect
+>> from leaving it on if its not being used?
+> 
+> Running yes "" | make oldconfig to upgrade kernel configs is standard practice
+> and you definitely don't want to have all kinds of random new unnecessary features
+> be turned on then.
 
-make mrproper should not do any difference here.
-I rather think you hit some ncurses bug.
+Hmmmm. I disagree its a standard practice. I thought the whole point of
+make oldconfig was to give you just the delta in configuration options
+and was targeted at manual review?
 
-If you could add '-g' to HOSTCFLAGS in top-level Makefile
-and then do:
-rm scripts/kconfig/mconf.o scripts/kconfig/mconf
-make menuconfig
+Also how many people are building there own kernels these days?
+Expanding on what I said in the original e-mail those who are likely to
+care "CAN TURN IT OFF". Those who care about such things should be
+REVIEWING CHANGES anyway. Thats what I do when looking at building
+custom kernels. What changed that makes me want to move to a new version?
 
-(to build mconf and to check that the error is still reproduceable).
-And then run it in a debugger like this:
-gdb scripts/kconfig/mconf
-run arch/x86_64/Kconfig
-         ^^^^^^ replace with your actual arch
+I generally try to stick with the distro kernel when possible, but part
+of being an early and aggressive adopter of virtualization technology
+involves running non distro kernels and patches.
 
-Provoke the error and get a back-trace with 'bt'.
+Most people don't really care.
 
-Thanks,
-	Sam
+> 
+> Besides paravirt by itself is pretty useless; you need typically quite
+> complex other options set to do any meaningfull virtualization.
+
+Actually if I understand the functionality of paravirt correctly that is
+not correct. I believe that will turn on the paravirt bits which allow
+it to run under things such as VMI or Xen.
+
+> 
+> The only reason to use default y is in options that are not user visible
+> and have a reasonable default or things that cause direct boot failures
+> when upgrading old configurations. That all doesn't apply here.
+
+Again you need to think about the target audience here. A distro kernel
+you don't have to worry about this stuff. A user compiling there own
+kernel should already be able to handle this.
+
+> 
+> Besides it's bad taste and taste is very important.
+
+Well it's bad taste for you (one person). Taste is highly subjective. So
+be careful in making broad ranging statements like this. :)
+
+> 
+> -Andi
+> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFG8DSnkQPZV56XDBMRAtZcAJ4rtRXGW14b70YRIBKyHCsaKTdO/wCeOdoM
+AUc4YGUaqs5DmDDbov7X980=
+=UA4y
+-----END PGP SIGNATURE-----
