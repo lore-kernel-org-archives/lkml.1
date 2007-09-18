@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbXIROmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbXIROof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140AbXIROmi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 10:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758817AbXIROm3
+	id S1759257AbXIROof (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbXIROoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 10:42:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42639 "EHLO mx1.redhat.com"
+	Tue, 18 Sep 2007 10:44:25 -0400
+Received: from mail.tmr.com ([64.65.253.246]:51485 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758845AbXIROm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 10:42:28 -0400
-Message-ID: <46EFE3AE.9040909@redhat.com>
-Date: Tue, 18 Sep 2007 10:41:50 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	id S1758879AbXIROoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 10:44:24 -0400
+Message-ID: <46EFE3F5.5070201@tmr.com>
+Date: Tue, 18 Sep 2007 10:43:01 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Anton Altaparmakov <aia21@cam.ac.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       marc.smith@esmail.mcc.edu
-Subject: Re: VM/VFS bug with large amount of memory and file systems?
-References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk> <200709170828.01098.nickpiggin@yahoo.com.au> <46EEB3AC.20205@redhat.com> <200709180312.31937.nickpiggin@yahoo.com.au>
-In-Reply-To: <200709180312.31937.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Newsgroups: gmane.linux.network,gmane.linux.kernel
+To: David Miller <davem@davemloft.net>
+CC: ytht.net@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.22.6 NETWORKING [IPV4]: Always use source addr in
+   skb to reply packet
+References: <20070918021617.GA15540@router.lepton.home> <20070917.192044.48396034.davem@davemloft.net>
+In-Reply-To: <20070917.192044.48396034.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Tuesday 18 September 2007 03:04, Rik van Riel wrote:
->> Nick Piggin wrote:
->>> (Rik has a patch sitting in -mm I believe which would make this problem
->>> even worse, by doing even less highmem scanning in response to lowmem
->>> allocations).
->> My patch should not make any difference here, since
->> balance_pgdat() already scans the zones from high to
->> low and sets an end_zone variable that determines the
->> highest zone to scan.
+David Miller wrote:
+> From: lepton <ytht.net@gmail.com>
+> Date: Tue, 18 Sep 2007 10:16:17 +0800
+> 
+>> Hi,
+>>   In some situation, icmp_reply and ip_send_reply will send
+>>   out packet with the wrong source addr, the following patch
+>>   will fix this.
 >>
->> All my patch does is make sure that we do not try to
->> reclaim excessive amounts of dma or low memory when
->> a higher zone is full.
+>>   I don't understand why we must use rt->rt_src in the current
+>>   code, if this is a wrong fix, please correct me.
+>>
+>> Signed-off-by: Lepton Wu <ytht.net@gmail.com>
 > 
-> Sorry, yeah I had it the wrong way around. Your patch would not
-> increase the probability of this problem.
+> That the address is wrong is your opinion only :-)
+
+Mine too, since an ICMP reply from an unexpected source IP is likely to 
+be logged as a probe and dropped.
 > 
-> We could have some logic in there to scan highmem when buffer
-> heads are over limit. But that really kind of sucks in that it introduces
-> some arbitrary point where reclaim behaviour completely changes...
-> Adding a shrinker for buffer heads is the "logical" approach 
-
-Christoph Lameter's slab defragmenting patch set does
-this.  One reason Andrew has not merged that code yet
-is a lack of reviewers, so I am going through it with
-a fine comb and hope to have the patches reviewed by
-the end of today.
-
-Lets get this bug fixed the right way.
+> Source address selection is a rather complex topic, and
+> here we are definitely purposefully using the source
+> address selected by the routing lookup for the reply.
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
