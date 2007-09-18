@@ -1,123 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbXIROgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbXIROlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139AbXIROgl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 10:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbXIROgd
+	id S1758923AbXIROlt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbXIROlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 10:36:33 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:2679 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753592AbXIROgc convert rfc822-to-8bit (ORCPT
+	Tue, 18 Sep 2007 10:41:39 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:44112 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758784AbXIROlh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 10:36:32 -0400
+	Tue, 18 Sep 2007 10:41:37 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: [2/3] 2.6.23-rc6: known regressions v2
+Date: Tue, 18 Sep 2007 16:42:02 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@austin.ibm.com>,
+       jfs-discussion@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
+       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
+       netdev@vger.kernel.org, Shish <shish@shishnet.org>,
+       Karl Meyer <adhocrocker@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Daniel Drake <dsd@gentoo.org>,
+       linux-usb-devel@lists.sourceforge.net, Florian Lohoff <flo@rfc822.org>,
+       Toralf F?rster <toralf.foerster@gmx.de>
+References: <46EB3E94.7080704@googlemail.com> <46EB4371.307@googlemail.com> <20070918142443.GA13304@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20070918142443.GA13304@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 18 Sep 2007 14:34:09.0392 (UTC) FILETIME=[F95D1700:01C7FA00]
-Content-class: urn:content-classes:message
-Subject: Re: PCI Interrupt
-Date: Tue, 18 Sep 2007 10:34:55 -0400
-Message-ID: <Pine.LNX.4.61.0709181028270.6702@chaos.analogic.com>
-In-Reply-To: <OF8D17B2FD.EFB025F4-ON8025735A.004DB087-8025735A.004DB743@elekta.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: PCI Interrupt
-Thread-Index: Acf6APlkGdQ3fGwWQUiGrBwws3/G1g==
-References: <OF8D17B2FD.EFB025F4-ON8025735A.004DB087-8025735A.004DB743@elekta.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: <Duncan.Perrett@elekta.com>
-Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709181642.04053.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Dienstag 18 September 2007 schrieb Jan Kara:
+> > Subject         : umount triggers a warning in jfs and takes almost a minute
+> > References      : http://lkml.org/lkml/2007/9/4/73
+> > Last known good : ?
+> > Submitter       : Oliver Neukum <oliver@neukum.org>
+> > Caused-By       : ?
+> > Handled-By      : ?
+> > Status          : unknown
+>   I thought Shaggy asked Oliver about some details (and he did not
+> answer so far) so I'd assume Shaggy is handling this.
 
-On Tue, 18 Sep 2007 Duncan.Perrett@elekta.com wrote:
+I was without access to the hardware for a week. Testing will start
+tomorrow.
 
-> The driver already does that ...
->
-> result =
->        request_irq(irq, can_pci_interrupt, SA_INTERRUPT | SA_SHIRQ,
->                    pDevice->au8IrqName, pDevice);
->
->
-> Any other ideas?
->
-> Duncan
->
->
->             "linux-os \(Dick
->             Johnson\)"
->             <linux-os@analogi                                          To
->             c.com>                    <Duncan.Perrett@elekta.com>
->                                                                        cc
->             18/09/2007 14:57          "Linux kernel"
->                                       <linux-kernel@vger.kernel.org>
->                                                                   Subject
->             Please respond to         Re: PCI Interrupt
->             "linux-os \(Dick
->                Johnson\)"
->             <linux-os@analogi
->                  c.com>
->
-> On Tue, 18 Sep 2007 Duncan.Perrett@elekta.com wrote:
->
->>
->> I have a CAN PCI card installed on my Ubuntu box.
->> I understand that PCI interrupts should be level rather than edge
->> triggered.
->>
->> The output of cat /proc/interrupts is :-
->>
->>           CPU0
->>  0:    1614601    IO-APIC-edge  timer
->>  1:        164    IO-APIC-edge  i8042
->>  8:          3    IO-APIC-edge  rtc
->>  9:          1   IO-APIC-level  acpi
->> 12:          0    IO-APIC-edge  CAN-ACx-PCI_01
->> 14:      65786    IO-APIC-edge  ide0
->> 169:       3220   IO-APIC-level  eth0, i915@pci:0000:00:02.0
->> 177:      46459   IO-APIC-level  eth1
->> 209:          0   IO-APIC-level  uhci_hcd:usb3, eth2
->> 217:          2   IO-APIC-level  uhci_hcd:usb1, ehci_hcd:usb4
->> 225:        697   IO-APIC-level  uhci_hcd:usb2
->> NMI:          0
->> LOC:    1614399
->> ERR:          0
->> MIS:          0
->>
->> You see that irq 12 CAN-ACx-PCI_01 is edge triggered.
->> Is there any way of forcing the BIOS to see the interrupt as a
->> level-triggered one?
->
-> It's done in the driver. IRQ12 can be shared, so the driver
-> needs to request the IRQ as a shared interrupt.
->
->
-> Cheers,
-> Dick Johnson
-> Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-> My book : http://www.AbominableFirebug.com/
-> _
+	Regards
+		Oliver
 
-Okay, then in the BIOS, make sure that IRQ12 is not assigned to
-a specific device. In other words, set it to PnP (if available).
-As you well know, PCI requires sharable interrupts and edges
-are not sharable so something is broken. As a last resort,
-move your PCI board to abother slot which should pick up another
-interrupt, which may not be broken. If that doesn't work, see
-if a new BIOS is available for download.
-
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
