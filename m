@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbXIRTFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbXIRTHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757911AbXIRTFB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbXIRTEu
+	id S1757260AbXIRTHd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbXIRTHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:04:50 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58163 "EHLO
-	caffeine.uwaterloo.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755308AbXIRTEt (ORCPT
+	Tue, 18 Sep 2007 15:07:25 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:26440 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754202AbXIRTHY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:04:49 -0400
-Date: Tue, 18 Sep 2007 15:04:47 -0400
-To: "Can E. Acar" <can.acar@pro-g.com.tr>
-Cc: Theodore Tso <tytso@mit.edu>, Claudio Jeker <cjeker@diehard.n-r-g.com>,
-       Adrian Bunk <bunk@kernel.org>, misc@openbsd.org,
-       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-Message-ID: <20070918190447.GI5386@csclub.uwaterloo.ca>
-References: <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <46EEFA6D.9080708@pro-g.com.tr> <20070917234726.GG18360@thunk.org> <46F01F21.4050009@pro-g.com.tr>
+	Tue, 18 Sep 2007 15:07:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TgSiCTWN4y5MqCsxz2z3Xl89sgGeOSH6AvncvMknY9vtiT5qiDTGOYOf3UfJS/eKAwc5yfepGWc2dQ1u9XMD/MxIQL0jAtmyn8KLhorZUY+8BTaAIavMgxPP8rXGIlWI3xjxtyzkasQkCSajgZllKFTAvDqndDTYhXPy/Hux1E4=
+Message-ID: <43e72e890709181207j7c85dc29sb355a9f5a4207411@mail.gmail.com>
+Date: Tue, 18 Sep 2007 15:07:23 -0400
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46F01F21.4050009@pro-g.com.tr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
+	 <20070918113401.6a8a737f@the-village.bc.nu>
+	 <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com>
+	 <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 11:55:29AM -0700, Can E. Acar wrote:
-> Well, they can add their names *anywhere* in the whole file, *except*
-> these two lines. See, these lines have a whole different meaning
-> when it comes to laws.  When they make sufficient contribution, they
-> sure can add their names. What is so difficult to understand here?
+On 9/18/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>
+> On Tue, 18 Sep 2007, Luis R. Rodriguez wrote:
+> >
+> > Alright, here is the same patch inline with s/recommended/required/ language:
+>
+> Well, the thing is, I'm not at all sure that I agree with this.
+>
+> If you use ioport_map/unmap, then you really *should* access them with the
+> proper iomem accessors (ioread/iowrite). The fact that it may happen to
+> work (when using the default lib/iomap.c implementation, at least) on
+> some architectures and with the current implementation still doesn't mean
+> that you should necessarily use readb/writeb.
+>
+> After all, you cannot use "inb/outb" on it, even if would happen to be an
+> IO address.
+>
+> So what is this usage that wants to use the bogus accessor? Why not fix
+> that instead of adding documentation for something that is very arguably
+> something we want to *avoid* having people do!
 
-Please define "Sufficient contribution".  And in what juristiction that
-definition applies.
+ACK -- driver developers use this just to save themselves a few lines
+from calling pci_resource_start() and friends. How about having an
+inline which does what pci_iomap() does except it doesn't call
+ioport_map() ? I am just not sure where this would go..
 
---
-Len Sorensen
+  Luis
