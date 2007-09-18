@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbXIRTVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbXIRTWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758340AbXIRTVm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbXIRTVe
+	id S1758774AbXIRTWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbXIRTV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:21:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42486
+	Tue, 18 Sep 2007 15:21:57 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42492
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754203AbXIRTVd (ORCPT
+	by vger.kernel.org with ESMTP id S1755028AbXIRTVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:21:33 -0400
-Date: Tue, 18 Sep 2007 12:20:34 -0700 (PDT)
-Message-Id: <20070918.122034.83625273.davem@davemloft.net>
-To: hpa@zytor.com
-Cc: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
+	Tue, 18 Sep 2007 15:21:55 -0400
+Date: Tue, 18 Sep 2007 12:21:50 -0700 (PDT)
+Message-Id: <20070918.122150.124083496.davem@davemloft.net>
+To: mchan@broadcom.com
+Cc: vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org
 Subject: Re: bnx2 dirver's firmware images
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <46F01BDE.6020902@zytor.com>
+In-Reply-To: <1190145951.9540.230.camel@dell>
 References: <1190141114.9540.216.camel@dell>
 	<20070918.112337.74737433.davem@davemloft.net>
-	<46F01BDE.6020902@zytor.com>
+	<1190145951.9540.230.camel@dell>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,33 +28,17 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Tue, 18 Sep 2007 11:41:34 -0700
+From: "Michael Chan" <mchan@broadcom.com>
+Date: Tue, 18 Sep 2007 13:05:51 -0700
 
-> David Miller wrote:
-> > 
-> > I don't like it because it means people have to setup full initrd's
-> > in order to do network booting with such network cards.
-> > 
+> The bnx2 firmware changes quite frequently.  A new driver quite often
+> requires new firmware to work correctly.  Splitting them up makes things
+> difficult for the user.
 > 
-> klibc could help with that, if there is interest in exploring that
-> avenue again.
+> The firmware in tg3 is a lot more mature and I don't expect it to
+> change.  I think tg3 is better suited for using request_firmware().
 
-I appreciate the effort you put into klibc and the offer to
-make initrd's easier to build.
+Like I said, I think neither should change and the driver should
+be fully functional when built statically into the kernel.
 
-But the point is that the initrd shouldn't be necessary in the first
-place.  There becomes zero point in building these drivers statically
-into the kernel, which many of us do specifically to avoid module
-loading, initrds, and all that fuss.  Because the driver is totally
-crippled even though it's been fully built into the main kernel image.
-
-I mean, it's so incredibly stupid and makes kernel development that
-much more difficult.
-
-Every new dependency, be it requiring initrd or something else,
-is one more barrier added to kernel development.
-
-I really pine for the days where everything was so simple, and initrd
-and modules were the odd ball cases, most developers built everything
-into their kernel image.
+:-)
