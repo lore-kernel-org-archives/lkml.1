@@ -1,111 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbXIRJBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbXIRJEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbXIRJBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 05:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbXIRJBN
+	id S1755346AbXIRJEY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 05:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXIRJEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 05:01:13 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40516 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752608AbXIRJBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 05:01:12 -0400
-Cc: lee.schermerhorn@hp.com, torvalds@linux-foundation.org,
-       vda.linux@googlemail.com, rdunlap@xenotime.net, corbet@lwn.net,
-       hch@lst.de, tglx@linutronix.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, geoff@gclare.org.uk, drepper@redhat.com,
-       davidel@xmailserver.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 18 Sep 2007 11:01:10 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-In-Reply-To: <38485.145.64.134.222.1190102719.squirrel@www.hardeman.nu>
-Message-ID: <20070918090110.235160@gmx.net>
-MIME-Version: 1.0
-References: <46EF7DDA.2070401@gmx.net> <46EF7E82.8040503@gmx.net>
- <38485.145.64.134.222.1190102719.squirrel@www.hardeman.nu>
-Subject: Re: RFC: A revised timerfd API
-To: =?iso-8859-1?Q?=22David_H=E4rdeman=22?= <david@hardeman.nu>
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1926hEJLdZ27uDgaW/7/Rp5tpmBoZ+QsuyzIwHU1+
- 0jiTq4E7dxAt9QQwbTPmtvMAdYQK66pEL+JA== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: 7qTacqkcTiE+YdX+HGVw6CB9ZUVSRFeK
+	Tue, 18 Sep 2007 05:04:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45689 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753206AbXIRJEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 05:04:14 -0400
+Date: Tue, 18 Sep 2007 10:04:08 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] JBD slab cleanups
+Message-ID: <20070918090407.GA671@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mingming Cao <cmm@us.ibm.com>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Christoph Lameter <clameter@sgi.com>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	ext4 development <linux-ext4@vger.kernel.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com> <20070902152801.GA19962@infradead.org> <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com> <20070903134043.GB28962@infradead.org> <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com> <20070903193308.GA7771@infradead.org> <1189796027.3841.6.camel@localhost.localdomain> <1190057391.3845.22.camel@localhost.localdomain> <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com> <1190069851.6725.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190069851.6725.6.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
-
-Thanks for taking a look at this.
-
-> On Tue, September 18, 2007 09:30, Michael Kerrisk wrote:
-> > ====> b) Create a timerfd interface analogous to POSIX timers
-> >
-> > Create an interface analogous to POSIX timers:
-> > fd = timerfd_create(clockid, flags);
-> > timerfd_settime(fd, flags, newtimervalue, &time_to_next_expire);
-> > timerfd_gettime(fd, &time_to_next_expire);
-> ...
-> > ====> c) Integrate timerfd with POSIX timers
-> >
-> > Make a very simple timerfd call that is integrated with the
-> > POSIX timers API.  The POSIX timers API is detailed here:
-> > http://linux.die.net/man/3/timer_create
-> > http://linux.die.net/man/3/timer_settime
-> >
-> > Under the POSIX timers API, a new timer is created using:
-> >
-> > int timer_create(clockid_t clockid, struct sigevent *evp,
-> >         timer_t *timerid);
-> >
-> > We could then have a timerfd() call that returns a file descriptor
-> > for the newly created 'timerid':
-> >
-> > fd = timerfd(timer_t timerid);
+On Mon, Sep 17, 2007 at 03:57:31PM -0700, Mingming Cao wrote:
+> Here is the incremental small cleanup patch. 
 > 
-> Wouldn't this remove some of the usefulness of the timerfd?
-> 
-> For example, if a timerfd is one of the fd's that is returned by a
-> epoll_wait syscall, you manually need to do the mapping between the
-> timerfd and the timerid in order to be able to modify the timer.
+> Remove kamlloc usages in jbd/jbd2 and consistently use jbd_kmalloc/jbd2_malloc.
 
-You're right, that makes the interface more clumsy. +1 for
-the disadvantages.  And of course solution (d) also suffers
-this problem.
+Shouldn't we kill jbd_kmalloc instead?
 
-> The advantage of solution b) above is that the fd is everything that is
-> needed to work with the timer.
-
-Yes, true.  Solution (b) would also be relatively easier (for me)
-to implement.
-
-> With solution c) you have to keep two
-> references to the same timer around and use one of them depending on what
-> you want to do with the timer.
-
-Yes.  (And the same for option (d).)
-
-> Also, if the timerfd is close():d, does that remove the underlying timer
-> (invalidate the timerid) as well?
-
-My gut feeling would be to say that closing the timerfd would not
-remove the underlying timer (so the timerid would remain valid).
-One could even do things like recreating a file descriptor
-for the timer using another timerfd() call.  
-
-But now that raises the question: what are the semantics if
-timerfd() is called  more than once on the same timerid? 
-Perhaps a read() from any one of them (destructively)
-reads the expiration count, as though one had read from a 
-dup()ed the file descriptor.  All in all, solution (c) 
-starts to look overly complex, and maybe suffers from 
-various dirty corners in the API.  (Solution (d) feels 
-slightly better, because the creation of the file descriptor
-and the timerid are integrated into a single call, and the
-fact that it integrates with an existing API, but
-it still has the limitation you describe above.)
-
-Cheers,
-
-Michael
