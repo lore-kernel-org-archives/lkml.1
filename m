@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761800AbXIRSFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761905AbXIRSGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761800AbXIRSFT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 14:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760510AbXIRSE5
+	id S1761905AbXIRSGJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 14:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760510AbXIRSFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 14:04:57 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:36914 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759834AbXIRSEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 14:04:55 -0400
-Subject: Re: [PATCH] JBD slab cleanups
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: cmm@us.ibm.com
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1190133347.3819.6.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
-	 <20070902152801.GA19962@infradead.org>
-	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
-	 <20070903134043.GB28962@infradead.org>
-	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
-	 <20070903193308.GA7771@infradead.org>
-	 <1189796027.3841.6.camel@localhost.localdomain>
-	 <1190057391.3845.22.camel@localhost.localdomain>
-	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
-	 <1190069851.6725.6.camel@localhost.localdomain>
-	 <20070918090407.GA671@infradead.org>
-	 <1190133347.3819.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 13:04:50 -0500
-Message-Id: <1190138690.6528.23.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Sep 2007 14:05:54 -0400
+Received: from hu-out-0506.google.com ([72.14.214.233]:23783 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760651AbXIRSFw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 14:05:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=tsSjjCeg67lVNDUkXH2B+Hc2vo/k+hUZVDplCsLfS6+3RKF5TtfzWyxLhXCL65cxjbJl6iJdxCJmiYbJRRMa0V+9g+st0WKVT/XMwdiz7uqcKNbnwxIVf8hxo6Y3KNV6ug8r6rQ9GSZUEZY+IABYCaLyFPK63IGTCnoTVti3Nw0=
+Date: Tue, 18 Sep 2007 22:05:25 +0400
+From: Sergey Dolgov <dolgovs@gmail.com>
+To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: ata_piix, laptop cdrom, ICH7: EH, limiting speed to PIO
+Message-ID: <20070918180525.GA21130@slk.laptop>
+References: <6bffcb0e0709120933p6d58127fv3c85076fe41daaca@mail.gmail.com> <20070912200706.GA2620@slk.laptop> <46E849B7.9040402@googlemail.com> <20070912212025.GB2620@slk.laptop> <46E8663E.3080205@googlemail.com> <46ED19F0.8060205@gmail.com> <ac0be4d70709170257o62e856f4re049c968ab5590a7@mail.gmail.com> <46EE66EA.3090902@gmail.com> <ac0be4d70709170505l6c4bba29pc8ad1c92fcb16ae9@mail.gmail.com> <f19298770709171018x6c4a150yfe6e490d7cc1721b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f19298770709171018x6c4a150yfe6e490d7cc1721b@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-18 at 09:35 -0700, Mingming Cao wrote:
-> On Tue, 2007-09-18 at 10:04 +0100, Christoph Hellwig wrote:
-> > On Mon, Sep 17, 2007 at 03:57:31PM -0700, Mingming Cao wrote:
-> > > Here is the incremental small cleanup patch. 
-> > > 
-> > > Remove kamlloc usages in jbd/jbd2 and consistently use jbd_kmalloc/jbd2_malloc.
-> > 
-> > Shouldn't we kill jbd_kmalloc instead?
-> > 
+On Mon, Sep 17, 2007 at 09:18:26PM +0400, Alexey Zaytsev wrote:
+> On 9/17/07, Sergey Dolgov <dolgovs@gmail.com> wrote:
+> > On 9/17/07, Tejun Heo <htejun@gmail.com> wrote:
+> >
+> > [...]
+> > > >>>> BTW, this only happens when using libata of course. The
+> > > >>>> old CONFIG_IDE stuff works fine every time.
+> > > >>> This maybe one of libata weirdness (I really don't get it why some hardware
+> > > >>> works perfectly fine with an old IDE and don't work well with libata).
+> > > >> Hmmm... Is MWDMA2 mode used with ide driver too?
+> > > >>
+> > > >
+> > > > What's the best way to tell whether it does or not? (the log says
+> > > > "selected mode 0x22", see below)
+> > >
+> > > Yes, that's MWDMA2.  Hmm... We're seeing many cases where MWDMA doesn't
+> > > work with libata while it works fine with IDE but have no idea what's
+> > > going on yet.  :-(
+> > >
+> >
 > 
-> It seems useful to me to keep jbd_kmalloc/jbd_free. They are central
-> places to handle memory (de)allocation(<page size) via kmalloc/kfree, so
-> in the future if we need to change memory allocation in jbd(e.g. not
-> using kmalloc or using different flag), we don't need to touch every
-> place in the jbd code calling jbd_kmalloc.
+> This may be well a hardware problem. Same laptop (HP nx7300 GB848ES)
+> works fine with either 2.6.22 and 2.6.23-rc. Maybe actually using the
+> DVD is required to trigger the problem on the next reboot?
 
-I disagree.  Why would jbd need to globally change the way it allocates
-memory?  It currently uses kmalloc (and jbd_kmalloc) for allocating a
-variety of structures.  Having to change one particular instance won't
-necessarily mean we want to change all of them.  Adding unnecessary
-wrappers only obfuscates the code making it harder to understand.  You
-wouldn't want every subsystem to have it's own *_kmalloc() that took
-different arguments.  Besides, there aren't that many calls to kmalloc
-and kfree in the jbd code, so there wouldn't be much pain in changing
-GFP flags or whatever, if it ever needed to be done.
+No, that is not required. The problem shows up on a fresh start from
+powered-off state just as well.
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+> Sergey, btw, on this laptop I've observed lockups twice with the -rc5.
+> After switching to 2.6.22 it was stable for at least one day. Can you
+> confirm or refute this?
 
+I've been using 2.6.23 rcs (rc3, rc6) since August, often for days
+without rebooting the machine. Haven't seen any lockups (except the
+ones on a return from suspend-to-RAM, but that's another story).
+
+--
+Sergey
