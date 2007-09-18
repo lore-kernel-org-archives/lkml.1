@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbXIRSMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbXIRSN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbXIRSMl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 14:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbXIRSMc
+	id S1757509AbXIRSN7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 14:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbXIRSNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 14:12:32 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:3787 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755308AbXIRSMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 14:12:30 -0400
-X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
-Subject: Re: bnx2 dirver's firmware images
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Denys Vlasenko" <vda.linux@googlemail.com>
-cc: linux-kernel@vger.kernel.org, "David Miller" <davem@davemloft.net>,
-       "netdev" <netdev@vger.kernel.org>
-In-Reply-To: <200709181855.37598.vda.linux@googlemail.com>
-References: <200709181823.26429.vda.linux@googlemail.com>
- <1190141114.9540.216.camel@dell>
- <200709181855.37598.vda.linux@googlemail.com>
-Date: Tue, 18 Sep 2007 12:09:52 -0700
-Message-ID: <1190142592.9540.218.camel@dell>
+	Tue, 18 Sep 2007 14:13:52 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36077 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752411AbXIRSNv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 14:13:51 -0400
+Date: Tue, 18 Sep 2007 20:14:04 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Mark Fasheh <mark.fasheh@oracle.com>, kurt.hackel@oracle.com
+Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: ocfs2: inconsequent NULL checking
+Message-ID: <20070918181404.GA16401@stusta.de>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6AEECA883K42796267-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-18 at 18:55 +0100, Denys Vlasenko wrote:
-> On Tuesday 18 September 2007 19:45, Michael Chan wrote:
-> > We can compress all the different sections of the firmware.  Currently,
-> > we only compress the biggest chunks and the rest are uncompressed.
-> 
-> > These zeros should compress to almost nothing.  But I agree that the
-> > firmware is still big.
-> 
-> You don't need to store and fetch zeros at all. You *know* that
-> they are zeros, right? So do this:
-> 
-> -                         REG_WR_IND(bp, offset, fw->bss[j]);
-> +                         REG_WR_IND(bp, offset, 0);
-> 
-Good point.  We can do that.  Looking at the file, there are other non-
-zero data that can be compressed to save some more room.
+The Coverity checker spotted the following inconsequent NULL checking in 
+fs/ocfs2/dlmglue.c:
+
+<--  snip  -->
+
+...
+int ocfs2_meta_lock_atime(struct inode *inode,
+                          struct vfsmount *vfsmnt,
+                          int *level)
+{
+...
+                if (ocfs2_should_update_atime(inode, vfsmnt))
+                        ocfs2_update_inode_atime(inode, bh);
+                if (bh)
+                        brelse(bh);
+...
+
+<--  snip  -->
+
+Since commit c11e9fafb398411af7558fca913c2fa4a10b1f48
+ocfs2_update_inode_atime() contains an unconditional
+dereference of "bh".
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
