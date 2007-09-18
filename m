@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbXIRQFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbXIRQFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760092AbXIRQFJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 12:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757949AbXIRQE6
+	id S1760246AbXIRQFz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 12:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757949AbXIRQFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 12:04:58 -0400
-Received: from spirit.analogic.com ([204.178.40.4]:3568 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756105AbXIRQE6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 12:04:58 -0400
+	Tue, 18 Sep 2007 12:05:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53420 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757914AbXIRQFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 12:05:43 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCH 1/2] [FS_ENET] TX stuff should use fep->tx_lock,
+	instead of fep->lock.
+Date: Tue, 18 Sep 2007 20:05:27 +0400
+Message-ID: <20070918160527.13525.80935.stgit@localhost.localdomain>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 18 Sep 2007 16:03:59.0449 (UTC) FILETIME=[86168490:01C7FA0D]
-Content-class: urn:content-classes:message
-Subject: Re: PCI Interrupt
-Date: Tue, 18 Sep 2007 12:04:41 -0400
-Message-ID: <Pine.LNX.4.61.0709181204070.6926@chaos.analogic.com>
-In-Reply-To: <OF349CACD2.8D7F43AF-ON8025735A.00538F1E-8025735A.0053BA82@elekta.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: PCI Interrupt
-Thread-Index: Acf6DYYwOw9UwTlLQTuhvhmd83dxXQ==
-References: <OF349CACD2.8D7F43AF-ON8025735A.00538F1E-8025735A.0053BA82@elekta.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: <Duncan.Perrett@elekta.com>
-Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 18 Sep 2007 Duncan.Perrett@elekta.com wrote:
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-> Sorted.
->
-> A setting in the BIOS meant it was storing old configuration data.
-> After disabling this option, it became a level triggered interrupt and
-> everything now works!
->
-> Thanks.
+---
 
-Good!
+ drivers/net/fs_enet/fs_enet-main.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
 
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index a4a2a0e..927cd9e 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -348,7 +348,7 @@ static void fs_enet_tx(struct net_device *dev)
+ 	int dirtyidx, do_wake, do_restart;
+ 	u16 sc;
+ 
+-	spin_lock(&fep->lock);
++	spin_lock(&fep->tx_lock);
+ 	bdp = fep->dirty_tx;
+ 
+ 	do_wake = do_restart = 0;
+@@ -428,7 +428,7 @@ static void fs_enet_tx(struct net_device *dev)
+ 	if (do_restart)
+ 		(*fep->ops->tx_restart)(dev);
+ 
+-	spin_unlock(&fep->lock);
++	spin_unlock(&fep->tx_lock);
+ 
+ 	if (do_wake)
+ 		netif_wake_queue(dev);
+@@ -826,7 +826,9 @@ static int fs_enet_close(struct net_device *dev)
+ 	phy_stop(fep->phydev);
+ 
+ 	spin_lock_irqsave(&fep->lock, flags);
++	spin_lock(&fep->tx_lock);
+ 	(*fep->ops->stop)(dev);
++	spin_unlock(&fep->tx_lock);
+ 	spin_unlock_irqrestore(&fep->lock, flags);
+ 
+ 	/* release any irqs */
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
