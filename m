@@ -1,63 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbXIRPMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbXIRPOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbXIRPMR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 11:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbXIRPMI
+	id S1759620AbXIRPOr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 11:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759043AbXIRPOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 11:12:08 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:33350 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756513AbXIRPMH (ORCPT
+	Tue, 18 Sep 2007 11:14:39 -0400
+Received: from crawleyone.elekta.com ([193.235.128.13]:2446 "EHLO
+	crawleyone.elekta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758013AbXIRPOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 11:12:07 -0400
-Date: Tue, 18 Sep 2007 17:12:06 +0200
-From: Jan Kara <jack@ucw.cz>
-To: Ville Herva <v@iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.4.35 SMP: ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal
-Message-ID: <20070918151206.GC13304@atrey.karlin.mff.cuni.cz>
-References: <20070918122314.GL29062@vianova.fi>
+	Tue, 18 Sep 2007 11:14:37 -0400
+In-Reply-To: <Pine.LNX.4.61.0709181028270.6702@chaos.analogic.com>
+Subject: Re: PCI Interrupt
+To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
+X-Mailer: Lotus Notes Release 6.5.1 January 21, 2004
+Message-ID: <OF349CACD2.8D7F43AF-ON8025735A.00538F1E-8025735A.0053BA82@elekta.com>
+From: Duncan.Perrett@elekta.com
+Date: Tue, 18 Sep 2007 16:14:27 +0100
+X-MIMETrack: Serialize by Router on CrawleyOne/Servers/Elekta(Release 6.5.1|January 21, 2004) at
+ 09/18/2007 04:14:37 PM
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070918122314.GL29062@vianova.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+Sorted.
 
-> I got a bunch of these into dmesg:
-> 
-> EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323880: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-> EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-> EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323882: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-> 
-> The kernel is 2.4.35 SMP, dual-processor. The scsi driver is Fusion MPT SCSI
-> Host driver 2.05.16.
-> 
-> The device is /dev/sda2, root fs.
-> 
-> One line per each directory had dropped into dmesg each night (I think
-> during updatedb) before I noticed.
-  Interesting. Can you look (using debugfs) on the content of the
-/usr/share/doc/ directory? It seems like parts of it have been zeroed
-out...
+A setting in the BIOS meant it was storing old configuration data.
+After disabling this option, it became a level triggered interrupt and
+everything now works!
 
-> The directories in question have not been written to for ages:
-> 
-> >debugfs /dev/sda2
-> debugfs:  ncheck 323888
-> Inode   Pathname
-> 323888  /usr/share/doc/logcheck-1.1.1
-> debugfs:  ncheck 323882
-> Inode   Pathname
-> 323882  /usr/share/doc/dev86-0.15.5
-> debugfs:  ncheck 323880
-> Inode   Pathname
-> 323880  /usr/share/doc/mod_put-1.3
-> 
-> The hardware _should_ be solid, although I can never 100% sure rule out disk
-> level corruption.
+Thanks.
 
-									Honza
+
+
+                                                                           
+             "linux-os \(Dick                                              
+             Johnson\)"                                                    
+             <linux-os@analogi                                          To 
+             c.com>                    <Duncan.Perrett@elekta.com>         
+                                                                        cc 
+             18/09/2007 15:34          "Linux kernel"                      
+                                       <linux-kernel@vger.kernel.org>      
+                                                                   Subject 
+             Please respond to         Re: PCI Interrupt                   
+             "linux-os \(Dick                                              
+                Johnson\)"                                                 
+             <linux-os@analogi                                             
+                  c.com>                                                   
+                                                                           
+                                                                           
+
+
+
+
+
+On Tue, 18 Sep 2007 Duncan.Perrett@elekta.com wrote:
+
+> The driver already does that ...
+>
+> result =
+>        request_irq(irq, can_pci_interrupt, SA_INTERRUPT | SA_SHIRQ,
+>                    pDevice->au8IrqName, pDevice);
+>
+>
+> Any other ideas?
+>
+> Duncan
+>
+>
+>             "linux-os \(Dick
+>             Johnson\)"
+>             <linux-os@analogi                                          To
+>             c.com>                    <Duncan.Perrett@elekta.com>
+>                                                                        cc
+>             18/09/2007 14:57          "Linux kernel"
+>                                       <linux-kernel@vger.kernel.org>
+>                                                                   Subject
+>             Please respond to         Re: PCI Interrupt
+>             "linux-os \(Dick
+>                Johnson\)"
+>             <linux-os@analogi
+>                  c.com>
+>
+> On Tue, 18 Sep 2007 Duncan.Perrett@elekta.com wrote:
+>
+>>
+>> I have a CAN PCI card installed on my Ubuntu box.
+>> I understand that PCI interrupts should be level rather than edge
+>> triggered.
+>>
+>> The output of cat /proc/interrupts is :-
+>>
+>>           CPU0
+>>  0:    1614601    IO-APIC-edge  timer
+>>  1:        164    IO-APIC-edge  i8042
+>>  8:          3    IO-APIC-edge  rtc
+>>  9:          1   IO-APIC-level  acpi
+>> 12:          0    IO-APIC-edge  CAN-ACx-PCI_01
+>> 14:      65786    IO-APIC-edge  ide0
+>> 169:       3220   IO-APIC-level  eth0, i915@pci:0000:00:02.0
+>> 177:      46459   IO-APIC-level  eth1
+>> 209:          0   IO-APIC-level  uhci_hcd:usb3, eth2
+>> 217:          2   IO-APIC-level  uhci_hcd:usb1, ehci_hcd:usb4
+>> 225:        697   IO-APIC-level  uhci_hcd:usb2
+>> NMI:          0
+>> LOC:    1614399
+>> ERR:          0
+>> MIS:          0
+>>
+>> You see that irq 12 CAN-ACx-PCI_01 is edge triggered.
+>> Is there any way of forcing the BIOS to see the interrupt as a
+>> level-triggered one?
+>
+> It's done in the driver. IRQ12 can be shared, so the driver
+> needs to request the IRQ as a shared interrupt.
+>
+>
+> Cheers,
+> Dick Johnson
+> Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+> My book : http://www.AbominableFirebug.com/
+> _
+
+Okay, then in the BIOS, make sure that IRQ12 is not assigned to
+a specific device. In other words, set it to PnP (if available).
+As you well know, PCI requires sharable interrupts and edges
+are not sharable so something is broken. As a last resort,
+move your PCI board to abother slot which should pick up another
+interrupt, which may not be broken. If that doesn't work, see
+if a new BIOS is available for download.
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be
+privileged.  Any review, retransmission, dissemination, or other use of
+this information by persons or entities other than the intended recipient
+is prohibited.  If you are not the intended recipient, please notify
+Analogic Corporation immediately - by replying to this message or by
+sending an email to DeliveryErrors@analogic.com - and destroy all copies of
+this information, including any attachments, without reading or disclosing
+them.
+
+Thank you.
+
+
+
+
+*******************Internet Email Confidentiality Footer*******************
+The contents of this e-mail message (including any attachments hereto) are
+confidential to and are intended to be conveyed for the use of the
+recipient to whom it is addressed only. If you receive this transmission in
+error, please notify the sender of this immediately and delete the message
+from your system. Any distribution, reproduction or use of this message by
+someone other than recipient is not authorized and may be unlawful.
+Elekta Limited is a company registered in England and Wales whose
+registered number is 3244454 and whose registered address is Linac House,
+Fleming Way, Crawley, West Sussex, RH10 9RR
+
