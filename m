@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbXIRR4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbXIRR6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760559AbXIRR4P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 13:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbXIRRzu
+	id S1761328AbXIRR6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 13:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759327AbXIRR6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 13:55:50 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:42603 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932073AbXIRRzr (ORCPT
+	Tue, 18 Sep 2007 13:58:44 -0400
+Received: from web36610.mail.mud.yahoo.com ([209.191.85.27]:32020 "HELO
+	web36610.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759474AbXIRR6n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 13:55:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=WAUT6+MldcYdJmLzWvAokajmqTPMSwFnHYNvWzKLvxBw1VdXcMCOg7vYCmABInmM7Q/Vi5j59O3YyK/sQFhM7ZtOowuQhcwTXSLyouM1VHcOaEsGeCVGtKh6D7gSHPyqHwiCq5jccVHAp2kcPTuyoiUzZbIfyM6vCJEiXvxqx5U=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: "Michael Chan" <mchan@broadcom.com>
-Subject: Re: bnx2 dirver's firmware images
-Date: Tue, 18 Sep 2007 18:55:37 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org
-References: <200709181823.26429.vda.linux@googlemail.com> <1190141114.9540.216.camel@dell>
-In-Reply-To: <1190141114.9540.216.camel@dell>
+	Tue, 18 Sep 2007 13:58:43 -0400
+X-YMail-OSG: ojg1xKYVM1k8F4SxIrSlKbyVTFiXWwHCwoc9psqxWeIdu0_Nx.1V00CRc4UzwjW3PVg_cc62WA--
+X-RocketYMMF: rancidfat
+Date: Tue, 18 Sep 2007 10:58:43 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: Credentials test patch
+To: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       David Howells <dhowells@redhat.com>
+Cc: viro@ftp.linux.org.uk, hch@infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1190133857.6656.20.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709181855.37598.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <336243.38765.qm@web36610.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 September 2007 19:45, Michael Chan wrote:
-> We can compress all the different sections of the firmware.  Currently,
-> we only compress the biggest chunks and the rest are uncompressed.
 
-> These zeros should compress to almost nothing.  But I agree that the
-> firmware is still big.
+--- Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-You don't need to store and fetch zeros at all. You *know* that
-they are zeros, right? So do this:
+> On Tue, 2007-09-18 at 17:33 +0100, David Howells wrote:
+> > Hi Al, Christoph,
+> > 
+> > Here's a new version of my credentials patch.  It's still very basic, with
+> > only Ext3, (V)FAT, NFS, AFS, SELinux and keyrings compiled in on an x86_64
+> > arch kernel.  The patched kernel compiles, links and runs.
+> > 
+> > I've made the following major changes to the patch:
+> > 
+> >  (1) System calls that might want to use the credentials call
+> >      update_current_cred() before calling into the VFS or whatever.  This
+> >      allows the keyring pointers in the cred struct to be updated.
+> > 
+> >  (2) I've got rid of current_cred(), __current_cred() and the accessors for
+> >      current's fsuid, fsgid and group list.  Instead you just use
+> >      current->cred->whatever.  You don't need RCU to read the current
+> threads
+> >      credentials as only you are permitted to change them.
+> > 
+> > David
+> > ---
+> 
+> What about the process' capabilities? Shouldn't they also be part of a
+> credential?
 
--                         REG_WR_IND(bp, offset, fw->bss[j]);
-+                         REG_WR_IND(bp, offset, 0);
+As should the LSM security blob, if appropriate.
 
---
-vda
+What I don't really understand is what value is gained by this exercise.
+Are the savings sufficiently significant to justify the effort?
+
+
+Casey Schaufler
+casey@schaufler-ca.com
