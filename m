@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbXIRKS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbXIRKSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbXIRKS0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 06:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbXIRKSS
+	id S1756006AbXIRKSu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 06:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbXIRKSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 06:18:18 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:19905 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753919AbXIRKSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 06:18:17 -0400
-Date: Tue, 18 Sep 2007 12:18:40 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: pj@sgi.com, apw@shadowen.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mel@csn.ul.ie, linux-scsi@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: 2.6.23-rc4-mm1
-Message-ID: <20070918101840.GN25592@kernel.dk>
-References: <20070914211635.4774c971.pj@sgi.com> <20070914104157D.tomof@acm.org> <20070917132819.GC25592@kernel.dk> <20070917192528E.tomof@acm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070917192528E.tomof@acm.org>
+	Tue, 18 Sep 2007 06:18:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59980 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755257AbXIRKSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 06:18:41 -0400
+Date: Tue, 18 Sep 2007 03:17:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: nadia.derbey@bull.net, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-Id: <20070918031723.05689e92.akpm@linux-foundation.org>
+In-Reply-To: <20070918091728.GA6766@localhost.sw.ru>
+References: <20070918091728.GA6766@localhost.sw.ru>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17 2007, FUJITA Tomonori wrote:
-> On Mon, 17 Sep 2007 15:28:19 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Sat, Sep 15 2007, FUJITA Tomonori wrote:
-> > > On Fri, 14 Sep 2007 21:16:35 -0700
-> > > Paul Jackson <pj@sgi.com> wrote:
-> > > 
-> > > > FUJITA Tomonori wrote:
-> > > > > Can you try this patch (against 2.6.23-rc4-mm1)?
-> > > > > 
-> > > > > >From 592bd2049cb3e6e1f1dde7cf631879f26ddffeaa Mon Sep 17 00:00:00 2001
-> > > > > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > > Date: Mon, 10 Sep 2007 04:17:13 +0100
-> > > > > Subject: [PATCH] qla1280: sg chaining fixes
-> > > > > 
-> > > > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > > ---
-> > > > >  drivers/scsi/qla1280.c |    5 ++++-
-> > > > >  1 files changed, 4 insertions(+), 1 deletions(-)
-> > > > 
-> > > > This patch works for me.
-> > > > 
-> > > > I was getting the scsi errors reported earlier in
-> > > > this thread, running 2.6.23-rc4-mm1 on one of our
-> > > > big SGI Altix systems.
-> > > > 
-> > > > Applying this patch fixed it, so far as I can tell,
-> > > > which is to say my system boots cleanly once again.
-> > > 
-> > > Thanks for testing!
-> > > 
-> > > Jens, we could enable use_sg_chaining option for qla1280.
-> > 
-> > Added, thanks!
-> 
-> Thanks.
-> 
-> BTW, please don't forget to integrate the following patches:
-> 
-> 
-> - revert sg segment size ifdefs
-> 
-> http://marc.info/?l=linux-scsi&m=118881264013097&w=2
-> 
-> - remove sglist_len
-> 
-> http://marc.info/?l=linux-scsi&m=118907920405100&w=2
+On Tue, 18 Sep 2007 13:17:28 +0400 Alexey Dobriyan <adobriyan@sw.ru> wrote:
 
-Added, and I rebased the sglist-* branches to current again. So
-everything should be fully uptodate once more.
+> I'm getting tons of this, and X fails to start
+> 
+> CONFIG_SYSVIPC=y
+> CONFIG_SYSVIPC_SYSCTL=y
+> # CONFIG_PREEMPT_NONE is not set
+> # CONFIG_PREEMPT_VOLUNTARY is not set
+> CONFIG_PREEMPT=y
+> CONFIG_PREEMPT_BKL=y
+> CONFIG_DEBUG_PREEMPT=y
+> 
+> BUG: sleeping function called from invalid context at kernel/rwsem.c:47
+> in_atomic():1, irqs_disabled():0
+> no locks held by X/5879.
+>  [<c012bcb1>] down_write+0x15/0x50
+>  [<c01b53af>] do_shmat+0x235/0x3a0
+>  [<c0106be2>] sys_ipc+0x146/0x263
+>  [<c0102892>] sysenter_past_esp+0xa7/0xb5
+>  [<c0102856>] sysenter_past_esp+0x6b/0xb5
+>  =======================
 
--- 
-Jens Axboe
+Here's a bug:
+
+--- a/ipc/util.c~ipc-integrate-ipc_checkid-into-ipc_lock-fix-2
++++ a/ipc/util.c
+@@ -691,7 +691,7 @@ struct kern_ipc_perm *ipc_lock(struct ip
+ 		rcu_read_unlock();
+ 		return ERR_PTR(-EINVAL);
+ 	}
+-
++	rcu_read_unlock();
+ 	return out;
+ }
+ 
+_
+
+but it still doesn't fix it.
+
+Nadia, please review Documentation/SubmitChecklist.  It contains stuff
+which would have prevented this.
 
