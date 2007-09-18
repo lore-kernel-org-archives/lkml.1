@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbXIRQKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759930AbXIRQNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbXIRQKh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 12:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758461AbXIRQKa
+	id S1759930AbXIRQNs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 12:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759052AbXIRQNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 12:10:30 -0400
-Received: from herkules.vianova.fi ([194.100.28.129]:51104 "HELO
-	mail.vianova.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757136AbXIRQK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 12:10:29 -0400
-Date: Tue, 18 Sep 2007 19:09:49 +0300
-From: Ville Herva <v@iki.fi>
-To: Jan Kara <jack@ucw.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.4.35 SMP: ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal
-Message-ID: <20070918160949.GR29062@vianova.fi>
-Reply-To: v@iki.fi
-References: <20070918122314.GL29062@vianova.fi> <20070918151206.GC13304@atrey.karlin.mff.cuni.cz>
-Mime-Version: 1.0
+	Tue, 18 Sep 2007 12:13:40 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:49725 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758050AbXIRQNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 12:13:40 -0400
+Date: Tue, 18 Sep 2007 09:13:37 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nadia Derbey <Nadia.Derbey@bull.net>, Alexey Dobriyan <adobriyan@sw.ru>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-ID: <20070918161337.GC8665@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070918091728.GA6766@localhost.sw.ru> <20070918031723.05689e92.akpm@linux-foundation.org> <46EFA8DC.2020909@bull.net> <20070918033400.495b02dd.akpm@linux-foundation.org> <20070918142451.418b3b51@twins>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070918151206.GC13304@atrey.karlin.mff.cuni.cz>
-X-Operating-System: Linux herkules.vianova.fi 2.4.35
-User-Agent: Mutt/1.5.10i
+In-Reply-To: <20070918142451.418b3b51@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 05:12:06PM +0200, you [Jan Kara] wrote:
->   Hello,
+On Tue, Sep 18, 2007 at 02:24:51PM +0200, Peter Zijlstra wrote:
+> On Tue, 18 Sep 2007 03:34:00 -0700 Andrew Morton
+> <akpm@linux-foundation.org> wrote:
 > 
-> > I got a bunch of these into dmesg:
-> > 
-> > EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323880: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-> > EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-> > EXT3-fs error (device sd(8,2)): ext3_readdir: bad entry in directory #323882: rec_len is smaller than minimal - offset=0, inode=0, rec_len=0, name_len=0
-> > 
-> > The kernel is 2.4.35 SMP, dual-processor. The scsi driver is Fusion MPT SCSI
-> > Host driver 2.05.16.
-> > 
-> > The device is /dev/sda2, root fs.
-> > 
-> > One line per each directory had dropped into dmesg each night (I think
-> > during updatedb) before I noticed.
->   Interesting. Can you look (using debugfs) on the content of the
-> /usr/share/doc/ directory? It seems like parts of it have been zeroed
-> out...
+> > Well, it was an optimisation.  spin_lock() implies rcu_read_lock().  That's
+> > a bit dirty and we might choose to not do that.
+> 
+> Not true for the preemptible-rcu work. All such sites should be fixed,
+> or at the very least heavily annotated.
 
-Unfortunately, no. I removed those directories because those were the only
-ones causing problems and wasn't able to reboot for a proper fsck
-immediately. The rm -rf command gave no errors (to stdout or dmesg), and a
-read-only fsck right after that gave no errors on the directory structure.
+What he said!!!
 
-Sorry for the sparse details, but when you have these kind of problems on
-live servers, you tend to forget the debuggability...
-
-
-
--- v -- 
-
-v@iki.fi
-
+							Thanx, Paul
