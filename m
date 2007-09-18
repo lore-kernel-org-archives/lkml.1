@@ -1,137 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760124AbXIRWsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbXIRWut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760124AbXIRWsM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756966AbXIRWr6
+	id S1759576AbXIRWut (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbXIRWun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:47:58 -0400
-Received: from spamscanner.webintact.net ([196.31.153.45]:42451 "EHLO
-	spamscanner.webintact.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755768AbXIRWr5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:47:57 -0400
-X-Greylist: delayed 1374 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 18:47:56 EDT
-Subject: Re: Wasting our Freedom
-From: Martin Schlemmer <azarah@gentoo.org>
-To: Linux Kernel Mailing Lists <linux-kernel@vger.kernel.org>
-Cc: "Can E. Acar" <can.acar@pro-g.com.tr>, Theodore Tso <tytso@mit.edu>,
-       Claudio Jeker <cjeker@diehard.n-r-g.com>, Adrian Bunk <bunk@kernel.org>,
-       misc@openbsd.org, Daniel Hazelton <dhazelton@enter.net>,
-       Eben Moglen <moglen@softwarefreedom.org>,
-       Lawrence Lessig <lessig_from_web@pobox.com>,
-       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
-       Matt Norwood <norwood@softwarefreedom.org>
-In-Reply-To: <46F01F21.4050009@pro-g.com.tr>
-References: <46ED7A8F.1020304@pro-g.com.tr>
-	 <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de>
-	 <20070916211208.GC5502@thunk.org>
-	 <20070917125554.GB13179@diehard.n-r-g.com>
-	 <20070917133458.GA18360@thunk.org>
-	 <20070917192341.GB30119@diehard.n-r-g.com>
-	 <20070917204318.GE18360@thunk.org> <46EEFA6D.9080708@pro-g.com.tr>
-	 <20070917234726.GG18360@thunk.org>  <46F01F21.4050009@pro-g.com.tr>
-Content-Type: text/plain
-Date: Wed, 19 Sep 2007 00:24:54 +0200
-Message-Id: <1190154294.6107.28.camel@lycan.lan>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
-X-TM-AS-Product-Ver: IMSS-7.0.0.1640-3.8.0.1026-15432.001
-X-TM-AS-Result: No--36.577-5.0-31-1
-X-imss-scan-details: No--36.577-5.0-31-1;No--36.577-5.0-31-1
+	Tue, 18 Sep 2007 18:50:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37836 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751163AbXIRWum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 18:50:42 -0400
+Date: Wed, 19 Sep 2007 00:46:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Antoine Martin <antoine@nagafix.co.uk>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: CFS: some bad numbers with Java/database threading [FIXED]
+Message-ID: <20070918224656.GA26719@elte.hu>
+References: <46E871FE.9010908@nagafix.co.uk> <20070913112427.GA20686@elte.hu> <20070914083246.GA20514@elte.hu> <a781481a0709140306k3faf3585haae26853fe81381c@mail.gmail.com> <46EAA7E4.8020700@nagafix.co.uk> <20070914153216.GA27213@elte.hu> <46F00417.7080301@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F00417.7080301@redhat.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-18 at 11:55 -0700, Can E. Acar wrote:
-> Theodore Tso wrote:
-> > On Mon, Sep 17, 2007 at 03:06:37PM -0700, Can E. Acar wrote:
-> >> The only remaining issue is whether Nick & Jiri have enough
-> >> original contributions to the code to be added to the Copyright.
-> >>
-> >> I believe this needs to be resolved between Reyk and Nick and Jiri.
-> >>
-> >> The main reason of Theo's message, linked earlier, was the
-> >> lack of response on this issue. It seems that the SFLC is
-> >> dismissing this issue,000d8b92-0010lling its resolution by the
-> >> developers.
+
+* Chuck Ebbert <cebbert@redhat.com> wrote:
+
+> On 09/14/2007 11:32 AM, Ingo Molnar wrote:
+> > * Antoine Martin <antoine@nagafix.co.uk> wrote:
 > > 
-> > OK, so all of this flaming, and digging up of "licenses ripped off",
-> > and chaff thrown up in the air, and moaning and bewailing about
-> > "theft", is now down to these two lines regarding Nick and Jiri:
-> 
-> Yes, quite an improvement, considering how it all started, dont you think?
-> Pity it took so much pushing and dragging to get people to do the right
-> thing.
-> There is just one little step to go. It is can not be that hard, can it?
-> 
-
-Apparently.
-
-
-> >> * Copyright (c) 2004-2007 Reyk Floeter <reyk@openbsd.org>
-> >> * Copyright (c) 2006-2007 Nick Kossifidis <mickflemm@gmail.com>
-> >> * Copyright (c) 2007 Jiri Slaby <jirislaby@gmail.com>
-> >> [snip rest of BSD license]
+> >>>> have an impact) Keep CONFIG_SCHED_DEBUG=y to be able to twiddle the
+> >>>> sysctl.
+> >> It looks good now! Updated results here:
+> >> http://devloop.org.uk/documentation/database-performance/Linux-Kernels/Kernels-ManyThreads-CombinedTests5-10msYield-noload.png
+> >> http://devloop.org.uk/documentation/database-performance/Linux-Kernels/Kernels-ManyThreads-CombinedTests5-10msYield.png
+> >> Compared with more kernels here - a bit more cluttered:
+> >> http://devloop.org.uk/documentation/database-performance/Linux-Kernels/Kernels-ManyThreads-CombinedTests4-10msYield-noload.png
+> >>
+> >> Thanks Ingo!
+> >> Does this mean that I'll have to keep doing:
+> >> echo 1 > /proc/sys/kernel/sched_yield_bug_workaround
+> >> Or are you planning on finding a more elegant solution?
 > > 
-> > It's under a BSD license; what material difference does those two
-> > lines make, for goodness sake?  It's under a BSD license, so it's not
-> > like anything won't be "given back".
+> > just to make sure - can you get it to work fast with the 
+> > -rc6+yield-patch solution too? (i.e. not CFS-devel) We need a (tested) 
+> > solution for 2.6.23 and the CFS-devel patches are not for 2.6.23. I've 
+> > attached below the latest version of the -rc6 yield patch - the switch 
+> > is not dependent on SCHED_DEBUG anymore but always available.
+> > 
 > 
-> As a programmer, you sure would know what difference any "two lines"
-> would make on your program. When it comes to law, you seem to lose
-> that intuition.
-> 
-> 
-> > Whether or not they have made
-> > enough for changes is really a question for the lawyers, and may
-> > differ from one jurisdiction to another
-> > --- but whether or not they have now, or maybe will not make until later ---
-> 
-> Well, they can add their names *anywhere* in the whole file, *except*
-> these two lines. See, these lines have a whole different meaning
-> when it comes to laws.  When they make sufficient contribution, they
-> sure can add their names. What is so difficult to understand here?
-> 
+> Is this going to be merged? And will you be making the default == 1 or 
+> just leaving it at 0, which forces people who want the older behavior 
+> to modify the default?
 
-So, here is the actual commit of the code in Linville's wireless
-networking development tree:
+not at the moment - Antoine suggested that the workload is probably fine 
+and the patch against -rc6 would have no clear effect anyway so we have 
+nothing to merge right now. (Note that there's no "older behavior" 
+possible, unless we want to emulate all of the O(1) scheduler's 
+behavior.) But ... we could still merge something like that patch, but a 
+clearer testcase is needed. The JVM's i have access to work fine.
 
-http://git.kernel.org/?p=linux/kernel/git/linville/wireless-dev.git;a=commitdiff;h=fb32e1730a91e39adcf06ed5254bfc5a65d17a9b
-
-It I am not mistaken, it was Sunday afternoon, so probably 5/6 or more
-of this thread consisting of more than 110 messages (according to my
-inbox) to LKML was after this time.
-
-As this already had the BSD license ...
-
-Anyway, as for the changes, I am not going to check the original, but
-from the first commit up to now is here:
-
-http://git.kernel.org/?p=linux/kernel/git/linville/wireless-dev.git;a=blobdiff;f=drivers/net/wireless/ath5k_hw.c;h=e4cc307e9590a71bcc8542c45dbd2caf3f9e8fe5;hp=f273c42d4004b81597e7cfc5f7eec757a7c52910;hb=everything;hpb=fb32e1730a91e39adcf06ed5254bfc5a65d17a9b
-
-Running a diffstat shows:
-
- ath5k_hw.c |  344 +++++++++++++++++++++++++++++--------------------------------
- 1 file changed, 165 insertions(+), 179 deletions(-)
-
-But not having the original version, and as the other two lines are
-already present, I am not going to look closer at the changes.
-
-<snip>
-
-
-However, the question I wanted to ask, was this:
-
-Can all those that still feel that there is a problem, please go and
-look at the original, compare it to the current, and then determine (ie,
-go ask a lawyer or some other appropriate person if need be) if the
-changes is enough of a contribution *BEFORE* posting again?
-
-Pretty please with sugar on top?
-
-
-Thanks,
-
-M
-
-
+	Ingo
