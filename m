@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbXIRKou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbXIRKuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608AbXIRKou (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 06:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbXIRKop
+	id S1755982AbXIRKuh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 06:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbXIRKub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 06:44:45 -0400
-Received: from il.qumranet.com ([82.166.9.18]:57306 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269AbXIRKoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 06:44:44 -0400
-Message-ID: <46EFAC0D.9090606@qumranet.com>
-Date: Tue, 18 Sep 2007 12:44:29 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 18 Sep 2007 06:50:31 -0400
+Received: from mailgw11.fraunhofer.de ([153.96.1.23]:49702 "EHLO
+	mailgw11.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbXIRKua (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 06:50:30 -0400
+X-Greylist: delayed 409 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 06:50:30 EDT
+Date: Tue, 18 Sep 2007 12:39:42 +0200
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: linux-kernel@vger.kernel.org, stern@rowland.harvard.edu
+Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
+Message-ID: <46efaaee.iiX5iPDduWZOOvLg%Joerg.Schilling@fokus.fraunhofer.de>
+User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Christoph Hellwig <hch@infradead.org>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Nguyen Anh Quynh <aquynh@gmail.com>
-Subject: Re: [PATCH 001/104] KVM: Fix *nopage() in kvm_main.c
-References: <11900179463203-git-send-email-avi@qumranet.com> <200709170729.24835.nickpiggin@yahoo.com.au> <46EEC52B.8080101@qumranet.com> <200709180317.07055.nickpiggin@yahoo.com.au>
-In-Reply-To: <200709180317.07055.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 18 Sep 2007 10:43:21.0031 (UTC) FILETIME=[BB18E570:01C7F9E0]
+X-Fraunhofer-Email-Policy: accepted
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Tuesday 18 September 2007 04:19, Avi Kivity wrote:
->   
->> Nick Piggin wrote:
->>     
->>>> I should mention that the converting to use ->fault() is a 15-minute
->>>> change; the tricky part is adding backwards compatibility for the
->>>> external module package.
->>>>         
->>> It should be mostly possible to ifdef a nopage() handler, which is
->>> just a wrapper function to translate arguments then call your new
->>> ->fault() handler. With luck, fault would mostly inline into nopage,
->>> and do some constant folding to make it cheaper...
->>>
->>> I'm planning to go through and convert the rest of the in-tree users
->>> at some point soon, so if you do get a chance to convert your
->>> upstream code before I try, it would nice ;)
->>>       
->> In kvm I don't add compatibility #ifdefs to mainline, instead I have an
->> awk script that massages the sources into something that all kernels can
->> grok.
->>     
->
-> Sure, but my suggestion is just a way to make it possible without having
-> to maintain a lot of duplicated code. The point is simply that we'll be
-> getting rid of nopage from mainline sooner or later, and it will probably
-> be less painful for your out of tree stuff if you do it rather than me. Maybe.
->
->   
 
-Certainly it's best done by someone familiar with the kvm external 
-module hackery.  I'll do it during 2.6.24 if no one beats me to it.
+> That's true now, but it wasn't always.  Until the last year or so, 
+> cdrecord wouldn't work properly with USB CD drives having a 64-sector 
+> limit unless the user added a particular command-line argument. 
+
+This is a bug that is known since ~ 3 years and that has been fixed 
+_very_ recently. It was still present in 2.6.21.7 a few weeks ago.
+
+And BTW: the limit was not 64 sectors but ~13 sectors. 64 sectors would be at 
+least 128 kB but the limit was ~ 32k.
+
+
+
+
+
+Jörg
 
 -- 
-error compiling committee.c: too many arguments to function
-
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
