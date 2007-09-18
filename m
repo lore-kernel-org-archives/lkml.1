@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbXIRH0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbXIRH1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbXIRH0r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 03:26:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbXIRH0j
+	id S1755590AbXIRH1z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 03:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbXIRH1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 03:26:39 -0400
-Received: from smtp1.Vir.com ([199.202.113.40]:34278 "EHLO smtp1.vir.com"
+	Tue, 18 Sep 2007 03:27:48 -0400
+Received: from nn7.de ([85.214.94.156]:44655 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754560AbXIRH0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 03:26:39 -0400
-Message-ID: <46EF7DAD.3080502@soo.com>
-Date: Tue, 18 Sep 2007 03:26:37 -0400
-From: ben soo <lnx-kern@soo.com>
-Reply-To: lnx-kern@soo.com
-User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
-MIME-Version: 1.0
-To: Kernel Mailing list <linux-kernel@vger.kernel.org>
-Subject: VGA text console display problem with kernel 2.6.23-rc5/6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754724AbXIRH1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 03:27:47 -0400
+Subject: Re: [3/3] 2.6.23-rc6: known regressions v2
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, "Rafael J\. Wysocki" <rjw@sisk.pl>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
+       Thomas Voegtle <tv@lio96.de>
+In-Reply-To: <1190063028.2995.53.camel@chaos>
+References: <46EB3EF8.6040103@googlemail.com>
+	 <200709172144.43761.arekm@maven.pl> <1190058463.2995.14.camel@chaos>
+	 <200709172251.07769.arekm@maven.pl>  <1190063028.2995.53.camel@chaos>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 18 Sep 2007 09:07:29 +0200
+Message-Id: <1190099250.29236.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i've 2 servers with old PCI VGA cards, one using X86_64 kernel 
-version 2.6.23-rc5 and one with i386 kernel version 2.6.23-rc6,
-both wired into the same CRT via a KVM switch.
+On Mon, 2007-09-17 at 23:03 +0200, Thomas Gleixner wrote:
+> On Mon, 2007-09-17 at 22:51 +0200, Arkadiusz Miskiewicz wrote:
+> > > >     clockevents: fix resume logic
+> > >
+> > > Linus pulled a series of patches which are addressing this issue into
+> > > his tree yesterday. Can you please retest against current git ?
+> > 
+> > Looks like the problem is fixed in current git for me. Thanks!
+> 
+> Thanks for testing.
 
-No matter what text screen size i set on both these machines (using 
-resizecons) the shell line where i type in commands is past the 
-bottom of the screen, invisible.
+I can confirm that the problem is fixed for me too in current git when
+using the free avivo driver (with the binary only fglrx driver the
+machine just hangs on resume or even sometimes on sleep). So it might be
+worth to purposely keep that such that people transit from fglrx to the
+free avivo/radeonhd drivers. Anyway s2ram with avivo takes 2-3 sec to
+suspend and 4-5 for resume (when fglrx worked it was more in the 10-20
+secs).
 
-Another box connected to the same KVM displays fine, and it runs 
-2.6.22-rc7.
-
-i also have a box running kernel 2.6.23-rc5 where the console 
-display is fine: it uses a GeForce 8500 PCI-E vidcard driving a LCD 
-screen.
-
+Soeren.
+-- 
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
