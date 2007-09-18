@@ -1,95 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758963AbXIRWmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbXIRWos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758963AbXIRWmc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756049AbXIRWmZ
+	id S1759531AbXIRWos (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbXIRWol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:42:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:63624 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbXIRWmY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:42:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ML8xZYhk2J4Ue05GSK1z6rDHruoHXD6p8gzqDMwEtrBnLXFTpz88AZFC8FMfGXNRjrxiwovU5yTLehhEFtBOwueYBxYCRLVTmAJh9HBploObUmAxgKyybzjljqOaFLDRuc1IIMJ+nr/oGBHnEUJ1XLqUWrwNfTcOIrOZRbysLhE=
-Message-ID: <46F05378.8020907@googlemail.com>
-Date: Wed, 19 Sep 2007 00:38:48 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+	Tue, 18 Sep 2007 18:44:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60409 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753033AbXIRWok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 18:44:40 -0400
+Message-ID: <46F054D4.5090006@garzik.org>
+Date: Tue, 18 Sep 2007 18:44:36 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Miles Lane <miles.lane@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: 2.6.23-rc6-mm1
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <a44ae5cd0709180827w7156dc17q13853c3f2c127142@mail.gmail.com> <20070918191741.GA27725@uranus.ravnborg.org> <a44ae5cd0709181242j517e39e0xc3f78224bcda360a@mail.gmail.com> <20070918202654.GA27836@uranus.ravnborg.org>
-In-Reply-To: <20070918202654.GA27836@uranus.ravnborg.org>
-Content-Type: text/plain; charset=us-ascii
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: "Luis R. Rodriguez" <mcgrof@gmail.com>, Jiri Slaby <jirislaby@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] revert ath5k ioread32()/iowrite32() usage - use	readl()/writel(),
+ we're MMIO-only
+References: <43e72e890709171334y321dc2c8ke255a126a733dad6@mail.gmail.com>	 <46EEE735.5050306@gmail.com> <46EEEA9B.70407@garzik.org>	 <46EEF543.7060901@gmail.com>	 <43e72e890709181203x30144451hf332da4032b5b770@mail.gmail.com>	 <43e72e890709181212u75ec6fe2x7aa639bac319c087@mail.gmail.com> <1190153934.6403.123.camel@localhost.localdomain>
+In-Reply-To: <1190153934.6403.123.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Tue, Sep 18, 2007 at 03:42:58PM -0400, Miles Lane wrote:
->> On 9/18/07, Sam Ravnborg <sam@ravnborg.org> wrote:
->>> Hi Miles.
->>> On Tue, Sep 18, 2007 at 11:27:23AM -0400, Miles Lane wrote:
->>>> Selecting Help for "Subarchitecture Type" causes "make menuconfig" to
->>>> crash, and the bash display settings have to be reset.
->>> Not reproduceable here.
->>> But I noticed that we pass a null pointer to a vsprintf function which
->>> in the cases you pointed out printed a (null) at my system.
->>> Could you plase try if attached patch fix your system.
->> Sorry, it still crashes.  I am running Ubuntu pre-6.10 (Gutsy -- the
->> development version of the distro).  Maybe I should try "make
->> mrproper" first?
+Benjamin Herrenschmidt wrote:
+> To be more precise, a platform has every right to return some kind of
+> "token" from ioport_map/pci_iomap that encodes the type of address, and
+> that is -different- from what a normal ioremap does. In which case, you
+> will -not- be able to use readb/writeb & cie on such a token.
 > 
-> make mrproper should not do any difference here.
-> I rather think you hit some ncurses bug.
-> 
-> If you could add '-g' to HOSTCFLAGS in top-level Makefile
-> and then do:
-> rm scripts/kconfig/mconf.o scripts/kconfig/mconf
-> make menuconfig
-> 
-> (to build mconf and to check that the error is still reproduceable).
-> And then run it in a debugger like this:
-> gdb scripts/kconfig/mconf
-> run arch/x86_64/Kconfig
->          ^^^^^^ replace with your actual arch
-> 
-> Provoke the error and get a back-trace with 'bt'.
-
-Hi Sam,
-
-I can reproduce this bug on Frugalware Linux. 
-
-Here the bt:
-
-Program received signal SIGSEGV, Segmentation fault.                                                     
-0xb7dc4143 in strlen () from /lib/libc.so.6                                                                                                                                       
-(gdb) bt                                                                                                                                                                          
-#0  0xb7dc4143 in strlen () from /lib/libc.so.6                                                                                                                                   
-#1  0x0804fd60 in str_append (gs=0xbfe4f6e8, s=0x0) at scripts/kconfig/util.c:87                                                                                                  
-#2  0x0804e0cb in expr_print (e=0x8e22df8, fn=0x804fda0 <expr_print_gstr_helper>, data=0xbfe4f6e8, prevtoken=0) at scripts/kconfig/expr.c:1037                                    
-#3  0x0804e1e7 in expr_gstr_print (e=0x8e22df8, gs=0xbfe4f6e8) at scripts/kconfig/expr.c:1099                                                                                     
-#4  0x0804a07e in get_symbol_str (r=0xbfe4f6e8, sym=0x8b54ee8) at scripts/kconfig/mconf.c:334                                                                                     
-#5  0x0804a363 in show_help (menu=0x8b54f88) at scripts/kconfig/mconf.c:738                                                                                                       
-#6  0x0804acec in conf (menu=0x8b69480) at scripts/kconfig/mconf.c:781                                                                                                            
-#7  0x0804a971 in conf (menu=0x8063c40) at scripts/kconfig/mconf.c:703                                                                                                            
-#8  0x0804af8a in main (ac=Cannot access memory at address 0x0                                                                                                                    
-) at scripts/kconfig/mconf.c:917
+> The fact that current implementations seem to return something for MMIO
+> that is equivalent to what ioremap returns is an accident and cannot be
+> relied upon.
 
 
-Looks somewhat strange -> http://194.231.229.228/menuconfig.png
+Fair enough.  It's easy enough to change ath5k to using ioremap (or 
+pci_ioremap).
 
-PS: Is without the patch you posted , I'll try with in a bit
+	Jeff
 
 
-> 
-> Thanks,
-> 	Sam
-
-Gabriel
