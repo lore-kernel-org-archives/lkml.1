@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbXIROcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbXIROgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbXIROcE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 10:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbXIRObs
+	id S1757883AbXIROgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 10:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbXIROgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 10:31:48 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:42800 "EHLO e3.ny.us.ibm.com"
+	Tue, 18 Sep 2007 10:36:04 -0400
+Received: from mail.dgt.com.pl ([195.117.141.2]:45731 "EHLO dgt.com.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754474AbXIRObq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 10:31:46 -0400
-Subject: Re: [2/3] 2.6.23-rc6: known regressions v2
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
-       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       netdev@vger.kernel.org, Shish <shish@shishnet.org>,
-       Karl Meyer <adhocrocker@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, Daniel Drake <dsd@gentoo.org>,
-       Oliver Neukum <oliver@neukum.org>,
-       linux-usb-devel@lists.sourceforge.net, Florian Lohoff <flo@rfc822.org>,
-       Toralf F?rster <toralf.foerster@gmx.de>
-In-Reply-To: <20070918142443.GA13304@atrey.karlin.mff.cuni.cz>
-References: <46EB3E94.7080704@googlemail.com> <46EB4371.307@googlemail.com>
-	 <20070918142443.GA13304@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 09:31:41 -0500
-Message-Id: <1190125901.6528.7.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	id S1756337AbXIROgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 10:36:02 -0400
+DGT-Virus-Scanned: amavisd-new at dgt.com.pl
+Message-ID: <46EFE23F.8090100@dgt.com.pl>
+Date: Tue, 18 Sep 2007 16:35:43 +0200
+From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); pl-PL; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: Intel-Quad on GA-P35-S3 motherboard with 4*2GB
+References: <46EA4B50.7040904@dgt.com.pl> <20070914131859.GC5386@csclub.uwaterloo.ca> <46EF77D8.3090808@dgt.com.pl> <20070918142047.GF5386@csclub.uwaterloo.ca>
+In-Reply-To: <20070918142047.GF5386@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-18 at 16:24 +0200, Jan Kara wrote:
 
-> > Subject         : umount triggers a warning in jfs and takes almost a minute
-> > References      : http://lkml.org/lkml/2007/9/4/73
-> > Last known good : ?
-> > Submitter       : Oliver Neukum <oliver@neukum.org>
-> > Caused-By       : ?
-> > Handled-By      : ?
-> > Status          : unknown
->   I thought Shaggy asked Oliver about some details (and he did not
-> answer so far) so I'd assume Shaggy is handling this.
+>> [root@kromblack ~]# cat /proc/mtrr
+>> reg00: base=0x100000000 (4096MB), size=8192MB: write-back, count=1
+>> reg01: base=0x280000000 (10240MB), size=2048MB: uncachable, count=1
+>> reg02: base=0x260000000 (9728MB), size= 512MB: uncachable, count=1
+>> reg03: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+>> reg04: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+>> reg05: base=0xa0000000 (2560MB), size= 512MB: uncachable, count=1
+>> reg06: base=0x9ff00000 (2559MB), size=   1MB: write-through, count=1
+>>     
+>
+>   
+Yes, it's a bit strange, but there should be a way to configure it in linux.
+I found only memmap option which does selection of regions, but not 
+remapping.
+> So first it says there is 8GB ram at 4GB.  Then it deletes the top 2GB
+> of that and then another 512MB.  So now there is 5.5GB at 4GB.  It then
+> says there is 4GB at 0GB, then deletes the top 1GB of that, and then
+> another 512MB, leaving 2.5GB at 0GB.  So overall that sounds like 8GB
+> total.  It also seems that if it had mapped 2GB at 0GB and 6GB at 4GB
+> the MTRR would have been a heck of a lot simpler (but a 32bit OS would
+> have had 512MB less ram of course).
+>
+>   
+I have 64 bit compilation of course.
+>> [root@kromblack ~]# dmesg|grep mtrr
+>> mtrr: your CPUs had inconsistent variable MTRR settings
+>> mtrr: probably your BIOS does not setup all CPUs.
+>> mtrr: corrected configuration.
+>>     
+>
+> Now that does sound odd.  How many CPUs does the machine have?
+>
+>   
+It's Intel-quad, so there are 4 CPUs.
+> So what does the dmesg say about the memory table it got from the bios?
+> That is the e820 table.
+>   
 
-I've put it on the back-burner since I haven't heard back from Oliver.
-I still haven't found out whether or not it is a regression.  I'm not
-too concerned about fixing it right away.  I don't think jfs on flash is
-very important.
+It's in prevoius mail:
 
--- 
-David Kleikamp
-IBM Linux Technology Center
+# dmesg|grep BIOS-e820
+> BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+> BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+> BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+> BIOS-e820: 0000000000100000 - 000000009fee0000 (usable)
+> BIOS-e820: 000000009fee0000 - 000000009fee3000 (ACPI NVS)
+> BIOS-e820: 000000009fee3000 - 000000009fef0000 (ACPI data)
+> BIOS-e820: 000000009fef0000 - 000000009ff00000 (reserved)
+> BIOS-e820: 00000000c0000000 - 00000000c4000000 (reserved)
+> BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+> BIOS-e820: 0000000100000000 - 0000000260000000 (usable)
+
+
+
+
 
