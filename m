@@ -1,69 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbXIRVh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbXIRVjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759084AbXIRVh5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbXIRVhr
+	id S1758720AbXIRVjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbXIRVjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:37:47 -0400
-Received: from 1wt.eu ([62.212.114.60]:2565 "EHLO 1wt.eu"
+	Tue, 18 Sep 2007 17:39:32 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:61400 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753323AbXIRVhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:37:46 -0400
-Date: Tue, 18 Sep 2007 23:37:36 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-Message-ID: <20070918213736.GA31119@1wt.eu>
-References: <1190145951.9540.230.camel@dell> <20070918.122150.124083496.davem@davemloft.net> <20070918213025.GF10199@1wt.eu> <20070918.143134.112198097.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070918.143134.112198097.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+	id S1752239AbXIRVja convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 17:39:30 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: kdump detection in SCSI drivers
+Date: Tue, 18 Sep 2007 15:39:28 -0600
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501B2C44C@NAMAIL1.ad.lsil.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kdump detection in SCSI drivers
+Thread-Index: Acf6PGP+AetV9gwHTem8lFTwLhfUPw==
+From: "Mukker, Atul" <Atul.Mukker@lsi.com>
+To: <Linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Sep 2007 21:39:29.0178 (UTC) FILETIME=[645767A0:01C7FA3C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 02:31:34PM -0700, David Miller wrote:
-> From: Willy Tarreau <w@1wt.eu>
-> Date: Tue, 18 Sep 2007 23:30:25 +0200
-> 
-> > On Tue, Sep 18, 2007 at 12:21:50PM -0700, David Miller wrote:
-> > > From: "Michael Chan" <mchan@broadcom.com>
-> > > Date: Tue, 18 Sep 2007 13:05:51 -0700
-> > > 
-> > > > The bnx2 firmware changes quite frequently.  A new driver quite often
-> > > > requires new firmware to work correctly.  Splitting them up makes things
-> > > > difficult for the user.
-> > > > 
-> > > > The firmware in tg3 is a lot more mature and I don't expect it to
-> > > > change.  I think tg3 is better suited for using request_firmware().
-> > > 
-> > > Like I said, I think neither should change and the driver should
-> > > be fully functional when built statically into the kernel.
-> > 
-> > Michael, doesn't a functional-yet-suboptimal firmware exist ? I mean,
-> > just the same principle as we all have kernels, boot CDs, statically
-> > built tools, etc... which run everywhere. If you have such a beast,
-> > maybe it would be a good start to have it in the kernel, and provide
-> > the users with the ability to upgrade the firmware once the system
-> > is able to do more complex things.
-> > 
-> > Just a thought...
-> 
-> So let's save 60K instead of 80K.
+Hi,
 
-That's not for this reason I said this. Michael said the firmware needs
-to be updated somewhat often. What I was wondering was if it was not
-possible to stick to a stable one (and hopefully small) so that the
-driver could require less frequent updates. Sorry if it's not the main
-point of the discussion, but I grepped on this :-)
+Is there a standard way for drivers (RAID) to detect if the current
+kernel is running in kdump mode? We would like to adjust driver behavior
+dynamically when kdump is active by scaling down resources.
 
-> I mean, the entire discussion is just plain silly :)
-
-yes, possibly :-)
-
-Cheers,
-Willy
-
+Thanks
+-Atul Mukker
+LSI Corp.
