@@ -1,90 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbXIRTgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbXIRTiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757692AbXIRTgq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXIRTgj
+	id S1758245AbXIRTiN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbXIRTh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:36:39 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:18741 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbXIRTgi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:36:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=atX6sUvq/+HUaZOLoAybxZZ+ulc8e3+J3QiuehOP43FENI8XiHJCsnWs8B/rQWrEQwZl6nMu5hC1vgWN2WHYvkQV0mOOgAmVdt8/Ib/vaw9BE7Hl0PXtVeeBx+F0uPuRJdLFyX4ld6AyyZaUcNFX80k+Dkj8ihCUHSpvYAnQFAk=
-Subject: Re: [git] CFS-devel, group scheduler, fixes
-From: dimm <dmitry.adamushko@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 21:36:30 +0200
-Message-Id: <1190144190.5204.24.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 18 Sep 2007 15:37:59 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59725 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755543AbXIRTh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 15:37:58 -0400
+Message-ID: <46F02902.3040003@pobox.com>
+Date: Tue, 18 Sep 2007 15:37:38 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: "Can E. Acar" <can.acar@pro-g.com.tr>
+CC: Theodore Tso <tytso@mit.edu>, Claudio Jeker <cjeker@diehard.n-r-g.com>,
+       Adrian Bunk <bunk@kernel.org>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <46EEFA6D.9080708@pro-g.com.tr> <20070917234726.GG18360@thunk.org> <46F01F21.4050009@pro-g.com.tr>
+In-Reply-To: <46F01F21.4050009@pro-g.com.tr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Can E. Acar wrote:
+> As long as it is not a derived work, Reyk gets to decide who is in the
+> copyright. Even if it is a derived work, it is polite to ask.
 
-[ well, don't expect to find here anything like RDCFS
-(no, 'D' does not stand for 'dumb'!). I was focused
-on more prosaic things in the mean time so just
-didn't have time for writing it.. ]
+Additional work went in, thus additional copyrights were added.
 
-here is a few cleanup/simplification/optimization(s)
-based on the recent modifications in the sched-dev tree.
 
-(1) optimize task_new_fair()
-(2) simplify yield_task()
-(3) rework enqueue/dequeue_entity() to get rid of
-sched_class::set_curr_task()
+> I am really disappointed by all this.  I would have expected that once
+> such a patch is suggested (let alone being committed to some public place)
 
-additionally, the changes somewhat decrease code size:
+In a purely open development environment, even personal developer trees 
+are made public.  That's the way we _want_ development to occur.  Out in 
+public, with a full audit trail.
 
-   text    data     bss     dec     hex filename
-  43538    5398      48   48984    bf58 build/kernel/sched.o.before
-  43250    5390      48   48688    be30 build/kernel/sched.o
+Your implied ideal scenario is tantamount to guaranteeing that mistakes 
+are never committed to a public repository anywhere.  Mistakes will 
+happen.  Even legal mistakes.  In public.
 
-(SMP + lots of debugging options but, I guess, in this case the diff
-should remain visible for any combination).
 
----
+> some senior/respected/responsible Linux person would tell them what they
+> are doing is wrong.  Right from the start.
 
-(1)
+What you are seeing is an example of mistakes that were caught in 
+review, and corrected.
 
-due to the fact that we no longer keep the 'current' within the tree,
-dequeue/enqueue_entity() is useless for the 'current' in task_new_fair().
-We are about to reschedule and sched_class->put_prev_task() will put
-the 'current' back into the tree, based on its new key.
+That's how any scalable review process works...  the developer reviews 
+his own work.  the team reviews the developer's work.  the maintainer 
+reviews the team's work.  the next maintainer reviews.  and so on, to 
+the top.
 
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
----
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 6e52d5a..5a244e2 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -969,10 +969,11 @@ static void task_new_fair(struct rq *rq, struct task_struct *p)
- 
- 	if (sysctl_sched_child_runs_first &&
- 			curr->vruntime < se->vruntime) {
--
--		dequeue_entity(cfs_rq, curr, 0);
-+		/*
-+ 		 * Upon rescheduling, sched_class::put_prev_task() will place
-+ 		 * 'current' within the tree based on its new key value.
-+ 		 */
- 		swap(curr->vruntime, se->vruntime);
--		enqueue_entity(cfs_rq, curr, 0);
- 	}
- 
- 	update_stats_enqueue(cfs_rq, se);
-
----
-
-Dmitry
-
+	Jeff
 
 
