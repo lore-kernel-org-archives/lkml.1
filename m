@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbXIRWTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbXIRWTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbXIRWTW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbXIRWTF
+	id S1760675AbXIRWTx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbXIRWTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:19:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45223 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754142AbXIRWTD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:19:03 -0400
-Date: Tue, 18 Sep 2007 23:25:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>,
+	Tue, 18 Sep 2007 18:19:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54155 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753748AbXIRWTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 18:19:43 -0400
+Subject: Re: [PATCH] revert ath5k ioread32()/iowrite32() usage - use
+	readl()/writel(), we're MMIO-only
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Jeff Garzik <jeff@garzik.org>,
        "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
-Message-ID: <20070918232546.004af9ff@the-village.bc.nu>
-In-Reply-To: <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>
-References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
-	<20070918113401.6a8a737f@the-village.bc.nu>
-	<43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com>
-	<alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <43e72e890709181212u75ec6fe2x7aa639bac319c087@mail.gmail.com>
+References: <43e72e890709171334y321dc2c8ke255a126a733dad6@mail.gmail.com>
+	 <46EEE735.5050306@gmail.com> <46EEEA9B.70407@garzik.org>
+	 <46EEF543.7060901@gmail.com>
+	 <43e72e890709181203x30144451hf332da4032b5b770@mail.gmail.com>
+	 <43e72e890709181212u75ec6fe2x7aa639bac319c087@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 08:18:54 +1000
+Message-Id: <1190153934.6403.123.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you use ioport_map/unmap, then you really *should* access them with the 
-> proper iomem accessors (ioread/iowrite). The fact that it may happen to 
-> work (when using the default lib/iomap.c implementation, at least) on 
-> some architectures and with the current implementation still doesn't mean 
-> that you should necessarily use readb/writeb.
 
-Another reason we should enforce the use of ioread/iowrite is that some
-platforms do daft things like map mmio type devices through indirect
-register access. Sparc PCMCIA is a classic example. The only sane way to
-make these work is to require ioread/iowrite is used with iomap
+> > > > If the driver knows its MMIO, using readX/writeX after pci_iomap() is
+> > > > just fine, for all current implementations, and it makes sense that way.
+> > >
+> > > There is nothing that guarantees this is permitted, any more than there
+> > > is anything saying not to use outb/outl. Some of the implementations do
+> > > quite strange things. It may happen to work but its not in the
+> > > documentation or the comments.
+> >
+> > I posted a patch to update the documentation with this.
+> >
+> > > Please, can anybody clarify it?
+> >
+> > Based on Alan's 'Review-by' remarks on my patch for updating the
+> > documenation on pci_iomap() it seems this validates this patch. Please
+> > see thread with subject:
+> >
+> > [PATCH] Clarify pci_iomap() usage for MMIO-only devices
+> 
+> Well spoke too soon. Now Linus disagrees. We'll see the outcome on the
+> other thread then.
+
+To be more precise, a platform has every right to return some kind of
+"token" from ioport_map/pci_iomap that encodes the type of address, and
+that is -different- from what a normal ioremap does. In which case, you
+will -not- be able to use readb/writeb & cie on such a token.
+
+The fact that current implementations seem to return something for MMIO
+that is equivalent to what ioremap returns is an accident and cannot be
+relied upon.
+
+Cheers,
+Ben.
+
 
