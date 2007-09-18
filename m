@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXIRQmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760344AbXIRQov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760766AbXIRQmi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 12:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759628AbXIRQm3
+	id S1760344AbXIRQov (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 12:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757515AbXIRQon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 12:42:29 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:39384 "EHLO e2.ny.us.ibm.com"
+	Tue, 18 Sep 2007 12:44:43 -0400
+Received: from pat.uio.no ([129.240.10.15]:50488 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758626AbXIRQm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 12:42:28 -0400
-Date: Tue, 18 Sep 2007 22:12:24 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, prasanna@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: Re: [patch 09/11] Text Edit Lock - kprobes x86_64
-Message-ID: <20070918164224.GB14594@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20070917184031.211525416@polymtl.ca> <20070917184210.769833022@polymtl.ca>
+	id S1756703AbXIRQom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 12:44:42 -0400
+Subject: Re: Credentials test patch
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: David Howells <dhowells@redhat.com>
+Cc: viro@ftp.linux.org.uk, hch@infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <11807.1190133197@redhat.com>
+References: <1577.1189713412@redhat.com>  <11807.1190133197@redhat.com>
+Content-Type: text/plain
+Date: Tue, 18 Sep 2007 12:44:17 -0400
+Message-Id: <1190133857.6656.20.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070917184210.769833022@polymtl.ca>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.083)
+X-UiO-Scanned: EB1A18E88A99CEB66445C27AC30636219ECB7C81
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 620 total 3954174 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 02:40:40PM -0400, Mathieu Desnoyers wrote:
-> Make kprobes use text_set instead of text_poke.
+On Tue, 2007-09-18 at 17:33 +0100, David Howells wrote:
+> Hi Al, Christoph,
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-Tested-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-
-> CC: Andi Kleen <andi@firstfloor.org>
-> CC: prasanna@in.ibm.com
-> CC: ananth@in.ibm.com
-> CC: anil.s.keshavamurthy@intel.com
-> CC: davem@davemloft.net
+> Here's a new version of my credentials patch.  It's still very basic, with
+> only Ext3, (V)FAT, NFS, AFS, SELinux and keyrings compiled in on an x86_64
+> arch kernel.  The patched kernel compiles, links and runs.
+> 
+> I've made the following major changes to the patch:
+> 
+>  (1) System calls that might want to use the credentials call
+>      update_current_cred() before calling into the VFS or whatever.  This
+>      allows the keyring pointers in the cred struct to be updated.
+> 
+>  (2) I've got rid of current_cred(), __current_cred() and the accessors for
+>      current's fsuid, fsgid and group list.  Instead you just use
+>      current->cred->whatever.  You don't need RCU to read the current threads
+>      credentials as only you are permitted to change them.
+> 
+> David
 > ---
->  arch/x86_64/kernel/kprobes.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6-lttng/arch/x86_64/kernel/kprobes.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/arch/x86_64/kernel/kprobes.c	2007-09-11 15:22:35.000000000 -0400
-> +++ linux-2.6-lttng/arch/x86_64/kernel/kprobes.c	2007-09-11 15:49:51.000000000 -0400
-> @@ -216,12 +216,13 @@ static void __kprobes arch_copy_kprobe(s
-> 
->  void __kprobes arch_arm_kprobe(struct kprobe *p)
->  {
-> -	text_poke(p->addr, ((unsigned char []){BREAKPOINT_INSTRUCTION}), 1);
-> +	text_poke(p->addr, INIT_ARRAY(unsigned char, BREAKPOINT_INSTRUCTION, 1),
-> +			1);
->  }
-> 
->  void __kprobes arch_disarm_kprobe(struct kprobe *p)
->  {
-> -	text_poke(p->addr, &p->opcode, 1);
-> +	text_poke(p->addr, INIT_ARRAY(unsigned char, p->opcode, 1), 1);
->  }
-> 
->  void __kprobes arch_remove_kprobe(struct kprobe *p)
-> 
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+What about the process' capabilities? Shouldn't they also be part of a
+credential?
+
+Cheers
+  Trond
+
