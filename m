@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbXIRJXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbXIRJZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbXIRJXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 05:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbXIRJXh
+	id S1755944AbXIRJZZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 05:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXIRJZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 05:23:37 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:40152 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753861AbXIRJXg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 05:23:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=guEUWz0ib3lTpGa8dOBs8+UfV6sE66jm9bBMKUjELTCTGNcDR9mQnKRB4nNEmh3tgXrT5zvLOjcf15axN9n7ZBzVxUuWy8+QUJj8tdjuoXPk+gW8dtM8QS55R7PI9rPnXwyqMm0r3456/dLelbMEJinhbz6cZPCnLI2uQJwVtho=  ;
-X-YMail-OSG: Ne1YVToVM1m.OhEpXc9bJYMH4reDDBny7ektgxZMiShniCOmRiY.VqcFIeJhvOMCwE7vTafx4Q--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: VM/VFS bug with large amount of memory and file systems?
-Date: Tue, 18 Sep 2007 03:12:31 +1000
-User-Agent: KMail/1.9.5
-Cc: Anton Altaparmakov <aia21@cam.ac.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       marc.smith@esmail.mcc.edu
-References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk> <200709170828.01098.nickpiggin@yahoo.com.au> <46EEB3AC.20205@redhat.com>
-In-Reply-To: <46EEB3AC.20205@redhat.com>
+	Tue, 18 Sep 2007 05:25:12 -0400
+Received: from gate.solvo.ru ([195.201.44.254]:57105 "EHLO gate.solvo.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753415AbXIRJZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 05:25:11 -0400
+X-Greylist: delayed 809 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 05:25:10 EDT
+Message-ID: <46EF962E.9010706@solvo.ru>
+Date: Tue, 18 Sep 2007 13:11:10 +0400
+From: Sergey Tikhonov <tsv@solvo.ru>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Linux on Alpha processors <axp-list@redhat.com>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       ink@jurassic.park.msu.ru, ac-admin@lists.anotherbloody.com,
+       Jay Estabrook <jay.estabrook@hp.com>
+Subject: Re: 2.6.23 alpha unistd.h changes
+References: <46EEE483.4020209@linux-kernel.at>	<20070917212257.GA27980@stusta.de> <46EF922A.4030206@linux-kernel.at>
+In-Reply-To: <46EF922A.4030206@linux-kernel.at>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709180312.31937.nickpiggin@yahoo.com.au>
+X-Milter: Spamilter (Reciever: gate.solvo.ru; Sender-ip: 172.16.80.12; Sender-helo: tiger.solvo.ru;)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 September 2007 03:04, Rik van Riel wrote:
-> Nick Piggin wrote:
-> > (Rik has a patch sitting in -mm I believe which would make this problem
-> > even worse, by doing even less highmem scanning in response to lowmem
-> > allocations).
+Oliver Falk wrote:
+> On 09/17/2007 11:22 PM, Adrian Bunk wrote:
+>   
+>> On Mon, Sep 17, 2007 at 10:33:07PM +0200, Oliver Falk wrote:
+>>     
+>>> At Alphacore we used to patch the kernel headers for a while now; We
+>>> added syscalls __NR_openat (447) until __NR_tee (466).
+>>>       
+>> Why did your numbers differ from the numbers that were used in the 
+>> upstream kernel?
+>>     
 >
-> My patch should not make any difference here, since
-> balance_pgdat() already scans the zones from high to
-> low and sets an end_zone variable that determines the
-> highest zone to scan.
->
-> All my patch does is make sure that we do not try to
-> reclaim excessive amounts of dma or low memory when
-> a higher zone is full.
+> Afaik, our patch was done a while ago and nobody every submitted it
+> upstream - don't know why...
+>   
+Yes, it was done by me and I had no info how to push the updates to 
+upstream, sorry. (by that time,
+there were no latest "distribution" available with those changes).
+> At AC, we follow RH/Fedora packages and there we had glibc-kernheaders -
+> where our patch originates. When the glibc/kernel packages changed and
+> glibc-kernheaders died, I patched the syscalls into kernel headers; Not
+> thinking that I better submit it upstream. :-(
+>   
+Yea, now there is more interest and it is better to do it right. :)
 
-Sorry, yeah I had it the wrong way around. Your patch would not
-increase the probability of this problem.
+Regards,
 
-We could have some logic in there to scan highmem when buffer
-heads are over limit. But that really kind of sucks in that it introduces
-some arbitrary point where reclaim behaviour completely changes...
-Adding a shrinker for buffer heads is the "logical" approach that we
-take for other non-page caches. That also kind of sucks because we
-normally don't want to do this out of band buffer reclaiming and just
-have it work from page reclaim (it will introduce extra locking and list
-scanning).
+-- 
+Sergey Tikhonov
 
-Maybe when the machine is near OOM, we can just change the scanning
-to do all zones -- a change in scanning behaviour at that point is better
-than oom kill.
+Head, R&D department
+Solvo Ltd.
+Saint-Petersburg, Russia
+http://www.solvo.ru
+tsv@solvo.ru
+
