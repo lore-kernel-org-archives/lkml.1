@@ -1,112 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbXIRWFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXIRWH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758032AbXIRWFg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 18:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXIRWF2
+	id S1758266AbXIRWH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 18:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbXIRWHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 18:05:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54635 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbXIRWF2 (ORCPT
+	Tue, 18 Sep 2007 18:07:21 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37492 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754527AbXIRWHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 18:05:28 -0400
-Subject: Re: [v4l-dvb-maintainer] modpost errors ( Re: 2.6.23-rc6-mm1)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: mkrufky@linuxtv.org
-Cc: sam@ravnborg.org, nix.or.die@googlemail.com,
-       v4l-dvb-maintainer@linuxtv.org, linux-dvb@linuxtv.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <46EFFEBC.9020706@linuxtv.org>
-References: <46EFFEBC.9020706@linuxtv.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 18 Sep 2007 19:06:11 -0300
-Message-Id: <1190153171.7883.1.camel@areia>
+	Tue, 18 Sep 2007 18:07:19 -0400
+Date: Tue, 18 Sep 2007 15:02:32 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 2/7] Immediate Values - Kconfig menu in EMBEDDED
+Message-Id: <20070918150232.128397b4.randy.dunlap@oracle.com>
+In-Reply-To: <20070918210852.945316226@polymtl.ca>
+References: <20070918210747.828804366@polymtl.ca>
+	<20070918210852.945316226@polymtl.ca>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.91-1mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied at my -git tree.
+On Tue, 18 Sep 2007 17:07:49 -0400 Mathieu Desnoyers wrote:
 
-Cheers,
-Mauro.
+> Immediate values provide a way to use dynamic code patching to update variables
+> sitting within the instruction stream. It saves caches lines normally used by
+> static read mostly variables. Enable it by default, but let users disable it
+> through the EMBEDDED menu with the "Disable immediate values" submenu entry.
+> 
+> Note: Since I think that I really should let embedded systems developers using
+> RO memory the option to disable the immediate values, I choose to leave this
+> menu option there, in the EMBEDDED menu. Also, the "CONFIG_IMMEDIATE" makes
+> sense because we want to compile out all the immediate code when we decide not
+> to use optimized immediate values at all (it removes otherwise unused code).
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: Adrian Bunk <bunk@stusta.de>
+> CC: Andi Kleen <andi@firstfloor.org>
+> CC: Alexey Dobriyan <adobriyan@gmail.com>
+> CC: Christoph Hellwig <hch@infradead.org>
+> ---
+>  init/Kconfig |   21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
+> 
+> Index: linux-2.6-lttng/init/Kconfig
+> ===================================================================
+> --- linux-2.6-lttng.orig/init/Kconfig	2007-09-18 10:09:40.000000000 -0400
+> +++ linux-2.6-lttng/init/Kconfig	2007-09-18 13:14:58.000000000 -0400
+> @@ -407,6 +407,17 @@ config CC_OPTIMIZE_FOR_SIZE
+>  config SYSCTL
+>  	bool
+>  
+> +config IMMEDIATE
+> +	default y if !DISABLE_IMMEDIATE
 
-Em Ter, 2007-09-18 às 12:37 -0400, mkrufky@linuxtv.org escreveu:
-> Sam Ravnborg wrote:
-> > Please cc: relevant people.
-> >
-> > On Tue, Sep 18, 2007 at 05:43:35PM +0200, Gabriel C wrote:
-> >   
-> >> Hi,
-> >>
-> >> I get modpost errors here :
-> >>
-> >> ...
-> >>
-> >> ERROR: "dvb_dmx_init" [drivers/media/video/video-buf-dvb.ko] undefined!
-> >> ERROR: "dvb_unregister_adapter" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_register_frontend" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_unregister_frontend" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_net_release" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_frontend_detach" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_dmxdev_release" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_dmx_swfilter" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_net_init" [drivers/media/video/video-buf-dvb.ko] undefined!
-> >> ERROR: "dvb_dmx_release" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_register_adapter" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >> ERROR: "dvb_dmxdev_init" [drivers/media/video/video-buf-dvb.ko]
-> undefined!
-> >>     
-> >
-> > dvb issue so dvb added.
-> >
-> >   
-> >> ERROR: "mt2131_attach" [drivers/media/video/cx23885/cx23885.ko]
-> undefined!
-> >> ERROR: "s5h1409_attach" [drivers/media/video/cx23885/cx23885.ko]
-> undefined!
-> >>     
-> >
-> > Was not sure who maintain this stuff..
-> > It's not in the git-tree I had around.
-> 
-> Sam,
-> 
-> This stuff is in -mm only right now.
-> 
-> It was a dependency problem, where a new driver (cx23885) is missing the 
-> dependency on DVB_CORE.
-> 
-> The fix is in this changeset:
-> 
-> http://linuxtv.org/hg/~mkrufky/build-fix/rev/67acaa106a99
-> 
-> Mauro,
-> 
-> Please pull from:
-> 
-> http://linuxtv.org/hg/~mkrufky/build-fix
-> 
-> for:
-> 
-> - VIDEO_CX23885 depends on DVB_CORE
-> 
->  Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Regards,
-> 
-> Mike Krufky
+So DISABLE_IMMEDIATE is just an intermediate symbol to make this option
+be displayed in the EMBEDDED menu instead of in the General Setup menu ?
 
+
+> +	depends on X86_32 || PPC || PPC64
+> +	bool
+> +	help
+> +	  Immediate values are used as read-mostly variables that are rarely
+> +	  updated. They use code patching to modify the values inscribed in the
+> +	  instruction stream. It provides a way to save precious cache lines
+> +	  that would otherwise have to be used by these variables. They can be
+> +	  disabled through the EMBEDDED menu.
+> +
+>  menuconfig EMBEDDED
+>  	bool "Configure standard kernel features (for small systems)"
+>  	help
+> @@ -646,6 +657,16 @@ config PROC_KPAGEMAP
+>            information on page-level memory usage. Disabling this interface
+>            will reduce the size of the kernel by around 600 bytes.
+>  
+> +config DISABLE_IMMEDIATE
+> +	default y if EMBEDDED
+> +	bool "Disable immediate values" if EMBEDDED
+> +	depends on X86_32 || PPC || PPC64
+> +	help
+> +	  Disable code patching based immediate values for embedded systems. It
+> +	  consumes slightly more memory and requires to modify the instruction
+> +	  stream each time a variable is updated. Should really be disabled for
+> +	  embedded systems with read-only text.
+> +
+>  endmenu		# General setup
+>  
+>  config RT_MUTEXES
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
