@@ -1,84 +1,318 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbXIRVPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbXIRVP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbXIRVPn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760009AbXIRVPO
+	id S1761347AbXIRVP5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760706AbXIRVPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:15:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40941 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759307AbXIRVPL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:15:11 -0400
-Date: Tue, 18 Sep 2007 14:14:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
-In-Reply-To: <43e72e890709181402x7335d0acp306cf576fac6c070@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0709181408390.16478@woody.linux-foundation.org>
-References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com> 
- <20070918113401.6a8a737f@the-village.bc.nu> 
- <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com> 
- <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org> 
- <43e72e890709181207j7c85dc29sb355a9f5a4207411@mail.gmail.com> 
- <alpine.LFD.0.999.0709181219020.16478@woody.linux-foundation.org> 
- <43e72e890709181312sf2b421cn49be3389b3786a2a@mail.gmail.com> 
- <alpine.LFD.0.999.0709181323260.16478@woody.linux-foundation.org>
- <43e72e890709181402x7335d0acp306cf576fac6c070@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 18 Sep 2007 17:15:25 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55237 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760633AbXIRVPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 17:15:22 -0400
+Message-Id: <20070918211459.816763211@polymtl.ca>
+References: <20070918211324.161373216@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Sep 2007 17:13:27 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [patch 3/4] Linux Kernel Markers - Documentation
+Content-Disposition: inline; filename=linux-kernel-markers-documentation.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 18 Sep 2007 21:15:00 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here is some documentation explaining what is/how to use the Linux
+Kernel Markers.
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: "Frank Ch. Eigler" <fche@redhat.com>
+CC: Christoph Hellwig <hch@infradead.org>
+---
 
-On Tue, 18 Sep 2007, Luis R. Rodriguez wrote:
-> 
-> ACK but do we really need to benchmark this if we *know* we are
-> creating unnecessary branches? How about Jeff's suggestion of
-> introducing pci_mmio_map() ?
+ Documentation/markers/markers.txt          |   93 +++++++++++++++++++++++++++
+ Documentation/markers/src/Makefile         |    7 ++
+ Documentation/markers/src/marker-example.c |   55 ++++++++++++++++
+ Documentation/markers/src/probe-example.c  |   98 +++++++++++++++++++++++++++++
+ 4 files changed, 253 insertions(+)
 
-Here's the counter-argument:
+Index: linux-2.6-lttng/Documentation/markers/markers.txt
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/markers/markers.txt	2007-09-07 09:17:45.000000000 -0400
+@@ -0,0 +1,93 @@
++ 	             Using the Linux Kernel Markers
++
++			    Mathieu Desnoyers
++
++
++This document introduces Linux Kernel Markers and their use. It provides
++examples of how to insert markers in the kernel and connect probe functions to
++them and provides some examples of probe functions.
++
++
++* Purpose of markers
++
++A marker placed in code provides a hook to call a function (probe) that you can
++provide at runtime. A marker can be "on" (a probe is connected to it) or "off"
++(no probe is attached). When a marker is "off" it has no effect, except for
++adding a tiny time penalty (checking a condition for a branch) and space
++penalty (adding a few bytes for the function call at the end of the
++instrumented function and adds a data structure in a separate section). The
++immediate values are used to minimize the impact on data cache, encoding the
++condition in the instruction stream. When a marker is "on", the function you
++provide is called each time the marker is executed, in the execution context of
++the caller. When the function provided ends its execution, it returns to the
++caller (continuing from the marker site).
++
++You can put markers at important locations in the code. Markers are
++lightweight hooks that can pass an arbitrary number of parameters,
++described in a printk-like format string, to the attached probe function.
++
++They can be used for tracing and performance accounting.
++
++
++* Usage
++
++In order to use the macro trace_mark, you should include linux/marker.h.
++
++#include <linux/marker.h>
++
++And,
++
++trace_mark(subsystem_event, "%d %s", someint, somestring);
++Where :
++- subsystem_event is an identifier unique to your event
++    - subsystem is the name of your subsystem.
++    - event is the name of the event to mark.
++- "%d %s" is the formatted string for the serializer.
++- someint is an integer.
++- somestring is a char pointer.
++
++Connecting a function (probe) to a marker is done by providing a probe (function
++to call) for the specific marker through marker_probe_register() and can be
++activated by calling marker_arm(). Marker deactivation can be done by calling
++marker_disarm() as many times as marker_arm() has been called. Removing a probe
++is done through marker_probe_unregister(); it will disarm the probe and make
++sure there is no caller left using the probe when it returns. Probe removal is
++preempt-safe because preemption is disabled around the probe call. See the
++"Probe example" section below for a sample probe module.
++
++The marker mechanism supports inserting multiple instances of the same marker.
++Markers can be put in inline functions, inlined static functions, and
++unrolled loops.
++
++The naming scheme "subsystem_event" is suggested here as a convention intended
++to limit collisions. Marker names are global to the kernel: they are considered
++as being the same whether they are in the core kernel image or in modules.
++Conflicting format strings for markers with the same name will cause the markers
++to be detected to have a different format string not to be armed and will output
++a printk warning which identifies the inconsistency:
++
++"Format mismatch for probe probe_name (format), marker (format)"
++
++
++* Optimization for a given architecture
++
++One can implement optimized markers for a given architecture by replacing
++asm-$ARCH/marker.h.
++
++To force use of a non-optimized version of the markers, _trace_mark() should be
++used. It takes the same parameters as the normal markers, but it does not use
++the immediate values based on code patching.
++
++
++* Probe / marker example
++
++See the example provided in Documentation/markers/markers/src
++
++Run, as root :
++
++make
++insmod marker-example.ko (insmod order is not important)
++insmod probe-example.ko
++cat /proc/marker-example (returns an expected error)
++rmmod marker-example probe-example
++dmesg
+Index: linux-2.6-lttng/Documentation/markers/src/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/markers/src/Makefile	2007-09-07 09:14:38.000000000 -0400
+@@ -0,0 +1,7 @@
++obj-m := probe-example.o marker-example.o
++KDIR := /lib/modules/$(shell uname -r)/build
++PWD := $(shell pwd)
++default:
++	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
++clean:
++	rm -f *.mod.c *.ko *.o
+Index: linux-2.6-lttng/Documentation/markers/src/marker-example.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/markers/src/marker-example.c	2007-09-07 09:16:27.000000000 -0400
+@@ -0,0 +1,55 @@
++/* marker-example.c
++ *
++ * Executes a marker when /proc/marker-example is opened.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <linux/sched.h>
++#include <linux/proc_fs.h>
++
++struct proc_dir_entry *pentry_example = NULL;
++
++static int my_open(struct inode *inode, struct file *file)
++{
++	int i;
++
++	trace_mark(subsystem_event, "%d %s", 123, "example string");
++	for (i=0; i<10; i++) {
++		trace_mark(subsystem_eventb, MARK_NOARGS);
++	}
++	return -EPERM;
++}
++
++static struct file_operations mark_ops = {
++	.open = my_open,
++};
++
++static int example_init(void)
++{
++	printk(KERN_ALERT "example init\n");
++	pentry_example = create_proc_entry("marker-example", 0444, NULL);
++	if (pentry_example)
++		pentry_example->proc_fops = &mark_ops;
++	else
++		return -EPERM;
++	return 0;
++}
++
++static void example_exit(void)
++{
++	printk(KERN_ALERT "example exit\n");
++	remove_proc_entry("marker-example", NULL);
++}
++
++module_init(example_init)
++module_exit(example_exit)
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Marker example");
+Index: linux-2.6-lttng/Documentation/markers/src/probe-example.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/markers/src/probe-example.c	2007-09-07 09:18:55.000000000 -0400
+@@ -0,0 +1,98 @@
++/* probe-example.c
++ *
++ * Connects two functions to marker call sites.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <asm/atomic.h>
++
++struct probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
++};
++
++void probe_subsystem_event(const struct __mark_marker *mdata,
++		void *private, const char *format, ...)
++{
++	va_list ap;
++	/* Declare args */
++	unsigned int value;
++	const char *mystr;
++
++	/* Assign args */
++	va_start(ap, format);
++	value = va_arg(ap, typeof(value));
++	mystr = va_arg(ap, typeof(mystr));
++
++	/* Call printk */
++	printk("Value %u, string %s\n", value, mystr);
++
++	/* or count, check rights, serialize data in a buffer */
++
++	va_end(ap);
++}
++
++atomic_t eventb_count = ATOMIC_INIT(0);
++
++void probe_subsystem_eventb(const struct __mark_marker *mdata,
++	void *private, const char *format, ...)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++static struct probe_data probe_array[] =
++{
++	{	.name = "subsystem_event",
++		.format = "%d %s",
++		.probe_func = probe_subsystem_event },
++	{	.name = "subsystem_eventb",
++		.format = MARK_NOARGS,
++		.probe_func = probe_subsystem_eventb },
++};
++
++static int __init probe_init(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_probe_register(probe_array[i].name,
++				probe_array[i].format,
++				probe_array[i].probe_func, &probe_array[i]);
++		if (result)
++			printk(KERN_INFO "Unable to register probe %s\n",
++				probe_array[i].name);
++		result = marker_arm(probe_array[i].name);
++		if (result)
++			printk(KERN_INFO "Unable to arm probe %s\n",
++				probe_array[i].name);
++	}
++	return 0;
++}
++
++static void __exit probe_fini(void)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		marker_probe_unregister(probe_array[i].name);
++	}
++	printk("Number of event b : %u\n", atomic_read(&eventb_count));
++}
++
++module_init(probe_init);
++module_exit(probe_fini);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("SUBSYSTEM Probe");
 
- - the run-time expense of this is basically *zero*
-
- - the expense of badly written drivers is absolutely *huge*
-
-The fewer "clever" interfaces we have for no good reason, and the less 
-unnecessary stuff that really doesn't matter, the more we help the 
-*second* case.
-
-The fact is, for device drivers, the *true* performance issues are nowhere 
-*near* the actual IO accessor functions, and are all at a much higher 
-level for all but a very very limited set of drivers. And I think you're 
-making the important issues *worse*.
-
-Really. "pci_mmio_map()" may not be a bad interface, but you're simply 
-working on entirely the wrong problem. The problem is not an out-of-line 
-IO accessor function - the problem is that you're making it even more 
-complicated to write drivers.
-
-The whole point of the "iomap()" interface was *never* about making the 
-driver interfaces faster. It was about making them *cleaner*. And you're 
-screwing that up!
-
-The old situation with SATA drivers that had
-
-	if (iomem)
-		writel(..)
-	else
-		outl(..)
-
-in the cases that needed it (and used hardcoded writel/outl in the cases 
-that didn't) was an example of code that "in theory" is faster. But 
-dammit, in practice that mattered not one whit, and what iomap() tries to 
-do is to attack the _real_ problem we had in that area. 
-
-Which had nothing what-so-ever to do with any branches.
-
-		Linus
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
