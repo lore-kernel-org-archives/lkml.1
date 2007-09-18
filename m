@@ -1,115 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbXIRTX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbXIRT10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbXIRTX5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbXIRTXr
+	id S1758017AbXIRT10 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbXIRT1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:23:47 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:42141 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbXIRTXq (ORCPT
+	Tue, 18 Sep 2007 15:27:17 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49144 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbXIRT1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:23:46 -0400
-X-Greylist: delayed 1817 seconds by postgrey-1.27 at vger.kernel.org; Tue, 18 Sep 2007 15:23:46 EDT
-Message-ID: <46F01E9F.3010307@tiscali.nl>
-Date: Tue, 18 Sep 2007 20:53:19 +0200
-From: roel <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 18 Sep 2007 15:27:15 -0400
+Message-ID: <46F02688.8030507@zytor.com>
+Date: Tue, 18 Sep 2007 12:27:04 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Andreas Herrmann <aherrman@arcor.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL
-References: <20070918080537.GA14882@devil>
-In-Reply-To: <20070918080537.GA14882@devil>
+To: David Miller <davem@davemloft.net>
+CC: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: bnx2 dirver's firmware images
+References: <1190141114.9540.216.camel@dell>	<20070918.112337.74737433.davem@davemloft.net>	<46F01BDE.6020902@zytor.com> <20070918.122034.83625273.davem@davemloft.net>
+In-Reply-To: <20070918.122034.83625273.davem@davemloft.net>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Herrmann wrote:
-> Fix compile error if !CONFIG_SYSCTL:
+David Miller wrote:
+> From: "H. Peter Anvin" <hpa@zytor.com>
+> Date: Tue, 18 Sep 2007 11:41:34 -0700
 > 
->     ...
->   LD      .tmp_vmlinux1
-> net/built-in.o: In function `init_p9':
-> net/9p/mod.c:59: undefined reference to `p9_sysctl_register'
-> net/built-in.o: In function `exit_p9':
-> net/9p/mod.c:75: undefined reference to `p9_sysctl_unregister'
-> make: *** [.tmp_vmlinux1] Error 1
->     ...
+>> David Miller wrote:
+>>> I don't like it because it means people have to setup full initrd's
+>>> in order to do network booting with such network cards.
+>>>
+>> klibc could help with that, if there is interest in exploring that
+>> avenue again.
 > 
-> Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
-> ---
->  include/net/9p/9p.h |    4 ++++
->  net/9p/mod.c        |    4 ++++
->  2 files changed, 8 insertions(+), 0 deletions(-)
+> I appreciate the effort you put into klibc and the offer to
+> make initrd's easier to build.
+>
+> But the point is that the initrd shouldn't be necessary in the first
+> place.  There becomes zero point in building these drivers statically
+> into the kernel, which many of us do specifically to avoid module
+> loading, initrds, and all that fuss.  Because the driver is totally
+> crippled even though it's been fully built into the main kernel image.
 > 
-> diff --git a/include/net/9p/9p.h b/include/net/9p/9p.h
-> index 88884d3..f723a03 100644
-> --- a/include/net/9p/9p.h
-> +++ b/include/net/9p/9p.h
-> @@ -412,6 +412,10 @@ int p9_idpool_check(int id, struct p9_idpool *p);
->  
->  int p9_error_init(void);
->  int p9_errstr2errno(char *, int);
-> +
-> +#ifdef CONFIG_SYSCTL
->  int __init p9_sysctl_register(void);
->  void __exit p9_sysctl_unregister(void);
-> +#endif
-> +
->  #endif /* NET_9P_H */
-> diff --git a/net/9p/mod.c b/net/9p/mod.c
-> index 4f9e1d2..b4d435c 100644
-> --- a/net/9p/mod.c
-> +++ b/net/9p/mod.c
-> @@ -56,11 +56,13 @@ static int __init init_p9(void)
->  		return ret;
->  	}
->  
-> +#ifdef CONFIG_SYSCTL
->  	ret = p9_sysctl_register();
->  	if (ret) {
->  		printk(KERN_WARNING "9p: registering sysctl failed\n");
->  		return ret;
->  	}
-> +#endif
->  
->  	return ret;
->  }
-> @@ -72,7 +74,9 @@ static int __init init_p9(void)
->  
->  static void __exit exit_p9(void)
->  {
-> +#ifdef CONFIG_SYSCTL
->  	p9_sysctl_unregister();
-> +#endif
->  	p9_mux_global_exit();
->  }
->  
-isn't it nicer to do something like this instead?
-diff --git a/net/9p/sysctl.c b/net/9p/sysctl.c
-index 8b61027..e199865 100644
---- a/net/9p/sysctl.c
-+++ b/net/9p/sysctl.c
-@@ -68,14 +68,17 @@ static struct ctl_table_header *p9_table_header;
- 
- int __init p9_sysctl_register(void)
- {
-+#ifdef CONFIG_SYSCTL
- 	p9_table_header = register_sysctl_table(p9_ctl_table);
- 	if (!p9_table_header)
- 		return -ENOMEM;
--
-+#endif
- 	return 0;
- }
- 
- void __exit p9_sysctl_unregister(void)
- {
-+#ifdef CONFIG_SYSCTL
- 	 unregister_sysctl_table(p9_table_header);
-+#endif
- }
+> I mean, it's so incredibly stupid and makes kernel development that
+> much more difficult.
+> 
+> Every new dependency, be it requiring initrd or something else,
+> is one more barrier added to kernel development.
+> 
+> I really pine for the days where everything was so simple, and initrd
+> and modules were the odd ball cases, most developers built everything
+> into their kernel image.
+
+Well, what I was referring to here, of course, was the initramfs
+integrated in the kernel image, so it all comes out of the kernel build
+tree and produces a single bootable image.  The fact that part of it
+contains userspace code is in that way invisible.
+
+That was kind of the point here, and the only reason for pushing klibc
+into the kernel build tree at all.  Under the "distros use external
+initrd anyway" school of thought, whatever libc used for that can be
+external anyway.
+
+	-hpa
