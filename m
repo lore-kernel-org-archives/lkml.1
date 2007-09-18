@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbXIRTnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbXIRTny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbXIRTnP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbXIRTnA
+	id S1758914AbXIRTny (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbXIRTnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:43:00 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:9895 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbXIRTm7 (ORCPT
+	Tue, 18 Sep 2007 15:43:46 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:34629 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbXIRTnp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:42:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tWBiosyS44YBY4y7ipyaRxSj3C+mOJbu9vmeS49A26cnRvac2IDjqkSP/F2EYZcG5VgVJOd6glYnSVcGGI1MSa9MNLismMw8nmXX+hT30Zabfg3qQYZGejLQL4SKApDtvVcbqDKpAbznIJ/asD/KH72J/Xz7w+OAF4wY61ZHnjE=
-Message-ID: <a44ae5cd0709181242j517e39e0xc3f78224bcda360a@mail.gmail.com>
-Date: Tue, 18 Sep 2007 15:42:58 -0400
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: 2.6.23-rc6-mm1
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Roman Zippel" <zippel@linux-m68k.org>
-In-Reply-To: <20070918191741.GA27725@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 18 Sep 2007 15:43:45 -0400
+Date: Tue, 18 Sep 2007 21:41:52 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nadia Derbey <Nadia.Derbey@bull.net>, Alexey Dobriyan <adobriyan@sw.ru>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-ID: <20070918214152.3698a787@lappy>
+In-Reply-To: <20070918182924.GF8665@linux.vnet.ibm.com>
+References: <20070918091728.GA6766@localhost.sw.ru>
+	<20070918031723.05689e92.akpm@linux-foundation.org>
+	<46EFA8DC.2020909@bull.net>
+	<20070918033400.495b02dd.akpm@linux-foundation.org>
+	<20070918142451.418b3b51@twins>
+	<20070918161337.GC8665@linux.vnet.ibm.com>
+	<20070918095715.05899d12.akpm@linux-foundation.org>
+	<20070918182924.GF8665@linux.vnet.ibm.com>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <a44ae5cd0709180827w7156dc17q13853c3f2c127142@mail.gmail.com>
-	 <20070918191741.GA27725@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/18/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> Hi Miles.
-> On Tue, Sep 18, 2007 at 11:27:23AM -0400, Miles Lane wrote:
-> > Selecting Help for "Subarchitecture Type" causes "make menuconfig" to
-> > crash, and the bash display settings have to be reset.
->
-> Not reproduceable here.
-> But I noticed that we pass a null pointer to a vsprintf function which
-> in the cases you pointed out printed a (null) at my system.
-> Could you plase try if attached patch fix your system.
+On Tue, 18 Sep 2007 11:29:24 -0700 "Paul E. McKenney"
+<paulmck@linux.vnet.ibm.com> wrote:
 
-Sorry, it still crashes.  I am running Ubuntu pre-6.10 (Gutsy -- the
-development version of the distro).  Maybe I should try "make
-mrproper" first?
+> On Tue, Sep 18, 2007 at 09:57:15AM -0700, Andrew Morton wrote:
+> > On Tue, 18 Sep 2007 09:13:37 -0700 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Tue, Sep 18, 2007 at 02:24:51PM +0200, Peter Zijlstra wrote:
+> > > > On Tue, 18 Sep 2007 03:34:00 -0700 Andrew Morton
+> > > > <akpm@linux-foundation.org> wrote:
+> > > > 
+> > > > > Well, it was an optimisation.  spin_lock() implies rcu_read_lock().  That's
+> > > > > a bit dirty and we might choose to not do that.
+> > > > 
+> > > > Not true for the preemptible-rcu work. All such sites should be fixed,
+> > > > or at the very least heavily annotated.
+> > > 
+> > > What he said!!!
+> > > 
+> > 
+> > What he said!
+> > 
+> > How are you going to find all such sites?
+> 
+> A first step would be to look for patches in -rt that add rcu_read_lock()
+> or friends.  A second step would be to look for rcu_dereference() without
+> an enclosing rcu_read_lock(), rcu_read_lock_bh(), or preempt_disable().
 
-ncurses 5.6+20070716-1ubuntu1
-bash 3.2-0ubuntu9
-GNU Make 3.81
+I could perhaps do that with that rcu_read_lock lockdep annotation. If
+I add a check for holding rcu_read_lock in rcu_dereference().
