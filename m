@@ -1,105 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbXIRLQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbXIRLRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbXIRLQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 07:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbXIRLQX
+	id S1757151AbXIRLRB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 07:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbXIRLQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 07:16:23 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:50967 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755357AbXIRLQX (ORCPT
+	Tue, 18 Sep 2007 07:16:53 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:60956 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754997AbXIRLQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 07:16:23 -0400
-Message-ID: <46EFB3AC.9030304@aitel.hist.no>
-Date: Tue, 18 Sep 2007 13:17:00 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Helge Hafting <helge.hafting@aitel.hist.no>, Theodore Tso <tytso@mit.edu>,
-       Adrian Bunk <bunk@kernel.org>, "Can E. Acar" <can.acar@pro-g.com.tr>,
-       misc@openbsd.org, linux-kernel@vger.kernel.org,
-       Daniel Hazelton <dhazelton@enter.net>,
+	Tue, 18 Sep 2007 07:16:52 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Wasting our Freedom
+To: Paul de Weerd <weerd@weirdnet.nl>, Adrian Bunk <bunk@kernel.org>,
+       Paul de Weerd <weerd@weirdnet.nl>,
+       "Can E. Acar" <can.acar@pro-g.com.tr>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
        Eben Moglen <moglen@softwarefreedom.org>,
        Lawrence Lessig <lessig_from_web@pobox.com>,
        "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
        Matt Norwood <norwood@softwarefreedom.org>
-Subject: Re: Wasting our Freedom
-References: <46ED7A8F.1020304@pro-g.com.tr> <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070916231633.GB10339@SDF.LONESTAR.ORG> <46EE311F.5040107@aitel.hist.no> <20070917115019.GA12790@SDF.LONESTAR.ORG>
-In-Reply-To: <20070917115019.GA12790@SDF.LONESTAR.ORG>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Reply-To: 7eggert@gmx.de
+Date: Tue, 18 Sep 2007 13:16:16 +0200
+References: <947Fl-2qO-1@gated-at.bofh.it> <948rP-3pK-5@gated-at.bofh.it> <949e6-4Ed-3@gated-at.bofh.it> <949Hd-5vb-19@gated-at.bofh.it> <94l5J-6gO-3@gated-at.bofh.it> <94oZy-3Sa-1@gated-at.bofh.it> <94qIg-6Ft-21@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1IXb3x-0000dT-0K@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+0p+cKs7WS/r2mUItg/LiJKZOxIPd63C9dcMn
+ wgYTobAHvBbPQF+7g3hc+U+0Oo2UM6nN1gYaXRnnPeqFj3F6DB
+ eCBXaiw6O38ppxpVw0+Rg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jacob Meuser wrote:
-> On Mon, Sep 17, 2007 at 09:47:43AM +0200, Helge Hafting wrote:
->
->   
->> Your problem seems to be with the BSD licence,
->> and the power to alter that licence lies in the BSD community.
->>     
->
-> I hope you can understand that this mentality is _exactly_ what has
-> some in the BSD community so upset.
->   
-First, note that I am not really a linux developer as my only
-contributions to linux are testing.
+Paul de Weerd <weerd@weirdnet.nl> wrote:
+> On Mon, Sep 17, 2007 at 03:38:45PM +0200, Adrian Bunk wrote:
 
-But it really looks like bsd people are more unhappy with their
-licence than linux people.  You can ask linux developers to
-keep the bsd licence - and the request is not unreasonable.
-Nobody is forced to give back, so some people choose not
-to.  Some of these have a "GPL" agenda, some have
-a commercial agenda. 
+> | It's not about lazyness of BSD developers, many people who consider the
+> | BSD licence more free than the GPL argue that the advantage of the BSD
+> | licence is that it does not require you to give back.
+> | 
+> | Something is wrong if your licence text clearly states that you do not
+> | require getting anything back but you then argue on moral grounds that
+> | something has to be given back.
+> 
+> Something is wrong if your licence text clearly states that you MUST
+> give back, but then you don't return the favour on grounds that "hey,
+> they don't require it, so we don't have to".
 
-I am sure some developers are willing to "give back" bsd code,
-but you can't do anything about those who don't. You don't
-want to have code "locked up" with GPL, these developers
-don't want their code improvements "locked up" in proprietary products.
+If you may demand me to give back, why should I(*) not demand the same thing
+for my contributions?
 
-So - either you will have to accept the current situation, or
-adjust the BSD licence to cope with this.
+You're not only asking to contribute to your project, but you're asking me
+to throw my code to the feet of Apple amd Microsoft, who will user it, make
+big bucks and lock out alternatives as far as possible, especially free ones.
+This happens to not be my idea of sharing code.
 
-> when I see the linux community start to take credit for works they
-> did not create and I see the linux community respond to warnings
->   
-Taking credit for the works of others is wrong of course,
-no matter what licence is involved.
-> that people in the community are going overboard and jeopardizing
-> the linux community, which we do all benefit from, with a more or
-> less "whatever" attitude, it makes me sad.  it would be like losing
-> a friend.  I don't like losing friends, so I get vocal.
->
-> I don't understand why the linux community can't seem to say, "We
-> can accept BSD licensed code.  There's no need to add the GPL to
-> it."  and maybe even, "Although we strongly prefer the GPL,
-> respect for other licenses is every bit as important as respect
-> for the GPL."
->   
-Good points.  But note that the linux community is divided on this,
-as on many other issues.  And there is nothing to do about
-those who disagree.
-> I could be wrong, but I strongly believe that if the above was
-> truly accepted and believed by the community, the actions that
-> started and spread this whole debacle^Wdebate would not have
-> happened in the first place.
->   
-My impression is that the actions that started the
-debate was an unauthorized (possibly illegal)
-change that the linux community also rejected. 
-With that problem solved, the debate turned to
-gpl/bsd licencing issues.
-> look, the GPL legally forces others to keep the same license.
-> the BSD community is asking the linux community do the same.
-> and when the linux community refuses, what do you expect the
-> recourse to be?
->   
-Clearly, there is the risk of less cooperation.  Or some
-kind of licencing scheme that makes sure that code with bsd
-origin always can go back into bsd as long as it stays open.
-
-That would solve the problem - if such a scheme is possible.
+You may say it's morally correct for them because they never claimed they'd
+not suck your blood, but did the GPL people claim not to demand others to
+give back? Au contrair, and if it's OK for companies to do what they say
+they would, it will be OK for them and for me, too.
 
 
-Helge Hafting
+*) I did not yet work on a BSD licensed project, but let's asume I did
 
+> It may be perfectly legal, but it's "interesting" to say the least.
+> No, you do not have to give back. But weren't you open source / free
+> software developers ? Why did you pick the GPL ? Because you didn't
+> want someone to run of with your code ? You wanted code to be given
+> back ? Why not do it yourself ?
+
+> By not giving back you're giving a strange signal.
+
+Gee, since you're demanding back anyway, you can use the GPL for your
+project and use my contribution. Problem solved.
+
+Oh, you want people to be free not to share? Freedom includes having the
+moral right to do something. Am I free not to share? Or is this "freedom"
+just an empty shell?
+
+-- 
+Funny quotes:
+36. You never really learn to swear until you learn to drive.
+
+Friﬂ, Spammer: zdhC.nb1l@w.7eggert.dyndns.org I@7eggert.dyndns.org
