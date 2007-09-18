@@ -1,32 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbXIRVMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbXIRVM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbXIRVMp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759299AbXIRVJw
+	id S1759249AbXIRVM7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758518AbXIRVJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:09:52 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54677 "EHLO smtp.polymtl.ca"
+	Tue, 18 Sep 2007 17:09:54 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54685 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759267AbXIRVJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:09:50 -0400
-Message-Id: <20070918210946.390597675@polymtl.ca>
+	id S1752712AbXIRVJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 17:09:53 -0400
+Message-Id: <20070918210946.674370372@polymtl.ca>
 References: <20070918210912.502772877@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 18 Sep 2007 17:09:13 -0400
+Date: Tue, 18 Sep 2007 17:09:14 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 1/2] Seq_file add support for sorted list
-Content-Disposition: inline; filename=seq_file_sorted.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 18 Sep 2007 21:09:46 +0000
+Subject: [patch 2/2] Sort module list by pointer address to get coherent sleepable seq_file iterators
+Content-Disposition: inline; filename=module.c-sort-module-list.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 18 Sep 2007 21:09:47 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for sorted list in seq_file. It aims at changing the way
-/proc/modules and kallsyms iterates on the module list to remove a race between
-module unload and module/symbol listing.
+A race that appears both in /proc/modules and in kallsyms: if, between the
+seq file reads, the process is put to sleep and at this moment a module is
+or removed from the module list, the listing will skip an amount of
+modules/symbols corresponding to the amount of elements present in the unloaded
+module, but at the current position in the list if the iteration is located
+after the removed module.
 
-The list is sorted by ascending list_head pointer address.
+The cleanest way I found to deal with this problem is to sort the module list.
+We can then keep the old struct module * as the old iterator, knowing the it may
+be removed between the seq file reads, but we only use it as "get next". If it
+is not present in the module list, the next pointer will be used.
+
+By doing this, removing a given module will now only fuzz the output related to
+this specific module, not any random module anymore. Since modprobe uses
+/proc/modules, it might be important to make sure multiple concurrent running
+modprobes won't interfere with each other.
+
+
+Small test program for this:
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define BUFSIZE 1024
+
+int main()
+{
+	int fd = open("/proc/modules", O_RDONLY);
+	char buf[BUFSIZE];
+	ssize_t size;
+
+	do {
+		size = read(fd, buf, 1);
+		printf("%c", buf[0]);
+		usleep(100000);
+	} while(size > 0);
+
+	close(fd);
+	return 0;
+}
+
+
+Actual test (kernel 2.6.23-rc3):
+
+dijkstra:~# lsmod
+Module                  Size  Used by
+pl2303                 18564  0
+usbserial              29032  1 pl2303
+ppdev                   7844  0
+sky2                   37476  0
+skge                   36368  0
+rtc                    10104  0
+snd_hda_intel         265628  0
+
+  (here, while we are printing the 2nd line, I rmmod pl2303)
+compudj@dijkstra:~/test$ ./module
+pl2303 18564 0 - Live 0xf886e000
+usbserial 29032 1 pl2303, Live 0xf8865000
+sky2 37476 0 - Live 0xf884f000
+skge 36368 0 - Live 0xf8838000
+rtc 10104 0 - Live 0xf8825000
+
+We see the the 2nd line is garbage.
+
+Now, with my patch applied:
+  (here, while we are printing the rtc module, I rmmod rtc)
+nd_hda_intel 268708 0 - Live 0xf8820000
+ltt_control 2372 0 - Live 0xf8866000
+rtc 10392 0 - Live 0xf886d000
+skge 36768 0 - Live 0xf8871000
+ltt_statedump 8516 0 - Live 0xf887b000
+
+We see that since the rtc line was already in the buffer, it has been
+printed completely.
+
+
+  (here, while we are printing the skge module, I rmmod rtc)
+snd_hda_intel 268708 0 - Live 0xf8820000
+ltt_control 2372 0 - Live 0xf8866000
+rtc 10392 0 - Live 0xf886d000
+skge 36768 0 - Live 0xf8871000
+ltt_statedump 8516 0 - Live 0xf887b000
+sky2 38420 0 - Live 0xf88cd000
+
+We see that the iteration continued at the same position even though the
+rtc module, located in earlier addresses, was removed.
 
 Changelog:
 
@@ -38,97 +121,73 @@ Therefore, use ppos instead of m->private to deal with the fact that this index
 is incremented directly to pass to the next module in seq_read() after the
 buffer has been emptied.
 
+Before fix, it prints the first module indefinitely. The patch fixes
+this.
+
+Changelog:
+- Remove module_mutex usage: depend on functions implemented in module.c for
+  that.
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- fs/seq_file.c            |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/seq_file.h |   20 ++++++++++++++++++++
- 2 files changed, 67 insertions(+)
+ kernel/module.c |   23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-lttng/fs/seq_file.c
+Index: linux-2.6-lttng/kernel/module.c
 ===================================================================
---- linux-2.6-lttng.orig/fs/seq_file.c	2007-08-25 14:39:03.000000000 -0400
-+++ linux-2.6-lttng/fs/seq_file.c	2007-08-27 11:11:33.000000000 -0400
-@@ -510,3 +510,50 @@ struct list_head *seq_list_next(void *v,
+--- linux-2.6-lttng.orig/kernel/module.c	2007-09-13 17:24:46.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2007-09-13 17:25:26.000000000 -0400
+@@ -64,7 +64,8 @@ extern int module_sysfs_initialized;
+ #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
+ 
+ /* List of modules, protected by module_mutex or preempt_disable
+- * (add/delete uses stop_machine). */
++ * (add/delete uses stop_machine). Sorted by ascending list node address.
++ */
+ static DEFINE_MUTEX(module_mutex);
+ static LIST_HEAD(modules);
+ static DECLARE_MUTEX(notify_mutex);
+@@ -2130,10 +2131,24 @@ nomodsectinfo:
+ /*
+  * link the module with the whole machine is stopped with interrupts off
+  * - this defends against kallsyms not taking locks
++ * We sort the modules by struct module pointer address to permit correct
++ * iteration over modules of, at least, kallsyms for preemptible operations,
++ * such as read(). Sorting by struct module pointer address is equivalent to
++ * sort by list node address.
+  */
+ static int __link_module(void *_mod)
+ {
+-	struct module *mod = _mod;
++	struct module *mod = _mod, *iter;
++
++	list_for_each_entry_reverse(iter, &modules, list) {
++		BUG_ON(iter == mod);	/* Should never be in the list twice */
++		if (iter < mod) {
++			/* We belong to the location right after iter. */
++			list_add(&mod->list, &iter->list);
++			return 0;
++		}
++	}
++	/* We should be added at the head of the list */
+ 	list_add(&mod->list, &modules);
+ 	return 0;
+ }
+@@ -2398,12 +2413,12 @@ unsigned long module_kallsyms_lookup_nam
+ static void *m_start(struct seq_file *m, loff_t *pos)
+ {
+ 	mutex_lock(&module_mutex);
+-	return seq_list_start(&modules, *pos);
++	return seq_sorted_list_start(&modules, pos);
  }
  
- EXPORT_SYMBOL(seq_list_next);
-+
-+struct list_head *seq_sorted_list_start(struct list_head *head, loff_t *ppos)
-+{
-+	struct list_head *lh;
-+
-+	list_for_each(lh, head)
-+		if ((unsigned long)lh >= *ppos) {
-+			*ppos = (unsigned long)lh;
-+			return lh;
-+		}
-+	return NULL;
-+}
-+
-+EXPORT_SYMBOL(seq_sorted_list_start);
-+
-+struct list_head *seq_sorted_list_start_head(struct list_head *head,
-+		loff_t *ppos)
-+{
-+	struct list_head *lh;
-+
-+	if (!*ppos) {
-+		*ppos = (unsigned long)head;
-+		return head;
-+	}
-+	list_for_each(lh, head)
-+		if ((unsigned long)lh >= *ppos) {
-+			*ppos = (long)lh->prev;
-+			return lh->prev;
-+		}
-+	return NULL;
-+}
-+
-+EXPORT_SYMBOL(seq_sorted_list_start_head);
-+
-+struct list_head *seq_sorted_list_next(void *p, struct list_head *head,
-+		loff_t *ppos)
-+{
-+	struct list_head *lh;
-+	void *next;
-+
-+	lh = ((struct list_head *)p)->next;
-+	next = (lh == head) ? NULL : lh;
-+	*ppos = next ? (unsigned long)next : -1UL;
-+	return next;
-+}
-+
-+EXPORT_SYMBOL(seq_sorted_list_next);
-Index: linux-2.6-lttng/include/linux/seq_file.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/seq_file.h	2007-08-25 14:39:03.000000000 -0400
-+++ linux-2.6-lttng/include/linux/seq_file.h	2007-08-27 11:11:33.000000000 -0400
-@@ -63,5 +63,25 @@ extern struct list_head *seq_list_start_
- extern struct list_head *seq_list_next(void *v, struct list_head *head,
- 		loff_t *ppos);
+ static void *m_next(struct seq_file *m, void *p, loff_t *pos)
+ {
+-	return seq_list_next(p, &modules, pos);
++	return seq_sorted_list_next(p, &modules, pos);
+ }
  
-+/*
-+ * Helpers for iteration over a list sorted by ascending head pointer address.
-+ * To be used in contexts where preemption cannot be disabled to insure to
-+ * continue iteration on a modified list starting at the same location where it
-+ * stopped, or at a following location. It insures that the lost information
-+ * will only be in elements added/removed from the list between iterations.
-+ * void *pos is only used to get the next list element and may not be a valid
-+ * list_head anymore when given to seq_sorted_list_start() or
-+ * seq_sorted_list_start_head().
-+ */
-+extern struct list_head *seq_sorted_list_start(struct list_head *head,
-+		loff_t *ppos);
-+extern struct list_head *seq_sorted_list_start_head(struct list_head *head,
-+		loff_t *ppos);
-+/*
-+ * next must be called with an existing p node
-+ */
-+extern struct list_head *seq_sorted_list_next(void *p, struct list_head *head,
-+		loff_t *ppos);
-+
- #endif
- #endif
+ static void m_stop(struct seq_file *m, void *p)
 
 -- 
 Mathieu Desnoyers
