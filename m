@@ -1,95 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbXIRLZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbXIRLa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbXIRLZJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 07:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbXIRLY6
+	id S1756271AbXIRLa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 07:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbXIRLaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 07:24:58 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43914 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753567AbXIRLY5 (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 07:24:57 -0400
-Date: Tue, 18 Sep 2007 21:24:47 +1000
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.23
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 18 Sep 2007 07:30:17 -0400
+Received: from www.osadl.org ([213.239.205.134]:34113 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755426AbXIRLaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 07:30:15 -0400
+Subject: Re: RFC: A revised timerfd API
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: david@hardeman.nu, davidel@xmailserver.org, drepper@redhat.com,
+       geoff@gclare.org.uk, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, hch@lst.de, corbet@lwn.net,
+       rdunlap@xenotime.net, vda.linux@googlemail.com,
+       torvalds@linux-foundation.org, Lee.Schermerhorn@hp.com
+In-Reply-To: <20070918110841.235150@gmx.net>
+References: <46EF7DDA.2070401@gmx.net>  <46EF7E82.8040503@gmx.net>
+	 <1190106607.2995.97.camel@chaos>  <20070918093007.223350@gmx.net>
+	 <1190108542.2995.112.camel@chaos>  <20070918110841.235150@gmx.net>
+Content-Type: text/plain
+Date: Tue, 18 Sep 2007 13:30:11 +0200
+Message-Id: <1190115011.2995.126.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070918112447.4315C58C4C09@chook.melbourne.sgi.com>
-From: tes@sgi.com (Tim Shimmin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, 2007-09-18 at 13:08 +0200, Michael Kerrisk wrote:
+> > > it does make the API a little more clumsy.
+> > 
+> > Hmm, we might do something like:
+> > 
+> > 	timer_gettime(fd | POSIX_TIMER_FD, .....);
+> > 
+> > So the kernel looks up the fd in order to figure out the timer_id, which
+> > needs to be referenced in filep->private_data anyway.
+> 
+> And you'd need similar for timer_settime() and, perhaps,
+> timer_getoverrun().  But it seems slightly ugly, in the same way that
+> my idea in option (d) of returning a file descriptor from
+> timer_create() seems a slightly ugly.  (And can we guarantee that
+> the [timerid] space is distinct from the [fd|POSIX_TIMER_FD] space?)
 
-A couple of fixes for potential fs corruption.
-And one fix to ensure that xfs_mru_cache is not
-doing anything unless the cache has active objects.
+If we use the most significant bit for POSIX_TIMER_FD, we should be
+fine.
+
+	tglx
 
 
-Please pull from the for-linus branch:
-    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
-
-This will update the following files:
-
- fs/xfs/linux-2.6/xfs_aops.c  |    1 +
- fs/xfs/linux-2.6/xfs_super.c |    4 ++-
- fs/xfs/xfs_buf_item.h        |    5 +++
- fs/xfs/xfs_filestream.c      |    3 +-
- fs/xfs/xfs_log_recover.c     |   51 ++++++++++++++++++++++++++++--
- fs/xfs/xfs_mru_cache.c       |   72 ++++++++++++++++-------------------------
- fs/xfs/xfs_mru_cache.h       |    6 +--
- fs/xfs/xfs_trans_buf.c       |    1 +
- fs/xfs/xfs_vnodeops.c        |   20 +++++++-----
- 9 files changed, 101 insertions(+), 62 deletions(-)
-
-through these commits:
-
-commit b394e43e995d08821588a22561c6a71a63b4ff27
-Author: Lachlan McIlroy <lachlan@sgi.com>
-Date:   Fri Sep 14 15:23:04 2007 +1000
-
-    [XFS] Avoid replaying inode buffer initialisation log items if on-disk version is newer.
-    
-    SGI-PV: 969656
-    SGI-Modid: xfs-linux-melb:xfs-kern:29676a
-    
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-    Signed-off-by: David Chinner <dgc@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit 776a75fa5cfb8f3602d3ca9d221dc34497133f4b
-Author: Lachlan McIlroy <lachlan@sgi.com>
-Date:   Fri Sep 14 15:22:50 2007 +1000
-
-    [XFS] Ensure file size updates have been completed before writing inode to disk.
-    
-    SGI-PV: 968767
-    SGI-Modid: xfs-linux-melb:xfs-kern:29675a
-    
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-    Signed-off-by: David Chinner <dgc@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit 65de5567564e70edd01b6d4e95e548d7ba284872
-Author: David Chinner <dgc@sgi.com>
-Date:   Thu Aug 16 15:21:11 2007 +1000
-
-    [XFS] On-demand reaping of the MRU cache
-    
-    Instead of running the mru cache reaper all the time based on a timeout,
-    we should only run it when the cache has active objects. This allows CPUs
-    to sleep when there is no activity rather than be woken repeatedly just to
-    check if there is anything to do.
-    
-    SGI-PV: 968554
-    SGI-Modid: xfs-linux-melb:xfs-kern:29305a
-    
-    Signed-off-by: David Chinner <dgc@sgi.com>
-    Signed-off-by: Donald Douwsma <donaldd@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
-
---Tim
