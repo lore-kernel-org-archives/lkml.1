@@ -1,79 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbXIRSPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbXIRSQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757960AbXIRSPn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 14:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbXIRSPf
+	id S1758229AbXIRSQV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 14:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbXIRSQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 14:15:35 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:47592 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbXIRSPe (ORCPT
+	Tue, 18 Sep 2007 14:16:11 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:21023 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755778AbXIRSQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 14:15:34 -0400
+	Tue, 18 Sep 2007 14:16:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Kdvmt0/SqnzWL1F+/ACs3W2bMcWzlTJyvHUhrrZYLnsKDdNIudtjdJSiWLtFidxASs9GGUwl/U1wAEvErDxBSv7VLfAX0Cfn5nRpoPyH+sRLc1EOy/vVgsSiwAYeLajk2zdnwiNhi6MWLMDHq5cJAPCNU/QwEzKl1eZrna3fLFo=
-Message-ID: <c5b2c05b0709181115t2e8e39fdo76954cf85f0e3cff@mail.gmail.com>
-Date: Tue, 18 Sep 2007 20:15:33 +0200
-From: "Primiano Tucci" <p.tucci@gmail.com>
-To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-Subject: Re: Linux Network Load Balancing is out!
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0709181041250.16667@filesrv1.baby-dragons.com>
+        h=received:in-reply-to:references:date:subject:mime-version:from:to:cc:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=qtsT/Tkq26GBYdbFGB1oK/ojHym4jWz2hcZSscrf2YjaNjyhBjLi6xop5Db2kuJrvMCeOmsjlElmZDAKYzffb6izfFn+mciM/giX9Mg05Bd7/dHH93igDwfuR1jvxuasIW93I2/v0xzGTA8rc0fFyrc7nEH2ESmyUXl9z36s53A=
+In-Reply-To: <200709152004.11930.strohel@gmail.com>
+References: <200709152004.11930.strohel@gmail.com>
+Date: Tue, 18 Sep 2007 20:16:00 +0200
+Subject: [PATCH] kconfig: menuconfig: change "---" items to "-*-", "-M-" or "- -"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Matej Laitl <strohel@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-References: <c5b2c05b0709170929i7674a8fcl64ab60cd5f0e727b@mail.gmail.com>
-	 <Pine.LNX.4.64.0709181041250.16667@filesrv1.baby-dragons.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <200709182016.02436.strohel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/18/07, Mr. James W. Laferriere <babydr@baby-dragons.com> wrote:
->        Hello Primiano ,
->
-> On Mon, 17 Sep 2007, Primiano Tucci wrote:
-> > Hi all!
-> > I've just released my first beta of Linux Network Load Balancing....
-> > it's a driver (+ userland tool) to make decentered load balancing
-> > clusters.
-> >
-> > I hope someone is interested in the project and could do some testing
-> > in decent environments (I've just done some "laboratory" test in a 3
-> > virtualized node cluster environment, but nothing more than this).
-> >
-> > Sources and some documentation on http://lnlb.sourceforge.net/
-> >
-> > Greetings,
-> > Primiano Tucci
->        Question 1 ,  Is this driver module only ?  Say I like all my drivers
-> contained in the linux boot image .
+This little patch changes notation of unchangeable menuconfig items to always
+reflect the current state of inclusion of a feature.
 
-Actually it's only available as a module... i think that with some
-little modifications it could be transformed into a patch to build
-into the kernel. I've not too much time in these days (i'm graduating
-on 10th October, LNLB will be my graduation thesis ;-) )... i'll try
-to search about and see if it's a short work to do. If not I'll delay
-the patch after my graduation,
+Signed-off-by: Matěj Laitl <strohel@gmail.com>
+---
+Hi again, Sam, Roman, Randy.
 
->        Question 2 ,  Where can I find a mailing list to subscribe to in order
-> to discuss ,  problems ,  success stories , ... ?
+Instead of incorporating all changes into a single patch, I decided to split 
+things into more rather independent patches.
 
-Good point,
-I edited the site and added a link to the project's forum page on
-sourceforge (I think it's the best and quickest way to do it)
+Expect another one extending show_help(). (which ATM needs more polishing 
+before being posted)
 
->        From the docs it appears to be almost a brease to setup .  I'd greatly
-> like to see the driver be built into the kernel .
->
->                Tia ,  JimL
+ scripts/kconfig/mconf.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-Really thanks for your interest
-Primiano Tucci
-> +-----------------------------------------------------------------+
-> | James   W.   Laferriere | System   Techniques | Give me VMS     |
-> | Network        Engineer | 663  Beaumont  Blvd |  Give me Linux  |
-> | babydr@baby-dragons.com | Pacifica, CA. 94044 |   only  on  AXP |
-> +-----------------------------------------------------------------+
->
+diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
+index bc5854e..38ffbe1 100644
+--- a/scripts/kconfig/mconf.c
++++ b/scripts/kconfig/mconf.c
+@@ -542,14 +542,19 @@ static void build_conf(struct menu *menu)
+ 			return;
+ 		}
+ 	} else {
++		val = sym_get_tristate_value(sym);
++		switch (val) {
++			case yes: ch = '*'; break;
++			case mod: ch = 'M'; break;
++			default:  ch = ' '; break;
++		}
+ 		if (menu == current_menu) {
+-			item_make("---%*c%s", indent + 1, ' ', menu_get_prompt(menu));
++			item_make("-%c-%*c%s", ch, indent + 1, ' ', menu_get_prompt(menu));
+ 			item_set_tag(':');
+ 			item_set_data(menu);
+ 			goto conf_childs;
+ 		}
+ 		child_count++;
+-		val = sym_get_tristate_value(sym);
+ 		if (sym_is_choice_value(sym) && val == yes) {
+ 			item_make("   ");
+ 			item_set_tag(':');
+@@ -558,22 +563,17 @@ static void build_conf(struct menu *menu)
+ 			switch (type) {
+ 			case S_BOOLEAN:
+ 				if (sym_is_changable(sym))
+-					item_make("[%c]", val == no ? ' ' : '*');
++					item_make("[%c]", ch);
+ 				else
+-					item_make("---");
++					item_make("-%c-", ch);
+ 				item_set_tag('t');
+ 				item_set_data(menu);
+ 				break;
+ 			case S_TRISTATE:
+-				switch (val) {
+-				case yes: ch = '*'; break;
+-				case mod: ch = 'M'; break;
+-				default:  ch = ' '; break;
+-				}
+ 				if (sym_is_changable(sym))
+ 					item_make("<%c>", ch);
+ 				else
+-					item_make("---");
++					item_make("-%c-", ch);
+ 				item_set_tag('t');
+ 				item_set_data(menu);
+ 				break;
+-- 
+1.5.1.6
+
