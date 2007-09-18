@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbXIRVCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbXIRVFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbXIRVCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 17:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbXIRVCI
+	id S1753978AbXIRVFf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 17:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXIRVF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 17:02:08 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:50526 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbXIRVCH (ORCPT
+	Tue, 18 Sep 2007 17:05:28 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42285 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751399AbXIRVF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 17:02:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kaaaj5v7WnN9VIIV+Z2pE5uY7at7YgC2aCqK7f/LyZ4qvGCrjXt5W85yMm5MN2KdtLchiPM7ovGm3NvWKkY/GNRZjZ9ZWoWSMncvtbpxNF89A7K4BCY8q//69KvbRNZu1ylfrktv2RRF2oipKxVU/rrm6VfNMOcbR4/XGAKLQn4=
-Message-ID: <43e72e890709181402x7335d0acp306cf576fac6c070@mail.gmail.com>
-Date: Tue, 18 Sep 2007 17:02:06 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.999.0709181323260.16478@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 18 Sep 2007 17:05:26 -0400
+Date: Tue, 18 Sep 2007 14:05:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com,
+       sparclinux@vger.kernel.org,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: 2.6.23-rc6-mm1 sparc build error
+Message-Id: <20070918140508.e2c56212.akpm@linux-foundation.org>
+In-Reply-To: <20070918205403.GA13650@Krystal>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070918205403.GA13650@Krystal>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
-	 <20070918113401.6a8a737f@the-village.bc.nu>
-	 <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com>
-	 <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>
-	 <43e72e890709181207j7c85dc29sb355a9f5a4207411@mail.gmail.com>
-	 <alpine.LFD.0.999.0709181219020.16478@woody.linux-foundation.org>
-	 <43e72e890709181312sf2b421cn49be3389b3786a2a@mail.gmail.com>
-	 <alpine.LFD.0.999.0709181323260.16478@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/18/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->
-> On Tue, 18 Sep 2007, Luis R. Rodriguez wrote:
-> >
-> > An extra branch is created on MMIO-only devices on read/writes on the
-> > IO_COND macro using this interface -- or is this optimized out?
->
-> Umm. Does anybody actually have any performance numbers?
->
-> The thing is, those things are *cheap* compared to the IO. And any
-> high-performance device will be using DMA for the real IO, so we're not
-> generally even talking about any performance-critical stuff.
+On Tue, 18 Sep 2007 16:54:03 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-ACK but do we really need to benchmark this if we *know* we are
-creating unnecessary branches? How about Jeff's suggestion of
-introducing pci_mmio_map() ? This way we leave the current
-documenation as it is and just introduce this for MMIO-only devices.
-No benchmarks are necessary then, and no need to confuse people with
-the old API.
+> I got the following error when building 2.6.23-rc6-mm1 on sparc:
+> 
+> 
+>   /opt/crosstool/gcc-4.1.1-glibc-2.3.6/sparc-unknown-linux-gnu/bin/sparc-unknown-linux-gnu-gcc -Wp,-MD,drivers/serial/.serial_core.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.1.1-glibc-2.3.6/sparc-unknown-linux-gnu/lib/gcc/sparc-unknown-linux-gnu/4.1.1/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h  -I/home/compudj/git/linux-2.6-lttng/drivers/serial -Idrivers/serial -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -m32 -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7 -fomit-frame-pointer -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(serial_core)"  -D"KBUILD_MODNAME=KBUILD_STR(serial_core)" -c -o drivers/serial/.tmp_serial_core.o /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c
+> /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c: In function 'uart_suspend_port':
+> /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c:1980: error: implicit declaration of function 'enable_irq_wake'
+> /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c: In function 'uart_resume_port':
+> /home/compudj/git/linux-2.6-lttng/drivers/serial/serial_core.c:2035: error: implicit declaration of function 'disable_irq_wake'
 
-  Luis
+hm, I wonder why I didn't hit that.
+
+enable_irq_wake() was added by wake-up-from-a-serial-port.patch
+
+I note that git-input adds a call too, and might have a problem
+with !CONFIG_GENERIC_HARDIRQS.
+
+Not sure what the best fix is here.  We could sprinkle ifdefs all
+over the code, or just add the suitable empty stubs for enable_irq_wake(),
+etc.
