@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759308AbXIRTtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbXIRTtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759308AbXIRTtA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 15:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbXIRTsw
+	id S1759481AbXIRTtf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 15:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbXIRTt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 15:48:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47583 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756039AbXIRTsv (ORCPT
+	Tue, 18 Sep 2007 15:49:26 -0400
+Received: from mail.pro-g.com.tr ([81.214.24.101]:58401 "EHLO
+	mail.pro-g.com.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbXIRTtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 15:48:51 -0400
-Date: Tue, 18 Sep 2007 12:48:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: What can be done to reduce the huge number of build fixes
- required to release an MM tree?
-Message-Id: <20070918124819.d16099fc.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0709180523p646024b1u43269816e5328c9f@mail.gmail.com>
-References: <a44ae5cd0709180523p646024b1u43269816e5328c9f@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Sep 2007 15:49:25 -0400
+Message-ID: <46F02C3B.6030009@pro-g.com.tr>
+Date: Tue, 18 Sep 2007 12:51:23 -0700
+From: "Can E. Acar" <can.acar@pro-g.com.tr>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070729)
+MIME-Version: 1.0
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Theodore Tso <tytso@mit.edu>, Claudio Jeker <cjeker@diehard.n-r-g.com>,
+       Adrian Bunk <bunk@kernel.org>, misc@openbsd.org,
+       linux-kernel@vger.kernel.org, Daniel Hazelton <dhazelton@enter.net>,
+       Eben Moglen <moglen@softwarefreedom.org>,
+       Lawrence Lessig <lessig_from_web@pobox.com>,
+       "Bradley M. Kuhn" <bkuhn@softwarefreedom.org>,
+       Matt Norwood <norwood@softwarefreedom.org>
+Subject: Re: Wasting our Freedom
+References: <20070916195909.GA18232@stusta.de> <20070916203926.GA17863@schlund.de> <20070916211208.GC5502@thunk.org> <20070917125554.GB13179@diehard.n-r-g.com> <20070917133458.GA18360@thunk.org> <20070917192341.GB30119@diehard.n-r-g.com> <20070917204318.GE18360@thunk.org> <46EEFA6D.9080708@pro-g.com.tr> <20070917234726.GG18360@thunk.org> <46F01F21.4050009@pro-g.com.tr> <20070918190447.GI5386@csclub.uwaterloo.ca>
+In-Reply-To: <20070918190447.GI5386@csclub.uwaterloo.ca>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 08:23:38 -0400
-"Miles Lane" <miles.lane@gmail.com> wrote:
-
-> Hello Andrew and all,
+Lennart Sorensen wrote:
+> On Tue, Sep 18, 2007 at 11:55:29AM -0700, Can E. Acar wrote:
+>> Well, they can add their names *anywhere* in the whole file, *except*
+>> these two lines. See, these lines have a whole different meaning
+>> when it comes to laws.  When they make sufficient contribution, they
+>> sure can add their names. What is so difficult to understand here?
 > 
-> What can be done to reduce the huge number of build fixes required to
-> release an MM tree?
+> Please define "Sufficient contribution".  And in what juristiction that
+> definition applies.
 
-My mind turns to cattle prods.
+Please note that I am not a lawyer. It would be best if you do
+your own research, and consult a lawyer.
 
-> Perhaps it would be helpful if you identified specific individuals who
-> send you patches that break the build.  If necessary, we could keep a
-> running total.  The main thought is that maybe we need to identify who
-> regularly sends troublesome patches.  There are three metrics that
-> might be good to know:  1) Who sends patches that are regularly
-> broken, but sends patches rarely?  2) Who sends patches all the time,
-> and once in while causes trouble?  And 3) Who is causing the most
-> cumulative trouble?
-> 
-> Is there any possibility that we ought to refuse patches from people
-> who break the build too often?
-> 
-> Another area that might be helpful might be how the patches break
-> things.  Are there major groupings of errors that developers could be
-> educated about?
-> 
-> 
-> I am sorry you are having to work so hard to do your job, Andrew.
-> 
+Please look up the definition of derivative work. Even Wikipedia would
+do for
+some basic definitions. The copyright laws in most countries adhere to the
+"Berne Convention", yet another phrase to look up.
 
-I don't think much can be done about it, really.
+>From my own research, one guideline I would consider is:
+"The new material must be original and copyrightable in itself."
 
-See, what I do is to merge probably hundreds of patches into the -mm-only
-part of the tree and then, after a few days, get down and compile-test it
-all, then fix it, then runtime test it all, then fix that.  Because it is
-vastly more efficient to do all this work against hundreds of patches than
-it is to do it against one patch at a time, no?
+But, again, if it comes to that, the lawyers will decide and we can have
+no more say on the subject.
 
-And guess what?  All the other maintainers do the same thing: someone sends
-you a patch, it looks good, so you commit it.  After you've committed a
-decent batch of patches, get in there and test it all.
+Let me, instead tell you how we handle this when working on BSD code:
+We communicate. If we feel we did some extensive changes to a file, we ask.
+Get OKs from other senior developers, preferably the authors and then add
+our name.
 
-Problem is, I often will get in there and do all that testing before the
-subsystem-tree owner has done his testing.
-
-The only way in which my problem can get fixed is if all the subsystem tree
-maintainers were to do a full set of compile-testing and runtime testing
-before committing each change (impossibly expensive) or if they were to run
-two trees: a raw/untested one, and a separate cooked/tested tree.  I then
-pull the cooked/tested one.  The latter approach has quite a lot of
-overhead for everyone as well.
+During our license audits of the OpenBSD tree, a couple of years ago, our
+developers went into great pains to locate the authors and clarify
+the questionable licenses that were our tree.  We are actively working
+on replacing the remaining non-BSD licensed code in our tree. Not by
+slapping
+on our own licenses, but by asking the authors nicely to relicense, finding
+replacements with an acceptable license, or by rewriting them.
 
 
-But really, it's not worth sweating over the build errors: they're almost
-always trivial to fix, and they are of course immediately apparent.
+Can
 
-So don't worry about the build errors - they're a trivial nuisance.  It's
-the runtime errors which are much, much more serious and are much more
-expensive to fix and which affect our users much more seriously.
-
-(otoh, quite a number of the build errors are really really silly ones,
-where someone couldn't be assed cooking up a decent grep regexp or
-didn't even compile-test the change with _any_ config.  I could name
-names, but it would look like `grep @ MAINTAINERS' ;))
-
+-- 
+In theory, there is no difference between theory and practice.
+But, in practice, there is.
