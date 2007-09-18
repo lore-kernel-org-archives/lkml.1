@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbXIRBib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbXIRBlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756513AbXIRBib (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Sep 2007 21:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbXIRBiX
+	id S1756835AbXIRBlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Sep 2007 21:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbXIRBlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Sep 2007 21:38:23 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:11643 "EHLO
+	Mon, 17 Sep 2007 21:41:12 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:12063 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754573AbXIRBiW (ORCPT
+	with ESMTP id S1753835AbXIRBlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Sep 2007 21:38:22 -0400
-Date: Mon, 17 Sep 2007 18:37:49 -0700
+	Mon, 17 Sep 2007 21:41:11 -0400
+Date: Mon, 17 Sep 2007 18:38:53 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] powerpc: Avoid pointless WARN_ON(irqs_disabled()) from
- panic codepath
-Message-Id: <20070917183749.fd690505.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
-References: <46EA5CEB.7020104@linux.vnet.ibm.com>
-	<a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
-	<alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: pete@bluelane.com, Jason Wessel <jason.wessel@windriver.com>,
+       Matt Mackall <mpm@selenic.com>, Amit Kale <amitkale@linsyssoft.com>,
+       Dave Anderson <anderson@redhat.com>, kdb@oss.sgi.com, jlan@sgi.com,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: My position on general ``RAS'' tool support infrastructure
+Message-Id: <20070917183853.42f29393.randy.dunlap@oracle.com>
+In-Reply-To: <m1abrq7lbt.fsf@ebiederm.dsl.xmission.com>
+References: <46E8B06D.9080006@bluelane.com>
+	<m1abrq7lbt.fsf@ebiederm.dsl.xmission.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -35,19 +37,39 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 05:13:40 +0530 (IST) Satyam Sharma wrote:
+On Thu, 13 Sep 2007 07:21:10 -0600 Eric W. Biederman wrote:
 
-> Untested (not even compile-tested) patch.
-> Could someone point me to ppc32/64 cross-compilers for i386?
+> Pete/Piet Delaney <pete@bluelane.com> writes:
+> 
+> > Jason, Eric:
+> >
+> > Did you read Keith Owens suggestion on RAS tools from:
 
-OSDL had some, but those are gone now.
-I downloaded all of them and still use them, although it would
-be good to have some more recent versions of them.
 
-I put the power* compiler tarballs here:
+Yes.  and I re-read it.
 
-http://userweb.kernel.org/~rdunlap/cross-compilers/
+There are several things in Keith's email that make sense:
+
+a.  all RAS tools should use a common interface
+b.  it's not the kernel's job to decide which RAS tool runs first
+
+
+Eric makes some good points too.  I'm mostly similar to Eric:
+paranoid about trusting software/hardware after a panic (or oops).
+
+So if someone wants to use multiple RAS tools on a panic event,
+enabling an admin to set priorities is OK with me, but I'll only
+trust the first one that is used, and even that one may have
+problems.  IOW, I don't see a big need to support multiple RAS
+tools at one time.  (speaking for myself)
+
+
+> So if someone who is suggesting an implementation can absorb 
+> and understand the requirements of the different groups and come
+> up with solutions that meet the requirements of the different projects
+> I think progress can be made.  That as far as I know takes talent.
+
+Ack that.
 
 ---
 ~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
