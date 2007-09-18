@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbXIRQzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbXIRQ45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760703AbXIRQzW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 12:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759694AbXIRQzJ
+	id S1760614AbXIRQ45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 12:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXIRQ4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 12:55:09 -0400
-Received: from pat.uio.no ([129.240.10.15]:60908 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754203AbXIRQzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 12:55:08 -0400
-Subject: Re: [PATCH] Wake up mandatory locks waiter on chmod (v2)
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-In-Reply-To: <20070918165220.GE18476@fieldses.org>
-References: <46EE3724.80200@openvz.org>
-	 <1190037331.6700.14.camel@heimdal.trondhjem.org>
-	 <46EE8C52.80503@openvz.org>
-	 <1190044850.6700.81.camel@heimdal.trondhjem.org>
-	 <46EF7136.7080308@openvz.org> <20070918151957.GA18476@fieldses.org>
-	 <1190132095.6656.12.camel@heimdal.trondhjem.org>
-	 <20070918165220.GE18476@fieldses.org>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 12:54:56 -0400
-Message-Id: <1190134496.6656.22.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 18 Sep 2007 12:56:49 -0400
+Received: from phunq.net ([64.81.85.152]:38975 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755462AbXIRQ4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 12:56:48 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+Date: Tue, 18 Sep 2007 09:56:06 -0700
+User-Agent: KMail/1.9.5
+Cc: "Mike Snitzer" <snitzer@gmail.com>, "Christoph Lameter" <clameter@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       "David Miller" <davem@davemloft.net>, "Nick Piggin" <npiggin@suse.de>,
+       "Wouter Verhelst" <w@uter.be>, "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+References: <20070814142103.204771292@sgi.com> <200709172211.26493.phillips@phunq.net> <20070918115836.1394a051@twins>
+In-Reply-To: <20070918115836.1394a051@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.112)
-X-UiO-Scanned: B265B4A091EB7184D66665452661F1BA21D5D271
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 756 total 3954310 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+Message-Id: <200709180956.07772.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-18 at 12:52 -0400, J. Bruce Fields wrote:
-> On Tue, Sep 18, 2007 at 12:14:55PM -0400, Trond Myklebust wrote:
-> > Note also that strictly speaking, we're not even compliant with the
-> > System V behaviour on read() and write(). See:
-> > 
-> >   http://www.unix.org.ua/orelly/networking_2ndEd/nfs/ch11_01.htm
-> > and
-> >   http://docs.sun.com/app/docs/doc/801-6736/6i13fom0a?l=en&a=view&q=mandatory+lock
-> > 
-> > According to these docs, we should be wrapping each and every read() and
-> > write() syscall with a mandatory lock. The fact that we're not, and yet
-> > still not seeing any complaints just goes to show how few people are
-> > actually using and relying on this...
-> 
-> So currently there's nothing to prevent this:
-> 
-> 				- write passes locks_mandatory_area() checks
-> 	- get mandatory lock
-> 	- read old data
-> 				- write updates file data
-> 	- read new data
-> 
-> You can see the data change even while you hold a mandatory lock that
-> should exclude writes.
-> 
-> Similarly you might think that an application could prevent anyone from
-> seeing the intermediate state of a file while it performs a series of
-> writes under an exclusive mandatory lock, but actually there's nothing
-> to stop a read in progress from racing with acquisition of the lock.
-> 
-> Unless I'm missing something, that makes our mandatory lock
-> implementation pretty pointless.  I wish we could either fix it or just
-> ditch it, but I suppose either option would be unpopular.
+On Tuesday 18 September 2007 02:58, Peter Zijlstra wrote:
+> On Mon, 17 Sep 2007 22:11:25 -0700 Daniel Phillips wrote:
+> > > I've been using Avi Kivity's patch from some time ago:
+> > > http://lkml.org/lkml/2004/7/26/68
+> >
+> > Yes.  Ddsnap includes a bit of code almost identical to that, which
+> > we wrote independently.  Seems wild and crazy at first blush,
+> > doesn't it? But this approach has proved robust in practice, and is
+> > to my mind, obviously correct.
+>
+> I'm so not liking this :-(
 
-It gets even better when you throw mmap() into the mix :-)
+Why don't you share your specific concerns?
 
-Trond
+> Can't we just run the user-space part as mlockall and extend netlink
+> to work with PF_MEMALLOC where needed?
+>
+> I did something like that for iSCSI.
 
+Not sure what you mean by extend netlink.  We do run the user daemons 
+under mlockall of course, this is one of the rules I stated earlier for 
+daemons running in the block IO path.  The problem is, if this 
+userspace daemon allocates even one page, for example in sys_open, it 
+can deadlock.  Running the daemon in PF_MEMALLOC mode fixes this 
+problem robustly, provided that the necessary audit of memory 
+allocation patterns and library dependencies has been done.
+
+I suppose you are worried that the userspace code could unexpectedly 
+allocate a large amount of memory and exhaust the entire PF_MEMALLOC 
+reserve?  Kernel code could do that too.  This userspace code just 
+needs to be checked carefully.  Perhaps we could come up with a kernel 
+debugging option to verify that a task does in fact stay within some 
+bounded number of page allocs while in PF_MEMALLOC mode.
+
+Regards,
+
+Daniel
