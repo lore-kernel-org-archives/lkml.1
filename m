@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760568AbXIRQlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbXIRQlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760568AbXIRQlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 12:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759142AbXIRQlH
+	id S932174AbXIRQlk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 12:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759628AbXIRQl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 12:41:07 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44578 "EHLO e3.ny.us.ibm.com"
+	Tue, 18 Sep 2007 12:41:29 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:55388 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755462AbXIRQlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 12:41:05 -0400
-Message-ID: <46EFFF9D.6090609@us.ibm.com>
-Date: Tue, 18 Sep 2007 09:41:01 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
+	id S1759142AbXIRQl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 12:41:28 -0400
+Date: Tue, 18 Sep 2007 17:41:26 +0100
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, SystemTAP <systemtap@sources.redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH 0/2] A kernel tracing interface
-References: <46E9CB0D.2040206@us.ibm.com> <20070914174953.04b0b158.akpm@linux-foundation.org>
-In-Reply-To: <20070914174953.04b0b158.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, themann@de.ibm.com, netdev@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/net/ehea/ehea_main.c
+Message-ID: <20070918164126.GB1804@skynet.ie>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070918162039.GA1804@skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070918162039.GA1804@skynet.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 13 Sep 2007 16:43:09 -0700
-> David Wilder <dwilder@us.ibm.com> wrote:
+My apologies for the repost, this should have gone to netdev and Dave Miller
+as well.
+
+On (18/09/07 17:20), Mel Gorman didst pronounce:
+> Hi Andrew,
 > 
->> These patches provide a kernel tracing interface called "trace".
->>
->> The motivation for "trace" is to:
->> - Provide a simple set of tracing primitives that will utilize the high-
->>   performance and low-overhead of relayfs for passing traces data from
->>   kernel to user space.
->> - Provide a common user interface for managing kernel traces.
->> - Allow for binary as well as ascii trace data.
->> - Incorporate features from the systemtap runtime that are
->>   useful to others.
->>
->> History- Versions of this code have been submitted for review under
->> a couple of different names.  The original submission was called UTT,
->> it was later re-submitted as GTSC.   Christoph Hellwig commented "The
->> code looks fine ...but the name is just dumb".  Following Christoph's
->> advice, I changed the name to simply "Trace".
->>
->> This patch addresses review comments made by Christoph Hellwig and Mathieu
->> Desnoyers.  Changes include the addition of a mutex and synchronization
->> protecting trace state changes (using RCU) and the reduction of the
->> number of exports.
->>
->> Patches are against 2.6.23-rc4-mm1
->>
->> Required patches:
->> 1/2 Trace code and documentation
->> 2/2 Relay reset consumed  (required for trace's "rewind" feature")
->>
->> Signed-off-by: David Wilder <dwilder@us.ibm.com>
+> PPC64 failed to build with the driver drivers/net/ehea with the
+> following error
 > 
-> Well the code looks neat and easy enough to merge.
+>   CC [M]  drivers/net/ehea/ehea_main.o
+> drivers/net/ehea/ehea_main.c: In function `ehea_open':
+> drivers/net/ehea/ehea_main.c:2322: error: implicit declaration of function `port_napi_enable'
+> drivers/net/ehea/ehea_main.c: At top level:
+> drivers/net/ehea/ehea_main.c:2340: error: conflicting types for 'port_napi_enable'
+> drivers/net/ehea/ehea_main.c:2322: error: previous implicit declaration of 'port_napi_enable' was here
+> make[1]: *** [drivers/net/ehea/ehea_main.o] Error 1
 > 
-> What exactly is the relationship between this and systemtap and kprobes and
-> all the other tracing things which people are doing?
+> It's buried in git-net.patch and I've cc'd a potential owner based simply
+> on the mention of EHEA in a leader. I've included a candidate fix for the
+> error. It seems to be a simple case of port_napi_enable being defined in
+> the wrong place.
 > 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 > 
-The key to the relationship is relay.  Systemtap, kprobes, blktrace 
-,(and others) need the fast user-kernel data hose that relay provides. 
-Trace is a means to simplify and standardize the use of relay. 
-Systemtap adopted this code some time ago in its own runtime.  Moving 
-this code into the kernel will allow other tracers to take advantage of 
-the same trace primitives.
+> ---
+>  ehea_main.c |   32 ++++++++++++++++----------------
+>  1 file changed, 16 insertions(+), 16 deletions(-)
+> 
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc6-mm1-005_fix-rpadlpar_sysfs/drivers/net/ehea/ehea_main.c linux-2.6.23-rc6-mm1-010_fix_ehea_main/drivers/net/ehea/ehea_main.c
+> --- linux-2.6.23-rc6-mm1-005_fix-rpadlpar_sysfs/drivers/net/ehea/ehea_main.c	2007-09-18 11:29:28.000000000 +0100
+> +++ linux-2.6.23-rc6-mm1-010_fix_ehea_main/drivers/net/ehea/ehea_main.c	2007-09-18 17:15:27.000000000 +0100
+> @@ -2307,6 +2307,22 @@ out:
+>  	return ret;
+>  }
+>  
+> +static void port_napi_disable(struct ehea_port *port)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < port->num_def_qps; i++)
+> +		napi_disable(&port->port_res[i].napi);
+> +}
+> +
+> +static void port_napi_enable(struct ehea_port *port)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < port->num_def_qps; i++)
+> +		napi_enable(&port->port_res[i].napi);
+> +}
+> +
+>  static int ehea_open(struct net_device *dev)
+>  {
+>  	int ret;
+> @@ -2328,22 +2344,6 @@ static int ehea_open(struct net_device *
+>  	return ret;
+>  }
+>  
+> -static void port_napi_disable(struct ehea_port *port)
+> -{
+> -	int i;
+> -
+> -	for (i = 0; i < port->num_def_qps; i++)
+> -		napi_disable(&port->port_res[i].napi);
+> -}
+> -
+> -static void port_napi_enable(struct ehea_port *port)
+> -{
+> -	int i;
+> -
+> -	for (i = 0; i < port->num_def_qps; i++)
+> -		napi_enable(&port->port_res[i].napi);
+> -}
+> -
+>  static int ehea_down(struct net_device *dev)
+>  {
+>  	int ret;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
