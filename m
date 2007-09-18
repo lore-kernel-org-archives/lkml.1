@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbXIRQP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbXIRQUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759925AbXIRQP1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 12:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbXIRQPP
+	id S1759901AbXIRQUu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 12:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755677AbXIRQUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 12:15:15 -0400
-Received: from pat.uio.no ([129.240.10.15]:54672 "EHLO pat.uio.no"
+	Tue, 18 Sep 2007 12:20:42 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42270 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753218AbXIRQPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 12:15:13 -0400
-Subject: Re: [PATCH] Wake up mandatory locks waiter on chmod (v2)
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-In-Reply-To: <20070918151957.GA18476@fieldses.org>
-References: <46EE3724.80200@openvz.org>
-	 <1190037331.6700.14.camel@heimdal.trondhjem.org>
-	 <46EE8C52.80503@openvz.org>
-	 <1190044850.6700.81.camel@heimdal.trondhjem.org>
-	 <46EF7136.7080308@openvz.org>  <20070918151957.GA18476@fieldses.org>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 12:14:55 -0400
-Message-Id: <1190132095.6656.12.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.1, required=12.0, autolearn=disabled, AWL=0.080)
-X-UiO-Scanned: C53CE95E4AFC0E0224E165E54E18429B5099402A
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 1 maxlevel 200 minaction 2 bait 0 mail/h: 216 total 3953770 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1755379AbXIRQUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 12:20:41 -0400
+Date: Tue, 18 Sep 2007 17:20:39 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, themann@de.ibm.com
+Subject: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/net/ehea/ehea_main.c
+Message-ID: <20070918162039.GA1804@skynet.ie>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-18 at 11:19 -0400, J. Bruce Fields wrote:
-> Maybe this should be documented, e.g. in fcntl(2).  I'm not sure exactly
-> what we'd say--we probably don't want to commit to the current behavior.
-> Maybe something like "behavior is undefined when setting or clearing
-> mandatory locking on a file while it is locked".
+Hi Andrew,
 
-The behaviour is pretty much undefined if you set/clear mandatory
-locking on the file while some application has it open. It is hard to
-see how you can avoid that unless you exclude simultaneous chmod,
-read(), write(), and fcntl(SETLK) operations.
+PPC64 failed to build with the driver drivers/net/ehea with the
+following error
 
-Note also that strictly speaking, we're not even compliant with the
-System V behaviour on read() and write(). See:
+  CC [M]  drivers/net/ehea/ehea_main.o
+drivers/net/ehea/ehea_main.c: In function `ehea_open':
+drivers/net/ehea/ehea_main.c:2322: error: implicit declaration of function `port_napi_enable'
+drivers/net/ehea/ehea_main.c: At top level:
+drivers/net/ehea/ehea_main.c:2340: error: conflicting types for 'port_napi_enable'
+drivers/net/ehea/ehea_main.c:2322: error: previous implicit declaration of 'port_napi_enable' was here
+make[1]: *** [drivers/net/ehea/ehea_main.o] Error 1
 
-  http://www.unix.org.ua/orelly/networking_2ndEd/nfs/ch11_01.htm
-and
-  http://docs.sun.com/app/docs/doc/801-6736/6i13fom0a?l=en&a=view&q=mandatory+lock
+It's buried in git-net.patch and I've cc'd a potential owner based simply
+on the mention of EHEA in a leader. I've included a candidate fix for the
+error. It seems to be a simple case of port_napi_enable being defined in
+the wrong place.
 
-According to these docs, we should be wrapping each and every read() and
-write() syscall with a mandatory lock. The fact that we're not, and yet
-still not seeing any complaints just goes to show how few people are
-actually using and relying on this...
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-  Trond
+---
+ ehea_main.c |   32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc6-mm1-005_fix-rpadlpar_sysfs/drivers/net/ehea/ehea_main.c linux-2.6.23-rc6-mm1-010_fix_ehea_main/drivers/net/ehea/ehea_main.c
+--- linux-2.6.23-rc6-mm1-005_fix-rpadlpar_sysfs/drivers/net/ehea/ehea_main.c	2007-09-18 11:29:28.000000000 +0100
++++ linux-2.6.23-rc6-mm1-010_fix_ehea_main/drivers/net/ehea/ehea_main.c	2007-09-18 17:15:27.000000000 +0100
+@@ -2307,6 +2307,22 @@ out:
+ 	return ret;
+ }
+ 
++static void port_napi_disable(struct ehea_port *port)
++{
++	int i;
++
++	for (i = 0; i < port->num_def_qps; i++)
++		napi_disable(&port->port_res[i].napi);
++}
++
++static void port_napi_enable(struct ehea_port *port)
++{
++	int i;
++
++	for (i = 0; i < port->num_def_qps; i++)
++		napi_enable(&port->port_res[i].napi);
++}
++
+ static int ehea_open(struct net_device *dev)
+ {
+ 	int ret;
+@@ -2328,22 +2344,6 @@ static int ehea_open(struct net_device *
+ 	return ret;
+ }
+ 
+-static void port_napi_disable(struct ehea_port *port)
+-{
+-	int i;
+-
+-	for (i = 0; i < port->num_def_qps; i++)
+-		napi_disable(&port->port_res[i].napi);
+-}
+-
+-static void port_napi_enable(struct ehea_port *port)
+-{
+-	int i;
+-
+-	for (i = 0; i < port->num_def_qps; i++)
+-		napi_enable(&port->port_res[i].napi);
+-}
+-
+ static int ehea_down(struct net_device *dev)
+ {
+ 	int ret;
