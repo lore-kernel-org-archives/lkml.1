@@ -1,36 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbXISLOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbXISLQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759518AbXISLOW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 07:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbXISLOO
+	id S1758975AbXISLQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 07:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbXISLQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 07:14:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34899 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755788AbXISLOO (ORCPT
+	Wed, 19 Sep 2007 07:16:18 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2980 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756928AbXISLQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 07:14:14 -0400
-Date: Wed, 19 Sep 2007 13:14:12 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
-Message-ID: <20070919111412.GA7250@one.firstfloor.org>
-References: <20070918210747.828804366@polymtl.ca> <20070918210853.588573678@polymtl.ca> <46F04856.3010808@goop.org> <p73myvjwri3.fsf@bingen.suse.de> <20070919110846.GC15500@Krystal>
+	Wed, 19 Sep 2007 07:16:17 -0400
+Date: Wed, 19 Sep 2007 19:16:01 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ingo Oeser <ioe-lkml@rameria.de>
+Cc: Bob Gilligan <gilligan@vyatta.com>, linux-kernel@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH] crypto: cleanup: Use max() in blkcipher_get_spot() to state the intention.
+Message-ID: <20070919111601.GB19488@gondor.apana.org.au>
+References: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com> <200709102146.47655.ioe-lkml@rameria.de> <20070911084058.GA4469@gondor.apana.org.au> <200709112153.25959.ioe-lkml@rameria.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070919110846.GC15500@Krystal>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200709112153.25959.ioe-lkml@rameria.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And yes, it's a pity there is no way to produce the long-nops there. :(
+On Tue, Sep 11, 2007 at 09:53:24PM +0200, Ingo Oeser wrote:
+> [PATCH] crypto: cleanup: Use max() in blkcipher_get_spot() to state the intention.
+> 
+> Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
 
-To be honest I consider it extremly unlikely you would be able
-to measure a difference.
-
--Andi
+Patch applied.  Thanks!
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
