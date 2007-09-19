@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbXISRed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762779AbXISRes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762693AbXISRed (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762402AbXISRdL
+	id S1762779AbXISRes (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762233AbXISRd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:33:11 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51943 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762215AbXISRdJ (ORCPT
+	Wed, 19 Sep 2007 13:33:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58959 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762412AbXISRd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:33:09 -0400
-Date: Wed, 19 Sep 2007 10:33:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Anton Altaparmakov <aia21@cam.ac.uk>, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [00/17] [RFC] Virtual Compound Page Support
-In-Reply-To: <20070919103400.7bc8ffd9.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0709191030370.11138@schroedinger.engr.sgi.com>
-References: <20070919033605.785839297@sgi.com> <3A6E599E-07AC-4273-8643-ADFC8014D3E6@cam.ac.uk>
- <20070919103400.7bc8ffd9.dada1@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 19 Sep 2007 13:33:26 -0400
+Date: Wed, 19 Sep 2007 18:33:25 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 10/24] elevate write count during entire ncp_ioctl()
+Message-ID: <20070919173325.GJ20917@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Dave Hansen <haveblue@us.ibm.com>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org
+References: <20070917182718.70494C9B@kernel> <20070917182731.822D5155@kernel>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070917182731.822D5155@kernel>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Eric Dumazet wrote:
+On Mon, Sep 17, 2007 at 11:27:31AM -0700, Dave Hansen wrote:
+> 
+> Some ioctls need write access, but others don't.  Make a helper
+> function to decide when write access is needed, and take it.
 
-> 1) Only power of two allocations are good candidates, or we waste RAM
+The WARN_ON is too agressive because it'll happen whenever someone tries
+a random, non-existant ioctl on ncpfs.  Otherwise the patch looks good.
 
-Correct.
-
-> 2) On i386 machines, we have a small vmalloc window. (128 MB default value)
->   Many servers with >4GB memory (PAE) like to boot with vmalloc=32M option to get 992MB of LOWMEM.
->   If we allow some slub caches to fallback to vmalloc land, we'll have problems to tune this.
-
-We would first do the vmalloc conversion to GFP_VFALLBACK which would 
-reduce the vmalloc requirements of drivers and core significantly. The 
-patchset should actually reduce the vmalloc space requirements 
-significantly. They are only needed in situations where the page allocator 
-cannot provide a contiguous mapping and that gets rarer the better Mel's 
-antifrag code works.
- 
-> 4) vmalloc() currently uses a linked list of vm_struct. Might need something more scalable.
-
-If its rarely used then its not that big of a deal. The better the anti 
-fragmentation measures the less vmalloc use.
