@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbXISIx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757683AbXISIyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbXISIx1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 04:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbXISIxU
+	id S1757683AbXISIyw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 04:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbXISIyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 04:53:20 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:36000 "EHLO
-	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753766AbXISIxT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 04:53:19 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Wed, 19 Sep 2007 10:52:58 +0200
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Andrey Kamchatnikov" <andrey.kamchatnikov@tec-venture.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem: one driver and 4 instances with different
- parameters
-Message-ID: <20070919085258.GA6640@alberich.amd.com>
-References: <016a01c7fa89$ff51e850$b4fefea9@andrey>
+	Wed, 19 Sep 2007 04:54:44 -0400
+Received: from il.qumranet.com ([82.166.9.18]:47714 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754990AbXISIym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 04:54:42 -0400
+Message-ID: <46F0E3C1.7080103@qumranet.com>
+Date: Wed, 19 Sep 2007 10:54:25 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-In-Reply-To: <016a01c7fa89$ff51e850$b4fefea9@andrey>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Sep 2007 08:52:55.0508 (UTC)
- FILETIME=[78641140:01C7FA9A]
-X-WSS-ID: 6AEE3CFA0X87896048-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+To: Miles Lane <miles.lane@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: =?windows-1252?Q?Re=3A_2=2E6=2E23-rc6-mm1_--_drivers/kvm/i?=
+ =?windows-1252?Q?oapic=2Ec=3A_In_function_=91ioapic=5Fdeliver=92=3A?=
+ =?windows-1252?Q?_error=3A_=91dest=5FLowestPrio=92_undeclared_=28?=
+ =?windows-1252?Q?first_use_in_this_function=29?=
+References: <a44ae5cd0709180936o73fcc276kbedce6051d387744@mail.gmail.com>
+In-Reply-To: <a44ae5cd0709180936o73fcc276kbedce6051d387744@mail.gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 08:54:58AM +0200, Andrey Kamchatnikov wrote:
-> I have one driver, but I need to run 4 instances of it (I run insmod with different 
-> parameters) .
-> 
-> But when I try to install the second driver I've got an error, that driver with this name 
-> exists.
+Miles Lane wrote:
+>   CC [M]  drivers/kvm/ioapic.o
+> drivers/kvm/ioapic.c: In function 'ioapic_deliver':
+> drivers/kvm/ioapic.c:204: error: 'dest_LowestPrio' undeclared (first
+> use in this function)
+> drivers/kvm/ioapic.c:204: error: (Each undeclared identifier is
+> reported only once
+> drivers/kvm/ioapic.c:204: error: for each function it appears in.)
+> drivers/kvm/ioapic.c:215: error: 'dest_Fixed' undeclared (first use in
+> this function)
+>
+>   
 
-It might work using modprobe's "--name"-option:
-
-  # modprobe -o foo driver
-  # modprobe -o bar driver
-
-
-Regards,
-
-Andreas
+Fixed & pushed to kvm.git.  Thanks for the report.
 
 -- 
-Operating | AMD Saxony Limited Liability Company & Co. KG,
-  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- Research | Register Court Dresden: HRA 4896, General Partner authorized
-  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
-  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
-
+error compiling committee.c: too many arguments to function
 
