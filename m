@@ -1,69 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760749AbXISPvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761247AbXISPwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760749AbXISPvv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbXISPvn
+	id S1761247AbXISPwk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXISPwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:51:43 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:17253 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753655AbXISPvm (ORCPT
+	Wed, 19 Sep 2007 11:52:33 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:23189 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755984AbXISPwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:51:42 -0400
-Date: Wed, 19 Sep 2007 08:50:32 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Philipp Marek <philipp@marek.priv.at>
-Cc: Jeff Dike <jdike@addtoit.com>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: UML dead with current -git?
-Message-Id: <20070919085032.dd5c1732.randy.dunlap@oracle.com>
-In-Reply-To: <200709191443.24158@x5>
-References: <200709181714.34035@x5>
-	<20070918175513.GD26539@uranus.ravnborg.org>
-	<20070919013512.GA10873@c2.user-mode-linux.org>
-	<200709191443.24158@x5>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Sep 2007 11:52:32 -0400
+X-IronPort-AV: i="4.20,274,1186372800"; 
+   d="scan'208"; a="51818970:sNHT33057787"
+Subject: Re: [Uclinux-dist-devel] [PATCH] binfmt_flat: minimum support for
+	the Blackfin relocations
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Bernd Schmidt <bernd.schmidt@analog.com>,
+       David McCullough <davidm@snapgear.com>,
+       Greg Ungerer <gerg@snapgear.com>, David Howells <dhowells@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com
+In-Reply-To: <1190102965.4406.9.camel@roc-desktop>
+References: <1190102965.4406.9.camel@roc-desktop>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Organization: Analog Devices, Ltd.
+Date: Wed, 19 Sep 2007 23:52:21 +0800
+Message-Id: <1190217141.15707.37.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 19 Sep 2007 15:52:26.0473 (UTC) FILETIME=[13748590:01C7FAD5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 14:43:23 +0200 Philipp Marek wrote:
-
-> On Wednesday 19 September 2007 Jeff Dike wrote:
-> > On Tue, Sep 18, 2007 at 07:55:13PM +0200, Sam Ravnborg wrote:
-> > > Sounds to me like a known issue by you. Can you give a few more details
-> > > so we maybe can get it fixed?
-> > I believe what happened here is an x86_64 build followed by a
-> > UML/x86_64 build with no intervening mrproper.
-> Yes, after a "make mrproper" it compiles fine.
-> However, the .config is gone afterwards ...
+On Tue, 2007-09-18 at 16:09 +0800, Bryan Wu wrote:
+> From: Bernd Schmidt <bernd.schmidt@analog.com>
 > 
-> > I've always considered this to be a "don't do that" sort of thing.
-> > However, maybe we could stick the arch of the current build somewhere
-> > in the tree, check that before any serious part of a subsequent
-> > build, and error out if $ARCH is different.
-> Well, on this line it may be nice to be able to put the target architecture 
-> somewhere ...
-> 	make mrproper
-> 	make menuconfig ARCH=um
-> 	make ARCH=um
-> ... some tweaking
-> 	make menuconfig
-> and the .config is overwritten with the "wrong" architecture.
-> (I know about .config.bak and so on ... just a small wish)
+> This just adds minimum support for the Blackfin relocations,
+> since we don't have enough space in each reloc. The idea
+> is to store a value with one relocation so that subsequent ones can
+> access it.
+> 
+> Actually, this patch is required for Blackfin. Currently if BINFMT_FLAT 
+> is enabled, git-tree kernel will fail to compile. Please consider to
+> accept it.
+> 
 
-Yes, I've tried to coerce the top-level Makefile into honoring/using
-the include/asm symlink if it exists, i.e., taking ARCH from
-readlink include/asm && sed -e 's/include-asm//', but sadly my
-makefile foo was not good enough.
+As this patch exits for a long time, it might be ignored by maintainers.
+I just resent it, because it is necessary for Blackfin bimfmt_flat
+configuration and compiling.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Any comments are welcome.
+
+Thanks
+- Bryan Wu
+
+> Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> Cc: David McCullough <davidm@snapgear.com>
+> Cc: Greg Ungerer <gerg@snapgear.com>
+> ---
+>  fs/binfmt_flat.c             |    5 ++++-
+>  include/asm-h8300/flat.h     |    3 ++-
+>  include/asm-m32r/flat.h      |    3 ++-
+>  include/asm-m68knommu/flat.h |    3 ++-
+>  include/asm-sh/flat.h        |    3 ++-
+>  include/asm-v850/flat.h      |    4 +++-
+>  6 files changed, 15 insertions(+), 6 deletions(-)
+> diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+> index 7b0265d..13b58f8 100644
+> --- a/fs/binfmt_flat.c
+> +++ b/fs/binfmt_flat.c
+> @@ -742,6 +742,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  	 * __start to address 4 so that is okay).
+>  	 */
+>  	if (rev > OLD_FLAT_VERSION) {
+> +		unsigned long persistent = 0;
+>  		for (i=0; i < relocs; i++) {
+>  			unsigned long addr, relval;
+>  
+> @@ -749,6 +750,8 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			   relocated (of course, the address has to be
+>  			   relocated first).  */
+>  			relval = ntohl(reloc[i]);
+> +			if (flat_set_persistent (relval, &persistent))
+> +				continue;
+>  			addr = flat_get_relocate_addr(relval);
+>  			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
+>  			if (rp == (unsigned long *)RELOC_FAILED) {
+> @@ -757,7 +760,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			}
+>  
+>  			/* Get the pointer's value.  */
+> -			addr = flat_get_addr_from_rp(rp, relval, flags);
+> +			addr = flat_get_addr_from_rp(rp, relval, flags, &persistent);
+>  			if (addr != 0) {
+>  				/*
+>  				 * Do the relocation.  PIC relocs in the data section are
+> diff --git a/include/asm-h8300/flat.h b/include/asm-h8300/flat.h
+> index c20eee7..2a87350 100644
+> --- a/include/asm-h8300/flat.h
+> +++ b/include/asm-h8300/flat.h
+> @@ -9,6 +9,7 @@
+>  #define	flat_argvp_envp_on_stack()		1
+>  #define	flat_old_ram_flag(flags)		1
+>  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> +#define	flat_set_persistent(relval, p)		0
+>  
+>  /*
+>   * on the H8 a couple of the relocations have an instruction in the
+> @@ -18,7 +19,7 @@
+>   */
+>  
+>  #define	flat_get_relocate_addr(rel)		(rel)
+> -#define flat_get_addr_from_rp(rp, relval, flags) \
+> +#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+>          (get_unaligned(rp) & ((flags & FLAT_FLAG_GOTPIC) ? 0xffffffff: 0x00ffffff))
+>  #define flat_put_addr_at_rp(rp, addr, rel) \
+>  	put_unaligned (((*(char *)(rp)) << 24) | ((addr) & 0x00ffffff), rp)
+> diff --git a/include/asm-m32r/flat.h b/include/asm-m32r/flat.h
+> index 1b285f6..d851cf0 100644
+> --- a/include/asm-m32r/flat.h
+> +++ b/include/asm-m32r/flat.h
+> @@ -15,9 +15,10 @@
+>  #define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
+>  #define	flat_argvp_envp_on_stack()		0
+>  #define	flat_old_ram_flag(flags)		(flags)
+> +#define	flat_set_persistent(relval, p)		0
+>  #define	flat_reloc_valid(reloc, size)		\
+>  	(((reloc) - textlen_for_m32r_lo16_data) <= (size))
+> -#define flat_get_addr_from_rp(rp, relval, flags) \
+> +#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+>  	m32r_flat_get_addr_from_rp(rp, relval, (text_len) )
+>  
+>  #define flat_put_addr_at_rp(rp, addr, relval) \
+> diff --git a/include/asm-m68knommu/flat.h b/include/asm-m68knommu/flat.h
+> index 2d836ed..814b517 100644
+> --- a/include/asm-m68knommu/flat.h
+> +++ b/include/asm-m68knommu/flat.h
+> @@ -9,8 +9,9 @@
+>  #define	flat_argvp_envp_on_stack()		1
+>  #define	flat_old_ram_flag(flags)		(flags)
+>  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> -#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
+> +#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
+>  #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
+>  #define	flat_get_relocate_addr(rel)		(rel)
+> +#define	flat_set_persistent(relval, p)		0
+>  
+>  #endif /* __M68KNOMMU_FLAT_H__ */
+> diff --git a/include/asm-sh/flat.h b/include/asm-sh/flat.h
+> index 0d5cc04..dc4f595 100644
+> --- a/include/asm-sh/flat.h
+> +++ b/include/asm-sh/flat.h
+> @@ -16,8 +16,9 @@
+>  #define	flat_argvp_envp_on_stack()		0
+>  #define	flat_old_ram_flag(flags)		(flags)
+>  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> -#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
+> +#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
+>  #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
+>  #define	flat_get_relocate_addr(rel)		(rel)
+> +#define	flat_set_persistent(relval, p)		0
+>  
+>  #endif /* __ASM_SH_FLAT_H */
+> diff --git a/include/asm-v850/flat.h b/include/asm-v850/flat.h
+> index 3888f59..17f0ea5 100644
+> --- a/include/asm-v850/flat.h
+> +++ b/include/asm-v850/flat.h
+> @@ -25,6 +25,7 @@
+>  #define	flat_stack_align(sp)		/* nothing needed */
+>  #define	flat_argvp_envp_on_stack()	0
+>  #define	flat_old_ram_flag(flags)	(flags)
+> +#define	flat_set_persistent(relval, p)	0
+>  
+>  /* We store the type of relocation in the top 4 bits of the `relval.' */
+>  
+> @@ -46,7 +47,8 @@ flat_get_relocate_addr (unsigned long relval)
+>     For the v850, RP should always be half-word aligned.  */
+>  static inline unsigned long flat_get_addr_from_rp (unsigned long *rp,
+>  						   unsigned long relval,
+> -						   unsigned long flags)
+> +						   unsigned long flags,
+> +						   unsigned long *persistent)
+>  {
+>  	short *srp = (short *)rp;
+>  
