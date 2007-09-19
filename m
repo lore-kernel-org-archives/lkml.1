@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbXISPJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761088AbXISPKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760408AbXISPJA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756465AbXISPIv
+	id S1761088AbXISPKK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbXISPJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:08:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46078 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753549AbXISPIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:08:49 -0400
-Message-ID: <46F13B6C.7020501@redhat.com>
-Date: Wed, 19 Sep 2007 11:08:28 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Wed, 19 Sep 2007 11:09:56 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:43871 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756465AbXISPJy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 11:09:54 -0400
+Date: Wed, 19 Sep 2007 16:09:47 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andy Fleming <afleming@freescale.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] PHYLIB: Fix an interrupt loop potential when halting
+Message-ID: <Pine.LNX.4.64N.0709191548030.24627@blysk.ds.pg.gda.pl>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       David Chinner <dgc@sgi.com>
-Subject: Re: [RFC 13/26] SLUB: Add SlabReclaimable() to avoid repeated reclaim
- attempts
-References: <20070901014107.719506437@sgi.com> <20070901014222.303468369@sgi.com>
-In-Reply-To: <20070901014222.303468369@sgi.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Add a flag SlabReclaimable() that is set on slabs with a method
-> that allows defrag/reclaim. Clear the flag if a reclaim action is not
-> successful in reducing the number of objects in a slab. The reclaim
-> flag is set again if all objects have been allocated from it.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> ---
->  mm/slub.c |   42 ++++++++++++++++++++++++++++++++++++------
->  1 file changed, 36 insertions(+), 6 deletions(-)
-> 
-> Index: linux-2.6/mm/slub.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slub.c	2007-08-28 20:10:37.000000000 -0700
-> +++ linux-2.6/mm/slub.c	2007-08-28 20:10:47.000000000 -0700
-> @@ -107,6 +107,8 @@
->  #define SLABDEBUG 0
->  #endif
->  
-> +#define SLABRECLAIMABLE (1 << PG_dirty)
-> +
->  static inline int SlabFrozen(struct page *page)
->  {
->  	return page->flags & FROZEN;
-> @@ -137,6 +139,21 @@ static inline void ClearSlabDebug(struct
->  	page->flags &= ~SLABDEBUG;
->  }
->  
-> +static inline int SlabReclaimable(struct page *page)
-> +{
-> +	return page->flags & SLABRECLAIMABLE;
-> +}
-> +
-> +static inline void SetSlabReclaimable(struct page *page)
-> +{
-> +	page->flags |= SLABRECLAIMABLE;
-> +}
-> +
-> +static inline void ClearSlabReclaimable(struct page *page)
-> +{
-> +	page->flags &= ~SLABRECLAIMABLE;
-> +}
+ Ensure the PHY_HALTED state is not entered with the IRQ asserted as it 
+could lead to an interrupt loop.
 
-Why is it safe to not use the normal page flag bit operators
-for these page flags operations?
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ There is a small window in phy_stop(), where the state of the PHY machine 
+indicates it has been halted, but its interrupt output might still be 
+unmasked.  If an interrupt goes active right at this moment it will loop 
+as the phy_interrupt() handler exits immediately with IRQ_NONE if the 
+halted state is seen.  It is unsafe to extend the phydev spinlock to cover 
+phy_interrupt().  It is safe to swap the order of the actions though as 
+all the competing places to unmask the interrupt output of the PHY, which 
+are phy_change() and phy_timer() are already covered with the lock as is 
+the sequence in question.
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+ Checked with checkpatch.pl and at the run time.
+
+ Please apply.
+
+  Maciej
+ 
+patch-mips-2.6.23-rc5-20070904-phy-halt-0
+diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/net/phy/phy.c linux-mips-2.6.23-rc5-20070904/drivers/net/phy/phy.c
+--- linux-mips-2.6.23-rc5-20070904.macro/drivers/net/phy/phy.c	2007-09-04 04:55:42.000000000 +0000
++++ linux-mips-2.6.23-rc5-20070904/drivers/net/phy/phy.c	2007-09-16 17:17:20.000000000 +0000
+@@ -722,8 +722,6 @@ void phy_stop(struct phy_device *phydev)
+ 	if (PHY_HALTED == phydev->state)
+ 		goto out_unlock;
+ 
+-	phydev->state = PHY_HALTED;
+-
+ 	if (phydev->irq != PHY_POLL) {
+ 		/* Disable PHY Interrupts */
+ 		phy_config_interrupt(phydev, PHY_INTERRUPT_DISABLED);
+@@ -732,6 +730,8 @@ void phy_stop(struct phy_device *phydev)
+ 		phy_clear_interrupt(phydev);
+ 	}
+ 
++	phydev->state = PHY_HALTED;
++
+ out_unlock:
+ 	spin_unlock(&phydev->lock);
+ 
