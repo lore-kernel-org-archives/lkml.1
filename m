@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbXISG4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbXISHGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbXISG4w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 02:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXISG4o
+	id S1755344AbXISHGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 03:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbXISHGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 02:56:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53904 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbXISG4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 02:56:43 -0400
-Date: Wed, 19 Sep 2007 16:56:23 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: travis@sgi.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sparclinux@vger.kernel.org
-Subject: Re: [PATCH 1/1] ppc64: Convert cpu_sibling_map to a per_cpu data
- array ppc64 v2
-Message-Id: <20070919165623.8a59f4dd.sfr@canb.auug.org.au>
-In-Reply-To: <20070917183507.506104000@sgi.com>
-References: <20070917183507.332345000@sgi.com>
-	<20070917183507.506104000@sgi.com>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Wed, 19 Sep 2007 03:06:09 -0400
+Received: from www.osadl.org ([213.239.205.134]:52745 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752044AbXISHGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 03:06:08 -0400
+Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
+	booted, USB-related WARNING
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
+       linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <200709182337.12695.rjw@sisk.pl>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	 <200709182221.53513.rjw@sisk.pl> <200709182254.55409.rjw@sisk.pl>
+	 <200709182337.12695.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 09:06:00 +0200
+Message-Id: <1190185560.2995.129.camel@chaos>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__19_Sep_2007_16_56_23_+1000_I.2xQApTY_b1iczd"
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__19_Sep_2007_16_56_23_+1000_I.2xQApTY_b1iczd
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2007-09-18 at 23:37 +0200, Rafael J. Wysocki wrote:
+> > > > - The Vaio also hangs during resume-from-RAM, due to git-acpi.patch
+> > > > 
+> > > > - And it hangs during suspend-to-RAM, due to git-acpi.patch
+> > 
+> > Sorry, I was wrong.
+> > 
+> > > On my HP nx6325 it only boots with "noacpitimer nohpet" on the command line,
+> > > but then it works.
+> > 
+> > It _sometimes_ boots with "noacpitimer nohpet" and that's if I press the power
+> > button for a couple of times during boot (before any messages appear on the
+> > console).
+> > 
+> > > Suspend-to-RAM and hibernation work too. :-) 
+> > 
+> > No, they don't (I must have booted -rc6 instead of it by mistake, sigh).
+> > 
+> > > Since 2.6.23-rc4-mm1 only booted with nohpet because of
+> > > 
+> > > x86_64-convert-to-clockevents.patch
+> > > 
+> > > I guess that the boot problems with this one result from the same patch.
+> > 
+> > Not sure any more ...
+> > 
+> > I'll try to compile it with NO_HZ and HIGH_RES_TIMERS unset.
+> 
+> OK, in that configuration it's much better.
+> 
+> It boots with nohpet alone and suspend/hibernation seem to work (still,
+> it didn't want to boot right after hibernation, but booted after I'd switched
+> it off/on manually).
 
-Hi Mike,
+Can you please check, whether
 
-On Mon, 17 Sep 2007 11:35:08 -0700 travis@sgi.com wrote:
->
-> v2:=20
->=20
-> This patch applies after:
->=20
-> 	convert-cpu_sibling_map-to-a-per_cpu-data-array-ppc64.patch
->=20
-> and should fix the "reference cpu_sibling_map before setup_per_cpu_areas()
-> has been called" problem.  In addtion, the cpu_sibiling_map macro has been
-> removed [this was missed in my original submission.]
+http://tglx.de/projects/hrtimers/2.6.23-rc6/patch-2.6.23-rc6-hrt2.patch
 
-This one make it work, thanks.
+works for you ?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+	tglx
 
---Signature=_Wed__19_Sep_2007_16_56_23_+1000_I.2xQApTY_b1iczd
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFG8MggTgG2atn1QN8RAg/qAJ4+XjXxXxwprLwXZuKNOD0jdLARgACdG056
-Ai/YzTQTgEZk3/c/IlVva5w=
-=vBAz
------END PGP SIGNATURE-----
-
---Signature=_Wed__19_Sep_2007_16_56_23_+1000_I.2xQApTY_b1iczd--
