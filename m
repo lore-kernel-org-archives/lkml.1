@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXISR00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbXISR1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbXISR00 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbXISR0T
+	id S1757301AbXISR1L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbXISR0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:26:19 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44111 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910AbXISR0S (ORCPT
+	Wed, 19 Sep 2007 13:26:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55131 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751074AbXISR0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:26:18 -0400
-Date: Wed, 19 Sep 2007 18:26:11 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [PATCH 01/24] filesystem helpers for custom 'struct file's
-Message-ID: <20070919172611.GA20917@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Dave Hansen <haveblue@us.ibm.com>, akpm@osdl.org,
-	linux-kernel@vger.kernel.org
-References: <20070917182718.70494C9B@kernel> <20070917182718.A6B9F7FD@kernel>
+	Wed, 19 Sep 2007 13:26:54 -0400
+Date: Wed, 19 Sep 2007 19:26:53 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, netdev <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: follow-up: discrepancy with POSIX
+Message-ID: <20070919172653.GB18045@one.firstfloor.org>
+References: <46F13E8B.4050309@redhat.com> <p73sl5aveqh.fsf@bingen.suse.de> <46F15305.2030507@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070917182718.A6B9F7FD@kernel>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <46F15305.2030507@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 17, 2007 at 11:27:18AM -0700, Dave Hansen wrote:
+On Wed, Sep 19, 2007 at 09:49:09AM -0700, Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Christoph H. says this stands on its own and can go in before the
-> rest of the r/o bind mount set.  
+> Andi Kleen wrote:
+> > The standard way to undo connect is to use AF_UNSPEC. Code to handle
+> > that for dgram sockets is there. It's the same code for v4 and v6.
 > 
-> ---
-> 
-> Some filesystems forego the vfs and may_open() and create their
-> own 'struct file's.
-> 
-> This patch creates a couple of helper functions which can be
-> used by these filesystems, and will provide a unified place
-> which the r/o bind mount code may patch.
-> 
-> Also, rename an existing, static-scope init_file() to a less
-> generic name.
+> I quoted the standard and it does not say anything about AF_UNSPEC.  So
+> you cannot simply make such broad statements.
 
-Looks good.  But please provide a patch ontop of your patchkit to
-add kernel-doc comments for the two new exported functions.
+Ok "standard" was perhaps a poor choice of words.
 
-Are there any direct caller of get_empty_filp left after this patch?
-We really should get rid of that export to stop people from shooting
-themselves in the foot.
+AF_UNSPEC used to be introduced long ago by Alan based on some early 
+POSIX draft iirc.
 
+Also incidentially it's a null address:
+
+include/linux/socket.h:#define AF_UNSPEC        0
+
+> But the spec calls for a "null address" to be used and that's in my
+> understanding something different from using AF_UNSPEC.
+
+memset(&sockaddr, 0, sizeof(sockaddr)) should give you AF_UNSPEC
+
+-Andi
