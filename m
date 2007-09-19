@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbXISVfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbXISVgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbXISVfj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 17:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbXISVfT
+	id S1758691AbXISVgV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbXISVgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 17:35:19 -0400
-Received: from outbound-mail-39.bluehost.com ([69.89.20.193]:54526 "HELO
-	outbound-mail-39.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756847AbXISVfR (ORCPT
+	Wed, 19 Sep 2007 17:36:05 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55220 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755276AbXISVgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 17:35:17 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
-Date: Wed, 19 Sep 2007 14:34:44 -0700
-User-Agent: KMail/1.9.7
-Cc: Shaohua Li <shaohua.li@intel.com>, Robert Hancock <hancockr@shaw.ca>,
-       Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <fa.13eJumylqINOxOaoEj9cthw0d0M@ifi.uio.no> <1189992107.26772.4.camel@sli10-conroe.sh.intel.com> <20070918135305.A26491@jurassic.park.msu.ru>
-In-Reply-To: <20070918135305.A26491@jurassic.park.msu.ru>
+	Wed, 19 Sep 2007 17:36:04 -0400
+Date: Wed, 19 Sep 2007 14:36:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Alexey Dobriyan <adobriyan@sw.ru>
+cc: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: BUG kmalloc-16: Object padding overwritten
+ (sysfs?)
+In-Reply-To: <Pine.LNX.4.64.0709191355340.3136@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0709191432200.3111@schroedinger.engr.sgi.com>
+References: <20070919123907.GA15591@localhost.sw.ru> <20070919125918.GA6760@localhost.sw.ru>
+ <20070919123954.fb552e80.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0709191355340.3136@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709191434.45127.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, September 18, 2007 2:53 am Ivan Kokshaysky wrote:
-> On Mon, Sep 17, 2007 at 09:21:47AM +0800, Shaohua Li wrote:
-> > I can confirm this is an add-in graphics card. the bfd is 00:02.0,
-> > so it's not behind any AGP/PCI-E bridge.
->
-> AFAIKS, 00:02.0 is *integrated* controller. Can you check that
-> "graphic adapter priority" setting in BIOS is "PCI Express" and not
-> "Internal VGA"? In the latter case an add-on card might be turned
-> completely off, so it doesn't even show up in lspci output.
+On Wed, 19 Sep 2007, Christoph Lameter wrote:
 
-Yeah, it's integrated gfx.  See the PRM at intel.com for the decode 
-rules.
+> Hmmm... This works fine here. Doing the cat may trigger slab validation 
+> and show objects corruptions that were heretofore unnoticed.
 
-I've been following this thread and I see a lot of fear about moving to 
-probing BARs as outlined in the PCI spec.  I haven't seen much in the 
-way of hard evidence though, mostly just handwaving or red herrings 
-(and even one comment implying that -mm wasn't a real testbed for 
-patches) that don't have much to do with the actual "disable, size, 
-re-enable" logic.  Has a conclusion been reached yet?
+Not exactly true since reading a file cannot trigger slab validation. The 
+catting of all files will touch the following:
 
-Keep in mind that any failures that occur due to this patch should be 
-easy to track down (boot hang), but we have yet to see any in real 
-life.  Moreover, reversion is trivial, and we could move to a more 
-complex scheme at that time if needed, but why bother unless we're sure 
-we need to?
+clameter@schroedinger:/sys/slab/kmalloc-64$ ls -l
+total 0
+-r--r--r-- 1 root root 4096 Sep 19 14:28 aliases
+-r--r--r-- 1 root root 4096 Sep 19 14:28 align
+-r--r--r-- 1 root root 4096 Sep 19 14:28 alloc_calls
+-r--r--r-- 1 root root 4096 Sep 19 14:28 cache_dma
+-r--r--r-- 1 root root 4096 Sep 19 14:28 cpu_slabs
+-r--r--r-- 1 root root 4096 Sep 19 14:28 ctor
+-r--r--r-- 1 root root 4096 Sep 19 14:28 destroy_by_rcu
+-r--r--r-- 1 root root 4096 Sep 19 14:28 free_calls
+-r--r--r-- 1 root root 4096 Sep 19 14:28 hwcache_align
+-r--r--r-- 1 root root 4096 Sep 19 14:28 object_size
+-r--r--r-- 1 root root 4096 Sep 19 14:28 objects
+-r--r--r-- 1 root root 4096 Sep 19 14:28 objs_per_slab
+-r--r--r-- 1 root root 4096 Sep 19 14:28 order
+-r--r--r-- 1 root root 4096 Sep 19 14:28 partial
+-rw-r--r-- 1 root root 4096 Sep 19 14:28 poison
+-rw-r--r-- 1 root root 4096 Sep 19 14:28 reclaim_account
+-rw-r--r-- 1 root root 4096 Sep 19 14:28 red_zone
+-rw-r--r-- 1 root root 4096 Sep 19 14:28 sanity_checks
+-rw-r--r-- 1 root root 4096 Sep 19 14:28 shrink
+-r--r--r-- 1 root root 4096 Sep 19 14:28 slab_size
+-r--r--r-- 1 root root 4096 Sep 19 14:28 slabs
+-rw-r--r-- 1 root root 4096 Sep 19 14:28 store_user
+-rw-r--r-- 1 root root 4096 Sep 19 14:28 trace
+-rw-r--r-- 1 root root    0 Sep 19 14:28 validate
 
-Thanks,
-Jesse
+catting
+
+	alloc_calls
+
+and
+	free_calls
+
+will perform a global scan over all objects to determine the callers. 
+Before we do that we have to flush the per cpu slabs. The trace shows that 
+one of the errors was detected in there and the other one probably later.
+
+So I would think that this is an actual memory corruption issue on your 
+system and the /sys/slab stuff works fine. slabinfo -v will perform a more 
+details scan to help you located the problem.
+
