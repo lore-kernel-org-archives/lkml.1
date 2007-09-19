@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763001AbXISSz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXISSzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763001AbXISSz3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 14:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758756AbXISSzN
+	id S1761477AbXISSzq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 14:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758383AbXISSzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 14:55:13 -0400
-Received: from mail.windriver.com ([147.11.1.11]:42955 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753378AbXISSzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 14:55:11 -0400
-Message-ID: <46F1700D.2020205@windriver.com>
-Date: Wed, 19 Sep 2007 13:53:01 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       amitkale@linsyssoft.com, trini@kernel.crashing.org
-Subject: Re: 2.6.23-rc6-mm1 powerpc - kgdb is broken
-References: <46F114D2.40809@linux.vnet.ibm.com>
-In-Reply-To: <46F114D2.40809@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Sep 2007 14:55:35 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:55072 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758756AbXISSze (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 14:55:34 -0400
+Date: Wed, 19 Sep 2007 14:50:22 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20070919185022.GA10330@Krystal>
+References: <20070918211324.161373216@polymtl.ca> <20070918211459.193904061@polymtl.ca> <20070919113737.GA18177@Krystal> <200709191832.13561.vda.linux@googlemail.com> <20070919184604.GA9653@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Sep 2007 18:54:04.0260 (UTC) FILETIME=[730ADA40:01C7FAEE]
+Content-Disposition: inline
+In-Reply-To: <20070919184604.GA9653@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:47:34 up 51 days, 19:06,  4 users,  load average: 0.63, 0.61, 0.83
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am not exactly sure how to fix this...
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * Denys Vlasenko (vda.linux@googlemail.com) wrote:
+> > On Wednesday 19 September 2007 12:37, Mathieu Desnoyers wrote:
+> > > > Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
+> > > > ===================================================================
+> > > > --- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-09-14 10:11:18.000000000 -0400
+> > > > +++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-09-14 10:11:31.000000000 -0400
+> > > > @@ -129,6 +133,11 @@
+> > > >  		VMLINUX_SYMBOL(__stop___immediate) = .;			\
+> > > >  	}								\
+> > > >  									\
+> > > > +	/* Markers: strings */						\
+> > > > +        __markers_strings : AT(ADDR(__markers_strings) - LOAD_OFFSET) {	\
+> > > > +		*(__markers_strings)					\
+> > > > + 	}								\
+> > > > +									\
+> > > >  	/* Kernel symbol table: strings */				\
+> > > >          __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
+> > > >  		*(__ksymtab_strings)					\
+> > > [...]
+> > > 
+> > > Do you think I should also remove the __markers_strings section from here ?
+> > 
+> > Yes.
+> > 
+> > It will be beneficial if one can read include/asm-generic/vmlinux.lds.h and
+> > arch/$ARCH/kernel/vmlinux.lds.S and understand which sections in resulting
+> > vmlinux serve what purpose. A comment atop each section explaining
+> > its role will be nice. Even more so that not many people are fluent
+> > in ld script language.
+> > 
+> > Currently, one will need to grep around (and not only in kernel tree -
+> > you need to read depmod.c source too) in order to understand the role
+> > of various sections in vmlinux.
+> > 
+> > There are dearth of comments in ld scripts, and some sections
+> > are created "just because I felt like it". For example, there are
+> > ".data.page_aligned" and ".data.percpu" sections - can you
+> > easily tell which one has to be a section, and which does not need
+> > to be one (can be merged with ".data")? Maybe both must be sections?
+> > Or none of them?
+> > --
+> > vda
+> 
+> Oh, wait.. I need it in module.c:
+> 
+> immediateindex = find_sec(hdr, sechdrs, secstrings, "__immediate");
+> 
+> I'll leave the section there then.
+> 
+> Mathieu
 
-Another git tree is overriding the patch to include/asm-powerpc/kgdb.h
-in the -mm tree.   The patches as I provide them against 2.6.23-rc6 for
-KGDB work correctly for ppc/powerpc in 32 and 64 bit modes and compile
-correctly.
+Sorry, let me take this back. It applies to what is linked in the core
+image, but I believe it does not apply to the kernel modules.
 
-At issue is that someone merged a bogus copy of asm-ppc/kgdb.h from the
-git tree in -mm that is called: git-powerpc.patch.
+Mathieu
 
-Jason.
-
-Kamalesh Babulal wrote:
-> Hi Andrew,
->
-> The kgdb seems to be broken on the powerpc, while compiling with
-> allyesconfig.
->
->   LD [M]  drivers/isdn/hysdn/hysdn.o
->   CC [M]  drivers/net/kgdboe.o
->   CC [M]  drivers/scsi/scsi_wait_scan.o
-> In file included from include/linux/kgdb.h:22,
->                  from drivers/net/kgdboe.c:28:
-> include/asm/kgdb.h:34: error: 'debugger' redeclared as different kind of symbol
-> include/asm/system.h:85: error: previous definition of 'debugger' was here
-> include/asm/kgdb.h:35: error: 'debugger_bpt' redeclared as different kind of symbol
-> include/asm/system.h:87: error: previous definition of 'debugger_bpt' was here
-> include/asm/kgdb.h:36: error: 'debugger_sstep' redeclared as different kind of symbol
-> include/asm/system.h:88: error: previous definition of 'debugger_sstep' was here
-> include/asm/kgdb.h:37: error: 'debugger_iabr_match' redeclared as different kind of symbol
-> include/asm/system.h:89: error: previous definition of 'debugger_iabr_match' was here
-> include/asm/kgdb.h:38: error: 'debugger_dabr_match' redeclared as different kind of symbol
-> include/asm/system.h:90: error: previous definition of 'debugger_dabr_match' was here
-> include/asm/kgdb.h:39: error: 'debugger_fault_handler' redeclared as different kind of symbol
-> include/asm/system.h:91: error: previous definition of 'debugger_fault_handler' was here
-> In file included from drivers/net/kgdboe.c:28:
-> include/linux/kgdb.h:69: error: 'BREAK_INSTR_SIZE' undeclared here (not in a function)
-> make[3]: *** [drivers/net/kgdboe.o] Error 1
-> make[2]: *** [drivers/net] Error 2
-> make[2]: *** Waiting for unfinished jobs....
-> make[1]: *** [drivers] Error 2
-> make: *** [modules] Error 2
->
->   
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
