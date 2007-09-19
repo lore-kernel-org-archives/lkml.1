@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbXISGdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbXISGzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754905AbXISGdv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 02:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXISGdm
+	id S1754802AbXISGzV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 02:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXISGzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 02:33:42 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:57638 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbXISGdl (ORCPT
+	Wed, 19 Sep 2007 02:55:09 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:55935 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbXISGzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 02:33:41 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=GuIS09vO/XZoppuhzoQkfwbclL1LH58DycWR7GEdPdjzFTa4mxB+tjuNTcjB46L8l
-	Ebi2AlSjisKBWiSRxkBHw==
-Date: Tue, 18 Sep 2007 23:32:13 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [03/17] is_vmalloc_addr(): Check if an address is within the
- vmalloc boundaries
-In-Reply-To: <20070919033641.009931707@sgi.com>
-Message-ID: <alpine.DEB.0.9999.0709182329110.6251@chino.kir.corp.google.com>
-References: <20070919033605.785839297@sgi.com> <20070919033641.009931707@sgi.com>
+	Wed, 19 Sep 2007 02:55:08 -0400
+Message-ID: <016a01c7fa89$ff51e850$b4fefea9@andrey>
+From: "Andrey Kamchatnikov" <andrey.kamchatnikov@tec-venture.de>
+To: <linux-kernel@vger.kernel.org>
+Subject: Problem: one driver and 4 instances with different parameters
+Date: Wed, 19 Sep 2007 08:54:58 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Provags-ID: V01U2FsdGVkX1/8QJBGyboWfhwSJCmyGxCLLeyj+uhFScPGJeR
+ u7hNAVX3LdUP1Q7crEadLZ5t906c0uzz4KgmuDaW1fE1v2zvYO
+ fn4FIp3ZhFeTJAc4HEKJF5nL/ND8k4B7pCpxH/qSRPt4JD5XO5
+ k3g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007, Christoph Lameter wrote:
+Hi,
 
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h	2007-09-17 21:46:06.000000000 -0700
-> +++ linux-2.6/include/linux/mm.h	2007-09-17 23:56:54.000000000 -0700
-> @@ -1158,6 +1158,14 @@ static inline unsigned long vma_pages(st
->  	return (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
->  }
->  
-> +/* Determine if an address is within the vmalloc range */
-> +static inline int is_vmalloc_addr(const void *x)
-> +{
-> +	unsigned long addr = (unsigned long)x;
-> +
-> +	return addr >= VMALLOC_START && addr < VMALLOC_END;
-> +}
+Could someone to make clear next question:
 
-This breaks on i386 because VMALLOC_END is defined in terms of PKMAP_BASE 
-in the CONFIG_HIGHMEM case.
+I have one driver, but I need to run 4 instances of it (I run insmod with 
+different parameters) .
 
-This function should probably be in include/linux/vmalloc.h instead since 
-all callers already include it anyway.
+But when I try to install the second driver I've got an error, that driver 
+with this name exists.
+
+How can I istall them? I don't want to use 4 different driver's sources.
+
+Thank you,
+
+Andrey 
+
