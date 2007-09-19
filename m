@@ -1,42 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbXISX3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759156AbXISXcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbXISX3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 19:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbXISX3G
+	id S1759156AbXISXcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 19:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXISXcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 19:29:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54910 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751832AbXISX3E (ORCPT
+	Wed, 19 Sep 2007 19:32:10 -0400
+Received: from web53702.mail.re2.yahoo.com ([206.190.37.23]:22417 "HELO
+	web53702.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751262AbXISXcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 19:29:04 -0400
-Date: Wed, 19 Sep 2007 16:29:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Anton Altaparmakov <aia21@cam.ac.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       marc.smith@esmail.mcc.edu
-Subject: Re: VM/VFS bug with large amount of memory and file systems?
-In-Reply-To: <20070919154542.4ed8ea1e.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0709191628170.3971@schroedinger.engr.sgi.com>
-References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk>
- <1189850897.21778.301.camel@twins> <20070915035228.8b8a7d6d.akpm@linux-foundation.org>
- <13126578-A4F8-43EA-9B0D-A3BCBFB41FEC@cam.ac.uk> <20070917163257.331c7605@twins>
- <46EEB532.3060804@redhat.com> <20070917131526.e8db80fe.akpm@linux-foundation.org>
- <46EEE7B7.1070206@redhat.com> <20070917141127.ab2ae148.akpm@linux-foundation.org>
- <46F19ED6.20501@redhat.com> <20070919154542.4ed8ea1e.akpm@linux-foundation.org>
+	Wed, 19 Sep 2007 19:32:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=rWdUh9cfiGu6tKAZMasPtEblub4O6QL/E0UspIZPFFNNIDHLFK2PjErRbZj3MvoJ0O/nllt5WXFcF7R7AAGnrt5sQ3v0pVpP0FkhQMGZp+TVMQVAd8XMwcnEWZhGAwmHhxN+R7SqiHnRQ4cdo7k5h3RTCiY6nYkUdPrKIExA5M8=;
+X-YMail-OSG: FAfVCjkVM1le71syKt8vEGQYDoYrytfIpZt6rL9L93o_oDmnReOqWPP6Ny6KMjWTSOPVaELfExRsJXtjPa.LtnyZt8CxxEeuOG4MV4KUDiSR9b9zI3WanRGjroclTg--
+Date: Wed, 19 Sep 2007 16:32:07 -0700 (PDT)
+From: Nagendra Tomar <tomer_iisc@yahoo.com>
+Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT events get missed for TCP sockets
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davidel@xmailserver.org
+In-Reply-To: <20070919.161037.68156707.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <608569.12944.qm@web53702.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Andrew Morton wrote:
 
-> Cool.
+--- David Miller <davem@davemloft.net> wrote:
 
-Should I rediff on top of rc6-mm1 for submission? When will you be able to 
-take it?
- 
+> From: Nagendra Tomar <tomer_iisc@yahoo.com>
+> Date: Wed, 19 Sep 2007 15:55:58 -0700 (PDT)
+> 
+> >      I agree that setting SOCK_NOSPACE would have been a more elegant
+> > fix. Infact I thought a lot about that before deciding on this fix.
+> 
+> I guess this means you also noticed that you are removing
+> the one and only test of this bit too?
+> 
+> You can't remove this, it's critical for performance.
+
+I'm sure you would have seen value in the check that's why the 
+check is there. 
+
+Now we have two critical points to discuss
+
+1. How can we achieve the ET EPOLLOUT event with the SOCK_NOSPACE
+   check in place ?
+2. How much effect will removing the check have (if we cannot 
+   find a way to get the ET EPOLLOUT notification w/ the check
+   in place) ? 
+
+Regding (2), IMHO for a "fast sender" the SOCK_NOSPACE check will
+almost always pass as the sender will come back to write (or poll)
+before the prev data is drained out. If he doesn't do that, he is
+not a "fast sender" by definition". A "fast sender" should always
+have some data to send when he practically (per the sndbuf space) 
+can.
+
+For a "slow sender", do we really care abt the optimization ?
+
+Thanx,
+Tomar
+
+
+
+      ___________________________________________________________
+Yahoo! Answers - Got a question? Someone out there knows the answer. Try it
+now.
+http://uk.answers.yahoo.com/ 
