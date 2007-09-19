@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbXISCsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbXISDB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbXISCsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 22:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXISCsB
+	id S1752966AbXISDB2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 23:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXISDBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 22:48:01 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:58053 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751021AbXISCsA (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 22:48:00 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: tapio.laxstrom@iptime.fi, linux-kernel@vger.kernel.org
-Subject: Re: drivers/usb/misc/emi*.c have the biggest data objects in the whole tree
-In-Reply-To: Your message of "Fri, 14 Sep 2007 11:35:34 BST."
-             <200709141135.35239.vda.linux@googlemail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200709141135.35239.vda.linux@googlemail.com>
+	Tue, 18 Sep 2007 23:01:19 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59801 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751021AbXISDBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 23:01:18 -0400
+Subject: Re: [PATCH] atyfb: force 29MHz xtal on G3 PowerBooks
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olaf@aepfle.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070825091358.GA12235@aepfle.de>
+References: <20070825091358.GA12235@aepfle.de>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 13:01:06 +1000
+Message-Id: <1190170866.6403.133.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190170078_4811P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Date: Tue, 18 Sep 2007 22:47:58 -0400
-Message-ID: <27040.1190170078@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190170078_4811P
-Content-Type: text/plain; charset=us-ascii
+On Sat, 2007-08-25 at 11:13 +0200, Olaf Hering wrote:
+> The atyfb does not work on my 233MHz PowerBook with Mach64 LP, when the
+> kernel is booted from firmware. aty_ld_pll_ct() returns 0x22 and xtal
+> remains at 14.31818. When booted from MacOS, aty_ld_pll_ct() returns 0x3c
+> and xtal is changed to 29.498928.
+> Google indicates that all 4 PowerBook models need the higher value.
 
-On Fri, 14 Sep 2007 11:35:34 BST, Denys Vlasenko said:
-> Hi Tapio,
+Seems to break it on my wallstreet first gen (M64 LG)
+
+So NAK for now until we find out a better way.
+
+Ben.
+
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
 > 
-> You are the author of these files. Are you still maintaining them?
-> If not, do you know who is the current maintainer?
+> --- a/drivers/video/aty/atyfb_base.c
+> +++ b/drivers/video/aty/atyfb_base.c
+> @@ -2411,7 +2411,7 @@ static int __devinit aty_init(struct fb_
+>  				diff1 = -diff1;
+>  			if (diff2 < 0)
+>  				diff2 = -diff2;
+> -			if (diff2 < diff1) {
+> +			if (diff2 < diff1 || (M64_HAS(G3_PB_1024x768))) {
+>  				par->ref_clk_per = 1000000000000ULL / 29498928;
+>  				xtal = "29.498928";
+>  			}
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-> These two object files hold the biggest data objects in the whole Linux kernel
-> after lockdep:
-> 
->    text    data     bss     dec     hex filename
->    1258  160516       0  161774   277ee ./drivers/usb/misc/emi26.o
->    1504  209296       0  210800   33770 ./drivers/usb/misc/emi62.o
-> 
-> Basically, these are big arrays of the following structures:
-> 
-> typedef struct _INTEL_HEX_RECORD
-> {
->         __u32   length;
->         __u32   address;
->         __u32   type;
->         __u8    data[MAX_INTEL_HEX_RECORD_LENGTH];
-> } INTEL_HEX_RECORD;
-> 
-> I suggest the following optimizations:
-> 
-> Change structure to
-
-I suggest moving those out of the kernel entirely and use the firmware loader
-support to bring it in from userspace like all the *other* firmware blobs.
-
-'INTEL_HEX_RECORD' just *screams* 'microcode' ;)
-
---==_Exmh_1190170078_4811P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG8I3ecC3lWbTT17ARApegAJ0RJsWV98SzvKxr1ispYvvAZ3DldQCgyaOQ
-dSUqQe0fUWb82Fvb+bawJAA=
-=vJ6i
------END PGP SIGNATURE-----
-
---==_Exmh_1190170078_4811P--
