@@ -1,201 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbXISTW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbXISTWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753109AbXISTW1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 15:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbXISTWP
+	id S1753851AbXISTWk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 15:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbXISTWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 15:22:15 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:44627 "EHLO e4.ny.us.ibm.com"
+	Wed, 19 Sep 2007 15:22:16 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:32891 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750907AbXISTWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 15:22:12 -0400
-Subject: [PATCH] JBD: use GFP_NOFS  in kmalloc
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1190229352.4318.12.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
-	 <20070902152801.GA19962@infradead.org>
-	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
-	 <20070903134043.GB28962@infradead.org>
-	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
-	 <20070903193308.GA7771@infradead.org>
-	 <1189796027.3841.6.camel@localhost.localdomain>
-	 <1190057391.3845.22.camel@localhost.localdomain>
-	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
-	 <1190069851.6725.6.camel@localhost.localdomain>
-	 <20070918090407.GA671@infradead.org>
-	 <1190133347.3819.6.camel@localhost.localdomain>
-	 <1190138690.6528.23.camel@norville.austin.ibm.com>
-	 <1190163601.3819.15.camel@localhost.localdomain>
-	 <20070918191920.a2130a3c.akpm@linux-foundation.org>
-	 <1190229352.4318.12.camel@localhost.localdomain>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 19 Sep 2007 12:22:09 -0700
-Message-Id: <1190229729.4318.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	id S1751036AbXISTWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 15:22:13 -0400
+Date: Wed, 19 Sep 2007 15:22:12 -0400
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: Re: [PATCH] Use list_first_entry in locks_wake_up_blocks
+Message-ID: <20070919192212.GG5946@fieldses.org>
+References: <46F11997.7030005@openvz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F11997.7030005@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert the GFP_KERNEL flag used in JBD/JBD2 to GFP_NOFS, consistent
-with the rest of kmalloc flag used in the JBD/JBD2 layer.
+On Wed, Sep 19, 2007 at 04:44:07PM +0400, Pavel Emelyanov wrote:
+> This routine deletes all the elements from the list
+> with the "while (!list_empty())" loop, and we already
+> have a list_first_entry() macro to help it look nicer :)
 
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+OK.
 
----
- fs/jbd/journal.c  |    6 +++---
- fs/jbd/revoke.c   |    8 ++++----
- fs/jbd2/journal.c |    6 +++---
- fs/jbd2/revoke.c  |    8 ++++----
- 4 files changed, 14 insertions(+), 14 deletions(-)
+--b.
 
-Index: linux-2.6.23-rc6/fs/jbd/journal.c
-===================================================================
---- linux-2.6.23-rc6.orig/fs/jbd/journal.c	2007-09-19 11:51:10.000000000 -0700
-+++ linux-2.6.23-rc6/fs/jbd/journal.c	2007-09-19 11:51:57.000000000 -0700
-@@ -653,7 +653,7 @@ static journal_t * journal_init_common (
- 	journal_t *journal;
- 	int err;
- 
--	journal = kmalloc(sizeof(*journal), GFP_KERNEL);
-+	journal = kmalloc(sizeof(*journal), GFP_NOFS);
- 	if (!journal)
- 		goto fail;
- 	memset(journal, 0, sizeof(*journal));
-@@ -723,7 +723,7 @@ journal_t * journal_init_dev(struct bloc
- 	journal->j_blocksize = blocksize;
- 	n = journal->j_blocksize / sizeof(journal_block_tag_t);
- 	journal->j_wbufsize = n;
--	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_KERNEL);
-+	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_NOFS);
- 	if (!journal->j_wbuf) {
- 		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
- 			__FUNCTION__);
-@@ -777,7 +777,7 @@ journal_t * journal_init_inode (struct i
- 	/* journal descriptor can store up to n blocks -bzzz */
- 	n = journal->j_blocksize / sizeof(journal_block_tag_t);
- 	journal->j_wbufsize = n;
--	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_KERNEL);
-+	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_NOFS);
- 	if (!journal->j_wbuf) {
- 		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
- 			__FUNCTION__);
-Index: linux-2.6.23-rc6/fs/jbd/revoke.c
-===================================================================
---- linux-2.6.23-rc6.orig/fs/jbd/revoke.c	2007-09-19 11:51:30.000000000 -0700
-+++ linux-2.6.23-rc6/fs/jbd/revoke.c	2007-09-19 11:52:34.000000000 -0700
-@@ -206,7 +206,7 @@ int journal_init_revoke(journal_t *journ
- 	while((tmp >>= 1UL) != 0UL)
- 		shift++;
- 
--	journal->j_revoke_table[0] = kmem_cache_alloc(revoke_table_cache, GFP_KERNEL);
-+	journal->j_revoke_table[0] = kmem_cache_alloc(revoke_table_cache, GFP_NOFS);
- 	if (!journal->j_revoke_table[0])
- 		return -ENOMEM;
- 	journal->j_revoke = journal->j_revoke_table[0];
-@@ -219,7 +219,7 @@ int journal_init_revoke(journal_t *journ
- 	journal->j_revoke->hash_shift = shift;
- 
- 	journal->j_revoke->hash_table =
--		kmalloc(hash_size * sizeof(struct list_head), GFP_KERNEL);
-+		kmalloc(hash_size * sizeof(struct list_head), GFP_NOFS);
- 	if (!journal->j_revoke->hash_table) {
- 		kmem_cache_free(revoke_table_cache, journal->j_revoke_table[0]);
- 		journal->j_revoke = NULL;
-@@ -229,7 +229,7 @@ int journal_init_revoke(journal_t *journ
- 	for (tmp = 0; tmp < hash_size; tmp++)
- 		INIT_LIST_HEAD(&journal->j_revoke->hash_table[tmp]);
- 
--	journal->j_revoke_table[1] = kmem_cache_alloc(revoke_table_cache, GFP_KERNEL);
-+	journal->j_revoke_table[1] = kmem_cache_alloc(revoke_table_cache, GFP_NOFS);
- 	if (!journal->j_revoke_table[1]) {
- 		kfree(journal->j_revoke_table[0]->hash_table);
- 		kmem_cache_free(revoke_table_cache, journal->j_revoke_table[0]);
-@@ -246,7 +246,7 @@ int journal_init_revoke(journal_t *journ
- 	journal->j_revoke->hash_shift = shift;
- 
- 	journal->j_revoke->hash_table =
--		kmalloc(hash_size * sizeof(struct list_head), GFP_KERNEL);
-+		kmalloc(hash_size * sizeof(struct list_head), GFP_NOFS);
- 	if (!journal->j_revoke->hash_table) {
- 		kfree(journal->j_revoke_table[0]->hash_table);
- 		kmem_cache_free(revoke_table_cache, journal->j_revoke_table[0]);
-Index: linux-2.6.23-rc6/fs/jbd2/journal.c
-===================================================================
---- linux-2.6.23-rc6.orig/fs/jbd2/journal.c	2007-09-19 11:52:48.000000000 -0700
-+++ linux-2.6.23-rc6/fs/jbd2/journal.c	2007-09-19 11:53:12.000000000 -0700
-@@ -654,7 +654,7 @@ static journal_t * journal_init_common (
- 	journal_t *journal;
- 	int err;
- 
--	journal = kmalloc(sizeof(*journal), GFP_KERNEL);
-+	journal = kmalloc(sizeof(*journal), GFP_NOFS);
- 	if (!journal)
- 		goto fail;
- 	memset(journal, 0, sizeof(*journal));
-@@ -724,7 +724,7 @@ journal_t * jbd2_journal_init_dev(struct
- 	journal->j_blocksize = blocksize;
- 	n = journal->j_blocksize / sizeof(journal_block_tag_t);
- 	journal->j_wbufsize = n;
--	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_KERNEL);
-+	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_NOFS);
- 	if (!journal->j_wbuf) {
- 		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
- 			__FUNCTION__);
-@@ -778,7 +778,7 @@ journal_t * jbd2_journal_init_inode (str
- 	/* journal descriptor can store up to n blocks -bzzz */
- 	n = journal->j_blocksize / sizeof(journal_block_tag_t);
- 	journal->j_wbufsize = n;
--	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_KERNEL);
-+	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_NOFS);
- 	if (!journal->j_wbuf) {
- 		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
- 			__FUNCTION__);
-Index: linux-2.6.23-rc6/fs/jbd2/revoke.c
-===================================================================
---- linux-2.6.23-rc6.orig/fs/jbd2/revoke.c	2007-09-19 11:52:53.000000000 -0700
-+++ linux-2.6.23-rc6/fs/jbd2/revoke.c	2007-09-19 11:53:32.000000000 -0700
-@@ -207,7 +207,7 @@ int jbd2_journal_init_revoke(journal_t *
- 	while((tmp >>= 1UL) != 0UL)
- 		shift++;
- 
--	journal->j_revoke_table[0] = kmem_cache_alloc(jbd2_revoke_table_cache, GFP_KERNEL);
-+	journal->j_revoke_table[0] = kmem_cache_alloc(jbd2_revoke_table_cache, GFP_NOFS);
- 	if (!journal->j_revoke_table[0])
- 		return -ENOMEM;
- 	journal->j_revoke = journal->j_revoke_table[0];
-@@ -220,7 +220,7 @@ int jbd2_journal_init_revoke(journal_t *
- 	journal->j_revoke->hash_shift = shift;
- 
- 	journal->j_revoke->hash_table =
--		kmalloc(hash_size * sizeof(struct list_head), GFP_KERNEL);
-+		kmalloc(hash_size * sizeof(struct list_head), GFP_NOFS);
- 	if (!journal->j_revoke->hash_table) {
- 		kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[0]);
- 		journal->j_revoke = NULL;
-@@ -230,7 +230,7 @@ int jbd2_journal_init_revoke(journal_t *
- 	for (tmp = 0; tmp < hash_size; tmp++)
- 		INIT_LIST_HEAD(&journal->j_revoke->hash_table[tmp]);
- 
--	journal->j_revoke_table[1] = kmem_cache_alloc(jbd2_revoke_table_cache, GFP_KERNEL);
-+	journal->j_revoke_table[1] = kmem_cache_alloc(jbd2_revoke_table_cache, GFP_NOFS);
- 	if (!journal->j_revoke_table[1]) {
- 		kfree(journal->j_revoke_table[0]->hash_table);
- 		kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[0]);
-@@ -247,7 +247,7 @@ int jbd2_journal_init_revoke(journal_t *
- 	journal->j_revoke->hash_shift = shift;
- 
- 	journal->j_revoke->hash_table =
--		kmalloc(hash_size * sizeof(struct list_head), GFP_KERNEL);
-+		kmalloc(hash_size * sizeof(struct list_head), GFP_NOFS);
- 	if (!journal->j_revoke->hash_table) {
- 		kfree(journal->j_revoke_table[0]->hash_table);
- 		kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[0]);
-
-
+> 
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> ---
+> 
+> diff --git a/fs/locks.c b/fs/locks.c
+> index 746dc70..5fa072a 100644
+> --- a/fs/locks.c
+> +++ b/fs/locks.c
+> @@ -534,7 +534,9 @@ static void locks_insert_block(struct fi
+>  static void locks_wake_up_blocks(struct file_lock *blocker)
+>  {
+>  	while (!list_empty(&blocker->fl_block)) {
+> -		struct file_lock *waiter = list_entry(blocker->fl_block.next,
+> +		struct file_lock *waiter;
+> +
+> +		waiter = list_first_entry(&blocker->fl_block,
+>  				struct file_lock, fl_block);
+>  		__locks_delete_block(waiter);
+>  		if (waiter->fl_lmops && waiter->fl_lmops->fl_notify)
