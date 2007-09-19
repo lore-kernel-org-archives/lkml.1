@@ -1,54 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbXISK5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbXISLAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbXISK5Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 06:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbXISK47
+	id S1758793AbXISLAI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 07:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756726AbXISK74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 06:56:59 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:45464 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755471AbXISK46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 06:56:58 -0400
-Date: Wed, 19 Sep 2007 14:56:13 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: rdreier@cisco.com, sean.hefty@intel.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [PATCH v2] iw_cxgb3: Support "iwarp-only" interfaces to avoid 4-tuple conflicts.
-Message-ID: <20070919105612.GA31158@2ka.mipt.ru>
-References: <20070913191617.30937.95960.stgit@dell3.ogc.int> <20070914130941.GG18517@2ka.mipt.ru> <46EC00BE.3020801@opengridcomputing.com> <20070916142241.GA26848@2ka.mipt.ru> <46EE9C50.7070406@opengridcomputing.com>
+	Wed, 19 Sep 2007 06:59:56 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:32823 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755902AbXISK7z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 06:59:55 -0400
+Date: Wed, 19 Sep 2007 06:59:51 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
+Message-ID: <20070919105951.GA15500@Krystal>
+References: <20070918210747.828804366@polymtl.ca> <20070918210853.588573678@polymtl.ca> <46F04856.3010808@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46EE9C50.7070406@opengridcomputing.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <46F04856.3010808@goop.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 06:48:35 up 51 days, 11:07,  3 users,  load average: 1.25, 0.66, 0.47
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve.
-
-On Mon, Sep 17, 2007 at 10:25:04AM -0500, Steve Wise (swise@opengridcomputing.com) wrote:
-> >Does creating the whole new netdevice is a too big overhead, or is it
-> >considered bad idea?
+* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> Mathieu Desnoyers wrote:
 > 
-> I think its too big overhead, and pretty invasive on the low level cxgb3 
-> driver.  I think having a device in the 'ifconfig -a' after iw_cxgb3 is 
-> loaded and devices discovered would be a good thing for the admin.  This 
-> is the angle Roland suggested.  I'm just not sure how to implement it.
+> > +#define immediate_read(name)						\
+> > +	({								\
+> > +		__typeof__(name##__immediate) value;			\
+> > +		switch (sizeof(value)) {				\
+> > +		case 1:							\
+> > +			asm (	".section __immediate, \"a\", @progbits;\n\t" \
+> > +					".long %1, (0f)+1, 1;\n\t"	\
+> > +					".previous;\n\t"		\
+> > +					"0:\n\t"			\
+> > +					"mov %2,%0;\n\t"		\
 > 
-> But if someone could explain how I might create this full netdevice as a 
-> pseudo device on top of the real one, maybe I could implement it.
+> Given that you're relying on the exact instruction that this mov
+> generates, it might be better to explicitly put the opcodes in with
+> .byte.  That way you're protected from the assembler deciding to
+> generate some other form of the instruction (for whatever reason).  I
+> guess substituting in different registers would be a pain.
 > 
-> Note that non TCP traffic still needs to utilize this interface for ND 
-> to work properly with the RDMA core.
 
-Just a though - what about allowing secondary addresses with the same
-address as main one? I.e. change bit of the core code to allow creating
-aliases with the same address as main device, so that you would be able
-to create ':iw' alias during rdma device initialization?
+Good point. I thought it might come up, especially for 16 bits mov that
+can be expressed under different forms, one of which has a prefix. I
+would like to go for Peter's suggestion: putting the label _after_ the
+instruction, since we know that we will be right after the immediate
+value, but it has a drawback: we cannot insure correct alignment of the
+immediate value in that case. But that would help not having to force
+the register.
 
-If this solution is not acceptible, then I belive your alias change is
-the way to go.
+> Aside from that,  is there any reason not to just put $0 in there rather
+> than use %2?
+> 
+
+Actually, no, since the initial value is written to the immediate value
+references at early boot and at module load time. I originally thought
+passing the referenced variable to it, but, as I recall, it brought
+linker issues when the symbol was defined in another module. So yes,
+just $0 is ok, I'll change that.
+
+> 
+> > +					".long %1, (0f)+1, 4;\n\t"	\
+> > +					".previous;\n\t"		\
+> > +					"1:\n\t"			\
+> > +					".org (1b)+(3-((1b)%%4)), 0x90;\n\t" \
+> >   
+> Seems a little complex, but I couldn't come up with anything much better:
+> 
+> 	.org . + 3 - (. & 3), 0x90
+> 
+> You can use . rather than needing to define 1:, it doesn't need quite so
+> many parens, and using &3 avoids the %% wart. 
+> 
+
+Yes, this one is tricky.. trying to align efficiently something on a 4
+bytes address - 1 is not what gas is used to help doing.
+
+> It's a pity that gas seems to generate plain 0x90 nops rather than
+> long-nop forms here.  I thought it could do that.
+> 
+
+At least we will have at most 3 nops there.
+
+Mathieu
+
+>     J
 
 -- 
-	Evgeniy Polyakov
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
