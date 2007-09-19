@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbXIST5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbXISUAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbXIST5n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 15:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXIST5d
+	id S1753809AbXISUAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 16:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbXISUAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 15:57:33 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:25655 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbXIST5c (ORCPT
+	Wed, 19 Sep 2007 16:00:41 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:34573 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbXISUAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 15:57:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=JNAhBW1ggS7eIuWVFkLo6ZsK++phZ5jW0BMyAXlK6iLPrnuIXCcmruiUqhTbGHtFflFZyNrJvuTD3J/6jZ/p0WZ77DGIkjQnjVzFXWtAjuu+FcA4+2R+jeET26BNuo3HDV0IhEk3FiCQ7kJnPuKXFvub6Mmb+yRqGHyJ7I8vBs8=
-Message-ID: <46F17F27.5080000@gmail.com>
-Date: Wed, 19 Sep 2007 21:57:27 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 19 Sep 2007 16:00:40 -0400
+Message-ID: <46F17FDC.6030903@nortel.com>
+Date: Wed, 19 Sep 2007 14:00:28 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org>
-In-Reply-To: <20070919195425.GF18707@one.firstfloor.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Chuck Ebbert <cebbert@redhat.com>, Antoine Martin <antoine@nagafix.co.uk>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: CFS: some bad numbers with Java/database threading [FIXED]
+References: <46E871FE.9010908@nagafix.co.uk> <20070913112427.GA20686@elte.hu> <20070914083246.GA20514@elte.hu> <a781481a0709140306k3faf3585haae26853fe81381c@mail.gmail.com> <46EAA7E4.8020700@nagafix.co.uk> <20070914153216.GA27213@elte.hu> <46F00417.7080301@redhat.com> <20070918224656.GA26719@elte.hu> <46F058EE.1080408@redhat.com> <20070919191837.GA19500@elte.hu>
+In-Reply-To: <20070919191837.GA19500@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Sep 2007 20:00:32.0403 (UTC) FILETIME=[BC292E30:01C7FAF7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/19/2007 09:54 PM, Andi Kleen wrote:
->> Yeah. (But X doesn't run -- this is maybe the known issue in this release).
-> 
-> What do you mean with not run? 
+Ingo Molnar wrote:
+> > The correct way to tell the kernel that the task is blocked is to use 
+> futexes for example, or any kernel-based locking or wait object - there 
+> are myriads of APIs for these. (The only well-defined behavior of yield 
+> is for SCHED_FIFO/RR tasks - and that is fully preserved in CFS.)
 
-(II) intel(0): Initializing HW Cursor
-(II) intel(0): xf86BindGARTMemory: bind key 0 at 0x005ff000 (pgoffset 1535)
-(WW) intel(0): xf86BindGARTMemory: binding of gart memory with key 0
-        at offset 0x5ff000 failed (Invalid argument)
+Certainly this is reasonable for applications for which the source is 
+available and readily recompilable.  However, there are legacy 
+closed-source apps out there expecting sched_yield() to result in a 
+reasonable amount of time passing before the task is scheduled again.
 
-Fatal server error:
-Couldn't bind memory for front buffer
+Also, there are installed bases of people that may have older versions 
+of code that may wish to upgrade to newer kernels without upgrading the 
+rest of the system.  It seems odd to force them to update userspace apps 
+just because we don't like the undefined semantics.
 
-I thought I'd seen a thread about this issue, but I can't find it now. Is it
-known or am I seeing ghosts yet, Andrew?
+> To avoid the reoccuring problems of applications mistakenly relying on 
+> sched_yield(), we now context-switch on yield very weakly for 
+> SCHED_OTHER tasks...
 
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+<snip>
+
+> My patch below adds a sysctl flag that triggers a context-switch when 
+> yield is called... <snip>    I think the patch 
+> cannot hurt (it does not change anything by default) - but we should not 
+> turn the workaround flag on by default. If you agree that we should do 
+> this, then please pull this single patch from the sched.git tree:
+
+I've always understood one of the kernel's basic tenets to be that we 
+don't break userspace without a good reason.  If there are apps out 
+there that expect sched_yield() to give up the cpu, it seems 
+counter-intuitive to ignore that expectation.
+
+Personally, I'd be in favour of making the context-switch be the default 
+behaviour, but at the very least it should be possible to enable a 
+"backwards-compatibility mode" for sched_yield().
+
+Chris
