@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761397AbXISPxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761506AbXISPxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761397AbXISPxV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbXISPxK
+	id S1761506AbXISPxr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760029AbXISPxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:53:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35648 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758737AbXISPxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:53:09 -0400
-Date: Wed, 19 Sep 2007 11:52:50 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-cifs-client@lists.samba.org,
-       nfs@lists.sourceforge.net, ecryptfs-devel@lists.sourceforge.net,
-       reiserfs-devel@vger.kernel.org, unionfs@filesystems.org
-Subject: Re: [PATCH 0/7] fix setuid/setgid clearing in networked filesystems
- (take 6)
-Message-Id: <20070919115250.b55a90cc.jlayton@redhat.com>
-In-Reply-To: <200709171129.l8HBT5Kq024360@dantu.rdu.redhat.com>
-References: <200709171129.l8HBT5Kq024360@dantu.rdu.redhat.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+	Wed, 19 Sep 2007 11:53:36 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:53384 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759637AbXISPxf (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 11:53:35 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1 - Mostly working, with a kbuild oddity
+In-Reply-To: Your message of "Wed, 19 Sep 2007 09:34:02 +0200."
+             <20070919073402.GA32218@uranus.ravnborg.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <7319.1190143977@turing-police.cc.vt.edu> <20070918203239.GB27836@uranus.ravnborg.org> <15592.1190153008@turing-police.cc.vt.edu>
+            <20070919073402.GA32218@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1190217203_23458P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 19 Sep 2007 11:53:23 -0400
+Message-ID: <28616.1190217203@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Sep 2007 07:29:05 -0400
-Jeff Layton <jlayton@redhat.com> wrote:
+--==_Exmh_1190217203_23458P
+Content-Type: text/plain; charset=us-ascii
 
-> This patchset is the latest one for fixing the clearing of setuid/setgid
-> bits in networked filesystems. It should apply cleanly to 2.6.23-rc4-mm1.
-> This is basically the same patchset as take 5. The main differences are
-> that the patches have been reordered to make the tree cleanly bisectable,
-> and the comment in notify_change is now a bit more descriptive. I've also
-> moved the description of the main rationale for the patch into patch 5.
+On Wed, 19 Sep 2007 09:34:02 +0200, Sam Ravnborg said:
+
+> > I had a few issues with some other modules, but they're evil binaries so
+> > I'm taking those up directly with the companies involved.. ;)
 > 
-> Andrew, would it be possible to go ahead and get this committed to -mm?
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> How annoying is this - and is this the CFLAGS thing again?
 
-Andrew,
-  This will need some changes before it can apply cleanly to
-2.6.23-rc6-mm1. You can ignore this for now. I'll respin, retest and
-repost...
+The other issues were VMWare and the removal of EXPORT_SYMBOL(set_dumpable),
+and NVidia graphics driver not playing nice with x86_64-mm-cpa-clflush.patch
+(these actually broke back around -rc[34]-mm1, so it's not a new issue).  I
+just had to spend 5 minutes re-checking that my workarounds did/didn't need
+refreshing.  Like I said, their problems (and mine), not lkml's.
 
-Thanks,
--- 
-Jeff Layton <jlayton@redhat.com>
+> We could introduce some workaraound so we continue to respect
+> the CFLAGS settings in a Makefile for a while.
+> But at the end of the day we should convince the external module people
+> to follow the Kbuild docs. So it will then be temporary.
+
+I already sent the author a patch for the broken Makefile.  I don't think an
+in-tree workaround is the right thing here.  I've vote for an entry in the
+"What's new in 2.6.2X" document when the kbuild changes go mainline, since
+fixing it to use EXTRA_CFLAGS worked perfectly.  External module maintainers
+have (presumably) already read stable-API-nonsense, and should be used to
+fixing code for new releases, so a 1 or 2 line Makefile tweak shouldn't be a
+hardship.
+
+
+--==_Exmh_1190217203_23458P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD4DBQFG8UXzcC3lWbTT17ARAkh9AJUWLAEQG0IQpZEXQyZLkpZVXqjJAJ4th+yD
+QCdYQ3vduESLEtIEtZUA0w==
+=eFqL
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1190217203_23458P--
