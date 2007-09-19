@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761178AbXISSaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbXISSd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761178AbXISSaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 14:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXISSaH
+	id S1760979AbXISSd3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 14:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbXISSdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 14:30:07 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48978 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752634AbXISSaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 14:30:05 -0400
-Date: Wed, 19 Sep 2007 20:30:04 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, netdev <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: follow-up: discrepancy with POSIX
-Message-ID: <20070919183004.GA18707@one.firstfloor.org>
-References: <46F13E8B.4050309@redhat.com> <p73sl5aveqh.fsf@bingen.suse.de> <46F15305.2030507@redhat.com> <20070919172653.GB18045@one.firstfloor.org> <46F1608E.7060908@redhat.com> <20070919175700.GC18045@one.firstfloor.org> <46F16418.3070706@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F16418.3070706@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 19 Sep 2007 14:33:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41252 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752066AbXISSdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 14:33:21 -0400
+Message-ID: <46F16ADC.3030307@redhat.com>
+Date: Wed, 19 Sep 2007 14:30:52 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: David Madore <david.madore@ens.fr>
+CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: patch/option to wipe memory at boot?
+References: <20070917155149.GA5453@clipper.ens.fr> <46EEC368.1040308@goop.org> <20070917204325.GA23658@clipper.ens.fr>
+In-Reply-To: <20070917204325.GA23658@clipper.ens.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 11:02:00AM -0700, Ulrich Drepper wrote:
-> > on UDP/RAW and it's certainly possible to connect() to that. 
+David Madore wrote:
+> On Mon, Sep 17, 2007 at 11:11:52AM -0700, Jeremy Fitzhardinge wrote:
+>> Boot memtest86 for a little while before booting the kernel?  And if you
+>> haven't already run it for a while, then that would be your first step
+>> anyway.
 > 
-> Where do you get this from?  And where is this implemented?  I don't
+> Indeed, that does the trick, thanks for the suggestion.  So I can be
+> quite confident, now, that my RAM is sane and it's just that the BIOS
+> doesn't initialize it properly.
+> 
+> But I'd still like some way of filling the RAM when Linux starts (or
+> perhaps in the bootloader), because letting memtest86 run after every
+> cold reboot isn't a very satisfactory solution.
 
-Sorry it's actually loopback, not broadcast as implemented in Linux.
-In Linux it's implemented in ip_route_output_slow(). Essentially
-converted to 127.0.0.1
+Bootloaders like to do things like run in 16-bit or 32-bit mode on boxes where 
+higher bitness is necessary to access all the memory.  It may be possible to do 
+this in the bootloader, but the BIOS is clearly the correct place to fix this 
+problem.
 
-I think it's traditional BSD behaviour but couldn't find it on
-a quick look in FreeBSD source (but haven't looked very intensively) 
-
-Admittedly port 0 is somewhat dodgy for UDP too, but at least in RAW
-context it might be valid.
-
--Andi
+	-- Chris
