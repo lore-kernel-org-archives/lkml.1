@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762805AbXISREF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762901AbXISRES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762805AbXISREF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760963AbXISRDM
+	id S1762901AbXISRES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761240AbXISRDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:03:12 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:53148 "EHLO
+	Wed, 19 Sep 2007 13:03:13 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53166 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755687AbXISRDG (ORCPT
+	with ESMTP id S1755011AbXISRDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Sep 2007 13:03:06 -0400
-Date: Wed, 19 Sep 2007 13:02:24 -0400
+Date: Wed, 19 Sep 2007 13:02:22 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 4/11] UML - Separate timer initialization
-Message-ID: <20070919170224.GA10176@c2.user-mode-linux.org>
+Subject: [PATCH 2/11] UML - Fix timer switching
+Message-ID: <20070919170222.GA10166@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,75 +24,165 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move timer signal initialization from init_irq_signals to a new
-function, timer_init.
+Fix up the switching between virtual and real timers.  The idle loop
+sleeps, so the timer at that point must be real time.  At all other
+times, the timer must be virtual.  Even when userspace is running, and
+the kernel is asleep, the virtual timer is correct because the process
+timer will be running and the process timer will be firing.
+
+The timer switch used to be in the context switch and timer handler
+code.  This is moved to the idle loop and the signal handler, making
+it much more clear why it is happening.
+
+switch_timers now returns the old timer type so that it may be
+restored.  The signal handler uses this in order to restore the
+previous timer type when it returns.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 ---
- arch/um/include/os.h      |    1 +
- arch/um/kernel/time.c     |    2 ++
- arch/um/os-Linux/irq.c    |    4 ----
- arch/um/os-Linux/signal.c |   10 ++++++++++
- 4 files changed, 13 insertions(+), 4 deletions(-)
+ arch/um/include/os.h      |    2 +-
+ arch/um/kernel/process.c  |    9 ++-------
+ arch/um/os-Linux/signal.c |    9 +++------
+ arch/um/os-Linux/time.c   |   27 ++++++++++++++++++++-------
+ 4 files changed, 26 insertions(+), 21 deletions(-)
 
-Index: linux-2.6.20/arch/um/kernel/time.c
-===================================================================
---- linux-2.6.20.orig/arch/um/kernel/time.c	2007-09-19 12:25:05.000000000 -0400
-+++ linux-2.6.20/arch/um/kernel/time.c	2007-09-19 12:25:06.000000000 -0400
-@@ -97,6 +97,8 @@ static void register_timer(void)
- {
- 	int err;
- 
-+	timer_init();
-+
- 	err = request_irq(TIMER_IRQ, um_timer, IRQF_DISABLED, "timer", NULL);
- 	if (err != 0)
- 		printk(KERN_ERR "register_timer : request_irq failed - "
-Index: linux-2.6.20/arch/um/os-Linux/irq.c
-===================================================================
---- linux-2.6.20.orig/arch/um/os-Linux/irq.c	2007-09-19 12:24:52.000000000 -0400
-+++ linux-2.6.20/arch/um/os-Linux/irq.c	2007-09-19 12:25:06.000000000 -0400
-@@ -145,10 +145,6 @@ void init_irq_signals(int on_sigstack)
- 
- 	flags = on_sigstack ? SA_ONSTACK : 0;
- 
--	set_handler(SIGVTALRM, (__sighandler_t) alarm_handler,
--		    flags | SA_RESTART, SIGUSR1, SIGIO, SIGWINCH, SIGALRM, -1);
--	set_handler(SIGALRM, (__sighandler_t) alarm_handler,
--		    flags | SA_RESTART, SIGUSR1, SIGIO, SIGWINCH, SIGALRM, -1);
- 	set_handler(SIGIO, (__sighandler_t) sig_handler, flags | SA_RESTART,
- 		    SIGUSR1, SIGIO, SIGWINCH, SIGALRM, SIGVTALRM, -1);
- 	signal(SIGWINCH, SIG_IGN);
 Index: linux-2.6.20/arch/um/include/os.h
 ===================================================================
---- linux-2.6.20.orig/arch/um/include/os.h	2007-09-19 12:25:05.000000000 -0400
-+++ linux-2.6.20/arch/um/include/os.h	2007-09-19 12:25:06.000000000 -0400
-@@ -227,6 +227,7 @@ extern int set_umid(char *name);
- extern char *get_umid(void);
+--- linux-2.6.20.orig/arch/um/include/os.h	2007-09-19 12:24:52.000000000 -0400
++++ linux-2.6.20/arch/um/include/os.h	2007-09-19 12:25:05.000000000 -0400
+@@ -250,7 +250,7 @@ extern void os_dump_core(void);
+ /* time.c */
+ #define BILLION (1000 * 1000 * 1000)
  
- /* signal.c */
-+extern void timer_init(void);
- extern void set_sigstack(void *sig_stack, int size);
- extern void remove_sigstack(void);
- extern void set_handler(int sig, void (*handler)(int), int flags, ...);
-Index: linux-2.6.20/arch/um/os-Linux/signal.c
+-extern void switch_timers(int to_real);
++extern int switch_timers(int to_real);
+ extern void idle_sleep(int secs);
+ extern int set_interval(int is_virtual);
+ extern void disable_timer(void);
+Index: linux-2.6.20/arch/um/kernel/process.c
 ===================================================================
---- linux-2.6.20.orig/arch/um/os-Linux/signal.c	2007-09-19 12:25:05.000000000 -0400
-+++ linux-2.6.20/arch/um/os-Linux/signal.c	2007-09-19 12:25:06.000000000 -0400
-@@ -85,6 +85,16 @@ void alarm_handler(int sig, struct sigco
- 	set_signals(enabled);
+--- linux-2.6.20.orig/arch/um/kernel/process.c	2007-09-19 12:24:52.000000000 -0400
++++ linux-2.6.20/arch/um/kernel/process.c	2007-09-19 12:25:05.000000000 -0400
+@@ -95,18 +95,11 @@ void *_switch_to(void *prev, void *next,
+ 	do {
+ 		current->thread.saved_task = NULL;
+ 
+-		/* XXX need to check runqueues[cpu].idle */
+-		if (current->pid == 0)
+-			switch_timers(0);
+-
+ 		switch_threads(&from->thread.switch_buf,
+ 			       &to->thread.switch_buf);
+ 
+ 		arch_switch_to(current->thread.prev_sched, current);
+ 
+-		if (current->pid == 0)
+-			switch_timers(1);
+-
+ 		if (current->thread.saved_task)
+ 			show_regs(&(current->thread.regs));
+ 		next= current->thread.saved_task;
+@@ -251,7 +244,9 @@ void default_idle(void)
+ 		if (need_resched())
+ 			schedule();
+ 
++		switch_timers(1);
+ 		idle_sleep(10);
++		switch_timers(0);
+ 	}
  }
  
-+void timer_init(void)
-+{
-+	set_handler(SIGVTALRM, (__sighandler_t) alarm_handler,
-+		    SA_ONSTACK | SA_RESTART, SIGUSR1, SIGIO, SIGWINCH,
-+		    SIGALRM, -1);
-+	set_handler(SIGALRM, (__sighandler_t) alarm_handler,
-+		    SA_ONSTACK | SA_RESTART, SIGUSR1, SIGIO, SIGWINCH,
-+		    SIGALRM, -1);
-+}
-+
- void set_sigstack(void *sig_stack, int size)
+Index: linux-2.6.20/arch/um/os-Linux/signal.c
+===================================================================
+--- linux-2.6.20.orig/arch/um/os-Linux/signal.c	2007-09-19 12:24:52.000000000 -0400
++++ linux-2.6.20/arch/um/os-Linux/signal.c	2007-09-19 12:25:05.000000000 -0400
+@@ -59,17 +59,11 @@ static void real_alarm_handler(int sig, 
  {
- 	stack_t stack = ((stack_t) { .ss_flags	= 0,
+ 	struct uml_pt_regs regs;
+ 
+-	if (sig == SIGALRM)
+-		switch_timers(0);
+-
+ 	if (sc != NULL)
+ 		copy_sc(&regs, sc);
+ 	regs.is_user = 0;
+ 	unblock_signals();
+ 	timer_handler(sig, &regs);
+-
+-	if (sig == SIGALRM)
+-		switch_timers(1);
+ }
+ 
+ void alarm_handler(int sig, struct sigcontext *sc)
+@@ -116,6 +110,7 @@ void (*handlers[_NSIG])(int sig, struct 
+ void handle_signal(int sig, struct sigcontext *sc)
+ {
+ 	unsigned long pending = 0;
++	int timer = switch_timers(0);
+ 
+ 	do {
+ 		int nested, bail;
+@@ -152,6 +147,8 @@ void handle_signal(int sig, struct sigco
+ 		if (!nested)
+ 			pending = from_irq_stack(nested);
+ 	} while (pending);
++
++	switch_timers(timer);
+ }
+ 
+ extern void hard_handler(int sig);
+Index: linux-2.6.20/arch/um/os-Linux/time.c
+===================================================================
+--- linux-2.6.20.orig/arch/um/os-Linux/time.c	2007-09-19 12:25:05.000000000 -0400
++++ linux-2.6.20/arch/um/os-Linux/time.c	2007-09-19 12:25:05.000000000 -0400
+@@ -12,6 +12,8 @@
+ #include "os.h"
+ #include "user.h"
+ 
++static int is_real_timer = 0;
++
+ int set_interval(int is_virtual)
+ {
+ 	int usec = 1000000/UM_HZ;
+@@ -39,12 +41,14 @@ void disable_timer(void)
+ 	signal(SIGVTALRM, SIG_IGN);
+ }
+ 
+-void switch_timers(int to_real)
++int switch_timers(int to_real)
+ {
+ 	struct itimerval disable = ((struct itimerval) { { 0, 0 }, { 0, 0 }});
+-	struct itimerval enable = ((struct itimerval) { { 0, 1000000/UM_HZ },
+-							{ 0, 1000000/UM_HZ }});
+-	int old, new;
++	struct itimerval enable;
++	int old, new, old_type = is_real_timer;
++
++	if(to_real == old_type)
++		return to_real;
+ 
+ 	if (to_real) {
+ 		old = ITIMER_VIRTUAL;
+@@ -55,10 +59,19 @@ void switch_timers(int to_real)
+ 		new = ITIMER_VIRTUAL;
+ 	}
+ 
+-	if ((setitimer(old, &disable, NULL) < 0) ||
+-	    (setitimer(new, &enable, NULL)))
+-		printk(UM_KERN_ERR "switch_timers - setitimer failed, "
++	if (setitimer(old, &disable, &enable) < 0)
++		printk(UM_KERN_ERR "switch_timers - setitimer disable failed, "
++		       "errno = %d\n", errno);
++
++	if((enable.it_value.tv_sec == 0) && (enable.it_value.tv_usec == 0))
++		enable.it_value = enable.it_interval;
++
++	if (setitimer(new, &enable, NULL))
++		printk(UM_KERN_ERR "switch_timers - setitimer enable failed, "
+ 		       "errno = %d\n", errno);
++
++	is_real_timer = to_real;
++	return old_type;
+ }
+ 
+ unsigned long long os_nsecs(void)
