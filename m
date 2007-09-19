@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbXISSd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbXISSgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbXISSd3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 14:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbXISSdV
+	id S1762165AbXISSgG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 14:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbXISSf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 14:33:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41252 "EHLO mx1.redhat.com"
+	Wed, 19 Sep 2007 14:35:56 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:57812 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752066AbXISSdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 14:33:21 -0400
-Message-ID: <46F16ADC.3030307@redhat.com>
-Date: Wed, 19 Sep 2007 14:30:52 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1754600AbXISSfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 14:35:55 -0400
 MIME-Version: 1.0
-To: David Madore <david.madore@ens.fr>
-CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: patch/option to wipe memory at boot?
-References: <20070917155149.GA5453@clipper.ens.fr> <46EEC368.1040308@goop.org> <20070917204325.GA23658@clipper.ens.fr>
-In-Reply-To: <20070917204325.GA23658@clipper.ens.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18161.27621.630048.643513@alkaid.it.uu.se>
+Date: Wed, 19 Sep 2007 20:35:17 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, james-p@moving-picture.com,
+       linux-kernel@vger.kernel.org, aarapov@redhat.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
+In-Reply-To: <46F1475B.5050107@zytor.com>
+References: <200709191454.l8JEsAQO010080@harpo.it.uu.se>
+	<46F1475B.5050107@zytor.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Madore wrote:
-> On Mon, Sep 17, 2007 at 11:11:52AM -0700, Jeremy Fitzhardinge wrote:
->> Boot memtest86 for a little while before booting the kernel?  And if you
->> haven't already run it for a while, then that would be your first step
->> anyway.
-> 
-> Indeed, that does the trick, thanks for the suggestion.  So I can be
-> quite confident, now, that my RAM is sane and it's just that the BIOS
-> doesn't initialize it properly.
-> 
-> But I'd still like some way of filling the RAM when Linux starts (or
-> perhaps in the bootloader), because letting memtest86 run after every
-> cold reboot isn't a very satisfactory solution.
+H. Peter Anvin writes:
+ > Mikael Pettersson wrote:
+ > > On Wed, 19 Sep 2007 14:35:29 +0100, James Pearson wrote:
+ > >> /proc/PID/environ currently truncates at 4096 characters, patch based on 
+ > >> the /proc/PID/mem code.
+ > > 
+ > > Does /proc/PID/mem even work? If I do `strace cat /proc/PID/mem > /dev/null'
+ > > for a known good PID, the first read() from /proc/PID/mem fails with ESRCH,
+ > 
+ > Of course it does.  Address zero isn't typically mapped.
 
-Bootloaders like to do things like run in 16-bit or 32-bit mode on boxes where 
-higher bitness is necessary to access all the memory.  It may be possible to do 
-this in the bootloader, but the BIOS is clearly the correct place to fix this 
-problem.
-
-	-- Chris
+Indeed. My bad :-(
