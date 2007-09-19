@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760149AbXISO4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760326AbXISO6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760149AbXISO4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 10:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbXISO4P
+	id S1760326AbXISO6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 10:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXISO6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 10:56:15 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:24296
+	Wed, 19 Sep 2007 10:58:10 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:24433
 	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753127AbXISO4O convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1752953AbXISO6J convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 10:56:14 -0400
-Message-Id: <46F154E3.76E4.0078.0@novell.com>
+	Wed, 19 Sep 2007 10:58:09 -0400
+Message-Id: <46F15559.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 19 Sep 2007 15:57:07 +0100
+Date: Wed, 19 Sep 2007 15:59:05 +0100
 From: "Jan Beulich" <jbeulich@novell.com>
 To: <sam@ravnborg.org>
 Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] strip generated symbols from *.ko
+Subject: [PATCH 2/2] allow stripping of generated symbols under
+	CONFIG_KALLSYMS_ALL
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -24,258 +25,192 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the way __crc_ symbols are being resolved from
-using ld to do so to using the assembler, thus allowing these symbols
-to be marked local (the linker creates then as global ones) and hence
-allow stripping (for modules) or ignoring (for vmlinux) them. While at
-this, also strip other generated symbols during module installation.
+Building upon parts of the module stripping patch, this patch
+introduces similar stripping for vmlinux when CONFIG_KALLSYMS_ALL=y.
+Using the newly added config option CONFIG_KALLSYMS_STRIP_GENERATED
+reduces the overhead of CONFIG_KALLSYMS_ALL from 220k/260k to 60k/70k
+for the i386/x86-64 kernels I tested with.
 
-One potentially debatable point is the handling of the flags passeed
-to gcc when translating the intermediate assembly file into an object:
-passing $(c_flags) unchanged doesn't work as gcc passes --gdwarf2 to
-gas whenever is sees any -g* option, even for -g0, and despite the
-fact that the compiler would have already produced all necessary debug
-info in the C->assembly translation phase. I took the approach of just
-filtering out all -g* options, but an alternative to such negative
-filtering might be to have a positive filter which might, in the ideal
-case allow just all the -Wa,* options to pass through.
+The patch also does away with the need to special case the kallsyms-
+internal symbols by making them available even in the first linking
+stage.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- Makefile                    |   15 ++++++------
- scripts/Makefile.build      |   51 +++++++++++++++++++++++++++-----------------
- scripts/Makefile.modinst    |    2 -
- scripts/genksyms/genksyms.c |   23 ++++++++++++++-----
- scripts/mksysmap            |    6 +----
- scripts/strip-syms.lst      |   19 ++++++++++++++++
- 6 files changed, 78 insertions(+), 38 deletions(-)
+ Makefile           |   44 +++++++++++++++++++++++++++++++++-----------
+ init/Kconfig       |    7 +++++++
+ kernel/kallsyms.c  |   16 ++++++----------
+ scripts/kallsyms.c |   18 ++++++------------
+ 4 files changed, 52 insertions(+), 33 deletions(-)
 
 --- 2.6.23-rc6-strip.orig/Makefile
 +++ 2.6.23-rc6-strip/Makefile
-@@ -542,19 +542,18 @@ MODLIB	= $(INSTALL_MOD_PATH)/lib/modules
+@@ -541,6 +541,8 @@ export	INSTALL_PATH ?= /boot
+ MODLIB	= $(INSTALL_MOD_PATH)/lib/modules/$(KERNELRELEASE)
  export MODLIB
  
++strip-lst := $(srctree)/scripts/strip-syms.lst $(wildcard $(srctree)/arch/$(ARCH)/scripts/strip-syms.lst)
++
  #
--#  INSTALL_MOD_STRIP, if defined, will cause modules to be
--#  stripped after they are installed.  If INSTALL_MOD_STRIP is '1', then
--#  the default option --strip-debug will be used.  Otherwise,
--#  INSTALL_MOD_STRIP will used as the options to the strip command.
--
-+# INSTALL_MOD_STRIP, if defined, will cause modules to be stripped while
-+# they get installed.  If INSTALL_MOD_STRIP is '1', then the default
-+# options (see below) will be used.  Otherwise, INSTALL_MOD_STRIP will
-+# be used as the option(s) to the objcopy command.
+ # INSTALL_MOD_STRIP, if defined, will cause modules to be stripped while
+ # they get installed.  If INSTALL_MOD_STRIP is '1', then the default
+@@ -548,7 +550,10 @@ export MODLIB
+ # be used as the option(s) to the objcopy command.
  ifdef INSTALL_MOD_STRIP
  ifeq ($(INSTALL_MOD_STRIP),1)
--mod_strip_cmd = $(STRIP) --strip-debug
-+mod_strip_cmd = $(OBJCOPY) --strip-debug --strip-symbols $(srctree)/scripts/strip-syms.lst --wildcard
+-mod_strip_cmd = $(OBJCOPY) --strip-debug --strip-symbols $(srctree)/scripts/strip-syms.lst --wildcard
++mod_strip_cmd = $(OBJCOPY) --strip-debug
++ifeq ($(CONFIG_KALLSYMS_ALL),$(CONFIG_KALLSYMS_STRIP_GENERATED))
++mod_strip_cmd += --wildcard $(addprefix --strip-symbols ,$(strip-lst))
++endif
  else
--mod_strip_cmd = $(STRIP) $(INSTALL_MOD_STRIP)
-+mod_strip_cmd = $(OBJCOPY) $(INSTALL_MOD_STRIP)
+ mod_strip_cmd = $(OBJCOPY) $(INSTALL_MOD_STRIP)
  endif # INSTALL_MOD_STRIP=1
- else
--mod_strip_cmd = true
-+mod_strip_cmd = false
- endif # INSTALL_MOD_STRIP
- export mod_strip_cmd
+@@ -707,24 +712,41 @@ endef
  
---- 2.6.23-rc6-strip.orig/scripts/Makefile.build
-+++ 2.6.23-rc6-strip/scripts/Makefile.build
-@@ -176,30 +176,38 @@ cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $
+ # Generate .S file with all kernel symbols
+ quiet_cmd_kallsyms = KSYM    $@
+-      cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) \
+-                     $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) > $@
++      cmd_kallsyms = { test $* -eq 0 || $(NM) -n $<; } \
++		     | $(KALLSYMS) $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) >$@
  
- else
- # When module versioning is enabled the following steps are executed:
--# o compile a .tmp_<file>.o from <file>.c
--# o if .tmp_<file>.o doesn't contain a __ksymtab version, i.e. does
--#   not export symbols, we just rename .tmp_<file>.o to <file>.o and
-+# o compile a .tmp_<file>.s from <file>.c
-+# o if .tmp_<file>.s doesn't contain a __ksymtab version, i.e. does
-+#   not export symbols, we just assemble .tmp_<file>.s to <file>.o and
- #   are done.
- # o otherwise, we calculate symbol versions using the good old
- #   genksyms on the preprocessed source and postprocess them in a way
--#   that they are usable as a linker script
--# o generate <file>.o from .tmp_<file>.o using the linker to
--#   replace the unresolved symbols __crc_exported_symbol with
--#   the actual value of the checksum generated by genksyms
-+#   that they are usable as assembly source
-+# o assemble <file>.o from .tmp_<file>.s forcing inclusion of directives
-+#   defining the actual values of __crc_*, followed by objcopy-ing them
-+#   to force these symbols to be local to permit stripping them later.
+-.tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
++quiet_cmd_kstrip = STRIP   $@
++      cmd_kstrip = $(OBJCOPY) --wildcard $(addprefix --strip-symbols ,$(filter %.lst,$^)) $< $@
++
++$(foreach n,0 1 2 3,.tmp_kallsyms$(n).o): AFLAGS += -Wa,--strip-local-absolute
++$(foreach n,0 1 2 3,.tmp_kallsyms$(n).o): %.o: %.S scripts FORCE
+ 	$(call if_changed_dep,as_o_S)
  
--cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
-+cmd_cc_o_c = $(CC) $(c_flags) -S -o $(@D)/.tmp_$(@F:.o=.s) $<
- cmd_modversions =							\
--	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
--		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
--		| $(GENKSYMS) $(if $(KBUILD_SYMTYPES),			\
--			      -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH)	\
--		> $(@D)/.tmp_$(@F:.o=.ver);				\
--									\
--		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
--			-T $(@D)/.tmp_$(@F:.o=.ver);			\
--		rm -f $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.ver);	\
-+	if grep -q __ksymtab $(@D)/.tmp_$(@F:.o=.s); then		\
-+		if $(CPP) -D__GENKSYMS__ $(c_flags) $<			\
-+		   | $(GENKSYMS) -A $(if $(KBUILD_SYMTYPES),		\
-+				 -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH) \
-+		   > $(@D)/.tmp_$(@F:.o=.v)				\
-+		   && $(CC) $(filter-out -g%,$(c_flags)) -c		\
-+			    -Wa,$(@D)/.tmp_$(@F:.o=.v)			\
-+			    -o $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.s)	\
-+		   && $(OBJCOPY) -L '__crc_*' -L '___crc_*' -w		\
-+				 $(@D)/.tmp_$(@F) $@;			\
-+		then							\
-+			: ;						\
-+		else							\
-+			rm -f $@; exit 1;				\
-+		fi;							\
- 	else								\
--		mv -f $(@D)/.tmp_$(@F) $@;				\
-+		rm -f $(@D)/.tmp_$(@F:.o=.v);				\
-+		$(CC) $(filter-out -g%,$(c_flags)) -c			\
-+		      -o $@ $(@D)/.tmp_$(@F:.o=.s);			\
- 	fi;
- endif
+-.tmp_kallsyms%.S: .tmp_vmlinux% $(KALLSYMS)
++ifeq ($(CONFIG_KALLSYMS_STRIP_GENERATED),y)
++strip-ext := .stripped
++endif
++
++.tmp_kallsyms%.S: .tmp_vmlinux%$(strip-ext) $(KALLSYMS) include/linux/autoconf.h
+ 	$(call cmd,kallsyms)
  
-@@ -209,7 +217,12 @@ define rule_cc_o_c
- 	$(cmd_modversions)						  \
- 	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
- 	                                              $(dot-target).tmp;  \
--	rm -f $(depfile);						  \
-+	if [ -r $(@D)/.tmp_$(@F:.o=.v) ]; then				  \
-+		echo >> $(dot-target).tmp;				  \
-+		echo '$@: $(GENKSYMS)' >> $(dot-target).tmp;		  \
-+		echo '$(GENKSYMS):: ;' >> $(dot-target).tmp;		  \
-+	fi;								  \
-+	rm -f $(depfile) $(@D)/.tmp_$(@F:.o=.?);			  \
- 	mv -f $(dot-target).tmp $(dot-target).cmd
- endef
++# make -jN seems to have problems with intermediate files, see bug #3330.
++.SECONDARY: $(foreach n,1 2 3,.tmp_vmlinux$(n).stripped)
++.tmp_vmlinux%.stripped: .tmp_vmlinux% $(strip-lst) include/linux/autoconf.h
++	$(call cmd,kstrip)
++
++ifneq ($(CONFIG_DEBUG_INFO),y)
++.tmp_vmlinux%: LDFLAGS_vmlinux += -S
++endif
+ # .tmp_vmlinux1 must be complete except kallsyms, so update vmlinux version
+-.tmp_vmlinux1: $(vmlinux-lds) $(vmlinux-all) FORCE
+-	$(call if_changed_rule,ksym_ld)
++.tmp_vmlinux%: $(vmlinux-lds) $(vmlinux-all) FORCE
++	$(if $(filter 1,$*),$(call if_changed_rule,ksym_ld),$(call if_changed,vmlinux__))
  
---- 2.6.23-rc6-strip.orig/scripts/Makefile.modinst
-+++ 2.6.23-rc6-strip/scripts/Makefile.modinst
-@@ -17,7 +17,7 @@ __modinst: $(modules)
- 	@:
+-.tmp_vmlinux2: $(vmlinux-lds) $(vmlinux-all) .tmp_kallsyms1.o FORCE
+-	$(call if_changed,vmlinux__)
++.tmp_vmlinux0$(strip-ext):
++	$(Q)echo "placeholder" >$@
  
- quiet_cmd_modules_install = INSTALL $@
--      cmd_modules_install = mkdir -p $(2); cp $@ $(2) ; $(mod_strip_cmd) $(2)/$(notdir $@)
-+      cmd_modules_install = mkdir -p $(2); $(mod_strip_cmd) $@ $(2)/$(notdir $@) || cp $@ $(2)
+-.tmp_vmlinux3: $(vmlinux-lds) $(vmlinux-all) .tmp_kallsyms2.o FORCE
+-	$(call if_changed,vmlinux__)
++.tmp_vmlinux1: .tmp_kallsyms0.o
++.tmp_vmlinux2: .tmp_kallsyms1.o
++.tmp_vmlinux3: .tmp_kallsyms2.o
  
- # Modules built outside the kernel source tree go into extra by default
- INSTALL_MOD_DIR ?= extra
---- 2.6.23-rc6-strip.orig/scripts/genksyms/genksyms.c
-+++ 2.6.23-rc6-strip/scripts/genksyms/genksyms.c
-@@ -42,7 +42,7 @@ static FILE *debugfile;
- int cur_line = 1;
- char *cur_filename;
+ # Needs to visit scripts/ before $(KALLSYMS) can be used.
+ $(KALLSYMS): scripts ;
+--- 2.6.23-rc6-strip.orig/init/Kconfig
++++ 2.6.23-rc6-strip/init/Kconfig
+@@ -400,6 +400,13 @@ config KALLSYMS_ALL
  
--static int flag_debug, flag_dump_defs, flag_dump_types, flag_warnings;
-+static int flag_debug, flag_dump_defs, flag_dump_types, flag_warnings, flag_asm;
- static const char *arch = "";
- static const char *mod_prefix = "";
+ 	   Say N.
  
-@@ -415,8 +415,11 @@ void export_symbol(const char *name)
- 		if (flag_dump_defs)
- 			fputs(">\n", debugfile);
++config KALLSYMS_STRIP_GENERATED
++	bool "Strip machine generated symbols from kallsyms"
++	depends on KALLSYMS_ALL
++	default y
++	help
++	  Say N if you want kallsyms to retain even machine generated symbols.
++
+ config KALLSYMS_EXTRA_PASS
+ 	bool "Do an extra kallsyms pass"
+ 	depends on KALLSYMS
+--- 2.6.23-rc6-strip.orig/kernel/kallsyms.c
++++ 2.6.23-rc6-strip/kernel/kallsyms.c
+@@ -30,15 +30,14 @@
+ #define all_var 0
+ #endif
  
--		/* Used as a linker script. */
--		printf("%s__crc_%s = 0x%08lx ;\n", mod_prefix, name, crc);
-+		/* Used as inline assembly or a linker script. */
-+		printf(flag_asm
-+		       ? ".equiv %s__crc_%s, 0x%08lx\n"
-+		       : "%s__crc_%s = 0x%08lx ;\n",
-+		       mod_prefix, name, crc);
- 	}
- }
+-/* These will be re-linked against their real values during the second link stage */
+-extern const unsigned long kallsyms_addresses[] __attribute__((weak));
+-extern const unsigned long kallsyms_num_syms __attribute__((weak));
+-extern const u8 kallsyms_names[] __attribute__((weak));
++extern const unsigned long kallsyms_addresses[];
++extern const unsigned long kallsyms_num_syms;
++extern const u8 kallsyms_names[];
  
-@@ -440,8 +443,10 @@ void error_with_pos(const char *fmt, ...
+-extern const u8 kallsyms_token_table[] __attribute__((weak));
+-extern const u16 kallsyms_token_index[] __attribute__((weak));
++extern const u8 kallsyms_token_table[];
++extern const u16 kallsyms_token_index[];
  
- static void genksyms_usage(void)
+-extern const unsigned long kallsyms_markers[] __attribute__((weak));
++extern const unsigned long kallsyms_markers[];
+ 
+ static inline int is_kernel_inittext(unsigned long addr)
  {
--	fputs("Usage:\n" "genksyms [-dDwqhV] > /path/to/.tmp_obj.ver\n" "\n"
-+	fputs("Usage:\n" "genksyms [-aAdDwqhV] > /path/to/.tmp_obj.ver\n" "\n"
- #ifdef __GNU_LIBRARY__
-+	      "  -a, --arch            Specify target architecture\n"
-+	      "  -A, --asm             Generate inline assembly rather than linker script\n"
- 	      "  -d, --debug           Increment the debug level (repeatable)\n"
- 	      "  -D, --dump            Dump expanded symbol defs (for debugging only)\n"
- 	      "  -w, --warnings        Enable warnings\n"
-@@ -449,6 +454,8 @@ static void genksyms_usage(void)
- 	      "  -h, --help            Print this message\n"
- 	      "  -V, --version         Print the release version\n"
- #else				/* __GNU_LIBRARY__ */
-+	      "  -a                    Specify target architecture\n"
-+	      "  -A                    Generate inline assembly rather than linker script\n"
- 	      "  -d                    Increment the debug level (repeatable)\n"
- 	      "  -D                    Dump expanded symbol defs (for debugging only)\n"
- 	      "  -w                    Enable warnings\n"
-@@ -467,6 +474,7 @@ int main(int argc, char **argv)
- #ifdef __GNU_LIBRARY__
- 	struct option long_opts[] = {
- 		{"arch", 1, 0, 'a'},
-+		{"asm", 0, 0, 'A'},
- 		{"debug", 0, 0, 'd'},
- 		{"warnings", 0, 0, 'w'},
- 		{"quiet", 0, 0, 'q'},
-@@ -477,10 +485,10 @@ int main(int argc, char **argv)
- 		{0, 0, 0, 0}
- 	};
+@@ -172,9 +171,6 @@ static unsigned long get_symbol_pos(unsi
+ 	unsigned long symbol_start = 0, symbol_end = 0;
+ 	unsigned long i, low, high, mid;
  
--	while ((o = getopt_long(argc, argv, "a:dwqVDT:k:p:",
-+	while ((o = getopt_long(argc, argv, "a:dwqVADT:k:p:",
- 				&long_opts[0], NULL)) != EOF)
- #else				/* __GNU_LIBRARY__ */
--	while ((o = getopt(argc, argv, "a:dwqVDT:k:p:")) != EOF)
-+	while ((o = getopt(argc, argv, "a:dwqVADT:k:p:")) != EOF)
- #endif				/* __GNU_LIBRARY__ */
- 		switch (o) {
- 		case 'a':
-@@ -498,6 +506,9 @@ int main(int argc, char **argv)
- 		case 'V':
- 			fputs("genksyms version 2.5.60\n", stderr);
- 			break;
-+		case 'A':
-+			flag_asm = 1;
-+			break;
- 		case 'D':
- 			flag_dump_defs = 1;
- 			break;
---- 2.6.23-rc6-strip.orig/scripts/mksysmap
-+++ 2.6.23-rc6-strip/scripts/mksysmap
-@@ -36,9 +36,7 @@
+-	/* This kernel should never had been booted. */
+-	BUG_ON(!kallsyms_addresses);
+-
+ 	/* do a binary search on the sorted kallsyms_addresses array */
+ 	low = 0;
+ 	high = kallsyms_num_syms;
+--- 2.6.23-rc6-strip.orig/scripts/kallsyms.c
++++ 2.6.23-rc6-strip/scripts/kallsyms.c
+@@ -138,18 +138,9 @@ static int read_symbol(FILE *in, struct 
+ static int symbol_valid(struct sym_entry *s)
+ {
+ 	/* Symbols which vary between passes.  Passes 1 and 2 must have
+-	 * identical symbol lists.  The kallsyms_* symbols below are only added
+-	 * after pass 1, they would be included in pass 2 when --all-symbols is
+-	 * specified so exclude them to get a stable symbol list.
++	 * identical symbol lists.
+ 	 */
+ 	static char *special_symbols[] = {
+-		"kallsyms_addresses",
+-		"kallsyms_num_syms",
+-		"kallsyms_names",
+-		"kallsyms_markers",
+-		"kallsyms_token_table",
+-		"kallsyms_token_index",
+-
+ 	/* Exclude linker generated symbols which vary between passes */
+ 		"_SDA_BASE_",		/* ppc */
+ 		"_SDA2_BASE_",		/* ppc */
+@@ -181,7 +172,9 @@ static int symbol_valid(struct sym_entry
+ 	}
  
- # readprofile starts reading symbols when _stext is found, and
- # continue until it finds a symbol which is not either of 'T', 't',
--# 'W' or 'w'. __crc_ are 'A' and placed in the middle
--# so we just ignore them to let readprofile continue to work.
--# (At least sparc64 has __crc_ in the middle).
-+# 'W' or 'w'.
+ 	/* Exclude symbols which vary between passes. */
+-	if (strstr((char *)s->sym + offset, "_compiled."))
++	if (strstr((char *)s->sym + offset, "_compiled.") ||
++	    strncmp((char*)s->sym + offset, "__compound_literal.", 19) == 0 ||
++	    strncmp((char*)s->sym + offset, "__compound_literal$", 19) == 0)
+ 		return 0;
  
--$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
-+$NM -n $1 | grep -v '\( [aUw] \)\|\( \$[adt]\)' > $2
+ 	for (i = 0; special_symbols[i]; i++)
+@@ -527,7 +520,8 @@ int main(int argc, char **argv)
+ 		usage();
  
---- /dev/null
-+++ 2.6.23-rc6-strip/scripts/strip-syms.lst
-@@ -0,0 +1,19 @@
-+<*>
-+*.h
-+__compound_literal[$.][0-9]*
-+__crc_[a-zA-Z_]*
-+__exitcall_[a-zA-Z_]*
-+__func__[$.][0-9]*
-+__FUNCTION__[$.][0-9]*
-+gcc[0-9]_compiled[$.]
-+__initcall_[a-zA-Z_]*
-+__kcrctab_[a-zA-Z_]*
-+__kstrtab_[a-zA-Z_]*
-+__ksymtab_[a-zA-Z_]*
-+__mod_[a-zA-Z_]*[0-9]
-+__module_depends
-+__param_[a-zA-Z_]*
-+__pci_fixup_[A-Z]*
-+__PRETTY_FUNCTION__[$.][0-9]*
-+__setup_[a-zA-Z_]*
-+____versions
+ 	read_map(stdin);
+-	optimize_token_table();
++	if (table_cnt)
++		optimize_token_table();
+ 	write_src();
+ 
+ 	return 0;
 
 
