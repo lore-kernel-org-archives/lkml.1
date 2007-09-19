@@ -1,108 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXISR4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763810AbXISR5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762650AbXISR4l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbXISR4c
+	id S1763810AbXISR5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXISR5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:56:32 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:46151 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754412AbXISR4b (ORCPT
+	Wed, 19 Sep 2007 13:57:04 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39092 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbXISR5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:56:31 -0400
-Subject: [PATCH] docuement filesystem helpers for custom 'struct file's
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070919172611.GA20917@infradead.org>
-References: <20070917182718.70494C9B@kernel>
-	 <20070917182718.A6B9F7FD@kernel>  <20070919172611.GA20917@infradead.org>
-Content-Type: text/plain
-Date: Wed, 19 Sep 2007 10:47:23 -0700
-Message-Id: <1190224043.26982.112.camel@localhost>
+	Wed, 19 Sep 2007 13:57:01 -0400
+Date: Wed, 19 Sep 2007 19:57:00 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, netdev <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: follow-up: discrepancy with POSIX
+Message-ID: <20070919175700.GC18045@one.firstfloor.org>
+References: <46F13E8B.4050309@redhat.com> <p73sl5aveqh.fsf@bingen.suse.de> <46F15305.2030507@redhat.com> <20070919172653.GB18045@one.firstfloor.org> <46F1608E.7060908@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F1608E.7060908@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-19 at 18:26 +0100, Christoph Hellwig wrote:
-> On Mon, Sep 17, 2007 at 11:27:18AM -0700, Dave Hansen wrote:
-> > 
-> > Christoph H. says this stands on its own and can go in before the
-> > rest of the r/o bind mount set.  
-> > 
-> > ---
-> > 
-> > Some filesystems forego the vfs and may_open() and create their
-> > own 'struct file's.
-> > 
-> > This patch creates a couple of helper functions which can be
-> > used by these filesystems, and will provide a unified place
-> > which the r/o bind mount code may patch.
-> > 
-> > Also, rename an existing, static-scope init_file() to a less
-> > generic name.
+On Wed, Sep 19, 2007 at 10:46:54AM -0700, Ulrich Drepper wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Looks good.  But please provide a patch ontop of your patchkit to
-> add kernel-doc comments for the two new exported functions.
+> Andi Kleen wrote:
+> >> But the spec calls for a "null address" to be used and that's in my
+> >> understanding something different from using AF_UNSPEC.
+> > 
+> > memset(&sockaddr, 0, sizeof(sockaddr)) should give you AF_UNSPEC
+> 
+> But the spec calls for <quote>null address for the protocol</quote>.
+> 
+> That means the family for the null address is the same as the family of
+> the socket.
 
-Appended.  I started to write the comments to describe the function
-arguments, but they all looked pretty retarded.  
+Spec doesn't match traditional behaviour then. IPv4 0.0.0.0 is 
+traditionally an synonym for old style all broadcast (255.255.255.255) 
+on UDP/RAW and it's certainly possible to connect() to that. 
 
-> Are there any direct caller of get_empty_filp left after this patch?
-> We really should get rid of that export to stop people from shooting
-> themselves in the foot.
-
-Yeah, there are a few left.  But, they're in the middle of what is
-sometimes tricky error handling, so I think we should trickle those in
-later. 
-
-
--- Dave
-
- lxc-dave/fs/file_table.c |   22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
-
-diff -puN fs/file_table.c~document fs/file_table.c
---- lxc/fs/file_table.c~document	2007-09-19 10:31:13.000000000 -0700
-+++ lxc-dave/fs/file_table.c	2007-09-19 10:39:34.000000000 -0700
-@@ -137,6 +137,18 @@ fail:
- 
- EXPORT_SYMBOL(get_empty_filp);
- 
-+/**
-+ * alloc_file - allocate and initialize a 'struct file' with
-+ * the given arguments
-+ *
-+ * Use this instead of get_empty_filp() to get a new
-+ * 'struct file'.  Do so because of the same initialization
-+ * pitfalls reasons listed for init_file().  This is a
-+ * preferred interface to using init_file().
-+ *
-+ * If all the callers of init_file() are eliminated, its
-+ * code should be moved into this function.
-+ */
- struct file *alloc_file(struct vfsmount *mnt, struct dentry *dentry,
- 		mode_t mode, const struct file_operations *fop)
- {
-@@ -152,7 +164,15 @@ struct file *alloc_file(struct vfsmount 
- }
- EXPORT_SYMBOL(alloc_file);
- 
--/*
-+/**
-+ * init_file - initialize a 'struct file'
-+ * @file: the already allocated 'struct file' to initialized
-+ * @mnt: the vfsmount on which the file resides
-+ *
-+ * Use this instead of setting the members directly.  Doing so
-+ * avoids making mistakes like forgetting the mntget() or
-+ * forgetting to take a write on the mnt.
-+ *
-  * Note: This is a crappy interface.  It is here to make
-  * merging with the existing users of get_empty_filp()
-  * who have complex failure logic easier.  All users
-_
-
-
+-Andi
