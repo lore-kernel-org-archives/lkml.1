@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbXISVoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbXISVss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758700AbXISVoR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 17:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXISVoE
+	id S1756870AbXISVss (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXISVsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 17:44:04 -0400
-Received: from THAUM.MIT.EDU ([18.95.3.27]:48493 "EHLO luto.stanford.edu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751313AbXISVoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 17:44:03 -0400
-X-Greylist: delayed 1275 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Sep 2007 17:44:03 EDT
-Message-ID: <46F19326.1040503@myrealbox.com>
-Date: Wed, 19 Sep 2007 17:22:46 -0400
-From: Andy Lutomirski <luto@myrealbox.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       kernel1@cyberdogtech.com
-Subject: Re: A little coding style nugget of joy
-References: <20070919123401.9369534d.kernel1@cyberdogtech.com> <p73odfyvar1.fsf@bingen.suse.de>
-In-Reply-To: <p73odfyvar1.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 19 Sep 2007 17:48:39 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:35577 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbXISVsj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 17:48:39 -0400
+Date: Wed, 19 Sep 2007 23:47:00 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs
+ rcu_read_lock()
+Message-ID: <20070919234700.3b532dcd@lappy>
+In-Reply-To: <d120d5000709191429n29f5dc78g2746de3ee4e9ca81@mail.gmail.com>
+References: <20070919104125.286538000@chello.nl>
+	<d120d5000709190959p351c7ba4mdb1eeb433098e0e6@mail.gmail.com>
+	<20070919173249.GE8666@linux.vnet.ibm.com>
+	<20070919174857.GA11922@linux.vnet.ibm.com>
+	<d120d5000709191149q3d850d07nd8bf864a6e797055@mail.gmail.com>
+	<20070919214110.5d832f28@lappy>
+	<d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
+	<20070919221349.2935f69d@lappy>
+	<d120d5000709191341p1c331e80qf7bad973bc899a0@mail.gmail.com>
+	<20070919231943.4b121361@lappy>
+	<d120d5000709191429n29f5dc78g2746de3ee4e9ca81@mail.gmail.com>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Matt LaPlante <kernel1@cyberdogtech.com> writes:
+On Wed, 19 Sep 2007 17:29:09 -0400 "Dmitry Torokhov"
+<dmitry.torokhov@gmail.com> wrote:
+
+> On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > On Wed, 19 Sep 2007 16:41:04 -0400 "Dmitry Torokhov"
+> > <dmitry.torokhov@gmail.com> wrote:
+> >
+> > > > If the IRQ handler does rcu_read_lock(),unlock() and the i8042_stop()
+> > > > function does sync_rcu() instead of _sched(), it should be good again.
+> > > > It will not affect anything else than the task that calls _stop(). And
+> > > > even there the only change is that the sleep might be a tad longer.
+> > >
+> > > And the IRQ handler needs to do some extra job... Anyway, it looks -rt
+> > > breaks synchronize_sched() and needs to have it fixed:
+> > >
+> > > "/**
+> > >  * synchronize_sched - block until all CPUs have exited any non-preemptive
+> > >  * kernel code sequences.
+> > >  *
+> > >  * This means that all preempt_disable code sequences, including NMI and
+> > >  * hardware-interrupt handlers, in progress on entry will have completed
+> > >  * before this primitive returns."
+> >
+> > That still does as it says in -rt. Its just that the interrupt handler
+> > will be preemptible so the guarantees it gives are useless.
 > 
->> Since everyone loves random statistics, here are a few gems to give you a break from your busy day:
->>
->> Number of lines in the 2.6.22 Linux kernel source that include one or more trailing whitespaces: 135209
->> Bytes saved by removing said whitespace: 151809
+> Please note "... including NMI and hardware-interrupt handlers ..."
+
+-rt doesn't run interrupt handlers in hardware irq context anymore.
+
+> >
+> > > > I find it curious that a driver that is 'low performant' and does not
+> > > > suffer lock contention pioneers locking schemes. I agree with
+> > > > optimizing, but this is not the place to push the envelope.
+> > >
+> > > Please realize that evey microsecond wasted on a 'low performant'
+> > > driver is taken from high performers and if we can help it why
+> > > shouldn't we?
+> >
+> > sure, but the cache eviction caused by running the driver will have
+> > more impact than the added rcu_read_{,un}lock() calls.
 > 
-> You don't actually save anything on disk on most file systems
-> (essentially everything except reiserfs on current Linux)
-> because all files are rounded to block size (normally 4K) 
-> 
-> Same in page cache.
+> Are you saying that adding rcu_read_{,un}lock() will help with cache
+> eviction? How?
 
-This is a terrible assumption in general (i.e. if filesize % blocksize 
-is close to uniformly distributed).  If you remove one byte and the data 
-is stored with blocksize B, then you either save zero bytes with 
-probability 1-1/B or you save B bytes with probability 1/B.  The 
-expected number of bytes saved is B*1/B=1.  Since expectation is linear, 
-if you remove x bytes, the expected number of bytes saved is x (even if 
-there is more than one byte removed per file).
-
-In my tree, about half of the files have size >= 4k, so the assumption 
-is probably not _that_ far off the mark.
-
-Alternatively, there are an average of about 16 bytes removed per file, 
-and there are 11 which are <= 16 bytes short of a 4k boundary, so it's 
-not at all unreasonable that we'd save 40-50k.
-
-> 
-> And in tar files bzip2/gzip is very good at compacting them.
-
-That's true.
-
---Andy
+No, I'm saying that its noise compared to the cache eviction overhead
+it causes for others.
