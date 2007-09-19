@@ -1,62 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761648AbXISQvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761634AbXISQxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761648AbXISQvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbXISQve
+	id S1761634AbXISQxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 12:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbXISQxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:51:34 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:2538 "EHLO baikonur.stro.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752124AbXISQvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:51:33 -0400
-Date: Wed, 19 Sep 2007 18:51:03 +0200
-From: maximilian attems <max@stro.at>
-To: David Miller <davem@davemloft.net>
-Cc: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-Message-ID: <20070919165103.GS19918@baikonur.stro.at>
-References: <20070918.112337.74737433.davem@davemloft.net> <1190145951.9540.230.camel@dell> <20070919163318.GG6618@stro.at> <20070919.093832.88002774.davem@davemloft.net>
+	Wed, 19 Sep 2007 12:53:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57745
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754900AbXISQxG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 12:53:06 -0400
+Date: Wed, 19 Sep 2007 09:52:51 -0700 (PDT)
+Message-Id: <20070919.095251.45154496.davem@davemloft.net>
+To: drepper@redhat.com
+Cc: andi@firstfloor.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: follow-up: discrepancy with POSIX
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <46F15305.2030507@redhat.com>
+References: <46F13E8B.4050309@redhat.com>
+	<p73sl5aveqh.fsf@bingen.suse.de>
+	<46F15305.2030507@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070919.093832.88002774.davem@davemloft.net>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello dave,
+From: Ulrich Drepper <drepper@redhat.com>
+Date: Wed, 19 Sep 2007 09:49:09 -0700
 
-i appreciate a lot your opinon, but please cool down.
-this is not a four spin on your beloved pipe. :)
+> But the spec calls for a "null address" to be used and that's in my
+> understanding something different from using AF_UNSPEC.
 
-On Wed, Sep 19, 2007 at 09:38:32AM -0700, David Miller wrote:
-> From: maximilian attems <max@stro.at>
-> Date: Wed, 19 Sep 2007 18:33:18 +0200
-> 
-> > we have to strip the firmware for Debian for the upcoming Lenny release.
-> 
-> Why do you "have to"?  The vendor has given you explicit rights
-> to distribute it:
-> 
->  * Firmware is:
->  *	Derived from proprietary unpublished source code,
->  *	Copyright (C) 2000-2003 Broadcom Corporation.
->  *
->  *	Permission is hereby granted for the distribution of this firmware
->  *	data in hexadecimal or equivalent format, provided this copyright
->  *	notice is accompanying it.
-
-afair the trouble is that it does not give permission to change
-unlike some other gpl or bsd licensed blob.
-so it is dfsg non-free and not suitable for main distribution.
- 
-> This whole firmware stripping thing in debian is beyond rediculious
-> and only serves to hurt users.
-
-i'm not of the d-legal department,
-but seeing free firmwares would be cool.
-
--- 
-maks
-
+It just occured to me that AF_UNSPEC might be used simply
+because "all zeros" might be a valid real bindable address
+for some address family.  And using AF_UNSPEC avoids that
+problem entirely.
