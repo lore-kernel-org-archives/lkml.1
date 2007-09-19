@@ -1,43 +1,447 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbXISIaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbXISIbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757000AbXISIaZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 04:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbXISIaM
+	id S1757308AbXISIbK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 04:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbXISIaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 04:30:12 -0400
-Received: from ns.suse.de ([195.135.220.2]:51783 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754151AbXISIaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 04:30:11 -0400
-To: "David J. Wilder" <dwilder@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Patch 1/2] Trace code and documentation (updated)
-References: <1190177218.3190.18.camel@lc4eb748232119.ibm.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 19 Sep 2007 10:30:07 +0200
-In-Reply-To: <1190177218.3190.18.camel@lc4eb748232119.ibm.com>
-Message-ID: <p736427vz00.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Wed, 19 Sep 2007 04:30:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:36773 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753886AbXISIat (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 04:30:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
+        b=dd9CSCIXNhU/y1TtmZb4gFeC74fQ0LvV1T+V+Lrn3eWo46Pe9AfkNUQRAjG/YsmR6y+PritoifbxHxX4M5+v60Gho/mIlD8lQM+iolUEMo8QC62EESuTrGpFUpiKDSF7GaYE/FeAtjroQ8a4QwFG+KL3zaqpsETfow8DEaY0zt8=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: "Michael Chan" <mchan@broadcom.com>
+Subject: Re: bnx2 dirver's firmware images
+Date: Wed, 19 Sep 2007 09:30:39 +0100
+User-Agent: KMail/1.9.1
+Cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       "netdev" <netdev@vger.kernel.org>
+References: <200709181823.26429.vda.linux@googlemail.com> <20070918.112337.74737433.davem@davemloft.net> <1190145951.9540.230.camel@dell>
+In-Reply-To: <1190145951.9540.230.camel@dell>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_v4N8G3YJXrlWNwg"
+Message-Id: <200709190930.39882.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"David J. Wilder" <dwilder@us.ibm.com> writes:
+--Boundary-00=_v4N8G3YJXrlWNwg
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Not having read the whole thing; just something I noticed.
+On Tuesday 18 September 2007 21:05, Michael Chan wrote:
+> The bnx2 firmware changes quite frequently.  A new driver quite often
+> requires new firmware to work correctly.  Splitting them up makes things
+> difficult for the user.
 
-Gut feeling is that you have too many knobs and options and 
-some overengineering though -- simplifying it would be a good thing.
+sounds reasonable.
 
-> +
-> +#define TRACE_PRINTF_TMPBUF_SIZE (1024)
-> +static char trace_tmpbuf[NR_CPUS][TRACE_PRINTF_TMPBUF_SIZE];
+I see that bnx2 has support for unpacking gzipped binary blobs,
+and it it the only such net driver (maybe the only such driver
+in the entire tree, I didn't check).
 
-That definitely needs to be a per CPU variable. Imagine
-what happens on a NR_CPUS==4096 kernel.  In general when 
-you have a NR_CPUS indexed array you're likely doing something
-wrong. Yes there are still places in the main tree who do that,
-but most of them need to be fixed.
+This can be very useful for all other firmware images in other drivers.
 
--Andi
+Last night I prepared a patch which basically separates unpacking
+function from bnx2-related code. Can you run-test attached patch?
+
+Meanwhile I will prepare follow-on patch which actually moves this
+function out of the driver and into lib/*.
+
+Size difference:
+
+# size */bn*.o
+   text    data     bss     dec     hex filename
+  54884   81689    6424  142997   22e95 net/bnx2.o
+  55276   81823    6424  143523   230a3 net.org/bnx2.o
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
+
+--Boundary-00=_v4N8G3YJXrlWNwg
+Content-Type: text/x-diff;
+  charset="iso-8859-15";
+  name="linux-2.6.23-rc6.gunzip.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="linux-2.6.23-rc6.gunzip.patch"
+
+--- linux-2.6.23-rc6.org/drivers/net/bnx2.c	Tue Sep 11 22:33:54 2007
++++ linux-2.6.23-rc6.gunzip/drivers/net/bnx2.c	Wed Sep 19 00:01:19 2007
+@@ -2767,93 +2767,61 @@
+ 	spin_unlock_bh(&bp->phy_lock);
+ }
+ 
+-#define FW_BUF_SIZE	0x8000
+-
++/* To be moved to generic lib/ */
+ static int
+-bnx2_gunzip_init(struct bnx2 *bp)
++bnx2_gunzip(u8 *zbuf, int len, void **outbuf)
+ {
+-	if ((bp->gunzip_buf = vmalloc(FW_BUF_SIZE)) == NULL)
+-		goto gunzip_nomem1;
++	struct z_stream_s *strm;
++	void *gunzip_buf;
++	int rc;
++	int sz;
+ 
+-	if ((bp->strm = kmalloc(sizeof(*bp->strm), GFP_KERNEL)) == NULL)
+-		goto gunzip_nomem2;
++	/* gzip header (1f,8b,08... 10 bytes total + possible asciz filename)
++	 * is stripped, 32-bit unpacked size (LE) is prepended instead */
++	sz = *zbuf++;
++	sz = (sz << 8) + *zbuf++;
++	sz = (sz << 8) + *zbuf++;
++	sz = (sz << 8) + *zbuf++;
+ 
+-	bp->strm->workspace = kmalloc(zlib_inflate_workspacesize(), GFP_KERNEL);
+-	if (bp->strm->workspace == NULL)
++	rc = -ENOMEM;
++	gunzip_buf = vmalloc(sz);
++	if (gunzip_buf == NULL)
++		goto gunzip_nomem1;
++	strm = kmalloc(sizeof(*strm), GFP_KERNEL);
++	if (strm == NULL)
++		goto gunzip_nomem2;
++	strm->workspace = kmalloc(zlib_inflate_workspacesize(), GFP_KERNEL);
++	if (strm->workspace == NULL)
+ 		goto gunzip_nomem3;
+ 
+-	return 0;
++	strm->next_in = zbuf;
++	strm->avail_in = len;
++	strm->next_out = gunzip_buf;
++	strm->avail_out = sz;
+ 
+-gunzip_nomem3:
+-	kfree(bp->strm);
+-	bp->strm = NULL;
++	rc = zlib_inflateInit2(strm, -MAX_WBITS);
++	if (rc == Z_OK) {
++		rc = zlib_inflate(strm, Z_FINISH);
++		if (rc == Z_OK) {
++			rc = sz - strm->avail_out;
++			*outbuf = gunzip_buf;
++		} else
++			rc = -EINVAL;
++		zlib_inflateEnd(strm);
++	} else
++		rc = -EINVAL;
+ 
++	kfree(strm->workspace);
++gunzip_nomem3:
++	kfree(strm);
+ gunzip_nomem2:
+-	vfree(bp->gunzip_buf);
+-	bp->gunzip_buf = NULL;
+-
++	if (rc != Z_OK)
++		vfree(gunzip_buf);
+ gunzip_nomem1:
+-	printk(KERN_ERR PFX "%s: Cannot allocate firmware buffer for "
+-			    "uncompression.\n", bp->dev->name);
+-	return -ENOMEM;
++	return rc; /* returns Z_OK (0) if successful */
+ }
+ 
+ static void
+-bnx2_gunzip_end(struct bnx2 *bp)
+-{
+-	kfree(bp->strm->workspace);
+-
+-	kfree(bp->strm);
+-	bp->strm = NULL;
+-
+-	if (bp->gunzip_buf) {
+-		vfree(bp->gunzip_buf);
+-		bp->gunzip_buf = NULL;
+-	}
+-}
+-
+-static int
+-bnx2_gunzip(struct bnx2 *bp, u8 *zbuf, int len, void **outbuf, int *outlen)
+-{
+-	int n, rc;
+-
+-	/* check gzip header */
+-	if ((zbuf[0] != 0x1f) || (zbuf[1] != 0x8b) || (zbuf[2] != Z_DEFLATED))
+-		return -EINVAL;
+-
+-	n = 10;
+-
+-#define FNAME	0x8
+-	if (zbuf[3] & FNAME)
+-		while ((zbuf[n++] != 0) && (n < len));
+-
+-	bp->strm->next_in = zbuf + n;
+-	bp->strm->avail_in = len - n;
+-	bp->strm->next_out = bp->gunzip_buf;
+-	bp->strm->avail_out = FW_BUF_SIZE;
+-
+-	rc = zlib_inflateInit2(bp->strm, -MAX_WBITS);
+-	if (rc != Z_OK)
+-		return rc;
+-
+-	rc = zlib_inflate(bp->strm, Z_FINISH);
+-
+-	*outlen = FW_BUF_SIZE - bp->strm->avail_out;
+-	*outbuf = bp->gunzip_buf;
+-
+-	if ((rc != Z_OK) && (rc != Z_STREAM_END))
+-		printk(KERN_ERR PFX "%s: Firmware decompression error: %s\n",
+-		       bp->dev->name, bp->strm->msg);
+-
+-	zlib_inflateEnd(bp->strm);
+-
+-	if (rc == Z_STREAM_END)
+-		return 0;
+-
+-	return rc;
+-}
+-
+-static void
+ load_rv2p_fw(struct bnx2 *bp, u32 *rv2p_code, u32 rv2p_code_len,
+ 	u32 rv2p_proc)
+ {
+@@ -2902,22 +2870,16 @@
+ 	/* Load the Text area. */
+ 	offset = cpu_reg->spad_base + (fw->text_addr - cpu_reg->mips_view_base);
+ 	if (fw->gz_text) {
+-		u32 text_len;
+-		void *text;
+-
+-		rc = bnx2_gunzip(bp, fw->gz_text, fw->gz_text_len, &text,
+-				 &text_len);
+-		if (rc)
+-			return rc;
+-
+-		fw->text = text;
+-	}
+-	if (fw->gz_text) {
++		u32 *text;
+ 		int j;
+ 
++		rc = bnx2_gunzip(fw->gz_text, fw->gz_text_len, (void*) &text);
++		if (rc < 0)
++			return rc;
+ 		for (j = 0; j < (fw->text_len / 4); j++, offset += 4) {
+-			REG_WR_IND(bp, offset, cpu_to_le32(fw->text[j]));
++			REG_WR_IND(bp, offset, cpu_to_le32(text[j]));
+ 	        }
++		vfree(text);
+ 	}
+ 
+ 	/* Load the Data area. */
+@@ -2979,28 +2941,22 @@
+ {
+ 	struct cpu_reg cpu_reg;
+ 	struct fw_info *fw;
+-	int rc = 0;
++	int rc;
+ 	void *text;
+-	u32 text_len;
+ 
+-	if ((rc = bnx2_gunzip_init(bp)) != 0)
+-		return rc;
+-
+ 	/* Initialize the RV2P processor. */
+-	rc = bnx2_gunzip(bp, bnx2_rv2p_proc1, sizeof(bnx2_rv2p_proc1), &text,
+-			 &text_len);
+-	if (rc)
++	rc = bnx2_gunzip(bnx2_rv2p_proc1, sizeof(bnx2_rv2p_proc1), &text);
++	if (rc < 0)
+ 		goto init_cpu_err;
++	load_rv2p_fw(bp, text, rc /* == len */, RV2P_PROC1);
++	vfree(text);
+ 
+-	load_rv2p_fw(bp, text, text_len, RV2P_PROC1);
+-
+-	rc = bnx2_gunzip(bp, bnx2_rv2p_proc2, sizeof(bnx2_rv2p_proc2), &text,
+-			 &text_len);
+-	if (rc)
++	rc = bnx2_gunzip(bnx2_rv2p_proc2, sizeof(bnx2_rv2p_proc2), &text);
++	if (rc < 0)
+ 		goto init_cpu_err;
++	load_rv2p_fw(bp, text, rc /* == len */, RV2P_PROC2);
++	vfree(text);
+ 
+-	load_rv2p_fw(bp, text, text_len, RV2P_PROC2);
+-
+ 	/* Initialize the RX Processor. */
+ 	cpu_reg.mode = BNX2_RXP_CPU_MODE;
+ 	cpu_reg.mode_value_halt = BNX2_RXP_CPU_MODE_SOFT_HALT;
+@@ -3115,7 +3071,6 @@
+ 			goto init_cpu_err;
+ 	}
+ init_cpu_err:
+-	bnx2_gunzip_end(bp);
+ 	return rc;
+ }
+ 
+--- linux-2.6.23-rc6.org/drivers/net/bnx2.h	Tue Sep 11 22:33:54 2007
++++ linux-2.6.23-rc6.gunzip/drivers/net/bnx2.h	Tue Sep 18 23:27:07 2007
+@@ -6679,9 +6679,6 @@
+ 	u32			flash_size;
+ 
+ 	int			status_stats_size;
+-
+-	struct z_stream_s	*strm;
+-	void			*gunzip_buf;
+ };
+ 
+ static u32 bnx2_reg_rd_ind(struct bnx2 *bp, u32 offset);
+@@ -6739,7 +6736,7 @@
+ 	const u32 text_addr;
+ 	const u32 text_len;
+ 	const u32 text_index;
+-	u32 *text;
++/*	u32 *text;*/
+ 	u8 *gz_text;
+ 	const u32 gz_text_len;
+ 
+--- linux-2.6.23-rc6.org/drivers/net/bnx2_fw.h	Mon Jul  9 00:32:17 2007
++++ linux-2.6.23-rc6.gunzip/drivers/net/bnx2_fw.h	Tue Sep 18 23:38:47 2007
+@@ -15,7 +15,9 @@
+  */
+ 
+ static u8 bnx2_COM_b06FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x00, 0x45, 0x30, 0xe7, 0x45, 0x00, 0x03, 0xdc, 0x5a,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x00, 0x45, 0x30, 0xe7, 0x45, 0x00, 0x03, */
++								    0xdc, 0x5a,
+ 	0x6b, 0x6c, 0x1c, 0xd7, 0x75, 0x3e, 0x33, 0x3b, 0x4b, 0xae, 0xc8, 0x15,
+ 	0x35, 0xa2, 0xc6, 0xf4, 0x5a, 0xa2, 0xed, 0x5d, 0x72, 0x28, 0x12, 0x96,
+ 	0xec, 0x6e, 0x68, 0xda, 0x62, 0x8c, 0x8d, 0xb4, 0xd9, 0xa5, 0x0c, 0xa1,
+@@ -1085,8 +1087,10 @@
+ };
+ 
+ static u8 bnx2_RXP_b06FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x08, 0xcb, 0xa3, 0x46, 0x45, 0x00, 0x03, 0x74, 0x65,
+-	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, 0xec, 0x5c, 0x6f, 0x6c,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x08, 0xcb, 0xa3, 0x46, 0x45, 0x00, 0x03, 0x74, 0x65,
++	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, */
++							0xec, 0x5c, 0x6f, 0x6c,
+ 	0x1c, 0xc7, 0x75, 0x7f, 0x3b, 0xbb, 0xa4, 0x4e, 0xd4, 0x91, 0x5c, 0x1e,
+ 	0x4f, 0xf4, 0x49, 0x66, 0x94, 0x5d, 0x71, 0x25, 0x5e, 0x2d, 0xc6, 0x5d,
+ 	0x31, 0x57, 0x9b, 0x08, 0xce, 0xf1, 0x79, 0xef, 0x64, 0xb1, 0x86, 0x0a,
+@@ -1798,8 +1802,10 @@
+ };
+ 
+ static u8 bnx2_rv2p_proc1[] = {
+-	0x1f, 0x8b, 0x08, 0x08, 0x5e, 0xd0, 0x41, 0x44, 0x00, 0x03, 0x74, 0x65,
+-	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, 0xc5, 0x56, 0xcf, 0x6b,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x08, 0x5e, 0xd0, 0x41, 0x44, 0x00, 0x03, 0x74, 0x65,
++	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, */
++							0xc5, 0x56, 0xcf, 0x6b,
+ 	0x13, 0x51, 0x10, 0x9e, 0xec, 0x6e, 0xb2, 0xdb, 0x74, 0xbb, 0x1b, 0x2b,
+ 	0xda, 0xa0, 0xb1, 0x8d, 0x51, 0x6a, 0x7f, 0xa4, 0xb4, 0x11, 0x0f, 0x82,
+ 	0x42, 0x25, 0x3d, 0x04, 0x54, 0x44, 0x7a, 0x28, 0x22, 0x82, 0x36, 0x8a,
+@@ -1877,8 +1883,10 @@
+ 	0x12, 0x3d, 0x80, 0x0b, 0x00, 0x00, 0x00 };
+ 
+ static u8 bnx2_rv2p_proc2[] = {
+-	0x1f, 0x8b, 0x08, 0x08, 0x7e, 0xd1, 0x41, 0x44, 0x00, 0x03, 0x74, 0x65,
+-	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, 0xcd, 0x58, 0x5b, 0x6c,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x08, 0x7e, 0xd1, 0x41, 0x44, 0x00, 0x03, 0x74, 0x65,
++	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, */
++							0xcd, 0x58, 0x5b, 0x6c,
+ 	0x54, 0x55, 0x14, 0x3d, 0xf3, 0xe8, 0xcc, 0x9d, 0xe9, 0xed, 0x9d, 0xf2,
+ 	0xb2, 0x03, 0xad, 0x08, 0xe5, 0xd1, 0x56, 0x29, 0xe8, 0x54, 0xab, 0x18,
+ 	0x15, 0x2c, 0x5a, 0x8c, 0x26, 0x68, 0xf0, 0xf9, 0x63, 0x14, 0x04, 0xda,
+@@ -2057,8 +2065,10 @@
+ 	0x17, 0x00, 0x00, 0x00 };
+ 
+ static u8 bnx2_TPAT_b06FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x08, 0x47, 0xd2, 0x41, 0x44, 0x00, 0x03, 0x74, 0x65,
+-	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, 0xc5, 0x57, 0x4d, 0x68,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x08, 0x47, 0xd2, 0x41, 0x44, 0x00, 0x03, 0x74, 0x65,
++	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, */
++							0xc5, 0x57, 0x4d, 0x68,
+ 	0x1c, 0xe7, 0x19, 0x7e, 0xe7, 0x77, 0x47, 0x62, 0x25, 0x8d, 0x93, 0x3d,
+ 	0xac, 0x5d, 0xa5, 0x99, 0x91, 0x46, 0x3f, 0x54, 0x26, 0x9e, 0x84, 0xa5,
+ 	0x56, 0x61, 0x20, 0xe3, 0x99, 0x95, 0x2c, 0x0c, 0x05, 0x07, 0x42, 0x08,
+@@ -2290,8 +2300,10 @@
+ };
+ 
+ static u8 bnx2_TXP_b06FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x08, 0x21, 0xd3, 0x41, 0x44, 0x00, 0x03, 0x74, 0x65,
+-	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, 0xed, 0x5c, 0x6d, 0x6c,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x08, 0x21, 0xd3, 0x41, 0x44, 0x00, 0x03, 0x74, 0x65,
++	0x73, 0x74, 0x31, 0x2e, 0x62, 0x69, 0x6e, 0x00, */
++							0xed, 0x5c, 0x6d, 0x6c,
+ 	0x1b, 0xf7, 0x79, 0x7f, 0xee, 0x85, 0xd2, 0x51, 0x96, 0xe9, 0x93, 0xc2,
+ 	0x78, 0x6c, 0xc0, 0xa6, 0x77, 0xd6, 0x51, 0x66, 0x20, 0xb5, 0xa0, 0x05,
+ 	0x36, 0x55, 0x87, 0x43, 0x73, 0x3e, 0x52, 0x2f, 0x4e, 0x5c, 0x57, 0x71,
+--- linux-2.6.23-rc6.org/drivers/net/bnx2_fw2.h	Mon Jul  9 00:32:17 2007
++++ linux-2.6.23-rc6.gunzip/drivers/net/bnx2_fw2.h	Tue Sep 18 23:37:41 2007
+@@ -15,7 +15,9 @@
+  */
+ 
+ static u8 bnx2_COM_b09FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x00, 0x0e, 0x34, 0xe7, 0x45, 0x00, 0x03, 0xdc, 0x5b,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x00, 0x0e, 0x34, 0xe7, 0x45, 0x00, 0x03, */
++								    0xdc, 0x5b,
+ 	0x6d, 0x70, 0x5c, 0xd5, 0x79, 0x7e, 0xef, 0xd9, 0xbb, 0xf2, 0x5a, 0x92,
+ 	0xe5, 0x6b, 0x79, 0x23, 0x16, 0x4b, 0xc0, 0xae, 0x75, 0x6d, 0x69, 0xb0,
+ 	0x43, 0x16, 0xa1, 0x80, 0x9a, 0xd9, 0xc0, 0xb2, 0x2b, 0x33, 0x9e, 0x0c,
+@@ -1083,7 +1085,9 @@
+ };
+ 
+ static u8 bnx2_CP_b09FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x00, 0x0f, 0x34, 0xe7, 0x45, 0x00, 0x03, 0xbd, 0x7d,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x00, 0x0f, 0x34, 0xe7, 0x45, 0x00, 0x03, */
++								    0xbd, 0x7d,
+ 	0x0d, 0x74, 0x5c, 0x57, 0x7d, 0xe7, 0xff, 0xdd, 0x19, 0x49, 0x63, 0x59,
+ 	0x96, 0x9f, 0xe5, 0x89, 0x32, 0x51, 0x84, 0x3d, 0x23, 0x3d, 0xd9, 0x22,
+ 	0x12, 0xe1, 0xc5, 0x11, 0xac, 0xda, 0x2a, 0xe9, 0x30, 0x92, 0x3f, 0x12,
+@@ -2279,7 +2283,9 @@
+ };
+ 
+ static u8 bnx2_RXP_b09FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x00, 0x0e, 0x34, 0xe7, 0x45, 0x00, 0x03, 0xec, 0x5c,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x00, 0x0e, 0x34, 0xe7, 0x45, 0x00, 0x03, */
++								    0xec, 0x5c,
+ 	0x5d, 0x6c, 0x1c, 0xd7, 0x75, 0x3e, 0xf3, 0x43, 0x6a, 0x49, 0xf1, 0x67,
+ 	0xb8, 0x5c, 0xb1, 0x2b, 0x99, 0x96, 0x77, 0xc9, 0x91, 0xc8, 0x58, 0x8a,
+ 	0x31, 0xa2, 0x09, 0x5b, 0x48, 0x17, 0xf6, 0x76, 0x76, 0x25, 0xb1, 0xb1,
+@@ -2988,7 +2994,9 @@
+ };
+ 
+ static u8 bnx2_TPAT_b09FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x00, 0x0e, 0x34, 0xe7, 0x45, 0x00, 0x03, 0xcd, 0x58,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x00, 0x0e, 0x34, 0xe7, 0x45, 0x00, 0x03, */
++								    0xcd, 0x58,
+ 	0x5d, 0x68, 0x1c, 0xd7, 0x15, 0x3e, 0xf3, 0xb7, 0x3b, 0x52, 0x24, 0xeb,
+ 	0x5a, 0xd9, 0xa6, 0xeb, 0xa0, 0x34, 0x33, 0xda, 0x91, 0xac, 0x22, 0x13,
+ 	0x4f, 0x9d, 0x25, 0x16, 0x65, 0x21, 0x93, 0xd9, 0x91, 0xac, 0x98, 0x3c,
+@@ -3279,7 +3287,9 @@
+ };
+ 
+ static u8 bnx2_TXP_b09FwText[] = {
+-	0x1f, 0x8b, 0x08, 0x00, 0x0e, 0x34, 0xe7, 0x45, 0x00, 0x03, 0xcd, 0x7c,
++	0x00, 0x80, 0x00, 0x00, /* unpack buf size = 0x8000 */
++/*	0x1f, 0x8b, 0x08, 0x00, 0x0e, 0x34, 0xe7, 0x45, 0x00, 0x03, */
++								    0xcd, 0x7c,
+ 	0x6f, 0x70, 0x5b, 0xd7, 0x95, 0xdf, 0x79, 0xef, 0x81, 0x24, 0x48, 0xd1,
+ 	0xd4, 0x13, 0x17, 0x56, 0x60, 0x87, 0x71, 0x00, 0xf1, 0x81, 0x66, 0x42,
+ 	0xae, 0x04, 0x2b, 0x4c, 0xc2, 0x6d, 0xd1, 0xf8, 0x05, 0x00, 0x29, 0x48,
+
+--Boundary-00=_v4N8G3YJXrlWNwg--
