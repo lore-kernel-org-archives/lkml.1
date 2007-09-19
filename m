@@ -1,115 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755640AbXISHLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbXISHME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755640AbXISHLX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 03:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbXISHLP
+	id S1756228AbXISHME (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 03:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbXISHLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 03:11:15 -0400
-Received: from 66-126-254-34.unm.net ([66.126.254.34]:60943 "EHLO
-	nxmail.netxen.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752734AbXISHLP (ORCPT
+	Wed, 19 Sep 2007 03:11:51 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:1783 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753028AbXISHLu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 03:11:15 -0400
-X-Greylist: delayed 1650 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Sep 2007 03:11:15 EDT
-Message-ID: <46F0C51B.2070205@netxen.com>
-Date: Wed, 19 Sep 2007 12:13:39 +0530
-From: Dhananjay Phadke <dhananjay@netxen.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070418)
-MIME-Version: 1.0
-To: Vernon Mauery <vernux@us.ibm.com>
-CC: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: NetXen driver causing slab corruption in -RT kernels
-References: <200709181117.59041.vernux@us.ibm.com>
-In-Reply-To: <200709181117.59041.vernux@us.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 19 Sep 2007 03:11:50 -0400
+X-IronPort-AV: i="4.20,271,1186372800"; 
+   d="scan'208"; a="39891235:sNHT26360572"
+Subject: Re: [PATCH 1/3] Blackfin EMAC driver: add function to change the
+	MAC	address
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Jeff Garzik <jeff@garzik.org>
+Cc: bryan.wu@analog.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org
+In-Reply-To: <46F04C2A.20500@garzik.org>
+References: <1189911423.9901.4.camel@roc-laptop> <46F04C2A.20500@garzik.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Wed, 19 Sep 2007 15:07:38 +0800
+Message-Id: <1190185658.28309.0.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 19 Sep 2007 07:11:48.0772 (UTC) FILETIME=[58559E40:01C7FA8C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That "00 0e 1e ..." is netxen's mac address, so sounds like the NIC is
-dumping a frame in the skb already freed (and poisoned) by the stack.
-I suppose -RT kernels preempt the softirq, giving a chance for this race.
-
-The netxen driver doesn't seem to clear the mapped address of the skb in
-rx descriptor, instead it replaces it with mapped address of newly
-allocated skb. Also, the rx ring is replenished in bursts (at the end of
-poll routine), this can help the race if preempted in between.
-
-I am currently reworking the rx handling, hopefully it will fix this.
-
-Thanks for reporting in detail.
-
--Dhananjay
-
-
-Vernon Mauery wrote:
-> In doing some stress testing of the NetXen driver, I found that my machine was 
-> dying in all sorts of weird ways.  I saw several different crashes, BUG 
-> messages in the TCP stack and some assert messages in the TCP stack as well.  
-> I really didn't think that there could be six different bugs all at once in 
-> the TCP/IP stack, so I started looking at possible memory corruption.
+On Wed, 2007-09-19 at 06:07 +0800, Jeff Garzik wrote:
+> Bryan Wu wrote: 
+> >>From 157dfddae50708a716c2a42a314eccb9621d8793 Mon Sep 17 00:00:00
+> 2001 
+> > From: Alex Landau <lirsb@yahoo.com> 
+> > Date: Sun, 5 Aug 2007 15:58:03 +0800 
+> > Subject: [PATCH] Blackfin Ethernet MAC driver: add function to
+> change the MAC address 
+> > 
+> > Alex Landau writes in the forums: 
+> >   Previously, changing the MAC address (e.g. via ifconfig) resulted 
+> >   in a generic function to be called that only changed a variable
+> in 
+> >   memory. This patch also updated the Blackfin MAC address
+> registers 
+> >   to filter the correct new MAC. 
+> > 
+> > Signed-off-by: Alex Landau <lirsb@yahoo.com> 
+> > Signed-off-by: Mike Frysinger <michael.frysinger@analog.com> 
+> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 > 
-> I first saw this on 2.6.16-rt22 with a backported netxen driver from 2.6.22.  
-> I figured I should try the latest kernel, so I tried it on 2.6.23-rc6-git7 
-> but could not trigger the slab corruption messages with CONFIG_DEBUG_SLAB, so 
-> I figured the race must only exist in the -RT kernels.  Next I tried 
-> 2.6.23-rc6-git7-rt1 (I applied patch-2.6.23-rc4-rt1 patch to 2.6.23-rc6-git7 
-> and fixed the 5 failing hunks).  After an hour or so, lots of slab corruption 
-> messages showed up:
+> ACK patches 1-3... but can you regenerate them against 
+> netdev-2.6.git#upstream (or davem/net-2.6.24.git)?
+
+Excellent, I will resend the patch against the netdev-2.6.git#upstream
+ASAP.
+
+Thanks
+-Bryan Wu
 > 
-> Slab corruption: size-2048 start=f40c4670, len=2048
-> Slab corruption: size-2048 start=f313cf48, len=2048
-> Redzone: 0x9f911029d74e35b/0x9f911029d74e35b.
-> Last user: [<c0166be4>](kfree+0x80/0x95)
-> 010: 6b 6b 00 0e 1e 00 16 13 00 0e 1e 00 19 3d 08 00
-> 020: 45 00 05 dc 92 ab 40 00 40 11 8a 5b 0a 02 02 03
-> 030: 0a 02 02 04 80 0c 80 0d 05 c8 dc 39 00 00 00 00
-> 040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> Prev obj: start=f313c730, len=2048
-> Redzone: 0xd84156c5635688c0/0xd84156c5635688c0.
-> Last user: [<f8f06186>](netxen_post_rx_buffers_nodb+0x62/0x1f0 [netxen_nic])
-> 000: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> 010: 5a 5a 00 0e 1e 00 16 13 00 0e 1e 00 19 3d 08 00
-> Next obj: start=f313d760, len=2048
-> Redzone: 0xd84156c5635688c0/0xd84156c5635688c0.
-> Last user: [<f8f06186>](netxen_post_rx_buffers_nodb+0x62/0x1f0 [netxen_nic])
-> 000: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> 010: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> Slab corruption: size-2048 start=f395a6f0, len=2048
-> Redzone: 0x9f911029d74e35b/0x9f911029d74e35b.
-> Last user: [<c0166be4>](kfree+0x80/0x95)
-> 010: 6b 6b 00 0e 1e 00 16 13 00 0e 1e 00 19 3d 08 00
-> 020: 45 00 05 dc 92 ac 40 00 40 11 8a 5a 0a 02 02 03
-> 030: 0a 02 02 04 80 0c 80 0d 05 c8 dc 39 00 00 00 00
-> 040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> Next obj: start=f395af08, len=2048
-> Redzone: 0xd84156c5635688c0/0xd84156c5635688c0.
-> Last user: [<f8f06186>](netxen_post_rx_buffers_nodb+0x62/0x1f0 [netxen_nic])
-> 000: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> 010: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> Redzone: 0x9f911029d74e35b/0x9f911029d74e35b.
-> Last user: [<c0166be4>](kfree+0x80/0x95)
-> 010: 6b 6b 00 0e 1e 00 16 13 00 0e 1e 00 19 3d 08 00
-> 020: 45 00 05 dc 92 aa 40 00 40 11 8a 5c 0a 02 02 03
-> 030: 0a 02 02 04 80 0c 80 0d 05 c8 dc 39 00 00 00 00
-> 040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> Next obj: start=f40c4e88, len=2048
-> Redzone: 0xd84156c5635688c0/0xd84156c5635688c0.
-> Last user: [<f8f06186>](netxen_post_rx_buffers_nodb+0x62/0x1f0 [netxen_nic])
-> 000: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
-> 010: 5a 5a 00 0e 1e 00 16 13 00 0e 1e 00 19 3d 08 00
-> 
-> The stress test that I am running is basically a mixed bag of stuff I threw 
-> together.  It runs eight concurrent netperf TCP streams and two concurrent 
-> UDP streams in both directions, (and on both 10GbE interfaces), ping -f in 
-> both directions, some more disk/cpu loads in the background and a little bit 
-> of NFS traffic thrown in for good measure.
-> 
-> --Vernon
