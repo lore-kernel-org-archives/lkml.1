@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762535AbXISReJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbXISRed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762535AbXISReJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762344AbXISRcw
+	id S1762693AbXISRed (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762402AbXISRdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:32:52 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37695 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762338AbXISRcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:32:51 -0400
-Date: Wed, 19 Sep 2007 10:32:49 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs rcu_read_lock()
-Message-ID: <20070919173249.GE8666@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070919104125.286538000@chello.nl> <20070919105054.332308000@chello.nl> <d120d5000709190717y69dca8b3tf4a17b920267806b@mail.gmail.com> <20070919163111.05c18021@twins> <d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com> <20070919153750.GB8666@linux.vnet.ibm.com> <d120d5000709190959p351c7ba4mdb1eeb433098e0e6@mail.gmail.com>
+	Wed, 19 Sep 2007 13:33:11 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51943 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762215AbXISRdJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:33:09 -0400
+Date: Wed, 19 Sep 2007 10:33:07 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Anton Altaparmakov <aia21@cam.ac.uk>, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [00/17] [RFC] Virtual Compound Page Support
+In-Reply-To: <20070919103400.7bc8ffd9.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0709191030370.11138@schroedinger.engr.sgi.com>
+References: <20070919033605.785839297@sgi.com> <3A6E599E-07AC-4273-8643-ADFC8014D3E6@cam.ac.uk>
+ <20070919103400.7bc8ffd9.dada1@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000709190959p351c7ba4mdb1eeb433098e0e6@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 12:59:10PM -0400, Dmitry Torokhov wrote:
-> On 9/19/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > On Wed, Sep 19, 2007 at 11:16:21AM -0400, Dmitry Torokhov wrote:
-> > > On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > > On Wed, 19 Sep 2007 10:17:25 -0400 "Dmitry Torokhov"
-> > > > <dmitry.torokhov@gmail.com> wrote:
-> > > >
-> > > > > Hi Peter,
-> > > > >
-> > > > > On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > > > > Warn when rcu_dereference() is not used in combination with rcu_read_lock()
-> > > > > >
-> > > > >
-> > > > > According to Paul it is fine to use RCU primitives (when accompanied
-> > > > > with proper comments) when the read-size critical section is guarded
-> > > > > by spin_lock_irqsave()/spin_lock_irqsrestore() instead of
-> > > > > rcu_read_lock()/rcu_read_unlock() and writers synchronize with
-> > > > > synchronize_sched(), not synchronize_rcu(). Your patch will trigger
-> > > > > warnign on such valid usages.
-> > > > >
-> > > >
-> > > > Sounds fragile to begin with. But you're right in that that is valid
-> > > > for Linux as you know it. However in -rt most/all spinlocks are
-> > > > converted to sleeping locks. In that case sync_sched() is not enough.
-> > >
-> > > OK, then it goes beyond RCU... We need to come up with something that
-> > > can be used to synchronize with IRQ handlers (quite often in driver
-> > > code one needs to be sure that current invocation of IRQ handler
-> > > completed before doing something). And once we have it splinlock + RCU
-> > > users can just use that method.
-> >
-> > But Peter's approach would not cause a problem here -- you wouldn't be
-> > doing an rcu_dereference from within the IRQ handler in this case, right?
-> 
-> Yes I do. Along with list_for_each_rcu().
+On Wed, 19 Sep 2007, Eric Dumazet wrote:
 
-OK, in that case it does indeed need to be handled.
+> 1) Only power of two allocations are good candidates, or we waste RAM
 
-							Thanx, Paul
+Correct.
 
-> > That said, we will need something to handle threaded interrupts, since
-> > synchronize_sched() only waits for hardirq, NMI, SMI, etc., and not
-> > threaded IRQs.
-> >
-> >                                                        Thanx, Paul
-> >
-> 
-> -- 
-> Dmitry
+> 2) On i386 machines, we have a small vmalloc window. (128 MB default value)
+>   Many servers with >4GB memory (PAE) like to boot with vmalloc=32M option to get 992MB of LOWMEM.
+>   If we allow some slub caches to fallback to vmalloc land, we'll have problems to tune this.
+
+We would first do the vmalloc conversion to GFP_VFALLBACK which would 
+reduce the vmalloc requirements of drivers and core significantly. The 
+patchset should actually reduce the vmalloc space requirements 
+significantly. They are only needed in situations where the page allocator 
+cannot provide a contiguous mapping and that gets rarer the better Mel's 
+antifrag code works.
+ 
+> 4) vmalloc() currently uses a linked list of vm_struct. Might need something more scalable.
+
+If its rarely used then its not that big of a deal. The better the anti 
+fragmentation measures the less vmalloc use.
