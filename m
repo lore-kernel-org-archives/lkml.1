@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbXISDwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXISD7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbXISDwr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 23:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbXISDwe
+	id S1753739AbXISD7g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 23:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbXISD73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 23:52:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49875 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751497AbXISDwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 23:52:33 -0400
-Date: Tue, 18 Sep 2007 20:50:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rene Herman <rene.herman@gmail.com>
-cc: Andrea Arcangeli <andrea@suse.de>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <46F09A80.8020605@gmail.com>
-Message-ID: <alpine.LFD.0.999.0709182049480.16478@woody.linux-foundation.org>
-References: <20070911060349.993975297@sgi.com> <200709161853.12050.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com>
- <200709181116.22573.nickpiggin@yahoo.com.au>
- <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org>
- <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org>
- <46F09A80.8020605@gmail.com>
+	Tue, 18 Sep 2007 23:59:29 -0400
+Received: from gw.goop.org ([64.81.55.164]:38266 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751935AbXISD72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 23:59:28 -0400
+Message-ID: <46F09EA1.7060606@goop.org>
+Date: Tue, 18 Sep 2007 20:59:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andi Kleen <ak@suse.de>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 3/3] Time to make CONFIG_PARAVIRT non-experimental.
+References: <1189747054.7262.34.camel@localhost.localdomain> <200709181257.41530.ak@suse.de> <1190151272.7262.175.camel@localhost.localdomain> <200709182352.25118.ak@suse.de>
+In-Reply-To: <200709182352.25118.ak@suse.de>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> At least the Xen port seems to have specific requirements
+> and essentially only work on xen-unstable (?) [or at least
+> some very new Xen version] which probably very few
+> people use.
+>   
 
+Only on 64-bit hosts, because of bugs in the 64-bit compat layer. 
+32-on-32 and 64-on-64 (when its done) should work fine.
 
-On Wed, 19 Sep 2007, Rene Herman wrote:
-> 
-> Well, not so sure about that. What if one of your expected uses for example is
-> video data storage -- lots of data, especially for multiple streams, and needs
-> still relatively fast machinery. Why would you care for the overhead af
-> _small_ blocks?
+BTW, what does "xm info" say on your system that fails?  I'll try to put
+a more graceful failure in there.
 
-.. so work with an extent-based filesystem instead.
-
-16k blocks are total idiocy. If this wasn't about a "support legacy 
-customers", I think the whole patch-series has been a total waste of time.
-
-		Linus
+    J
