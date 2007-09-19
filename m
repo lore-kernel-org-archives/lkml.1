@@ -1,53 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbXISSjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762276AbXISSk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762326AbXISSjb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 14:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbXISSjV
+	id S1762276AbXISSk4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 14:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbXISSkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 14:39:21 -0400
-Received: from palrel10.hp.com ([156.153.255.245]:49825 "EHLO palrel10.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753718AbXISSjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 14:39:20 -0400
-Message-ID: <46F16CC1.9090302@hp.com>
-Date: Wed, 19 Sep 2007 11:38:57 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ulrich Drepper <drepper@redhat.com>, netdev <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: follow-up: discrepancy with POSIX
-References: <46F13E8B.4050309@redhat.com> <p73sl5aveqh.fsf@bingen.suse.de>	<46F15305.2030507@redhat.com>	<20070919172653.GB18045@one.firstfloor.org>	<46F1608E.7060908@redhat.com>	<20070919175700.GC18045@one.firstfloor.org>	<46F16418.3070706@redhat.com> <20070919183004.GA18707@one.firstfloor.org>
-In-Reply-To: <20070919183004.GA18707@one.firstfloor.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 19 Sep 2007 14:40:49 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58778 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751468AbXISSks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 14:40:48 -0400
+Date: Wed, 19 Sep 2007 19:45:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: majkls <majkls@prepere.com>, bunk@fs.tum.de, linux-kernel@vger.kernel.org
+Subject: Re: sys_chroot+sys_fchdir Fix
+Message-ID: <20070919194559.36015307@the-village.bc.nu>
+In-Reply-To: <46F16A0A.3070402@tmr.com>
+References: <46F0CD96.9030807@prepere.com>
+	<20070919104018.3a6bcfb1@the-village.bc.nu>
+	<46F16A0A.3070402@tmr.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Wed, Sep 19, 2007 at 11:02:00AM -0700, Ulrich Drepper wrote:
-> 
->>>on UDP/RAW and it's certainly possible to connect() to that. 
->>
->>Where do you get this from?  And where is this implemented?  I don't
-> 
-> 
-> Sorry it's actually loopback, not broadcast as implemented in Linux.
-> In Linux it's implemented in ip_route_output_slow(). Essentially
-> converted to 127.0.0.1
-> 
-> I think it's traditional BSD behaviour but couldn't find it on
-> a quick look in FreeBSD source (but haven't looked very intensively) 
+> I thought this was to prevent breaking out of chroot as a normal user.
+> 	ie. chroot /var/myjail /bin/su - guest
+> or similar.
 
-One has to set their way-back machine pretty far back to find the *BSD 
-bits which used 0.0.0.0 as the "all nets, all subnets" (to mis-use a 
-term) broadcast IPv4 address when sending.  Perhaps as far back as the 
-time before HP-UX 7 or SunOS4.  The bit errors in my dimm memory get 
-pretty dense that far back...
-
-It has hung-on in various places (stacks) as an "accepted" broadcast IP 
-in the receive path, but not the send path for quite possibly decades now.
-
-rick jones
+Normal users cannot use chroot() themselves so they can't use chroot to
+get back out
