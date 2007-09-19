@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbXISWd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbXISWeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbXISWd5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 18:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbXISWdt
+	id S1757697AbXISWeY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 18:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXISWeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 18:33:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48187 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750853AbXISWds (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 18:33:48 -0400
-Date: Wed, 19 Sep 2007 15:33:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, discuss@x86-64.org
-Subject: Re: [patch 3/7] Use extended crashkernel command line on x86_64
-Message-Id: <20070919153329.cfe714e3.akpm@linux-foundation.org>
-In-Reply-To: <20070913161429.387888398@strauss.suse.de>
-References: <20070913161428.343951643@strauss.suse.de>
-	<20070913161429.387888398@strauss.suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Sep 2007 18:34:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44921 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751338AbXISWeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 18:34:14 -0400
+Message-ID: <46F19ED6.20501@redhat.com>
+Date: Wed, 19 Sep 2007 18:12:38 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Anton Altaparmakov <aia21@cam.ac.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       marc.smith@esmail.mcc.edu
+Subject: Re: VM/VFS bug with large amount of memory and file systems?
+References: <C2A8AED2-363F-4131-863C-918465C1F4E1@cam.ac.uk>	<1189850897.21778.301.camel@twins>	<20070915035228.8b8a7d6d.akpm@linux-foundation.org>	<13126578-A4F8-43EA-9B0D-A3BCBFB41FEC@cam.ac.uk>	<20070917163257.331c7605@twins>	<46EEB532.3060804@redhat.com>	<20070917131526.e8db80fe.akpm@linux-foundation.org>	<46EEE7B7.1070206@redhat.com> <20070917141127.ab2ae148.akpm@linux-foundation.org>
+In-Reply-To: <20070917141127.ab2ae148.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Sep 2007 18:14:31 +0200
-Bernhard Walle <bwalle@suse.de> wrote:
+Andrew Morton wrote:
+> On Mon, 17 Sep 2007 16:46:47 -0400
+> Rik van Riel <riel@redhat.com> wrote:
 
-> +#ifdef CONFIG_KEXEC
-> +static inline void reserve_crashkernel(void)
-> +{
+>> Is the slab defragmentation code in -mm or upstream already
+>> or can I find it on the mailing list?
+> 
+> Is on lkml and linux-mm: http://lkml.org/lkml/2007/8/31/329
 
-The x86_64 function was made inline, so it will actually end up in
-.text.init.  But the i386 equivalent function was not inlined so I'm not
-sure whether it will end up in .text or in .text.init.
+> I think the whole approach is reasonable.  It's mainly a matter of going
+> through it all with a toothcomb 
 
-Could you fix all that up please?
+I've spent the last two days combing through the patches.
+
+Except for the one doubt I had (resolved in email), and
+one function name comment (on patch 18/26) the code looks
+good to me.
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
