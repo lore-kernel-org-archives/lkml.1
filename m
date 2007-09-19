@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759852AbXISMpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbXISMq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759852AbXISMpb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 08:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXISMpU
+	id S1759955AbXISMq5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 08:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbXISMqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 08:45:20 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:38578 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754825AbXISMpT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 08:45:19 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 19 Sep 2007 08:43:42 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: hskinnemoen@atmel.com
-Subject: [PATCH] AVR32:  Drop support for redundant "keepinitrd" boot-time
- parm.
-Message-ID: <Pine.LNX.4.64.0709190840020.20641@localhost.localdomain>
+	Wed, 19 Sep 2007 08:46:50 -0400
+Received: from sacred.ru ([62.205.161.221]:58794 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755664AbXISMqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 08:46:49 -0400
+Message-ID: <46F11997.7030005@openvz.org>
+Date: Wed, 19 Sep 2007 16:44:07 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Andrew Morton <akpm@osdl.org>
+CC: "J. Bruce Fields" <bfields@fieldses.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH] Use list_first_entry in locks_wake_up_blocks
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 19 Sep 2007 16:46:29 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This routine deletes all the elements from the list
+with the "while (!list_empty())" loop, and we already
+have a list_first_entry() macro to help it look nicer :)
 
-Given the existing "retain_initrd" boot-time parameter defined in
-init/initramfs.c, there appears to be no need for the equivalent
-"keepinitrd" parameter.
-
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
 ---
 
-  not compile-tested, so i'll leave it with haavard to make the final
-call.
-
-  the arm architecture also defines that same parm, and it may very
-well be redundant, too.
-
-diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-index 82cf708..480760b 100644
---- a/arch/avr32/mm/init.c
-+++ b/arch/avr32/mm/init.c
-@@ -224,19 +224,9 @@ void free_initmem(void)
-
- #ifdef CONFIG_BLK_DEV_INITRD
-
--static int keep_initrd;
--
- void free_initrd_mem(unsigned long start, unsigned long end)
+diff --git a/fs/locks.c b/fs/locks.c
+index 746dc70..5fa072a 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -534,7 +534,9 @@ static void locks_insert_block(struct fi
+ static void locks_wake_up_blocks(struct file_lock *blocker)
  {
--	if (!keep_initrd)
--		free_area(start, end, "initrd");
--}
--
--static int __init keepinitrd_setup(char *__unused)
--{
--	keep_initrd = 1;
--	return 1;
-+	free_area(start, end, "initrd");
- }
-
--__setup("keepinitrd", keepinitrd_setup);
- #endif
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+ 	while (!list_empty(&blocker->fl_block)) {
+-		struct file_lock *waiter = list_entry(blocker->fl_block.next,
++		struct file_lock *waiter;
++
++		waiter = list_first_entry(&blocker->fl_block,
+ 				struct file_lock, fl_block);
+ 		__locks_delete_block(waiter);
+ 		if (waiter->fl_lmops && waiter->fl_lmops->fl_notify)
