@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbXISE56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbXISFHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbXISE56 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 00:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbXISE5t
+	id S1753644AbXISFHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 01:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXISFHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 00:57:49 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50703 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbXISE5s (ORCPT
+	Wed, 19 Sep 2007 01:07:32 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:42215 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751415AbXISFHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 00:57:48 -0400
-Message-ID: <46F0AC06.1030208@gmail.com>
-Date: Wed, 19 Sep 2007 06:56:38 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrea Arcangeli <andrea@suse.de>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-References: <20070911060349.993975297@sgi.com> <200709161853.12050.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com> <200709181116.22573.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org> <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org> <46F09A80.8020605@gmail.com> <alpine.LFD.0.999.0709182049480.16478@woody.linux-foundation.org> <46F0A4FB.2020901@gmail.com> <alpine.LFD.0.999.0709182131560.16478@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709182131560.16478@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 19 Sep 2007 01:07:31 -0400
+Date: Tue, 18 Sep 2007 22:05:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: wim@iguana.be, akpm <akpm@linux-foundation.org>
+Subject: [PATCH -mm] watchdog: fix help text
+Message-Id: <20070918220529.20d57884.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/19/2007 06:33 AM, Linus Torvalds wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> On Wed, 19 Sep 2007, Rene Herman wrote:
+Fix typos in uniform watchdog driver help text.
 
->> I do feel larger blocksizes continue to make sense in general though. Packet
->> writing on CD/DVD is a problem already today since the hardware needs 32K or
->> 64K blocks and I'd expect to see more of these and similiar situations when
->> flash gets (even) more popular which it sort of inevitably is going to be.
-> 
-> .. that's what scatter-gather exists for.
-> 
-> What's so hard with just realizing that physical memory isn't contiguous?
-> 
-> It's why we have MMU's. It's why we have scatter-gather. 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/watchdog/core/Kconfig |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-So if I understood that right, you'd suggest to deal with devices with 
-larger physical blocksizes at some level above the current blocklayer.
-
-Not familiar enough with either block or fs to be able to argue that 
-effectively...
-
-Rene.
-
+--- linux-2.6.23-rc6-mm1.orig/drivers/watchdog/core/Kconfig
++++ linux-2.6.23-rc6-mm1/drivers/watchdog/core/Kconfig
+@@ -9,12 +9,12 @@ config WATCHDOG_CORE
+ 	depends on EXPERIMENTAL
+ 	default m
+ 	---help---
+-	  Say Y here is you want to use the new uniform watchdog device
++	  Say Y here if you want to use the new uniform watchdog device
+ 	  driver. This driver provides a framework for all watchdog
+ 	  device drivers and gives them the /dev/watchdog interface (and
+-	  later also the sysfs interface)
++	  later also the sysfs interface).
+ 
+-	  At this moment only the iTCO_wdt driver uses this new frame-work.
++	  At this moment only the iTCO_wdt driver uses this new framework.
+ 
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called watchdog_core.
