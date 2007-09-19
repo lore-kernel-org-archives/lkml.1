@@ -1,57 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbXISFgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbXISFo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbXISFgZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 01:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbXISFgQ
+	id S1754125AbXISFo1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 01:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbXISFoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 01:36:16 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:57370 "EHLO koto.vergenet.net"
+	Wed, 19 Sep 2007 01:44:20 -0400
+Received: from mail.queued.net ([207.210.101.209]:3446 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751969AbXISFgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 01:36:15 -0400
-X-Greylist: delayed 1786 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Sep 2007 01:36:15 EDT
-Subject: [IA64] Kexec: Remove vector from ia64_machine_kexec()
-Date: Wed, 19 Sep 2007 14:02:20 +0900
-To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-Cc: Eric Biederman <ebiederm@xmission.com>, Nan hai Zou <nanhai.zou@intel.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Alex Williamson <alex.williamson@hp.com>
-From: Simon Horman <horms@verge.net.au>
-Message-Id: <20070919050626.8A0024F811@tabatha.lab.ultramonkey.org>
+	id S1751540AbXISFoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 01:44:19 -0400
+Date: Wed, 19 Sep 2007 01:44:18 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: video4linux-list@redhat.com
+Cc: v4l-dvb-maintainer@linuxtv.org, corbet@lwn.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] cafe_ccic: default to allocating DMA buffers at probe time
+Message-Id: <20070919014418.073543bc.dilinger@queued.net>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The use of vector in ia64_machine_kexec() seems spurios,
-and removing it simplifies the code slightly.
+By default, we allocate DMA buffers when actually reading from the video
+capture device.  On a system with 128MB or 256MB of ram, it's very easy
+for that memory to quickly become fragmented.  We've had users report
+having 30+MB of memory free, but the cafe_ccic driver is still unable to
+allocate DMA buffers.
 
-As suggested by Alex Williamson <alex.williamson@hp.com>
+Our workaround has been to make use of the 'alloc_bufs_at_load' parameter
+to allocate DMA buffers during device probing.  This patch makes DMA
+buffer allocation happen during device probe by default, and changes
+the parameter to 'alloc_bufs_at_read'.  The camera hardware is there,
+if the cafe_ccic driver is enabled/loaded it should do its best to ensure
+that the camera is actually usable; delaying DMA buffer allocation
+saves an insignicant amount of memory, and causes the driver to be much
+less useful.
+---
 
-Cc: Alex Williamson <alex.williamson@hp.com>
-Signed-off-by: Simon Horman <horms@verge.net.au>
+ drivers/media/video/cafe_ccic.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/arch/ia64/kernel/machine_kexec.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/machine_kexec.c	2007-09-19 13:43:42.000000000 +0900
-+++ linux-2.6/arch/ia64/kernel/machine_kexec.c	2007-09-19 13:44:11.000000000 +0900
-@@ -79,7 +79,6 @@ static void ia64_machine_kexec(struct un
- 	relocate_new_kernel_t rnk;
- 	void *pal_addr = efi_get_pal_addr();
- 	unsigned long code_addr = (unsigned long)page_address(image->control_code_page);
--	unsigned long vector;
- 	int ii;
+diff --git a/drivers/media/video/cafe_ccic.c b/drivers/media/video/cafe_ccic.c
+index ef53618..3588a59 100644
+--- a/drivers/media/video/cafe_ccic.c
++++ b/drivers/media/video/cafe_ccic.c
+@@ -63,13 +63,13 @@ MODULE_SUPPORTED_DEVICE("Video");
+  */
  
- 	BUG_ON(!image);
-@@ -107,11 +106,8 @@ static void ia64_machine_kexec(struct un
- 	/* unmask TPR and clear any pending interrupts */
- 	ia64_setreg(_IA64_REG_CR_TPR, 0);
- 	ia64_srlz_d();
--	vector = ia64_get_ivr();
--	while (vector != IA64_SPURIOUS_INT_VECTOR) {
-+	while (ia64_get_ivr() != IA64_SPURIOUS_INT_VECTOR)
- 		ia64_eoi();
--		vector = ia64_get_ivr();
--	}
- 	platform_kernel_launch_event();
- 	rnk = (relocate_new_kernel_t)&code_addr;
- 	(*rnk)(image->head, image->start, ia64_boot_param,
+ #define MAX_DMA_BUFS 3
+-static int alloc_bufs_at_load = 0;
+-module_param(alloc_bufs_at_load, bool, 0444);
+-MODULE_PARM_DESC(alloc_bufs_at_load,
+-		"Non-zero value causes DMA buffers to be allocated at module "
+-		"load time.  This increases the chances of successfully getting "
+-		"those buffers, but at the cost of nailing down the memory from "
+-		"the outset.");
++static int alloc_bufs_at_read = 0;
++module_param(alloc_bufs_at_read, bool, 0444);
++MODULE_PARM_DESC(alloc_bufs_at_read,
++		"Non-zero value causes DMA buffers to be allocated when the "
++		"video capture device is read, rather than at module load "
++		"time.  This saves memory, but decreases the chances of "
++		"successfully getting those buffers.");
+ 
+ static int n_dma_bufs = 3;
+ module_param(n_dma_bufs, uint, 0644);
+@@ -1503,7 +1503,7 @@ static int cafe_v4l_release(struct inode *inode, struct file *filp)
+ 	}
+ 	if (cam->users == 0) {
+ 		cafe_ctlr_power_down(cam);
+-		if (! alloc_bufs_at_load)
++		if (alloc_bufs_at_read)
+ 			cafe_free_dma_bufs(cam);
+ 	}
+ 	mutex_unlock(&cam->s_mutex);
+@@ -2162,7 +2162,7 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+ 	/*
+ 	 * If so requested, try to get our DMA buffers now.
+ 	 */
+-	if (alloc_bufs_at_load) {
++	if (!alloc_bufs_at_read) {
+ 		if (cafe_alloc_dma_bufs(cam, 1))
+ 			cam_warn(cam, "Unable to alloc DMA buffers at load"
+ 					" will try again later.");
