@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbXISQcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761653AbXISQdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761524AbXISQcY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbXISQcO
+	id S1761653AbXISQdd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 12:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbXISQdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:32:14 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46463 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758637AbXISQcN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:32:13 -0400
-Date: Wed, 19 Sep 2007 17:39:04 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: drepper@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: follow-up: discrepancy with POSIX
-Message-ID: <20070919173904.3987ec1b@the-village.bc.nu>
-In-Reply-To: <20070919.091510.00787167.davem@davemloft.net>
-References: <46F13E8B.4050309@redhat.com>
-	<20070919.091510.00787167.davem@davemloft.net>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Sep 2007 12:33:23 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:2928 "EHLO baikonur.stro.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754930AbXISQdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 12:33:22 -0400
+Date: Wed, 19 Sep 2007 18:33:18 +0200
+From: maximilian attems <max@stro.at>
+To: Michael Chan <mchan@broadcom.com>
+Cc: David Miller <davem@davemloft.net>, vda.linux@googlemail.com,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+Subject: Re: bnx2 dirver's firmware images
+Message-ID: <20070919163318.GG6618@stro.at>
+References: <200709181823.26429.vda.linux@googlemail.com> <1190141114.9540.216.camel@dell> <20070918.112337.74737433.davem@davemloft.net> <1190145951.9540.230.camel@dell>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190145951.9540.230.camel@dell>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 09:15:10 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+On Tue, 18 Sep 2007, Michael Chan wrote:
 
-> From: Ulrich Drepper <drepper@redhat.com>
-> Date: Wed, 19 Sep 2007 08:21:47 -0700
-> 
-> > If you think the POSIX spec is wrong (and can point to other
-> > implementations doing the same as Linux) let me know and I'll work on
-> > getting the spec changed.
-> 
-> The whole AF_UNSPEC thing I'm almost certain comes from BSD, which has
-> behaved that way for centuries.
+> The bnx2 firmware changes quite frequently.  A new driver quite often
+> requires new firmware to work correctly.  Splitting them up makes things
+> difficult for the user.
 
-We got it from the 1003.4g draft socket specification if I remember
-rightly. Its entirely plausible that got it from 4BSE.
+sorry didn't check, what's the license of the firmware?
+ 
+> The firmware in tg3 is a lot more mature and I don't expect it to
+> change.  I think tg3 is better suited for using request_firmware().
 
-Alan
+well thanks that would help us a lot,
+we have to strip the firmware for Debian for the upcoming Lenny release.
+as the shipping exception for the previous 2 releases will not be granted
+again. so a separate firmware would be great. also afaik only some boards
+need it. it is a pressing need for us as tg3 with stripped firmware of
+course doesn't build.
+
+-- 
+maks
