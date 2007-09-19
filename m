@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbXISMq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbXISMs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759955AbXISMq5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 08:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbXISMqu
+	id S1760026AbXISMs2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 08:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXISMsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 08:46:50 -0400
-Received: from sacred.ru ([62.205.161.221]:58794 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755664AbXISMqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 08:46:49 -0400
-Message-ID: <46F11997.7030005@openvz.org>
-Date: Wed, 19 Sep 2007 16:44:07 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: "J. Bruce Fields" <bfields@fieldses.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [PATCH] Use list_first_entry in locks_wake_up_blocks
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 19 Sep 2007 16:46:29 +0400 (MSD)
+	Wed, 19 Sep 2007 08:48:21 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:41246 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754766AbXISMsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 08:48:20 -0400
+Date: Wed, 19 Sep 2007 14:50:23 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: "Rafael J\. Wysocki" <rjw@sisk.pl>
+Cc: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>,
+       Duncan.Perrett@elekta.com, Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCI Interrupt
+Message-ID: <20070919125023.GC3226@ff.dom.local>
+References: <20070919101430.GA3226@ff.dom.local> <200709191432.12831.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709191432.12831.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This routine deletes all the elements from the list
-with the "while (!list_empty())" loop, and we already
-have a list_first_entry() macro to help it look nicer :)
+On Wed, Sep 19, 2007 at 02:32:12PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, 19 September 2007 12:14, Jarek Poplawski wrote:
+> > On 18-09-2007 16:42, Rafael J. Wysocki wrote:
+> > ...
+> > > 
+> > > Hm, edge-triggered interrupts cannot be shared, AFAIK.
+> > > 
+> > 
+> > Let's agree it's only a superstition...
+> > 
+> > http://en.wikipedia.org/wiki/Edge_triggered_interrupt
+> 
+> Well, if this is an MSI (which is edge-triggered), for example, it cannot be
+> shared.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+I'd rather say: "which is handled like edge-triggered".
 
----
+> 
+> Also, you must use a level-triggered interrupt for SCI, because that has to be
+> shareable.
 
-diff --git a/fs/locks.c b/fs/locks.c
-index 746dc70..5fa072a 100644
---- a/fs/locks.c
-+++ b/fs/locks.c
-@@ -534,7 +534,9 @@ static void locks_insert_block(struct fi
- static void locks_wake_up_blocks(struct file_lock *blocker)
- {
- 	while (!list_empty(&blocker->fl_block)) {
--		struct file_lock *waiter = list_entry(blocker->fl_block.next,
-+		struct file_lock *waiter;
-+
-+		waiter = list_first_entry(&blocker->fl_block,
- 				struct file_lock, fl_block);
- 		__locks_delete_block(waiter);
- 		if (waiter->fl_lmops && waiter->fl_lmops->fl_notify)
+O.K. Let's agree we differ here a bit...
+
+Cheers,
+Jarek P.
