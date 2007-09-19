@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbXISPoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761076AbXISPsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761470AbXISPoO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbXISPnk
+	id S1761076AbXISPsF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbXISPrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:43:40 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:41619 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760740AbXISPng (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:43:36 -0400
-X-IronPort-AV: i="4.20,274,1186372800"; 
-   d="scan'208"; a="51816367:sNHT245052563"
-Subject: [PATCH 4/4] Blackfin EMAC driver: add a select for the PHYLIB of
-	this driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Robin Getz <robin.getz@analog.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Wed, 19 Sep 2007 23:37:41 +0800
-Message-Id: <1190216261.15707.31.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 19 Sep 2007 15:37:49.0492 (UTC) FILETIME=[08BBD740:01C7FAD3]
+	Wed, 19 Sep 2007 11:47:52 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60595 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755724AbXISPrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 11:47:51 -0400
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: netdev <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: follow-up: discrepancy with POSIX
+References: <46F13E8B.4050309@redhat.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 19 Sep 2007 17:47:50 +0200
+In-Reply-To: <46F13E8B.4050309@redhat.com>
+Message-ID: <p73sl5aveqh.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ulrich Drepper <drepper@redhat.com> writes:
 
-Since we are adding requirement for the PHYLIB for this driver, there should be a select for that
+> 
+>    fd = socket(AT_INET6, ...)
+> 
+>    connect(fd, ...some IPv6 address...)
+> 
+>    struct sockaddr_in6 sin6 = { .sin6_family = AF_INET6 };
+>    connect(fd, &sin6, sizeof (sin6));
 
-Cc: Robin Getz <robin.getz@analog.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- drivers/net/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+The standard way to undo connect is to use AF_UNSPEC. Code to handle
+that for dgram sockets is there. It's the same code for v4 and v6.
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index fd284a9..ebba92d 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -838,6 +838,8 @@ config BFIN_MAC
- 	tristate "Blackfin 536/537 on-chip mac support"
- 	depends on NET_ETHERNET && (BF537 || BF536) && (!BF537_PORT_H)
- 	select CRC32
-+	select MII
-+	select PHYLIB
- 	select BFIN_MAC_USE_L1 if DMA_UNCACHED_NONE
- 	help
- 	  This is the driver for blackfin on-chip mac device. Say Y if you want it
--- 
-1.5.2
+-Andi
 
