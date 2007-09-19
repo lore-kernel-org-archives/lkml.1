@@ -1,87 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbXISFo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbXISF4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbXISFo1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 01:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbXISFoU
+	id S1753766AbXISF4b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 01:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXISF4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 01:44:20 -0400
-Received: from mail.queued.net ([207.210.101.209]:3446 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751540AbXISFoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 01:44:19 -0400
-Date: Wed, 19 Sep 2007 01:44:18 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: video4linux-list@redhat.com
-Cc: v4l-dvb-maintainer@linuxtv.org, corbet@lwn.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cafe_ccic: default to allocating DMA buffers at probe time
-Message-Id: <20070919014418.073543bc.dilinger@queued.net>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Sep 2007 01:56:23 -0400
+Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:44800 "HELO
+	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751432AbXISF4W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 01:56:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ffmaOYmSDYHqji+IEd0txPRfqXyoG0y1O54UJEhpz0XBPVid/8hctHP5ObvLZKxSxtuubdgvWLPyO5g9W4asvkwxmI3DeRqJfLwhscetarDAtxdi0Dx92kJV5YC0JNkz8AeQqojAMsdZK15X339myAgIyD2GG/j6dEBQXexqdtw=  ;
+X-YMail-OSG: RjgSbTIVM1mnR1HJC..4mc9YuO5GGwbNPCTFgitw1RjkA_LzWZ.XZLFgI_jzUnlKjEoDdAcf0w--
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Two identical entries for "rtc" in /proc/devices
+Date: Tue, 18 Sep 2007 22:21:14 -0700
+User-Agent: KMail/1.9.6
+Cc: cebbert@redhat.com, linux-kernel@vger.kernel.org
+References: <46E07DDA.2040907@redhat.com> <20070915185020.16BB51F9EAA@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20070915221015.02aad5ea.akpm@linux-foundation.org>
+In-Reply-To: <20070915221015.02aad5ea.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709182221.14751.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By default, we allocate DMA buffers when actually reading from the video
-capture device.  On a system with 128MB or 256MB of ram, it's very easy
-for that memory to quickly become fragmented.  We've had users report
-having 30+MB of memory free, but the cafe_ccic driver is still unable to
-allocate DMA buffers.
+On Saturday 15 September 2007, Andrew Morton wrote:
+> On Sat, 15 Sep 2007 11:50:21 -0700 David Brownell <david-b@pacbell.net> wrote:
+> 
+> > > On Thu, 06 Sep 2007 18:23:22 -0400 Chuck Ebbert <cebbert@redhat.com> wrote:
+> > >
+> > > > # ls -li
+> > > > total 0
+> > > > 4026532007 -r--r--r-- 1 root root 0 Sep  6 18:18 nvram
+> > > > 4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
+> > > > 4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
+> > > > 4026532056 -rw-r--r-- 1 root root 0 Sep  6 18:18 snd-page-alloc
+> > >
+> > > ...
+> > 
+> > Semes pretty clear that this must be procfs itself...
+> > when a filesystem sees a name in a directory, it should
+> > refuse to make another file with the same name.  And it
+> > should *never* reuse inode numbers...
+>
+> ...
+>
+> procfs can reject the attempt to create the file, but the bottom line
+> is that two different callsites are trying to create the same file.  One
+> of those callsites needs fixing?
 
-Our workaround has been to make use of the 'alloc_bufs_at_load' parameter
-to allocate DMA buffers during device probing.  This patch makes DMA
-buffer allocation happen during device probe by default, and changes
-the parameter to 'alloc_bufs_at_read'.  The camera hardware is there,
-if the cafe_ccic driver is enabled/loaded it should do its best to ensure
-that the camera is actually usable; delaying DMA buffer allocation
-saves an insignicant amount of memory, and causes the driver to be much
-less useful.
----
+Both of those call sites have code to handle procfs rejecting
+the file creation; nothing to fix.  And anyway, there's no way
+this is a *caller* bug!
 
- drivers/media/video/cafe_ccic.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+The missing step seems to be that proc_register() doesn't bother
+to check whether there's already an entry for that file.  Which
+is what the appended *UNTESTED* patch does (it compiles though).
 
-diff --git a/drivers/media/video/cafe_ccic.c b/drivers/media/video/cafe_ccic.c
-index ef53618..3588a59 100644
---- a/drivers/media/video/cafe_ccic.c
-+++ b/drivers/media/video/cafe_ccic.c
-@@ -63,13 +63,13 @@ MODULE_SUPPORTED_DEVICE("Video");
-  */
+- Dave
+
+--- g26.orig/fs/proc/generic.c	2007-09-18 22:08:44.000000000 -0700
++++ g26/fs/proc/generic.c	2007-09-18 22:14:07.000000000 -0700
+@@ -521,10 +521,11 @@ static const struct inode_operations pro
+ 	.setattr	= proc_notify_change,
+ };
  
- #define MAX_DMA_BUFS 3
--static int alloc_bufs_at_load = 0;
--module_param(alloc_bufs_at_load, bool, 0444);
--MODULE_PARM_DESC(alloc_bufs_at_load,
--		"Non-zero value causes DMA buffers to be allocated at module "
--		"load time.  This increases the chances of successfully getting "
--		"those buffers, but at the cost of nailing down the memory from "
--		"the outset.");
-+static int alloc_bufs_at_read = 0;
-+module_param(alloc_bufs_at_read, bool, 0444);
-+MODULE_PARM_DESC(alloc_bufs_at_read,
-+		"Non-zero value causes DMA buffers to be allocated when the "
-+		"video capture device is read, rather than at module load "
-+		"time.  This saves memory, but decreases the chances of "
-+		"successfully getting those buffers.");
+-static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp)
++static int proc_register(struct proc_dir_entry *dir, struct proc_dir_entry *dp)
+ {
+ 	unsigned int i;
+-	
++	struct proc_dir_entry *de;
++
+ 	i = get_inode_number();
+ 	if (i == 0)
+ 		return -EAGAIN;
+@@ -547,6 +548,16 @@ static int proc_register(struct proc_dir
+ 	}
  
- static int n_dma_bufs = 3;
- module_param(n_dma_bufs, uint, 0644);
-@@ -1503,7 +1503,7 @@ static int cafe_v4l_release(struct inode *inode, struct file *filp)
- 	}
- 	if (cam->users == 0) {
- 		cafe_ctlr_power_down(cam);
--		if (! alloc_bufs_at_load)
-+		if (alloc_bufs_at_read)
- 			cafe_free_dma_bufs(cam);
- 	}
- 	mutex_unlock(&cam->s_mutex);
-@@ -2162,7 +2162,7 @@ static int cafe_pci_probe(struct pci_dev *pdev,
- 	/*
- 	 * If so requested, try to get our DMA buffers now.
- 	 */
--	if (alloc_bufs_at_load) {
-+	if (!alloc_bufs_at_read) {
- 		if (cafe_alloc_dma_bufs(cam, 1))
- 			cam_warn(cam, "Unable to alloc DMA buffers at load"
- 					" will try again later.");
+ 	spin_lock(&proc_subdir_lock);
++
++	for (de = dir->subdir; de ; de = de->next) {
++		if (de->namelen != dp->namelen)
++			continue;
++		if (!memcmp(de->name, dp->name, de->namelen)) {
++			spin_unlock(&proc_subdir_lock);
++			return -EEXIST;
++		}
++	}
++
+ 	dp->next = dir->subdir;
+ 	dp->parent = dir;
+ 	dir->subdir = dp;
+
