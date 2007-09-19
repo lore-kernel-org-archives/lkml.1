@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbXISVa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbXISVde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088AbXISVa1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 17:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbXISVaO
+	id S1758049AbXISVde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbXISVd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 17:30:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45782 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbXISVaN (ORCPT
+	Wed, 19 Sep 2007 17:33:26 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:30635 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751387AbXISVd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 17:30:13 -0400
-Date: Wed, 19 Sep 2007 23:30:10 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andy Lutomirski <luto@myrealbox.com>
-Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       kernel1@cyberdogtech.com
-Subject: Re: A little coding style nugget of joy
-Message-ID: <20070919213010.GG18707@one.firstfloor.org>
-References: <20070919123401.9369534d.kernel1@cyberdogtech.com> <p73odfyvar1.fsf@bingen.suse.de> <46F19326.1040503@myrealbox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F19326.1040503@myrealbox.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 19 Sep 2007 17:33:26 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <46F194D5.9050800@am.sony.com>
+Date: Wed, 19 Sep 2007 14:29:57 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Andi Kleen <andi@firstfloor.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-tiny <Linux-tiny@selenic.com>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       Michael Opdenacker <michael@free-electrons.com>,
+       john cooper <john.cooper@third-harmonic.com>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [Announce] Linux-tiny project revival
+References: <46F1645D.9050406@am.sony.com> <p73fy1av4jc.fsf@bingen.suse.de>            <46F17B54.6070106@am.sony.com> <12631.1190234722@turing-police.cc.vt.edu>
+In-Reply-To: <12631.1190234722@turing-police.cc.vt.edu>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Sep 2007 21:30:25.0074 (UTC) FILETIME=[4A717920:01C7FB04]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is a terrible assumption in general (i.e. if filesize % blocksize 
-> is close to uniformly distributed).  If you remove one byte and the data 
-> is stored with blocksize B, then you either save zero bytes with 
-> probability 1-1/B or you save B bytes with probability 1/B.  The 
-> expected number of bytes saved is B*1/B=1.  Since expectation is linear, 
-> if you remove x bytes, the expected number of bytes saved is x (even if 
-> there is more than one byte removed per file).
+Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 19 Sep 2007 12:41:08 PDT, Tim Bird said:
+>> The patchkit gives a place for things to live while they are out
+>> of mainline, and still have multiple people use and work on them.
+> 
+> Is anybody working on testing that the patchkit "does no harm" for bigger
+> boxes (laptops, desktops, servers)? 
+Not to my knowledge.  Most of the things it provides are
+only activated by config options.  So my sense is that just
+applying the patches should be harmless.  But we'll need some
+runtime testing to see what affect some of these have on
+big iron.
 
-You didn't calculate the probability of actually saving a full block 
-or not (that's the only thing that matters). I assumed it's relatively
-small and can be ignored in practice since the amount of end white
-space is negligible compared to total file size.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
--Andi
