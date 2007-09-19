@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbXISLoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbXISLpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759502AbXISLoO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 07:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbXISLn4
+	id S1759082AbXISLpa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 07:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbXISLpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 07:43:56 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:49930 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754424AbXISLnz convert rfc822-to-8bit (ORCPT
+	Wed, 19 Sep 2007 07:45:23 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:46723 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755239AbXISLpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 07:43:55 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: [Jfs-discussion] [2/4] 2.6.23-rc6: known regressions
-Date: Wed, 19 Sep 2007 13:44:24 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       jfs-discussion@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <46E8187E.9000006@googlemail.com> <46E81ACE.6030305@googlemail.com> <1189685917.26427.10.camel@norville.austin.ibm.com>
-In-Reply-To: <1189685917.26427.10.camel@norville.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Wed, 19 Sep 2007 07:45:22 -0400
+Date: Wed, 19 Sep 2007 07:45:18 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Michael Boerner <michael@boernerconsulting.com>
+Subject: Re: [PATCH] Combine instrumentation menus in kernel/Kconfig.instrumentation
+Message-ID: <20070919114516.GH15500@Krystal>
+References: <20070918211259.GA14927@Krystal> <14754.1190151939@turing-police.cc.vt.edu> <20070919010627.GA24174@Krystal> <3956.1190181478@turing-police.cc.vt.edu> <20070919112033.GF15500@Krystal> <Pine.LNX.4.64.0709190731570.16870@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709191344.25808.oliver@neukum.org>
+In-Reply-To: <Pine.LNX.4.64.0709190731570.16870@localhost.localdomain>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:38:34 up 51 days, 11:57,  4 users,  load average: 2.03, 1.89, 1.60
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 13 September 2007 schrieb Dave Kleikamp:
-> On Wed, 2007-09-12 at 18:58 +0200, Michal Piotrowski wrote:
+* Robert P. J. Day (rpjday@mindspring.com) wrote:
+> On Wed, 19 Sep 2007, Mathieu Desnoyers wrote:
 > 
-> > Subject         : umount triggers a warning in jfs and takes almost a minute
-> > References      : http://lkml.org/lkml/2007/9/4/73
-> > Last known good : ?
-> > Submitter       : Oliver Neukum <oliver@neukum.org>
-> > Caused-By       : ?
-> > Handled-By      : ?
-> > Status          : unknown
+> > * Valdis.Kletnieks@vt.edu (Valdis.Kletnieks@vt.edu) wrote:
 > 
-> I'm still waiting to hear from Oliver whether or not this is actually a
-> regression.
+> > > Ahh, LTT. *that* I recognize.  Yeah, I count that as *one flavor*
+> > > of instrumentation. :)
+> 
+> mathieu clarified this in a previous email to me, but is LTT not
+> entirely superseded by LTT-ng?  just curious.
+> 
 
-OK, I've done test. On 2.6.22 I was unable to trigger the warning.
-On 2.6.23-rc6 I get the following warning in about 3/4 of all unmounts:
+Yes, LTTng supersedes LTT. It provides the ability to extract traces
+across execution layers (hypervisor, kernel, userspace) to perform
+performance analysis and debugging of applications at the system level.
+LTTng's approach differs from LTT in that it allows completely
+customizable instrumentation. We chose to provide that based on the
+previous LTT experience, where we have seen that adding instrumentation
+is very often required when digging deeply into a problem.
 
-Sep 19 13:08:04 oenone kernel: WARNING: at fs/jfs/jfs_logmgr.c:1643 jfs_flush_journal()
-Sep 19 13:08:04 oenone kernel:
-Sep 19 13:08:04 oenone kernel: Call Trace:
-Sep 19 13:08:04 oenone kernel:  [<ffffffff8860f962>] :jfs:jfs_flush_journal+0x26a/0x27d
-Sep 19 13:08:04 oenone kernel:  [<ffffffff8029fca1>] dispose_list+0xde/0xf7
-Sep 19 13:08:04 oenone kernel:  [<ffffffff885fd003>] :jfs:jfs_umount+0x30/0xe5
-Sep 19 13:08:04 oenone kernel:  [<ffffffff885f9a31>] :jfs:jfs_put_super+0xd/0x5e
-Sep 19 13:08:04 oenone kernel:  [<ffffffff8028ef8f>] generic_shutdown_super+0x60/0xf0
-Sep 19 13:08:04 oenone kernel:  [<ffffffff8028f02c>] kill_block_super+0xd/0x1e
-Sep 19 13:08:04 oenone kernel:  [<ffffffff8028f0f7>] deactivate_super+0x6a/0x82
-Sep 19 13:08:04 oenone kernel:  [<ffffffff802a2184>] sys_umount+0x249/0x25a
-Sep 19 13:08:04 oenone kernel:  [<ffffffff802616ff>] audit_syscall_entry+0x141/0x174
-Sep 19 13:08:04 oenone kernel:  [<ffffffff8020be8c>] tracesys+0xdc/0xe1
-Sep 19 13:08:04 oenone kernel:
+Mathieu
 
-This is on a partition of a usb mass storage device with 2K sector size.
-IMHO it is a regression. I am recompiling with CONFIG_JFS_DEBUG.
+> rday
+> -- 
+> ========================================================================
+> Robert P. J. Day
+> Linux Consulting, Training and Annoying Kernel Pedantry
+> Waterloo, Ontario, CANADA
+> 
+> http://crashcourse.ca
+> ========================================================================
 
-	Regards
-		Oliver
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
