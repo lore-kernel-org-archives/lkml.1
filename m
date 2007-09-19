@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761439AbXISQru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXISQtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761439AbXISQru (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbXISQrl
+	id S1761580AbXISQtg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 12:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759622AbXISQtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:47:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39204
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755687AbXISQrk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:47:40 -0400
-Date: Wed, 19 Sep 2007 09:47:24 -0700 (PDT)
-Message-Id: <20070919.094724.78016587.davem@davemloft.net>
-To: ossthema@de.ibm.com
-Cc: netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
-       tklein@de.ibm.com
-Subject: Re: [PATCH net-2.6.24] eHEA: poll function update for new NAPI
- scheme
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200709191740.30640.ossthema@de.ibm.com>
-References: <200709191740.30640.ossthema@de.ibm.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Sep 2007 12:49:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60674 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757654AbXISQtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 12:49:24 -0400
+Message-ID: <46F15305.2030507@redhat.com>
+Date: Wed, 19 Sep 2007 09:49:09 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: netdev <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: follow-up: discrepancy with POSIX
+References: <46F13E8B.4050309@redhat.com> <p73sl5aveqh.fsf@bingen.suse.de>
+In-Reply-To: <p73sl5aveqh.fsf@bingen.suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Date: Wed, 19 Sep 2007 17:40:30 +0200
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Update of ehea_poll function to work with new NAPI scheme.
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+Andi Kleen wrote:
+> The standard way to undo connect is to use AF_UNSPEC. Code to handle
+> that for dgram sockets is there. It's the same code for v4 and v6.
 
-Applied, thanks.
+I quoted the standard and it does not say anything about AF_UNSPEC.  So
+you cannot simply make such broad statements.
+
+I also don't say that this behavior should be removed.  It's certainly
+useful, very much so in fact.
+
+But the spec calls for a "null address" to be used and that's in my
+understanding something different from using AF_UNSPEC.
+
+I looked through Stevens TCP Illustrated Vol 2 and it seems not to
+mention resetting the address at all.  The POSIX spec certainly got this
+text from .1g.
+
+I cannot test it on other systems.  If somebody has access to some
+certified systems (and maybe others), write a bit of code which creates
+a DGRAM socket, connect to one address, call connect with a "null
+address", then connect to another address (which likely has to use a
+different interface since otherwise the connect will just succeed, it
+seems).
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFG8VMF2ijCOnn/RHQRAr9NAJwLxyql0kQnMGJNaPZlRGsuB6rGEACgog88
+WIWAFhuBWsjps7PdbcoumUQ=
+=oLxP
+-----END PGP SIGNATURE-----
