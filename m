@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbXISSQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762625AbXISSQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761502AbXISSQU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 14:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbXISSQL
+	id S1762625AbXISSQe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 14:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbXISSQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 14:16:11 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4508 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbXISSQJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 14:16:09 -0400
-Date: Wed, 19 Sep 2007 19:15:46 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie
-Subject: Re: 2.6.23-rc6: hanging ext3 dbench tests
-Message-ID: <20070919181546.GA4343@shadowen.org>
-References: <20070911124202.GI9556@shadowen.org> <alpine.LFD.0.999.0709110949250.16478@woody.linux-foundation.org> <20070911173049.GA10499@shadowen.org> <20070914094905.GA32670@shadowen.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070914094905.GA32670@shadowen.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+	Wed, 19 Sep 2007 14:16:21 -0400
+Received: from pat.uio.no ([129.240.10.15]:38633 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761442AbXISSQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 14:16:19 -0400
+Subject: Re: [PATCH] Wake up mandatory locks waiter on chmod
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+In-Reply-To: <20070919180749.GD5946@fieldses.org>
+References: <46E94993.3090506@openvz.org>
+	 <20070916194135.GC31801@fieldses.org> <46EE20C4.1060405@openvz.org>
+	 <20070917145934.GA4957@fieldses.org> <46EF71F0.9010606@openvz.org>
+	 <20070919180749.GD5946@fieldses.org>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 14:16:13 -0400
+Message-Id: <1190225773.6734.15.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.052)
+X-UiO-Scanned: 574FAF622239D3E9C890381231AF1DBF0E41FB23
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 209 total 3988938 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 10:49:05AM +0100, Andy Whitcroft wrote:
-> On Tue, Sep 11, 2007 at 06:30:49PM +0100, Andy Whitcroft wrote:
-> > Annoyingly this seems to be intermittent, and I have not managed to get
-> > a machine into this state again yet.  Will keep trying.
+On Wed, 2007-09-19 at 14:07 -0400, J. Bruce Fields wrote:
+> On Tue, Sep 18, 2007 at 10:36:32AM +0400, Pavel Emelyanov wrote:
+> > J. Bruce Fields wrote:
+> > > I would also prefer a locking scheme that didn't rely on the BKL.  That
+> > > said, except for this race:
+> > 
+> > I would as well :) But I don't know the locking code good enough to
+> > start fixing. Besides, even if I send a patch series that handles this,
+> > I don't think that anyone will accept it, due to "this changes too much
+> > code", "can you prove you fixed all the places" and so on...
 > 
-> Ok, I have been completly unsuccessful in reproducing this.  Dispite
-> having two distinct machines showing this behaviour.  I have neither
-> been able to reproduce it with those machine on 2.6.23-rc6 nor has any
-> of the testing of any of the -git releases which follow thrown this
-> error.  I have run about 10 repeats of the jobs which failed too and
-> none of those have thrown the same error.
-> 
-> It is pretty clear from the dbench output that the problem is/was real,
-> that its not some artifact of the test harness.  I am a loss as to how to
-> get this to trigger again.
-> 
-> I guess I will keep monitoring the ongoing tests for new instances.  I
-> will also look to getting the sysrq-* stuff triggered automatically on
-> job timeout as that seems like a sane plan in all cases.
-> 
-> Frustrated.
+> Several people have expressed interest in a locking scheme for locks.c
+> (and probably lockd) that doesn't depend on BKL, so I don't think it
+> would be ignored.  But, yes, it would have to be done very carefully;
+> there have been at least one or two previous attempts that failed.
 
-I have since had a single occurance of a hang on 2.6.23-rc6-mm1.  As the
-base is different I cannot for sure say its the same problem.  In this
-new event we had a mkfs hung in a 'D' wait:
+Another long-term project might be to convert the current list of locks
+into a more scalable structure: something like an rbtree might be more
+appropriate for really large numbers of locks.
 
- =======================
-mkfs.ext2     D c10220f4     0  6233   6222
-       c344fc80 00000082 00000286 c10220f4 c344fc90 002ed099 c2963340 c2b9f640
-       c142bce0 c2b9f640 c344fc90 002ed099 c344fcfc c344fcc0 c1219563 c1109bf2
-       c344fcc4 c186e4d4 c186e4d4 002ed099 c1022612 c2b9f640 c186e000 c104000c
-Call Trace:
- [<c10220f4>] lock_timer_base+0x19/0x35
- [<c1219563>] schedule_timeout+0x70/0x8d
- [<c1109bf2>] prop_fraction_single+0x37/0x5d
- [<c1022612>] process_timeout+0x0/0x5
- [<c104000c>] task_dirty_limit+0x3a/0xb5
- [<c12194da>] io_schedule_timeout+0x1e/0x28
- [<c10454b4>] congestion_wait+0x62/0x7a
- [<c102b021>] autoremove_wake_function+0x0/0x33
- [<c10402af>] get_dirty_limits+0x16a/0x172
- [<c102b021>] autoremove_wake_function+0x0/0x33
- [<c104040b>] balance_dirty_pages+0x154/0x1be
- [<c103bda3>] generic_perform_write+0x168/0x18a
- [<c103be38>] generic_file_buffered_write+0x73/0x107
- [<c103c346>] __generic_file_aio_write_nolock+0x47a/0x4a5
- [<c11b0fef>] do_sock_write+0x92/0x99
- [<c11b1048>] sock_aio_write+0x52/0x5e
- [<c103c3b9>] generic_file_aio_write_nolock+0x48/0x9b
- [<c105d2d6>] do_sync_write+0xbf/0xfc
- [<c102b021>] autoremove_wake_function+0x0/0x33
- [<c1010311>] do_page_fault+0x2cc/0x739
- [<c105d3a0>] vfs_write+0x8d/0x108
- [<c105d4c3>] sys_write+0x41/0x67
- [<c100260a>] syscall_call+0x7/0xb
- =======================
+Cheers
+  Trond
 
--apw
