@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbXISVPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbXISVVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbXISVPQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 17:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXISVPE
+	id S1753949AbXISVVV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbXISVVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 17:15:04 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:42826 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbXISVPC (ORCPT
+	Wed, 19 Sep 2007 17:21:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43934 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbXISVVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 17:15:02 -0400
-Message-ID: <46F19148.4090404@ct.jp.nec.com>
-Date: Wed, 19 Sep 2007 14:14:48 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] sched: fix to use invalid sched_class
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Sep 2007 17:21:13 -0400
+Date: Wed, 19 Sep 2007 23:19:43 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs
+ rcu_read_lock()
+Message-ID: <20070919231943.4b121361@lappy>
+In-Reply-To: <d120d5000709191341p1c331e80qf7bad973bc899a0@mail.gmail.com>
+References: <20070919104125.286538000@chello.nl>
+	<d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com>
+	<20070919153750.GB8666@linux.vnet.ibm.com>
+	<d120d5000709190959p351c7ba4mdb1eeb433098e0e6@mail.gmail.com>
+	<20070919173249.GE8666@linux.vnet.ibm.com>
+	<20070919174857.GA11922@linux.vnet.ibm.com>
+	<d120d5000709191149q3d850d07nd8bf864a6e797055@mail.gmail.com>
+	<20070919214110.5d832f28@lappy>
+	<d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
+	<20070919221349.2935f69d@lappy>
+	<d120d5000709191341p1c331e80qf7bad973bc899a0@mail.gmail.com>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Wed, 19 Sep 2007 16:41:04 -0400 "Dmitry Torokhov"
+<dmitry.torokhov@gmail.com> wrote:
 
-I found an issue about the scheduler.
-If you need a test case, please let me know.
-Here is a patch.
+> > If the IRQ handler does rcu_read_lock(),unlock() and the i8042_stop()
+> > function does sync_rcu() instead of _sched(), it should be good again.
+> > It will not affect anything else than the task that calls _stop(). And
+> > even there the only change is that the sleep might be a tad longer.
+> 
+> And the IRQ handler needs to do some extra job... Anyway, it looks -rt
+> breaks synchronize_sched() and needs to have it fixed:
+> 
+> "/**
+>  * synchronize_sched - block until all CPUs have exited any non-preemptive
+>  * kernel code sequences.
+>  *
+>  * This means that all preempt_disable code sequences, including NMI and
+>  * hardware-interrupt handlers, in progress on entry will have completed
+>  * before this primitive returns."
 
-When using rt_mutex, a NULL pointer dereference is occurred at
-enqueue_task_rt. Here is a scenario;
-1) there are two threads, the thread A is fair_sched_class and
-   thread B is rt_sched_class.
-2) Thread A is boosted up to rt_sched_class, because the thread A
-   has a rt_mutex lock and the thread B is waiting the lock.
-3) At this time, when thread A create a new thread C, the thread
-   C has a rt_sched_class.
-4) When doing wake_up_new_task() for the thread C, the priority
-   of the thread C is out of the RT priority range, because the
-   normal priority of thread A is not the RT priority. It makes
-   data corruption by overflowing the rt_prio_array.
-The new thread C should be fair_sched_class.
+That still does as it says in -rt. Its just that the interrupt handler
+will be preemptible so the guarantees it gives are useless.
 
-The new thread should be valid scheduler class before queuing.
-This patch fixes to set the suitable scheduler class.
+> > I find it curious that a driver that is 'low performant' and does not
+> > suffer lock contention pioneers locking schemes. I agree with
+> > optimizing, but this is not the place to push the envelope.
+> 
+> Please realize that evey microsecond wasted on a 'low performant'
+> driver is taken from high performers and if we can help it why
+> shouldn't we?
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index deeb1f8..b0c582b 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1682,6 +1682,11 @@ void fastcall wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- 
- 	p->prio = effective_prio(p);
- 
-+	if (rt_prio(p->prio))
-+		p->sched_class = &rt_sched_class;
-+	else
-+		p->sched_class = &fair_sched_class;
-+
- 	if (!p->sched_class->task_new || !sysctl_sched_child_runs_first ||
- 			(clone_flags & CLONE_VM) || task_cpu(p) != this_cpu ||
- 			!current->se.on_rq) {
-
+sure, but the cache eviction caused by running the driver will have
+more impact than the added rcu_read_{,un}lock() calls.
