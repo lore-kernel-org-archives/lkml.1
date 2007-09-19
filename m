@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763831AbXISRmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763997AbXISRmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763831AbXISRmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763425AbXISRmF
+	id S1763997AbXISRmv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760159AbXISRmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:42:05 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:49781 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763773AbXISRmD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:42:03 -0400
-Message-ID: <46F15F5F.9060908@us.ibm.com>
-Date: Wed, 19 Sep 2007 10:41:51 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Patch 1/2] Trace code and documentation (updated)
-References: <1190177218.3190.18.camel@lc4eb748232119.ibm.com> <p736427vz00.fsf@bingen.suse.de> <46F12ED7.3060605@us.ibm.com> <20070919162018.GA16237@infradead.org> <20070919095223.83bd8226.randy.dunlap@oracle.com>
-In-Reply-To: <20070919095223.83bd8226.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Sep 2007 13:42:40 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:36249 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751625AbXISRmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:42:39 -0400
+Date: Wed, 19 Sep 2007 19:44:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.23-rc6-mm1 -- powerpc link failure
+Message-ID: <20070919174403.GC3115@uranus.ravnborg.org>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070919092848.GG973@shadowen.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070919092848.GG973@shadowen.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Wed, 19 Sep 2007 17:20:18 +0100 Christoph Hellwig wrote:
+On Wed, Sep 19, 2007 at 10:28:48AM +0100, Andy Whitcroft wrote:
+> I am seeing this strange link error from a PowerMac G5 (powerpc):
 > 
->> On Wed, Sep 19, 2007 at 07:14:47AM -0700, David Wilder wrote:
->>> I agree with you; however, this is in the example code in the 
->>> Documentation directory,  It is not part of the trace code.  The example 
->>> was just meant to be a demonstration of how the interface works.
->> So we tell people to write bad code?  Wonderful..
->>
->> And while we're at it can we please stop the dumb idea to put example
->> code into Documentation?  If example code doesn't get build during a
->> make oldconfig it will bitrot real fast and not be useful at all.
-> 
-> 
-> That's why they exmaples should not be hidden/embedded in .txt files;
-> they should be standalone .c files with makefiles etc.
-> 
-> I've built and corrected several of them, but they would be more
-> likely to be kept up-to-date if they are more available in standalone
-> files.
-> 
-> and they can be taken out of Documentation/ whenever they go into
-> util-linux-ng or elsewhere.  Let's get the order correct.
-> 
-> ---
-> ~Randy
-> 
-IMHO keeping example code as standalone files under Documentation/* make 
-it easy to build an play with.  I like it better than keeping it on some 
-project website where it is even less likely to maintained.
+>   [...]
+>     KSYM    .tmp_kallsyms2.S
+>     AS      .tmp_kallsyms2.o
+>     LD      vmlinux.o
+>   ld: dynreloc miscount for fs/built-in.o, section .opd
+>   ld: can not edit opd Bad value
+>   make: *** [vmlinux.o] Error 1
+
+We have had this issue before.
+Try to see:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=045e72acf16054c4ed2760e9a8edb19a08053af1
+
+Here it was caused by a weak declaration that was superflous.
+
+I expect the workaround to be equally simple this time - or I hope so.
+
+	Sam
