@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbXIST0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbXIST0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753361AbXIST0K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 15:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbXISTZ5
+	id S1753829AbXIST0x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 15:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbXIST0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 15:25:57 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:4813 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbXISTZ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 15:25:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=gUAsKBwpHKBDCM4nau+sdwz8xaHGRONL049JM5xK3iSTG7TlICUIln1WX5uZrK3qspSm0DlbQyLXs7qy/dBd/6ZrVpSKqIDTJ+opByPQnEYO7lWE15b0huSKl6vtcrCK4tI6SHAsKj1IuGDytGlvKR7SyECc2DwDbIeGT9rWyNs=
-Date: Wed, 19 Sep 2007 22:25:46 +0300
-To: Low Yucheng <ylow@andrew.cmu.edu>
-Cc: Oleg Verych <olecom@flower.upol.cz>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PROBLEM: System Freeze on Particular workload with kernel 2.6.22.6
-Message-ID: <20070919192546.GA3153@Ahmed>
-References: <46F0E19D.8000400@andrew.cmu.edu> <E1IY1mO-00067S-7v@flower> <46F14B67.5010807@andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F14B67.5010807@andrew.cmu.edu>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Wed, 19 Sep 2007 15:26:43 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:48500 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750835AbXIST0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 15:26:41 -0400
+Subject: Re: [PATCH] JBD slab cleanups
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: cmm@us.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1190229352.4318.12.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
+	 <20070902152801.GA19962@infradead.org>
+	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
+	 <20070903134043.GB28962@infradead.org>
+	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
+	 <20070903193308.GA7771@infradead.org>
+	 <1189796027.3841.6.camel@localhost.localdomain>
+	 <1190057391.3845.22.camel@localhost.localdomain>
+	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
+	 <1190069851.6725.6.camel@localhost.localdomain>
+	 <20070918090407.GA671@infradead.org>
+	 <1190133347.3819.6.camel@localhost.localdomain>
+	 <1190138690.6528.23.camel@norville.austin.ibm.com>
+	 <1190163601.3819.15.camel@localhost.localdomain>
+	 <20070918191920.a2130a3c.akpm@linux-foundation.org>
+	 <1190229352.4318.12.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 14:26:31 -0500
+Message-Id: <1190229991.6504.3.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Low,
+On Wed, 2007-09-19 at 12:15 -0700, Mingming Cao wrote:
 
-On Wed, Sep 19, 2007 at 12:16:39PM -0400, Low Yucheng wrote:
-> There are no additional console messages.
-> Not sure what this is: * no relevant Cc (memory management added)
+> Here is the patch to clean up __GFP_NOFAIL flag in jbd/jbd2. In all
+> cases except one handles memory allocation failure so I get rid of those
+> GFP_NOFAIL flags.
+> 
+> Also, shouldn't we use GFP_KERNEL instead of GFP_NOFS flag for kmalloc
+> in jbd/jbd2? I will send a separate patch to cleanup that.
 
-Relevant CCs means CCing maintainers or subsystem mailing lists related to your
-bug report. i.e, if it's a networking bug, you need to CC the linux kernel
-networking mailing list. If it's a kobject bug, you need to CC its maintainer
-(Greg) and so on.
+No.  GFP_NOFS avoids deadlock.  It prevents the allocation from making
+recursive calls back into the file system that could end up blocking on
+jbd code.
 
-Regards,  
-
+Shaggy
 -- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+David Kleikamp
+IBM Linux Technology Center
+
