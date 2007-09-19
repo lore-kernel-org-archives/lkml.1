@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbXISUr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbXISUs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757612AbXISUr4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 16:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbXISUrr
+	id S1757522AbXISUs5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 16:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXISUst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 16:47:47 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:33136 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbXISUrp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 16:47:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=JFASh7q2VBUEuH/xKJeJ6zwrvGI8lEOtwk/RvMddRHjbcBRXZcA/5halWbLwiqklnvxI6AwOKN+eDorkVs7inj6SNnXipzsgGskAF7fVHxxJt8egrscPWKwT/vs2SLTXzVyiPNKqEAWuR3t+aqTIAUconX/zbadD+bD+wcUyGN0=
-Message-ID: <46F18AED.4090906@gmail.com>
-Date: Wed, 19 Sep 2007 22:47:41 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 19 Sep 2007 16:48:49 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45113 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbXISUss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 16:48:48 -0400
+Date: Wed, 19 Sep 2007 13:48:41 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs rcu_read_lock()
+Message-ID: <20070919204841.GH8666@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <d120d5000709190717y69dca8b3tf4a17b920267806b@mail.gmail.com> <20070919163111.05c18021@twins> <d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com> <20070919153750.GB8666@linux.vnet.ibm.com> <d120d5000709190959p351c7ba4mdb1eeb433098e0e6@mail.gmail.com> <20070919173249.GE8666@linux.vnet.ibm.com> <20070919174857.GA11922@linux.vnet.ibm.com> <d120d5000709191149q3d850d07nd8bf864a6e797055@mail.gmail.com> <20070919214110.5d832f28@lappy> <d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org>            <46F17F27.5080000@gmail.com> <12009.1190233975@turing-police.cc.vt.edu>
-In-Reply-To: <12009.1190233975@turing-police.cc.vt.edu>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/19/2007 10:32 PM, Valdis.Kletnieks@vt.edu wrote:
-> On Wed, 19 Sep 2007 21:57:27 +0200, Jiri Slaby said:
->> On 09/19/2007 09:54 PM, Andi Kleen wrote:
->>>> Yeah. (But X doesn't run -- this is maybe the known issue in this release)
-> .
->>> What do you mean with not run? 
->> (II) intel(0): Initializing HW Cursor
->> (II) intel(0): xf86BindGARTMemory: bind key 0 at 0x005ff000 (pgoffset 1535)
->> (WW) intel(0): xf86BindGARTMemory: binding of gart memory with key 0
->>         at offset 0x5ff000 failed (Invalid argument)
->>
->> Fatal server error:
->> Couldn't bind memory for front buffer
->>
->> I thought I'd seen a thread about this issue, but I can't find it now. Is it
->> known or am I seeing ghosts yet, Andrew?
+On Wed, Sep 19, 2007 at 03:49:24PM -0400, Dmitry Torokhov wrote:
+> On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > On Wed, 19 Sep 2007 14:49:56 -0400 "Dmitry Torokhov"
+> > <dmitry.torokhov@gmail.com> wrote:
+> >
+> > > On 9/19/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> >
+> > > > PS to previous -- any problem with inserting rcu_read_lock() and
+> > > > rcu_read_unlock() around the portion of the IRQ handler that has
+> > > > these accesses?
+> > > >
+> > >
+> > > I guess I could but it is an extra lock that needs to be managed and
+> > > given the fact that it is not really needed (other to make a newly
+> > > developed tool happy) I am hestsant to do that.
+> >
+> > As is, these sites are a bug in -rt and we'll need to fix them anyway.
+> >
+> > As for the code you pointed me to, the i8042 driver, it seems to play
+> > way to funny tricks for a simple 'slow' driver.
 > 
-> That would probably have been me, saying that x86_64-mm-cpa-clflush.patch broke
-> the NVidia graphics driver in 23-rc3-mm1.  Is it breaking *other* X drivers as
-> well?
+> Even "slow" driver should try not to slow down the rest of the system
+> if it can help it. I am sorry if the thing it does do not quite fit in
+> with the changes you are proposing but it does not make the exeisting
+> code invalid.
+> 
+> > If you replace the spin_lock() + sync_sched(), with rcu_read_lock() +
+> > rcu_call() it should work again without adding an extra lock.
+> 
+> Except that I need spin_lock_irq for other reasons. I could take the
+> same lock in write-side code and not use RCU at all but using RCU
+> allows opening/closing input devices without slowing down interrupt
+> handlers so why not use it?
 
-Yes, the issue is there from rc3-mm1, see (intel and radeon cards are affected
-in my case):
-http://lkml.org/lkml/2007/9/9/51
+One approach would be to make rcu_read_held() check for in_interrupt()
+or some such.  This would allow Dmitry's code to stay as it is, for the
+moment at least.
 
-But now I'm talking about another issue -- a regression since rc4-mm1, where X
-server is unable to bind agp memory (those x logs above). The clflush issue has
-solved andi in
-http://lkml.org/lkml/2007/9/19/334
-recently
-
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+							Thanx, Paul
