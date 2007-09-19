@@ -1,39 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbXISUq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbXISUqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757249AbXISUq0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 16:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbXISUqP
+	id S1757453AbXISUqn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 16:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbXISUqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 16:46:15 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:1519 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbXISUqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 16:46:14 -0400
-X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
-Subject: Re: bnx2 dirver's firmware images
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Denys Vlasenko" <vda.linux@googlemail.com>
-cc: "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       "netdev" <netdev@vger.kernel.org>
-In-Reply-To: <200709192129.23034.vda.linux@googlemail.com>
-References: <200709181823.26429.vda.linux@googlemail.com>
- <200709190930.39882.vda.linux@googlemail.com>
- <1190235642.9540.261.camel@dell>
- <200709192129.23034.vda.linux@googlemail.com>
-Date: Wed, 19 Sep 2007 14:43:53 -0700
-Message-ID: <1190238233.9540.263.camel@dell>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6AEF55063K43391752-01-01
-Content-Type: text/plain
+	Wed, 19 Sep 2007 16:46:24 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:36889 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756687AbXISUqX (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 16:46:23 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-tiny <Linux-tiny@selenic.com>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       Michael Opdenacker <michael@free-electrons.com>,
+       john cooper <john.cooper@third-harmonic.com>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [Announce] Linux-tiny project revival
+In-Reply-To: Your message of "Wed, 19 Sep 2007 12:41:08 PDT."
+             <46F17B54.6070106@am.sony.com>
+From: Valdis.Kletnieks@vt.edu
+References: <46F1645D.9050406@am.sony.com> <p73fy1av4jc.fsf@bingen.suse.de>
+            <46F17B54.6070106@am.sony.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1190234722_23458P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 19 Sep 2007 16:45:22 -0400
+Message-ID: <12631.1190234722@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-19 at 21:29 +0100, Denys Vlasenko wrote:
+--==_Exmh_1190234722_23458P
+Content-Type: text/plain; charset=us-ascii
 
-> Are you saying that you successfully run-tested it?
+On Wed, 19 Sep 2007 12:41:08 PDT, Tim Bird said:
+> The patchkit gives a place for things to live while they are out
+> of mainline, and still have multiple people use and work on them.
 
-I've only reviewed the code.  Let's resolve these issues first before
-testing the code.
+Is anybody working on testing that the patchkit "does no harm" for bigger
+boxes (laptops, desktops, servers)?  That would probably be helpful info
+when pieces are pushed towards mainline....
 
+(Was just looking at the patch details, there's at least a few that look
+interesting for my purposes even though I'm not an embedded developer)...
+
+--==_Exmh_1190234722_23458P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG8YpicC3lWbTT17ARAhdSAKDBmOzpKEI9+FsanzPKqFJAH1klwwCfVp6c
+hce2ncjZyVXmxwafEutepvw=
+=Txo2
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1190234722_23458P--
