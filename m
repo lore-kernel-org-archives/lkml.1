@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751327AbXISA3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751364AbXISApV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751327AbXISA3Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 20:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbXISA3D
+	id S1751364AbXISApV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 20:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbXISApJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 20:29:03 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:41678 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702AbXISA3C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 20:29:02 -0400
-Subject: Re: 2.6.23-rc6-mm1 panic (memory controller issue ?)
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: balbir@in.ibm.com, clameter@sgi.com, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1190154076.31220.19.camel@dyn9047017100.beaverton.ibm.com>
-References: <1190154076.31220.19.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 17:31:43 -0700
-Message-Id: <1190161903.31220.24.camel@dyn9047017100.beaverton.ibm.com>
+	Tue, 18 Sep 2007 20:45:09 -0400
+Received: from hera.cwi.nl ([192.16.191.8]:47107 "EHLO hera.cwi.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbXISApH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Sep 2007 20:45:07 -0400
+Date: Wed, 19 Sep 2007 02:46:58 +0200
+From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Jan Kara <jack@suse.cz>, "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: iso9660 vs udf
+Message-ID: <20070919004657.GB11444@mette>
+References: <20070915214926.GA31416@mette> <20070918144734.GB13304@atrey.karlin.mff.cuni.cz> <alpine.LFD.0.999.0709190534490.26241@enigma.security.iitk.ac.in>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0709190534490.26241@enigma.security.iitk.ac.in>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-18 at 15:21 -0700, Badari Pulavarty wrote:
-> Hi Balbir,
+On Wed, Sep 19, 2007 at 05:48:28AM +0530, Satyam Sharma wrote:
+
+> > > On the other hand, this filesystem announces itself as UDF
+> > > ("CD-RTOS" "CD-BRIDGE" "CDUDF File System - Adaptec Inc"),
+> > > perhaps the kernel code should be more robust.
 > 
-> I get following panic from SLUB, while doing simple fsx tests.
-> I haven't used any container/memory controller stuff except 
-> that I configured them in :(
-> 
-> Looks like slub doesn't like one of the flags passed in ?
-> 
-> Known issue ? Ideas ?
-> 
+> Could you send the complete dmesg log, and what you mean with filesystem/
+> kernel (incorrectly?) announcing it as UDF here ... I agree with Jan,
+> this sounds like an issue with mount(8) to me.
 
-I think, I found the issue. I am still running tests to
-verify. Does this sound correct ?
+You already got the relevant part of the dmesg log. Slightly more below.
 
-Thanks,
-Badari
+I think the filesystem can be treated both as iso9660 and as udf,
+at least that is what I seem to recall CD-BRIDGE means.  Thus,
+if the kernel cannot mount it as udf, I think it is a kernel flaw.
+Given that kernel flaw, and the fact that mounting as iso9660 works,
+mount(8) could work around the kernel problem by guessing iso9660.
+But maybe we should first try to fix the kernel.
 
-Need to strip __GFP_HIGHMEM flag while passing to mem_container_cache_charge().
+Andries
 
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
- mm/filemap.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Failed mount:
+UDF-fs INFO UDF 0.9.8.1 (2004/29/09) Mounting volume 'Wisk1956-82', timestamp 2006/03/07 16:26 (1078)
+udf: udf_read_inode(ino 547) failed !bh
+UDF-fs: Error in udf_iget, block=1, partition=1
 
-Index: linux-2.6.23-rc6/mm/filemap.c
-===================================================================
---- linux-2.6.23-rc6.orig/mm/filemap.c	2007-09-18 12:43:54.000000000 -0700
-+++ linux-2.6.23-rc6/mm/filemap.c	2007-09-18 19:14:44.000000000 -0700
-@@ -441,7 +441,8 @@ int filemap_write_and_wait_range(struct 
- int add_to_page_cache(struct page *page, struct address_space *mapping,
- 		pgoff_t offset, gfp_t gfp_mask)
- {
--	int error = mem_container_cache_charge(page, current->mm, gfp_mask);
-+	int error = mem_container_cache_charge(page, current->mm,
-+			gfp_mask & ~__GFP_HIGHMEM);
- 	if (error)
- 		goto out;
- 
-
+Success:
+ISO 9660 Extensions: Microsoft Joliet Level 3
+ISOFS: changing to secondary root
 
