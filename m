@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbXISUJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbXISUP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbXISUJW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 16:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXISUJP
+	id S1755274AbXISUP2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 16:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbXISUPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 16:09:15 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:18858 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751924AbXISUJO (ORCPT
+	Wed, 19 Sep 2007 16:15:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38629 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750758AbXISUPQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 16:09:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jnwQfVa6siIHq7Rd4kLSg5k7uP8+5Biqq9bDhibCpL88J8/z3jKF3PQc2kvqKkjvKFSmk5SnBbMPob04z5HVdX4u5mG8SuAUYEerkgB4cCa6qo2UXnA82U3pQktPN7aNBxYRmmQt/GS0UrGR5+VYRAfdgXqJWIzxN5KGM6Tmdfw=
-Message-ID: <c424c7d0709191309s283a255au9e6841634c18204c@mail.gmail.com>
-Date: Wed, 19 Sep 2007 22:09:12 +0200
-From: "Ramon Chimeno" <ramon.chimeno@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Disk I/O degraded performance
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Sep 2007 16:15:16 -0400
+Date: Wed, 19 Sep 2007 22:13:49 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs
+ rcu_read_lock()
+Message-ID: <20070919221349.2935f69d@lappy>
+In-Reply-To: <d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
+References: <20070919104125.286538000@chello.nl>
+	<d120d5000709190717y69dca8b3tf4a17b920267806b@mail.gmail.com>
+	<20070919163111.05c18021@twins>
+	<d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com>
+	<20070919153750.GB8666@linux.vnet.ibm.com>
+	<d120d5000709190959p351c7ba4mdb1eeb433098e0e6@mail.gmail.com>
+	<20070919173249.GE8666@linux.vnet.ibm.com>
+	<20070919174857.GA11922@linux.vnet.ibm.com>
+	<d120d5000709191149q3d850d07nd8bf864a6e797055@mail.gmail.com>
+	<20070919214110.5d832f28@lappy>
+	<d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all
+On Wed, 19 Sep 2007 15:49:24 -0400 "Dmitry Torokhov"
+<dmitry.torokhov@gmail.com> wrote:
 
-I migrated one of my server from kernel 2.6.18 to the latest 2.6.22
-and I experienced lower disk performance for processes that open file
-with the O_DIRECT flag.
+> On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > On Wed, 19 Sep 2007 14:49:56 -0400 "Dmitry Torokhov"
+> > <dmitry.torokhov@gmail.com> wrote:
+> >
+> > > On 9/19/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> >
+> > > > PS to previous -- any problem with inserting rcu_read_lock() and
+> > > > rcu_read_unlock() around the portion of the IRQ handler that has
+> > > > these accesses?
+> > > >
+> > >
+> > > I guess I could but it is an extra lock that needs to be managed and
+> > > given the fact that it is not really needed (other to make a newly
+> > > developed tool happy) I am hestsant to do that.
+> >
+> > As is, these sites are a bug in -rt and we'll need to fix them anyway.
+> >
+> > As for the code you pointed me to, the i8042 driver, it seems to play
+> > way to funny tricks for a simple 'slow' driver.
+> 
+> Even "slow" driver should try not to slow down the rest of the system
+> if it can help it. I am sorry if the thing it does do not quite fit in
+> with the changes you are proposing but it does not make the exeisting
+> code invalid.
+> 
+> >
+> > If you replace the spin_lock() + sync_sched(), with rcu_read_lock() +
+> > rcu_call() it should work again without adding an extra lock.
+> >
+> 
+> Except that I need spin_lock_irq for other reasons. I could take the
+> same lock in write-side code and not use RCU at all but using RCU
+> allows opening/closing input devices without slowing down interrupt
+> handlers so why not use it?
 
-I did a very simple test program that opens two files with O_DIRECT
-flag and reads the files to end. I monitored the time spent to read
-the files and I have ~ 40% of difference between 2.6.18 and 2.6.22.
+If the IRQ handler does rcu_read_lock(),unlock() and the i8042_stop()
+function does sync_rcu() instead of _sched(), it should be good again.
+It will not affect anything else than the task that calls _stop(). And
+even there the only change is that the sleep might be a tad longer.
 
-For information, the files are stored on a XFS partition which is part
-of a software raid-5 block device (the raid-5 is made with 3 SATA
-drives).
-
-Does that make sense to you gurus ? Of course, I didn't change the
-configuration (task scheduler, HZ, default I/O scheduler, ...) between
-the two kernels.
-
-For information, the code of my test program is pasted below (I
-snipped the #include part):
-----------------------8<----------------------8<----------------------
-#define BSIZE (512*512)
-int main(int ac, char * av[])
-{
- int   fd[2];
- char* buffer;
-
- if (ac != 3)  {
-   printf("USAGE: %s <FILE-1> <FILE-2>\n", av[0]);
-   exit(EXIT_FAILURE);
- }
-
- if ((fd[0] = open(av[1], O_RDONLY|O_DIRECT)) == -1)
-   exit(EXIT_FAILURE);
- if ((fd[1] = open(av[2], O_RDONLY|O_DIRECT)) == -1)
-   exit(EXIT_FAILURE);
- if ((buffer = (char *)memalign(4096, BSIZE)) == 0)
-   exit(EXIT_FAILURE);
-
- for (;;)  {
-   if (read(fd[0], buffer, BSIZE) != BSIZE)
-     break;
-   if (read(fd[1], buffer, BSIZE) != BSIZE)
-     break;
- }
- close(fd[0]);
- close(fd[1]);
- free(buffer);
- return EXIT_SUCCESS;
-}
-----------------------8<----------------------8<----------------------
-
-Any help/hint would be appreciate.
-
--- R.C
+I find it curious that a driver that is 'low performant' and does not
+suffer lock contention pioneers locking schemes. I agree with
+optimizing, but this is not the place to push the envelope.
