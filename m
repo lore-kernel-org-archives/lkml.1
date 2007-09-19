@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbXISWFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbXISWIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896AbXISWFz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 18:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXISWFr
+	id S1756006AbXISWIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 18:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbXISWIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 18:05:47 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:10631 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbXISWFq (ORCPT
+	Wed, 19 Sep 2007 18:08:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51160 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750868AbXISWIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 18:05:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Sc1iUoysn4J16+SyO5UIDLoYdIZX5ujkY+iBv+M30HfQF1XYIzCH+r5q0h2B/lV6c9hXlhAhObjoq4hoUwttCzIPb3Ald0qxGZPWhZzMxuQR7fCt1f9y/6pIt0bErrJq82T38rIXb3BcxaniTfphSjP7BuISPMeSdxnxfNKfJow=
-Subject: Re: [PATCH] sched: fix to use invalid sched_class
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 20 Sep 2007 00:05:39 +0200
-Message-Id: <1190239539.19576.5.camel@earth>
+	Wed, 19 Sep 2007 18:08:10 -0400
+Date: Wed, 19 Sep 2007 15:06:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [PATCH 00/24] Read-only bind mounts
+Message-Id: <20070919150659.597f0d8b.akpm@linux-foundation.org>
+In-Reply-To: <1190238987.26982.119.camel@localhost>
+References: <20070917182718.70494C9B@kernel>
+	<20070919174418.GA22982@infradead.org>
+	<20070919142437.7490b219.akpm@linux-foundation.org>
+	<1190238987.26982.119.camel@localhost>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Hi Ingo,
+On Wed, 19 Sep 2007 14:56:27 -0700
+Dave Hansen <haveblue@us.ibm.com> wrote:
+
+> On Wed, 2007-09-19 at 14:24 -0700, Andrew Morton wrote:
+> > On Wed, 19 Sep 2007 18:44:18 +0100
+> > Christoph Hellwig <hch@infradead.org> wrote:
 > > 
-> > I found an issue about the scheduler.
-> > If you need a test case, please let me know.
-> > Here is a patch.
-> > [ ... ]
-> > The new thread should be valid scheduler class before queuing.
-> > This patch fixes to set the suitable scheduler class.
+> > > On Mon, Sep 17, 2007 at 11:27:18AM -0700, Dave Hansen wrote:
+> > > > If we can't pull the entire series into -mm, can we just put the
+> > > > first three patches for now?  They can stand on their own.
+> > > 
+> > > Yes, they're kinda a series of their own.  But I still think we really
+> > > want this in -mm.  As we've seen on the kernel summit there's a pretty
+> > > desparate need for it.  And there's not many changes in this area in
+> > > -mm, maybe the unprivilegued mounts.  I'd personally prioritize the
+> > > r/o bindmounts over them as they're more needed and we need more reviewing
+> > > of the unprivilegued mounts (I'll try to come back to that soon).
+> > 
+> > What's the situation on unprivileged mounts?  iirc, it's all a bit stuck.
+> > 
+> > If unpriv-mounts code isn't going to go into mainline ahead of r/o bind
+> > mounts then it'd make a big mess to prepare the r/o bind mount patches on
+> > top of unprivileged mounts.
+> > 
+> > It sounds like a better approach would be for me to merge the r/o bind
+> > mounts code and to drop (or maybe rework) the unprivileged mounts patches
 > 
-> Nice fix! It's a 2.6.23 must-have fix - i'll push it out into the 
-> scheduler tree. Thanks!
+> I actually don't think they collided too much.  There were a couple of
+> patches, like maybe 2 or 3 that needed any futzing at all.  
+> 
+> I'll cook up a set straight on top of mainline if that helps.
+> 
 
-I think, the following approach would be a bit more appropriate
-(the missing addition to the already existing "don't leak PI boosting prio"):
+That sounds good, thanks.
 
-(not tested)
-
----
-diff --git a/kernel/sched.c b/kernel/sched.c
-index bc1a625..da2139e 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1646,6 +1646,8 @@ void sched_fork(struct task_struct *p, int clone_flags)
- 	 * Make sure we do not leak PI boosting priority to the child:
- 	 */
- 	p->prio = current->normal_prio;
-+	if (!rt_prio(p->prio))
-+		p->sched_class = &fair_sched_class;
- 
- #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
- 	if (likely(sched_info_on()))
-
----
-
-
-
+There may be collisions with unionfs too, but if that happens in a
+non-trivial way I may just drop unionfs - it doesn't look like it's
+going to get there in its present form.
