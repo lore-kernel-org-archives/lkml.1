@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbXISR1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbXISR1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757301AbXISR1L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:27:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbXISR0z
+	id S1758261AbXISR1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXISR1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:26:55 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55131 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074AbXISR0y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:26:54 -0400
-Date: Wed, 19 Sep 2007 19:26:53 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, netdev <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
+	Wed, 19 Sep 2007 13:27:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45655 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752007AbXISR1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:27:20 -0400
+Message-ID: <46F15BEE.2050701@redhat.com>
+Date: Wed, 19 Sep 2007 10:27:10 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: follow-up: discrepancy with POSIX
-Message-ID: <20070919172653.GB18045@one.firstfloor.org>
-References: <46F13E8B.4050309@redhat.com> <p73sl5aveqh.fsf@bingen.suse.de> <46F15305.2030507@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F15305.2030507@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+References: <46F13E8B.4050309@redhat.com>	<p73sl5aveqh.fsf@bingen.suse.de>	<46F15305.2030507@redhat.com> <20070919.095251.45154496.davem@davemloft.net> <46F156A7.5000304@redhat.com>
+In-Reply-To: <46F156A7.5000304@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 09:49:09AM -0700, Ulrich Drepper wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Andi Kleen wrote:
-> > The standard way to undo connect is to use AF_UNSPEC. Code to handle
-> > that for dgram sockets is there. It's the same code for v4 and v6.
-> 
-> I quoted the standard and it does not say anything about AF_UNSPEC.  So
-> you cannot simply make such broad statements.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Ok "standard" was perhaps a poor choice of words.
+Ulrich Drepper wrote:
+> Yes, but for IPv4/6 it's not an issue.  Some implementations might
+> handle all-zeros and the spec _currently_ calls for it.  In this case an
+> alignment would be good.
 
-AF_UNSPEC used to be introduced long ago by Alan based on some early 
-POSIX draft iirc.
+Searching the web shows up this:
 
-Also incidentially it's a null address:
+http://developer.apple.com/documentation/Darwin/Reference/ManPages/man2/connect.2.html
 
-include/linux/socket.h:#define AF_UNSPEC        0
 
-> But the spec calls for a "null address" to be used and that's in my
-> understanding something different from using AF_UNSPEC.
+  Datagram sockets may dissolve the association by connecting to an
+  invalid address, such as a null address or an address with the address
+  family set to AF_UNSPEC (the error EAFNOSUPPORT will be harmlessly
+  returned).
 
-memset(&sockaddr, 0, sizeof(sockaddr)) should give you AF_UNSPEC
 
--Andi
+I.e., at least Apple implements both variants.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFG8Vvu2ijCOnn/RHQRAsSfAJkBELtiNyul8wMOjVv1x7LfvDWw/ACfR0D0
+cm+k1wfhCsT4GjbF3uac+eY=
+=nksN
+-----END PGP SIGNATURE-----
