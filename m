@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbXISLAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbXISLBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759280AbXISLAo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 07:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756726AbXISLAg
+	id S1759489AbXISLBJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 07:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbXISLA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 07:00:36 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:12394 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753012AbXISLAg (ORCPT
+	Wed, 19 Sep 2007 07:00:56 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:32865 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756726AbXISLAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 07:00:36 -0400
-Message-ID: <46F10113.1040205@ru.mvista.com>
-Date: Wed, 19 Sep 2007 14:59:31 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci: Fix e100 interrupt quirk
-References: <20070919104342.GB3226@ff.dom.local>
-In-Reply-To: <20070919104342.GB3226@ff.dom.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 19 Sep 2007 07:00:55 -0400
+Date: Wed, 19 Sep 2007 07:00:53 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@muc.de>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
+Message-ID: <20070919110053.GB15500@Krystal>
+References: <20070918210747.828804366@polymtl.ca> <20070918210853.588573678@polymtl.ca> <46F04856.3010808@goop.org> <46F04D53.6040903@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <46F04D53.6040903@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:00:03 up 51 days, 11:18,  4 users,  load average: 1.33, 1.56, 1.08
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
-> On 18-09-2007 13:17, Valentine Barshak wrote:
->> PCI memory space may have a 64-bit offset on some architectures
->> (for example, PowerPC 440) and the actual PCI memory address
->> has to fixed up (an offset to PCI mem space shuld be added)
->> before remapping. So, pci_iomap should be used instead of
->> reading and remapping PCI BAR directly. This has been tested
->> on Sequoia PowerPC 440EPx board.
->>
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->> ---
->>
->> --- linux-2.6.orig/drivers/pci/quirks.c	2007-09-04 21:15:43.000000000 +0400
->> +++ linux-2.6.bld/drivers/pci/quirks.c	2007-09-05 20:46:14.000000000 +0400
->> @@ -1444,9 +1444,9 @@
->>  static void __devinit quirk_e100_interrupt(struct pci_dev *dev)
->>  {
->>  	u16 command;
->> -	u32 bar;
->>  	u8 __iomem *csr;
->>  	u8 cmd_hi;
->> +	int rc;
->>  
->>  	switch (dev->device) {
->>  	/* PCI IDs taken from drivers/net/e100.c */
->> @@ -1476,16 +1476,17 @@
->>  	 * re-enable them when it's ready.
->>  	 */
->>  	pci_read_config_word(dev, PCI_COMMAND, &command);
->> -	pci_read_config_dword(dev, PCI_BASE_ADDRESS_0, &bar);
->>  
->> -	if (!(command & PCI_COMMAND_MEMORY) || !bar)
->> +	rc = pci_request_region(dev, 0, "e100_quirk");
->> +
->> +	if (!(command & PCI_COMMAND_MEMORY) || (rc < 0))
->>  		return;
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Jeremy Fitzhardinge wrote:
+> > Mathieu Desnoyers wrote:
+> > 
+> >> +#define immediate_read(name)						\
+> >> +	({								\
+> >> +		__typeof__(name##__immediate) value;			\
+> >> +		switch (sizeof(value)) {				\
+> >> +		case 1:							\
+> >> +			asm (	".section __immediate, \"a\", @progbits;\n\t" \
+> >> +					".long %1, (0f)+1, 1;\n\t"	\
+> >> +					".previous;\n\t"		\
+> >> +					"0:\n\t"			\
+> >> +					"mov %2,%0;\n\t"		\
+> > 
+> > Given that you're relying on the exact instruction that this mov
+> > generates, it might be better to explicitly put the opcodes in with
+> > .byte.  That way you're protected from the assembler deciding to
+> > generate some other form of the instruction (for whatever reason).  I
+> > guess substituting in different registers would be a pain.
 > 
-> I didn't look at this too much, but isn't something like:
-> 		if (rc >=  0)
-> 			goto e100_quirk_exit;
-> needed before this return?
-
-I'll split these 2 checks and submit new patch in a minute.
-Thanks.
-
+> Allowing different registers should be doable, but if so, one would have
+> to put 0: at the *end* of the instruction and use (0f)-4 instead, since
+> the non-%eax forms are one byte longer.
 > 
-> Regards,
-> Jarek P.
+> This also seems "safer", since an imm32 is always the last thing in the
+> instruction.
+> 
 
+The idea is very interesting, but then, if I can't be sure of the size
+of my instruction, how can I align the immediate value properly ?
+
+> 	-hpa
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
