@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbXISMUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbXISMYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758597AbXISMUT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 08:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbXISMUI
+	id S1758835AbXISMYe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 08:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbXISMY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 08:20:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34078 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753027AbXISMUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 08:20:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Subject: Re: PCI Interrupt
-Date: Wed, 19 Sep 2007 14:32:12 +0200
-User-Agent: KMail/1.9.5
-Cc: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>,
-       Duncan.Perrett@elekta.com, Linux kernel <linux-kernel@vger.kernel.org>
-References: <20070919101430.GA3226@ff.dom.local>
-In-Reply-To: <20070919101430.GA3226@ff.dom.local>
+	Wed, 19 Sep 2007 08:24:26 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:45228 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754224AbXISMY0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 08:24:26 -0400
+Message-ID: <46F114D2.40809@linux.vnet.ibm.com>
+Date: Wed, 19 Sep 2007 17:53:46 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       amitkale@linsyssoft.com, trini@kernel.crashing.org
+Subject: 2.6.23-rc6-mm1 powerpc - kgdb is broken
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709191432.12831.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 19 September 2007 12:14, Jarek Poplawski wrote:
-> On 18-09-2007 16:42, Rafael J. Wysocki wrote:
-> ...
-> > 
-> > Hm, edge-triggered interrupts cannot be shared, AFAIK.
-> > 
-> 
-> Let's agree it's only a superstition...
-> 
-> http://en.wikipedia.org/wiki/Edge_triggered_interrupt
+Hi Andrew,
 
-Well, if this is an MSI (which is edge-triggered), for example, it cannot be
-shared.
+The kgdb seems to be broken on the powerpc, while compiling with
+allyesconfig.
 
-Also, you must use a level-triggered interrupt for SCI, because that has to be
-shareable.
+  LD [M]  drivers/isdn/hysdn/hysdn.o
+  CC [M]  drivers/net/kgdboe.o
+  CC [M]  drivers/scsi/scsi_wait_scan.o
+In file included from include/linux/kgdb.h:22,
+                 from drivers/net/kgdboe.c:28:
+include/asm/kgdb.h:34: error: 'debugger' redeclared as different kind of symbol
+include/asm/system.h:85: error: previous definition of 'debugger' was here
+include/asm/kgdb.h:35: error: 'debugger_bpt' redeclared as different kind of symbol
+include/asm/system.h:87: error: previous definition of 'debugger_bpt' was here
+include/asm/kgdb.h:36: error: 'debugger_sstep' redeclared as different kind of symbol
+include/asm/system.h:88: error: previous definition of 'debugger_sstep' was here
+include/asm/kgdb.h:37: error: 'debugger_iabr_match' redeclared as different kind of symbol
+include/asm/system.h:89: error: previous definition of 'debugger_iabr_match' was here
+include/asm/kgdb.h:38: error: 'debugger_dabr_match' redeclared as different kind of symbol
+include/asm/system.h:90: error: previous definition of 'debugger_dabr_match' was here
+include/asm/kgdb.h:39: error: 'debugger_fault_handler' redeclared as different kind of symbol
+include/asm/system.h:91: error: previous definition of 'debugger_fault_handler' was here
+In file included from drivers/net/kgdboe.c:28:
+include/linux/kgdb.h:69: error: 'BREAK_INSTR_SIZE' undeclared here (not in a function)
+make[3]: *** [drivers/net/kgdboe.o] Error 1
+make[2]: *** [drivers/net] Error 2
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [drivers] Error 2
+make: *** [modules] Error 2
 
-Greetings,
-Rafael
+-- 
+
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
+
