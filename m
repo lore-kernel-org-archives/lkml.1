@@ -1,57 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbXISHkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756468AbXISHlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbXISHkR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 03:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbXISHkF
+	id S1756468AbXISHlf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 03:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbXISHl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 03:40:05 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:44341 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbXISHkD (ORCPT
+	Wed, 19 Sep 2007 03:41:27 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47504 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752872AbXISHl0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 03:40:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t6NR6xs74N1b9vd4xOgRcrLEb0a3NAEkhuH3IPuwIx+xb8ggxAYtrwur7xWu5VNxAJsPOpq5JGo52Ys2tm7noqHKvBEsPpFRjGRnrm4SRz1eUIaqG3nIRK3NRciVoWtCFc77UZ3gxGm2X/TtC6Ri3XNRweMuvj+qv3p+PX+EdDc=
-Message-ID: <8d6898730709190040r7dc5cb46m50b5d87b54facc63@mail.gmail.com>
-Date: Wed, 19 Sep 2007 13:10:03 +0530
-From: "Nobin Mathew" <nobin.mathew@gmail.com>
-To: "Andrey Kamchatnikov" <andrey.kamchatnikov@tec-venture.de>
-Subject: Re: Problem: one driver and 4 instances with different parameters
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <016a01c7fa89$ff51e850$b4fefea9@andrey>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Sep 2007 03:41:26 -0400
+Date: Wed, 19 Sep 2007 16:43:08 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       ricknu-0@student.ltu.se,
+       "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [RFC][PATCH] page->mapping clarification [1/3] base functions
+Message-Id: <20070919164308.281f9960.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <016a01c7fa89$ff51e850$b4fefea9@andrey>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think you need to modify your driver. So that you need to do only
-single insmod. and handle the 4 instances internally.
+Rebased to 2.6.23-rc6-mm1 and reflected comments.
+Not so aggresive as previous version.
+(I'm not in a hurry if -mm is busy.)
 
-On 9/19/07, Andrey Kamchatnikov <andrey.kamchatnikov@tec-venture.de> wrote:
-> Hi,
->
-> Could someone to make clear next question:
->
-> I have one driver, but I need to run 4 instances of it (I run insmod with
-> different parameters) .
->
-> But when I try to install the second driver I've got an error, that driver
-> with this name exists.
->
-> How can I istall them? I don't want to use 4 different driver's sources.
->
-> Thank you,
->
-> Andrey
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Any comments are welcome.
+
+Thanks,
+-Kame
+==
+A clarification of page <-> fs interface (page cache).
+
+At first, each FS has to access to struct page->mapping directly.
+But it's not just pointer. (we use special 1bit enconding for anon.)
+
+Although there is historical consensus that page->mapping points to its inode's
+address space, I think adding some neat helper functon is not bad.
+
+This patch adds page-cache.h which containes page<->address_space<->inode
+function which is required (used) by subsystems.
+
+Following functions are added
+
+ * page_mapping_cache() ... returns address space if a page is page cache
+ * page_mapping_anon()  ... returns anon_vma if a page is anonymous page.
+ * page_is_pagecache()  ... returns true if a page is page-cache.
+ * page_inode()         ... returns inode which a page-cache belongs to.
+ * is_page_consistent() ... returns true if a page is still valid page cache 
+
+Followings are moved 
+ * page_mapping()       ... returns swapper_space or address_space a page is on.
+			    (from mm.h)
+ * page_index()         ... returns position of a page in its inode
+			    (from mm.h)
+ * remove_mapping()     ... a safe routine to remove page->mapping from page.
+			    (from swap.h)
+
+Changelog V1 -> V2:
+ - for 2.6.23-rc6-mm1.
+ - use bool type.
+ - moved related functions to page-cache.h
+ - renamed some functions.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+ include/linux/fs.h         |    6 +-
+ include/linux/mm.h         |   40 ---------------
+ include/linux/page-cache.h |  118 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/swap.h       |    1 
+ 4 files changed, 123 insertions(+), 42 deletions(-)
+
+Index: linux-2.6.23-rc6-mm1/include/linux/page-cache.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc6-mm1/include/linux/page-cache.h
+@@ -0,0 +1,118 @@
++#ifndef _LINUX_PAGE_CACHE_H
++#define _LINUX_PAGE_CACHE_H
++#ifdef __KERNEL__
++
++#include <linux/mm.h>
++#include <linux/fs.h>
++#include <linux/rmap.h>
++/*
++ * This file defines interface function among page-cache and FS.
++ *
++ * page_mapping()       ... returns swapper_space or address_space a page is on.
++ *                          Will be used by routines walks by LRU.
++ * page_mapping_cache() ... returns address space if a page is page cache
++ *                          Will be used by FS.
++ * page_mapping_anon()  ... returns anon_vma if a page is anonymous page.
++ *                          Will be used by VM subsystem
++ * page_is_pagecache()  ... returns true if a page is page-cache.
++ * page_inode()         ... returns inode which a page-cache belongs to.
++ * page_index()         ... returns position of a page in its inode
++ * is_page_consistent() ... returns true if a page is still valid on specified
++ *                          address space.
++ * remove_mapping()     ... a safe routine to remove page->mapping from page.
++ */
++extern  struct address_space swapper_space;
++
++/*
++ * On an anonymous page mapped into a user virtual memory area,
++ * page->mapping points to its anon_vma, not to a struct address_space;
++ * with the PAGE_MAPPING_ANON bit set to distinguish it.
++ *
++ * Please note that, confusingly, "page_mapping" refers to the inode
++ * address_space which maps the page from disk; whereas "page_mapped"
++ * refers to user virtual address space into which the page is mapped.
++ */
++#define PAGE_MAPPING_ANON       1
++
++static inline bool PageAnon(struct page *page)
++{
++	return (((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0);
++}
++
++static inline struct anon_vma *page_mapping_anon(struct page *page)
++{
++	if (!page->mapping || !PageAnon(page))
++		return NULL;
++	return (struct anon_vma *)
++		((unsigned long)page->mapping - PAGE_MAPPING_ANON);
++}
++
++static inline struct address_space *page_mapping_cache(struct page *page)
++{
++	if (!page->mapping || PageAnon(page))
++		return NULL;
++	return page->mapping;
++}
++
++/*
++ * Automatically detect 'what the page is' and returns address_space.
++ *
++ * If page is swap cache, returns &swapper_space.
++ * If page is page cache, returns inode's address space it belongs to
++ * If page is anon, returns NULL.
++ */
++
++static inline struct address_space *page_mapping(struct page *page)
++{
++	struct address_space *mapping = page->mapping;
++
++	VM_BUG_ON(PageSlab(page));
++	if (unlikely(PageSwapCache(page)))
++		mapping = &swapper_space;
++#ifdef CONFIG_SLUB
++	else if (unlikely(PageSlab(page)))
++		mapping = NULL;
++#endif
++        else if (unlikely((unsigned long)mapping & PAGE_MAPPING_ANON))
++		mapping = NULL;
++        return mapping;
++
++}
++
++static inline bool page_is_pagecache(struct page *page)
++{
++	return (page_mapping_cache(page) != NULL);
++}
++
++static inline struct inode *page_inode(struct page *page)
++{
++	if (!page_is_pagecache(page))
++		return NULL;
++	return page_mapping_cache(page)->host;
++}
++/*
++ * Return the pagecache index of the passed page.  Regular pagecache pages
++ * use ->index whereas swapcache pages use ->private
++ */
++static inline pgoff_t page_index(struct page *page)
++{
++	if (unlikely(PageSwapCache(page)))
++		return page_private(page);
++	return page->index;
++}
++
++/*
++ * Returns true if a page is belongs to mapping.
++ */
++static inline bool
++is_page_consistent(struct page *page, struct address_space *mapping)
++{
++	struct address_space *check = page_mapping_cache(page);
++	return (check == mapping);
++}
++
++/* defined in mm/vmscan.c. Must be called under lock_page(). */
++extern int remove_mapping(struct address_space *mapping, struct page *page);
++
++#endif /* __KERNEL__ */
++#endif /* _LINUX_PAGE_CACHE_H */
+Index: linux-2.6.23-rc6-mm1/include/linux/mm.h
+===================================================================
+--- linux-2.6.23-rc6-mm1.orig/include/linux/mm.h
++++ linux-2.6.23-rc6-mm1/include/linux/mm.h
+@@ -550,46 +550,6 @@ void page_address_init(void);
+ #endif
+ 
+ /*
+- * On an anonymous page mapped into a user virtual memory area,
+- * page->mapping points to its anon_vma, not to a struct address_space;
+- * with the PAGE_MAPPING_ANON bit set to distinguish it.
+- *
+- * Please note that, confusingly, "page_mapping" refers to the inode
+- * address_space which maps the page from disk; whereas "page_mapped"
+- * refers to user virtual address space into which the page is mapped.
+- */
+-#define PAGE_MAPPING_ANON	1
+-
+-extern struct address_space swapper_space;
+-static inline struct address_space *page_mapping(struct page *page)
+-{
+-	struct address_space *mapping = page->mapping;
+-
+-	VM_BUG_ON(PageSlab(page));
+-	if (unlikely(PageSwapCache(page)))
+-		mapping = &swapper_space;
+-	else if (unlikely((unsigned long)mapping & PAGE_MAPPING_ANON))
+-		mapping = NULL;
+-	return mapping;
+-}
+-
+-static inline int PageAnon(struct page *page)
+-{
+-	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
+-}
+-
+-/*
+- * Return the pagecache index of the passed page.  Regular pagecache pages
+- * use ->index whereas swapcache pages use ->private
+- */
+-static inline pgoff_t page_index(struct page *page)
+-{
+-	if (unlikely(PageSwapCache(page)))
+-		return page_private(page);
+-	return page->index;
+-}
+-
+-/*
+  * The atomic page->_mapcount, like _count, starts from -1:
+  * so that transitions both from it and to it can be tracked,
+  * using atomic_inc_and_test and atomic_add_negative(-1).
+Index: linux-2.6.23-rc6-mm1/include/linux/fs.h
+===================================================================
+--- linux-2.6.23-rc6-mm1.orig/include/linux/fs.h
++++ linux-2.6.23-rc6-mm1/include/linux/fs.h
+@@ -517,12 +517,16 @@ struct address_space {
+ 	struct list_head	private_list;	/* ditto */
+ 	struct address_space	*assoc_mapping;	/* ditto */
+ } __attribute__((aligned(sizeof(long))));
++
++
++#include <linux/page-cache.h>
++
++
+ 	/*
+ 	 * On most architectures that alignment is already the case; but
+ 	 * must be enforced here for CRIS, to let the least signficant bit
+ 	 * of struct page's "mapping" pointer be used for PAGE_MAPPING_ANON.
+ 	 */
+-
+ struct block_device {
+ 	dev_t			bd_dev;  /* not a kdev_t - it's a search key */
+ 	struct inode *		bd_inode;	/* will die */
+Index: linux-2.6.23-rc6-mm1/include/linux/swap.h
+===================================================================
+--- linux-2.6.23-rc6-mm1.orig/include/linux/swap.h
++++ linux-2.6.23-rc6-mm1/include/linux/swap.h
+@@ -196,7 +196,6 @@ extern unsigned long try_to_free_mem_con
+ extern int __isolate_lru_page(struct page *page, int mode);
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+-extern int remove_mapping(struct address_space *mapping, struct page *page);
+ extern long vm_total_pages;
+ 
+ #ifdef CONFIG_NUMA
+
