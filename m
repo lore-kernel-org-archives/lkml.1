@@ -1,37 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbXISPjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760938AbXISPk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761370AbXISPjB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbXISPiw
+	id S1760938AbXISPk4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbXISPkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:38:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52250 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbXISPiv (ORCPT
+	Wed, 19 Sep 2007 11:40:47 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:9870 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750978AbXISPkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:38:51 -0400
-Date: Wed, 19 Sep 2007 17:38:48 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: David Wilder <dwilder@us.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [Patch 1/2] Trace code and documentation (updated)
-Message-ID: <20070919153848.GA17005@one.firstfloor.org>
-References: <1190177218.3190.18.camel@lc4eb748232119.ibm.com> <p736427vz00.fsf@bingen.suse.de> <46F12ED7.3060605@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 19 Sep 2007 11:40:45 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH net-2.6.24] eHEA: poll function update for new NAPI scheme
+Date: Wed, 19 Sep 2007 17:40:30 +0200
+User-Agent: KMail/1.8.2
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <46F12ED7.3060605@us.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+To: David Miller <davem@davemloft.net>
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709191740.30640.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I agree with you; however, this is in the example code in the 
-> Documentation directory,  It is not part of the trace code.  The example 
-> was just meant to be a demonstration of how the interface works.
+Update of ehea_poll function to work with new NAPI scheme.
 
-That's not a good excuse.  In fact it's a very bad one.
-Especially example code needs to be correct because it'll be likely copied 
-a lot.
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
--Andi
+---
+Hi David,
+
+this patch is built upon the patches provided by Mel Gorman
+(2.6.23-rc6-mm1: Build failure on ppc64 drivers/net/ehea/ehea_main.c)
+and Roland Dreier 
+([PATCH net-2.6.24] Fix refcounting problem with netif_rx_reschedule())
+
+
+ drivers/net/ehea/ehea_main.c |   29 +++++++++++++++--------------
+ 1 files changed, 15 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index c5fc0b1..1bb39a7 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -609,6 +609,7 @@ static struct ehea_cqe *ehea_proc_cqes(struct ehea_port_res *pr, int my_quota)
+ }
+ 
+ #define EHEA_NAPI_POLL_NUM_BEFORE_IRQ 16
++#define EHEA_POLL_MAX_CQES 65535
+ 
+ static int ehea_poll(struct napi_struct *napi, int budget)
+ {
+@@ -616,15 +617,18 @@ static int ehea_poll(struct napi_struct *napi, int budget)
+ 	struct net_device *dev = pr->port->netdev;
+ 	struct ehea_cqe *cqe;
+ 	struct ehea_cqe *cqe_skb = NULL;
+-	int force_irq, wqe_index, rx;
+-
+-	cqe = ehea_poll_rq1(pr->qp, &wqe_index);
+-	cqe_skb = ehea_poll_cq(pr->send_cq);
++	int force_irq, wqe_index;
++	int rx = 0;
+ 
+ 	force_irq = (pr->poll_counter > EHEA_NAPI_POLL_NUM_BEFORE_IRQ);
++	cqe_skb = ehea_proc_cqes(pr, EHEA_POLL_MAX_CQES);
++
++	if (!force_irq)
++		rx += ehea_proc_rwqes(dev, pr, budget - rx);
+ 
+-	if ((!cqe && !cqe_skb) || force_irq) {
++	while ((rx != budget) || force_irq) {
+ 		pr->poll_counter = 0;
++		force_irq = 0;
+ 		netif_rx_complete(dev, napi);
+ 		ehea_reset_cq_ep(pr->recv_cq);
+ 		ehea_reset_cq_ep(pr->send_cq);
+@@ -634,19 +638,16 @@ static int ehea_poll(struct napi_struct *napi, int budget)
+ 		cqe_skb = ehea_poll_cq(pr->send_cq);
+ 
+ 		if (!cqe && !cqe_skb)
+-			return 0;
++			return rx;
+ 
+ 		if (!netif_rx_reschedule(dev, napi))
+-			return 0;
+-	}
++			return rx;
+ 
+-	rx = ehea_proc_rwqes(dev, pr, budget);
+-	cqe = ehea_poll_rq1(pr->qp, &wqe_index);
+-	cqe_skb = ehea_proc_cqes(pr, 300);
+-
+-	if (cqe || cqe_skb)
+-		pr->poll_counter++;
++		cqe_skb = ehea_proc_cqes(pr, EHEA_POLL_MAX_CQES);
++		rx += ehea_proc_rwqes(dev, pr, budget - rx);
++	}
+ 
++	pr->poll_counter++;
+ 	return rx;
+ }
+ 
+-- 
+1.5.2
+
