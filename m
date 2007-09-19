@@ -1,46 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbXISU7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXISVHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbXISU7l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 16:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXISU7e
+	id S1754672AbXISVHD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXISVGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 16:59:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52348 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751832AbXISU7d (ORCPT
+	Wed, 19 Sep 2007 17:06:54 -0400
+Received: from el-out-1112.google.com ([209.85.162.178]:41750 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751338AbXISVGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 16:59:33 -0400
-Date: Wed, 19 Sep 2007 13:59:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Alexey Dobriyan <adobriyan@sw.ru>
-cc: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: BUG kmalloc-16: Object padding overwritten
- (sysfs?)
-In-Reply-To: <20070919123954.fb552e80.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0709191355340.3136@schroedinger.engr.sgi.com>
-References: <20070919123907.GA15591@localhost.sw.ru> <20070919125918.GA6760@localhost.sw.ru>
- <20070919123954.fb552e80.akpm@linux-foundation.org>
+	Wed, 19 Sep 2007 17:06:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type;
+        b=QRVQmfU7P8RZfIX1sZFTll3qwTcKoDP1+DxqupJB80E8NDRfudfj3svNoYEFjmIvBjrmwYEBcPzaNNh6IkYlYN5KqeQpdvvVTAi9SG7SLKldccnuACSUDYlduZ+IxjiPkJann61VpXk0+mkv/7RF8onKxM9M7Wz2TzjhOhTgnGo=
+Message-ID: <47a286160709191406r48dd0c79iefd2ec585abda500@mail.gmail.com>
+Date: Wed, 19 Sep 2007 23:06:44 +0200
+From: Gonsolo <gonsolo@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Complete Linux history in git
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_1999_29815504.1190236004195"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Andrew Morton wrote:
+------=_Part_1999_29815504.1190236004195
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> > 	find /sys/slab | xargs cat
+I have written a small python script that fetches the
+linux archive at
+git://git.kernel.org/pub/scm/linux/kernel/git/nico/archive.git,
+applies patches up to 2.4.0 and commits every patch to git
+with a message and a tag.
+>From there it should be easy to merge old-2.6-bkcvs and
+the latest Linux git and have a git archive with the complete
+history.
 
-Hmmm... This works fine here. Doing the cat may trigger slab validation 
-and show objects corruptions that were heretofore unnoticed.
+To run it you have to download some patches from
+http://gonsolo.de/kernel_history/ and start the script
+from the same directory.
 
-Could you see if running
+It is not perfect, you have to press enter a few times when
+patches do not apply. I would be happy to receive feedback
+or patches.
 
-slabinfo -v
+After running the script there is a git repository at "kernel" which
+is approximately 1GB! After running "git gc" (which takes a long time!)
+the pack file is under 100MB, IIRC.
 
-gives the same results?
+Next step would be to download old-2.6-bkcvs repository from
+git.kernel.org and merge/rebase (don't know).
 
-> So do you beleive the bug lies in the /sys/slab implementation?
+Gonsolo
 
-I would think that this is evidence of memory corruption occurring. The 
-issues were detected while SLUB attempted to flush per cpu queues.
+------=_Part_1999_29815504.1190236004195
+Content-Type: text/x-python; name="history.py"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="history.py"
+X-Attachment-Id: f_f6sbq7yu
+
+IyEvdXNyL2Jpbi9weXRob24KCiMgRmV0Y2ggdGhlIGdpdCByZXBvc2l0b3J5IGZvciBrZXJuZWxz
+IHVwIHRvIDEuMC4KIyBBcHBseSBhbGwgcGF0Y2hlcyB1cCB0byAyLjQgYW5kIGNvbW1pdCB0byB0
+aGUgcmVwb3NpdG9yeS4KIyBGcm9tIGhlcmUgb2xkLTIuNi1ia2N2cyBjYW4gYmUgYXBwbGllZC4K
+IyBTb21lIGZpeGVzIGFyZSBuZWNlc3NhcnkgdGhlc2UgaGF2ZSB0byBiZSBkb3dubG9hZGVkIHNl
+cGVyYXRlbHkuCgppbXBvcnQgb3MsIHNodXRpbCwgdXJsbGliCgojIFRoZSBsb2NhbCBnaXQgZGly
+ZWN0b3J5CmxvY2FsPSdrZXJuZWwvJwoKIyBXaGVyZSB0byBmZXRjaCBwYXRjaGVzCnJlbW90ZT0n
+aHR0cDovL3d3dy5rZXJuZWwub3JnL3B1Yi9saW51eC9rZXJuZWwvJwoKIyBUaGlzIGNhbiBiZSBh
+IGxvY2FsIGRpcmVjdG9yeSwgdG9vCiNyZW1vdGU9ICdmaWxlOi8vL3lvdXJfbG9jYWxfcGF0Y2hf
+ZGlyL3d3dy5rZXJuZWwub3JnL3B1Yi9saW51eC9rZXJuZWwvJwoKZGVmIGFwcGx5KCBwYXRjaCAp
+OgoJb3Muc3lzdGVtKCAnYnpjYXQgJyArIHBhdGNoICsgJyB8IHBhdGNoIC1zIC1wMSAtZCAnICsg
+bG9jYWwgKQoJb3MucmVtb3ZlKCBwYXRjaCApCgpkZWYgcmV0cmlldmVfYXBwbHkoIGRpciwgcGF0
+Y2ggKToKCXByaW50ICdhcHBseSAnICsgcGF0Y2gKCXVybGxpYi51cmxyZXRyaWV2ZSggZGlyICsg
+cGF0Y2gsIHBhdGNoICkKCWFwcGx5KCBwYXRjaCApCgpkZWYgY29tbWl0KCBtc2cgKToKCW9zLnN5
+c3RlbSggJ2NkICcgKyBsb2NhbCArICcgJiYgZ2l0IGFkZCAqICYmIGdpdCBjb21taXQgLXEgLWEg
+LW0nICsgbXNnICkKCW9zLnN5c3RlbSggJ2NkICcgKyBsb2NhbCArICcgJiYgZ2l0IHRhZyAnICsg
+bXNnICkKCmRlZiBhcHBseV9wYXRjaGVzKGRpcixiZWdpbixlbmQscGF0Y2hiYXNlLGNvbW1pdGJh
+c2UpOgoJZm9yIGkgaW4gcmFuZ2UoYmVnaW4sZW5kKToKCQlwYXRjaD1wYXRjaGJhc2UgKyBzdHIo
+aSkgKyAnLmJ6MicKCQlyZXRyaWV2ZV9hcHBseSggZGlyLCBwYXRjaCApCgkJY29tbWl0KCBjb21t
+aXRiYXNlICsgc3RyKGkpICkKCmRlZiB2MTAoKToKCXByaW50ICd2MTAnCglkaXI9cmVtb3RlICsg
+J3YxLjAvJwoKCWFwcGx5X3BhdGNoZXMoZGlyLDEsNywncGF0Y2gnLCd2MS4wLicpCgpkZWYgdjEx
+KCk6CglwcmludCAndjExJwoJZGlyPXJlbW90ZSArICd2MS4xLycKCXBhdGNoPScxLjAuNi0xLjEu
+MC5kaWZmLmJ6MicKCXJldHJpZXZlX2FwcGx5KCBkaXIsIHBhdGNoICkKCWNvbW1pdCggJ3YxLjEu
+MCcgKQoKCWFwcGx5X3BhdGNoZXMoZGlyLDEsNDYsJ3BhdGNoJywndjEuMS4nKQoKCSMgcGF0Y2gg
+NDUgZm9yZ2V0cyB0byByZW1vdmUgZmlsZXMKCW9zLnN5c3RlbSggJ2NkICcgKyBsb2NhbCArICcg
+JiYgY2F0IC4uL2ZpeC4xIHwgcGF0Y2ggLXMgLXAxJyApCgljb21taXQoICd2MS4xLjQ1Zml4MScg
+KQoKCWFwcGx5X3BhdGNoZXMoZGlyLDQ2LDU0LCdwYXRjaCcsJ3YxLjEuJykKCgkjIHBhdGNoNTQg
+aXMgc2NyZXdlZAoJI29zLnJlbW92ZSggbG9jYWwgKyAnZnMvYmluZm10X2VsZi5jJyApCgoJYXBw
+bHlfcGF0Y2hlcyhkaXIsNTQsNzUsJ3BhdGNoJywndjEuMS4nKQoKCSMgcGF0Y2g3NSBpcyBzY3Jl
+d2VkCglvcy5yZW1vdmUoIGxvY2FsICsgJ2ZzL21zZG9zL21tYXAuYycgKQoJY29tbWl0KCAndjEu
+MS43NGE6IGZpeHVwJyApCgoJYXBwbHlfcGF0Y2hlcyhkaXIsNzUsNzcsJ3BhdGNoJywndjEuMS4n
+KQoKCSMgcGF0Y2g3NyBpcyB3aGl0ZXNwYWNlZCBkYW1hZ2VkCglvcy5zeXN0ZW0oICdjZCAnICsg
+bG9jYWwgKyAnICYmIGNhdCAuLi9maXguMiB8IHBhdGNoIC1zIC1wMScgKQoJY29tbWl0KCAndjEu
+MS43NmE6IGZpeHVwJyApCgoJYXBwbHlfcGF0Y2hlcyhkaXIsNzcsOTYsJ3BhdGNoJywndjEuMS4n
+KQoKCSMgMS4xIHBhdGNoZXMgYWRkICctTicgdG8gZGlmZgoJb3Muc3lzdGVtKCAnY2QgJyArIGxv
+Y2FsICsgJyAmJiBjYXQgLi4vZml4LjMgfCBwYXRjaCAtcyAtcDEnICkKCWNvbW1pdCggJ3YxLjEu
+OTVmaXgyJyApCgpkZWYgdjEyKCk6CglwcmludCAndjEyJwoJZGlyPXJlbW90ZSArICd2MS4yLycK
+CglwYXRjaD0ndjEuMS45NS0xLjIuMC5wYXRjaC5iejInCglyZXRyaWV2ZV9hcHBseSggZGlyLCBw
+YXRjaCApCgljb21taXQoICd2MS4yLjAnICkKCglhcHBseV9wYXRjaGVzKGRpciwxLDExLCdwYXRj
+aC0xLjIuJywndjEuMi4nKQoKZGVmIHYxMygpOgoJcHJpbnQgJ3YxMycKCWRpcj1yZW1vdGUgKyAn
+djEuMy8nCgoJIyBmb3VuZCBubyBwYXRjaCBmb3IgdXBncmFkZQoJb3Muc3lzdGVtKCAnY2F0IDEu
+Mi4xMC0xLjMuMCB8IHBhdGNoIC1zIC1wMSAtZCAnICsgbG9jYWwgKQoJY29tbWl0KCAndjEuMy4w
+JyApCgoJYXBwbHlfcGF0Y2hlcyhkaXIsMSwxMDEsJ3BhdGNoLTEuMy4nLCd2MS4zLicpCgoJIyBG
+aXggMS4zIHBhdGNoZXMKCW9zLnN5c3RlbSggJ2NkICcgKyBsb2NhbCArICcgJiYgY2F0IC4uL2Zp
+eC40IHwgcGF0Y2ggLXMgLXAxJyApCgljb21taXQoICd2MS4zLjEwMGZpeDMnICkKCglhcHBseV9w
+YXRjaGVzKGRpciwxLDE1LCdwYXRjaC1wcmUyLjAuJywncHJlMi4wLicpCgoJIyBGaXggcHJlMiBw
+YXRjaGVzCglvcy5zeXN0ZW0oICdjZCAnICsgbG9jYWwgKyAnICYmIGNhdCAuLi9maXguNSB8IHBh
+dGNoIC1zIC1wMScgKQoJY29tbWl0KCAndjIuMGZpeDQnICkKCmRlZiB2MjAoKToKCXByaW50ICd2
+MjAnCglkaXI9cmVtb3RlICsgJ3YyLjAvJwoJCglhcHBseV9wYXRjaGVzKGRpciwxLDQxLCdwYXRj
+aC0yLjAuJywndjIuMC4nKQoKZGVmIHYyMSgpOgoJcHJpbnQgJ3YyMScKCWRpcj1yZW1vdGUgKyAn
+djIuMS8nCgoJb3Muc3lzdGVtKCAnY2QgJyArIGxvY2FsICsgJyAmJiBnaXQgY2hlY2tvdXQgdjIu
+MC4yMScgKQoJCglyZXRyaWV2ZV9hcHBseSggZGlyLCAncGF0Y2gtMi4wLjIxLTIuMS4wLmJ6Micp
+Cgljb21taXQoICd2Mi4xLjAnICkKCglhcHBseV9wYXRjaGVzKGRpciwxLDEzMywncGF0Y2gtMi4x
+LicsJ3YyLjEuJykKCWFwcGx5X3BhdGNoZXMoZGlyLDEsMTAsJ3BhdGNoLTIuMi4wLXByZScsJ3Yy
+LjIuMC1wcmUnKQoKCXJldHJpZXZlX2FwcGx5KCBkaXIsICdwYXRjaC0yLjIuMC1maW5hbC5iejIn
+KQoJY29tbWl0KCAndjIuMi4wLWZpbmFsJyApCgpkZWYgdjIyKCk6CglwcmludCAndjIyJwoJZGly
+PXJlbW90ZSArICd2Mi4yLycKCglhcHBseV9wYXRjaGVzKGRpciwxLDI3LCdwYXRjaC0yLjIuJywn
+djIuMi4nKQoKZGVmIHYyMygpOgoJcHJpbnQgJ3YyMycKCWRpcj1yZW1vdGUgKyAndjIuMy8nCgoJ
+b3Muc3lzdGVtKCAnY2QgJyArIGxvY2FsICsgJyAmJiBnaXQgY2hlY2tvdXQgdjIuMi44JyApCgkK
+CXJldHJpZXZlX2FwcGx5KCBkaXIsICdwYXRjaC0yLjIuOC10by0yLjMuMC5iejInKQoJY29tbWl0
+KCAndjIuMy4wJyApCgoJYXBwbHlfcGF0Y2hlcyhkaXIsMSw1MiwncGF0Y2gtMi4zLicsJ3YyLjMu
+JykKCWFwcGx5X3BhdGNoZXMoZGlyLDEsMTAsJ3BhdGNoLTIuMy45OS1wcmUnLCd2Mi4zLjk5LXBy
+ZScpCgpkZWYgdjI0KCk6CglwcmludCAndjI0JwoJZGlyPXJlbW90ZSArICd2Mi40L29sZC10ZXN0
+LWtlcm5lbHMvJwoKCWFwcGx5X3BhdGNoZXMoZGlyLDEsMTMsJ3BhdGNoLTIuNC4wLXRlc3QnLCd2
+Mi40LjAtdGVzdCcpCgoJcmV0cmlldmVfYXBwbHkoIGRpciwgJ3BhdGNoLTIuNC4wLXByZXJlbGVh
+c2UuYnoyJyApCgljb21taXQoICd2Mi40LjAtcHJlcmVsZWFzZScgKQoKCXJldHJpZXZlX2FwcGx5
+KCBkaXIsICdwcmVyZWxlYXNlLXRvLWZpbmFsLmJ6MicgKQoJY29tbWl0KCAndjIuNC4wJyApCgoK
+aWYgb3MucGF0aC5leGlzdHMoIGxvY2FsICk6CglzaHV0aWwucm10cmVlKCBsb2NhbCApCm9zLnN5
+c3RlbSggJ2dpdCBjbG9uZSBnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5l
+bC9naXQvbmljby9hcmNoaXZlLmdpdCAnICsgbG9jYWwgKQp2MTAoKQp2MTEoKQp2MTIoKQp2MTMo
+KQp2MjAoKQp2MjEoKQp2MjIoKQp2MjMoKQp2MjQoKQoK
+------=_Part_1999_29815504.1190236004195--
