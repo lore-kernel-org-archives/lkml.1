@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbXISEe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbXISErR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753050AbXISEe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 00:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbXISEeu
+	id S1753313AbXISErR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 00:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbXISErD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 00:34:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32881 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750807AbXISEes (ORCPT
+	Wed, 19 Sep 2007 00:47:03 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:44115 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbXISErA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 00:34:48 -0400
-Date: Tue, 18 Sep 2007 21:33:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rene Herman <rene.herman@gmail.com>
-cc: Andrea Arcangeli <andrea@suse.de>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <46F0A4FB.2020901@gmail.com>
-Message-ID: <alpine.LFD.0.999.0709182131560.16478@woody.linux-foundation.org>
-References: <20070911060349.993975297@sgi.com> <200709161853.12050.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com>
- <200709181116.22573.nickpiggin@yahoo.com.au>
- <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org>
- <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org>
- <46F09A80.8020605@gmail.com> <alpine.LFD.0.999.0709182049480.16478@woody.linux-foundation.org>
- <46F0A4FB.2020901@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 19 Sep 2007 00:47:00 -0400
+Subject: [Patch 0/2] A Kernel Tracing Interface (updated)
+From: "David J. Wilder" <dwilder@us.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Content-Type: text/plain
+Date: Tue, 18 Sep 2007 21:46:55 -0700
+Message-Id: <1190177215.3190.17.camel@lc4eb748232119.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+These patches provide a kernel tracing interface called "trace".
+
+The motivation for "trace" is to:
+- Provide a simple set of tracing primitives that will utilize the high-
+  performance and low-overhead of relayfs for passing traces data from
+  kernel to user space.
+- Provide a common user interface for managing kernel traces.
+- Allow for binary as well as ascii trace data.
+- Incorporate features from the systemtap runtime that are
+  useful to others.
+
+History- Versions of this code have been submitted for review under
+a couple of different names.  The original submission was called UTT,
+it was later re-submitted as GTSC.   Christoph Hellwig commented "The
+code looks fine ...but the name is just dumb".  Following Christoph's
+advice, I changed the name to simply "Trace".
+
+This patch addresses review comments made by Christoph Hellwig and
+Mathieu Desnoyers.  Changes include the addition of a mutex and
+synchronization protecting trace state changes (using RCU) and the
+reduction of the number of exports.
+
+Patch Updated Sep. 18,2007
+Addressed further review comments by Andrew Morton, Randy Dunlap,
+and Sam Ravnborg.
+
+Patches are against 2.6.23-rc6-mm1
+
+Required patches:
+1/2 Trace code and documentation
+2/2 Relay Reset Consumed patch (required for trace's "rewind" feature")
+
+Signed-off-by: David Wilder <dwilder@us.ibm.com>
 
 
-On Wed, 19 Sep 2007, Rene Herman wrote:
-> 
-> I do feel larger blocksizes continue to make sense in general though. Packet
-> writing on CD/DVD is a problem already today since the hardware needs 32K or
-> 64K blocks and I'd expect to see more of these and similiar situations when
-> flash gets (even) more popular which it sort of inevitably is going to be.
-
-.. that's what scatter-gather exists for.
-
-What's so hard with just realizing that physical memory isn't contiguous?
-
-It's why we have MMU's. It's why we have scatter-gather. 
-
-		Linus
