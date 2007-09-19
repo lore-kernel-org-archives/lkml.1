@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXISQtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761648AbXISQvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761580AbXISQtg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759622AbXISQtZ
+	id S1761648AbXISQvn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 12:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbXISQve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:49:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60674 "EHLO mx1.redhat.com"
+	Wed, 19 Sep 2007 12:51:34 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:2538 "EHLO baikonur.stro.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757654AbXISQtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:49:24 -0400
-Message-ID: <46F15305.2030507@redhat.com>
-Date: Wed, 19 Sep 2007 09:49:09 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: netdev <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: follow-up: discrepancy with POSIX
-References: <46F13E8B.4050309@redhat.com> <p73sl5aveqh.fsf@bingen.suse.de>
-In-Reply-To: <p73sl5aveqh.fsf@bingen.suse.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	id S1752124AbXISQvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 12:51:33 -0400
+Date: Wed, 19 Sep 2007 18:51:03 +0200
+From: maximilian attems <max@stro.at>
+To: David Miller <davem@davemloft.net>
+Cc: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: bnx2 dirver's firmware images
+Message-ID: <20070919165103.GS19918@baikonur.stro.at>
+References: <20070918.112337.74737433.davem@davemloft.net> <1190145951.9540.230.camel@dell> <20070919163318.GG6618@stro.at> <20070919.093832.88002774.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070919.093832.88002774.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+hello dave,
 
-Andi Kleen wrote:
-> The standard way to undo connect is to use AF_UNSPEC. Code to handle
-> that for dgram sockets is there. It's the same code for v4 and v6.
+i appreciate a lot your opinon, but please cool down.
+this is not a four spin on your beloved pipe. :)
 
-I quoted the standard and it does not say anything about AF_UNSPEC.  So
-you cannot simply make such broad statements.
+On Wed, Sep 19, 2007 at 09:38:32AM -0700, David Miller wrote:
+> From: maximilian attems <max@stro.at>
+> Date: Wed, 19 Sep 2007 18:33:18 +0200
+> 
+> > we have to strip the firmware for Debian for the upcoming Lenny release.
+> 
+> Why do you "have to"?  The vendor has given you explicit rights
+> to distribute it:
+> 
+>  * Firmware is:
+>  *	Derived from proprietary unpublished source code,
+>  *	Copyright (C) 2000-2003 Broadcom Corporation.
+>  *
+>  *	Permission is hereby granted for the distribution of this firmware
+>  *	data in hexadecimal or equivalent format, provided this copyright
+>  *	notice is accompanying it.
 
-I also don't say that this behavior should be removed.  It's certainly
-useful, very much so in fact.
+afair the trouble is that it does not give permission to change
+unlike some other gpl or bsd licensed blob.
+so it is dfsg non-free and not suitable for main distribution.
+ 
+> This whole firmware stripping thing in debian is beyond rediculious
+> and only serves to hurt users.
 
-But the spec calls for a "null address" to be used and that's in my
-understanding something different from using AF_UNSPEC.
+i'm not of the d-legal department,
+but seeing free firmwares would be cool.
 
-I looked through Stevens TCP Illustrated Vol 2 and it seems not to
-mention resetting the address at all.  The POSIX spec certainly got this
-text from .1g.
+-- 
+maks
 
-I cannot test it on other systems.  If somebody has access to some
-certified systems (and maybe others), write a bit of code which creates
-a DGRAM socket, connect to one address, call connect with a "null
-address", then connect to another address (which likely has to use a
-different interface since otherwise the connect will just succeed, it
-seems).
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFG8VMF2ijCOnn/RHQRAr9NAJwLxyql0kQnMGJNaPZlRGsuB6rGEACgog88
-WIWAFhuBWsjps7PdbcoumUQ=
-=oLxP
------END PGP SIGNATURE-----
