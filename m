@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbXISUre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbXISUr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757369AbXISUre (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 16:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbXISUrW
+	id S1757612AbXISUr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 16:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbXISUrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 16:47:22 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:43140 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751410AbXISUrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 16:47:20 -0400
-Subject: Re: [PATCH] JBD slab cleanups
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1190230126.6504.5.camel@norville.austin.ibm.com>
-References: <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
-	 <20070902152801.GA19962@infradead.org>
-	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
-	 <20070903134043.GB28962@infradead.org>
-	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
-	 <20070903193308.GA7771@infradead.org>
-	 <1189796027.3841.6.camel@localhost.localdomain>
-	 <1190057391.3845.22.camel@localhost.localdomain>
-	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
-	 <1190069851.6725.6.camel@localhost.localdomain>
-	 <20070918090407.GA671@infradead.org>
-	 <1190133347.3819.6.camel@localhost.localdomain>
-	 <1190138690.6528.23.camel@norville.austin.ibm.com>
-	 <1190163601.3819.15.camel@localhost.localdomain>
-	 <20070918191920.a2130a3c.akpm@linux-foundation.org>
-	 <1190229352.4318.12.camel@localhost.localdomain>
-	 <1190229991.6504.3.camel@norville.austin.ibm.com>
-	 <1190230126.6504.5.camel@norville.austin.ibm.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 19 Sep 2007 13:47:16 -0700
-Message-Id: <1190234836.4318.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Wed, 19 Sep 2007 16:47:47 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:33136 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754044AbXISUrp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 16:47:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JFASh7q2VBUEuH/xKJeJ6zwrvGI8lEOtwk/RvMddRHjbcBRXZcA/5halWbLwiqklnvxI6AwOKN+eDorkVs7inj6SNnXipzsgGskAF7fVHxxJt8egrscPWKwT/vs2SLTXzVyiPNKqEAWuR3t+aqTIAUconX/zbadD+bD+wcUyGN0=
+Message-ID: <46F18AED.4090906@gmail.com>
+Date: Wed, 19 Sep 2007 22:47:41 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org>            <46F17F27.5080000@gmail.com> <12009.1190233975@turing-police.cc.vt.edu>
+In-Reply-To: <12009.1190233975@turing-police.cc.vt.edu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-19 at 19:28 +0000, Dave Kleikamp wrote:
-> On Wed, 2007-09-19 at 14:26 -0500, Dave Kleikamp wrote:
-> > On Wed, 2007-09-19 at 12:15 -0700, Mingming Cao wrote:
-> > 
-> > > Here is the patch to clean up __GFP_NOFAIL flag in jbd/jbd2. In all
-> > > cases except one handles memory allocation failure so I get rid of those
-> > > GFP_NOFAIL flags.
-> > > 
-> > > Also, shouldn't we use GFP_KERNEL instead of GFP_NOFS flag for kmalloc
-> > > in jbd/jbd2? I will send a separate patch to cleanup that.
-> > 
-> > No.  GFP_NOFS avoids deadlock.  It prevents the allocation from making
-> > recursive calls back into the file system that could end up blocking on
-> > jbd code.
+On 09/19/2007 10:32 PM, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 19 Sep 2007 21:57:27 +0200, Jiri Slaby said:
+>> On 09/19/2007 09:54 PM, Andi Kleen wrote:
+>>>> Yeah. (But X doesn't run -- this is maybe the known issue in this release)
+> .
+>>> What do you mean with not run? 
+>> (II) intel(0): Initializing HW Cursor
+>> (II) intel(0): xf86BindGARTMemory: bind key 0 at 0x005ff000 (pgoffset 1535)
+>> (WW) intel(0): xf86BindGARTMemory: binding of gart memory with key 0
+>>         at offset 0x5ff000 failed (Invalid argument)
+>>
+>> Fatal server error:
+>> Couldn't bind memory for front buffer
+>>
+>> I thought I'd seen a thread about this issue, but I can't find it now. Is it
+>> known or am I seeing ghosts yet, Andrew?
 > 
-> Oh, I see your patch now.  You mean use GFP_NOFS instead of
-> GFP_KERNEL.  :-)  OK then.
-> 
+> That would probably have been me, saying that x86_64-mm-cpa-clflush.patch broke
+> the NVidia graphics driver in 23-rc3-mm1.  Is it breaking *other* X drivers as
+> well?
 
-oops, I did mean what you say here.:-)
+Yes, the issue is there from rc3-mm1, see (intel and radeon cards are affected
+in my case):
+http://lkml.org/lkml/2007/9/9/51
 
-> > Shaggy
+But now I'm talking about another issue -- a regression since rc4-mm1, where X
+server is unable to bind agp memory (those x logs above). The clflush issue has
+solved andi in
+http://lkml.org/lkml/2007/9/19/334
+recently
 
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
