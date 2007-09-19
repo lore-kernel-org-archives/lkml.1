@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761133AbXISPH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbXISPHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761133AbXISPH6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758455AbXISPHp
+	id S1760968AbXISPHi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760730AbXISPHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:07:45 -0400
-Received: from stinky.trash.net ([213.144.137.162]:33658 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755548AbXISPHo (ORCPT
+	Wed, 19 Sep 2007 11:07:24 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:21365 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760178AbXISPHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:07:44 -0400
-Message-ID: <46F13999.30700@trash.net>
-Date: Wed, 19 Sep 2007 17:00:41 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Wed, 19 Sep 2007 11:07:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=e5P9OypInWNAadSwnzvshlnGznnQzAVTBKSy3/h3GHEQgiUgQW+1ZGAdNpA8drQ/L0wISuc+qou1rs83Z+N1cwBaH/av5rNbokpVI6m6OCd8MyNMhYCQH8x1g8+CnR9U1O8n+OHugCrJWMng6EuxzSnqadwWfCqqufzA8f+laME=
+Message-ID: <40f31dec0709190807k5ea36ce8h615764a49c49efc@mail.gmail.com>
+Date: Wed, 19 Sep 2007 18:07:17 +0300
+From: "Nick Kossifidis" <mickflemm@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Clarify pci_iomap() usage for MMIO-only devices
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <20070918232546.004af9ff@the-village.bc.nu>
 MIME-Version: 1.0
-To: lepton <ytht.net@gmail.com>
-CC: lkm <linux-kernel@vger.kernel.org>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [RFC PATCH] 2.6.22.6 netfilter: sk_setup_caps in ip_make_route_harder
-References: <20070919093648.GA7491@router.lepton.home>
-In-Reply-To: <20070919093648.GA7491@router.lepton.home>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <43e72e890709171322x76ab6b70xd29bf97e3643c553@mail.gmail.com>
+	 <20070918113401.6a8a737f@the-village.bc.nu>
+	 <43e72e890709181146s604e0f9fl8b0c16627469c77f@mail.gmail.com>
+	 <alpine.LFD.0.999.0709181159440.16478@woody.linux-foundation.org>
+	 <20070918232546.004af9ff@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lepton wrote:
-> Hi,
->   For local src packets, it is better to update sk_route_caps in
->   ip_route_me_harder.
+2007/9/19, Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> > If you use ioport_map/unmap, then you really *should* access them with the
+> > proper iomem accessors (ioread/iowrite). The fact that it may happen to
+> > work (when using the default lib/iomap.c implementation, at least) on
+> > some architectures and with the current implementation still doesn't mean
+> > that you should necessarily use readb/writeb.
+>
+> Another reason we should enforce the use of ioread/iowrite is that some
+> platforms do daft things like map mmio type devices through indirect
+> register access. Sparc PCMCIA is a classic example. The only sane way to
+> make these work is to require ioread/iowrite is used with iomap
+>
 
+Hmm, we 've had bug reports about driver (madwifi-old-openhal) not
+working on Sparc64, can someone test if this is the case (the fact
+that we used readl/writel instead of ioread/iowrite on
+madwifi-old-openhal) ? It was really weird because we handle
+big-endian machines ok (madwifi-old-openhal on ppc worked fine).
 
-This seems like a good idea to me. But why only for local src
-(address) packets? This function can also be used for locally
-generated packet that have been (f.i.) NATed to a foreign
-address ...
+(ath5k was based on madwifi-old-openhal)
 
-
-> Signed-off-by: Lepton Wu <ytht.net@gmail.com>
-> 
-> diff -pru -X linux-2.6.22.6/Documentation/dontdiff linux-2.6.22.6/net/ipv4/netfilter.c linux-2.6.22.6-lepton/net/ipv4/netfilter.c
-> --- linux-2.6.22.6/net/ipv4/netfilter.c	2007-09-19 13:19:13.000000000 +0800
-> +++ linux-2.6.22.6-lepton/net/ipv4/netfilter.c	2007-09-19 17:10:36.000000000 +0800
-> @@ -37,6 +37,10 @@ int ip_route_me_harder(struct sk_buff **
->  		/* Drop old route. */
->  		dst_release((*pskb)->dst);
->  		(*pskb)->dst = &rt->u.dst;
-> +		if((*pskb)->sk){
-> +			dst_hold((*pskb)->dst);
-> +			sk_setup_caps((*pskb)->sk, (*pskb)->dst);
-> +		}
->  	} else {
->  		/* non-local src, find valid iif to satisfy
->  		 * rp-filter when calling ip_route_input. */
-> 
-
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
