@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbXISQPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbXISQQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbXISQPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757195AbXISQPc
+	id S1756646AbXISQQf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 12:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760625AbXISQQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:15:32 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:28686
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757331AbXISQPb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:15:31 -0400
-Message-Id: <46F16779.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 19 Sep 2007 17:16:25 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i386/PAE: avoid temporarily inconsistent pte-s
-References: <46F150CB.76E4.0078.0@novell.com>
- <200709191809.47351.ak@suse.de>
-In-Reply-To: <200709191809.47351.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 19 Sep 2007 12:16:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49813 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757724AbXISQQT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 12:16:19 -0400
+Message-ID: <46F14A58.60904@zytor.com>
+Date: Wed, 19 Sep 2007 09:12:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@muc.de>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
+References: <20070918210747.828804366@polymtl.ca> <20070918210853.588573678@polymtl.ca> <46F04856.3010808@goop.org> <46F04D53.6040903@zytor.com> <46F050E8.5020206@goop.org> <20070919130122.GA21750@Krystal>
+In-Reply-To: <20070919130122.GA21750@Krystal>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Andi Kleen <ak@suse.de> 19.09.07 18:09 >>>
->On Wednesday 19 September 2007 16:39:39 Jan Beulich wrote:
->> One more of these issues (which were considered fixed a few releases
->> back): Other than on x86-64, i386 allows set_fixmap() to replace
->> already present mappings. Consequently, on PAE, care must be taken to
->> not update the high half of a pte while the low half is still holding
->> the old value.
->
->Hmm perhaps it would be better to just forbid it on i386 too.
->Do you know who uses it?
+Mathieu Desnoyers wrote:
+> 
+> Ok, let's have a good look at what we want:
+> 
+> 1 - get a pointer to the beginning of the immediate value within the
+>     instruction.
+> 2 - make sure that the immediate value, within the instruction, is
+>     written to atomically wrt all CPUs, even on older architectures
+>     where non aligned writes are not atomic.
+> 
 
-PCI's mmconfig accessor. One could of course make it call clear_fixmap() prior
-to establishing a new mapping, but I thought that was not intended and is the
-reason for allowing this.
+I think you'll find that even on modern architectures cross-cacheline
+writes aren't atomic.
 
-Jan
+Anyway, disregard the bit I mentioned about one byte longer; I've been
+staring myself too blind at instruction variants lately (lots of
+arguments about how to generate various instructions using NASM syntax).
 
+> 
+> * 4 bytes
+> B8 + rd         MOV r32, imm32   (1 byte opcode)
+> C7 /0           MOV r/m32, imm32 (2 bytes opcode)
+> (the 2 bytes opcode can be a problem)
+> 
+
+If gas generates the C7 opcodes by default, then that's a bug, nothing less.
+
+	-hpa
