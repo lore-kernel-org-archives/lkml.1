@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbXISPhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbXISPh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbXISPhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXISPhT
+	id S1760878AbXISPh5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbXISPhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:37:19 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:31641 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754936AbXISPhR (ORCPT
+	Wed, 19 Sep 2007 11:37:48 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:43645 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755235AbXISPhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:37:17 -0400
-X-IronPort-AV: i="4.20,273,1186372800"; 
-   d="scan'208"; a="39917894:sNHT27146063"
-Subject: [PATCH 1/4] Blackfin EMAC driver: add function to change the MAC
-	address
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Alex Landau <lirsb@yahoo.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Wed, 19 Sep 2007 23:37:04 +0800
-Message-Id: <1190216224.15707.27.camel@roc-laptop>
+	Wed, 19 Sep 2007 11:37:47 -0400
+Date: Wed, 19 Sep 2007 08:29:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Josh Boyer <jwboyer@jdub.homelinux.org>, linuxppc-dev@ozlabs.org,
+       Linux@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Mailing List <linux-kernel@vger.kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Avoid pointless WARN_ON(irqs_disabled()) from
+ panic codepath
+Message-Id: <20070919082947.d9a33a70.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.0.999.0709191844360.7697@enigma.security.iitk.ac.in>
+References: <46EA5CEB.7020104@linux.vnet.ibm.com>
+	<a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
+	<alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
+	<20070917183749.fd690505.randy.dunlap@oracle.com>
+	<20070917204625.64b97392@vader.jdub.homelinux.org>
+	<alpine.LFD.0.999.0709191844360.7697@enigma.security.iitk.ac.in>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 19 Sep 2007 15:37:16.0352 (UTC) FILETIME=[F4FB1400:01C7FAD2]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Landau <lirsb@yahoo.com>
-Date: Wed, 19 Sep 2007 23:14:18 +0800
-Subject: [PATCH] Blackfin EMAC driver: add function to change the MAC address
+On Wed, 19 Sep 2007 19:15:00 +0530 (IST) Satyam Sharma wrote:
 
-Alex Landau writes in the forums:
- Previously, changing the MAC address (e.g. via ifconfig) resulted
- in a generic function to be called that only changed a variable in
- memory. This patch also updated the Blackfin MAC address registers
- to filter the correct new MAC.
+> 
+> In fact, it turns out OSDL's cross-compiler toolchains were built with
+> crosstool itself. Should also add that those OSDL compilers are too old
+> (gcc version 3.4.x-3.5.x mostly -- my build was totally spammed with those
+> "+m" in asm constraints related warnings), so I'll try and build a few
+> more recent ones (at least for the more popular platforms) over the
+> weekend too.
 
-Signed-off-by: Alex Landau <lirsb@yahoo.com>
-Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-Acked-by: Jeff Garzik <jeff@garzik.org>
+Hi,
+Please let us know if/when you have newer cross-compiler tarballs
+available.
+
+Thanks.
 ---
- drivers/net/bfin_mac.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
-index cebe554..ead7be9 100644
---- a/drivers/net/bfin_mac.c
-+++ b/drivers/net/bfin_mac.c
-@@ -463,7 +463,7 @@ void setup_system_regs(struct net_device *dev)
- 	bfin_write_DMA1_Y_MODIFY(0);
- }
- 
--void setup_mac_addr(u8 * mac_addr)
-+static void setup_mac_addr(u8 *mac_addr)
- {
- 	u32 addr_low = le32_to_cpu(*(__le32 *) & mac_addr[0]);
- 	u16 addr_hi = le16_to_cpu(*(__le16 *) & mac_addr[4]);
-@@ -473,6 +473,16 @@ void setup_mac_addr(u8 * mac_addr)
- 	bfin_write_EMAC_ADDRHI(addr_hi);
- }
- 
-+static int bf537mac_set_mac_address(struct net_device *dev, void *p)
-+{
-+	struct sockaddr *addr = p;
-+	if (netif_running(dev))
-+		return -EBUSY;
-+	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
-+	setup_mac_addr(dev->dev_addr);
-+	return 0;
-+}
-+
- static void adjust_tx_list(void)
- {
- 	int timeout_cnt = MAX_TIMEOUT_CNT;
-@@ -876,6 +886,7 @@ static int __init bf537mac_probe(struct net_device *dev)
- 	dev->open = bf537mac_open;
- 	dev->stop = bf537mac_close;
- 	dev->hard_start_xmit = bf537mac_hard_start_xmit;
-+	dev->set_mac_address = bf537mac_set_mac_address;
- 	dev->tx_timeout = bf537mac_timeout;
- 	dev->set_multicast_list = bf537mac_set_multicast_list;
- #ifdef CONFIG_NET_POLL_CONTROLLER
--- 
-1.5.2
-
+~Randy
