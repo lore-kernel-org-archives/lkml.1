@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbXISR34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbXISRaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760696AbXISR34 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXISR3m
+	id S1755203AbXISRaU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758948AbXISR3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:29:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35234 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751181AbXISR3l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:29:41 -0400
-Date: Wed, 19 Sep 2007 10:29:40 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-cc: David Rientjes <rientjes@google.com>, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [03/17] is_vmalloc_addr(): Check if an address is within the
- vmalloc boundaries
-In-Reply-To: <167F960F-0A93-4263-8AE6-1B0CEBB2C9D1@cam.ac.uk>
-Message-ID: <Pine.LNX.4.64.0709191029230.11138@schroedinger.engr.sgi.com>
-References: <20070919033605.785839297@sgi.com> <20070919033641.009931707@sgi.com>
- <alpine.DEB.0.9999.0709182329110.6251@chino.kir.corp.google.com>
- <E1A595D3-FD5B-44EA-A99D-BB581642F0E8@cam.ac.uk>
- <alpine.DEB.0.9999.0709190103560.12827@chino.kir.corp.google.com>
- <167F960F-0A93-4263-8AE6-1B0CEBB2C9D1@cam.ac.uk>
+	Wed, 19 Sep 2007 13:29:47 -0400
+Received: from mail.suse.de ([195.135.220.2]:39644 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756929AbXISR3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:29:45 -0400
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: "Dr. David Alan Gilbert" <linux@treblig.org>, linux-kernel@vger.kernel.org
+Subject: Re: Intel Memory Ordering White Paper
+References: <200709071526.51169.jesse.barnes@intel.com>
+	<20070912182622.GA16520@gallifrey>
+	<200709190926.55200.jesse.barnes@intel.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 19 Sep 2007 19:29:44 +0200
+In-Reply-To: <200709190926.55200.jesse.barnes@intel.com>
+Message-ID: <p73k5qmva0n.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Anton Altaparmakov wrote:
+Jesse Barnes <jesse.barnes@intel.com> writes:
+> 
+> It's really both (1) and (2).  This document will become part of the 
+> regular manuals when the next version is published.  And yes, 
+> processors may do something different internally, but software can rely 
+> on the behavior described by the rules in the document.
 
-> I suspect that is_vmalloc_addr() should not be in linux/mm.h at all and should
-> be in linux/vmalloc.h instead and vmalloc.h should include linux/highmem.h.
-> That would be more sensible than sticking a vmalloc related function into
-> linux/mm.h where it does not belong...
+... until the first erratum comes around. With the multitude of x86
+cores being introduced all the time (how many did only Intel just announce at 
+IDF?@) that is going to happen sooner or later.
 
-Tried it and that leads to all sort of other failures.
+i386 with full legacy enabled already has to care about old PPros and 
+those seriously violate write ordering.
+
+-Andi
