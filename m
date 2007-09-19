@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbXISTZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbXIST0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752717AbXISTZI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 15:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbXISTY5
+	id S1753361AbXIST0K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 15:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbXISTZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 15:24:57 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57145 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbXISTY5 (ORCPT
+	Wed, 19 Sep 2007 15:25:57 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:4813 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbXISTZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 15:24:57 -0400
-Date: Wed, 19 Sep 2007 21:24:53 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Message-ID: <20070919192453.GB18707@one.firstfloor.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Wed, 19 Sep 2007 15:25:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=gUAsKBwpHKBDCM4nau+sdwz8xaHGRONL049JM5xK3iSTG7TlICUIln1WX5uZrK3qspSm0DlbQyLXs7qy/dBd/6ZrVpSKqIDTJ+opByPQnEYO7lWE15b0huSKl6vtcrCK4tI6SHAsKj1IuGDytGlvKR7SyECc2DwDbIeGT9rWyNs=
+Date: Wed, 19 Sep 2007 22:25:46 +0300
+To: Low Yucheng <ylow@andrew.cmu.edu>
+Cc: Oleg Verych <olecom@flower.upol.cz>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PROBLEM: System Freeze on Particular workload with kernel 2.6.22.6
+Message-ID: <20070919192546.GA3153@Ahmed>
+References: <46F0E19D.8000400@andrew.cmu.edu> <E1IY1mO-00067S-7v@flower> <46F14B67.5010807@andrew.cmu.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070919121017.0cbcbc30.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <46F14B67.5010807@andrew.cmu.edu>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 12:10:17PM -0700, Andrew Morton wrote:
-> On Wed, 19 Sep 2007 16:59:04 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-> 
-> > ---------8<---------8<---------8<---------8<---------8<---------8<----
-> > That means
-> > void agp_generic_destroy_page(void *addr)
-> > {
-> >         struct page *page;
-> > 
-> >         if (addr == NULL)
-> >                 return;
-> > 
-> >         page = virt_to_page(addr);
-> > (1)     unmap_page_from_agp(page);
-> >         put_page(page);
-> > (2)     free_page((unsigned long)addr);
-> >         atomic_dec(&agp_bridge->current_memory_agp);
-> > }
-> > 
-> > (1) unmap_page_from_agp -> change_page_attr -> change_page_attr_addr ->
-> > __change_page_attr -> save_page -> list_add(&fpage->lru, &deferred_pages);
-> > (2) free_page -> free_pages -> __free_pages -> free_hot_page ->
-> > free_hot_cold_page -> list_add(&page->lru, &pcp->list);
-> 
-> that'll hurt.
-> 
-> > any ideas how to fix this?
-> 
-> We should hold a single reference on the page for its membership in
-> deferred_pages.
+Hi Low,
 
-The code is broken anyways. If you free pages without flushing
-them first some other innocent user allocating them will end up
-with possible uncached pages for some time.
+On Wed, Sep 19, 2007 at 12:16:39PM -0400, Low Yucheng wrote:
+> There are no additional console messages.
+> Not sure what this is: * no relevant Cc (memory management added)
 
-Does this simple patch help? 
+Relevant CCs means CCing maintainers or subsystem mailing lists related to your
+bug report. i.e, if it's a networking bug, you need to CC the linux kernel
+networking mailing list. If it's a kobject bug, you need to CC its maintainer
+(Greg) and so on.
 
--Andi
+Regards,  
 
-
-Flush uncached AGP pages before freeing
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/drivers/char/agp/generic.c
-===================================================================
---- linux.orig/drivers/char/agp/generic.c
-+++ linux/drivers/char/agp/generic.c
-@@ -1185,6 +1185,7 @@ void agp_generic_destroy_page(void *addr
- 
- 	page = virt_to_page(addr);
- 	unmap_page_from_agp(page);
-+	flush_agp_mappings();
- 	put_page(page);
- 	free_page((unsigned long)addr);
- 	atomic_dec(&agp_bridge->current_memory_agp);
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
