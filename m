@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762847AbXISSrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762968AbXISSsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762847AbXISSrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 14:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbXISSre
+	id S1762968AbXISSsi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 14:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbXISSsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 14:47:34 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:2187 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbXISSrd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 14:47:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RDXahtorpwNUgzCiiCqzzbOJtI5cJYRd8Qyzx1HYpPj8HUC3Jq6aH34LkXk+QioyoWMEUYoUu6cUFN2VSVrQSMJHtuKD+vp0yC7/LbA3qA668kmDpOuIfO9CihEM2l29ZWDjzH8BN27g5D0qVGw/IBiBOlaJFpWCmZ7PYsOEWIc=
-Message-ID: <43e72e890709191147h63d4d780l7091e7baefc8345d@mail.gmail.com>
-Date: Wed, 19 Sep 2007 14:47:31 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Tim Bird" <tim.bird@am.sony.com>
-Subject: Re: [Announce] Linux-tiny project revival
-Cc: "linux kernel" <linux-kernel@vger.kernel.org>,
-       linux-tiny <Linux-tiny@selenic.com>,
-       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
-       "Michael Opdenacker" <michael@free-electrons.com>
-In-Reply-To: <46F1645D.9050406@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Sep 2007 14:48:30 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42133 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755859AbXISSsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 14:48:30 -0400
+Date: Wed, 19 Sep 2007 20:48:18 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Miles Lane <miles.lane@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: 2.6.23-rc6-mm1
+Message-ID: <20070919184818.GA3651@uranus.ravnborg.org>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <a44ae5cd0709180827w7156dc17q13853c3f2c127142@mail.gmail.com> <20070918191741.GA27725@uranus.ravnborg.org> <a44ae5cd0709181242j517e39e0xc3f78224bcda360a@mail.gmail.com> <20070918202654.GA27836@uranus.ravnborg.org> <46F05378.8020907@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46F1645D.9050406@am.sony.com>
+In-Reply-To: <46F05378.8020907@googlemail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/19/07, Tim Bird <tim.bird@am.sony.com> wrote:
-> Recently, the CE Linux forum has been working to revive the
-> Linux-tiny project.  At OLS, I asked for interested parties
-> to volunteer to become the new maintainer for the Linux-tiny patchset.
->
-> A few candidates came forward, but eventually Michael Opdenacker
-> was selected as the new primary maintainer.  A few other
-> people, including John Cooper of Wind River and myself
-> are working to support this effort.
->
-> Recently, many of the Linux-tiny patches have been brought up-to-date
-> and are now available for use with a 2.6.22 kernel.  The intent
-> is to test these, and begin mainlining the most effective sub-patches,
-> in the next few months.
->
-> Some automated testing has already been set up, with some
-> preliminary results published at a CELF conference in Japan.
-> (See the linux-tiny page below for a link to the presentation.)
-> Hopefully, results publishing will also be automated soon.
->
-> We encourage anyone with interest in this project to get involved.
-> If you have ideas how to reduce the static or dynamic memory footprint
-> of Linux, or, even better, patches for this, please let us know about
-> them.
->
-> Please see http://elinux.org/Linux_Tiny
->
-> A related document: http://elinux.org/Kernel_Size_Tuning_Guide
-> is undergoing an update this week.
+> Hi Sam,
+> 
+> I can reproduce this bug on Frugalware Linux. 
+> 
+> Here the bt:
+> 
+> Program received signal SIGSEGV, Segmentation fault.                                                     
+> 0xb7dc4143 in strlen () from /lib/libc.so.6                                                                                                                                       
+> (gdb) bt                                                                                                                                                                          
+> #0  0xb7dc4143 in strlen () from /lib/libc.so.6                                                                                                                                   
+> #1  0x0804fd60 in str_append (gs=0xbfe4f6e8, s=0x0) at scripts/kconfig/util.c:87                                                                                                  
+So the string is null and we call strlen(null) => boom.
 
-Will there be a separate git for testing? Is the idea to still keep
-moving patches upstream?
+Thanks - will post a fix in a few minutes.
+Need to investigate a bit more why I do not see the crash even
+though I updated to ubuntu gutsy to check it out?!?
 
-  Luis
+	Sam
