@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbXISQK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760734AbXISQKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758352AbXISQK1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbXISQKN
+	id S1760734AbXISQKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 12:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758843AbXISQK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:10:13 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60644
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754026AbXISQKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:10:11 -0400
-Date: Wed, 19 Sep 2007 09:09:55 -0700 (PDT)
-Message-Id: <20070919.090955.89232336.davem@davemloft.net>
-To: davidsen@tmr.com
-Cc: mchan@broadcom.com, vda.linux@googlemail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46F126BE.5060507@tmr.com>
-References: <1190145951.9540.230.camel@dell>
-	<20070918.122150.124083496.davem@davemloft.net>
-	<46F126BE.5060507@tmr.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 19 Sep 2007 12:10:29 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43067 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758646AbXISQK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 12:10:28 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH] i386/PAE: avoid temporarily inconsistent pte-s
+Date: Wed, 19 Sep 2007 18:09:47 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <46F150CB.76E4.0078.0@novell.com>
+In-Reply-To: <46F150CB.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709191809.47351.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bill Davidsen <davidsen@tmr.com>
-Date: Wed, 19 Sep 2007 09:40:14 -0400
+On Wednesday 19 September 2007 16:39:39 Jan Beulich wrote:
+> One more of these issues (which were considered fixed a few releases
+> back): Other than on x86-64, i386 allows set_fixmap() to replace
+> already present mappings. Consequently, on PAE, care must be taken to
+> not update the high half of a pte while the low half is still holding
+> the old value.
 
-> Is that a suggestion that the driver work differently when built as a 
-> module or built in?
+Hmm perhaps it would be better to just forbid it on i386 too.
+Do you know who uses it?
 
-Absolutely.
+-Andi
 
