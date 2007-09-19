@@ -1,142 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759120AbXISDmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbXISDnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759120AbXISDmw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 23:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbXISDh0
+	id S1758672AbXISDnU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Sep 2007 23:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbXISDh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 23:37:26 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54934 "EHLO
+	Tue, 18 Sep 2007 23:37:28 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54926 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751994AbXISDgm (ORCPT
+	with ESMTP id S1751984AbXISDgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Sep 2007 23:36:42 -0400
-Message-Id: <20070919033641.699816118@sgi.com>
+Message-Id: <20070919033641.468440734@sgi.com>
 From: Christoph Lameter <clameter@sgi.com>
 References: <20070919033605.785839297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 18 Sep 2007 20:36:11 -0700
+Date: Tue, 18 Sep 2007 20:36:10 -0700
 To: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [06/17] vmalloc_address(): Determine vmalloc address from page struct
-Content-Disposition: inline; filename=vcompound_vmalloc_address
+Subject: [05/17] vunmap: return page array
+Content-Disposition: inline; filename=vcompound_vunmap_returns_pages
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes we need to figure out which vmalloc address is in use
-for a certain page struct. There is no easy way to figure out
-the vmalloc address from the page struct. So simply search through
-the kernel page table to find the address. This is a fairly expensive
-process. Use sparingly (or provide a better implementation).
+Make vunmap return the page array that was used at vmap. This is useful
+if one has no structures to track the page array but simply stores the
+virtual address somewhere. The disposition of the page array can be
+decided upon after vunmap. vfree() may now also be used instead of
+vunmap which will release the page array after vunmap'ping it.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/vmalloc.h |    3 +
- mm/vmalloc.c            |   77 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 80 insertions(+)
+ include/linux/vmalloc.h |    2 +-
+ mm/vmalloc.c            |   26 ++++++++++++++++----------
+ 2 files changed, 17 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/mm/vmalloc.c
-===================================================================
---- linux-2.6.orig/mm/vmalloc.c	2007-09-18 18:35:13.000000000 -0700
-+++ linux-2.6/mm/vmalloc.c	2007-09-18 18:35:18.000000000 -0700
-@@ -196,6 +196,83 @@ struct page *vmalloc_to_page(const void 
- EXPORT_SYMBOL(vmalloc_to_page);
- 
- /*
-+ * Determine vmalloc address from a page struct.
-+ *
-+ * Linear search through all ptes of the vmalloc area.
-+ */
-+static unsigned long vaddr_pte_range(pmd_t *pmd, unsigned long addr,
-+		unsigned long end, unsigned long pfn)
-+{
-+	pte_t *pte;
-+
-+	pte = pte_offset_kernel(pmd, addr);
-+	do {
-+		pte_t ptent = *pte;
-+		if (pte_present(ptent) && pte_pfn(ptent) == pfn)
-+			return addr;
-+	} while (pte++, addr += PAGE_SIZE, addr != end);
-+	return 0;
-+}
-+
-+static inline unsigned long vaddr_pmd_range(pud_t *pud, unsigned long addr,
-+		unsigned long end, unsigned long pfn)
-+{
-+	pmd_t *pmd;
-+	unsigned long next;
-+	unsigned long n;
-+
-+	pmd = pmd_offset(pud, addr);
-+	do {
-+		next = pmd_addr_end(addr, end);
-+		if (pmd_none_or_clear_bad(pmd))
-+			continue;
-+		n = vaddr_pte_range(pmd, addr, next, pfn);
-+		if (n)
-+			return n;
-+	} while (pmd++, addr = next, addr != end);
-+	return 0;
-+}
-+
-+static inline unsigned long vaddr_pud_range(pgd_t *pgd, unsigned long addr,
-+		unsigned long end, unsigned long pfn)
-+{
-+	pud_t *pud;
-+	unsigned long next;
-+	unsigned long n;
-+
-+	pud = pud_offset(pgd, addr);
-+	do {
-+		next = pud_addr_end(addr, end);
-+		if (pud_none_or_clear_bad(pud))
-+			continue;
-+		n = vaddr_pmd_range(pud, addr, next, pfn);
-+		if (n)
-+			return n;
-+	} while (pud++, addr = next, addr != end);
-+	return 0;
-+}
-+
-+void *vmalloc_address(struct page *page)
-+{
-+	pgd_t *pgd;
-+	unsigned long next, n;
-+	unsigned long addr = VMALLOC_START;
-+	unsigned long pfn = page_to_pfn(page);
-+
-+	pgd = pgd_offset_k(VMALLOC_START);
-+	do {
-+		next = pgd_addr_end(addr, VMALLOC_END);
-+		if (pgd_none_or_clear_bad(pgd))
-+			continue;
-+		n = vaddr_pud_range(pgd, addr, next, pfn);
-+		if (n)
-+			return (void *)n;
-+	} while (pgd++, addr = next, addr < VMALLOC_END);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(vmalloc_address);
-+
-+/*
-  * Map a vmalloc()-space virtual address to the physical page frame number.
-  */
- unsigned long vmalloc_to_pfn(const void *vmalloc_addr)
 Index: linux-2.6/include/linux/vmalloc.h
 ===================================================================
---- linux-2.6.orig/include/linux/vmalloc.h	2007-09-18 18:35:13.000000000 -0700
-+++ linux-2.6/include/linux/vmalloc.h	2007-09-18 18:35:48.000000000 -0700
-@@ -85,6 +85,9 @@ extern void free_vm_area(struct vm_struc
- struct page *vmalloc_to_page(const void *addr);
- unsigned long vmalloc_to_pfn(const void *addr);
+--- linux-2.6.orig/include/linux/vmalloc.h	2007-09-18 13:22:56.000000000 -0700
++++ linux-2.6/include/linux/vmalloc.h	2007-09-18 13:22:57.000000000 -0700
+@@ -49,7 +49,7 @@ extern void vfree(const void *addr);
  
-+/* Determine address from page struct pointer */
-+void *vmalloc_address(struct page *);
-+
- /*
-  *	Internals.  Dont't use..
+ extern void *vmap(struct page **pages, unsigned int count,
+ 			unsigned long flags, pgprot_t prot);
+-extern void vunmap(const void *addr);
++extern struct page **vunmap(const void *addr);
+ 
+ extern int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
+ 							unsigned long pgoff);
+Index: linux-2.6/mm/vmalloc.c
+===================================================================
+--- linux-2.6.orig/mm/vmalloc.c	2007-09-18 13:22:56.000000000 -0700
++++ linux-2.6/mm/vmalloc.c	2007-09-18 13:22:57.000000000 -0700
+@@ -356,17 +356,18 @@ struct vm_struct *remove_vm_area(const v
+ 	return v;
+ }
+ 
+-static void __vunmap(const void *addr, int deallocate_pages)
++static struct page **__vunmap(const void *addr, int deallocate_pages)
+ {
+ 	struct vm_struct *area;
++	struct page **pages;
+ 
+ 	if (!addr)
+-		return;
++		return NULL;
+ 
+ 	if ((PAGE_SIZE-1) & (unsigned long)addr) {
+ 		printk(KERN_ERR "Trying to vfree() bad address (%p)\n", addr);
+ 		WARN_ON(1);
+-		return;
++		return NULL;
+ 	}
+ 
+ 	area = remove_vm_area(addr);
+@@ -374,29 +375,30 @@ static void __vunmap(const void *addr, i
+ 		printk(KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
+ 				addr);
+ 		WARN_ON(1);
+-		return;
++		return NULL;
+ 	}
+ 
++	pages = area->pages;
+ 	debug_check_no_locks_freed(addr, area->size);
+ 
+ 	if (deallocate_pages) {
+ 		int i;
+ 
+ 		for (i = 0; i < area->nr_pages; i++) {
+-			struct page *page = area->pages[i];
++			struct page *page = pages[i];
+ 
+ 			BUG_ON(!page);
+ 			__free_page(page);
+ 		}
+ 
+ 		if (area->flags & VM_VPAGES)
+-			vfree(area->pages);
++			vfree(pages);
+ 		else
+-			kfree(area->pages);
++			kfree(pages);
+ 	}
+ 
+ 	kfree(area);
+-	return;
++	return pages;
+ }
+ 
+ /**
+@@ -424,11 +426,13 @@ EXPORT_SYMBOL(vfree);
+  *	which was created from the page array passed to vmap().
+  *
+  *	Must not be called in interrupt context.
++ *
++ *	Returns a pointer to the array of pointers to page structs
   */
+-void vunmap(const void *addr)
++struct page **vunmap(const void *addr)
+ {
+ 	BUG_ON(in_interrupt());
+-	__vunmap(addr, 0);
++	return __vunmap(addr, 0);
+ }
+ EXPORT_SYMBOL(vunmap);
+ 
+@@ -453,6 +457,8 @@ void *vmap(struct page **pages, unsigned
+ 	area = get_vm_area((count << PAGE_SHIFT), flags);
+ 	if (!area)
+ 		return NULL;
++	area->pages = pages;
++	area->nr_pages = count;
+ 	if (map_vm_area(area, prot, &pages)) {
+ 		vunmap(area->addr);
+ 		return NULL;
 
 -- 
