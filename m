@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbXISTF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbXISTKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbXISTF0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 15:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbXISTFS
+	id S1752785AbXISTKi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 15:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbXISTKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 15:05:18 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:45839 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751519AbXISTFQ (ORCPT
+	Wed, 19 Sep 2007 15:10:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59386 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750765AbXISTKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 15:05:16 -0400
-Message-ID: <46F172C8.4030207@linux.vnet.ibm.com>
-Date: Thu, 20 Sep 2007 00:34:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Badari Pulavarty <pbadari@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, balbir@in.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc6-mm1 panic (memory controller issue ?)
-References: <1190154076.31220.19.camel@dyn9047017100.beaverton.ibm.com> <1190161903.31220.24.camel@dyn9047017100.beaverton.ibm.com> <46F08135.70401@linux.vnet.ibm.com> <Pine.LNX.4.64.0709191024440.11138@schroedinger.engr.sgi.com> <46F16802.4010002@linux.vnet.ibm.com> <Pine.LNX.4.64.0709191154230.2241@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0709191154230.2241@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Sep 2007 15:10:30 -0400
+Date: Wed, 19 Sep 2007 12:10:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+Message-Id: <20070919121017.0cbcbc30.akpm@linux-foundation.org>
+In-Reply-To: <46F13938.1070709@gmail.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<46F10B69.5070008@gmail.com>
+	<46F10DCB.1090302@gmail.com>
+	<46F13938.1070709@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Wed, 19 Sep 2007, Balbir Singh wrote:
-> 
->> Yes, the whole code is very interesting. From add_to_page_cache()
->> we call radix_tree_preload with __GFP_HIGHMEM cleared, but
->> from __add_to_swap_cache(), we don't make any changes to the
->> gfp_mask. radix_tree_preload() calls kmem_cache_alloc() and in slub
->> there is a check
->>
->>         BUG_ON(flags & GFP_SLAB_BUG_MASK);
->>
->> So, I guess all our allocations should check against __GFP_DMA and
->> __GFP_HIGHMEM. I'll review the code, test it and send a fix.
-> 
-> You need to use the proper mask from include/linux/gfp.h. Masking 
-> individual bits will create problems when we create new bits.
-> 
+On Wed, 19 Sep 2007 16:59:04 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
 
-I agree 100%, that's why I want to review the code. I want to use
-a mask that clears the GFP_SLAB_BUG_MASK bits and review it. I want
-to check against other call sites that use gfp_mask as well.
+> ---------8<---------8<---------8<---------8<---------8<---------8<----
+> That means
+> void agp_generic_destroy_page(void *addr)
+> {
+>         struct page *page;
+> 
+>         if (addr == NULL)
+>                 return;
+> 
+>         page = virt_to_page(addr);
+> (1)     unmap_page_from_agp(page);
+>         put_page(page);
+> (2)     free_page((unsigned long)addr);
+>         atomic_dec(&agp_bridge->current_memory_agp);
+> }
+> 
+> (1) unmap_page_from_agp -> change_page_attr -> change_page_attr_addr ->
+> __change_page_attr -> save_page -> list_add(&fpage->lru, &deferred_pages);
+> (2) free_page -> free_pages -> __free_pages -> free_hot_page ->
+> free_hot_cold_page -> list_add(&page->lru, &pcp->list);
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+that'll hurt.
+
+> any ideas how to fix this?
+
+We should hold a single reference on the page for its membership in
+deferred_pages.
