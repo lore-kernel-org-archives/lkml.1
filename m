@@ -1,36 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbXISUVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbXISU0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbXISUVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 16:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbXISUVM
+	id S1753889AbXISU0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 16:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbXISU0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 16:21:12 -0400
-Received: from mailrelay006.isp.belgacom.be ([195.238.6.172]:29741 "EHLO
-	mailrelay006.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750890AbXISUVL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 16:21:11 -0400
-X-Belgacom-Dynamic: yes
-Date: Wed, 19 Sep 2007 22:25:18 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] watchdog: fix help text
-Message-ID: <20070919202518.GC2666@infomag.infomag.iguana.be>
-References: <20070918220529.20d57884.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070918220529.20d57884.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 19 Sep 2007 16:26:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33600 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750871AbXISU0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 16:26:36 -0400
+Message-ID: <46F156A7.5000304@redhat.com>
+Date: Wed, 19 Sep 2007 10:04:39 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: follow-up: discrepancy with POSIX
+References: <46F13E8B.4050309@redhat.com>	<p73sl5aveqh.fsf@bingen.suse.de>	<46F15305.2030507@redhat.com> <20070919.095251.45154496.davem@davemloft.net>
+In-Reply-To: <20070919.095251.45154496.davem@davemloft.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randi,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Fix typos in uniform watchdog driver help text.
+David Miller wrote:
+> It just occured to me that AF_UNSPEC might be used simply
+> because "all zeros" might be a valid real bindable address
+> for some address family.  And using AF_UNSPEC avoids that
+> problem entirely.
 
-Patch applied to the linux-2.6-watchdog-mm tree.
+Yes, but for IPv4/6 it's not an issue.  Some implementations might
+handle all-zeros and the spec _currently_ calls for it.  In this case an
+alignment would be good.
 
-Greetings,
-Wim.
+I guess I'll just go ahead and file a problem report with the spec.
+Maybe the Unix vendors will test their implementations in provide feedback.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFG8Vam2ijCOnn/RHQRAlw2AJwPCkD/GdX5YWCjsidhNXkGT71SiQCeLUDX
+XimSWS2NMI9T8QxnnV3FDQ4=
+=8XbG
+-----END PGP SIGNATURE-----
