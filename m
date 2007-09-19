@@ -1,102 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbXISNvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758504AbXISN7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbXISNvX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 09:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbXISNvP
+	id S1758504AbXISN7l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 09:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXISN7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 09:51:15 -0400
-Received: from smtpoutm.mac.com ([17.148.16.74]:62235 "EHLO smtpoutm.mac.com"
+	Wed, 19 Sep 2007 09:59:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44212 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753812AbXISNvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 09:51:14 -0400
-In-Reply-To: <alpine.LFD.0.999.0709191704300.7162@enigma.security.iitk.ac.in>
-References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr> <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org> <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in> <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com> <1189121714.6672.38.camel@heimdal.trondhjem.org> <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com> <alpine.LFD.0.999.0709190503250.26241@enigma.security.iitk.ac.in> <A5318C25-7864-453A-B09A-00232D9EAF2A@mac.com> <alpine.LFD.0.999.0709191704300.7162@enigma.security.iitk.ac.in>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DBAB3583-BB6E-48C8-AFC1-0A705D048843@mac.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	id S1753099AbXISN7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 09:59:33 -0400
+Date: Wed, 19 Sep 2007 22:59:16 +0900 (JST)
+Message-Id: <20070919.225916.47218290.jet@gyve.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fixing signness of parameters in scsi module
+From: Masatake YAMATO <jet@gyve.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1.50 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: NFS4 authentification / fsuid
-Date: Wed, 19 Sep 2007 09:49:43 -0400
-To: Satyam Sharma <satyam@infradead.org>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 19, 2007, at 08:16:30, Satyam Sharma wrote:
-> [all sorts of crap about spies in washington needing stronger  
-> protection than your average consumer]
+Hi,
 
-Well no duh.  I think most of the 4-year-olds I know could have told  
-you that.  What sense does it make to give a spy all sorts of fancy  
-electronic listening and monitoring equipment and then rely on the  
-physical security of your average Dell?  You _can_ make a laptop  
-sufficiently secure that its data is encrypted and it cannot be  
-physically compromised to install a hardware keylogger without  
-virtually destroying the enclosure, but that's completely unnecessary  
-for 99.99999% of the users on the planet.
-
-We would be much better off if all the companies getting their data  
-stolen out from under them on company laptops would just use basic  
-drive encryption and implement basic physical-security training.   
-*THAT* is where protecting the laptop is easy; all the bullcrap about  
-foreign intelligence is just drawing focus off of how easy it is to  
-achieve *adequate* physical protection where it matters.
-
- From a practical standpoint, an identity thief trying to determine  
-which company to attack will just steal a few laptops from a company  
-which doesn't encrypt them instead of going through all the very  
-risky steps of trying to break into the laptops of one that does.
-
-Of course, this also relies on being able to teach the stupid lusers  
-with the laptops not to give their boot password to the "service tech  
-on the phone"
+In scsi module I've found some inconsistency between variable type
+used in module_param_named and type passed to module_param_named as an
+argument. Especially the inconsistency of `max_scsi_luns' parameter is
+a bit serious because the description text says "last scsi LUN (should
+be between 1 and 2^32-1)". 
 
 
->> If your system equates end-user with attacker
->
-> "If"? Was there ever any doubt?
->
-> Heh, did you even read the thread you just replied to?
+I'm not on the mailing list. so please put my address
+to cc: of your reply.
 
-Yes I did and I wanted to make it *really* clear that with average  
-hardware you can properly protect against virtually all of the  
-*common* attack vectors.  The pretty standard problems of "somebody  
-stole the company laptop with a bunch of credit-card info on it" or  
-"my personal financial data was on the laptop I left in the airport",  
-are pretty easy to make safe.  Furthermore, that is *EXACTLY* the  
-initial example I gave (my laptop with my personal data on it).
+Signed-off-by: Masatake YAMATO <jet@gyve.org>
 
 
-On the other hand, I made this point in my original email, so if this  
-is what you were arguing about you've been preaching to the choir.
-
-> We're talking of consoles / hardware sold by commercial companies  
-> to  users here, where they want explicitly want to prevent the  
-> users from  being able to hack it. So yes, end user == attacker.
->
->> then you are *screwed* regardless!
->
-> Ah, finally you make my point again for me :-)
-
-
-To quote myself again:
-> A fully self-certifying system that can prevent any attack is  
-> impossible to achieve.  If I have the device and can devote as many  
-> hours as I want to breaking into it, there is exactly ZERO way to  
-> prevent that, aside from encrypting things and not giving out the  
-> key (which sorta makes it useless but is precisely the point of  
-> real crypto).
->
-> There is a HUGE difference between "I don't want the end-user to  
-> hack into this" and "The end-user wants a certain degree of  
-> assurance that his data can't be compromised.
-
-
-Cheers,
-Kyle Moffett
-
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index 1bd92b9..f6d7552 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -83,7 +83,7 @@ #else
+ static unsigned int max_scsi_luns = 1;
+ #endif
+ 
+-module_param_named(max_luns, max_scsi_luns, int, S_IRUGO|S_IWUSR);
++module_param_named(max_luns, max_scsi_luns, uint, S_IRUGO|S_IWUSR);
+ MODULE_PARM_DESC(max_luns,
+ 		 "last scsi LUN (should be between 1 and 2^32-1)");
+ 
+@@ -96,14 +96,14 @@ MODULE_PARM_DESC(max_luns,
+  */
+ static unsigned int max_scsi_report_luns = 511;
+ 
+-module_param_named(max_report_luns, max_scsi_report_luns, int, S_IRUGO|S_IWUSR);
++module_param_named(max_report_luns, max_scsi_report_luns, uint, S_IRUGO|S_IWUSR);
+ MODULE_PARM_DESC(max_report_luns,
+ 		 "REPORT LUNS maximum number of LUNS received (should be"
+ 		 " between 1 and 16384)");
+ 
+ static unsigned int scsi_inq_timeout = SCSI_TIMEOUT/HZ+3;
+ 
+-module_param_named(inq_timeout, scsi_inq_timeout, int, S_IRUGO|S_IWUSR);
++module_param_named(inq_timeout, scsi_inq_timeout, uint, S_IRUGO|S_IWUSR);
+ MODULE_PARM_DESC(inq_timeout, 
+ 		 "Timeout (in seconds) waiting for devices to answer INQUIRY."
+ 		 " Default is 5. Some non-compliant devices need more.");
+diff --git a/drivers/scsi/scsi_transport_fc.c b/drivers/scsi/scsi_transport_fc.c
+index b03aa85..61ca8cd 100644
+--- a/drivers/scsi/scsi_transport_fc.c
++++ b/drivers/scsi/scsi_transport_fc.c
+@@ -370,7 +370,7 @@ static DECLARE_TRANSPORT_CLASS(fc_rport_
+  */
+ static unsigned int fc_dev_loss_tmo = 60;		/* seconds */
+ 
+-module_param_named(dev_loss_tmo, fc_dev_loss_tmo, int, S_IRUGO|S_IWUSR);
++module_param_named(dev_loss_tmo, fc_dev_loss_tmo, uint, S_IRUGO|S_IWUSR);
+ MODULE_PARM_DESC(dev_loss_tmo,
+ 		 "Maximum number of seconds that the FC transport should"
+ 		 " insulate the loss of a remote port. Once this value is"
