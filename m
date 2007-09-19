@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759876AbXISONy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbXISOO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759876AbXISONy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 10:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXISONr
+	id S1760132AbXISOO5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 10:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbXISOOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 10:13:47 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:45872 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754931AbXISONr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 10:13:47 -0400
-Date: Wed, 19 Sep 2007 15:13:38 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Frantisek Rysanek <Frantisek.Rysanek@post.cz>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: PCI Interrupt
-In-Reply-To: <46F12244.22016.47D8DCD0@localhost>
-Message-ID: <Pine.LNX.4.64N.0709191500400.24627@blysk.ds.pg.gda.pl>
-References: <200709181642.23070.rjw@sisk.pl> <46F12244.22016.47D8DCD0@localhost>
+	Wed, 19 Sep 2007 10:14:50 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:53379 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755016AbXISOOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 10:14:49 -0400
+Message-ID: <46F12ED7.3060605@us.ibm.com>
+Date: Wed, 19 Sep 2007 07:14:47 -0700
+From: David Wilder <dwilder@us.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [Patch 1/2] Trace code and documentation (updated)
+References: <1190177218.3190.18.camel@lc4eb748232119.ibm.com> <p736427vz00.fsf@bingen.suse.de>
+In-Reply-To: <p736427vz00.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Frantisek Rysanek wrote:
+Andi Kleen wrote:
+> "David J. Wilder" <dwilder@us.ibm.com> writes:
+> 
+> Not having read the whole thing; just something I noticed.
+> 
+> Gut feeling is that you have too many knobs and options and 
+> some overengineering though -- simplifying it would be a good thing.
+> 
+>> +
+>> +#define TRACE_PRINTF_TMPBUF_SIZE (1024)
+>> +static char trace_tmpbuf[NR_CPUS][TRACE_PRINTF_TMPBUF_SIZE];
+> 
+> That definitely needs to be a per CPU variable. Imagine
+> what happens on a NR_CPUS==4096 kernel.  In general when 
+> you have a NR_CPUS indexed array you're likely doing something
+> wrong. Yes there are still places in the main tree who do that,
+> but most of them need to be fixed.
 
-> On IBM PC compatible hardware, there's always a risky "window of 
-> opportunity" that a shared edge-triggered interrupt line gets 
-> electrically re-triggered before your ISR manages to service all the 
-> devices and ACK the interrupt (I believe RTAI does that in reverse 
-> order). In that case, you get a missed interrupt, and your 
-> peripherial device may wait for service indefinitely.
+I agree with you; however, this is in the example code in the 
+Documentation directory,  It is not part of the trace code.  The example 
+was just meant to be a demonstration of how the interface works.
+> 
+> -Andi
+> 
 
- That's because the 8259A does not support truly edge-triggered interrupts 
--- what it supports is a signalling model where the rising edge asserts 
-the interrupt and the falling edge negates it if unhandled.  So in some 
-sense it is a level-triggered interrupt with no retrigger before the 
-falling edge.
-
-> I don't recall if the i8259 AT-pic has some useable "retrigger while 
-> in service" register, maybe the APIC does. (I do recall that the 
-> 8259's two-register IO footprint is rather convoluted.) I seriously 
-> doubt that the presence of such a register would completely eliminate 
-> the critical window of time.
-
- The APIC can support truly edge-triggered interrupts as it only records 
-one of the edges (which one of the two it is, depends on the polarity 
-setting).  It also records another edge happening between an ACK and an 
-EOI and signals another interrupt immediately after the EOI, so nothing is 
-lost if pulses are short (assuming there is a reasonably small number of 
-sources so that overlapping pulses do not continue for too long).  There 
-are subtle differences, as usually with Intel, between APIC 
-implementations that may have to be taken into account here.
-
- Also sharing at the vector level poses interesting issues, but that's 
-different matter.
-
-  Maciej
