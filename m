@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbXISVnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbXISVoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbXISVnQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 17:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXISVnB
+	id S1758700AbXISVoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXISVoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 17:43:01 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33356 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750875AbXISVnA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 17:43:00 -0400
-Date: Wed, 19 Sep 2007 14:42:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Dave Airlie <airlied@linux.ie>
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Message-Id: <20070919144246.8a85489d.akpm@linux-foundation.org>
-In-Reply-To: <46F18037.1020505@gmail.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<46F10B69.5070008@gmail.com>
-	<46F10DCB.1090302@gmail.com>
-	<46F13938.1070709@gmail.com>
-	<20070919121017.0cbcbc30.akpm@linux-foundation.org>
-	<20070919192453.GB18707@one.firstfloor.org>
-	<46F17CA1.5080205@gmail.com>
-	<20070919195425.GF18707@one.firstfloor.org>
-	<46F17F27.5080000@gmail.com>
-	<46F18037.1020505@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Sep 2007 17:44:04 -0400
+Received: from THAUM.MIT.EDU ([18.95.3.27]:48493 "EHLO luto.stanford.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751313AbXISVoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 17:44:03 -0400
+X-Greylist: delayed 1275 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Sep 2007 17:44:03 EDT
+Message-ID: <46F19326.1040503@myrealbox.com>
+Date: Wed, 19 Sep 2007 17:22:46 -0400
+From: Andy Lutomirski <luto@myrealbox.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, andi@firstfloor.org,
+       kernel1@cyberdogtech.com
+Subject: Re: A little coding style nugget of joy
+References: <20070919123401.9369534d.kernel1@cyberdogtech.com> <p73odfyvar1.fsf@bingen.suse.de>
+In-Reply-To: <p73odfyvar1.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 22:01:59 +0200
-Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 09/19/2007 09:57 PM, Jiri Slaby wrote:
-> > On 09/19/2007 09:54 PM, Andi Kleen wrote:
-> >>> Yeah. (But X doesn't run -- this is maybe the known issue in this release).
-> >> What do you mean with not run? 
-> > 
-> > (II) intel(0): Initializing HW Cursor
-> > (II) intel(0): xf86BindGARTMemory: bind key 0 at 0x005ff000 (pgoffset 1535)
-> > (WW) intel(0): xf86BindGARTMemory: binding of gart memory with key 0
-> >         at offset 0x5ff000 failed (Invalid argument)
-> > 
-> > Fatal server error:
-> > Couldn't bind memory for front buffer
+Andi Kleen wrote:
+> Matt LaPlante <kernel1@cyberdogtech.com> writes:
 > 
-> Further info:
-> 4690  write(0, "(II) intel(0): Initializing HW C"..., 38) = 38
-> 4690  write(0, "(II) intel(0): xf86BindGARTMemor"..., 76) = 76
-> 4690  ioctl(9, AGPIOC_BIND, 0x7fffbe1cb850) = -1 EINVAL (Invalid argument)
-> 4690  write(0, "(WW) intel(0): xf86BindGARTMemor"..., 115) = 115
-> 4690  write(2, "\nFatal server error:\n", 21) = 21
+>> Since everyone loves random statistics, here are a few gems to give you a break from your busy day:
+>>
+>> Number of lines in the 2.6.22 Linux kernel source that include one or more trailing whitespaces: 135209
+>> Bytes saved by removing said whitespace: 151809
 > 
+> You don't actually save anything on disk on most file systems
+> (essentially everything except reiserfs on current Linux)
+> because all files are rounded to block size (normally 4K) 
+> 
+> Same in page cache.
 
-This might be a Dave thing and not an Andi thing.
+This is a terrible assumption in general (i.e. if filesize % blocksize 
+is close to uniformly distributed).  If you remove one byte and the data 
+is stored with blocksize B, then you either save zero bytes with 
+probability 1-1/B or you save B bytes with probability 1/B.  The 
+expected number of bytes saved is B*1/B=1.  Since expectation is linear, 
+if you remove x bytes, the expected number of bytes saved is x (even if 
+there is more than one byte removed per file).
 
-In my usual -mm-testing I only test X on the one machine (the Vaio,
-natch).  Check that it runs glxgears, check suspend/resume to mem and disk.
-It has intel graphics and I'm not seeing any such problems.
+In my tree, about half of the files have size >= 4k, so the assumption 
+is probably not _that_ far off the mark.
 
-Have you time to bisect it? 
-http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
-describes how.
+Alternatively, there are an average of about 16 bytes removed per file, 
+and there are 11 which are <= 16 bytes short of a 4k boundary, so it's 
+not at all unreasonable that we'd save 40-50k.
 
-As a quick test, perhaps build a tree with just
-2.6.23-rc6+origin.patch+git-drm.patch?  Fortunately git-agpgart.patch is
-presently empty.
+> 
+> And in tar files bzip2/gzip is very good at compacting them.
 
+That's true.
+
+--Andy
