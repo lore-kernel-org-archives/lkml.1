@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbXISQk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762078AbXISQoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762132AbXISQk3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbXISQkW
+	id S1762078AbXISQoP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 12:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbXISQoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:40:22 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48771 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751756AbXISQkV (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:40:21 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: NFS4 authentification / fsuid
-In-Reply-To: Your message of "Wed, 19 Sep 2007 01:16:28 EDT."
-             <A5318C25-7864-453A-B09A-00232D9EAF2A@mac.com>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr> <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org> <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in> <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com> <1189121714.6672.38.camel@heimdal.trondhjem.org> <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com> <alpine.LFD.0.999.0709190503250.26241@enigma.security.iitk.ac.in>
-            <A5318C25-7864-453A-B09A-00232D9EAF2A@mac.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190219938_23458P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 19 Sep 2007 12:38:58 -0400
-Message-ID: <31390.1190219938@turing-police.cc.vt.edu>
+	Wed, 19 Sep 2007 12:44:01 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1511 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755896AbXISQoA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 12:44:00 -0400
+Date: Wed, 19 Sep 2007 17:43:48 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.23-rc6-mm1 -- mkfs stuck in 'D'
+Message-ID: <20070919164348.GC2519@shadowen.org>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190219938_23458P
-Content-Type: text/plain; charset=us-ascii
+Seems I have a case of a largish i386 NUMA (NUMA-Q) which has a mkfs
+stuck in a 'D' wait:
 
-On Wed, 19 Sep 2007 01:16:28 EDT, Kyle Moffett said:
+ =======================
+mkfs.ext2     D c10220f4     0  6233   6222
+       c344fc80 00000082 00000286 c10220f4 c344fc90 002ed099 c2963340 c2b9f640
+       c142bce0 c2b9f640 c344fc90 002ed099 c344fcfc c344fcc0 c1219563 c1109bf2
+       c344fcc4 c186e4d4 c186e4d4 002ed099 c1022612 c2b9f640 c186e000 c104000c
+Call Trace:
+ [<c10220f4>] lock_timer_base+0x19/0x35
+ [<c1219563>] schedule_timeout+0x70/0x8d
+ [<c1109bf2>] prop_fraction_single+0x37/0x5d
+ [<c1022612>] process_timeout+0x0/0x5
+ [<c104000c>] task_dirty_limit+0x3a/0xb5
+ [<c12194da>] io_schedule_timeout+0x1e/0x28
+ [<c10454b4>] congestion_wait+0x62/0x7a
+ [<c102b021>] autoremove_wake_function+0x0/0x33
+ [<c10402af>] get_dirty_limits+0x16a/0x172
+ [<c102b021>] autoremove_wake_function+0x0/0x33
+ [<c104040b>] balance_dirty_pages+0x154/0x1be
+ [<c103bda3>] generic_perform_write+0x168/0x18a
+ [<c103be38>] generic_file_buffered_write+0x73/0x107
+ [<c103c346>] __generic_file_aio_write_nolock+0x47a/0x4a5
+ [<c11b0fef>] do_sock_write+0x92/0x99
+ [<c11b1048>] sock_aio_write+0x52/0x5e
+ [<c103c3b9>] generic_file_aio_write_nolock+0x48/0x9b
+ [<c105d2d6>] do_sync_write+0xbf/0xfc
+ [<c102b021>] autoremove_wake_function+0x0/0x33
+ [<c1010311>] do_page_fault+0x2cc/0x739
+ [<c105d3a0>] vfs_write+0x8d/0x108
+ [<c105d4c3>] sys_write+0x41/0x67
+ [<c100260a>] syscall_call+0x7/0xb
+ =======================
 
-> I am assuming that if the laptop has sufficiently important data on  
-> it to warrant the above steps then I am also clueful enough to:
->    (A)  Not carry the laptop around unsecured areas,
->    (B)  Keep a close enough eye on it and be aware that it's gone by  
-> the time they get to step 2, OR
->    (C)  Pay somebody to build me a better physical chassis for my laptop
+This machine and others have run numerous test runs on this kernel and
+this is the first time I've see a hang like this.
 
-Building a better chassis can be a challenge when the threat model really
-*does* include attacks by a well-funded TLA.
+I wonder if this is the ultimate cause of the couple of mainline hangs
+which were seen, but not diagnosed.
 
-http://www.epic.org/crypto/scarfo/murch_aff.pdf
-
-The FBI did an *initial* entry to survey the hardware, and then a total of
-*five* other entries before they actually installed it.  Note the technical
-and legal requirements required on the KLS (it had to, among other things,
-capture PGP passphrases but *not* anything that was typed online).
-
->                                       Besides, if some government  
-> wanted the data on your laptop that bad they'd just pick you up in  
-> the middle of the night and torture your password out of you.
-
-See above.  Though I *will* note that several years ago, a Department
-of Justice filing regarding the use of wiretaps and similar tools reported
-that in every single case that the FBI encountered encryption, it in fact
-didn't stop the FBI from getting the info it was looking for.  Presumably,
-they either used Scarfo-type devices, or they rolled somebody for the key.
-
-They never *did* break Anthony Pellicano's PGP key, as far as I know....
-
---==_Exmh_1190219938_23458P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG8VCicC3lWbTT17ARAmtDAKD+dGh2W5SLICrDqi6zh8EbEGl3qwCgh0un
-TRCLhBXYRRSkMfSP+L9S5Ic=
-=F3OO
------END PGP SIGNATURE-----
-
---==_Exmh_1190219938_23458P--
+-apw
