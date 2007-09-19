@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbXISUs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbXISU6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbXISUs5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 16:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXISUst
+	id S1755475AbXISU6e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 16:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbXISU61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 16:48:49 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:45113 "EHLO e6.ny.us.ibm.com"
+	Wed, 19 Sep 2007 16:58:27 -0400
+Received: from mga11.intel.com ([192.55.52.93]:25548 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbXISUss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 16:48:48 -0400
-Date: Wed, 19 Sep 2007 13:48:41 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs rcu_read_lock()
-Message-ID: <20070919204841.GH8666@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <d120d5000709190717y69dca8b3tf4a17b920267806b@mail.gmail.com> <20070919163111.05c18021@twins> <d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com> <20070919153750.GB8666@linux.vnet.ibm.com> <d120d5000709190959p351c7ba4mdb1eeb433098e0e6@mail.gmail.com> <20070919173249.GE8666@linux.vnet.ibm.com> <20070919174857.GA11922@linux.vnet.ibm.com> <d120d5000709191149q3d850d07nd8bf864a6e797055@mail.gmail.com> <20070919214110.5d832f28@lappy> <d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
+	id S1750935AbXISU60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 16:58:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,275,1186383600"; 
+   d="scan'208";a="144782951"
+Date: Wed, 19 Sep 2007 13:58:25 -0700 (PDT)
+From: Tong Li <tong.n.li@intel.com>
+X-X-Sender: tongli@tongli.jf.intel.com
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+cc: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [git] CFS-devel, group scheduler, fixes
+In-Reply-To: <20070919193557.GD20863@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0709191350400.12420@tongli.jf.intel.com>
+References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu>
+ <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com>
+ <20070919193557.GD20863@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 03:49:24PM -0400, Dmitry Torokhov wrote:
-> On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > On Wed, 19 Sep 2007 14:49:56 -0400 "Dmitry Torokhov"
-> > <dmitry.torokhov@gmail.com> wrote:
-> >
-> > > On 9/19/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> >
-> > > > PS to previous -- any problem with inserting rcu_read_lock() and
-> > > > rcu_read_unlock() around the portion of the IRQ handler that has
-> > > > these accesses?
-> > > >
-> > >
-> > > I guess I could but it is an extra lock that needs to be managed and
-> > > given the fact that it is not really needed (other to make a newly
-> > > developed tool happy) I am hestsant to do that.
-> >
-> > As is, these sites are a bug in -rt and we'll need to fix them anyway.
-> >
-> > As for the code you pointed me to, the i8042 driver, it seems to play
-> > way to funny tricks for a simple 'slow' driver.
-> 
-> Even "slow" driver should try not to slow down the rest of the system
-> if it can help it. I am sorry if the thing it does do not quite fit in
-> with the changes you are proposing but it does not make the exeisting
-> code invalid.
-> 
-> > If you replace the spin_lock() + sync_sched(), with rcu_read_lock() +
-> > rcu_call() it should work again without adding an extra lock.
-> 
-> Except that I need spin_lock_irq for other reasons. I could take the
-> same lock in write-side code and not use RCU at all but using RCU
-> allows opening/closing input devices without slowing down interrupt
-> handlers so why not use it?
+On Wed, 19 Sep 2007, Siddha, Suresh B wrote:
 
-One approach would be to make rcu_read_held() check for in_interrupt()
-or some such.  This would allow Dmitry's code to stay as it is, for the
-moment at least.
+> On Tue, Sep 18, 2007 at 11:03:59PM -0700, Tong Li wrote:
+>> This patch attempts to improve CFS's SMP global fairness based on the new
+>> virtual time design.
+>>
+>> Removed vruntime adjustment in set_task_cpu() as it skews global fairness.
+>>
+>> Modified small_imbalance logic in find_busiest_group(). If there's small
+>> imbalance, move tasks from busiest to local sched_group only if the local
+>> group contains a CPU whose min_vruntime is the maximum among all CPUs in
+>> the same sched_domain. This prevents any CPU from advancing too far ahead
+>> in virtual time and avoids tasks thrashing between two CPUs without
+>> utilizing other CPUs in the system. For example, for 10 tasks on 8 CPUs,
+>> since the load is not evenly divisible by the number of CPUs, we want the
+>> extra load to have a fair use of every CPU in the system.
+>>
+>> Tested with a microbenchmark running 10 nice-0 tasks on 8 CPUs. Each task
+>
+> Just as an experiment, can you run 82 tasks on 8 CPUs. Current
+> imbalance_pct logic will not detect and fix the global fairness issue
+> even with this patch.
 
-							Thanx, Paul
+Right. For 82 tasks on 8 CPUs, the max error is 7.07% and min is -14.12%. 
+It could be fixed by removing the imbalance_pct check (i.e., making 
+imbalance_pct effectively 1). The cost would be more migrations, so I 
+wasn't sure if that was the approach people would agree on.
+
+>
+>>  	if (*imbalance < busiest_load_per_task) {
+>> -		unsigned long tmp, pwr_now, pwr_move;
+>> -		unsigned int imbn;
+>> -
+>>  small_imbalance:
+>> -		pwr_move = pwr_now = 0;
+>> -		imbn = 2;
+>> -		if (this_nr_running) {
+>> -			this_load_per_task /= this_nr_running;
+>> -			if (busiest_load_per_task > this_load_per_task)
+>> -				imbn = 1;
+>> -		} else
+>> -			this_load_per_task = SCHED_LOAD_SCALE;
+>> -
+>> -		if (max_load - this_load + SCHED_LOAD_SCALE_FUZZ >=
+>> -					busiest_load_per_task * imbn) {
+>> -			*imbalance = busiest_load_per_task;
+>> -			return busiest;
+>> -		}
+>
+> This patch removes quite a few lines and all this is logic is not for
+> fairness :( Especially the above portion handles some of the HT/MC
+> optimizations.
+
+What are the optimizations? I was trying to simplify the code to use only 
+vruntime to control balancing when there's small imbalance, but if it 
+breaks non-fairness related optimizations, we can certainly add the code 
+back.
+
+   tong
