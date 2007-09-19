@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXISD7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbXISEQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbXISD7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Sep 2007 23:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbXISD73
+	id S1752243AbXISEQD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 00:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbXISEPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Sep 2007 23:59:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:38266 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbXISD72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Sep 2007 23:59:28 -0400
-Message-ID: <46F09EA1.7060606@goop.org>
-Date: Tue, 18 Sep 2007 20:59:29 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 19 Sep 2007 00:15:52 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:23233 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbXISEPv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 00:15:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=NAd+uKuwOb9DDwrl5rPWiuRKpZzuqZGc79doh/Od0oDk9Q70vT/r45sYfP95nwHIJOJwx6k0ejm90qZYNU6FzCreq3gXb/lII2xPqDtuFf+jiEgURagNNZk3Fcs4x6XD1gZr3fmqwEPXgMiFtKXUfgyYokXzu6qvf2+Bz88a1BA=
+Message-ID: <46F0A199.30706@googlemail.com>
+Date: Wed, 19 Sep 2007 06:12:09 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anthony Liguori <aliguori@us.ibm.com>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 3/3] Time to make CONFIG_PARAVIRT non-experimental.
-References: <1189747054.7262.34.camel@localhost.localdomain> <200709181257.41530.ak@suse.de> <1190151272.7262.175.camel@localhost.localdomain> <200709182352.25118.ak@suse.de>
-In-Reply-To: <200709182352.25118.ak@suse.de>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+To: Christoph Lameter <clameter@sgi.com>
+CC: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [14/17] Allow bit_waitqueue to wait on a bit in a vmalloc area
+References: <20070919033605.785839297@sgi.com> <20070919033643.537998421@sgi.com>
+In-Reply-To: <20070919033643.537998421@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> At least the Xen port seems to have specific requirements
-> and essentially only work on xen-unstable (?) [or at least
-> some very new Xen version] which probably very few
-> people use.
->   
+Christoph Lameter wrote:
 
-Only on 64-bit hosts, because of bugs in the 64-bit compat layer. 
-32-on-32 and 64-on-64 (when its done) should work fine.
+>  
+> +	if (is_vmalloc_addr(word))
+> +		page = vmalloc_to_page(word)
+					^^^^^^
+Missing ' ; '
 
-BTW, what does "xm info" say on your system that fails?  I'll try to put
-a more graceful failure in there.
+> +	else
+> +		page = virt_to_page(word);
+> +
+> +	zone = page_zone(page);
+>  	return &zone->wait_table[hash_long(val, zone->wait_table_bits)];
+>  }
+>  EXPORT_SYMBOL(bit_waitqueue);
+> 
 
-    J
+Regards,
+
+Gabriel
