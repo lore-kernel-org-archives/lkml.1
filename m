@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762248AbXISRyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbXISR4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762248AbXISRyi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXISRyb
+	id S1762650AbXISR4l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbXISR4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:54:31 -0400
-Received: from pat.uio.no ([129.240.10.15]:45947 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbXISRya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:54:30 -0400
-Subject: Re: [PATCH 03/24] create cleanup helper svc_msnfs()
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org
-In-Reply-To: <1190223930.26982.109.camel@localhost>
+	Wed, 19 Sep 2007 13:56:32 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:46151 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754412AbXISR4b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:56:31 -0400
+Subject: [PATCH] docuement filesystem helpers for custom 'struct file's
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070919172611.GA20917@infradead.org>
 References: <20070917182718.70494C9B@kernel>
-	 <20070917182721.8EF73A09@kernel>
-	 <Pine.LNX.4.64.0709191939080.10201@fbirervta.pbzchgretzou.qr>
-	 <1190223930.26982.109.camel@localhost>
+	 <20070917182718.A6B9F7FD@kernel>  <20070919172611.GA20917@infradead.org>
 Content-Type: text/plain
-Date: Wed, 19 Sep 2007 13:54:06 -0400
-Message-Id: <1190224446.6734.4.camel@heimdal.trondhjem.org>
+Date: Wed, 19 Sep 2007 10:47:23 -0700
+Message-Id: <1190224043.26982.112.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: 1C4C6214B127D90F7FE3967796E9205A9221E02C
-X-UiO-Ratelimit-Test: Ratelimit
-X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1252 total 3988653 max/h 8345 blacklist 0 greylist 0 ratelimit 1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-19 at 10:45 -0700, Dave Hansen wrote:
-> On Wed, 2007-09-19 at 19:39 +0200, Jan Engelhardt wrote:
+On Wed, 2007-09-19 at 18:26 +0100, Christoph Hellwig wrote:
+> On Mon, Sep 17, 2007 at 11:27:18AM -0700, Dave Hansen wrote:
 > > 
-> > >+static inline int svc_msnfs(struct svc_fh *ffhp)
-> > >+{
-> > >+#ifdef MSNFS
-> > >+      return (ffhp->fh_export->ex_flags & NFSEXP_MSNFS);
-> > >+#else
-> > >+      return 0;
-> > >+#endif
-> > >+}
+> > Christoph H. says this stands on its own and can go in before the
+> > rest of the r/o bind mount set.  
 > > 
-> > The name looks kinda confusing. msnfs? almost makes you think
-> > what's got microsoft to do with it.. 
+> > ---
+> > 
+> > Some filesystems forego the vfs and may_open() and create their
+> > own 'struct file's.
+> > 
+> > This patch creates a couple of helper functions which can be
+> > used by these filesystems, and will provide a unified place
+> > which the r/o bind mount code may patch.
+> > 
+> > Also, rename an existing, static-scope init_file() to a less
+> > generic name.
 > 
-> I'd give it a better name if I had any idea what it means. :)
-> 
-> The macros and names are all preexisting.  I just took the liberty of
-> pulling the #ifdef out into a function because the code got very
-> unreadable with the other modifications that I need.
-> 
-> If it were some kind of larger API, we could come up with something
-> better.  But, for a single isolated user, I think it is OK.
+> Looks good.  But please provide a patch ontop of your patchkit to
+> add kernel-doc comments for the two new exported functions.
 
-The msnfs option means enable the use of MS Windows share locks, so yes,
-the name is appropriate.
+Appended.  I started to write the comments to describe the function
+arguments, but they all looked pretty retarded.  
 
-Trond
+> Are there any direct caller of get_empty_filp left after this patch?
+> We really should get rid of that export to stop people from shooting
+> themselves in the foot.
+
+Yeah, there are a few left.  But, they're in the middle of what is
+sometimes tricky error handling, so I think we should trickle those in
+later. 
+
+
+-- Dave
+
+ lxc-dave/fs/file_table.c |   22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+diff -puN fs/file_table.c~document fs/file_table.c
+--- lxc/fs/file_table.c~document	2007-09-19 10:31:13.000000000 -0700
++++ lxc-dave/fs/file_table.c	2007-09-19 10:39:34.000000000 -0700
+@@ -137,6 +137,18 @@ fail:
+ 
+ EXPORT_SYMBOL(get_empty_filp);
+ 
++/**
++ * alloc_file - allocate and initialize a 'struct file' with
++ * the given arguments
++ *
++ * Use this instead of get_empty_filp() to get a new
++ * 'struct file'.  Do so because of the same initialization
++ * pitfalls reasons listed for init_file().  This is a
++ * preferred interface to using init_file().
++ *
++ * If all the callers of init_file() are eliminated, its
++ * code should be moved into this function.
++ */
+ struct file *alloc_file(struct vfsmount *mnt, struct dentry *dentry,
+ 		mode_t mode, const struct file_operations *fop)
+ {
+@@ -152,7 +164,15 @@ struct file *alloc_file(struct vfsmount 
+ }
+ EXPORT_SYMBOL(alloc_file);
+ 
+-/*
++/**
++ * init_file - initialize a 'struct file'
++ * @file: the already allocated 'struct file' to initialized
++ * @mnt: the vfsmount on which the file resides
++ *
++ * Use this instead of setting the members directly.  Doing so
++ * avoids making mistakes like forgetting the mntget() or
++ * forgetting to take a write on the mnt.
++ *
+  * Note: This is a crappy interface.  It is here to make
+  * merging with the existing users of get_empty_filp()
+  * who have complex failure logic easier.  All users
+_
+
 
