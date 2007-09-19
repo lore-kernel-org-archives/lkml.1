@@ -1,48 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbXISPBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbXISPGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756242AbXISPBd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbXISPBY
+	id S1760705AbXISPGH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbXISPF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:01:24 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:54672 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760693AbXISPBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:01:23 -0400
-Date: Wed, 19 Sep 2007 11:01:02 -0400
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: NFS4 authentification / fsuid
-Message-ID: <20070919150102.GA2810@fieldses.org>
-References: <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in> <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com> <1189121714.6672.38.camel@heimdal.trondhjem.org> <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com> <alpine.LFD.0.999.0709190503250.26241@enigma.security.iitk.ac.in> <A5318C25-7864-453A-B09A-00232D9EAF2A@mac.com> <alpine.LFD.0.999.0709191704300.7162@enigma.security.iitk.ac.in> <DBAB3583-BB6E-48C8-AFC1-0A705D048843@mac.com> <alpine.LFD.0.999.0709191931010.7697@enigma.security.iitk.ac.in>
+	Wed, 19 Sep 2007 11:05:56 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:33648 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755579AbXISPF4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 11:05:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=tCQZKH9bwlpedB7cs1zwu/9vYhSb+eSNrgpaO0dDX3dl59uSFb1/7dd6cBc91YB8SQilcBkIBOPBTKA786fTnnVHrjWpab2j6CmsE2LAkckZiQ7e/EKDSHKK0cDDMjwQ0RbYG2uSVQSzUbPU0Hj8KZNJN30JkZ6EKdvljn+u4OE=
+Message-ID: <2cbbd8de0709190805g5a85655dg644a8ca7162ee848@mail.gmail.com>
+Date: Wed, 19 Sep 2007 17:05:54 +0200
+From: "Antoine Zen-Ruffinen" <antoine.zen@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Real-time features in kernel 2.6.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709191931010.7697@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 07:42:20PM +0530, Satyam Sharma wrote:
-> 
-> 
-> On Wed, 19 Sep 2007, Kyle Moffett wrote:
-> > 
-> > > [all sorts of crap about spies in washington needing stronger protection
-> > > than your average consumer]
-> > 
-> > [snip]
-> > 
-> > [...] all the bullcrap about foreign intelligence
-> 
-> Hehe, again, *you* started all the "bullcrap" about foreign "governments"
-> in the first place :-)
+Hi,
 
-Uh, is there somebody else that feels they're being enlightened by this
-discussion?
+I heard about new real-time abilities on the 2.6.18 kernel release.
+Where can I read more about it ? How to use them ?
 
---b.
+Tank's for your time.
