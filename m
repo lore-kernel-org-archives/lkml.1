@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbXISHME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbXISHYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbXISHME (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 03:12:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbXISHLv
+	id S1755535AbXISHYm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 03:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXISHYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 03:11:51 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:1783 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753028AbXISHLu (ORCPT
+	Wed, 19 Sep 2007 03:24:34 -0400
+Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:43931 "EHLO
+	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbXISHYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 03:11:50 -0400
-X-IronPort-AV: i="4.20,271,1186372800"; 
-   d="scan'208"; a="39891235:sNHT26360572"
-Subject: Re: [PATCH 1/3] Blackfin EMAC driver: add function to change the
-	MAC	address
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Jeff Garzik <jeff@garzik.org>
-Cc: bryan.wu@analog.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-In-Reply-To: <46F04C2A.20500@garzik.org>
-References: <1189911423.9901.4.camel@roc-laptop> <46F04C2A.20500@garzik.org>
-Content-Type: text/plain
+	Wed, 19 Sep 2007 03:24:33 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <alpine.DEB.0.9999.0709182329110.6251@chino.kir.corp.google.com>
+References: <20070919033605.785839297@sgi.com> <20070919033641.009931707@sgi.com> <alpine.DEB.0.9999.0709182329110.6251@chino.kir.corp.google.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E1A595D3-FD5B-44EA-A99D-BB581642F0E8@cam.ac.uk>
+Cc: Christoph Lameter <clameter@sgi.com>, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Wed, 19 Sep 2007 15:07:38 +0800
-Message-Id: <1190185658.28309.0.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 19 Sep 2007 07:11:48.0772 (UTC) FILETIME=[58559E40:01C7FA8C]
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: [03/17] is_vmalloc_addr(): Check if an address is within the vmalloc boundaries
+Date: Wed, 19 Sep 2007 08:24:24 +0100
+To: David Rientjes <rientjes@google.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-19 at 06:07 +0800, Jeff Garzik wrote:
-> Bryan Wu wrote: 
-> >>From 157dfddae50708a716c2a42a314eccb9621d8793 Mon Sep 17 00:00:00
-> 2001 
-> > From: Alex Landau <lirsb@yahoo.com> 
-> > Date: Sun, 5 Aug 2007 15:58:03 +0800 
-> > Subject: [PATCH] Blackfin Ethernet MAC driver: add function to
-> change the MAC address 
-> > 
-> > Alex Landau writes in the forums: 
-> >   Previously, changing the MAC address (e.g. via ifconfig) resulted 
-> >   in a generic function to be called that only changed a variable
-> in 
-> >   memory. This patch also updated the Blackfin MAC address
-> registers 
-> >   to filter the correct new MAC. 
-> > 
-> > Signed-off-by: Alex Landau <lirsb@yahoo.com> 
-> > Signed-off-by: Mike Frysinger <michael.frysinger@analog.com> 
-> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> 
-> ACK patches 1-3... but can you regenerate them against 
-> netdev-2.6.git#upstream (or davem/net-2.6.24.git)?
+On 19 Sep 2007, at 07:32, David Rientjes wrote:
+> On Tue, 18 Sep 2007, Christoph Lameter wrote:
+>> Index: linux-2.6/include/linux/mm.h
+>> ===================================================================
+>> --- linux-2.6.orig/include/linux/mm.h	2007-09-17  
+>> 21:46:06.000000000 -0700
+>> +++ linux-2.6/include/linux/mm.h	2007-09-17 23:56:54.000000000 -0700
+>> @@ -1158,6 +1158,14 @@ static inline unsigned long vma_pages(st
+>>  	return (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+>>  }
+>>
+>> +/* Determine if an address is within the vmalloc range */
+>> +static inline int is_vmalloc_addr(const void *x)
+>> +{
+>> +	unsigned long addr = (unsigned long)x;
+>> +
+>> +	return addr >= VMALLOC_START && addr < VMALLOC_END;
+>> +}
+>
+> This breaks on i386 because VMALLOC_END is defined in terms of  
+> PKMAP_BASE
+> in the CONFIG_HIGHMEM case.
 
-Excellent, I will resend the patch against the netdev-2.6.git#upstream
-ASAP.
+That is incorrect.  This works perfectly on i386 and on ALL  
+architectures supported by Linux.  A lot of places in the kernel  
+already do this today (mostly hand coded though, eg XFS and NTFS)...
 
-Thanks
--Bryan Wu
-> 
+There even is such a function already in mm/ 
+sparse.c::vaddr_in_vmalloc_area() with pretty identical content.  I  
+would suggest either this new inline should go away completely and  
+use the existing one and export it or the existing one should go away  
+and the inline should be used.  It seems silly to have two functions  
+with different names doing exactly the same thing!
+
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
+
