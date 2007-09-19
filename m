@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759640AbXISPZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbXISPcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759640AbXISPZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbXISPZm
+	id S1760165AbXISPcc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXISPcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:25:42 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:58052 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754793AbXISPZl (ORCPT
+	Wed, 19 Sep 2007 11:32:25 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:38312 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754793AbXISPcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:25:41 -0400
-Date: Wed, 19 Sep 2007 17:25:37 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs
- rcu_read_lock()
-Message-ID: <20070919172537.3dceb0d3@twins>
-In-Reply-To: <d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com>
-References: <20070919104125.286538000@chello.nl>
-	<20070919105054.332308000@chello.nl>
-	<d120d5000709190717y69dca8b3tf4a17b920267806b@mail.gmail.com>
-	<20070919163111.05c18021@twins>
-	<d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Sep 2007 11:32:24 -0400
+To: Low Yucheng <ylow@andrew.cmu.edu>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PROBLEM: System Freeze on Particular workload with kernel 2.6.22.6
+In-Reply-To: <46F0E19D.8000400@andrew.cmu.edu>
+References: <46F0E19D.8000400@andrew.cmu.edu>
+User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+Date: Wed, 19 Sep 2007 17:47:56 +0200
+Message-Id: <E1IY1mO-00067S-7v@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 11:16:21 -0400 "Dmitry Torokhov"
-<dmitry.torokhov@gmail.com> wrote:
+* Wed, 19 Sep 2007 04:45:17 -0400
+>
+> [1.] Summary
+> System Freeze on Particular workload with kernel 2.6.22.6
+>
+> [2.] Description
+> System freezes on repeated application of the following command
+> for f in *png ; do convert -quality 100 $f `basename $f png`jpg; done
+>
+> Problem is consistent and repeatable.
+> Problem persists when running on a different drive, and also in pure console (no X).
+>
+> One time, the following error logged in syslog:
+> Sep 19 04:22:11 mossnew kernel: [  301.883919] VM: killing process convert
+> Sep 19 04:22:11 mossnew kernel: [  301.884382] swap_free: Unused swap offset entry 0000ff00
+> Sep 19 04:22:11 mossnew kernel: [  301.884421] swap_free: Unused swap offset entry 00000300
+> Sep 19 04:22:11 mossnew kernel: [  301.884456] swap_free: Unused swap offset entry 00000200
+> Sep 19 04:22:11 mossnew kernel: [  301.884491] swap_free: Unused swap offset entry 0000ff00
+> Sep 19 04:22:11 mossnew kernel: [  301.884527] swap_free: Unused swap offset entry 0000ff00
+> Sep 19 04:22:11 mossnew kernel: [  301.884562] swap_free: Unused swap offset entry 00000100
+>
+> Should not be a RAM problem. RAM has survived 12 hrs of Memtest with no errors.
+> Should not be a CPU problem either. I have been running CPU intensive tasks for days.
+>
+> [3.] Keywords
+> freeze, swap_free,VM
 
-> On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > On Wed, 19 Sep 2007 10:17:25 -0400 "Dmitry Torokhov"
-> > <dmitry.torokhov@gmail.com> wrote:
-> >
-> > > Hi Peter,
-> > >
-> > > On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > > Warn when rcu_dereference() is not used in combination with rcu_read_lock()
-> > > >
-> > >
-> > > According to Paul it is fine to use RCU primitives (when accompanied
-> > > with proper comments) when the read-size critical section is guarded
-> > > by spin_lock_irqsave()/spin_lock_irqsrestore() instead of
-> > > rcu_read_lock()/rcu_read_unlock() and writers synchronize with
-> > > synchronize_sched(), not synchronize_rcu(). Your patch will trigger
-> > > warnign on such valid usages.
-> > >
-> >
-> > Sounds fragile to begin with. But you're right in that that is valid
-> > for Linux as you know it. However in -rt most/all spinlocks are
-> > converted to sleeping locks. In that case sync_sched() is not enough.
-> >
-> 
-> OK, then it goes beyond RCU... We need to come up with something that
-> can be used to synchronize with IRQ handlers (quite often in driver
-> code one needs to be sure that current invocation of IRQ handler
-> completed before doing something). And once we have it splinlock + RCU
-> users can just use that method.
+Nice bug report, seems like from linux-source/REPORTING-BUGS.
+But still:
 
-Sound like you want a completion or workqueue.
+* no relevant Cc (memory management added)
++ no output of `mount` (because if swap is on some file system, that
+  *can* be another problem)
++ no information about amount of memory and its BIOS configuration
+
+FYI, latter two (and much more) is one `dmesg` output. This output,
+together with any other kernel information can be gathered by serial or
+net consoles:
+
+linux-source/Documentation/serial-console.txt
+linux-source/Documentation/networking/netconsole.txt 
+
+If console messages after freeze can be seen in text mode VGA/CRT
+also, photos of it somewhere on ftp will be OK.
+
+> [4.] /proc/version
+> Linux version 2.6.22.6intelcore2 (root@mossnew) (gcc version 4.1.2 (Ubuntu 4.1.2-0ubuntu4)) #1 SMP Sat Sep 15 00:29:00 EDT 2007
+>
+> [5.] No Oops
+>
+> [6.] Trigger
+> - Create a large number of png images. (a few hundred)
+>
+> - repeatedly run
+> for f in *png ; do convert -quality 100 $f `basename $f png`jpg; done
+>
+> - This might be subjective, but the freeze seems to show up sooner if there is a CPU heavy
+> process running in the background.
+>
+> [7] Environment
+> [7.1] Software /script/ver_linux
+>
+> Linux mossnew 2.6.22.6intelcore2 #1 SMP Sat Sep 15 00:29:00 EDT 2007 x86_64 GNU/Linux
+>
+[]
+____
