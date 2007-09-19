@@ -1,150 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299AbXISUEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbXISUIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756299AbXISUEf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 16:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbXISUE1
+	id S1754767AbXISUIq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 16:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXISUIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 16:04:27 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42336 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbXISUE0 (ORCPT
+	Wed, 19 Sep 2007 16:08:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:63279 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbXISUIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 16:04:26 -0400
-Date: Wed, 19 Sep 2007 21:03:19 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1 -- mkfs stuck in 'D'
-In-Reply-To: <20070919164348.GC2519@shadowen.org>
-Message-ID: <Pine.LNX.4.64.0709192035370.14804@blonde.wat.veritas.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
- <20070919164348.GC2519@shadowen.org>
+	Wed, 19 Sep 2007 16:08:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=tTYm2juVEPVs/PZOcbJ4onImE8OGM/qiG9MQ6+K8Ilvty3BlVcH6HWgJaREzawHUjLqvm1ASjpi76v/Oc2U/5y6zR8+6zFY6a2KatO3Kqhd3S0e7WtQIlkBu8zwXv3DLdTnfqwTG9poinJ3BGORpT3KcWb45cm5zpkkqIoW3mSE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] MAINTAINERS: mark ide-scsi as Orphan
+Date: Wed, 19 Sep 2007 22:08:56 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709192208.57023.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Andy Whitcroft wrote:
-> Seems I have a case of a largish i386 NUMA (NUMA-Q) which has a mkfs
-> stuck in a 'D' wait:
-> 
->  =======================
-> mkfs.ext2     D c10220f4     0  6233   6222
->  [<c12194da>] io_schedule_timeout+0x1e/0x28
->  [<c10454b4>] congestion_wait+0x62/0x7a
->  [<c10402af>] get_dirty_limits+0x16a/0x172
->  [<c104040b>] balance_dirty_pages+0x154/0x1be
->  [<c103bda3>] generic_perform_write+0x168/0x18a
->  [<c103be38>] generic_file_buffered_write+0x73/0x107
->  [<c103c346>] __generic_file_aio_write_nolock+0x47a/0x4a5
->  [<c103c3b9>] generic_file_aio_write_nolock+0x48/0x9b
->  [<c105d2d6>] do_sync_write+0xbf/0xfc
->  [<c105d3a0>] vfs_write+0x8d/0x108
->  [<c105d4c3>] sys_write+0x41/0x67
->  [<c100260a>] syscall_call+0x7/0xb
->  =======================
 
-[edited out some bogus lines from stale stack]
-
-> This machine and others have run numerous test runs on this kernel and
-> this is the first time I've see a hang like this.
-
-I've been seeing something like that on 4-way PPC64: in my case I've
-shells hanging in D state trying to append to kernel build log on ext3
-(the builds themselves going on elsewhere, in tmpfs): one of the shells
-holding i_mutex and stuck doing congestion_waits from balance_dirty_pages.
-
-> I wonder if this is the ultimate cause of the couple of mainline hangs
-> which were seen, but not diagnosed.
-
-My *guess* is that this is peculiar to 2.6.23-rc6-mm1, and from Peter's
-mm-per-device-dirty-threshold.patch.  printks showed bdi_nr_reclaimable
-0, bdi_nr_writeback 24, bdi_thresh 1 in balance_dirty_pages (though I've
-not done enough to check if those really correlate with the hangs),
-and I'm wondering if the bdi_stat_sum business is needed on the
-!nr_reclaimable path.
-
-So I'm running now with the patch below, good so far, but can't judge
-until tomorrow whether it has actually addressed the problem seen.
-
-Not-yet-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- mm/page-writeback.c |   53 +++++++++++++++++++-----------------------
- 1 file changed, 24 insertions(+), 29 deletions(-)
+ MAINTAINERS |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- 2.6.23-rc6-mm1/mm/page-writeback.c	2007-09-18 12:28:25.000000000 +0100
-+++ linux/mm/page-writeback.c	2007-09-19 20:00:46.000000000 +0100
-@@ -379,7 +379,7 @@ static void balance_dirty_pages(struct a
- 		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
- 		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
- 		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
--				break;
-+			break;
+Index: b/MAINTAINERS
+===================================================================
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1889,6 +1889,11 @@ M:	Gadi Oxman <gadio@netvision.net.il>
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
  
- 		if (!bdi->dirty_exceeded)
- 			bdi->dirty_exceeded = 1;
-@@ -392,39 +392,34 @@ static void balance_dirty_pages(struct a
- 		 */
- 		if (bdi_nr_reclaimable) {
- 			writeback_inodes(&wbc);
--
-+			pages_written += write_chunk - wbc.nr_to_write;
- 			get_dirty_limits(&background_thresh, &dirty_thresh,
- 				       &bdi_thresh, bdi);
-+		}
- 
--			/*
--			 * In order to avoid the stacked BDI deadlock we need
--			 * to ensure we accurately count the 'dirty' pages when
--			 * the threshold is low.
--			 *
--			 * Otherwise it would be possible to get thresh+n pages
--			 * reported dirty, even though there are thresh-m pages
--			 * actually dirty; with m+n sitting in the percpu
--			 * deltas.
--			 */
--			if (bdi_thresh < 2*bdi_stat_error(bdi)) {
--				bdi_nr_reclaimable =
--					bdi_stat_sum(bdi, BDI_RECLAIMABLE);
--				bdi_nr_writeback =
--					bdi_stat_sum(bdi, BDI_WRITEBACK);
--			} else {
--				bdi_nr_reclaimable =
--					bdi_stat(bdi, BDI_RECLAIMABLE);
--				bdi_nr_writeback =
--					bdi_stat(bdi, BDI_WRITEBACK);
--			}
-+		/*
-+		 * In order to avoid the stacked BDI deadlock we need
-+		 * to ensure we accurately count the 'dirty' pages when
-+		 * the threshold is low.
-+		 *
-+		 * Otherwise it would be possible to get thresh+n pages
-+		 * reported dirty, even though there are thresh-m pages
-+		 * actually dirty; with m+n sitting in the percpu
-+		 * deltas.
-+		 */
-+		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
-+			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
-+			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
-+		} else if (bdi_nr_reclaimable) {
-+			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
-+			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 
--			if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
--				break;
-+		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-+			break;
-+		if (pages_written >= write_chunk)
-+			break;		/* We've done our duty */
- 
--			pages_written += write_chunk - wbc.nr_to_write;
--			if (pages_written >= write_chunk)
--				break;		/* We've done our duty */
--		}
- 		congestion_wait(WRITE, HZ/10);
- 	}
- 
++IDE-SCSI DRIVER
++L:	linux-ide@vger.kernel.org
++L:	linux-scsi@vger.kernel.org
++S:	Orphan
++
+ IEEE 1394 SUBSYSTEM
+ P:	Ben Collins
+ M:	ben.collins@ubuntu.com
