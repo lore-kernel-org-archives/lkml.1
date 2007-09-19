@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbXISLnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbXISLoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758185AbXISLnu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 07:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbXISLnm
+	id S1759502AbXISLoO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 07:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbXISLn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 07:43:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:47303 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753511AbXISLnm (ORCPT
+	Wed, 19 Sep 2007 07:43:56 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:49930 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754424AbXISLnz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 07:43:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=EotRHZpImcOXsRRROJWh2G3I7xYII2pNrJFx6mpL7sHPnZ9NiGvAcoaTHI7v5CQwz9FMRsVg4D0UHHusFsjTv8P0xzosF46138SBbten2Uilo/l6BptOhMP4i9zjetbyAz7jVZr0bim9bXRQXjpw3kGOicWLADZWDbngxMro9iU=
-Message-ID: <46F10B69.5070008@gmail.com>
-Date: Wed, 19 Sep 2007 13:43:37 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 19 Sep 2007 07:43:55 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [Jfs-discussion] [2/4] 2.6.23-rc6: known regressions
+Date: Wed, 19 Sep 2007 13:44:24 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       jfs-discussion@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <46E8187E.9000006@googlemail.com> <46E81ACE.6030305@googlemail.com> <1189685917.26427.10.camel@norville.austin.ibm.com>
+In-Reply-To: <1189685917.26427.10.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709191344.25808.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/18/2007 10:18 AM, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
+Am Donnerstag 13 September 2007 schrieb Dave Kleikamp:
+> On Wed, 2007-09-12 at 18:58 +0200, Michal Piotrowski wrote:
 > 
-> 2.6.23-rc6-mm1 is a 29MB diff against 2.6.23-rc6.
+> > Subject         : umount triggers a warning in jfs and takes almost a minute
+> > References      : http://lkml.org/lkml/2007/9/4/73
+> > Last known good : ?
+> > Submitter       : Oliver Neukum <oliver@neukum.org>
+> > Caused-By       : ?
+> > Handled-By      : ?
+> > Status          : unknown
 > 
-> It took me over two solid days to get this lot compiling and booting on a few
-> boxes.  This required around ninety fixup patches and patch droppings.  There
-> are several bugs in here which I know of (details below) and presumably many
-> more which I don't know of.  I have to say that this just isn't working any
-> more.
-> 
-> - The Vaio hangs when quitting X due to x86_64-mm-cpa-clflush.patch, but
->   I didn't drop that patch because the iommu patch series depends on it.
+> I'm still waiting to hear from Oliver whether or not this is actually a
+> regression.
 
-No matter whether slub/slab is selected someone gets a page and moves/adds its
-.lru head to some list after being in the deffered_pages list yet -- this breaks
-the deffered_pages list and loops forever in list_for_each (unless LIST_DEBUG is
-selected, which produces a BUG).
+OK, I've done test. On 2.6.22 I was unable to trigger the warning.
+On 2.6.23-rc6 I get the following warning in about 3/4 of all unmounts:
 
-Any ideas who could be the one pushing the page to some other list?
+Sep 19 13:08:04 oenone kernel: WARNING: at fs/jfs/jfs_logmgr.c:1643 jfs_flush_journal()
+Sep 19 13:08:04 oenone kernel:
+Sep 19 13:08:04 oenone kernel: Call Trace:
+Sep 19 13:08:04 oenone kernel:  [<ffffffff8860f962>] :jfs:jfs_flush_journal+0x26a/0x27d
+Sep 19 13:08:04 oenone kernel:  [<ffffffff8029fca1>] dispose_list+0xde/0xf7
+Sep 19 13:08:04 oenone kernel:  [<ffffffff885fd003>] :jfs:jfs_umount+0x30/0xe5
+Sep 19 13:08:04 oenone kernel:  [<ffffffff885f9a31>] :jfs:jfs_put_super+0xd/0x5e
+Sep 19 13:08:04 oenone kernel:  [<ffffffff8028ef8f>] generic_shutdown_super+0x60/0xf0
+Sep 19 13:08:04 oenone kernel:  [<ffffffff8028f02c>] kill_block_super+0xd/0x1e
+Sep 19 13:08:04 oenone kernel:  [<ffffffff8028f0f7>] deactivate_super+0x6a/0x82
+Sep 19 13:08:04 oenone kernel:  [<ffffffff802a2184>] sys_umount+0x249/0x25a
+Sep 19 13:08:04 oenone kernel:  [<ffffffff802616ff>] audit_syscall_entry+0x141/0x174
+Sep 19 13:08:04 oenone kernel:  [<ffffffff8020be8c>] tracesys+0xdc/0xe1
+Sep 19 13:08:04 oenone kernel:
 
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+This is on a partition of a usb mass storage device with 2K sector size.
+IMHO it is a regression. I am recompiling with CONFIG_JFS_DEBUG.
+
+	Regards
+		Oliver
+
