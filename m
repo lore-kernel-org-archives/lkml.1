@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbXISV1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbXISV1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150AbXISV1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 17:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbXISVZT
+	id S1756837AbXISV1l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXISVZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 17:25:19 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:52808 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752467AbXISVZD (ORCPT
+	Wed, 19 Sep 2007 17:25:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34780 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756069AbXISVZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 17:25:03 -0400
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 6/6] Unionfs: cache coherency after lower objects are removed
-Date: Wed, 19 Sep 2007 17:24:40 -0400
-Message-Id: <11902370831020-git-send-email-ezk@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.2
-X-MailKey: Erez_Zadok
-In-Reply-To: <1190237080683-git-send-email-ezk@cs.sunysb.edu>
-References: <1190237080683-git-send-email-ezk@cs.sunysb.edu>
+	Wed, 19 Sep 2007 17:25:23 -0400
+Date: Wed, 19 Sep 2007 14:24:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [PATCH 00/24] Read-only bind mounts
+Message-Id: <20070919142437.7490b219.akpm@linux-foundation.org>
+In-Reply-To: <20070919174418.GA22982@infradead.org>
+References: <20070917182718.70494C9B@kernel>
+	<20070919174418.GA22982@infradead.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prevent an oops if a lower file is deleted and then it is stat'ed from the
-upper layer.  Ensure that we return a negative dentry so the user will get
-an ENOENT.  Properly dput/mntput so we don't leak references at the lower
-file system.
+On Wed, 19 Sep 2007 18:44:18 +0100
+Christoph Hellwig <hch@infradead.org> wrote:
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
-Acked-by: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
----
- fs/unionfs/lookup.c |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
+> On Mon, Sep 17, 2007 at 11:27:18AM -0700, Dave Hansen wrote:
+> > If we can't pull the entire series into -mm, can we just put the
+> > first three patches for now?  They can stand on their own.
+> 
+> Yes, they're kinda a series of their own.  But I still think we really
+> want this in -mm.  As we've seen on the kernel summit there's a pretty
+> desparate need for it.  And there's not many changes in this area in
+> -mm, maybe the unprivilegued mounts.  I'd personally prioritize the
+> r/o bindmounts over them as they're more needed and we need more reviewing
+> of the unprivilegued mounts (I'll try to come back to that soon).
 
-diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
-index 8eb9749..963d622 100644
---- a/fs/unionfs/lookup.c
-+++ b/fs/unionfs/lookup.c
-@@ -92,7 +92,7 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry,
- 	struct dentry *lower_dir_dentry = NULL;
- 	struct dentry *parent_dentry = NULL;
- 	struct dentry *d_interposed = NULL;
--	int bindex, bstart, bend, bopaque;
-+	int bindex, bstart = -1, bend, bopaque;
- 	int dentry_count = 0;	/* Number of positive dentries. */
- 	int first_dentry_offset = -1; /* -1 is uninitialized */
- 	struct dentry *first_dentry = NULL;
-@@ -413,7 +413,14 @@ out:
- 	if (!err && UNIONFS_D(dentry)) {
- 		BUG_ON(dbend(dentry) > UNIONFS_D(dentry)->bcount);
- 		BUG_ON(dbend(dentry) > sbmax(dentry->d_sb));
--		BUG_ON(dbstart(dentry) < 0);
-+		if (dbstart(dentry) < 0 &&
-+		    dentry->d_inode && bstart >= 0 &&
-+		    (!UNIONFS_I(dentry->d_inode) ||
-+		     !UNIONFS_I(dentry->d_inode)->lower_inodes)) {
-+			unionfs_mntput(dentry->d_sb->s_root, bstart);
-+			dput(first_lower_dentry);
-+			UNIONFS_I(dentry->d_inode)->stale = 1;
-+		}
- 	}
- 	kfree(whname);
- 	if (locked_parent)
-@@ -423,6 +430,9 @@ out:
- 		unionfs_unlock_dentry(dentry);
- 	if (!err && d_interposed)
- 		return d_interposed;
-+	if (dentry->d_inode && UNIONFS_I(dentry->d_inode)->stale &&
-+	    first_dentry_offset >= 0)
-+		unionfs_mntput(dentry->d_sb->s_root, first_dentry_offset);
- 	return ERR_PTR(err);
- }
- 
--- 
-1.5.2.2
+What's the situation on unprivileged mounts?  iirc, it's all a bit stuck.
+
+If unpriv-mounts code isn't going to go into mainline ahead of r/o bind
+mounts then it'd make a big mess to prepare the r/o bind mount patches on
+top of unprivileged mounts.
+
+It sounds like a better approach would be for me to merge the r/o bind
+mounts code and to drop (or maybe rework) the unprivileged mounts patches
 
