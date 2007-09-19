@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbXISPQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbXISPWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760823AbXISPQd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbXISPQY
+	id S1760644AbXISPWO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbXISPV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:16:24 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:49884 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752953AbXISPQX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:16:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mffkznxVCeQUkrA8reYRQvp4vL6Wyzf64nMeRDt+OHmEHd8XlTbEiTG+zycTeq34WdWW2n0qx83QBaFsjib/4IuahATCaJ7TKE9qlmGrp2bEuQ5QfaWsWv/Gy47lKrM1ge67PcuXpHGL//zBM+F+8OfcQm+j/lH2aMUsFPpXwuM=
-Message-ID: <d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com>
-Date: Wed, 19 Sep 2007 11:16:21 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs rcu_read_lock()
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>
-In-Reply-To: <20070919163111.05c18021@twins>
+	Wed, 19 Sep 2007 11:21:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51372 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752124AbXISPV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 11:21:56 -0400
+Message-ID: <46F13E8B.4050309@redhat.com>
+Date: Wed, 19 Sep 2007 08:21:47 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070919104125.286538000@chello.nl>
-	 <20070919105054.332308000@chello.nl>
-	 <d120d5000709190717y69dca8b3tf4a17b920267806b@mail.gmail.com>
-	 <20070919163111.05c18021@twins>
+To: netdev <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: follow-up: discrepancy with POSIX
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> On Wed, 19 Sep 2007 10:17:25 -0400 "Dmitry Torokhov"
-> <dmitry.torokhov@gmail.com> wrote:
->
-> > Hi Peter,
-> >
-> > On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > Warn when rcu_dereference() is not used in combination with rcu_read_lock()
-> > >
-> >
-> > According to Paul it is fine to use RCU primitives (when accompanied
-> > with proper comments) when the read-size critical section is guarded
-> > by spin_lock_irqsave()/spin_lock_irqsrestore() instead of
-> > rcu_read_lock()/rcu_read_unlock() and writers synchronize with
-> > synchronize_sched(), not synchronize_rcu(). Your patch will trigger
-> > warnign on such valid usages.
-> >
->
-> Sounds fragile to begin with. But you're right in that that is valid
-> for Linux as you know it. However in -rt most/all spinlocks are
-> converted to sleeping locks. In that case sync_sched() is not enough.
->
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-OK, then it goes beyond RCU... We need to come up with something that
-can be used to synchronize with IRQ handlers (quite often in driver
-code one needs to be sure that current invocation of IRQ handler
-completed before doing something). And once we have it splinlock + RCU
-users can just use that method.
+As a follow up to my question from yesterday on the netdev list what I
+think is a real problem.  Either in the kernel or in the POSIX spec.
 
--- 
-Dmitry
+The POSIX spec currently says this about SOCK_DGRAM sockets:
+
+  If  address is a null address for the protocol, the socket’s peer
+  address shall be reset.
+
+The term "null address" is not further specified but it will usually be
+read to allow the following scenario to work out:
+
+   fd = socket(AT_INET6, ...)
+
+   connect(fd, ...some IPv6 address...)
+
+   struct sockaddr_in6 sin6 = { .sin6_family = AF_INET6 };
+   connect(fd, &sin6, sizeof (sin6));
+
+   connect(fd, ...some new IPv6 address...)
+
+This does not work on Linux in the moment.  The socket remains connected
+to the old IPv6 address but the second connect() call does succeed (this
+does not sound OK).  What does work is if the connect call to
+disassociate the address uses AF_UNSPEC instead of AF_INET6.
+
+
+The question is: do people here think this is a problem in the POSIX
+spec?  Binding to :: and 0.0.0.0 isn't possible, so maybe the Linux
+implementation should allow this?
+
+If you think the POSIX spec is wrong (and can point to other
+implementations doing the same as Linux) let me know and I'll work on
+getting the spec changed.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFG8T6L2ijCOnn/RHQRAnSRAJ9sXDGG9OepEQWQInaPgwxCWlaH6wCghqim
+ULttg5/lU8c1rSpBnoRCjB8=
+=nGVv
+-----END PGP SIGNATURE-----
