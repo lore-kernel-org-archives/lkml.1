@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbXISNXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbXISNYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758914AbXISNXs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 09:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbXISNXi
+	id S1754948AbXISNYE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 09:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbXISNXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 09:23:38 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:40880 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbXISNXh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 09:23:37 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <alpine.DEB.0.9999.0709190217530.17127@chino.kir.corp.google.com>
-References: <20070919033605.785839297@sgi.com> <20070919033641.009931707@sgi.com> <alpine.DEB.0.9999.0709182329110.6251@chino.kir.corp.google.com> <E1A595D3-FD5B-44EA-A99D-BB581642F0E8@cam.ac.uk> <alpine.DEB.0.9999.0709190103560.12827@chino.kir.corp.google.com> <167F960F-0A93-4263-8AE6-1B0CEBB2C9D1@cam.ac.uk> <alpine.DEB.0.9999.0709190217530.17127@chino.kir.corp.google.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <918AEB61-0E65-41AD-A1D7-0226CFC40701@cam.ac.uk>
-Cc: Christoph Lameter <clameter@sgi.com>, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [03/17] is_vmalloc_addr(): Check if an address is within the vmalloc boundaries
-Date: Wed, 19 Sep 2007 14:23:27 +0100
-To: David Rientjes <rientjes@google.com>
-X-Mailer: Apple Mail (2.752.3)
+	Wed, 19 Sep 2007 09:23:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55567 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754209AbXISNXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 09:23:40 -0400
+Date: Wed, 19 Sep 2007 15:23:27 +0200
+From: Karel Zak <kzak@redhat.com>
+To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: iso9660 vs udf
+Message-ID: <20070919132327.GF2782@petra.dvoda.cz>
+References: <20070915214926.GA31416@mette>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070915214926.GA31416@mette>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19 Sep 2007, at 10:19, David Rientjes wrote:
-> On Wed, 19 Sep 2007, Anton Altaparmakov wrote:
->> Although it may cause a problem as highmem.h also includes mm.h so  
->> a bit of
->> trickery may be needed to get it to compile...
->>
->> I suspect that is_vmalloc_addr() should not be in linux/mm.h at  
->> all and should
->> be in linux/vmalloc.h instead and vmalloc.h should include linux/ 
->> highmem.h.
->> That would be more sensible than sticking a vmalloc related  
->> function into
->> linux/mm.h where it does not belong...
->
-> That is why I suggested include/linux/vmalloc.h as its home in the  
-> first
-> place.  And no, adding an include for linux/highmem.h (and asm/ 
-> pgtable.h)
-> to linux/vmalloc.h does not work.
+On Sat, Sep 15, 2007 at 11:49:31PM +0200, Andries E. Brouwer wrote:
+> What goes wrong on the mount side is that when it hesitates between
+> iso9660 and udf it decides for udf when seeing "NSR02".
+> Maybe the heuristics in mount should be tuned.
 
-I am sure Christoph can figure out somewhere that it will work.   
-After all, the code in that function already exists both as another  
-function and open coded in several places and compiles fine there...
+ I'd like to see the CD image (or at least first 2Mb). Also try:
 
-Best regards,
+     # blkid -c /dev/null /dev/cdrom
+     # /lib/udev/vol_id  /dev/cdrom
 
-	Anton
+ Maybe vol_id provides better information -- the udf/iso code in
+ libblkid seems poorer that in libvolume_id.
+
+> If anybody feels responsible for mount and/or this kernel area
+> we might discuss.
+
+ mount(8) --> util-linux-ng@vger.kernel.org
+
+
+        Karel
+
 -- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
-
+ Karel Zak  <kzak@redhat.com>
