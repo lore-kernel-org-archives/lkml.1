@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbXISRGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750839AbXISRHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbXISRGl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbXISRGF
+	id S1750839AbXISRHL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbXISRGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:06:05 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49779 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754245AbXISRGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:06:03 -0400
-Date: Wed, 19 Sep 2007 10:06:01 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ethan Solomita <solo@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/6] cpuset write dirty map
-In-Reply-To: <46F072A5.8060008@google.com>
-Message-ID: <Pine.LNX.4.64.0709191001420.10862@schroedinger.engr.sgi.com>
-References: <469D3342.3080405@google.com> <46E741B1.4030100@google.com>
- <46E742A2.9040006@google.com> <20070914161536.3ec5c533.akpm@linux-foundation.org>
- <46F072A5.8060008@google.com>
+	Wed, 19 Sep 2007 13:06:48 -0400
+Received: from mga01.intel.com ([192.55.52.88]:8796 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbXISRGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:06:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,274,1186383600"; 
+   d="scan'208";a="313979935"
+Date: Wed, 19 Sep 2007 10:06:44 -0700 (PDT)
+From: Tong Li <tong.n.li@intel.com>
+X-X-Sender: tongli@tongli.jf.intel.com
+To: Mike Galbraith <efault@gmx.de>
+cc: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [git] CFS-devel, group scheduler, fixes
+In-Reply-To: <1190191368.8687.5.camel@Homer.simpson.net>
+Message-ID: <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
+References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu>
+  <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com> 
+ <1190183324.9737.7.camel@Homer.simpson.net>  <1190188261.9185.21.camel@Homer.simpson.net>
+ <1190191368.8687.5.camel@Homer.simpson.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007, Ethan Solomita wrote:
+On Wed, 19 Sep 2007, Mike Galbraith wrote:
 
-> > Does it have to be atomic?  atomic is weak and can fail.
-> > 
-> > If some callers can do GFP_KERNEL and some can only do GFP_ATOMIC then we
-> > should at least pass the gfp_t into this function so it can do the stronger
-> > allocation when possible.
-> 
-> 	I was going to say that sanity would be improved by just allocing the
-> nodemask at inode alloc time. A failure here could be a problem because
-> below cpuset_intersects_dirty_nodes() assumes that a NULL nodemask
-> pointer means that there are no dirty nodes, thus preventing dirty pages
-> from getting written to disk. i.e. This must never fail.
+> On Wed, 2007-09-19 at 09:51 +0200, Mike Galbraith wrote:
+>
+>> The scenario which was previously cured was this:
+>> taskset -c 1 nice -n 0 ./massive_intr 2 9999
+>> taskset -c 1 nice -n 5 ./massive_intr 2 9999
+>> click link
+>> (http://pages.cs.wisc.edu/~shubu/talks/cachescrub-prdc2004.ppt) to bring
+>> up browser and OpenOffice Impress.
+>>
+>> Xorg (at nice -5 + above scenario) latency samples:
+>> se.wait_max              :            57985337
+>> se.wait_max              :            25163510
+>> se.wait_max              :            37005538
+>> se.wait_max              :            66986511
+>> se.wait_max              :            53990868
+>> se.wait_max              :            80976761
+>> se.wait_max              :            96967501
+>> se.wait_max              :            80989254
+>> se.wait_max              :            53990897
+>> se.wait_max              :           181963905
+>> se.wait_max              :            85985181
+>
+> To be doubly sure of the effect on the pinned tasks + migrating Xorg
+> scenario, I just ran the above test 10 times with virgin devel source.
+> Maximum Xorg latency was 20ms.
+>
+> 	-Mike
+>
 
-Hmmm. It should assume that there is no tracking thus any node can be 
-dirty? Match by default?
+Yeah, the patch was a first attempt at getting better global fairness for 
+unpinned tasks. I expected there'd be latency problems when unpinned and 
+pinned tasks co-exist. The original code for vruntime adjustment in 
+set_task_cpu() helped alleviate this problem, so removing it in my patch 
+would definitely bring the problem back. On the other hand, leaving it 
+there broke global fairness in my fairness benchmark. So we'd need a 
+better compromise.
 
-> 	Given that we allocate it always at the beginning, I'm leaning towards
-> just allocating it within mapping no matter its size. It will make the
-> code much much simpler, and save me writing all the comments we've been
-> discussing. 8-)
-> 
-> 	How disastrous would this be? Is the need to support a 1024 node system
-> with 1,000,000 open mostly-read-only files thus needing to spend 120MB
-> of extra memory on my nodemasks a real scenario and a showstopper?
+Were the experiments run on a 2-CPU system? When Xorg experiences large 
+wait time, is it on the same CPU that has the two pinned tasks? If this is 
+the case, then the problem could be X somehow advanced faster and got a 
+larger vruntime then the two pinned tasks, so it had to wait for the 
+pinned ones to catch up before it got a chance to be scheduled.
 
-Consider that a 1024 node system has more than 4TB of memory. If that 
-system is running as a fileserver then you get into some issues. But then 
-120MB are not that big of a deal. Its more the cache footprint issue I 
-would think. Having a NULL there avoids touching a 128 byte nodemask. I 
-think your approach should be fine.
-
-
-> >> +void cpuset_clear_dirty_nodes(struct address_space *mapping)
-> >> +{
-> >> +	nodemask_t *nodes = mapping->dirty_nodes;
-> >> +
-> >> +	if (nodes) {
-> >> +		mapping->dirty_nodes = NULL;
-> >> +		kfree(nodes);
-> >> +	}
-> >> +}
-> > 
-> > Can this race with cpuset_update_dirty_nodes()?  And with itself?  If not,
-> > a comment which describes the locking requirements would be good.
-> 
-> 	I'll add a comment. Such a race should not be possible. It is called
-> only from clear_inode() which is used when the inode is being freed
-> "with extreme prejudice" (from its comments). I can add a check that
-> i_state I_FREEING is set. Would that do?
-
-There is already a comment saying that it cannot happen.
+   tong
