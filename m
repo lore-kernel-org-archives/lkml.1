@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbXIST5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbXIST5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbXIST5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 15:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbXIST5J
+	id S1755926AbXIST5n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 15:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXIST5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 15:57:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55359 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbXIST5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 15:57:08 -0400
-Date: Wed, 19 Sep 2007 21:56:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Antoine Martin <antoine@nagafix.co.uk>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: CFS: some bad numbers with Java/database threading [FIXED]
-Message-ID: <20070919195633.GA23595@elte.hu>
-References: <20070913112427.GA20686@elte.hu> <20070914083246.GA20514@elte.hu> <a781481a0709140306k3faf3585haae26853fe81381c@mail.gmail.com> <46EAA7E4.8020700@nagafix.co.uk> <20070914153216.GA27213@elte.hu> <46F00417.7080301@redhat.com> <20070918224656.GA26719@elte.hu> <46F058EE.1080408@redhat.com> <20070919191837.GA19500@elte.hu> <alpine.LFD.0.999.0709191230230.16478@woody.linux-foundation.org>
+	Wed, 19 Sep 2007 15:57:33 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:25655 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbXIST5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 15:57:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JNAhBW1ggS7eIuWVFkLo6ZsK++phZ5jW0BMyAXlK6iLPrnuIXCcmruiUqhTbGHtFflFZyNrJvuTD3J/6jZ/p0WZ77DGIkjQnjVzFXWtAjuu+FcA4+2R+jeET26BNuo3HDV0IhEk3FiCQ7kJnPuKXFvub6Mmb+yRqGHyJ7I8vBs8=
+Message-ID: <46F17F27.5080000@gmail.com>
+Date: Wed, 19 Sep 2007 21:57:27 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709191230230.16478@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andi Kleen <andi@firstfloor.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org>
+In-Reply-To: <20070919195425.GF18707@one.firstfloor.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > Linus, what do you think? I have no strong feelings, I think the 
-> > patch cannot hurt (it does not change anything by default) - but we 
-> > should not turn the workaround flag on by default.
+On 09/19/2007 09:54 PM, Andi Kleen wrote:
+>> Yeah. (But X doesn't run -- this is maybe the known issue in this release).
 > 
-> I disagree. I think CFS made "sched_yield()" worse, and what you call 
-> "bug workaround" is likely the *better* behaviour.
-> 
-> The fact is, sched_yield() is not - and should not be - about 
-> "recalculating the position in the scheduler queue" like you do now in 
-> CFS.
-> 
-> It very much is about moving the thread *dead last* within its 
-> priority group.
-[...]
-> and quite frankly, the current CFS behaviour simply looks buggy. It 
-> should simply not move it to the "right place" in the rbtree. It 
-> should move it *last*.
+> What do you mean with not run? 
 
-ok, we can do that.
+(II) intel(0): Initializing HW Cursor
+(II) intel(0): xf86BindGARTMemory: bind key 0 at 0x005ff000 (pgoffset 1535)
+(WW) intel(0): xf86BindGARTMemory: binding of gart memory with key 0
+        at offset 0x5ff000 failed (Invalid argument)
 
-the O(1) implementation of yield() was pretty arbitrary: it did not move 
-it last on the same priority level - it only did it within the active 
-array. So expired tasks (such as CPU hogs) would come _after_ a 
-yield()-ing task.
+Fatal server error:
+Couldn't bind memory for front buffer
 
-so the yield() implementation was so much tied to the data structures of 
-the O(1) scheduler that it was impossible to fully emulate it in CFS.
+I thought I'd seen a thread about this issue, but I can't find it now. Is it
+known or am I seeing ghosts yet, Andrew?
 
-in CFS we dont have a per-nice-level rbtree, so we cannot move it dead 
-last within the same priority group - but we can move it dead last in 
-the whole tree. (then they'd be put even after nice +19 tasks.) People 
-might complain about _that_.
-
-another practical problem is that this will break certain desktop apps 
-that do calls to yield() [some firefox plugins do that, some 3D apps do 
-that, etc.] but they dont expect to be moved 'very late' into the queue 
-- they expect the O(1) scheduler's behavior of being delayed "a bit". 
-(That's why i added the yield-granularity tunable.)
-
-we can make yield super-agressive, that is pretty much the only sane 
-(because well-defined) thing to do (besides turning yield into a NOP), 
-but there will be lots of regression reports about lost interactivity 
-during load. sched_yield() is a mortally broken API. "fix the app" would 
-be the answer, but still there will be lots of complaints.
-
-	Ingo
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
