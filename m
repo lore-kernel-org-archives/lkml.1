@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762954AbXISRhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763069AbXISRhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762954AbXISRhg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762754AbXISRfm
+	id S1763069AbXISRhu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762858AbXISRgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:35:42 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45484 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762643AbXISRfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:35:40 -0400
-Date: Wed, 19 Sep 2007 19:37:04 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: maximilian attems <max@stro.at>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
-       mchan@broadcom.com, vda.linux@googlemail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: bnx2 dirver's firmware images
-Message-ID: <20070919173704.GA3115@uranus.ravnborg.org>
-References: <46F01BDE.6020902@zytor.com> <20070918.122034.83625273.davem@davemloft.net> <46F02688.8030507@zytor.com> <20070918.130810.78161599.davem@davemloft.net> <20070918203530.GC27836@uranus.ravnborg.org> <20070919171033.GH6618@stro.at> <46F15886.6040701@zytor.com> <20070919171841.GT19918@baikonur.stro.at>
+	Wed, 19 Sep 2007 13:36:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59021 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762752AbXISRgG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:36:06 -0400
+Date: Wed, 19 Sep 2007 18:36:05 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 16/24] nfs: check mnt instead of superblock directly
+Message-ID: <20070919173605.GP20917@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Dave Hansen <haveblue@us.ibm.com>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org
+References: <20070917182718.70494C9B@kernel> <20070917182739.6987C126@kernel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070919171841.GT19918@baikonur.stro.at>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070917182739.6987C126@kernel>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Maks.
-
-On Wed, Sep 19, 2007 at 07:18:41PM +0200, maximilian attems wrote:
-> On Wed, Sep 19, 2007 at 10:12:38AM -0700, H. Peter Anvin wrote:
-> > 
-> > Could you give a concrete example?
-> > 
-> > 	-hpa
+On Mon, Sep 17, 2007 at 11:27:39AM -0700, Dave Hansen wrote:
 > 
-> max@dual:~/src/klibc$ touch usr/utils/mount_main.c
-> max@dual:~/src/klibc$ make
->   KLIBCCC usr/utils/mount_main.o
->   KLIBCLD usr/utils/static/halt
->   LN      usr/utils/static/reboot
->   LN      usr/utils/static/poweroff
->   KLIBCLD usr/utils/shared/halt
->   LN      usr/utils/shared/reboot
->   LN      usr/utils/shared/poweroff
->   KLIBCLD usr/utils/static/chroot
->   KLIBCLD usr/utils/static/dd
->   <snipp>
+> If we depend on the inodes for writeability, we will not
+> catch the r/o mounts when implemented.
+> 
+> This patches uses __mnt_want_write().  It does not guarantee
+> that the mount will stay writeable after the check.  But,
+> this is OK for one of the checks because it is just for a
+> printk().
+> 
+> The other two are probably unnecessary and duplicate existing
+> checks in the VFS.  This won't make them better checks than
+> before, but it will make them detect r/o mounts.
 
-I do not recall the details at the moment but I recall I had to
-do this tradeoff for some reasons.
-I do not say it is not fixable but when I did the static-y support
-I recall I took a shortcut or two under the assumption that everything
-build by klibc was anyway so simple that compiling a bit too much was no harm.
+Ok from me, but can please get a nfs person to look over this
+aswell?
 
-Too buried with other stuff right now.
-But feel free to poke me in roughly a month and I will take a deeper look.
-
-	Sam
