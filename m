@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbXISVgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbXISVhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758691AbXISVgV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 17:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbXISVgF
+	id S1758273AbXISVhU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbXISVhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 17:36:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55220 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755276AbXISVgE (ORCPT
+	Wed, 19 Sep 2007 17:37:07 -0400
+Received: from mga03.intel.com ([143.182.124.21]:27280 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751148AbXISVhF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 17:36:04 -0400
-Date: Wed, 19 Sep 2007 14:36:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Alexey Dobriyan <adobriyan@sw.ru>
-cc: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: BUG kmalloc-16: Object padding overwritten
- (sysfs?)
-In-Reply-To: <Pine.LNX.4.64.0709191355340.3136@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0709191432200.3111@schroedinger.engr.sgi.com>
-References: <20070919123907.GA15591@localhost.sw.ru> <20070919125918.GA6760@localhost.sw.ru>
- <20070919123954.fb552e80.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0709191355340.3136@schroedinger.engr.sgi.com>
+	Wed, 19 Sep 2007 17:37:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,275,1186383600"; 
+   d="scan'208";a="282488814"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: what is the difference between shutdown command and writing to /sys/power/state
+Date: Wed, 19 Sep 2007 14:37:03 -0700
+Message-ID: <A3258B497F1C1441AD36A2E8B45FD628ACF21D@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <200709192334.30944.rjw@sisk.pl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: what is the difference between shutdown command and writing to /sys/power/state
+Thread-Index: Acf7AyPWNF3A3WU1TQiiZV5I4nyupQAAdnPQ
+References: <A3258B497F1C1441AD36A2E8B45FD628ACF018@scsmsx412.amr.corp.intel.com> <200709192334.30944.rjw@sisk.pl>
+From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 19 Sep 2007 21:37:03.0766 (UTC) FILETIME=[38150B60:01C7FB05]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Christoph Lameter wrote:
+Can you tell me the differences?
+Also what do you mean by - depending also on what you mean by 'now'? I
+gave now as a time parameter to shutdown command. How can it be
+interpreted in a different way?
 
-> Hmmm... This works fine here. Doing the cat may trigger slab validation 
-> and show objects corruptions that were heretofore unnoticed.
+-----Original Message-----
+From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+Sent: Wednesday, September 19, 2007 2:35 PM
+To: Agarwal, Lomesh
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: what is the difference between shutdown command and writing
+to /sys/power/state
 
-Not exactly true since reading a file cannot trigger slab validation. The 
-catting of all files will touch the following:
+On Wednesday, 19 September 2007 20:50, Agarwal, Lomesh wrote:
+> Does linux handles writing "disk" to /sys/power/state and shutdown -P
+> now differently (except writing to disk part)?
 
-clameter@schroedinger:/sys/slab/kmalloc-64$ ls -l
-total 0
--r--r--r-- 1 root root 4096 Sep 19 14:28 aliases
--r--r--r-- 1 root root 4096 Sep 19 14:28 align
--r--r--r-- 1 root root 4096 Sep 19 14:28 alloc_calls
--r--r--r-- 1 root root 4096 Sep 19 14:28 cache_dma
--r--r--r-- 1 root root 4096 Sep 19 14:28 cpu_slabs
--r--r--r-- 1 root root 4096 Sep 19 14:28 ctor
--r--r--r-- 1 root root 4096 Sep 19 14:28 destroy_by_rcu
--r--r--r-- 1 root root 4096 Sep 19 14:28 free_calls
--r--r--r-- 1 root root 4096 Sep 19 14:28 hwcache_align
--r--r--r-- 1 root root 4096 Sep 19 14:28 object_size
--r--r--r-- 1 root root 4096 Sep 19 14:28 objects
--r--r--r-- 1 root root 4096 Sep 19 14:28 objs_per_slab
--r--r--r-- 1 root root 4096 Sep 19 14:28 order
--r--r--r-- 1 root root 4096 Sep 19 14:28 partial
--rw-r--r-- 1 root root 4096 Sep 19 14:28 poison
--rw-r--r-- 1 root root 4096 Sep 19 14:28 reclaim_account
--rw-r--r-- 1 root root 4096 Sep 19 14:28 red_zone
--rw-r--r-- 1 root root 4096 Sep 19 14:28 sanity_checks
--rw-r--r-- 1 root root 4096 Sep 19 14:28 shrink
--r--r--r-- 1 root root 4096 Sep 19 14:28 slab_size
--r--r--r-- 1 root root 4096 Sep 19 14:28 slabs
--rw-r--r-- 1 root root 4096 Sep 19 14:28 store_user
--rw-r--r-- 1 root root 4096 Sep 19 14:28 trace
--rw-r--r-- 1 root root    0 Sep 19 14:28 validate
+Yes, it does (depending also on what you mean by 'now').
 
-catting
-
-	alloc_calls
-
-and
-	free_calls
-
-will perform a global scan over all objects to determine the callers. 
-Before we do that we have to flush the per cpu slabs. The trace shows that 
-one of the errors was detected in there and the other one probably later.
-
-So I would think that this is an actual memory corruption issue on your 
-system and the /sys/slab stuff works fine. slabinfo -v will perform a more 
-details scan to help you located the problem.
-
+Greetings,
+Rafael
