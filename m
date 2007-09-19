@@ -1,68 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761088AbXISPKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbXISPKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761088AbXISPKK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 11:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbXISPJ4
+	id S1761287AbXISPKe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 11:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760158AbXISPKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 11:09:56 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:43871 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756465AbXISPJy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 11:09:54 -0400
-Date: Wed, 19 Sep 2007 16:09:47 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andy Fleming <afleming@freescale.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>
-cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] PHYLIB: Fix an interrupt loop potential when halting
-Message-ID: <Pine.LNX.4.64N.0709191548030.24627@blysk.ds.pg.gda.pl>
+	Wed, 19 Sep 2007 11:10:25 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:54742 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760435AbXISPKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 11:10:24 -0400
+Date: Wed, 19 Sep 2007 17:10:20 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Antoine Zen-Ruffinen <antoine.zen@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Real-time features in kernel 2.6.18
+In-Reply-To: <2cbbd8de0709190805g5a85655dg644a8ca7162ee848@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0709191709020.24429@twin.jikos.cz>
+References: <2cbbd8de0709190805g5a85655dg644a8ca7162ee848@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Ensure the PHY_HALTED state is not entered with the IRQ asserted as it 
-could lead to an interrupt loop.
+On Wed, 19 Sep 2007, Antoine Zen-Ruffinen wrote:
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- There is a small window in phy_stop(), where the state of the PHY machine 
-indicates it has been halted, but its interrupt output might still be 
-unmasked.  If an interrupt goes active right at this moment it will loop 
-as the phy_interrupt() handler exits immediately with IRQ_NONE if the 
-halted state is seen.  It is unsafe to extend the phydev spinlock to cover 
-phy_interrupt().  It is safe to swap the order of the actions though as 
-all the competing places to unmask the interrupt output of the PHY, which 
-are phy_change() and phy_timer() are already covered with the lock as is 
-the sequence in question.
+> I heard about new real-time abilities on the 2.6.18 kernel release. 
+> Where can I read more about it ? How to use them ?
 
- Checked with checkpatch.pl and at the run time.
+I don't know how specifically is your question tied to 2.6.18 kernel, but 
+generally it might be a good start to look at 
+http://rt.wiki.kernel.org/index.php/Main_Page
 
- Please apply.
-
-  Maciej
- 
-patch-mips-2.6.23-rc5-20070904-phy-halt-0
-diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/net/phy/phy.c linux-mips-2.6.23-rc5-20070904/drivers/net/phy/phy.c
---- linux-mips-2.6.23-rc5-20070904.macro/drivers/net/phy/phy.c	2007-09-04 04:55:42.000000000 +0000
-+++ linux-mips-2.6.23-rc5-20070904/drivers/net/phy/phy.c	2007-09-16 17:17:20.000000000 +0000
-@@ -722,8 +722,6 @@ void phy_stop(struct phy_device *phydev)
- 	if (PHY_HALTED == phydev->state)
- 		goto out_unlock;
- 
--	phydev->state = PHY_HALTED;
--
- 	if (phydev->irq != PHY_POLL) {
- 		/* Disable PHY Interrupts */
- 		phy_config_interrupt(phydev, PHY_INTERRUPT_DISABLED);
-@@ -732,6 +730,8 @@ void phy_stop(struct phy_device *phydev)
- 		phy_clear_interrupt(phydev);
- 	}
- 
-+	phydev->state = PHY_HALTED;
-+
- out_unlock:
- 	spin_unlock(&phydev->lock);
- 
+-- 
+Jiri Kosina
