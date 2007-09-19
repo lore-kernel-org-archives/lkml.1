@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbXISIew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbXISInE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbXISIew (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 04:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbXISIeo
+	id S1756774AbXISInE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 04:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbXISImz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 04:34:44 -0400
-Received: from hera.cwi.nl ([192.16.191.8]:63101 "EHLO hera.cwi.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754236AbXISIen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 04:34:43 -0400
-Date: Wed, 19 Sep 2007 10:36:41 +0200
-From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>, Jan Kara <jack@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: iso9660 vs udf
-Message-ID: <20070919083640.GC11444@mette>
-References: <20070915214926.GA31416@mette> <20070918144734.GB13304@atrey.karlin.mff.cuni.cz> <alpine.LFD.0.999.0709190534490.26241@enigma.security.iitk.ac.in> <20070919004657.GB11444@mette> <alpine.LFD.0.999.0709190736140.28653@enigma.security.iitk.ac.in>
+	Wed, 19 Sep 2007 04:42:55 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58449 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754213AbXISImy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 04:42:54 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX194ctEN8Zt4liQ067q6jd0FXDQFBXQKeDrueFRHCT
+	2UeQwAxzXtLKJf
+Subject: Re: [git] CFS-devel, group scheduler, fixes
+From: Mike Galbraith <efault@gmx.de>
+To: Tong Li <tong.n.li@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, dimm <dmitry.adamushko@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1190188261.9185.21.camel@Homer.simpson.net>
+References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu>
+	 <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com>
+	 <1190183324.9737.7.camel@Homer.simpson.net>
+	 <1190188261.9185.21.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 10:42:48 +0200
+Message-Id: <1190191368.8687.5.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709190736140.28653@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 08:05:32AM +0530, Satyam Sharma wrote:
+On Wed, 2007-09-19 at 09:51 +0200, Mike Galbraith wrote:
 
-> I was actually asking for the logs explaining why you thought
-> the _kernel_ incorrectly "announced" it as an UDF filesystem.
+> The scenario which was previously cured was this:
+> taskset -c 1 nice -n 0 ./massive_intr 2 9999
+> taskset -c 1 nice -n 5 ./massive_intr 2 9999
+> click link
+> (http://pages.cs.wisc.edu/~shubu/talks/cachescrub-prdc2004.ppt) to bring
+> up browser and OpenOffice Impress.
+> 
+> Xorg (at nice -5 + above scenario) latency samples:
+> se.wait_max              :            57985337
+> se.wait_max              :            25163510
+> se.wait_max              :            37005538
+> se.wait_max              :            66986511
+> se.wait_max              :            53990868
+> se.wait_max              :            80976761
+> se.wait_max              :            96967501
+> se.wait_max              :            80989254
+> se.wait_max              :            53990897
+> se.wait_max              :           181963905
+> se.wait_max              :            85985181
 
-No, the CDROM announces itself as an UDF filesystem.
+To be doubly sure of the effect on the pinned tasks + migrating Xorg
+scenario, I just ran the above test 10 times with virgin devel source.
+Maximum Xorg latency was 20ms.
 
-> Hmm ... those "CD-RTOS", "CD-BRIDGE" and "CDUDF File System - Adaptec Inc"
-> bits are not dmesg output, are they?
-
-No, hexdump of the CDROM.
-
-Andries
+	-Mike
 
