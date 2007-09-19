@@ -1,159 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbXISErr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbXISE56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752151AbXISErr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 00:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbXISErW
+	id S1753921AbXISE56 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 00:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbXISE5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 00:47:22 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:33981 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbXISErC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 00:47:02 -0400
-Subject: [Patch 2/2] Relay reset consumend
-From: "David J. Wilder" <dwilder@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 21:46:59 -0700
-Message-Id: <1190177220.3190.19.camel@lc4eb748232119.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+	Wed, 19 Sep 2007 00:57:49 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50703 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751480AbXISE5s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 00:57:48 -0400
+Message-ID: <46F0AC06.1030208@gmail.com>
+Date: Wed, 19 Sep 2007 06:56:38 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrea Arcangeli <andrea@suse.de>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+References: <20070911060349.993975297@sgi.com> <200709161853.12050.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com> <200709181116.22573.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org> <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org> <46F09A80.8020605@gmail.com> <alpine.LFD.0.999.0709182049480.16478@woody.linux-foundation.org> <46F0A4FB.2020901@gmail.com> <alpine.LFD.0.999.0709182131560.16478@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0709182131560.16478@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows relay channels to be reset i.e. unconsumed.
-Basically allows a 'rewind' function for flight-recorder tracing.
+On 09/19/2007 06:33 AM, Linus Torvalds wrote:
 
-Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
----
- Documentation/filesystems/relay.txt |   11 ++++++
- include/linux/relay.h               |    1 +
- kernel/relay.c                      |   58 ++++++++++++++++++++++++++++
-++++---
- 3 files changed, 65 insertions(+), 5 deletions(-)
+> On Wed, 19 Sep 2007, Rene Herman wrote:
 
-diff --git a/Documentation/filesystems/relay.txt
-b/Documentation/filesystems/relay.txt
-index 18d23f9..d31113a 100644
---- a/Documentation/filesystems/relay.txt
-+++ b/Documentation/filesystems/relay.txt
-@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
-     relay_close(chan)
-     relay_flush(chan)
-     relay_reset(chan)
-+    relay_reset_consumed(chan)
- 
-   channel management typically called on instigation of userspace:
- 
-@@ -452,6 +453,16 @@ state without reallocating channel buffer memory or
-destroying
- existing mappings.  It should however only be called when it's safe to
- do so, i.e. when the channel isn't currently being written to.
- 
-+The read(2) implementation always 'consumes' the bytes read,
-+i.e. those bytes won't be available again to subsequent reads.
-+Certain applications may nonetheless wish to allow the 'consumed' data
-+to be re-read; relay_reset_consumed() is provided for that purpose -
-+it resets the internal consumed counters for all buffers in the
-+channel.  For example, if a first set of reads 'drains' the channel,
-+and then relay_reset_consumed() is called, a second set of reads will
-+get the exact same data (assuming no new data was written between the
-+first set of reads and the second).
-+
- Finally, there are a couple of utility callbacks that can be used for
- different purposes.  buf_mapped() is called whenever a channel buffer
- is mmapped from user space and buf_unmapped() is called when it's
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 6cd8c44..aca45fa 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -175,6 +175,7 @@ extern void relay_subbufs_consumed(struct rchan
-*chan,
- 				   unsigned int cpu,
- 				   size_t consumed);
- extern void relay_reset(struct rchan *chan);
-+extern void relay_reset_consumed(struct rchan *chan);
- extern int relay_buf_full(struct rchan_buf *buf);
- 
- extern size_t relay_switch_subbuf(struct rchan_buf *buf,
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 61134eb..6b55eaa 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -383,6 +383,57 @@ void relay_reset(struct rchan *chan)
- }
- EXPORT_SYMBOL_GPL(relay_reset);
- 
-+/**
-+ *	__relay_reset_consumed - reset a channel buffer's consumed count
-+ *	@buf: the channel buffer
-+ *
-+ *	See relay_reset_consumed for description of effect.
-+ */
-+static inline void __relay_reset_consumed(struct rchan_buf *buf)
-+{
-+	size_t n_subbufs = buf->chan->n_subbufs;
-+	size_t produced = buf->subbufs_produced;
-+	size_t consumed = buf->subbufs_consumed;
-+
-+	if (produced < n_subbufs)
-+		buf->subbufs_consumed = 0;
-+	else {
-+		consumed = produced - n_subbufs;
-+		if (buf->offset)
-+			consumed++;
-+		buf->subbufs_consumed = consumed;
-+	}
-+	buf->bytes_consumed = 0;
-+}
-+
-+/**
-+ *	relay_reset_consumed - reset the channel's consumed counts
-+ *	@chan: the channel
-+ *
-+ *	This has the effect of making all data previously read (and
-+ *	not overwritten by subsequent writes) from a channel available
-+ *	for reading again.
-+ *
-+ *	NOTE: Care should be taken that the channel isn't actually
-+ *	being used by anything when this call is made.
-+ */
-+void relay_reset_consumed(struct rchan *chan)
-+{
-+	unsigned int i;
-+	struct rchan_buf *prev = NULL;
-+
-+	if (!chan)
-+		return;
-+
-+	for (i = 0; i < NR_CPUS; i++) {
-+		if (!chan->buf[i] || chan->buf[i] == prev)
-+			break;
-+		__relay_reset_consumed(chan->buf[i]);
-+		prev = chan->buf[i];
-+	}
-+}
-+EXPORT_SYMBOL_GPL(relay_reset_consumed);
-+
- /*
-  *	relay_open_buf - create a new relay channel buffer
-  *
-@@ -845,11 +896,8 @@ static int relay_file_read_avail(struct rchan_buf
-*buf, size_t read_pos)
- 		return 1;
- 	}
- 
--	if (unlikely(produced - consumed >= n_subbufs)) {
--		consumed = produced - n_subbufs + 1;
--		buf->subbufs_consumed = consumed;
--		buf->bytes_consumed = 0;
--	}
-+	if (unlikely(produced - consumed >= n_subbufs))
-+		__relay_reset_consumed(buf);
- 
- 	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
- 	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
+>> I do feel larger blocksizes continue to make sense in general though. Packet
+>> writing on CD/DVD is a problem already today since the hardware needs 32K or
+>> 64K blocks and I'd expect to see more of these and similiar situations when
+>> flash gets (even) more popular which it sort of inevitably is going to be.
+> 
+> .. that's what scatter-gather exists for.
+> 
+> What's so hard with just realizing that physical memory isn't contiguous?
+> 
+> It's why we have MMU's. It's why we have scatter-gather. 
 
+So if I understood that right, you'd suggest to deal with devices with 
+larger physical blocksizes at some level above the current blocklayer.
+
+Not familiar enough with either block or fs to be able to argue that 
+effectively...
+
+Rene.
 
