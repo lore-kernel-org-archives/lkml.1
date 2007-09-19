@@ -1,47 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761653AbXISQdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbXISQeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761653AbXISQdd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbXISQdX
+	id S1761939AbXISQeS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 12:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757882AbXISQeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:33:23 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:2928 "EHLO baikonur.stro.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754930AbXISQdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:33:22 -0400
-Date: Wed, 19 Sep 2007 18:33:18 +0200
-From: maximilian attems <max@stro.at>
-To: Michael Chan <mchan@broadcom.com>
-Cc: David Miller <davem@davemloft.net>, vda.linux@googlemail.com,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-Subject: Re: bnx2 dirver's firmware images
-Message-ID: <20070919163318.GG6618@stro.at>
-References: <200709181823.26429.vda.linux@googlemail.com> <1190141114.9540.216.camel@dell> <20070918.112337.74737433.davem@davemloft.net> <1190145951.9540.230.camel@dell>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190145951.9540.230.camel@dell>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 19 Sep 2007 12:34:09 -0400
+Received: from mail3.cyberdogtech.com ([209.40.194.40]:44356 "EHLO
+	mail3.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbXISQeI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 12:34:08 -0400
+Date: Wed, 19 Sep 2007 12:34:01 -0400
+From: Matt LaPlante <kernel1@cyberdogtech.com>
+To: linux-kernel@vger.kernel.org
+Subject: A little coding style nugget of joy
+Message-Id: <20070919123401.9369534d.kernel1@cyberdogtech.com>
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007, Michael Chan wrote:
+Since everyone loves random statistics, here are a few gems to give you a break from your busy day:
 
-> The bnx2 firmware changes quite frequently.  A new driver quite often
-> requires new firmware to work correctly.  Splitting them up makes things
-> difficult for the user.
+Number of lines in the 2.6.22 Linux kernel source that include one or more trailing whitespaces: 135209
+Bytes saved by removing said whitespace: 151809
+Lines in the (unified) diff: 455437
+Size of the diff: 15M
+People brave enough to submit the patch: ~0
 
-sorry didn't check, what's the license of the firmware?
- 
-> The firmware in tg3 is a lot more mature and I don't expect it to
-> change.  I think tg3 is better suited for using request_firmware().
+Take care. :)
 
-well thanks that would help us a lot,
-we have to strip the firmware for Debian for the upcoming Lenny release.
-as the shipping exception for the previous 2 releases will not be granted
-again. so a separate firmware would be great. also afaik only some boards
-need it. it is a pressing need for us as tg3 with stripped firmware of
-course doesn't build.
-
--- 
-maks
+-
+Matt
