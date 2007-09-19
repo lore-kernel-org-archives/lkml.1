@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbXISR1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbXISR2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbXISR1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXISR1V
+	id S1758631AbXISR2N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbXISR15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:27:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45655 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007AbXISR1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:27:20 -0400
-Message-ID: <46F15BEE.2050701@redhat.com>
-Date: Wed, 19 Sep 2007 10:27:10 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: follow-up: discrepancy with POSIX
-References: <46F13E8B.4050309@redhat.com>	<p73sl5aveqh.fsf@bingen.suse.de>	<46F15305.2030507@redhat.com> <20070919.095251.45154496.davem@davemloft.net> <46F156A7.5000304@redhat.com>
-In-Reply-To: <46F156A7.5000304@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 19 Sep 2007 13:27:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53855 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752908AbXISR14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:27:56 -0400
+Date: Wed, 19 Sep 2007 18:27:54 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 02/24] rearrange may_open() to be r/o friendly
+Message-ID: <20070919172754.GB20917@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Dave Hansen <haveblue@us.ibm.com>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org
+References: <20070917182718.70494C9B@kernel> <20070917182720.A41D6484@kernel>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070917182720.A41D6484@kernel>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, Sep 17, 2007 at 11:27:20AM -0700, Dave Hansen wrote:
+> 
+> may_open() calls vfs_permission() before it does checks for
+> IS_RDONLY(inode).  It checks _again_ inside of vfs_permission().
+> 
+> The check inside of vfs_permission() is going away eventually.
+> With the mnt_want/drop_write() functions, all of the r/o
+> checks (except for this one) are consistently done before
+> calling permission().  Because of this, I'd like to use
+> permission() to hold a debugging check to make sure that
+> the mnt_want/drop_write() calls are actually being made.
+> 
+> So, to do this:
+> 1. remove the IS_RDONLY() check from permission()
+> 2. enforce that you must mnt_want_write() before
+>    even calling permission()
+> 3. enable a debugging in permission()
+> 
+> We need to rearrange may_open().  Here's the patch.
 
-Ulrich Drepper wrote:
-> Yes, but for IPv4/6 it's not an issue.  Some implementations might
-> handle all-zeros and the spec _currently_ calls for it.  In this case an
-> alignment would be good.
+>  int permission(struct inode *inode, int mask, struct nameidata *nd)
+>  {
+>  	int retval, submask;
+> +	struct vfsmount *mnt = NULL;
+> +
+> +	if (nd)
+> +		mnt = nd->mnt;
+>  
+>  	if (mask & MAY_WRITE) {
+>  		umode_t mode = inode->i_mode;
+> @@ -251,7 +255,7 @@ int permission(struct inode *inode, int 
+>  		 * MAY_EXEC on regular files is denied if the fs is mounted
+>  		 * with the "noexec" flag.
+>  		 */
+> -		if (nd && nd->mnt && (nd->mnt->mnt_flags & MNT_NOEXEC))
+> +		if (mnt && (mnt->mnt_flags & MNT_NOEXEC))
 
-Searching the web shows up this:
+Why is this entirely unrelated cleanup in this patch?
 
-http://developer.apple.com/documentation/Darwin/Reference/ManPages/man2/connect.2.html
-
-
-  Datagram sockets may dissolve the association by connecting to an
-  invalid address, such as a null address or an address with the address
-  family set to AF_UNSPEC (the error EAFNOSUPPORT will be harmlessly
-  returned).
-
-
-I.e., at least Apple implements both variants.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFG8Vvu2ijCOnn/RHQRAsSfAJkBELtiNyul8wMOjVv1x7LfvDWw/ACfR0D0
-cm+k1wfhCsT4GjbF3uac+eY=
-=nksN
------END PGP SIGNATURE-----
+Except for that it looks fine.
