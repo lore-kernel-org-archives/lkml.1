@@ -1,84 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761439AbXISQ7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbXISRDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761439AbXISQ7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 12:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbXISQ7N
+	id S1762038AbXISRDQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbXISRDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 12:59:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:58776 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753143AbXISQ7M (ORCPT
+	Wed, 19 Sep 2007 13:03:06 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53141 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754853AbXISRDF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 12:59:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EpU65VCm1sM2yItfw76QGKypE3StvnWGqI3p4c/exPw1eO4d+qxFiaIaIPBE6jLUWs2HK3367SI7j0Gbh6Sy4ZDahnE4WCPzeLjZRMubpErs6sCJN+U4PID9hA1gG/T2PQB4ygwJmk0JzLOmzJH3iNE0TXul7cDhvI5zFY2OnaA=
-Message-ID: <d120d5000709190959p351c7ba4mdb1eeb433098e0e6@mail.gmail.com>
-Date: Wed, 19 Sep 2007 12:59:10 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs rcu_read_lock()
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>
-In-Reply-To: <20070919153750.GB8666@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Sep 2007 13:03:05 -0400
+Date: Wed, 19 Sep 2007 13:02:22 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 1/11] UML - Eliminate hz()
+Message-ID: <20070919170222.GA10161@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070919104125.286538000@chello.nl>
-	 <20070919105054.332308000@chello.nl>
-	 <d120d5000709190717y69dca8b3tf4a17b920267806b@mail.gmail.com>
-	 <20070919163111.05c18021@twins>
-	 <d120d5000709190816o2899f85fpb8ae88cbf9a18830@mail.gmail.com>
-	 <20070919153750.GB8666@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/19/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> On Wed, Sep 19, 2007 at 11:16:21AM -0400, Dmitry Torokhov wrote:
-> > On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > On Wed, 19 Sep 2007 10:17:25 -0400 "Dmitry Torokhov"
-> > > <dmitry.torokhov@gmail.com> wrote:
-> > >
-> > > > Hi Peter,
-> > > >
-> > > > On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > > > Warn when rcu_dereference() is not used in combination with rcu_read_lock()
-> > > > >
-> > > >
-> > > > According to Paul it is fine to use RCU primitives (when accompanied
-> > > > with proper comments) when the read-size critical section is guarded
-> > > > by spin_lock_irqsave()/spin_lock_irqsrestore() instead of
-> > > > rcu_read_lock()/rcu_read_unlock() and writers synchronize with
-> > > > synchronize_sched(), not synchronize_rcu(). Your patch will trigger
-> > > > warnign on such valid usages.
-> > > >
-> > >
-> > > Sounds fragile to begin with. But you're right in that that is valid
-> > > for Linux as you know it. However in -rt most/all spinlocks are
-> > > converted to sleeping locks. In that case sync_sched() is not enough.
-> >
-> > OK, then it goes beyond RCU... We need to come up with something that
-> > can be used to synchronize with IRQ handlers (quite often in driver
-> > code one needs to be sure that current invocation of IRQ handler
-> > completed before doing something). And once we have it splinlock + RCU
-> > users can just use that method.
->
-> But Peter's approach would not cause a problem here -- you wouldn't be
-> doing an rcu_dereference from within the IRQ handler in this case, right?
->
+Eliminate hz() since its only purpose was to provide a kernel-space
+constant to userspace code.  This can be done instead by providing the
+constant directly through kernel_constants.h.
 
-Yes I do. Along with list_for_each_rcu().
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/include/common-offsets.h |    2 ++
+ arch/um/include/kern_util.h      |    1 -
+ arch/um/kernel/time.c            |    5 -----
+ arch/um/os-Linux/skas/process.c  |    5 +++--
+ arch/um/os-Linux/time.c          |    7 +++----
+ 5 files changed, 8 insertions(+), 12 deletions(-)
 
-> That said, we will need something to handle threaded interrupts, since
-> synchronize_sched() only waits for hardirq, NMI, SMI, etc., and not
-> threaded IRQs.
->
->                                                        Thanx, Paul
->
-
--- 
-Dmitry
+Index: linux-2.6.20/arch/um/include/common-offsets.h
+===================================================================
+--- linux-2.6.20.orig/arch/um/include/common-offsets.h	2007-09-19 12:24:52.000000000 -0400
++++ linux-2.6.20/arch/um/include/common-offsets.h	2007-09-19 12:25:05.000000000 -0400
+@@ -32,3 +32,5 @@ DEFINE(UM_GFP_ATOMIC, GFP_ATOMIC);
+ DEFINE(crypto_tfm_ctx_offset, offsetof(struct crypto_tfm, __crt_ctx));
+ 
+ DEFINE(UM_THREAD_SIZE, THREAD_SIZE);
++
++DEFINE(UM_HZ, HZ);
+Index: linux-2.6.20/arch/um/include/kern_util.h
+===================================================================
+--- linux-2.6.20.orig/arch/um/include/kern_util.h	2007-09-19 12:24:52.000000000 -0400
++++ linux-2.6.20/arch/um/include/kern_util.h	2007-09-19 12:25:05.000000000 -0400
+@@ -64,7 +64,6 @@ extern void paging_init(void);
+ extern void init_flush_vm(void);
+ extern void *syscall_sp(void *t);
+ extern void syscall_trace(struct uml_pt_regs *regs, int entryexit);
+-extern int hz(void);
+ extern unsigned int do_IRQ(int irq, struct uml_pt_regs *regs);
+ extern void interrupt_end(void);
+ extern void initial_thread_cb(void (*proc)(void *), void *arg);
+Index: linux-2.6.20/arch/um/kernel/time.c
+===================================================================
+--- linux-2.6.20.orig/arch/um/kernel/time.c	2007-09-19 12:24:52.000000000 -0400
++++ linux-2.6.20/arch/um/kernel/time.c	2007-09-19 12:25:05.000000000 -0400
+@@ -11,11 +11,6 @@
+ #include "kern_util.h"
+ #include "os.h"
+ 
+-int hz(void)
+-{
+-	return HZ;
+-}
+-
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+  */
+Index: linux-2.6.20/arch/um/os-Linux/skas/process.c
+===================================================================
+--- linux-2.6.20.orig/arch/um/os-Linux/skas/process.c	2007-09-19 12:24:52.000000000 -0400
++++ linux-2.6.20/arch/um/os-Linux/skas/process.c	2007-09-19 12:25:05.000000000 -0400
+@@ -392,8 +392,9 @@ int copy_context_skas0(unsigned long new
+ 	*data = ((struct stub_data) { .offset	= MMAP_OFFSET(new_offset),
+ 				      .fd	= new_fd,
+ 				      .timer    = ((struct itimerval)
+-					            { { 0, 1000000 / hz() },
+-						      { 0, 1000000 / hz() }})});
++					            { { 0, 1000000 / UM_HZ },
++						      { 0, 1000000 / UM_HZ }})
++				 });
+ 	err = ptrace_setregs(pid, thread_regs);
+ 	if (err < 0)
+ 		panic("copy_context_skas0 : PTRACE_SETREGS failed, "
+Index: linux-2.6.20/arch/um/os-Linux/time.c
+===================================================================
+--- linux-2.6.20.orig/arch/um/os-Linux/time.c	2007-09-19 12:24:52.000000000 -0400
++++ linux-2.6.20/arch/um/os-Linux/time.c	2007-09-19 12:25:05.000000000 -0400
+@@ -8,14 +8,13 @@
+ #include <signal.h>
+ #include <time.h>
+ #include <sys/time.h>
+-#include "kern_util.h"
+ #include "kern_constants.h"
+ #include "os.h"
+ #include "user.h"
+ 
+ int set_interval(int is_virtual)
+ {
+-	int usec = 1000000/hz();
++	int usec = 1000000/UM_HZ;
+ 	int timer_type = is_virtual ? ITIMER_VIRTUAL : ITIMER_REAL;
+ 	struct itimerval interval = ((struct itimerval) { { 0, usec },
+ 							  { 0, usec } });
+@@ -43,8 +42,8 @@ void disable_timer(void)
+ void switch_timers(int to_real)
+ {
+ 	struct itimerval disable = ((struct itimerval) { { 0, 0 }, { 0, 0 }});
+-	struct itimerval enable = ((struct itimerval) { { 0, 1000000/hz() },
+-							{ 0, 1000000/hz() }});
++	struct itimerval enable = ((struct itimerval) { { 0, 1000000/UM_HZ },
++							{ 0, 1000000/UM_HZ }});
+ 	int old, new;
+ 
+ 	if (to_real) {
