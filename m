@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbXISHYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbXISHcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535AbXISHYm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 03:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXISHYe
+	id S1755653AbXISHcq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 03:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXISHci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 03:24:34 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:43931 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbXISHYd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 03:24:33 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <alpine.DEB.0.9999.0709182329110.6251@chino.kir.corp.google.com>
-References: <20070919033605.785839297@sgi.com> <20070919033641.009931707@sgi.com> <alpine.DEB.0.9999.0709182329110.6251@chino.kir.corp.google.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E1A595D3-FD5B-44EA-A99D-BB581642F0E8@cam.ac.uk>
-Cc: Christoph Lameter <clameter@sgi.com>, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [03/17] is_vmalloc_addr(): Check if an address is within the vmalloc boundaries
-Date: Wed, 19 Sep 2007 08:24:24 +0100
-To: David Rientjes <rientjes@google.com>
-X-Mailer: Apple Mail (2.752.3)
+	Wed, 19 Sep 2007 03:32:38 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:45876 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752072AbXISHci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 03:32:38 -0400
+Date: Wed, 19 Sep 2007 09:34:02 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1 - Mostly working, with a kbuild oddity
+Message-ID: <20070919073402.GA32218@uranus.ravnborg.org>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <7319.1190143977@turing-police.cc.vt.edu> <20070918203239.GB27836@uranus.ravnborg.org> <15592.1190153008@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <15592.1190153008@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19 Sep 2007, at 07:32, David Rientjes wrote:
-> On Tue, 18 Sep 2007, Christoph Lameter wrote:
->> Index: linux-2.6/include/linux/mm.h
->> ===================================================================
->> --- linux-2.6.orig/include/linux/mm.h	2007-09-17  
->> 21:46:06.000000000 -0700
->> +++ linux-2.6/include/linux/mm.h	2007-09-17 23:56:54.000000000 -0700
->> @@ -1158,6 +1158,14 @@ static inline unsigned long vma_pages(st
->>  	return (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
->>  }
->>
->> +/* Determine if an address is within the vmalloc range */
->> +static inline int is_vmalloc_addr(const void *x)
->> +{
->> +	unsigned long addr = (unsigned long)x;
->> +
->> +	return addr >= VMALLOC_START && addr < VMALLOC_END;
->> +}
->
-> This breaks on i386 because VMALLOC_END is defined in terms of  
-> PKMAP_BASE
-> in the CONFIG_HIGHMEM case.
+On Tue, Sep 18, 2007 at 06:03:28PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 18 Sep 2007 22:32:39 +0200, Sam Ravnborg said:
+> 
+> > So the external module were fiddeling with CFLAGS which is wrong.
+> > Yes - it worked before by accident.
+> 
+> OK, I can deal with that diagnosis. ;)
+> 
+> > Pelase ask the author of the module to either fix it or even better
+> > submit the driver for inclusion because then we will find it during
+> > the review pahse.
+> 
+> I'll take it up with the author, and see what happens...
+> 
+> > But anyway - thanks for reporting an issue related to an external module.
+> 
+> I had a few issues with some other modules, but they're evil binaries so
+> I'm taking those up directly with the companies involved.. ;)
 
-That is incorrect.  This works perfectly on i386 and on ALL  
-architectures supported by Linux.  A lot of places in the kernel  
-already do this today (mostly hand coded though, eg XFS and NTFS)...
+How annoying is this - and is this the CFLAGS thing again?
+We could introduce some workaraound so we continue to respect
+the CFLAGS settings in a Makefile for a while.
+But at the end of the day we should convince the external module people
+to follow the Kbuild docs. So it will then be temporary.
 
-There even is such a function already in mm/ 
-sparse.c::vaddr_in_vmalloc_area() with pretty identical content.  I  
-would suggest either this new inline should go away completely and  
-use the existing one and export it or the existing one should go away  
-and the inline should be used.  It seems silly to have two functions  
-with different names doing exactly the same thing!
+Opinion?
 
-Best regards,
-
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
-
+	Sam
