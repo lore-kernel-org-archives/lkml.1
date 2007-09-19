@@ -1,143 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbXISFK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbXISFRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754706AbXISFK2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 01:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbXISFKL
+	id S1754737AbXISFRV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 01:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbXISFRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 01:10:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58393 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751807AbXISFKI (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 01:10:08 -0400
-Date: Wed, 19 Sep 2007 15:09:10 +1000
-From: David Chinner <dgc@sgi.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nathan Scott <nscott@aconex.com>, Andrea Arcangeli <andrea@suse.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070919050910.GK995458@sgi.com>
-References: <20070911060349.993975297@sgi.com> <200709161853.12050.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com> <200709181116.22573.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org> <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org> <1190163523.24970.378.camel@edge.yarra.acx> <alpine.LFD.0.999.0709181803020.16478@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709181803020.16478@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 19 Sep 2007 01:17:13 -0400
+Received: from smtpoutm.mac.com ([17.148.16.71]:58828 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751180AbXISFRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 01:17:12 -0400
+In-Reply-To: <alpine.LFD.0.999.0709190503250.26241@enigma.security.iitk.ac.in>
+References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr> <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org> <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in> <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com> <1189121714.6672.38.camel@heimdal.trondhjem.org> <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com> <alpine.LFD.0.999.0709190503250.26241@enigma.security.iitk.ac.in>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A5318C25-7864-453A-B09A-00232D9EAF2A@mac.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: NFS4 authentification / fsuid
+Date: Wed, 19 Sep 2007 01:16:28 -0400
+To: Satyam Sharma <satyam@infradead.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 06:06:52PM -0700, Linus Torvalds wrote:
-> >						 especially as the Linux
-> > kernel limitations in this area are well known.  There's no "16K mess"
-> > that SGI is trying to clean up here (and SGI have offered both IA64 and
-> > x86_64 systems for some time now, so not sure how you came up with that
-> > whacko theory).
-> 
-> Well, if that is the case, then I vote that we drop the whole patch-series 
-> entirely. It clearly has no reason for existing at all.
-> 
-> There is *no* valid reason for 16kB blocksizes unless you have legacy 
-> issues.
+On Sep 18, 2007, at 19:44:59, Satyam Sharma wrote:
+> On Thu, 6 Sep 2007, Kyle Moffett wrote:
+>> On Sep 06, 2007, at 19:35:14, Trond Myklebust wrote:
+>>> On Thu, 2007-09-06 at 19:30 -0400, Kyle Moffett wrote:
+>>>> On Sep 06, 2007, at 11:06:16, J. Bruce Fields wrote:
+>>>>> The question of how to protect against someone with *physical*  
+>>>>> access certainly is more difficult, but surely that's a  
+>>>>> separate problem.
+>>>>
+>>>> Actually, that's a fairly simple problem (barring disassembling  
+>>>> the system and attaching a hardware debugger).  You encrypt the  
+>>>> root filesystem and  require a password to boot (See: LUKS).   
+>>>> Debian has built-in support for installing onto fs-on-LVM-on- 
+>>>> crypt-on-RAID, and it works quite well on all the laptops I use  
+>>>> regularly.  It's not even much of a speed penalty; once you take  
+>>>> the overhead of hitting a 5400RPM laptop drive you can chew  
+>>>> thousands of cycles of CPU without anybody noticing (much).   
+>>>> Then all you have to do is burn a copy of your /boot with  
+>>>> bootloader onto some read-only media (like a finalized CDROM/ 
+>>>> DVDROM) and you're set to go.
+>>>
+>>> Disconnect battery, and watch boot password go 'poof!'.
+>>
+>> Umm, I did say "encrypt the root filesystem", didn't I?  Booting  
+>> my laptops
+>
+> The whole *point* here is to secure against physical access -- then  
+> how can you assume "barring disassembling the system"? If you're  
+> not considering attacks such as those, then how _are_ you solving  
+> the physical access problem in the first place? :-)
 
-Ok, let's step back for a moment and look at a basic, fundamental
-constraint of disks - seek capacity. A decade ago, a terabyte of
-filesystem had 30 disks behind it - a seek capacity of about
-6000 seeks/s. Nowdays, that's a single disk with a seek
-capacity of about 200/s. We're going *rapidly* backwards in
-terms of seek capacity per terabyte of storage.
+Security is about fractional reduction of risk, and anybody who tells  
+you otherwise is either ignorant or lying through their teeth.  There  
+are *multiple* aspects of "physical access"; one of those is access  
+while the box is off and no data resident in volatile memory, which  
+is the easy case.  Basically there you can just encrypt the non- 
+volatile storage.  If the system is *on* and has unencrypted data in  
+memory (such as suspend-to-RAM for example) then you *HAVE* to ensure  
+that it can't be easily disassembled and a hardware debugger  
+attached; there is no way around that very fundamental limitation.
 
-Now fill that terabyte of storage and index it in the most efficient
-way - let's say btrees are used because lots of filesystems use
-them. Hence the depth of the tree is roughly O((log n)/m) where m is
-a factor of the btree block size.  Effectively, btree depth = seek
-count on lookup of any object.
+Basically if the key is resident and unencrypted as is necessary to  
+*USE* the system, then no amount of hardware is going to *prevent* a  
+dedicated attacker from getting at it unless you make it so  
+unportable that you don't have to worry about somebody carrying it  
+off in the first place.  Typical mechanisms to increase the time and  
+effort to break into a device include wiring the entire enclosure  
+with extremely thin filament wires and detecting automatically wiping  
+the system upon any variation in a small flow of current through said  
+filament.
 
-When the filesystem had a capacity of 6,000 seeks/s, we didn't
-really care if the indexes used 4k blocks or not - the storage
-subsystem had an excess of seek capacity to deal with
-less-than-optimal indexing. Now we have over an order of magnitude
-less seeks to expend in index operations *for the same amount of
-data* so we are really starting to care about minimising the
-number of seeks in our indexing mechanisms and allocations.
+>> this way follows this procedure:
+>>  1) Enter BIOS boot menu
+>>  2) Insert /boot CDROM
+>>  3) Select the "CDROM" entry
+>>  4) Wait for kernel to start and run through initramfs
+>>  5) Type password into the initramfs prompt so that it can DECRYPT  
+>> THE ROOT FILESYSTEM
+>>  6) Continue to boot the system.
+>>
+>> Under this setup, tinkering with my BIOS does virtually nothing;  
+>> the only avenues of attack are strictly of the "Install a hardware  
+>> keylogger" variety.
+>
+> Doesn't flashing/replacing your BIOS firmware/chip count as  
+> tinkering?  Then I don't really need a "hardware keylogger", do I ...
 
-We can play tricks in index compaction to reduce the number of
-interior nodes of the tree (like hashed indexing in the XFS ext3
-htree directories) but that still only gets us so far in reducing
-seeks and doesn't help at all for tree traversals. That leaves us
-with the btree block size as the only factor we can further vary to
-reduce the depth of the tree. i.e. "m".
+Ok, so you are saying your plan of attack on this system would be:
+   1)  Steal the laptop such that I don't notice it has been stolen
+   2)  Open it up
+   3)  Replace the very-vendor-specific BIOS chip with a reflashed  
+one with sufficient storage to do all the things the old BIOS could  
+*AND* have enough storage for an entire replacement kernel binary  
+with a built-in keylogger, as well as some storage for the logged  
+password
+   4)  Return the laptop, again such that I don't notice it has been  
+missing
+   5)  Wait for me to boot and type my password
+   6)  Somehow recover the laptop *yet* *again* to get the password  
+back off of it and decrypt the disk
 
-So we want to increase the filesystem block size it improve the
-efficiency of our indexing. That improvement in efficiency
-translates directly into better performance on seek constrained
-storage subsystems.
+Yes it "can be done", but so can dumping the firmware for an iPod out  
+through the built-in piezo clicker[1].  USE SOME COMMON SENSE HERE  
+PEOPLE!!!  The only "unbreakable" computer is one always disconnected  
+and off under armed guard in a bank vault, and even then it's only as  
+secure as the bank in which it is stored (which get broken into on  
+occasion).
 
-The problem is this: to alter the fundamental block size of the
-filesystem we also need to alter the data block size and that is
-exactly the piece that linux does not support right now.  So while
-we have the capability to use large block sizes in certain
-filesystems, we can't use that capability until the data path
-supports it.
+I am assuming that if the laptop has sufficiently important data on  
+it to warrant the above steps then I am also clueful enough to:
+   (A)  Not carry the laptop around unsecured areas,
+   (B)  Keep a close enough eye on it and be aware that it's gone by  
+the time they get to step 2, OR
+   (C)  Pay somebody to build me a better physical chassis for my laptop
 
-To summarise, large block size support in the filesystem is not
-about "legacy" issues. It's about trying to cope with the rapid
-expansion of storage capabilities of modern hardware where we have
-to index much, much more data with a corresponding decrease in
-the seek capability of the hardware.
+We are talking about *STANDARD* laptop systems with reasonably alert  
+users.  If the user doesn't know how to properly protect the stuff on  
+the laptop then they probably don't know how to properly protect the  
+other copy in their heads, either.  Besides, if some government  
+wanted the data on your laptop that bad they'd just pick you up in  
+the middle of the night and torture your password out of you.
 
-> So get your stories straight, people.
+On Sep 18, 2007, at 19:48:16, Satyam Sharma wrote:
+> On Fri, 7 Sep 2007, Kyle Moffett wrote:
+>> So you can't draw any relationships between "Protect the end-user"  
+>> with "Protect the device FROM the end-user", the former can be  
+>> done very reliably to whatever level of risk-reduction you need  
+>> and the latter can't practically be done at all.
+>
+> Well, you're the one who called solving the physical access problem  
+> "easy" here ... :-)
 
-Ok, so let's set the record straight. There were 3 justifications
-for using *large pages* to *support* large filesystem block sizes
-The justifications for the variable order page cache with large
-pages were:
-
-	1. little code change needed in the filesystems
-		-> still true
-
-	2. Increased I/O sizes on 4k page machines (the "SCSI
-	   controller problem")
-		-> redundant thanks to Jens Axboe's quick work
-
-	3. avoiding the need for vmap() as it has great
-	   overhead and does not scale
-	   	-> Nick is starting to work on that and has
-		   already had good results.
-
-Everyone seems to be focussing on #2 as the entire justification for
-large block sizes in filesystems and that this is an "SGI" problem.
-Nothing could be further from the truth - the truth is that large
-pages solved multiple problems in one go. We now have a different,
-better solution #2, so please, please stop using that as some
-justification for claiming filesystems don't need large block sizes.
-
-However, all this doesn't change the fact that we have a major storage
-scalability crunch coming in the next few years. Disk capacity is
-likely to continue to double every 12 months for the next 3 or 4
-years. Large block size support is only one mechanism we need to
-help cope with this trend.
-
-The variable order page cache with large pages was a means to an end
-- it's not the only solution to this problem and I'm extremely happy
-to see that there is progress on multiple fronts.  That's the
-strength of the Linux community showing through.  In the end, I
-really don't care how we end up supporting large filesystem block
-sizes in the page cache - all I care about is that we end up
-supporting it as efficiently and generically as we possibly can.
+If your system equates end-user with attacker then you are *screwed*  
+regardless!  If you give the end-user the tools that they need to use  
+the system, then they can just as easily hack into it, *END* *OF*  
+*STORY*.  See   The _only_ way to protect data on a piece of hardware  
+is with the _assistance_ of the end-user; they have to be alert and  
+aware of potential threats and act to protect from them.
 
 Cheers,
+Kyle Moffett
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+[1] http://hardware.slashdot.org/article.pl?sid=05/01/29/2017244
