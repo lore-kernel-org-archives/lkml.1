@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762875AbXISShi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbXISSjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762875AbXISShi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 14:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762398AbXISShZ
+	id S1762326AbXISSjb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 14:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbXISSjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 14:37:25 -0400
-Received: from rgminet02.oracle.com ([148.87.113.119]:54865 "EHLO
-	rgminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762655AbXISShX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 14:37:23 -0400
-X-Greylist: delayed 4759 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Sep 2007 14:37:23 EDT
-Date: Wed, 19 Sep 2007 09:52:23 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: David Wilder <dwilder@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Patch 1/2] Trace code and documentation (updated)
-Message-Id: <20070919095223.83bd8226.randy.dunlap@oracle.com>
-In-Reply-To: <20070919162018.GA16237@infradead.org>
-References: <1190177218.3190.18.camel@lc4eb748232119.ibm.com>
-	<p736427vz00.fsf@bingen.suse.de>
-	<46F12ED7.3060605@us.ibm.com>
-	<20070919162018.GA16237@infradead.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Sep 2007 14:39:21 -0400
+Received: from palrel10.hp.com ([156.153.255.245]:49825 "EHLO palrel10.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753718AbXISSjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 14:39:20 -0400
+Message-ID: <46F16CC1.9090302@hp.com>
+Date: Wed, 19 Sep 2007 11:38:57 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, netdev <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: follow-up: discrepancy with POSIX
+References: <46F13E8B.4050309@redhat.com> <p73sl5aveqh.fsf@bingen.suse.de>	<46F15305.2030507@redhat.com>	<20070919172653.GB18045@one.firstfloor.org>	<46F1608E.7060908@redhat.com>	<20070919175700.GC18045@one.firstfloor.org>	<46F16418.3070706@redhat.com> <20070919183004.GA18707@one.firstfloor.org>
+In-Reply-To: <20070919183004.GA18707@one.firstfloor.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 17:20:18 +0100 Christoph Hellwig wrote:
-
-> On Wed, Sep 19, 2007 at 07:14:47AM -0700, David Wilder wrote:
-> > I agree with you; however, this is in the example code in the 
-> > Documentation directory,  It is not part of the trace code.  The example 
-> > was just meant to be a demonstration of how the interface works.
+Andi Kleen wrote:
+> On Wed, Sep 19, 2007 at 11:02:00AM -0700, Ulrich Drepper wrote:
 > 
-> So we tell people to write bad code?  Wonderful..
+>>>on UDP/RAW and it's certainly possible to connect() to that. 
+>>
+>>Where do you get this from?  And where is this implemented?  I don't
 > 
-> And while we're at it can we please stop the dumb idea to put example
-> code into Documentation?  If example code doesn't get build during a
-> make oldconfig it will bitrot real fast and not be useful at all.
+> 
+> Sorry it's actually loopback, not broadcast as implemented in Linux.
+> In Linux it's implemented in ip_route_output_slow(). Essentially
+> converted to 127.0.0.1
+> 
+> I think it's traditional BSD behaviour but couldn't find it on
+> a quick look in FreeBSD source (but haven't looked very intensively) 
 
+One has to set their way-back machine pretty far back to find the *BSD 
+bits which used 0.0.0.0 as the "all nets, all subnets" (to mis-use a 
+term) broadcast IPv4 address when sending.  Perhaps as far back as the 
+time before HP-UX 7 or SunOS4.  The bit errors in my dimm memory get 
+pretty dense that far back...
 
-That's why they exmaples should not be hidden/embedded in .txt files;
-they should be standalone .c files with makefiles etc.
+It has hung-on in various places (stacks) as an "accepted" broadcast IP 
+in the receive path, but not the send path for quite possibly decades now.
 
-I've built and corrected several of them, but they would be more
-likely to be kept up-to-date if they are more available in standalone
-files.
-
-and they can be taken out of Documentation/ whenever they go into
-util-linux-ng or elsewhere.  Let's get the order correct.
-
----
-~Randy
+rick jones
