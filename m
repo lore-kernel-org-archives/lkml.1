@@ -1,59 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbXISTKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751722AbXISTQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752785AbXISTKi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 15:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbXISTKb
+	id S1751722AbXISTQP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 15:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbXISTP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 15:10:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59386 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750765AbXISTKa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 15:10:30 -0400
-Date: Wed, 19 Sep 2007 12:10:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Message-Id: <20070919121017.0cbcbc30.akpm@linux-foundation.org>
-In-Reply-To: <46F13938.1070709@gmail.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<46F10B69.5070008@gmail.com>
-	<46F10DCB.1090302@gmail.com>
-	<46F13938.1070709@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 19 Sep 2007 15:15:58 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:43868 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbXISTP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 15:15:56 -0400
+Subject: Re: [PATCH] JBD slab cleanups
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070918191920.a2130a3c.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
+	 <20070902152801.GA19962@infradead.org>
+	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
+	 <20070903134043.GB28962@infradead.org>
+	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
+	 <20070903193308.GA7771@infradead.org>
+	 <1189796027.3841.6.camel@localhost.localdomain>
+	 <1190057391.3845.22.camel@localhost.localdomain>
+	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
+	 <1190069851.6725.6.camel@localhost.localdomain>
+	 <20070918090407.GA671@infradead.org>
+	 <1190133347.3819.6.camel@localhost.localdomain>
+	 <1190138690.6528.23.camel@norville.austin.ibm.com>
+	 <1190163601.3819.15.camel@localhost.localdomain>
+	 <20070918191920.a2130a3c.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 19 Sep 2007 12:15:52 -0700
+Message-Id: <1190229352.4318.12.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 16:59:04 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> ---------8<---------8<---------8<---------8<---------8<---------8<----
-> That means
-> void agp_generic_destroy_page(void *addr)
-> {
->         struct page *page;
+On Tue, 2007-09-18 at 19:19 -0700, Andrew Morton wrote:
+> On Tue, 18 Sep 2007 18:00:01 -0700 Mingming Cao <cmm@us.ibm.com> wrote:
 > 
->         if (addr == NULL)
->                 return;
+> > JBD: Replace slab allocations with page cache allocations
+> > 
+> > JBD allocate memory for committed_data and frozen_data from slab. However
+> > JBD should not pass slab pages down to the block layer. Use page allocator pages instead. This will also prepare JBD for the large blocksize patchset.
+> > 
+> > 
+> > Also this patch cleans up jbd_kmalloc and replace it with kmalloc directly
 > 
->         page = virt_to_page(addr);
-> (1)     unmap_page_from_agp(page);
->         put_page(page);
-> (2)     free_page((unsigned long)addr);
->         atomic_dec(&agp_bridge->current_memory_agp);
-> }
+> __GFP_NOFAIL should only be used when we have no way of recovering
+> from failure.  The allocation in journal_init_common() (at least)
+> _can_ recover and hence really shouldn't be using __GFP_NOFAIL.
 > 
-> (1) unmap_page_from_agp -> change_page_attr -> change_page_attr_addr ->
-> __change_page_attr -> save_page -> list_add(&fpage->lru, &deferred_pages);
-> (2) free_page -> free_pages -> __free_pages -> free_hot_page ->
-> free_hot_cold_page -> list_add(&page->lru, &pcp->list);
+> (Actually, nothing in the kernel should be using __GFP_NOFAIL.  It is 
+> there as a marker which says "we really shouldn't be doing this but
+> we don't know how to fix it").
+> 
+> So sometime it'd be good if you could review all the __GFP_NOFAILs in
+> there and see if we can remove some, thanks.
 
-that'll hurt.
+Here is the patch to clean up __GFP_NOFAIL flag in jbd/jbd2. In all
+cases except one handles memory allocation failure so I get rid of those
+GFP_NOFAIL flags.
 
-> any ideas how to fix this?
+Also, shouldn't we use GFP_KERNEL instead of GFP_NOFS flag for kmalloc
+in jbd/jbd2? I will send a separate patch to cleanup that.
 
-We should hold a single reference on the page for its membership in
-deferred_pages.
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+---
+ fs/jbd/journal.c      |    2 +-
+ fs/jbd/transaction.c  |    3 +--
+ fs/jbd2/journal.c     |    2 +-
+ fs/jbd2/transaction.c |    3 +--
+ 4 files changed, 4 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.23-rc6/fs/jbd/journal.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/jbd/journal.c	2007-09-19 11:47:58.000000000 -0700
++++ linux-2.6.23-rc6/fs/jbd/journal.c	2007-09-19 11:48:40.000000000 -0700
+@@ -653,7 +653,7 @@ static journal_t * journal_init_common (
+ 	journal_t *journal;
+ 	int err;
+ 
+-	journal = kmalloc(sizeof(*journal), GFP_KERNEL|__GFP_NOFAIL);
++	journal = kmalloc(sizeof(*journal), GFP_KERNEL);
+ 	if (!journal)
+ 		goto fail;
+ 	memset(journal, 0, sizeof(*journal));
+Index: linux-2.6.23-rc6/fs/jbd/transaction.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/jbd/transaction.c	2007-09-19 11:48:05.000000000 -0700
++++ linux-2.6.23-rc6/fs/jbd/transaction.c	2007-09-19 11:49:10.000000000 -0700
+@@ -96,8 +96,7 @@ static int start_this_handle(journal_t *
+ 
+ alloc_transaction:
+ 	if (!journal->j_running_transaction) {
+-		new_transaction = kmalloc(sizeof(*new_transaction),
+-						GFP_NOFS|__GFP_NOFAIL);
++		new_transaction = kmalloc(sizeof(*new_transaction), GFP_NOFS);
+ 		if (!new_transaction) {
+ 			ret = -ENOMEM;
+ 			goto out;
+Index: linux-2.6.23-rc6/fs/jbd2/journal.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/jbd2/journal.c	2007-09-19 11:48:14.000000000 -0700
++++ linux-2.6.23-rc6/fs/jbd2/journal.c	2007-09-19 11:49:46.000000000 -0700
+@@ -654,7 +654,7 @@ static journal_t * journal_init_common (
+ 	journal_t *journal;
+ 	int err;
+ 
+-	journal = kmalloc(sizeof(*journal), GFP_KERNEL|__GFP_NOFAIL);
++	journal = kmalloc(sizeof(*journal), GFP_KERNEL);
+ 	if (!journal)
+ 		goto fail;
+ 	memset(journal, 0, sizeof(*journal));
+Index: linux-2.6.23-rc6/fs/jbd2/transaction.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/jbd2/transaction.c	2007-09-19 11:48:08.000000000 -0700
++++ linux-2.6.23-rc6/fs/jbd2/transaction.c	2007-09-19 11:50:12.000000000 -0700
+@@ -96,8 +96,7 @@ static int start_this_handle(journal_t *
+ 
+ alloc_transaction:
+ 	if (!journal->j_running_transaction) {
+-		new_transaction = kmalloc(sizeof(*new_transaction),
+-						GFP_NOFS|__GFP_NOFAIL);
++		new_transaction = kmalloc(sizeof(*new_transaction), GFP_NOFS);
+ 		if (!new_transaction) {
+ 			ret = -ENOMEM;
+ 			goto out;
+
+
+
+
