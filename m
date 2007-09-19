@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXISRQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbXISRS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbXISRQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbXISRQd
+	id S1755653AbXISRS5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbXISRSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:16:33 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:9666 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbXISRQc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:16:32 -0400
-X-IronPort-AV: E=Sophos;i="4.20,274,1186383600"; 
-   d="scan'208";a="400264591"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 2/3] IB/umem: Add hugetlb flag to struct ib_umem
-X-Message-Flag: Warning: May contain useful information
-References: <200709131814.13937.fenkes@de.ibm.com>
-	<200709131815.29040.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 19 Sep 2007 10:16:07 -0700
-In-Reply-To: <200709131815.29040.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 13 Sep 2007 18:15:28 +0200")
-Message-ID: <adatzpqinjc.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
+	Wed, 19 Sep 2007 13:18:47 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:4161 "EHLO baikonur.stro.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839AbXISRSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:18:46 -0400
+Date: Wed, 19 Sep 2007 19:18:41 +0200
+From: maximilian attems <max@stro.at>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
+       mchan@broadcom.com, vda.linux@googlemail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: bnx2 dirver's firmware images
+Message-ID: <20070919171841.GT19918@baikonur.stro.at>
+References: <46F01BDE.6020902@zytor.com> <20070918.122034.83625273.davem@davemloft.net> <46F02688.8030507@zytor.com> <20070918.130810.78161599.davem@davemloft.net> <20070918203530.GC27836@uranus.ravnborg.org> <20070919171033.GH6618@stro.at> <46F15886.6040701@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Sep 2007 17:16:07.0788 (UTC) FILETIME=[C46462C0:01C7FAE0]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <46F15886.6040701@zytor.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This looks realy nice to me... a very clean patch.
+On Wed, Sep 19, 2007 at 10:12:38AM -0700, H. Peter Anvin wrote:
+> 
+> Could you give a concrete example?
+> 
+> 	-hpa
 
-I'll add this to 2.6.24 unless someone objects soon...
+max@dual:~/src/klibc$ touch usr/utils/mount_main.c
+max@dual:~/src/klibc$ make
+  KLIBCCC usr/utils/mount_main.o
+  KLIBCLD usr/utils/static/halt
+  LN      usr/utils/static/reboot
+  LN      usr/utils/static/poweroff
+  KLIBCLD usr/utils/shared/halt
+  LN      usr/utils/shared/reboot
+  LN      usr/utils/shared/poweroff
+  KLIBCLD usr/utils/static/chroot
+  KLIBCLD usr/utils/static/dd
+  <snipp>
+
+-- 
+maks
