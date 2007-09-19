@@ -1,103 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbXISF4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbXISF6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753766AbXISF4b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 01:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXISF4X
+	id S1754714AbXISF6q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 01:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXISF6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 01:56:23 -0400
-Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:44800 "HELO
-	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751432AbXISF4W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 01:56:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ffmaOYmSDYHqji+IEd0txPRfqXyoG0y1O54UJEhpz0XBPVid/8hctHP5ObvLZKxSxtuubdgvWLPyO5g9W4asvkwxmI3DeRqJfLwhscetarDAtxdi0Dx92kJV5YC0JNkz8AeQqojAMsdZK15X339myAgIyD2GG/j6dEBQXexqdtw=  ;
-X-YMail-OSG: RjgSbTIVM1mnR1HJC..4mc9YuO5GGwbNPCTFgitw1RjkA_LzWZ.XZLFgI_jzUnlKjEoDdAcf0w--
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Two identical entries for "rtc" in /proc/devices
-Date: Tue, 18 Sep 2007 22:21:14 -0700
-User-Agent: KMail/1.9.6
-Cc: cebbert@redhat.com, linux-kernel@vger.kernel.org
-References: <46E07DDA.2040907@redhat.com> <20070915185020.16BB51F9EAA@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20070915221015.02aad5ea.akpm@linux-foundation.org>
-In-Reply-To: <20070915221015.02aad5ea.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 19 Sep 2007 01:58:39 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:33102 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbXISF6i (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 01:58:38 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Combine instrumentation menus in kernel/Kconfig.instrumentation
+In-Reply-To: Your message of "Tue, 18 Sep 2007 21:06:28 EDT."
+             <20070919010627.GA24174@Krystal>
+From: Valdis.Kletnieks@vt.edu
+References: <20070918211259.GA14927@Krystal> <14754.1190151939@turing-police.cc.vt.edu>
+            <20070919010627.GA24174@Krystal>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1190181478_4811P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709182221.14751.david-b@pacbell.net>
+Date: Wed, 19 Sep 2007 01:57:58 -0400
+Message-ID: <3956.1190181478@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 September 2007, Andrew Morton wrote:
-> On Sat, 15 Sep 2007 11:50:21 -0700 David Brownell <david-b@pacbell.net> wrote:
+--==_Exmh_1190181478_4811P
+Content-Type: text/plain; charset=us-ascii
+
+On Tue, 18 Sep 2007 21:06:28 EDT, Mathieu Desnoyers said:
+ 
+> * Valdis.Kletnieks@vt.edu (Valdis.Kletnieks@vt.edu) wrote:
+> > OK, I'll bite - given the mention of 'debugging' there, do we want to go for
+> > broke and *also* suck in the 'Kernel Hacking' menu as well?
 > 
-> > > On Thu, 06 Sep 2007 18:23:22 -0400 Chuck Ebbert <cebbert@redhat.com> wrote:
-> > >
-> > > > # ls -li
-> > > > total 0
-> > > > 4026532007 -r--r--r-- 1 root root 0 Sep  6 18:18 nvram
-> > > > 4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
-> > > > 4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
-> > > > 4026532056 -rw-r--r-- 1 root root 0 Sep  6 18:18 snd-page-alloc
-> > >
-> > > ...
-> > 
-> > Semes pretty clear that this must be procfs itself...
-> > when a filesystem sees a name in a directory, it should
-> > refuse to make another file with the same name.  And it
-> > should *never* reuse inode numbers...
->
-> ...
->
-> procfs can reject the attempt to create the file, but the bottom line
-> is that two different callsites are trying to create the same file.  One
-> of those callsites needs fixing?
+> Instrumentation primarity aims at debugging user-space applications by
+> giving the ability to extract information across execution layers, hence
+> being a feature useful to users, not only kernel hackers.
 
-Both of those call sites have code to handle procfs rejecting
-the file creation; nothing to fix.  And anyway, there's no way
-this is a *caller* bug!
+Ahh.. Where I come from, "Instrumentation" includes *all* the code that doesn't
+actually *do* the work, but exists solely so you can tell what the code is
+doing - so almost everything on the i386/x86_64 "Kernel Hacking" menu counts
+as "instrumentation" in my book.
 
-The missing step seems to be that proc_register() doesn't bother
-to check whether there's already an entry for that file.  Which
-is what the appended *UNTESTED* patch does (it compiles though).
+Now if we're talking about the features provided by one specific *instance*
+of instrumentation code, I can buy that too - but I think that help text
+needs to be clear on what is included under "debugging"
 
-- Dave
+(I'd settle for "If you're trying to debug the kernel itself, go see the
+Kernel Hacking menu" or similar.. ;)
 
---- g26.orig/fs/proc/generic.c	2007-09-18 22:08:44.000000000 -0700
-+++ g26/fs/proc/generic.c	2007-09-18 22:14:07.000000000 -0700
-@@ -521,10 +521,11 @@ static const struct inode_operations pro
- 	.setattr	= proc_notify_change,
- };
- 
--static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp)
-+static int proc_register(struct proc_dir_entry *dir, struct proc_dir_entry *dp)
- {
- 	unsigned int i;
--	
-+	struct proc_dir_entry *de;
-+
- 	i = get_inode_number();
- 	if (i == 0)
- 		return -EAGAIN;
-@@ -547,6 +548,16 @@ static int proc_register(struct proc_dir
- 	}
- 
- 	spin_lock(&proc_subdir_lock);
-+
-+	for (de = dir->subdir; de ; de = de->next) {
-+		if (de->namelen != dp->namelen)
-+			continue;
-+		if (!memcmp(de->name, dp->name, de->namelen)) {
-+			spin_unlock(&proc_subdir_lock);
-+			return -EEXIST;
-+		}
-+	}
-+
- 	dp->next = dir->subdir;
- 	dp->parent = dir;
- 	dir->subdir = dp;
+> to many, not only kernel developers. Please have a look at the
+> papers (especially the OLS2007 paper) linked on http://ltt.polymtl.ca as a
+> starting point if you are intereted in the question.
 
+Ahh, LTT. *that* I recognize.  Yeah, I count that as *one flavor* of
+instrumentation. :)
+
+
+--==_Exmh_1190181478_4811P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG8LpmcC3lWbTT17ARAlGZAJ9I703zzUtT2NTnZZ26FWPwugi9SACg8Q39
+Bvg58hI+TXWqKDO4+BebrbI=
+=u3GT
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1190181478_4811P--
