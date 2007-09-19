@@ -1,44 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbXISVxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758694AbXISVzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbXISVxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 17:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbXISVxF
+	id S1758694AbXISVzV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 17:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXISVzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 17:53:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:41953 "EHLO mga03.intel.com"
+	Wed, 19 Sep 2007 17:55:06 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:46207 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751749AbXISVxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 17:53:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,275,1186383600"; 
-   d="scan'208";a="282500322"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Howard Chu <hyc@symas.com>
-Subject: Re: MTRR initialization
-Date: Wed, 19 Sep 2007 14:52:57 -0700
-User-Agent: KMail/1.9.7
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <46EAB7DA.10507@symas.com>
-In-Reply-To: <46EAB7DA.10507@symas.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1750992AbXISVzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 17:55:03 -0400
+Subject: Re: [PATCH] JBD: use GFP_NOFS  in kmalloc
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070919143429.ea0b37c9.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
+	 <20070902152801.GA19962@infradead.org>
+	 <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
+	 <20070903134043.GB28962@infradead.org>
+	 <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
+	 <20070903193308.GA7771@infradead.org>
+	 <1189796027.3841.6.camel@localhost.localdomain>
+	 <1190057391.3845.22.camel@localhost.localdomain>
+	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
+	 <1190069851.6725.6.camel@localhost.localdomain>
+	 <20070918090407.GA671@infradead.org>
+	 <1190133347.3819.6.camel@localhost.localdomain>
+	 <1190138690.6528.23.camel@norville.austin.ibm.com>
+	 <1190163601.3819.15.camel@localhost.localdomain>
+	 <20070918191920.a2130a3c.akpm@linux-foundation.org>
+	 <1190229352.4318.12.camel@localhost.localdomain>
+	 <1190229729.4318.19.camel@localhost.localdomain>
+	 <20070919143429.ea0b37c9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 19 Sep 2007 14:55:00 -0700
+Message-Id: <1190238900.4318.26.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709191452.57505.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, September 14, 2007 9:33 am Howard Chu wrote:
-> So the question is - was there an easier/correct way to do this?
->
-> It might have been nice if the MTRR ioctls allowed the register
-> number to be specified on the Set commands, though I'm not sure that
-> would have helped in this case.
+On Wed, 2007-09-19 at 14:34 -0700, Andrew Morton wrote:
+> On Wed, 19 Sep 2007 12:22:09 -0700
+> Mingming Cao <cmm@us.ibm.com> wrote:
+> 
+> > Convert the GFP_KERNEL flag used in JBD/JBD2 to GFP_NOFS, consistent
+> > with the rest of kmalloc flag used in the JBD/JBD2 layer.
+> > 
+> > Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> > 
+> > ---
+> >  fs/jbd/journal.c  |    6 +++---
+> >  fs/jbd/revoke.c   |    8 ++++----
+> >  fs/jbd2/journal.c |    6 +++---
+> >  fs/jbd2/revoke.c  |    8 ++++----
+> >  4 files changed, 14 insertions(+), 14 deletions(-)
+> > 
+> > Index: linux-2.6.23-rc6/fs/jbd/journal.c
+> > ===================================================================
+> > --- linux-2.6.23-rc6.orig/fs/jbd/journal.c	2007-09-19 11:51:10.000000000 -0700
+> > +++ linux-2.6.23-rc6/fs/jbd/journal.c	2007-09-19 11:51:57.000000000 -0700
+> > @@ -653,7 +653,7 @@ static journal_t * journal_init_common (
+> >  	journal_t *journal;
+> >  	int err;
+> >  
+> > -	journal = kmalloc(sizeof(*journal), GFP_KERNEL);
+> > +	journal = kmalloc(sizeof(*journal), GFP_NOFS);
+> >  	if (!journal)
+> >  		goto fail;
+> >  	memset(journal, 0, sizeof(*journal));
+> > @@ -723,7 +723,7 @@ journal_t * journal_init_dev(struct bloc
+> >  	journal->j_blocksize = blocksize;
+> >  	n = journal->j_blocksize / sizeof(journal_block_tag_t);
+> >  	journal->j_wbufsize = n;
+> > -	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_KERNEL);
+> > +	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_NOFS);
+> >  	if (!journal->j_wbuf) {
+> >  		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
+> >  			__FUNCTION__);
+> > @@ -777,7 +777,7 @@ journal_t * journal_init_inode (struct i
+> >  	/* journal descriptor can store up to n blocks -bzzz */
+> >  	n = journal->j_blocksize / sizeof(journal_block_tag_t);
+> >  	journal->j_wbufsize = n;
+> > -	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_KERNEL);
+> > +	journal->j_wbuf = kmalloc(n * sizeof(struct buffer_head*), GFP_NOFS);
+> >  	if (!journal->j_wbuf) {
+> >  		printk(KERN_ERR "%s: Cant allocate bhs for commit thread\n",
+> >  			__FUNCTION__);
+> > Index: linux-2.6.23-rc6/fs/jbd/revoke.c
+> > ===================================================================
+> > --- linux-2.6.23-rc6.orig/fs/jbd/revoke.c	2007-09-19 11:51:30.000000000 -0700
+> > +++ linux-2.6.23-rc6/fs/jbd/revoke.c	2007-09-19 11:52:34.000000000 -0700
+> > @@ -206,7 +206,7 @@ int journal_init_revoke(journal_t *journ
+> >  	while((tmp >>= 1UL) != 0UL)
+> >  		shift++;
+> >  
+> > -	journal->j_revoke_table[0] = kmem_cache_alloc(revoke_table_cache, GFP_KERNEL);
+> > +	journal->j_revoke_table[0] = kmem_cache_alloc(revoke_table_cache, GFP_NOFS);
+> >  	if (!journal->j_revoke_table[0])
+> >  		return -ENOMEM;
+> >  	journal->j_revoke = journal->j_revoke_table[0];
+> > @@ -219,7 +219,7 @@ int journal_init_revoke(journal_t *journ
+> >  	journal->j_revoke->hash_shift = shift;
+> >  
+> >  	journal->j_revoke->hash_table =
+> > -		kmalloc(hash_size * sizeof(struct list_head), GFP_KERNEL);
+> > +		kmalloc(hash_size * sizeof(struct list_head), GFP_NOFS);
+> >  	if (!journal->j_revoke->hash_table) {
+> >  		kmem_cache_free(revoke_table_cache, journal->j_revoke_table[0]);
+> >  		journal->j_revoke = NULL;
+> > @@ -229,7 +229,7 @@ int journal_init_revoke(journal_t *journ
+> >  	for (tmp = 0; tmp < hash_size; tmp++)
+> >  		INIT_LIST_HEAD(&journal->j_revoke->hash_table[tmp]);
+> >  
+> > -	journal->j_revoke_table[1] = kmem_cache_alloc(revoke_table_cache, GFP_KERNEL);
+> > +	journal->j_revoke_table[1] = kmem_cache_alloc(revoke_table_cache, GFP_NOFS);
+> >  	if (!journal->j_revoke_table[1]) {
+> >  		kfree(journal->j_revoke_table[0]->hash_table);
+> >  		kmem_cache_free(revoke_table_cache, journal->j_revoke_table[0]);
+> > @@ -246,7 +246,7 @@ int journal_init_revoke(journal_t *journ
+> >  	journal->j_revoke->hash_shift = shift;
+> >  
+> >  	journal->j_revoke->hash_table =
+> > -		kmalloc(hash_size * sizeof(struct list_head), GFP_KERNEL);
+> > +		kmalloc(hash_size * sizeof(struct list_head), GFP_NOFS);
+> >  	if (!journal->j_revoke->hash_table) {
+> >  		kfree(journal->j_revoke_table[0]->hash_table);
+> >  		kmem_cache_free(revoke_table_cache, journal->j_revoke_table[0]);
+> 
+> These were all OK using GFP_KERNEL.
+> 
+> GFP_NOFS should only be used when the caller is holding some fs locks which
+> might cause a deadlock if that caller reentered the fs in ->writepage (and
+> maybe put_inode and such).  That isn't the case in any of the above code,
+> which is all mount time stuff (I think).
+> 
 
-To do this in a nicer way (and be less vulnerable to similar BIOS 
-funkiness) the kernel really needs full PAT support.  That should allow 
-WC over WB and WC over UC mappings to occur, at least if I'm 
-remembering the docs right...
+You are right they are all occur at initialization time.
 
-Jesse
+> ext3/4 should be using GFP_NOFS when the caller has a transaction open, has
+> a page locked, is holding i_mutex, etc.
+> 
+
+Thanks for your feedback.
+
+Mingming
+
