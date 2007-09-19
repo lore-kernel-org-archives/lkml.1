@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbXISLfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbXISLgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759207AbXISLfb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 07:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXISLfY
+	id S1758018AbXISLgZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 07:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbXISLgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 07:35:24 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:36721 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753081AbXISLfX (ORCPT
+	Wed, 19 Sep 2007 07:36:18 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:43418 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754061AbXISLgR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 07:35:23 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 19 Sep 2007 07:33:19 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Combine instrumentation menus in kernel/Kconfig.instrumentation
-In-Reply-To: <20070919112033.GF15500@Krystal>
-Message-ID: <Pine.LNX.4.64.0709190731570.16870@localhost.localdomain>
-References: <20070918211259.GA14927@Krystal> <14754.1190151939@turing-police.cc.vt.edu>
- <20070919010627.GA24174@Krystal> <3956.1190181478@turing-police.cc.vt.edu>
- <20070919112033.GF15500@Krystal>
+	Wed, 19 Sep 2007 07:36:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GhdWsS8pyKUyuwKsGUhXufdufqDXZVeKo2vXTbdgKnzjYC1b9PzTSPR0Td1okmWNiQmC8ILkJjoIPF+P29bWTB5js8Lv+nZj75ka7hHrdVohnfYJAJTr+znCwfMpY2vu9Kyn14fZ/fovepmQG1yXVmYVcqGWSYbfWl4zaAEDAGk=
+Message-ID: <3ae72650709190436m1051aaddo1df73fc5b3f91b23@mail.gmail.com>
+Date: Wed, 19 Sep 2007 13:36:15 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+Subject: Re: iso9660 vs udf
+Cc: "Satyam Sharma" <satyam@infradead.org>, "Jan Kara" <jack@suse.cz>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070919083640.GC11444@mette>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070915214926.GA31416@mette>
+	 <20070918144734.GB13304@atrey.karlin.mff.cuni.cz>
+	 <alpine.LFD.0.999.0709190534490.26241@enigma.security.iitk.ac.in>
+	 <20070919004657.GB11444@mette>
+	 <alpine.LFD.0.999.0709190736140.28653@enigma.security.iitk.ac.in>
+	 <20070919083640.GC11444@mette>
+X-Google-Sender-Auth: 52d149a709adc71c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Mathieu Desnoyers wrote:
+On 9/19/07, Andries E. Brouwer <Andries.Brouwer@cwi.nl> wrote:
+> On Wed, Sep 19, 2007 at 08:05:32AM +0530, Satyam Sharma wrote:
+>
+> > I was actually asking for the logs explaining why you thought
+> > the _kernel_ incorrectly "announced" it as an UDF filesystem.
+>
+> No, the CDROM announces itself as an UDF filesystem.
+>
+> > Hmm ... those "CD-RTOS", "CD-BRIDGE" and "CDUDF File System - Adaptec Inc"
+> > bits are not dmesg output, are they?
+>
+> No, hexdump of the CDROM.
 
-> * Valdis.Kletnieks@vt.edu (Valdis.Kletnieks@vt.edu) wrote:
+Care to provide:
+  /lib/udev/vol_id /dev/...
+and:
+  blkid /dev/...
 
-> > Ahh, LTT. *that* I recognize.  Yeah, I count that as *one flavor*
-> > of instrumentation. :)
+Or "dd" the start of the disk to a file, and send it to me, if there
+is nothing confidential on it.
 
-mathieu clarified this in a previous email to me, but is LTT not
-entirely superseded by LTT-ng?  just curious.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Thanks,
+Kay
