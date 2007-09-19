@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758925AbXISKv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbXISKwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758925AbXISKv5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 06:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbXISKvK
+	id S1759072AbXISKwW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 06:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbXISKvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 06:51:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39340 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756849AbXISKvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 06:51:05 -0400
-Message-Id: <20070919105055.343945000@chello.nl>
-References: <20070919104125.286538000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Wed, 19 Sep 2007 12:41:31 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: [RFC][PATCH 6/6] fixup early boot
-Content-Disposition: inline; filename=preempt-fixup-rest_init.patch
+	Wed, 19 Sep 2007 06:51:42 -0400
+Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:49508 "EHLO
+	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758634AbXISKvk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 06:51:40 -0400
+X-Greylist: delayed 472 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Sep 2007 06:51:40 EDT
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <46F09EA1.7060606@goop.org>
+References: <1189747054.7262.34.camel@localhost.localdomain>
+	 <200709181257.41530.ak@suse.de>
+	 <1190151272.7262.175.camel@localhost.localdomain>
+	 <200709182352.25118.ak@suse.de>  <46F09EA1.7060606@goop.org>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 11:43:00 +0100
+Message-Id: <1190198580.13585.34.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 217.46.209.99
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH 3/3] Time to make CONFIG_PARAVIRT non-experimental.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- init/main.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+On Tue, 2007-09-18 at 20:59 -0700, Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> > At least the Xen port seems to have specific requirements
+> > and essentially only work on xen-unstable (?) [or at least
+> > some very new Xen version] which probably very few
+> > people use.
+> >   
+> 
+> Only on 64-bit hosts, because of bugs in the 64-bit compat layer. 
+> 32-on-32 and 64-on-64 (when its done) should work fine.
 
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -452,7 +452,8 @@ static void noinline __init_refok rest_i
- 	 * at least once to get things moving:
- 	 */
- 	init_idle_bootup_task(current);
--	preempt_enable_no_resched();
-+	_preempt_enable_no_resched();
-+
- 	schedule();
- 	preempt_disable();
- 
-@@ -556,7 +557,7 @@ asmlinkage void __init start_kernel(void
- 	 * Disable preemption - early bootup scheduling is extremely
- 	 * fragile until we cpu_idle() for the first time.
- 	 */
--	preempt_disable();
-+	_preempt_disable();
- 	build_all_zonelists();
- 	page_alloc_init();
- 	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+All the required fixes for 32on64 are queued for Xen 3.1.1 too. The
+proposed updates are at
+http://xenbits.xensource.com/xen-3.1-testing.pq.hg
 
---
+Ian.
+
+-- 
+Ian Campbell
+Current Noise: Detonation - Sword-Carved Skin
+
+The executioner is, I hear, very expert, and my neck is very slender.
+		-- Anne Boleyn
 
