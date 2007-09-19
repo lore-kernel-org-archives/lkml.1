@@ -1,80 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750839AbXISRHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbXISRIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750839AbXISRHL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 13:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbXISRGs
+	id S1754757AbXISRIm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 13:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbXISRIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 13:06:48 -0400
-Received: from mga01.intel.com ([192.55.52.88]:8796 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750794AbXISRGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 13:06:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,274,1186383600"; 
-   d="scan'208";a="313979935"
-Date: Wed, 19 Sep 2007 10:06:44 -0700 (PDT)
-From: Tong Li <tong.n.li@intel.com>
-X-X-Sender: tongli@tongli.jf.intel.com
-To: Mike Galbraith <efault@gmx.de>
-cc: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [git] CFS-devel, group scheduler, fixes
-In-Reply-To: <1190191368.8687.5.camel@Homer.simpson.net>
-Message-ID: <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
-References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu>
-  <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com> 
- <1190183324.9737.7.camel@Homer.simpson.net>  <1190188261.9185.21.camel@Homer.simpson.net>
- <1190191368.8687.5.camel@Homer.simpson.net>
+	Wed, 19 Sep 2007 13:08:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49981 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751713AbXISRIb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 13:08:31 -0400
+Date: Wed, 19 Sep 2007 10:08:31 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ethan Solomita <solo@google.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/6] cpuset write dirty map
+In-Reply-To: <20070918191405.d9b43470.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0709191006160.10862@schroedinger.engr.sgi.com>
+References: <469D3342.3080405@google.com> <46E741B1.4030100@google.com>
+ <46E742A2.9040006@google.com> <20070914161536.3ec5c533.akpm@linux-foundation.org>
+ <46F072A5.8060008@google.com> <20070918191405.d9b43470.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Mike Galbraith wrote:
+On Tue, 18 Sep 2007, Andrew Morton wrote:
 
-> On Wed, 2007-09-19 at 09:51 +0200, Mike Galbraith wrote:
->
->> The scenario which was previously cured was this:
->> taskset -c 1 nice -n 0 ./massive_intr 2 9999
->> taskset -c 1 nice -n 5 ./massive_intr 2 9999
->> click link
->> (http://pages.cs.wisc.edu/~shubu/talks/cachescrub-prdc2004.ppt) to bring
->> up browser and OpenOffice Impress.
->>
->> Xorg (at nice -5 + above scenario) latency samples:
->> se.wait_max              :            57985337
->> se.wait_max              :            25163510
->> se.wait_max              :            37005538
->> se.wait_max              :            66986511
->> se.wait_max              :            53990868
->> se.wait_max              :            80976761
->> se.wait_max              :            96967501
->> se.wait_max              :            80989254
->> se.wait_max              :            53990897
->> se.wait_max              :           181963905
->> se.wait_max              :            85985181
->
-> To be doubly sure of the effect on the pinned tasks + migrating Xorg
-> scenario, I just ran the above test 10 times with virgin devel source.
-> Maximum Xorg latency was 20ms.
->
-> 	-Mike
->
+> How hard would it be to handle the allocation failure in a more friendly
+> manner?  Say, if the allocation failed then point mapping->dirty_nodes at
+> some global all-ones nodemask, and then special-case that nodemask in the
+> freeing code?
 
-Yeah, the patch was a first attempt at getting better global fairness for 
-unpinned tasks. I expected there'd be latency problems when unpinned and 
-pinned tasks co-exist. The original code for vruntime adjustment in 
-set_task_cpu() helped alleviate this problem, so removing it in my patch 
-would definitely bring the problem back. On the other hand, leaving it 
-there broke global fairness in my fairness benchmark. So we'd need a 
-better compromise.
+Ack. However, the situation dirty_nodes == NULL && inode dirty then means 
+that unknown nodes are dirty. If we are later are successful with the 
+alloc and we know that the pages are dirty in the mapping then the initial 
+dirty_nodes must be all ones. If this is the first page to be dirtied then 
+we can start with a dirty_nodes mask of all zeros like now.
 
-Were the experiments run on a 2-CPU system? When Xorg experiences large 
-wait time, is it on the same CPU that has the two pinned tasks? If this is 
-the case, then the problem could be X somehow advanced faster and got a 
-larger vruntime then the two pinned tasks, so it had to wait for the 
-pinned ones to catch up before it got a chance to be scheduled.
-
-   tong
