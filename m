@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759911AbXISLqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbXISLyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759911AbXISLqv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 07:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbXISLqo
+	id S1758305AbXISLyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 07:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbXISLxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 07:46:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33948 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755235AbXISLqn convert rfc822-to-8bit (ORCPT
+	Wed, 19 Sep 2007 07:53:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:61794 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753027AbXISLxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 07:46:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Gerdau <mgerdau@tiscali.de>
-Subject: Re: 2.6.23-rc6-mm1 and acpi
-Date: Wed, 19 Sep 2007 13:59:14 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200709182342.39905.mgerdau@tiscali.de>
-In-Reply-To: <200709182342.39905.mgerdau@tiscali.de>
+	Wed, 19 Sep 2007 07:53:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=oO2FIJZ3BcwI/HhCFyMHba7lMSVKOAifsbknIlL262MLA+EERP8GP6df56/r7240Mktu8jAy2zSg+EHTGwil13Pj6XgyQsxqF3CEji8Zb7akzfU4INo3vmJ0omk0WoC4YKflzepwiOjlfnK3tX2oTe9Ipcf0cwjzKZqf0UWVnyo=
+Message-ID: <46F10DCB.1090302@gmail.com>
+Date: Wed, 19 Sep 2007 13:53:47 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200709191359.15050.rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com>
+In-Reply-To: <46F10B69.5070008@gmail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 18 September 2007 23:42, Michael Gerdau wrote:
-> Hi,
+On 09/19/2007 01:43 PM, Jiri Slaby wrote:
+> On 09/18/2007 10:18 AM, Andrew Morton wrote:
+>> - The Vaio hangs when quitting X due to x86_64-mm-cpa-clflush.patch, but
+>>   I didn't drop that patch because the iommu patch series depends on it.
 > 
-> while trying to compile 2.6.23-rc6-mm1 I came across the following
-> build error:
-> 
-> mgd@seneca:/usr/src/linux-2.6.23-rc6-mm1> make modules
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CALL    scripts/checksyscalls.sh
-> <stdin>:1389:2: warning: #warning syscall revokeat not implemented
-> <stdin>:1393:2: warning: #warning syscall frevoke not implemented
->   CC [M]  drivers/acpi/sbs.o
-> drivers/acpi/sbs.c: In function ‘acpi_battery_alarm_show’:
-> drivers/acpi/sbs.c:457: error: implicit declaration of function ‘acpi_battery_get_alarm’
-> drivers/acpi/sbs.c: In function ‘acpi_battery_alarm_store’:
-> drivers/acpi/sbs.c:472: error: implicit declaration of function ‘acpi_battery_set_alarm’
-> drivers/acpi/sbs.c: In function ‘acpi_battery_add’:
-> drivers/acpi/sbs.c:829: warning: ignoring return value of ‘device_create_file’, declared with attribute warn_unused_result
-> make[2]: *** [drivers/acpi/sbs.o] Fehler 1
-> make[1]: *** [drivers/acpi] Fehler 2
-> make: *** [drivers] Fehler 2
-> 
-> Not sure who to CC, which is why I send it to the list alone.
+> No matter whether slub/slab is selected someone gets a page and moves/adds its
 
-Patch here: http://marc.info/?l=linux-acpi&m=119019799008585&w=4
+Oh, only adds, if it moves, it won't break the list. Going to check for
+POISON1/2 in __list_add, will get results (if any) in few moments...
 
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
