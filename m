@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbXITGxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbXITHA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288AbXITGxo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 02:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbXITGxd
+	id S1753898AbXITHA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbXITHAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 02:53:33 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:57957 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750786AbXITGxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 02:53:32 -0400
-Date: Thu, 20 Sep 2007 08:53:23 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kernel@avr32linux.org, avr32@atmel.com
-Subject: Re: [PATCH] AVR32:  Drop support for redundant "keepinitrd"
- boot-time parm.
-Message-ID: <20070920085323.74676fc9@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <Pine.LNX.4.64.0709190840020.20641@localhost.localdomain>
-References: <Pine.LNX.4.64.0709190840020.20641@localhost.localdomain>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Thu, 20 Sep 2007 03:00:20 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37951 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750875AbXITHAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 03:00:19 -0400
+Date: Thu, 20 Sep 2007 09:01:14 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Ph. Marek" <philipp@marek.priv.at>
+Cc: Jeff Dike <jdike@addtoit.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: UML dead with current -git?
+Message-ID: <20070920070114.GA8580@uranus.ravnborg.org>
+References: <200709181714.34035@x5> <200709191443.24158@x5> <20070919085032.dd5c1732.randy.dunlap@oracle.com> <200709191817.51921@x5> <20070919180544.GA11860@c2.user-mode-linux.org> <39168.193.171.152.61.1190267089.squirrel@webmail.marek.priv.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <39168.193.171.152.61.1190267089.squirrel@webmail.marek.priv.at>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 08:43:42 -0400 (EDT)
-"Robert P. J. Day" <rpjday@mindspring.com> wrote:
-
+On Thu, Sep 20, 2007 at 07:44:49AM +0200, Ph. Marek wrote:
+> Hello Jeff,
 > 
-> Given the existing "retain_initrd" boot-time parameter defined in
-> init/initramfs.c, there appears to be no need for the equivalent
-> "keepinitrd" parameter.
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> > On Wed, Sep 19, 2007 at 06:17:51PM +0200, Philipp Marek wrote:
+> >> How about that?
+> >> 	readlink include/asm
+> >> returns
+> >> 	asm-um
+> >> in my case, so I only have to strip the "asm-" part ...
+> >
+> > It doesn't handle O= directories...
+> Sorry, I don't understand you. What are "0=" directories?
 
-Applied, thanks.
+When building a kernel you can specify an other output directory
+so you do not mix up your source tree with generated files.
+To do so do like this:
 
-If anyone are actually using the "keepinitrd" option on AVR32 (I doubt
-it since you have to read the source to know that it even exists),
-please use "retain_initrd" instead.
+Prepare the stuff:
+mkdir ~/kernel
+cp .config ~/kernel
+make mrproper
 
-Håvard
+And then build the kernel:
+make O=~/kernel
+
+
+	Sam
