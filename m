@@ -1,105 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbXITNkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbXITNn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbXITNkj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 09:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbXITNk3
+	id S1756428AbXITNn0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 09:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXITNnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 09:40:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55389 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754236AbXITNk3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 09:40:29 -0400
-Date: Thu, 20 Sep 2007 19:13:12 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Antonino Daplas <adaplas@pol.net>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/video/pmag-ba-fb.c: Improve diagnostics
-In-Reply-To: <Pine.LNX.4.64N.0709201342160.30788@blysk.ds.pg.gda.pl>
-Message-ID: <alpine.LFD.0.999.0709201837160.17093@enigma.security.iitk.ac.in>
-References: <Pine.LNX.4.64N.0709171736580.17606@blysk.ds.pg.gda.pl>
- <Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
- <20070919172412.725508d0.akpm@linux-foundation.org>
- <Pine.LNX.4.64N.0709201342160.30788@blysk.ds.pg.gda.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Thu, 20 Sep 2007 09:43:19 -0400
+Received: from www.osadl.org ([213.239.205.134]:57122 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753479AbXITNnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 09:43:17 -0400
+Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
+	booted, USB-related WARNING
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
+       linux-usb-devel@lists.sourceforge.net,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <200709201529.24081.rjw@sisk.pl>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	 <200709200206.20992.rjw@sisk.pl> <1190269128.3235.7.camel@chaos>
+	 <200709201529.24081.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 20 Sep 2007 15:43:15 +0200
+Message-Id: <1190295795.3481.17.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Maciej,
-
-
-On Thu, 20 Sep 2007, Maciej W. Rozycki wrote:
-> 
-> On Wed, 19 Sep 2007, Andrew Morton wrote:
-> 
-> > > patch-mips-2.6.23-rc5-20070904-pmag-ba-err-2
-> > > diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c
-> > > --- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c	2007-02-21 05:56:47.000000000 +0000
-> > > +++ linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c	2007-09-18 10:56:51.000000000 +0000
-> > > @@ -147,16 +147,23 @@ static int __init pmagbafb_probe(struct 
-> > >  	resource_size_t start, len;
-> > >  	struct fb_info *info;
-> > >  	struct pmagbafb_par *par;
-> > > +	int err = 0;
+On Thu, 2007-09-20 at 15:29 +0200, Rafael J. Wysocki wrote:
+> > > I haven't had the time to check if any special command line arguments help.
+> > > Will check tomorrow.
 > > 
-> > This initialisation to zero is not good.
+> > Can you please disable the patches, which I sent Linus wards:
 > > 
-> > Because if some error-path code forgot to do `err = -EFOO' then probe()
-> > will return zero and the driver will leave things in half-initialised state
-> > and will then proceed as if things had succeeded.  It will crash.
+> > timekeeping-access-rtc-outside-xtime-lock.patch
+> > xtime-supsend-resume-fixup.patch
+> > acpi-reevaluate-c-p-t-states.patch
+> > clockevents-enforce-broadcast-on-resume.patch
+> > clockevents-do-not-shutdown-broadcast-device-in-oneshot-mode.patch
+> > clockevents-prevent-stale-tick-update-on-offline-cpu.patch
 > 
->  GCC used to complain: "`foo' might be used uninitialized..." and this is 
-> the usual cure; let me see if this not the case anymore (I have 4.1.2).
-
-Even so, initializing to zero isn't quite good. You could use the
-uninitialized_var() (once you've confirmed that the warning is bogus).
-However, some maintainers may still nack uninitialized_var() usage,
-quite legitimately.
-
-
-> > So it's better to leave this local uninitialised, because we really want to
-> > get that compiler warning if someone forgot to set the return value.
+> I have skipped all of them, but the resulting kernel behaves in the same
+> way (ie. doesn't boot).
 > 
->  Yes of course, barring the issue mentioned.  Note the message above is 
-> not the same as: "`foo' is used uninitialized..." that would be reported 
-> in the case which you are concerned of.
+> > Without those patches you get the state of rc4-mm1. It would be
+> > interesting to know which one interferes with the acpi stuff.
+> 
+> It looks like something else went in between -rc4 and -rc6 that broke your
+> patch.  I wonder what it might be ...
 
-Firstly, "may be used uninitialized" can still be a bug.
+Hmm. Can you please go back in the -hrt project history:
+http://tglx.de/projects/hrtimers/2.6.23-rc5/patch-2.6.23-rc5-hrt1.patches.tar.bz2
+http://tglx.de/projects/hrtimers/2.6.23-rc4/patch-2.6.23-rc4-hrt1.patches.tar.bz2
 
-Secondly, latest gcc is *horribly* buggy (and has been so for last several
-releases including 4.1, 4.2 and 4.3 -- 3.x was good). See:
+Also, can you send me your .config file please ?
 
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33327
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18501
+Vs. the suspend / resume wreckage of rc6-mm1 / rc6-hrt2: 
 
-We'd been hurling all sorts of abuses on gcc for quite long (when it fails
-to detect these "false positive" cases), but now, it turns out it is quite
-easy to write *genuinely* buggy code that still won't get any warnings,
-neither the "is used" nor "may be used" one!
+I'm still fishing in rather dark water. Depending on the added
+instrumentation points the problem mutates up to the point where it
+vanishes completely. The hang, which requires key strokes again, happens
+consistently at the same place:
 
-In short, there are three ways to fix these false positive warnings:
+The notifier call in kernel/cpu.c::_cpu_up()
 
-1. Do nothing, there are enough "uninitialized variable" warnings anyway,
-   and hopefully, one day GCC would clean up its act.
+       ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
+                                                        -1, &nr_calls);
 
-2. Use uninitialized_var() to shut it up (only if it's genuinely bogus).
+does not return, but _all_ registered notifiers are called and reach
+their return statement. This reminds me on:
 
-3. Do something like the following legendary patch [1]:
+http://lkml.org/lkml/2007/5/9/46
 
-http://kegel.com/crosstool/crosstool-0.43/patches/linux-2.6.11.3/arch_alpha_kernel_srcons.patch
+Sigh. I have no clue where to dig further.
 
-i.e., explicitly change the structure/logic of the function to make it
-obvious enough to gcc that the variable will not be used uninitialized.
+	tglx
 
 
-Satyam
-
-[1] That was a funny case -- the alpha linux maintainer is also a gcc
-    maintainer. Alpha even sets -Werror, so either he had to fix the
-    kernel code that produced the warning, or go fix GCC to not warn
-    about it -- he chose the former :-)
