@@ -1,47 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbXITOCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbXITOCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbXITOCO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 10:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbXITOB5
+	id S1756199AbXITOCv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 10:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbXITOCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 10:01:57 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:20151 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbXITOB4 (ORCPT
+	Thu, 20 Sep 2007 10:02:41 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43668 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752835AbXITOCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 10:01:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=IS5aTT1FLzZE+DbBMuo/yq7ZpX3Iv9MLR9g4IoGqlniYTh8WpGe+rvW4g34/ftQhm5TI6IZdtzTQVRloh4lnlcEOLOf2YjTT7/KGVt4sUSY5YV08iWhA7XWNjDk/32OrktkAk+gdLqY1VqvYueNTzpcxCJ/C/L4crLfHqrjUshM=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: arch/x86_64/kernel/Makefile: why EXTRA_AFLAGS := -traditional
-Date: Thu, 20 Sep 2007 15:01:43 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 20 Sep 2007 10:02:39 -0400
+Date: Thu, 20 Sep 2007 15:09:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: mel@skynet.ie (Mel Gorman)
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
+Message-ID: <20070920150925.0caf3aef@the-village.bc.nu>
+In-Reply-To: <20070920131315.GE24105@skynet.ie>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070920131315.GE24105@skynet.ie>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709201501.44009.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+On Thu, 20 Sep 2007 14:13:15 +0100
+mel@skynet.ie (Mel Gorman) wrote:
 
-arch/x86_64/kernel/Makefile has 
+> PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
+> doesn't show up on other arches because this driver is specific to the
+> architecture.
+> 
+> drivers/ata/pata_scc.c: In function `scc_bmdma_status'
 
-EXTRA_AFLAGS := -traditional
+Its not been updated to match the libata core changes. Try something like
+this. Whoever is maintaining it should also remove the prereset cable handling
+code and use the proper cable detect method.
 
-and this is causing me trouble with #define MACRO(a,b) a.b
-(defined in one of included header file).
-It expands incorrectly, as "a. b" - extra space.
 
-If I use a.##b, all other .S files suffer - I am getting
-a.##b expansion in them.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-Can I remove EXTRA_AFLAGS := -traditional?
---
-vda
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c
+--- linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-18 15:32:51.000000000 +0100
++++ linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-20 14:23:32.879807760 +0100
+@@ -731,7 +731,7 @@
+ 	void __iomem *mmio = ap->ioaddr.bmdma_addr;
+ 	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
+ 	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
+-	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
++	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
+ 	static int retry = 0;
+ 
+ 	/* return if IOS_SS is cleared */
+@@ -860,10 +860,10 @@
+  *	@deadline: deadline jiffies for the operation
+  */
+ 
+-static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)
++static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)
+ {
+-	ap->cbl = ATA_CBL_PATA80;
+-	return ata_std_prereset(ap, deadline);
++	link->ap->cbl = ATA_CBL_PATA80;
++	return ata_std_prereset(link, deadline);
+ }
+ 
+ /**
+@@ -874,8 +874,9 @@
+  *	Note: Original code is ata_std_postreset().
+  */
+ 
+-static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
++static void scc_std_postreset (struct ata_link *link, unsigned int *classes)
+ {
++	struct ata_port *ap = link->ap;
+ 	DPRINTK("ENTER\n");
+ 
+ 	/* is double-select really necessary? */
