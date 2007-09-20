@@ -1,102 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbXITMMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbXITMPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbXITMMi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 08:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbXITMMa
+	id S1754936AbXITMPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 08:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbXITMPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 08:12:30 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:60748 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752797AbXITMMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 08:12:30 -0400
-Date: Thu, 20 Sep 2007 16:16:01 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Guillaume Chazarain <guichaz@yahoo.fr>, Jonathan Lim <jlim@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jay Lan <jlan@cthulhu.engr.sgi.com>,
-       Michael Neuling <mikey@neuling.org>
-Subject: Re: Add all thread stats for TASKSTATS_CMD_ATTR_TGID (v5)
-Message-ID: <20070920121601.GA135@tv-sign.ru>
-References: <200708310302.l7V32ZpV410222@sabah.engr.sgi.com> <46D7C23F.7020509@linux.vnet.ibm.com> <20070831143535.2e4709c7@localhost.localdomain> <20070912171816.f0993440.akpm@linux-foundation.org> <20070915204239.4a6af65e@localhost.localdomain> <20070918002339.4a989377@localhost.localdomain> <20070919232054.77c271aa.akpm@linux-foundation.org> <46F23550.6050209@linux.vnet.ibm.com>
+	Thu, 20 Sep 2007 08:15:39 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:52243 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750789AbXITMPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 08:15:38 -0400
+Date: Thu, 20 Sep 2007 14:15:31 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>, spamtrap@knobisoft.de
+Subject: Re: 2.6.23-rc6-mm1 -- mkfs stuck in 'D'
+Message-ID: <20070920141531.534502c1@twins>
+In-Reply-To: <Pine.LNX.4.64.0709201210470.13752@blonde.wat.veritas.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070919164348.GC2519@shadowen.org>
+	<Pine.LNX.4.64.0709192035370.14804@blonde.wat.veritas.com>
+	<20070919224409.24baa75b@lappy>
+	<Pine.LNX.4.64.0709201210470.13752@blonde.wat.veritas.com>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F23550.6050209@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/20, Balbir Singh wrote:
->
-> Andrew Morton wrote:
-> > On Tue, 18 Sep 2007 00:23:39 +0200 Guillaume Chazarain <guichaz@yahoo.fr> wrote:
-> > 
-> >> TASKSTATS_CMD_ATTR_TGID used to return only the delay accounting stats, not
-> >> the basic and extended accounting.  With this patch,
-> >> TASKSTATS_CMD_ATTR_TGID also aggregates the accounting info for all threads
-> >> of a thread group.  This makes TASKSTATS_CMD_ATTR_TGID usable in a similar
-> >> fashion to TASKSTATS_CMD_ATTR_PID, for commands like iotop -P
-> >> (http://guichaz.free.fr/misc/iotop.py).
-> > 
-> > This patch conflicts somewhat with
-> > add-scaled-time-to-taskstats-based-process-accounting.patch
-> > 
-> > I fixed it up like this:
-> > 
-> > void bacct_add_tsk(struct taskstats *stats, struct task_struct *task)
-> > {
-> > 	if (task->flags & PF_SUPERPRIV)
-> > 		stats->ac_flag |= ASU;
-> > 	if (task->flags & PF_DUMPCORE)
-> > 		stats->ac_flag |= ACORE;
-> > 	if (task->flags & PF_SIGNALED)
-> > 		stats->ac_flag |= AXSIG;
-> > 	if (thread_group_leader(task) && (task->flags & PF_FORKNOEXEC))
-> > 		/*
-> > 		 * Threads are created by do_fork() and don't exec but not in
-> > 		 * the AFORK sense, as the latter involves fork(2).
-> > 		 */
-> > 		stats->ac_flag |= AFORK;
-> > 
-> > 	stats->ac_utimescaled +=
-> > 		cputime_to_msecs(task->utimescaled) * USEC_PER_MSEC;
-> > 	stats->ac_stimescaled +=
-> > 		cputime_to_msecs(task->stimescaled) * USEC_PER_MSEC;
-> > 	stats->ac_utime	 += cputime_to_msecs(task->utime) * USEC_PER_MSEC;
-> > 	stats->ac_stime	 += cputime_to_msecs(task->stime) * USEC_PER_MSEC;
-> > 	stats->ac_minflt += task->min_flt;
-> > 	stats->ac_majflt += task->maj_flt;
-> > }
-> > 
-> > (note the s/=/+=/ in there) but it all needs reviewing and checking and
-> > testing please.
+On Thu, 20 Sep 2007 12:31:39 +0100 (BST) Hugh Dickins
+<hugh@veritas.com> wrote:
+
+
+Thanks Hugh!
+
+> [PATCH mm] mm per-device dirty threshold fix
 > 
-> Andrew,
+> Fix occasional hang when a task couldn't get out of balance_dirty_pages:
+> mm-per-device-dirty-threshold.patch needs to reevaluate bdi_nr_writeback
+> across all cpus when bdi_thresh is low, even in the case when there was
+> no bdi_nr_reclaimable.
 > 
-> Thanks for reviewing the patchset, this patch is on my review and test
-> queue (which has gotten rather long of late). I'll test it further and
-> get back.
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-I still think this version is very wrong. It makes the ->signal->stats
-absolutely meaningless. Quoting myself:
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-	On 09/18, Guillaume Chazarain wrote:
-	>
-	> @@ -508,7 +543,7 @@ void taskstats_exit(struct task_struct *
-	>    if (!stats)
-	>            goto err;
-	>
-	> -  memcpy(stats, tsk->signal->stats, sizeof(*stats));
-	> +  fill_tgid(tsk->pid, tsk, stats);
-
-	No, no, this is wrong.
-
-	tsk->signal->stats contains the accumulated info about the already exited
-	threads, we shouldn't throw it out.
-
-	Also, fill_tgid() doesn't make sense here, current is the last live sub-thread.
-
-Oleg.
-
+> ---
+>  mm/page-writeback.c |   53 +++++++++++++++++++-----------------------
+>  1 file changed, 24 insertions(+), 29 deletions(-)
+> 
+> --- 2.6.23-rc6-mm1/mm/page-writeback.c	2007-09-18 12:28:25.000000000 +0100
+> +++ linux/mm/page-writeback.c	2007-09-19 20:00:46.000000000 +0100
+> @@ -379,7 +379,7 @@ static void balance_dirty_pages(struct a
+>  		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+>  		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+>  		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> -				break;
+> +			break;
+>  
+>  		if (!bdi->dirty_exceeded)
+>  			bdi->dirty_exceeded = 1;
+> @@ -392,39 +392,34 @@ static void balance_dirty_pages(struct a
+>  		 */
+>  		if (bdi_nr_reclaimable) {
+>  			writeback_inodes(&wbc);
+> -
+> +			pages_written += write_chunk - wbc.nr_to_write;
+>  			get_dirty_limits(&background_thresh, &dirty_thresh,
+>  				       &bdi_thresh, bdi);
+> +		}
+>  
+> -			/*
+> -			 * In order to avoid the stacked BDI deadlock we need
+> -			 * to ensure we accurately count the 'dirty' pages when
+> -			 * the threshold is low.
+> -			 *
+> -			 * Otherwise it would be possible to get thresh+n pages
+> -			 * reported dirty, even though there are thresh-m pages
+> -			 * actually dirty; with m+n sitting in the percpu
+> -			 * deltas.
+> -			 */
+> -			if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+> -				bdi_nr_reclaimable =
+> -					bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+> -				bdi_nr_writeback =
+> -					bdi_stat_sum(bdi, BDI_WRITEBACK);
+> -			} else {
+> -				bdi_nr_reclaimable =
+> -					bdi_stat(bdi, BDI_RECLAIMABLE);
+> -				bdi_nr_writeback =
+> -					bdi_stat(bdi, BDI_WRITEBACK);
+> -			}
+> +		/*
+> +		 * In order to avoid the stacked BDI deadlock we need
+> +		 * to ensure we accurately count the 'dirty' pages when
+> +		 * the threshold is low.
+> +		 *
+> +		 * Otherwise it would be possible to get thresh+n pages
+> +		 * reported dirty, even though there are thresh-m pages
+> +		 * actually dirty; with m+n sitting in the percpu
+> +		 * deltas.
+> +		 */
+> +		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+> +			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+> +			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
+> +		} else if (bdi_nr_reclaimable) {
+> +			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+> +			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> +		}
+>  
+> -			if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> -				break;
+> +		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> +			break;
+> +		if (pages_written >= write_chunk)
+> +			break;		/* We've done our duty */
+>  
+> -			pages_written += write_chunk - wbc.nr_to_write;
+> -			if (pages_written >= write_chunk)
+> -				break;		/* We've done our duty */
+> -		}
+>  		congestion_wait(WRITE, HZ/10);
+>  	}
+>  
