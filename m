@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbXITWKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbXITWMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755592AbXITWKk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbXITWKc
+	id S1755487AbXITWMQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXITWMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:10:32 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:40312 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751435AbXITWKb (ORCPT
+	Thu, 20 Sep 2007 18:12:03 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41552
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751616AbXITWMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:10:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=PrZS66+iRpsUwGqcfTMDIAq9IFO7eFdoACBd6hgV3vBJjdj3HI9O5r8ccO2WRNKWk3lcciKeJGTlaBEfB1sFXiWXrR+y1EFY3ZyP7k4u6xf/R2ieCgfb/fHI/Ymbob79sYc9PQy+cjE/vwndipHGfidPktA98SUUXorzRhdPT8o=
-Message-ID: <46F2EFD2.2090907@gmail.com>
-Date: Fri, 21 Sep 2007 00:10:26 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 20 Sep 2007 18:12:01 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Tim Bird <tim.bird@am.sony.com>
+Subject: Re: [Announce] Linux-tiny project revival
+Date: Thu, 20 Sep 2007 18:11:51 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-tiny@selenic.com, linux kernel <linux-kernel@vger.kernel.org>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       Michael Opdenacker <michael@free-electrons.com>
+References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <46F2ED1E.3090407@am.sony.com>
+In-Reply-To: <46F2ED1E.3090407@am.sony.com>
 MIME-Version: 1.0
-To: Dave Airlie <airlied@gmail.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-References: <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org> <46F17F27.5080000@gmail.com> <21d7e9970709191851s1b3f35c1j42faae3ce6cd0b24@mail.gmail.com> <46F22048.8050401@gmail.com> <21d7e9970709200033k3f0f46feq7dae4e0a106f0372@mail.gmail.com> <20070920092441.GA1972@zhen-devel.sh.intel.com>
-In-Reply-To: <20070920092441.GA1972@zhen-devel.sh.intel.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709201811.51384.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/20/2007 11:24 AM, Zhenyu Wang wrote:
-> On 2007.09.20 17:33:45 +0000, Dave Airlie wrote:
->>> Maybe you are rather interested in these dmesg lines:
->>> Linux agpgart interface v0.102
->>> agpgart: suspend/resume problematic: resume with 3D/DRI active may lockup X.Org
->>> on some chipset/BIOS combos (see DEBUG_AGP_PM in intel-agp.c)
->>> agpgart: Detected an Intel G33 Chipset.
->>> agpgart: Detected 8192K stolen memory.
->>> agpgart: AGP aperture is 256M @ 0xd0000000
->>> [drm] Initialized drm 1.1.0 20060810
->>> ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
->>> [drm] Initialized i915 1.6.0 20060119 on minor 0
->>> ...
->>> set status page addr 0x00033000
->>> agpgart: pg_start == 0x000005ff,intel_private.gtt_entries == 0x00000800
->>> agpgart: Trying to insert into local/stolen memory
->>>
->>> So the problem is, that X passes too low start.
->>>
->>> The X log:
->>> http://www.fi.muni.cz/~xslaby/sklad/Xorg.0.log.old
-> 
-> Could you try current xf86-video-intel driver? just do
-> git clone git://anongit.freedesktop.org/git/xorg/driver/xf86-video-intel
+On Thursday 20 September 2007 4:58:54 pm Tim Bird wrote:
+> Rob Landley wrote:
+> > So instead of:
+> >   printk(KERN_NOTICE "Fruit=%d\n", banana);
+> > It would now be:
+> >   printk(KERN_NOTICE, "Fruit=%d\n", banana);
+> >
+> > Change the header from:
+> >   #define KERN_NOTICE "<5>"
+> > to:
+> >   #define KERN_NOTICE 5
+> >
+> > Then you can change the printk guts to do something vaguely like
+> > (untested): #define printk(arg1, arg2, ...) actual_printk("<" #arg1 ">"
+> > arg2, __VA_ARGS__)
+>
+> ...
+>
+> > [then] the
+> > compiler's dead code eliminator zaps the printks you don't care about so
+> > they don't bloat the kernel image.
+>
+> I agree in principal with the idea, but there are some major
+> practical wrinkles that would have to be worked through.
+>
+> First, not all printks that are missing a log level should have one.
+> People do stuff like this:
+>
+> printk(KERN_INFO "interesting info follows:");
+> ...
+> printk("var5: %d\n", var5);
+>
+> Or even things that evaluate to:
+> printk("");
+>
+> The code inside printk currently has to examine the
+> strings, looking for line feeds and inserting log levels.
+>
+> Given that there are about 60,000 printks in the kernel (and that's
+> not counting wrappers like dprintk() and other locally-defined
+> functions and macros) it would be a huge task to examine the code
+> and differentiate strings that really start a new log message
+> (and thus should have an attached log level) and strings
+> that don't.
 
-It works! 3d problem, but it has maybe nothing to do with kernel:
-$ glxinfo
-name of display: :0.0
-Unrecognized deviceID 29c2
-X Error of failed request:  GLXBadContext
-...
+Hmmm.  The hard part isn't making printk(0,blah) mean the same as not having a 
+log level message now, because the current logic already handles it.  The 
+problem is that filtering continuations of previous messages involves knowing 
+what log level the previous message was so you know whether or not to filter 
+it.
 
-regards,
+Yeah, that would take some doing to untangle.  An incremental switchever (easy 
+printks first, I.E. the ones that currently specify a loglevel) seems more 
+strongly indicated...
+
+That said, I started this by noting I haven't personally had time to bang on 
+this since I thought of it.  You did ask for ideas. :)
+
+>  -- Tim
+
+Rob
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
