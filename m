@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbXITKF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbXITKJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbXITKF7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 06:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbXITKFv
+	id S1754732AbXITKJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 06:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXITKJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 06:05:51 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:42517 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbXITKFv (ORCPT
+	Thu, 20 Sep 2007 06:09:43 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52485 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbXITKJm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 06:05:51 -0400
-X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Sep 2007 06:05:50 EDT
-To: akpm@linux-foundation.org
-CC: haveblue@us.ibm.com, hch@infradead.org, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu
-In-reply-to: <20070919150659.597f0d8b.akpm@linux-foundation.org> (message from
-	Andrew Morton on Wed, 19 Sep 2007 15:06:59 -0700)
-Subject: Re: [PATCH 00/24] Read-only bind mounts
-References: <20070917182718.70494C9B@kernel>
-	<20070919174418.GA22982@infradead.org>
-	<20070919142437.7490b219.akpm@linux-foundation.org>
-	<1190238987.26982.119.camel@localhost> <20070919150659.597f0d8b.akpm@linux-foundation.org>
-Message-Id: <E1IYInb-0000hR-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 20 Sep 2007 11:58:19 +0200
+	Thu, 20 Sep 2007 06:09:42 -0400
+Date: Thu, 20 Sep 2007 12:09:41 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Message-ID: <20070920100941.GA12157@atrey.karlin.mff.cuni.cz>
+References: <1190266447.21818.17.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190266447.21818.17.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 19 Sep 2007 14:56:27 -0700
-> Dave Hansen <haveblue@us.ibm.com> wrote:
+Hi!
+
+> This patch implements the functionality of jumping between the kexeced
+> kernel and the original kernel.
 > 
-> > On Wed, 2007-09-19 at 14:24 -0700, Andrew Morton wrote:
-> > > On Wed, 19 Sep 2007 18:44:18 +0100
-> > > Christoph Hellwig <hch@infradead.org> wrote:
-> > > 
-> > > > On Mon, Sep 17, 2007 at 11:27:18AM -0700, Dave Hansen wrote:
-> > > > > If we can't pull the entire series into -mm, can we just put the
-> > > > > first three patches for now?  They can stand on their own.
-> > > > 
-> > > > Yes, they're kinda a series of their own.  But I still think we really
-> > > > want this in -mm.  As we've seen on the kernel summit there's a pretty
-> > > > desparate need for it.  And there's not many changes in this area in
-> > > > -mm, maybe the unprivilegued mounts.  I'd personally prioritize the
-> > > > r/o bindmounts over them as they're more needed and we need more reviewing
-> > > > of the unprivilegued mounts (I'll try to come back to that soon).
-> > > 
-> > > What's the situation on unprivileged mounts?  iirc, it's all a bit stuck.
-> > > 
-> > > If unpriv-mounts code isn't going to go into mainline ahead of r/o bind
-> > > mounts then it'd make a big mess to prepare the r/o bind mount patches on
-> > > top of unprivileged mounts.
-> > > 
-> > > It sounds like a better approach would be for me to merge the r/o bind
-> > > mounts code and to drop (or maybe rework) the unprivileged mounts patches
-> > 
-> > I actually don't think they collided too much.  There were a couple of
-> > patches, like maybe 2 or 3 that needed any futzing at all.  
-> > 
-> > I'll cook up a set straight on top of mainline if that helps.
-> > 
+> A new reboot command named LINUX_REBOOT_CMD_KJUMP is defined to
+> trigger the jumping to (executing) the new kernel and jumping back to
+> the original kernel.
 > 
-> That sounds good, thanks.
+> To support jumping between two kernels, before jumping to (executing)
+> the new kernel and jumping back to the original kernel, the devices
+> are put into quiescent state (to be fully implemented), and the state
+> of devices and CPU is saved. After jumping back from kexeced kernel
+> and jumping to the new kernel, the state of devices and CPU are
+> restored accordingly. The devices/CPU state save/restore code of
+> software suspend is called to implement corresponding function.
+> 
+> To support jumping without preserving memory. One shadow backup page
+> is allocated for each page used by new (kexeced) kernel. When do
+> kexec_load, the image of new kernel is loaded into shadow pages, and
+> before executing, the original pages and the shadow pages are swapped,
+> so the contents of original pages are backuped. Before jumping to the
+> new (kexeced) kernel and after jumping back to the original kernel,
+> the original pages and the shadow pages are swapped too.
+> 
+> A jump back protocol is defined and documented.
 
-I agree, that per mount r/o is more important than unprivileged
-mounts.  Especially because fixing up mount(8) and option showing in
-/proc/mounts is really nowhere yet, both of which are needed to make
-unprivileged mounting really useful.
 
-So if that's convenient for you, just drop the unpriv mount patches,
-and I'll resubmit sometime later.
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Miklos
+Seems like good enough for -mm to me.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
