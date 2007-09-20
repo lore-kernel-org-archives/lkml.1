@@ -1,59 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbXITWXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbXITWXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbXITWXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbXITWXN
+	id S1755430AbXITWXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXITWXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:23:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40647 "EHLO ogre.sisk.pl"
+	Thu, 20 Sep 2007 18:23:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40650 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbXITWXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:23:12 -0400
+	id S1750945AbXITWXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 18:23:13 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when booted, USB-related WARNING
-Date: Fri, 21 Sep 2007 00:30:19 +0200
+Date: Fri, 21 Sep 2007 00:35:53 +0200
 User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
        linux-usb-devel@lists.sourceforge.net,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, miklos@szeredi.hu,
-       Len Brown <len.brown@intel.com>,
-       David Shaohua Li <shaohua.li@intel.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <alpine.LFD.0.999.0709201437310.16478@woody.linux-foundation.org> <1190325929.3085.79.camel@chaos>
-In-Reply-To: <1190325929.3085.79.camel@chaos>
+       Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@osdl.org>,
+       miklos@szeredi.hu
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <200709202345.01682.rjw@sisk.pl> <1190325191.3085.64.camel@chaos>
+In-Reply-To: <1190325191.3085.64.camel@chaos>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709210030.20662.rjw@sisk.pl>
+Message-Id: <200709210035.55083.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 21 September 2007 00:05, Thomas Gleixner wrote:
-> Linus,
+Thomas,
+
+On Thursday, 20 September 2007 23:53, Thomas Gleixner wrote:
+> Rafael,
 > 
-> On Thu, 2007-09-20 at 14:55 -0700, Linus Torvalds wrote:
-> > And I think that's a damn reasonable thing to agree on: timers (and 
-> > anything else that CPU shutdown/bringup could *possibly* care about) 
-> > should be considered core enough that they had better be on the 
-> > suspend_late/resume_early list.
+> On Thu, 2007-09-20 at 23:45 +0200, Rafael J. Wysocki wrote:
+> > > We disable everything in device_suspend()
 > > 
-> > Thomas, Rafael, can you verify that at least STR is ok in this respect?
+> > No, we don't.  sysdevs are _not_ suspended in device_suspend().
+> > They are suspended in device_power_down(), which is called
+> > _after_ disable_nonboot_cpus() (from swsusp_suspend()).
+> > 
+> > > including timekeeping,
+> > 
+> > No, the timekeeping is suspended in device_power_down() (or at least it should
+> > be).
 > 
-> -ETOOTIRED led me too a wrong conclusion, but still it is a valuable
-> hint that this change is making things work again.
+> Damn, you are right. Reading through 30 different logs confused me.
+> 
+> > > 	enable_nonboot_cpus();
+> > 
+> > Actually, we can't do this here, because of ACPI and some interrupt handling
+> > related problems.  Unfortunately, platform_finish() needs to go _after_
+> > enable_nonboot_cpus() and device_resume() needs to go after platform_finish().
+> > Analogously, disable_nonboot_cpus() has to go after platform_prepare().
+> >
+> > Otherwise, some systems will break.
+> 
+> Well, I don't buy this one. The system would break in the same way, when
+> I take CPU#1 offline before I initiate the suspend.
 
-Yes, it is.
+I was referring to the resume part.  If we call enable_nonboot_cpus(), which
+executes the _INI ACPI control method, after platform_finish(), which executes
+the _WAK global ACPI control method, things will break.  That already happened
+in the past, when the code ordering was different, AFAICS.
 
-> I need to go down into the details of the swsusp_suspend() code path to
-> figure out, what's the root cause. 
+> > > and non-surprisingly the "my VAIO needs help from keyboard" problem went
+> > > away immediately. See patch below. (on top of rc7-hrt1, -mm1 does not
+> > > work at all on my VAIO due to some yet not identified wreckage)
+> > 
+> > Hm, I really don't know why it helps, but that's not because of the timekeeping
+> > suspend, IMO.
+> 
+> It is related. We rely on some subtle thing which is not up when we
+> resume the non boot cpu.
 
-If you need any help from me with that, please let me know.
+Yes, it looks so.
+
+> > > I did not yet look into the suspend to ram code, but I guess that there
+> > > is an equivalent problem.
+> > 
+> > Yes, the code ordering is the same, but it's not totally wrong, IMHO.
+> > 
+> > > But I have no idea why this affects Andrews jinxed VAIO (UP machine),
+> > > though I suspect that we have more timekeeping/timer depending code
+> > > somewhere waiting to bite us.
+> > 
+> > That's possible.
+> > 
+> > > Also I still need to debug why the HIBERNATION_TEST code path (which has
+> > > a msleep(5000) in it) does not fail,
+> > 
+> > See above. :-)
+> 
+> Yes. It makes sense. When I change the TEST code path to:
+> 
+> -	printk("swsusp debug: Waiting for 5 seconds.\n");
+> - 	msleep(5000);
+> +	printk("swsusp debug: before swsusp_suspend\n");
+> + 	error = swsusp_suspend();
+> 
+> then I have the same effect as I get from real hibernation. And we
+> actually shut down time keeping somewhere in that code path.
+> 
+> ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+> swsusp debug: before swsusp_suspend
+> Suspend timekeeping
+
+Exactly.  timekeeping_suspend() is called from device_power_down(), which is
+called from swsusp_suspend() (after disabling interrupts).
+
+> swsusp: critical section: 
+> swsusp: Need to copy 112429 pages
+> swsusp: Normal pages needed: 35399 + 1024 + 40, available pages: 193876
+> swsusp: critical section: done (112429 pages copied)
+> Intel machine check architecture supported.
+> Intel machine check reporting enabled on CPU#0.
+> Resume timekeeping
+> ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+> -> works fine
+> 
+> This is with my patch applied. Without that I get:
+> 
+> CPU1 is down
+> swsusp debug: before swsusp_suspend
+> Suspend timekeeping
+> swsusp: critical section: 
+> swsusp: Need to copy 112429 pages
+> swsusp: Normal pages needed: 35399 + 1024 + 40, available pages: 193876
+> swsusp: critical section: done (112429 pages copied)
+> Intel machine check architecture supported.
+> Intel machine check reporting enabled on CPU#0.
+> Resume timekeeping
+> Enabling non-boot CPUs
+> --> Waits for ever until a key is pressed
+
+Well, perhaps there's something else that we should suspend late and resume
+early, but we don't?
 
 Greetings,
 Rafael
