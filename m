@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbXITNYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbXITNZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbXITNYa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 09:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbXITNYX
+	id S1756302AbXITNZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 09:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbXITNZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 09:24:23 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:52722 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751839AbXITNYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 09:24:22 -0400
-Date: Thu, 20 Sep 2007 15:26:28 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-Message-ID: <20070920132628.GC2796@ff.dom.local>
-References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 20 Sep 2007 09:25:16 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:35609 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754289AbXITNZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 09:25:15 -0400
+Date: Thu, 20 Sep 2007 14:25:12 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       linuxppc-dev@ozlabs.org
+Subject: Build failure on ppc64 drivers/block/ps3disk.c
+Message-ID: <20070920132512.GF24105@skynet.ie>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <46F270DA.5030101@bull.net>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 03:08:42PM +0200, Nadia Derbey wrote:
-...
-> So, here is the ipc_lock_by_ptr() status:
-> 1) do_msgsnd(), semctl_main(GETALL), semctl_main(SETALL) and find_undo() 
-> call it inside a refcounting.
->   ==> no rcu read section needed.
-> 
-> 2) *_exit_ns(), ipc_findkey() and sysvipc_find_ipc() call it under the 
-> ipc_ids mutex lock.
->   ==> no rcu read section needed.
-> 
-> 3) do_msgrcv() is the only path where ipc_lock_by_ptr() is not called 
-> under refcounting
->   ==> rcu read section + some more checks needed once the spnlock is
->       taken.
-> 
-> So I completely agree with you: we might remove the rcu_read_lock() from 
-> the ipc_lock_by_ptr() and explicitley  call it when needed (actually, it 
-> is already explicitly called in do_msgrcv()).
+allmodconfig on ppc64 fails to build with the following error
 
-Impossible!
+drivers/block/ps3disk.c: In function `ps3disk_probe':
+drivers/block/ps3disk.c:509: error: implicit declaration of function `blk_queue_issue_flush_fn'
+make[2]: *** [drivers/block/ps3disk.o] Error 1
+make[1]: *** [drivers/block] Error 2
+make: *** [drivers] Error 2
 
-I've to look at this once more in the evening (and try to recall
-what I've seen yesterday and forgotten today...).
+The problem seems to be coming from git-block.patch. Jens, glancing through
+the patch, the function blk_queue_issue_flush_fn() seems to be have been
+made redundant. Based on that, this looks like the correct fix but it needs
+a review. Thanks
 
-Cheers,
-Jarek P.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ drivers/block/ps3disk.c |   21 ---------------------
+ 1 file changed, 21 deletions(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc6-mm1-030_fix_ppc64_sata/drivers/block/ps3disk.c linux-2.6.23-rc6-mm1-035_fix_ppc64_ps3disk/drivers/block/ps3disk.c
+--- linux-2.6.23-rc6-mm1-030_fix_ppc64_sata/drivers/block/ps3disk.c	2007-09-11 03:50:29.000000000 +0100
++++ linux-2.6.23-rc6-mm1-035_fix_ppc64_ps3disk/drivers/block/ps3disk.c	2007-09-20 14:17:43.000000000 +0100
+@@ -414,26 +414,6 @@ static void ps3disk_prepare_flush(struct
+ 	req->cmd_type = REQ_TYPE_FLUSH;
+ }
+ 
+-static int ps3disk_issue_flush(struct request_queue *q, struct gendisk *gendisk,
+-			       sector_t *sector)
+-{
+-	struct ps3_storage_device *dev = q->queuedata;
+-	struct request *req;
+-	int res;
+-
+-	dev_dbg(&dev->sbd.core, "%s:%u\n", __func__, __LINE__);
+-
+-	req = blk_get_request(q, WRITE, __GFP_WAIT);
+-	ps3disk_prepare_flush(q, req);
+-	res = blk_execute_rq(q, gendisk, req, 0);
+-	if (res)
+-		dev_err(&dev->sbd.core, "%s:%u: flush request failed %d\n",
+-			__func__, __LINE__, res);
+-	blk_put_request(req);
+-	return res;
+-}
+-
+-
+ static unsigned long ps3disk_mask;
+ 
+ static DEFINE_MUTEX(ps3disk_mask_mutex);
+@@ -506,7 +486,6 @@ static int __devinit ps3disk_probe(struc
+ 	blk_queue_dma_alignment(queue, dev->blk_size-1);
+ 	blk_queue_hardsect_size(queue, dev->blk_size);
+ 
+-	blk_queue_issue_flush_fn(queue, ps3disk_issue_flush);
+ 	blk_queue_ordered(queue, QUEUE_ORDERED_DRAIN_FLUSH,
+ 			  ps3disk_prepare_flush);
+ 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
