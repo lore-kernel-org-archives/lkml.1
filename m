@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbXITFGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbXITFRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928AbXITFGX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 01:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbXITFGQ
+	id S1754770AbXITFRP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 01:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbXITFRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 01:06:16 -0400
-Received: from smtp102.plus.mail.re1.yahoo.com ([69.147.102.65]:46661 "HELO
-	smtp102.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750899AbXITFGP (ORCPT
+	Thu, 20 Sep 2007 01:17:01 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:47360 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbXITFRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 01:06:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=JMujZO6raE4UbY1XFYhG8Ux8SOcMDAoLpJb46HiiQwXgMBuTyYlSwBpZn+5wEpE6/VtTDrD0u4J0zysWsdAdCFWGFt3PcI1lsk+d7zjoJHVmIUlLEoOBKq5ZdVbh6BSa20QVpGSuQesA4TZwg/zoAkt1GLe8rqk32Eo2xswvQ/4=  ;
-X-YMail-OSG: 7oz8oMQVM1kEzuqkrfwqJZJFUhM4HxMpS9kcdTL1xiIVxA_STOtuyW1AfcUfFD6eZZAg16G0cA--
-Date: Thu, 20 Sep 2007 07:05:37 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] fs/isofs/namei.c: Remove uninitialized local vars warning,
-	was: Re: Arr! Linux 2.6.23-rc7
-Message-ID: <20070920050537.GA9244@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <alpine.LFD.0.999.0709191605530.16478@woody.linux-foundation.org>
+	Thu, 20 Sep 2007 01:17:00 -0400
+Message-Id: <46F20233.1040209@mxs.nes.nec.co.jp>
+Date: Thu, 20 Sep 2007 14:16:35 +0900
+From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.0.999.0709191605530.16478@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: David Rientjes <rientjes@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
+       kexec-ml <kexec@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] [-mm patch]  Add nodemask_t's size and NR_FREE_PAGES's
+ value to vmcoreinfo_data.
+References: <46E9F6A9.8060500@mxs.nes.nec.co.jp> <46E9F854.9030804@mxs.nes.nec.co.jp> <alpine.DEB.0.9999.0709132034540.30494@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.0.9999.0709132034540.30494@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-   since there's no iso9660 maintainer i send this one to you :).
----
-From: Borislav Petkov <bbpetkov@yahoo.de>
+Hi David,
 
-shut up those:
-fs/isofs/namei.c: In function 'isofs_lookup':
-fs/isofs/namei.c:161: warning: 'offset' may be used uninitialized in this function
-fs/isofs/namei.c:161: warning: 'block' may be used uninitialized in this function
+David Rientjes wrote:
+> On Fri, 14 Sep 2007, Ken'ichi Ohmichi wrote:
+>
+>> diff -rpuN a/include/linux/kexec.h b/include/linux/kexec.h
+>> --- a/include/linux/kexec.h    2007-09-10 23:28:42.000000000 +0900
+>> +++ b/include/linux/kexec.h    2007-09-10 23:29:52.000000000 +0900
+>> @@ -132,11 +132,16 @@ unsigned long paddr_vmcoreinfo_note(void
+>>  #define SIZE(name) \
+>>      vmcoreinfo_append_str("SIZE(%s)=%lu\n", #name, \
+>>                    (unsigned long)sizeof(struct name))
+>> +#define TYPEDEF_SIZE(name) \
+>> +    vmcoreinfo_append_str("SIZE(%s)=%lu\n", #name, \
+>> +                  (unsigned long)sizeof(name))
+>>   #define OFFSET(name, field) \
+>>      vmcoreinfo_append_str("OFFSET(%s.%s)=%lu\n", #name, #field, \
+>>                    (unsigned long)&(((struct name *)0)->field))
+>>  #define LENGTH(name, value) \
+>>      vmcoreinfo_append_str("LENGTH(%s)=%lu\n", #name, (unsigned long)value)
+>> +#define NUMBER(name) \
+>> +    vmcoreinfo_append_str("NUMBER(%s)=%ld\n", #name, (long)name)
+>>  #define CONFIG(name) \
+>>      vmcoreinfo_append_str("CONFIG_%s=y\n", #name)
+>>
+>
+> The #define SIZE() should be renamed STRUCT_SIZE() since it's always returning the size of the struct with a given name.  This would allow TYPEDEF_SIZE() to simply become SIZE() since it need not be used exclusively for typedefs.
 
-By the way, they get overwritten at the end of isofs_find_entry().
+Thank you for the comment.
+That sounds good, I'll post a new patch including it.
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 
- fs/isofs/namei.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---
---- 23-rc7/fs/isofs/namei.c.orig	2007-09-20 06:34:19.000000000 +0200
-+++ 23-rc7/fs/isofs/namei.c	2007-09-20 06:35:23.000000000 +0200
-@@ -158,7 +158,8 @@ isofs_find_entry(struct inode *dir, stru
- struct dentry *isofs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
- {
- 	int found;
--	unsigned long block, offset;
-+	unsigned long uninitialized_var(block);
-+	unsigned long uninitialized_var(offset);
- 	struct inode *inode;
- 	struct page *page;
- 
--- 
-Regards/Gruﬂ,
-    Boris.
+Thanks
+Ken'ichi Ohmichi
