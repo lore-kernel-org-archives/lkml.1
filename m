@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbXITH05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbXITH1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbXITH05 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759822AbXITH0T
+	id S1760656AbXITH1X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759922AbXITH0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:26:19 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:49405 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758073AbXITH0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:26:16 -0400
-Date: Thu, 20 Sep 2007 09:28:21 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-Message-ID: <20070920072821.GA2065@ff.dom.local>
-References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net>
+	Thu, 20 Sep 2007 03:26:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:23292 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758617AbXITH0W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 03:26:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
+        b=aws9xKN28loQ+ZRflhy6/WuDqZpwA4yhCzwX14TgZrcsY2smPMukHrC0GtlH7UPkH9GBL+Zj/gnXhPgOjMslpInDSD/jVixufKjnD/6G77F49B+26YzpVSZOsxvawazSZhCg7BBUfg1T1hI9iIdZDEPOq60CxJHhXbLRNdLTZ+k=
+Subject: [PATCHSET 2/4] sysfs: allow suicide
+In-Reply-To: 
+X-Mailer: git-send-email
+Date: Thu, 20 Sep 2007 16:26:15 +0900
+Message-Id: <11902731752407-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F2123A.9070201@bull.net>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Tejun Heo <htejun@gmail.com>
+To: ebiederm@xmission.com, cornelia.huck@de.ibm.com, greg@kroah.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, htejun@gmail.com
+Content-Transfer-Encoding: 7BIT
+From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 08:24:58AM +0200, Nadia Derbey wrote:
-> Jarek Poplawski wrote:
-> >On 18-09-2007 16:55, Nadia Derbey wrote:
-> >...
-> >
-> >>Well, reviewing the code I found another place where the 
-> >>rcu_read_unlock() was missing.
-> >>I'm so sorry for the inconvenience. It's true that I should have tested 
-> >>with CONFIG_PREEMPT=y :-(
-> >>Now, the ltp tests pass even with this option set...
-> >>
-> >>In attachment you'll find a patch thhat
-> >>1) adds the missing rcu_read_unlock()
-> >>2) replaces Andrew's fix with a new one: the rcu_read_lock() is now 
-> >>taken in ipc_lock() / ipc_lock_by_ptr() and released in ipc_unlock(), 
-> >>exactly as it was done in the ref code.
-> >
-> >
-> >BTW, probably I miss something, but I wonder, how this RCU is working
-> >here. E.g. in msg.c do_msgsnd() there is:
-> >
-> >msq = msg_lock_check(ns, msqid);
-> >...
-> >
-> >msg_unlock(msq);
-> >schedule();
-> >
-> >ipc_lock_by_ptr(&msq->q_perm);
-> >
-> >Since msq_lock_check() gets msq with ipc_lock_check() under
-> >rcu_read_lock(), and then goes msg_unlock(msq) (i.e. ipc_unlock())
-> >with rcu_read_unlock(), is it valid to use this with
-> >ipc_lock_by_ptr() yet?
-> 
-> Before Calling msg_unlock() they call ipc_rcu_getref() that increments a 
-> refcount in the rcu header for the msg structure. This guarantees that 
-> the the structure won't be freed before they relock it. Once the 
-> structure is relocked by ipc_lock_by_ptr(), they do the symmetric 
-> operation i.e. ipc_rcu_putref().
+Hello, all.
 
-Yes, I've found this later too - sorry for bothering. I was mislead
-by the code like this:
+This is the second patchset of four sysfs update patchset series[1]
+and to be applied on top of the first patchset[1].
 
-struct kern_ipc_perm *ipc_lock(struct ipc_ids *ids, int id)
-{
-        struct kern_ipc_perm *out;
-        int lid = ipcid_to_idx(id);
+Currently, sysfs files which want to kill themselves should ask
+someone else (workqueue) to kill it, which is so inhumane.  This
+patchset updates sysfs file implementation such that sysfs files can
+commit suicide peacefully.
 
-        rcu_read_lock();
-        out = idr_find(&ids->ipcs_idr, lid);
-        if (out == NULL) {
-                rcu_read_unlock();
-                return ERR_PTR(-EINVAL);
-        }
+Global sledgehammer module unload inhibition/delay mechanism is
+implemented and used to prevent premature unload while suicide is in
+progress.  Suicide attempt is detected by scanning sysfs_buffers for
+matching accessor.  If suicide is detected, active references the
+accessor were holding are dropped early such that the suiciding node
+can be deactivated without deadlock.
 
-which seems to suggest "out" is an RCU protected pointer, so, I
-thought these refcounts were for something else. But, after looking
-at how it's used it turns out to be ~90% wrong: probably 9 out of 10
-places use refcouning around this, so, these rcu_read_locks() don't
-work here at all. So, probably I miss something again, but IMHO,
-these rcu_read_locks/unlocks could be removed here or in
-ipc_lock_by_ptr() and it should be enough to use them directly, where
-really needed, e.g., in msg.c do_msgrcv().
+As active references go away early, the module basing the code the
+accessor is running can go away before it finishes.  Global module
+unload inhibition is used here to prevent that until accessor callback
+is complete.
 
-BTW, I've found this comment, which, at least for me, explains very
-good, what's going on here:
+This patchset contains the following four patches.
 
-/* Lockless receive, part 3:
- * Acquire the queue spinlock.
- */
- ipc_lock_by_ptr(&msq->q_perm);
+ 0001-module-implement-module_inhibit_unload.patch
+ 0002-sysfs-make-the-sysfs_addrm_cxt-removed-list-FIFO.patch
+ 0003-sysfs-care-free-suicide-for-sysfs-files.patch
+ 0004-sysfs-make-suicidal-nodes-just-do-it-directly.patch
 
-Thanks,
-Jarek P.
+0001 needs Rusty Russell's ack.
+
+Thanks.
+
+--
+tejun
+
+[1] http://thread.gmane.org/gmane.linux.kernel/582105
+
+
