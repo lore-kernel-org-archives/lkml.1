@@ -1,72 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332AbXITTm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbXITToo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752332AbXITTm4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbXITTms
+	id S1752992AbXITToo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXITToe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:42:48 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:36981 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751151AbXITTmr (ORCPT
+	Thu, 20 Sep 2007 15:44:34 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55646 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751334AbXITToc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:42:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=RJrwiPozk/0SOKFt9lXKcKH4jQ4dadZ2GdCdZu3nFXCO6nyWazqzW1v6C+uDSt1271Kq/rs28Kd+J54g1aRICbvaq2ymB0NPGsdRqJvFS4EFPVm8cnz3etVdtFd1ENnwyN76Yh4ykqp6oOtvpY1CueywwsdVZ4nPoEZHyEGQCBo=
-Date: Thu, 20 Sep 2007 15:42:31 -0400
-To: Paul Mundt <lethal@linux-sh.org>, Michael Buesch <mb@bu3sch.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] ssb: Make pcmciahost depend on PCMCIA=y
-Message-ID: <20070920194231.GB31759@nineveh.local>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Michael Buesch <mb@bu3sch.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20070912021100.GB26827@linux-sh.org> <200709121209.10068.mb@bu3sch.de> <20070912101745.GA23417@linux-sh.org> <200709121259.00700.mb@bu3sch.de> <20070913014333.GA26541@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070913014333.GA26541@linux-sh.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: jfannin@gmail.com (Joseph Fannin)
+	Thu, 20 Sep 2007 15:44:32 -0400
+Date: Thu, 20 Sep 2007 12:44:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Kamalesh Babulal" <kamalesh.babulal@gmail.com>
+Cc: "Joseph Fannin" <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       "Mike Travis" <travis@sgi.com>, netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1
+Message-Id: <20070920124420.2a57ea7b.akpm@linux-foundation.org>
+In-Reply-To: <f86d6cc00709200912j37a3218boa882a044c0610779@mail.gmail.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070919235828.GA31759@nineveh.local>
+	<20070919170934.84f44e05.akpm@linux-foundation.org>
+	<f86d6cc00709200721h6e8f7cf8xa2264e9d1f88883b@mail.gmail.com>
+	<f86d6cc00709200912j37a3218boa882a044c0610779@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 10:43:33AM +0900, Paul Mundt wrote:
-> On Wed, Sep 12, 2007 at 12:59:00PM +0200, Michael Buesch wrote:
-> > On Wednesday 12 September 2007 12:17:45 Paul Mundt wrote:
-> > > On Wed, Sep 12, 2007 at 12:09:09PM +0200, Michael Buesch wrote:
-> > > > There we go. The usual SELECT dependency hell again...
-> > > > Would changing SSB_PCMCIAHOST_POSSIBLE to tristate also fix it?
-> > > > What would be the sideeffects?
-> > > >
-> > > I tried that first, if you do that you have to change the default to
-> > > SSB && PCMCIA, and then anything that depends on it also has to be a
-> > > tristate. That worked ok for SSB_PCMCIAHOST, but it didn't work ok for
-> > > the b43 wireless + PCMCIA, which is why I opted for the PCMCIA=y thing
-> > > instead, which makes sure that SSB_PCMCIAHOST can't be enabled if PCMCIA
-> > > is modular.
-> >
-> > Ok, so much for "SELECT is easy and it works if used correctly..." :)
-> > Well, let's apply that patch then. It needlessly restricts the
-> > choice to not allow modular pcmcia in that case, though.
-> >
-> That is the compromise, yes. Feel free to propose a better solution ;-)
+On Thu, 20 Sep 2007 21:42:44 +0530
+"Kamalesh Babulal" <kamalesh.babulal@gmail.com> wrote:
 
-    I just ran into this link error (CONFIG_PCMCIA=m;
-CONFIG_SSB_PCMCIAHOST=y).  No big deal; I don't have the hardware.
-
-    But yeah, this is still a problem.
-
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> ...
 >
+> > i have tested the change with cross compiler for power405 with the same
+> > .config
+> > with which the build problem is solved, but the build fails with another
+> > error
+> >
+> >   CC [M]  drivers/net/mace.o
+> > drivers/net/mace.c: In function 'mace_handle_misc_intrs':
+> > drivers/net/mace.c:642: error: 'dev' undeclared (first use in this
+> > function)
+> > drivers/net/mace.c:642: error: (Each undeclared identifier is reported
+> > only once
+> > drivers/net/mace.c:642: error: for each function it appears in.)
+> > make[2]: *** [drivers/net/mace.o] Error 1
+> > make[1]: *** [drivers/net] Error 2
+> > make: *** [drivers] Error 2
+> >
+> > This patch fixes the build failure
+> >
+> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > ---
+> > --- linux-2.6.23-rc6 /drivers/net/mace.c 2007-09-20 17:16:50.000000000+0530
+> > +++ linux-2.6.23-rc6/drivers/net/~mace.c        2007-09-20 17:12:
+> > 47.000000000 +0530
+> > @@ -633,7 +633,7 @@ static void mace_set_multicast(struct ne
+> >      spin_unlock_irqrestore(&mp->lock, flags);
+> >  }
+> >
+> > -static void mace_handle_misc_intrs(struct mace_data *mp, int intr)
+> > +static void mace_handle_misc_intrs(struct mace_data *mp, int intr, struct
+> > net_device *dev)
+> >  {
+> >      volatile struct mace __iomem *mb = mp->mace;
+> >      static int mace_babbles, mace_jabbers;
+> > @@ -669,7 +669,7 @@ static irqreturn_t mace_interrupt(int ir
+> >      spin_lock_irqsave(&mp->lock, flags);
+> >      intr = in_8(&mb->ir);              /* read interrupt register */
+> >      in_8(&mb->xmtrc);                  /* get retries */
+> > -    mace_handle_misc_intrs(mp, intr);
+> > +    mace_handle_misc_intrs(mp, intr, dev);
+> >
+> >      i = mp->tx_empty;
+> >      while (in_8(&mb->pr) & XMTSV) {
+> > @@ -682,7 +682,7 @@ static irqreturn_t mace_interrupt(int ir
+> >          */
+> >         intr = in_8(&mb->ir);
+> >         if (intr != 0)
+> > -           mace_handle_misc_intrs(mp, intr);
+> > +           mace_handle_misc_intrs(mp, intr, dev);
+> >         if (mp->tx_bad_runt) {
+> >             fs = in_8(&mb->xmtfs);
+> >             mp->tx_bad_runt = 0;
+> > @@ -817,7 +817,7 @@ static void mace_tx_timeout(unsigned lon
+> >         goto out;
+> >
+> >      /* update various counters */
+> > -    mace_handle_misc_intrs(mp, in_8(&mb->ir));
+> > +    mace_handle_misc_intrs(mp, in_8(&mb->ir), dev);
+> >
+> >      cp = mp->tx_cmds + NCMDS_TX * mp->tx_empty;
 
---
-Joseph Fannin
-jfannin@gmail.com
+Thanks, I will fix the wordwrapping in your patch and shall send it in to
+David. 
 
+> 
+> Hi,
+> 
+> The build fails when compiling with the same .config over cross compiler for
+> powerpc405
+> 
+> drivers/net/mv643xx_eth.c: In function 'mv643xx_eth_int_handler':
+> drivers/net/mv643xx_eth.c:564: error: 'bp' undeclared (first use in this
+> function)
+> drivers/net/mv643xx_eth.c:564: error: (Each undeclared identifier is
+> reported only once
+> drivers/net/mv643xx_eth.c:564: error: for each function it appears in.)
+> drivers/net/mv643xx_eth.c: At top level:
+> drivers/net/mv643xx_eth.c:1010: error: conflicting types for 'mv643xx_poll'
+> drivers/net/mv643xx_eth.c:68: error: previous declaration of 'mv643xx_poll'
+> was here
+> make[2]: *** [drivers/net/mv643xx_eth.o] Error 1
+> make[1]: *** [drivers/net] Error 2
+> make: *** [drivers] Error 2
+
+Yes, rather a lot of net drivers got broken in easy-to-fix ways.
