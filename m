@@ -1,50 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbXITMFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbXITMHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbXITMFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 08:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbXITMFp
+	id S1755559AbXITMHW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 08:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbXITMHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 08:05:45 -0400
-Received: from il.qumranet.com ([82.166.9.18]:52519 "EHLO il.qumranet.com"
+	Thu, 20 Sep 2007 08:07:10 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60131 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbXITMFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 08:05:44 -0400
-Message-ID: <46F26208.309@qumranet.com>
-Date: Thu, 20 Sep 2007 14:05:28 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Jesse Barnes <jesse.barnes@intel.com>, Howard Chu <hyc@symas.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MTRR initialization
-References: <46EAB7DA.10507@symas.com>	<200709191452.57505.jesse.barnes@intel.com> <p73d4wdal00.fsf@bingen.suse.de>
-In-Reply-To: <p73d4wdal00.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752896AbXITMHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 08:07:08 -0400
+Date: Thu, 20 Sep 2007 14:08:34 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Shlomi Fish <shlomif-lkml@freehackers.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-rc4] qconf ("make xconfig") Search Dialog Enhancement (rev8)
+Message-ID: <20070920120834.GA10427@uranus.ravnborg.org>
+References: <200709132252.20719.shlomif@freehackers.org> <Pine.LNX.4.64.0709160043430.1817@scrub.home> <200709201350.43553.shlomif-lkml@freehackers.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709201350.43553.shlomif-lkml@freehackers.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Jesse Barnes <jesse.barnes@intel.com> writes:
->   
->> To do this in a nicer way (and be less vulnerable to similar BIOS 
->> funkiness) the kernel really needs full PAT support.  That should allow 
->> WC over WB and WC over UC mappings to occur, at least if I'm 
->> remembering the docs right...
->>     
->
-> PAT only really helps for device driver performance optimizations.
-> But if the basic WB MTRRs are wrong PAT cannot really salvage it. 
->   
+Hi Shlomi Fish.
 
-Is there any reason not to set the MTRRs to define the entire memory as 
-write back, and use PAT exclusively for setting cacheability?
+When you address the comments of Roman just sent a replacemnt
+patch. I will drop the one I have in kbuild.git then.
 
-On my home machine for instance, the BIOS uses all 8 MTRRs leaving none 
-for X.  I hacked it by merging a couple of MTRRs but this isn't a 
-generic solution.
-
--- 
-error compiling committee.c: too many arguments to function
-
+	Sam
