@@ -1,72 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbXITIlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760776AbXITImL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759489AbXITIlc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 04:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbXITIlY
+	id S1760776AbXITImL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 04:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXITIl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 04:41:24 -0400
-Received: from sacred.ru ([62.205.161.221]:50786 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751975AbXITIlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 04:41:24 -0400
-Message-ID: <46F23198.6070004@openvz.org>
-Date: Thu, 20 Sep 2007 12:38:48 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 20 Sep 2007 04:41:56 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:55794 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754319AbXITIlz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 04:41:55 -0400
+Message-ID: <46F2324E.9020707@fr.ibm.com>
+Date: Thu, 20 Sep 2007 10:41:50 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Fix potential OOPS in generic_setlease()
-References: <46F1317D.6010309@openvz.org> <20070919193001.GH5946@fieldses.org>
-In-Reply-To: <20070919193001.GH5946@fieldses.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-rc6-mm1 - make access to tasks nsproxy ligther (fix) 
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 20 Sep 2007 12:41:10 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Wed, Sep 19, 2007 at 06:26:05PM +0400, Pavel Emelyanov wrote:
->> This code is run under lock_kernel(), which is dropped during
->> sleeping operations, so the following race is possible:
->>
->> CPU1:                                CPU2:
->>   vfs_setlease();                    vfs_setlease();
->>   lock_kernel();
->>                                      lock_kernel(); /* spin */
->>   generic_setlease():
->>     ...
->>     for (before = ...)
->>     /* here we found some lease after
->>      * which we will insert the new one
->>      */
->>     fl = locks_alloc_lock();
->>     /* go to sleep in this allocation and
->>      * drop the BKL
->>      */
->>                                      generic_setlease():
->>                                        ...
->>                                        for (before = ...)
->>                                        /* here we find the "before" pointing
->>                                         * at the one we found on CPU1
->>                                         */
->>                                       ->fl_change(my_before, arg);
->>                                               lease_modify();
->>                                                      locks_free_lock();
->>                                                      /* and we freed it */
->>                                      ...
->>                                      unlock_kernel();
->>    locks_insert_lock(before, fl);
->>    /* OOPS! We have just tried to add the lease
->>     * at the tail of already removed one
->>     */
-> 
-> Thanks for spotting this!
-> 
-> But--careful-- it looks like "fl" is also used as a temporary variable
-> in a loop between the new and old location of that allocation.  Isn't
-> that a bug?
+Hello !
 
-OOPS! Good catch, thanks. I will resend the patch shortly.
+Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
+
+make-access-to-tasks-nsproxy-lighter.patch breaks unshare()
+
+when called from unshare(), switch_task_namespaces() takes an 
+extra refcount on the nsproxy, leading to a memory leak of 
+nsproxy objects. 
+
+Now the problem is that we still need that extra ref when called 
+from daemonize(). Here's an ugly fix for it.
+
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+---
+ include/linux/nsproxy.h |    5 +++++
+ kernel/exit.c           |    2 ++
+ kernel/nsproxy.c        |    7 -------
+ 3 files changed, 7 insertions(+), 7 deletions(-)
+
+Index: 2.6.23-rc6-mm1/kernel/nsproxy.c
+===================================================================
+--- 2.6.23-rc6-mm1.orig/kernel/nsproxy.c
++++ 2.6.23-rc6-mm1/kernel/nsproxy.c
+@@ -25,11 +25,6 @@ static struct kmem_cache *nsproxy_cachep
+ 
+ struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
+ 
+-static inline void get_nsproxy(struct nsproxy *ns)
+-{
+-	atomic_inc(&ns->count);
+-}
+-
+ /*
+  * creates a copy of "orig" with refcount 1.
+  */
+@@ -208,8 +203,6 @@ void switch_task_namespaces(struct task_
+ 	if (ns == new)
+ 		return;
+ 
+-	if (new)
+-		get_nsproxy(new);
+ 	rcu_assign_pointer(p->nsproxy, new);
+ 
+ 	if (ns && atomic_dec_and_test(&ns->count)) {
+Index: 2.6.23-rc6-mm1/kernel/exit.c
+===================================================================
+--- 2.6.23-rc6-mm1.orig/kernel/exit.c
++++ 2.6.23-rc6-mm1/kernel/exit.c
+@@ -408,6 +408,8 @@ void daemonize(const char *name, ...)
+ 	current->fs = fs;
+ 	atomic_inc(&fs->count);
+ 
++	if (current->nsproxy != init_task.nsproxy)
++		get_nsproxy(init_task.nsproxy);
+ 	switch_task_namespaces(current, init_task.nsproxy);
+ 
+ 	exit_files(current);
+Index: 2.6.23-rc6-mm1/include/linux/nsproxy.h
+===================================================================
+--- 2.6.23-rc6-mm1.orig/include/linux/nsproxy.h
++++ 2.6.23-rc6-mm1/include/linux/nsproxy.h
+@@ -77,6 +77,11 @@ static inline void put_nsproxy(struct ns
+ 	}
+ }
+ 
++static inline void get_nsproxy(struct nsproxy *ns)
++{
++	atomic_inc(&ns->count);
++}
++
+ #ifdef CONFIG_CONTAINER_NS
+ int ns_container_clone(struct task_struct *tsk);
+ #else
