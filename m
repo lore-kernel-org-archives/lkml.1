@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbXITPYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbXITPhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbXITPYY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 11:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbXITPYQ
+	id S1756860AbXITPhN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 11:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbXITPg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 11:24:16 -0400
-Received: from hu-out-0506.google.com ([72.14.214.227]:42058 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbXITPYQ (ORCPT
+	Thu, 20 Sep 2007 11:36:58 -0400
+Received: from web36603.mail.mud.yahoo.com ([209.191.85.20]:27764 "HELO
+	web36603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755740AbXITPg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 11:24:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=R8SmZDfsdttZeH8mt9x99JlCCsUl36AnMsDr8AlflEps0ESYN5vh7giIfYB8pVP1B5hF+Ouhh97jN/ppU4c9lCwfti/61ueDqDXNnsC5lbBMRueHRNvLRKDb4RPk6pvbqz/4DKgM7ZOGcseWQbUCW2BPOX3ah05b0gnLiMPwMhU=
-Date: Thu, 20 Sep 2007 18:24:06 +0300
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Low Yucheng <ylow@andrew.cmu.edu>, Oleg Verych <olecom@flower.upol.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PROBLEM: System Freeze on Particular workload with kernel 2.6.22.6
-Message-ID: <20070920152406.GA2562@Ahmed>
-References: <20070919192546.GA3153@Ahmed> <20070920100031.GA2796@ff.dom.local>
+	Thu, 20 Sep 2007 11:36:57 -0400
+X-YMail-OSG: hCGPzH4VM1l88KYw1_PO2WeQjIk6HEl6Wo.Pa6NixPL9JC7eD04dSwpD6HVuUjnTq4cAgw4sbQ--
+X-RocketYMMF: rancidfat
+Date: Thu, 20 Sep 2007 08:36:57 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 3/3] CRED: Move the effective capabilities into the cred struct
+To: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Morgan <morgan@kernel.org>
+Cc: David Howells <dhowells@redhat.com>, viro@ftp.linux.org.uk,
+       hch@infradead.org, sds@tycho.nsa.gov, casey@schaufler-ca.com,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <1190295535.6763.29.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070920100031.GA2796@ff.dom.local>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <176624.5520.qm@web36603.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 12:00:31PM +0200, Jarek Poplawski wrote:
-> On 19-09-2007 21:25, Ahmed S. Darwish wrote:
-> > Hi Low,
+
+--- Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
+
+> On Wed, 2007-09-19 at 21:11 -0700, Andrew Morgan wrote:
+> > -----BEGIN PGP SIGNED MESSAGE-----
+> > Hash: SHA1
 > > 
-> > On Wed, Sep 19, 2007 at 12:16:39PM -0400, Low Yucheng wrote:
-> >> There are no additional console messages.
-> >> Not sure what this is: * no relevant Cc (memory management added)
+> > David Howells wrote:
+> > > Move the effective capabilities mask from the task struct into the
+> credentials
+> > > record.
+> > > 
+> > > Note that the effective capabilities mask in the cred struct shadows that
+> in
+> > > the task_struct because a thread can have its capabilities masks changed
+> by
+> > > another thread.  The shadowing is performed by update_current_cred()
+> which is
+> > > invoked on entry to any system call that might need it.
 > > 
-> > Relevant CCs means CCing maintainers or subsystem mailing lists related to your
-> > bug report. i.e, if it's a networking bug, you need to CC the linux kernel
-> > networking mailing list. If it's a kobject bug, you need to CC its maintainer
-> > (Greg) and so on.
+> > OOC If we were to simply drop support for one process changing the
+> > capabilities of another, would we need this patch?
 > 
-> So, which one do you recommend here?
+> No. This has nothing to do about one process changing some other
+> process' capabilities. It has to do with being able to pass security
+> information around the kernel beyond the confines of the task struct.
 > 
+> This is needed in order to deal with asynchronous i/o where security
+> checks may have to be deferred, and where the task struct may no longer
+> be available.
+> One example would be a failover situation when doing deferred writes: if
+> the first choice of storage medium is unavailable, and the kernel tries
+> to fail the write over to another storage. On NFS that might involve
+> having to build up a new RPCSEC_GSS security context for the new server.
+> Currently, you cannot do this safely because all the security info is
+> cached in the task struct and much of it cannot be copied.
 
-I'm not really sure, just wanted to solve Jarek's confusion :).
+Ok, what can't be copied, and why can't it be copied?
 
-Regards,
 
--- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+Casey Schaufler
+casey@schaufler-ca.com
