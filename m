@@ -1,62 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbXITQgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbXITQiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbXITQgS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 12:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbXITQgI
+	id S1757958AbXITQiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 12:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbXITQiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 12:36:08 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:57292 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756509AbXITQgG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 12:36:06 -0400
-Date: Thu, 20 Sep 2007 09:35:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Ph. Marek" <philipp@marek.priv.at>
-Cc: "Jeff Dike" <jdike@addtoit.com>, "Sam Ravnborg" <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: UML dead with current -git?
-Message-Id: <20070920093522.35264e5c.randy.dunlap@oracle.com>
-In-Reply-To: <41830.193.171.152.61.1190266958.squirrel@webmail.marek.priv.at>
-References: <200709181714.34035@x5>
-	<200709191443.24158@x5>
-	<20070919085032.dd5c1732.randy.dunlap@oracle.com>
-	<200709191817.51921@x5>
-	<20070919104703.4c9d432f.randy.dunlap@oracle.com>
-	<41830.193.171.152.61.1190266958.squirrel@webmail.marek.priv.at>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Sep 2007 12:38:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33371 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755240AbXITQiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 12:38:05 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [BUG]: ACPI wakup devices (/proc/acpi/wakeup) don't wake the system anymore after hibernation
+Date: Thu, 20 Sep 2007 12:37:27 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <200709201813.28497.maximlevitsky@gmail.com>
+In-Reply-To: <200709201813.28497.maximlevitsky@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200709201237.27469.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 07:42:38 +0200 (CEST) Ph. Marek wrote:
-
-> Hello Randy!
+On Thursday 20 September 2007 12:13, Maxim Levitsky wrote:
+> Hi,
 > 
-> > This doesn't work when there is no include/asm symlink.
-> Why? I specifically test for that, and tried it on my machine.
-> What's the bug?
-> ASMARCH should come out empty, and the ?= and $(or) should take care of
-> the rest ...
+> I had always a issue with wake-up devices after suspend-to disk.
+> 
+> Scenario 1:
+> 1) enable all devices devices: (echo "....." > /proc/acpi/wakeup), I have a script that does that
+> 2) suspend to ram
+> 3) hit a key on keyboard / mouse / send WOL magc packet, and system resumes in all cases
+> 4) repeat the above, and all the same, good.
+> 
+> Scenario 2:
+> 1) enable all devices devices: (echo "....." > /proc/acpi/wakeup)
+> 2) suspend to disk
+> 3) send WOL, doesn't wake the system, but should, and usb can't wake since it is powered off
+> 4) power system on, let system resume from disk, works
+> 5) suspend to ram
+> 6) hit a key on keyboard / mouse / send WOL magic packet, nothing works.
+> 
+> I never got to the bottom of that issue, and just gave up, but not long ago,
+> and I sadly don't remember exactly when / what .config I had, it begin to work
+> I decided that this bug is fixed, and since I suspend to disk rarely, I assumed it works
+> But now, I discovered that this bug is back, and I don't know what to do
+> I tried 2.6.22, 2.6.21-rc7, 2.6.23-rc1, and all fail in same way.
 
-Sorry, I can't reproduce it now.
-The variable was coming out empty though.  I saw path strings like
-  linux-2.6.23-rc6/arch//Makefile
+Yes, please try this one:
 
-Hopefully Sam can fix it all up.  :)
+commit ea256a37b093b9c0c0fa639eb9a0bff10df41998
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Wed Sep 12 14:04:32 2007 +0400
 
-> > It also didn't apply cleanly due to tab(s) being converted
-> > to spaces (but of course I fixed that part).
-> Yes, sorry. I'll try to attach inline next time.
+    ACPI: Hibernate erroneously disabled Suspend wakeup devices
+    
+    S4 suspend to disk will disable GPE's permanently
+    because acpi_gpe_sleep_prepare() does not have
+    a counterpart at resume time.  Thus, those devices
+    became unavailable for wakeup from subsequent
+    S3 suspend-to-ram.
+    
+    Here acpi_gpe_sleep_prepare() is removed, and upon suspend
+    acpi_enable_wakeup_device() gets its functionality.
+    Upon resume, acpi_disable_wakeup_device() restores the state.
+    
+    https://bugzilla.novell.com/show_bug.cgi?id=292300
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Acked-by:  Pavel Machek <pavel@suse.cz>
+    Signed-off-by: Len Brown <len.brown@intel.com>
 
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+diff --git a/drivers/acpi/sleep/poweroff.c b/drivers/acpi/sleep/poweroff.c
+index 39e40d5..2725a60 100644
+--- a/drivers/acpi/sleep/poweroff.c
++++ b/drivers/acpi/sleep/poweroff.c
+@@ -32,7 +32,6 @@ int acpi_sleep_prepare(u32 acpi_state)
+ 	ACPI_FLUSH_CPU_CACHE();
+ 	acpi_enable_wakeup_device_prep(acpi_state);
+ #endif
+-	acpi_gpe_sleep_prepare(acpi_state);
+ 	acpi_enter_sleep_state_prep(acpi_state);
+ 	return 0;
+ }
+diff --git a/drivers/acpi/sleep/sleep.h b/drivers/acpi/sleep/sleep.h
+index ff1f850..a2ea125 100644
+--- a/drivers/acpi/sleep/sleep.h
++++ b/drivers/acpi/sleep/sleep.h
+@@ -5,6 +5,5 @@ extern int acpi_suspend (u32 state);
+ extern void acpi_enable_wakeup_device_prep(u8 sleep_state);
+ extern void acpi_enable_wakeup_device(u8 sleep_state);
+ extern void acpi_disable_wakeup_device(u8 sleep_state);
+-extern void acpi_gpe_sleep_prepare(u32 sleep_state);
+ 
+ extern int acpi_sleep_prepare(u32 acpi_state);
+diff --git a/drivers/acpi/sleep/wakeup.c b/drivers/acpi/sleep/wakeup.c
+index 97c27dd..ed8e41b 100644
+--- a/drivers/acpi/sleep/wakeup.c
++++ b/drivers/acpi/sleep/wakeup.c
+@@ -64,36 +64,29 @@ void acpi_enable_wakeup_device(u8 sleep_state)
+ 	ACPI_FUNCTION_TRACE("acpi_enable_wakeup_device");
+ 	spin_lock(&acpi_device_lock);
+ 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+-		struct acpi_device *dev = container_of(node,
+-						       struct acpi_device,
+-						       wakeup_list);
+-
++		struct acpi_device *dev =
++			container_of(node, struct acpi_device, wakeup_list);
++		if (!dev->wakeup.flags.valid)
++			continue;
+ 		/* If users want to disable run-wake GPE,
+ 		 * we only disable it for wake and leave it for runtime
+ 		 */
+-		if (dev->wakeup.flags.run_wake && !dev->wakeup.state.enabled) {
+-			spin_unlock(&acpi_device_lock);
+-			acpi_set_gpe_type(dev->wakeup.gpe_device,
+-					  dev->wakeup.gpe_number,
+-					  ACPI_GPE_TYPE_RUNTIME);
+-			/* Re-enable it, since set_gpe_type will disable it */
+-			acpi_enable_gpe(dev->wakeup.gpe_device,
+-					dev->wakeup.gpe_number, ACPI_ISR);
+-			spin_lock(&acpi_device_lock);
++		if (!dev->wakeup.state.enabled ||
++		    sleep_state > (u32) dev->wakeup.sleep_state) {
++			if (dev->wakeup.flags.run_wake) {
++				spin_unlock(&acpi_device_lock);
++				/* set_gpe_type will disable GPE, leave it like that */
++				acpi_set_gpe_type(dev->wakeup.gpe_device,
++						  dev->wakeup.gpe_number,
++						  ACPI_GPE_TYPE_RUNTIME);
++				spin_lock(&acpi_device_lock);
++			}
+ 			continue;
+ 		}
+-
+-		if (!dev->wakeup.flags.valid ||
+-		    !dev->wakeup.state.enabled ||
+-		    (sleep_state > (u32) dev->wakeup.sleep_state))
+-			continue;
+-
+ 		spin_unlock(&acpi_device_lock);
+-		/* run-wake GPE has been enabled */
+ 		if (!dev->wakeup.flags.run_wake)
+ 			acpi_enable_gpe(dev->wakeup.gpe_device,
+ 					dev->wakeup.gpe_number, ACPI_ISR);
+-		dev->wakeup.state.active = 1;
+ 		spin_lock(&acpi_device_lock);
+ 	}
+ 	spin_unlock(&acpi_device_lock);
+@@ -112,26 +105,25 @@ void acpi_disable_wakeup_device(u8 sleep_state)
+ 
+ 	spin_lock(&acpi_device_lock);
+ 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+-		struct acpi_device *dev = container_of(node,
+-						       struct acpi_device,
+-						       wakeup_list);
++		struct acpi_device *dev =
++			container_of(node, struct acpi_device, wakeup_list);
+ 
+-		if (dev->wakeup.flags.run_wake && !dev->wakeup.state.enabled) {
+-			spin_unlock(&acpi_device_lock);
+-			acpi_set_gpe_type(dev->wakeup.gpe_device,
+-					  dev->wakeup.gpe_number,
+-					  ACPI_GPE_TYPE_WAKE_RUN);
+-			/* Re-enable it, since set_gpe_type will disable it */
+-			acpi_enable_gpe(dev->wakeup.gpe_device,
+-					dev->wakeup.gpe_number, ACPI_NOT_ISR);
+-			spin_lock(&acpi_device_lock);
++		if (!dev->wakeup.flags.valid)
+ 			continue;
+-		}
+-
+-		if (!dev->wakeup.flags.valid ||
+-		    !dev->wakeup.state.active ||
+-		    (sleep_state > (u32) dev->wakeup.sleep_state))
++		if (!dev->wakeup.state.enabled ||
++		    sleep_state > (u32) dev->wakeup.sleep_state) {
++			if (dev->wakeup.flags.run_wake) {
++				spin_unlock(&acpi_device_lock);
++				acpi_set_gpe_type(dev->wakeup.gpe_device,
++						  dev->wakeup.gpe_number,
++						  ACPI_GPE_TYPE_WAKE_RUN);
++				/* Re-enable it, since set_gpe_type will disable it */
++				acpi_enable_gpe(dev->wakeup.gpe_device,
++						dev->wakeup.gpe_number, ACPI_NOT_ISR);
++				spin_lock(&acpi_device_lock);
++			}
+ 			continue;
++		}
+ 
+ 		spin_unlock(&acpi_device_lock);
+ 		acpi_disable_wakeup_device_power(dev);
+@@ -142,7 +134,6 @@ void acpi_disable_wakeup_device(u8 sleep_state)
+ 			acpi_clear_gpe(dev->wakeup.gpe_device,
+ 				       dev->wakeup.gpe_number, ACPI_NOT_ISR);
+ 		}
+-		dev->wakeup.state.active = 0;
+ 		spin_lock(&acpi_device_lock);
+ 	}
+ 	spin_unlock(&acpi_device_lock);
+@@ -160,48 +151,20 @@ static int __init acpi_wakeup_device_init(void)
+ 		struct acpi_device *dev = container_of(node,
+ 						       struct acpi_device,
+ 						       wakeup_list);
+-
+ 		/* In case user doesn't load button driver */
+-		if (dev->wakeup.flags.run_wake && !dev->wakeup.state.enabled) {
+-			spin_unlock(&acpi_device_lock);
+-			acpi_set_gpe_type(dev->wakeup.gpe_device,
+-					  dev->wakeup.gpe_number,
+-					  ACPI_GPE_TYPE_WAKE_RUN);
+-			acpi_enable_gpe(dev->wakeup.gpe_device,
+-					dev->wakeup.gpe_number, ACPI_NOT_ISR);
+-			dev->wakeup.state.enabled = 1;
+-			spin_lock(&acpi_device_lock);
+-		}
++		if (!dev->wakeup.flags.run_wake || dev->wakeup.state.enabled)
++			continue;
++		spin_unlock(&acpi_device_lock);
++		acpi_set_gpe_type(dev->wakeup.gpe_device,
++				  dev->wakeup.gpe_number,
++				  ACPI_GPE_TYPE_WAKE_RUN);
++		acpi_enable_gpe(dev->wakeup.gpe_device,
++				dev->wakeup.gpe_number, ACPI_NOT_ISR);
++		dev->wakeup.state.enabled = 1;
++		spin_lock(&acpi_device_lock);
+ 	}
+ 	spin_unlock(&acpi_device_lock);
+-
+ 	return 0;
+ }
+ 
+ late_initcall(acpi_wakeup_device_init);
+-
+-/*
+- * Disable all wakeup GPEs before entering requested sleep state.
+- *	@sleep_state:	ACPI state
+- * Since acpi_enter_sleep_state() will disable all
+- * RUNTIME GPEs, we simply mark all GPES that
+- * are not enabled for wakeup from requested state as RUNTIME.
+- */
+-void acpi_gpe_sleep_prepare(u32 sleep_state)
+-{
+-	struct list_head *node, *next;
+-
+-	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+-		struct acpi_device *dev = container_of(node,
+-						       struct acpi_device,
+-						       wakeup_list);
+-
+-		/* The GPE can wakeup system from this state, don't touch it */
+-		if ((u32) dev->wakeup.sleep_state >= sleep_state)
+-			continue;
+-		/* acpi_set_gpe_type will automatically disable GPE */
+-		acpi_set_gpe_type(dev->wakeup.gpe_device,
+-				  dev->wakeup.gpe_number,
+-				  ACPI_GPE_TYPE_RUNTIME);
+-	}
+-}
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index 86aea44..17500a1 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -264,7 +264,6 @@ struct acpi_device_wakeup_flags {
+ 
+ struct acpi_device_wakeup_state {
+ 	u8 enabled:1;
+-	u8 active:1;
+ };
+ 
+ struct acpi_device_wakeup {
