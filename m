@@ -1,99 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbXITVa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbXITVc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbXITVa7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 17:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXITVas
+	id S1754499AbXITVc1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 17:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXITVcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 17:30:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41480 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754937AbXITVap (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 17:30:45 -0400
-Date: Thu, 20 Sep 2007 14:29:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Matthias Hensler <matthias@wspse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       richard kennedy <richard@rsk.demon.co.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-Message-Id: <20070920142927.d87ab5af.akpm@linux-foundation.org>
-In-Reply-To: <46F2E103.8000907@redhat.com>
-References: <46B10BB7.60900@redhat.com>
-	<20070803113407.0b04d44e.akpm@linux-foundation.org>
-	<20070804084426.GA20464@kobayashi-maru.wspse.de>
-	<20070809095943.GA7763@kobayashi-maru.wspse.de>
-	<20070809095534.25ae1c42.akpm@linux-foundation.org>
-	<46F2E103.8000907@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Sep 2007 17:32:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40481 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbXITVcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 17:32:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when booted, USB-related WARNING
+Date: Thu, 20 Sep 2007 23:45:00 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
+       linux-usb-devel@lists.sourceforge.net,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@osdl.org>,
+       miklos@szeredi.hu
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <200709202239.11070.rjw@sisk.pl> <1190322532.3085.42.camel@chaos>
+In-Reply-To: <1190322532.3085.42.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709202345.01682.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 17:07:15 -0400
-Chuck Ebbert <cebbert@redhat.com> wrote:
+Thomas,
 
-> On 08/09/2007 12:55 PM, Andrew Morton wrote:
-> > On Thu, 9 Aug 2007 11:59:43 +0200 Matthias Hensler <matthias@wspse.de> wrote:
-> > 
-> >> On Sat, Aug 04, 2007 at 10:44:26AM +0200, Matthias Hensler wrote:
-> >>> On Fri, Aug 03, 2007 at 11:34:07AM -0700, Andrew Morton wrote:
-> >>> [...]
-> >>> I am also willing to try the patch posted by Richard.
-> >> I want to give some update here:
-> >>
-> >> 1. We finally hit the problem on a third system, with a total different
-> >>    setup and hardware. However, again high I/O load caused the problem
-> >>    and the affected filesystems were mounted with noatime.
-> >>
-> >> 2. I installed a recompiled kernel with just the two line patch from
-> >>    Richard Kennedy (http://lkml.org/lkml/2007/8/2/89). That system has 5
-> >>    days uptime now and counting. I believe the patch fixed the problem.
-> >>    However, I will continue running "vmstat 1" and the endless loop of
-> >>    "cat /proc/meminfo", just in case I am wrong.
-> >>
-> > 
-> > Did we ever see the /proc/meminfo and /proc/vmstat output during the stall?
-> > 
-> > If Richard's patch has indeed fixed it then this confirms that we're seeing
-> > contention over the dirty-memory limits.  Richard's patch isn't really the
-> > right one because it allows unlimited dirty-memory windup in some situations
-> > (large number of disks with small writes, or when we perform queue congestion
-> > avoidance).
-> > 
-> > As you're seeing this happening when multiple disks are being written to it is
-> > possible that the per-device-dirty-threshold patches which recently went into
-> > -mm (and which appear to have a bug) will fix it.
-> > 
-> > But I worry that the stall appears to persist *forever*.  That would indicate
-> > that we have a dirty-memory accounting leak, or that for some reason the
-> > system has decided to stop doing writeback to one or more queues (might be
-> > caused by an error in a lower-level driver's queue congestion state management).
-> > 
-> > If it is the latter, then it could be that running "sync" will clear the
-> > problem.  Temporarily, at least.  Because sync will ignore the queue congestion
-> > state.
-> > 
+On Thursday, 20 September 2007 23:08, Thomas Gleixner wrote:
+> Rafael,
 > 
-> This is still a problem for people, and no fix is in sight until 2.6.24.
+> On Thu, 2007-09-20 at 22:39 +0200, Rafael J. Wysocki wrote:
+> > > Works as well. What's the difference between this and the real thing ?
+> > 
+> > The real thing also calls device_power_down(PMSG_FREEZE), which is a
+> > counterpart of sysdev_shutdown(), more or less, and I think that's what goes
+> > belly up.
+> > 
+> > You can use the patch below (on top of -rc6-mm1), which just disables the image
+> > creation (that should be irrelevant anyway) and see what happens.
+> 
+> In meantime I figured out what's happening. The ordering in
+> hibernate_snapshot() is wrong. It does:
+> 
+> 	swsusp_shrink_memory();
+>         suspend_console();
+>         device_suspend(PMSG_FREEZE);
+>         platform_prepare(platform_mode);
+> 
+> 	disable_nonboot_cpus();
+> 
+>         swsusp_suspend();
+> 
+> 	enable_nonboot_cpus();
+> 
+> 	platform_finish(platform_mode);
+>         device_resume();
+>         resume_console();
+> 
+> We disable everything in device_suspend()
 
-Any bugzilla urls or anything like that?
+No, we don't.  sysdevs are _not_ suspended in device_suspend().
+They are suspended in device_power_down(), which is called
+_after_ disable_nonboot_cpus() (from swsusp_suspend()).
 
-> Can we get some kind of band-aid, like making the endless 'for' loop in
-> balance_dirty_pages() terminate after some number of iterations? Clearly
-> if we haven't written "write_chunk" pages after a few tries, *and* we
-> haven't encountered congestion, there's no point in trying forever...
+> including timekeeping,
 
-Did my above questions get looked at?
+No, the timekeeping is suspended in device_power_down() (or at least it should
+be).
 
-Is anyone able to reproduce this?
+> so any  code which is depending on working timekeeping and timer
+> functionality (which is suspended in timekeeping_suspend() as well) is
+> busted. 
+> 
+> enable_nonboot_cpus() definitely relies on working timekeeping and
+> timers depending on the codepath. It's just a surprise that this did not
+> blow up earlier (also before clock events).
+> 
+> I changed the ordering of the above to:
+> 
+> 	disable_nonboot_cpus();
+> 
+> 	swsusp_shrink_memory();
+>         suspend_console();
+>         device_suspend(PMSG_FREEZE);
+>         platform_prepare(platform_mode);
+>         swsusp_suspend();
+> 	platform_finish(platform_mode);
+>         device_resume();
+>         resume_console();
+> 
+> 	enable_nonboot_cpus();
 
-Do we have a clue what's happening?
+Actually, we can't do this here, because of ACPI and some interrupt handling
+related problems.  Unfortunately, platform_finish() needs to go _after_
+enable_nonboot_cpus() and device_resume() needs to go after platform_finish().
+Analogously, disable_nonboot_cpus() has to go after platform_prepare().
 
-Is that function just spinning around, failing to start writeout against
-any pages at all?  If so, how come?
+Otherwise, some systems will break.
 
+> and non-surprisingly the "my VAIO needs help from keyboard" problem went
+> away immediately. See patch below. (on top of rc7-hrt1, -mm1 does not
+> work at all on my VAIO due to some yet not identified wreckage)
+
+Hm, I really don't know why it helps, but that's not because of the timekeeping
+suspend, IMO.
+
+> I did not yet look into the suspend to ram code, but I guess that there
+> is an equivalent problem.
+
+Yes, the code ordering is the same, but it's not totally wrong, IMHO.
+
+> But I have no idea why this affects Andrews jinxed VAIO (UP machine),
+> though I suspect that we have more timekeeping/timer depending code
+> somewhere waiting to bite us.
+
+That's possible.
+
+> Also I still need to debug why the HIBERNATION_TEST code path (which has
+> a msleep(5000) in it) does not fail,
+
+See above. :-)
+
+> but I postpone this until tomorrow morning. I'm dead tired after hunting
+> this Heisenbug which changes with every other printk added to the code.
+> I'm going to add some really noisy messages for everything which accesses
+> timekeeping / timers _after_ those systems have been shut down.
+> 
+> We really need to fix this once and forever _before_ 2.6.23 final, even
+> if it requires a -rc8.
+
+Agreed.
+
+Greetings,
+Rafael
