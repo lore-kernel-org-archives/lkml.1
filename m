@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbXITFxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbXITGIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757830AbXITFxc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 01:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbXITFxY
+	id S1756454AbXITGIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 02:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXITGIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 01:53:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32774 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754300AbXITFxY (ORCPT
+	Thu, 20 Sep 2007 02:08:09 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:39968 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbXITGII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 01:53:24 -0400
-Date: Wed, 19 Sep 2007 22:53:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Jason Wessel <jason.wessel@windriver.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, amitkale@linsyssoft.com,
-       trini@kernel.crashing.org
-Subject: Re: 2.6.23-rc6-mm1 powerpc - kgdb is broken
-Message-Id: <20070919225300.8c41a2e5.akpm@linux-foundation.org>
-In-Reply-To: <18162.967.558342.829193@cargo.ozlabs.ibm.com>
-References: <46F114D2.40809@linux.vnet.ibm.com>
-	<46F1700D.2020205@windriver.com>
-	<20070919123629.05e3a06c.akpm@linux-foundation.org>
-	<18162.967.558342.829193@cargo.ozlabs.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Sep 2007 02:08:08 -0400
+X-IronPort-AV: i="4.20,276,1186372800"; 
+   d="scan'208"; a="51875495:sNHT30428335"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Paul Mundt" <lethal@linux-sh.org>
+Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin relocations
+Date: Thu, 20 Sep 2007 02:08:29 -0400
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
+       "David McCullough" <David_Mccullough@securecomputing.com>,
+       uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com,
+       "Bernd Schmidt" <bernd.schmidt@analog.com>,
+       "Greg Ungerer" <gerg@snapgear.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, ysato@users.sourceforge.jp,
+       linux-m32r@ml.linux-m32r.org
+References: <1190102965.4406.9.camel@roc-desktop> <8bd0f97a0709192042g67f13337nf62978768b64ff80@mail.gmail.com> <20070920035412.GA31501@linux-sh.org>
+In-Reply-To: <20070920035412.GA31501@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709200208.29580.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 20 Sep 2007 06:08:05.0926 (UTC) FILETIME=[9C275C60:01C7FB4C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 15:23:19 +1000 Paul Mackerras <paulus@samba.org> wrote:
-
-> Andrew Morton writes:
-> 
-> > On Wed, 19 Sep 2007 13:53:01 -0500 Jason Wessel <jason.wessel@windriver.com> wrote:
+On Wed 19 Sep 2007 23:54, Paul Mundt pondered:
+> On Wed, Sep 19, 2007 at 11:42:53PM -0400, Mike Frysinger wrote:
+> > On 9/19/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> > > On Thu, Sep 20, 2007 at 11:55:25AM +1000, David McCullough wrote:
+> > > > Jivin Robin Getz lays it down ...
+> > > > > On Tue 18 Sep 2007 04:09, Bryan Wu pondered:
+> > > > > > This just adds minimum support for the Blackfin relocations,
+> > > > > > since we don't have enough space in each reloc. The idea
+> > > > > > is to store a value with one relocation so that subsequent 
+> > > > > > ones can  access it.
+> > > > >
+> > > > > Adding the other appropriate maintainers. for h8, m32r, sh and
+> > > > > v850. 
+> > > >
+> > > > Looks fine to me,  obviously impacts the existing arches very
+> > > > little.  Can't see why it shouldn't get included,
+> > >
+> > > I find it a bit disconcerting that blackfin already depends on this
+> > > in-tree without there being any earlier discussion on making these
+> > > changes.
 > > 
-> > > I am not exactly sure how to fix this...
-> > > 
-> > > Another git tree is overriding the patch to include/asm-powerpc/kgdb.h
-> > > in the -mm tree.   The patches as I provide them against 2.6.23-rc6 for
-> > > KGDB work correctly for ppc/powerpc in 32 and 64 bit modes and compile
-> > > correctly.
-> > > 
-> > > At issue is that someone merged a bogus copy of asm-ppc/kgdb.h from the
-> > > git tree in -mm that is called: git-powerpc.patch.
+> > not really ... this patch was posted before but was lost in the
+> > shuffle ... and i'm not quite sure what you mean by "depends on" ...
+> > if you want to use the FLAT file format on a Blackfin processor, then
+> > this patch is needed, but that isnt the only file format that works on
+> > the Blackfin port as we also have FDPIC ELF
 > > 
-> > Yeah, this was pointed out and largely ignored.
-> > 
-> > I'm afraid you'll have to wait until that powerpc stuff hits mainline
-> > and then fix it all up.
-> 
-> I could remove all the kgdb support from arch/powerpc as a first step,
-> if that would make it easier to pull in the new stuff...
-> 
+> What I mean by "depends on" is that for what you are attempting to
+> patch, your architecture has an in-tree dependency on something that hasn't
+> been discussed.
 
-I don't know if/when the new stuff will be merged - it's missed 2.6.24.
+"not been discussed" because it was sent to lkml -
+http://lkml.org/lkml/2006/9/22/60
+- and it got missed/left on the floor during the arch/blackfin inclusion 
+(which was huge), not because of any deliberate malicious intent on our part 
+to mislead or try to get this in now by doing an end around as you are 
+implying.
 
-It might be better to proceed as you intended.  Presumably it won't be too
-hard to hack things back into shape.
+Our mistake for not poking everyone/resending things sooner/before 
+arch/blackfin was included. Bryan will try to make sure that doesn't happen 
+again (right Bryan?) - like he is now, by poking/resending things, and making 
+sure that the appropriate maintainers (like you, if we are changing things 
+you maintain) are included. (which is what I think the problem was).
 
+If we can focus on the technical merits of things, rather than how we got 
+here - which I agree sucks - was our mistake - we are sorry - we will try to 
+make sure that it doesn't happen again - I think it would be time/effort 
+better spent.
+
+-Robin
+
+BTW - does anyone know Miles Bader's current email address? There isn't one 
+listed in MAINTAINERS - and he is still listed for the NEC V850?
