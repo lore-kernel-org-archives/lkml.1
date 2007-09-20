@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbXITELU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751987AbXITELq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbXITELU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 00:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXITELD
+	id S1751987AbXITELq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 00:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXITELe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 00:11:03 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55614 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750806AbXITELB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 00:11:01 -0400
-Message-ID: <46F1F2CE.7020300@pobox.com>
-Date: Thu, 20 Sep 2007 00:10:54 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 20 Sep 2007 00:11:34 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:44965 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbXITELc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 00:11:32 -0400
+Message-ID: <46F1F2EE.1010904@kernel.org>
+Date: Wed, 19 Sep 2007 21:11:26 -0700
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Ralf Baechle <ralf@linux-mips.org>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sb1250-mac.c: De-typedef, de-volatile, de-etc...
-References: <Pine.LNX.4.64N.0709101310030.25038@blysk.ds.pg.gda.pl> <46E8B56E.7060705@pobox.com> <Pine.LNX.4.64N.0709131506040.31069@blysk.ds.pg.gda.pl> <20070913151452.GB29665@linux-mips.org> <46E95C7F.1050302@pobox.com> <Pine.LNX.4.64N.0709141135290.1926@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0709141135290.1926@blysk.ds.pg.gda.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Howells <dhowells@redhat.com>
+CC: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 3/3] CRED: Move the effective capabilities into the cred
+ struct
+References: <20070919161749.8334.26064.stgit@warthog.procyon.org.uk> <20070919161805.8334.96808.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20070919161805.8334.96808.stgit@warthog.procyon.org.uk>
+X-Enigmail-Version: 0.94.4.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
->  Remove typedefs, volatiles and convert kmalloc()/memset() pairs to
-> kcalloc().  Also reformat the surrounding clutter.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
-> On Thu, 13 Sep 2007, Jeff Garzik wrote:
-> 
->> Net driver patches should apply on top of netdev-2.6.git#upstream, which is
->> where changes to net drivers are queued for the next release.
-> 
->  I can see Andrew has done some changes to the patch and applied it 
-> anyway, but here's a version I generated against your tree.  Please feel 
-> free to choose either.
-> 
->  You may be pleased (or less so) to hear that the version of sb1250-mac.c 
-> in your tree does not even build (because of 
-> 42d53d6be113f974d8152979c88e1061b953bd12) and the patch below does not 
-> address it.  I ran out of time in the evening, but I will send you a fix 
-> shortly.  To be honest I think even with bulk changes it may be worth 
-> checking whether they do not break stuff. ;-)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-hrm.  I cannot get this to apply on top of linux-2.6.git, 
-netdev-2.6.git#upstream (prior to net-2.6.24 rebase) or 
-netdev-2.6.git#upstream (after net-2.6.24 rebase)
+David Howells wrote:
+> Move the effective capabilities mask from the task struct into the credentials
+> record.
+> 
+> Note that the effective capabilities mask in the cred struct shadows that in
+> the task_struct because a thread can have its capabilities masks changed by
+> another thread.  The shadowing is performed by update_current_cred() which is
+> invoked on entry to any system call that might need it.
 
-ACK the changes
+OOC If we were to simply drop support for one process changing the
+capabilities of another, would we need this patch?
 
+Thanks
+
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFG8fLrQheEq9QabfIRApPOAKCHAoazhTTpY/qSjdmRZxDptqeqiACfd4Q7
+mdIPx+xpG19ih9uiVv1NSBU=
+=TfZd
+-----END PGP SIGNATURE-----
