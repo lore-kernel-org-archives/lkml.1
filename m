@@ -1,153 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbXITHKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbXITHMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759605AbXITHKw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756560AbXITHFh
+	id S1759293AbXITHMh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbXITHM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:05:37 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:64799 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756133AbXITHFc (ORCPT
+	Thu, 20 Sep 2007 03:12:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36803 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751727AbXITHM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:05:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=a7y8R0AP4FdW9S15eJEy0gj/5lbRvy8k9wQN/QCmMEAWJaatWtBeMOxvk0162+dU21NSX7rRLOdHIDabK8SQs6bTwAQiwYXP8m0wmbq1dLsKU/yiZrgNC4MKWvf+z8RvCctdJ6q3oonq6JQNJieQBrJxZAjeaHH4Sg9WElwtwQ8=
-Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 13/15] sysfs: move sysfs_dirent->s_children into sysfs_dirent->s_dir
-In-Reply-To: <11902719091692-git-send-email-htejun@gmail.com>
-X-Mailer: git-send-email
-Date: Thu, 20 Sep 2007 16:05:12 +0900
-Message-Id: <11902719123828-git-send-email-htejun@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Tejun Heo <htejun@gmail.com>
-To: ebiederm@xmission.com, cornelia.huck@de.ibm.com, greg@kroah.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com
-Content-Transfer-Encoding: 7BIT
-From: Tejun Heo <htejun@gmail.com>
+	Thu, 20 Sep 2007 03:12:28 -0400
+Date: Thu, 20 Sep 2007 12:45:14 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Valdis.Kletnieks@vt.edu
+cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: NFS4 authentification / fsuid
+In-Reply-To: <31390.1190219938@turing-police.cc.vt.edu>
+Message-ID: <alpine.LFD.0.999.0709201234090.14806@enigma.security.iitk.ac.in>
+References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr>
+ <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org>
+ <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr>
+ <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org>
+ <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in>
+ <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com>
+ <1189121714.6672.38.camel@heimdal.trondhjem.org> <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com>
+ <alpine.LFD.0.999.0709190503250.26241@enigma.security.iitk.ac.in>         
+   <A5318C25-7864-453A-B09A-00232D9EAF2A@mac.com>
+ <31390.1190219938@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Children list head is only meaninful for directory nodes.  Move it
-into s_dir.  This doesn't save any space currently but it will with
-further changes.
-
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/dir.c   |   17 +++++++++--------
- fs/sysfs/inode.c |    2 +-
- fs/sysfs/sysfs.h |    3 ++-
- 3 files changed, 12 insertions(+), 10 deletions(-)
-
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 7500407..b81744b 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -26,7 +26,7 @@ static DEFINE_IDA(sysfs_ino_ida);
-  *	@sd: sysfs_dirent of interest
-  *
-  *	Link @sd into its sibling list which starts from
-- *	sd->s_parent->s_children.
-+ *	sd->s_parent->s_dir.children.
-  *
-  *	Locking:
-  *	mutex_lock(sysfs_mutex)
-@@ -40,9 +40,9 @@ static void sysfs_link_sibling(struct sysfs_dirent *sd)
- 
- 	/* Store directory entries in order by ino.  This allows
- 	 * readdir to properly restart without having to add a
--	 * cursor into the s_children list.
-+	 * cursor into the s_dir.children list.
- 	 */
--	for (pos = &parent_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
-+	for (pos = &parent_sd->s_dir.children; *pos; pos = &(*pos)->s_sibling) {
- 		if (sd->s_ino < (*pos)->s_ino)
- 			break;
- 	}
-@@ -55,7 +55,7 @@ static void sysfs_link_sibling(struct sysfs_dirent *sd)
-  *	@sd: sysfs_dirent of interest
-  *
-  *	Unlink @sd from its sibling list which starts from
-- *	sd->s_parent->s_children.
-+ *	sd->s_parent->s_dir.children.
-  *
-  *	Locking:
-  *	mutex_lock(sysfs_mutex)
-@@ -64,7 +64,8 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
- {
- 	struct sysfs_dirent **pos;
- 
--	for (pos = &sd->s_parent->s_children; *pos; pos = &(*pos)->s_sibling) {
-+	for (pos = &sd->s_parent->s_dir.children; *pos;
-+	     pos = &(*pos)->s_sibling) {
- 		if (*pos == sd) {
- 			*pos = sd->s_sibling;
- 			sd->s_sibling = NULL;
-@@ -566,7 +567,7 @@ struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
- {
- 	struct sysfs_dirent *sd;
- 
--	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling)
-+	for (sd = parent_sd->s_dir.children; sd; sd = sd->s_sibling)
- 		if (!strcmp(sd->s_name, name))
- 			return sd;
- 	return NULL;
-@@ -718,7 +719,7 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
- 
- 	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
- 	sysfs_addrm_start(&acxt, dir_sd);
--	pos = &dir_sd->s_children;
-+	pos = &dir_sd->s_dir.children;
- 	while (*pos) {
- 		struct sysfs_dirent *sd = *pos;
- 
-@@ -918,7 +919,7 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
- 		mutex_lock(&sysfs_mutex);
- 
- 		/* Skip the dentries we have already reported */
--		pos = parent_sd->s_children;
-+		pos = parent_sd->s_dir.children;
- 		while (pos && (filp->f_pos > pos->s_ino))
- 			pos = pos->s_sibling;
- 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index c40fb9f..2210cf0 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -127,7 +127,7 @@ static int sysfs_count_nlink(struct sysfs_dirent *sd)
- 	struct sysfs_dirent *child;
- 	int nr = 0;
- 
--	for (child = sd->s_children; child; child = child->s_sibling)
-+	for (child = sd->s_dir.children; child; child = child->s_sibling)
- 		if (sysfs_type(child) == SYSFS_DIR)
- 			nr++;
- 
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 60405a6..42b0327 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -1,6 +1,8 @@
- /* type-specific structures for sysfs_dirent->s_* union members */
- struct sysfs_elem_dir {
- 	struct kobject		*kobj;
-+	/* children list starts here and goes through sd->s_sibling */
-+	struct sysfs_dirent	*children;
- };
- 
- struct sysfs_elem_symlink {
-@@ -28,7 +30,6 @@ struct sysfs_dirent {
- 	atomic_t		s_active;
- 	struct sysfs_dirent	*s_parent;
- 	struct sysfs_dirent	*s_sibling;
--	struct sysfs_dirent	*s_children;
- 	const char		*s_name;
- 
- 	union {
--- 
-1.5.0.3
+Hi Valdis,
 
 
+On Wed, 19 Sep 2007, Valdis.Kletnieks@vt.edu wrote:
+> 
+> On Wed, 19 Sep 2007 01:16:28 EDT, Kyle Moffett said:
+> 
+> > I am assuming that if the laptop has sufficiently important data on  
+> > it to warrant the above steps then I am also clueful enough to:
+> >    (A)  Not carry the laptop around unsecured areas,
+> >    (B)  Keep a close enough eye on it and be aware that it's gone by  
+> > the time they get to step 2, OR
+> >    (C)  Pay somebody to build me a better physical chassis for my laptop
+> 
+> Building a better chassis can be a challenge when the threat model really
+> *does* include attacks by a well-funded TLA.
+> 
+> http://www.epic.org/crypto/scarfo/murch_aff.pdf
+
+Thanks for the link! And this was ... 1999 (!) Probably goes without
+saying that physical hacking tricks have only become even more refined/
+perfected by now :-)
+
+
+> The FBI did an *initial* entry to survey the hardware, and then a total of
+> *five* other entries before they actually installed it.  Note the technical
+> and legal requirements required on the KLS (it had to, among other things,
+> capture PGP passphrases but *not* anything that was typed online).
+
+
+Thanks,
+
+Satyam
