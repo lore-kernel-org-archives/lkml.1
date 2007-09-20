@@ -1,53 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbXITXou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbXITXsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753213AbXITXou (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 19:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbXITXon
+	id S1753213AbXITXsB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 19:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbXITXrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 19:44:43 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47714 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbXITXon (ORCPT
+	Thu, 20 Sep 2007 19:47:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38753 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751431AbXITXry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 19:44:43 -0400
-Date: Fri, 21 Sep 2007 01:44:41 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Message-ID: <20070920234441.GK18707@one.firstfloor.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com> <20070920220604.GA17536@waste.org> <20070920230304.GJ18707@one.firstfloor.org> <20070920233114.GR4219@waste.org>
+	Thu, 20 Sep 2007 19:47:54 -0400
+Date: Thu, 20 Sep 2007 16:46:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "James Pearson" <james-p@moving-picture.com>
+Cc: linux-kernel@vger.kernel.org, aarapov@redhat.com, hpa@zytor.com,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
+Message-Id: <20070920164632.fd440b78.akpm@linux-foundation.org>
+In-Reply-To: <E1IXziD-0003YJ-0w@moving-picture.com>
+References: <E1IXziD-0003YJ-0w@moving-picture.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070920233114.GR4219@waste.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 06:31:14PM -0500, Matt Mackall wrote:
-> On Fri, Sep 21, 2007 at 01:03:04AM +0200, Andi Kleen wrote:
-> > > It's broken for me.
-> > > 
-> > > 2.6.23-rc3-mm1: solid lock on X shutdown (noticed when upgrading)
-> > >       -rc4-mm1: solid lock on X shutdown, random solid locks about
-> > >                 once every four hours
-> > >       -rc6-mm1: solid lock on X startup
-> > >    +your patch: screen goes black, turns off and on a few times during
-> > >                 startup, can reboot with sysrq-b
-> > 
-> > Does it work with my simple dumb patch instead of Dave's ? 
-> 
-> Sorry, forgot to mention: your one-liner flush also doesn't work (same
-> behavior).
-> 
-> I suspect I'm tripping two things and the flushing thing fixes one but
-> not the other.
+On Wed, 19 Sep 2007 14:35:29 +0100
+"James Pearson" <james-p@moving-picture.com> wrote:
 
-Full bisect needed then I guess. Ok as a short cut you could perhaps
-the cpa-* patches first (might need to drop some later depending 
-patches), then the drm and agp trees.
+> 
+> From: James Pearson <james-p@moving-picture.com>
+> 
+> /proc/PID/environ currently truncates at 4096 characters, patch based on 
+> the /proc/PID/mem code.
 
--Andi
+patch needs to be carefully reviewed from the security POV (ie: permissions)
+as well as for correctness.  Does anyone have time to do that?
+
+> Signed-off-by: James Pearson <james-p@moving-picture.com>
+> 
+> --- ./fs/proc/base.c.dist	2007-09-19 12:29:46.244929651 +0100
+> +++ ./fs/proc/base.c	2007-09-19 12:36:18.155648760 +0100
+> @@ -202,27 +202,6 @@ static int proc_root_link(struct inode *
+>  	 (task->state == TASK_STOPPED || task->state == TASK_TRACED) && \
+>  	 security_ptrace(current,task) == 0))
+>  
+> -static int proc_pid_environ(struct task_struct *task, char * buffer)
+> -{
+> -	int res = 0;
+> -	struct mm_struct *mm = get_task_mm(task);
+> -	if (mm) {
+> -		unsigned int len;
+> -
+> -		res = -ESRCH;
+> -		if (!ptrace_may_attach(task))
+> -			goto out;
+> -
+> -		len  = mm->env_end - mm->env_start;
+> -		if (len > PAGE_SIZE)
+> -			len = PAGE_SIZE;
+> -		res = access_process_vm(task, mm->env_start, buffer, len, 0);
+> -out:
+> -		mmput(mm);
+> -	}
+> -	return res;
+> -}
+> -
+>  static int proc_pid_cmdline(struct task_struct *task, char * buffer)
+>  {
+>  	int res = 0;
+> @@ -740,6 +719,79 @@ static const struct file_operations proc
+>  	.open		= mem_open,
+>  };
+>  
+> +static ssize_t environ_read(struct file *file, char __user *buf,
+> +			size_t count, loff_t *ppos)
+> +{
+> +	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
+> +	char *page;
+> +	unsigned long src = *ppos;
+> +	int ret = -ESRCH;
+> +	struct mm_struct *mm;
+> +	size_t max_len;
+> +
+> +	if (!task)
+> +		goto out_no_task;
+> +
+> +	if (!ptrace_may_attach(task))
+> +		goto out;
+> +
+> +	ret = -ENOMEM;
+> +	page = (char *)__get_free_page(GFP_TEMPORARY);
+
+Now I wonder what inspired you to reach for GFP_TEMPORARY?  Perhaps the
+fact that it is crappily named and undocumented.
+
+This should be GFP_KERNEL - the page you're allocating here is not
+reclaimable by the VM.
+
+> +	if (!page)
+> +		goto out;
+> +
+> +	ret = 0;
+> +
+> +	mm = get_task_mm(task);
+> +	if (!mm)
+> +		goto out_free;
+> +
+> +	max_len = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+> +
+> +	while (count > 0) {
+> +		int this_len, retval;
+> +
+> +		this_len = mm->env_end - (mm->env_start + src);
+> +
+> +		if (this_len <= 0)
+> +			break;
+> +
+> +		if (this_len > max_len)
+> +			this_len = max_len;
+> +
+> +		retval = access_process_vm(task, (mm->env_start + src),
+> +			page, this_len, 0);
+> +
+> +		if (retval <= 0) {
+> +			ret = retval;
+> +			break;
+> +		}
+> +
+> +		if (copy_to_user(buf, page, retval)) {
+> +			ret = -EFAULT;
+> +			break;
+> +		}
+> +
+> +		ret += retval;
+> +		src += retval;
+> +		buf += retval;
+> +		count -= retval;
+> +	}
+
+Now that's a funky loop.  Someone please convince me that there is no way
+in which `count - retval' can ever go negative (ie: huge positive).
+
+
+> +	*ppos = src;
+> +
+> +	mmput(mm);
+> +out_free:
+> +	free_page((unsigned long) page);
+> +out:
+> +	put_task_struct(task);
+> +out_no_task:
+> +	return ret;
+> +}
+> +
+> +static const struct file_operations proc_environ_operations = {
+> +	.read		= environ_read,
+> +};
+> +
+>  static ssize_t oom_adjust_read(struct file *file, char __user *buf,
+>  				size_t count, loff_t *ppos)
+>  {
+> @@ -2092,7 +2144,7 @@ static const struct pid_entry tgid_base_
+>  	DIR("task",       S_IRUGO|S_IXUGO, task),
+>  	DIR("fd",         S_IRUSR|S_IXUSR, fd),
+>  	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
+> -	INF("environ",    S_IRUSR, pid_environ),
+> +	REG("environ",    S_IRUSR, environ),
+>  	INF("auxv",       S_IRUSR, pid_auxv),
+>  	INF("status",     S_IRUGO, pid_status),
+>  	INF("limits",	  S_IRUSR, pid_limits),
+> @@ -2421,7 +2473,7 @@ out_no_task:
+>  static const struct pid_entry tid_base_stuff[] = {
+>  	DIR("fd",        S_IRUSR|S_IXUSR, fd),
+>  	DIR("fdinfo",    S_IRUSR|S_IXUSR, fdinfo),
+> -	INF("environ",   S_IRUSR, pid_environ),
+> +	REG("environ",   S_IRUSR, environ),
+>  	INF("auxv",      S_IRUSR, pid_auxv),
+>  	INF("status",    S_IRUGO, pid_status),
+>  	INF("limits",	 S_IRUSR, pid_limits),
