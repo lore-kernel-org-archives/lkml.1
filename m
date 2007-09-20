@@ -1,37 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbXITVPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbXITVS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbXITVPp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 17:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXITVPY
+	id S1753907AbXITVS4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 17:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbXITVSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 17:15:24 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59547 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752174AbXITVPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 17:15:23 -0400
-Message-ID: <46F2E2E9.3070507@pobox.com>
-Date: Thu, 20 Sep 2007 17:15:21 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Thu, 20 Sep 2007 17:18:48 -0400
+Received: from hpsmtp-eml16.kpnxchange.com ([213.75.38.116]:15701 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751937AbXITVSr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 17:18:47 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba Satellite A40
+Date: Thu, 20 Sep 2007 23:18:43 +0200
+User-Agent: KMail/1.9.7
+Cc: Alexey Starikovskiy <aystarik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Maciek Rutecki <maciej.rutecki@gmail.com>
+References: <200709192014.08443.elendil@planet.nl> <200709202207.13101.rjw@sisk.pl> <200709202232.33309.elendil@planet.nl>
+In-Reply-To: <200709202232.33309.elendil@planet.nl>
 MIME-Version: 1.0
-To: Jason Gaston <jason.d.gaston@intel.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: Re: [PATCH 2.6.23-rc5] ata_piix: replace spaces with tabs
-References: <200709071721.04170.jason.d.gaston@intel.com>
-In-Reply-To: <200709071721.04170.jason.d.gaston@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200709202318.44676.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Sep 2007 21:18:47.0473 (UTC) FILETIME=[D50DC210:01C7FBCB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Gaston wrote:
-> This patch removes some incorrect formatting spaces and replaces them with tabs.
-> 
-> Signed-off-by: Jason Gaston <jason.d.gaston@intel.com>
+On Thursday 20 September 2007, Frans Pop wrote:
+> On Thursday 20 September 2007, Rafael J. Wysocki wrote:
+> > On Thursday, 20 September 2007 20:33, Alexey Starikovskiy wrote:
+> > > Frans Pop wrote:
+> > > > Maybe S0 should be taken outside the #ifdef and the loop as that
+> > > > state is also basically always there?
+> > >
+> > > Don't think it is worth the trouble. We already have this loop almost
+> > > completely unrolled, let's not make it complete mess...
+> >
+> > Well, you could use "(supports S0" instead of just "(supports". ;-)
+>
+> After thinking about this a bit more, I think this does make sense for
+> three (admittedly minor) reasons:
+> - consistency between messages with and without CONFIG_SUSPEND
+> - consistency with /proc/acpi/sleep
+> - avoiding unnecessary change from previous versions.
 
-applied
+One additional reason...
 
+With current code, sleep_states(0) will not be set if compiled without 
+CONFIG_SUSPEND, which means that S0 will also disappear from
+/proc/acpi/sleep. With pre-2.6.23 code it would be listed there.
 
+I think that is even a more relevant change than the display issue and could 
+possibly even be considered a user-space interface regression.
+My proposed patch fixes that too.
+
+Note that the patch currently does not call acpi_get_sleep_type_data for S0, 
+but (partially from Rafael's comment) I was assuming that for S0 that does 
+not really matter. If it does, then the patch could easily be adjusted to 
+include that.
