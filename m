@@ -1,66 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbXITBv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbXITBzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbXITBv4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 21:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbXITBvt
+	id S1756731AbXITBzE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 21:55:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbXITByy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 21:51:49 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:63233 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbXITBvs (ORCPT
+	Wed, 19 Sep 2007 21:54:54 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:43905 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752552AbXITByy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 21:51:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ha0XAB55TadZZABXYJDVF3aHl3OpQSJh2bFgoe3cVuRKZ+1fNI5bZa1I2E5vP4gcta6cxyRFcaT5WDjpvXftGwG5y9U58+mAYSb85cYwAZrijT7sTAVHAP33v7HdyGgGVyXYTpue5Jx5d78tNYvMOHRTU3Masj0ptIe+MLaHCR4=
-Message-ID: <21d7e9970709191851s1b3f35c1j42faae3ce6cd0b24@mail.gmail.com>
-Date: Thu, 20 Sep 2007 11:51:47 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46F17F27.5080000@gmail.com>
+	Wed, 19 Sep 2007 21:54:54 -0400
+Date: Thu, 20 Sep 2007 11:55:25 +1000
+From: David McCullough <David_Mccullough@securecomputing.com>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com,
+       Bernd Schmidt <bernd.schmidt@analog.com>,
+       Greg Ungerer <gerg@snapgear.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ysato@users.sourceforge.jp,
+       lethal@linux-sh.org, miles@lsi.nec.co.jp, linux-m32r@ml.linux-m32r.org
+Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin relocations
+Message-ID: <20070920015525.GA16615@securecomputing.com>
+References: <1190102965.4406.9.camel@roc-desktop> <200709192131.09469.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com>
-	 <46F13938.1070709@gmail.com>
-	 <20070919121017.0cbcbc30.akpm@linux-foundation.org>
-	 <20070919192453.GB18707@one.firstfloor.org>
-	 <46F17CA1.5080205@gmail.com>
-	 <20070919195425.GF18707@one.firstfloor.org>
-	 <46F17F27.5080000@gmail.com>
+In-Reply-To: <200709192131.09469.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/20/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 09/19/2007 09:54 PM, Andi Kleen wrote:
-> >> Yeah. (But X doesn't run -- this is maybe the known issue in this release).
-> >
-> > What do you mean with not run?
->
-> (II) intel(0): Initializing HW Cursor
-> (II) intel(0): xf86BindGARTMemory: bind key 0 at 0x005ff000 (pgoffset 1535)
-> (WW) intel(0): xf86BindGARTMemory: binding of gart memory with key 0
->         at offset 0x5ff000 failed (Invalid argument)
->
-> Fatal server error:
-> Couldn't bind memory for front buffer
->
-> I thought I'd seen a thread about this issue, but I can't find it now. Is it
-> known or am I seeing ghosts yet, Andrew?
->
 
-Can you send me a complete Xorg log file?
+Jivin Robin Getz lays it down ...
+> On Tue 18 Sep 2007 04:09, Bryan Wu pondered:
+> > From: Bernd Schmidt <bernd.schmidt@analog.com>
+> > 
+> > This just adds minimum support for the Blackfin relocations,
+> > since we don't have enough space in each reloc. The idea
+> > is to store a value with one relocation so that subsequent ones can
+> > access it.
+> > 
+> > Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
+> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> > Cc: David McCullough <davidm@snapgear.com>
+> > Cc: Greg Ungerer <gerg@snapgear.com>
+> 
+> Adding the other appropriate maintainers. for h8, m32r, sh and v850.
 
-and lspci -vv?
+Looks fine to me,  obviously impacts the existing arches very little.
+Can't see why it shouldn't get included,
 
-my 945 works fine with my drm tree on top of Linus with clflush + my
-agp fix I just sent out ..
+Cheers,
+Davidm
 
-Dave.
+> > ---
+> >  fs/binfmt_flat.c             |    5 ++++-
+> >  include/asm-h8300/flat.h     |    3 ++-
+> >  include/asm-m32r/flat.h      |    3 ++-
+> >  include/asm-m68knommu/flat.h |    3 ++-
+> >  include/asm-sh/flat.h        |    3 ++-
+> >  include/asm-v850/flat.h      |    4 +++-
+> >  6 files changed, 15 insertions(+), 6 deletions(-)
+> > diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+> > index 7b0265d..13b58f8 100644
+> > --- a/fs/binfmt_flat.c
+> > +++ b/fs/binfmt_flat.c
+> > @@ -742,6 +742,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+> >  	 * __start to address 4 so that is okay).
+> >  	 */
+> >  	if (rev > OLD_FLAT_VERSION) {
+> > +		unsigned long persistent = 0;
+> >  		for (i=0; i < relocs; i++) {
+> >  			unsigned long addr, relval;
+> >  
+> > @@ -749,6 +750,8 @@ static int load_flat_file(struct linux_binprm * bprm,
+> >  			   relocated (of course, the address has to be
+> >  			   relocated first).  */
+> >  			relval = ntohl(reloc[i]);
+> > +			if (flat_set_persistent (relval, &persistent))
+> > +				continue;
+> >  			addr = flat_get_relocate_addr(relval);
+> >  			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
+> >  			if (rp == (unsigned long *)RELOC_FAILED) {
+> > @@ -757,7 +760,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+> >  			}
+> >  
+> >  			/* Get the pointer's value.  */
+> > -			addr = flat_get_addr_from_rp(rp, relval, flags);
+> > +			addr = flat_get_addr_from_rp(rp, relval, flags, &persistent);
+> >  			if (addr != 0) {
+> >  				/*
+> >  				 * Do the relocation.  PIC relocs in the data section are
+> > diff --git a/include/asm-h8300/flat.h b/include/asm-h8300/flat.h
+> > index c20eee7..2a87350 100644
+> > --- a/include/asm-h8300/flat.h
+> > +++ b/include/asm-h8300/flat.h
+> > @@ -9,6 +9,7 @@
+> >  #define	flat_argvp_envp_on_stack()		1
+> >  #define	flat_old_ram_flag(flags)		1
+> >  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> > +#define	flat_set_persistent(relval, p)		0
+> >  
+> >  /*
+> >   * on the H8 a couple of the relocations have an instruction in the
+> > @@ -18,7 +19,7 @@
+> >   */
+> >  
+> >  #define	flat_get_relocate_addr(rel)		(rel)
+> > -#define flat_get_addr_from_rp(rp, relval, flags) \
+> > +#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+> >          (get_unaligned(rp) & ((flags & FLAT_FLAG_GOTPIC) ? 0xffffffff: 0x00ffffff))
+> >  #define flat_put_addr_at_rp(rp, addr, rel) \
+> >  	put_unaligned (((*(char *)(rp)) << 24) | ((addr) & 0x00ffffff), rp)
+> > diff --git a/include/asm-m32r/flat.h b/include/asm-m32r/flat.h
+> > index 1b285f6..d851cf0 100644
+> > --- a/include/asm-m32r/flat.h
+> > +++ b/include/asm-m32r/flat.h
+> > @@ -15,9 +15,10 @@
+> >  #define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
+> >  #define	flat_argvp_envp_on_stack()		0
+> >  #define	flat_old_ram_flag(flags)		(flags)
+> > +#define	flat_set_persistent(relval, p)		0
+> >  #define	flat_reloc_valid(reloc, size)		\
+> >  	(((reloc) - textlen_for_m32r_lo16_data) <= (size))
+> > -#define flat_get_addr_from_rp(rp, relval, flags) \
+> > +#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+> >  	m32r_flat_get_addr_from_rp(rp, relval, (text_len) )
+> >  
+> >  #define flat_put_addr_at_rp(rp, addr, relval) \
+> > diff --git a/include/asm-m68knommu/flat.h b/include/asm-m68knommu/flat.h
+> > index 2d836ed..814b517 100644
+> > --- a/include/asm-m68knommu/flat.h
+> > +++ b/include/asm-m68knommu/flat.h
+> > @@ -9,8 +9,9 @@
+> >  #define	flat_argvp_envp_on_stack()		1
+> >  #define	flat_old_ram_flag(flags)		(flags)
+> >  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> > -#define	flat_get_addr_from_rp(rp, relval, flags)  get_unaligned(rp)
+> > +#define	flat_get_addr_from_rp(rp, relval, flags, p) get_unaligned(rp)
+> >  #define	flat_put_addr_at_rp(rp, val, relval) put_unaligned(val,rp)
+> >  #define	flat_get_relocate_addr(rel)		(rel)
+> > +#define	flat_set_persistent(relval, p)		0
+> >  
+> >  #endif /* __M68KNOMMU_FLAT_H__ */
+> > diff --git a/include/asm-sh/flat.h b/include/asm-sh/flat.h
+> > index 0d5cc04..dc4f595 100644
+> > --- a/include/asm-sh/flat.h
+> > +++ b/include/asm-sh/flat.h
+> > @@ -16,8 +16,9 @@
+> >  #define	flat_argvp_envp_on_stack()		0
+> >  #define	flat_old_ram_flag(flags)		(flags)
+> >  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> > -#define	flat_get_addr_from_rp(rp, relval, flags)  get_unaligned(rp)
+> > +#define	flat_get_addr_from_rp(rp, relval, flags, p)  get_unaligned(rp)
+> >  #define	flat_put_addr_at_rp(rp, val, relval)  put_unaligned(val,rp)
+> >  #define	flat_get_relocate_addr(rel)		(rel)
+> > +#define	flat_set_persistent(relval, p)		0
+> >  
+> >  #endif /* __ASM_SH_FLAT_H */
+> > diff --git a/include/asm-v850/flat.h b/include/asm-v850/flat.h
+> > index 3888f59..17f0ea5 100644
+> > --- a/include/asm-v850/flat.h
+> > +++ b/include/asm-v850/flat.h
+> > @@ -25,6 +25,7 @@
+> >  #define	flat_stack_align(sp)		/* nothing needed */
+> >  #define	flat_argvp_envp_on_stack()	0
+> >  #define	flat_old_ram_flag(flags)	(flags)
+> > +#define	flat_set_persistent(relval, p)	0
+> >  
+> >  /* We store the type of relocation in the top 4 bits of the `relval.'
+> > */
+> >  
+> > @@ -46,7 +47,8 @@ flat_get_relocate_addr (unsigned long relval)
+> >     For the v850, RP should always be half-word aligned.  */
+> >  static inline unsigned long flat_get_addr_from_rp (unsigned long *rp,
+> >  						   unsigned long relval,
+> > -						   unsigned long flags)
+> > +						   unsigned long flags,
+> > +						   unsigned long *persistent)
+> >  {
+> >  	short *srp = (short *)rp;
+
+-- 
+David McCullough,  david_mccullough@securecomputing.com,   Ph:+61 734352815
+Secure Computing - SnapGear  http://www.uCdot.org http://www.cyberguard.com
