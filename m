@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbXITCY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbXITCqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755266AbXITCY6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 22:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbXITCYv
+	id S1756798AbXITCqR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 22:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbXITCqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 22:24:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43133 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750935AbXITCYv (ORCPT
+	Wed, 19 Sep 2007 22:46:07 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:12513 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753480AbXITCqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 22:24:51 -0400
-Date: Wed, 19 Sep 2007 19:24:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Dave Airlie" <airlied@gmail.com>
-Cc: "Andi Kleen" <andi@firstfloor.org>, "Jiri Slaby" <jirislaby@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Message-Id: <20070919192439.ee31d68b.akpm@linux-foundation.org>
-In-Reply-To: <21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<46F10B69.5070008@gmail.com>
-	<46F10DCB.1090302@gmail.com>
-	<46F13938.1070709@gmail.com>
-	<20070919121017.0cbcbc30.akpm@linux-foundation.org>
-	<20070919192453.GB18707@one.firstfloor.org>
-	<21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Sep 2007 22:46:06 -0400
+X-IronPort-AV: i="4.20,276,1186372800"; 
+   d="scan'208"; a="51866291:sNHT27284775"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "David McCullough" <David_Mccullough@securecomputing.com>
+Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin relocations
+Date: Wed, 19 Sep 2007 22:46:26 -0400
+User-Agent: KMail/1.9.5
+Cc: uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com,
+       "Bernd Schmidt" <bernd.schmidt@analog.com>,
+       "Greg Ungerer" <gerg@snapgear.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, ysato@users.sourceforge.jp,
+       lethal@linux-sh.org, miles@lsi.nec.co.jp, linux-m32r@ml.linux-m32r.org
+References: <1190102965.4406.9.camel@roc-desktop> <200709192131.09469.rgetz@blackfin.uclinux.org> <20070920015525.GA16615@securecomputing.com>
+In-Reply-To: <20070920015525.GA16615@securecomputing.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709192246.26956.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 20 Sep 2007 02:46:04.0223 (UTC) FILETIME=[630E44F0:01C7FB30]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 11:42:29 +1000 "Dave Airlie" <airlied@gmail.com> wrote:
+On Wed 19 Sep 2007 21:55, David McCullough pondered:
+> Jivin Robin Getz lays it down ...
+> > On Tue 18 Sep 2007 04:09, Bryan Wu pondered:
+> > > From: Bernd Schmidt <bernd.schmidt@analog.com>
+> > > 
+> > > This just adds minimum support for the Blackfin relocations,
+> > > since we don't have enough space in each reloc. The idea
+> > > is to store a value with one relocation so that subsequent ones can
+> > > access it.
+> > > 
+> > > Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
+> > > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> > > Cc: David McCullough <davidm@snapgear.com>
+> > > Cc: Greg Ungerer <gerg@snapgear.com>
+> > 
+> > Adding the other appropriate maintainers. for h8, m32r, sh and v850.
+> 
+> Looks fine to me,  obviously impacts the existing arches very little.
+> Can't see why it shouldn't get included,
 
-> From 225696d75e7ec0bafbb47b935bd700e3fbeefbde Mon Sep 17 00:00:00 2001
-> From: Dave Airlie <airlied@redhat.com>
-> Date: Thu, 20 Sep 2007 11:30:41 +1000
-> Subject: [PATCH] agp: fix race condition between unmapping and freeing pages
+Is that Australian for Acked-by:? :)
 
-This fixes the hang-when-quitting-X on the Vaio.
+-Robin
