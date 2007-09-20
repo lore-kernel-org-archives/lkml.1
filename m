@@ -1,103 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbXITWFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbXITWG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbXITWFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbXITWFf
+	id S1755459AbXITWG5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbXITWGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:05:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40142 "EHLO mx1.redhat.com"
+	Thu, 20 Sep 2007 18:06:49 -0400
+Received: from waste.org ([66.93.16.53]:37522 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754035AbXITWFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:05:34 -0400
-Message-ID: <46F2EE76.4000203@redhat.com>
-Date: Thu, 20 Sep 2007 18:04:38 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1751380AbXITWGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 18:06:48 -0400
+Date: Thu, 20 Sep 2007 17:06:05 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+Message-ID: <20070920220604.GA17536@waste.org>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Matthias Hensler <matthias@wspse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       richard kennedy <richard@rsk.demon.co.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-References: <46B10BB7.60900@redhat.com>	<20070803113407.0b04d44e.akpm@linux-foundation.org>	<20070804084426.GA20464@kobayashi-maru.wspse.de>	<20070809095943.GA7763@kobayashi-maru.wspse.de>	<20070809095534.25ae1c42.akpm@linux-foundation.org>	<46F2E103.8000907@redhat.com> <20070920142927.d87ab5af.akpm@linux-foundation.org>
-In-Reply-To: <20070920142927.d87ab5af.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/20/2007 05:29 PM, Andrew Morton wrote:
-> On Thu, 20 Sep 2007 17:07:15 -0400
-> Chuck Ebbert <cebbert@redhat.com> wrote:
+On Thu, Sep 20, 2007 at 11:42:29AM +1000, Dave Airlie wrote:
+> > The code is broken anyways. If you free pages without flushing
+> > them first some other innocent user allocating them will end up
+> > with possible uncached pages for some time.
+> >
+> > Does this simple patch help?
+> >
 > 
->> On 08/09/2007 12:55 PM, Andrew Morton wrote:
->>> On Thu, 9 Aug 2007 11:59:43 +0200 Matthias Hensler <matthias@wspse.de> wrote:
->>>
->>>> On Sat, Aug 04, 2007 at 10:44:26AM +0200, Matthias Hensler wrote:
->>>>> On Fri, Aug 03, 2007 at 11:34:07AM -0700, Andrew Morton wrote:
->>>>> [...]
->>>>> I am also willing to try the patch posted by Richard.
->>>> I want to give some update here:
->>>>
->>>> 1. We finally hit the problem on a third system, with a total different
->>>>    setup and hardware. However, again high I/O load caused the problem
->>>>    and the affected filesystems were mounted with noatime.
->>>>
->>>> 2. I installed a recompiled kernel with just the two line patch from
->>>>    Richard Kennedy (http://lkml.org/lkml/2007/8/2/89). That system has 5
->>>>    days uptime now and counting. I believe the patch fixed the problem.
->>>>    However, I will continue running "vmstat 1" and the endless loop of
->>>>    "cat /proc/meminfo", just in case I am wrong.
->>>>
->>> Did we ever see the /proc/meminfo and /proc/vmstat output during the stall?
->>>
->>> If Richard's patch has indeed fixed it then this confirms that we're seeing
->>> contention over the dirty-memory limits.  Richard's patch isn't really the
->>> right one because it allows unlimited dirty-memory windup in some situations
->>> (large number of disks with small writes, or when we perform queue congestion
->>> avoidance).
->>>
->>> As you're seeing this happening when multiple disks are being written to it is
->>> possible that the per-device-dirty-threshold patches which recently went into
->>> -mm (and which appear to have a bug) will fix it.
->>>
->>> But I worry that the stall appears to persist *forever*.  That would indicate
->>> that we have a dirty-memory accounting leak, or that for some reason the
->>> system has decided to stop doing writeback to one or more queues (might be
->>> caused by an error in a lower-level driver's queue congestion state management).
->>>
->>> If it is the latter, then it could be that running "sync" will clear the
->>> problem.  Temporarily, at least.  Because sync will ignore the queue congestion
->>> state.
->>>
->> This is still a problem for people, and no fix is in sight until 2.6.24.
+> I've attached a more complicated patch that does a 2 stage effort to
+> unmapping and freeing pages. My kernel no longer hangs with this
+> patch...
 > 
-> Any bugzilla urls or anything like that?
+> Jiri can you confirm?
 
-https://bugzilla.redhat.com/show_bug.cgi?id=249563
+It's broken for me.
 
-> 
->> Can we get some kind of band-aid, like making the endless 'for' loop in
->> balance_dirty_pages() terminate after some number of iterations? Clearly
->> if we haven't written "write_chunk" pages after a few tries, *and* we
->> haven't encountered congestion, there's no point in trying forever...
-> 
-> Did my above questions get looked at?
-> 
-> Is anyone able to reproduce this?
-> 
-> Do we have a clue what's happening?
+2.6.23-rc3-mm1: solid lock on X shutdown (noticed when upgrading)
+      -rc4-mm1: solid lock on X shutdown, random solid locks about
+                once every four hours
+      -rc6-mm1: solid lock on X startup
+   +your patch: screen goes black, turns off and on a few times during
+                startup, can reboot with sysrq-b
 
-There are a ton of dirty pages for one disk, and zero or close to zero dirty
-for a different one. Kernel spins forever trying to write some arbitrary
-minimum amount of data ("write_chunk" pages) to the second disk...
+Video is:
 
-> 
-> Is that function just spinning around, failing to start writeout against
-> any pages at all?  If so, how come?
+01:00.0 VGA compatible controller: ATI Technologies Inc Radeon R250
+[Mobility FireGL 9000] (rev 02)
 
-Yes, it spins forever. Just removing the "noatime" mount option for the
-second disk generates enough dirty data to keep the system functional.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
