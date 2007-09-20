@@ -1,120 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbXITIvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbXITIzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbXITIvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 04:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbXITIvK
+	id S1756135AbXITIzg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 04:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbXITIz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 04:51:10 -0400
-Received: from sacred.ru ([62.205.161.221]:37511 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbXITIvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 04:51:09 -0400
-Message-ID: <46F233E0.4090206@openvz.org>
-Date: Thu, 20 Sep 2007 12:48:32 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 20 Sep 2007 04:55:28 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:48426 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbXITIz1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 04:55:27 -0400
+Message-ID: <46F23550.6050209@linux.vnet.ibm.com>
+Date: Thu, 20 Sep 2007 14:24:40 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: "J. Bruce Fields" <bfields@fieldses.org>,
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Guillaume Chazarain <guichaz@yahoo.fr>, Jonathan Lim <jlim@sgi.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [PATCH] Fix potential OOPS in generic_setlease() (v2)
+       Jay Lan <jlan@cthulhu.engr.sgi.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Michael Neuling <mikey@neuling.org>
+Subject: Re: Add all thread stats for TASKSTATS_CMD_ATTR_TGID (v5)
+References: <200708310302.l7V32ZpV410222@sabah.engr.sgi.com> <46D7C23F.7020509@linux.vnet.ibm.com> <20070831143535.2e4709c7@localhost.localdomain> <20070912171816.f0993440.akpm@linux-foundation.org> <20070915204239.4a6af65e@localhost.localdomain> <20070918002339.4a989377@localhost.localdomain> <20070919232054.77c271aa.akpm@linux-foundation.org>
+In-Reply-To: <20070919232054.77c271aa.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 20 Sep 2007 12:50:56 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This code is run under lock_kernel(), which is dropped during
-sleeping operations, so the following race is possible:
+Andrew Morton wrote:
+> On Tue, 18 Sep 2007 00:23:39 +0200 Guillaume Chazarain <guichaz@yahoo.fr> wrote:
+> 
+>> TASKSTATS_CMD_ATTR_TGID used to return only the delay accounting stats, not
+>> the basic and extended accounting.  With this patch,
+>> TASKSTATS_CMD_ATTR_TGID also aggregates the accounting info for all threads
+>> of a thread group.  This makes TASKSTATS_CMD_ATTR_TGID usable in a similar
+>> fashion to TASKSTATS_CMD_ATTR_PID, for commands like iotop -P
+>> (http://guichaz.free.fr/misc/iotop.py).
+> 
+> This patch conflicts somewhat with
+> add-scaled-time-to-taskstats-based-process-accounting.patch
+> 
+> I fixed it up like this:
+> 
+> void bacct_add_tsk(struct taskstats *stats, struct task_struct *task)
+> {
+> 	if (task->flags & PF_SUPERPRIV)
+> 		stats->ac_flag |= ASU;
+> 	if (task->flags & PF_DUMPCORE)
+> 		stats->ac_flag |= ACORE;
+> 	if (task->flags & PF_SIGNALED)
+> 		stats->ac_flag |= AXSIG;
+> 	if (thread_group_leader(task) && (task->flags & PF_FORKNOEXEC))
+> 		/*
+> 		 * Threads are created by do_fork() and don't exec but not in
+> 		 * the AFORK sense, as the latter involves fork(2).
+> 		 */
+> 		stats->ac_flag |= AFORK;
+> 
+> 	stats->ac_utimescaled +=
+> 		cputime_to_msecs(task->utimescaled) * USEC_PER_MSEC;
+> 	stats->ac_stimescaled +=
+> 		cputime_to_msecs(task->stimescaled) * USEC_PER_MSEC;
+> 	stats->ac_utime	 += cputime_to_msecs(task->utime) * USEC_PER_MSEC;
+> 	stats->ac_stime	 += cputime_to_msecs(task->stime) * USEC_PER_MSEC;
+> 	stats->ac_minflt += task->min_flt;
+> 	stats->ac_majflt += task->maj_flt;
+> }
+> 
+> (note the s/=/+=/ in there) but it all needs reviewing and checking and
+> testing please.
 
-CPU1:                                CPU2:
-  vfs_setlease();                    vfs_setlease();
-  lock_kernel();
-                                     lock_kernel(); /* spin */
-  generic_setlease():
-    ...
-    for (before = ...)
-    /* here we found some lease after
-     * which we will insert the new one
-     */
-    fl = locks_alloc_lock();
-    /* go to sleep in this allocation and
-     * drop the BKL
-     */
-                                     generic_setlease():
-                                       ...
-                                       for (before = ...)
-                                       /* here we find the "before" pointing
-                                        * at the one we found on CPU1
-                                        */
-                                      ->fl_change(my_before, arg);
-                                              lease_modify();
-                                                     locks_free_lock();
-                                                     /* and we freed it */
-                                     ...
-                                     unlock_kernel();
-   locks_insert_lock(before, fl);
-   /* OOPS! We have just tried to add the lease
-    * at the tail of already removed one
-    */
+Andrew,
 
-The similar races are already handled in other code - all the 
-allocations are performed before any checks/updates.
+Thanks for reviewing the patchset, this patch is on my review and test
+queue (which has gotten rather long of late). I'll test it further and
+get back.
 
-Fixed the problem, spotted by J. Bruce Fields, about the fl
-variable reuse.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
-
-diff --git a/fs/locks.c b/fs/locks.c
-index a1c1c01..d5b9653 100644
---- a/fs/locks.c
-+++ b/fs/locks.c
-@@ -1354,6 +1354,7 @@ int fcntl_getlease(struct file *filp)
- int generic_setlease(struct file *filp, long arg, struct file_lock **flp)
- {
- 	struct file_lock *fl, **before, **my_before = NULL, *lease;
-+	struct file_lock *new_fl = NULL;
- 	struct dentry *dentry = filp->f_path.dentry;
- 	struct inode *inode = dentry->d_inode;
- 	int error, rdlease_count = 0, wrlease_count = 0;
-@@ -1380,6 +1381,11 @@ int generic_setlease(struct file *filp, 
- 		|| (atomic_read(&inode->i_count) > 1)))
- 		goto out;
- 
-+	error = -ENOMEM;
-+	new_fl = locks_alloc_lock();
-+	if (new_fl == NULL)
-+		goto out;
-+
- 	/*
- 	 * At this point, we know that if there is an exclusive
- 	 * lease on this file, then we hold it on this filp
-@@ -1422,18 +1428,15 @@ int generic_setlease(struct file *filp, 
- 	if (!leases_enable)
- 		goto out;
- 
--	error = -ENOMEM;
--	fl = locks_alloc_lock();
--	if (fl == NULL)
--		goto out;
--
--	locks_copy_lock(fl, lease);
--
--	locks_insert_lock(before, fl);
-+	locks_copy_lock(new_fl, lease);
-+	locks_insert_lock(before, new_fl);
- 
- 	*flp = fl;
--	error = 0;
-+	return 0;
-+
- out:
-+	if (new_fl != NULL)
-+		locks_free_lock(new_fl);
- 	return error;
- }
- EXPORT_SYMBOL(generic_setlease);
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
