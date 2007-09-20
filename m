@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbXITUAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbXITUBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbXITUAz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbXITTxb
+	id S1756346AbXITUBT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbXITTxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:53:31 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:51481 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490AbXITTxV (ORCPT
+	Thu, 20 Sep 2007 15:53:32 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:42289 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527AbXITTxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:53:21 -0400
-Subject: [PATCH 22/25] elevate mnt writers for vfs_unlink() callers
+	Thu, 20 Sep 2007 15:53:22 -0400
+Subject: [PATCH 23/25] do_rmdir(): elevate write count
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 20 Sep 2007 12:53:17 -0700
+Date: Thu, 20 Sep 2007 12:53:19 -0700
 References: <20070920195249.852667D5@kernel>
 In-Reply-To: <20070920195249.852667D5@kernel>
-Message-Id: <20070920195317.5F01FBE0@kernel>
+Message-Id: <20070920195319.D360DF72@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Elevate the write count during the vfs_rmdir() call.
 
-Acked-by: Christoph Hellwig <hch@infradead.org>
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+Acked-by: Christoph Hellwig <hch@infradead.org>
 ---
 
- lxc-dave/fs/namei.c   |    4 ++++
- lxc-dave/ipc/mqueue.c |    5 ++++-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+ lxc-dave/fs/namei.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff -puN fs/namei.c~elevate-mnt-writers-for-vfs-unlink-callers fs/namei.c
---- lxc/fs/namei.c~elevate-mnt-writers-for-vfs-unlink-callers	2007-09-20 12:16:21.000000000 -0700
-+++ lxc-dave/fs/namei.c	2007-09-20 12:16:21.000000000 -0700
-@@ -2228,7 +2228,11 @@ static long do_unlinkat(int dfd, const c
- 		inode = dentry->d_inode;
- 		if (inode)
- 			atomic_inc(&inode->i_count);
-+		error = mnt_want_write(nd.mnt);
-+		if (error)
-+			goto exit2;
- 		error = vfs_unlink(nd.dentry->d_inode, dentry);
-+		mnt_drop_write(nd.mnt);
- 	exit2:
- 		dput(dentry);
- 	}
-diff -puN ipc/mqueue.c~elevate-mnt-writers-for-vfs-unlink-callers ipc/mqueue.c
---- lxc/ipc/mqueue.c~elevate-mnt-writers-for-vfs-unlink-callers	2007-09-20 12:16:21.000000000 -0700
-+++ lxc-dave/ipc/mqueue.c	2007-09-20 12:16:21.000000000 -0700
-@@ -750,8 +750,11 @@ asmlinkage long sys_mq_unlink(const char
- 	inode = dentry->d_inode;
- 	if (inode)
- 		atomic_inc(&inode->i_count);
--
-+	err = mnt_want_write(mqueue_mnt);
-+	if (err)
-+		goto out_err;
- 	err = vfs_unlink(dentry->d_parent->d_inode, dentry);
-+	mnt_drop_write(mqueue_mnt);
- out_err:
+diff -puN fs/namei.c~do-rmdir-elevate-write-count fs/namei.c
+--- lxc/fs/namei.c~do-rmdir-elevate-write-count	2007-09-20 12:16:22.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-09-20 12:16:22.000000000 -0700
+@@ -2148,7 +2148,12 @@ static long do_rmdir(int dfd, const char
+ 	error = PTR_ERR(dentry);
+ 	if (IS_ERR(dentry))
+ 		goto exit2;
++	error = mnt_want_write(nd.mnt);
++	if (error)
++		goto exit3;
+ 	error = vfs_rmdir(nd.dentry->d_inode, dentry);
++	mnt_drop_write(nd.mnt);
++exit3:
  	dput(dentry);
- 
+ exit2:
+ 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
 _
