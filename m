@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbXITHSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757614AbXITHUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758957AbXITHSX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXITHSP
+	id S1757614AbXITHUJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbXITHT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:18:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37585 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbXITHSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:18:14 -0400
-Date: Thu, 20 Sep 2007 09:17:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: fix to use invalid sched_class
-Message-ID: <20070920071730.GB29903@elte.hu>
-References: <1190239539.19576.5.camel@earth> <46F1B872.1050307@ct.jp.nec.com>
+	Thu, 20 Sep 2007 03:19:57 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:37914 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751002AbXITHT5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 03:19:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=iTII11HkJQV8Yk9qkp4aTmzYg5nMV/4Hv/qk9+aoVBaG9IQoa5RiiMHN7gVbl2dxrOO9kRQske1foSuKVU1EdWIR6L4ucp/2Yd8yRLaGb92fE+6L+svrCyo4UQRYwuMkHrWdT5FktqpFXnkUJ+O3ca2UeQa8tw0edEBd4asAm8E=
+Message-ID: <46F21F17.5000704@gmail.com>
+Date: Thu, 20 Sep 2007 09:19:51 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F1B872.1050307@ct.jp.nec.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Dave Airlie <airlied@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>	<46F10B69.5070008@gmail.com>	<46F10DCB.1090302@gmail.com>	<46F13938.1070709@gmail.com>	<20070919121017.0cbcbc30.akpm@linux-foundation.org>	<20070919192453.GB18707@one.firstfloor.org>	<21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com> <20070919192439.ee31d68b.akpm@linux-foundation.org>
+In-Reply-To: <20070919192439.ee31d68b.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-
-> Dmitry Adamushko wrote:
-> >>> Hi Ingo,
-> >>>
-> >>> I found an issue about the scheduler.
-> >>> If you need a test case, please let me know.
-> >>> Here is a patch.
-> >>> [ ... ]
-> >>> The new thread should be valid scheduler class before queuing.
-> >>> This patch fixes to set the suitable scheduler class.
-> >> Nice fix! It's a 2.6.23 must-have fix - i'll push it out into the 
-> >> scheduler tree. Thanks!
-> > 
-> > I think, the following approach would be a bit more appropriate
-> > (the missing addition to the already existing "don't leak PI boosting prio"):
-> > 
-> > (not tested)
-> > 
-> Thank you for reviewing my patch.
-> Yes, your approach looks better than mine.
-> I've tested it and it looks working fine in my test case.
-> I attached the test case.
+On 09/20/2007 04:24 AM, Andrew Morton wrote:
+> On Thu, 20 Sep 2007 11:42:29 +1000 "Dave Airlie" <airlied@gmail.com> wrote:
 > 
-> Will you write a patch to replace mine?
+>> From 225696d75e7ec0bafbb47b935bd700e3fbeefbde Mon Sep 17 00:00:00 2001
+>> From: Dave Airlie <airlied@redhat.com>
+>> Date: Thu, 20 Sep 2007 11:30:41 +1000
+>> Subject: [PATCH] agp: fix race condition between unmapping and freeing pages
+> 
+> This fixes the hang-when-quitting-X on the Vaio.
 
-thanks for testing it - we can queue Dmitry's clean-up for v2.6.24 
-(please send me a patch for v2.6.23-rc7). The most important step was to 
-get your fix into v2.6.23.
-
-	Ingo
-
+Checked.
