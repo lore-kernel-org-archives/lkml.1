@@ -1,105 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbXITVhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbXITVmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbXITVhf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 17:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbXITVhD
+	id S1753544AbXITVmQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 17:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbXITVmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 17:37:03 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:48217 "EHLO atlrel6.hp.com"
+	Thu, 20 Sep 2007 17:42:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40516 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbXITVhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 17:37:00 -0400
-Subject: [PATCH 2.6.23-rc6-mm1] - Panic in blk_rq_map_sg() from CCISS driver
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Eric Whitney <eric.whitney@hp.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Thu, 20 Sep 2007 17:37:02 -0400
-Message-Id: <1190324222.5326.42.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1750913AbXITVl7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 17:41:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when booted, USB-related WARNING
+Date: Thu, 20 Sep 2007 23:54:41 +0200
+User-Agent: KMail/1.9.5
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
+       linux-usb-devel@lists.sourceforge.net,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, miklos@szeredi.hu,
+       Len Brown <len.brown@intel.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <1190322532.3085.42.camel@chaos> <alpine.LFD.0.999.0709201420231.16478@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0709201420231.16478@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709202354.42557.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH 2.6.23-rc6-mm1 - Panic in blk_rq_map_sg() from CCISS driver
+On Thursday, 20 September 2007 23:35, Linus Torvalds wrote:
+> 
+> On Thu, 20 Sep 2007, Thomas Gleixner wrote:
+> > 
+> > In meantime I figured out what's happening. The ordering in
+> > hibernate_snapshot() is wrong. It does:
 
-New scatter/gather list chaining [sg_next()] treats 'page' member of
-struct scatterlist with low bit set [0x01] as a chain pointer to
-another struct scatterlist [array].  The CCISS driver request function
-passes an uninitialized, temporary, on-stack scatterlist array to 
-blk_rq_map_sq().  sg_next() interprets random data on the stack as a
-chain pointer and eventually tries to de-reference an invalid pointer,
-resulting in:
+Actually, this is incorrect.  Please read my reply to Thomas, just sent. 
 
-[<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
-PGD 6090c3067 PUD 0
-Oops: 0000 [1] SMP
-last sysfs file: /block/cciss!c0d0/cciss!c0d0p1/dev
-CPU 6
-Modules linked in: ehci_hcd ohci_hcd uhci_hcd
-Pid: 1, comm: init Not tainted 2.6.23-rc6-mm1 #3
-RIP: 0010:[<ffffffff8031dd70>] [<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
-RSP: 0018:ffff81060901f768 EFLAGS: 00010206
-RAX: 000000040b161000 RBX: ffff81060901f7d8 RCX: 000000040b162c00
-RDX: 0000000000000000 RSI: ffff81060b13a260 RDI: ffff81060b139600
-RBP: 0000000000001400 R08: 00000000fffffffe R09: 0000000000000400
-R10: 0000000000000000 R11: 000000040b163000 R12: ffff810102fe0000
-R13: 0000000000000001 R14: 0000000000000001 R15: 00001e0000000000
-FS: 00000000026108f0(0063) GS:ffff810409000b80(0000) knlGS:0000000000000000
-CS: 0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 000000010000001e CR3: 00000006090c6000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process init (pid: 1, threadinfo ffff81060901e000, task ffff810409020800)
-last branch before last exception/interrupt
-from [<ffffffff8031de0a>] blk_rq_map_sg+0x10a/0x170
-to [<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
-Stack: 000000018068ea00 ffff810102fe0000 0000000000000000 ffff810011400000
-0000000000000002 0000000000000000 ffff81040b172000 ffffffff803acd3d
-0000000000003ec1 ffff8106090d5000 ffff8106090d5000 ffff810102fe0000
-Call Trace:
-[<ffffffff803acd3d>] do_cciss_request+0x15d/0x4c0
-[<ffffffff80298968>] new_slab+0x1c8/0x270
-[<ffffffff80298ffd>] __slab_alloc+0x22d/0x470
-[<ffffffff8027327b>] mempool_alloc+0x4b/0x130
-[<ffffffff8032b21e>] cfq_set_request+0xee/0x380
-[<ffffffff8027327b>] mempool_alloc+0x4b/0x130
-[<ffffffff8031ff98>] get_request+0x168/0x360
-[<ffffffff80331b0d>] rb_insert_color+0x8d/0x110
-[<ffffffff8031cfd8>] elv_rb_add+0x58/0x60
-[<ffffffff8032a329>] cfq_add_rq_rb+0x69/0xa0
-[<ffffffff8031c1ab>] elv_merged_request+0x5b/0x60
-[<ffffffff803224fd>] __make_request+0x23d/0x650
-[<ffffffff80298ffd>] __slab_alloc+0x22d/0x470
-[<ffffffff80270000>] generic_write_checks+0x140/0x190
-[<ffffffff8031f012>] generic_make_request+0x1c2/0x3a0
-<etc>
-Kernel panic - not syncing: Attempted to kill init!
+> Hmm. This is close to the ordering we have in STR too.
+> 
+> I have some dim memory of there being some ACPI reason why it had to be 
+> done that way.
 
-This patch initializes the tmp_sg array to zeroes.  Perhaps not the ultimate
-fix, but an effective work-around.  I can now boot 23-rc6-mm1 on an HP
-Proliant x86_64 with CCISS boot disk.
+Yes.  We're executing _INI from the CPU initialization code and that shouldn't
+be done after _WAK, which is called from platform_finish().
 
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+> In fact, this was done in commit e3c7db621bed4afb8e231cb005057f2feb5db557, 
+> long ago, by Rafael:
+> 
+>     As indicated in a recent thread on Linux-PM, it's necessary to call
+>     pm_ops->finish() before devce_resume(), but enable_nonboot_cpus() has to be
+>     called before pm_ops->finish() (cf.
+>     http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).  For
+>     consistency, it seems reasonable to call disable_nonboot_cpus() after
+>     device_suspend().
+> 
+>     This way the suspend code will remain symmetrical with respect to the resume
+>     code and it may allow us to speed up things in the future by suspending and
+>     resuming devices and/or saving the suspend image in many threads.
+> 
+>     The following series of patches reorders the suspend and resume code so that
+>     nonboot CPUs are disabled after devices have been suspended and enabled before
+>     the devices are resumed.  It also causes pm_ops->finish() to be called after
+>     enable_nonboot_cpus() wherever necessary.
+> 
+> Hmm?
+> 
+> It's entirely possible that that commit was simply just buggy, and we 
+> should indeed move the CPU down/up to be early/late - we've fixed other 
+> ordering issues since that commit went in. But this whole area is very 
+> murky.
+> 
+> (Btw, the above commit message points to just my response with a testing 
+> patch to the real email: the actual explanation of the INSANE ordering is 
+> from Len Brown in
+> 
+> 	https://lists.linux-foundation.org/pipermail/linux-pm/2006-November/004161.html
+> 
+> and there Len claims that we *must* wake up CPU's early).
+> 
+> I personally think that the whole ACPI ordering requirements are just 
+> insane, but the point of this email is to point these different 
+> requirements out, and hopefully we can get something that works for 
+> everybody.
 
- drivers/block/cciss.c |    1 +
- 1 file changed, 1 insertion(+)
+Sure.
 
-Index: Linux/drivers/block/cciss.c
-===================================================================
---- Linux.orig/drivers/block/cciss.c	2007-09-20 14:59:29.000000000 -0400
-+++ Linux/drivers/block/cciss.c	2007-09-20 15:06:39.000000000 -0400
-@@ -2611,6 +2611,7 @@ static void do_cciss_request(struct requ
- 	       (int)creq->nr_sectors);
- #endif				/* CCISS_DEBUG */
- 
-+	memset(tmp_sg, 0, sizeof(tmp_sg));
- 	seg = blk_rq_map_sg(q, creq, tmp_sg);
- 
- 	/* get the DMA records for the setup */
-
-
+Greetings,
+Rafael
