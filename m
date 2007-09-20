@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbXITNRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbXITNV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756463AbXITNRN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 09:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbXITNQ4
+	id S1755657AbXITNV2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 09:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbXITNVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 09:16:56 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:45217 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753969AbXITNQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 09:16:55 -0400
-Date: Thu, 20 Sep 2007 15:19:00 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-Message-ID: <20070920131900.GB2796@ff.dom.local>
-References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net>
+	Thu, 20 Sep 2007 09:21:21 -0400
+Received: from 1wt.eu ([62.212.114.60]:2580 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753969AbXITNVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 09:21:21 -0400
+Date: Thu, 20 Sep 2007 15:20:55 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ville Herva <v@iki.fi>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: 2.4.35 SMP: ext3_readdir: bad entry in directory #323888: rec_len is smaller than minimal
+Message-ID: <20070920132055.GB12291@1wt.eu>
+References: <20070918122314.GL29062@vianova.fi> <20070918151206.GC13304@atrey.karlin.mff.cuni.cz> <20070918160949.GR29062@vianova.fi> <20070918162256.GA3280@atrey.karlin.mff.cuni.cz> <20070918163326.GT29062@vianova.fi> <20070918214705.GG10199@1wt.eu> <20070920124537.GB5076@vianova.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46F234DB.7030403@bull.net>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070920124537.GB5076@vianova.fi>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 10:52:43AM +0200, Nadia Derbey wrote:
-> Jarek Poplawski wrote:
-...
-> >which seems to suggest "out" is an RCU protected pointer, so, I
-> >thought these refcounts were for something else. But, after looking
-> >at how it's used it turns out to be ~90% wrong: probably 9 out of 10
-> >places use refcouning around this,
+Hi Ville,
+
+On Thu, Sep 20, 2007 at 03:45:37PM +0300, Ville Herva wrote:
+> On Tue, Sep 18, 2007 at 11:47:05PM +0200, you [Willy Tarreau] wrote:
+> > Thanks for your report. Unfortunately, I've rechecked the recent changelogs
+> > and see nothing related either. At least, in order to keep trace of the
+> > incident, would you please post some info about your config (CPU, RAM,
+> > chipset, .config, gcc, and any possible patches you may have applied) ?
+> > Maybe some of these info may remind old bad memories to some people.
+> > 
+> > Also, do you know if this server has ECC memory ? I would more easily
+> > bet for side effects of one random bit flip in memory than for some
+> > massive block corruption.
+> > 
+> > I vaguely remember about very old reports of people sometimes observing
+> > zeroed out blocks during writes, which were attributed to chipset bugs
+> > if my memory serves me. But I would rule this out as recent chipsets
+> > look more stable than 5-10 years ago !
 > 
-> Actually, ipc_lock() is called most of the time without the 
-> ipc_ids.mutex held and without refcounting (maybe you didn't look for 
-> the msg_lock() sem_lock() and shm_lock() too).
-
-Yes, you are 100% right and I'm 90% lier, 10% blind (maybe backward
-too).
-
-> So I think disabling preemption is needed, isn't it?
-
-Do I've to tell the truth...?
-
+> Willy,
 > 
-> >so, these rcu_read_locks() don't
-> >work here at all. So, probably I miss something again, but IMHO,
-> >these rcu_read_locks/unlocks could be removed here or in
-> >ipc_lock_by_ptr() and it should be enough to use them directly, where
-> >really needed, e.g., in msg.c do_msgrcv().
-> >
+> The machine is a virtual machine on an VMware ESX 3.0.1 host.
 > 
-> I have to check for the ipc_lock_by_ptr(): may be you're right!
+> /proc/cpuinfo shows two of these:
+> Dual
+> model           : 15
+> model name      : Intel(R) Xeon(R) CPU           E5345  @ 2.33GHz
+> stepping        : 8
+> cpu MHz         : 2333.014
+> cache size      : 64 KB
+> 
+> It has 864MB of memory.
+> 
+> .config is at:
+> http://v.iki.fi/~vherva/tmp/2.4.35-config
+> The kernel is plain vanilla 2.4.35 from kernel.org, no patches.
 
-Since this whole locking scheme is really quite a puzzle, and needs
-more than one or two looks to figure it out, I'd better try stop to
-discredit myself more.
+OK. And your config seems perfectly standard.
 
-Anyway it looks to me like the most sophisticated way of achieving
-locklessness I've seen so far. I hope, there is still some gain after
-this RCU + refcounting vs. simple locking. (It seems somebody had
-similar doubts writing the "Lockless receive, part 1:" comment in
-do_msgrcv(); and probably again I'm very wrong, but this checking of
-validity of RCU protected structure with an r_msg value, which is
-done to avoid refcounting, looks like not very different and has
-some cost too).
+> gcc 2.96-129:
+> cat /proc/version 
+> Linux version 2.4.35 (root) (gcc version 2.96 20000731 (Red Hat Linux 7.2 2.96-129.7.2)) #1 SMP Thu Aug 9 10:35:37 EEST 2007
 
-Regards,
-Jarek P.
+I used not to trust 2.96, but I wouldn't accuse it now.
+
+> Memory is ECC.
+> 
+> The server is HP Proliant ML370 with 82801BA/CA/DB/EB chipset. I've had my
+> share of chipset bugs with older Via chipsets, but I think it's very likely
+> in this case.
+
+I think you meant "unlikely".
+
+> This could very well be a VMware bug, but I wanted to know if this rings
+> bells for someone.
+
+It could also be a problem with the host OS, drivers, hardware, etc...
+
+Cheers,
+Willy
+
