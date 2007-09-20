@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbXITQJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbXITQJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbXITQJU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 12:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbXITQJL
+	id S1757964AbXITQJb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 12:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbXITQJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 12:09:11 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:15209 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbXITQJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 12:09:13 -0400
+Received: from pool-71-118-246-34.lsanca.dsl-w.verizon.net ([71.118.246.34]:44775
+	"EHLO www.thewybles.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755004AbXITQJK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Sep 2007 12:09:10 -0400
-X-IronPort-AV: E=Sophos;i="4.20,279,1186383600"; 
-   d="scan'208";a="106097751"
-Subject: Re: [PATCH 3/3] CRED: Move the effective capabilities into the
-	cred struct
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: casey@schaufler-ca.com
-Cc: Andrew Morgan <morgan@kernel.org>, David Howells <dhowells@redhat.com>,
-       viro@ftp.linux.org.uk, hch@infradead.org, sds@tycho.nsa.gov,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <176624.5520.qm@web36603.mail.mud.yahoo.com>
-References: <176624.5520.qm@web36603.mail.mud.yahoo.com>
-Content-Type: text/plain
+Message-ID: <46F29B4B.2070200@thewybles.com>
+Date: Thu, 20 Sep 2007 09:09:47 -0700
+From: Charles N Wyble <charles@thewybles.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: Satyam Sharma <satyam@infradead.org>
+CC: Andi Kleen <ak@suse.de>, virtualization@lists.linux-foundation.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] Time to make CONFIG_PARAVIRT non-experimental.
+References: <1189747054.7262.34.camel@localhost.localdomain> <200709181257.41530.ak@suse.de> <46F02F50.5000001@thewybles.com> <200709182220.27311.ak@suse.de> <46F034A8.2070801@thewybles.com> <alpine.LFD.0.999.0709202110150.18597@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0709202110150.18597@enigma.security.iitk.ac.in>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Thu, 20 Sep 2007 12:09:06 -0400
-Message-Id: <1190304546.6763.86.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 20 Sep 2007 16:09:07.0892 (UTC) FILETIME=[92C2AF40:01C7FBA0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-20 at 08:36 -0700, Casey Schaufler wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Ok, what can't be copied, and why can't it be copied?
 
-In practice, no security information can be copied because the checks
-are all made on the "current" pointer. There is no mechanism other than
-'current' for passing security information around.
 
-Trond
+Satyam Sharma wrote:
+> 
+> On Tue, 18 Sep 2007, Charles N Wyble wrote:
+>> Andi Kleen wrote:
+>>> Besides it's bad taste and taste is very important.
+>> Well it's bad taste for you (one person).
+> 
+> FWIW, my opinion is the same as Andi's here. Please, let's avoid this
+> disease -- unless *absolutely* required, stuff shouldn't be "default y".
+> 
+
+I am curious why you think it shouldn't be default why? Bad taste? Can
+you provide data about how it will harm things?
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFG8ptLkQPZV56XDBMRApxNAJwLOv2dabO6KD6t4Z/Fkffelh1IxwCdEzPM
+1JEuIQvlkiojgiMy0tnroqk=
+=yCiZ
+-----END PGP SIGNATURE-----
