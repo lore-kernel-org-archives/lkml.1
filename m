@@ -1,59 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbXITWFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbXITWFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbXITWFj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbXITWFb
+	id S1755754AbXITWFw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbXITWFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:05:31 -0400
-Received: from www.osadl.org ([213.239.205.134]:43852 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751450AbXITWFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:05:30 -0400
-Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
-	booted, USB-related WARNING
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, miklos@szeredi.hu,
-       Len Brown <len.brown@intel.com>,
-       David Shaohua Li <shaohua.li@intel.com>
-In-Reply-To: <alpine.LFD.0.999.0709201437310.16478@woody.linux-foundation.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <1190299841.3481.37.camel@chaos> <1190303393.3639.0.camel@chaos>
-	 <200709202239.11070.rjw@sisk.pl> <1190322532.3085.42.camel@chaos>
-	 <alpine.LFD.0.999.0709201420231.16478@woody.linux-foundation.org>
-	 <alpine.LFD.0.999.0709201437310.16478@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 00:05:29 +0200
-Message-Id: <1190325929.3085.79.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-1.fc8) 
+	Thu, 20 Sep 2007 18:05:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40142 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754035AbXITWFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 18:05:34 -0400
+Message-ID: <46F2EE76.4000203@redhat.com>
+Date: Thu, 20 Sep 2007 18:04:38 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Matthias Hensler <matthias@wspse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       richard kennedy <richard@rsk.demon.co.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
+References: <46B10BB7.60900@redhat.com>	<20070803113407.0b04d44e.akpm@linux-foundation.org>	<20070804084426.GA20464@kobayashi-maru.wspse.de>	<20070809095943.GA7763@kobayashi-maru.wspse.de>	<20070809095534.25ae1c42.akpm@linux-foundation.org>	<46F2E103.8000907@redhat.com> <20070920142927.d87ab5af.akpm@linux-foundation.org>
+In-Reply-To: <20070920142927.d87ab5af.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
-
-On Thu, 2007-09-20 at 14:55 -0700, Linus Torvalds wrote:
-> And I think that's a damn reasonable thing to agree on: timers (and 
-> anything else that CPU shutdown/bringup could *possibly* care about) 
-> should be considered core enough that they had better be on the 
-> suspend_late/resume_early list.
+On 09/20/2007 05:29 PM, Andrew Morton wrote:
+> On Thu, 20 Sep 2007 17:07:15 -0400
+> Chuck Ebbert <cebbert@redhat.com> wrote:
 > 
-> Thomas, Rafael, can you verify that at least STR is ok in this respect?
+>> On 08/09/2007 12:55 PM, Andrew Morton wrote:
+>>> On Thu, 9 Aug 2007 11:59:43 +0200 Matthias Hensler <matthias@wspse.de> wrote:
+>>>
+>>>> On Sat, Aug 04, 2007 at 10:44:26AM +0200, Matthias Hensler wrote:
+>>>>> On Fri, Aug 03, 2007 at 11:34:07AM -0700, Andrew Morton wrote:
+>>>>> [...]
+>>>>> I am also willing to try the patch posted by Richard.
+>>>> I want to give some update here:
+>>>>
+>>>> 1. We finally hit the problem on a third system, with a total different
+>>>>    setup and hardware. However, again high I/O load caused the problem
+>>>>    and the affected filesystems were mounted with noatime.
+>>>>
+>>>> 2. I installed a recompiled kernel with just the two line patch from
+>>>>    Richard Kennedy (http://lkml.org/lkml/2007/8/2/89). That system has 5
+>>>>    days uptime now and counting. I believe the patch fixed the problem.
+>>>>    However, I will continue running "vmstat 1" and the endless loop of
+>>>>    "cat /proc/meminfo", just in case I am wrong.
+>>>>
+>>> Did we ever see the /proc/meminfo and /proc/vmstat output during the stall?
+>>>
+>>> If Richard's patch has indeed fixed it then this confirms that we're seeing
+>>> contention over the dirty-memory limits.  Richard's patch isn't really the
+>>> right one because it allows unlimited dirty-memory windup in some situations
+>>> (large number of disks with small writes, or when we perform queue congestion
+>>> avoidance).
+>>>
+>>> As you're seeing this happening when multiple disks are being written to it is
+>>> possible that the per-device-dirty-threshold patches which recently went into
+>>> -mm (and which appear to have a bug) will fix it.
+>>>
+>>> But I worry that the stall appears to persist *forever*.  That would indicate
+>>> that we have a dirty-memory accounting leak, or that for some reason the
+>>> system has decided to stop doing writeback to one or more queues (might be
+>>> caused by an error in a lower-level driver's queue congestion state management).
+>>>
+>>> If it is the latter, then it could be that running "sync" will clear the
+>>> problem.  Temporarily, at least.  Because sync will ignore the queue congestion
+>>> state.
+>>>
+>> This is still a problem for people, and no fix is in sight until 2.6.24.
+> 
+> Any bugzilla urls or anything like that?
 
--ETOOTIRED led me too a wrong conclusion, but still it is a valuable
-hint that this change is making things work again. I need to go down
-into the details of the swsusp_suspend() code path to figure out, what's
-the root cause. 
+https://bugzilla.redhat.com/show_bug.cgi?id=249563
 
-Sorry for the noise, but I'm zooming in.
+> 
+>> Can we get some kind of band-aid, like making the endless 'for' loop in
+>> balance_dirty_pages() terminate after some number of iterations? Clearly
+>> if we haven't written "write_chunk" pages after a few tries, *and* we
+>> haven't encountered congestion, there's no point in trying forever...
+> 
+> Did my above questions get looked at?
+> 
+> Is anyone able to reproduce this?
+> 
+> Do we have a clue what's happening?
 
-	tglx
+There are a ton of dirty pages for one disk, and zero or close to zero dirty
+for a different one. Kernel spins forever trying to write some arbitrary
+minimum amount of data ("write_chunk" pages) to the second disk...
 
+> 
+> Is that function just spinning around, failing to start writeout against
+> any pages at all?  If so, how come?
 
+Yes, it spins forever. Just removing the "noatime" mount option for the
+second disk generates enough dirty data to keep the system functional.
