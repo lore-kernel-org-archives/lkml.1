@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbXITHG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbXITHGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbXITHG1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbXITHFX
+	id S1758956AbXITHGm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbXITHFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:05:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:43685 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbXITHFS (ORCPT
+	Thu, 20 Sep 2007 03:05:24 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:65209 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbXITHFV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:05:18 -0400
+	Thu, 20 Sep 2007 03:05:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=s9fhaUXg7Sl1qWtG3KGEEUEjjENRbz42S+h124Sd/Q0rSixxp05bsOW6hj3PwLirCzU7s3Zk0KK6+tnRt8UxQIswav6dQYpAvOMYUc0FCAuAG893W/qUNM2Q/hrAwiah67No8OIvjsahUBRIHbezCZa2Maw3NYvW47vwQYLxNPA=
+        b=XDjUYKY+MgJhgRnDBvf/3/hYHQmwaDU74YhWAQZHuShosi0bR6tXYvnPchsDdTlyRJowq8z4k9Fqijb7gKTYiZQtvWWv5HCf4GJ8qpqT8Uh3MquSKJplJiUDksZx2T5Ujph/cHFsqNnbNQp2OY4DUbm4gZ2F4OcbZqidw4RN6WY=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 01/15] sysfs: kill SYSFS_FLAG_REMOVED
+Subject: [PATCH 04/15] sysfs: clean up header files
 In-Reply-To: <11902719091692-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Thu, 20 Sep 2007 16:05:09 +0900
-Message-Id: <1190271909505-git-send-email-htejun@gmail.com>
+Date: Thu, 20 Sep 2007 16:05:10 +0900
+Message-Id: <1190271910143-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,54 +31,465 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With sysfs_get_dentry() simplified, there's no user of
-SYSFS_FLAG_REMOVED left.  Kill it.
+sysfs is about to go through major overhaul making this a pretty good
+opportunity to clean up (out-of-tree changes and pending patches will
+need regeneration anyway).  Clean up headers.
+
+* Kill space between * and symbolname.
+
+* Move SYSFS_* type constants and flags into fs/sysfs/sysfs.h.
+  They're internal to sysfs.
+
+* Reformat function prototypes and add argument symbol names.
+
+* Make dummy function definition order match that of function
+  prototypes.
+
+* Add some comments.
+
+* Reorganize fs/sysfs/sysfs.h according to which file the declared
+  variable or feature lives in.
+
+This patch does not introduce any behavior change.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
-This patch reverts driver/sysfs-kill-sysfs_flag_removed.patch and thus
-can be removed together with it.
+ fs/sysfs/sysfs.h      |  148 ++++++++++++++++++++++++++++++------------------
+ include/linux/sysfs.h |  127 +++++++++++++++++++-----------------------
+ 2 files changed, 149 insertions(+), 126 deletions(-)
 
- fs/sysfs/dir.c        |    5 ++++-
- include/linux/sysfs.h |    1 +
- 2 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index a493c6f..da4bb66 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -222,7 +222,7 @@ static void sysfs_deactivate(struct sysfs_dirent *sd)
- 	DECLARE_COMPLETION_ONSTACK(wait);
- 	int v;
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 791b3ed..63adbec 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -1,20 +1,24 @@
++/* type-specific structures for sysfs_dirent->s_* union members */
+ struct sysfs_elem_dir {
+-	struct kobject		* kobj;
++	struct kobject		*kobj;
+ };
  
--	BUG_ON(sd->s_sibling);
-+	BUG_ON(sd->s_sibling || !(sd->s_flags & SYSFS_FLAG_REMOVED));
- 	sd->s_sibling = (void *)&wait;
+ struct sysfs_elem_symlink {
+-	struct sysfs_dirent	* target_sd;
++	struct sysfs_dirent	*target_sd;
+ };
  
- 	/* atomic_add_return() is a mb(), put_active() will always see
-@@ -462,8 +462,11 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-  */
- void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
-+	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
+ struct sysfs_elem_attr {
+-	struct attribute	* attr;
++	struct attribute	*attr;
+ };
+ 
+ struct sysfs_elem_bin_attr {
+-	struct bin_attribute	* bin_attr;
++	struct bin_attribute	*bin_attr;
+ };
+ 
+ /*
++ * sysfs_dirent - the building block of sysfs hierarchy.  Each and
++ * every sysfs node is represented by single sysfs_dirent.
++ *
+  * As long as s_count reference is held, the sysfs_dirent itself is
+  * accessible.  Dereferencing s_elem or any other outer entity
+  * requires s_active reference.
+@@ -22,10 +26,10 @@ struct sysfs_elem_bin_attr {
+ struct sysfs_dirent {
+ 	atomic_t		s_count;
+ 	atomic_t		s_active;
+-	struct sysfs_dirent	* s_parent;
+-	struct sysfs_dirent	* s_sibling;
+-	struct sysfs_dirent	* s_children;
+-	const char		* s_name;
++	struct sysfs_dirent	*s_parent;
++	struct sysfs_dirent	*s_sibling;
++	struct sysfs_dirent	*s_children;
++	const char		*s_name;
+ 
+ 	union {
+ 		struct sysfs_elem_dir		dir;
+@@ -37,12 +41,31 @@ struct sysfs_dirent {
+ 	unsigned int		s_flags;
+ 	umode_t			s_mode;
+ 	ino_t			s_ino;
+-	struct iattr		* s_iattr;
++	struct iattr		*s_iattr;
+ 	atomic_t		s_event;
+ };
+ 
+-#define SD_DEACTIVATED_BIAS	INT_MIN
++#define SD_DEACTIVATED_BIAS		INT_MIN
+ 
++#define SYSFS_TYPE_MASK			0x00ff
++#define SYSFS_ROOT			0x0001
++#define SYSFS_DIR			0x0002
++#define SYSFS_KOBJ_ATTR			0x0004
++#define SYSFS_KOBJ_BIN_ATTR		0x0008
++#define SYSFS_KOBJ_LINK			0x0020
++#define SYSFS_COPY_NAME			(SYSFS_DIR | SYSFS_KOBJ_LINK)
 +
- 	sysfs_unlink_sibling(sd);
++#define SYSFS_FLAG_MASK			~SYSFS_TYPE_MASK
++#define SYSFS_FLAG_REMOVED		0x0200
++
++static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
++{
++	return sd->s_flags & SYSFS_TYPE_MASK;
++}
++
++/*
++ * Context structure to be used while adding/removing nodes.
++ */
+ struct sysfs_addrm_cxt {
+ 	struct sysfs_dirent	*parent_sd;
+ 	struct inode		*parent_inode;
+@@ -50,59 +73,47 @@ struct sysfs_addrm_cxt {
+ 	int			cnt;
+ };
  
-+	sd->s_flags |= SYSFS_FLAG_REMOVED;
- 	sd->s_sibling = acxt->removed;
- 	acxt->removed = sd;
++/*
++ * mount.c
++ */
+ extern struct sysfs_dirent sysfs_root;
++extern struct super_block *sysfs_sb;
+ extern struct kmem_cache *sysfs_dir_cachep;
  
+-extern struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
+-extern struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd);
+-extern void sysfs_put_active(struct sysfs_dirent *sd);
+-extern struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
+-extern void sysfs_put_active_two(struct sysfs_dirent *sd);
+-extern void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+-			      struct sysfs_dirent *parent_sd);
+-extern int sysfs_add_one(struct sysfs_addrm_cxt *acxt,
+-			  struct sysfs_dirent *sd);
+-extern void sysfs_remove_one(struct sysfs_addrm_cxt *acxt,
+-			     struct sysfs_dirent *sd);
+-extern void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
+-
+-extern struct inode * sysfs_get_inode(struct sysfs_dirent *sd);
+-
+-extern void release_sysfs_dirent(struct sysfs_dirent * sd);
+-extern struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
+-					      const unsigned char *name);
+-extern struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
+-					     const unsigned char *name);
+-extern struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode,
+-					     int type);
+-
+-extern int sysfs_add_file(struct sysfs_dirent *dir_sd,
+-			  const struct attribute *attr, int type);
+-extern int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
+-extern struct sysfs_dirent *sysfs_find(struct sysfs_dirent *dir, const char * name);
+-
+-extern int sysfs_create_subdir(struct kobject *kobj, const char *name,
+-			       struct sysfs_dirent **p_sd);
+-extern void sysfs_remove_subdir(struct sysfs_dirent *sd);
+-
+-extern int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
+-
+-extern spinlock_t sysfs_assoc_lock;
++/*
++ * dir.c
++ */
+ extern struct mutex sysfs_mutex;
+ extern struct mutex sysfs_rename_mutex;
+-extern struct super_block * sysfs_sb;
++extern spinlock_t sysfs_assoc_lock;
++
+ extern const struct file_operations sysfs_dir_operations;
+-extern const struct file_operations sysfs_file_operations;
+-extern const struct file_operations bin_fops;
+ extern const struct inode_operations sysfs_dir_inode_operations;
+-extern const struct inode_operations sysfs_symlink_inode_operations;
+ 
+-static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
+-{
+-	return sd->s_flags & SYSFS_TYPE_MASK;
+-}
+-
+-static inline struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
++struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
++struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd);
++void sysfs_put_active(struct sysfs_dirent *sd);
++struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
++void sysfs_put_active_two(struct sysfs_dirent *sd);
++void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
++		       struct sysfs_dirent *parent_sd);
++int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
++void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
++void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
++
++struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
++				       const unsigned char *name);
++struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
++				      const unsigned char *name);
++struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type);
++
++void release_sysfs_dirent(struct sysfs_dirent *sd);
++
++int sysfs_create_subdir(struct kobject *kobj, const char *name,
++			struct sysfs_dirent **p_sd);
++void sysfs_remove_subdir(struct sysfs_dirent *sd);
++
++static inline struct sysfs_dirent *sysfs_get(struct sysfs_dirent *sd)
+ {
+ 	if (sd) {
+ 		WARN_ON(!atomic_read(&sd->s_count));
+@@ -111,8 +122,33 @@ static inline struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
+ 	return sd;
+ }
+ 
+-static inline void sysfs_put(struct sysfs_dirent * sd)
++static inline void sysfs_put(struct sysfs_dirent *sd)
+ {
+ 	if (sd && atomic_dec_and_test(&sd->s_count))
+ 		release_sysfs_dirent(sd);
+ }
++
++/*
++ * inode.c
++ */
++struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
++int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
++int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
++
++/*
++ * file.c
++ */
++extern const struct file_operations sysfs_file_operations;
++
++int sysfs_add_file(struct sysfs_dirent *dir_sd,
++		   const struct attribute *attr, int type);
++
++/*
++ * bin.c
++ */
++extern const struct file_operations bin_fops;
++
++/*
++ * symlink.c
++ */
++extern const struct inode_operations sysfs_symlink_inode_operations;
 diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 82c31b2..c16e4c5 100644
+index c16e4c5..b393bb4 100644
 --- a/include/linux/sysfs.h
 +++ b/include/linux/sysfs.h
-@@ -83,6 +83,7 @@ struct sysfs_ops {
- #define SYSFS_COPY_NAME		(SYSFS_DIR | SYSFS_KOBJ_LINK)
+@@ -23,14 +23,14 @@ struct module;
+  * until the tree gets cleaned up fully.
+  */
+ struct attribute {
+-	const char		* name;
+-	struct module		* owner;
++	const char		*name;
++	struct module		*owner;
+ 	mode_t			mode;
+ };
  
- #define SYSFS_FLAG_MASK		~SYSFS_TYPE_MASK
-+#define SYSFS_FLAG_REMOVED	0x0100
+ struct attribute_group {
+-	const char		* name;
+-	struct attribute	** attrs;
++	const char		*name;
++	struct attribute	**attrs;
+ };
  
+ 
+@@ -74,65 +74,43 @@ struct sysfs_ops {
+ 	ssize_t	(*store)(struct kobject *,struct attribute *,const char *, size_t);
+ };
+ 
+-#define SYSFS_TYPE_MASK		0x00ff
+-#define SYSFS_ROOT		0x0001
+-#define SYSFS_DIR		0x0002
+-#define SYSFS_KOBJ_ATTR 	0x0004
+-#define SYSFS_KOBJ_BIN_ATTR	0x0008
+-#define SYSFS_KOBJ_LINK 	0x0020
+-#define SYSFS_COPY_NAME		(SYSFS_DIR | SYSFS_KOBJ_LINK)
+-
+-#define SYSFS_FLAG_MASK		~SYSFS_TYPE_MASK
+-#define SYSFS_FLAG_REMOVED	0x0100
+-
  #ifdef CONFIG_SYSFS
+ 
+-extern int sysfs_schedule_callback(struct kobject *kobj,
+-		void (*func)(void *), void *data, struct module *owner);
+-
+-extern int __must_check
+-sysfs_create_dir(struct kobject *);
+-
+-extern void
+-sysfs_remove_dir(struct kobject *);
+-
+-extern int __must_check
+-sysfs_rename_dir(struct kobject *kobj, const char *new_name);
+-
+-extern int __must_check
+-sysfs_move_dir(struct kobject *, struct kobject *);
+-
+-extern int __must_check
+-sysfs_create_file(struct kobject *, const struct attribute *);
+-
+-extern int __must_check
+-sysfs_update_file(struct kobject *, const struct attribute *);
++int sysfs_schedule_callback(struct kobject *kobj, void (*func)(void *),
++			    void *data, struct module *owner);
+ 
+-extern int __must_check
+-sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode);
++int __must_check sysfs_create_dir(struct kobject *kobj);
++void sysfs_remove_dir(struct kobject *kobj);
++int __must_check sysfs_rename_dir(struct kobject *kobj, const char *new_name);
++int __must_check sysfs_move_dir(struct kobject *kobj,
++				struct kobject *new_parent_kobj);
+ 
+-extern void
+-sysfs_remove_file(struct kobject *, const struct attribute *);
+-
+-extern int __must_check
+-sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name);
+-
+-extern void
+-sysfs_remove_link(struct kobject *, const char * name);
++int __must_check sysfs_create_file(struct kobject *kobj,
++				   const struct attribute *attr);
++int __must_check sysfs_update_file(struct kobject *kobj,
++				   const struct attribute *attr);
++int __must_check sysfs_chmod_file(struct kobject *kobj, struct attribute *attr,
++				  mode_t mode);
++void sysfs_remove_file(struct kobject *kobj, const struct attribute *attr);
+ 
+ int __must_check sysfs_create_bin_file(struct kobject *kobj,
+-					struct bin_attribute *attr);
++				       struct bin_attribute *attr);
+ void sysfs_remove_bin_file(struct kobject *kobj, struct bin_attribute *attr);
+ 
+-int __must_check sysfs_create_group(struct kobject *,
+-					const struct attribute_group *);
+-void sysfs_remove_group(struct kobject *, const struct attribute_group *);
++int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
++				   const char *name);
++void sysfs_remove_link(struct kobject *kobj, const char *name);
++
++int __must_check sysfs_create_group(struct kobject *kobj,
++				    const struct attribute_group *grp);
++void sysfs_remove_group(struct kobject *kobj,
++			const struct attribute_group *grp);
+ int sysfs_add_file_to_group(struct kobject *kobj,
+-		const struct attribute *attr, const char *group);
++			const struct attribute *attr, const char *group);
+ void sysfs_remove_file_from_group(struct kobject *kobj,
+-		const struct attribute *attr, const char *group);
++			const struct attribute *attr, const char *group);
+ 
+-void sysfs_notify(struct kobject * k, char *dir, char *attr);
++void sysfs_notify(struct kobject *kobj, char *dir, char *attr);
+ 
+ extern int __must_check sysfs_init(void);
+ 
+@@ -144,72 +122,81 @@ static inline int sysfs_schedule_callback(struct kobject *kobj,
+ 	return -ENOSYS;
+ }
+ 
+-static inline int sysfs_create_dir(struct kobject * kobj)
++static inline int sysfs_create_dir(struct kobject *kobj)
+ {
+ 	return 0;
+ }
+ 
+-static inline void sysfs_remove_dir(struct kobject * k)
++static inline void sysfs_remove_dir(struct kobject *kobj)
+ {
+ 	;
+ }
+ 
+-static inline int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
++static inline int sysfs_rename_dir(struct kobject *kobj, const char *new_name)
+ {
+ 	return 0;
+ }
+ 
+-static inline int sysfs_move_dir(struct kobject * k, struct kobject * new_parent)
++static inline int sysfs_move_dir(struct kobject *kobj,
++				 struct kobject *new_parent_kobj)
+ {
+ 	return 0;
+ }
+ 
+-static inline int sysfs_create_file(struct kobject * k, const struct attribute * a)
++static inline int sysfs_create_file(struct kobject *kobj,
++				    const struct attribute *attr)
+ {
+ 	return 0;
+ }
+ 
+-static inline int sysfs_update_file(struct kobject * k, const struct attribute * a)
++static inline int sysfs_update_file(struct kobject *kobj,
++				    const struct attribute *attr)
+ {
+ 	return 0;
+ }
+-static inline int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
++static inline int sysfs_chmod_file(struct kobject *kobj,
++				   struct attribute *attr, mode_t mode)
+ {
+ 	return 0;
+ }
+ 
+-static inline void sysfs_remove_file(struct kobject * k, const struct attribute * a)
++static inline void sysfs_remove_file(struct kobject *kobj,
++				     const struct attribute *attr)
+ {
+ 	;
+ }
+ 
+-static inline int sysfs_create_link(struct kobject * k, struct kobject * t, const char * n)
++static inline int sysfs_create_bin_file(struct kobject *kobj,
++					struct bin_attribute *attr)
+ {
+ 	return 0;
+ }
+ 
+-static inline void sysfs_remove_link(struct kobject * k, const char * name)
++static inline int sysfs_remove_bin_file(struct kobject *kobj,
++					struct bin_attribute *attr)
+ {
+-	;
++	return 0;
+ }
+ 
+-
+-static inline int sysfs_create_bin_file(struct kobject * k, struct bin_attribute * a)
++static inline int sysfs_create_link(struct kobject *kobj,
++				    struct kobject *target, const char *name)
+ {
+ 	return 0;
+ }
+ 
+-static inline int sysfs_remove_bin_file(struct kobject * k, struct bin_attribute * a)
++static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
+ {
+-	return 0;
++	;
+ }
+ 
+-static inline int sysfs_create_group(struct kobject * k, const struct attribute_group *g)
++static inline int sysfs_create_group(struct kobject *kobj,
++				     const struct attribute_group *grp)
+ {
+ 	return 0;
+ }
+ 
+-static inline void sysfs_remove_group(struct kobject * k, const struct attribute_group * g)
++static inline void sysfs_remove_group(struct kobject *kobj,
++				      const struct attribute_group *grp)
+ {
+ 	;
+ }
+@@ -225,7 +212,7 @@ static inline void sysfs_remove_file_from_group(struct kobject *kobj,
+ {
+ }
+ 
+-static inline void sysfs_notify(struct kobject * k, char *dir, char *attr)
++static inline void sysfs_notify(struct kobject *kobj, char *dir, char *attr)
+ {
+ }
  
 -- 
 1.5.0.3
