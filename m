@@ -1,41 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761643AbXITIRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762224AbXITISO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761643AbXITIRs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 04:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761815AbXITIP2
+	id S1762224AbXITISO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 04:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761915AbXITIPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 04:15:28 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:37334 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761800AbXITIP0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 04:15:26 -0400
-Date: Thu, 20 Sep 2007 10:15:24 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+	Thu, 20 Sep 2007 04:15:55 -0400
+Received: from ozlabs.org ([203.10.76.45]:58764 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761788AbXITIPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 04:15:53 -0400
+From: Michael Neuling <mikey@neuling.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: "Robert P. J. Day" <rpjday@mindspring.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [RFC][PATCH 2/2 -mm] kexec based hibernation -v3: kexec restore
-Message-ID: <20070920081524.GA8732@atrey.karlin.mff.cuni.cz>
-References: <1190266450.21818.18.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190266450.21818.18.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ARM: Drop support for redundant "keepinitrd" boot-time param. 
+In-reply-to: <20070920072233.GA10410@flint.arm.linux.org.uk> 
+References: <Pine.LNX.4.64.0709191203460.30041@localhost.localdomain> <20070920072233.GA10410@flint.arm.linux.org.uk>
+Comments: In-reply-to Russell King <rmk+lkml@arm.linux.org.uk>
+   message dated "Thu, 20 Sep 2007 08:22:33 +0100."
+X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
+Date: Thu, 20 Sep 2007 18:15:48 +1000
+Message-ID: <2261.1190276148@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch adds writing support for /dev/oldmem. This is used to
-> restore the memory contents of hibernated system.
+> NAK.  "keepinitrd" is what people expect on ARM.
 > 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> I'm frustrated that whoever invented "retain_initrd" didn't look
+> around in the documentation to see if there was any existing
+> implementation first.  The generic implementation should be fixed
+> IMHO, or at least the option string moved into init/initramfs.c.
 
-ACK. (And this can even go in before the patch #1, right?)
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Sorry about that.  I'm happy to change retain_initrd to keep keepinitrd.
+I don't think many people are using retain_initrd anyway (other than me
+and some people I work with).
+
+Otherwise we can support both for a while with something like (and
+Robert's patch)....
+
+
+From: Michael Neuling <mikey@neuling.org>
+
+Make keepinitrd the same as retain_initrd for backwards compatibility
+with ARM/AVR32 
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ init/initramfs.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: linux-2.6-ozlabs/init/initramfs.c
+===================================================================
+--- linux-2.6-ozlabs.orig/init/initramfs.c
++++ linux-2.6-ozlabs/init/initramfs.c
+@@ -502,6 +502,13 @@ static int __init retain_initrd_param(ch
+ }
+ __setup("retain_initrd", retain_initrd_param);
+ 
++/* for backwards compatibility with ARM/AVR32 */
++static int __init keepinitrd_param(char *str)
++{
++	return retain_initrd_param(str);
++}
++__setup("keepinitrd", keepinitrd_param);
++
+ extern char __initramfs_start[], __initramfs_end[];
+ #ifdef CONFIG_BLK_DEV_INITRD
+ #include <linux/initrd.h>
+
