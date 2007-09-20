@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbXITUll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbXITUtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbXITUll (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbXITUle
+	id S1752611AbXITUtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXITUte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 16:41:34 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:35209
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751126AbXITUld (ORCPT
+	Thu, 20 Sep 2007 16:49:34 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38388 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750800AbXITUtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 16:41:33 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-tiny@selenic.com
-Subject: Re: Monster switch for small size (was Linux-tiny revival)
-Date: Thu, 20 Sep 2007 16:41:22 -0500
-User-Agent: KMail/1.9.6
-Cc: Tim Bird <tim.bird@am.sony.com>, Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Michael Opdenacker <michael@free-electrons.com>,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>
-References: <46F1645D.9050406@am.sony.com> <20070920091042.GA6035@shadowen.org> <46F2A99A.3080400@am.sony.com>
-In-Reply-To: <46F2A99A.3080400@am.sony.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709201641.22580.rob@landley.net>
+	Thu, 20 Sep 2007 16:49:33 -0400
+Message-Id: <20070920204932.663196000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 20 Sep 2007 13:49:32 -0700
+From: travis@sgi.com
+To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/1] x86: Reduce Memory Usage for large CPU count systems
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 September 2007 12:10:50 pm Tim Bird wrote:
-> Andy Whitcroft wrote:
-> > Knowing nothing about these options, from a test perspective it would
-> > be nice if we were able to simply enable "the lot" so we can do "normal"
-> > -mm runs and "tiny" -mm runs without any manual intervention?
->
-> I agree completely.
->
-> I have been thinking for a while about how to make a "monster switch"
-> (the kind they always seem to have in Frankenstein movies) that
-> switches a whole bunch of settings at once.  We currently have methods
-> in the kernel for:
->  * default (or recommended) config for a particular platform
->  * all yes - to build as much as possible
->  * all no - to build as little as possible
->
-> The problem with "allno" is that it rarely produces a usable
-> kernel.
 
-Beyond that, allno doesn't come close to switching everything off.
+Analyzing various data structures when NR_CPU count is raised
+to 4096 shows the following arrays over 128k.  If the maximum
+number of cpus are not installed (about 99.99% of the time),
+then a large percentage of this memory is wasted.
+--
+	151289856  CALNDATA  irq_desc
+	135530496  RMDATATA  irq_cfg
+	  3145728  CALNDATA  cpu_data
+	  2101248  BSS       irq_lists
+	  2097152  RMDATATA  cpu_sibling_map
+	  2097152  RMDATATA  cpu_core_map
+	  1575936  BSS       irq_2_pin
+	  1050624  BSS       irq_timer_state
+	   614400  INITDATA  early_node_map
+	   525376  PERCPU    per_cpu__kstat
+	   524608  DATA      unix_proto
+	   524608  DATA      udpv6_prot
+	   524608  DATA      udplitev6_prot
+	   524608  DATA      udplite_prot
+	   524608  DATA      udp_prot
+	   524608  DATA      tcpv6_prot
+	   524608  DATA      tcp_prot
+	   524608  DATA      rawv6_prot
+	   524608  DATA      raw_prot
+	   524608  DATA      packet_proto
+	   524608  DATA      netlink_proto
+	   524288  BSS       cpu_devices
+	   524288  BSS       boot_pageset
+	   524288  CALNDATA  boot_cpu_pda
+	   262144  RMDATATA  node_to_cpumask
+	   262144  BSS       __log_buf
+	   131072  BSS       entries
 
-1) You have to _enable_ CONFIG_EMBEDDED in order to go into that menu and 
-switch _off_ the stuff in there.
+cpu_sibling_map and cpu_core_map have been taken care of in
+a prior patch.  This patch deals with the cpu_data array of
+cpuinfo_x86 structs.  The model that was used in sparc64
+architecture was adopted for x86.
 
-2) The stuff CONFIG_EMBEDDED reveals isn't all in that menu.  CONFIG_BLOCK is 
-at the top level menu.  CONFIG_VT and CONFIG_UNIX98_PTYS are buried down 
-under device drivers->character devices, and there's more sprinkled all over.  
-You have to track it all down and switch it off to get an _actual_ 
-allnoconfig kernel.
+Obviously, the IRQ arrays are of greater importance for
+size reduction.  Any suggestions, or threads I should read
+are gratefully accecpted... ;-)
 
-(I cut the bit where you reinvent miniconfig.  People keep doing this.  I dig 
-it up and resubmit it every year or so, so Roman Zippel can shoot it down 
-again.  Meanwhile, not only is Firmware Linux happily using it, but I even 
-wrote more documentation at 
-http://landley.net/code/firmware/new_platform.html although you have to 
-scroll down a bit to get to the stuff about miniconfig...)
-
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
