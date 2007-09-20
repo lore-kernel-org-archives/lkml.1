@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbXITRnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbXITRsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758725AbXITRnS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 13:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbXITRnK
+	id S1758469AbXITRsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 13:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbXITRsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 13:43:10 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:36068 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754471AbXITRnJ (ORCPT
+	Thu, 20 Sep 2007 13:48:08 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:42185 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755121AbXITRsH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 13:43:09 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 20 Sep 2007 10:42:15 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nagendra Tomar <tomer_iisc@yahoo.com>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT
- events get missed for TCP sockets
-In-Reply-To: <130356.85796.qm@web53703.mail.re2.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0709201033120.8897@alien.or.mcafeemobile.com>
-References: <130356.85796.qm@web53703.mail.re2.yahoo.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 20 Sep 2007 13:48:07 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: kdump detection in SCSI drivers
+Date: Thu, 20 Sep 2007 11:47:46 -0600
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501B2C7D8@NAMAIL1.ad.lsil.com>
+In-Reply-To: <20070920104249.GB12157@atrey.karlin.mff.cuni.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kdump detection in SCSI drivers
+Thread-Index: Acf7cwU4F8ogU9SfT0KoV/CGL3y/kAAOuYYw
+References: <9738BCBE884FDB42801FAD8A7769C26501B2C44C@NAMAIL1.ad.lsil.com> <20070920104249.GB12157@atrey.karlin.mff.cuni.cz>
+From: "Mukker, Atul" <Atul.Mukker@lsi.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: <Linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 20 Sep 2007 17:47:48.0508 (UTC) FILETIME=[5BB8FDC0:01C7FBAE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Nagendra Tomar wrote:
+How do we "know" when little memory is available?
 
-> The tcp_check_space() function calls tcp_new_space() only if the
-> SOCK_NOSPACE bit is set in the socket flags. This is causing Edge Triggered
-> EPOLLOUT events to be missed for TCP sockets, as the ep_poll_callback() 
-> is not called from the wakeup routine.
+Other suggestion which came about was to parse the kernel command line
+and look for "elfcorehdr=". Is this ok? Is kernel command line visible
+to the SCSI drivers?
+
+Thanks
+-Atul
+
+-----Original Message-----
+From: Pavel Machek [mailto:pavel@ucw.cz] 
+Sent: Thursday, September 20, 2007 6:43 AM
+To: Mukker, Atul
+Cc: Linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org
+Subject: Re: kdump detection in SCSI drivers
+
+> Hi,
 > 
->         The SOCK_NOSPACE bit indicates the user's intent to perform writes
-> on that socket (set in tcp_sendmsg and tcp_poll). I believe the idea 
-> behind the SOCK_NOSPACE check is to optimize away the tcp_new_space call
-> in cases when user is not interested in writing to the socket. These two
-> take care of all possible scenarios in which a user can convey his intent
-> to write on that socket.
-> 
-> Case 1: tcp_sendmsg detects lack of sndbuf space
-> Case 2: tcp_poll returns not writable
-> 
-> This is fine if we do not deal with epoll's Edge Triggered events (EPOLLET).
-> With ET events we can have a scenario where the SOCK_NOSPACE bit is not set,
-> as the user has neither done a sendmsg nor a poll/epoll call that returned
-> with the POLLOUT condition not set. 
+> Is there a standard way for drivers (RAID) to detect if the current
+> kernel is running in kdump mode? We would like to adjust driver
+behavior
+> dynamically when kdump is active by scaling down resources.
 
-Looking back at it, I think the current TCP code is right, once you look 
-at the "event" to be a output buffer full->with_space transition.
-If you drop an fd inside epoll with EPOLLOUT|EPOLLET and you get an event 
-(free space on the output buffer), if you do not consume it (say a 
-tcp_sendmsg that re-fill the buffer), you can't see other OUT event 
-anymore since they happen on the full->with_space transition.
-Yes, I know, the read size (EPOLLIN) works differently and you get an 
-event for every packet you receive. And yes, I do not like asymmetric 
-things. But that does not make the EPOLLOUT|EPOLLET wrong IMO.
+Perhaps you should be automatically using little resources when little
+memory is available, or something? 
 
-
-
-- Davide
-
-
+With upcomping kjump patches, it is more "interesting" than kdump
+vs. no kdump.
+	
+Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures)
+http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
