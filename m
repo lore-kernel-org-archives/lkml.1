@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbXITRCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbXITRFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbXITRCF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 13:02:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXITRBw
+	id S1756859AbXITRFX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 13:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXITRFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 13:01:52 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60101 "EHLO mail.dvmed.net"
+	Thu, 20 Sep 2007 13:05:09 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:22680 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751134AbXITRBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 13:01:51 -0400
-Message-ID: <46F2A779.2040904@pobox.com>
-Date: Thu, 20 Sep 2007 13:01:45 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	id S1752835AbXITRFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 13:05:07 -0400
+Date: Thu, 20 Sep 2007 19:05:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] ide-cd is unmaintained
+Message-ID: <20070920170549.GO2367@kernel.dk>
+References: <20070920152121.053fc9d4@the-village.bc.nu>
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Ralf Baechle <ralf@linux-mips.org>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sb1250-mac.c: De-typedef, de-volatile, de-etc...
-References: <Pine.LNX.4.64N.0709101310030.25038@blysk.ds.pg.gda.pl> <46E8B56E.7060705@pobox.com> <Pine.LNX.4.64N.0709131506040.31069@blysk.ds.pg.gda.pl> <20070913151452.GB29665@linux-mips.org> <46E95C7F.1050302@pobox.com> <Pine.LNX.4.64N.0709141135290.1926@blysk.ds.pg.gda.pl> <46F1F2CE.7020300@pobox.com> <Pine.LNX.4.64N.0709201354320.30788@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0709201354320.30788@blysk.ds.pg.gda.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070920152121.053fc9d4@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> On Thu, 20 Sep 2007, Jeff Garzik wrote:
+On Thu, Sep 20 2007, Alan Cox wrote:
+> I simply don't have any old IDE systems any more or time to really look
+> after this. Nobody responded to the previous linux-ide mail about
+> maintainers so...
 > 
->>> You may be pleased (or less so) to hear that the version of sb1250-mac.c in
->>> your tree does not even build (because of
->>> 42d53d6be113f974d8152979c88e1061b953bd12) and the patch below does not
->>> address it.  I ran out of time in the evening, but I will send you a fix
->>> shortly.  To be honest I think even with bulk changes it may be worth
->>> checking whether they do not break stuff. ;-)
->> hrm.  I cannot get this to apply on top of linux-2.6.git,
->> netdev-2.6.git#upstream (prior to net-2.6.24 rebase) or
->> netdev-2.6.git#upstream (after net-2.6.24 rebase)
-> 
->  It applies on top of current -mm.  It seems to apply to a copy of 
-> netdev-2.6.git#upstream that I have got, but I am probably missing 
-> something...  If I try to clone your repository again I get:
-> 
-> $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/linux-netdev-2.6.git linux
-> Initialized empty Git repository in /home/macro/GIT-other/linux-netdev/linux/.git/
-> fatal: The remote end hung up unexpectedly
-> fetch-pack from 'git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/linux-netdev-2.6.git' failed.
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-Remove the "linux-" prefix.
+Just fold it in with the IDE system in general? Would make the most
+sense, I think.
 
-	Jeff
-
-
+-- 
+Jens Axboe
 
