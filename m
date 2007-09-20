@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbXITHnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbXITHoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759598AbXITHnn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXITHne
+	id S1760096AbXITHoJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXITHnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:43:34 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:30139 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751727AbXITHnd (ORCPT
+	Thu, 20 Sep 2007 03:43:53 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:63676 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbXITHnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:43:33 -0400
-Date: Thu, 20 Sep 2007 09:42:21 +0200
+	Thu, 20 Sep 2007 03:43:52 -0400
+Date: Thu, 20 Sep 2007 09:43:50 +0200
 From: Cornelia Huck <huckc@de.ibm.com>
 To: Greg KH <gregkh@suse.de>
 Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: kobject: Temporarily save k_name on cleanup for debug message.
-Message-ID: <20070920094221.59b78cfd@gondolin.boeblingen.de.ibm.com>
+Message-ID: <20070920094350.6417a547@gondolin.boeblingen.de.ibm.com>
 In-Reply-To: <20070919200205.057e3fbc@gondolin.boeblingen.de.ibm.com>
 References: <20070918011841.2381bd93.akpm@linux-foundation.org>
 	<200709182345.13435.m.kozlowski@tuxland.pl>
