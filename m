@@ -1,144 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbXITFcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbXITFdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbXITFcu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 01:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229AbXITFc2
+	id S1757588AbXITFdL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 01:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756463AbXITFc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 01:32:28 -0400
-Received: from mga03.intel.com ([143.182.124.21]:25944 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757136AbXITFc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 01:32:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,276,1186383600"; 
-   d="scan'208";a="282704901"
-Subject: [RFC][PATCH 2/2 -mm] kexec based hibernation -v3: kexec restore
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Content-Type: text/plain
+	Thu, 20 Sep 2007 01:32:56 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:55191 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756490AbXITFcy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 01:32:54 -0400
+Message-Id: <46F205DB.70209@mxs.nes.nec.co.jp>
+Date: Thu, 20 Sep 2007 14:32:11 +0900
+From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Adrian Bunk <bunk@kernel.org>, kexec-ml <kexec@lists.infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       David Rientjes <rientjes@google.com>, Joe Perches <joe@perches.com>
+Subject: [PATCH 6/4] [-mm patch] use the existing offsetof().
+References: <46E9F6A9.8060500@mxs.nes.nec.co.jp>	<46E9F942.5070007@mxs.nes.nec.co.jp> <20070914190350.011cdadb.akpm@linux-foundation.org> <46F204FD.6040303@mxs.nes.nec.co.jp>
+In-Reply-To: <46F204FD.6040303@mxs.nes.nec.co.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Date: Thu, 20 Sep 2007 13:34:10 +0800
-Message-Id: <1190266450.21818.18.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 20 Sep 2007 05:32:11.0675 (UTC) FILETIME=[981EBEB0:01C7FB47]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds writing support for /dev/oldmem. This is used to
-restore the memory contents of hibernated system.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+[PATCH 6/4] [-mm patch] use the existing offsetof().
+ It is better that offsetof() is used for VMCOREINFO_OFFSET().
+ This idea is Joe Perches's.
+
+
+
+Thanks
+Ken'ichi Ohmichi 
 
 ---
+Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+---
+diff -rpuN a/include/linux/kexec.h b/include/linux/kexec.h
+--- a/include/linux/kexec.h	2007-09-18 15:23:22.000000000 +0900
++++ b/include/linux/kexec.h	2007-09-18 15:27:29.000000000 +0900
+@@ -137,7 +137,7 @@ unsigned long paddr_vmcoreinfo_note(void
+ 			      (unsigned long)sizeof(struct name))
+ #define VMCOREINFO_OFFSET(name, field) \
+ 	vmcoreinfo_append_str("OFFSET(%s.%s)=%lu\n", #name, #field, \
+-			      (unsigned long)&(((struct name *)0)->field))
++			      (unsigned long)offsetof(struct name, field))
+ #define VMCOREINFO_LENGTH(name, value) \
+ 	vmcoreinfo_append_str("LENGTH(%s)=%lu\n", #name, (unsigned long)value)
+ #define VMCOREINFO_NUMBER(name) \
+_
 
- arch/i386/kernel/crash_dump.c |   27 +++++++++++++++++++++++++++
- drivers/char/mem.c            |   32 ++++++++++++++++++++++++++++++++
- include/linux/crash_dump.h    |    2 ++
- 3 files changed, 61 insertions(+)
-
-Index: linux-2.6.23-rc4/arch/i386/kernel/crash_dump.c
-===================================================================
---- linux-2.6.23-rc4.orig/arch/i386/kernel/crash_dump.c	2007-09-11 16:52:14.000000000 +0800
-+++ linux-2.6.23-rc4/arch/i386/kernel/crash_dump.c	2007-09-20 09:48:10.000000000 +0800
-@@ -58,6 +58,33 @@
- 	return csize;
- }
- 
-+ssize_t write_oldmem_page(unsigned long pfn, const char *buf,
-+			  size_t csize, unsigned long offset, int userbuf)
-+{
-+	void  *vaddr;
-+
-+	if (!csize)
-+		return 0;
-+
-+	if (!userbuf) {
-+		vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
-+		memcpy(vaddr + offset, buf, csize);
-+	} else {
-+		if (!kdump_buf_page) {
-+			printk(KERN_WARNING "Kdump: Kdump buffer page not"
-+				" allocated\n");
-+			return -EFAULT;
-+		}
-+		if (copy_from_user(kdump_buf_page, buf, csize))
-+			return -EFAULT;
-+		vaddr = kmap_atomic_pfn(pfn, KM_PTE0);
-+		memcpy(vaddr + offset, kdump_buf_page, csize);
-+	}
-+	kunmap_atomic(vaddr, KM_PTE0);
-+
-+	return csize;
-+}
-+
- static int __init kdump_buf_page_init(void)
- {
- 	int ret = 0;
-Index: linux-2.6.23-rc4/include/linux/crash_dump.h
-===================================================================
---- linux-2.6.23-rc4.orig/include/linux/crash_dump.h	2007-09-11 16:52:14.000000000 +0800
-+++ linux-2.6.23-rc4/include/linux/crash_dump.h	2007-09-20 09:48:10.000000000 +0800
-@@ -11,6 +11,8 @@
- extern unsigned long long elfcorehdr_addr;
- extern ssize_t copy_oldmem_page(unsigned long, char *, size_t,
- 						unsigned long, int);
-+extern ssize_t write_oldmem_page(unsigned long, const char *, size_t,
-+				 unsigned long, int);
- extern const struct file_operations proc_vmcore_operations;
- extern struct proc_dir_entry *proc_vmcore;
- 
-Index: linux-2.6.23-rc4/drivers/char/mem.c
-===================================================================
---- linux-2.6.23-rc4.orig/drivers/char/mem.c	2007-09-11 16:52:14.000000000 +0800
-+++ linux-2.6.23-rc4/drivers/char/mem.c	2007-09-20 09:48:10.000000000 +0800
-@@ -348,6 +348,37 @@
- 	}
- 	return read;
- }
-+
-+/*
-+ * Write memory corresponding to the old kernel.
-+ */
-+static ssize_t write_oldmem(struct file *file, const char __user *buf,
-+			    size_t count, loff_t *ppos)
-+{
-+	unsigned long pfn, offset;
-+	size_t write = 0, csize;
-+	int rc = 0;
-+
-+	while (count) {
-+		pfn = *ppos / PAGE_SIZE;
-+		if (pfn > saved_max_pfn)
-+			return write;
-+
-+		offset = (unsigned long)(*ppos % PAGE_SIZE);
-+		if (count > PAGE_SIZE - offset)
-+			csize = PAGE_SIZE - offset;
-+		else
-+			csize = count;
-+		rc = write_oldmem_page(pfn, buf, csize, offset, 1);
-+		if (rc < 0)
-+			return rc;
-+		buf += csize;
-+		*ppos += csize;
-+		write += csize;
-+		count -= csize;
-+	}
-+	return write;
-+}
- #endif
- 
- extern long vread(char *buf, char *addr, unsigned long count);
-@@ -783,6 +814,7 @@
- #ifdef CONFIG_CRASH_DUMP
- static const struct file_operations oldmem_fops = {
- 	.read	= read_oldmem,
-+	.write	= write_oldmem,
- 	.open	= open_oldmem,
- };
- #endif
