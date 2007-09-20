@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbXITH1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbXITH2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760909AbXITH1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759950AbXITH01
+	id S1760614AbXITH2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759960AbXITH02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:26:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:23908 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759785AbXITH0W (ORCPT
+	Thu, 20 Sep 2007 03:26:28 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:33305 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759910AbXITH0Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:26:22 -0400
+	Thu, 20 Sep 2007 03:26:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=ByyPm1zIh/ReMCtjPqIUE5dYnIniH5bGhr4SWAaSRpZIQCzMz9AABK4A7WTAGXT4HEf2CP4ZOb9JFN7HY0gaQnVoLbn6STjedzbD13vUulG0HorDrSJpoHi3bz+pjNUWEay2bqulJbU7eHCrBkXjEYxLLaGg70tF+XGzybh/JUA=
+        b=EZdhOOEKlPVyfTaCaaqI/KiV+nlLXV/OExSeofXr9a62Hmz9z6uMgyk4lxvDTs97bTux1UWzZshhe8NNCjuacKkr1scQ5jSi1RucV10Rg5YNlIoOUdOYKQSjAnAAR3p7m2apULtyWmrOn0c4yssH2iQOLZcJGu2yW9yEAKcRAp8=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 3/4] sysfs: care-free suicide for sysfs files
+Subject: [PATCH 1/4] module: implement module_inhibit_unload()
 In-Reply-To: <11902731752407-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Thu, 20 Sep 2007 16:26:15 +0900
-Message-Id: <11902731754189-git-send-email-htejun@gmail.com>
+Message-Id: <11902731752708-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,158 +31,173 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Life can be weary and some sysfs files choose to commit suicide (kills
-itself when written to).  This is troublesome because while a sysfs
-file is being accessed, the accessing task holds active references to
-the node and its parent.  Removing a sysfs node waits for active
-references to be drained.  The suicidal thread ends up waiting for its
-own active reference and thus is sadly forced to live till the end of
-the time.
+As its name suggests, module_inhibit_unload() inhibits all module
+unloading till the matching module_allow_unload() is called.  This
+unload inhibition doesn't affect whether a module can be unloaded or
+not.  It just stalls the final module free till the inhibition is
+lifted.
 
-Till now, this has been dealt with by requiring suicidal node to ask
-someone else (workqueue) to kill it.  In recognition of the
-inhumanitrian nature of this solution, this patch implements care-free
-suicide support.
+This sledgehammer mechanism is to be used briefly in obscure cases
+where identifying or getting the module to prevent from unloading is
+difficult or not worth the effort.  Note that module unloading is
+siberia-cold path.  If the inhibion is relatively brief in human
+scale, that is, upto a few secs at maximum, it should be fine.  So, if
+this sledgehammer simplifies API and fixes premature unload bugs which
+unfortunately aren't too rare, there isn't much reason not to use it.
 
-Suicide attempt is automagically detected and the active references
-the suiciding task is holding are put early to avoid the above
-described deadlock.  Module unload is inhibited till the sysfs file
-access is complete to avoid freeing the code region too early.
-
-This patch only implements care-free suicide support.  The next patch
-will convert the users.
+Even if something goes wrong with unload inhibition (e.g. someone
+forgets to lift the inhibition), it doesn't prevent modules from being
+loaded.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 ---
- fs/sysfs/dir.c   |    2 +
- fs/sysfs/file.c  |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/sysfs/sysfs.h |    1 +
- 3 files changed, 68 insertions(+), 2 deletions(-)
+ include/linux/module.h |   17 +++++++++++++
+ kernel/module.c        |   59 ++++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 72 insertions(+), 4 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index c902bdc..fe8270c 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -546,6 +546,8 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
- 		sd->s_sibling = NULL;
+diff --git a/include/linux/module.h b/include/linux/module.h
+index b6a646c..a835659 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -418,6 +418,9 @@ static inline int try_module_get(struct module *module)
  
- 		sysfs_drop_dentry(sd);
-+		if (sysfs_type(sd) == SYSFS_KOBJ_ATTR)
-+			sysfs_file_check_suicide(sd);
- 		sysfs_deactivate(sd);
- 		sysfs_put(sd);
- 	}
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index c05f961..0460970 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -76,9 +76,62 @@ struct sysfs_buffer {
- 	int			needs_read_fill;
- 	int			event;
- 	struct list_head	list;
-+	struct task_struct	*accessor;
-+	int			committed_suicide;
- };
+ extern void module_put(struct module *module);
  
- /**
-+ *	sysfs_file_check_suicide - check whether a file is trying to kill itself
-+ *	@sd: sysfs_dirent of interest
++void module_inhibit_unload(void);
++void module_allow_unload(void);
++
+ #else /*!CONFIG_MODULE_UNLOAD*/
+ static inline int try_module_get(struct module *module)
+ {
+@@ -431,6 +434,12 @@ static inline void __module_get(struct module *module)
+ }
+ #define symbol_put(x) do { } while(0)
+ #define symbol_put_addr(p) do { } while(0)
++static inline void module_inhibit_unload(void)
++{
++}
++static inline void module_allow_unload(void)
++{
++}
+ 
+ #endif /* CONFIG_MODULE_UNLOAD */
+ 
+@@ -516,6 +525,14 @@ static inline void module_put(struct module *module)
+ {
+ }
+ 
++static inline void module_inhibit_unload(void)
++{
++}
++
++static inline void module_allow_unload(void)
++{
++}
++
+ #define module_name(mod) "kernel"
+ 
+ #define __unsafe(mod)
+diff --git a/kernel/module.c b/kernel/module.c
+index db0ead0..8daff45 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -44,6 +44,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/semaphore.h>
+ #include <asm/cacheflush.h>
++#include <asm/atomic.h>
+ #include <linux/license.h>
+ 
+ extern int module_sysfs_initialized;
+@@ -65,6 +66,8 @@ extern int module_sysfs_initialized;
+  * (add/delete uses stop_machine). */
+ static DEFINE_MUTEX(module_mutex);
+ static LIST_HEAD(modules);
++static atomic_t module_unload_inhibit_cnt = ATOMIC_INIT(0);
++static DECLARE_WAIT_QUEUE_HEAD(module_unload_wait);
+ 
+ static BLOCKING_NOTIFIER_HEAD(module_notify_list);
+ 
+@@ -656,6 +659,7 @@ static void wait_for_zero_refcount(struct module *mod)
+ asmlinkage long
+ sys_delete_module(const char __user *name_user, unsigned int flags)
+ {
++	DECLARE_WAITQUEUE(wait, current);
+ 	struct module *mod;
+ 	char name[MODULE_NAME_LEN];
+ 	int ret, forced = 0;
+@@ -714,12 +718,22 @@ sys_delete_module(const char __user *name_user, unsigned int flags)
+ 	if (!forced && module_refcount(mod) != 0)
+ 		wait_for_zero_refcount(mod);
+ 
++	mutex_unlock(&module_mutex);
++
+ 	/* Final destruction now noone is using it. */
+-	if (mod->exit != NULL) {
+-		mutex_unlock(&module_mutex);
++	if (mod->exit != NULL)
+ 		mod->exit();
+-		mutex_lock(&module_mutex);
+-	}
++
++	/* Don't proceed till inhibition is lifted. */
++	add_wait_queue(&module_unload_wait, &wait);
++	set_current_state(TASK_UNINTERRUPTIBLE);
++	if (atomic_read(&module_unload_inhibit_cnt))
++		schedule();
++	__set_current_state(TASK_RUNNING);
++	remove_wait_queue(&module_unload_wait, &wait);
++
++	mutex_lock(&module_mutex);
++
+ 	free_module(mod);
+ 
+  out:
+@@ -805,6 +819,43 @@ void module_put(struct module *module)
+ }
+ EXPORT_SYMBOL(module_put);
+ 
++/**
++ *	module_inhibit_unload - inhibit module unload
 + *
-+ *	Check whether @sd is trying to commit suicide.  If so, help it
-+ *	by putting active references early such that deactivation
-+ *	doesn't deadlock waiting for its own active references.
++ *	Inhibit module unload until allowed again.  All module unload
++ *	operations which reach zero reference count after this call
++ *	has returned are guaranteed to be stalled till inhibition is
++ *	lifted.
 + *
-+ *	This works because a leaf node is always removed before its
-+ *	parent.  By the time deactivation is called on the parent, the
-+ *	suiciding node has already put the active references to itself
-+ *	and the parent.
++ *	This is a simple mechanism to prevent premature unload while
++ *	code on a to-be-unloaded module is still executing.  Unload
++ *	inhibitions must be finite and relatively short.
 + *
 + *	LOCKING:
 + *	None.
 + */
-+void sysfs_file_check_suicide(struct sysfs_dirent *sd)
++void module_inhibit_unload(void)
 +{
-+	struct sysfs_open_dirent *od;
-+	struct sysfs_buffer *buffer;
-+
-+	spin_lock(&sysfs_open_dirent_lock);
-+
-+	od = sd->s_attr.open;
-+	if (od) {
-+		list_for_each_entry(buffer, &od->buffers, list) {
-+			if (buffer->accessor != current)
-+				continue;
-+
-+			/* it's trying to commit suicide, help it */
-+
-+			/* Inhibit unload till the suiciding method is
-+			 * complete.  This is to avoid premature
-+			 * unload of the owner of the suiciding
-+			 * method.
-+			 */
-+			module_inhibit_unload();
-+
-+			/* Global unload inhibition in effect, safe to
-+			 * put active references.
-+			 */
-+			sysfs_put_active_two(sd);
-+			buffer->committed_suicide = 1;
-+
-+			break;
-+		}
-+	}
-+
-+	spin_unlock(&sysfs_open_dirent_lock);
++	atomic_inc(&module_unload_inhibit_cnt);
 +}
 +
 +/**
-  *	fill_read_buffer - allocate and fill buffer from object.
-  *	@dentry:	dentry pointer.
-  *	@buffer:	data buffer for file.
-@@ -107,9 +160,14 @@ static int fill_read_buffer(struct dentry * dentry, struct sysfs_buffer * buffer
- 		return -ENODEV;
- 
- 	buffer->event = atomic_read(&attr_sd->s_attr.open->event);
-+	buffer->accessor = current;
++ *	module_allow_unload - allow module unload
++ *
++ *	Allow module unload.  Must be balanced with calls to
++ *	module_inhibit_unload().
++ *
++ *	LOCKING:
++ *	None.
++ */
++void module_allow_unload(void)
++{
++	if (atomic_dec_and_test(&module_unload_inhibit_cnt))
++		wake_up_all(&module_unload_wait);
 +
- 	count = ops->show(kobj, attr_sd->s_attr.attr, buffer->page);
- 
--	sysfs_put_active_two(attr_sd);
-+	if (buffer->committed_suicide)
-+		module_allow_unload();
-+	else
-+		sysfs_put_active_two(attr_sd);
- 
- 	BUG_ON(count > (ssize_t)PAGE_SIZE);
- 	if (count >= 0) {
-@@ -215,9 +273,14 @@ flush_write_buffer(struct dentry * dentry, struct sysfs_buffer * buffer, size_t
- 	if (!sysfs_get_active_two(attr_sd))
- 		return -ENODEV;
- 
-+	buffer->accessor = current;
++	BUG_ON(atomic_read(&module_unload_inhibit_cnt) < 0);
++}
 +
- 	rc = ops->store(kobj, attr_sd->s_attr.attr, buffer->page, count);
- 
--	sysfs_put_active_two(attr_sd);
-+	if (buffer->committed_suicide)
-+		module_allow_unload();
-+	else
-+		sysfs_put_active_two(attr_sd);
- 
- 	return rc;
- }
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index be16947..58f517b 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -142,6 +142,7 @@ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
-  */
- extern const struct file_operations sysfs_file_operations;
- 
-+void sysfs_file_check_suicide(struct sysfs_dirent *sd);
- int sysfs_add_file(struct sysfs_dirent *dir_sd,
- 		   const struct attribute *attr, int type);
- 
+ #else /* !CONFIG_MODULE_UNLOAD */
+ static void print_unload_info(struct seq_file *m, struct module *mod)
+ {
 -- 
 1.5.0.3
 
