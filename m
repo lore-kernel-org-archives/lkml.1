@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbXITV3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbXITVa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbXITV3s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 17:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbXITV3h
+	id S1754455AbXITVa2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 17:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXITVaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 17:29:37 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38587 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbXITV3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 17:29:34 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-serial@vger.kernel.org
-Subject: Re: Don't cross the (tty) streams
-References: <20070920210221.GC10625@parisc-linux.org>
-X-Yow: ..  over in west Philadelphia a puppy is vomiting..
-Date: Thu, 20 Sep 2007 23:29:31 +0200
-In-Reply-To: <20070920210221.GC10625@parisc-linux.org> (Matthew Wilcox's
-	message of "Thu\, 20 Sep 2007 15\:02\:22 -0600")
-Message-ID: <jer6ktt490.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 20 Sep 2007 17:30:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40951 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751548AbXITVaF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 17:30:05 -0400
+Message-Id: <20070920213004.527735000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 20 Sep 2007 14:30:04 -0700
+From: travis@sgi.com
+To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/1] x86: Reduce Memory Usage for large CPU count systems v2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox <matthew@wil.cx> writes:
 
-> Connect two machines with a serial cable.  On the victim:
->
-> willy@rowlf:~$ cat </dev/ttyS1
->
-> Now, let's find out which ttyS on the other machine is connected ...
->
-> willy@teeth:~$ echo foo >/dev/ttyS1
-> -bash: echo: write error: Input/output error
->
-> Oops, that's not a serial port.  No output on rowlf, as expected.
-> OK, carrying on ...
->
-> willy@teeth:~$ echo bar >/dev/ttyS0
->
-> And yet on rowlf, we now see:
->
-> foo
-> bar
->
-> Looks like there's an error path that doesn't throw away data on -EIO.
+v2: rebasing on 2.6.23-rc6-mm1
 
-Read the thread starting here:
-<http://lists.gnu.org/archive/html/bug-bash/2007-09/msg00020.html>.
+Analyzing various data structures when NR_CPU count is raised
+to 4096 shows the following arrays over 128k.  If the maximum
+number of cpus are not installed (about 99.99% of the time),
+then a large percentage of this memory is wasted.
+--
+	151289856  CALNDATA  irq_desc
+	135530496  RMDATATA  irq_cfg
+	  3145728  CALNDATA  cpu_data
+	  2101248  BSS       irq_lists
+	  2097152  RMDATATA  cpu_sibling_map
+	  2097152  RMDATATA  cpu_core_map
+	  1575936  BSS       irq_2_pin
+	  1050624  BSS       irq_timer_state
+	   614400  INITDATA  early_node_map
+	   525376  PERCPU    per_cpu__kstat
+	   524608  DATA      unix_proto
+	   524608  DATA      udpv6_prot
+	   524608  DATA      udplitev6_prot
+	   524608  DATA      udplite_prot
+	   524608  DATA      udp_prot
+	   524608  DATA      tcpv6_prot
+	   524608  DATA      tcp_prot
+	   524608  DATA      rawv6_prot
+	   524608  DATA      raw_prot
+	   524608  DATA      packet_proto
+	   524608  DATA      netlink_proto
+	   524288  BSS       cpu_devices
+	   524288  BSS       boot_pageset
+	   524288  CALNDATA  boot_cpu_pda
+	   262144  RMDATATA  node_to_cpumask
+	   262144  BSS       __log_buf
+	   131072  BSS       entries
 
-Andreas.
+cpu_sibling_map and cpu_core_map have been taken care of in
+a prior patch.  This patch deals with the cpu_data array of
+cpuinfo_x86 structs.  The model that was used in sparc64
+architecture was adopted for x86.
+
+Obviously, the IRQ arrays are of greater importance for
+size reduction.  Any suggestions, or threads I should read
+are gratefully accecpted... ;-)
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
