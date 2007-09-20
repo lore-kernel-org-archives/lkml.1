@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXITJ0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbXITJel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758278AbXITJ0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 05:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXITJ0P
+	id S1756226AbXITJel (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 05:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXITJed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 05:26:15 -0400
-Received: from mga11.intel.com ([192.55.52.93]:53874 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750961AbXITJ0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 05:26:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,277,1186383600"; 
-   d="scan'208";a="314934427"
-Date: Thu, 20 Sep 2007 17:24:41 +0800
-From: Zhenyu Wang <zhenyu.z.wang@intel.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Message-ID: <20070920092441.GA1972@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Airlie <airlied@gmail.com>,
-	Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org> <46F17F27.5080000@gmail.com> <21d7e9970709191851s1b3f35c1j42faae3ce6cd0b24@mail.gmail.com> <46F22048.8050401@gmail.com> <21d7e9970709200033k3f0f46feq7dae4e0a106f0372@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21d7e9970709200033k3f0f46feq7dae4e0a106f0372@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.22-rc6 i686
+	Thu, 20 Sep 2007 05:34:33 -0400
+Received: from smtp.parkwest.mxsweep.com ([89.149.149.67]:3147 "EHLO
+	smtp1.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750981AbXITJec (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 05:34:32 -0400
+X-Greylist: delayed 677 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Sep 2007 05:34:32 EDT
+X-PMWin-Spam: Gauge=IIIIIIII, Probability=8%, Report='__HAS_MSGID, __SANE_MSGID, __USER_AGENT, __MIME_VERSION, __CT, __CT_TEXT_PLAIN, __CTE, __CP_URI_IN_BODY, BODY_SIZE_400_499, __MIME_TEXT_ONLY'
+thread-index: Acf7aADgBU7jxosiRnSynWnq8G9+7Q==
+X-PMWin-SpamScore: 8
+X-PMWin-Version: 2.6.1, Antispam-Engine: 2.5.2, Antivirus-Engine: 2.49.1
+Content-Class: urn:content-classes:message
+Importance: normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4073
+Message-ID: <46F23B77.40809@draigBrady.com>
+Date: Thu, 20 Sep 2007 10:20:55 +0100
+From: =?iso-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
+User-Agent: Thunderbird 1.5.0.8 (X11/20061116)
+MIME-Version: 1.0
+To: "Matt LaPlante" <kernel1@cyberdogtech.com>
+CC: <linux-kernel@vger.kernel.org>
+Subject: Re: A little coding style nugget of joy
+References: <20070919123401.9369534d.kernel1@cyberdogtech.com>
+In-Reply-To: <20070919123401.9369534d.kernel1@cyberdogtech.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Sep 2007 09:24:07.0727 (UTC) FILETIME=[FEBBC3F0:01C7FB67]
+X-CTCH-RefID: str=0001.0A010204.46F23C00.00BD:SCCEO7923,ss=1,fgs=0
+X-MXUniqueID: faf56e5d-1b95-4be2-8203-ceeb1b5ffe32
+X-MXSweep-Threat: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.09.20 17:33:45 +0000, Dave Airlie wrote:
-> > Maybe you are rather interested in these dmesg lines:
-> > Linux agpgart interface v0.102
-> > agpgart: suspend/resume problematic: resume with 3D/DRI active may lockup X.Org
-> > on some chipset/BIOS combos (see DEBUG_AGP_PM in intel-agp.c)
-> > agpgart: Detected an Intel G33 Chipset.
-> > agpgart: Detected 8192K stolen memory.
-> > agpgart: AGP aperture is 256M @ 0xd0000000
-> > [drm] Initialized drm 1.1.0 20060810
-> > ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
-> > [drm] Initialized i915 1.6.0 20060119 on minor 0
-> > ...
-> > set status page addr 0x00033000
-> > agpgart: pg_start == 0x000005ff,intel_private.gtt_entries == 0x00000800
-> > agpgart: Trying to insert into local/stolen memory
-> >
-> > So the problem is, that X passes too low start.
-> >
-> > The X log:
-> > http://www.fi.muni.cz/~xslaby/sklad/Xorg.0.log.old
-
-Could you try current xf86-video-intel driver? just do
-git clone git://anongit.freedesktop.org/git/xorg/driver/xf86-video-intel
-
-My G33 was just verified broken today... so I'll try to reproduce it on
-another one tomorrow.
-
+Matt LaPlante wrote:
+> Since everyone loves random statistics, here are a few gems to give you a break from your busy day:
 > 
-> I've cc'd Zhenyu who might be able to shed some light on this? can you
-> try 2.6.23-rc7 as maybe the G33 support still needs some work.. or
-> maybe I'm missing a patch in the drm..
-> 
+> Number of lines in the 2.6.22 Linux kernel source that include one or more trailing whitespaces: 135209
+> Bytes saved by removing said whitespace: 151809
+> Lines in the (unified) diff: 455437
+> Size of the diff: 15M
+> People brave enough to submit the patch: ~0
 
-yep, should try 2.6.23-rc7 first, and it seems not drm relate.
+It's gradually getting better so:
+http://lwn.net/2001/1129/a/whitespace.php3
