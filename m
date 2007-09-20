@@ -1,152 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbXITBjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbXITBmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbXITBjg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 21:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXITBj0
+	id S1756090AbXITBmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 21:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbXITBmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 21:39:26 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41367 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751290AbXITBjY (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 21:39:24 -0400
-Date: Thu, 20 Sep 2007 11:38:21 +1000
-From: David Chinner <dgc@sgi.com>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: David Chinner <dgc@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nathan Scott <nscott@aconex.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070920013821.GR995458@sgi.com>
-References: <200709161853.12050.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com> <200709181116.22573.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org> <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org> <1190163523.24970.378.camel@edge.yarra.acx> <alpine.LFD.0.999.0709181803020.16478@woody.linux-foundation.org> <20070919050910.GK995458@sgi.com> <20070919140430.GJ4608@v2.random>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070919140430.GJ4608@v2.random>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 19 Sep 2007 21:42:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:58751 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbXITBma (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 21:42:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=eGyr8ZhClfOmDs5+4zhNQ9/OwcB7FWwo/44l1aupkq+Y/X7LG5wAtUqaaghxsrASXRw1FF5ZJzCJfkcdpVcOeky+B9rA7c2tAz7pskFZBAFahPSmpwisAYOHF6ZKF4W6Z7AZhxUB3BBuBN4m7r8aoIV3FXP8hiK6JNw0bJoSspo=
+Message-ID: <21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com>
+Date: Thu, 20 Sep 2007 11:42:29 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jiri Slaby" <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070919192453.GB18707@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_6268_20869991.1190252549189"
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	 <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com>
+	 <46F13938.1070709@gmail.com>
+	 <20070919121017.0cbcbc30.akpm@linux-foundation.org>
+	 <20070919192453.GB18707@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 04:04:30PM +0200, Andrea Arcangeli wrote:
-> On Wed, Sep 19, 2007 at 03:09:10PM +1000, David Chinner wrote:
-> > Ok, let's step back for a moment and look at a basic, fundamental
-> > constraint of disks - seek capacity. A decade ago, a terabyte of
-> > filesystem had 30 disks behind it - a seek capacity of about
-> > 6000 seeks/s. Nowdays, that's a single disk with a seek
-> > capacity of about 200/s. We're going *rapidly* backwards in
-> > terms of seek capacity per terabyte of storage.
-> > 
-> > Now fill that terabyte of storage and index it in the most efficient
-> > way - let's say btrees are used because lots of filesystems use
-> > them. Hence the depth of the tree is roughly O((log n)/m) where m is
-> > a factor of the btree block size.  Effectively, btree depth = seek
-> > count on lookup of any object.
-> 
-> I agree. btrees will clearly benefit if the nodes are larger. We've an
-> excess of disk capacity and an huge gap between seeking and contiguous
-> bandwidth.
-> 
-> You don't need largepages for this, fsblocks is enough.
+------=_Part_6268_20869991.1190252549189
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Sure, and that's what I meant when I said VPC + large pages was
-a means to the end, not the only solution to the problem.
+> The code is broken anyways. If you free pages without flushing
+> them first some other innocent user allocating them will end up
+> with possible uncached pages for some time.
+>
+> Does this simple patch help?
+>
 
-> Plus of course you don't like fsblock because it requires work to
-> adapt a fs to it, I can't argue about that.
+I've attached a more complicated patch that does a 2 stage effort to
+unmapping and freeing pages. My kernel no longer hangs with this
+patch...
 
-No, I don't like fsblock because it is inherently a "struture
-per filesystem block" construct, just like buggerheads. You
-still need to allocate millions of them when you have millions
-dirty pages around. Rather than type it all out again, read
-the fsblocks thread from here:
+Jiri can you confirm?
 
-http://marc.info/?l=linux-fsdevel&m=118284983925719&w=2
-
-FWIW, with Chris mason's extent-based block mapping (which btrfs
-is using and Christoph Hellwig is porting XFS over to) we completely
-remove buggerheads from XFS and so fsblock would be a pretty
-major step backwards for us if Chris's work goes into mainline.
-
-> > Ok, so let's set the record straight. There were 3 justifications
-> > for using *large pages* to *support* large filesystem block sizes
-> > The justifications for the variable order page cache with large
-> > pages were:
-> > 
-> > 	1. little code change needed in the filesystems
-> > 		-> still true
-> 
-> Disagree, the mmap side is not a little change.
-
-That's not in the filesystem, though. ;)
-
-However, I agree that if you don't have mmap then it's not
-worthwhile and the changes for VPC aren't trivial.
-
-> > 	3. avoiding the need for vmap() as it has great
-> > 	   overhead and does not scale
-> > 	   	-> Nick is starting to work on that and has
-> > 		   already had good results.
-> 
-> Frankly I don't follow this vmap thing. Can you elaborate?
-
-We current support metadata blocks larger than page size for
-certain types of metadata in XFS. e.g. directory blocks.
-This however, requires vmap()ing a bunch of individual,
-non-contiguous pages out of a block device address space
-in exactly the fashion that was proposed by Nick with fsblock
-originally.
-
-vmap() has severe scalability problems - read this subthread
-of this discussion between Nick and myself:
-
-http://lkml.org/lkml/2007/9/11/508
-
-> > Everyone seems to be focussing on #2 as the entire justification for
-> > large block sizes in filesystems and that this is an "SGI" problem.
-> 
-> I agree it's not a SGI problem and this is why I want a design that
-> has a _slight chance_ to improve performance on x86-64 too. If
-> variable order page cache will provide any further improvement on top
-> of fsblock will be only because your I/O device isn't fast with small
-> sg entries.
-
-<sigh>
-
-There we go - back to the bloody I/O devices. Can ppl please stop
-bringing this up because it *is not an issue any more*.
-
-> config-page-shift + fsblock IMHO is the way to go for x86-64, with one
-> additional 64k PAGE_SIZE rpm. config-page-shift will stack nicely on
-> top of fsblocks.
-
-Hmm - so you'll need page cache tail packing as well in that case
-to prevent memory being wasted on small files. That means any way
-we look at it (VPC+mmap or config-page-shift+fsblock+pctails)
-we've got some non-trivial VM  modifications to make. 
-
-If VPC can be separated from the large contiguous page requirement
-(i.e. virtually mapped compound page support), I still think it
-comes out on top because it doesn't require every filesystem to be
-modified and you can use standard pages where they are optimal
-(i.e. on filesystems were block size <= PAGE_SIZE).
-
-But, I'm not going to argue endlessly for one solution or another;
-I'm happy to see different solutions being chased, so may the
-best VM win ;)
-
-Cheers,
+I'll look at the other issue separately..
 
 Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+
+------=_Part_6268_20869991.1190252549189
+Content-Type: text/x-patch;
+ name="0001-agp-fix-race-condition-between-unmapping-and-freein.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="0001-agp-fix-race-condition-between-unmapping-and-freein.patch"
+X-Attachment-Id: f_f6t6q2rg
+
+RnJvbSAyMjU2OTZkNzVlN2VjMGJhZmJiNDdiOTM1YmQ3MDBlM2ZiZWVmYmRlIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBEYXZlIEFpcmxpZSA8YWlybGllZEByZWRoYXQuY29tPgpEYXRl
+OiBUaHUsIDIwIFNlcCAyMDA3IDExOjMwOjQxICsxMDAwClN1YmplY3Q6IFtQQVRDSF0gYWdwOiBm
+aXggcmFjZSBjb25kaXRpb24gYmV0d2VlbiB1bm1hcHBpbmcgYW5kIGZyZWVpbmcgcGFnZXMKCldp
+dGggQW5kaSdzIGNsZmx1c2ggZml4dXAsIHdlIHdlcmUgZ2V0dGluZyBoYW5ncyBvbiBzZXJ2ZXIg
+ZXhpdCwgZmx1c2hpbmcKdGhlIG1hcHBpbmdzIGFmdGVyIGZyZWVpbmcgZWFjaCBwYWdlIGhlbHBl
+ZC4KClRoaXMgc2hvd2VkIHVwIGEgcmFjZSBjb25kaXRpb24gd2hlcmUgdGhlIHBhZ2VzIGFmdGVy
+IGJlaW5nIGZyZWVkIGNvdWxkIGJlCnJldXNlZCBiZWZvcmUgdGhlIGFncCBtYXBwaW5ncyBoYWQg
+YmVlbiBmbHVzaGVkLiBGbHVzaGluZyBhZnRlciBlYWNoIHNpbmdsZQpwYWdlIGlzIGEgYmFkIHRo
+aW5nIGZvciBmdXR1cmUgZHJtIHdvcmssIHNvIG1ha2UgdGhlIHBhZ2UgZGVzdHJveSBhIHR3byBw
+YXNzCnVubWFwcGluZyBhbGwgdGhlIHBhZ2VzLCBmbHVzaGluZyB0aGUgbWFwcGluZ3MsIGFuZCB0
+aGVuIGRlc3Ryb3lpbmcgdGhlIHBhZ2VzLgoKU2lnbmVkLW9mZi1ieTogRGF2ZSBBaXJsaWUgPGFp
+cmxpZWRAbGludXguaWU+Ci0tLQogZHJpdmVycy9jaGFyL2FncC9hZ3AuaCAgICAgICB8ICAgIDcg
+KysrKystLQogZHJpdmVycy9jaGFyL2FncC9hbGktYWdwLmMgICB8ICAgMjkgKysrKysrKysrKysr
+KysrKystLS0tLS0tLS0tLS0KIGRyaXZlcnMvY2hhci9hZ3AvYmFja2VuZC5jICAgfCAgIDEyICsr
+KysrKysrLS0tLQogZHJpdmVycy9jaGFyL2FncC9nZW5lcmljLmMgICB8ICAgMjAgKysrKysrKysr
+KysrKystLS0tLS0KIGRyaXZlcnMvY2hhci9hZ3AvaTQ2MC1hZ3AuYyAgfCAgICA0ICsrLS0KIGRy
+aXZlcnMvY2hhci9hZ3AvaW50ZWwtYWdwLmMgfCAgICA2ICsrKystLQogNiBmaWxlcyBjaGFuZ2Vk
+LCA1MCBpbnNlcnRpb25zKCspLCAyOCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJz
+L2NoYXIvYWdwL2FncC5oIGIvZHJpdmVycy9jaGFyL2FncC9hZ3AuaAppbmRleCA4OTU1ZTdmLi5i
+ODM4MjRjIDEwMDY0NAotLS0gYS9kcml2ZXJzL2NoYXIvYWdwL2FncC5oCisrKyBiL2RyaXZlcnMv
+Y2hhci9hZ3AvYWdwLmgKQEAgLTU4LDYgKzU4LDkgQEAgc3RydWN0IGdhdHRfbWFzayB7CiAJICog
+ZGV2aWNlcyB0aGlzIHdpbGwgcHJvYmFibHkgYmUgaWdub3JlZCAqLwogfTsKIAorI2RlZmluZSBB
+R1BfUEFHRV9ERVNUUk9ZX1VOTUFQIDEKKyNkZWZpbmUgQUdQX1BBR0VfREVTVFJPWV9GUkVFIDIK
+Kwogc3RydWN0IGFwZXJfc2l6ZV9pbmZvXzggewogCWludCBzaXplOwogCWludCBudW1fZW50cmll
+czsKQEAgLTExMyw3ICsxMTYsNyBAQCBzdHJ1Y3QgYWdwX2JyaWRnZV9kcml2ZXIgewogCXN0cnVj
+dCBhZ3BfbWVtb3J5ICooKmFsbG9jX2J5X3R5cGUpIChzaXplX3QsIGludCk7CiAJdm9pZCAoKmZy
+ZWVfYnlfdHlwZSkoc3RydWN0IGFncF9tZW1vcnkgKik7CiAJdm9pZCAqKCphZ3BfYWxsb2NfcGFn
+ZSkoc3RydWN0IGFncF9icmlkZ2VfZGF0YSAqKTsKLQl2b2lkICgqYWdwX2Rlc3Ryb3lfcGFnZSko
+dm9pZCAqKTsKKwl2b2lkICgqYWdwX2Rlc3Ryb3lfcGFnZSkodm9pZCAqLCBpbnQgZmxhZ3MpOwog
+ICAgICAgICBpbnQgKCphZ3BfdHlwZV90b19tYXNrX3R5cGUpIChzdHJ1Y3QgYWdwX2JyaWRnZV9k
+YXRhICosIGludCk7CiB9OwogCkBAIC0yNjcsNyArMjcwLDcgQEAgaW50IGFncF9nZW5lcmljX3Jl
+bW92ZV9tZW1vcnkoc3RydWN0IGFncF9tZW1vcnkgKm1lbSwgb2ZmX3QgcGdfc3RhcnQsIGludCB0
+eXBlKTsKIHN0cnVjdCBhZ3BfbWVtb3J5ICphZ3BfZ2VuZXJpY19hbGxvY19ieV90eXBlKHNpemVf
+dCBwYWdlX2NvdW50LCBpbnQgdHlwZSk7CiB2b2lkIGFncF9nZW5lcmljX2ZyZWVfYnlfdHlwZShz
+dHJ1Y3QgYWdwX21lbW9yeSAqY3Vycik7CiB2b2lkICphZ3BfZ2VuZXJpY19hbGxvY19wYWdlKHN0
+cnVjdCBhZ3BfYnJpZGdlX2RhdGEgKmJyaWRnZSk7Ci12b2lkIGFncF9nZW5lcmljX2Rlc3Ryb3lf
+cGFnZSh2b2lkICphZGRyKTsKK3ZvaWQgYWdwX2dlbmVyaWNfZGVzdHJveV9wYWdlKHZvaWQgKmFk
+ZHIsIGludCBmbGFncyk7CiB2b2lkIGFncF9mcmVlX2tleShpbnQga2V5KTsKIGludCBhZ3BfbnVt
+X2VudHJpZXModm9pZCk7CiB1MzIgYWdwX2NvbGxlY3RfZGV2aWNlX3N0YXR1cyhzdHJ1Y3QgYWdw
+X2JyaWRnZV9kYXRhICpicmlkZ2UsIHUzMiBtb2RlLCB1MzIgY29tbWFuZCk7CmRpZmYgLS1naXQg
+YS9kcml2ZXJzL2NoYXIvYWdwL2FsaS1hZ3AuYyBiL2RyaXZlcnMvY2hhci9hZ3AvYWxpLWFncC5j
+CmluZGV4IDQ5NDFkZGIuLjJiNjUxNTUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY2hhci9hZ3AvYWxp
+LWFncC5jCisrKyBiL2RyaXZlcnMvY2hhci9hZ3AvYWxpLWFncC5jCkBAIC0xNTYsMjkgKzE1Niwz
+NCBAQCBzdGF0aWMgdm9pZCAqbTE1NDFfYWxsb2NfcGFnZShzdHJ1Y3QgYWdwX2JyaWRnZV9kYXRh
+ICpicmlkZ2UpCiAJcmV0dXJuIGFkZHI7CiB9CiAKLXN0YXRpYyB2b2lkIGFsaV9kZXN0cm95X3Bh
+Z2Uodm9pZCAqIGFkZHIpCitzdGF0aWMgdm9pZCBhbGlfZGVzdHJveV9wYWdlKHZvaWQgKiBhZGRy
+LCBpbnQgZmxhZ3MpCiB7CiAJaWYgKGFkZHIpIHsKLQkJZ2xvYmFsX2NhY2hlX2ZsdXNoKCk7CS8q
+IGlzIHRoaXMgcmVhbGx5IG5lZWRlZD8gIC0taGNoICovCi0JCWFncF9nZW5lcmljX2Rlc3Ryb3lf
+cGFnZShhZGRyKTsKLQkJZ2xvYmFsX2ZsdXNoX3RsYigpOworCQlpZiAoZmxhZ3MgJiBBR1BfUEFH
+RV9ERVNUUk9ZX1VOTUFQKSB7CisJCQlnbG9iYWxfY2FjaGVfZmx1c2goKTsJLyogaXMgdGhpcyBy
+ZWFsbHkgbmVlZGVkPyAgLS1oY2ggKi8KKwkJCWFncF9nZW5lcmljX2Rlc3Ryb3lfcGFnZShhZGRy
+LCBmbGFncyk7CisJCQlnbG9iYWxfZmx1c2hfdGxiKCk7CisJCX0gZWxzZQorCQkJYWdwX2dlbmVy
+aWNfZGVzdHJveV9wYWdlKGFkZHIsIGZsYWdzKTsKIAl9CiB9CiAKLXN0YXRpYyB2b2lkIG0xNTQx
+X2Rlc3Ryb3lfcGFnZSh2b2lkICogYWRkcikKK3N0YXRpYyB2b2lkIG0xNTQxX2Rlc3Ryb3lfcGFn
+ZSh2b2lkICogYWRkciwgaW50IGZsYWdzKQogewogCXUzMiB0ZW1wOwogCiAJaWYgKGFkZHIgPT0g
+TlVMTCkKIAkJcmV0dXJuOwogCi0JZ2xvYmFsX2NhY2hlX2ZsdXNoKCk7Ci0KLQlwY2lfcmVhZF9j
+b25maWdfZHdvcmQoYWdwX2JyaWRnZS0+ZGV2LCBBTElfQ0FDSEVfRkxVU0hfQ1RSTCwgJnRlbXAp
+OwotCXBjaV93cml0ZV9jb25maWdfZHdvcmQoYWdwX2JyaWRnZS0+ZGV2LCBBTElfQ0FDSEVfRkxV
+U0hfQ1RSTCwKLQkJCSgoKHRlbXAgJiBBTElfQ0FDSEVfRkxVU0hfQUREUl9NQVNLKSB8Ci0JCQkg
+IHZpcnRfdG9fZ2FydChhZGRyKSkgfCBBTElfQ0FDSEVfRkxVU0hfRU4pKTsKLQlhZ3BfZ2VuZXJp
+Y19kZXN0cm95X3BhZ2UoYWRkcik7CisJaWYgKGZsYWdzICYgQUdQX1BBR0VfREVTVFJPWV9VTk1B
+UCkgeworCQlnbG9iYWxfY2FjaGVfZmx1c2goKTsKKwkgIAorCQlwY2lfcmVhZF9jb25maWdfZHdv
+cmQoYWdwX2JyaWRnZS0+ZGV2LCBBTElfQ0FDSEVfRkxVU0hfQ1RSTCwgJnRlbXApOworCQlwY2lf
+d3JpdGVfY29uZmlnX2R3b3JkKGFncF9icmlkZ2UtPmRldiwgQUxJX0NBQ0hFX0ZMVVNIX0NUUkws
+CisJCQkJICAgICAgICgoKHRlbXAgJiBBTElfQ0FDSEVfRkxVU0hfQUREUl9NQVNLKSB8CisJCQkJ
+CSB2aXJ0X3RvX2dhcnQoYWRkcikpIHwgQUxJX0NBQ0hFX0ZMVVNIX0VOKSk7CisJfQorCWFncF9n
+ZW5lcmljX2Rlc3Ryb3lfcGFnZShhZGRyLCBmbGFncyk7CiB9CiAKIApkaWZmIC0tZ2l0IGEvZHJp
+dmVycy9jaGFyL2FncC9iYWNrZW5kLmMgYi9kcml2ZXJzL2NoYXIvYWdwL2JhY2tlbmQuYwppbmRl
+eCAxYjQ3Yzg5Li44MzJkZWQyIDEwMDY0NAotLS0gYS9kcml2ZXJzL2NoYXIvYWdwL2JhY2tlbmQu
+YworKysgYi9kcml2ZXJzL2NoYXIvYWdwL2JhY2tlbmQuYwpAQCAtMTg5LDkgKzE4OSwxMSBAQCBz
+dGF0aWMgaW50IGFncF9iYWNrZW5kX2luaXRpYWxpemUoc3RydWN0IGFncF9icmlkZ2VfZGF0YSAq
+YnJpZGdlKQogCiBlcnJfb3V0OgogCWlmIChicmlkZ2UtPmRyaXZlci0+bmVlZHNfc2NyYXRjaF9w
+YWdlKSB7Ci0JCWJyaWRnZS0+ZHJpdmVyLT5hZ3BfZGVzdHJveV9wYWdlKAotCQkJCWdhcnRfdG9f
+dmlydChicmlkZ2UtPnNjcmF0Y2hfcGFnZV9yZWFsKSk7CisJCWJyaWRnZS0+ZHJpdmVyLT5hZ3Bf
+ZGVzdHJveV9wYWdlKGdhcnRfdG9fdmlydChicmlkZ2UtPnNjcmF0Y2hfcGFnZV9yZWFsKSwKKwkJ
+CQkJCSBBR1BfUEFHRV9ERVNUUk9ZX1VOTUFQKTsKIAkJZmx1c2hfYWdwX21hcHBpbmdzKCk7CisJ
+CWJyaWRnZS0+ZHJpdmVyLT5hZ3BfZGVzdHJveV9wYWdlKGdhcnRfdG9fdmlydChicmlkZ2UtPnNj
+cmF0Y2hfcGFnZV9yZWFsKSwKKwkJCQkJCSBBR1BfUEFHRV9ERVNUUk9ZX0ZSRUUpOwogCX0KIAlp
+ZiAoZ290X2dhdHQpCiAJCWJyaWRnZS0+ZHJpdmVyLT5mcmVlX2dhdHRfdGFibGUoYnJpZGdlKTsK
+QEAgLTIxNSw5ICsyMTcsMTEgQEAgc3RhdGljIHZvaWQgYWdwX2JhY2tlbmRfY2xlYW51cChzdHJ1
+Y3QgYWdwX2JyaWRnZV9kYXRhICpicmlkZ2UpCiAKIAlpZiAoYnJpZGdlLT5kcml2ZXItPmFncF9k
+ZXN0cm95X3BhZ2UgJiYKIAkgICAgYnJpZGdlLT5kcml2ZXItPm5lZWRzX3NjcmF0Y2hfcGFnZSkg
+ewotCQlicmlkZ2UtPmRyaXZlci0+YWdwX2Rlc3Ryb3lfcGFnZSgKLQkJCQlnYXJ0X3RvX3ZpcnQo
+YnJpZGdlLT5zY3JhdGNoX3BhZ2VfcmVhbCkpOworCQlicmlkZ2UtPmRyaXZlci0+YWdwX2Rlc3Ry
+b3lfcGFnZShnYXJ0X3RvX3ZpcnQoYnJpZGdlLT5zY3JhdGNoX3BhZ2VfcmVhbCksCisJCQkJCQkg
+QUdQX1BBR0VfREVTVFJPWV9VTk1BUCk7CiAJCWZsdXNoX2FncF9tYXBwaW5ncygpOworCQlicmlk
+Z2UtPmRyaXZlci0+YWdwX2Rlc3Ryb3lfcGFnZShnYXJ0X3RvX3ZpcnQoYnJpZGdlLT5zY3JhdGNo
+X3BhZ2VfcmVhbCksCisJCQkJCQkgQUdQX1BBR0VfREVTVFJPWV9GUkVFKTsKIAl9CiB9CiAKZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvY2hhci9hZ3AvZ2VuZXJpYy5jIGIvZHJpdmVycy9jaGFyL2FncC9n
+ZW5lcmljLmMKaW5kZXggM2RiNGY0MC4uMWNkYmVkOSAxMDA2NDQKLS0tIGEvZHJpdmVycy9jaGFy
+L2FncC9nZW5lcmljLmMKKysrIGIvZHJpdmVycy9jaGFyL2FncC9nZW5lcmljLmMKQEAgLTE5NSw5
+ICsxOTUsMTIgQEAgdm9pZCBhZ3BfZnJlZV9tZW1vcnkoc3RydWN0IGFncF9tZW1vcnkgKmN1cnIp
+CiAJfQogCWlmIChjdXJyLT5wYWdlX2NvdW50ICE9IDApIHsKIAkJZm9yIChpID0gMDsgaSA8IGN1
+cnItPnBhZ2VfY291bnQ7IGkrKykgewotCQkJY3Vyci0+YnJpZGdlLT5kcml2ZXItPmFncF9kZXN0
+cm95X3BhZ2UoZ2FydF90b192aXJ0KGN1cnItPm1lbW9yeVtpXSkpOworCQkJY3Vyci0+YnJpZGdl
+LT5kcml2ZXItPmFncF9kZXN0cm95X3BhZ2UoZ2FydF90b192aXJ0KGN1cnItPm1lbW9yeVtpXSks
+IEFHUF9QQUdFX0RFU1RST1lfVU5NQVApOwogCQl9CiAJCWZsdXNoX2FncF9tYXBwaW5ncygpOwor
+CQlmb3IgKGkgPSAwOyBpIDwgY3Vyci0+cGFnZV9jb3VudDsgaSsrKSB7CisJCQljdXJyLT5icmlk
+Z2UtPmRyaXZlci0+YWdwX2Rlc3Ryb3lfcGFnZShnYXJ0X3RvX3ZpcnQoY3Vyci0+bWVtb3J5W2ld
+KSwgQUdQX1BBR0VfREVTVFJPWV9GUkVFKTsKKwkJfQogCX0KIAlhZ3BfZnJlZV9rZXkoY3Vyci0+
+a2V5KTsKIAlhZ3BfZnJlZV9wYWdlX2FycmF5KGN1cnIpOwpAQCAtMTE3Niw3ICsxMTc5LDcgQEAg
+dm9pZCAqYWdwX2dlbmVyaWNfYWxsb2NfcGFnZShzdHJ1Y3QgYWdwX2JyaWRnZV9kYXRhICpicmlk
+Z2UpCiBFWFBPUlRfU1lNQk9MKGFncF9nZW5lcmljX2FsbG9jX3BhZ2UpOwogCiAKLXZvaWQgYWdw
+X2dlbmVyaWNfZGVzdHJveV9wYWdlKHZvaWQgKmFkZHIpCit2b2lkIGFncF9nZW5lcmljX2Rlc3Ry
+b3lfcGFnZSh2b2lkICphZGRyLCBpbnQgZmxhZ3MpCiB7CiAJc3RydWN0IHBhZ2UgKnBhZ2U7CiAK
+QEAgLTExODQsMTAgKzExODcsMTUgQEAgdm9pZCBhZ3BfZ2VuZXJpY19kZXN0cm95X3BhZ2Uodm9p
+ZCAqYWRkcikKIAkJcmV0dXJuOwogCiAJcGFnZSA9IHZpcnRfdG9fcGFnZShhZGRyKTsKLQl1bm1h
+cF9wYWdlX2Zyb21fYWdwKHBhZ2UpOwotCXB1dF9wYWdlKHBhZ2UpOwotCWZyZWVfcGFnZSgodW5z
+aWduZWQgbG9uZylhZGRyKTsKLQlhdG9taWNfZGVjKCZhZ3BfYnJpZGdlLT5jdXJyZW50X21lbW9y
+eV9hZ3ApOworCWlmIChmbGFncyAmIEFHUF9QQUdFX0RFU1RST1lfVU5NQVApIHsKKwkJdW5tYXBf
+cGFnZV9mcm9tX2FncChwYWdlKTsKKwl9IAorCisJaWYgKGZsYWdzICYgQUdQX1BBR0VfREVTVFJP
+WV9GUkVFKSB7CisJCXB1dF9wYWdlKHBhZ2UpOworCQlmcmVlX3BhZ2UoKHVuc2lnbmVkIGxvbmcp
+YWRkcik7CisJCWF0b21pY19kZWMoJmFncF9icmlkZ2UtPmN1cnJlbnRfbWVtb3J5X2FncCk7CisJ
+fQogfQogRVhQT1JUX1NZTUJPTChhZ3BfZ2VuZXJpY19kZXN0cm95X3BhZ2UpOwogCmRpZmYgLS1n
+aXQgYS9kcml2ZXJzL2NoYXIvYWdwL2k0NjAtYWdwLmMgYi9kcml2ZXJzL2NoYXIvYWdwL2k0NjAt
+YWdwLmMKaW5kZXggNzVkMmFjYS4uNzAxMTdkZiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jaGFyL2Fn
+cC9pNDYwLWFncC5jCisrKyBiL2RyaXZlcnMvY2hhci9hZ3AvaTQ2MC1hZ3AuYwpAQCAtNTM2LDEw
+ICs1MzYsMTAgQEAgc3RhdGljIHZvaWQgKmk0NjBfYWxsb2NfcGFnZSAoc3RydWN0IGFncF9icmlk
+Z2VfZGF0YSAqYnJpZGdlKQogCXJldHVybiBwYWdlOwogfQogCi1zdGF0aWMgdm9pZCBpNDYwX2Rl
+c3Ryb3lfcGFnZSAodm9pZCAqcGFnZSkKK3N0YXRpYyB2b2lkIGk0NjBfZGVzdHJveV9wYWdlICh2
+b2lkICpwYWdlLCBpbnQgZmxhZ3MpCiB7CiAJaWYgKEk0NjBfSU9fUEFHRV9TSElGVCA8PSBQQUdF
+X1NISUZUKSB7Ci0JCWFncF9nZW5lcmljX2Rlc3Ryb3lfcGFnZShwYWdlKTsKKwkJYWdwX2dlbmVy
+aWNfZGVzdHJveV9wYWdlKHBhZ2UsIGZsYWdzKTsKIAkJZ2xvYmFsX2ZsdXNoX3RsYigpOwogCX0K
+IH0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2hhci9hZ3AvaW50ZWwtYWdwLmMgYi9kcml2ZXJzL2No
+YXIvYWdwL2ludGVsLWFncC5jCmluZGV4IGE1ZDBlOTUuLmMwYzEwZWEgMTAwNjQ0Ci0tLSBhL2Ry
+aXZlcnMvY2hhci9hZ3AvaW50ZWwtYWdwLmMKKysrIGIvZHJpdmVycy9jaGFyL2FncC9pbnRlbC1h
+Z3AuYwpAQCAtNDAwLDkgKzQwMCwxMSBAQCBzdGF0aWMgdm9pZCBpbnRlbF9pODEwX2ZyZWVfYnlf
+dHlwZShzdHJ1Y3QgYWdwX21lbW9yeSAqY3VycikKIAkJaWYgKGN1cnItPnBhZ2VfY291bnQgPT0g
+NCkKIAkJCWk4eHhfZGVzdHJveV9wYWdlcyhnYXJ0X3RvX3ZpcnQoY3Vyci0+bWVtb3J5WzBdKSk7
+CiAJCWVsc2UgewotCQkJYWdwX2JyaWRnZS0+ZHJpdmVyLT5hZ3BfZGVzdHJveV9wYWdlKAotCQkJ
+CSBnYXJ0X3RvX3ZpcnQoY3Vyci0+bWVtb3J5WzBdKSk7CisJCQlhZ3BfYnJpZGdlLT5kcml2ZXIt
+PmFncF9kZXN0cm95X3BhZ2UoZ2FydF90b192aXJ0KGN1cnItPm1lbW9yeVswXSksCisJCQkJCQkJ
+ICAgICBBR1BfUEFHRV9ERVNUUk9ZX1VOTUFQKTsKIAkJCWdsb2JhbF9mbHVzaF90bGIoKTsKKwkJ
+CWFncF9icmlkZ2UtPmRyaXZlci0+YWdwX2Rlc3Ryb3lfcGFnZShnYXJ0X3RvX3ZpcnQoY3Vyci0+
+bWVtb3J5WzBdKSwKKwkJCQkJCQkgICAgIEFHUF9QQUdFX0RFU1RST1lfRlJFRSk7CiAJCX0KIAkJ
+YWdwX2ZyZWVfcGFnZV9hcnJheShjdXJyKTsKIAl9Ci0tIAoxLjUuMi40Cgo=
+------=_Part_6268_20869991.1190252549189--
