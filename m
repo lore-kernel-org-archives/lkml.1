@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbXITS07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbXITSeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758096AbXITS07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 14:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbXITS0w
+	id S1757933AbXITSeP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 14:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbXITSeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 14:26:52 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40652 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751549AbXITS0v (ORCPT
+	Thu, 20 Sep 2007 14:34:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:23333 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753311AbXITSd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 14:26:51 -0400
-Date: Thu, 20 Sep 2007 11:26:47 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       ricknu-0@student.ltu.se
-Subject: Re: [RFC][PATCH] page->mapping clarification [1/3] base functions
-In-Reply-To: <20070919164308.281f9960.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0709201120510.8801@schroedinger.engr.sgi.com>
-References: <20070919164308.281f9960.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 20 Sep 2007 14:33:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Ha5WOTooozWX6zDihE4T9VpwjyLXNIbNkG8kRTQG2O4xwffePXmOvo614AjDSKO2+NRp1MIDICkCUPsd5SAwxMUbXF2PA+63IgWIqOpliqC+ZTGQDeajWP0KVc7VsJ+uLjyYGFrFbfpdmOqr1Tqc3T/xiKsXPbK/bNf5HXP3FAg=
+Message-ID: <46F2BD0D.2010206@gmail.com>
+Date: Thu, 20 Sep 2007 22:33:49 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Frans Pop <elendil@planet.nl>
+CC: Pavel Machek <pavel@ucw.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Maciek Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba
+ Satellite A40
+References: <200709192014.08443.elendil@planet.nl> <46F2A0E9.9000603@gmail.com> <46F2AE16.9080803@gmail.com> <200709202017.50934.elendil@planet.nl>
+In-Reply-To: <200709202017.50934.elendil@planet.nl>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, KAMEZAWA Hiroyuki wrote:
-
-> Any comments are welcome.
-
-I am still a bit confused as to what the benefit of this is.
-
-> Following functions are added
+Frans Pop wrote:
+> On Thursday 20 September 2007, you wrote:
+>> Please try this patch.
 > 
->  * page_mapping_cache() ... returns address space if a page is page cache
->  * page_mapping_anon()  ... returns anon_vma if a page is anonymous page.
->  * page_is_pagecache()  ... returns true if a page is page-cache.
->  * page_inode()         ... returns inode which a page-cache belongs to.
->  * is_page_consistent() ... returns true if a page is still valid page cache 
+> Works. All states are now listed again.
+> I've not tested suspend to disk, but suspend to ram and power off work fine.
+> 
+>> +printk(KERN_INFO PREFIX "(supports");
+>>  #ifdef CONFIG_SUSPEND
+>> -       printk(KERN_INFO PREFIX "(supports");
+>>         for (i = ACPI_STATE_S0; i < ACPI_STATE_S4; i++) {
+> 
+> Isn't there a risk now that we now end up printing
+>    ACPI: (supports)
+> if CONFIG_SUSPEND is not enabled and >S4 is not supported?
+> 
+> Or, more probably, it would print
+>    ACPI: (supports S5)
+Don't know what does it mean to support S0 exactly... :)
+> as it is unlikely that "off" is not supported :-)
+> 
+> Maybe S0 should be taken outside the #ifdef and the loop as that state is 
+> also basically always there?
+Don't think it is worth the trouble. We already have this loop almost completely unrolled,
+let's not make it complete mess...
 
-Ok this could make the code more readable.
-
-> +/*
-> + * On an anonymous page mapped into a user virtual memory area,
-> + * page->mapping points to its anon_vma, not to a struct address_space;
-> + * with the PAGE_MAPPING_ANON bit set to distinguish it.
-> + *
-> + * Please note that, confusingly, "page_mapping" refers to the inode
-> + * address_space which maps the page from disk; whereas "page_mapped"
-> + * refers to user virtual address space into which the page is mapped.
-> + */
-> +#define PAGE_MAPPING_ANON       1
-> +
-> +static inline bool PageAnon(struct page *page)
-
-bool??? That is unusual?
-
-> +static inline struct address_space *page_mapping_cache(struct page *page)
-> +{
-> +	if (!page->mapping || PageAnon(page))
-> +		return NULL;
-> +	return page->mapping;
-> +}
-
-That is confusing.
-
-if (PageAnon(page))
-	return NULL;
-return page->mapping;
-
-
-> +static inline struct address_space *page_mapping(struct page *page)
-> +{
-> +	struct address_space *mapping = page->mapping;
-> +
-> +	VM_BUG_ON(PageSlab(page));
-> +	if (unlikely(PageSwapCache(page)))
-> +		mapping = &swapper_space;
-> +#ifdef CONFIG_SLUB
-> +	else if (unlikely(PageSlab(page)))
-> +		mapping = NULL;
-> +#endif
-
-The #ifdef does not exist in rc6-mm1. No need to reintroduce it.
-
-> +static inline bool
-> +is_page_consistent(struct page *page, struct address_space *mapping)
-> +{
-> +	struct address_space *check = page_mapping_cache(page);
-> +	return (check == mapping);
-> +}
-
-Why do we need a special function? Why is it safer?
+Regards,
+Alex.
+> 
+> Thanks,
+> FJP
+> 
 
