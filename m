@@ -1,146 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbXITUAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbXITUAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbXITUAL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbXITTx3
+	id S1755945AbXITUAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbXITTxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:53:29 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:51421 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752453AbXITTxT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:53:19 -0400
-Subject: [PATCH 06/25] elevate write count open()'d files
+	Thu, 20 Sep 2007 15:53:30 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:49128 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752477AbXITTxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 15:53:20 -0400
+Subject: [PATCH 21/25] sys_mknodat(): elevate write count for vfs_mknod/create()
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 20 Sep 2007 12:52:56 -0700
+Date: Thu, 20 Sep 2007 12:53:16 -0700
 References: <20070920195249.852667D5@kernel>
 In-Reply-To: <20070920195249.852667D5@kernel>
-Message-Id: <20070920195256.EDA48D0F@kernel>
+Message-Id: <20070920195316.05066D8C@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is the first really tricky patch in the series.  It
-elevates the writer count on a mount each time a
-non-special file is opened for write.
+This takes care of all of the direct callers of vfs_mknod().
+Since a few of these cases also handle normal file creation
+as well, this also covers some calls to vfs_create().
 
-This is not completely apparent in the patch because the
-two if() conditions in may_open() above the
-mnt_want_write() call are, combined, equivalent to
-special_file().
+So that we don't have to make three mnt_want/drop_write()
+calls inside of the switch statement, we move some of its
+logic outside of the switch.
 
-There is also an elevated count around the vfs_create()
-call in open_namei().  The count needs to be kept elevated
-all the way into the may_open() call.  Otherwise, when the
-write is dropped, a ro->rw transisition could occur.  This
-would lead to having rw access on the newly created file,
-while the vfsmount is ro.  That is bad.
-
-Some filesystems forego the use of normal vfs calls to create
-struct files.  Make sure that these users elevate the mnt writer
-count because they will get __fput(), and we need to make
-sure they're balanced.
-
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 Acked-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/file_table.c |    9 ++++++++-
- lxc-dave/fs/namei.c      |   20 ++++++++++++++++----
- lxc-dave/ipc/mqueue.c    |    3 +++
- 3 files changed, 27 insertions(+), 5 deletions(-)
+ lxc-dave/fs/namei.c         |   32 +++++++++++++++++++++-----------
+ lxc-dave/fs/nfsd/vfs.c      |    4 ++++
+ lxc-dave/net/unix/af_unix.c |    4 ++++
+ 3 files changed, 29 insertions(+), 11 deletions(-)
 
-diff -puN fs/file_table.c~tricky-elevate-write-count-files-are-open-ed fs/file_table.c
---- lxc/fs/file_table.c~tricky-elevate-write-count-files-are-open-ed	2007-09-20 12:16:11.000000000 -0700
-+++ lxc-dave/fs/file_table.c	2007-09-20 12:16:11.000000000 -0700
-@@ -194,6 +194,10 @@ int init_file(struct file *file, struct 
- 	file->f_mapping = dentry->d_inode->i_mapping;
- 	file->f_mode = mode;
- 	file->f_op = fop;
-+	if (mode & FMODE_WRITE) {
-+		error = mnt_want_write(mnt);
-+		WARN_ON(error);
-+	}
- 	return error;
- }
- EXPORT_SYMBOL(init_file);
-@@ -231,8 +235,11 @@ void fastcall __fput(struct file *file)
- 	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
- 		cdev_put(inode->i_cdev);
- 	fops_put(file->f_op);
--	if (file->f_mode & FMODE_WRITE)
-+	if (file->f_mode & FMODE_WRITE) {
- 		put_write_access(inode);
-+		if (!special_file(inode->i_mode))
-+			mnt_drop_write(mnt);
-+	}
- 	put_pid(file->f_owner.pid);
- 	file_kill(file);
- 	file->f_path.dentry = NULL;
-diff -puN fs/namei.c~tricky-elevate-write-count-files-are-open-ed fs/namei.c
---- lxc/fs/namei.c~tricky-elevate-write-count-files-are-open-ed	2007-09-20 12:16:11.000000000 -0700
-+++ lxc-dave/fs/namei.c	2007-09-20 12:16:11.000000000 -0700
-@@ -1595,8 +1595,15 @@ int may_open(struct nameidata *nd, int a
- 			return -EACCES;
- 
- 		flag &= ~O_TRUNC;
--	} else if (IS_RDONLY(inode) && (flag & FMODE_WRITE))
--		return -EROFS;
-+	} else if (flag & FMODE_WRITE) {
-+		/*
-+		 * effectively: !special_file()
-+		 * balanced by __fput()
-+		 */
-+		error = mnt_want_write(nd->mnt);
-+		if (error)
-+			return error;
-+	}
- 
- 	error = vfs_permission(nd, acc_mode);
+diff -puN fs/namei.c~sys-mknodat-elevate-write-count-for-vfs-mknod-create fs/namei.c
+--- lxc/fs/namei.c~sys-mknodat-elevate-write-count-for-vfs-mknod-create	2007-09-20 12:16:21.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-09-20 12:16:21.000000000 -0700
+@@ -1945,12 +1945,25 @@ asmlinkage long sys_mknodat(int dfd, con
  	if (error)
-@@ -1739,14 +1746,17 @@ do_last:
+ 		goto out;
+ 	dentry = lookup_create(&nd, 0);
+-	error = PTR_ERR(dentry);
+-
++	if (IS_ERR(dentry)) {
++		error = PTR_ERR(dentry);
++		goto out_unlock;
++	}
+ 	if (!IS_POSIXACL(nd.dentry->d_inode))
+ 		mode &= ~current->fs->umask;
+-	if (!IS_ERR(dentry)) {
+-		switch (mode & S_IFMT) {
++	if (S_ISDIR(mode)) {
++		error = -EPERM;
++		goto out_dput;
++	}
++	if (!S_ISREG(mode)  && !S_ISCHR(mode)  && !S_ISBLK(mode) &&
++	    !S_ISFIFO(mode) && !S_ISSOCK(mode) && mode != 0) {
++		error = -EINVAL;
++		goto out_dput;
++	}
++	error = mnt_want_write(nd.mnt);
++	if (error)
++		goto out_dput;
++	switch (mode & S_IFMT) {
+ 		case 0: case S_IFREG:
+ 			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
+ 			break;
+@@ -1961,14 +1974,11 @@ asmlinkage long sys_mknodat(int dfd, con
+ 		case S_IFIFO: case S_IFSOCK:
+ 			error = vfs_mknod(nd.dentry->d_inode,dentry,mode,0);
+ 			break;
+-		case S_IFDIR:
+-			error = -EPERM;
+-			break;
+-		default:
+-			error = -EINVAL;
+-		}
+-		dput(dentry);
  	}
- 
- 	if (IS_ERR(nd->intent.open.file)) {
--		mutex_unlock(&dir->d_inode->i_mutex);
- 		error = PTR_ERR(nd->intent.open.file);
--		goto exit_dput;
-+		goto exit_mutex_unlock;
- 	}
- 
- 	/* Negative dentry, just create the file */
- 	if (!path.dentry->d_inode) {
-+		error = mnt_want_write(nd->mnt);
-+		if (error)
-+			goto exit_mutex_unlock;
- 		error = open_namei_create(nd, &path, flag, mode);
-+		mnt_drop_write(nd->mnt);
- 		if (error)
- 			goto exit;
- 		return 0;
-@@ -1784,6 +1794,8 @@ ok:
- 		goto exit;
- 	return 0;
- 
-+exit_mutex_unlock:
-+	mutex_unlock(&dir->d_inode->i_mutex);
- exit_dput:
- 	dput_path(&path, nd);
- exit:
-diff -puN ipc/mqueue.c~tricky-elevate-write-count-files-are-open-ed ipc/mqueue.c
---- lxc/ipc/mqueue.c~tricky-elevate-write-count-files-are-open-ed	2007-09-20 12:16:11.000000000 -0700
-+++ lxc-dave/ipc/mqueue.c	2007-09-20 12:16:11.000000000 -0700
-@@ -686,6 +686,9 @@ asmlinkage long sys_mq_open(const char _
- 				goto out;
- 			filp = do_open(dentry, oflag);
- 		} else {
-+			error = mnt_want_write(mqueue_mnt);
-+			if (error)
-+				goto out;
- 			filp = do_create(mqueue_mnt->mnt_root, dentry,
- 						oflag, mode, u_attr);
- 		}
++	mnt_drop_write(nd.mnt);
++out_dput:
++	dput(dentry);
++out_unlock:
+ 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
+ 	path_release(&nd);
+ out:
+diff -puN fs/nfsd/vfs.c~sys-mknodat-elevate-write-count-for-vfs-mknod-create fs/nfsd/vfs.c
+--- lxc/fs/nfsd/vfs.c~sys-mknodat-elevate-write-count-for-vfs-mknod-create	2007-09-20 12:16:21.000000000 -0700
++++ lxc-dave/fs/nfsd/vfs.c	2007-09-20 12:16:21.000000000 -0700
+@@ -1225,7 +1225,11 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	case S_IFBLK:
+ 	case S_IFIFO:
+ 	case S_IFSOCK:
++		host_err = mnt_want_write(fhp->fh_export->ex_mnt);
++		if (host_err)
++			break;
+ 		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
++		mnt_drop_write(fhp->fh_export->ex_mnt);
+ 		break;
+ 	default:
+ 	        printk("nfsd: bad file type %o in nfsd_create\n", type);
+diff -puN net/unix/af_unix.c~sys-mknodat-elevate-write-count-for-vfs-mknod-create net/unix/af_unix.c
+--- lxc/net/unix/af_unix.c~sys-mknodat-elevate-write-count-for-vfs-mknod-create	2007-09-20 12:16:21.000000000 -0700
++++ lxc-dave/net/unix/af_unix.c	2007-09-20 12:16:21.000000000 -0700
+@@ -842,7 +842,11 @@ static int unix_bind(struct socket *sock
+ 		 */
+ 		mode = S_IFSOCK |
+ 		       (SOCK_INODE(sock)->i_mode & ~current->fs->umask);
++		err = mnt_want_write(nd.mnt);
++		if (err)
++			goto out_mknod_dput;
+ 		err = vfs_mknod(nd.dentry->d_inode, dentry, mode, 0);
++		mnt_drop_write(nd.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
+ 		mutex_unlock(&nd.dentry->d_inode->i_mutex);
 _
