@@ -1,134 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbXITLvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbXITL7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbXITLvU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 07:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXITLvN
+	id S1754302AbXITL7J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 07:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbXITL64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 07:51:13 -0400
-Received: from sa8.bezeqint.net ([192.115.104.22]:40234 "EHLO sa8.bezeqint.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752244AbXITLvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 07:51:11 -0400
-From: Shlomi Fish <shlomif-lkml@freehackers.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH 2.6.23-rc4] qconf ("make xconfig") Search Dialog Enhancement (rev8)
-Date: Thu, 20 Sep 2007 13:50:43 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-References: <200709132252.20719.shlomif@freehackers.org> <Pine.LNX.4.64.0709160043430.1817@scrub.home>
-In-Reply-To: <Pine.LNX.4.64.0709160043430.1817@scrub.home>
+	Thu, 20 Sep 2007 07:58:56 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58481 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbXITL6z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 07:58:55 -0400
+Date: Thu, 20 Sep 2007 12:31:39 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>, spamtrap@knobisoft.de
+Subject: Re: 2.6.23-rc6-mm1 -- mkfs stuck in 'D'
+In-Reply-To: <20070919224409.24baa75b@lappy>
+Message-ID: <Pine.LNX.4.64.0709201210470.13752@blonde.wat.veritas.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+ <20070919164348.GC2519@shadowen.org> <Pine.LNX.4.64.0709192035370.14804@blonde.wat.veritas.com>
+ <20070919224409.24baa75b@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709201350.43553.shlomif-lkml@freehackers.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 19 Sep 2007, Peter Zijlstra wrote:
+> On Wed, 19 Sep 2007 21:03:19 +0100 (BST) Hugh Dickins
+> <hugh@veritas.com> wrote:
+> 
+> > On Wed, 19 Sep 2007, Andy Whitcroft wrote:
+> > > Seems I have a case of a largish i386 NUMA (NUMA-Q) which has a mkfs
+> > > stuck in a 'D' wait:
+> > > 
+> > >  =======================
+> > > mkfs.ext2     D c10220f4     0  6233   6222
+> > >  [<c12194da>] io_schedule_timeout+0x1e/0x28
+> > >  [<c10454b4>] congestion_wait+0x62/0x7a
+> > >  [<c10402af>] get_dirty_limits+0x16a/0x172
+> > >  [<c104040b>] balance_dirty_pages+0x154/0x1be
+> > >  [<c103bda3>] generic_perform_write+0x168/0x18a
+> > >  [<c103be38>] generic_file_buffered_write+0x73/0x107
+> > >  [<c103c346>] __generic_file_aio_write_nolock+0x47a/0x4a5
+> > >  [<c103c3b9>] generic_file_aio_write_nolock+0x48/0x9b
+> > >  [<c105d2d6>] do_sync_write+0xbf/0xfc
+> > >  [<c105d3a0>] vfs_write+0x8d/0x108
+> > >  [<c105d4c3>] sys_write+0x41/0x67
+> > >  [<c100260a>] syscall_call+0x7/0xb
+> > >  =======================
+> > 
+> > [edited out some bogus lines from stale stack]
+> > 
+> > > This machine and others have run numerous test runs on this kernel and
+> > > this is the first time I've see a hang like this.
+> > 
+> > I've been seeing something like that on 4-way PPC64: in my case I've
+> > shells hanging in D state trying to append to kernel build log on ext3
+> > (the builds themselves going on elsewhere, in tmpfs): one of the shells
+> > holding i_mutex and stuck doing congestion_waits from balance_dirty_pages.
+> > 
+> > > I wonder if this is the ultimate cause of the couple of mainline hangs
+> > > which were seen, but not diagnosed.
+> > 
+> > My *guess* is that this is peculiar to 2.6.23-rc6-mm1, and from Peter's
+> > mm-per-device-dirty-threshold.patch.  printks showed bdi_nr_reclaimable
+> > 0, bdi_nr_writeback 24, bdi_thresh 1 in balance_dirty_pages (though I've
+> > not done enough to check if those really correlate with the hangs),
+> > and I'm wondering if the bdi_stat_sum business is needed on the
+> > !nr_reclaimable path.
+> 
+> FWIW my tired brain seems to think it the !nr_reclaimable path needs it
+> just the same. So this change seems to make sense for now :-)
 
-Sorry for the late response.
+Thanks.
 
-On Sunday 16 September 2007, Roman Zippel wrote:
-> Hi,
->
-> On Thu, 13 Sep 2007, Shlomi Fish wrote:
-> > This patch adds an option to use either substring match, regular
-> > expression match, or keywords search in the "make xconfig" Edit->Find
-> > dialog.
-> >
-> > It also allows searching on the "help" field of the menus as well as
-> > the "name" of the symbol.
-> >
-> > This change involved adding the sym_generic_search function to the LKC,
-> > and implementing sym_re_search using it.
->
-> I like the direction, but first of all please fix the coding style.
+> > So I'm running now with the patch below, good so far, but can't judge
+> > until tomorrow whether it has actually addressed the problem seen.
 
-Which specific problems do you see with the coding style of the patch? Can you 
-comment on it?
-
-> I would also prefer to move more of the search functionality into the
-> generic code, so it can be used by other front ends as well, otherwise a
-> lot of this had to be duplicated.
-
-That would be a good idea, but I cannot use Qt there, which makes my job 
-harder.
-
-> I think a filter function makes it maybe a bit to flexible, if a front
-> end wants to do some weird filtering, it can still access the symbol
-> data base directly. 
-
-A filter function would still be convenient in this context, as the symbol 
-data base API may change, and the filter function has a little logic in it.
-
-> So what I have in mind is something like this: 
->
-> struct symbol **sym_generic_search(const char *pattern, unsigned int
-> flags);
->
-> This means the back end provides a basic search facility for the most
-> common search operations. The flags would specify what to search (e.g.
-> symbol name, help text, prompts) and how to do it.
-
-I suggest we don't call it sym_generic_search, as generic implies it is a 
-generic filter. We can call it "sym_string_search" or whatever. Then, I 
-suggest we have separate arguments for every parameter (i.e: search type, 
-case sensitivity, what to search, etc.).
+Last night's run went well: that patch does indeed seem to have fixed it.
+Looking at the timings (some variance but _very_ much less than the night
+before), there does appear to be some other occasional slight slowdown -
+but I've no reason to suspect your patch for it, nor to suppose it's
+something new: it may just be an artifact of my heavy swap thrashing.
 
 
+[PATCH mm] mm per-device dirty threshold fix
 
->
-> > @@ -1199,6 +1199,23 @@
-> >  	layout2->addWidget(searchButton);
-> >  	layout1->addLayout(layout2);
-> >
-> > +	// Initialize the "Search Type" button group.
-> > +	searchType = new QVButtonGroup("Search Type", this, "searchType");
-> > +
-> > +	substringSearch = new QRadioButton(
-> > +		"Substring Match", searchType, "Substring Match"
-> > +		);
-> > +
-> > +	keywordsSearch = new QRadioButton("Keywords", searchType, "Keywords");
-> > +
-> > +	regexSearch = new QRadioButton(
-> > +		"Regular Expression", searchType, "Regular Expression"
-> > +		);
-> > +
-> > +	substringSearch->setChecked(TRUE);
-> > +	layout1->addWidget(searchType);
-> > +
-> > +	// Initialize the ConfigView and ConfigInfoView
-> >  	split = new QSplitter(this);
-> >  	split->setOrientation(QSplitter::Vertical);
-> >  	list = new ConfigView(split, name);
-> > @@ -1245,6 +1262,20 @@
-> >  	}
-> >  }
-> >
-> > +SEARCH_TYPE ConfigSearchWindow::getSearchType()
-> > +{
-> > +	return	substringSearch->isChecked() ? SUBSTRING :
-> > +		regexSearch->isChecked() ? REGEX :
-> > +		KEYWORDS;
-> > +}
->
-> If you use QButtonGroup::insert() you can assign id's to the indivual
-> buttons and then use selectedId to make this part simpler.
->
+Fix occasional hang when a task couldn't get out of balance_dirty_pages:
+mm-per-device-dirty-threshold.patch needs to reevaluate bdi_nr_writeback
+across all cpus when bdi_thresh is low, even in the case when there was
+no bdi_nr_reclaimable.
 
-Ah, OK.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+ mm/page-writeback.c |   53 +++++++++++++++++++-----------------------
+ 1 file changed, 24 insertions(+), 29 deletions(-)
 
-Regards,
-
-	Shlomi Fish
-
----------------------------------------------------------------------
-Shlomi Fish      shlomif@iglu.org.il
-Homepage:        http://www.shlomifish.org/
-
-If it's not in my E-mail it doesn't happen. And if my E-mail is saying
-one thing, and everything else says something else - E-mail will conquer.
-    -- An Israeli Linuxer
+--- 2.6.23-rc6-mm1/mm/page-writeback.c	2007-09-18 12:28:25.000000000 +0100
++++ linux/mm/page-writeback.c	2007-09-19 20:00:46.000000000 +0100
+@@ -379,7 +379,7 @@ static void balance_dirty_pages(struct a
+ 		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+ 		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+ 		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+-				break;
++			break;
+ 
+ 		if (!bdi->dirty_exceeded)
+ 			bdi->dirty_exceeded = 1;
+@@ -392,39 +392,34 @@ static void balance_dirty_pages(struct a
+ 		 */
+ 		if (bdi_nr_reclaimable) {
+ 			writeback_inodes(&wbc);
+-
++			pages_written += write_chunk - wbc.nr_to_write;
+ 			get_dirty_limits(&background_thresh, &dirty_thresh,
+ 				       &bdi_thresh, bdi);
++		}
+ 
+-			/*
+-			 * In order to avoid the stacked BDI deadlock we need
+-			 * to ensure we accurately count the 'dirty' pages when
+-			 * the threshold is low.
+-			 *
+-			 * Otherwise it would be possible to get thresh+n pages
+-			 * reported dirty, even though there are thresh-m pages
+-			 * actually dirty; with m+n sitting in the percpu
+-			 * deltas.
+-			 */
+-			if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+-				bdi_nr_reclaimable =
+-					bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+-				bdi_nr_writeback =
+-					bdi_stat_sum(bdi, BDI_WRITEBACK);
+-			} else {
+-				bdi_nr_reclaimable =
+-					bdi_stat(bdi, BDI_RECLAIMABLE);
+-				bdi_nr_writeback =
+-					bdi_stat(bdi, BDI_WRITEBACK);
+-			}
++		/*
++		 * In order to avoid the stacked BDI deadlock we need
++		 * to ensure we accurately count the 'dirty' pages when
++		 * the threshold is low.
++		 *
++		 * Otherwise it would be possible to get thresh+n pages
++		 * reported dirty, even though there are thresh-m pages
++		 * actually dirty; with m+n sitting in the percpu
++		 * deltas.
++		 */
++		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
++			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
++			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
++		} else if (bdi_nr_reclaimable) {
++			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
++			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
++		}
+ 
+-			if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+-				break;
++		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
++			break;
++		if (pages_written >= write_chunk)
++			break;		/* We've done our duty */
+ 
+-			pages_written += write_chunk - wbc.nr_to_write;
+-			if (pages_written >= write_chunk)
+-				break;		/* We've done our duty */
+-		}
+ 		congestion_wait(WRITE, HZ/10);
+ 	}
+ 
