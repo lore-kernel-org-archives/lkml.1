@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbXITSLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbXITSMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758378AbXITSLs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 14:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbXITSLk
+	id S1757329AbXITSMR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 14:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758630AbXITSL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 14:11:40 -0400
-Received: from mga01.intel.com ([192.55.52.88]:28816 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751540AbXITSLk convert rfc822-to-8bit (ORCPT
+	Thu, 20 Sep 2007 14:11:59 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39470 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756882AbXITSL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 14:11:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,279,1186383600"; 
-   d="scan'208";a="315438799"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 20 Sep 2007 14:11:58 -0400
+Date: Thu, 20 Sep 2007 11:11:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@suse.de>
+cc: David Chinner <dgc@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nathan Scott <nscott@aconex.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+In-Reply-To: <20070920145407.GY4608@v2.random>
+Message-ID: <Pine.LNX.4.64.0709201108070.8626@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com>
+ <200709181116.22573.nickpiggin@yahoo.com.au>
+ <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org>
+ <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org>
+ <1190163523.24970.378.camel@edge.yarra.acx>
+ <alpine.LFD.0.999.0709181803020.16478@woody.linux-foundation.org>
+ <20070919050910.GK995458@sgi.com> <20070919140430.GJ4608@v2.random>
+ <20070920013821.GR995458@sgi.com> <20070920145407.GY4608@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: what is the difference between shutdown command and writing to /sys/power/state
-Date: Thu, 20 Sep 2007 11:11:38 -0700
-Message-ID: <A3258B497F1C1441AD36A2E8B45FD628ACF82B@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <200709200209.11331.rjw@sisk.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: what is the difference between shutdown command and writing to /sys/power/state
-Thread-Index: Acf7I1asxyK7wUJCRke5OiwT0/Aj0gAjhUhA
-References: <A3258B497F1C1441AD36A2E8B45FD628ACF018@scsmsx412.amr.corp.intel.com> <200709192334.30944.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD628ACF21D@scsmsx412.amr.corp.intel.com> <200709200209.11331.rjw@sisk.pl>
-From: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 20 Sep 2007 18:11:39.0913 (UTC) FILETIME=[B0E80F90:01C7FBB1]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can someone tell me the flow of code for these two scenarios -
-I write disk to /sys/power/state. How does system go to hibernation? How
-does this trigger ACPI driver functions?
-I issue shutdown command.
-I am using 2.6.18 kernel.
+On Thu, 20 Sep 2007, Andrea Arcangeli wrote:
 
-Thanks,
-Lomesh
+> The only point of this largepage stuff is to go an extra mile to save
+> a bit more of cpu vs a strict vmap based solution (fsblock of course
+> will be smart enough that if it notices the PAGE_SIZE is >= blocksize
+> it doesn't need to run any vmap at all and it can just use the direct
+> mapping, so vmap translates in 1 branch only to check the blocksize
+> variable, PAGE_SIZE is immediate in the .text at compile time). But if
 
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Rafael J.
-Wysocki
-Sent: Wednesday, September 19, 2007 5:09 PM
-To: Agarwal, Lomesh
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: what is the difference between shutdown command and writing
-to /sys/power/state
+Hmmm.. You are not keeping up with things? Heard of virtual compound 
+pages? They only require a vmap when the page allocator fails a 
+larger order allocation (which we have established is rare to the point 
+of nonexistence). The next rev of large blocksize will use that for 
+fallback. Plus vcompounds can be used to get rid of most uses of vmalloc 
+reducing the need for virtual mapping in general.
 
-On Wednesday, 19 September 2007 23:37, Agarwal, Lomesh wrote:
-> Can you tell me the differences?
-> Also what do you mean by - depending also on what you mean by 'now'? I
-
-Please tell me what kernel version you're referring to.
-
-> gave now as a time parameter to shutdown command. How can it be
-> interpreted in a different way?
-
-Sorry, I have misunderstood your post (the "now" doesn't look as a part
-of the
-command).
-
-Greetings,
-Rafael
-
-
-> -----Original Message-----
-> From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-> Sent: Wednesday, September 19, 2007 2:35 PM
-> To: Agarwal, Lomesh
-> Cc: linux-kernel@vger.kernel.org
-> Subject: Re: what is the difference between shutdown command and
-writing
-> to /sys/power/state
-> 
-> On Wednesday, 19 September 2007 20:50, Agarwal, Lomesh wrote:
-> > Does linux handles writing "disk" to /sys/power/state and shutdown
--P
-> > now differently (except writing to disk part)?
-> 
-> Yes, it does (depending also on what you mean by 'now').
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Largeblock is a general solution for managing large data sets using a 
+single page struct. See the original message that started this thread. It 
+can be used for various other subsystems like vcompound can.
