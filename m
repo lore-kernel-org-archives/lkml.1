@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbXITWha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbXITWiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752856AbXITWha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbXITWhW
+	id S1753819AbXITWiI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXITWh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:37:22 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:48766 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbXITWhW (ORCPT
+	Thu, 20 Sep 2007 18:37:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48755 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750958AbXITWhz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:37:22 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 20 Sep 2007 15:37:18 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nagendra Tomar <tomer_iisc@yahoo.com>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT
- events get missed for TCP sockets
-In-Reply-To: <120313.72141.qm@web53705.mail.re2.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0709201518540.8897@alien.or.mcafeemobile.com>
-References: <120313.72141.qm@web53705.mail.re2.yahoo.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 20 Sep 2007 18:37:55 -0400
+Date: Thu, 20 Sep 2007 15:36:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Matthias Hensler <matthias@wspse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       richard kennedy <richard@rsk.demon.co.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
+Message-Id: <20070920153654.b9e90616.akpm@linux-foundation.org>
+In-Reply-To: <46F2EE76.4000203@redhat.com>
+References: <46B10BB7.60900@redhat.com>
+	<20070803113407.0b04d44e.akpm@linux-foundation.org>
+	<20070804084426.GA20464@kobayashi-maru.wspse.de>
+	<20070809095943.GA7763@kobayashi-maru.wspse.de>
+	<20070809095534.25ae1c42.akpm@linux-foundation.org>
+	<46F2E103.8000907@redhat.com>
+	<20070920142927.d87ab5af.akpm@linux-foundation.org>
+	<46F2EE76.4000203@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007, Nagendra Tomar wrote:
+On Thu, 20 Sep 2007 18:04:38 -0400
+Chuck Ebbert <cebbert@redhat.com> wrote:
 
-> 
-> --- Davide Libenzi <davidel@xmailserver.org> wrote:
-> 
-> > Looking back at it, I think the current TCP code is right, once you look 
-> > at the "event" to be a output buffer full->with_space transition.
-> > If you drop an fd inside epoll with EPOLLOUT|EPOLLET and you get an event 
-> > (free space on the output buffer), if you do not consume it (say a 
-> > tcp_sendmsg that re-fill the buffer), you can't see other OUT event 
-> > anymore since they happen on the full->with_space transition.
-> > Yes, I know, the read size (EPOLLIN) works differently and you get an 
-> > event for every packet you receive. And yes, I do not like asymmetric 
-> > things. But that does not make the EPOLLOUT|EPOLLET wrong IMO.
 > > 
+> >> Can we get some kind of band-aid, like making the endless 'for' loop in
+> >> balance_dirty_pages() terminate after some number of iterations? Clearly
+> >> if we haven't written "write_chunk" pages after a few tries, *and* we
+> >> haven't encountered congestion, there's no point in trying forever...
+> > 
+> > Did my above questions get looked at?
+> > 
+> > Is anyone able to reproduce this?
+> > 
+> > Do we have a clue what's happening?
 > 
-> I agree that ET means the event should happen at the transition
-> from nospace->space condition, but isn't the other case (event is 
-> delivered every time the event actually happens) more usable.
-> Also the epoll man page says so
-> 
-> "... Edge Triggered event distribution delivers events only when 
-> events happens on the  monitored file."
-> 
-> This serves the purpose of ET (reducing the number of poll events) and
-> at the same time makes userspace coding easier. My userspace code
-> has the liberty of deciding when it can write to the socket. f.e. the
-> sendfile buffer management example that I quoted in my earlier post
-> will be difficult with the current ET|POLLOUT behaviour. I cannot 
-> write in full-buffer units. I'll ve to write partial buffers just to 
-> fill the TCP writeq which is needed to trigger the event.
+> There are a ton of dirty pages for one disk, and zero or close to zero dirty
+> for a different one. Kernel spins forever trying to write some arbitrary
+> minimum amount of data ("write_chunk" pages) to the second disk...
 
-That's not what POLLOUT means in the Unix meaning. POLLOUT indicates the 
-ability to write, and it is not meant as to signal every time a packet 
-(skb) is sent on the wire (and the buffer released).
-In your particular application, you could simply split the sendfile into 
-appropriately sized chunks, and handle the buffer realease in there.
+That should be OK.  The caller will sit in that loop, sleeping in
+congestion_wait(), polling the correct backing-dev occasionally and waiting
+until the dirty limits subside to an acceptable limit, at which stage this:
+
+			if (nr_reclaimable +
+				global_page_state(NR_WRITEBACK)
+					<= dirty_thresh)
+						break;
 
 
+will happen and we leave balance_dirty_pages().
 
-- Davide
+That's all a bit crappy if the wrong races happen and some other task is
+somehow exceeding the dirty limits each time this task polls them.  Seems
+unlikely that such a condition would persist forever.
+
+So the question is, why do we have large amounts of dirty pages for one
+disk which appear to be sitting there not getting written?
+
+Do we know if there's any writeout at all happening when the system is in
+this state?
+
+I guess it's possible that the dirty inodes on the "other" disk got
+themselves onto the wrong per-sb inode list, or are on the correct list,
+but in the correct place.  If so, these:
+
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists.patch
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-2.patch
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-3.patch
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-4.patch
+writeback-fix-comment-use-helper-function.patch
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-5.patch
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-6.patch
+writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-7.patch
+writeback-fix-periodic-superblock-dirty-inode-flushing.patch
+
+from 2.6.23-rc6-mm1 should help.
 
 
+Did anyone try running /bin/sync when the system is in this state?
