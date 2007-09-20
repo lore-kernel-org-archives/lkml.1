@@ -1,129 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757007AbXITGlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbXITGni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757007AbXITGlv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 02:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXITGlo
+	id S1758748AbXITGni (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 02:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXITGnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 02:41:44 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:22393 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbXITGln (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 02:41:43 -0400
-X-IronPort-AV: i="4.20,276,1186372800"; 
-   d="scan'208"; a="39964318:sNHT38262756"
-Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin
-	relocations
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: bryan.wu@analog.com
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Paul Mundt <lethal@linux-sh.org>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       David McCullough <David_Mccullough@securecomputing.com>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Bernd Schmidt <bernd.schmidt@analog.com>,
-       Greg Ungerer <gerg@snapgear.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ysato@users.sourceforge.jp,
-       linux-m32r@ml.linux-m32r.org
-In-Reply-To: <1190270076.10133.16.camel@roc-laptop>
-References: <1190102965.4406.9.camel@roc-desktop>
-	 <8bd0f97a0709192042g67f13337nf62978768b64ff80@mail.gmail.com>
-	 <20070920035412.GA31501@linux-sh.org>
-	 <200709200208.29580.rgetz@blackfin.uclinux.org>
-	 <1190270076.10133.16.camel@roc-laptop>
-Content-Type: text/plain
+	Thu, 20 Sep 2007 02:43:32 -0400
+Received: from smtp1.Vir.com ([199.202.113.40]:35731 "EHLO smtp1.vir.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750862AbXITGnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 02:43:31 -0400
+Message-ID: <46F21692.4020607@soo.com>
+Date: Thu, 20 Sep 2007 02:43:30 -0400
+From: ben soo <lnx-kern@soo.com>
+Reply-To: lnx-kern@soo.com
+User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
+MIME-Version: 1.0
+To: Kernel Mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: PROBLEM: Network sky2 Module
+References: <46E2BC6A.4070800@gmx.de>	<46EF4DE1.4000707@soo.com>	<46EFE09B.6090901@tmr.com> <20070918080525.7a49d110@freepuppy.rosehill.hemminger.net>
+In-Reply-To: <20070918080525.7a49d110@freepuppy.rosehill.hemminger.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Thu, 20 Sep 2007 14:41:39 +0800
-Message-Id: <1190270499.10840.1.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 20 Sep 2007 06:41:41.0554 (UTC) FILETIME=[4D8FC920:01C7FB51]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-20 at 14:34 +0800, Bryan Wu wrote:
-> On Thu, 2007-09-20 at 02:08 -0400, Robin Getz wrote:
-> > On Wed 19 Sep 2007 23:54, Paul Mundt pondered:
-> > > On Wed, Sep 19, 2007 at 11:42:53PM -0400, Mike Frysinger wrote:
-> > > > On 9/19/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> > > > > On Thu, Sep 20, 2007 at 11:55:25AM +1000, David McCullough wrote:
-> > > > > > Jivin Robin Getz lays it down ...
-> > > > > > > On Tue 18 Sep 2007 04:09, Bryan Wu pondered:
-> > > > > > > > This just adds minimum support for the Blackfin relocations,
-> > > > > > > > since we don't have enough space in each reloc. The idea
-> > > > > > > > is to store a value with one relocation so that subsequent 
-> > > > > > > > ones can  access it.
-> > > > > > >
-> > > > > > > Adding the other appropriate maintainers. for h8, m32r, sh and
-> > > > > > > v850. 
-> > > > > >
-> > > > > > Looks fine to me,  obviously impacts the existing arches very
-> > > > > > little.  Can't see why it shouldn't get included,
-> > > > >
-> > > > > I find it a bit disconcerting that blackfin already depends on this
-> > > > > in-tree without there being any earlier discussion on making these
-> > > > > changes.
-> > > > 
-> > > > not really ... this patch was posted before but was lost in the
-> > > > shuffle ... and i'm not quite sure what you mean by "depends on" ...
-> > > > if you want to use the FLAT file format on a Blackfin processor, then
-> > > > this patch is needed, but that isnt the only file format that works on
-> > > > the Blackfin port as we also have FDPIC ELF
-> > > > 
-> > > What I mean by "depends on" is that for what you are attempting to
-> > > patch, your architecture has an in-tree dependency on something that hasn't
-> > > been discussed.
-> > 
-> > "not been discussed" because it was sent to lkml -
-> > http://lkml.org/lkml/2006/9/22/60
-> > - and it got missed/left on the floor during the arch/blackfin inclusion 
-> > (which was huge), not because of any deliberate malicious intent on our part 
-> > to mislead or try to get this in now by doing an end around as you are 
-> > implying.
-> > 
-> 
-> Yes, as Robin pointed out, this patch was sent to LKML at least 3 times
-> including Bernd's email. This is the 4th round.
-> http://lkml.org/lkml/2007/5/29/24
-> http://lkml.org/lkml/2007/5/28/63
-> 
-> I don't wanna to resend it again and again to annoy the receiver and
-> LKML. But IMO, technically this patch looks fine to binfmt_flat and
-> other architectures. And the in-tree Blackfin port will fail to be
-> compiled with this patch if the BINFMT_FLAT is enabled.
-> 
+>> ben soo wrote:
+[...]
+>>> This last might be an artifact caused by the firewall, i dunno.
+[...]
 
-Oops, typo. Correct one:  it will fail to be compiled without this
-patch.
+> Bill Davidsen <davidsen@tmr.com> wrote:
+>> Yes, I have found that I get far less problem in this area leaving the 
+>> MTU at 1500, then putting a larger MTU (usually 9000) into the routing 
+>> table for segments, or even just machines, where I know there is direct 
+>> connectivity.
+[...]
 
-> > Our mistake for not poking everyone/resending things sooner/before 
-> > arch/blackfin was included. Bryan will try to make sure that doesn't happen 
-> > again (right Bryan?) - like he is now, by poking/resending things, and making 
-> > sure that the appropriate maintainers (like you, if we are changing things 
-> > you maintain) are included. (which is what I think the problem was).
-> > 
-> > If we can focus on the technical merits of things, rather than how we got 
-> > here - which I agree sucks - was our mistake - we are sorry - we will try to 
-> > make sure that it doesn't happen again - I think it would be time/effort 
-> > better spent.
-> > 
-> 
-> Yes, I will try my best to avoid this happen again. But on the other
-> hand, several reasons made this mess happen:
-> a) not very easy found the maintainer information for several domain,
-> for example this patch should invite binfmt_flat maintainers, arch
-> maintainers (Thanks Robin to invite them), blackfin port maintainers and
-> toolchain maintainers.
-> b) even the maintainers got this patch email, they don't have time to
-> review or reply. So the patch was ignored by LKML and the sender, sorry
-> -:))).
-> c) There is a rule that do __NOT__ send the same patch again and again,
-> I don't wanna to break this rule. But if there is no feedback about the
-> patch, we have no choice but resent it or just ignore it.
-> 
-> I know it is general problem in the LKML patch review.
-> 
-> Thanks
-> -Bryan
+Stephen Hemminger wrote:
+> If you want to use Jumbo frames, you need to have routers and firewalls
+> that correctly handle ICMP and do path MTU discovery. If you have bridges
+> or firewalls that aren't Jumbo aware on both interfaces, then there will
+> be long timeouts retries for each connection. If you have busted routers
+> and firewalls that swallow ICMP then PMTU won't work well either.
+
+i turned off the motherboard Marvell Gbit devices and installed a 
+Realtek 8169 card, all the while keeping to kernel version 
+2.6.23-rc6, and saw all the network problems go away.  Must mean it 
+was a sky2 driver bug.
+
+Am currently running 2.6.23-rc7 on the affected server and the rc7 
+sky2 driver is holding up fine so far.
+
+thank you!
+
+b
