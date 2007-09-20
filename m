@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbXITUQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbXITUV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbXITUQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbXITUQu
+	id S1753238AbXITUV3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXITUVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 16:16:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50614 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751696AbXITUQt (ORCPT
+	Thu, 20 Sep 2007 16:21:21 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:47821 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751200AbXITUVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 16:16:49 -0400
-Date: Thu, 20 Sep 2007 13:15:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>,
-       Neil Brown <neilb@suse.de>, Trond Myklebust <trond@netapp.com>,
-       stable@kernel.org
-Subject: Re: [PATCH] rpc: fix garbage in printk in svc_tcp_accept()
-In-Reply-To: <20070920195146.GC23287@fieldses.org>
-Message-ID: <alpine.LFD.0.999.0709201310230.16478@woody.linux-foundation.org>
-References: <20070920195146.GC23287@fieldses.org>
+	Thu, 20 Sep 2007 16:21:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FYZtJazEOh3y0Cm5LQGTWP8iGEZFHG/9AZ7doi1VcK4rBTuiSwunO01pyfdkaiYAOvl3tYI0s3+kFrh5cBpX7sGBHBlKgBu5mBWFg62Rp6Qcy5hYl7x69z6q01rh+GBko+mpFCQWG5HG9XQzB4ggc7ykMepJBB7877kPCrUlhH4=
+Message-ID: <7b69d1470709201321m53e21180u8b4e3c56a28ba73d@mail.gmail.com>
+Date: Thu, 20 Sep 2007 15:21:17 -0500
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Arjan van de Ven" <arjan@linux.intel.com>
+Subject: Re: [Announce] LessWatts.org power saving project
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <46F2B707.1080905@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46F2B707.1080905@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 20 Sep 2007, J. Bruce Fields wrote:
+On 9/20/07, Arjan van de Ven <arjan@linux.intel.com> wrote:
+> Intel's Open Source Technology Center is pleased to announce the
+> LessWatts.org project, an open source project for saving power on Linux.
 >
-> we upgraded the kernel of a nfs-server from 2.6.17.11 to 2.6.22.6. Since
-> then we get the message
-...
+> http://www.lesswatts.org
+>
+>
+> What is LessWatts.org about?
+> ----------------------------
+>
+> LessWatts.org is a place to bring users, developers and distribution
+> makers together around power reduction for linux machines, from mobile
+> to desktop to server to datacenter. LessWatts.org is about a
+> system-level approach to power savings, from the lowest level device
+> drivers in the kernel to the most advanced desktop applications.
+> LessWatts.org is about things you can do to reduce power usage.
+> LessWatts.org is about longer battery life, a lower airconditioning
+> bill, about reducing the impact of computers on the environment.
+>
+> LessWatts.org brings together a set of tips & tricks, tools,
+> technology development projects as well as documentation around power
+> saving.
+>
+>
+> Projects
+> --------
+>
+> At this time of launching the LessWatts.org project, the technology
+> development projects are those that Intel has started, is involved in
+> or has just started working on, such as PowerTOP, Tickless Idle,
+> Graphics and various link power management techniques. We'd like to
+> invite all developers and projects that focus on power saving to join
+> the LessWatts.org effort and community.
+>
+>
+> Arjan van de Ven
+> <arjan@linux.intel.com>
+>
+> http://www.lesswatts.org
 
-Bruce - you're losing authorship information.
+*sigh*
 
-Please don't do that.
+Noble cause - dreadful name. And it's ungrammatical, too - should have
+been "FewerWatts" or "LessWattage". Or LessPower. Or it could have
+shared the Linux Foundations "GreenLinux" name.
 
-Put a 
-
-	From: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
-
-at the top of the email, so that the author gets properly attributed. I 
-don't know how many of these I've missed - in this case I just ended up 
-googling for the commit message because the "Signed-off-by:" lines implied 
-that you weren't the original author, and see the real patch authorship 
-that way.
-
-But it's *not* the case that the first sign-off is always the author, and 
-I don't want to need to google for each patch I get, so please make it a 
-habit to make sure that there's proper attribution for the patches.
-
-Some people (read: Andrew) go so far as to *always* do it (ie Andrew puts 
-a "From: Andrew Morton .." at the heads of the emails he sends out), and I 
-appreciate it. That way, even if the email then gets forwarded by somebody 
-else (because Andrew sent it to some submaintainer instead of me), the 
-original authorship doesn't get lost when somebody else then forwards the 
-email.
-
-So that "always explicitly say who the author is" is a good idea, but when 
-forwarding somebody elses patch, it's *more* than a good idea - at that 
-point it's absolutely required for proper attribution.
-
-		Linus
+scott
+-- 
+scott preece
