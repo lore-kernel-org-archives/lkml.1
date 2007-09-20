@@ -1,46 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbXITGoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbXITGue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759034AbXITGoZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 02:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXITGoR
+	id S1756714AbXITGue (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 02:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbXITGu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 02:44:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43189 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750862AbXITGoQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 02:44:16 -0400
-Date: Wed, 19 Sep 2007 23:44:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] increase AT_VECTOR_SIZE to terminate saved_auxv
- properly
-Message-Id: <20070919234411.d5bf33ea.akpm@linux-foundation.org>
-In-Reply-To: <20070918115504.GA609@aepfle.de>
-References: <20070914110057.GA10088@aepfle.de>
-	<20070918115504.GA609@aepfle.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Sep 2007 02:50:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56128 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbXITGu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 02:50:26 -0400
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Howard Chu <hyc@symas.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MTRR initialization
+References: <46EAB7DA.10507@symas.com>
+	<200709191452.57505.jesse.barnes@intel.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 20 Sep 2007 08:50:23 +0200
+In-Reply-To: <200709191452.57505.jesse.barnes@intel.com>
+Message-ID: <p73d4wdal00.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 13:55:04 +0200 Olaf Hering <olaf@aepfle.de> wrote:
-
-> include/asm-powerpc/elf.h has 6 entries in ARCH_DLINFO.
-> fs/binfmt_elf.c has 14 unconditional NEW_AUX_ENT entries and 2
-> conditional NEW_AUX_ENT entries.
-> So in the worst case, saved_auxv does not get an AT_NULL entry at the
-> end.
+Jesse Barnes <jesse.barnes@intel.com> writes:
 > 
-> The saved_auxv array must be terminated with an AT_NULL entry.
-> Make the size of mm_struct->saved_auxv arch dependend,
-> based on the number of ARCH_DLINFO entries.
+> To do this in a nicer way (and be less vulnerable to similar BIOS 
+> funkiness) the kernel really needs full PAT support.  That should allow 
+> WC over WB and WC over UC mappings to occur, at least if I'm 
+> remembering the docs right...
 
-I'm not very confident that this will work well with the
-already-queued move-mm_struct-and-vm_area_struct.patch.
+PAT only really helps for device driver performance optimizations.
+But if the basic WB MTRRs are wrong PAT cannot really salvage it. 
 
-It moves the saved_auxv[AT_VECTOR_SIZE] definition over into
-mm_types.h and mm_types.h doesn't include sched.h.
+-Andi
