@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbXITOCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbXITOET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbXITOCv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 10:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbXITOCl
+	id S1756441AbXITOET (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 10:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbXITOEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 10:02:41 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43668 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752835AbXITOCj (ORCPT
+	Thu, 20 Sep 2007 10:04:09 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:26640 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754736AbXITOEH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 10:02:39 -0400
-Date: Thu, 20 Sep 2007 15:09:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: mel@skynet.ie (Mel Gorman)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
-Message-ID: <20070920150925.0caf3aef@the-village.bc.nu>
-In-Reply-To: <20070920131315.GE24105@skynet.ie>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070920131315.GE24105@skynet.ie>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Sep 2007 10:04:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N1PzicfzuqNVRy5InoV55lT5QOVXPeZmqYelOWkz9hGw4vEOfwBZZt1IBdhfiDyc6PmmR3VDu8civ9ZPh+C9cTGbqzqri4DlVmPZG89EoOEqUZ2JzbAvytTNHFP/JeoRyuki0XTYrXqsFJsZb3nYA6SR5roSgU5vqwXhYoS/sk4=
+Message-ID: <7b69d1470709200704o73317ff2w345af46c5f427a4d@mail.gmail.com>
+Date: Thu, 20 Sep 2007 09:04:05 -0500
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: A little coding style nugget of joy
+Cc: "=?ISO-8859-1?Q?P=E1draig_Brady?=" <P@draigbrady.com>,
+       "Matt LaPlante" <kernel1@cyberdogtech.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0709200610180.15327@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20070919123401.9369534d.kernel1@cyberdogtech.com>
+	 <46F23B77.40809@draigBrady.com>
+	 <Pine.LNX.4.64.0709200610180.15327@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 14:13:15 +0100
-mel@skynet.ie (Mel Gorman) wrote:
+On 9/20/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+> On Thu, 20 Sep 2007, Pádraig Brady wrote:
+>
+> > Matt LaPlante wrote:
+> > > Since everyone loves random statistics, here are a few gems to give you a break from your busy day:
+> > >
+> > > Number of lines in the 2.6.22 Linux kernel source that include one or more trailing whitespaces: 135209
+> > > Bytes saved by removing said whitespace: 151809
+> > > Lines in the (unified) diff: 455437
+> > > Size of the diff: 15M
+> > > People brave enough to submit the patch: ~0
+> >
+> > It's gradually getting better so:
+> > http://lwn.net/2001/1129/a/whitespace.php3
+>
+> and you wouldn't *believe* how much space you can save by getting rid
+> of all that annoying indentation.  and don't even get me *started* on
+> those comments ...
+>
+> rday
+---
 
-> PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
-> doesn't show up on other arches because this driver is specific to the
-> architecture.
-> 
-> drivers/ata/pata_scc.c: In function `scc_bmdma_status'
+I think you're on to something here. If we stored the files with all
+the non-meaningful whitespace (including non-meaningful newlines)
+removed, not only would we save disk space, but we would also
+eliminate significant amounts of developer time and LKML bandwidth
+currently expended on arguing about formatting. Everybody could just
+run things through indent with whatever formatting they preferred.
+Might make diffs ugly, though...
 
-Its not been updated to match the libata core changes. Try something like
-this. Whoever is maintaining it should also remove the prereset cable handling
-code and use the proper cable detect method.
-
-
-Signed-off-by: Alan Cox <alan@redhat.com>
-
-diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c
---- linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-18 15:32:51.000000000 +0100
-+++ linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-20 14:23:32.879807760 +0100
-@@ -731,7 +731,7 @@
- 	void __iomem *mmio = ap->ioaddr.bmdma_addr;
- 	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
- 	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
--	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
-+	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
- 	static int retry = 0;
- 
- 	/* return if IOS_SS is cleared */
-@@ -860,10 +860,10 @@
-  *	@deadline: deadline jiffies for the operation
-  */
- 
--static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)
-+static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)
- {
--	ap->cbl = ATA_CBL_PATA80;
--	return ata_std_prereset(ap, deadline);
-+	link->ap->cbl = ATA_CBL_PATA80;
-+	return ata_std_prereset(link, deadline);
- }
- 
- /**
-@@ -874,8 +874,9 @@
-  *	Note: Original code is ata_std_postreset().
-  */
- 
--static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
-+static void scc_std_postreset (struct ata_link *link, unsigned int *classes)
- {
-+	struct ata_port *ap = link->ap;
- 	DPRINTK("ENTER\n");
- 
- 	/* is double-select really necessary? */
+scott
+-- 
+scott preece
