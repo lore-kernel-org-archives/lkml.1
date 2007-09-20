@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbXITUCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbXITUCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbXITUCW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbXITTyQ
+	id S1753302AbXITUCi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbXITT5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:54:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39887 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753610AbXITTyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:54:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba Satellite A40
-Date: Thu, 20 Sep 2007 22:07:12 +0200
-User-Agent: KMail/1.9.5
-Cc: Frans Pop <elendil@planet.nl>, Pavel Machek <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Maciek Rutecki <maciej.rutecki@gmail.com>
-References: <200709192014.08443.elendil@planet.nl> <200709202017.50934.elendil@planet.nl> <46F2BD0D.2010206@gmail.com>
-In-Reply-To: <46F2BD0D.2010206@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Sep 2007 15:57:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54563 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754614AbXITT5P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 15:57:15 -0400
+Date: Thu, 20 Sep 2007 20:57:11 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 03/25] give may_open() a local 'mnt' variable
+Message-ID: <20070920195711.GA28765@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Dave Hansen <haveblue@us.ibm.com>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org
+References: <20070920195249.852667D5@kernel> <20070920195252.BE019DC4@kernel>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709202207.13101.rjw@sisk.pl>
+In-Reply-To: <20070920195252.BE019DC4@kernel>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 20 September 2007 20:33, Alexey Starikovskiy wrote:
-> Frans Pop wrote:
-> > On Thursday 20 September 2007, you wrote:
-> >> Please try this patch.
-> > 
-> > Works. All states are now listed again.
-> > I've not tested suspend to disk, but suspend to ram and power off work fine.
-> > 
-> >> +printk(KERN_INFO PREFIX "(supports");
-> >>  #ifdef CONFIG_SUSPEND
-> >> -       printk(KERN_INFO PREFIX "(supports");
-> >>         for (i = ACPI_STATE_S0; i < ACPI_STATE_S4; i++) {
-> > 
-> > Isn't there a risk now that we now end up printing
-> >    ACPI: (supports)
-> > if CONFIG_SUSPEND is not enabled and >S4 is not supported?
-> > 
-> > Or, more probably, it would print
-> >    ACPI: (supports S5)
-> Don't know what does it mean to support S0 exactly... :)
-> > as it is unlikely that "off" is not supported :-)
-> > 
-> > Maybe S0 should be taken outside the #ifdef and the loop as that state is 
-> > also basically always there?
-> Don't think it is worth the trouble. We already have this loop almost completely unrolled,
-> let's not make it complete mess...
+On Thu, Sep 20, 2007 at 12:52:52PM -0700, Dave Hansen wrote:
+> 
+> First of all, this makes the structure jumping look a little
+> bit cleaner.  So, this stands alone as a tiny cleanup.  But,
+> we also need 'mnt' by itself a few more times later in this
+> series, so this isn't _just_ a cleanup.
 
-Well, you could use "(supports S0" instead of just "(supports". ;-)
+You're touching permission, not may_open, though.
 
-Greetings,
-Rafael
