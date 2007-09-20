@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbXITU3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752481AbXITUc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753041AbXITU3U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXITU3M
+	id S1752481AbXITUc1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXITUcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 16:29:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40096 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751219AbXITU3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 16:29:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when booted, USB-related WARNING
-Date: Thu, 20 Sep 2007 22:42:09 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <1190295795.3481.17.camel@chaos> <200709201612.37194.rjw@sisk.pl>
-In-Reply-To: <200709201612.37194.rjw@sisk.pl>
+	Thu, 20 Sep 2007 16:32:19 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:44736 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750858AbXITUcS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 16:32:18 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <46F2D695.5070500@am.sony.com>
+Date: Thu, 20 Sep 2007 13:22:45 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Rob Landley <rob@landley.net>, linux-tiny@selenic.com,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       Michael Opdenacker <michael@free-electrons.com>
+Subject: printk proposal - (was Linux-tiny project revival)
+References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <20070920195844.GA1805@martell.zuzino.mipt.ru>
+In-Reply-To: <20070920195844.GA1805@martell.zuzino.mipt.ru>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709202242.10489.rjw@sisk.pl>
+X-OriginalArrivalTime: 20 Sep 2007 20:23:08.0102 (UTC) FILETIME=[0EA22E60:01C7FBC4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 20 September 2007 16:12, Rafael J. Wysocki wrote:
-> On Thursday, 20 September 2007 15:43, Thomas Gleixner wrote:
-> > On Thu, 2007-09-20 at 15:29 +0200, Rafael J. Wysocki wrote:
-> > > > > I haven't had the time to check if any special command line arguments help.
-> > > > > Will check tomorrow.
-> > > > 
-> > > > Can you please disable the patches, which I sent Linus wards:
-> > > > 
-> > > > timekeeping-access-rtc-outside-xtime-lock.patch
-> > > > xtime-supsend-resume-fixup.patch
-> > > > acpi-reevaluate-c-p-t-states.patch
-> > > > clockevents-enforce-broadcast-on-resume.patch
-> > > > clockevents-do-not-shutdown-broadcast-device-in-oneshot-mode.patch
-> > > > clockevents-prevent-stale-tick-update-on-offline-cpu.patch
-> > > 
-> > > I have skipped all of them, but the resulting kernel behaves in the same
-> > > way (ie. doesn't boot).
-> > > 
-> > > > Without those patches you get the state of rc4-mm1. It would be
-> > > > interesting to know which one interferes with the acpi stuff.
-> > > 
-> > > It looks like something else went in between -rc4 and -rc6 that broke your
-> > > patch.  I wonder what it might be ...
-> > 
-> > Hmm. Can you please go back in the -hrt project history:
-> > http://tglx.de/projects/hrtimers/2.6.23-rc5/patch-2.6.23-rc5-hrt1.patches.tar.bz2
-> > http://tglx.de/projects/hrtimers/2.6.23-rc4/patch-2.6.23-rc4-hrt1.patches.tar.bz2
+Alexey Dobriyan wrote:
+> Given that
+> a) there're plenty of printks without any KERN_* bloat,
+> b) there're printks that SHOULD NOT have KERN_* bloat,
 
-Each of them on top of 2.6.23-rc6 gives the same symptoms as rc6-hrt2 (ie. the
-box doesn't boot).
+Just to clarify, which bloat are you concerned about?
+I presume source code bloat (but maybe you mean
+message size bloat, or object code bloat)?
 
-I'm going to check if -rc5 with patch-2.6.23-rc4-hrt1 on top of it works and
-if not (I suspect so), I'll bisect the Linus' tree between -rc4 and -rc5 in
-order to identify the responsible patch.
+ -- Tim
 
-Greetings,
-Rafael
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
