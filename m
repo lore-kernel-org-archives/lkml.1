@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbXITJel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbXITJoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbXITJel (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 05:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXITJed
+	id S1755776AbXITJoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 05:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXITJoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 05:34:33 -0400
-Received: from smtp.parkwest.mxsweep.com ([89.149.149.67]:3147 "EHLO
-	smtp1.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750981AbXITJec (ORCPT
+	Thu, 20 Sep 2007 05:44:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:52870 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbXITJoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 05:34:32 -0400
-X-Greylist: delayed 677 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Sep 2007 05:34:32 EDT
-X-PMWin-Spam: Gauge=IIIIIIII, Probability=8%, Report='__HAS_MSGID, __SANE_MSGID, __USER_AGENT, __MIME_VERSION, __CT, __CT_TEXT_PLAIN, __CTE, __CP_URI_IN_BODY, BODY_SIZE_400_499, __MIME_TEXT_ONLY'
-thread-index: Acf7aADgBU7jxosiRnSynWnq8G9+7Q==
-X-PMWin-SpamScore: 8
-X-PMWin-Version: 2.6.1, Antispam-Engine: 2.5.2, Antivirus-Engine: 2.49.1
-Content-Class: urn:content-classes:message
-Importance: normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4073
-Message-ID: <46F23B77.40809@draigBrady.com>
-Date: Thu, 20 Sep 2007 10:20:55 +0100
-From: =?iso-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20061116)
+	Thu, 20 Sep 2007 05:44:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=BU4JMI1obl2IRdNJDbF/j8Xw1vf+lQ+y5SjJWoowqVnXmDgVNusITKJaZzu7SoRLvA8YuOXj8COPsv0D1M0HB2WEBWZQJ4I1ECSn2uniGujykQjTTxgSkx13i6pYPWEOiq6GigxSTaQiUMtcF0CguQSI9VsdYEpQz7GTH/3MisA=
+Message-ID: <46F240DF.7050303@gmail.com>
+Date: Thu, 20 Sep 2007 18:43:59 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: "Matt LaPlante" <kernel1@cyberdogtech.com>
-CC: <linux-kernel@vger.kernel.org>
-Subject: Re: A little coding style nugget of joy
-References: <20070919123401.9369534d.kernel1@cyberdogtech.com>
-In-Reply-To: <20070919123401.9369534d.kernel1@cyberdogtech.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset="ISO-8859-1"
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: ebiederm@xmission.com, greg@kroah.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH 4/4] sysfs: make suicidal nodes just do it directly
+References: <11902731752407-git-send-email-htejun@gmail.com>	<11902731751771-git-send-email-htejun@gmail.com> <20070920112440.6216644b@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070920112440.6216644b@gondolin.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Sep 2007 09:24:07.0727 (UTC) FILETIME=[FEBBC3F0:01C7FB67]
-X-CTCH-RefID: str=0001.0A010204.46F23C00.00BD:SCCEO7923,ss=1,fgs=0
-X-MXUniqueID: faf56e5d-1b95-4be2-8203-ceeb1b5ffe32
-X-MXSweep-Threat: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt LaPlante wrote:
-> Since everyone loves random statistics, here are a few gems to give you a break from your busy day:
+Cornelia Huck wrote:
+> On Thu, 20 Sep 2007 16:26:15 +0900,
+> Tejun Heo <htejun@gmail.com> wrote:
 > 
-> Number of lines in the 2.6.22 Linux kernel source that include one or more trailing whitespaces: 135209
-> Bytes saved by removing said whitespace: 151809
-> Lines in the (unified) diff: 455437
-> Size of the diff: 15M
-> People brave enough to submit the patch: ~0
+>> Sysfs now allows direct suicide.  Make suicidial sysfs nodes to use
+>> it and remove now unncessary callback mechanism.
+>>
+>> Signed-off-by: Tejun Heo <htejun@gmail.com>
+>> ---
+>>  drivers/base/core.c         |   33 ----------------------
+>>  drivers/s390/cio/ccwgroup.c |   25 +++-------------
+>>  drivers/scsi/scsi_sysfs.c   |   13 +--------
+>>  fs/sysfs/file.c             |   63 -------------------------------------------
+>>  include/linux/device.h      |    6 ----
+>>  include/linux/sysfs.h       |    9 ------
+>>  6 files changed, 6 insertions(+), 143 deletions(-)
+>>
+> 
+> Just browsing through this (I'll review and do some tests later), but
+> you missed drivers/s390/cio/device.c::ccw_device_remove_disconnected().
+> 
+> Following (not event compile tested) patch (which is basically a revert
+> of 59a8a6e227cf0bc42e5be741ebfea97c222ab9ef) should take care of it.
+> 
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-It's gradually getting better so:
-http://lwn.net/2001/1129/a/whitespace.php3
+Thanks for spotting this.  After converting ccwgroup, I thought that was
+it for s390.
+
+-- 
+tejun
