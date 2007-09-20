@@ -1,45 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbXITTLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbXITTTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758690AbXITTLZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbXITTLQ
+	id S1757919AbXITTTG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:19:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXITTS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:11:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51265 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752935AbXITTLP (ORCPT
+	Thu, 20 Sep 2007 15:18:56 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:35892 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbXITTSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:11:15 -0400
-Message-Id: <20070920190627.671886126@linux-foundation.org>
-References: <20070920190608.339749785@linux-foundation.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 20 Sep 2007 12:06:11 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	Thu, 20 Sep 2007 15:18:55 -0400
+Date: Thu, 20 Sep 2007 21:19:44 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] missing null termination in one wire uevent
-Content-Disposition: inline; filename=sysfs-wl.patch
+Subject: Re: [PATCH] increase AT_VECTOR_SIZE to terminate saved_auxv properly
+Message-ID: <20070920191944.GA14348@aepfle.de>
+References: <20070914110057.GA10088@aepfle.de> <20070918115504.GA609@aepfle.de> <20070919234411.d5bf33ea.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070919234411.d5bf33ea.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Need to null terminate environment. Found by inspection
-while looking for similar problems to platform uevent bug
+On Wed, Sep 19, Andrew Morton wrote:
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+> I'm not very confident that this will work well with the
+> already-queued move-mm_struct-and-vm_area_struct.patch.
 
---- a/drivers/w1/w1.c	2007-08-18 07:50:12.000000000 -0700
-+++ b/drivers/w1/w1.c	2007-09-20 11:44:06.000000000 -0700
-@@ -431,6 +431,7 @@ static int w1_uevent(struct device *dev,
- 	err = add_uevent_var(envp, num_envp, &cur_index, buffer, buffer_size,
- 			&cur_len, "W1_SLAVE_ID=%024LX",
- 			(unsigned long long)sl->reg_num.id);
-+	envp[cur_index] = NULL;
- 	if (err)
- 		return err;
- 
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
-
+You want me to redo my patch agains the current -mm kernel?
