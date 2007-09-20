@@ -1,74 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbXITUjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbXITUkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753650AbXITUjS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbXITUjI
+	id S1754208AbXITUkn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbXITUke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 16:39:08 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:43814 "EHLO fieldses.org"
+	Thu, 20 Sep 2007 16:40:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40140 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbXITUjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 16:39:05 -0400
-Date: Thu, 20 Sep 2007 16:39:04 -0400
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Consolidate sleeping routines in file locking code
-Message-ID: <20070920203904.GH23287@fieldses.org>
-References: <46EFD574.5060705@openvz.org> <20070919183703.GE5946@fieldses.org> <46F238DF.4010000@openvz.org>
+	id S1751025AbXITUkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 16:40:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>, Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba Satellite A40
+Date: Thu, 20 Sep 2007 22:53:06 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Maciek Rutecki <maciej.rutecki@gmail.com>
+References: <200709192014.08443.elendil@planet.nl> <200709202207.13101.rjw@sisk.pl> <200709202232.33309.elendil@planet.nl>
+In-Reply-To: <200709202232.33309.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46F238DF.4010000@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200709202253.07571.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 01:09:51PM +0400, Pavel Emelyanov wrote:
-> J. Bruce Fields wrote:
-> > On Tue, Sep 18, 2007 at 05:41:08PM +0400, Pavel Emelyanov wrote:
-> >> This is the next step in fs/locks.c cleanup before turning
-> >> it into using the struct pid *. 
-> >>
-> >> This time I found, that there are some places that do a
-> >> similar thing - they try to apply a lock on a file and go 
-> >> to sleep on error till the blocker exits.
-> >>
-> >> All these places can be easily consolidated, saving 28 
-> >> lines of code and more than 600 bytes from the .text,
-> >> but there is one minor note. 
-> > 
-> > I'm not opposed to consolidating this code, but would it be possible to
-> > do so in a more straightforward way, without passing in a callback
-> > function?  E.g. a single __posix_lock_file_wait that just took an inode
-> > instead of a filp and called __posix_lock_file() could be called from
-> > both posix_lock_file_wait() and locks_mandatory_locked, right?
+On Thursday, 20 September 2007 22:32, Frans Pop wrote:
+> On Thursday 20 September 2007, Rafael J. Wysocki wrote:
+> > On Thursday, 20 September 2007 20:33, Alexey Starikovskiy wrote:
+> > > Frans Pop wrote:
+> > > > On Thursday 20 September 2007, you wrote:
+> > > >> Please try this patch.
+> > > >
+> > > > Works. All states are now listed again.
+> > > > I've not tested suspend to disk, but suspend to ram and power off
+> > > > work fine.
+> > > >
+> > > >> +printk(KERN_INFO PREFIX "(supports");
 > 
-> Well, the locks_mandatory_area() has to check for inode mode change
-> in my lock callback, the fcntl_setlk() has to call the vfs_lock_file,
-> and flock_lock_file_wait() has to call the flock_lock_file, so
-> I don't see the ways of having one routine to lock the file.
+> Note that this printk should be indented.
 > 
-> If you don't mind, I'd port the patch with this approach (with the
-> "trylock" callback) on the latest Andrew's tree.
-
-OK.
-
-> >> The locks_mandatory_area() code becomes a bit different 
-> >> after this patch - it no longer checks for the inode's 
-> >> permissions change. Nevertheless, this check is useless 
-> >> without my another patch that wakes the waiter up in the
-> >> notify_change(), which is not considered to be useful for
-> >> now.
-> > 
-> > OK.  Might be better to submit this as a separate patch, though.
+> > > >>  #ifdef CONFIG_SUSPEND
+> > > >> -       printk(KERN_INFO PREFIX "(supports");
+> > > >>         for (i = ACPI_STATE_S0; i < ACPI_STATE_S4; i++) {
+> > > >
+> > > > Isn't there a risk now that we now end up printing
+> > > >    ACPI: (supports)
+> > > > if CONFIG_SUSPEND is not enabled and >S4 is not supported?
+> > > >
+> > > > Or, more probably, it would print
+> > > >    ACPI: (supports S5)
+> > >
+> > > Don't know what does it mean to support S0 exactly... :)
 > 
-> This one is already accepted, but I have just noticed that
-> the check for __mandatory_lock() in wait_event_interruptible
-> is ambiguous :(
+> Agreed, though arguably the same goes for S5. I guess you could say they are 
+> all states that can be switched to.
+> 
+> > > > as it is unlikely that "off" is not supported :-)
+> > > >
+> > > > Maybe S0 should be taken outside the #ifdef and the loop as that
+> > > > state is also basically always there?
+> > >
+> > > Don't think it is worth the trouble. We already have this loop almost
+> > > completely unrolled, let's not make it complete mess...
+> >
+> > Well, you could use "(supports S0" instead of just "(supports". ;-)
+> 
+> After thinking about this a bit more, I think this does make sense for three 
+> (admittedly minor) reasons:
+> - consistency between messages with and without CONFIG_SUSPEND
+> - consistency with /proc/acpi/sleep
+> - avoiding unnecessary change from previous versions.
+> 
+> Please consider the attached patch which applies on top of Alexey's. Feel 
+> free to integrate it in his patch.
+> 
+> Signed-off-by: Frans Pop <elendil@planet.nl>
 
-I'm not sure what you mean here....  Do you have a fix?
+Alexey, do you agree?
 
---b.
+(patch reproduced below for convenience).
+
+diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+index 638172f..85633c5 100644
+--- a/drivers/acpi/sleep/main.c
++++ b/drivers/acpi/sleep/main.c
+@@ -401,9 +401,11 @@ int __init acpi_sleep_init(void)
+        if (acpi_disabled)
+                return 0;
+ 
+-printk(KERN_INFO PREFIX "(supports");
++       sleep_states[ACPI_STATE_S0] = 1;
++       printk(KERN_INFO PREFIX "(supports S0");
++
+ #ifdef CONFIG_SUSPEND
+-       for (i = ACPI_STATE_S0; i < ACPI_STATE_S4; i++) {
++       for (i = ACPI_STATE_S1; i < ACPI_STATE_S4; i++) {
+                status = acpi_get_sleep_type_data(i, &type_a, &type_b);
+                if (ACPI_SUCCESS(status)) {
+                        sleep_states[i] = 1;
