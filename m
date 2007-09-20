@@ -1,53 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbXITQSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbXITQTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbXITQSl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 12:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbXITQSe
+	id S1757299AbXITQTT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 12:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbXITQTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 12:18:34 -0400
-Received: from sslsrv.de ([62.75.159.123]:59572 "EHLO sslsrv.de"
+	Thu, 20 Sep 2007 12:19:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45009 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756636AbXITQSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 12:18:33 -0400
-From: Philipp Marek <philipp@marek.priv.at>
-To: David Newall <david@davidnewall.com>
-Subject: Re: sys_chroot+sys_fchdir Fix
-Date: Thu, 20 Sep 2007 18:17:16 +0200
-User-Agent: KMail/1.9.7
-Cc: 7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bill Davidsen <davidsen@tmr.com>, majkls <majkls@prepere.com>,
-       bunk@fs.tum.de, linux-kernel@vger.kernel.org
-References: <952DN-83o-31@gated-at.bofh.it> <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com>
-In-Reply-To: <46F29A9A.4070806@davidnewall.com>
+	id S1756213AbXITQTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 12:19:10 -0400
+Message-ID: <46F29D7A.9070309@redhat.com>
+Date: Thu, 20 Sep 2007 12:19:06 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Aggelos Manousarides <amanous@inaccessnetworks.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Bogus high interrupt load?
+References: <20070918235648.GA29746@inaccessnetworks.com>
+In-Reply-To: <20070918235648.GA29746@inaccessnetworks.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709201817.17282@x5>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 September 2007 David Newall wrote:
-> Philipp Marek wrote:
-> > - User starts a small wrapper,
-> > - that opens "/",
-> > - chroot()s into a directory and starts fsvs.
-> > - fsvs gets its libraries loaded
-> > - and chroot()s back to the original system.
->
-> Isn't that what pivot_root was meant for?
-AFAIK pivot_root() changes the / mapping for *all* processes, no?
+On 09/18/2007 07:56 PM, Aggelos Manousarides wrote:
+> 
+> There is obviously something happening to the load reporting facility of
+> the kernel when a periodic interrupt source is present. Has anyone seen
+> something like this? I am not using any real time patches, this is a
+> vanilla kernel patched only to support the platform at hand.
+> 
 
-I just wanted to give *this* single process completely new library paths, even 
-for delay-loaded things (like libnss) ...
+You will get aliasing effects like that if the system clock is not
+interrupting at least twice as often as your periodic interrupts occur.
 
-
-Regards,
-
-Phil
-
-
--- 
-Versioning your /etc, /home or even your whole installation?
-             Try fsvs (fsvs.tigris.org)!
