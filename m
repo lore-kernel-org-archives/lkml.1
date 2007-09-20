@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbXITSCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbXITSHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758874AbXITSCW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 14:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbXITSCO
+	id S1757938AbXITSHb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 14:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbXITSHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 14:02:14 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:34080 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755221AbXITSCO (ORCPT
+	Thu, 20 Sep 2007 14:07:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51926 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752779AbXITSHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 14:02:14 -0400
-Message-ID: <46F2B59F.8090709@davidnewall.com>
-Date: Fri, 21 Sep 2007 03:32:07 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Thu, 20 Sep 2007 14:07:20 -0400
+Date: Thu, 20 Sep 2007 11:07:18 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Chinner <dgc@sgi.com>
+cc: Andrea Arcangeli <andrea@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nathan Scott <nscott@aconex.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+In-Reply-To: <20070920013821.GR995458@sgi.com>
+Message-ID: <Pine.LNX.4.64.0709201105350.8626@schroedinger.engr.sgi.com>
+References: <200709161853.12050.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com>
+ <200709181116.22573.nickpiggin@yahoo.com.au>
+ <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org>
+ <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org>
+ <1190163523.24970.378.camel@edge.yarra.acx>
+ <alpine.LFD.0.999.0709181803020.16478@woody.linux-foundation.org>
+ <20070919050910.GK995458@sgi.com> <20070919140430.GJ4608@v2.random>
+ <20070920013821.GR995458@sgi.com>
 MIME-Version: 1.0
-To: Philipp Marek <philipp@marek.priv.at>
-CC: 7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bill Davidsen <davidsen@tmr.com>, majkls <majkls@prepere.com>,
-       bunk@fs.tum.de, linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-References: <952DN-83o-31@gated-at.bofh.it> <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5>
-In-Reply-To: <200709201817.17282@x5>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philipp Marek wrote:
-> AFAIK pivot_root() changes the / mapping for *all* processes, no?
->   
+On Thu, 20 Sep 2007, David Chinner wrote:
 
-The manual page is confusing.  It even admits to being "intentionally 
-vague".  However the goal seems clear:
+> > Disagree, the mmap side is not a little change.
+> 
+> That's not in the filesystem, though. ;)
 
-    "pivot_root() moves the root file system of the current process to
-    the directory put_old and makes new_root the new root file system of
-    the current process"
-    -- man 2 pivot_root
+And its really only a minimal change for some function to loop over all 
+4k pages and elsewhere index the right 4k subpage.
 
-There's an argument that pivot_root could be improved...
