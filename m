@@ -1,117 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759577AbXITIrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbXITIrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759577AbXITIrU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 04:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbXITIrL
+	id S1760659AbXITIrq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 04:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXITIrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 04:47:11 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39035 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753461AbXITIrJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 04:47:09 -0400
-Message-ID: <46F234DB.7030403@bull.net>
-Date: Thu, 20 Sep 2007 10:52:43 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Thu, 20 Sep 2007 04:47:37 -0400
+Received: from sacred.ru ([62.205.161.221]:47781 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbXITIrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 04:47:36 -0400
+Message-ID: <46F2330E.4040107@openvz.org>
+Date: Thu, 20 Sep 2007 12:45:02 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local>
-In-Reply-To: <20070920072821.GA2065@ff.dom.local>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 20/09/2007 10:52:58,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 20/09/2007 10:53:00,
-	Serialize complete at 20/09/2007 10:53:00
+To: Andrew Morton <akpm@osdl.org>
+CC: "J. Bruce Fields" <bfields@fieldses.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH] Rework /proc/locks via seq_files and seq_list helpers (v2)
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 20 Sep 2007 12:47:22 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
-> On Thu, Sep 20, 2007 at 08:24:58AM +0200, Nadia Derbey wrote:
-> 
->>Jarek Poplawski wrote:
->>
->>>On 18-09-2007 16:55, Nadia Derbey wrote:
->>>...
->>>
->>>
->>>>Well, reviewing the code I found another place where the 
->>>>rcu_read_unlock() was missing.
->>>>I'm so sorry for the inconvenience. It's true that I should have tested 
->>>>with CONFIG_PREEMPT=y :-(
->>>>Now, the ltp tests pass even with this option set...
->>>>
->>>>In attachment you'll find a patch thhat
->>>>1) adds the missing rcu_read_unlock()
->>>>2) replaces Andrew's fix with a new one: the rcu_read_lock() is now 
->>>>taken in ipc_lock() / ipc_lock_by_ptr() and released in ipc_unlock(), 
->>>>exactly as it was done in the ref code.
->>>
->>>
->>>BTW, probably I miss something, but I wonder, how this RCU is working
->>>here. E.g. in msg.c do_msgsnd() there is:
->>>
->>>msq = msg_lock_check(ns, msqid);
->>>...
->>>
->>>msg_unlock(msq);
->>>schedule();
->>>
->>>ipc_lock_by_ptr(&msq->q_perm);
->>>
->>>Since msq_lock_check() gets msq with ipc_lock_check() under
->>>rcu_read_lock(), and then goes msg_unlock(msq) (i.e. ipc_unlock())
->>>with rcu_read_unlock(), is it valid to use this with
->>>ipc_lock_by_ptr() yet?
->>
->>Before Calling msg_unlock() they call ipc_rcu_getref() that increments a 
->>refcount in the rcu header for the msg structure. This guarantees that 
->>the the structure won't be freed before they relock it. Once the 
->>structure is relocked by ipc_lock_by_ptr(), they do the symmetric 
->>operation i.e. ipc_rcu_putref().
-> 
-> 
-> Yes, I've found this later too - sorry for bothering. I was mislead
-> by the code like this:
-> 
-> struct kern_ipc_perm *ipc_lock(struct ipc_ids *ids, int id)
-> {
->         struct kern_ipc_perm *out;
->         int lid = ipcid_to_idx(id);
-> 
->         rcu_read_lock();
->         out = idr_find(&ids->ipcs_idr, lid);
->         if (out == NULL) {
->                 rcu_read_unlock();
->                 return ERR_PTR(-EINVAL);
->         }
-> 
-> which seems to suggest "out" is an RCU protected pointer, so, I
-> thought these refcounts were for something else. But, after looking
-> at how it's used it turns out to be ~90% wrong: probably 9 out of 10
-> places use refcouning around this,
+Currently /proc/locks is shown with a proc_read function, but
+its behavior is rather complex as it has to manually handle
+current offset and buffer length. On the other hand, files 
+that show objects from lists can be easily reimplemented using
+the sequential files and the seq_list_XXX() helpers.
 
-Actually, ipc_lock() is called most of the time without the 
-ipc_ids.mutex held and without refcounting (maybe you didn't look for 
-the msg_lock() sem_lock() and shm_lock() too).
-So I think disabling preemption is needed, isn't it?
+This saves (as usually) 16 lines of code and more than 200 from
+the .text section.
 
-> so, these rcu_read_locks() don't
-> work here at all. So, probably I miss something again, but IMHO,
-> these rcu_read_locks/unlocks could be removed here or in
-> ipc_lock_by_ptr() and it should be enough to use them directly, where
-> really needed, e.g., in msg.c do_msgrcv().
-> 
+This patch looks rather ugly, as diff often uses curly braces
+as not-changed lines, but I haven't managed to organize the 
+code to make diff look better. Except for move the whole proc
+related stuff upper/lower in the locks.c file...
 
-I have to check for the ipc_lock_by_ptr(): may be you're right!
+Fixed the problem, spotted by J. Bruce Fields, about the fl
+variable reuse.
 
-Regards,
-Nadia
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
+---
+
+diff --git a/fs/locks.c b/fs/locks.c
+index a1c1c01..d5b9653 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -1354,6 +1354,7 @@ int fcntl_getlease(struct file *filp)
+ int generic_setlease(struct file *filp, long arg, struct file_lock **flp)
+ {
+ 	struct file_lock *fl, **before, **my_before = NULL, *lease;
++	struct file_lock *new_fl = NULL;
+ 	struct dentry *dentry = filp->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	int error, rdlease_count = 0, wrlease_count = 0;
+@@ -1380,6 +1381,11 @@ int generic_setlease(struct file *filp, 
+ 		|| (atomic_read(&inode->i_count) > 1)))
+ 		goto out;
+ 
++	error = -ENOMEM;
++	new_fl = locks_alloc_lock();
++	if (new_fl == NULL)
++		goto out;
++
+ 	/*
+ 	 * At this point, we know that if there is an exclusive
+ 	 * lease on this file, then we hold it on this filp
+@@ -1422,18 +1428,15 @@ int generic_setlease(struct file *filp, 
+ 	if (!leases_enable)
+ 		goto out;
+ 
+-	error = -ENOMEM;
+-	fl = locks_alloc_lock();
+-	if (fl == NULL)
+-		goto out;
+-
+-	locks_copy_lock(fl, lease);
+-
+-	locks_insert_lock(before, fl);
++	locks_copy_lock(new_fl, lease);
++	locks_insert_lock(before, new_fl);
+ 
+ 	*flp = fl;
+-	error = 0;
++	return 0;
++
+ out:
++	if (new_fl != NULL)
++		locks_free_lock(new_fl);
+ 	return error;
+ }
+ EXPORT_SYMBOL(generic_setlease);
