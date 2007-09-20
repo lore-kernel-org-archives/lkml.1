@@ -1,104 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbXITLei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbXITLjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbXITLei (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 07:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXITLe1
+	id S1754500AbXITLjS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 07:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXITLjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 07:34:27 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:14085 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750758AbXITLe0 (ORCPT
+	Thu, 20 Sep 2007 07:39:06 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:32887 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbXITLjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 07:34:26 -0400
-Message-ID: <46F25A82.8090300@ru.mvista.com>
-Date: Thu, 20 Sep 2007 15:33:22 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 20 Sep 2007 07:39:04 -0400
+Message-ID: <46F25BCD.2070005@wpkg.org>
+Date: Thu, 20 Sep 2007 13:38:53 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Auke Kok <auke-jan.h.kok@intel.com>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] pci: Fix e100 interrupt quirk
-References: <20070918111737.GA7026@ru.mvista.com> <20070919233726.9d81b674.akpm@linux-foundation.org>
-In-Reply-To: <20070919233726.9d81b674.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: patch/option to wipe memory at boot?
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 18 Sep 2007 15:17:37 +0400 Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+> Is there a patch or a boot option or something which wipes all
+> available (physical) RAM at boot (or better, fills it with a fixed
+> signature like 0xdeadbeef)?  I'm getting phony ECC errors and I'd like
+> to test whether they go away when the RAM is properly initialized.
+> Also, I'd like to know exactly which parts of RAM are being used and
+> which are untouched since boot (hence the 0xdeadbeef signature).
 > 
->> PCI memory space may have a 64-bit offset on some architectures
->> (for example, PowerPC 440) and the actual PCI memory address
->> has to fixed up (an offset to PCI mem space shuld be added)
->> before remapping. So, pci_iomap should be used instead of
->> reading and remapping PCI BAR directly. This has been tested
->> on Sequoia PowerPC 440EPx board.
->>
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->> ---
->>
->> --- linux-2.6.orig/drivers/pci/quirks.c	2007-09-04 21:15:43.000000000 +0400
->> +++ linux-2.6.bld/drivers/pci/quirks.c	2007-09-05 20:46:14.000000000 +0400
->> @@ -1444,9 +1444,9 @@
->>  static void __devinit quirk_e100_interrupt(struct pci_dev *dev)
->>  {
->>  	u16 command;
->> -	u32 bar;
->>  	u8 __iomem *csr;
->>  	u8 cmd_hi;
->> +	int rc;
->>  
->>  	switch (dev->device) {
->>  	/* PCI IDs taken from drivers/net/e100.c */
->> @@ -1476,16 +1476,17 @@
->>  	 * re-enable them when it's ready.
->>  	 */
->>  	pci_read_config_word(dev, PCI_COMMAND, &command);
->> -	pci_read_config_dword(dev, PCI_BASE_ADDRESS_0, &bar);
->>  
->> -	if (!(command & PCI_COMMAND_MEMORY) || !bar)
->> +	rc = pci_request_region(dev, 0, "e100_quirk");
->> +
->> +	if (!(command & PCI_COMMAND_MEMORY) || (rc < 0))
->>  		return;
+> If this patch/option doesn't exist, can anyone give me a hint as to
+> where and how it would be best to add this?  (I'm afraid I'm very
+> ignorant as to how Linux sets up its RAM mapping.)  I'm concerned
+> about x86 and x86_64.
 > 
-> Really?  So if pci_request_region() failed and !(command & PCI_COMMAND_MEMORY),
-> we leak the region?  So the next call to this function will fail?
-> 
+> PS: I'm not finicky: it's all right if a couple of megabytes at the
+> bottom of RAM are not scrubbed (I'm more interested about the top
+> gigabyte-or-so), especially if they're guaranteed to be used by the
+> kernel.
 
-I've split command and request region checks and submitted new patch:
-http://lkml.org/lkml/2007/9/19/106
-Please, take a look,
-Thanks,
-Valentine.
+As a side note to what others said, you can always use initrd/initramfs 
+to start your favourite program that wipes the memory...
 
-> 
->> -	csr = ioremap(bar, 8);
->> +	csr = pci_iomap(dev, 0, 8);
->>  	if (!csr) {
->>  		printk(KERN_WARNING "PCI: Can't map %s e100 registers\n",
->>  			pci_name(dev));
->> -		return;
->> +		goto e100_quirk_exit;
->>  	}
->>  
->>  	cmd_hi = readb(csr + 3);
->> @@ -1495,7 +1496,9 @@
->>  		writeb(1, csr + 3);
->>  	}
->>  
->> -	iounmap(csr);
->> +	pci_iounmap(dev, csr);
->> +e100_quirk_exit:
->> +	pci_release_region(dev, 0);
->>  }
->>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, quirk_e100_interrupt);
->>  
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Tomasz Chmielewski
+http://blog.wpkg.org
+
 
