@@ -1,182 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbXITXsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbXITXwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753213AbXITXsB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 19:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbXITXrz
+	id S1753837AbXITXwb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 19:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXITXwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 19:47:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38753 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751431AbXITXry (ORCPT
+	Thu, 20 Sep 2007 19:52:25 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:49168 "EHLO
+	outbound6-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750778AbXITXwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 19:47:54 -0400
-Date: Thu, 20 Sep 2007 16:46:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "James Pearson" <james-p@moving-picture.com>
-Cc: linux-kernel@vger.kernel.org, aarapov@redhat.com, hpa@zytor.com,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
-Message-Id: <20070920164632.fd440b78.akpm@linux-foundation.org>
-In-Reply-To: <E1IXziD-0003YJ-0w@moving-picture.com>
-References: <E1IXziD-0003YJ-0w@moving-picture.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Sep 2007 19:52:24 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
+Date: Thu, 20 Sep 2007 17:47:10 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: pommnitz@yahoo.com
+cc: cebbert@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: Problems with 2.6.23-rc6 on AMD Geode LX800
+Message-ID: <20070920234710.GA6504@cosmic.amd.com>
+MIME-Version: 1.0
+In-Reply-To: <46F2A72E.5010709@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 20 Sep 2007 23:46:52.0053 (UTC)
+ FILETIME=[84AD1450:01C7FBE0]
+X-WSS-ID: 6AEDD9F457W456470-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 14:35:29 +0100
-"James Pearson" <james-p@moving-picture.com> wrote:
+Chuck Ebbert wrote:
 
-> 
-> From: James Pearson <james-p@moving-picture.com>
-> 
-> /proc/PID/environ currently truncates at 4096 characters, patch based on 
-> the /proc/PID/mem code.
+> On 09/20/2007 08:32 AM, Joerg Pommnitz wrote:
+>> Hello all,
+>> yesterday I tried to boot a kernel built from the current wireless-dev git
+>> tree (ath5k branch)
+>> on a MSEP800/A board (see http://www.milesie.co.uk/pdf/MSEP800.pdf). The
+>> board
+>> contains an AMD Geode LX800 CPU.
+>> The wireless-dev tree is up to date with Linus kernel 2.6.23-rc6.
+>> 
+>> Attached is a photographic screen shot. The EIP value of c0378dd6 seems to
+>> correspond with the
+>> reserve_bootmem_core from System.map:
+>> 
+>> c0378d51 t free_bootmem_core
+>> c0378da7 T free_bootmem
+>> c0378db2 T free_bootmem_node
+>> c0378dba t reserve_bootmem_core
+>> c0378e14 T reserve_bootmem
+>> c0378e1f T reserve_bootmem_node
+>>
 
-patch needs to be carefully reviewed from the security POV (ie: permissions)
-as well as for correctness.  Does anyone have time to do that?
+> Can you post disassembled code for that function?
 
-> Signed-off-by: James Pearson <james-p@moving-picture.com>
-> 
-> --- ./fs/proc/base.c.dist	2007-09-19 12:29:46.244929651 +0100
-> +++ ./fs/proc/base.c	2007-09-19 12:36:18.155648760 +0100
-> @@ -202,27 +202,6 @@ static int proc_root_link(struct inode *
->  	 (task->state == TASK_STOPPED || task->state == TASK_TRACED) && \
->  	 security_ptrace(current,task) == 0))
->  
-> -static int proc_pid_environ(struct task_struct *task, char * buffer)
-> -{
-> -	int res = 0;
-> -	struct mm_struct *mm = get_task_mm(task);
-> -	if (mm) {
-> -		unsigned int len;
-> -
-> -		res = -ESRCH;
-> -		if (!ptrace_may_attach(task))
-> -			goto out;
-> -
-> -		len  = mm->env_end - mm->env_start;
-> -		if (len > PAGE_SIZE)
-> -			len = PAGE_SIZE;
-> -		res = access_process_vm(task, mm->env_start, buffer, len, 0);
-> -out:
-> -		mmput(mm);
-> -	}
-> -	return res;
-> -}
-> -
->  static int proc_pid_cmdline(struct task_struct *task, char * buffer)
->  {
->  	int res = 0;
-> @@ -740,6 +719,79 @@ static const struct file_operations proc
->  	.open		= mem_open,
->  };
->  
-> +static ssize_t environ_read(struct file *file, char __user *buf,
-> +			size_t count, loff_t *ppos)
-> +{
-> +	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
-> +	char *page;
-> +	unsigned long src = *ppos;
-> +	int ret = -ESRCH;
-> +	struct mm_struct *mm;
-> +	size_t max_len;
-> +
-> +	if (!task)
-> +		goto out_no_task;
-> +
-> +	if (!ptrace_may_attach(task))
-> +		goto out;
-> +
-> +	ret = -ENOMEM;
-> +	page = (char *)__get_free_page(GFP_TEMPORARY);
+Its hitting a bug - specifically (from bootmem.c:125):
+BUG_ON(PFN_DOWN(addr) >= bdata->node_low_pfn);
 
-Now I wonder what inspired you to reach for GFP_TEMPORARY?  Perhaps the
-fact that it is crappily named and undocumented.
+I hit this problem on a db800 last week.  It went away with a newer
+version of the BIOS, which doesn't help Joerg any, since its a different
+board (though I think it is the same BIOS vendor).  Other BIOSes work
+just fine with the same kernel image (including known troublemakers like
+LinuxBIOS).  I believe that 2.6.22 was good, so some change must
+have come along in 2.6.23-pre to cause the pain.  Or, it may have exposed
+old breakage in the BIOS that was later repaired.
 
-This should be GFP_KERNEL - the page you're allocating here is not
-reclaimable by the VM.
+I'll do the math to figure out whats happening - and I'll check the release
+notes to see what changed in the BIOS between the failing and working
+version.  If anybody familiar with arch/i386 can think of something
+new in the kernel that may have precipitated this, do let me know. :)
 
-> +	if (!page)
-> +		goto out;
-> +
-> +	ret = 0;
-> +
-> +	mm = get_task_mm(task);
-> +	if (!mm)
-> +		goto out_free;
-> +
-> +	max_len = (count > PAGE_SIZE) ? PAGE_SIZE : count;
-> +
-> +	while (count > 0) {
-> +		int this_len, retval;
-> +
-> +		this_len = mm->env_end - (mm->env_start + src);
-> +
-> +		if (this_len <= 0)
-> +			break;
-> +
-> +		if (this_len > max_len)
-> +			this_len = max_len;
-> +
-> +		retval = access_process_vm(task, (mm->env_start + src),
-> +			page, this_len, 0);
-> +
-> +		if (retval <= 0) {
-> +			ret = retval;
-> +			break;
-> +		}
-> +
-> +		if (copy_to_user(buf, page, retval)) {
-> +			ret = -EFAULT;
-> +			break;
-> +		}
-> +
-> +		ret += retval;
-> +		src += retval;
-> +		buf += retval;
-> +		count -= retval;
-> +	}
-
-Now that's a funky loop.  Someone please convince me that there is no way
-in which `count - retval' can ever go negative (ie: huge positive).
+Jordan
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
 
 
-> +	*ppos = src;
-> +
-> +	mmput(mm);
-> +out_free:
-> +	free_page((unsigned long) page);
-> +out:
-> +	put_task_struct(task);
-> +out_no_task:
-> +	return ret;
-> +}
-> +
-> +static const struct file_operations proc_environ_operations = {
-> +	.read		= environ_read,
-> +};
-> +
->  static ssize_t oom_adjust_read(struct file *file, char __user *buf,
->  				size_t count, loff_t *ppos)
->  {
-> @@ -2092,7 +2144,7 @@ static const struct pid_entry tgid_base_
->  	DIR("task",       S_IRUGO|S_IXUGO, task),
->  	DIR("fd",         S_IRUSR|S_IXUSR, fd),
->  	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
-> -	INF("environ",    S_IRUSR, pid_environ),
-> +	REG("environ",    S_IRUSR, environ),
->  	INF("auxv",       S_IRUSR, pid_auxv),
->  	INF("status",     S_IRUGO, pid_status),
->  	INF("limits",	  S_IRUSR, pid_limits),
-> @@ -2421,7 +2473,7 @@ out_no_task:
->  static const struct pid_entry tid_base_stuff[] = {
->  	DIR("fd",        S_IRUSR|S_IXUSR, fd),
->  	DIR("fdinfo",    S_IRUSR|S_IXUSR, fdinfo),
-> -	INF("environ",   S_IRUSR, pid_environ),
-> +	REG("environ",   S_IRUSR, environ),
->  	INF("auxv",      S_IRUSR, pid_auxv),
->  	INF("status",    S_IRUGO, pid_status),
->  	INF("limits",	 S_IRUSR, pid_limits),
