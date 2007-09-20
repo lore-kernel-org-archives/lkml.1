@@ -1,128 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759074AbXITRVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbXITRVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759074AbXITRVZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 13:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757987AbXITRTB
+	id S1759384AbXITRVp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 13:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbXITRTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 13:19:01 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47533 "EHLO mx2.suse.de"
+	Thu, 20 Sep 2007 13:19:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41327 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755488AbXITRSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 13:18:48 -0400
-Message-Id: <20070920171847.117044000@stravinsky.suse.de>
-References: <20070920171845.774383000@stravinsky.suse.de>
-User-Agent: quilt/0.46-47.1
-Date: Thu, 20 Sep 2007 19:18:51 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: kexec@lists.infradead.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linuxsh-dev@lists.sourceforge.net, Paul Mundt <lethal@linux-sh.org>
-Subject: [patch 6/7] Use extended crashkernel command line on sh
-Content-Disposition: inline; filename=crashkernel-sh
+	id S1758392AbXITRTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 13:19:20 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <956034.72880.qm@web36610.mail.mud.yahoo.com>
+References: <956034.72880.qm@web36610.mail.mud.yahoo.com>
+To: casey@schaufler-ca.com
+Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 2/3] CRED: Split the task security data and move part of it into struct cred
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Thu, 20 Sep 2007 18:17:12 +0100
+Message-ID: <14969.1190308632@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the crashkernel parsing from arch/sh/kernel/machine_kexec.c
-and calls the generic function, introduced in the generic patch, in
-setup_bootmem_allocator().
+Casey Schaufler <casey@schaufler-ca.com> wrote:
 
-This is necessary because the amount of System RAM must be known in this
-function now because of the new syntax.
+> Could you use "object context" instead of "victimisation context"?
+> It would be in better keeping with traditional security jargon.
 
-NOTE: Due to the lack of a SH processor, this patch is untested (and
-uncompiled). Because the code in that area is quite similar as i386/x86_64
-(contrary to PPC and IA64), it should compile and work. However, if someone of
-the SH people could test for me and provide feedback, that would be very nice.
+If you wish.  Personally, I find it clearer than object or subject.
 
+> > The separation is necessary for a few reasons:
+> > 
+> >  (1) The task victimisation context must *not* be changed by a temporary
+> >      override of the action and creation contexts for purposes such as
+> >      cachefiles.
+> 
+> That would be for the LSM to decide, not the file system.
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Filesystem?  CacheFiles is acting on behalf of a filesystem and must override
+the context that that filesystem was using, so that it can access a different
+filesystem.
 
----
- arch/sh/kernel/machine_kexec.c |   21 ---------------------
- arch/sh/kernel/setup.c         |   38 +++++++++++++++++++++++++++++++++-----
- 2 files changed, 33 insertions(+), 26 deletions(-)
+> While I concede that it is unlikely that you are going to want to use the
+> same security attributes for your "object" and your "subject"
 
---- a/arch/sh/kernel/machine_kexec.c
-+++ b/arch/sh/kernel/machine_kexec.c
-@@ -104,24 +104,3 @@ NORET_TYPE void machine_kexec(struct kim
- 	(*rnk)(page_list, reboot_code_buffer, image->start, vbr_reg);
- }
- 
--/* crashkernel=size@addr specifies the location to reserve for
-- * a crash kernel.  By reserving this memory we guarantee
-- * that linux never sets it up as a DMA target.
-- * Useful for holding code to do something appropriate
-- * after a kernel panic.
-- */
--static int __init parse_crashkernel(char *arg)
--{
--	unsigned long size, base;
--	size = memparse(arg, &arg);
--	if (*arg == '@') {
--		base = memparse(arg+1, &arg);
--		/* FIXME: Do I want a sanity check
--		 * to validate the memory range?
--		 */
--		crashk_res.start = base;
--		crashk_res.end   = base + size - 1;
--	}
--	return 0;
--}
--early_param("crashkernel", parse_crashkernel);
---- a/arch/sh/kernel/setup.c
-+++ b/arch/sh/kernel/setup.c
-@@ -121,6 +121,37 @@ static void __init register_bootmem_low_
- 	free_bootmem(PFN_PHYS(curr_pfn), PFN_PHYS(pages));
- }
- 
-+#ifdef CONFIG_KEXEC
-+static void __init reserve_crashkernel(void)
-+{
-+	unsigned long long 	free_mem;
-+	unsigned long long 	crash_size, crash_base;
-+	int			ret;
-+
-+	free_mem = (max_low_pfn - min_low_pfn) << PAGE_SHIFT;
-+
-+	ret = parse_crashkernel(boot_command_line, free_mem,
-+			&crash_size, &crash_base);
-+	if (ret == 0 && crash_size) {
-+		if (crash_base > 0) {
-+			printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+					"for crashkernel (System RAM: %ldMB)\n",
-+					(unsigned long)(crash_size >> 20),
-+					(unsigned long)(crash_base >> 20),
-+					(unsigned long)(free_mem >> 20));
-+			crashk_res.start = crash_base;
-+			crashk_res.end   = crash_base + crash_size - 1;
-+			reserve_bootmem(crash_base, crash_size);
-+		} else
-+			printk(KERN_INFO "crashkernel reservation failed - "
-+					"you have to specify a base address\n");
-+	}
-+}
-+#else
-+static inline void __init reserve_crashkernel(void)
-+{}
-+#endif
-+
- void __init setup_bootmem_allocator(unsigned long free_pfn)
- {
- 	unsigned long bootmap_size;
-@@ -182,11 +213,8 @@ void __init setup_bootmem_allocator(unsi
- 		}
- 	}
- #endif
--#ifdef CONFIG_KEXEC
--	if (crashk_res.start != crashk_res.end)
--		reserve_bootmem(crashk_res.start,
--			crashk_res.end - crashk_res.start + 1);
--#endif
-+
-+	reserve_crashkernel();
- }
- 
- #ifndef CONFIG_NEED_MULTIPLE_NODES
+99.99% probable that I will want a different subjective context for talking to
+the cache to the objective context of the task I'm doing work on behalf of.
 
--- 
+> I also suggest that it is probable that the "object" attributes will want to
+> change in the case of an filesystem daemon as well, 
+
+What daemon are you referring to?
+
+You've misunderstood, I think.  Consider readpages.  CacheFiles really wants to
+run in the process context of whoever called readpages.  The main reason for
+this is one of performance: readpages() is called an awful lot, and we don't
+want to be changing process context at least twice per call if we can avoid it.
+
+> and that the filesystem code by itself can't know what's correct.
+
+Indeed.  I have mentioned that I intend to create a patch to provide an LSM
+hook by which a kernel service can ask the LSM module for a new cred struct,
+appropriate to that service.  That way, all details of SIDs, secids,
+transformations, etc are hidden inside the LSM module.
+
+> Assuming that the LSM goes along with the notion you could do that
+> with a task struct, too.
+
+Sigh.  Only by saving and restoring the complete credential context from/to the
+task struct.
+
+> So it sounds like what you'd be happiest with would be a separate task
+> struct hand crafted to he the right "object" and "subject" attributes.
+
+Exchanging task structs is highly impractical, I think.
+
+> Couldn't you set up a task to do the overridden operations?
+
+Performance.
+
+> Yes, but the LSM writer now has to maintain two full security blobs
+> even if the system doesn't want cachefs or nfs.
+
+This is actually the simpler and cleaner solution.  It has been assumed,
+generally, to this point that subjective context == objective context, but we
+have two cases where we need to break that assumption.
+
+> You could have done the same thing passing the task instead of a cred.
+
+? I didn't mention passing a cred, did I?
+
+> And I'm reluctantly withdrawing my objection to exporting secid's across the
+> LSM interface
+
+Actually, I think you were right.  I shouldn't be exposing secids like that.
+There's no requirement for an LSM to have such a concept.
+
+> I don't see any way to get around the LSM being involved, even with
+> secid's.
+
+Of course the LSM must be involved, but secids aren't needed.
+
+> Only the LSM can decide what is appropriate for an override value. Maybe all
+> you need is
+> 
+>     int security_task_godlikesecid(u32 *secid)
+
+No, all I really need is something like:
+
+	struct cred *security_get_kernel_service_cred(const char *name);
+
+And maybe:
+
+	int security_create_files_as(struct cred *, struct inode *);
+
+So that I can say I want to be able to create files that look the same as that
+inode there.  The LSM can then check that the subjective context in the cred
+struct is allowed to do that.
+
+David
