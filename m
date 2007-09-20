@@ -1,44 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbXITUNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbXITUPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbXITUNN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbXITUM7
+	id S1753041AbXITUPi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXITUPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 16:12:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39993 "EHLO ogre.sisk.pl"
+	Thu, 20 Sep 2007 16:15:30 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:52939 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbXITUM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 16:12:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
-Subject: Re: what is the difference between shutdown command and writing to /sys/power/state
-Date: Thu, 20 Sep 2007 22:25:41 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <A3258B497F1C1441AD36A2E8B45FD628ACF018@scsmsx412.amr.corp.intel.com> <200709200209.11331.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD628ACF82B@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD628ACF82B@scsmsx412.amr.corp.intel.com>
+	id S1751036AbXITUP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 16:15:28 -0400
+Date: Thu, 20 Sep 2007 16:15:27 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20070920201527.GA12136@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709202225.41429.rjw@sisk.pl>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 20 September 2007 20:11, Agarwal, Lomesh wrote:
-> Can someone tell me the flow of code for these two scenarios -
-> I write disk to /sys/power/state. How does system go to hibernation? How
-> does this trigger ACPI driver functions?
-> I issue shutdown command.
-> I am using 2.6.18 kernel.
 
-It's quite old for current standards. :-)
+Fixes from Alan, PCI IDs from ATI/AMD.
 
-I'll need to get the source and look into it to be able to answer, so please
-give me some time.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-BTW, please don't top post.
+to receive the following updates:
 
-Greetings,
-Rafael
+ drivers/ata/ahci.c        |   10 ++++++----
+ drivers/ata/libata-core.c |    4 ++++
+ drivers/ata/libata-sff.c  |    5 ++++-
+ 3 files changed, 14 insertions(+), 5 deletions(-)
+
+Alan Cox (2):
+      libata: Update the blacklist with a few more devices
+      libata-sff: Fix documentation
+
+henry su (1):
+      [libata] ahci: add ATI SB800 PCI IDs
+
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index 06f212f..c168203 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -418,10 +418,12 @@ static const struct pci_device_id ahci_pci_tbl[] = {
+ 
+ 	/* ATI */
+ 	{ PCI_VDEVICE(ATI, 0x4380), board_ahci_sb600 }, /* ATI SB600 */
+-	{ PCI_VDEVICE(ATI, 0x4390), board_ahci_sb600 }, /* ATI SB700 IDE */
+-	{ PCI_VDEVICE(ATI, 0x4391), board_ahci_sb600 }, /* ATI SB700 AHCI */
+-	{ PCI_VDEVICE(ATI, 0x4392), board_ahci_sb600 }, /* ATI SB700 nraid5 */
+-	{ PCI_VDEVICE(ATI, 0x4393), board_ahci_sb600 }, /* ATI SB700 raid5 */
++	{ PCI_VDEVICE(ATI, 0x4390), board_ahci_sb600 }, /* ATI SB700/800 */
++	{ PCI_VDEVICE(ATI, 0x4391), board_ahci_sb600 }, /* ATI SB700/800 */
++	{ PCI_VDEVICE(ATI, 0x4392), board_ahci_sb600 }, /* ATI SB700/800 */
++	{ PCI_VDEVICE(ATI, 0x4393), board_ahci_sb600 }, /* ATI SB700/800 */
++	{ PCI_VDEVICE(ATI, 0x4394), board_ahci_sb600 }, /* ATI SB700/800 */
++	{ PCI_VDEVICE(ATI, 0x4395), board_ahci_sb600 }, /* ATI SB700/800 */
+ 
+ 	/* VIA */
+ 	{ PCI_VDEVICE(VIA, 0x3349), board_ahci_vt8251 }, /* VIA VT8251 */
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index c43de9a..772be09 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3778,6 +3778,9 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
+ 	{ "Maxtor 6L250S0",     "BANC1G10",     ATA_HORKAGE_NONCQ },
+ 	{ "Maxtor 6B200M0",	"BANC1BM0",	ATA_HORKAGE_NONCQ },
+ 	{ "Maxtor 6B200M0",	"BANC1B10",	ATA_HORKAGE_NONCQ },
++	{ "Maxtor 7B250S0",	"BANC1B70",	ATA_HORKAGE_NONCQ, },
++	{ "Maxtor 7B300S0",	"BANC1B70",	ATA_HORKAGE_NONCQ },
++	{ "Maxtor 7V300F0",	"VA111630",	ATA_HORKAGE_NONCQ },
+ 	{ "HITACHI HDS7250SASUN500G 0621KTAWSD", "K2AOAJ0AHITACHI",
+ 	 ATA_HORKAGE_NONCQ },
+ 	/* NCQ hard hangs device under heavier load, needs hard power cycle */
+@@ -3794,6 +3797,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
+ 	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
+ 	{ "FUJITSU MHV2080BH",	"00840028",	ATA_HORKAGE_NONCQ, },
+ 	{ "ST9160821AS",	"3.CLF",	ATA_HORKAGE_NONCQ, },
++	{ "ST3160812AS",	"3.AD",		ATA_HORKAGE_NONCQ, },
+ 	{ "SAMSUNG HD401LJ",	"ZZ100-15",	ATA_HORKAGE_NONCQ, },
+ 
+ 	/* devices which puke on READ_NATIVE_MAX */
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 1cce219..8023167 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -297,7 +297,7 @@ void ata_bmdma_start (struct ata_queued_cmd *qc)
+ 	dmactl = ioread8(ap->ioaddr.bmdma_addr + ATA_DMA_CMD);
+ 	iowrite8(dmactl | ATA_DMA_START, ap->ioaddr.bmdma_addr + ATA_DMA_CMD);
+ 
+-	/* Strictly, one may wish to issue a readb() here, to
++	/* Strictly, one may wish to issue an ioread8() here, to
+ 	 * flush the mmio write.  However, control also passes
+ 	 * to the hardware at this point, and it will interrupt
+ 	 * us when we are to resume control.  So, in effect,
+@@ -307,6 +307,9 @@ void ata_bmdma_start (struct ata_queued_cmd *qc)
+ 	 * is expected, so I think it is best to not add a readb()
+ 	 * without first all the MMIO ATA cards/mobos.
+ 	 * Or maybe I'm just being paranoid.
++	 *
++	 * FIXME: The posting of this write means I/O starts are
++	 * unneccessarily delayed for MMIO
+ 	 */
+ }
+ 
