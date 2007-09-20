@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbXITJCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbXITJLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbXITJCm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 05:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbXITJCf
+	id S1756069AbXITJLI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 05:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbXITJKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 05:02:35 -0400
-Received: from sacred.ru ([62.205.161.221]:52224 "EHLO sacred.ru"
+	Thu, 20 Sep 2007 05:10:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49243 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751097AbXITJCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 05:02:35 -0400
-Message-ID: <46F23681.2030400@openvz.org>
-Date: Thu, 20 Sep 2007 12:59:45 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: 2.6.23-rc6-mm1 - make access to tasks nsproxy ligther (fix)
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F2324E.9020707@fr.ibm.com>
-In-Reply-To: <46F2324E.9020707@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 20 Sep 2007 13:02:10 +0400 (MSD)
+	id S1751660AbXITJKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 05:10:50 -0400
+Date: Thu, 20 Sep 2007 05:10:35 -0400
+Message-Id: <200709200910.l8K9AZId001323@dantu.rdu.redhat.com>
+From: Jeff Layton <jlayton@redhat.com>
+Subject: [PATCH 0/7] fix setuid/setgid clearing in networked filesystems (rev 7)
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
+       ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
+       unionfs@filesystems.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks sane :)
+This patchset is the 7th revision for fixing the clearing of setuid and
+setgid bits in networked filesystems. It should apply cleanly to
+2.6.23-rc6-mm1.
 
-[snip]
+The first four patches in the set are cleanup patches to make sure that
+those filesystems don't trip the new BUG() call in notify_change. The
+fifth patch (the main one) fixes notify_change to not clear the
+ATTR_KILL_S*ID bits when interpreting them into a mode change. The final
+two patches change NFS and CIFS to take advantage of the new scheme.
 
-> Index: 2.6.23-rc6-mm1/kernel/exit.c
-> ===================================================================
-> --- 2.6.23-rc6-mm1.orig/kernel/exit.c
-> +++ 2.6.23-rc6-mm1/kernel/exit.c
-> @@ -408,6 +408,8 @@ void daemonize(const char *name, ...)
->  	current->fs = fs;
->  	atomic_inc(&fs->count);
->  
-> +	if (current->nsproxy != init_task.nsproxy)
-> +		get_nsproxy(init_task.nsproxy);
->  	switch_task_namespaces(current, init_task.nsproxy);
+This is basically the same patchset as version 6. The main differences
+are changes to ecryptfs and unionfs patches to accomodate changes made
+in recent -mm patches. Also, when I sent out the 6th revision I forgot
+to mention that the knfsd patch had been changed to more closely reflect
+the existing behavior when receiving a setattr call that changes the
+mode and uid/gid.
 
-shouldn't we make the switch under this if() as well?
+This patchset is being submitted for inclusion into -mm.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
