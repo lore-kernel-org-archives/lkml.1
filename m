@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXITFoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbXITFpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbXITFoY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 01:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbXITFoR
+	id S1754950AbXITFpQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 01:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbXITFpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 01:44:17 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:56846 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbXITFoR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 01:44:17 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 19 Sep 2007 22:43:21 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nagendra Tomar <tomer_iisc@yahoo.com>
-cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT
- events get missed for TCP sockets
-In-Reply-To: <331107.71046.qm@web53704.mail.re2.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0709191701050.2989@alien.or.mcafeemobile.com>
-References: <331107.71046.qm@web53704.mail.re2.yahoo.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 20 Sep 2007 01:45:04 -0400
+Received: from sslsrv.de ([62.75.159.123]:45535 "EHLO sslsrv.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752885AbXITFpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 01:45:02 -0400
+Message-ID: <39168.193.171.152.61.1190267089.squirrel@webmail.marek.priv.at>
+In-Reply-To: <20070919180544.GA11860@c2.user-mode-linux.org>
+References: <200709181714.34035@x5> <200709191443.24158@x5>
+    <20070919085032.dd5c1732.randy.dunlap@oracle.com>
+    <200709191817.51921@x5>
+    <20070919180544.GA11860@c2.user-mode-linux.org>
+Date: Thu, 20 Sep 2007 07:44:49 +0200 (CEST)
+Subject: Re: UML dead with current -git?
+From: "Ph. Marek" <philipp@marek.priv.at>
+To: "Jeff Dike" <jdike@addtoit.com>
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Sam Ravnborg" <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6-4.fc1.1.legacy
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007, Nagendra Tomar wrote:
+Hello Jeff,
 
-> Definitely not ! 
-> 
-> The point is that the "tcp write space available" 
-> wakeup does not get called if SOCK_NOSPACE bit is not set. This was
-> fine when the wakeup was merely a wakeup (since SOCK_NOSPACE bit 
-> indicated that someone really cared abt the wakeup). Now after the
-> introduction of callback'ed wakeups, we might have some work to
-> do inside the callback even if there is nobody interested in the wakeup
-> at that point of time. 
-> 
-> In this particular case the ep_poll_callback is not getting called and
-> hence the socket fd is not getting added to the ready list.
-
-I know, I saw the patch. I was just commenting the point where DaveM was 
-heading to ;)
-This things needs to be looked at a little bit more deeply.
+> On Wed, Sep 19, 2007 at 06:17:51PM +0200, Philipp Marek wrote:
+>> How about that?
+>> 	readlink include/asm
+>> returns
+>> 	asm-um
+>> in my case, so I only have to strip the "asm-" part ...
+>
+> It doesn't handle O= directories...
+Sorry, I don't understand you. What are "0=" directories? Do you mean that
+if there's no include/ directory?
 
 
-- Davide
+Well, I guess that there are non-obvious corner cases in the include/asm
+symlink usage, that amateurs simply do not know ...
 
 
+Regards,
+
+Phil
+
+
+-- 
+Versioning your /etc, /home or even your whole installation?
+             Try fsvs (fsvs.tigris.org)!
