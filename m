@@ -1,174 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbXITIq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759577AbXITIrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758006AbXITIq1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 04:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbXITIqT
+	id S1759577AbXITIrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 04:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbXITIrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 04:46:19 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:61487 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750795AbXITIqS (ORCPT
+	Thu, 20 Sep 2007 04:47:11 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39035 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753461AbXITIrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 04:46:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=HrwUJPqv+zv4nmmvyxQORcOXRT9QCdNZHkMaIZWHrWnHixz2Qeb1rPVF9CESrY1eSXMI/9dEuUcYDOQIFQvRSFVfYBT9NuCTp/0s54EKOFfLXYtldAitmEEqUyVeK5k/0rpXuQmiKN/p9ZdON3m5auoMM+UgRkJAAA/FdUQGbVI=
-Date: Thu, 20 Sep 2007 17:46:10 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: ebiederm@xmission.com, cornelia.huck@de.ibm.com, greg@kroah.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: testing module and script for new sysfs interface
-Message-ID: <20070920084610.GA10660@htj.dyndns.org>
+	Thu, 20 Sep 2007 04:47:09 -0400
+Message-ID: <46F234DB.7030403@bull.net>
+Date: Thu, 20 Sep 2007 10:52:43 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="YiEDa0DAkWCtVeE4"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local>
+In-Reply-To: <20070920072821.GA2065@ff.dom.local>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 20/09/2007 10:52:58,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 20/09/2007 10:53:00,
+	Serialize complete at 20/09/2007 10:53:00
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jarek Poplawski wrote:
+> On Thu, Sep 20, 2007 at 08:24:58AM +0200, Nadia Derbey wrote:
+> 
+>>Jarek Poplawski wrote:
+>>
+>>>On 18-09-2007 16:55, Nadia Derbey wrote:
+>>>...
+>>>
+>>>
+>>>>Well, reviewing the code I found another place where the 
+>>>>rcu_read_unlock() was missing.
+>>>>I'm so sorry for the inconvenience. It's true that I should have tested 
+>>>>with CONFIG_PREEMPT=y :-(
+>>>>Now, the ltp tests pass even with this option set...
+>>>>
+>>>>In attachment you'll find a patch thhat
+>>>>1) adds the missing rcu_read_unlock()
+>>>>2) replaces Andrew's fix with a new one: the rcu_read_lock() is now 
+>>>>taken in ipc_lock() / ipc_lock_by_ptr() and released in ipc_unlock(), 
+>>>>exactly as it was done in the ref code.
+>>>
+>>>
+>>>BTW, probably I miss something, but I wonder, how this RCU is working
+>>>here. E.g. in msg.c do_msgsnd() there is:
+>>>
+>>>msq = msg_lock_check(ns, msqid);
+>>>...
+>>>
+>>>msg_unlock(msq);
+>>>schedule();
+>>>
+>>>ipc_lock_by_ptr(&msq->q_perm);
+>>>
+>>>Since msq_lock_check() gets msq with ipc_lock_check() under
+>>>rcu_read_lock(), and then goes msg_unlock(msq) (i.e. ipc_unlock())
+>>>with rcu_read_unlock(), is it valid to use this with
+>>>ipc_lock_by_ptr() yet?
+>>
+>>Before Calling msg_unlock() they call ipc_rcu_getref() that increments a 
+>>refcount in the rcu header for the msg structure. This guarantees that 
+>>the the structure won't be freed before they relock it. Once the 
+>>structure is relocked by ipc_lock_by_ptr(), they do the symmetric 
+>>operation i.e. ipc_rcu_putref().
+> 
+> 
+> Yes, I've found this later too - sorry for bothering. I was mislead
+> by the code like this:
+> 
+> struct kern_ipc_perm *ipc_lock(struct ipc_ids *ids, int id)
+> {
+>         struct kern_ipc_perm *out;
+>         int lid = ipcid_to_idx(id);
+> 
+>         rcu_read_lock();
+>         out = idr_find(&ids->ipcs_idr, lid);
+>         if (out == NULL) {
+>                 rcu_read_unlock();
+>                 return ERR_PTR(-EINVAL);
+>         }
+> 
+> which seems to suggest "out" is an RCU protected pointer, so, I
+> thought these refcounts were for something else. But, after looking
+> at how it's used it turns out to be ~90% wrong: probably 9 out of 10
+> places use refcouning around this,
 
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Actually, ipc_lock() is called most of the time without the 
+ipc_ids.mutex held and without refcounting (maybe you didn't look for 
+the msg_lock() sem_lock() and shm_lock() too).
+So I think disabling preemption is needed, isn't it?
 
-Hello,
+> so, these rcu_read_locks() don't
+> work here at all. So, probably I miss something again, but IMHO,
+> these rcu_read_locks/unlocks could be removed here or in
+> ipc_lock_by_ptr() and it should be enough to use them directly, where
+> really needed, e.g., in msg.c do_msgrcv().
+> 
 
-The tarball attached to this mail contains module source and scripts
-to test new sysfs interface.
+I have to check for the ipc_lock_by_ptr(): may be you're right!
 
-* sysfs-interpreter : kernel module to call sysfs interface functions
-  as directed via debugfs file /sys/kernel/debug/sysfs-interpreter.
-  It keeps internal list which maps path name to sysfs_dirent pointer.
+Regards,
+Nadia
 
-  Note that userland is perfectly capable of causing oops using this
-  module.  Other than usage of pathnaem instead of pointer, most
-  functionalities are exported verbatim.
-
-  All test nodes are created under /sys/test which is created on
-  module load and removed on unload.
-
-* si-runcmd.pl : perl script to execute sysfs commands using
-  sysfs-interpreter.  It reads from stdin line-by-line and executes
-  them.  For example "echo remove test-dir | si-rumcmd.pl" removes
-  /sys/test/test-dir.
-
-* si files : these files are to be fed to si-runcmd.pl and test
-  certain features of sysfs.  For batch-error.si to work, you need to
-  modify sysfs_new_dirent() such that it fails allocation if mode
-  contains invalid bits.
-
-Thanks.
-
--- 
-tejun
-
---YiEDa0DAkWCtVeE4
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="sysfs-interpreter.tar.bz2"
-Content-Transfer-Encoding: base64
-
-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
-
---YiEDa0DAkWCtVeE4--
