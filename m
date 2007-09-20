@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbXITJoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbXITJ6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbXITJoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 05:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXITJoK
+	id S1754137AbXITJ6d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 05:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXITJ60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 05:44:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:52870 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbXITJoI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 05:44:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BU4JMI1obl2IRdNJDbF/j8Xw1vf+lQ+y5SjJWoowqVnXmDgVNusITKJaZzu7SoRLvA8YuOXj8COPsv0D1M0HB2WEBWZQJ4I1ECSn2uniGujykQjTTxgSkx13i6pYPWEOiq6GigxSTaQiUMtcF0CguQSI9VsdYEpQz7GTH/3MisA=
-Message-ID: <46F240DF.7050303@gmail.com>
-Date: Thu, 20 Sep 2007 18:43:59 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: ebiederm@xmission.com, greg@kroah.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH 4/4] sysfs: make suicidal nodes just do it directly
-References: <11902731752407-git-send-email-htejun@gmail.com>	<11902731751771-git-send-email-htejun@gmail.com> <20070920112440.6216644b@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070920112440.6216644b@gondolin.boeblingen.de.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Sep 2007 05:58:26 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:47196 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750758AbXITJ60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 05:58:26 -0400
+Date: Thu, 20 Sep 2007 12:00:31 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: "Ahmed S\. Darwish" <darwish.07@gmail.com>
+Cc: Low Yucheng <ylow@andrew.cmu.edu>, Oleg Verych <olecom@flower.upol.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PROBLEM: System Freeze on Particular workload with kernel 2.6.22.6
+Message-ID: <20070920100031.GA2796@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070919192546.GA3153@Ahmed>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Thu, 20 Sep 2007 16:26:15 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
+On 19-09-2007 21:25, Ahmed S. Darwish wrote:
+> Hi Low,
 > 
->> Sysfs now allows direct suicide.  Make suicidial sysfs nodes to use
->> it and remove now unncessary callback mechanism.
->>
->> Signed-off-by: Tejun Heo <htejun@gmail.com>
->> ---
->>  drivers/base/core.c         |   33 ----------------------
->>  drivers/s390/cio/ccwgroup.c |   25 +++-------------
->>  drivers/scsi/scsi_sysfs.c   |   13 +--------
->>  fs/sysfs/file.c             |   63 -------------------------------------------
->>  include/linux/device.h      |    6 ----
->>  include/linux/sysfs.h       |    9 ------
->>  6 files changed, 6 insertions(+), 143 deletions(-)
->>
+> On Wed, Sep 19, 2007 at 12:16:39PM -0400, Low Yucheng wrote:
+>> There are no additional console messages.
+>> Not sure what this is: * no relevant Cc (memory management added)
 > 
-> Just browsing through this (I'll review and do some tests later), but
-> you missed drivers/s390/cio/device.c::ccw_device_remove_disconnected().
-> 
-> Following (not event compile tested) patch (which is basically a revert
-> of 59a8a6e227cf0bc42e5be741ebfea97c222ab9ef) should take care of it.
-> 
-> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> Relevant CCs means CCing maintainers or subsystem mailing lists related to your
+> bug report. i.e, if it's a networking bug, you need to CC the linux kernel
+> networking mailing list. If it's a kobject bug, you need to CC its maintainer
+> (Greg) and so on.
 
-Thanks for spotting this.  After converting ccwgroup, I thought that was
-it for s390.
+So, which one do you recommend here?
 
--- 
-tejun
+Regards,
+Jarek P.
+
+PS#1: I don't think we should require from users so much expertise
+in bug reporting: after a few questions cc-ing should be no problem
+here.
+
+PS#2: Low Yucheng: maybe it's something else, but it seems your swap
+could be bigger for this amount of memory. (You could try to monitor
+this e.g. with "top" running in another console window.)
