@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbXITVS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbXITVWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbXITVS4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 17:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbXITVSs
+	id S1752934AbXITVWq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 17:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbXITVWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 17:18:48 -0400
-Received: from hpsmtp-eml16.kpnxchange.com ([213.75.38.116]:15701 "EHLO
-	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751937AbXITVSr (ORCPT
+	Thu, 20 Sep 2007 17:22:38 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:14969 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750864AbXITVWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 17:18:47 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba Satellite A40
-Date: Thu, 20 Sep 2007 23:18:43 +0200
-User-Agent: KMail/1.9.7
-Cc: Alexey Starikovskiy <aystarik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Maciek Rutecki <maciej.rutecki@gmail.com>
-References: <200709192014.08443.elendil@planet.nl> <200709202207.13101.rjw@sisk.pl> <200709202232.33309.elendil@planet.nl>
-In-Reply-To: <200709202232.33309.elendil@planet.nl>
+	Thu, 20 Sep 2007 17:22:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QOyX/idL1Cu6IX3tNPQT5drJXRVrpEISPWWhlTm9Wpc54gsVS2MilFmPp8fottwrGzM2fDWdrCibo40wytvmR37gj4kPxr08igy2SfMY8F5PUb6Fk5v9obvM8rgv/xZTzw5m/XsjYHsGvn07BG8Z2ZIFKYoujQwyVxUczXVtGPc=
+Message-ID: <6934efce0709201422r252b5fbbiaa1c7afdf938c7c6@mail.gmail.com>
+Date: Thu, 20 Sep 2007 14:22:37 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Rob Landley" <rob@landley.net>
+Subject: Re: [Announce] Linux-tiny project revival
+Cc: "Alexey Dobriyan" <adobriyan@gmail.com>, linux-tiny@selenic.com,
+       "Tim Bird" <tim.bird@am.sony.com>,
+       "linux kernel" <linux-kernel@vger.kernel.org>,
+       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
+       "Michael Opdenacker" <michael@free-electrons.com>
+In-Reply-To: <200709201702.08126.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709202318.44676.elendil@planet.nl>
-X-OriginalArrivalTime: 20 Sep 2007 21:18:47.0473 (UTC) FILETIME=[D50DC210:01C7FBCB]
+References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net>
+	 <20070920195844.GA1805@martell.zuzino.mipt.ru>
+	 <200709201702.08126.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 September 2007, Frans Pop wrote:
-> On Thursday 20 September 2007, Rafael J. Wysocki wrote:
-> > On Thursday, 20 September 2007 20:33, Alexey Starikovskiy wrote:
-> > > Frans Pop wrote:
-> > > > Maybe S0 should be taken outside the #ifdef and the loop as that
-> > > > state is also basically always there?
-> > >
-> > > Don't think it is worth the trouble. We already have this loop almost
-> > > completely unrolled, let's not make it complete mess...
-> >
-> > Well, you could use "(supports S0" instead of just "(supports". ;-)
->
-> After thinking about this a bit more, I think this does make sense for
-> three (admittedly minor) reasons:
-> - consistency between messages with and without CONFIG_SUSPEND
-> - consistency with /proc/acpi/sleep
-> - avoiding unnecessary change from previous versions.
+> > I think that this idea is not worth it.
 
-One additional reason...
+Don't use the config option then....
 
-With current code, sleep_states(0) will not be set if compiled without 
-CONFIG_SUSPEND, which means that S0 will also disappear from
-/proc/acpi/sleep. With pre-2.6.23 code it would be listed there.
+> My problem is that switching off printk is the single biggest bloat cutter in
+> the kernel, yet it makes the resulting system very hard to support.  It
+> combines a big upside with a big downside, and I'd like something in between.
 
-I think that is even a more relevant change than the display issue and could 
-possibly even be considered a user-space interface regression.
-My proposed patch fixes that too.
+It's not such a big downside IMHO.  You can support a kernel without
+printk.  Need to debug the kernel without printk?  Use a JTAG
+debugger...
 
-Note that the patch currently does not call acpi_get_sleep_type_data for S0, 
-but (partially from Rafael's comment) I was assuming that for S0 that does 
-not really matter. If it does, then the patch could easily be adjusted to 
-include that.
+If you have a system that actually configures out printk's, chances
+are you don't have storage and output mechanisms to do much with the
+messages anyway.  Think embedded _products_ here.  Sure the
+development boards have serial, ethernet, and all that jazz but tens
+of millions of ARM based gadgets don't.
