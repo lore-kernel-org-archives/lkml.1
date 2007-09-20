@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbXITQHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbXITQJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757299AbXITQHG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 12:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756317AbXITQG4
+	id S1757526AbXITQJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 12:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbXITQJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 12:06:56 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:34062 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755740AbXITQG4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 12:06:56 -0400
-Message-ID: <46F29A9A.4070806@davidnewall.com>
-Date: Fri, 21 Sep 2007 01:36:50 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Philipp Marek <philipp@marek.priv.at>
-CC: 7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Bill Davidsen <davidsen@tmr.com>, majkls <majkls@prepere.com>,
-       bunk@fs.tum.de, linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-References: <952DN-83o-31@gated-at.bofh.it> <954cl-29C-3@gated-at.bofh.it>    <95ctn-74b-15@gated-at.bofh.it> <95cMH-7um-19@gated-at.bofh.it>    <95gdA-4OZ-7@gated-at.bofh.it> <E1IYJyC-0000iq-TR@be1.lrz> <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>
-In-Reply-To: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 20 Sep 2007 12:09:11 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:15209 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbXITQJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 12:09:10 -0400
+X-IronPort-AV: E=Sophos;i="4.20,279,1186383600"; 
+   d="scan'208";a="106097751"
+Subject: Re: [PATCH 3/3] CRED: Move the effective capabilities into the
+	cred struct
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: casey@schaufler-ca.com
+Cc: Andrew Morgan <morgan@kernel.org>, David Howells <dhowells@redhat.com>,
+       viro@ftp.linux.org.uk, hch@infradead.org, sds@tycho.nsa.gov,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <176624.5520.qm@web36603.mail.mud.yahoo.com>
+References: <176624.5520.qm@web36603.mail.mud.yahoo.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Thu, 20 Sep 2007 12:09:06 -0400
+Message-Id: <1190304546.6763.86.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 20 Sep 2007 16:09:07.0892 (UTC) FILETIME=[92C2AF40:01C7FBA0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philipp Marek wrote:
-> - User starts a small wrapper,
-> - that opens "/",
-> - chroot()s into a directory and starts fsvs.
-> - fsvs gets its libraries loaded
-> - and chroot()s back to the original system.
+On Thu, 2007-09-20 at 08:36 -0700, Casey Schaufler wrote:
 
-Isn't that what pivot_root was meant for?
+> Ok, what can't be copied, and why can't it be copied?
+
+In practice, no security information can be copied because the checks
+are all made on the "current" pointer. There is no mechanism other than
+'current' for passing security information around.
+
+Trond
