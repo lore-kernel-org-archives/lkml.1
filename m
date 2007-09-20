@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbXITHKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbXITHKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbXITHKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbXITHFg
+	id S1759605AbXITHKw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756560AbXITHFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:05:36 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:65209 "EHLO
+	Thu, 20 Sep 2007 03:05:37 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:64799 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755686AbXITHFb (ORCPT
+	with ESMTP id S1756133AbXITHFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:05:31 -0400
+	Thu, 20 Sep 2007 03:05:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=EO32ZYfI3LfR6PpLa8F0iWTjRYWoMwIWEGE7vJYeEcYivIK6s4krwCifHHEeMQGh9E1CPX07tbk3hz/L5r+f5iapcK7p827DPdcCF+ih+Lch13ug/CCZ/m+OBHKvF+AQvxg5legSQeajfMsQbRers9rtgv+hAyleuKU32jJtxs4=
+        b=a7y8R0AP4FdW9S15eJEy0gj/5lbRvy8k9wQN/QCmMEAWJaatWtBeMOxvk0162+dU21NSX7rRLOdHIDabK8SQs6bTwAQiwYXP8m0wmbq1dLsKU/yiZrgNC4MKWvf+z8RvCctdJ6q3oonq6JQNJieQBrJxZAjeaHH4Sg9WElwtwQ8=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 15/15] sysfs: move sysfs file poll implementation to sysfs_open_dirent
+Subject: [PATCH 13/15] sysfs: move sysfs_dirent->s_children into sysfs_dirent->s_dir
 In-Reply-To: <11902719091692-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Thu, 20 Sep 2007 16:05:12 +0900
-Message-Id: <11902719121259-git-send-email-htejun@gmail.com>
+Message-Id: <11902719123828-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,153 +31,122 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sysfs file poll implementation is scattered over sysfs and kobject.
-Event numbering is done in sysfs_dirent but wait itself is done on
-kobject.  This not only unecessarily bloats both kobject and
-sysfs_dirent but is also buggy - if a sysfs_dirent is removed while
-there still are pollers, the associaton betwen the kobject and
-sysfs_dirent breaks and kobject may be freed with the pollers still
-sleeping on it.
-
-This patch moves whole poll implementation into sysfs_open_dirent.
-Each time a sysfs_open_dirent is created, event number restarts from 1
-and pollers sleep on sysfs_open_dirent.  As event sequence number is
-meaningless without any open file and pollers should have open file
-and thus sysfs_open_dirent, this ephemeral event counting works and is
-a saner implementation.
-
-This patch fixes the dnagling sleepers bug and reduces the sizes of
-kobject and sysfs_dirent by one pointer.
+Children list head is only meaninful for directory nodes.  Move it
+into s_dir.  This doesn't save any space currently but it will with
+further changes.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/dir.c          |    1 -
- fs/sysfs/file.c         |   25 +++++++++++++++++++------
- fs/sysfs/sysfs.h        |    1 -
- include/linux/kobject.h |    1 -
- lib/kobject.c           |    1 -
- 5 files changed, 19 insertions(+), 10 deletions(-)
+ fs/sysfs/dir.c   |   17 +++++++++--------
+ fs/sysfs/inode.c |    2 +-
+ fs/sysfs/sysfs.h |    3 ++-
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index b81744b..ad3394a 100644
+index 7500407..b81744b 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -318,7 +318,6 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
+@@ -26,7 +26,7 @@ static DEFINE_IDA(sysfs_ino_ida);
+  *	@sd: sysfs_dirent of interest
+  *
+  *	Link @sd into its sibling list which starts from
+- *	sd->s_parent->s_children.
++ *	sd->s_parent->s_dir.children.
+  *
+  *	Locking:
+  *	mutex_lock(sysfs_mutex)
+@@ -40,9 +40,9 @@ static void sysfs_link_sibling(struct sysfs_dirent *sd)
  
- 	atomic_set(&sd->s_count, 1);
- 	atomic_set(&sd->s_active, 0);
--	atomic_set(&sd->s_event, 1);
- 
- 	sd->s_name = name;
- 	sd->s_mode = mode;
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index b13ba94..c05f961 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -62,6 +62,8 @@ static spinlock_t sysfs_open_dirent_lock = SPIN_LOCK_UNLOCKED;
- 
- struct sysfs_open_dirent {
- 	atomic_t		refcnt;
-+	atomic_t		event;
-+	wait_queue_head_t	poll;
- 	struct list_head	buffers; /* goes through sysfs_buffer.list */
- };
- 
-@@ -104,7 +106,7 @@ static int fill_read_buffer(struct dentry * dentry, struct sysfs_buffer * buffer
- 	if (!sysfs_get_active_two(attr_sd))
- 		return -ENODEV;
- 
--	buffer->event = atomic_read(&attr_sd->s_event);
-+	buffer->event = atomic_read(&attr_sd->s_attr.open->event);
- 	count = ops->show(kobj, attr_sd->s_attr.attr, buffer->page);
- 
- 	sysfs_put_active_two(attr_sd);
-@@ -301,6 +303,8 @@ static int sysfs_get_open_dirent(struct sysfs_dirent *sd,
- 		return -ENOMEM;
- 
- 	atomic_set(&new_od->refcnt, 0);
-+	atomic_set(&new_od->event, 1);
-+	init_waitqueue_head(&new_od->poll);
- 	INIT_LIST_HEAD(&new_od->buffers);
- 	goto retry;
- }
-@@ -443,17 +447,17 @@ static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
- {
- 	struct sysfs_buffer * buffer = filp->private_data;
- 	struct sysfs_dirent *attr_sd = filp->f_path.dentry->d_fsdata;
--	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
-+	struct sysfs_open_dirent *od = attr_sd->s_attr.open;
- 
- 	/* need parent for the kobj, grab both */
- 	if (!sysfs_get_active_two(attr_sd))
- 		goto trigger;
- 
--	poll_wait(filp, &kobj->poll, wait);
-+	poll_wait(filp, &od->poll, wait);
- 
- 	sysfs_put_active_two(attr_sd);
- 
--	if (buffer->event != atomic_read(&attr_sd->s_event))
-+	if (buffer->event != atomic_read(&od->event))
- 		goto trigger;
- 
- 	return 0;
-@@ -474,8 +478,17 @@ void sysfs_notify(struct kobject *k, char *dir, char *attr)
- 	if (sd && attr)
- 		sd = sysfs_find_dirent(sd, attr);
- 	if (sd) {
--		atomic_inc(&sd->s_event);
--		wake_up_interruptible(&k->poll);
-+		struct sysfs_open_dirent *od;
-+
-+		spin_lock(&sysfs_open_dirent_lock);
-+
-+		od = sd->s_attr.open;
-+		if (od) {
-+			atomic_inc(&od->event);
-+			wake_up_interruptible(&od->poll);
-+		}
-+
-+		spin_unlock(&sysfs_open_dirent_lock);
+ 	/* Store directory entries in order by ino.  This allows
+ 	 * readdir to properly restart without having to add a
+-	 * cursor into the s_children list.
++	 * cursor into the s_dir.children list.
+ 	 */
+-	for (pos = &parent_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
++	for (pos = &parent_sd->s_dir.children; *pos; pos = &(*pos)->s_sibling) {
+ 		if (sd->s_ino < (*pos)->s_ino)
+ 			break;
  	}
+@@ -55,7 +55,7 @@ static void sysfs_link_sibling(struct sysfs_dirent *sd)
+  *	@sd: sysfs_dirent of interest
+  *
+  *	Unlink @sd from its sibling list which starts from
+- *	sd->s_parent->s_children.
++ *	sd->s_parent->s_dir.children.
+  *
+  *	Locking:
+  *	mutex_lock(sysfs_mutex)
+@@ -64,7 +64,8 @@ static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
+ {
+ 	struct sysfs_dirent **pos;
  
- 	mutex_unlock(&sysfs_mutex);
+-	for (pos = &sd->s_parent->s_children; *pos; pos = &(*pos)->s_sibling) {
++	for (pos = &sd->s_parent->s_dir.children; *pos;
++	     pos = &(*pos)->s_sibling) {
+ 		if (*pos == sd) {
+ 			*pos = sd->s_sibling;
+ 			sd->s_sibling = NULL;
+@@ -566,7 +567,7 @@ struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
+ {
+ 	struct sysfs_dirent *sd;
+ 
+-	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling)
++	for (sd = parent_sd->s_dir.children; sd; sd = sd->s_sibling)
+ 		if (!strcmp(sd->s_name, name))
+ 			return sd;
+ 	return NULL;
+@@ -718,7 +719,7 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
+ 
+ 	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
+ 	sysfs_addrm_start(&acxt, dir_sd);
+-	pos = &dir_sd->s_children;
++	pos = &dir_sd->s_dir.children;
+ 	while (*pos) {
+ 		struct sysfs_dirent *sd = *pos;
+ 
+@@ -918,7 +919,7 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ 		mutex_lock(&sysfs_mutex);
+ 
+ 		/* Skip the dentries we have already reported */
+-		pos = parent_sd->s_children;
++		pos = parent_sd->s_dir.children;
+ 		while (pos && (filp->f_pos > pos->s_ino))
+ 			pos = pos->s_sibling;
+ 
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index c40fb9f..2210cf0 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -127,7 +127,7 @@ static int sysfs_count_nlink(struct sysfs_dirent *sd)
+ 	struct sysfs_dirent *child;
+ 	int nr = 0;
+ 
+-	for (child = sd->s_children; child; child = child->s_sibling)
++	for (child = sd->s_dir.children; child; child = child->s_sibling)
+ 		if (sysfs_type(child) == SYSFS_DIR)
+ 			nr++;
+ 
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 3adce7d..269c845 100644
+index 60405a6..42b0327 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -46,7 +46,6 @@ struct sysfs_dirent {
- 	ino_t			s_ino;
- 	umode_t			s_mode;
- 	struct iattr		*s_iattr;
--	atomic_t		s_event;
+@@ -1,6 +1,8 @@
+ /* type-specific structures for sysfs_dirent->s_* union members */
+ struct sysfs_elem_dir {
+ 	struct kobject		*kobj;
++	/* children list starts here and goes through sd->s_sibling */
++	struct sysfs_dirent	*children;
  };
  
- #define SD_DEACTIVATED_BIAS		INT_MIN
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 0777b3f..a8a84fc 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -66,7 +66,6 @@ struct kobject {
- 	struct kset		* kset;
- 	struct kobj_type	* ktype;
- 	struct sysfs_dirent	* sd;
--	wait_queue_head_t	poll;
- };
+ struct sysfs_elem_symlink {
+@@ -28,7 +30,6 @@ struct sysfs_dirent {
+ 	atomic_t		s_active;
+ 	struct sysfs_dirent	*s_parent;
+ 	struct sysfs_dirent	*s_sibling;
+-	struct sysfs_dirent	*s_children;
+ 	const char		*s_name;
  
- extern int kobject_set_name(struct kobject *, const char *, ...)
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 01f9c3b..a280c62 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -131,7 +131,6 @@ void kobject_init(struct kobject * kobj)
- 		return;
- 	kref_init(&kobj->kref);
- 	INIT_LIST_HEAD(&kobj->entry);
--	init_waitqueue_head(&kobj->poll);
- 	kobj->kset = kset_get(kobj->kset);
- }
- 
+ 	union {
 -- 
 1.5.0.3
 
