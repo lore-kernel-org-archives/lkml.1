@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXITKND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXITKYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbXITKND (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 06:13:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbXITKMx
+	id S1753859AbXITKYq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 06:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbXITKYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 06:12:53 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:47948 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbXITKMw (ORCPT
+	Thu, 20 Sep 2007 06:24:38 -0400
+Received: from hu-out-0506.google.com ([72.14.214.236]:2790 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbXITKYh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 06:12:52 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 20 Sep 2007 06:11:21 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: =?iso-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-cc: Matt LaPlante <kernel1@cyberdogtech.com>, linux-kernel@vger.kernel.org
-Subject: Re: A little coding style nugget of joy
-In-Reply-To: <46F23B77.40809@draigBrady.com>
-Message-ID: <Pine.LNX.4.64.0709200610180.15327@localhost.localdomain>
-References: <20070919123401.9369534d.kernel1@cyberdogtech.com>
- <46F23B77.40809@draigBrady.com>
+	Thu, 20 Sep 2007 06:24:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=jOwqAeIjruGKgj/EnFfbjZVQxGF3EwgFAgEAcgiShEthLF2toL2VP0nQk/gkNYK44gqC/E02ZjADpyBlc5GUlDwdKlDGHuxV5XX3dAX60YbsxNsT79xoQQa2sgQf4jBH1UKgtiuyeNSXJSHBct3P2sRXJT7w1vVaBNALKqCWakY=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [patch 4/7] Immediate Values - i386 Optimization
+Date: Thu, 20 Sep 2007 11:24:12 +0100
+User-Agent: KMail/1.9.1
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@muc.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+References: <20070918210747.828804366@polymtl.ca> <20070918210853.588573678@polymtl.ca>
+In-Reply-To: <20070918210853.588573678@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2001575627-1190283081=:15327"
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709201124.13097.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tuesday 18 September 2007 22:07, Mathieu Desnoyers wrote:
+> i386 optimization of the immediate values which uses a movl with code patching
+> to set/unset the value used to populate the register used as variable source.
+> 
+> Changelog:
+> - Use text_poke_early with cr0 WP save/restore to patch the bypass. We are doing
+>   non atomic writes to a code region only touched by us (nobody can execute it
+>   since we are protected by the immediate_mutex).
+> - Put immediate_set and _immediate_set in the architecture independent header.
 
---8323328-2001575627-1190283081=:15327
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+> +struct __immediate {
+> +	long var;		/* Pointer to the identifier variable of the
+> +				 * immediate value
+> +				 */
+> +	long immediate;		/*
+> +				 * Pointer to the memory location of the
+> +				 * immediate value within the instruction.
+> +				 */
+> +	long size;		/* Type size. */
+> +};
 
-On Thu, 20 Sep 2007, Pádraig Brady wrote:
 
-> Matt LaPlante wrote:
-> > Since everyone loves random statistics, here are a few gems to give you a break from your busy day:
-> >
-> > Number of lines in the 2.6.22 Linux kernel source that include one or more trailing whitespaces: 135209
-> > Bytes saved by removing said whitespace: 151809
-> > Lines in the (unified) diff: 455437
-> > Size of the diff: 15M
-> > People brave enough to submit the patch: ~0
->
-> It's gradually getting better so:
-> http://lwn.net/2001/1129/a/whitespace.php3
+> +		case 2:							\
+> +			asm (	".section __immediate, \"a\", @progbits;\n\t" \
+> +					".long %1, (0f)+2, 2;\n\t"	\
+> +					".previous;\n\t"		\
+> +					"1:\n\t"			\
+> +					".align 2;\n\t"			\
+> +					"0:\n\t"			\
+> +					"mov %2,%0;\n\t"		\
+> +				: "=r" (value)				\
+> +				: "m" (name##__immediate),		\
+> +				  "i" (0));				\
 
-and you wouldn't *believe* how much space you can save by getting rid
-of all that annoying indentation.  and don't even get me *started* on
-those comments ...
+Instead of letting gcc use whatever instruction it sees fit best
+for accessing the variable (like add/cmp/test...)
+now we force it to use mov imm,reg first. Maybe with preceding nop
+due to "align 2".
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+And then we use 12 more bytes in __immediate section
+*for each* place where you read the variable.
 
-http://crashcourse.ca
-========================================================================
---8323328-2001575627-1190283081=:15327--
+Do you plan to use the same approach on x86_64?
+I mean, longs there are twice as long.
+
+Can this be made conditional, on CONFIG_CC_OPTIMIZE_FOR_SIZE perhaps?
+--
+vda
