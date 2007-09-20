@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761322AbXITILt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761196AbXITIMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761322AbXITILt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 04:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbXITIGQ
+	id S1761196AbXITIMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 04:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbXITIGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 04:06:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:41325 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755884AbXITIF4 (ORCPT
+	Thu, 20 Sep 2007 04:06:18 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:33382 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757275AbXITIF6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 04:05:56 -0400
+	Thu, 20 Sep 2007 04:05:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=dTSEC1Gsm0wGnRGGiNs763Rs1k26gRwpwxNrU7bUgBtY3OV5aBAojg+WY0SdR3ETyqL5jZPSevGbaoQJ6ybbT12l1leOV8uv5cPxeUdTvV0oo3CbP/6XeVsIfHmdtit8IdSfvQR35T7VutNq+8sjOHwBYvslQjxdVK7TCpAfc1Q=
+        b=LqCaijvmH6e4H1XCWQvdaGts/UXSv4tn9qYAq0KqSwlFYWREoAWbms17qwp8ZlUtzaJH3Mf2cMsLsQMbx2MQaof6PxqCHDRDbPpJPUDNlpzJF8sDZvM+0E6WZ7tjgvL6rr/0ID1XzyE3jXscn71GIBoRVVXzwTrtXKCDpT6yD+Q=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 09/22] sysfs: rename internal function sysfs_add_file()
+Subject: [PATCH 15/22] sysfs: implement sysfs_dirent based link interface
 In-Reply-To: <11902755392688-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Thu, 20 Sep 2007 17:05:40 +0900
-Message-Id: <11902755403992-git-send-email-htejun@gmail.com>
+Date: Thu, 20 Sep 2007 17:05:41 +0900
+Message-Id: <11902755414149-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,91 +31,224 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function name sysfs_add_file() will be used for sd-based file
-interface.  Rename the internal function to __sysfs_add_file().  Note
-that the internal function will be removed once the new interface is
-in place, so double underscore prefix should do it for the time being.
+sysfs_add_link() takes parent sd, name, mode and the target sd and
+creates a link accordingly.  Currently, sysfs links can only point to
+directories but this limitiation is artificial to avoid inflating the
+sysfs_dirent structure by one pointer with future changes and can be
+easily removed.
+
+Kobject based sysfs_create_link() is reimplemented using
+sysfs_add_link().
+
+This patch doesn't introduce any behavior change to the original API.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/bin.c   |    2 +-
- fs/sysfs/file.c  |    6 +++---
- fs/sysfs/group.c |    2 +-
- fs/sysfs/sysfs.h |    4 ++--
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ fs/sysfs/kobject.c    |   47 +++++++++++++++++++++++++++
+ fs/sysfs/symlink.c    |   83 +++++++++++++++++-------------------------------
+ include/linux/sysfs.h |   10 ++++++
+ 3 files changed, 87 insertions(+), 53 deletions(-)
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index 91e573f..20c2e78 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -234,7 +234,7 @@ int sysfs_create_bin_file(struct kobject * kobj, struct bin_attribute * attr)
- {
- 	BUG_ON(!kobj || !kobj->sd || !attr);
+diff --git a/fs/sysfs/kobject.c b/fs/sysfs/kobject.c
+index a34c54e..7400575 100644
+--- a/fs/sysfs/kobject.c
++++ b/fs/sysfs/kobject.c
+@@ -355,6 +355,53 @@ void sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr)
+ }
+ EXPORT_SYMBOL_GPL(sysfs_remove_bin_file);
  
--	return sysfs_add_file(kobj->sd, &attr->attr, SYSFS_KOBJ_BIN_ATTR);
-+	return __sysfs_add_file(kobj->sd, &attr->attr, SYSFS_KOBJ_BIN_ATTR);
++/*
++ * kobject link interface
++ */
++
++/**
++ *	sysfs_create_link - create symlink between two objects.
++ *	@kobj:	object whose directory we're creating the link in.
++ *	@target:	object we're pointing to.
++ *	@name:		name of the symlink.
++ */
++int sysfs_create_link(struct kobject *kobj, struct kobject *target,
++		      const char *name)
++{
++	struct sysfs_dirent *parent_sd, *target_sd, *sd;
++
++	BUG_ON(!name);
++
++	if (!kobj)
++		parent_sd = sysfs_root;
++	else
++		parent_sd = kobj->sd;
++
++	if (!parent_sd)
++		return -EFAULT;
++
++	/* target->sd can go away beneath us but is protected with
++	 * sysfs_assoc_lock.  Fetch target_sd from it.
++	 */
++	spin_lock(&sysfs_assoc_lock);
++	target_sd = NULL;
++	if (target->sd)
++		target_sd = sysfs_get(target->sd);
++	spin_unlock(&sysfs_assoc_lock);
++
++	if (!target_sd)
++		return -ENOENT;
++
++	sd = sysfs_add_link(parent_sd, name, SYSFS_COPY_NAME, target_sd);
++
++	sysfs_put(target_sd);
++
++	if (IS_ERR(sd))
++		return PTR_ERR(sd);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(sysfs_create_link);
++
+ /**
+  *	sysfs_remove_link - remove symlink in object's directory.
+  *	@kobj:	object we're acting for.
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 2c3e4f7..42ecb69 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -5,7 +5,6 @@
+ #include <linux/fs.h>
+ #include <linux/mount.h>
+ #include <linux/module.h>
+-#include <linux/kobject.h>
+ #include <linux/namei.h>
+ #include <linux/mutex.h>
+ 
+@@ -45,64 +44,45 @@ static void fill_object_path(struct sysfs_dirent *sd, char *buffer, int length)
  }
  
- EXPORT_SYMBOL_GPL(sysfs_create_bin_file);
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 8154fbb..3b74912 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -568,7 +568,7 @@ const struct file_operations sysfs_file_operations = {
+ /**
+- *	sysfs_create_link - create symlink between two objects.
+- *	@kobj:	object whose directory we're creating the link in.
+- *	@target:	object we're pointing to.
+- *	@name:		name of the symlink.
++ *	sysfs_add_link - add a new sysfs symlink
++ *	@parent: sysfs_dirent to add symlink under
++ *	@name: name of the symlink
++ *	@mode: SYSFS_* flags for the new symlink
++ *	@target: target of the symlink
++ *
++ *	Add a new symlink which points to @target under @parent with
++ *	the specified parameters.
++ *
++ *	LOCKING:
++ *	Kernel thread context (may sleep).
++ *
++ *	RETURNS:
++ *	Pointer to the new sysfs_dirent on success, ERR_PTR() value on
++ *	error.
+  */
+-int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
++struct sysfs_dirent *sysfs_add_link(struct sysfs_dirent *parent,
++				    const char *name, mode_t mode,
++				    struct sysfs_dirent *target)
+ {
+-	struct sysfs_dirent *parent_sd = NULL;
+-	struct sysfs_dirent *target_sd = NULL;
+-	struct sysfs_dirent *sd = NULL;
+-	struct sysfs_addrm_cxt acxt;
+-	int error;
+-
+-	BUG_ON(!name);
+-
+-	if (!kobj)
+-		parent_sd = sysfs_root;
+-	else
+-		parent_sd = kobj->sd;
++	struct sysfs_dirent *sd;
+ 
+-	error = -EFAULT;
+-	if (!parent_sd)
+-		goto out_put;
+-
+-	/* target->sd can go away beneath us but is protected with
+-	 * sysfs_assoc_lock.  Fetch target_sd from it.
++	/* Only symlink to directories are allowed.  This is an
++	 * artificial limitation.  If ever needed, allowing symlinks
++	 * to point to other types of sysfs nodes isn't difficult.
+ 	 */
+-	spin_lock(&sysfs_assoc_lock);
+-	if (target->sd)
+-		target_sd = sysfs_get(target->sd);
+-	spin_unlock(&sysfs_assoc_lock);
+-
+-	error = -ENOENT;
+-	if (!target_sd)
+-		goto out_put;
++	if (sysfs_type(target) != SYSFS_DIR)
++		return ERR_PTR(-EINVAL);
+ 
+-	error = -ENOMEM;
+-	sd = sysfs_new_dirent(name, S_IRWXUGO | SYSFS_COPY_NAME, SYSFS_LINK);
++	/* allocate & initialize */
++	sd = sysfs_new_dirent(name, mode | S_IRWXUGO, SYSFS_LINK);
+ 	if (!sd)
+-		goto out_put;
+-
+-	sd->s_link.target = target_sd;
+-	target_sd = NULL;	/* reference is now owned by the symlink */
++		return ERR_PTR(-ENOMEM);
+ 
+-	sysfs_addrm_start(&acxt);
+-	error = sysfs_add_one(&acxt, parent_sd, sd);
+-	sysfs_addrm_finish(&acxt);
++	sd->s_link.target = sysfs_get(target);
+ 
+-	if (error)
+-		goto out_put;
+-
+-	return 0;
+-
+- out_put:
+-	sysfs_put(target_sd);
+-	sysfs_put(sd);
+-	return error;
++	return sysfs_insert_one(parent, sd);
+ }
++EXPORT_SYMBOL_GPL(sysfs_add_link);
+ 
+ static int sysfs_get_target_path(struct sysfs_dirent * parent_sd,
+ 				 struct sysfs_dirent * target_sd, char *path)
+@@ -162,6 +142,3 @@ const struct inode_operations sysfs_link_inode_operations = {
+ 	.follow_link = sysfs_follow_link,
+ 	.put_link = sysfs_put_link,
  };
+-
+-
+-EXPORT_SYMBOL_GPL(sysfs_create_link);
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index dfb6bd7..08ed1b0 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -60,6 +60,9 @@ struct sysfs_dirent *sysfs_add_file(struct sysfs_dirent *parent,
+ struct sysfs_dirent *sysfs_add_bin(struct sysfs_dirent *parent,
+ 			const char *name, mode_t mode, size_t size,
+ 			const struct sysfs_bin_ops *bops, void *data);
++struct sysfs_dirent *sysfs_add_link(struct sysfs_dirent *parent,
++			const char *name, mode_t mode,
++			struct sysfs_dirent *target);
  
- 
--int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
-+int __sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
- 		   int type)
- {
- 	umode_t mode = attr->mode & S_IALLUGO;
-@@ -602,7 +602,7 @@ int sysfs_create_file(struct kobject * kobj, const struct attribute * attr)
- {
- 	BUG_ON(!kobj || !kobj->sd || !attr);
- 
--	return sysfs_add_file(kobj->sd, attr, SYSFS_KOBJ_ATTR);
-+	return __sysfs_add_file(kobj->sd, attr, SYSFS_KOBJ_ATTR);
- 
+ struct sysfs_dirent *sysfs_find_child(struct sysfs_dirent *parent,
+ 				      const char *name);
+@@ -94,6 +97,13 @@ static inline struct sysfs_dirent *sysfs_add_bin(struct sysfs_dirent *parent,
+ 	return NULL;
  }
  
-@@ -623,7 +623,7 @@ int sysfs_add_file_to_group(struct kobject *kobj,
- 	if (!dir_sd)
- 		return -ENOENT;
- 
--	error = sysfs_add_file(dir_sd, attr, SYSFS_KOBJ_ATTR);
-+	error = __sysfs_add_file(dir_sd, attr, SYSFS_KOBJ_ATTR);
- 	sysfs_put(dir_sd);
- 
- 	return error;
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index e4993fd..5c5aab0 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -32,7 +32,7 @@ static int create_files(struct sysfs_dirent *dir_sd,
- 	int error = 0;
- 
- 	for (attr = grp->attrs; *attr && !error; attr++)
--		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
-+		error = __sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
- 	if (error)
- 		remove_files(dir_sd, grp);
- 	return error;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 82ade38..c57b2dc 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -142,8 +142,8 @@ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
- extern const struct file_operations sysfs_file_operations;
- 
- void sysfs_file_check_suicide(struct sysfs_dirent *sd);
--int sysfs_add_file(struct sysfs_dirent *dir_sd,
--		   const struct attribute *attr, int type);
-+int __sysfs_add_file(struct sysfs_dirent *dir_sd,
-+		     const struct attribute *attr, int type);
- 
- /*
-  * bin.c
++static inline struct sysfs_dirent *sysfs_add_link(struct sysfs_dirent *parent,
++			const char *name, mode_t mode,
++			struct sysfs_dirent *target)
++{
++	return NULL;
++}
++
+ static inline struct sysfs_dirent *sysfs_find_child(struct sysfs_dirent *parent,
+ 						    const char *name)
+ {
 -- 
 1.5.0.3
 
