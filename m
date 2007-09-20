@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757672AbXITRAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbXITRCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757672AbXITRAl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 13:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXITRAe
+	id S1757364AbXITRCF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 13:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbXITRBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 13:00:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33079 "EHLO mx1.redhat.com"
+	Thu, 20 Sep 2007 13:01:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60101 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750856AbXITRAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 13:00:33 -0400
-Message-ID: <46F2A72E.5010709@redhat.com>
-Date: Thu, 20 Sep 2007 13:00:30 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1751134AbXITRBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 13:01:51 -0400
+Message-ID: <46F2A779.2040904@pobox.com>
+Date: Thu, 20 Sep 2007 13:01:45 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Joerg Pommnitz <pommnitz@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Problems with 2.6.23-rc6 on AMD Geode LX800
-References: <639631.28356.qm@web51402.mail.re2.yahoo.com>
-In-Reply-To: <639631.28356.qm@web51402.mail.re2.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sb1250-mac.c: De-typedef, de-volatile, de-etc...
+References: <Pine.LNX.4.64N.0709101310030.25038@blysk.ds.pg.gda.pl> <46E8B56E.7060705@pobox.com> <Pine.LNX.4.64N.0709131506040.31069@blysk.ds.pg.gda.pl> <20070913151452.GB29665@linux-mips.org> <46E95C7F.1050302@pobox.com> <Pine.LNX.4.64N.0709141135290.1926@blysk.ds.pg.gda.pl> <46F1F2CE.7020300@pobox.com> <Pine.LNX.4.64N.0709201354320.30788@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0709201354320.30788@blysk.ds.pg.gda.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/20/2007 08:32 AM, Joerg Pommnitz wrote:
-> Hello all,
-> yesterday I tried to boot a kernel built from the current wireless-dev git tree (ath5k branch)
-> on a MSEP800/A board (see http://www.milesie.co.uk/pdf/MSEP800.pdf). The board
-> contains an AMD Geode LX800 CPU.
-> The wireless-dev tree is up to date with Linus kernel 2.6.23-rc6.
+Maciej W. Rozycki wrote:
+> On Thu, 20 Sep 2007, Jeff Garzik wrote:
 > 
-> Attached is a photographic screen shot. The EIP value of c0378dd6 seems to correspond with the
-> reserve_bootmem_core from System.map:
+>>> You may be pleased (or less so) to hear that the version of sb1250-mac.c in
+>>> your tree does not even build (because of
+>>> 42d53d6be113f974d8152979c88e1061b953bd12) and the patch below does not
+>>> address it.  I ran out of time in the evening, but I will send you a fix
+>>> shortly.  To be honest I think even with bulk changes it may be worth
+>>> checking whether they do not break stuff. ;-)
+>> hrm.  I cannot get this to apply on top of linux-2.6.git,
+>> netdev-2.6.git#upstream (prior to net-2.6.24 rebase) or
+>> netdev-2.6.git#upstream (after net-2.6.24 rebase)
 > 
-> c0378d51 t free_bootmem_core
-> c0378da7 T free_bootmem
-> c0378db2 T free_bootmem_node
-> c0378dba t reserve_bootmem_core
-> c0378e14 T reserve_bootmem
-> c0378e1f T reserve_bootmem_node
+>  It applies on top of current -mm.  It seems to apply to a copy of 
+> netdev-2.6.git#upstream that I have got, but I am probably missing 
+> something...  If I try to clone your repository again I get:
 > 
+> $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/linux-netdev-2.6.git linux
+> Initialized empty Git repository in /home/macro/GIT-other/linux-netdev/linux/.git/
+> fatal: The remote end hung up unexpectedly
+> fetch-pack from 'git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/linux-netdev-2.6.git' failed.
 
-Can you post disassembled code for that function?
+Remove the "linux-" prefix.
+
+	Jeff
+
+
+
