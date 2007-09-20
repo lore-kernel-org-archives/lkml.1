@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbXITOVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbXITOW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062AbXITOVu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 10:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbXITOVm
+	id S1756376AbXITOW2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 10:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbXITOWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 10:21:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48018 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752972AbXITOVl (ORCPT
+	Thu, 20 Sep 2007 10:22:19 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:52592 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100AbXITOWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 10:21:41 -0400
-Date: Thu, 20 Sep 2007 19:54:31 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Antonino Daplas <adaplas@pol.net>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/video/pmag-ba-fb.c: Improve diagnostics
-In-Reply-To: <Pine.LNX.4.64N.0709201445590.30788@blysk.ds.pg.gda.pl>
-Message-ID: <alpine.LFD.0.999.0709201946130.17093@enigma.security.iitk.ac.in>
-References: <Pine.LNX.4.64N.0709171736580.17606@blysk.ds.pg.gda.pl>
- <Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
- <20070919172412.725508d0.akpm@linux-foundation.org>
- <Pine.LNX.4.64N.0709201342160.30788@blysk.ds.pg.gda.pl>
- <alpine.LFD.0.999.0709201837160.17093@enigma.security.iitk.ac.in>
- <Pine.LNX.4.64N.0709201445590.30788@blysk.ds.pg.gda.pl>
+	Thu, 20 Sep 2007 10:22:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PTNl6k/WtqXsUr/orVnkSAK6950x0SVD4vtDW38drh6yImEt2b+bUyHI/BeS9W8HyiRTpZsue3dkWcsprUxicZdu0U+0oXhp+e6fekyBlXHhOFSWB90fifOb5Gwzdx2LUh9WYIeiHU2hlpJ3AYgY0vYqhydh/zQLu3wnn4j7xck=
+Message-ID: <b6a2187b0709200722q2755111brb8b7c3bdc71e2129@mail.gmail.com>
+Date: Thu, 20 Sep 2007 22:22:17 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jiri Kosina" <jikos@jikos.cz>
+Subject: Re: ACPI video mode patch review
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Pavel Machek" <pavel@ucw.cz>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0709201617440.24429@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46E9AD88.7070400@zytor.com>
+	 <Pine.LNX.4.64.0709201617440.24429@twin.jikos.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 9/20/07, Jiri Kosina <jikos@jikos.cz> wrote:
 
+> With your patch applied, I get no video at all after resume (I tried all
+> three possible combinations of acpi_sleep parameter).
 
-On Thu, 20 Sep 2007, Maciej W. Rozycki wrote:
-> 
->  Perhaps preinitialising to an error value such as -EINVAL would be of
-> more sense.  This way any error paths lacking initialisation are still
-> reported as errors, even though the classification might be wrong.
+Can you please try again with 2.6.23-rc7. The patch is already
+included in -rc7 and it works for me on Lenono X60s.
 
-Eeee ... at least I wouldn't prefer that. Why not simply use the
-"int x = x;" trick (which is what uninitialized_var() does) -- it shuts
-up the warning, and does *nothing* else. The bug will not be hidden, if
-there's bad misbehaviour happening due to the bug, it will continue to
-happen that way -- thus bringing our attention to it. Pre-initializing
-to -EINVAL (or whatever) has the problem that when the bug actually
-triggers, something unrelated might happen higher up the callchain, and
-we'd be scratching our heads in a "why are we getting a -EINVAL here?"
-kind of way ... worse still, we might think that this was _really_ an
-EINVAL and go about debugging it ...
-
-Plus, pre-initializing to -EINVAL (or even 0) will waste some bytes in
-kernel text size, but no such overhead with uninitialized_var() :-)
-
-
-Satyam
+Jeff.
