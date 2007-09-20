@@ -1,123 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbXITTyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbXITTyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbXITTyY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXITTw7
+	id S1751330AbXITTyk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXITTxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:52:59 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:39026 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751357AbXITTw6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:52:58 -0400
-Subject: [PATCH 05/25] r/o bind mounts: stub functions
+	Thu, 20 Sep 2007 15:53:05 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60156 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751938AbXITTxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 15:53:03 -0400
+Subject: [PATCH 09/25] make access() use mnt check
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 20 Sep 2007 12:52:54 -0700
+Date: Thu, 20 Sep 2007 12:53:00 -0700
 References: <20070920195249.852667D5@kernel>
 In-Reply-To: <20070920195249.852667D5@kernel>
-Message-Id: <20070920195254.24A9FC3C@kernel>
+Message-Id: <20070920195300.328EF882@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patch adds two function mnt_want_write() and
-mnt_drop_write().  These are used like a lock pair around
-and fs operations that might cause a write to the filesystem.
+It is OK to let access() go without using a mnt_want/drop_write()
+pair because it doesn't actually do writes to the filesystem,
+and it is inherently racy anyway.  This is a rare case when it is
+OK to use __mnt_is_readonly() directly.
 
-Before these can become useful, we must first cover each
-place in the VFS where writes are performed with a
-want/drop pair.  When that is complete, we can actually
-introduce code that will safely check the counts before
-allowing r/w<->r/o transitions to occur.
-
+Acked-by: Christoph Hellwig <hch@infradead.org>
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/namespace.c        |   54 +++++++++++++++++++++++++++++++++++++++++
- lxc-dave/include/linux/mount.h |    3 ++
- 2 files changed, 57 insertions(+)
+ lxc-dave/fs/open.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff -puN fs/namespace.c~add-vfsmount-writer-count fs/namespace.c
---- lxc/fs/namespace.c~add-vfsmount-writer-count	2007-09-20 12:16:10.000000000 -0700
-+++ lxc-dave/fs/namespace.c	2007-09-20 12:16:10.000000000 -0700
-@@ -77,6 +77,60 @@ struct vfsmount *alloc_vfsmnt(const char
- 	return mnt;
- }
+diff -puN fs/open.c~make-access-use-helper fs/open.c
+--- lxc/fs/open.c~make-access-use-helper	2007-09-20 12:16:13.000000000 -0700
++++ lxc-dave/fs/open.c	2007-09-20 12:16:13.000000000 -0700
+@@ -457,8 +457,17 @@ asmlinkage long sys_faccessat(int dfd, c
+ 	if(res || !(mode & S_IWOTH) ||
+ 	   special_file(nd.dentry->d_inode->i_mode))
+ 		goto out_path_release;
+-
+-	if(IS_RDONLY(nd.dentry->d_inode))
++	/*
++	 * This is a rare case where using __mnt_is_readonly()
++	 * is OK without a mnt_want/drop_write() pair.  Since
++	 * no actual write to the fs is performed here, we do
++	 * not need to telegraph to that to anyone.
++	 *
++	 * By doing this, we accept that this access is
++	 * inherently racy and know that the fs may change
++	 * state before we even see this result.
++	 */
++	if (__mnt_is_readonly(nd.mnt))
+ 		res = -EROFS;
  
-+/*
-+ * Most r/o checks on a fs are for operations that take
-+ * discrete amounts of time, like a write() or unlink().
-+ * We must keep track of when those operations start
-+ * (for permission checks) and when they end, so that
-+ * we can determine when writes are able to occur to
-+ * a filesystem.
-+ */
-+/**
-+ * mnt_want_write - get write access to a mount
-+ * @mnt: the mount on which to take a write
-+ *
-+ * This tells the low-level filesystem that a write is
-+ * about to be performed to it, and makes sure that
-+ * writes are allowed before returning success.  When
-+ * the write operation is finished, mnt_drop_write()
-+ * must be called.  This is effectively a refcount.
-+ */
-+int mnt_want_write(struct vfsmount *mnt)
-+{
-+	if (__mnt_is_readonly(mnt))
-+		return -EROFS;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(mnt_want_write);
-+
-+/**
-+ * mnt_drop_write - give up write access to a mount
-+ * @mnt: the mount on which to give up write access
-+ *
-+ * Tells the low-level filesystem that we are done
-+ * performing writes to it.  Must be matched with
-+ * mnt_want_write() call above.
-+ */
-+void mnt_drop_write(struct vfsmount *mnt)
-+{
-+}
-+EXPORT_SYMBOL_GPL(mnt_drop_write);
-+
-+/*
-+ * __mnt_is_readonly: check whether a mount is read-only
-+ * @mnt: the mount to check for its write status
-+ *
-+ * This shouldn't be used directly ouside of the VFS.
-+ * It does not guarantee that the filesystem will stay
-+ * r/w, just that it is right *now*.  This can not and
-+ * should not be used in place of IS_RDONLY(inode).
-+ */
-+int __mnt_is_readonly(struct vfsmount *mnt)
-+{
-+	return (mnt->mnt_sb->s_flags & MS_RDONLY);
-+}
-+EXPORT_SYMBOL_GPL(__mnt_is_readonly);
-+
- int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
- {
- 	mnt->mnt_sb = sb;
-diff -puN include/linux/mount.h~add-vfsmount-writer-count include/linux/mount.h
---- lxc/include/linux/mount.h~add-vfsmount-writer-count	2007-09-20 12:16:10.000000000 -0700
-+++ lxc-dave/include/linux/mount.h	2007-09-20 12:16:10.000000000 -0700
-@@ -70,9 +70,12 @@ static inline struct vfsmount *mntget(st
- 	return mnt;
- }
- 
-+extern int mnt_want_write(struct vfsmount *mnt);
-+extern void mnt_drop_write(struct vfsmount *mnt);
- extern void mntput_no_expire(struct vfsmount *mnt);
- extern void mnt_pin(struct vfsmount *mnt);
- extern void mnt_unpin(struct vfsmount *mnt);
-+extern int __mnt_is_readonly(struct vfsmount *mnt);
- 
- static inline void mntput(struct vfsmount *mnt)
- {
+ out_path_release:
 _
