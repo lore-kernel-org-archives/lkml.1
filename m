@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbXITOh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbXITOrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbXITOh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 10:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbXITOhP
+	id S1756245AbXITOrA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 10:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbXITOqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 10:37:15 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:60804 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752731AbXITOhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 10:37:14 -0400
-Date: Thu, 20 Sep 2007 16:37:09 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ACPI video mode patch review
-In-Reply-To: <b6a2187b0709200722q2755111brb8b7c3bdc71e2129@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0709201635000.24429@twin.jikos.cz>
-References: <46E9AD88.7070400@zytor.com>  <Pine.LNX.4.64.0709201617440.24429@twin.jikos.cz>
- <b6a2187b0709200722q2755111brb8b7c3bdc71e2129@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 20 Sep 2007 10:46:53 -0400
+Received: from www.osadl.org ([213.239.205.134]:59962 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753216AbXITOqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 10:46:53 -0400
+Subject: [PATCH] usb-gadget-ether: Prevent oops caused by error interrupt
+	race
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@osdl.org>
+Cc: David Brownell <david-b@pacbell.net>, LKML <linux-kernel@vger.kernel.org>,
+       Benedikt Spranger <bene@linutronix.de>, Stable Team <stable@kernel.org>
+Content-Type: text/plain
+Date: Thu, 20 Sep 2007 16:46:51 +0200
+Message-Id: <1190299611.3481.34.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007, Jeff Chua wrote:
+From: Benedikt Spranger <bene@linutronix.de>
 
-> > With your patch applied, I get no video at all after resume (I tried all
-> > three possible combinations of acpi_sleep parameter).
-> Can you please try again with 2.6.23-rc7. The patch is already
-> included in -rc7 and it works for me on Lenono X60s.
+An USB error interrupt (e.g. disconnect) nukes the pending requests for
+an ethernet gadget device asynchronously. This can race against
+eth_start_xmit(), where we end up dereferencing the list head itself.
 
-With current -git, I still get the same behavior as with 
-previous 2.6.23-rcX kernels - i.e. after resume (with 
-acpi_sleep=s3_bios,s3_mode), I get corrupted image resembling the BIOS 
-POST graphics.
+The nuke code is serialized against eth_start_xmit via dev->req_lock,
+but we need to check the list for empty first instead of unconditionally
+accessing dev->tx_reqs.next.
 
-Previous kernels (I am currently pretty sure that 
-15028aad00ddf241581fbe74a02ec89cbb28d35d was OK, but I haven't done the 
-bisection yet) resumed perfectly with acpi_sleep=s3_bios,s3_mode on this 
-machine.
+This is a long standing bug, which should be fixed in stable as well.
 
-Please note that this is very different HW than you have - it is sort-of a 
-desktop machine, not a notebook at all.
+Signed-off-by: Benedikt Spranger <bene@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
--- 
-Jiri Kosina
+diff --git a/drivers/usb/gadget/ether.c b/drivers/usb/gadget/ether.c
+index 593e235..f1d7c82 100644
+--- a/drivers/usb/gadget/ether.c
++++ b/drivers/usb/gadget/ether.c
+@@ -1989,8 +1989,20 @@ static int eth_start_xmit (struct sk_buff *skb, struct net_device *net)
+ 	}
+ 
+ 	spin_lock_irqsave(&dev->req_lock, flags);
++	/*
++	 * dev->tx_reqs may be empty due to an error interrupt which
++	 * nuked all requests.
++	 */
++	if (list_empty(&dev->tx_reqs)) {
++		netif_stop_queue(net);
++		spin_unlock_irqrestore(&dev->req_lock, flags);
++		return 1;
++	}
++
+ 	req = container_of (dev->tx_reqs.next, struct usb_request, list);
+ 	list_del (&req->list);
++
++	/* last request in list: stop queue */
+ 	if (list_empty (&dev->tx_reqs))
+ 		netif_stop_queue (net);
+ 	spin_unlock_irqrestore(&dev->req_lock, flags);
+
+
