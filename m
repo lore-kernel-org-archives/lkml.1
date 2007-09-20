@@ -1,121 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbXITToo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751949AbXITTs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbXITToo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXITToe
+	id S1751949AbXITTs2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbXITTsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:44:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55646 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751334AbXITToc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:44:32 -0400
-Date: Thu, 20 Sep 2007 12:44:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kamalesh Babulal" <kamalesh.babulal@gmail.com>
-Cc: "Joseph Fannin" <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
-       "Mike Travis" <travis@sgi.com>, netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1
-Message-Id: <20070920124420.2a57ea7b.akpm@linux-foundation.org>
-In-Reply-To: <f86d6cc00709200912j37a3218boa882a044c0610779@mail.gmail.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070919235828.GA31759@nineveh.local>
-	<20070919170934.84f44e05.akpm@linux-foundation.org>
-	<f86d6cc00709200721h6e8f7cf8xa2264e9d1f88883b@mail.gmail.com>
-	<f86d6cc00709200912j37a3218boa882a044c0610779@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Sep 2007 15:48:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39851 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbXITTsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 15:48:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba Satellite A40
+Date: Thu, 20 Sep 2007 22:01:15 +0200
+User-Agent: KMail/1.9.5
+Cc: Maciek Rutecki <maciej.rutecki@gmail.com>, Frans Pop <elendil@planet.nl>,
+       Pavel Machek <pavel@ucw.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200709192014.08443.elendil@planet.nl> <46F29965.8030603@gmail.com> <46F2A122.8020909@gmail.com>
+In-Reply-To: <46F2A122.8020909@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709202201.16487.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 21:42:44 +0530
-"Kamalesh Babulal" <kamalesh.babulal@gmail.com> wrote:
+On Thursday, 20 September 2007 18:34, Alexey Starikovskiy wrote:
+> Maciek Rutecki wrote:
+> > Frans Pop pisze:
+> >> On Thursday 20 September 2007, you wrote:
+> >>>> When compared with 2.6.22-4, dmesg no longer lists S4 and S5 as
+> >>>> supported for my Toshiba Satellite A40 laptop (Mobile Intel Pentium 4,
+> >>>> 2.8GHz).
+> >>>>
+> >>>> -Linux version 2.6.22-2-686 (Debian 2.6.22-4) (waldi@debian.org) ...
+> >>>> +Linux version 2.6.23-rc6 (root@faramir) ...
+> >>>>  [...]
+> >>>> -ACPI: (supports S0 S3 S4 S5)
+> >>>> +ACPI: (supports S0 S3)
+> >>> Unexpected, and potentially pretty serious. Something went wrong with
+> >>> ACPI. Can you try to narrow down when it started happening?
+> >> rc1 still had all 4 levels. I'll run a bisect between rc1 and rc6.
+> > 
+> > I have the same on HP/Compaq nx6310:
+> > ACPI: (supports S0 S3)
+> This is due to Rafael' split of suspend from hibernation. 
+> namely 296699de6bdc717189a331ab6bbe90e05c94db06.
+> Detection of S4 lacks printk(), so even if S4 is supported, it will not be reported.
+> Adding Rafael to the discussion :)
 
-> ...
->
-> > i have tested the change with cross compiler for power405 with the same
-> > .config
-> > with which the build problem is solved, but the build fails with another
-> > error
-> >
-> >   CC [M]  drivers/net/mace.o
-> > drivers/net/mace.c: In function 'mace_handle_misc_intrs':
-> > drivers/net/mace.c:642: error: 'dev' undeclared (first use in this
-> > function)
-> > drivers/net/mace.c:642: error: (Each undeclared identifier is reported
-> > only once
-> > drivers/net/mace.c:642: error: for each function it appears in.)
-> > make[2]: *** [drivers/net/mace.o] Error 1
-> > make[1]: *** [drivers/net] Error 2
-> > make: *** [drivers] Error 2
-> >
-> > This patch fixes the build failure
-> >
-> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> > ---
-> > --- linux-2.6.23-rc6 /drivers/net/mace.c 2007-09-20 17:16:50.000000000+0530
-> > +++ linux-2.6.23-rc6/drivers/net/~mace.c        2007-09-20 17:12:
-> > 47.000000000 +0530
-> > @@ -633,7 +633,7 @@ static void mace_set_multicast(struct ne
-> >      spin_unlock_irqrestore(&mp->lock, flags);
-> >  }
-> >
-> > -static void mace_handle_misc_intrs(struct mace_data *mp, int intr)
-> > +static void mace_handle_misc_intrs(struct mace_data *mp, int intr, struct
-> > net_device *dev)
-> >  {
-> >      volatile struct mace __iomem *mb = mp->mace;
-> >      static int mace_babbles, mace_jabbers;
-> > @@ -669,7 +669,7 @@ static irqreturn_t mace_interrupt(int ir
-> >      spin_lock_irqsave(&mp->lock, flags);
-> >      intr = in_8(&mb->ir);              /* read interrupt register */
-> >      in_8(&mb->xmtrc);                  /* get retries */
-> > -    mace_handle_misc_intrs(mp, intr);
-> > +    mace_handle_misc_intrs(mp, intr, dev);
-> >
-> >      i = mp->tx_empty;
-> >      while (in_8(&mb->pr) & XMTSV) {
-> > @@ -682,7 +682,7 @@ static irqreturn_t mace_interrupt(int ir
-> >          */
-> >         intr = in_8(&mb->ir);
-> >         if (intr != 0)
-> > -           mace_handle_misc_intrs(mp, intr);
-> > +           mace_handle_misc_intrs(mp, intr, dev);
-> >         if (mp->tx_bad_runt) {
-> >             fs = in_8(&mb->xmtfs);
-> >             mp->tx_bad_runt = 0;
-> > @@ -817,7 +817,7 @@ static void mace_tx_timeout(unsigned lon
-> >         goto out;
-> >
-> >      /* update various counters */
-> > -    mace_handle_misc_intrs(mp, in_8(&mb->ir));
-> > +    mace_handle_misc_intrs(mp, in_8(&mb->ir), dev);
-> >
-> >      cp = mp->tx_cmds + NCMDS_TX * mp->tx_empty;
+Thanks, I've already spotted the fix patch.
 
-Thanks, I will fix the wordwrapping in your patch and shall send it in to
-David. 
-
-> 
-> Hi,
-> 
-> The build fails when compiling with the same .config over cross compiler for
-> powerpc405
-> 
-> drivers/net/mv643xx_eth.c: In function 'mv643xx_eth_int_handler':
-> drivers/net/mv643xx_eth.c:564: error: 'bp' undeclared (first use in this
-> function)
-> drivers/net/mv643xx_eth.c:564: error: (Each undeclared identifier is
-> reported only once
-> drivers/net/mv643xx_eth.c:564: error: for each function it appears in.)
-> drivers/net/mv643xx_eth.c: At top level:
-> drivers/net/mv643xx_eth.c:1010: error: conflicting types for 'mv643xx_poll'
-> drivers/net/mv643xx_eth.c:68: error: previous declaration of 'mv643xx_poll'
-> was here
-> make[2]: *** [drivers/net/mv643xx_eth.o] Error 1
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
-
-Yes, rather a lot of net drivers got broken in easy-to-fix ways.
+Greetings,
+Rafael
