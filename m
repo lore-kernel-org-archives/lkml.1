@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbXITJ6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbXITJ7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbXITJ6d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 05:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXITJ60
+	id S1755474AbXITJ7t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 05:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbXITJ7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 05:58:26 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:47196 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750758AbXITJ60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 05:58:26 -0400
-Date: Thu, 20 Sep 2007 12:00:31 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: "Ahmed S\. Darwish" <darwish.07@gmail.com>
-Cc: Low Yucheng <ylow@andrew.cmu.edu>, Oleg Verych <olecom@flower.upol.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PROBLEM: System Freeze on Particular workload with kernel 2.6.22.6
-Message-ID: <20070920100031.GA2796@ff.dom.local>
-Mime-Version: 1.0
+	Thu, 20 Sep 2007 05:59:41 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42953 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750886AbXITJ7k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 05:59:40 -0400
+X-Sasl-enc: Y70LFIkXj2a70F6UldUI5KbYDW69mgTYJM+5jKyeRG1p 1190282379
+Date: Thu, 20 Sep 2007 06:59:35 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Peter Schwabe <schwabe@ti.rwth-aachen.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Another Hitachi Disk with NCQ problems
+Message-ID: <20070920095935.GD300@khazad-dum.debian.net>
+References: <46F229CF.5020109@ti.rwth-aachen.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070919192546.GA3153@Ahmed>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <46F229CF.5020109@ti.rwth-aachen.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19-09-2007 21:25, Ahmed S. Darwish wrote:
-> Hi Low,
-> 
-> On Wed, Sep 19, 2007 at 12:16:39PM -0400, Low Yucheng wrote:
->> There are no additional console messages.
->> Not sure what this is: * no relevant Cc (memory management added)
-> 
-> Relevant CCs means CCing maintainers or subsystem mailing lists related to your
-> bug report. i.e, if it's a networking bug, you need to CC the linux kernel
-> networking mailing list. If it's a kobject bug, you need to CC its maintainer
-> (Greg) and so on.
+On Thu, 20 Sep 2007, Peter Schwabe wrote:
+> Model number: HITACHI HTS541612J9SA00
 
-So, which one do you recommend here?
+If you got it with the thinkpad, it will have an IBM/Lenovo firmware.  Ask
+them for a fix.  They might have broken NCQ while adding immediate unload
+and security extensions to the original Hitachi firmware.
 
-Regards,
-Jarek P.
-
-PS#1: I don't think we should require from users so much expertise
-in bug reporting: after a few questions cc-ing should be no problem
-here.
-
-PS#2: Low Yucheng: maybe it's something else, but it seems your swap
-could be bigger for this amount of memory. (You could try to monitor
-this e.g. with "top" running in another console window.)
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
