@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756515AbXITUDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbXITUNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756515AbXITUDj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756631AbXITUDJ
+	id S1752728AbXITUNN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbXITUM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 16:03:09 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:34182 "EHLO e2.ny.us.ibm.com"
+	Thu, 20 Sep 2007 16:12:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39993 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756260AbXITUDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 16:03:07 -0400
-Subject: [resend PATCH 03/25] give may_open() a local 'mnt' variable
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: hch <hch@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 20 Sep 2007 13:03:04 -0700
-Message-Id: <1190318584.26982.173.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1751000AbXITUM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 16:12:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+Subject: Re: what is the difference between shutdown command and writing to /sys/power/state
+Date: Thu, 20 Sep 2007 22:25:41 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <A3258B497F1C1441AD36A2E8B45FD628ACF018@scsmsx412.amr.corp.intel.com> <200709200209.11331.rjw@sisk.pl> <A3258B497F1C1441AD36A2E8B45FD628ACF82B@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <A3258B497F1C1441AD36A2E8B45FD628ACF82B@scsmsx412.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709202225.41429.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First of all, this makes the structure jumping look a little
-bit cleaner.  So, this stands alone as a tiny cleanup.  But,
-we also need 'mnt' by itself a few more times later in this
-series, so this isn't _just_ a cleanup.
+On Thursday, 20 September 2007 20:11, Agarwal, Lomesh wrote:
+> Can someone tell me the flow of code for these two scenarios -
+> I write disk to /sys/power/state. How does system go to hibernation? How
+> does this trigger ACPI driver functions?
+> I issue shutdown command.
+> I am using 2.6.18 kernel.
 
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
----
+It's quite old for current standards. :-)
 
- lxc-dave/fs/namei.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+I'll need to get the source and look into it to be able to answer, so please
+give me some time.
 
-diff -puN fs/namei.c~give-may_open-a-local-mnt-variable fs/namei.c
---- lxc/fs/namei.c~give-may_open-a-local-mnt-variable	2007-09-20 12:16:09.000000000 -0700
-+++ lxc-dave/fs/namei.c	2007-09-20 12:16:09.000000000 -0700
-@@ -230,6 +230,10 @@ int permission(struct inode *inode, int 
- {
- 	umode_t mode = inode->i_mode;
- 	int retval, submask;
-+	struct vfsmount *mnt = NULL;
-+
-+	if (nd)
-+		mnt = nd->mnt;
+BTW, please don't top post.
 
- 	if (mask & MAY_WRITE) {
-
-@@ -254,7 +258,7 @@ int permission(struct inode *inode, int 
- 	 * the fs is mounted with the "noexec" flag.
- 	 */
- 	if ((mask & MAY_EXEC) && S_ISREG(mode) && (!(mode & S_IXUGO) ||
--			(nd && nd->mnt && (nd->mnt->mnt_flags & MNT_NOEXEC))))
-+			(mnt && (mnt->mnt_flags & MNT_NOEXEC))))
- 		return -EACCES;
-
- 	/* Ordinary permission routines do not understand MAY_APPEND. */
-_
--- Dave
-
+Greetings,
+Rafael
