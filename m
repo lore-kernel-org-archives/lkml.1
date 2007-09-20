@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbXITQop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXITQt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757685AbXITQop (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 12:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbXITQoh
+	id S1757594AbXITQt2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 12:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbXITQtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 12:44:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44975 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbXITQoh (ORCPT
+	Thu, 20 Sep 2007 12:49:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:6323 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755414AbXITQtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 12:44:37 -0400
-Date: Thu, 20 Sep 2007 22:17:27 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Charles N Wyble <charles@thewybles.com>
-cc: Andi Kleen <ak@suse.de>, virtualization@lists.linux-foundation.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Anthony Liguori <aliguori@us.ibm.com>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] Time to make CONFIG_PARAVIRT non-experimental.
-In-Reply-To: <46F29B4B.2070200@thewybles.com>
-Message-ID: <alpine.LFD.0.999.0709202207360.19354@enigma.security.iitk.ac.in>
-References: <1189747054.7262.34.camel@localhost.localdomain>
- <200709181257.41530.ak@suse.de> <46F02F50.5000001@thewybles.com>
- <200709182220.27311.ak@suse.de> <46F034A8.2070801@thewybles.com>
- <alpine.LFD.0.999.0709202110150.18597@enigma.security.iitk.ac.in>
- <46F29B4B.2070200@thewybles.com>
+	Thu, 20 Sep 2007 12:49:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=X1D6UMrgIA1fkLFfPzwFE1LSI0VGKy9GfuhPYax6cYx5gW/A5JE/aFHk/UuHcRDeb04rUWzkv7vqdoEG+NTpz83oEzz/8slLTFr4/MCRz2H0sQRuSHSldQQ8upPn7SXAoC3ziZEe9bIhx5i/4PtTyUL2BqS+Ry1CWiD/K6z7iDQ=
+Message-ID: <91b13c310709200949x4b0c6db1kd408c19d931a1d09@mail.gmail.com>
+Date: Fri, 21 Sep 2007 00:49:15 +0800
+From: "rae l" <crquan@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 1/2] net/: all net/ cleanup with ARRAY_SIZE
+Cc: rpjday@mindspring.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, cr_quan@163.com
+In-Reply-To: <20070916.164203.38709930.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0709020235420.22012@localhost.localdomain>
+	 <11887290181154-git-send-email-crquan@gmail.com>
+	 <20070916.164203.38709930.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 9/17/07, David Miller <davem@davemloft.net> wrote:
+> From: Denis Cheng <crquan@gmail.com>
+> Date: Sun,  2 Sep 2007 18:30:17 +0800
+>
+> > Signed-off-by: Denis Cheng <crquan@gmail.com>
+>
+> You already submitted the net/ipv4/af_inet.c case
+> seperately, so I had to remove it from this patch for
+> it to apply properly.
+>
+> Please keep your patches straight to avoid problems
+> like this.
+I just can say sorry. But at that time, I'm not sure the former
+specific patch to net/ipv4/af_inet.c would be applied, and then I
+realized that change should be done with every subsystem in the kernel
+source, so I regenerate a new patch for the whole net/ subsystem; In
+this situation, I think I should give an announcement to make the
+former patch deprecated, shouldn't it?
+However, I'll be more cautious with patches.
+
+>
+> Thans.
+Thanks for applying.
+
+>
 
 
-On Thu, 20 Sep 2007, Charles N Wyble wrote:
-> 
-> Satyam Sharma wrote:
-> > 
-> > On Tue, 18 Sep 2007, Charles N Wyble wrote:
-> >> Andi Kleen wrote:
-> >>> Besides it's bad taste and taste is very important.
-> >> Well it's bad taste for you (one person).
-> > 
-> > FWIW, my opinion is the same as Andi's here. Please, let's avoid this
-> > disease -- unless *absolutely* required, stuff shouldn't be "default y".
-> 
-> I am curious why you think it shouldn't be default why? Bad taste? Can
-> you provide data about how it will harm things?
-
-Clear CONFIG_PARAVIRT from your .config and try "make oldconfig", and find
-out for yourself :-)
-
-You'll end up having to answer questions for all other config options
-below it, that you never cared about, that you didn't know even existed.
-You'd obviously (I would, at least) feel annoyed by it all ... this is
-almost a regression :-)
-
-And for those who automate the oldconfig process using "yes", well, this
-"default y" *will* end up introducing a kernel text size regression --
-all those config options they never had earlier, suddenly got enabled.
-
-Besides, like Andi said, selecting or enabling CONFIG_PARAVIRT is quite
-pointless in the first place -- it's just a menuconfig symbol, not a
-"real" kconfig symbol that _actually_ controls code in the Makefiles.
-
-
-Satyam
+-- 
+Denis Cheng
