@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbXITGV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbXITGVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756363AbXITGV0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 02:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbXITGVT
+	id S1758621AbXITGVl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 02:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757859AbXITGV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 02:21:19 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47737 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752092AbXITGVS (ORCPT
+	Thu, 20 Sep 2007 02:21:28 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39317 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757305AbXITGV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 02:21:18 -0400
-Message-ID: <46F2123A.9070201@bull.net>
-Date: Thu, 20 Sep 2007 08:24:58 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-References: <20070919140726.GA4603@ff.dom.local>
-In-Reply-To: <20070919140726.GA4603@ff.dom.local>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 20/09/2007 08:25:12,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 20/09/2007 08:25:14,
-	Serialize complete at 20/09/2007 08:25:14
+	Thu, 20 Sep 2007 02:21:26 -0400
+Date: Wed, 19 Sep 2007 23:20:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: balbir@linux.vnet.ibm.com, Jonathan Lim <jlim@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jay Lan <jlan@cthulhu.engr.sgi.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Michael Neuling <mikey@neuling.org>
+Subject: Re: Add all thread stats for TASKSTATS_CMD_ATTR_TGID (v5)
+Message-Id: <20070919232054.77c271aa.akpm@linux-foundation.org>
+In-Reply-To: <20070918002339.4a989377@localhost.localdomain>
+References: <200708310302.l7V32ZpV410222@sabah.engr.sgi.com>
+	<46D7C23F.7020509@linux.vnet.ibm.com>
+	<20070831143535.2e4709c7@localhost.localdomain>
+	<20070912171816.f0993440.akpm@linux-foundation.org>
+	<20070915204239.4a6af65e@localhost.localdomain>
+	<20070918002339.4a989377@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
-> On 18-09-2007 16:55, Nadia Derbey wrote:
-> ...
-> 
->>Well, reviewing the code I found another place where the 
->>rcu_read_unlock() was missing.
->>I'm so sorry for the inconvenience. It's true that I should have tested 
->>with CONFIG_PREEMPT=y :-(
->>Now, the ltp tests pass even with this option set...
->>
->>In attachment you'll find a patch thhat
->>1) adds the missing rcu_read_unlock()
->>2) replaces Andrew's fix with a new one: the rcu_read_lock() is now 
->>taken in ipc_lock() / ipc_lock_by_ptr() and released in ipc_unlock(), 
->>exactly as it was done in the ref code.
-> 
-> 
-> BTW, probably I miss something, but I wonder, how this RCU is working
-> here. E.g. in msg.c do_msgsnd() there is:
-> 
-> msq = msg_lock_check(ns, msqid);
-> ...
-> 
-> msg_unlock(msq);
-> schedule();
-> 
-> ipc_lock_by_ptr(&msq->q_perm);
-> 
-> Since msq_lock_check() gets msq with ipc_lock_check() under
-> rcu_read_lock(), and then goes msg_unlock(msq) (i.e. ipc_unlock())
-> with rcu_read_unlock(), is it valid to use this with
-> ipc_lock_by_ptr() yet?
+On Tue, 18 Sep 2007 00:23:39 +0200 Guillaume Chazarain <guichaz@yahoo.fr> wrote:
 
-Before Calling msg_unlock() they call ipc_rcu_getref() that increments a 
-refcount in the rcu header for the msg structure. This guarantees that 
-the the structure won't be freed before they relock it. Once the 
-structure is relocked by ipc_lock_by_ptr(), they do the symmetric 
-operation i.e. ipc_rcu_putref().
+> TASKSTATS_CMD_ATTR_TGID used to return only the delay accounting stats, not
+> the basic and extended accounting.  With this patch,
+> TASKSTATS_CMD_ATTR_TGID also aggregates the accounting info for all threads
+> of a thread group.  This makes TASKSTATS_CMD_ATTR_TGID usable in a similar
+> fashion to TASKSTATS_CMD_ATTR_PID, for commands like iotop -P
+> (http://guichaz.free.fr/misc/iotop.py).
 
-Regards,
-Nadia
+This patch conflicts somewhat with
+add-scaled-time-to-taskstats-based-process-accounting.patch
+
+I fixed it up like this:
+
+void bacct_add_tsk(struct taskstats *stats, struct task_struct *task)
+{
+	if (task->flags & PF_SUPERPRIV)
+		stats->ac_flag |= ASU;
+	if (task->flags & PF_DUMPCORE)
+		stats->ac_flag |= ACORE;
+	if (task->flags & PF_SIGNALED)
+		stats->ac_flag |= AXSIG;
+	if (thread_group_leader(task) && (task->flags & PF_FORKNOEXEC))
+		/*
+		 * Threads are created by do_fork() and don't exec but not in
+		 * the AFORK sense, as the latter involves fork(2).
+		 */
+		stats->ac_flag |= AFORK;
+
+	stats->ac_utimescaled +=
+		cputime_to_msecs(task->utimescaled) * USEC_PER_MSEC;
+	stats->ac_stimescaled +=
+		cputime_to_msecs(task->stimescaled) * USEC_PER_MSEC;
+	stats->ac_utime	 += cputime_to_msecs(task->utime) * USEC_PER_MSEC;
+	stats->ac_stime	 += cputime_to_msecs(task->stime) * USEC_PER_MSEC;
+	stats->ac_minflt += task->min_flt;
+	stats->ac_majflt += task->maj_flt;
+}
+
+(note the s/=/+=/ in there) but it all needs reviewing and checking and
+testing please.
