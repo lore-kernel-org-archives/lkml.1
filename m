@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbXITSsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758354AbXITS4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758193AbXITSsO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 14:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbXITSr7
+	id S1758354AbXITS4R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 14:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbXITS4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 14:47:59 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:36566 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753146AbXITSr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 14:47:59 -0400
-Subject: Re: [PATCH 02/24] rearrange may_open() to be r/o friendly
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070919172754.GB20917@infradead.org>
-References: <20070917182718.70494C9B@kernel>
-	 <20070917182720.A41D6484@kernel>  <20070919172754.GB20917@infradead.org>
-Content-Type: text/plain
-Date: Thu, 20 Sep 2007 11:47:56 -0700
-Message-Id: <1190314076.26982.151.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Sep 2007 14:56:04 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39239 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753947AbXITS4D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 14:56:03 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: BUG kmalloc-16: Object padding overwritten (sysfs?)
+References: <20070919123907.GA15591@localhost.sw.ru>
+	<20070919125918.GA6760@localhost.sw.ru>
+	<20070919123954.fb552e80.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0709191355340.3136@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.64.0709191432200.3111@schroedinger.engr.sgi.com>
+	<20070920075353.GA6781@localhost.sw.ru>
+	<Pine.LNX.4.64.0709201019510.8283@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.64.0709201036190.8283@schroedinger.engr.sgi.com>
+Date: Thu, 20 Sep 2007 12:54:53 -0600
+In-Reply-To: <Pine.LNX.4.64.0709201036190.8283@schroedinger.engr.sgi.com>
+	(Christoph Lameter's message of "Thu, 20 Sep 2007 10:37:01 -0700
+	(PDT)")
+Message-ID: <m1ejgtupz6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-19 at 18:27 +0100, Christoph Hellwig wrote:
-> >  int permission(struct inode *inode, int mask, struct nameidata *nd)
-> >  {
-> >  	int retval, submask;
-> > +	struct vfsmount *mnt = NULL;
-> > +
-> > +	if (nd)
-> > +		mnt = nd->mnt;
-> >  
-> >  	if (mask & MAY_WRITE) {
-> >  		umode_t mode = inode->i_mode;
-> > @@ -251,7 +255,7 @@ int permission(struct inode *inode, int 
-> >  		 * MAY_EXEC on regular files is denied if the fs is mounted
-> >  		 * with the "noexec" flag.
-> >  		 */
-> > -		if (nd && nd->mnt && (nd->mnt->mnt_flags & MNT_NOEXEC))
-> > +		if (mnt && (mnt->mnt_flags & MNT_NOEXEC))
-> 
-> Why is this entirely unrelated cleanup in this patch?
-> 
-> Except for that it looks fine.
+Christoph Lameter <clameter@sgi.com> writes:
 
-You're right.  In this context, it looks completely unrelated.  I'll
-separate it into another patch.
+> On Thu, 20 Sep 2007, Christoph Lameter wrote:
+>
+>> Eric: Anything that comes to mind in sysfs?
+>
+> Arg. Forget it. Its likely SLUB mm related.
 
--- Dave
+Ok.
+
+Eric
+
 
