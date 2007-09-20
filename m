@@ -1,73 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbXITWMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbXITWPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbXITWMQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXITWMD
+	id S1754961AbXITWPA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbXITWOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:12:03 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41552
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751616AbXITWMB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:12:01 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Tim Bird <tim.bird@am.sony.com>
+	Thu, 20 Sep 2007 18:14:53 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3182 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750919AbXITWOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 18:14:52 -0400
 Subject: Re: [Announce] Linux-tiny project revival
-Date: Thu, 20 Sep 2007 18:11:51 -0500
-User-Agent: KMail/1.9.6
-Cc: linux-tiny@selenic.com, linux kernel <linux-kernel@vger.kernel.org>,
+From: Joe Perches <joe@perches.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Rob Landley <rob@landley.net>, linux-tiny@selenic.com,
+       linux kernel <linux-kernel@vger.kernel.org>,
        CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
        Michael Opdenacker <michael@free-electrons.com>
-References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <46F2ED1E.3090407@am.sony.com>
 In-Reply-To: <46F2ED1E.3090407@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+References: <46F1645D.9050406@am.sony.com>
+	 <200709201538.43093.rob@landley.net>  <46F2ED1E.3090407@am.sony.com>
+Content-Type: text/plain
+Date: Thu, 20 Sep 2007 15:14:25 -0700
+Message-Id: <1190326465.26101.171.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709201811.51384.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 September 2007 4:58:54 pm Tim Bird wrote:
-> Rob Landley wrote:
-> > So instead of:
-> >   printk(KERN_NOTICE "Fruit=%d\n", banana);
-> > It would now be:
-> >   printk(KERN_NOTICE, "Fruit=%d\n", banana);
-> >
-> > Change the header from:
-> >   #define KERN_NOTICE "<5>"
-> > to:
-> >   #define KERN_NOTICE 5
-> >
-> > Then you can change the printk guts to do something vaguely like
-> > (untested): #define printk(arg1, arg2, ...) actual_printk("<" #arg1 ">"
-> > arg2, __VA_ARGS__)
->
-> ...
->
-> > [then] the
-> > compiler's dead code eliminator zaps the printks you don't care about so
-> > they don't bloat the kernel image.
->
-> I agree in principal with the idea, but there are some major
-> practical wrinkles that would have to be worked through.
->
-> First, not all printks that are missing a log level should have one.
-> People do stuff like this:
->
-> printk(KERN_INFO "interesting info follows:");
-> ...
-> printk("var5: %d\n", var5);
->
-> Or even things that evaluate to:
-> printk("");
->
-> The code inside printk currently has to examine the
-> strings, looking for line feeds and inserting log levels.
->
+On Thu, 2007-09-20 at 14:58 -0700, Tim Bird wrote:
 > Given that there are about 60,000 printks in the kernel (and that's
 > not counting wrappers like dprintk() and other locally-defined
 > functions and macros) it would be a huge task to examine the code
@@ -75,22 +36,46 @@ On Thursday 20 September 2007 4:58:54 pm Tim Bird wrote:
 > (and thus should have an attached log level) and strings
 > that don't.
 
-Hmmm.  The hard part isn't making printk(0,blah) mean the same as not having a 
-log level message now, because the current logic already handles it.  The 
-problem is that filtering continuations of previous messages involves knowing 
-what log level the previous message was so you know whether or not to filter 
-it.
+I've converted most all of that treewide.
 
-Yeah, that would take some doing to untangle.  An incremental switchever (easy 
-printks first, I.E. the ones that currently specify a loglevel) seems more 
-strongly indicated...
+printk(KERN_<level> to pr_<level>(
 
-That said, I started this by noting I haven't personally had time to bang on 
-this since I thought of it.  You did ask for ideas. :)
+It's pretty automated.
 
->  -- Tim
+$ cat pr_alert.sh
+#!/bin/sh
+egrep -r -w --include=*.[ch] -l "printk[[:space:]]*\([[:space:]]*KERN_ALERT" * | \
+ xargs perl ../cvt_pr.pl KERN_ALERT pr_alert
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+$ cat cvt_pr.pl
+if ($#ARGV < 3) {
+    print "usage: KERN_<level> pr_<level> files...\n";
+    exit;
+}
+
+for ($i=2; $i<$#ARGV; $i++) {
+    PrintkSearchReplace($ARGV[$i], $ARGV[0], $ARGV[1]);
+}
+
+sub PrintkSearchReplace{
+    my($file, $search, $replace) = @_;
+
+    my $content = "";
+    local( $/ );
+    open( my $fh, $file ) or die "File not found '$file'\n";
+    $content = <$fh>;
+    close(my $fh);
+    my $orig = $content;
+
+    $content =~ s/\bprintk[[:space:]]*\([[:space:]]*${search}[[:space:]]*([^\"]*)\"([^\\]*)\\n\"/${replace}\(\1 \"\2\"/mgs;
+    $content =~ s/\b${replace}\( /${replace}\(/mgs;
+    
+    if ($orig ne $content)
+    {
+        open(my $fh, ">${file}") or die "Could not open '$file'\n";
+        print $fh $content;
+        close(my $fh);
+    } 
+}
+
+
