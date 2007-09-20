@@ -1,37 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbXITQb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbXITQdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbXITQb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 12:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757199AbXITQbj
+	id S1758142AbXITQdw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 12:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbXITQdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 12:31:39 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:64049 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756812AbXITQbg (ORCPT
+	Thu, 20 Sep 2007 12:33:42 -0400
+Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:3125 "EHLO
+	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756210AbXITQdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 12:31:36 -0400
-X-IronPort-AV: E=Sophos;i="4.20,279,1186383600"; 
-   d="scan'208";a="400589500"
-To: "Sean Hefty" <sean.hefty@intel.com>
-Cc: "'Steve Wise'" <swise@opengridcomputing.com>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <general@lists.openfabrics.org>
-Subject: Re: [PATCH] RDMA/CMA: Use neigh_event_send() to initiate neighbour discovery.
-X-Message-Flag: Warning: May contain useful information
-References: <20070912100025.3190.89259.stgit@dell3.ogc.int>
-	<000101c7f568$9275b520$ff0da8c0@amr.corp.intel.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 20 Sep 2007 09:31:27 -0700
-In-Reply-To: <000101c7f568$9275b520$ff0da8c0@amr.corp.intel.com> (Sean Hefty's message of "Wed, 12 Sep 2007 11:13:08 -0700")
-Message-ID: <ada1wctguxs.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 20 Sep 2007 12:33:41 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba Satellite A40
+Date: Thu, 20 Sep 2007 18:33:38 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200709192014.08443.elendil@planet.nl> <20070920105312.GC12157@atrey.karlin.mff.cuni.cz> <200709201437.56431.elendil@planet.nl>
+In-Reply-To: <200709201437.56431.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Sep 2007 16:31:29.0330 (UTC) FILETIME=[B251E120:01C7FBA3]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709201833.38765.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Sep 2007 16:33:39.0119 (UTC) FILETIME=[FFAE1BF0:01C7FBA3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Roland - can you please queue this up for 2.6.24?
+On Thursday 20 September 2007, Frans Pop wrote:
+> On Thursday 20 September 2007, you wrote:
+> > > When compared with 2.6.22-4, dmesg no longer lists S4 and S5 as
+> > > supported for my Toshiba Satellite A40 laptop (Mobile Intel Pentium
+> > > 4, 2.8GHz).
+> > >
+> > > -Linux version 2.6.22-2-686 (Debian 2.6.22-4) (waldi@debian.org) ...
+> > > +Linux version 2.6.23-rc6 (root@faramir) ...
+> > >  [...]
+> > > -ACPI: (supports S0 S3 S4 S5)
+> > > +ACPI: (supports S0 S3)
+> >
+> > Unexpected, and potentially pretty serious. Something went wrong with
+> > ACPI. Can you try to narrow down when it started happening?
+>
+> rc1 still had all 4 levels. I'll run a bisect between rc1 and rc6.
 
-Done, thanks.
+I've bisected it down to this trio of changes:
+- b0cb1a19d05b8ea8 Replace CONFIG_SOFTWARE_SUSPEND with CONFIG_HIBERNATION
+- 296699de6bdc7171 Introduce CONFIG_SUSPEND for suspend-to-Ram and standby
+- 673d5b43daa00b42 ACPI: restore CONFIG_ACPI_SLEEP
+
+The actual change is probably in the second of those.
+
+I've seen the comment that the change may just be cosmetic, but I'll leave 
+it to others to confirm that (and if so, judge if it is desirable or not).
+
+Cheers,
+Frans Pop
