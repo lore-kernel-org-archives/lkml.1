@@ -1,111 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbXITATI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbXITAYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbXITATI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 20:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbXITAS5
+	id S1756230AbXITAYo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 20:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXITAYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 20:18:57 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:19622 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752574AbXITAS4 (ORCPT
+	Wed, 19 Sep 2007 20:24:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37967 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751214AbXITAYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 20:18:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p0DUy/GxI37nkwonpZcbP2pBRD2teOparU8psU0CIrZ2MUYtmmMCnaObWYtmlQTmi2RDnBZh4rzpej477GSFfCg4ajFyXjcApfpc2XTC6qAIZug4xhvCxI72UuS692tGJKdEIlj8f06JG045JhwqxLiGWadgVetMlMa8TAv73LE=
-Message-ID: <21d7e9970709191718q1695e96bgbd280c2590c1aebd@mail.gmail.com>
-Date: Thu, 20 Sep 2007 10:18:54 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jiri Slaby" <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070919192453.GB18707@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Sep 2007 20:24:36 -0400
+Date: Wed, 19 Sep 2007 17:24:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/video/pmag-ba-fb.c: Improve diagnostics
+Message-Id: <20070919172412.725508d0.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0709171736580.17606@blysk.ds.pg.gda.pl>
+	<Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com>
-	 <46F13938.1070709@gmail.com>
-	 <20070919121017.0cbcbc30.akpm@linux-foundation.org>
-	 <20070919192453.GB18707@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/20/07, Andi Kleen <andi@firstfloor.org> wrote:
-> On Wed, Sep 19, 2007 at 12:10:17PM -0700, Andrew Morton wrote:
-> > On Wed, 19 Sep 2007 16:59:04 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-> >
-> > > ---------8<---------8<---------8<---------8<---------8<---------8<----
-> > > That means
-> > > void agp_generic_destroy_page(void *addr)
-> > > {
-> > >         struct page *page;
-> > >
-> > >         if (addr == NULL)
-> > >                 return;
-> > >
-> > >         page = virt_to_page(addr);
-> > > (1)     unmap_page_from_agp(page);
-> > >         put_page(page);
-> > > (2)     free_page((unsigned long)addr);
-> > >         atomic_dec(&agp_bridge->current_memory_agp);
-> > > }
-> > >
-> > > (1) unmap_page_from_agp -> change_page_attr -> change_page_attr_addr ->
-> > > __change_page_attr -> save_page -> list_add(&fpage->lru, &deferred_pages);
-> > > (2) free_page -> free_pages -> __free_pages -> free_hot_page ->
-> > > free_hot_cold_page -> list_add(&page->lru, &pcp->list);
-> >
-> > that'll hurt.
-> >
-> > > any ideas how to fix this?
-> >
-> > We should hold a single reference on the page for its membership in
-> > deferred_pages.
->
-> The code is broken anyways. If you free pages without flushing
-> them first some other innocent user allocating them will end up
-> with possible uncached pages for some time.
->
-> Does this simple patch help?
->
-> -Andi
->
->
-> Flush uncached AGP pages before freeing
+On Tue, 18 Sep 2007 13:18:34 +0100 (BST)
+"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
 
-In theory this should be handled by the caller, so as to avoid the
-overhead of continuous flushing however I can see a potential race
-condition here if the pages are put back into the kernel before the
-caller flushes the mappings..
+>  Add error messages to the probe call.
+> 
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+>  While they may rarely trigger, they may be useful when something weird is 
+> going on.  Also this is good style.
+> 
+>  This is an updated version that addresses an issue raised by Mariusz 
+> Kozlowski for the sibling patch.  Checked with checkpatch.pl.
+> 
+>  Please apply.
+> 
+>   Maciej
+> 
+> patch-mips-2.6.23-rc5-20070904-pmag-ba-err-2
+> diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c
+> --- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c	2007-02-21 05:56:47.000000000 +0000
+> +++ linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c	2007-09-18 10:56:51.000000000 +0000
+> @@ -147,16 +147,23 @@ static int __init pmagbafb_probe(struct 
+>  	resource_size_t start, len;
+>  	struct fb_info *info;
+>  	struct pmagbafb_par *par;
+> +	int err = 0;
 
-Do we need some sort of two step approach here? as flushing after each
-page would be a major overhead for dynamic agp stuff in the new memory
-manager..
+This initialisation to zero is not good.
 
-Dave.
+Because if some error-path code forgot to do `err = -EFOO' then probe()
+will return zero and the driver will leave things in half-initialised state
+and will then proceed as if things had succeeded.  It will crash.
 
->
-> Signed-off-by: Andi Kleen <ak@suse.de>
->
-> Index: linux/drivers/char/agp/generic.c
-> ===================================================================
-> --- linux.orig/drivers/char/agp/generic.c
-> +++ linux/drivers/char/agp/generic.c
-> @@ -1185,6 +1185,7 @@ void agp_generic_destroy_page(void *addr
->
->         page = virt_to_page(addr);
->         unmap_page_from_agp(page);
-> +       flush_agp_mappings();
->         put_page(page);
->         free_page((unsigned long)addr);
->         atomic_dec(&agp_bridge->current_memory_agp);
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+So it's better to leave this local uninitialised, because we really want to
+get that compiler warning if someone forgot to set the return value.
+
+I made that change, but am too stupid to be able to work out how to create
+a config which will let me compile this thing.
+
+akpm:/usr/src/25> grep PMAG arch/arm/configs/*
+akpm:/usr/src/25> 
+
+bah.
