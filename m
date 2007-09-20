@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbXITMcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbXITMgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755800AbXITMcO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 08:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbXITMb7
+	id S1755114AbXITMgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 08:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXITMgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 08:31:59 -0400
-Received: from pat.uio.no ([129.240.10.15]:48850 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752919AbXITMb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 08:31:58 -0400
-Subject: Re: NFS + coredump OOPS
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: NetArt - Grzegorz Nosek <grzegorz.nosek@netart.pl>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070920072914.GA11115@tech.serwery.pl>
-References: <20070919105353.GA7392@tech.serwery.pl>
-	 <1190225233.6734.8.camel@heimdal.trondhjem.org>
-	 <20070920072914.GA11115@tech.serwery.pl>
-Content-Type: text/plain
-Date: Thu, 20 Sep 2007 08:31:54 -0400
-Message-Id: <1190291514.6763.7.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.075)
-X-UiO-Scanned: 34BFB0EFCAFDD8B0BF8D98D9E5190A1205E9A6C4
-X-UiO-Ratelimit-Test: Ratelimit
-X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1084 total 4006892 max/h 8345 blacklist 0 greylist 0 ratelimit 1
+	Thu, 20 Sep 2007 08:36:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46364 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbXITMgg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 08:36:36 -0400
+Date: Thu, 20 Sep 2007 18:09:28 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Leonid Kalev <lion@3tera.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, dushistov@mail.ru
+Subject: Re: [PATCH] [UFS] fs/ufs/super.c misreads the file system state
+In-Reply-To: <46F14EF3.3050606@3tera.com>
+Message-ID: <alpine.LFD.0.999.0709201804050.17093@enigma.security.iitk.ac.in>
+References: <46F14EF3.3050606@3tera.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-20 at 09:29 +0200, NetArt - Grzegorz Nosek wrote:
-> On Wed, Sep 19, 2007 at 02:07:13PM -0400, Trond Myklebust wrote:
-> > On Wed, 2007-09-19 at 12:53 +0200, NetArt - Grzegorz Nosek wrote:
-> > > [16249868.626066] ------------[ cut here ]------------
-> > > [16249868.684345] kernel BUG at mm/readahead.c:314!
-> > 
-> > That bug should have been fixed in 2.6.19-rc5. See 
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=029e332ea717810172e965ec50f942755ad0c58a
-> > 
-> > Cheers
-> >   Trond
+
+
+On Wed, 19 Sep 2007, Leonid Kalev wrote:
 > 
-> Thanks! Is this single commit safe to apply on older kernels (we're on
-> 2.6.18.y for the time being), or does it depend on other changes?
+> ufs_get_fs_state() needs the file system type to read the state from the
+> correct place in the superblock. It takes the type from UFS_SB(sb)->s_flags,
+> but that value is stored after the first call to ufs_get_fs_state(). The patch
+> below moves the assignment of s_flags up, before the first call to
+> ufs_get_fs_state().
 > 
-> Best regards,
->  Grzegorz Nosek
+> The patch is against linux-2.6.23-rc6-git7, but it applies (with offset) to
+> 2.6.22 and to earlier versions as well. It has been tested on the Solaris
+> flavor of UFS (ufstype=sunx86) - with this change, the file system can be used
+> in read-write mode.
 
-It should be quite safe to apply afaik.
+The same fix is already in 2.6.23-rc6-mm1 (don't know if it's lined up
+for .23 though, I think it should be).
 
-Cheers
-  Trond
 
+Satyam
+
+PS: All my mails to Evgeniy Dushistov never reach him. The mail.ru server
+    is absolutely *evil* and simply rejects all mails unless the sender
+    is already whitelisted by the reciever (!)
