@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbXITHFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbXITHF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbXITHFr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbXITHFU
+	id S1758111AbXITHF7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbXITHFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:05:20 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:65209 "EHLO
+	Thu, 20 Sep 2007 03:05:21 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:64799 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751419AbXITHFQ (ORCPT
+	with ESMTP id S1751432AbXITHFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:05:16 -0400
+	Thu, 20 Sep 2007 03:05:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=rw8RyXxs/OryqQ7XO9kd5qEuAf4zASU4BxLBF7o2+QbR/IkPfmSk8L8BrgvXw/2HLqtJqVOwTE1HSFTT0nUWXXbumjRJ2sMZ0Ic+CxslX5XNVYV8pDu3ogfVdQ75cNQPW/yx3W53JNPtLPdHZbDuysKNVsYk0D6Y6tT8/rbuvwg=
-Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 02/15] sysfs: fix comments of sysfs_add/remove_one()
-In-Reply-To: <11902719091692-git-send-email-htejun@gmail.com>
+        b=WYX9iMnhs/g7m2PtjGgnrDTB4iKpk1Z/nCOXqKypPYIjc4rTKw90hz5c6NZuUoWXvJUI3w9js4o2BDQqFPud6UynmbLq1R5UQqpJVPF70o7w74h/fgApMvjULJV3tMxSlFMVW3mZPXtBh+oZvP16IPYh4U9qq14Zn/y1lbaZZHw=
+Subject: [PATCHSET 1/4] sysfs: misc updates
+In-Reply-To: 
 X-Mailer: git-send-email
 Date: Thu, 20 Sep 2007 16:05:09 +0900
-Message-Id: <1190271909482-git-send-email-htejun@gmail.com>
+Message-Id: <11902719091692-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,43 +30,53 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs_add/remove_one() now link and unlink the target dirent into and
-from the children list.  Update comments accordingly.
+Hello, all.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/dir.c |   10 +++-------
- 1 files changed, 3 insertions(+), 7 deletions(-)
+There are four patchsets going out today, which are...
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index da4bb66..e85206c 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -410,10 +410,8 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
-  *	@sd: sysfs_dirent to be added
-  *
-  *	Get @acxt->parent_sd and set sd->s_parent to it and increment
-- *	nlink of parent inode if @sd is a directory.  @sd is NOT
-- *	linked into the children list of the parent.  The caller
-- *	should invoke sysfs_link_sibling() after this function
-- *	completes if @sd needs to be on the children list.
-+ *	nlink of parent inode if @sd is a directory and link into the
-+ *	children list of the parent.
-  *
-  *	This function should be called between calls to
-  *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
-@@ -449,9 +447,7 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-  *	@sd: sysfs_dirent to be added
-  *
-  *	Mark @sd removed and drop nlink of parent inode if @sd is a
-- *	directory.  @sd is NOT unlinked from the children list of the
-- *	parent.  The caller is repsonsible for removing @sd from the
-- *	children list before calling this function.
-+ *	directory.  @sd is unlinked from the children list.
-  *
-  *	This function should be called between calls to
-  *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
--- 
-1.5.0.3
+ PS-1 misc updates
+ PS-2 allow suicide
+ PS-3 divorce sysfs from kobject and driver model
+ PS-4 implement new features - symlink name formatting, plugging, batch
+      error handling
+
+And this is PS-1.  This patchset is on top of
+drivers/sysfs-rewrite-sysfs_move_dir-in-terms-of-sysfs-dirents.patch
+in gregkh-2.6 as of today (20070920, based on 2.6.23-rc6-git4) and
+contains the following 15 patches.
+
+ 0001-sysfs-kill-SYSFS_FLAG_REMOVED.patch
+ 0002-sysfs-fix-comments-of-sysfs_add-remove_one.patch
+ 0003-sysfs-fix-sysfs_chmod_file-such-that-it-updates-s.patch
+ 0004-sysfs-clean-up-header-files.patch
+ 0005-sysfs-kill-sysfs_update_file.patch
+ 0006-sysfs-reposition-sysfs_dirent-s_mode.patch
+ 0007-sysfs-kill-unnecessary-sysfs_get-in-open-paths.patch
+ 0008-sysfs-kill-unnecessary-NULL-pointer-check-in-sysfs_.patch
+ 0009-sysfs-make-bin-attr-open-get-active-reference-of-pa.patch
+ 0010-sysfs-make-s_elem-an-anonymous-union.patch
+ 0011-sysfs-open-code-sysfs_attach_dentry.patch
+ 0012-sysfs-make-sysfs_root-a-regular-directory-dirent.patch
+ 0013-sysfs-move-sysfs_dirent-s_children-into-sysfs_dire.patch
+ 0014-sysfs-implement-sysfs_open_dirent.patch
+ 0015-sysfs-move-sysfs-file-poll-implementation-to-sysfs_.patch
+
+0001 reverses earlier driver/sysfs-kill-sysfs_flag_removed.patch and
+as such both patches can just be dropped.
+
+0002-0003 contains misc fixes.  0004 reorganizes and cleans up sysfs
+header files.  As these four patchsets are gonna disrupt out-of-tree
+changes anyway, this is a good time to clean up.  0005-0013 are also
+clean up patches.  They change and tune things here and there but
+don't really cause behavior changes.
+
+0014-0015 implements sysfs_open_dirent and moves poll implementation
+to it.  This reduces the size of sysfs_dirent and fixes dangling
+sleeper bug in the current poll implementation.
+
+Thanks.
+
+--
+tejun
 
 
