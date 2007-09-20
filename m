@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbXITT6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbXITT6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbXITT6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbXITTxX
+	id S1755345AbXITT6g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbXITTxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:53:23 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:38536 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbXITTxO (ORCPT
+	Thu, 20 Sep 2007 15:53:25 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:49217 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbXITTxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:53:14 -0400
-Subject: [PATCH 14/25] elevate write count for file_update_time()
+	Thu, 20 Sep 2007 15:53:16 -0400
+Subject: [PATCH 18/25] elevate writer count for do_sys_truncate()
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 20 Sep 2007 12:53:06 -0700
+Date: Thu, 20 Sep 2007 12:53:12 -0700
 References: <20070920195249.852667D5@kernel>
 In-Reply-To: <20070920195249.852667D5@kernel>
-Message-Id: <20070920195306.C855ABDD@kernel>
+Message-Id: <20070920195312.5D92D4C4@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 Acked-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/inode.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ lxc-dave/fs/open.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff -puN fs/inode.c~elevate-write-count-for-file_update_time fs/inode.c
---- lxc/fs/inode.c~elevate-write-count-for-file_update_time	2007-09-20 12:16:16.000000000 -0700
-+++ lxc-dave/fs/inode.c	2007-09-20 12:16:16.000000000 -0700
-@@ -1232,10 +1232,19 @@ void file_update_time(struct file *file)
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct timespec now;
- 	int sync_it = 0;
-+	int err = 0;
+diff -puN fs/open.c~elevate-writer-count-for-do-sys-truncate fs/open.c
+--- lxc/fs/open.c~elevate-writer-count-for-do-sys-truncate	2007-09-20 12:16:19.000000000 -0700
++++ lxc-dave/fs/open.c	2007-09-20 12:16:19.000000000 -0700
+@@ -244,21 +244,21 @@ static long do_sys_truncate(const char _
+ 	if (!S_ISREG(inode->i_mode))
+ 		goto dput_and_out;
  
- 	if (IS_NOCMTIME(inode))
- 		return;
+-	error = vfs_permission(&nd, MAY_WRITE);
++	error = mnt_want_write(nd.mnt);
+ 	if (error)
+ 		goto dput_and_out;
+ 
+-	error = -EROFS;
 -	if (IS_RDONLY(inode))
-+	/*
-+	 * Ideally, we want to guarantee that 'f_vfsmnt'
-+	 * is non-NULL here.  But, NFS exports need to
-+	 * be fixed up before we can do that.  So, check
-+	 * it for now. - Dave Hansen
-+	 */
-+	if (file->f_vfsmnt)
-+		err = mnt_want_write(file->f_vfsmnt);
-+	if (err)
- 		return;
+-		goto dput_and_out;
++	error = vfs_permission(&nd, MAY_WRITE);
++	if (error)
++		goto mnt_drop_write_and_out;
  
- 	now = current_fs_time(inode->i_sb);
-@@ -1251,6 +1260,8 @@ void file_update_time(struct file *file)
+ 	error = -EPERM;
+ 	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+-		goto dput_and_out;
++		goto mnt_drop_write_and_out;
  
- 	if (sync_it)
- 		mark_inode_dirty_sync(inode);
-+	if (file->f_vfsmnt)
-+		mnt_drop_write(file->f_vfsmnt);
- }
+ 	error = get_write_access(inode);
+ 	if (error)
+-		goto dput_and_out;
++		goto mnt_drop_write_and_out;
  
- EXPORT_SYMBOL(file_update_time);
+ 	/*
+ 	 * Make sure that there are no leases.  get_write_access() protects
+@@ -276,6 +276,8 @@ static long do_sys_truncate(const char _
+ 
+ put_write_and_out:
+ 	put_write_access(inode);
++mnt_drop_write_and_out:
++	mnt_drop_write(nd.mnt);
+ dput_and_out:
+ 	path_release(&nd);
+ out:
 _
