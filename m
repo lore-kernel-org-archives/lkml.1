@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbXITH1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbXITH1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760656AbXITH1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759922AbXITH0Z
+	id S1760778AbXITH1h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 03:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbXITH00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:26:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:23292 "EHLO
+	Thu, 20 Sep 2007 03:26:26 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:23307 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758617AbXITH0W (ORCPT
+	with ESMTP id S1759907AbXITH0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:26:22 -0400
+	Thu, 20 Sep 2007 03:26:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=aws9xKN28loQ+ZRflhy6/WuDqZpwA4yhCzwX14TgZrcsY2smPMukHrC0GtlH7UPkH9GBL+Zj/gnXhPgOjMslpInDSD/jVixufKjnD/6G77F49B+26YzpVSZOsxvawazSZhCg7BBUfg1T1hI9iIdZDEPOq60CxJHhXbLRNdLTZ+k=
-Subject: [PATCHSET 2/4] sysfs: allow suicide
-In-Reply-To: 
+        b=ezzwUWASGJTHTo8P8n2CPbXG6aBt9KSDllOCbpp16VZkeOquYf4YxiNPTYn7UUVRb5dM0CdvPyaFnenwre6bAjuWPwXT83hOccVrbnWthV9PiWZodFxE8f/7O+U0Ad4tnJGMberx8iv/beDrV2KgnnsDcTTsaE1K58AeD2xYqNs=
+Cc: Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 2/4] sysfs: make the sysfs_addrm_cxt->removed list FIFO
+In-Reply-To: <11902731752407-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Thu, 20 Sep 2007 16:26:15 +0900
-Message-Id: <11902731752407-git-send-email-htejun@gmail.com>
+Message-Id: <11902731753916-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -30,42 +31,54 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, all.
+Add sysfs_addrm_cxt->removed_tail to make the ->removed list FIFO.
+This will be used to implement care-free suicide.
 
-This is the second patchset of four sysfs update patchset series[1]
-and to be applied on top of the first patchset[1].
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+ fs/sysfs/dir.c   |    7 +++++--
+ fs/sysfs/sysfs.h |    2 +-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-Currently, sysfs files which want to kill themselves should ask
-someone else (workqueue) to kill it, which is so inhumane.  This
-patchset updates sysfs file implementation such that sysfs files can
-commit suicide peacefully.
-
-Global sledgehammer module unload inhibition/delay mechanism is
-implemented and used to prevent premature unload while suicide is in
-progress.  Suicide attempt is detected by scanning sysfs_buffers for
-matching accessor.  If suicide is detected, active references the
-accessor were holding are dropped early such that the suiciding node
-can be deactivated without deadlock.
-
-As active references go away early, the module basing the code the
-accessor is running can go away before it finishes.  Global module
-unload inhibition is used here to prevent that until accessor callback
-is complete.
-
-This patchset contains the following four patches.
-
- 0001-module-implement-module_inhibit_unload.patch
- 0002-sysfs-make-the-sysfs_addrm_cxt-removed-list-FIFO.patch
- 0003-sysfs-care-free-suicide-for-sysfs-files.patch
- 0004-sysfs-make-suicidal-nodes-just-do-it-directly.patch
-
-0001 needs Rusty Russell's ack.
-
-Thanks.
-
---
-tejun
-
-[1] http://thread.gmane.org/gmane.linux.kernel/582105
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index ad3394a..c902bdc 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -361,6 +361,7 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+ 
+ 	memset(acxt, 0, sizeof(*acxt));
+ 	acxt->parent_sd = parent_sd;
++	acxt->removed_tail = &acxt->removed;
+ 
+ 	/* Lookup parent inode.  inode initialization and I_NEW
+ 	 * clearing are protected by sysfs_mutex.  By grabbing it and
+@@ -448,8 +449,10 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ 	sysfs_unlink_sibling(sd);
+ 
+ 	sd->s_flags |= SYSFS_FLAG_REMOVED;
+-	sd->s_sibling = acxt->removed;
+-	acxt->removed = sd;
++	*acxt->removed_tail = sd;
++	/* keep them in FIFO order, suicide check depends on it */
++	acxt->removed_tail = &sd->s_sibling;
++	*acxt->removed_tail = NULL;
+ 
+ 	if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
+ 		drop_nlink(acxt->parent_inode);
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 269c845..be16947 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -71,7 +71,7 @@ static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
+ struct sysfs_addrm_cxt {
+ 	struct sysfs_dirent	*parent_sd;
+ 	struct inode		*parent_inode;
+-	struct sysfs_dirent	*removed;
++	struct sysfs_dirent	*removed, **removed_tail;
+ 	int			cnt;
+ };
+ 
+-- 
+1.5.0.3
 
 
