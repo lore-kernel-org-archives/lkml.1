@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbXITQ4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbXITQ75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757450AbXITQ4r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 12:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbXITQ4i
+	id S1757648AbXITQ75 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 12:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbXITQ7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 12:56:38 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:46229 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755650AbXITQ4h (ORCPT
+	Thu, 20 Sep 2007 12:59:49 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:38753 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbXITQ7s convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 12:56:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pHQhPykiJ0C7irKMogtdUbz9kkcqbJERwwae2q0AAnuIuQJoicoItIfBhysR8gBWfOQQExeyVK3By59nSEd+uIJ4ra8tbEMyBGDIUaaKQfrs2pHmhlYD6nyKZfOf/6KpCWSSDHK5ZbdWloFf/CWhR/mio7v0JvRuiPds2SWt5rY=
-Message-ID: <91b13c310709200956n155ff614p7234d28829a9b8ce@mail.gmail.com>
-Date: Fri, 21 Sep 2007 00:56:35 +0800
-From: "rae l" <crquan@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 2/3] netlink: the temp variable name max is ambiguous
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, cr_quan@163.com
-In-Reply-To: <20070916.163650.88475186.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1188675959178-git-send-email-crquan@gmail.com>
-	 <11886759682348-git-send-email-crquan@gmail.com>
-	 <20070916.163650.88475186.davem@davemloft.net>
+	Thu, 20 Sep 2007 12:59:48 -0400
+Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on 
+	ToshibaSatellite A40
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Maciek Rutecki <maciej.rutecki@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, Pavel Machek <pavel@ucw.cz>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <46F29965.8030603@gmail.com>
+References: <200709192014.08443.elendil@planet.nl> 
+	<20070920105312.GC12157@atrey.karlin.mff.cuni.cz> 
+	<200709201437.56431.elendil@planet.nl>  <46F29965.8030603@gmail.com>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Thu, 20 Sep 2007 18:59:42 +0200
+Message-Id: <1190307582.16437.7.camel@rukbat>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/17/07, David Miller <davem@davemloft.net> wrote:
-> From: Denis Cheng <crquan@gmail.com>
-> Date: Sun,  2 Sep 2007 03:45:58 +0800
->
-> > with the macro max provided by <linux/kernel.h>, so changed its name to a more proper one: limit
+On Thu, 2007-09-20 at 18:01 +0200, Maciek Rutecki wrote:
+> Frans Pop pisze:
+
+> >> Unexpected, and potentially pretty serious. Something went wrong with
+> >> ACPI. Can you try to narrow down when it started happening?
 > >
-> > Signed-off-by: Denis Cheng <crquan@gmail.com>
+> > rc1 still had all 4 levels. I'll run a bisect between rc1 and rc6.
 >
-> Not strictly necessary because CPP knows to differentiate between
-> 'max(' and plain 'max' when evaluating if a CPP macro should be
-> expanded or not.
-I also know the GNU CPP is intelligent, but people are often not.
-I just think the avoidance to use human ambiguous names could give
-more readability.
+> I have the same on HP/Compaq nx6310:
+> ACPI: (supports S0 S3)
+>
+> (kernel 2.6.23-rc6)
 
->
-> Nonetheless, applied to net-2.6.24, thanks.
->
+Linux version 2.6.20-16-generic (ubuntu):
+ACPI: (supports S0 S3 S4 S5)
 
--- 
-Denis Cheng
+Linux version 2.6.23-rc2-rg (with a little snd-hda-intel patch)
+ACPI: (supports S0 S3)
+
+So it  seems  happened between rc1 and rc2
+
+> But suspend to ram/disk works.
+
+For me too (with s2ram, not with vanilla echo ram > ...). And the system
+is otherwise ok.
+
+	Romano
+
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+
