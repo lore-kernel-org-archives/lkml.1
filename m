@@ -1,138 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbXITJZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXITJ0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756320AbXITJZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 05:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbXITJZR
+	id S1758278AbXITJ0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 05:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXITJ0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 05:25:17 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:25090 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbXITJZP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 05:25:15 -0400
-Date: Thu, 20 Sep 2007 11:24:40 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: ebiederm@xmission.com, greg@kroah.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH 4/4] sysfs: make suicidal nodes just do it directly
-Message-ID: <20070920112440.6216644b@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <11902731751771-git-send-email-htejun@gmail.com>
-References: <11902731752407-git-send-email-htejun@gmail.com>
-	<11902731751771-git-send-email-htejun@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Thu, 20 Sep 2007 05:26:15 -0400
+Received: from mga11.intel.com ([192.55.52.93]:53874 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750961AbXITJ0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 05:26:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,277,1186383600"; 
+   d="scan'208";a="314934427"
+Date: Thu, 20 Sep 2007 17:24:41 +0800
+From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+Message-ID: <20070920092441.GA1972@zhen-devel.sh.intel.com>
+Mail-Followup-To: Dave Airlie <airlied@gmail.com>,
+	Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org> <46F17F27.5080000@gmail.com> <21d7e9970709191851s1b3f35c1j42faae3ce6cd0b24@mail.gmail.com> <46F22048.8050401@gmail.com> <21d7e9970709200033k3f0f46feq7dae4e0a106f0372@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21d7e9970709200033k3f0f46feq7dae4e0a106f0372@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.22-rc6 i686
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 16:26:15 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+On 2007.09.20 17:33:45 +0000, Dave Airlie wrote:
+> > Maybe you are rather interested in these dmesg lines:
+> > Linux agpgart interface v0.102
+> > agpgart: suspend/resume problematic: resume with 3D/DRI active may lockup X.Org
+> > on some chipset/BIOS combos (see DEBUG_AGP_PM in intel-agp.c)
+> > agpgart: Detected an Intel G33 Chipset.
+> > agpgart: Detected 8192K stolen memory.
+> > agpgart: AGP aperture is 256M @ 0xd0000000
+> > [drm] Initialized drm 1.1.0 20060810
+> > ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+> > [drm] Initialized i915 1.6.0 20060119 on minor 0
+> > ...
+> > set status page addr 0x00033000
+> > agpgart: pg_start == 0x000005ff,intel_private.gtt_entries == 0x00000800
+> > agpgart: Trying to insert into local/stolen memory
+> >
+> > So the problem is, that X passes too low start.
+> >
+> > The X log:
+> > http://www.fi.muni.cz/~xslaby/sklad/Xorg.0.log.old
 
-> Sysfs now allows direct suicide.  Make suicidial sysfs nodes to use
-> it and remove now unncessary callback mechanism.
+Could you try current xf86-video-intel driver? just do
+git clone git://anongit.freedesktop.org/git/xorg/driver/xf86-video-intel
+
+My G33 was just verified broken today... so I'll try to reproduce it on
+another one tomorrow.
+
 > 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
->  drivers/base/core.c         |   33 ----------------------
->  drivers/s390/cio/ccwgroup.c |   25 +++-------------
->  drivers/scsi/scsi_sysfs.c   |   13 +--------
->  fs/sysfs/file.c             |   63 -------------------------------------------
->  include/linux/device.h      |    6 ----
->  include/linux/sysfs.h       |    9 ------
->  6 files changed, 6 insertions(+), 143 deletions(-)
+> I've cc'd Zhenyu who might be able to shed some light on this? can you
+> try 2.6.23-rc7 as maybe the G33 support still needs some work.. or
+> maybe I'm missing a patch in the drm..
 > 
 
-Just browsing through this (I'll review and do some tests later), but
-you missed drivers/s390/cio/device.c::ccw_device_remove_disconnected().
-
-Following (not event compile tested) patch (which is basically a revert
-of 59a8a6e227cf0bc42e5be741ebfea97c222ab9ef) should take care of it.
-
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-
----
- drivers/s390/cio/device.c |   51 +++++++++-------------------------------------
- 1 files changed, 10 insertions(+), 41 deletions(-)
-
---- linux-2.6.orig/drivers/s390/cio/device.c
-+++ linux-2.6/drivers/s390/cio/device.c
-@@ -288,62 +288,31 @@ static void ccw_device_unregister(struct
- 		device_del(&cdev->dev);
- }
- 
--static void ccw_device_remove_orphan_cb(struct device *dev)
--{
--	struct ccw_device *cdev = to_ccwdev(dev);
--
--	ccw_device_unregister(cdev);
--	put_device(&cdev->dev);
--}
--
--static void ccw_device_remove_sch_cb(struct device *dev)
--{
--	struct subchannel *sch;
--
--	sch = to_subchannel(dev);
--	css_sch_device_unregister(sch);
--	/* Reset intparm to zeroes. */
--	sch->schib.pmcw.intparm = 0;
--	cio_modify(sch);
--	put_device(&sch->dev);
--}
--
- static void
- ccw_device_remove_disconnected(struct ccw_device *cdev)
- {
-+	struct subchannel *sch;
- 	unsigned long flags;
--	int rc;
- 
- 	/*
- 	 * Forced offline in disconnected state means
- 	 * 'throw away device'.
- 	 */
- 	if (ccw_device_is_orphan(cdev)) {
--		/*
--		 * Deregister ccw device.
--		 * Unfortunately, we cannot do this directly from the
--		 * attribute method.
--		 */
-+		/* Deregister ccw device. */
- 		spin_lock_irqsave(cdev->ccwlock, flags);
- 		cdev->private->state = DEV_STATE_NOT_OPER;
- 		spin_unlock_irqrestore(cdev->ccwlock, flags);
--		rc = device_schedule_callback(&cdev->dev,
--					      ccw_device_remove_orphan_cb);
--		if (rc)
--			CIO_MSG_EVENT(2, "Couldn't unregister orphan "
--				      "0.%x.%04x\n",
--				      cdev->private->dev_id.ssid,
--				      cdev->private->dev_id.devno);
-+		ccw_device_unregister(cdev);
-+		put_device(&cdev->dev);
- 		return;
- 	}
--	/* Deregister subchannel, which will kill the ccw device. */
--	rc = device_schedule_callback(cdev->dev.parent,
--				      ccw_device_remove_sch_cb);
--	if (rc)
--		CIO_MSG_EVENT(2, "Couldn't unregister disconnected device "
--			      "0.%x.%04x\n",
--			      cdev->private->dev_id.ssid,
--			      cdev->private->dev_id.devno);
-+	sch = to_subchannel(cdev->dev.parent);
-+	css_sch_device_unregister(sch);
-+	/* Reset intparm to zeroes. */
-+	sch->schib.pmcw.intparm = 0;
-+	cio_modify(sch);
-+	put_device(&sch->dev);
- }
- 
- /**
+yep, should try 2.6.23-rc7 first, and it seems not drm relate.
