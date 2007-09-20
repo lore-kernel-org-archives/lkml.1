@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbXITOuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbXITOwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbXITOuu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 10:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbXITOun
+	id S1756517AbXITOwH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 10:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbXITOvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 10:50:43 -0400
-Received: from www.osadl.org ([213.239.205.134]:59047 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755228AbXITOun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 10:50:43 -0400
-Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
-	booted, USB-related WARNING
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <200709201647.33152.rjw@sisk.pl>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <200709201612.37194.rjw@sisk.pl> <1190296432.3481.18.camel@chaos>
-	 <200709201647.33152.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 20 Sep 2007 16:50:40 +0200
-Message-Id: <1190299841.3481.37.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-1.fc8) 
+	Thu, 20 Sep 2007 10:51:55 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:52136 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754873AbXITOvy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 10:51:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NIJAV07GV9zzgdreYu1Uy/aRWmDsG46pdPVe7QgMyoX9t4qffvx8guj8aJUgwd1jSXHLa6wBc0RldtiJl88Kgs26TO9zW0AzEmV8f0yco9x420uzaby0abDmAQYSXpT26M1sbgO45HRFNMOPKg3lolZO6peuG+zTrA1GagbwwaA=
+Message-ID: <b6a2187b0709200751j586aee93x3c2320141a392586@mail.gmail.com>
+Date: Thu, 20 Sep 2007 22:51:52 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jiri Kosina" <jikos@jikos.cz>
+Subject: Re: ACPI video mode patch review
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Pavel Machek" <pavel@ucw.cz>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0709201635000.24429@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46E9AD88.7070400@zytor.com>
+	 <Pine.LNX.4.64.0709201617440.24429@twin.jikos.cz>
+	 <b6a2187b0709200722q2755111brb8b7c3bdc71e2129@mail.gmail.com>
+	 <Pine.LNX.4.64.0709201635000.24429@twin.jikos.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-20 at 16:47 +0200, Rafael J. Wysocki wrote:
-> On Thursday, 20 September 2007 15:53, Thomas Gleixner wrote:
-> > On Thu, 2007-09-20 at 16:12 +0200, Rafael J. Wysocki wrote:
-> > > > Vs. the suspend / resume wreckage of rc6-mm1 / rc6-hrt2: 
-> > > 
-> > > ie. the one on the Vaio (I assume).
-> > > 
-> > > > I'm still fishing in rather dark water. Depending on the added
-> > > > instrumentation points the problem mutates up to the point where it
-> > > > vanishes completely. The hang, which requires key strokes again, happens
-> > > > consistently at the same place:
-> > > > 
-> > > > The notifier call in kernel/cpu.c::_cpu_up()
-> > > > 
-> > > >        ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
-> > > >                                                         -1, &nr_calls);
-> > > > 
-> > > > does not return, but _all_ registered notifiers are called and reach
-> > > > their return statement. This reminds me on:
-> > > > 
-> > > > http://lkml.org/lkml/2007/5/9/46
-> > > > 
-> > > > Sigh. I have no clue where to dig further.
-> > > 
-> > > Well, the above may affect SMP systems, but the Vaio is UP.  Hmm?
-> > 
-> > My jinxed VAIO variant is SMP, but it looks like the same mysterious
-> > error.
-> 
-> Hm.  Have you tried
-> 
-> # echo test > /sys/power/disk
-> # echo disk > /sys/power/state
-> 
-> (should suspend devices and disable the nonboot CPUs, wait for 5 sec. and
-> restore everything)?
+On 9/20/07, Jiri Kosina <jikos@jikos.cz> wrote:
+> On Thu, 20 Sep 2007, Jeff Chua wrote:
+>
 
-Works fine, but I need to reboot into a non debug kernel to verify.
+> With current -git, I still get the same behavior as with
+> previous 2.6.23-rcX kernels - i.e. after resume (with
+> acpi_sleep=s3_bios,s3_mode), I get corrupted image resembling the BIOS
+> POST graphics.
+>
+> Previous kernels (I am currently pretty sure that
+> 15028aad00ddf241581fbe74a02ec89cbb28d35d was OK, but I haven't done the
+> bisection yet) resumed perfectly with acpi_sleep=s3_bios,s3_mode on this
+> machine.
+>
+> Please note that this is very different HW than you have - it is sort-of a
+> desktop machine, not a notebook at all.
 
-	tglx
+Sorry, with -rc7, still needs the patch. Apparently it's still not
+included in the -rc7 kernel.
 
+It might already be in the latest git, but just want to be sure that's the case.
 
-
+Jeff.
