@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbXITKrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbXITKwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755288AbXITKrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 06:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXITKr3
+	id S1754818AbXITKwS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 06:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXITKwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 06:47:29 -0400
-Received: from hu-out-0506.google.com ([72.14.214.227]:10951 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbXITKr2 (ORCPT
+	Thu, 20 Sep 2007 06:52:09 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46334 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752044AbXITKwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 06:47:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=SNeKI+7/bvVJpSr53tqxr73lxOa2NPMPYdCCLgd6hQwJmz5k/ffaUAkWvCOp7L+oWMeuI+NTVCU+fwu9OG6X3M+DKLfWetiqbZkIFWmj7kHh5IlQaU5UOUKOR6RTKZBx3IepeJo1mfVFj+DWsF5C4zJGri49K7k6bc/YlvuUxSk=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [patch 7/8] Immediate Values - Documentation
-Date: Thu, 20 Sep 2007 11:46:57 +0100
-User-Agent: KMail/1.9.1
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20070827155910.336723755@polymtl.ca> <20070827160214.252315593@polymtl.ca>
-In-Reply-To: <20070827160214.252315593@polymtl.ca>
+	Thu, 20 Sep 2007 06:52:08 -0400
+Date: Thu, 20 Sep 2007 12:50:02 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: a.zummo@towertech.it, rtc-linux@googlegroups.com,
+       kernel list <linux-kernel@vger.kernel.org>,
+       dbrownell@users.sourceforge.net
+Subject: Re: RTC wakealarm write-only, still has 644 permissions
+Message-ID: <20070920105002.GA4611@elf.ucw.cz>
+References: <20070920103225.GA4410@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709201146.57334.vda.linux@googlemail.com>
+In-Reply-To: <20070920103225.GA4410@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 August 2007 16:59, Mathieu Desnoyers wrote:
-> +We can therefore affirm that adding 2 markers to getppid, on a system with high
-> +memory pressure, would have a performance hit of at least 6.0% on the system
-> +call time, all within the uncertainty limits of these tests. The same applies to
-> +other kernel code paths. The smaller those code paths are, the highest the
-> +impact ratio will be.
+Hi!
 
-Immediates make code bigger, right?
-What will happen on a system with high *icache* pressure?
-There a lot of inline happy and/or C++ folks out there
-in the userland, they routinely have programs in tens of megabytes range.
+> ...should they be changed to 200? Or perhaps file should be readable?
+> 
+> root@amd:/sys/class/rtc/rtc0# cat wakealarm 
+> root@amd:/sys/class/rtc/rtc0# echo 132719 > wakealarm 
+> root@amd:/sys/class/rtc/rtc0# ls -al wakealarm 
+> -rw-r--r-- 1 root root 0 Sep 20 12:30 wakealarm
+> root@amd:/sys/class/rtc/rtc0# cat wakealarm 
+> root@amd:/sys/class/rtc/rtc0# cat wakealarm 
+> root@amd:/sys/class/rtc/rtc0# 
+> 
+> 
+> ...standard PC with reasonably recent kernel...
 
-getppid is one of the lightest syscalls out there.
-What kind of speedup do you see on a real-world test
-(two processes exchaging data through pipes, for example)?
+Hmm, something is definitely wrong in here. I sometimes _do_ get
+something back.
 
-> +Therefore, not only is it interesting to use the immediate values to dynamically
-> +activate dormant code such as the markers, but I think it should also be
-> +considered as a replacement for many of the "read mostly" static variables.
+root@amd:~# s2ram
+Switching from vt9 to vt1
 
-What effect that will have on "size vmlinux" on AMD64?
---
-vda
+
+switching back to vt9
+root@amd:~# 
+root@amd:~# 
+root@amd:~# cd /sys/class/rtc/rtc0
+root@amd:/sys/class/rtc/rtc0# ls
+date  dev  device@  name  power/  since_epoch  subsystem@  time
+uevent  wakealarm
+root@amd:/sys/class/rtc/rtc0# cat wakealarm 
+2051629528
+root@amd:/sys/class/rtc/rtc0# cat power/wakeup 
+
+root@amd:/sys/class/rtc/rtc0# cat wakealarm 
+2051629528
+root@amd:/sys/class/rtc/rtc0# date +%s
+1190285030
+root@amd:/sys/class/rtc/rtc0# echo 1190285050 > wakealarm 
+root@amd:/sys/class/rtc/rtc0# s2ram
+Switching from vt9 to vt1
+
+
+switching back to vt9
+root@amd:/sys/class/rtc/rtc0# 
+root@amd:/sys/class/rtc/rtc0# 
+root@amd:/sys/class/rtc/rtc0# cat wakealarm 
+root@amd:/sys/class/rtc/rtc0# cat wakealarm 
+root@amd:/sys/class/rtc/rtc0# date +%s
+1190285229
+root@amd:/sys/class/rtc/rtc0# cat wakealarm 
+root@amd:/sys/class/rtc/rtc0# 
+
+Also, is there some documentation for wakealarm?
+
+sh-3.1$ cd Documentation/
+sh-3.1$ grep -ri wakealarm .
+
+...is it time in seconds? In UTC? In whatever timezone rtc clocks are
+using? It does not seem to work for me :-(.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
