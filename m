@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbXITGue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbXITGxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbXITGue (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 02:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbXITGu0
+	id S1753288AbXITGxo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 02:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbXITGxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 02:50:26 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56128 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbXITGu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 02:50:26 -0400
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Howard Chu <hyc@symas.com>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MTRR initialization
-References: <46EAB7DA.10507@symas.com>
-	<200709191452.57505.jesse.barnes@intel.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 20 Sep 2007 08:50:23 +0200
-In-Reply-To: <200709191452.57505.jesse.barnes@intel.com>
-Message-ID: <p73d4wdal00.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 20 Sep 2007 02:53:33 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:57957 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750786AbXITGxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 02:53:32 -0400
+Date: Thu, 20 Sep 2007 08:53:23 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kernel@avr32linux.org, avr32@atmel.com
+Subject: Re: [PATCH] AVR32:  Drop support for redundant "keepinitrd"
+ boot-time parm.
+Message-ID: <20070920085323.74676fc9@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <Pine.LNX.4.64.0709190840020.20641@localhost.localdomain>
+References: <Pine.LNX.4.64.0709190840020.20641@localhost.localdomain>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes <jesse.barnes@intel.com> writes:
+On Wed, 19 Sep 2007 08:43:42 -0400 (EDT)
+"Robert P. J. Day" <rpjday@mindspring.com> wrote:
+
 > 
-> To do this in a nicer way (and be less vulnerable to similar BIOS 
-> funkiness) the kernel really needs full PAT support.  That should allow 
-> WC over WB and WC over UC mappings to occur, at least if I'm 
-> remembering the docs right...
+> Given the existing "retain_initrd" boot-time parameter defined in
+> init/initramfs.c, there appears to be no need for the equivalent
+> "keepinitrd" parameter.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-PAT only really helps for device driver performance optimizations.
-But if the basic WB MTRRs are wrong PAT cannot really salvage it. 
+Applied, thanks.
 
--Andi
+If anyone are actually using the "keepinitrd" option on AVR32 (I doubt
+it since you have to read the source to know that it even exists),
+please use "retain_initrd" instead.
+
+Håvard
