@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbXITMTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbXITM0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756124AbXITMTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 08:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbXITMS6
+	id S1754699AbXITM0S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 08:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbXITM0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 08:18:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51276 "EHLO
+	Thu, 20 Sep 2007 08:26:06 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46632 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753461AbXITMS4 (ORCPT
+	with ESMTP id S1752879AbXITM0F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 08:18:56 -0400
-Date: Thu, 20 Sep 2007 17:51:42 +0530 (IST)
+	Thu, 20 Sep 2007 08:26:05 -0400
+Date: Thu, 20 Sep 2007 17:58:52 +0530 (IST)
 From: Satyam Sharma <satyam@infradead.org>
 X-X-Sender: satyam@enigma.security.iitk.ac.in
 To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
@@ -18,63 +18,68 @@ cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
        kexec-ml <kexec@lists.infradead.org>,
        lkml <linux-kernel@vger.kernel.org>,
        David Rientjes <rientjes@google.com>, Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 5/4] [-mm patch] Rename macros returning the size.
-In-Reply-To: <46F2056E.6080601@mxs.nes.nec.co.jp>
-Message-ID: <alpine.LFD.0.999.0709201746090.17093@enigma.security.iitk.ac.in>
+Subject: Re: [PATCH 6/4] [-mm patch] use the existing offsetof().
+In-Reply-To: <46F205DB.70209@mxs.nes.nec.co.jp>
+Message-ID: <alpine.LFD.0.999.0709201752310.17093@enigma.security.iitk.ac.in>
 References: <46E9F6A9.8060500@mxs.nes.nec.co.jp> <46E9F942.5070007@mxs.nes.nec.co.jp>
  <20070914190350.011cdadb.akpm@linux-foundation.org> <46F204FD.6040303@mxs.nes.nec.co.jp>
- <46F2056E.6080601@mxs.nes.nec.co.jp>
+ <46F205DB.70209@mxs.nes.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
 
 On Thu, 20 Sep 2007, Ken'ichi Ohmichi wrote:
 > 
-> [PATCH 5/4] [-mm patch] Rename macros returning the size.
->  The #define SIZE() should be renamed STRUCT_SIZE() since it's always 
->  returning the size of the struct with a given name.  This would allow 
->  TYPEDEF_SIZE() to simply become SIZE() since it need not be used 
->  exclusively for typedefs. This idea is David Rientjes's.
->  http://www.ussg.iu.edu/hypermail/linux/kernel/0709.1/1964.html
+> [PATCH 6/4] [-mm patch] use the existing offsetof().
+>  It is better that offsetof() is used for VMCOREINFO_OFFSET().
+>  This idea is Joe Perches's.
+> 
+> 
 > 
 > Thanks
-> Ken'ichi Ohmichi
+> Ken'ichi Ohmichi 
 > 
 > ---
-> Signed-off-by: David Rientjes <rientjes@google.com>
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Hmm, I think adding a s-o-b line for David here isn't quite correct.
-When someone reviews a patch and gives a suggestion, you only need to
-copy him on the next iteration (and he may ack it or whatever, if he
-wants) -- but adding a s-o-b line like that ends up (incorrectly)
-denoting that he came between the author-to-git-commit chain ...
+Same deal here ...
 
 
 > Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
-
-> --- a/include/linux/kexec.h	2007-09-18 15:22:19.000000000 +0900
-> +++ b/include/linux/kexec.h	2007-09-18 15:23:22.000000000 +0900
-> @@ -131,10 +131,10 @@ unsigned long paddr_vmcoreinfo_note(void
->  	vmcoreinfo_append_str("SYMBOL(%s)=%lx\n", #name, (unsigned long)&name)
->  #define VMCOREINFO_SIZE(name) \
->  	vmcoreinfo_append_str("SIZE(%s)=%lu\n", #name, \
-> -			      (unsigned long)sizeof(struct name))
-> -#define VMCOREINFO_TYPEDEF_SIZE(name) \
-> -	vmcoreinfo_append_str("SIZE(%s)=%lu\n", #name, \
->  			      (unsigned long)sizeof(name))
-> +#define VMCOREINFO_STRUCT_SIZE(name) \
-> +	vmcoreinfo_append_str("SIZE(%s)=%lu\n", #name, \
-> +			      (unsigned long)sizeof(struct name))
+> ---
+> diff -rpuN a/include/linux/kexec.h b/include/linux/kexec.h
+> --- a/include/linux/kexec.h	2007-09-18 15:23:22.000000000 +0900
+> +++ b/include/linux/kexec.h	2007-09-18 15:27:29.000000000 +0900
+> @@ -137,7 +137,7 @@ unsigned long paddr_vmcoreinfo_note(void
+>  			      (unsigned long)sizeof(struct name))
 >  #define VMCOREINFO_OFFSET(name, field) \
 >  	vmcoreinfo_append_str("OFFSET(%s.%s)=%lu\n", #name, #field, \
->  			      (unsigned long)&(((struct name *)0)->field))
+> -			      (unsigned long)&(((struct name *)0)->field))
+> +			      (unsigned long)offsetof(struct name, field))
+>  #define VMCOREINFO_LENGTH(name, value) \
+>  	vmcoreinfo_append_str("LENGTH(%s)=%lu\n", #name, (unsigned long)value)
 
-Please use %zu and lose all the ugly (unsigned long) casts here.
+... and here. Use %zu and lose the casts.
 
-Otherwise it looks good,
+BTW I don't think these macros are such a big win in readability or
+code clarity anyway. And I noticed that there are still some open
+calls to vmcoreinfo_append_str() in kexec.c (such as for the OS_RELEASE
+case) which you haven't macro-ized ... we end up having code that looks
+like:
+
+	vmcoreinfo_append_str(...);
+	...
+
+	...
+	VMCOREINFO_OFFSET(...);
+	...
+
+and it's not even obvious (unless you follow on to the definition of the
+later macro) that the above two are *exactly* the same. So you could also
+consider just losing the macros altogether.
+
 
 Satyam
