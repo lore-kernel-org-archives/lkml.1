@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbXITUvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbXITUwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753655AbXITUvK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbXITUu5
+	id S1754608AbXITUwO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbXITUv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 16:50:57 -0400
-Received: from mail.tmr.com ([64.65.253.246]:53706 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbXITUu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 16:50:57 -0400
-Message-ID: <46F2DDD0.3030500@tmr.com>
-Date: Thu, 20 Sep 2007 16:53:36 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: David Newall <david@davidnewall.com>
-CC: Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, majkls <majkls@prepere.com>,
-       bunk@fs.tum.de, linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-References: <952DN-83o-31@gated-at.bofh.it> <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com>
-In-Reply-To: <46F2B59F.8090709@davidnewall.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 20 Sep 2007 16:51:59 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:34147 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbXITUv6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 16:51:58 -0400
+Date: Thu, 20 Sep 2007 13:50:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Rob Landley <rob@landley.net>
+Cc: linux-tiny@selenic.com, Tim Bird <tim.bird@am.sony.com>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Michael Opdenacker <michael@free-electrons.com>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>
+Subject: Re: Monster switch for small size (was Linux-tiny revival)
+Message-Id: <20070920135002.b00d8e64.randy.dunlap@oracle.com>
+In-Reply-To: <200709201641.22580.rob@landley.net>
+References: <46F1645D.9050406@am.sony.com>
+	<20070920091042.GA6035@shadowen.org>
+	<46F2A99A.3080400@am.sony.com>
+	<200709201641.22580.rob@landley.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> Philipp Marek wrote:
->> AFAIK pivot_root() changes the / mapping for *all* processes, no?
->>   
->
-> The manual page is confusing.  It even admits to being "intentionally 
-> vague".  However the goal seems clear:
->
->    "pivot_root() moves the root file system of the current process to
->    the directory put_old and makes new_root the new root file system of
->    the current process"
->    -- man 2 pivot_root
->
-> There's an argument that pivot_root could be improved...
->
-And very little argument that the man page could be improved, perhaps. 
-However, there is no question that pivot_root is intended to have 
-breadth for more than one process.
+On Thu, 20 Sep 2007 16:41:22 -0500 Rob Landley wrote:
 
-Keeping this functionality sounds a little like putting a bow tie and 
-tux on your bug and calling it a "feature." Not all bugs are useless for 
-legitimate purposes, but it doesn't make them safe. It appears to be a 
-sort-of way to get per-process bind mounts.
+> On Thursday 20 September 2007 12:10:50 pm Tim Bird wrote:
+> > Andy Whitcroft wrote:
+> > > Knowing nothing about these options, from a test perspective it would
+> > > be nice if we were able to simply enable "the lot" so we can do "normal"
+> > > -mm runs and "tiny" -mm runs without any manual intervention?
+> >
+> > I agree completely.
+> >
+> > I have been thinking for a while about how to make a "monster switch"
+> > (the kind they always seem to have in Frankenstein movies) that
+> > switches a whole bunch of settings at once.  We currently have methods
+> > in the kernel for:
+> >  * default (or recommended) config for a particular platform
+> >  * all yes - to build as much as possible
+> >  * all no - to build as little as possible
+> >
+> > The problem with "allno" is that it rarely produces a usable
+> > kernel.
+> 
+> Beyond that, allno doesn't come close to switching everything off.
+> 
+> 1) You have to _enable_ CONFIG_EMBEDDED in order to go into that menu and 
+> switch _off_ the stuff in there.
+> 
+> 2) The stuff CONFIG_EMBEDDED reveals isn't all in that menu.  CONFIG_BLOCK is 
+> at the top level menu.  CONFIG_VT and CONFIG_UNIX98_PTYS are buried down 
+> under device drivers->character devices, and there's more sprinkled all over.  
+> You have to track it all down and switch it off to get an _actual_ 
+> allnoconfig kernel.
+> 
+> (I cut the bit where you reinvent miniconfig.  People keep doing this.  I dig 
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+I noticed that too.
 
+> it up and resubmit it every year or so, so Roman Zippel can shoot it down 
+> again.  Meanwhile, not only is Firmware Linux happily using it, but I even 
+> wrote more documentation at 
+> http://landley.net/code/firmware/new_platform.html although you have to 
+> scroll down a bit to get to the stuff about miniconfig...)
+
+I use it for daily build/boot/run-some-number-like-30-tests kernel testing.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
