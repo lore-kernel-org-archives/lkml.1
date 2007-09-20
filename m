@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbXITX3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbXITXce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752856AbXITX3R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 19:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXITX3G
+	id S1753232AbXITXce (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 19:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXITXc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 19:29:06 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45412
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751960AbXITX3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 19:29:04 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Joe Perches <joe@perches.com>
-Subject: Re: [Announce] Linux-tiny project revival
-Date: Thu, 20 Sep 2007 19:28:49 -0500
-User-Agent: KMail/1.9.6
-Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny@selenic.com,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       Michael Opdenacker <michael@free-electrons.com>
-References: <46F1645D.9050406@am.sony.com> <46F2ED1E.3090407@am.sony.com> <1190326465.26101.171.camel@localhost>
-In-Reply-To: <1190326465.26101.171.camel@localhost>
+	Thu, 20 Sep 2007 19:32:28 -0400
+Received: from waste.org ([66.93.16.53]:47905 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbXITXc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 19:32:27 -0400
+Date: Thu, 20 Sep 2007 18:31:14 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Dave Airlie <airlied@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+Message-ID: <20070920233114.GR4219@waste.org>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com> <20070920220604.GA17536@waste.org> <20070920230304.GJ18707@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709201928.49440.rob@landley.net>
+In-Reply-To: <20070920230304.GJ18707@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 September 2007 5:14:25 pm Joe Perches wrote:
-> On Thu, 2007-09-20 at 14:58 -0700, Tim Bird wrote:
-> > Given that there are about 60,000 printks in the kernel (and that's
-> > not counting wrappers like dprintk() and other locally-defined
-> > functions and macros) it would be a huge task to examine the code
-> > and differentiate strings that really start a new log message
-> > (and thus should have an attached log level) and strings
-> > that don't.
->
-> I've converted most all of that treewide.
->
-> printk(KERN_<level> to pr_<level>(
->
-> It's pretty automated.
+On Fri, Sep 21, 2007 at 01:03:04AM +0200, Andi Kleen wrote:
+> > It's broken for me.
+> > 
+> > 2.6.23-rc3-mm1: solid lock on X shutdown (noticed when upgrading)
+> >       -rc4-mm1: solid lock on X shutdown, random solid locks about
+> >                 once every four hours
+> >       -rc6-mm1: solid lock on X startup
+> >    +your patch: screen goes black, turns off and on a few times during
+> >                 startup, can reboot with sysrq-b
+> 
+> Does it work with my simple dumb patch instead of Dave's ? 
 
-Perl, being a write-only language, does not help my poor little brain 
-understand what's going on.  You convert printk(KERN_INFO, blah) to 
-pr_INFO(blah)?  I'm not finding pr_INFO with a grep on the files in 
-2.6.23-rc7.  Is this something you added?
+Sorry, forgot to mention: your one-liner flush also doesn't work (same
+behavior).
 
-Rob
+I suspect I'm tripping two things and the flushing thing fixes one but
+not the other.
+
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Mathematics is the supreme nostalgia of our time.
