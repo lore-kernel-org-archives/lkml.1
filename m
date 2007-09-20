@@ -1,180 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbXITBbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbXITBjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754486AbXITBbE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 21:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXITBay
+	id S1754950AbXITBjg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 21:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXITBj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 21:30:54 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:33599 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbXITBax (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 21:30:53 -0400
-X-IronPort-AV: i="4.20,276,1186372800"; 
-   d="scan'208"; a="51862355:sNHT33092255"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com
-Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin relocations
-Date: Wed, 19 Sep 2007 21:31:09 -0400
-User-Agent: KMail/1.9.5
-Cc: "Bernd Schmidt" <bernd.schmidt@analog.com>,
-       "David McCullough" <davidm@snapgear.com>,
-       "Greg Ungerer" <gerg@snapgear.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, ysato@users.sourceforge.jp,
-       lethal@linux-sh.org, miles@lsi.nec.co.jp, linux-m32r@ml.linux-m32r.org
-References: <1190102965.4406.9.camel@roc-desktop>
-In-Reply-To: <1190102965.4406.9.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Sep 2007 21:39:26 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41367 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751290AbXITBjY (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 19 Sep 2007 21:39:24 -0400
+Date: Thu, 20 Sep 2007 11:38:21 +1000
+From: David Chinner <dgc@sgi.com>
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: David Chinner <dgc@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nathan Scott <nscott@aconex.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@skynet.ie>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Message-ID: <20070920013821.GR995458@sgi.com>
+References: <200709161853.12050.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com> <200709181116.22573.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org> <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org> <1190163523.24970.378.camel@edge.yarra.acx> <alpine.LFD.0.999.0709181803020.16478@woody.linux-foundation.org> <20070919050910.GK995458@sgi.com> <20070919140430.GJ4608@v2.random>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709192131.09469.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 20 Sep 2007 01:30:47.0264 (UTC) FILETIME=[DEBD0600:01C7FB25]
+In-Reply-To: <20070919140430.GJ4608@v2.random>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 18 Sep 2007 04:09, Bryan Wu pondered:
-> From: Bernd Schmidt <bernd.schmidt@analog.com>
+On Wed, Sep 19, 2007 at 04:04:30PM +0200, Andrea Arcangeli wrote:
+> On Wed, Sep 19, 2007 at 03:09:10PM +1000, David Chinner wrote:
+> > Ok, let's step back for a moment and look at a basic, fundamental
+> > constraint of disks - seek capacity. A decade ago, a terabyte of
+> > filesystem had 30 disks behind it - a seek capacity of about
+> > 6000 seeks/s. Nowdays, that's a single disk with a seek
+> > capacity of about 200/s. We're going *rapidly* backwards in
+> > terms of seek capacity per terabyte of storage.
+> > 
+> > Now fill that terabyte of storage and index it in the most efficient
+> > way - let's say btrees are used because lots of filesystems use
+> > them. Hence the depth of the tree is roughly O((log n)/m) where m is
+> > a factor of the btree block size.  Effectively, btree depth = seek
+> > count on lookup of any object.
 > 
-> This just adds minimum support for the Blackfin relocations,
-> since we don't have enough space in each reloc. The idea
-> is to store a value with one relocation so that subsequent ones can
-> access it.
+> I agree. btrees will clearly benefit if the nodes are larger. We've an
+> excess of disk capacity and an huge gap between seeking and contiguous
+> bandwidth.
 > 
-> Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> Cc: David McCullough <davidm@snapgear.com>
-> Cc: Greg Ungerer <gerg@snapgear.com>
+> You don't need largepages for this, fsblocks is enough.
 
-Adding the other appropriate maintainers. for h8, m32r, sh and v850.
+Sure, and that's what I meant when I said VPC + large pages was
+a means to the end, not the only solution to the problem.
 
-> ---
->  fs/binfmt_flat.c             |    5 ++++-
->  include/asm-h8300/flat.h     |    3 ++-
->  include/asm-m32r/flat.h      |    3 ++-
->  include/asm-m68knommu/flat.h |    3 ++-
->  include/asm-sh/flat.h        |    3 ++-
->  include/asm-v850/flat.h      |    4 +++-
->  6 files changed, 15 insertions(+), 6 deletions(-)
-> diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
-> index 7b0265d..13b58f8 100644
-> --- a/fs/binfmt_flat.c
-> +++ b/fs/binfmt_flat.c
-> @@ -742,6 +742,7 @@ static int load_flat_file(struct linux_binprm * bprm,
->  	 * __start to address 4 so that is okay).
->  	 */
->  	if (rev > OLD_FLAT_VERSION) {
-> +		unsigned long persistent = 0;
->  		for (i=0; i < relocs; i++) {
->  			unsigned long addr, relval;
->  
-> @@ -749,6 +750,8 @@ static int load_flat_file(struct linux_binprm * bprm,
->  			   relocated (of course, the address has to be
->  			   relocated first).  */
->  			relval = ntohl(reloc[i]);
-> +			if (flat_set_persistent (relval, &persistent))
-> +				continue;
->  			addr = flat_get_relocate_addr(relval);
->  			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
->  			if (rp == (unsigned long *)RELOC_FAILED) {
-> @@ -757,7 +760,7 @@ static int load_flat_file(struct linux_binprm * bprm,
->  			}
->  
->  			/* Get the pointer's value.  */
-> -			addr = flat_get_addr_from_rp(rp, relval, flags);
-> +			addr = flat_get_addr_from_rp(rp, relval, flags, &persistent);
->  			if (addr != 0) {
->  				/*
->  				 * Do the relocation.  PIC relocs in the data section are
-> diff --git a/include/asm-h8300/flat.h b/include/asm-h8300/flat.h
-> index c20eee7..2a87350 100644
-> --- a/include/asm-h8300/flat.h
-> +++ b/include/asm-h8300/flat.h
-> @@ -9,6 +9,7 @@
->  #define	flat_argvp_envp_on_stack()		1
->  #define	flat_old_ram_flag(flags)		1
->  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-> +#define	flat_set_persistent(relval, p)		0
->  
->  /*
->   * on the H8 a couple of the relocations have an instruction in the
-> @@ -18,7 +19,7 @@
->   */
->  
->  #define	flat_get_relocate_addr(rel)		(rel)
-> -#define flat_get_addr_from_rp(rp, relval, flags) \
-> +#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
->          (get_unaligned(rp) & ((flags & FLAT_FLAG_GOTPIC) ? 0xffffffff: 0x00ffffff))
->  #define flat_put_addr_at_rp(rp, addr, rel) \
->  	put_unaligned (((*(char *)(rp)) << 24) | ((addr) & 0x00ffffff), rp)
-> diff --git a/include/asm-m32r/flat.h b/include/asm-m32r/flat.h
-> index 1b285f6..d851cf0 100644
-> --- a/include/asm-m32r/flat.h
-> +++ b/include/asm-m32r/flat.h
-> @@ -15,9 +15,10 @@
->  #define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
->  #define	flat_argvp_envp_on_stack()		0
->  #define	flat_old_ram_flag(flags)		(flags)
-> +#define	flat_set_persistent(relval, p)		0
->  #define	flat_reloc_valid(reloc, size)		\
->  	(((reloc) - textlen_for_m32r_lo16_data) <= (size))
-> -#define flat_get_addr_from_rp(rp, relval, flags) \
-> +#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
->  	m32r_flat_get_addr_from_rp(rp, relval, (text_len) )
->  
->  #define flat_put_addr_at_rp(rp, addr, relval) \
-> diff --git a/include/asm-m68knommu/flat.h b/include/asm-m68knommu/flat.h
-> index 2d836ed..814b517 100644
-> --- a/include/asm-m68knommu/flat.h
-> +++ b/include/asm-m68knommu/flat.h
-> @@ -9,8 +9,9 @@
->  #define	flat_argvp_envp_on_stack()		1
->  #define	flat_old_ram_flag(flags)		(flags)
->  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-> -#define	flat_get_addr_from_rp(rp, relval, flags)  get_unaligned(rp)
-> +#define	flat_get_addr_from_rp(rp, relval, flags, p) get_unaligned(rp)
->  #define	flat_put_addr_at_rp(rp, val, relval) put_unaligned(val,rp)
->  #define	flat_get_relocate_addr(rel)		(rel)
-> +#define	flat_set_persistent(relval, p)		0
->  
->  #endif /* __M68KNOMMU_FLAT_H__ */
-> diff --git a/include/asm-sh/flat.h b/include/asm-sh/flat.h
-> index 0d5cc04..dc4f595 100644
-> --- a/include/asm-sh/flat.h
-> +++ b/include/asm-sh/flat.h
-> @@ -16,8 +16,9 @@
->  #define	flat_argvp_envp_on_stack()		0
->  #define	flat_old_ram_flag(flags)		(flags)
->  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-> -#define	flat_get_addr_from_rp(rp, relval, flags)  get_unaligned(rp)
-> +#define	flat_get_addr_from_rp(rp, relval, flags, p)  get_unaligned(rp)
->  #define	flat_put_addr_at_rp(rp, val, relval)  put_unaligned(val,rp)
->  #define	flat_get_relocate_addr(rel)		(rel)
-> +#define	flat_set_persistent(relval, p)		0
->  
->  #endif /* __ASM_SH_FLAT_H */
-> diff --git a/include/asm-v850/flat.h b/include/asm-v850/flat.h
-> index 3888f59..17f0ea5 100644
-> --- a/include/asm-v850/flat.h
-> +++ b/include/asm-v850/flat.h
-> @@ -25,6 +25,7 @@
->  #define	flat_stack_align(sp)		/* nothing needed */
->  #define	flat_argvp_envp_on_stack()	0
->  #define	flat_old_ram_flag(flags)	(flags)
-> +#define	flat_set_persistent(relval, p)	0
->  
->  /* We store the type of relocation in the top 4 bits of the `relval.'
-> */
->  
-> @@ -46,7 +47,8 @@ flat_get_relocate_addr (unsigned long relval)
->     For the v850, RP should always be half-word aligned.  */
->  static inline unsigned long flat_get_addr_from_rp (unsigned long *rp,
->  						   unsigned long relval,
-> -						   unsigned long flags)
-> +						   unsigned long flags,
-> +						   unsigned long *persistent)
->  {
->  	short *srp = (short *)rp;
+> Plus of course you don't like fsblock because it requires work to
+> adapt a fs to it, I can't argue about that.
+
+No, I don't like fsblock because it is inherently a "struture
+per filesystem block" construct, just like buggerheads. You
+still need to allocate millions of them when you have millions
+dirty pages around. Rather than type it all out again, read
+the fsblocks thread from here:
+
+http://marc.info/?l=linux-fsdevel&m=118284983925719&w=2
+
+FWIW, with Chris mason's extent-based block mapping (which btrfs
+is using and Christoph Hellwig is porting XFS over to) we completely
+remove buggerheads from XFS and so fsblock would be a pretty
+major step backwards for us if Chris's work goes into mainline.
+
+> > Ok, so let's set the record straight. There were 3 justifications
+> > for using *large pages* to *support* large filesystem block sizes
+> > The justifications for the variable order page cache with large
+> > pages were:
+> > 
+> > 	1. little code change needed in the filesystems
+> > 		-> still true
+> 
+> Disagree, the mmap side is not a little change.
+
+That's not in the filesystem, though. ;)
+
+However, I agree that if you don't have mmap then it's not
+worthwhile and the changes for VPC aren't trivial.
+
+> > 	3. avoiding the need for vmap() as it has great
+> > 	   overhead and does not scale
+> > 	   	-> Nick is starting to work on that and has
+> > 		   already had good results.
+> 
+> Frankly I don't follow this vmap thing. Can you elaborate?
+
+We current support metadata blocks larger than page size for
+certain types of metadata in XFS. e.g. directory blocks.
+This however, requires vmap()ing a bunch of individual,
+non-contiguous pages out of a block device address space
+in exactly the fashion that was proposed by Nick with fsblock
+originally.
+
+vmap() has severe scalability problems - read this subthread
+of this discussion between Nick and myself:
+
+http://lkml.org/lkml/2007/9/11/508
+
+> > Everyone seems to be focussing on #2 as the entire justification for
+> > large block sizes in filesystems and that this is an "SGI" problem.
+> 
+> I agree it's not a SGI problem and this is why I want a design that
+> has a _slight chance_ to improve performance on x86-64 too. If
+> variable order page cache will provide any further improvement on top
+> of fsblock will be only because your I/O device isn't fast with small
+> sg entries.
+
+<sigh>
+
+There we go - back to the bloody I/O devices. Can ppl please stop
+bringing this up because it *is not an issue any more*.
+
+> config-page-shift + fsblock IMHO is the way to go for x86-64, with one
+> additional 64k PAGE_SIZE rpm. config-page-shift will stack nicely on
+> top of fsblocks.
+
+Hmm - so you'll need page cache tail packing as well in that case
+to prevent memory being wasted on small files. That means any way
+we look at it (VPC+mmap or config-page-shift+fsblock+pctails)
+we've got some non-trivial VM  modifications to make. 
+
+If VPC can be separated from the large contiguous page requirement
+(i.e. virtually mapped compound page support), I still think it
+comes out on top because it doesn't require every filesystem to be
+modified and you can use standard pages where they are optimal
+(i.e. on filesystems were block size <= PAGE_SIZE).
+
+But, I'm not going to argue endlessly for one solution or another;
+I'm happy to see different solutions being chased, so may the
+best VM win ;)
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
