@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760722AbXITIdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762096AbXITIdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760722AbXITIdd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 04:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbXITIbw
+	id S1762096AbXITIdw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 04:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbXITIby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 04:31:52 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:12702 "EHLO
+	Thu, 20 Sep 2007 04:31:54 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:12629 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756783AbXITIbv (ORCPT
+	with ESMTP id S1756967AbXITIbw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 04:31:51 -0400
+	Thu, 20 Sep 2007 04:31:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=LbunXpaUFMBNO8gE6L7yyVGxIJovJgz1M01oXpRo48BpD2r1xo7Zv42GYMK3y3tRPpdPM/kYCQm6VbOz69XnFZbffz4yQGAde1t5EfuYyAMsaeNeovXR9jg2Jn+jCxhcfg+bdetpK17h/CDblH91M1y5oylq97x0ZKIWYs/rnfQ=
+        b=pcNVkwCyw2Mkq1Jh9nulj84QKRWZuENp8OVBaw5LzgW3VWCTD1zsL7K8JwzfhETJaUaEYJF5onv+oIqYJrIfXl/M5BCtdNUmccqJIVGfLqOESl/ztrhvrjzhWK98zPPW1GdsN9lKhLUurKtU0R6CLBhCZ/a0a34BeQeYEkADULI=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 6/8] sysfs: implement plugged creation of sysfs nodes
+Subject: [PATCH 7/8] sysfs: implement batch error handling
 In-Reply-To: <11902770971822-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Thu, 20 Sep 2007 17:31:38 +0900
-Message-Id: <11902770983006-git-send-email-htejun@gmail.com>
+Message-Id: <11902770983349-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,355 +31,422 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements plugged creation of sysfs nodes.  If
-SYSFS_PLUGGED is specified to any of sysfs_add_*() functions, the
-node, its children which get added under it and symlinks pointing to
-it or its children won't be visible from userland - lookup and
-directory listing won't show them, until the plugged node is
-unplugged using sysfs_unplug().
+Batch error handling is to be used with plugged creation.  It
+accumulates any error condition which happens under a plugged node and
+let the user handle error once right before unplugging.  This easily
+replaces attribute group creation.
 
-This will be used to prevent userland from seeing sysfs hierarchy for
-certain entity (device or whatever) appear piece-by-piece.  Also,
-initialization failure won't be visible on userland.  Everything
-including inode nlinks are handled properly.
+Batch error handling works by the following two mechanisms.
 
-This will be later combined with uevent_suppress.
+* When an error occurs, tree is walked toward the top and, if there
+  are plugged nodes which don't have plugged error recorded yet,
+  sd->s_batch_error is set before returning the error code.
+
+* All interface funtions allow ERR_PTR value to be passed as
+  sysfs_dirent arguments and return -EBADF if that happens.
+
+* After all the operations are complete, the user calls
+  sysfs_check_batch_error() on the plugged node (usually the top one)
+  which returns 0 if there hasn't been any error or error code of the
+  first error.
+
+* The user unplugs or removes the node accordingly.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/dir.c        |  165 +++++++++++++++++++++++++++++++++++++++++--------
- fs/sysfs/inode.c      |    3 +-
- fs/sysfs/sysfs.h      |    2 +
- include/linux/sysfs.h |    8 ++-
- 4 files changed, 149 insertions(+), 29 deletions(-)
+ fs/sysfs/bin.c        |    8 +++-
+ fs/sysfs/dir.c        |  137 ++++++++++++++++++++++++++++++++++++++++++++++--
+ fs/sysfs/file.c       |   12 ++++-
+ fs/sysfs/symlink.c    |    7 +++
+ fs/sysfs/sysfs.h      |   12 ++++-
+ include/linux/sysfs.h |    6 ++
+ 6 files changed, 173 insertions(+), 9 deletions(-)
 
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index d6cc7b3..1f705d2 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -231,10 +231,16 @@ struct sysfs_dirent *sysfs_add_bin(struct sysfs_dirent *parent,
+ {
+ 	struct sysfs_dirent *sd;
+ 
++	/* for batch error handling */
++	if (IS_ERR(parent))
++		return ERR_PTR(-EBADF);
++
+ 	/* allocate and initialize */
+ 	sd = sysfs_new_dirent(name, mode, SYSFS_BIN);
+-	if (!sd)
++	if (!sd) {
++		sysfs_set_batch_error(parent, -ENOMEM);
+ 		return ERR_PTR(-ENOMEM);
++	}
+ 
+ 	sd->s_bin.ops = bops;
+ 	sd->s_bin.size = size;
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index eac8fef..88ec749 100644
+index 88ec749..f18da1b 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -118,8 +118,15 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
- 		/* look it up */
- 		parent = dentry;
- 		mutex_lock(&parent->d_inode->i_mutex);
-+
- 		dentry = lookup_one_len_kern(cur->s_name, parent,
- 					     strlen(cur->s_name));
-+		/* negative dentry means @sd is plugged, return -ENOENT */
-+		if (!dentry->d_inode) {
-+			dput(dentry);
-+			dentry = ERR_PTR(-ENOENT);
-+		}
-+
- 		mutex_unlock(&parent->d_inode->i_mutex);
- 		dput(parent);
+@@ -305,7 +305,12 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
+ 	if (sd->s_flags & SYSFS_FLAG_LINK_NAME_FMT_COPIED)
+ 		kfree(sd->s_link.name_fmt);
  
-@@ -322,12 +329,13 @@ static struct dentry_operations sysfs_dentry_ops = {
- /**
-  *	sysfs_new_dirent - allocate and initialize sysfs_dirent
-  *	@name: name for the new sysfs_dirent
-- *	@mode: mask of bits from S_IRWXUGO | SYSFS_COPY_NAME
-+ *	@mode: mask of bits from S_IRWXUGO | SYSFS_COPY_NAME | SYSFS_PLUGGED
-  *	@type: one of SYSFS_{DIR|FILE|BIN|LINK}
-  *
-  *	Allocate and initialize a sysfs_dirent with the specified
-  *	parameters.  If SYSFS_COPY_NAME is specified in @mode, @name
-- *	is duplicated.
-+ *	is duplicated.  If SYSFS_PLUGGED is set, the node is
-+ *	initialized into plugged state.
-  *
-  *	LOCKING:
-  *	Kernel thread context (may sleep).
-@@ -351,6 +359,10 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
- 		flags |= SYSFS_FLAG_NAME_COPIED;
+-	kfree(sd->s_iattr);
++	/* s_batch_error shares room with s_iattr.  If plugged, it's
++	 * s_batch_error; otherwise, s_iattr.
++	 */
++	if (!(sd->s_flags & SYSFS_FLAG_PLUGGED))
++		kfree(sd->s_iattr);
++
+ 	sysfs_free_ino(sd->s_ino);
+ 	kmem_cache_free(sysfs_dir_cachep, sd);
+ 
+@@ -722,6 +727,7 @@ struct sysfs_dirent *sysfs_insert_one(struct sysfs_dirent *parent,
+ 
+ 	if (rc) {
+ 		sysfs_put(sd);
++		sysfs_set_batch_error(parent, rc);
+ 		return ERR_PTR(rc);
  	}
  
-+	/* start plugged? */
-+	if (mode & SYSFS_PLUGGED)
-+		flags |= SYSFS_FLAG_PLUGGED;
+@@ -804,6 +810,10 @@ struct sysfs_dirent *sysfs_find_child(struct sysfs_dirent *parent,
+ {
+ 	struct sysfs_dirent *sd;
+ 
++	/* for batch error handling */
++	if (IS_ERR(parent))
++		return ERR_PTR(-EBADF);
 +
- 	/* normalize mode */
- 	mode &= S_IALLUGO;
- 
-@@ -512,12 +524,14 @@ static struct inode *sysfs_addrm_get_parent_inode(struct sysfs_addrm_cxt *acxt,
- int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *parent,
- 		  struct sysfs_dirent *sd)
+ 	mutex_lock(&sysfs_mutex);
+ 	sd = sysfs_find_dirent(parent, name);
+ 	mutex_unlock(&sysfs_mutex);
+@@ -837,10 +847,16 @@ struct sysfs_dirent *sysfs_add_dir(struct sysfs_dirent *parent,
  {
--	struct inode *parent_inode;
-+	struct inode *parent_inode = NULL;
+ 	struct sysfs_dirent *sd;
  
- 	if (sysfs_find_dirent(parent, sd->s_name))
- 		return -EEXIST;
++	/* for plugged error handling */
++	if (IS_ERR(parent))
++		return ERR_PTR(-EBADF);
++
+ 	/* allocate and initialize */
+ 	sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
+-	if (!sd)
++	if (!sd) {
++		sysfs_set_batch_error(parent, -ENOMEM);
+ 		return ERR_PTR(-ENOMEM);
++	}
  
--	parent_inode = sysfs_addrm_get_parent_inode(acxt, parent);
-+	/* if plugged, don't update parent inode, will be updated on unplug */
-+	if (!(sd->s_flags & SYSFS_FLAG_PLUGGED))
-+		parent_inode = sysfs_addrm_get_parent_inode(acxt, parent);
+ 	sd->s_dir.data = data;
  
- 	sd->s_parent = sysfs_get(parent);
- 
-@@ -555,11 +569,13 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *parent,
-  */
- void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
--	struct inode *parent_inode;
-+	struct inode *parent_inode = NULL;
- 
- 	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
- 
--	parent_inode = sysfs_addrm_get_parent_inode(acxt, sd->s_parent);
-+	/* if plugged, don't update parent inode, will be updated on unplug */
-+	if (!(sd->s_flags & SYSFS_FLAG_PLUGGED))
-+		parent_inode = sysfs_addrm_get_parent_inode(acxt, sd->s_parent);
- 
- 	if (sd->s_flags & SYSFS_FLAG_LINK_CHAINED) {
- 		struct sysfs_dirent *target = sd->s_link.target;
-@@ -805,7 +821,9 @@ EXPORT_SYMBOL_GPL(sysfs_find_child);
-  *
-  *	Add a new directory under @parent with the specified
-  *	parameters.  If SYSFS_COPY_NAME is set in @mode, @name is
-- *	copied before being used.
-+ *	copied before being used.  If SYSFS_PLUGGED is set in @mode,
-+ *	the new directory will start plugged (won't be visible till
-+ *	unplugged).
-  *
-  *	LOCKING:
-  *	Kernel thread context (may sleep).
-@@ -830,6 +848,84 @@ struct sysfs_dirent *sysfs_add_dir(struct sysfs_dirent *parent,
- }
+@@ -849,6 +865,71 @@ struct sysfs_dirent *sysfs_add_dir(struct sysfs_dirent *parent,
  EXPORT_SYMBOL_GPL(sysfs_add_dir);
  
-+/**
-+ *	sysfs_unplug - unplug a plugged sysfs_dirent
-+ *	@sd: sysfs_dirent to unplug
+ /**
++ *	sysfs_set_batch_error - record batch error
++ *	@sd: sysfs_dirent which failed operation
++ *	@error: error value
 + *
-+ *	A plugged sysfs_dirent isn't visible to userland.  As are all
-+ *	its children and symlinks point to the sysfs_dirent or its
-+ *	children.  This function unplugs @sd and makes it visible to
-+ *	userland.
++ *	If @error is an error value, find all plugging ancestors and
++ *	record batch error status if this is the first error in the
++ *	subtree.  Note that only the first error behind a plugged node
++ *	is recorded.
 + *
 + *	LOCKING:
 + *	Kernel thread context (may sleep).  Uses sysfs_mutex.
 + */
-+void sysfs_unplug(struct sysfs_dirent *sd)
++void sysfs_set_batch_error(struct sysfs_dirent *sd, int error)
 +{
-+	struct sysfs_addrm_cxt acxt;
++	if (!IS_ERR_VALUE(error))
++		return;
 +
-+	/* Unplugging performs parent inode update delayed from
-+	 * add/removal.  Also, sysfs_op_mutex grabbed by addrm_start
-+	 * guarantees renaming to see consistent plugged status.
-+	 */
-+	sysfs_addrm_start(&acxt);
++	mutex_lock(&sysfs_mutex);
 +
-+	if (sd->s_flags & SYSFS_FLAG_PLUGGED) {
-+		struct inode *parent_inode =
-+			sysfs_addrm_get_parent_inode(&acxt, sd->s_parent);
-+
-+		sd->s_flags &= ~SYSFS_FLAG_PLUGGED;
-+
-+		if (parent_inode) {
-+			parent_inode->i_ctime =
-+			parent_inode->i_mtime = CURRENT_TIME;
-+
-+			if (sysfs_type(sd) == SYSFS_DIR)
-+				inc_nlink(parent_inode);
++	for ( ; sd; sd = sd->s_parent) {
++		if (!(sd->s_flags & SYSFS_FLAG_PLUGGED) || sd->s_batch_error) {
++			BUG_ON(sd->s_batch_error &&
++			       !IS_ERR_VALUE(sd->s_batch_error));
++			continue;
 +		}
++
++		/* s_iattr must be unused at this point */
++		BUG_ON(sd->s_iattr);
++		sd->s_batch_error = error;
 +	}
 +
-+	sysfs_addrm_finish(&acxt);
++	mutex_unlock(&sysfs_mutex);
 +}
-+EXPORT_SYMBOL_GPL(sysfs_unplug);
 +
-+static int sysfs_plugged(struct sysfs_dirent *sd,
-+			 struct sysfs_dirent *new_parent)
++/**
++ *	sysfs_check_batch_error - check batch error
++ *	@sd: sysfs_dirent to check batch error for
++ *
++ *	Check whether any error has occurred on a plugged node @sd and
++ *	the nodes behind it.
++ *
++ *	LOCKING:
++ *	None.
++ *
++ *	RETURNS:
++ *	0 if there hasn't been any batch error, -errno if it had one
++ *	or more batch errors.  -errno is from the first batch error.
++ */
++int sysfs_check_batch_error(struct sysfs_dirent *sd)
 +{
-+	struct sysfs_dirent *cur;
++	int error = 0;
 +
-+	/* @sd itself is plugged? */
-+	if (sd->s_flags & SYSFS_FLAG_PLUGGED)
-+		return 1;
++	if (IS_ERR(sd))
++		return PTR_ERR(sd);
 +
-+	/* Parent override for renaming.  This is used to determine
-+	 * whether @sd will be plugged when moved under @new_parent.
++	if (sd->s_batch_error) {
++		error = sd->s_batch_error;
++		BUG_ON(!IS_ERR_VALUE(error));
++	}
++
++	return error;
++}
++EXPORT_SYMBOL_GPL(sysfs_check_batch_error);
++
++/**
+  *	sysfs_unplug - unplug a plugged sysfs_dirent
+  *	@sd: sysfs_dirent to unplug
+  *
+@@ -858,12 +939,19 @@ EXPORT_SYMBOL_GPL(sysfs_add_dir);
+  *	userland.
+  *
+  *	LOCKING:
+- *	Kernel thread context (may sleep).  Uses sysfs_mutex.
++ *	Kernel thread context (may sleep).  Uses sysfs_op_mutex and
++ *	sysfs_mutex.
+  */
+ void sysfs_unplug(struct sysfs_dirent *sd)
+ {
+ 	struct sysfs_addrm_cxt acxt;
+ 
++	/* This happens when creation of the top node failed but the
++	 * user want to ignore it.  Do nothing.
 +	 */
-+	if (!new_parent)
-+		new_parent = sd->s_parent;
++	if (IS_ERR(sd))
++		return;
 +
-+	/* is one of @sd's acnestors plugged? */
-+	for (cur = new_parent; cur; cur = cur->s_parent)
-+		if (cur->s_flags & SYSFS_FLAG_PLUGGED)
-+			return 1;
+ 	/* Unplugging performs parent inode update delayed from
+ 	 * add/removal.  Also, sysfs_op_mutex grabbed by addrm_start
+ 	 * guarantees renaming to see consistent plugged status.
+@@ -876,6 +964,12 @@ void sysfs_unplug(struct sysfs_dirent *sd)
+ 
+ 		sd->s_flags &= ~SYSFS_FLAG_PLUGGED;
+ 
++		/* s_batch_error shares room with s_iattr, make sure
++		 * it's NULL.
++		 */
++		BUG_ON(sd->s_batch_error && !IS_ERR_VALUE(sd->s_batch_error));
++		sd->s_iattr = NULL;
 +
-+	/* A symlink is plugged if its target is plugged.  Check
-+	 * whether the target is plugged unless the symlink is known
-+	 * to be unplugged.
+ 		if (parent_inode) {
+ 			parent_inode->i_ctime =
+ 			parent_inode->i_mtime = CURRENT_TIME;
+@@ -1036,8 +1130,8 @@ void __sysfs_remove(struct sysfs_dirent *sd, int recurse)
+ 	struct sysfs_addrm_cxt acxt;
+ 	struct sysfs_dirent *cur, *next;
+ 
+-	/* noop on NULL */
+-	if (!sd)
++	/* noop on NULL and ERR_PTR, the latter is for batch error handling */
++	if (!sd || IS_ERR(sd))
+ 		return;
+ 
+ 	sysfs_addrm_start(&acxt);
+@@ -1223,6 +1317,18 @@ static int sysfs_rcxt_get_dentries(struct sysfs_rename_context *rcxt,
+ 	struct dentry *old_dentry, *new_parent_dentry, *new_dentry;
+ 	int rc;
+ 
++	/* If sd is plugged currently and will stay plugged under the
++	 * new parent, dentries are guaranteed to not exist and stay
++	 * that way till rename is complete (op mutex released) and
++	 * there's nothing to do regarding dentries.
++	 *
++	 * Changing plugged status by moving isn't allowed and this
++	 * function will fail later if the user tries to do that.
 +	 */
-+	if (sysfs_type(sd) != SYSFS_LINK ||
-+	    (sd->s_flags & SYSFS_FLAG_LINK_UNPLUGGED))
++	if (sysfs_plugged(rent->sd, NULL) &&
++	    sysfs_plugged(rent->sd, rent->new_parent))
 +		return 0;
 +
-+	for (cur = sd->s_link.target; cur; cur = cur->s_parent)
-+		if (cur->s_flags & SYSFS_FLAG_PLUGGED)
-+			return 1;
+ 	/* get old dentry */
+ 	old_dentry = sysfs_get_dentry(rent->sd);
+ 	if (IS_ERR(old_dentry))
+@@ -1424,6 +1530,10 @@ int sysfs_rename(struct sysfs_dirent *sd, struct sysfs_dirent *new_parent,
+ 	struct sysfs_rcxt_rename_ent *rent;
+ 	int error;
+ 
++	/* for batch error handling */
++	if (IS_ERR(sd) || IS_ERR(new_parent))
++		return -EBADF;
 +
-+	/* if unplugged, mark it to accelerate future plugged test */
-+	sd->s_flags |= SYSFS_FLAG_LINK_UNPLUGGED;
-+	return 0;
-+}
+ 	mutex_lock(&sysfs_op_mutex);
+ 
+ 	if (!new_parent)
+@@ -1463,6 +1573,12 @@ int sysfs_rename(struct sysfs_dirent *sd, struct sysfs_dirent *new_parent,
+ 			sysfs_link_sibling(rent->sd);
+ 		}
+ 
++		/* no dentry, no inode - this happens for plugged rename */
++		if (!rent->old_dentry) {
++			WARN_ON(rent->new_dentry);
++			continue;
++		}
 +
- static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 				struct nameidata *nd)
- {
-@@ -842,8 +938,8 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 
- 	sd = sysfs_find_dirent(parent_sd, dentry->d_name.name);
- 
--	/* no such entry */
--	if (!sd)
-+	/* no such entry or plugged */
-+	if (unlikely(!sd || sysfs_plugged(sd, NULL)))
- 		goto out_unlock;
- 
- 	/* attach dentry and inode */
-@@ -1021,6 +1117,10 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
- 			const char * name;
- 			int len;
- 
-+			/* skip plugged nodes */
-+			if (unlikely(sysfs_plugged(pos, NULL)))
-+				continue;
-+
- 			name = pos->s_name;
- 			len = strlen(name);
- 			filp->f_pos = ino = pos->s_ino;
-@@ -1398,33 +1498,44 @@ EXPORT_SYMBOL_GPL(sysfs_rename);
+ 		/* update dcache and inode accordingly */
+ 		if (sysfs_type(rent->sd) == SYSFS_DIR) {
+ 			drop_nlink(rent->old_dentry->d_parent->d_inode);
+@@ -1479,6 +1595,8 @@ int sysfs_rename(struct sysfs_dirent *sd, struct sysfs_dirent *new_parent,
+ 	sysfs_post_rename(&rcxt, error);
+  out:
+ 	mutex_unlock(&sysfs_op_mutex);
++	sysfs_set_batch_error(sd, error);
++	sysfs_set_batch_error(new_parent, error);
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(sysfs_rename);
+@@ -1498,11 +1616,17 @@ EXPORT_SYMBOL_GPL(sysfs_rename);
   */
  int sysfs_chmod(struct sysfs_dirent *sd, mode_t mode)
  {
--	struct dentry *dentry;
--	struct inode *inode;
--	struct iattr newattrs;
--	int rc;
-+	mode_t new_mode = (mode & S_IALLUGO) | (sd->s_mode & ~S_IALLUGO);
-+	struct dentry *dentry = NULL;
-+	struct inode *inode = NULL;
-+	int rc = 0;
+-	mode_t new_mode = (mode & S_IALLUGO) | (sd->s_mode & ~S_IALLUGO);
+ 	struct dentry *dentry = NULL;
+ 	struct inode *inode = NULL;
++	mode_t new_mode;
+ 	int rc = 0;
  
++	/* for batch error handling */
++	if (IS_ERR(sd))
++		return -EBADF;
++
++	new_mode = (mode & S_IALLUGO) | (sd->s_mode & ~S_IALLUGO);
++
  	mutex_lock(&sysfs_op_mutex);
--	dentry = sysfs_get_dentry(sd);
--	mutex_unlock(&sysfs_op_mutex);
--	if (IS_ERR(dentry))
--		return PTR_ERR(dentry);
  
--	inode = dentry->d_inode;
-+	/* If @sd is plugged, dentry and inode aren't there and can't
-+	 * be looked up.  Just update @sd->s_mode.
-+	 */
-+	if (!sysfs_plugged(sd, NULL)) {
-+		struct iattr newattrs;
- 
--	mutex_lock(&inode->i_mutex);
-+		dentry = sysfs_get_dentry(sd);
-+		if (IS_ERR(dentry)) {
-+			rc = PTR_ERR(dentry);
-+			goto out_unlock_op;
-+		}
-+		inode = dentry->d_inode;
- 
--	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
--	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
--	rc = notify_change(dentry, &newattrs);
-+		mutex_lock(&inode->i_mutex);
- 
--	if (rc == 0) {
--		mutex_lock(&sysfs_mutex);
--		sd->s_mode = newattrs.ia_mode;
--		mutex_unlock(&sysfs_mutex);
-+		newattrs.ia_mode = new_mode;
-+		newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-+		rc = notify_change(dentry, &newattrs);
-+		if (rc)
-+			goto out_unlock_inode;
- 	}
- 
--	mutex_unlock(&inode->i_mutex);
-+	mutex_lock(&sysfs_mutex);
-+	sd->s_mode = new_mode;
-+	mutex_unlock(&sysfs_mutex);
- 
-+ out_unlock_inode:
-+	if (inode)
-+		mutex_unlock(&inode->i_mutex);
-+ out_unlock_op:
-+	mutex_unlock(&sysfs_op_mutex);
+ 	/* If @sd is plugged, dentry and inode aren't there and can't
+@@ -1537,6 +1661,7 @@ int sysfs_chmod(struct sysfs_dirent *sd, mode_t mode)
+  out_unlock_op:
+ 	mutex_unlock(&sysfs_op_mutex);
  	dput(dentry);
++	sysfs_set_batch_error(sd, rc);
  	return rc;
  }
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 0aeea4b..bd61cca 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -128,7 +128,8 @@ static int sysfs_count_nlink(struct sysfs_dirent *sd)
- 	int nr = 0;
+ EXPORT_SYMBOL_GPL(sysfs_chmod);
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 1d93940..3412732 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -498,6 +498,10 @@ void sysfs_notify_file(struct sysfs_dirent *sd)
+ {
+ 	struct sysfs_open_dirent *od;
  
- 	for (child = sd->s_dir.children; child; child = child->s_sibling)
--		if (sysfs_type(child) == SYSFS_DIR)
-+		if (sysfs_type(child) == SYSFS_DIR &&
-+		    !(child->s_flags & SYSFS_FLAG_PLUGGED))
- 			nr++;
++	/* for batch error handling */
++	if (IS_ERR(sd))
++		return;
++
+ 	BUG_ON(sysfs_type(sd) != SYSFS_FILE);
  
- 	return nr + 2;
+ 	spin_lock(&sysfs_open_dirent_lock);
+@@ -545,10 +549,16 @@ struct sysfs_dirent *sysfs_add_file(struct sysfs_dirent *parent,
+ {
+ 	struct sysfs_dirent *sd;
+ 
++	/* for batch error handling */
++	if (IS_ERR(parent))
++		return ERR_PTR(-EBADF);
++
+ 	/* allocate and initialize */
+ 	sd = sysfs_new_dirent(name, mode, SYSFS_FILE);
+-	if (!sd)
++	if (!sd) {
++		sysfs_set_batch_error(parent, -ENOMEM);
+ 		return ERR_PTR(-ENOMEM);
++	}
+ 
+ 	sd->s_file.ops = fops;
+ 	sd->s_file.data = data;
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 53cc8a6..7e0fd89 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -217,6 +217,10 @@ struct sysfs_dirent *__sysfs_add_link(struct sysfs_dirent *parent,
+ 	struct sysfs_addrm_cxt acxt;
+ 	int rc;
+ 
++	/* for batch error handling */
++	if (IS_ERR(parent) || IS_ERR(target))
++		return ERR_PTR(-EBADF);
++
+ 	/* acquire locks early for link name formatting */
+ 	sysfs_addrm_start(&acxt);
+ 
+@@ -280,6 +284,9 @@ struct sysfs_dirent *__sysfs_add_link(struct sysfs_dirent *parent,
+ 		kfree(name_fmt);
+ 	if (flags & SYSFS_FLAG_NAME_COPIED)
+ 		kfree(name);
++
++	sysfs_set_batch_error(parent, rc);
++	sysfs_set_batch_error(target, rc);
+ 	return ERR_PTR(rc);
+ }
+ 
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index f704279..51f346d 100644
+index 51f346d..ec0b308 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -64,10 +64,12 @@ struct sysfs_dirent {
- #define SYSFS_LINK			0x0008
+@@ -52,7 +52,15 @@ struct sysfs_dirent {
+ 	unsigned int		s_flags;
+ 	ino_t			s_ino;
+ 	umode_t			s_mode;
+-	struct iattr		*s_iattr;
++
++	/* Make s_iattr and s_batch_error share the room.  This is
++	 * okay because s_iattr is used only after a node is unplugged
++	 * while s_batch_error is used only while a node is plugged.
++	 */
++	union {
++		struct iattr		*s_iattr;
++		int			s_batch_error;
++	};
+ };
  
- #define SYSFS_FLAG_MASK			~SYSFS_TYPE_MASK
-+#define SYSFS_FLAG_PLUGGED		0x0100
- #define SYSFS_FLAG_REMOVED		0x0200
- #define SYSFS_FLAG_NAME_COPIED		0x0400
- #define SYSFS_FLAG_LINK_NAME_FMT_COPIED	0x0800
- #define SYSFS_FLAG_LINK_CHAINED		0x1000
-+#define SYSFS_FLAG_LINK_UNPLUGGED	0x2000
+ #define SD_DEACTIVATED_BIAS		INT_MIN
+@@ -120,6 +128,8 @@ struct sysfs_dirent *sysfs_get_dirent(struct sysfs_dirent *parent_sd,
+ 				      const unsigned char *name);
+ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type);
  
- static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
- {
++void sysfs_set_batch_error(struct sysfs_dirent *sd, int error);
++
+ void __sysfs_remove(struct sysfs_dirent *sd, int recurse);
+ 
+ void release_sysfs_dirent(struct sysfs_dirent *sd);
 diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 5afe3bd..5a8c9f1 100644
+index 5a8c9f1..a8dfc6b 100644
 --- a/include/linux/sysfs.h
 +++ b/include/linux/sysfs.h
-@@ -30,9 +30,10 @@ struct vm_area_struct;
-  */
- #define SYSFS_DIR_MODE		(S_IRWXU | S_IRUGO | S_IXUGO)
- #define SYSFS_COPY_NAME		010000	/* copy passed @name[_fmt] */
-+#define SYSFS_PLUGGED		020000	/* plug the node on creation */
- 
- /* collection of all flags for verification */
--#define SYSFS_MODE_FLAGS	SYSFS_COPY_NAME
-+#define SYSFS_MODE_FLAGS	(SYSFS_COPY_NAME | SYSFS_PLUGGED)
- 
- struct sysfs_file_ops {
- 	ssize_t (*show)(char *page, void *data, void *parent_data);
-@@ -63,6 +64,7 @@ struct sysfs_dirent *sysfs_add_bin(struct sysfs_dirent *parent,
+@@ -64,6 +64,7 @@ struct sysfs_dirent *sysfs_add_bin(struct sysfs_dirent *parent,
  struct sysfs_dirent *sysfs_add_link(struct sysfs_dirent *parent,
  			const char *name_fmt, mode_t mode,
  			struct sysfs_dirent *target);
-+void sysfs_unplug(struct sysfs_dirent *sd);
++int sysfs_check_batch_error(struct sysfs_dirent *sd);
+ void sysfs_unplug(struct sysfs_dirent *sd);
  
  struct sysfs_dirent *sysfs_find_child(struct sysfs_dirent *parent,
- 				      const char *name);
-@@ -106,6 +108,10 @@ static inline struct sysfs_dirent *sysfs_add_link(struct sysfs_dirent *parent,
+@@ -108,6 +109,11 @@ static inline struct sysfs_dirent *sysfs_add_link(struct sysfs_dirent *parent,
  	return NULL;
  }
  
-+static inline void sysfs_unplug(struct sysfs_dirent *sd)
++static inline int sysfs_check_batch_error(struct sysfs_dirent *sd)
 +{
++	return 0;
 +}
 +
- static inline struct sysfs_dirent *sysfs_find_child(struct sysfs_dirent *parent,
- 						    const char *name)
+ static inline void sysfs_unplug(struct sysfs_dirent *sd)
  {
+ }
 -- 
 1.5.0.3
 
