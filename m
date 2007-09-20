@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbXITWJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbXITWKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754800AbXITWJg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbXITWJZ
+	id S1755592AbXITWKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbXITWKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:09:25 -0400
-Received: from web53705.mail.re2.yahoo.com ([206.190.37.26]:28168 "HELO
-	web53705.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751224AbXITWJY (ORCPT
+	Thu, 20 Sep 2007 18:10:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:40312 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435AbXITWKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:09:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=hUD9GYNLgbvVTEDKt081d43UoCOke4ORTmPJMDj7D1GJ99aHGO69bBDhoIixKx9s9ntG4ZunEqzNnYgzqzVEH00ZvHp4BbCn5QTxvFv0hRaMNRz33EtUwilt5cHihfnGGr+7IaQFErbEY3NB3Urc0vGXOhpVyaU/QtZPln2mkIk=;
-X-YMail-OSG: mQRVB7AVM1kW_vxYl93Vl.fJja9e7HTZBG3VR1GA3oLPNfWrEi4maD22G3OlPHIUoQ--
-Date: Thu, 20 Sep 2007 15:09:23 -0700 (PDT)
-From: Nagendra Tomar <tomer_iisc@yahoo.com>
-Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT events get missed for TCP sockets
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0709201033120.8897@alien.or.mcafeemobile.com>
+	Thu, 20 Sep 2007 18:10:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PrZS66+iRpsUwGqcfTMDIAq9IFO7eFdoACBd6hgV3vBJjdj3HI9O5r8ccO2WRNKWk3lcciKeJGTlaBEfB1sFXiWXrR+y1EFY3ZyP7k4u6xf/R2ieCgfb/fHI/Ymbob79sYc9PQy+cjE/vwndipHGfidPktA98SUUXorzRhdPT8o=
+Message-ID: <46F2EFD2.2090907@gmail.com>
+Date: Fri, 21 Sep 2007 00:10:26 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <120313.72141.qm@web53705.mail.re2.yahoo.com>
+To: Dave Airlie <airlied@gmail.com>, Jiri Slaby <jirislaby@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+References: <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org> <46F17F27.5080000@gmail.com> <21d7e9970709191851s1b3f35c1j42faae3ce6cd0b24@mail.gmail.com> <46F22048.8050401@gmail.com> <21d7e9970709200033k3f0f46feq7dae4e0a106f0372@mail.gmail.com> <20070920092441.GA1972@zhen-devel.sh.intel.com>
+In-Reply-To: <20070920092441.GA1972@zhen-devel.sh.intel.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Davide Libenzi <davidel@xmailserver.org> wrote:
-
-> Looking back at it, I think the current TCP code is right, once you look 
-> at the "event" to be a output buffer full->with_space transition.
-> If you drop an fd inside epoll with EPOLLOUT|EPOLLET and you get an event 
-> (free space on the output buffer), if you do not consume it (say a 
-> tcp_sendmsg that re-fill the buffer), you can't see other OUT event 
-> anymore since they happen on the full->with_space transition.
-> Yes, I know, the read size (EPOLLIN) works differently and you get an 
-> event for every packet you receive. And yes, I do not like asymmetric 
-> things. But that does not make the EPOLLOUT|EPOLLET wrong IMO.
+On 09/20/2007 11:24 AM, Zhenyu Wang wrote:
+> On 2007.09.20 17:33:45 +0000, Dave Airlie wrote:
+>>> Maybe you are rather interested in these dmesg lines:
+>>> Linux agpgart interface v0.102
+>>> agpgart: suspend/resume problematic: resume with 3D/DRI active may lockup X.Org
+>>> on some chipset/BIOS combos (see DEBUG_AGP_PM in intel-agp.c)
+>>> agpgart: Detected an Intel G33 Chipset.
+>>> agpgart: Detected 8192K stolen memory.
+>>> agpgart: AGP aperture is 256M @ 0xd0000000
+>>> [drm] Initialized drm 1.1.0 20060810
+>>> ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+>>> [drm] Initialized i915 1.6.0 20060119 on minor 0
+>>> ...
+>>> set status page addr 0x00033000
+>>> agpgart: pg_start == 0x000005ff,intel_private.gtt_entries == 0x00000800
+>>> agpgart: Trying to insert into local/stolen memory
+>>>
+>>> So the problem is, that X passes too low start.
+>>>
+>>> The X log:
+>>> http://www.fi.muni.cz/~xslaby/sklad/Xorg.0.log.old
 > 
+> Could you try current xf86-video-intel driver? just do
+> git clone git://anongit.freedesktop.org/git/xorg/driver/xf86-video-intel
 
-I agree that ET means the event should happen at the transition
-from nospace->space condition, but isn't the other case (event is 
-delivered every time the event actually happens) more usable.
-Also the epoll man page says so
+It works! 3d problem, but it has maybe nothing to do with kernel:
+$ glxinfo
+name of display: :0.0
+Unrecognized deviceID 29c2
+X Error of failed request:  GLXBadContext
+...
 
-"... Edge Triggered event distribution delivers events only when 
-events happens on the  monitored file."
-
-This serves the purpose of ET (reducing the number of poll events) and
-at the same time makes userspace coding easier. My userspace code
-has the liberty of deciding when it can write to the socket. f.e. the
-sendfile buffer management example that I quoted in my earlier post
-will be difficult with the current ET|POLLOUT behaviour. I cannot 
-write in full-buffer units. I'll ve to write partial buffers just to 
-fill the TCP writeq which is needed to trigger the event.
-
-Thanx,
-Tomar
-
-
-
-      ___________________________________________________________
-Yahoo! Answers - Got a question? Someone out there knows the answer. Try it
-now.
-http://uk.answers.yahoo.com/ 
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
