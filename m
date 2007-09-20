@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbXITWpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbXITW7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbXITWpW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbXITWpJ
+	id S1752687AbXITW7R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXITW67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:45:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53553 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbXITWpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:45:08 -0400
-Message-ID: <46F2F7CB.70001@redhat.com>
-Date: Thu, 20 Sep 2007 18:44:27 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 20 Sep 2007 18:58:59 -0400
+Received: from web53705.mail.re2.yahoo.com ([206.190.37.26]:46230 "HELO
+	web53705.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751296AbXITW66 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 18:58:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Jc5Hl6CJO6xq+Q752nrOW5MdjmWJsTkVyVdBKAPRO95QZfK+h+gHgfE8Ol6J7ciDQJt54AFgmhNSPmfMpvRRXtGQhNoJfXl8p46lcr5NLBIHifix0F9HXKe4e+ckunnQR43rBE3QWZ5Vs10g1QbtOs6OWpOBpA+LqDYTXCPo4VE=;
+X-YMail-OSG: kL807dQVM1npS.M4BJwsudX4iV4pkhn7mvq3LEejnAwFOFjTU42srOh3FzsWmaa1CSmvv3jsWwHeU_zNPrTE7cxX0xLu8GaiIS57sdX7vkBWtwqJ7CgMEl4sljdMspJA4IBg.3kQdt_OAxRxbRdXZ0p2gw--
+Date: Thu, 20 Sep 2007 15:58:57 -0700 (PDT)
+From: Nagendra Tomar <tomer_iisc@yahoo.com>
+Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT events get missed for TCP sockets
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0709201518540.8897@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Matthias Hensler <matthias@wspse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       richard kennedy <richard@rsk.demon.co.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-References: <46B10BB7.60900@redhat.com>	<20070803113407.0b04d44e.akpm@linux-foundation.org>	<20070804084426.GA20464@kobayashi-maru.wspse.de>	<20070809095943.GA7763@kobayashi-maru.wspse.de>	<20070809095534.25ae1c42.akpm@linux-foundation.org>	<46F2E103.8000907@redhat.com>	<20070920142927.d87ab5af.akpm@linux-foundation.org>	<46F2EE76.4000203@redhat.com> <20070920153654.b9e90616.akpm@linux-foundation.org>
-In-Reply-To: <20070920153654.b9e90616.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <798693.92196.qm@web53705.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/20/2007 06:36 PM, Andrew Morton wrote:
-> 
-> So the question is, why do we have large amounts of dirty pages for one
-> disk which appear to be sitting there not getting written?
-> 
-> Do we know if there's any writeout at all happening when the system is in
-> this state?
-> 
-> I guess it's possible that the dirty inodes on the "other" disk got
-> themselves onto the wrong per-sb inode list, or are on the correct list,
-> but in the correct place.  If so, these:
-> 
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-2.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-3.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-4.patch
-> writeback-fix-comment-use-helper-function.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-5.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-6.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-7.patch
-> writeback-fix-periodic-superblock-dirty-inode-flushing.patch
-> 
-> from 2.6.23-rc6-mm1 should help.
 
-Yikes! Simple fixes would be better.
+--- Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Patch that is confirmed to fix the problem for this user is below, but
-that one could cause other problems. I was looking for some band-aid
-could be shown to be harmless...
 
-http://lkml.org/lkml/2007/8/2/89:
+> That's not what POLLOUT means in the Unix meaning. POLLOUT indicates the 
+> ability to write, and it is not meant as to signal every time a packet 
+> (skb) is sent on the wire (and the buffer released).
 
-------
---- linux-2.6.22.1/mm/page-writeback.c.orig	2007-07-30 16:36:09.000000000 +0100
-+++ linux-2.6.22.1/mm/page-writeback.c	2007-07-31 16:26:43.000000000 +0100
-@@ -250,6 +250,8 @@ static void balance_dirty_pages(struct a
- 			pages_written += write_chunk - wbc.nr_to_write;
- 			if (pages_written >= write_chunk)
- 				break;		/* We've done our duty */
-+			if (!wbc.encountered_congestion && wbc.nr_to_write > 0)
-+				break;	/* didn't find enough to do */
- 		}
- 		congestion_wait(WRITE, HZ/10);
- 	}
+Aren't they both the same ? Everytime an incoming ACK frees up a buffer
+from the retransmit queue, the writability condition is freshly asserted,
+much the same way as the readability condition is asserted everytime a 
+new data is queued in the socket receive queue (irrespective of 
+whether there was data already waiting to be read in the receive queue).
 
- 
-> 
-> Did anyone try running /bin/sync when the system is in this state?
-> 
+This difference in meaning of POLLOUT only arises in the ET case, which was
+not what traditional Unix poll referred to. 
 
-Reporter is in the CC: list.
+Since its a new game the rules can be modified (ofcourse based on the 
+merits i.e. usability)
+
+Thanx,
+Tomar
+
+
+
+
+
+      ___________________________________________________________ 
+Want ideas for reducing your carbon footprint? Visit Yahoo! For Good  http://uk.promotions.yahoo.com/forgood/environment.html
