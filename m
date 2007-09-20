@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbXITWBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbXITWDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbXITWBb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXITWBX
+	id S1755188AbXITWDS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbXITWDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:01:23 -0400
-Received: from www.osadl.org ([213.239.205.134]:54764 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751220AbXITWBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:01:23 -0400
-Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
-	booted, USB-related WARNING
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, miklos@szeredi.hu,
-       Len Brown <len.brown@intel.com>
-In-Reply-To: <200709202354.42557.rjw@sisk.pl>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <1190322532.3085.42.camel@chaos>
-	 <alpine.LFD.0.999.0709201420231.16478@woody.linux-foundation.org>
-	 <200709202354.42557.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 00:01:20 +0200
-Message-Id: <1190325680.3085.73.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-1.fc8) 
+	Thu, 20 Sep 2007 18:03:10 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:43523
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752345AbXITWDI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 18:03:08 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-tiny@selenic.com
+Subject: Re: [Celinux-dev] [Announce] Linux-tiny project revival
+Date: Thu, 20 Sep 2007 18:02:58 -0500
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       Michael Opdenacker <michael@free-electrons.com>
+References: <46F1645D.9050406@am.sony.com> <20070919142805.e0242fcf.akpm@linux-foundation.org>
+In-Reply-To: <20070919142805.e0242fcf.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709201802.58611.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
+On Wednesday 19 September 2007 4:28:05 pm Andrew Morton wrote:
+> On Wed, 19 Sep 2007 11:03:09 -0700
+>
+> Tim Bird <tim.bird@am.sony.com> wrote:
+> > Recently, the CE Linux forum has been working to revive the
+> > Linux-tiny project.  At OLS, I asked for interested parties
+> > to volunteer to become the new maintainer for the Linux-tiny patchset.
+>
+> I volunteer!  Send patches to me, cc linux-kernel and celinuv-dev.
+>
+> Seriously, putting this stuff into some private patch collection should
+> be a complete last resort - you should only do this with patches which
+> you (and the rest of us) agree have no hope of ever getting into mainline.
 
-On Thu, 2007-09-20 at 23:54 +0200, Rafael J. Wysocki wrote:
-> > Hmm. This is close to the ordering we have in STR too.
-> > 
-> > I have some dim memory of there being some ACPI reason why it had to be 
-> > done that way.
-> 
-> Yes.  We're executing _INI from the CPU initialization code and that shouldn't
-> be done after _WAK, which is called from platform_finish().
+History!
 
-If I tear down CPU#1 right before I tell the kernel to hibernate, then
-the box must explode in the same way. It does not. On none of 4 tested
-laptops. 
+<computer historian hat on>
 
-Of course only the jinxed VAIO one exposes the "please press a key
-problem".
+The -tiny tree started out as a separate patch kit of Matt Mackall's, which he 
+stopped updating circa 2.6.14 because he didn't think keeping them out of 
+tree was helping attract other developers, nor was it helping to get them 
+inline.  He decided to focus on pushing the existing patches into mainline, 
+and stop maintaining the out of tree patcheset for new releases.  His last 
+post on the subject (to the linux-tiny mailing list) was a year ago:
+http://selenic.com/pipermail/linux-tiny/2006-March/000314.html
 
-I need to follow down the swsusp_suspend() code path to figure out, why
-this breaks the box.
+But what happened is that most of the abandoned patches stopped applying to 
+new kernels yet still weren't available in mainline a year later, so Tim and 
+Michael have stepped in to revive the -tiny tree.  (Tim talked about this a 
+bit at the CELF BOF at OLS, which is more acronyms than should really show up 
+immediately after one another in any confersation, FYI.)
 
-	tglx
+So yay new tree.  Tried without it, didn't work.  Broken up to make merging 
+easier, but mainline will probably never _fully_ catch up, any more than 
+it'll catch up with any of the other special-interest development trees.  
+Making -tiny an .hg tree would be really really nice, though... :)
 
-
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
