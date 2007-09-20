@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbXITAHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbXITAJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbXITAHV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 20:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbXITAHK
+	id S1757149AbXITAJJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 20:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbXITAI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 20:07:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39489 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751214AbXITAHI (ORCPT
+	Wed, 19 Sep 2007 20:08:57 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:46798 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbXITAI5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 20:07:08 -0400
-Date: Wed, 19 Sep 2007 17:06:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Chuck Ebbert <cebbert@redhat.com>, tilman@imap.cc,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, a.zummo@towertech.it
-Subject: Re: 2.6.23-rc6-mm1
-Message-Id: <20070919170604.f7e82f19.akpm@linux-foundation.org>
-In-Reply-To: <20070919234448.8E87D2319AA@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<46F1AA6E.1030708@imap.cc>
-	<20070919162438.7264f06c.akpm@linux-foundation.org>
-	<20070919234448.8E87D2319AA@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Sep 2007 20:08:57 -0400
+Date: Wed, 19 Sep 2007 17:08:55 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Andres Salomon <dilinger@queued.net>
+cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       v4l-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       akpm@linux-foundation.org, mchehab@infradead.org
+Subject: Re: [v4l-dvb-maintainer] [PATCH] cafe_ccic: default to allocating
+ DMA buffers at probe time
+In-Reply-To: <20070919184338.64fc6e89.dilinger@queued.net>
+Message-ID: <Pine.LNX.4.58.0709191703300.27377@shell4.speakeasy.net>
+References: <11514.1190230317@lwn.net> <Pine.LNX.4.58.0709191527120.27377@shell4.speakeasy.net>
+ <20070919184338.64fc6e89.dilinger@queued.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 16:44:48 -0700
-David Brownell <david-b@pacbell.net> wrote:
-
-> > > <4>[   21.211942] Duplicate file names "rtc" detected
+On Wed, 19 Sep 2007, Andres Salomon wrote:
+> On Wed, 19 Sep 2007 15:34:42 -0700 (PDT)
+> Trent Piepho <xyzzy@speakeasy.org> wrote:
+> > On Wed, 19 Sep 2007, Jonathan Corbet wrote:
+> > > Andres Salomon <dilinger@queued.net> wrote:
+> > > > This patch makes DMA buffer allocation happen during device probe by
+> > > > default, and changes the parameter to 'alloc_bufs_at_read'.  The
+> > > > camera hardware is there, if the cafe_ccic driver is enabled/loaded it
+> > > > should do its best to ensure that the camera is actually usable;
+> > > > delaying DMA buffer allocation saves an insignicant amount of memory,
+> > > > and causes the driver to be much less useful.
+> > >
+> > Changing the parameter name will break the configuration of anyone who was
+> > using the existing parameter.  It also means everyone who has multiple
+>
+> We (OLPC) are the only ones using this driver, as we are the only ones with
+> this hardware.  Marvell designed the cafe for us, and it is not available
+> on the market yet.  Backwards compatibility at this point is not a concern.
+>
+> > kernels installed and uses this parameter will need to have one
+> > configuration for old kernels and a different configuration for new
+> > kernels.
 > >
-> > Nah, that's an rtc-specific problem.
-> 
-> RTC-related ... but it's a procfs bug, since it's procfs which doesn't
-> even bother to check for duplicate names before it registers files.
+> > In the default really needs to be changed (what's so hard about setting
+> > alloc_bufs_at_load in /etc/modprobe{.d,.config}?) then just change the
+> > default of the existing parameter.  That avoids the whole problem with
+> > different configration files for different module versions.
+>
+> We're building the driver in statically; there's no point for us to make
+> it a module.  We could add a kernel argument, yes, but that quickly
+> becomes unwieldy as we require more and more.  We've actually been trying
+> to cut down the number of kernel args we use.
 
-So you keep on claiming, but I don't think I've yet seen a description of
-the *reason* why two copies of this file are being created, and a
-description of why that is an OK thing for the kernel to be doing.
+Ok, that seems like a good reason to change the default.
+>
+>
+> That said, I'm not opposed to keeping the parameter name the same while
+> making the default 1; I just thought that the name 'alloc_bufs_at_read' was
+> clearer.  Another option is to change it to 'no_alloc_bufs_at_load'.  Jon,
+> any preference there?
 
-> > From: Chuck Ebbert <cebbert@redhat.com>
-> >
-> > AFAICT the rtc problem is caused by misconfiguration: both the new
-> > and old rtc driver have been built and they are both trying to load.
-> 
-> That _shouldn't_ be a problem at all; only one of them should be
-> able to bind to that hardware.
-> 
-> The only problem I see in these messages is that procfs bug.
-> 
-
-It's not obvious that this is only a procfs bug.  If some part of the
-kernel tries to add a procfs file which is already there, that's often a
-bug in the caller.
-
-Yes, procfs should have been checking for this.  But it is too late now for
-us to just fail out of the procfs registration code.  Because this can
-cause previously buggy-but-works-ok code to now fail completely.
-
-So I think the best we can do now is to retain the runtime warning and to
-continue to "succeed" and to identify all the problematic codesites and to
-either fix them or to convince ourselves that they really are working as
-intended. 
+It seems like the name 'alloc_bufs_at_read' isn't quite right, since the
+buffers will be allocated when the format is set, from
+cafe_vidioc_s_fmt_cap().
