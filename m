@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbXITWYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbXITWZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753886AbXITWYi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 18:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbXITWYa
+	id S1756080AbXITWZT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 18:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbXITWY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 18:24:30 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:54935 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbXITWY3 (ORCPT
+	Thu, 20 Sep 2007 18:24:56 -0400
+Received: from web53705.mail.re2.yahoo.com ([206.190.37.26]:42751 "HELO
+	web53705.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752465AbXITWYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 18:24:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ep8UccCkqAuXjF861G82AIQTRbiimHcVSS+4mwKnkhjo5jjGGBZdyzuAI7PjtFN99cO38g/pTspEOzgxx0rnkAm1HSRfogFygCSF0Gb/5lePsW8lPbHfmYXDP3vv7UHHTArZxdCwG0k0zqEs6U0vbhrLLDuuC8LJEdvX8rJFXms=
-Message-ID: <21d7e9970709201524r159d544aq9de90bfa6b1e116e@mail.gmail.com>
-Date: Fri, 21 Sep 2007 08:24:00 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-Cc: "Jiri Slaby" <jirislaby@gmail.com>, "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <21897.1190294255@turing-police.cc.vt.edu>
+	Thu, 20 Sep 2007 18:24:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=gDG9/uLr0HnaZ9MKcyeoZxSo7iCTJxHEOWCNimmW5GdtoCcZJkbdfWws2DUiOJUqWGJj6YOhfb1NdfLnGaHlcfVUAjUvEHk7TzIg203UtaTAGarO97EovqEaqcPhccL6TIWRgJixOggYf0NOeCEpAUFB6eJBC+WTKVbv9O/pSc8=;
+X-YMail-OSG: sPHfC6kVM1kfCdL_4OQFmXYG2u9TJn4xyiKekshrFshoqM4A6bg_7vh3lXGM5kgpyOblvC9vLfrsTE0KrgfrayY6DeOOOLO7lZ9OPY4NvtIVhSAYuc4LEfBXiw--
+Date: Thu, 20 Sep 2007 15:24:53 -0700 (PDT)
+From: Nagendra Tomar <tomer_iisc@yahoo.com>
+Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT events get missed for TCP sockets
+To: Davide Libenzi <davidel@xmailserver.org>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Cc: Nagendra Tomar <tomer_iisc@yahoo.com>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0709201048290.8897@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <46F13938.1070709@gmail.com>
-	 <20070919121017.0cbcbc30.akpm@linux-foundation.org>
-	 <20070919192453.GB18707@one.firstfloor.org>
-	 <46F17CA1.5080205@gmail.com>
-	 <20070919195425.GF18707@one.firstfloor.org>
-	 <46F17F27.5080000@gmail.com>
-	 <12009.1190233975@turing-police.cc.vt.edu>
-	 <46F18AED.4090906@gmail.com>
-	 <21897.1190294255@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <549830.78824.qm@web53705.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > But now I'm talking about another issue -- a regression since rc4-mm1, where X
-> > server is unable to bind agp memory (those x logs above). The clflush issue has
-> > solved andi in
-> > http://lkml.org/lkml/2007/9/19/334
-> > recently
->
-> Tried that, my laptop still bricks the instant X starts up and the NVidia driver
-> tries to initialize.  Not even sysrq-foo works. Time to power-cycle.
->
 
-I'd expect the binary to be doing something stupid with it's flushing
-and relying on the kernel to do something it no longer does.. so this
-is most likely a case of not fixable..
+--- Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Dave.
+> 
+> Unfortunately f_op->poll() does not let the caller to specify the events 
+> it's interested in, that would allow to split send/recevie wait queues and 
+> better detect read/write cases.
+> The detection of a waitqueue_active(->sk_wr_sleep) would work fine in 
+> detecting is someone is actually waiting for a write, w/out the false 
+> positives triggered by the read-waiters.
+> That would be a very sane thing to do, but would require a big&dumb change 
+> to all the ->poll around (that could be automated by a script - devices 
+> not caring about the events hint can just continue to use the single queue 
+> like they currently do), and a more critical and gradual change of all the 
+> devices that wants to take advantage of it.
+> That way, no more magic bits are needed, and a simple waitqueue_active() 
+> would tell you if someone is waiting for write-space events.
+> 
+
+I like this.
+
+
+
+
+
+      ___________________________________________________________ 
+To help you stay safe and secure online, we've developed the all new Yahoo! Security Centre. http://uk.security.yahoo.com
