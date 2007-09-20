@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXITT4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbXITT5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbXITT4x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbXITTxR
+	id S1754058AbXITT5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXITTxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:53:17 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:60391 "EHLO e4.ny.us.ibm.com"
+	Thu, 20 Sep 2007 15:53:19 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50957 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbXITTxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:53:11 -0400
-Subject: [PATCH 15/25] unix_find_other() elevate write count for touch_atime()
+	id S1752169AbXITTxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 15:53:14 -0400
+Subject: [PATCH 17/25] nfs: check mnt instead of superblock directly
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 20 Sep 2007 12:53:08 -0700
+Date: Thu, 20 Sep 2007 12:53:10 -0700
 References: <20070920195249.852667D5@kernel>
 In-Reply-To: <20070920195249.852667D5@kernel>
-Message-Id: <20070920195308.37801985@kernel>
+Message-Id: <20070920195310.06D8B67D@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+If we depend on the inodes for writeability, we will not
+catch the r/o mounts when implemented.
 
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+This patches uses __mnt_want_write().  It does not guarantee
+that the mount will stay writeable after the check.  But,
+this is OK for one of the checks because it is just for a
+printk().
+
+The other two are probably unnecessary and duplicate existing
+checks in the VFS.  This won't make them better checks than
+before, but it will make them detect r/o mounts.
+
 Acked-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/net/unix/af_unix.c |   16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ lxc-dave/fs/nfs/dir.c  |    3 ++-
+ lxc-dave/fs/nfsd/vfs.c |    4 ++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff -puN net/unix/af_unix.c~unix-find-other-elevate-write-count-for-touch-atime net/unix/af_unix.c
---- lxc/net/unix/af_unix.c~unix-find-other-elevate-write-count-for-touch-atime	2007-09-20 12:16:17.000000000 -0700
-+++ lxc-dave/net/unix/af_unix.c	2007-09-20 12:16:17.000000000 -0700
-@@ -729,21 +729,27 @@ static struct sock *unix_find_other(stru
- 		err = path_lookup(sunname->sun_path, LOOKUP_FOLLOW, &nd);
- 		if (err)
- 			goto fail;
-+
-+		err = mnt_want_write(nd.mnt);
-+		if (err)
-+			goto put_path_fail;
-+
- 		err = vfs_permission(&nd, MAY_WRITE);
- 		if (err)
--			goto put_fail;
-+			goto mnt_drop_write_fail;
- 
- 		err = -ECONNREFUSED;
- 		if (!S_ISSOCK(nd.dentry->d_inode->i_mode))
--			goto put_fail;
-+			goto mnt_drop_write_fail;
- 		u=unix_find_socket_byinode(nd.dentry->d_inode);
- 		if (!u)
--			goto put_fail;
-+			goto mnt_drop_write_fail;
- 
- 		if (u->sk_type == type)
- 			touch_atime(nd.mnt, nd.dentry);
- 
- 		path_release(&nd);
-+		mnt_drop_write(nd.mnt);
- 
- 		err=-EPROTOTYPE;
- 		if (u->sk_type != type) {
-@@ -763,7 +769,9 @@ static struct sock *unix_find_other(stru
- 	}
- 	return u;
- 
--put_fail:
-+mnt_drop_write_fail:
-+	mnt_drop_write(nd.mnt);
-+put_path_fail:
- 	path_release(&nd);
- fail:
- 	*error=err;
+diff -puN fs/nfs/dir.c~nfs-check-mnt-instead-of-sb fs/nfs/dir.c
+--- lxc/fs/nfs/dir.c~nfs-check-mnt-instead-of-sb	2007-09-20 12:16:18.000000000 -0700
++++ lxc-dave/fs/nfs/dir.c	2007-09-20 12:16:18.000000000 -0700
+@@ -997,7 +997,8 @@ static int is_atomic_open(struct inode *
+ 	if (nd->flags & LOOKUP_DIRECTORY)
+ 		return 0;
+ 	/* Are we trying to write to a read only partition? */
+-	if (IS_RDONLY(dir) && (nd->intent.open.flags & (O_CREAT|O_TRUNC|FMODE_WRITE)))
++	if (__mnt_is_readonly(nd->mnt) &&
++	    (nd->intent.open.flags & (O_CREAT|O_TRUNC|FMODE_WRITE)))
+ 		return 0;
+ 	return 1;
+ }
+diff -puN fs/nfsd/vfs.c~nfs-check-mnt-instead-of-sb fs/nfsd/vfs.c
+--- lxc/fs/nfsd/vfs.c~nfs-check-mnt-instead-of-sb	2007-09-20 12:16:18.000000000 -0700
++++ lxc-dave/fs/nfsd/vfs.c	2007-09-20 12:16:18.000000000 -0700
+@@ -1845,7 +1845,7 @@ nfsd_permission(struct svc_rqst *rqstp, 
+ 		inode->i_mode,
+ 		IS_IMMUTABLE(inode)?	" immut" : "",
+ 		IS_APPEND(inode)?	" append" : "",
+-		IS_RDONLY(inode)?	" ro" : "");
++		__mnt_is_readonly(exp->ex_mnt)?	" ro" : "");
+ 	dprintk("      owner %d/%d user %d/%d\n",
+ 		inode->i_uid, inode->i_gid, current->fsuid, current->fsgid);
+ #endif
+@@ -1856,7 +1856,7 @@ nfsd_permission(struct svc_rqst *rqstp, 
+ 	 */
+ 	if (!(acc & MAY_LOCAL_ACCESS))
+ 		if (acc & (MAY_WRITE | MAY_SATTR | MAY_TRUNC)) {
+-			if (exp_rdonly(rqstp, exp) || IS_RDONLY(inode))
++			if (exp_rdonly(rqstp, exp) || __mnt_is_readonly(exp->ex_mnt))
+ 				return nfserr_rofs;
+ 			if (/* (acc & MAY_WRITE) && */ IS_IMMUTABLE(inode))
+ 				return nfserr_perm;
 _
