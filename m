@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbXITAYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbXITAqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbXITAYo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 20:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXITAYh
+	id S1755024AbXITAqo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 20:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbXITAqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 20:24:37 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37967 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751214AbXITAYg (ORCPT
+	Wed, 19 Sep 2007 20:46:36 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44129 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbXITAqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 20:24:36 -0400
-Date: Wed, 19 Sep 2007 17:24:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/video/pmag-ba-fb.c: Improve diagnostics
-Message-Id: <20070919172412.725508d0.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0709171736580.17606@blysk.ds.pg.gda.pl>
-	<Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Wed, 19 Sep 2007 20:46:34 -0400
+Date: Thu, 20 Sep 2007 09:47:20 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [05/17] vunmap: return page array
+Message-Id: <20070920094720.46e781ec.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0709191510470.3402@schroedinger.engr.sgi.com>
+References: <20070919033605.785839297@sgi.com>
+	<20070919033641.468440734@sgi.com>
+	<20070919170559.a0552679.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0709191510470.3402@schroedinger.engr.sgi.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Sep 2007 13:18:34 +0100 (BST)
-"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+On Wed, 19 Sep 2007 15:15:58 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
->  Add error messages to the probe call.
+> On Wed, 19 Sep 2007, KAMEZAWA Hiroyuki wrote:
 > 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
->  While they may rarely trigger, they may be useful when something weird is 
-> going on.  Also this is good style.
+> > Hmm, I don't like returning array which someone allocated in past and forgot.
 > 
->  This is an updated version that addresses an issue raised by Mariusz 
-> Kozlowski for the sibling patch.  Checked with checkpatch.pl.
+> But that is exactly the point. There is no need to keep track of the 
+> information that is of no interest until the disposition of the mapping.
 > 
->  Please apply.
+yes. But I think neat style of this kind function is
+==
+/* If array != NULL, pointer of unmapped pages are stored in array[] */
+extern int vunmap(const void *addr, struct page **array);
+==
+But yes, this costs.
+
+> > And, area->page[] array under vmalloc() is allocated as following (in -rc6-mm1)
+> > ==
+> >        if (array_size > PAGE_SIZE) {
+> >                 pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
+> >                                         PAGE_KERNEL, node);
+> >                 area->flags |= VM_VPAGES;
+> >         } else {
+> >                 pages = kmalloc_node(array_size,
+> >                                 (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO,
+> >                                 node);
+> >         }
+> > ==
+> > A bit complicating.
 > 
->   Maciej
+> Not at all. You can pass a __vmalloc'ed entity to vmap if you add VM_VPAGES 
+> to the flags passed to it.
 > 
-> patch-mips-2.6.23-rc5-20070904-pmag-ba-err-2
-> diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c
-> --- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c	2007-02-21 05:56:47.000000000 +0000
-> +++ linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c	2007-09-18 10:56:51.000000000 +0000
-> @@ -147,16 +147,23 @@ static int __init pmagbafb_probe(struct 
->  	resource_size_t start, len;
->  	struct fb_info *info;
->  	struct pmagbafb_par *par;
-> +	int err = 0;
+> > At least, please add comments "How to free page-array returned by vummap"
+> 
+> But that depends on how the vmap was called. The caller knows what he has 
+> done to acquire the memory and therefore also knows how to get rid of it.
+>  
+Hm, it seems all your patch are for hiding usage of vmalloc()/vmap().
+If freeing pages[] array is also hidden in your patch's context, no problem.
 
-This initialisation to zero is not good.
+Thanks,
+-Kame
 
-Because if some error-path code forgot to do `err = -EFOO' then probe()
-will return zero and the driver will leave things in half-initialised state
-and will then proceed as if things had succeeded.  It will crash.
 
-So it's better to leave this local uninitialised, because we really want to
-get that compiler warning if someone forgot to set the return value.
-
-I made that change, but am too stupid to be able to work out how to create
-a config which will let me compile this thing.
-
-akpm:/usr/src/25> grep PMAG arch/arm/configs/*
-akpm:/usr/src/25> 
-
-bah.
