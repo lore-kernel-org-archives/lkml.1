@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751949AbXITTs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbXITTtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751949AbXITTs2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbXITTsS
+	id S1752345AbXITTtZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbXITTtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:48:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39851 "EHLO ogre.sisk.pl"
+	Thu, 20 Sep 2007 15:49:18 -0400
+Received: from 1wt.eu ([62.212.114.60]:2590 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbXITTsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:48:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba Satellite A40
-Date: Thu, 20 Sep 2007 22:01:15 +0200
-User-Agent: KMail/1.9.5
-Cc: Maciek Rutecki <maciej.rutecki@gmail.com>, Frans Pop <elendil@planet.nl>,
-       Pavel Machek <pavel@ucw.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200709192014.08443.elendil@planet.nl> <46F29965.8030603@gmail.com> <46F2A122.8020909@gmail.com>
-In-Reply-To: <46F2A122.8020909@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1750793AbXITTtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 15:49:17 -0400
+Date: Thu, 20 Sep 2007 21:48:13 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [git] CFS-devel, group scheduler, fixes
+Message-ID: <20070920194813.GH10199@1wt.eu>
+References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu> <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com> <1190183324.9737.7.camel@Homer.simpson.net> <1190188261.9185.21.camel@Homer.simpson.net> <1190191368.8687.5.camel@Homer.simpson.net> <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com> <1190264114.6411.4.camel@Homer.simpson.net> <1190272507.27867.20.camel@Homer.simpson.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709202201.16487.rjw@sisk.pl>
+In-Reply-To: <1190272507.27867.20.camel@Homer.simpson.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 20 September 2007 18:34, Alexey Starikovskiy wrote:
-> Maciek Rutecki wrote:
-> > Frans Pop pisze:
-> >> On Thursday 20 September 2007, you wrote:
-> >>>> When compared with 2.6.22-4, dmesg no longer lists S4 and S5 as
-> >>>> supported for my Toshiba Satellite A40 laptop (Mobile Intel Pentium 4,
-> >>>> 2.8GHz).
-> >>>>
-> >>>> -Linux version 2.6.22-2-686 (Debian 2.6.22-4) (waldi@debian.org) ...
-> >>>> +Linux version 2.6.23-rc6 (root@faramir) ...
-> >>>>  [...]
-> >>>> -ACPI: (supports S0 S3 S4 S5)
-> >>>> +ACPI: (supports S0 S3)
-> >>> Unexpected, and potentially pretty serious. Something went wrong with
-> >>> ACPI. Can you try to narrow down when it started happening?
-> >> rc1 still had all 4 levels. I'll run a bisect between rc1 and rc6.
-> > 
-> > I have the same on HP/Compaq nx6310:
-> > ACPI: (supports S0 S3)
-> This is due to Rafael' split of suspend from hibernation. 
-> namely 296699de6bdc717189a331ab6bbe90e05c94db06.
-> Detection of S4 lacks printk(), so even if S4 is supported, it will not be reported.
-> Adding Rafael to the discussion :)
+On Thu, Sep 20, 2007 at 09:15:07AM +0200, Mike Galbraith wrote:
+> But, I did just manage to trigger some horrid behavior, and log it.  I
+> modified the kernel to print task's actual tree key instead of their
+> current vruntime, and was watching that while make -j2 was running (and
+> not seeing anything very interesting), when on a lark, I restarted
+> SuSE's system updater thingy.  That beast chews 100% CPU for so long at
+> startup that I long ago got annoyed, and changed it to run at nice 19.
+> Anyway, when it started, interactivity went to hell in the proverbial
+> hand-basket, and the sched_debug log shows some interesting results..
+> like spread0 hitting -13659412644, and cc1 being keyed at -3867063305.
+> 
+> cpu#0, 2992.608 MHz
+>   .nr_running                    : 4
+>   .load                          : 4096
+>   .nr_switches                   : 1105882
+>   .nr_load_updates               : 735146
+>   .nr_uninterruptible            : 4294966399
 
-Thanks, I've already spotted the fix patch.
+(...)
 
-Greetings,
-Rafael
+> cpu#1, 2992.608 MHz
+>   .nr_running                    : 5
+>   .load                          : 6208
+>   .nr_switches                   : 1012995
+>   .nr_load_updates               : 747540
+>   .nr_uninterruptible            : 897
+
+I don't know if this is relevant, but 4294966399 in nr_uninterruptible
+for cpu#0 equals -897, exactly the negation of cpu1.nr_uninterruptible.
+I don't know if this rings a bell for someone or if it's a completely
+useless comment, but just in case...
+
+HTH,
+Willy
+
