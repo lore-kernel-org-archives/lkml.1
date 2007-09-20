@@ -1,109 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbXITUCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbXITUDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757485AbXITUCy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 16:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbXITT7h
+	id S1756681AbXITUDY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756668AbXITUBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:59:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:9453 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755413AbXITT7f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:59:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=EFaNmDZ26skyepSDLbnnceC+YQpEn+MuVI8Nv2KcB4SzzQ+XCW2lNibgbSCIaqDZ8i7+Rfiq4RDt4ceqOoO2zkcNbeuaBEx7HM5f+V7Sl65XkuhKCTU78naiX0GQQjwbes6SHnl3F2PfuO9EhiUvV6RUrUisLH5cMmotVYKq1TE=
-Date: Thu, 20 Sep 2007 23:58:44 +0400
-To: Rob Landley <rob@landley.net>
-Cc: linux-tiny@selenic.com, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       Michael Opdenacker <michael@free-electrons.com>
-Subject: Re: [Announce] Linux-tiny project revival
-Message-ID: <20070920195844.GA1805@martell.zuzino.mipt.ru>
-References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net>
+	Thu, 20 Sep 2007 16:01:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39930 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756656AbXITUBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 16:01:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [BUG]: ACPI wakup devices (/proc/acpi/wakeup) don't wake the system anymore after hibernation
+Date: Thu, 20 Sep 2007 22:14:27 +0200
+User-Agent: KMail/1.9.5
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org
+References: <200709201813.28497.maximlevitsky@gmail.com> <200709201237.27469.lenb@kernel.org> <200709201937.03492.maximlevitsky@gmail.com>
+In-Reply-To: <200709201937.03492.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200709201538.43093.rob@landley.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+Message-Id: <200709202214.27513.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 03:38:42PM -0500, Rob Landley wrote:
-> I've been playing with an idea for a while to improve the printk() situation, 
-> but it's a more intrusive change than I've had time to bang on.
+On Thursday, 20 September 2007 19:37, Maxim Levitsky wrote:
+> On Thursday 20 September 2007 18:37:27 Len Brown wrote:
+> > On Thursday 20 September 2007 12:13, Maxim Levitsky wrote:
+[--snip--]
+> > 
 > 
-> Right now, the first argument to printk() is a loglevel, but it's handled via 
-> string concatenation.  I'd like to change that to be an integer, and make it 
-> an actual comma-separated first argument.  (Mandatory, not optional.)
 > 
-> So instead of:
->   printk(KERN_NOTICE "Fruit=%d\n", banana);
-> It would now be:
->   printk(KERN_NOTICE, "Fruit=%d\n", banana);
+> Hi,
 > 
-> Change the header from:
->   #define KERN_NOTICE "<5>"
-> to:
->   #define KERN_NOTICE 5
+> Well, what can I say....
+> Big big thanks, works perfectly.
 > 
-> Then you can change the printk guts to do something vaguely like (untested):
-> #define printk(arg1, arg2, ...) actual_printk("<" #arg1 ">" arg2, __VA_ARGS__)
-> 
-> And so far no behavior has changed.  But now the _fun_ part is, you can add a 
-> config symbol for "what is the minimum loglevel I care about?"
+> All resume device work after suspend to disk, and I was able to WOL the system
+> while it is suspended to disk.
 
-Given that
-a) there're plenty of printks without any KERN_* bloat,
-b) there're printks that SHOULD NOT have KERN_* bloat,
-c) debugging-by-printk method is widely used and this will force
-   additional typing, head-scratching  and swear words
-d) time wasted on pointless discussions whether some particular
-   printk ALERT or CRIT
-e) flag day for printk,
+Len, the patch is already in my patchset, please push upstream.
 
-I think that this idea is not worth it.
-
-> #define printk(level, str, ...) \
->   do { \
->     if (level < CONFIG_PRINTK_DOICARE) \
->       actual_printk("<" #level ">" str, __VA_ARGS__); \
->   } while(0);
-
-> Opinions?
-
-Ick.
-
-	Alexey "ignore_loglevel" Dobriyan
-
-
-
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -52,6 +52,7 @@ extern const char linux_proc_banner[];
-  */
- #define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
- 
-+#ifdef CONFIG_FOO
- #define	KERN_EMERG	"<0>"	/* system is unusable			*/
- #define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
- #define	KERN_CRIT	"<2>"	/* critical conditions			*/
-@@ -59,6 +60,15 @@ extern const char linux_proc_banner[];
- #define	KERN_WARNING	"<4>"	/* warning conditions			*/
- #define	KERN_NOTICE	"<5>"	/* normal but significant condition	*/
- #define	KERN_INFO	"<6>"	/* informational			*/
-+#else
-+#define	KERN_EMERG	""
-+#define	KERN_ALERT	""
-+#define	KERN_CRIT	""
-+#define	KERN_ERR	""
-+#define	KERN_WARNING	""
-+#define	KERN_NOTICE	""
-+#define	KERN_INFO	""
-+#endif
- #define	KERN_DEBUG	"<7>"	/* debug-level messages			*/
- 
- extern int console_printk[];
+Greetings,
+Rafael
