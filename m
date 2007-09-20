@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbXITPK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbXITPOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757063AbXITPK1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 11:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbXITPKT
+	id S1757296AbXITPOs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 11:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbXITPOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 11:10:19 -0400
-Received: from outbound-mail-28.bluehost.com ([69.89.17.198]:42789 "HELO
-	outbound-mail-28.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755228AbXITPKR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 11:10:17 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Sep 2007 11:10:17 EDT
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: MTRR initialization
-Date: Thu, 20 Sep 2007 08:03:31 -0700
-User-Agent: KMail/1.9.7
-Cc: Jesse Barnes <jesse.barnes@intel.com>, Howard Chu <hyc@symas.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <46EAB7DA.10507@symas.com> <200709191452.57505.jesse.barnes@intel.com> <p73d4wdal00.fsf@bingen.suse.de>
-In-Reply-To: <p73d4wdal00.fsf@bingen.suse.de>
+	Thu, 20 Sep 2007 11:14:39 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:34603 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754873AbXITPOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 11:14:38 -0400
+Date: Thu, 20 Sep 2007 16:14:35 +0100
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
+Message-ID: <20070920151435.GA5081@skynet.ie>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070920131315.GE24105@skynet.ie> <20070920150925.0caf3aef@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200709200803.31795.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+In-Reply-To: <20070920150925.0caf3aef@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, September 19, 2007 11:50:23 pm Andi Kleen wrote:
-> Jesse Barnes <jesse.barnes@intel.com> writes:
-> > To do this in a nicer way (and be less vulnerable to similar BIOS
-> > funkiness) the kernel really needs full PAT support.  That should allow
-> > WC over WB and WC over UC mappings to occur, at least if I'm
-> > remembering the docs right...
->
-> PAT only really helps for device driver performance optimizations.
-> But if the basic WB MTRRs are wrong PAT cannot really salvage it.
+On (20/09/07 15:09), Alan Cox didst pronounce:
+> On Thu, 20 Sep 2007 14:13:15 +0100
+> mel@skynet.ie (Mel Gorman) wrote:
+> 
+> > PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
+> > doesn't show up on other arches because this driver is specific to the
+> > architecture.
+> > 
+> > drivers/ata/pata_scc.c: In function `scc_bmdma_status'
+> 
+> Its not been updated to match the libata core changes. Try something like
+> this. Whoever is maintaining it should also remove the prereset cable handling
+> code and use the proper cable detect method.
+> 
 
-Look at the original bug report.  There's a bug WB region so any subsequent WC 
-mappings via the MTRRs won't work, so you need PAT to do WC (unless you want 
-to rewrite all your MTRR settings as Howard has to do now).
+I can confirm it builds with the following messages
 
-Seems like more and more machines are being setup this way, and until we have 
-PAT users will have to jump through hoops to get good performance.
+  CC [M]  drivers/ata/pata_scc.o
+drivers/ata/pata_scc.c: In function `scc_error_handler':
+drivers/ata/pata_scc.c:909: warning: passing arg 3 of `ata_bmdma_drive_eh' from incompatible pointer type
 
-Jesse
+As for the rest, I cannot comment.
+
+Thanks Alan
+
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c
+> --- linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-18 15:32:51.000000000 +0100
+> +++ linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-20 14:23:32.879807760 +0100
+> @@ -731,7 +731,7 @@
+>  	void __iomem *mmio = ap->ioaddr.bmdma_addr;
+>  	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
+>  	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
+> -	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
+> +	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
+>  	static int retry = 0;
+>  
+>  	/* return if IOS_SS is cleared */
+> @@ -860,10 +860,10 @@
+>   *	@deadline: deadline jiffies for the operation
+>   */
+>  
+> -static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)
+> +static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)
+>  {
+> -	ap->cbl = ATA_CBL_PATA80;
+> -	return ata_std_prereset(ap, deadline);
+> +	link->ap->cbl = ATA_CBL_PATA80;
+> +	return ata_std_prereset(link, deadline);
+>  }
+>  
+>  /**
+> @@ -874,8 +874,9 @@
+>   *	Note: Original code is ata_std_postreset().
+>   */
+>  
+> -static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
+> +static void scc_std_postreset (struct ata_link *link, unsigned int *classes)
+>  {
+> +	struct ata_port *ap = link->ap;
+>  	DPRINTK("ENTER\n");
+>  
+>  	/* is double-select really necessary? */
+> 
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
