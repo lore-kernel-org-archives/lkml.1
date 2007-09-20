@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbXITTxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbXITTx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752294AbXITTxo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbXITTw5
+	id S1753515AbXITTx5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXITTw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:52:57 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:59905 "EHLO e4.ny.us.ibm.com"
+	Thu, 20 Sep 2007 15:52:58 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:42393 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbXITTwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:52:55 -0400
-Subject: [PATCH 03/25] give may_open() a local 'mnt' variable
+	id S1751305AbXITTw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 15:52:56 -0400
+Subject: [PATCH 04/25] create cleanup helper svc_msnfs()
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 20 Sep 2007 12:52:52 -0700
+Date: Thu, 20 Sep 2007 12:52:53 -0700
 References: <20070920195249.852667D5@kernel>
 In-Reply-To: <20070920195249.852667D5@kernel>
-Message-Id: <20070920195252.BE019DC4@kernel>
+Message-Id: <20070920195253.3A6CC036@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-First of all, this makes the structure jumping look a little
-bit cleaner.  So, this stands alone as a tiny cleanup.  But,
-we also need 'mnt' by itself a few more times later in this
-series, so this isn't _just_ a cleanup.
+I'm going to be modifying nfsd_rename() shortly to support
+read-only bind mounts.  This #ifdef is around the area I'm
+patching, and it starts to get really ugly if I just try
+to add my new code by itself.  Using this little helper
+makes things a lot cleaner to use.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+Acked-by: Christoph Hellwig <hch@infradead.org>
 ---
 
- lxc-dave/fs/namei.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ lxc-dave/fs/nfsd/vfs.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff -puN fs/namei.c~give-may_open-a-local-mnt-variable fs/namei.c
---- lxc/fs/namei.c~give-may_open-a-local-mnt-variable	2007-09-20 12:16:09.000000000 -0700
-+++ lxc-dave/fs/namei.c	2007-09-20 12:16:09.000000000 -0700
-@@ -230,6 +230,10 @@ int permission(struct inode *inode, int 
- {
- 	umode_t mode = inode->i_mode;
- 	int retval, submask;
-+	struct vfsmount *mnt = NULL;
+diff -puN fs/nfsd/vfs.c~create-svc_msnfs-helper fs/nfsd/vfs.c
+--- lxc/fs/nfsd/vfs.c~create-svc_msnfs-helper	2007-09-20 12:16:10.000000000 -0700
++++ lxc-dave/fs/nfsd/vfs.c	2007-09-20 12:16:10.000000000 -0700
+@@ -857,6 +857,15 @@ static int nfsd_direct_splice_actor(stru
+ 	return __splice_from_pipe(pipe, sd, nfsd_splice_actor);
+ }
+ 
++static inline int svc_msnfs(struct svc_fh *ffhp)
++{
++#ifdef MSNFS
++	return (ffhp->fh_export->ex_flags & NFSEXP_MSNFS);
++#else
++	return 0;
++#endif
++}
 +
-+	if (nd)
-+		mnt = nd->mnt;
+ static __be32
+ nfsd_vfs_read(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+               loff_t offset, struct kvec *vec, int vlen, unsigned long *count)
+@@ -869,11 +878,9 @@ nfsd_vfs_read(struct svc_rqst *rqstp, st
  
- 	if (mask & MAY_WRITE) {
+ 	err = nfserr_perm;
+ 	inode = file->f_path.dentry->d_inode;
+-#ifdef MSNFS
+-	if ((fhp->fh_export->ex_flags & NFSEXP_MSNFS) &&
+-		(!lock_may_read(inode, offset, *count)))
++
++	if (svc_msnfs(fhp) && !lock_may_read(inode, offset, *count))
+ 		goto out;
+-#endif
  
-@@ -254,7 +258,7 @@ int permission(struct inode *inode, int 
- 	 * the fs is mounted with the "noexec" flag.
- 	 */
- 	if ((mask & MAY_EXEC) && S_ISREG(mode) && (!(mode & S_IXUGO) ||
--			(nd && nd->mnt && (nd->mnt->mnt_flags & MNT_NOEXEC))))
-+			(mnt && (mnt->mnt_flags & MNT_NOEXEC))))
- 		return -EACCES;
- 
- 	/* Ordinary permission routines do not understand MAY_APPEND. */
+ 	/* Get readahead parameters */
+ 	ra = nfsd_get_raparms(inode->i_sb->s_dev, inode->i_ino);
 _
