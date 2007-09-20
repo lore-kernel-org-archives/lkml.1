@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbXITOJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbXITOKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756673AbXITOJS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 10:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbXITOJI
+	id S1756893AbXITOKH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 10:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbXITOJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 10:09:08 -0400
-Received: from www.osadl.org ([213.239.205.134]:56178 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753978AbXITOJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 10:09:07 -0400
-Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
-	booted, USB-related WARNING
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <200709201612.37194.rjw@sisk.pl>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <200709201529.24081.rjw@sisk.pl> <1190295795.3481.17.camel@chaos>
-	 <200709201612.37194.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 20 Sep 2007 15:53:52 +0200
-Message-Id: <1190296432.3481.18.camel@chaos>
+	Thu, 20 Sep 2007 10:09:57 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52787 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754767AbXITOJ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 10:09:56 -0400
+Date: Thu, 20 Sep 2007 16:09:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: arch/x86_64/kernel/Makefile: why EXTRA_AFLAGS := -traditional
+Message-ID: <20070920140954.GI18707@one.firstfloor.org>
+References: <200709201501.44009.vda.linux@googlemail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-1.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709201501.44009.vda.linux@googlemail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-20 at 16:12 +0200, Rafael J. Wysocki wrote:
-> > Vs. the suspend / resume wreckage of rc6-mm1 / rc6-hrt2: 
+On Thu, Sep 20, 2007 at 03:01:43PM +0100, Denys Vlasenko wrote:
+> Hi Andi,
 > 
-> ie. the one on the Vaio (I assume).
+> arch/x86_64/kernel/Makefile has 
 > 
-> > I'm still fishing in rather dark water. Depending on the added
-> > instrumentation points the problem mutates up to the point where it
-> > vanishes completely. The hang, which requires key strokes again, happens
-> > consistently at the same place:
-> > 
-> > The notifier call in kernel/cpu.c::_cpu_up()
-> > 
-> >        ret = __raw_notifier_call_chain(&cpu_chain, CPU_UP_PREPARE | mod, hcpu,
-> >                                                         -1, &nr_calls);
-> > 
-> > does not return, but _all_ registered notifiers are called and reach
-> > their return statement. This reminds me on:
-> > 
-> > http://lkml.org/lkml/2007/5/9/46
-> > 
-> > Sigh. I have no clue where to dig further.
+> EXTRA_AFLAGS := -traditional
 > 
-> Well, the above may affect SMP systems, but the Vaio is UP.  Hmm?
+> and this is causing me trouble with #define MACRO(a,b) a.b
+> (defined in one of included header file).
+> It expands incorrectly, as "a. b" - extra space.
+> 
+> If I use a.##b, all other .S files suffer - I am getting
+> a.##b expansion in them.
+> 
+> Can I remove EXTRA_AFLAGS := -traditional?
 
-My jinxed VAIO variant is SMP, but it looks like the same mysterious
-error.
+Inherited long ago from i386. Does it build without it?
+If yes it's ok to remove.
 
-	tglx
-
-
+-Andi
