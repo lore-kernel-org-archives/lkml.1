@@ -1,108 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbXITRbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbXITRgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbXITRbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 13:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbXITRbi
+	id S1758887AbXITRgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 13:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXITRgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 13:31:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:1709 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754068AbXITRbh (ORCPT
+	Thu, 20 Sep 2007 13:36:11 -0400
+Received: from smtp118.sbc.mail.re3.yahoo.com ([66.196.96.91]:39067 "HELO
+	smtp118.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752056AbXITRgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 13:31:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pv9nV2V1OzHLo6sO/8siumIyitln+jiApJxcYxWq49ySdvpcXqhiiuJQ+xzSJXERcBnvpn5w6GSXlr1gokcllxeY0VnPa89uaC0hav4a+dDnYQwiek+aOV7Ls4XXZ2ravQRBtdxhj6vPOnXkKKFB6Q28kyYN1XFRgN1S38KDxiQ=
-Message-ID: <d120d5000709201031o687ac0d5qe4d32406c12a7886@mail.gmail.com>
-Date: Thu, 20 Sep 2007 13:31:35 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs rcu_read_lock()
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>
-In-Reply-To: <20070919234700.3b532dcd@lappy>
+	Thu, 20 Sep 2007 13:36:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ttsiLUiYIUaP3ayJ5knRViZ3ME7sHL1WMAe1Q8xPOtWWhaJ5pFYh86pQfgvh23N8LwAS1+OwTV8cEyJ/22RTybrr8gucq7LNT7Q2k017/E73fhP4DQLiLpdI7jmkp8/V6fmobpx1WxTbK6kamst2OmRPLfFEtZev0KEjIekz1Ic=  ;
+X-YMail-OSG: sRE_1OsVM1lU6R9UGtfk.dDgjwiNrV6i6f4ndO1VkGxjbUek7TeQz82Hc_QFKkK6qi2tMVt88d2zIHQMebTEzRwhIa3lFT2U9rbDJQx5dJrGWf.jhJ8Ks1l7qbL3Tx53brINaePbOcmlKHc-
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc6-mm1
+Date: Thu, 20 Sep 2007 10:36:06 -0700
+User-Agent: KMail/1.9.6
+Cc: Chuck Ebbert <cebbert@redhat.com>, tilman@imap.cc,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, a.zummo@towertech.it
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <200709192143.14635.david-b@pacbell.net> <20070919231121.e481445c.akpm@linux-foundation.org>
+In-Reply-To: <20070919231121.e481445c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070919104125.286538000@chello.nl>
-	 <20070919174857.GA11922@linux.vnet.ibm.com>
-	 <d120d5000709191149q3d850d07nd8bf864a6e797055@mail.gmail.com>
-	 <20070919214110.5d832f28@lappy>
-	 <d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
-	 <20070919221349.2935f69d@lappy>
-	 <d120d5000709191341p1c331e80qf7bad973bc899a0@mail.gmail.com>
-	 <20070919231943.4b121361@lappy>
-	 <d120d5000709191429n29f5dc78g2746de3ee4e9ca81@mail.gmail.com>
-	 <20070919234700.3b532dcd@lappy>
+Message-Id: <200709201036.06658.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> On Wed, 19 Sep 2007 17:29:09 -0400 "Dmitry Torokhov"
-> <dmitry.torokhov@gmail.com> wrote:
->
-> > On 9/19/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > On Wed, 19 Sep 2007 16:41:04 -0400 "Dmitry Torokhov"
-> > > <dmitry.torokhov@gmail.com> wrote:
-> > >
-> > > > > If the IRQ handler does rcu_read_lock(),unlock() and the i8042_stop()
-> > > > > function does sync_rcu() instead of _sched(), it should be good again.
-> > > > > It will not affect anything else than the task that calls _stop(). And
-> > > > > even there the only change is that the sleep might be a tad longer.
-> > > >
-> > > > And the IRQ handler needs to do some extra job... Anyway, it looks -rt
-> > > > breaks synchronize_sched() and needs to have it fixed:
-> > > >
-> > > > "/**
-> > > >  * synchronize_sched - block until all CPUs have exited any non-preemptive
-> > > >  * kernel code sequences.
-> > > >  *
-> > > >  * This means that all preempt_disable code sequences, including NMI and
-> > > >  * hardware-interrupt handlers, in progress on entry will have completed
-> > > >  * before this primitive returns."
-> > >
-> > > That still does as it says in -rt. Its just that the interrupt handler
-> > > will be preemptible so the guarantees it gives are useless.
-> >
-> > Please note "... including NMI and hardware-interrupt handlers ..."
->
-> -rt doesn't run interrupt handlers in hardware irq context anymore.
+On Wednesday 19 September 2007, Andrew Morton wrote:
+> Head still spinning.
+> 
+> a) "rtc0" != "rtc" ??
 
-OK, then what is the purpose of synchronize_sched() in -rt?
+One key difference between any of the numerous legacy RTC drivers
+and the new framework is that the legacy drivers tended to think
+(wrongly!) they would be the only RTC in the system, while the
+framework recognizes that other configurations are important.
 
-You really need to provide users with a replacement. There are several
-drivers that use it and for example r8169 is not what you'd call a
-'low performer'.
+Hence names "rtc0", "rtc1", "rtc2" ... etc in framework drivers,
+versus just "rtc" in legacy code.  Easily tweaked with "udev" if it
+matters, but current versions of "hwclock" (in util-linux and also
+in busybox) don't require a /dev/rtc file any more ... they check
+for /dev/rtc0, and can be told to look at other RTCs too.
 
-I guess I can switch i8042 to use synchronize_irq(). That still works
-in -rt, doesn't it? That still leaves atkbd...
 
->
-> > >
-> > > > > I find it curious that a driver that is 'low performant' and does not
-> > > > > suffer lock contention pioneers locking schemes. I agree with
-> > > > > optimizing, but this is not the place to push the envelope.
-> > > >
-> > > > Please realize that evey microsecond wasted on a 'low performant'
-> > > > driver is taken from high performers and if we can help it why
-> > > > shouldn't we?
-> > >
-> > > sure, but the cache eviction caused by running the driver will have
-> > > more impact than the added rcu_read_{,un}lock() calls.
-> >
-> > Are you saying that adding rcu_read_{,un}lock() will help with cache
-> > eviction? How?
->
-> No, I'm saying that its noise compared to the cache eviction overhead
-> it causes for others.
->
+> b) The kernel is trying to register two procfs files of the same name! 
+>    If that's a configuration error then we have a Kconfiguration bug.
 
-What about udelay(10)? It is probably also a noise but we shoudl not
-go and sprinkle it through drivers, should we? ;)
+Not so much an "error" as minor awkwardness.  The end result is
+that only one driver will be active.
 
--- 
-Dmitry
+
+> > It's not a wrong thing, at any rate.  This is a fairly basic task
+> > in any filesystem:  mutual exclusion.  Code is allowed to rely on
+> > filesystems acting correctly...
+> > 
+> 
+> We're relying on procfs behaviour to prevent registration of two rtc
+> devices?
+
+Not at all.  But if two chunks of code try to create /proc/x/y/z,
+only one of them should succeed.  Today, there's a clear bug in
+procfs whereby both of them will succeed...
+
+
+> That's a strange means of arbitration.   And what happens 
+> when CONFIG_PROC_FS=n?
+
+Then nothing gets stored there; procfs is nonessential.  The same
+code executes as when creating the /proc/x/y/z file fails.
+
+
+> > > Yes, procfs should have been checking for this.  But it is too late now for
+> > > us to just fail out of the procfs registration code.  Because this can
+> > > cause previously buggy-but-works-ok code to now fail completely.
+> > 
+> > What do you mean by too late "now" ... just-before-2.6.23?
+> 
+> No.
+> 
+> What I mean is that we cannot change procfs as you propose until we have
+> located and fixed all places in the kernel which can cause duplicated
+> procfs names.
+
+But causing duplicated names doesn't need any "fix" when that code
+handles the error sanely -- by using its "PROCFS=n" code paths.
+
+If you're arguing that you think such fault handling code may have
+a lot of bugs, I might agree:  not all fault handling code gets even
+basic testing.  But that would seem to be nothing more than a reason
+to want some code auditing (to see how common such bugs really are,
+and fix at least a few of them), and perhaps to let such bugfixes sit
+in a moderately well-exposed testing tree for a while.
+
+
+> (Good luck with that). 
+
+Evidently there's no procfs maintainer ... you've said there are
+patches in MM to detect and report such duplication.  What is it
+turning up?
+
+
+> Because we've had this happening before, and *the driver kept working*
+> (apart from, presumably, some of their procfs features which, presumably,
+> nobody used much). 
+> 
+> With the change which you propose, these drivers will probably stop
+> working, because they will newly find their procfs registration failed.
+
+The last time I had occasion to look at such stuff I observed that procfs
+users were generally sane.  If they couldn't create a file, they just
+continued ... after all, procfs can never be the primary interface.
+
+
+> > And what would an example be of buggy-but-works code, which would
+> > then be broken if the procfs stopped being buggy?
+> > 
+> 
+> A driver which checks the return value from procfs registration and which
+> then errors out (as it should) if that registration fails.
+
+Erroring out is appropriate for fatal errors ... but procfs errors
+generally can't be fatal.  (Code which uses procfs for its primary
+userspace interface would be the exception.)  So most code should
+never error out on such faults.
+
+As I commented above, most code I've happend across will proceed
+just fine if the extra procfs support is unavailable.  After all,
+it needs to work with CONFIG_PROCFS=n so those code paths aren't
+going to suddenly stop working!
+
+- Dave
+
