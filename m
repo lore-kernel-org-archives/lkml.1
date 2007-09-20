@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbXITGni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbXITGoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758748AbXITGni (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 02:43:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXITGnc
+	id S1759034AbXITGoZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 02:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXITGoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 02:43:32 -0400
-Received: from smtp1.Vir.com ([199.202.113.40]:35731 "EHLO smtp1.vir.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750862AbXITGnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 02:43:31 -0400
-Message-ID: <46F21692.4020607@soo.com>
-Date: Thu, 20 Sep 2007 02:43:30 -0400
-From: ben soo <lnx-kern@soo.com>
-Reply-To: lnx-kern@soo.com
-User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
-MIME-Version: 1.0
-To: Kernel Mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: Network sky2 Module
-References: <46E2BC6A.4070800@gmx.de>	<46EF4DE1.4000707@soo.com>	<46EFE09B.6090901@tmr.com> <20070918080525.7a49d110@freepuppy.rosehill.hemminger.net>
-In-Reply-To: <20070918080525.7a49d110@freepuppy.rosehill.hemminger.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Thu, 20 Sep 2007 02:44:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43189 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750862AbXITGoQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 02:44:16 -0400
+Date: Wed, 19 Sep 2007 23:44:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Olaf Hering <olaf@aepfle.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] increase AT_VECTOR_SIZE to terminate saved_auxv
+ properly
+Message-Id: <20070919234411.d5bf33ea.akpm@linux-foundation.org>
+In-Reply-To: <20070918115504.GA609@aepfle.de>
+References: <20070914110057.GA10088@aepfle.de>
+	<20070918115504.GA609@aepfle.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> ben soo wrote:
-[...]
->>> This last might be an artifact caused by the firewall, i dunno.
-[...]
+On Tue, 18 Sep 2007 13:55:04 +0200 Olaf Hering <olaf@aepfle.de> wrote:
 
-> Bill Davidsen <davidsen@tmr.com> wrote:
->> Yes, I have found that I get far less problem in this area leaving the 
->> MTU at 1500, then putting a larger MTU (usually 9000) into the routing 
->> table for segments, or even just machines, where I know there is direct 
->> connectivity.
-[...]
+> include/asm-powerpc/elf.h has 6 entries in ARCH_DLINFO.
+> fs/binfmt_elf.c has 14 unconditional NEW_AUX_ENT entries and 2
+> conditional NEW_AUX_ENT entries.
+> So in the worst case, saved_auxv does not get an AT_NULL entry at the
+> end.
+> 
+> The saved_auxv array must be terminated with an AT_NULL entry.
+> Make the size of mm_struct->saved_auxv arch dependend,
+> based on the number of ARCH_DLINFO entries.
 
-Stephen Hemminger wrote:
-> If you want to use Jumbo frames, you need to have routers and firewalls
-> that correctly handle ICMP and do path MTU discovery. If you have bridges
-> or firewalls that aren't Jumbo aware on both interfaces, then there will
-> be long timeouts retries for each connection. If you have busted routers
-> and firewalls that swallow ICMP then PMTU won't work well either.
+I'm not very confident that this will work well with the
+already-queued move-mm_struct-and-vm_area_struct.patch.
 
-i turned off the motherboard Marvell Gbit devices and installed a 
-Realtek 8169 card, all the while keeping to kernel version 
-2.6.23-rc6, and saw all the network problems go away.  Must mean it 
-was a sky2 driver bug.
-
-Am currently running 2.6.23-rc7 on the affected server and the rc7 
-sky2 driver is holding up fine so far.
-
-thank you!
-
-b
+It moves the saved_auxv[AT_VECTOR_SIZE] definition over into
+mm_types.h and mm_types.h doesn't include sched.h.
