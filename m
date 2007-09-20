@@ -1,167 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbXITVJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbXITVK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbXITVJS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 17:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbXITVJB
+	id S1754650AbXITVK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 17:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbXITVKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 17:09:01 -0400
-Received: from www.osadl.org ([213.239.205.134]:54988 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750772AbXITVJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 17:09:00 -0400
-Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
-	booted, USB-related WARNING
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@osdl.org>,
-       miklos@szeredi.hu
-In-Reply-To: <200709202239.11070.rjw@sisk.pl>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <1190299841.3481.37.camel@chaos> <1190303393.3639.0.camel@chaos>
-	 <200709202239.11070.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 20 Sep 2007 23:08:52 +0200
-Message-Id: <1190322532.3085.42.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Sep 2007 17:10:12 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:57594 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751159AbXITVKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 17:10:10 -0400
+Date: Thu, 20 Sep 2007 14:10:15 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: linux-scsi <linux-scsi@vger.kernel.org>, mpt_linux_developer@lsi.com,
+       Eric.Moore@lsi.com, support@lsi.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] mptbase: Reset ioc initiator during PCI resume
+Message-ID: <20070920211014.GA24047@tree.beaverton.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
+It appears that the LSI SAS 1064E chip needs to be reset after a
+suspend/resume cycle before the driver attempts further communications with
+the chip.  Without this patch, resuming the chip results in this error
+message being printed repeatedly and no more disk I/O.
 
-On Thu, 2007-09-20 at 22:39 +0200, Rafael J. Wysocki wrote:
-> > Works as well. What's the difference between this and the real thing ?
-> 
-> The real thing also calls device_power_down(PMSG_FREEZE), which is a
-> counterpart of sysdev_shutdown(), more or less, and I think that's what goes
-> belly up.
-> 
-> You can use the patch below (on top of -rc6-mm1), which just disables the image
-> creation (that should be irrelevant anyway) and see what happens.
+mptbase: ioc0: ERROR - Invalid IOC facts reply, msgLength=0 offsetof=6!
 
-In meantime I figured out what's happening. The ordering in
-hibernate_snapshot() is wrong. It does:
+So far it seems to fix suspend/resume on all the MPT Fusion cards I have
+(SAS and U320 SCSI) but since I don't know the internals of that chip I
+can't say for sure if this is a proper fix.
 
-	swsusp_shrink_memory();
-        suspend_console();
-        device_suspend(PMSG_FREEZE);
-        platform_prepare(platform_mode);
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-	disable_nonboot_cpus();
+ drivers/message/fusion/mptbase.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-        swsusp_suspend();
-
-	enable_nonboot_cpus();
-
-	platform_finish(platform_mode);
-        device_resume();
-        resume_console();
-
-We disable everything in device_suspend() including timekeeping, so any
-code which is depending on working timekeeping and timer functionality
-(which is suspended in timekeeping_suspend() as well) is busted.
-
-enable_nonboot_cpus() definitely relies on working timekeeping and
-timers depending on the codepath. It's just a surprise that this did not
-blow up earlier (also before clock events).
-
-I changed the ordering of the above to:
-
-	disable_nonboot_cpus();
-
-	swsusp_shrink_memory();
-        suspend_console();
-        device_suspend(PMSG_FREEZE);
-        platform_prepare(platform_mode);
-        swsusp_suspend();
-	platform_finish(platform_mode);
-        device_resume();
-        resume_console();
-
-	enable_nonboot_cpus();
-
-and non-surprisingly the "my VAIO needs help from keyboard" problem went
-away immediately. See patch below. (on top of rc7-hrt1, -mm1 does not
-work at all on my VAIO due to some yet not identified wreckage)
-
-I did not yet look into the suspend to ram code, but I guess that there
-is an equivalent problem.
-
-But I have no idea why this affects Andrews jinxed VAIO (UP machine),
-though I suspect that we have more timekeeping/timer depending code
-somewhere waiting to bite us.
-
-Also I still need to debug why the HIBERNATION_TEST code path (which has
-a msleep(5000) in it) does not fail, but I postpone this until tomorrow
-morning. I'm dead tired after hunting this Heisenbug which changes with
-every other printk added to the code. I'm going to add some really noisy
-messages for everything which accesses timekeeping / timers _after_
-those systems have been shut down.
-
-We really need to fix this once and forever _before_ 2.6.23 final, even
-if it requires a -rc8.
-
-Thanks,
-
-	tglx
-
---- a/kernel/power/disk.c	2007-09-11 09:25:24.000000000 +0200
-+++ b/kernel/power/disk.c	2007-09-20 22:47:30.000000000 +0200
-@@ -130,10 +130,14 @@ int hibernation_snapshot(int platform_mo
- {
- 	int error;
+diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+index 414c109..97895bd 100644
+--- a/drivers/message/fusion/mptbase.c
++++ b/drivers/message/fusion/mptbase.c
+@@ -1772,6 +1772,12 @@ mpt_resume(struct pci_dev *pdev)
+ 		(mpt_GetIocState(ioc, 1) >> MPI_IOC_STATE_SHIFT),
+ 		CHIPREG_READ32(&ioc->chip->Doorbell));
  
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto resume_cpus;
++	/* put ioc into READY_STATE */
++	if(SendIocReset(ioc, MPI_FUNCTION_IOC_MESSAGE_UNIT_RESET, CAN_SLEEP)) {
++		printk(MYIOC_s_ERR_FMT
++		"pci-resume:  IOC msg unit reset failed!\n", ioc->name);
++	}
 +
- 	/* Free memory before shutting down devices. */
- 	error = swsusp_shrink_memory();
- 	if (error)
--		return error;
-+		goto resume_cpus;
- 
- 	suspend_console();
- 	error = device_suspend(PMSG_FREEZE);
-@@ -144,23 +148,22 @@ int hibernation_snapshot(int platform_mo
- 	if (error)
- 		goto Resume_devices;
- 
--	error = disable_nonboot_cpus();
--	if (!error) {
--		if (hibernation_mode != HIBERNATION_TEST) {
--			in_suspend = 1;
--			error = swsusp_suspend();
--			/* Control returns here after successful restore */
--		} else {
--			printk("swsusp debug: Waiting for 5 seconds.\n");
--			mdelay(5000);
--		}
-+	if (hibernation_mode != HIBERNATION_TEST) {
-+		in_suspend = 1;
-+		error = swsusp_suspend();
-+		/* Control returns here after successful restore */
-+	} else {
-+		printk("swsusp debug: Waiting for 5 seconds.\n");
-+		mdelay(5000);
- 	}
--	enable_nonboot_cpus();
-+
-  Resume_devices:
- 	platform_finish(platform_mode);
- 	device_resume();
-  Resume_console:
- 	resume_console();
-+resume_cpus:
-+	enable_nonboot_cpus();
- 	return error;
- }
- 
-
-
-
+ 	/* bring ioc to operational state */
+ 	if ((recovery_state = mpt_do_ioc_recovery(ioc,
+ 	    MPT_HOSTEVENT_IOC_RECOVER, CAN_SLEEP)) != 0) {
