@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbXITNjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbXITNkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755619AbXITNjP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 09:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbXITNi7
+	id S1756134AbXITNkj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 09:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbXITNk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 09:38:59 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:3296 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbXITNi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 09:38:58 -0400
-X-IronPort-AV: E=Sophos;i="4.20,278,1186383600"; 
-   d="scan'208";a="106043013"
-Subject: Re: [PATCH 3/3] CRED: Move the effective capabilities into the
-	cred struct
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: David Howells <dhowells@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <46F1F2EE.1010904@kernel.org>
-References: <20070919161749.8334.26064.stgit@warthog.procyon.org.uk>
-	 <20070919161805.8334.96808.stgit@warthog.procyon.org.uk>
-	 <46F1F2EE.1010904@kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Thu, 20 Sep 2007 09:38:55 -0400
-Message-Id: <1190295535.6763.29.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 20 Sep 2007 13:38:56.0089 (UTC) FILETIME=[974EAC90:01C7FB8B]
+	Thu, 20 Sep 2007 09:40:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55389 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754236AbXITNk3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 09:40:29 -0400
+Date: Thu, 20 Sep 2007 19:13:12 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Antonino Daplas <adaplas@pol.net>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/video/pmag-ba-fb.c: Improve diagnostics
+In-Reply-To: <Pine.LNX.4.64N.0709201342160.30788@blysk.ds.pg.gda.pl>
+Message-ID: <alpine.LFD.0.999.0709201837160.17093@enigma.security.iitk.ac.in>
+References: <Pine.LNX.4.64N.0709171736580.17606@blysk.ds.pg.gda.pl>
+ <Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
+ <20070919172412.725508d0.akpm@linux-foundation.org>
+ <Pine.LNX.4.64N.0709201342160.30788@blysk.ds.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-19 at 21:11 -0700, Andrew Morgan wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+Hi Maciej,
+
+
+On Thu, 20 Sep 2007, Maciej W. Rozycki wrote:
 > 
-> David Howells wrote:
-> > Move the effective capabilities mask from the task struct into the credentials
-> > record.
+> On Wed, 19 Sep 2007, Andrew Morton wrote:
+> 
+> > > patch-mips-2.6.23-rc5-20070904-pmag-ba-err-2
+> > > diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c
+> > > --- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c	2007-02-21 05:56:47.000000000 +0000
+> > > +++ linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c	2007-09-18 10:56:51.000000000 +0000
+> > > @@ -147,16 +147,23 @@ static int __init pmagbafb_probe(struct 
+> > >  	resource_size_t start, len;
+> > >  	struct fb_info *info;
+> > >  	struct pmagbafb_par *par;
+> > > +	int err = 0;
 > > 
-> > Note that the effective capabilities mask in the cred struct shadows that in
-> > the task_struct because a thread can have its capabilities masks changed by
-> > another thread.  The shadowing is performed by update_current_cred() which is
-> > invoked on entry to any system call that might need it.
+> > This initialisation to zero is not good.
+> > 
+> > Because if some error-path code forgot to do `err = -EFOO' then probe()
+> > will return zero and the driver will leave things in half-initialised state
+> > and will then proceed as if things had succeeded.  It will crash.
 > 
-> OOC If we were to simply drop support for one process changing the
-> capabilities of another, would we need this patch?
+>  GCC used to complain: "`foo' might be used uninitialized..." and this is 
+> the usual cure; let me see if this not the case anymore (I have 4.1.2).
 
-No. This has nothing to do about one process changing some other
-process' capabilities. It has to do with being able to pass security
-information around the kernel beyond the confines of the task struct.
+Even so, initializing to zero isn't quite good. You could use the
+uninitialized_var() (once you've confirmed that the warning is bogus).
+However, some maintainers may still nack uninitialized_var() usage,
+quite legitimately.
 
-This is needed in order to deal with asynchronous i/o where security
-checks may have to be deferred, and where the task struct may no longer
-be available.
-One example would be a failover situation when doing deferred writes: if
-the first choice of storage medium is unavailable, and the kernel tries
-to fail the write over to another storage. On NFS that might involve
-having to build up a new RPCSEC_GSS security context for the new server.
-Currently, you cannot do this safely because all the security info is
-cached in the task struct and much of it cannot be copied.
 
-Trond
+> > So it's better to leave this local uninitialised, because we really want to
+> > get that compiler warning if someone forgot to set the return value.
+> 
+>  Yes of course, barring the issue mentioned.  Note the message above is 
+> not the same as: "`foo' is used uninitialized..." that would be reported 
+> in the case which you are concerned of.
+
+Firstly, "may be used uninitialized" can still be a bug.
+
+Secondly, latest gcc is *horribly* buggy (and has been so for last several
+releases including 4.1, 4.2 and 4.3 -- 3.x was good). See:
+
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33327
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18501
+
+We'd been hurling all sorts of abuses on gcc for quite long (when it fails
+to detect these "false positive" cases), but now, it turns out it is quite
+easy to write *genuinely* buggy code that still won't get any warnings,
+neither the "is used" nor "may be used" one!
+
+In short, there are three ways to fix these false positive warnings:
+
+1. Do nothing, there are enough "uninitialized variable" warnings anyway,
+   and hopefully, one day GCC would clean up its act.
+
+2. Use uninitialized_var() to shut it up (only if it's genuinely bogus).
+
+3. Do something like the following legendary patch [1]:
+
+http://kegel.com/crosstool/crosstool-0.43/patches/linux-2.6.11.3/arch_alpha_kernel_srcons.patch
+
+i.e., explicitly change the structure/logic of the function to make it
+obvious enough to gcc that the variable will not be used uninitialized.
+
+
+Satyam
+
+[1] That was a funny case -- the alpha linux maintainer is also a gcc
+    maintainer. Alpha even sets -Werror, so either he had to fix the
+    kernel code that produced the warning, or go fix GCC to not warn
+    about it -- he chose the former :-)
