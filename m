@@ -1,54 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbXITAx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbXITBbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbXITAx3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 20:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbXITAxW
+	id S1754486AbXITBbE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 21:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXITBay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 20:53:22 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:12195 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbXITAxV (ORCPT
+	Wed, 19 Sep 2007 21:30:54 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:33599 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751184AbXITBax (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 20:53:21 -0400
-Date: Wed, 19 Sep 2007 18:51:11 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Out of socket memory
-In-reply-to: <fa.3CwoTTQ1S/AhXEODsNaySgEYmWc@ifi.uio.no>
-To: Ilya Eremin <che_guevara_3@bk.ru>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <46F1C3FF.4030706@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.3CwoTTQ1S/AhXEODsNaySgEYmWc@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 19 Sep 2007 21:30:53 -0400
+X-IronPort-AV: i="4.20,276,1186372800"; 
+   d="scan'208"; a="51862355:sNHT33092255"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com
+Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin relocations
+Date: Wed, 19 Sep 2007 21:31:09 -0400
+User-Agent: KMail/1.9.5
+Cc: "Bernd Schmidt" <bernd.schmidt@analog.com>,
+       "David McCullough" <davidm@snapgear.com>,
+       "Greg Ungerer" <gerg@snapgear.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, ysato@users.sourceforge.jp,
+       lethal@linux-sh.org, miles@lsi.nec.co.jp, linux-m32r@ml.linux-m32r.org
+References: <1190102965.4406.9.camel@roc-desktop>
+In-Reply-To: <1190102965.4406.9.camel@roc-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709192131.09469.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 20 Sep 2007 01:30:47.0264 (UTC) FILETIME=[DEBD0600:01C7FB25]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilya Eremin wrote:
-> Hello,
+On Tue 18 Sep 2007 04:09, Bryan Wu pondered:
+> From: Bernd Schmidt <bernd.schmidt@analog.com>
 > 
-> I am running a P2P related server, which has many connections to it at one time (about 100,000 at peak times). But I have been getting
-> eserver invoked oom-killer: gfp_mask=0xd0, order=0, oomkilladj=0 errors followed by
-> Out of socket memory
-> I believe this is related to rmem, but I am not sure. Here's my current net related sysctl settings
+> This just adds minimum support for the Blackfin relocations,
+> since we don't have enough space in each reloc. The idea
+> is to store a value with one relocation so that subsequent ones can
+> access it.
 > 
-> net.core.wmem_max = 8388608
-> net.core.rmem_max = 8388608
-> net.core.wmem_default = 104448
-> net.core.rmem_default = 104448
+> Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> Cc: David McCullough <davidm@snapgear.com>
+> Cc: Greg Ungerer <gerg@snapgear.com>
 
-..
+Adding the other appropriate maintainers. for h8, m32r, sh and v850.
 
-> 
-> I am not sure if I should increase rmem further or not
-
-Increasing that will likely make things worse, not better, as it allows 
-more memory to be allocated for each socket. I should think you want to 
-adjust those values down, not up..
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+> ---
+>  fs/binfmt_flat.c             |    5 ++++-
+>  include/asm-h8300/flat.h     |    3 ++-
+>  include/asm-m32r/flat.h      |    3 ++-
+>  include/asm-m68knommu/flat.h |    3 ++-
+>  include/asm-sh/flat.h        |    3 ++-
+>  include/asm-v850/flat.h      |    4 +++-
+>  6 files changed, 15 insertions(+), 6 deletions(-)
+> diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+> index 7b0265d..13b58f8 100644
+> --- a/fs/binfmt_flat.c
+> +++ b/fs/binfmt_flat.c
+> @@ -742,6 +742,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  	 * __start to address 4 so that is okay).
+>  	 */
+>  	if (rev > OLD_FLAT_VERSION) {
+> +		unsigned long persistent = 0;
+>  		for (i=0; i < relocs; i++) {
+>  			unsigned long addr, relval;
+>  
+> @@ -749,6 +750,8 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			   relocated (of course, the address has to be
+>  			   relocated first).  */
+>  			relval = ntohl(reloc[i]);
+> +			if (flat_set_persistent (relval, &persistent))
+> +				continue;
+>  			addr = flat_get_relocate_addr(relval);
+>  			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
+>  			if (rp == (unsigned long *)RELOC_FAILED) {
+> @@ -757,7 +760,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			}
+>  
+>  			/* Get the pointer's value.  */
+> -			addr = flat_get_addr_from_rp(rp, relval, flags);
+> +			addr = flat_get_addr_from_rp(rp, relval, flags, &persistent);
+>  			if (addr != 0) {
+>  				/*
+>  				 * Do the relocation.  PIC relocs in the data section are
+> diff --git a/include/asm-h8300/flat.h b/include/asm-h8300/flat.h
+> index c20eee7..2a87350 100644
+> --- a/include/asm-h8300/flat.h
+> +++ b/include/asm-h8300/flat.h
+> @@ -9,6 +9,7 @@
+>  #define	flat_argvp_envp_on_stack()		1
+>  #define	flat_old_ram_flag(flags)		1
+>  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> +#define	flat_set_persistent(relval, p)		0
+>  
+>  /*
+>   * on the H8 a couple of the relocations have an instruction in the
+> @@ -18,7 +19,7 @@
+>   */
+>  
+>  #define	flat_get_relocate_addr(rel)		(rel)
+> -#define flat_get_addr_from_rp(rp, relval, flags) \
+> +#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+>          (get_unaligned(rp) & ((flags & FLAT_FLAG_GOTPIC) ? 0xffffffff: 0x00ffffff))
+>  #define flat_put_addr_at_rp(rp, addr, rel) \
+>  	put_unaligned (((*(char *)(rp)) << 24) | ((addr) & 0x00ffffff), rp)
+> diff --git a/include/asm-m32r/flat.h b/include/asm-m32r/flat.h
+> index 1b285f6..d851cf0 100644
+> --- a/include/asm-m32r/flat.h
+> +++ b/include/asm-m32r/flat.h
+> @@ -15,9 +15,10 @@
+>  #define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
+>  #define	flat_argvp_envp_on_stack()		0
+>  #define	flat_old_ram_flag(flags)		(flags)
+> +#define	flat_set_persistent(relval, p)		0
+>  #define	flat_reloc_valid(reloc, size)		\
+>  	(((reloc) - textlen_for_m32r_lo16_data) <= (size))
+> -#define flat_get_addr_from_rp(rp, relval, flags) \
+> +#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+>  	m32r_flat_get_addr_from_rp(rp, relval, (text_len) )
+>  
+>  #define flat_put_addr_at_rp(rp, addr, relval) \
+> diff --git a/include/asm-m68knommu/flat.h b/include/asm-m68knommu/flat.h
+> index 2d836ed..814b517 100644
+> --- a/include/asm-m68knommu/flat.h
+> +++ b/include/asm-m68knommu/flat.h
+> @@ -9,8 +9,9 @@
+>  #define	flat_argvp_envp_on_stack()		1
+>  #define	flat_old_ram_flag(flags)		(flags)
+>  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> -#define	flat_get_addr_from_rp(rp, relval, flags)  get_unaligned(rp)
+> +#define	flat_get_addr_from_rp(rp, relval, flags, p) get_unaligned(rp)
+>  #define	flat_put_addr_at_rp(rp, val, relval) put_unaligned(val,rp)
+>  #define	flat_get_relocate_addr(rel)		(rel)
+> +#define	flat_set_persistent(relval, p)		0
+>  
+>  #endif /* __M68KNOMMU_FLAT_H__ */
+> diff --git a/include/asm-sh/flat.h b/include/asm-sh/flat.h
+> index 0d5cc04..dc4f595 100644
+> --- a/include/asm-sh/flat.h
+> +++ b/include/asm-sh/flat.h
+> @@ -16,8 +16,9 @@
+>  #define	flat_argvp_envp_on_stack()		0
+>  #define	flat_old_ram_flag(flags)		(flags)
+>  #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+> -#define	flat_get_addr_from_rp(rp, relval, flags)  get_unaligned(rp)
+> +#define	flat_get_addr_from_rp(rp, relval, flags, p)  get_unaligned(rp)
+>  #define	flat_put_addr_at_rp(rp, val, relval)  put_unaligned(val,rp)
+>  #define	flat_get_relocate_addr(rel)		(rel)
+> +#define	flat_set_persistent(relval, p)		0
+>  
+>  #endif /* __ASM_SH_FLAT_H */
+> diff --git a/include/asm-v850/flat.h b/include/asm-v850/flat.h
+> index 3888f59..17f0ea5 100644
+> --- a/include/asm-v850/flat.h
+> +++ b/include/asm-v850/flat.h
+> @@ -25,6 +25,7 @@
+>  #define	flat_stack_align(sp)		/* nothing needed */
+>  #define	flat_argvp_envp_on_stack()	0
+>  #define	flat_old_ram_flag(flags)	(flags)
+> +#define	flat_set_persistent(relval, p)	0
+>  
+>  /* We store the type of relocation in the top 4 bits of the `relval.'
+> */
+>  
+> @@ -46,7 +47,8 @@ flat_get_relocate_addr (unsigned long relval)
+>     For the v850, RP should always be half-word aligned.  */
+>  static inline unsigned long flat_get_addr_from_rp (unsigned long *rp,
+>  						   unsigned long relval,
+> -						   unsigned long flags)
+> +						   unsigned long flags,
+> +						   unsigned long *persistent)
+>  {
+>  	short *srp = (short *)rp;
