@@ -1,123 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbXITT7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbXITUAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbXITT7s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbXITTx2
+	id S1753987AbXITUAL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 16:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbXITTx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 15:53:28 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:51416 "EHLO
+	Thu, 20 Sep 2007 15:53:29 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:51421 "EHLO
 	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbXITTxS (ORCPT
+	with ESMTP id S1752453AbXITTxT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:53:18 -0400
-Subject: [PATCH 13/25] elevate mount count for extended attributes
+	Thu, 20 Sep 2007 15:53:19 -0400
+Subject: [PATCH 06/25] elevate write count open()'d files
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 20 Sep 2007 12:53:05 -0700
+Date: Thu, 20 Sep 2007 12:52:56 -0700
 References: <20070920195249.852667D5@kernel>
 In-Reply-To: <20070920195249.852667D5@kernel>
-Message-Id: <20070920195305.2369B8F3@kernel>
+Message-Id: <20070920195256.EDA48D0F@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This basically audits the callers of xattr_permission(), which
-calls permission() and can perform writes to the filesystem.
+This is the first really tricky patch in the series.  It
+elevates the writer count on a mount each time a
+non-special file is opened for write.
 
-This conflicts with the current (~2.6.23-rc7) audit 
-git tree in -mm.  wiggle'ing the patch merges it.
+This is not completely apparent in the patch because the
+two if() conditions in may_open() above the
+mnt_want_write() call are, combined, equivalent to
+special_file().
 
-Acked-by: Christoph Hellwig <hch@infradead.org>
+There is also an elevated count around the vfs_create()
+call in open_namei().  The count needs to be kept elevated
+all the way into the may_open() call.  Otherwise, when the
+write is dropped, a ro->rw transisition could occur.  This
+would lead to having rw access on the newly created file,
+while the vfsmount is ro.  That is bad.
+
+Some filesystems forego the use of normal vfs calls to create
+struct files.  Make sure that these users elevate the mnt writer
+count because they will get __fput(), and we need to make
+sure they're balanced.
+
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+Acked-by: Christoph Hellwig <hch@infradead.org>
 ---
 
- lxc-dave/fs/nfsd/nfs4proc.c |    7 ++++++-
- lxc-dave/fs/xattr.c         |   16 ++++++++++++++--
- 2 files changed, 20 insertions(+), 3 deletions(-)
+ lxc-dave/fs/file_table.c |    9 ++++++++-
+ lxc-dave/fs/namei.c      |   20 ++++++++++++++++----
+ lxc-dave/ipc/mqueue.c    |    3 +++
+ 3 files changed, 27 insertions(+), 5 deletions(-)
 
-diff -puN fs/nfsd/nfs4proc.c~elevate-mount-count-for-extended-attributes fs/nfsd/nfs4proc.c
---- lxc/fs/nfsd/nfs4proc.c~elevate-mount-count-for-extended-attributes	2007-09-20 12:16:16.000000000 -0700
-+++ lxc-dave/fs/nfsd/nfs4proc.c	2007-09-20 12:16:16.000000000 -0700
-@@ -658,14 +658,19 @@ nfsd4_setattr(struct svc_rqst *rqstp, st
- 			return status;
- 		}
- 	}
-+	status = mnt_want_write(cstate->current_fh.fh_export->ex_mnt);
-+	if (status)
-+		return status;
- 	status = nfs_ok;
- 	if (setattr->sa_acl != NULL)
- 		status = nfsd4_set_nfs4_acl(rqstp, &cstate->current_fh,
- 					    setattr->sa_acl);
- 	if (status)
--		return status;
-+		goto out;
- 	status = nfsd_setattr(rqstp, &cstate->current_fh, &setattr->sa_iattr,
- 				0, (time_t)0);
-+out:
-+	mnt_drop_write(cstate->current_fh.fh_export->ex_mnt);
- 	return status;
+diff -puN fs/file_table.c~tricky-elevate-write-count-files-are-open-ed fs/file_table.c
+--- lxc/fs/file_table.c~tricky-elevate-write-count-files-are-open-ed	2007-09-20 12:16:11.000000000 -0700
++++ lxc-dave/fs/file_table.c	2007-09-20 12:16:11.000000000 -0700
+@@ -194,6 +194,10 @@ int init_file(struct file *file, struct 
+ 	file->f_mapping = dentry->d_inode->i_mapping;
+ 	file->f_mode = mode;
+ 	file->f_op = fop;
++	if (mode & FMODE_WRITE) {
++		error = mnt_want_write(mnt);
++		WARN_ON(error);
++	}
+ 	return error;
  }
+ EXPORT_SYMBOL(init_file);
+@@ -231,8 +235,11 @@ void fastcall __fput(struct file *file)
+ 	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
+ 		cdev_put(inode->i_cdev);
+ 	fops_put(file->f_op);
+-	if (file->f_mode & FMODE_WRITE)
++	if (file->f_mode & FMODE_WRITE) {
+ 		put_write_access(inode);
++		if (!special_file(inode->i_mode))
++			mnt_drop_write(mnt);
++	}
+ 	put_pid(file->f_owner.pid);
+ 	file_kill(file);
+ 	file->f_path.dentry = NULL;
+diff -puN fs/namei.c~tricky-elevate-write-count-files-are-open-ed fs/namei.c
+--- lxc/fs/namei.c~tricky-elevate-write-count-files-are-open-ed	2007-09-20 12:16:11.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-09-20 12:16:11.000000000 -0700
+@@ -1595,8 +1595,15 @@ int may_open(struct nameidata *nd, int a
+ 			return -EACCES;
  
-diff -puN fs/xattr.c~elevate-mount-count-for-extended-attributes fs/xattr.c
---- lxc/fs/xattr.c~elevate-mount-count-for-extended-attributes	2007-09-20 12:16:16.000000000 -0700
-+++ lxc-dave/fs/xattr.c	2007-09-20 12:16:16.000000000 -0700
-@@ -11,6 +11,7 @@
- #include <linux/slab.h>
- #include <linux/file.h>
- #include <linux/xattr.h>
-+#include <linux/mount.h>
- #include <linux/namei.h>
- #include <linux/security.h>
- #include <linux/syscalls.h>
-@@ -32,8 +33,6 @@ xattr_permission(struct inode *inode, co
- 	 * filesystem  or on an immutable / append-only inode.
- 	 */
- 	if (mask & MAY_WRITE) {
--		if (IS_RDONLY(inode))
--			return -EROFS;
- 		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
- 			return -EPERM;
+ 		flag &= ~O_TRUNC;
+-	} else if (IS_RDONLY(inode) && (flag & FMODE_WRITE))
+-		return -EROFS;
++	} else if (flag & FMODE_WRITE) {
++		/*
++		 * effectively: !special_file()
++		 * balanced by __fput()
++		 */
++		error = mnt_want_write(nd->mnt);
++		if (error)
++			return error;
++	}
+ 
+ 	error = vfs_permission(nd, acc_mode);
+ 	if (error)
+@@ -1739,14 +1746,17 @@ do_last:
  	}
-@@ -235,7 +234,11 @@ sys_setxattr(char __user *path, char __u
- 	error = user_path_walk(path, &nd);
- 	if (error)
- 		return error;
-+	error = mnt_want_write(nd.mnt);
-+	if (error)
-+		return error;
- 	error = setxattr(nd.dentry, name, value, size, flags);
-+	mnt_drop_write(nd.mnt);
- 	path_release(&nd);
- 	return error;
- }
-@@ -250,7 +253,11 @@ sys_lsetxattr(char __user *path, char __
- 	error = user_path_walk_link(path, &nd);
- 	if (error)
- 		return error;
-+	error = mnt_want_write(nd.mnt);
-+	if (error)
-+		return error;
- 	error = setxattr(nd.dentry, name, value, size, flags);
-+	mnt_drop_write(nd.mnt);
- 	path_release(&nd);
- 	return error;
- }
-@@ -266,9 +273,14 @@ sys_fsetxattr(int fd, char __user *name,
- 	f = fget(fd);
- 	if (!f)
- 		return error;
-+	error = mnt_want_write(f->f_vfsmnt);
-+	if (error)
-+		goto out_fput;
- 	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
- 	error = setxattr(dentry, name, value, size, flags);
-+	mnt_drop_write(f->f_vfsmnt);
-+out_fput:
- 	fput(f);
- 	return error;
- }
+ 
+ 	if (IS_ERR(nd->intent.open.file)) {
+-		mutex_unlock(&dir->d_inode->i_mutex);
+ 		error = PTR_ERR(nd->intent.open.file);
+-		goto exit_dput;
++		goto exit_mutex_unlock;
+ 	}
+ 
+ 	/* Negative dentry, just create the file */
+ 	if (!path.dentry->d_inode) {
++		error = mnt_want_write(nd->mnt);
++		if (error)
++			goto exit_mutex_unlock;
+ 		error = open_namei_create(nd, &path, flag, mode);
++		mnt_drop_write(nd->mnt);
+ 		if (error)
+ 			goto exit;
+ 		return 0;
+@@ -1784,6 +1794,8 @@ ok:
+ 		goto exit;
+ 	return 0;
+ 
++exit_mutex_unlock:
++	mutex_unlock(&dir->d_inode->i_mutex);
+ exit_dput:
+ 	dput_path(&path, nd);
+ exit:
+diff -puN ipc/mqueue.c~tricky-elevate-write-count-files-are-open-ed ipc/mqueue.c
+--- lxc/ipc/mqueue.c~tricky-elevate-write-count-files-are-open-ed	2007-09-20 12:16:11.000000000 -0700
++++ lxc-dave/ipc/mqueue.c	2007-09-20 12:16:11.000000000 -0700
+@@ -686,6 +686,9 @@ asmlinkage long sys_mq_open(const char _
+ 				goto out;
+ 			filp = do_open(dentry, oflag);
+ 		} else {
++			error = mnt_want_write(mqueue_mnt);
++			if (error)
++				goto out;
+ 			filp = do_create(mqueue_mnt->mnt_root, dentry,
+ 						oflag, mode, u_attr);
+ 		}
 _
