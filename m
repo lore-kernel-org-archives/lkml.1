@@ -1,155 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbXITHzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbXITIDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbXITHzO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 03:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXITHy7
+	id S1756805AbXITIDV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 04:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXITICz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 03:54:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:18756 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753288AbXITHy6 (ORCPT
+	Thu, 20 Sep 2007 04:02:55 -0400
+Received: from web53708.mail.re2.yahoo.com ([206.190.37.29]:37041 "HELO
+	web53708.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751567AbXITICx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 03:54:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=gqsBhTU4Ku+q5e+OWGqHpRLbtZF+i24pRfiaEddNBAMuPhhZl3epLtXJqd5IjXhoPU4h75NaHB29cQPN0jXd+LeCXBltHptjrERfyTQKNA97cT8Mv9xQ7HpObk34/QWBwENSdTJF5168fa7USCOymuYTsf+LOXFEHzDTbXU0PDU=
-Message-ID: <3ae72650709200054u356203b9rb594f1644730071b@mail.gmail.com>
-Date: Thu, 20 Sep 2007 09:54:57 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc6-mm1
-Cc: "David Brownell" <david-b@pacbell.net>,
-       "Chuck Ebbert" <cebbert@redhat.com>, tilman@imap.cc,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, a.zummo@towertech.it
-In-Reply-To: <20070919231121.e481445c.akpm@linux-foundation.org>
+	Thu, 20 Sep 2007 04:02:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=ApYBn7GB7uMixhIHMsqQBUI2HEEGz/nv09votgZuo8VursKbdBOEzNQFVPbTEcKEpMPpIVyia3QV5bs10gPO2NpVDUy+DCCkFyMKTs4O+LoWIpO42T9CvoohIh/dsEZrobVVjWHJBeUWZPErZmGxy1QZOL3Un8BiGWsbfyOs+f8=;
+X-YMail-OSG: 0kqcK_cVM1kwpjrVO43TG5gltZ5_QuM4sQ8ThxCBVxJppYjEqVDe..k69K1rcVQAoIepjLLwTLMF7UlOzWFjP.ECY.ZBs.1YRZcBn9YU7DO2YDXjX2c-
+Date: Thu, 20 Sep 2007 01:02:51 -0700 (PDT)
+From: Nagendra Tomar <tomer_iisc@yahoo.com>
+Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT events get missed for TCP sockets
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <46F20F24.1020900@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <20070919234448.8E87D2319AA@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	 <20070919170604.f7e82f19.akpm@linux-foundation.org>
-	 <200709192143.14635.david-b@pacbell.net>
-	 <20070919231121.e481445c.akpm@linux-foundation.org>
-X-Google-Sender-Auth: e2e47bbbac3ebcd7
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <712722.8047.qm@web53708.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/20/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 19 Sep 2007 21:43:14 -0700 David Brownell <david-b@pacbell.net> wrote:
->
-> > On Wednesday 19 September 2007, Andrew Morton wrote:
-> > > On Wed, 19 Sep 2007 16:44:48 -0700
-> > > David Brownell <david-b@pacbell.net> wrote:
-> > >
-> > > > > > <4>[   21.211942] Duplicate file names "rtc" detected
-> > > > >
-> > > > > Nah, that's an rtc-specific problem.
-> > > >
-> > > > RTC-related ... but it's a procfs bug, since it's procfs which doesn't
-> > > > even bother to check for duplicate names before it registers files.
-> > >
-> > > So you keep on claiming, but I don't think I've yet seen a description of
-> > > the *reason* why two copies of this file are being created,
-> >
-> > Yes you did .... most recently in http://lkml.org/lkml/2007/9/19/18 is:
-> >
-> > > > The missing step seems to be that proc_register() doesn't bother
-> > > > to check whether there's already an entry for that file.  Which
-> > > > is what the appended *UNTESTED* patch does (it compiles though).
-> >
-> > Although maybe you meant me to parse that differently ... as in,
-> > not "why is procfs doing this broken thing?" but rather "how is it
-> > that procfs fault (non)handling code ended up getting used?".
-> >
-> > That's always seemed self-evident:  the RTC framework was creating
-> > it for /dev/rtc0 (presumably, rtc-cmos), while at the same time the
-> > legacy drivers/char/rtc.c was creating it for /dev/rtc.
-> >
-> > Workaround by configuring just one, and the problem goes away.
-> > (Although it *ought* to be OK to configure both, with all the normal
-> > resource exclusions kicking in to ensure only one will run.)
->
-> Head still spinning.
->
-> a) "rtc0" != "rtc" ??
->
-> b) The kernel is trying to register two procfs files of the same name!
->    If that's a configuration error then we have a Kconfiguration bug.
->
-> >
-> > > and a
-> > > description of why that is an OK thing for the kernel to be doing.
-> >
-> > It's not a wrong thing, at any rate.  This is a fairly basic task
-> > in any filesystem:  mutual exclusion.  Code is allowed to rely on
-> > filesystems acting correctly...
-> >
->
-> We're relying on procfs behaviour to prevent registration of two rtc
-> devices?  That's a strange means of arbitration.   And what happens
-> when CONFIG_PROC_FS=n?
->
-> >
-> > > > > From: Chuck Ebbert <cebbert@redhat.com>
-> > > > >
-> > > > > AFAICT the rtc problem is caused by misconfiguration: both the new
-> > > > > and old rtc driver have been built and they are both trying to load.
-> > > >
-> > > > That _shouldn't_ be a problem at all; only one of them should be
-> > > > able to bind to that hardware.
-> > > >
-> > > > The only problem I see in these messages is that procfs bug.
-> > > >
-> > >
-> > > It's not obvious that this is only a procfs bug.  If some part of the
-> > > kernel tries to add a procfs file which is already there, that's often a
-> > > bug in the caller.
-> >
-> > Not really; procfs is supposed to not create it if it's already there!!
-> > Reasonable callers will cope with "it didn't get created", and that's
-> > all they should really need to do.
-> >
-> >
-> > > Yes, procfs should have been checking for this.  But it is too late now for
-> > > us to just fail out of the procfs registration code.  Because this can
-> > > cause previously buggy-but-works-ok code to now fail completely.
-> >
-> > What do you mean by too late "now" ... just-before-2.6.23?
->
-> No.
->
-> What I mean is that we cannot change procfs as you propose until we have
-> located and fixed all places in the kernel which can cause duplicated
-> procfs names.  (Good luck with that).
->
-> Because we've had this happening before, and *the driver kept working*
-> (apart from, presumably, some of their procfs features which, presumably,
-> nobody used much).
->
-> With the change which you propose, these drivers will probably stop
-> working, because they will newly find their procfs registration failed.
->
-> > I'm a bit puzzled why this issue cropped up suddenly, when the
-> > "two RTC drivers" configs have been behaving fine (presumably
-> > failing properly, but at least not generating problem reports)
-> > for some time.  One of the procfs changes must have caused this
-> > trouble.
->
-> I'm not sure that anything _has_ changed.  It's just that a few people have
-> suddenly noticed duplicated rtc entris in /proc.  Perhaps theye were there
-> for some time.
->
-> > And what would an example be of buggy-but-works code, which would
-> > then be broken if the procfs stopped being buggy?
-> >
->
-> A driver which checks the return value from procfs registration and which
-> then errors out (as it should) if that registration fails.
 
-Isn't that all caused by the rtc driver registering itself without
-checking if it is able to grab the device? Wouldn't moving the
-request_resource() before doing any device registration do the magic?
+--- Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-Kay
+> Nagendra Tomar a écrit :
+> > --- Davide Libenzi <davidel@xmailserver.org> wrote:
+> > 
+> >> On Wed, 19 Sep 2007, David Miller wrote:
+> >>
+> >>> From: Nagendra Tomar <tomer_iisc@yahoo.com>
+> >>> Date: Wed, 19 Sep 2007 15:37:09 -0700 (PDT)
+> >>>
+> >>>> With the SOCK_NOSPACE check in tcp_check_space(), this epoll_wait call will 
+> >>>> not return, even when the incoming acks free the buffers.
+> >>>>         Note that this patch assumes that the SOCK_NOSPACE check in
+> >>>> tcp_check_space is a trivial optimization which can be safely removed.
+> >>> I already replied to your patch posting explaining that whatever is
+> >>> not setting SOCK_NOSPACE should be fixed instead.
+> >>>
+> >>> Please address that, thanks.
+> >> You're not planning of putting the notion of a SOCK_NOSPACE bit inside a 
+> >> completely device-unaware interface like epoll, I hope?
+> >>
+> > 
+> > Definitely not ! 
+> > 
+> > The point is that the "tcp write space available" 
+> > wakeup does not get called if SOCK_NOSPACE bit is not set. This was
+> > fine when the wakeup was merely a wakeup (since SOCK_NOSPACE bit 
+> > indicated that someone really cared abt the wakeup). Now after the
+> > introduction of callback'ed wakeups, we might have some work to
+> > do inside the callback even if there is nobody interested in the wakeup
+> > at that point of time. 
+> > 
+> > In this particular case the ep_poll_callback is not getting called and
+> > hence the socket fd is not getting added to the ready list.
+> > 
+> 
+> Does it means that with your patch each ACK on a ET managed socket will 
+> trigger an epoll event   ?
+> 
+> Maybe your very sensitive high throuput appication needs to set a flag or 
+> something at socket level to ask for such a behavior.
+> 
+> The default should stay as is. That is an event should be sent only if someone 
+> cared about the wakeup.
+> 
+
+A high throughput app will always care about the wakeup, or else it will 
+not be a high throughput app in the first place. An application that
+occasionaly writes and then goes to slumber and then writes again will
+not be a high throughput app. 
+    
+My point is that the SOCK_NOSPACE check does not save us much. For
+high throughput app it will almost always be set, thus making the 
+check insignificant, and for the low throughput case we care less.
+
+Thanx,
+Tomar
+
+
+
+      ___________________________________________________________
+Yahoo! Answers - Got a question? Someone out there knows the answer. Try it
+now.
+http://uk.answers.yahoo.com/ 
