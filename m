@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbXITNrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbXITNsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbXITNrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 09:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXITNrH
+	id S1756568AbXITNsi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 09:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXITNsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 09:47:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54468 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752265AbXITNrE (ORCPT
+	Thu, 20 Sep 2007 09:48:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47853 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752835AbXITNsb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 09:47:04 -0400
-Date: Thu, 20 Sep 2007 19:19:59 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: error from checkpatch.pl version 0.10
-In-Reply-To: <200709202156.GFC11109.HOFQLOVOFFtSJM@I-love.SAKURA.ne.jp>
-Message-ID: <alpine.LFD.0.999.0709201916400.17093@enigma.security.iitk.ac.in>
-References: <200709202156.GFC11109.HOFQLOVOFFtSJM@I-love.SAKURA.ne.jp>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Thu, 20 Sep 2007 09:48:31 -0400
+Date: Thu, 20 Sep 2007 14:55:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] keys: Missing word in documentation
+Message-ID: <20070920145539.2341da89@the-village.bc.nu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-
-On Thu, 20 Sep 2007, Tetsuo Handa wrote:
-> 
-> I checked my patch using checkpatch.pl version 0.10
-> and I got the following error.
-> 
->   ERROR: need consistent spacing around '*' (ctx:WxV)
->   #2334: FILE: security/tomoyo/common.c:2306:
->   +static unsigned int tmy_poll(struct file *file, poll_table *wait)
->                                                               ^
-
-Looks like a checkpatch.pl bug to me -- that was nothing to warn about.
-
-
-> What action should I take?
-> Ignore this error because "poll_table" is used everywhere?
-> Replace "poll_table" with "struct poll_table_struct" according to
-> definition of "poll_table"?
-
-Yeah, this would be better to do anyway (and rename poll_table_struct
-to just poll_table).
-
->   typedef struct poll_table_struct {
->           poll_queue_proc qproc;
->   } poll_table;
-
-So:
-
-	struct poll_table {
-		poll_queue_proc qproc;
-	};
-
-In general the kernel's codingstyle consensus is to avoid adding typedefs.
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23rc6-mm1/Documentation/keys.txt linux-2.6.23rc6-mm1/Documentation/keys.txt
+--- linux.vanilla-2.6.23rc6-mm1/Documentation/keys.txt	2007-09-18 15:32:50.000000000 +0100
++++ linux-2.6.23rc6-mm1/Documentation/keys.txt	2007-09-18 16:16:55.000000000 +0100
+@@ -4,7 +4,7 @@
+ 
+ This service allows cryptographic keys, authentication tokens, cross-domain
+ user mappings, and similar to be cached in the kernel for the use of
+-filesystems other kernel services.
++filesystems and other kernel services.
+ 
+ Keyrings are permitted; these are a special type of key that can hold links to
+ other keys. Processes each have three standard keyring subscriptions that a
