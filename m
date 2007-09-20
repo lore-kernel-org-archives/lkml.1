@@ -1,71 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbXITTx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbXITTyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbXITTx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 15:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXITTw6
+	id S1753355AbXITTyY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 15:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXITTw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 20 Sep 2007 15:52:59 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:39026 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751357AbXITTw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Sep 2007 15:52:58 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:42393 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751305AbXITTw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 15:52:56 -0400
-Subject: [PATCH 04/25] create cleanup helper svc_msnfs()
+Subject: [PATCH 05/25] r/o bind mounts: stub functions
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 20 Sep 2007 12:52:53 -0700
+Date: Thu, 20 Sep 2007 12:52:54 -0700
 References: <20070920195249.852667D5@kernel>
 In-Reply-To: <20070920195249.852667D5@kernel>
-Message-Id: <20070920195253.3A6CC036@kernel>
+Message-Id: <20070920195254.24A9FC3C@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I'm going to be modifying nfsd_rename() shortly to support
-read-only bind mounts.  This #ifdef is around the area I'm
-patching, and it starts to get really ugly if I just try
-to add my new code by itself.  Using this little helper
-makes things a lot cleaner to use.
+This patch adds two function mnt_want_write() and
+mnt_drop_write().  These are used like a lock pair around
+and fs operations that might cause a write to the filesystem.
+
+Before these can become useful, we must first cover each
+place in the VFS where writes are performed with a
+want/drop pair.  When that is complete, we can actually
+introduce code that will safely check the counts before
+allowing r/w<->r/o transitions to occur.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
-Acked-by: Christoph Hellwig <hch@infradead.org>
 ---
 
- lxc-dave/fs/nfsd/vfs.c |   15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ lxc-dave/fs/namespace.c        |   54 +++++++++++++++++++++++++++++++++++++++++
+ lxc-dave/include/linux/mount.h |    3 ++
+ 2 files changed, 57 insertions(+)
 
-diff -puN fs/nfsd/vfs.c~create-svc_msnfs-helper fs/nfsd/vfs.c
---- lxc/fs/nfsd/vfs.c~create-svc_msnfs-helper	2007-09-20 12:16:10.000000000 -0700
-+++ lxc-dave/fs/nfsd/vfs.c	2007-09-20 12:16:10.000000000 -0700
-@@ -857,6 +857,15 @@ static int nfsd_direct_splice_actor(stru
- 	return __splice_from_pipe(pipe, sd, nfsd_splice_actor);
+diff -puN fs/namespace.c~add-vfsmount-writer-count fs/namespace.c
+--- lxc/fs/namespace.c~add-vfsmount-writer-count	2007-09-20 12:16:10.000000000 -0700
++++ lxc-dave/fs/namespace.c	2007-09-20 12:16:10.000000000 -0700
+@@ -77,6 +77,60 @@ struct vfsmount *alloc_vfsmnt(const char
+ 	return mnt;
  }
  
-+static inline int svc_msnfs(struct svc_fh *ffhp)
++/*
++ * Most r/o checks on a fs are for operations that take
++ * discrete amounts of time, like a write() or unlink().
++ * We must keep track of when those operations start
++ * (for permission checks) and when they end, so that
++ * we can determine when writes are able to occur to
++ * a filesystem.
++ */
++/**
++ * mnt_want_write - get write access to a mount
++ * @mnt: the mount on which to take a write
++ *
++ * This tells the low-level filesystem that a write is
++ * about to be performed to it, and makes sure that
++ * writes are allowed before returning success.  When
++ * the write operation is finished, mnt_drop_write()
++ * must be called.  This is effectively a refcount.
++ */
++int mnt_want_write(struct vfsmount *mnt)
 +{
-+#ifdef MSNFS
-+	return (ffhp->fh_export->ex_flags & NFSEXP_MSNFS);
-+#else
++	if (__mnt_is_readonly(mnt))
++		return -EROFS;
 +	return 0;
-+#endif
 +}
++EXPORT_SYMBOL_GPL(mnt_want_write);
 +
- static __be32
- nfsd_vfs_read(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
-               loff_t offset, struct kvec *vec, int vlen, unsigned long *count)
-@@ -869,11 +878,9 @@ nfsd_vfs_read(struct svc_rqst *rqstp, st
- 
- 	err = nfserr_perm;
- 	inode = file->f_path.dentry->d_inode;
--#ifdef MSNFS
--	if ((fhp->fh_export->ex_flags & NFSEXP_MSNFS) &&
--		(!lock_may_read(inode, offset, *count)))
++/**
++ * mnt_drop_write - give up write access to a mount
++ * @mnt: the mount on which to give up write access
++ *
++ * Tells the low-level filesystem that we are done
++ * performing writes to it.  Must be matched with
++ * mnt_want_write() call above.
++ */
++void mnt_drop_write(struct vfsmount *mnt)
++{
++}
++EXPORT_SYMBOL_GPL(mnt_drop_write);
 +
-+	if (svc_msnfs(fhp) && !lock_may_read(inode, offset, *count))
- 		goto out;
--#endif
++/*
++ * __mnt_is_readonly: check whether a mount is read-only
++ * @mnt: the mount to check for its write status
++ *
++ * This shouldn't be used directly ouside of the VFS.
++ * It does not guarantee that the filesystem will stay
++ * r/w, just that it is right *now*.  This can not and
++ * should not be used in place of IS_RDONLY(inode).
++ */
++int __mnt_is_readonly(struct vfsmount *mnt)
++{
++	return (mnt->mnt_sb->s_flags & MS_RDONLY);
++}
++EXPORT_SYMBOL_GPL(__mnt_is_readonly);
++
+ int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
+ {
+ 	mnt->mnt_sb = sb;
+diff -puN include/linux/mount.h~add-vfsmount-writer-count include/linux/mount.h
+--- lxc/include/linux/mount.h~add-vfsmount-writer-count	2007-09-20 12:16:10.000000000 -0700
++++ lxc-dave/include/linux/mount.h	2007-09-20 12:16:10.000000000 -0700
+@@ -70,9 +70,12 @@ static inline struct vfsmount *mntget(st
+ 	return mnt;
+ }
  
- 	/* Get readahead parameters */
- 	ra = nfsd_get_raparms(inode->i_sb->s_dev, inode->i_ino);
++extern int mnt_want_write(struct vfsmount *mnt);
++extern void mnt_drop_write(struct vfsmount *mnt);
+ extern void mntput_no_expire(struct vfsmount *mnt);
+ extern void mnt_pin(struct vfsmount *mnt);
+ extern void mnt_unpin(struct vfsmount *mnt);
++extern int __mnt_is_readonly(struct vfsmount *mnt);
+ 
+ static inline void mntput(struct vfsmount *mnt)
+ {
 _
