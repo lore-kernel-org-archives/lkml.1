@@ -1,112 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbXITACB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbXITADT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757804AbXITACB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Sep 2007 20:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXITABy
+	id S1759249AbXITADT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Sep 2007 20:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXITADM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Sep 2007 20:01:54 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:57634 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbXITABx (ORCPT
+	Wed, 19 Sep 2007 20:03:12 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:48748 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754406AbXITADL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Sep 2007 20:01:53 -0400
-Message-ID: <46F1B872.1050307@ct.jp.nec.com>
-Date: Wed, 19 Sep 2007 17:01:54 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 19 Sep 2007 20:03:11 -0400
+Date: Wed, 19 Sep 2007 17:03:36 -0700
+From: Greg KH <greg@kroah.com>
+To: Werner Cornelius <Werner.Cornelius@cornelius-consult.de>
+Cc: linux-kernel@vger.kernel.org, mtosatti@redhat.com
+Subject: Re: Serial USB-driver for Winchiphead CH340/41 chip
+Message-ID: <20070920000336.GA17357@kroah.com>
+References: <200709141438.55147.Werner.Cornelius@cornelius-consult.de>
 MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: fix to use invalid sched_class
-References: <1190239539.19576.5.camel@earth>
-In-Reply-To: <1190239539.19576.5.camel@earth>
-Content-Type: multipart/mixed;
- boundary="------------070508060703040505020102"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709141438.55147.Werner.Cornelius@cornelius-consult.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070508060703040505020102
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Dmitry Adamushko wrote:
->>> Hi Ingo,
->>>
->>> I found an issue about the scheduler.
->>> If you need a test case, please let me know.
->>> Here is a patch.
->>> [ ... ]
->>> The new thread should be valid scheduler class before queuing.
->>> This patch fixes to set the suitable scheduler class.
->> Nice fix! It's a 2.6.23 must-have fix - i'll push it out into the 
->> scheduler tree. Thanks!
+On Fri, Sep 14, 2007 at 02:38:55PM +0200, Werner Cornelius wrote:
+> Hello,
 > 
-> I think, the following approach would be a bit more appropriate
-> (the missing addition to the already existing "don't leak PI boosting prio"):
+> I know that there has been a patch for the Winchiphead CH340/41 USB to serial 
+> converter chips on the net, but they have been implemented with only a basic 
+> feature and limited baudrates due to the lack of any datasheets.
 > 
-> (not tested)
-> 
-Thank you for reviewing my patch.
-Yes, your approach looks better than mine.
-I've tested it and it looks working fine in my test case.
-I attached the test case.
+> I picked these patches up and added all common baudrates as well as the 
+> complete modem control and status handling to be able of using this adapter 
+> in nearly all applications.
 
-Will you write a patch to replace mine?
+Care to just send me a patch against the -mm tree, for these new
+features?  The driver, with the proper attribution from the original
+author, is already in that tree and will be going into the 2.6.24
+release.
 
-Thanks,
-Hiroshi Shimamoto
+thanks,
 
---------------070508060703040505020102
-Content-Type: image/x-xbitmap;
- name="mutexprio.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mutexprio.c"
-
-#define _GNU_SOURCE
-#include <pthread.h>
-
-pthread_mutex_t mtx;
-
-void* th(void* p)
-{
-  pthread_mutex_lock(&mtx);
-  pthread_mutex_unlock(&mtx);
-  return NULL;
-}
-
-int main(int argc, char** argv)
-{
-  pthread_t tid1, tid2;
-  pthread_attr_t attr;
-  pthread_mutexattr_t mtxattr;
-  struct sched_param sp;
-
-  pthread_mutexattr_init(&mtxattr);
-  pthread_mutexattr_setprotocol(&mtxattr, PTHREAD_PRIO_INHERIT);
-
-  pthread_mutex_init(&mtx, &mtxattr);
-
-  pthread_attr_init(&attr);
-  pthread_attr_setschedpolicy(&attr, SCHED_RR);
-  sp.sched_priority = 10;
-  pthread_attr_setschedparam(&attr, &sp);
-  pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-
-  pthread_mutex_lock(&mtx);
-
-  pthread_create(&tid1, &attr, th, NULL);
-  pthread_create(&tid2, &attr, th, NULL);
-
-  /* GO threads */
-  pthread_mutex_unlock(&mtx);
-
-  pthread_join(tid1, NULL);
-  pthread_join(tid2, NULL);
-
-  return 0;
-}
-
---------------070508060703040505020102--
+greg k-h
