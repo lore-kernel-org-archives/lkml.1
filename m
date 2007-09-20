@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbXITKM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXITKND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbXITKM1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 06:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXITKMS
+	id S1756702AbXITKND (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 06:13:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbXITKMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 06:12:18 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58871 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750749AbXITKMQ (ORCPT
+	Thu, 20 Sep 2007 06:12:53 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:47948 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbXITKMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 06:12:16 -0400
-Date: Thu, 20 Sep 2007 20:12:10 +1000
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.23
-User-Agent: nail 11.25 7/29/05
+	Thu, 20 Sep 2007 06:12:52 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 20 Sep 2007 06:11:21 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: =?iso-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
+cc: Matt LaPlante <kernel1@cyberdogtech.com>, linux-kernel@vger.kernel.org
+Subject: Re: A little coding style nugget of joy
+In-Reply-To: <46F23B77.40809@draigBrady.com>
+Message-ID: <Pine.LNX.4.64.0709200610180.15327@localhost.localdomain>
+References: <20070919123401.9369534d.kernel1@cyberdogtech.com>
+ <46F23B77.40809@draigBrady.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070920101210.6631358C4C09@chook.melbourne.sgi.com>
-From: tes@sgi.com (Tim Shimmin)
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2001575627-1190283081=:15327"
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-A couple of small fixes.
-One for harmless sparse warnings and one which can prevent
-crashes on 32 bit boxes using filestreams.
+--8323328-2001575627-1190283081=:15327
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Please pull from the for-linus branch:
-    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+On Thu, 20 Sep 2007, Pádraig Brady wrote:
 
-This will update the following files:
+> Matt LaPlante wrote:
+> > Since everyone loves random statistics, here are a few gems to give you a break from your busy day:
+> >
+> > Number of lines in the 2.6.22 Linux kernel source that include one or more trailing whitespaces: 135209
+> > Bytes saved by removing said whitespace: 151809
+> > Lines in the (unified) diff: 455437
+> > Size of the diff: 15M
+> > People brave enough to submit the patch: ~0
+>
+> It's gradually getting better so:
+> http://lwn.net/2001/1129/a/whitespace.php3
 
- fs/xfs/xfs_filestream.c  |    7 ++++---
- fs/xfs/xfs_log_recover.c |    4 ++--
- 2 files changed, 6 insertions(+), 5 deletions(-)
+and you wouldn't *believe* how much space you can save by getting rid
+of all that annoying indentation.  and don't even get me *started* on
+those comments ...
 
-through these commits:
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-commit 1bc5858d0d40e07697b5eda47ed8628b8a934235
-Author: Christoph Hellwig <hch@infradead.org>
-Date:   Wed Sep 19 15:27:30 2007 +1000
-
-    [XFS] fix valid but harmless sparse warning
-    
-    The new xlog_recover_do_reg_buffer checks call be16_to_cpu on di_gen which
-    is a 32bit value so sparse rightly complains. Fortunately the warning is
-    harmless because we don't care for the value, but only whether it's
-    non-NULL. Due to that fact we can simply kill the endian swaps on this and
-    the previous di_mode check entirely.
-    
-    SGI-PV: 969656
-    SGI-Modid: xfs-linux-melb:xfs-kern:29709a
-    
-    Signed-off-by: Christoph Hellwig <hch@infradead.org>
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit bcc7b445eff295664a3a3ab14e742b3c9d88e6e3
-Author: Eric Sandeen <sandeen@sandeen.net>
-Date:   Thu Aug 30 17:21:38 2007 +1000
-
-    [XFS] fix filestreams on 32-bit boxes
-    
-    xfs_filestream_mount() sets up an mru cache with:
-      err = xfs_mru_cache_create(&mp->m_filestream, lifetime, grp_count,
-      (xfs_mru_cache_free_func_t)xfs_fstrm_free_func);
-    but that cast is causing problems...
-      typedef void (*xfs_mru_cache_free_func_t)(unsigned long, void*);
-    but:
-      void xfs_fstrm_free_func( xfs_ino_t ino, fstrm_item_t *item)
-    so on a 32-bit box, it's casting (32, 32) args into (64, 32) and I assume
-    it's getting garbage for *item, which subsequently causes an explosion.
-    With this change the filestreams xfsqa tests don't oops on my 32-bit box.
-    
-    SGI-PV: 967795
-    SGI-Modid: xfs-linux-melb:xfs-kern:29510a
-    
-    Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
-    Signed-off-by: David Chinner <dgc@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
-
---Tim
+http://crashcourse.ca
+========================================================================
+--8323328-2001575627-1190283081=:15327--
