@@ -1,72 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbXITJOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbXITJZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbXITJOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 05:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759347AbXITJM1
+	id S1756320AbXITJZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 05:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbXITJZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 05:12:27 -0400
-Received: from sacred.ru ([62.205.161.221]:34455 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759876AbXITJM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 05:12:26 -0400
-Message-ID: <46F238DF.4010000@openvz.org>
-Date: Thu, 20 Sep 2007 13:09:51 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Consolidate sleeping routines in file locking code
-References: <46EFD574.5060705@openvz.org> <20070919183703.GE5946@fieldses.org>
-In-Reply-To: <20070919183703.GE5946@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 20 Sep 2007 05:25:17 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:25090 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbXITJZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 05:25:15 -0400
+Date: Thu, 20 Sep 2007 11:24:40 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: ebiederm@xmission.com, greg@kroah.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH 4/4] sysfs: make suicidal nodes just do it directly
+Message-ID: <20070920112440.6216644b@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <11902731751771-git-send-email-htejun@gmail.com>
+References: <11902731752407-git-send-email-htejun@gmail.com>
+	<11902731751771-git-send-email-htejun@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 20 Sep 2007 13:12:11 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Tue, Sep 18, 2007 at 05:41:08PM +0400, Pavel Emelyanov wrote:
->> This is the next step in fs/locks.c cleanup before turning
->> it into using the struct pid *. 
->>
->> This time I found, that there are some places that do a
->> similar thing - they try to apply a lock on a file and go 
->> to sleep on error till the blocker exits.
->>
->> All these places can be easily consolidated, saving 28 
->> lines of code and more than 600 bytes from the .text,
->> but there is one minor note. 
+On Thu, 20 Sep 2007 16:26:15 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
+
+> Sysfs now allows direct suicide.  Make suicidial sysfs nodes to use
+> it and remove now unncessary callback mechanism.
 > 
-> I'm not opposed to consolidating this code, but would it be possible to
-> do so in a more straightforward way, without passing in a callback
-> function?  E.g. a single __posix_lock_file_wait that just took an inode
-> instead of a filp and called __posix_lock_file() could be called from
-> both posix_lock_file_wait() and locks_mandatory_locked, right?
-
-Well, the locks_mandatory_area() has to check for inode mode change
-in my lock callback, the fcntl_setlk() has to call the vfs_lock_file,
-and flock_lock_file_wait() has to call the flock_lock_file, so
-I don't see the ways of having one routine to lock the file.
-
-If you don't mind, I'd port the patch with this approach (with the
-"trylock" callback) on the latest Andrew's tree.
-
->> The locks_mandatory_area() code becomes a bit different 
->> after this patch - it no longer checks for the inode's 
->> permissions change. Nevertheless, this check is useless 
->> without my another patch that wakes the waiter up in the
->> notify_change(), which is not considered to be useful for
->> now.
-> 
-> OK.  Might be better to submit this as a separate patch, though.
-
-This one is already accepted, but I have just noticed that
-the check for __mandatory_lock() in wait_event_interruptible
-is ambiguous :(
-
-> --b.
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+>  drivers/base/core.c         |   33 ----------------------
+>  drivers/s390/cio/ccwgroup.c |   25 +++-------------
+>  drivers/scsi/scsi_sysfs.c   |   13 +--------
+>  fs/sysfs/file.c             |   63 -------------------------------------------
+>  include/linux/device.h      |    6 ----
+>  include/linux/sysfs.h       |    9 ------
+>  6 files changed, 6 insertions(+), 143 deletions(-)
 > 
 
+Just browsing through this (I'll review and do some tests later), but
+you missed drivers/s390/cio/device.c::ccw_device_remove_disconnected().
+
+Following (not event compile tested) patch (which is basically a revert
+of 59a8a6e227cf0bc42e5be741ebfea97c222ab9ef) should take care of it.
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+---
+ drivers/s390/cio/device.c |   51 +++++++++-------------------------------------
+ 1 files changed, 10 insertions(+), 41 deletions(-)
+
+--- linux-2.6.orig/drivers/s390/cio/device.c
++++ linux-2.6/drivers/s390/cio/device.c
+@@ -288,62 +288,31 @@ static void ccw_device_unregister(struct
+ 		device_del(&cdev->dev);
+ }
+ 
+-static void ccw_device_remove_orphan_cb(struct device *dev)
+-{
+-	struct ccw_device *cdev = to_ccwdev(dev);
+-
+-	ccw_device_unregister(cdev);
+-	put_device(&cdev->dev);
+-}
+-
+-static void ccw_device_remove_sch_cb(struct device *dev)
+-{
+-	struct subchannel *sch;
+-
+-	sch = to_subchannel(dev);
+-	css_sch_device_unregister(sch);
+-	/* Reset intparm to zeroes. */
+-	sch->schib.pmcw.intparm = 0;
+-	cio_modify(sch);
+-	put_device(&sch->dev);
+-}
+-
+ static void
+ ccw_device_remove_disconnected(struct ccw_device *cdev)
+ {
++	struct subchannel *sch;
+ 	unsigned long flags;
+-	int rc;
+ 
+ 	/*
+ 	 * Forced offline in disconnected state means
+ 	 * 'throw away device'.
+ 	 */
+ 	if (ccw_device_is_orphan(cdev)) {
+-		/*
+-		 * Deregister ccw device.
+-		 * Unfortunately, we cannot do this directly from the
+-		 * attribute method.
+-		 */
++		/* Deregister ccw device. */
+ 		spin_lock_irqsave(cdev->ccwlock, flags);
+ 		cdev->private->state = DEV_STATE_NOT_OPER;
+ 		spin_unlock_irqrestore(cdev->ccwlock, flags);
+-		rc = device_schedule_callback(&cdev->dev,
+-					      ccw_device_remove_orphan_cb);
+-		if (rc)
+-			CIO_MSG_EVENT(2, "Couldn't unregister orphan "
+-				      "0.%x.%04x\n",
+-				      cdev->private->dev_id.ssid,
+-				      cdev->private->dev_id.devno);
++		ccw_device_unregister(cdev);
++		put_device(&cdev->dev);
+ 		return;
+ 	}
+-	/* Deregister subchannel, which will kill the ccw device. */
+-	rc = device_schedule_callback(cdev->dev.parent,
+-				      ccw_device_remove_sch_cb);
+-	if (rc)
+-		CIO_MSG_EVENT(2, "Couldn't unregister disconnected device "
+-			      "0.%x.%04x\n",
+-			      cdev->private->dev_id.ssid,
+-			      cdev->private->dev_id.devno);
++	sch = to_subchannel(cdev->dev.parent);
++	css_sch_device_unregister(sch);
++	/* Reset intparm to zeroes. */
++	sch->schib.pmcw.intparm = 0;
++	cio_modify(sch);
++	put_device(&sch->dev);
+ }
+ 
+ /**
