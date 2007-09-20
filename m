@@ -1,108 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbXITXhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbXITXou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbXITXhO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 19:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXITXhA
+	id S1753213AbXITXou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 19:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbXITXon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 19:37:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47680 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618AbXITXg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 19:36:59 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when booted, USB-related WARNING
-Date: Thu, 20 Sep 2007 19:35:03 -0400
-User-Agent: KMail/1.9.5
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Thu, 20 Sep 2007 19:44:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47714 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbXITXon (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 19:44:43 -0400
+Date: Fri, 21 Sep 2007 01:44:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Dave Airlie <airlied@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, miklos@szeredi.hu,
-       Len Brown <len.brown@intel.com>,
-       David Shaohua Li <shaohua.li@intel.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <alpine.LFD.0.999.0709201420231.16478@woody.linux-foundation.org> <alpine.LFD.0.999.0709201437310.16478@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709201437310.16478@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+       Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+Message-ID: <20070920234441.GK18707@one.firstfloor.org>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com> <20070920220604.GA17536@waste.org> <20070920230304.GJ18707@one.firstfloor.org> <20070920233114.GR4219@waste.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709201935.04400.lenb@kernel.org>
+In-Reply-To: <20070920233114.GR4219@waste.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 September 2007 17:55, Linus Torvalds wrote:
-> 
-> On Thu, 20 Sep 2007, Linus Torvalds wrote:
+On Thu, Sep 20, 2007 at 06:31:14PM -0500, Matt Mackall wrote:
+> On Fri, Sep 21, 2007 at 01:03:04AM +0200, Andi Kleen wrote:
+> > > It's broken for me.
+> > > 
+> > > 2.6.23-rc3-mm1: solid lock on X shutdown (noticed when upgrading)
+> > >       -rc4-mm1: solid lock on X shutdown, random solid locks about
+> > >                 once every four hours
+> > >       -rc6-mm1: solid lock on X startup
+> > >    +your patch: screen goes black, turns off and on a few times during
+> > >                 startup, can reboot with sysrq-b
 > > 
-> > (Btw, the above commit message points to just my response with a testing 
-> > patch to the real email: the actual explanation of the INSANE ordering is 
-> > from Len Brown in
-> > 
-> > 	https://lists.linux-foundation.org/pipermail/linux-pm/2006-November/004161.html
-> > 
-> > and there Len claims that we *must* wake up CPU's early).
+> > Does it work with my simple dumb patch instead of Dave's ? 
 > 
-> ..and points to commit 1a38416cea8ac801ae8f261074721f35317613dc which in 
-> turn talks about http://bugzilla.kernel.org/show_bug.cgi?id=5651 
+> Sorry, forgot to mention: your one-liner flush also doesn't work (same
+> behavior).
 > 
-> Howerver, it seems that bugzilla entry may just be bogus. It talks about 
-> "it appears that some firmware in the future may depend on that sequence 
-> for correction operation"
-> 
-> Len, Shaohua, what are the real issues here? 
+> I suspect I'm tripping two things and the flushing thing fixes one but
+> not the other.
 
-Intel's reference BIOS for Core Duo performs some re-initialization
-in _WAK that will get blow away if INIT follows _WAK.
-IIR, it is related to re-initializing the thermal sensors.
-I opened bug 5651 when the BIOS team informed me of this issue.
+Full bisect needed then I guess. Ok as a short cut you could perhaps
+the cpa-* patches first (might need to drop some later depending 
+patches), then the drm and agp trees.
 
-Yes, bringing a processor offline and then online again w/o
-an intervening suspend or reset would not evaluate _WAK,
-and thus may still run into the issue.
-
-I don't know if this is a widespread issue and a commonly
-used BIOS hook, or if it is specific to certain processors.
-
--Len
-
-> It would indeed be nice if we could just take CPU's down early (while 
-> everything is working), and run the whole suspend code with just one CPU, 
-> rather than having to worry about the ordering between CPU and device 
-> takedown.
-> 
-> That said, at least with STR, the situation is:
-> 
->  1) suspend_console
->  2)   device_suspend(PMSG_SUSPEND)	  (==   ->suspend)
->  3)     disable_nonboot_cpus()
->  4)       device_power_down(PMSG_SUSPEND) (==   ->suspend_late)
->  5)         pm_ops->enter()
->  6)       device_power_up()		  (==   ->resume_early)
->  7)     enable_nonboot_cpus()
->  8)     pm_finish()
->  9)   device_resume()		          (==   ->resume
-> 10) resume_console
-> 
-> So if we agree that things like timers etc should *never* be suspended by 
-> the early suspend, and *always* use "suspend_late/resume_early", then at 
-> least STR should be ok.
-> 
-> And I think that's a damn reasonable thing to agree on: timers (and 
-> anything else that CPU shutdown/bringup could *possibly* care about) 
-> should be considered core enough that they had better be on the 
-> suspend_late/resume_early list.
-> 
-> Thomas, Rafael, can you verify that at least STR is ok in this respect?
-> 
-> 		Linus
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-Andi
