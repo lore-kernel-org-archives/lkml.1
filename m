@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbXITOW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbXITOX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbXITOW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 10:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbXITOWT
+	id S1757422AbXITOX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 10:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbXITOXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 10:22:19 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:52592 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbXITOWS (ORCPT
+	Thu, 20 Sep 2007 10:23:17 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:45187 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbXITOXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 10:22:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PTNl6k/WtqXsUr/orVnkSAK6950x0SVD4vtDW38drh6yImEt2b+bUyHI/BeS9W8HyiRTpZsue3dkWcsprUxicZdu0U+0oXhp+e6fekyBlXHhOFSWB90fifOb5Gwzdx2LUh9WYIeiHU2hlpJ3AYgY0vYqhydh/zQLu3wnn4j7xck=
-Message-ID: <b6a2187b0709200722q2755111brb8b7c3bdc71e2129@mail.gmail.com>
-Date: Thu, 20 Sep 2007 22:22:17 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: ACPI video mode patch review
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Pavel Machek" <pavel@ucw.cz>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0709201617440.24429@twin.jikos.cz>
+	Thu, 20 Sep 2007 10:23:15 -0400
+Date: Thu, 20 Sep 2007 15:23:03 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Jeff Garzik <jgarzik@pobox.com>
+cc: Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sb1250-mac.c: De-typedef, de-volatile, de-etc...
+In-Reply-To: <46F1F2CE.7020300@pobox.com>
+Message-ID: <Pine.LNX.4.64N.0709201354320.30788@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0709101310030.25038@blysk.ds.pg.gda.pl>
+ <46E8B56E.7060705@pobox.com> <Pine.LNX.4.64N.0709131506040.31069@blysk.ds.pg.gda.pl>
+ <20070913151452.GB29665@linux-mips.org> <46E95C7F.1050302@pobox.com>
+ <Pine.LNX.4.64N.0709141135290.1926@blysk.ds.pg.gda.pl> <46F1F2CE.7020300@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46E9AD88.7070400@zytor.com>
-	 <Pine.LNX.4.64.0709201617440.24429@twin.jikos.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/20/07, Jiri Kosina <jikos@jikos.cz> wrote:
+On Thu, 20 Sep 2007, Jeff Garzik wrote:
 
-> With your patch applied, I get no video at all after resume (I tried all
-> three possible combinations of acpi_sleep parameter).
+> > You may be pleased (or less so) to hear that the version of sb1250-mac.c in
+> > your tree does not even build (because of
+> > 42d53d6be113f974d8152979c88e1061b953bd12) and the patch below does not
+> > address it.  I ran out of time in the evening, but I will send you a fix
+> > shortly.  To be honest I think even with bulk changes it may be worth
+> > checking whether they do not break stuff. ;-)
+> 
+> hrm.  I cannot get this to apply on top of linux-2.6.git,
+> netdev-2.6.git#upstream (prior to net-2.6.24 rebase) or
+> netdev-2.6.git#upstream (after net-2.6.24 rebase)
 
-Can you please try again with 2.6.23-rc7. The patch is already
-included in -rc7 and it works for me on Lenono X60s.
+ It applies on top of current -mm.  It seems to apply to a copy of 
+netdev-2.6.git#upstream that I have got, but I am probably missing 
+something...  If I try to clone your repository again I get:
 
-Jeff.
+$ git clone git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/linux-netdev-2.6.git linux
+Initialized empty Git repository in /home/macro/GIT-other/linux-netdev/linux/.git/
+fatal: The remote end hung up unexpectedly
+fetch-pack from 'git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/linux-netdev-2.6.git' failed.
+$
+
+For linux-2.6.git the patch-mips-2.6.23-rc5-20070904-sb1250-mac-typedef-7 
+version applies as submitted originally; I can resubmit this one if you 
+like.
+
+ I am slowly getting lost and I have another big chunk for sb1250-mac.c 
+waiting to be put on top of these...
+
+  Maciej
