@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbXIUVNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765582AbXIUVNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764351AbXIUVNY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 17:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762337AbXIUVNQ
+	id S1765582AbXIUVNw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 17:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763177AbXIUVNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 17:13:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44585 "EHLO ogre.sisk.pl"
+	Fri, 21 Sep 2007 17:13:41 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:32914 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757631AbXIUVNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 17:13:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
-Date: Fri, 21 Sep 2007 23:25:37 +0200
-User-Agent: KMail/1.9.5
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang\, Ying" <ying.huang@intel.com>,
-       linux-pm@lists.linux-foundation.org,
-       huang ying <huang.ying.caritas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org> <200709212253.02158.rjw@sisk.pl> <87d4wb680u.fsf@jbms.ath.cx>
-In-Reply-To: <87d4wb680u.fsf@jbms.ath.cx>
+	id S1763104AbXIUVNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 17:13:40 -0400
+Date: Fri, 21 Sep 2007 17:13:38 -0400
+To: Nix <nix@esperi.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22.6] nfsd: fh_verify() `malloc failure' with lots of
+	free memory leads to NFS hang
+Message-ID: <20070921211338.GF1951@fieldses.org>
+References: <874phtkk25.fsf@hades.wkstn.nix> <20070917223600.GA30350@fieldses.org> <87zlzkkfvk.fsf@hades.wkstn.nix> <20070918011257.GC2443@fieldses.org> <873ax7ua9j.fsf@hades.wkstn.nix>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709212325.39599.rjw@sisk.pl>
+In-Reply-To: <873ax7ua9j.fsf@hades.wkstn.nix>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 21 September 2007 23:08, Jeremy Maitin-Shepard wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Fri, Sep 21, 2007 at 07:46:32PM +0100, Nix wrote:
+> On 18 Sep 2007, J. Bruce Fields told this:
+> > Also I suppose we should check which version of nfs-utils that fix is in
+> > and make sure distributions are getting the fixed nfs-utils before they
+> > get the new libc, or we're going to see this bug a lot....
 > 
-> > On Friday, 21 September 2007 22:26, Jeremy Maitin-Shepard wrote:
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >> [snip]
-> >> 
-> >> > The ACPI NVS area is explicitly marked as reserved and we don't save it.
-> >> > On x86_64 we don't save any memory areas marked as reserved and yet the
-> > above
-> >> > happens.
-> >> 
-> >> I think you have mentioned before, though, that ACPI is first
-> >> initialized by the boot kernel, before it is later initialized by
-> >> resuming kernel.  This could well be the source of the problem.
+> Further info. This behaviour, although it is allowed by POSIX, is not
+> *specified*, as such, by it (ah! ambiguity! life would be so dull
+> without you!), and is not replicated by any other C library on the face
+> of the planet.
 > 
-> > No, it's not.  I have tested that too with an ACPI-less boot kernel.
+> Further, it's not even the behaviour of glibc, as such.
 > 
-> Well, it seems that there just must be some other bug.  I would define
-> anything that differs between the post-resume initialization of ACPI
+> It's the behaviour of glibc 2.6.x as patched with this Debian-specific
+> patch:
 
-I'm not sure what you mean.
+Good grief.  Well, I'd still count it as a bug in nfs-utils, then, but
+nfs-util's share of the blame is much less than we'd previously
+thought....
 
-> from the normal boot initialization of ACPI as a bug.  If the interaction
-> with the hardware is the same, then the behavior will be the same.
+> This patch also breaks at least bash and zsh as well as nfs-utils (see
+> <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=429021>) and I sort of
+> suspect it's not long for this world as a result.
+> 
+> So this is much less nasty than we feared (well, and more nasty if you
+> happen to be a Debian unstable or testing user).
 
-The ACPI platform firmware is allowed to preserve information accross the
-hibernation-resume cycle, so this need not be the same.
+OK!  Sounds like good news.
 
-Greetings,
-Rafael
+--b.
