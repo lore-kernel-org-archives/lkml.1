@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbXIUF2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbXIUFvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090AbXIUF2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 01:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbXIUF2J
+	id S1754222AbXIUFvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 01:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbXIUFvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 01:28:09 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:46880 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbXIUF2H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 01:28:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer;
-        b=UZUV6duK9LRd1ajvdOtD/F435we0FJJLmr/lgf9PSwiks19aBleiNFwxm+fSneCWzffQF/SnrluQ75Z40EWKw0aKmQAbINQvm4Y9xk/Gne/nZ989NvL4Uuojq19IBxQpuk5vT/PQOqTFrAf+W0cqNjVs5HMeQK1wsOw1R7eE5xk=
-Date: Fri, 21 Sep 2007 13:28:01 +0800
-From: "Peer Chen" <peerchen@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Cc: "jeff" <jeff@garzik.org>, "akpm" <akpm@linux-foundation.org>,
-       "linux-ide" <linux-ide@vger.kernel.org>
-Subject: [PATCH] ahci: enable GHC.AE bit before set GHC.HR
-Message-ID: <200709211327569648280@gmail.com>
-X-mailer: Foxmail 6, 6, 105, 21 [cn]
+	Fri, 21 Sep 2007 01:51:00 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:55694 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750895AbXIUFu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 01:50:59 -0400
+Date: Thu, 20 Sep 2007 22:50:56 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl, bunk@kernel.org,
+       ego@in.ibm.com, oleg@tv-sign.ru, srostedt@redhat.com
+Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
+Message-ID: <20070921055056.GA8654@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183412.GC3819@linux.vnet.ibm.com> <20070921041721.GB15697@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070921041721.GB15697@goodmis.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to the description of section 5.2.2.1 and 10.1.2 of AHCI specification rev1_1/rev1_2, GHC.HR shall only be set to ¡®1¡¯
-by software when GHC.AE is set to ¡®1¡¯.
+On Fri, Sep 21, 2007 at 12:17:21AM -0400, Steven Rostedt wrote:
+> [ continued here from comment on patch 1]
+> 
+> On Mon, Sep 10, 2007 at 11:34:12AM -0700, Paul E. McKenney wrote:
+> >  /* softirq mask and active fields moved to irq_cpustat_t in
+> > diff -urpNa -X dontdiff linux-2.6.22-b-fixbarriers/include/linux/rcuclassic.h linux-2.6.22-c-preemptrcu/include/linux/rcuclassic.h
+> > --- linux-2.6.22-b-fixbarriers/include/linux/rcuclassic.h	2007-08-22 14:42:23.000000000 -0700
+> > +++ linux-2.6.22-c-preemptrcu/include/linux/rcuclassic.h	2007-08-22 15:21:06.000000000 -0700
+> > @@ -142,8 +142,6 @@ extern int rcu_needs_cpu(int cpu);
+> >  extern void __rcu_init(void);
+> >  extern void rcu_check_callbacks(int cpu, int user);
+> >  extern void rcu_restart_cpu(int cpu);
+> > -extern long rcu_batches_completed(void);
+> > -extern long rcu_batches_completed_bh(void);
+> >  
+> >  #endif /* __KERNEL__ */
+> >  #endif /* __LINUX_RCUCLASSIC_H */
+> > diff -urpNa -X dontdiff linux-2.6.22-b-fixbarriers/include/linux/rcupdate.h linux-2.6.22-c-preemptrcu/include/linux/rcupdate.h
+> > --- linux-2.6.22-b-fixbarriers/include/linux/rcupdate.h	2007-07-19 14:02:36.000000000 -0700
+> > +++ linux-2.6.22-c-preemptrcu/include/linux/rcupdate.h	2007-08-22 15:21:06.000000000 -0700
+> > @@ -52,7 +52,11 @@ struct rcu_head {
+> >  	void (*func)(struct rcu_head *head);
+> >  };
+> >  
+> > +#ifdef CONFIG_CLASSIC_RCU
+> >  #include <linux/rcuclassic.h>
+> > +#else /* #ifdef CONFIG_CLASSIC_RCU */
+> > +#include <linux/rcupreempt.h>
+> > +#endif /* #else #ifdef CONFIG_CLASSIC_RCU */
+> >  
+> >  #define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
+> >  #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
+> > @@ -218,10 +222,13 @@ extern void FASTCALL(call_rcu_bh(struct 
+> >  /* Exported common interfaces */
+> >  extern void synchronize_rcu(void);
+> >  extern void rcu_barrier(void);
+> > +extern long rcu_batches_completed(void);
+> > +extern long rcu_batches_completed_bh(void);
+> >
+> 
+> And here we put back rcu_batches_completed and rcu_batches_completed_bh
+> from rcuclassic.h to rcupdate.h ;-)
 
-Signed-off-by: Peer Chen <peerchen@gmail.com>
----
---- linux-2.6.23-rc7/drivers/ata/ahci.c.orig	2007-09-20 11:01:55.000000000 -0400
-+++ linux-2.6.23-rc7/drivers/ata/ahci.c	2007-09-20 11:07:31.000000000 -0400
-@@ -834,6 +834,10 @@ static int ahci_reset_controller(struct 
- 	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
- 	u32 tmp;
- 
-+        /* turn on AHCI mode before controller reset*/
-+        writel(HOST_AHCI_EN, mmio + HOST_CTL);
-+        (void) readl(mmio + HOST_CTL);  /* flush */
-+
- 	/* global controller reset */
- 	tmp = readl(mmio + HOST_CTL);
- 	if ((tmp & HOST_RESET) == 0) {
--
- 				
---------------
-Peer Chen
-2007-09-21
+Hmmm...  Good point!!!  I guess it would be OK to just leave them
+in rcupdate.h throughout.  ;-)
 
+Will fix.  And good eyes!
+
+						Thanx, Paul
