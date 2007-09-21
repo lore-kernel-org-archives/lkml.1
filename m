@@ -1,98 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760540AbXIUPip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbXIUPjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760540AbXIUPip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 11:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbXIUPih
+	id S1761338AbXIUPjB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 11:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759487AbXIUPix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 11:38:37 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:55277 "EHLO
-	caffeine.uwaterloo.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbXIUPig (ORCPT
+	Fri, 21 Sep 2007 11:38:53 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:36976 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758997AbXIUPiw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 11:38:36 -0400
-Date: Fri, 21 Sep 2007 11:38:35 -0400
-To: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Intel-Quad on GA-P35-S3 motherboard with 4*2GB
-Message-ID: <20070921153835.GJ5386@csclub.uwaterloo.ca>
-References: <46EA4B50.7040904@dgt.com.pl> <20070914131859.GC5386@csclub.uwaterloo.ca> <46EF77D8.3090808@dgt.com.pl> <20070918142047.GF5386@csclub.uwaterloo.ca> <46EFE23F.8090100@dgt.com.pl> <20070918145009.GH5386@csclub.uwaterloo.ca> <46F0EBB0.9030909@dgt.com.pl>
+	Fri, 21 Sep 2007 11:38:52 -0400
+Message-ID: <46F3E584.4020301@nortel.com>
+Date: Fri, 21 Sep 2007 09:38:44 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F0EBB0.9030909@dgt.com.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: linux-kernel@vger.kernel.org
+Subject: question on kernel rwsem behaviour
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Sep 2007 15:38:48.0465 (UTC) FILETIME=[80B5E810:01C7FC65]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 11:28:16AM +0200, Wojciech Kromer wrote:
-> a)With mem=8GB parameter I had:
-> 
-> #free -m
-> total used free shared buffers cached
-> Mem: 6473 474 5999 0 29 278
-> 
-> 
-> b) Without mem=8GM system slows down while booting and sometimes restart...
-> 
-> 
-> ==== So the story begins ===========================
-> 
-> It's strange GIGABYTE missinformation, but:
-> - my board came with F2 release
-> - after detecting memory problem, I've upgraded it to F4 (latest at this 
-> moment)
-> - next day came with F5 release ,
-> there was only one info: "Fix PS2 keyboard compatibility issues",
-> so I decided *not* to upgrade BIOS
-> 
-> But yesterday I've finally upgraded to F5 release.
-> ... and here is *surrprise*: MTRR changed to:
 
-Never ever trust the "changelog" of the BIOS release to contain all the
-changes.  That would be admiting to having made mistakes after all. :)
+Hi all,
 
-> #cat /proc/mtrr
-> reg00: base=0x00000000 ( 0MB), size=4096MB: write-back, count=1
-> reg01: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
-> reg02: base=0xa0000000 (2560MB), size= 512MB: uncachable, count=1
-> reg03: base=0x100000000 (4096MB), size=4096MB: write-back, count=1
-> reg04: base=0x200000000 (8192MB), size=2048MB: write-back, count=1
-> reg05: base=0x260000000 (9728MB), size= 512MB: uncachable, count=1
-> reg06: base=0x9ff00000 (2559MB), size= 1MB: write-through, count=1
+I just had a quick question on read-write semaphore semantics.  Suppose 
+someone holds a sema for reading, then someone else tries to aquire it 
+for writing, and blocks.  Finally, a third code path tries to aquire it 
+for reading.
 
-Well they are in sane order now (the previous order was weird)  And they
-don't do as much setting a range as one thing and then deleting small
-pieces from it afterwards.
+Does this third code path get the sema, or does it wait for the writer?
 
-> Now there are no complains about MTRR in dmesg.
-> 
-> E820 seems to be the same:
-> 
-> BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
-> BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
-> BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
-> BIOS-e820: 0000000000100000 - 000000009fee0000 (usable)
-> BIOS-e820: 000000009fee0000 - 000000009fee3000 (ACPI NVS)
-> BIOS-e820: 000000009fee3000 - 000000009fef0000 (ACPI data)
-> BIOS-e820: 000000009fef0000 - 000000009ff00000 (reserved)
-> BIOS-e820: 00000000c0000000 - 00000000c4000000 (reserved)
-> BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-> BIOS-e820: 0000000100000000 - 0000000260000000 (usable)
+Based on looking at the implementation it seems like it waits, but I'd 
+like to confirm that.
 
-Well that part always did look sane.
+Thanks,
 
-> And finally I have my 8GB working without any kernel parameter,
-> 
-> # free -m
-> total used free shared buffers cached
-> Mem: 7988 1120 6868 0 88 612
-> 
-> Now i need to rerun memory tests.
-> Thank you for helping me with this stuff.
-
-Well now things look good.  Nice to know BIOS updates occationally fix
-things, even if they don't admit to it.
-
---
-Len Sorensen
+Chris
