@@ -1,55 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbXIUVC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXIUVDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932214AbXIUVC6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 17:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764976AbXIUUxn
+	id S932318AbXIUVDz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 17:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764670AbXIUU5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:53:43 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:58199
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1764971AbXIUUxl (ORCPT
+	Fri, 21 Sep 2007 16:57:09 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:4637 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762932AbXIUU5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:53:41 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: printk proposal - (was Linux-tiny project revival)
-Date: Fri, 21 Sep 2007 15:53:35 -0500
-User-Agent: KMail/1.9.6
-Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny@selenic.com,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       Michael Opdenacker <michael@free-electrons.com>
-References: <46F1645D.9050406@am.sony.com> <46F2D695.5070500@am.sony.com> <20070921190738.GB1857@martell.zuzino.mipt.ru>
-In-Reply-To: <20070921190738.GB1857@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Sep 2007 16:57:07 -0400
+Date: Fri, 21 Sep 2007 22:57:04 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Andi Kleen <ak@suse.de>
+Cc: bernarde@br.ibm.com, Andrew Morton <akpm@osdl.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Muli Ben-Yehuda <muli@il.ibm.com>
+Subject: [PATCH 1/2] x86-64: Calgary - fix calgary=disable=<busnum> for CalIOC2
+Message-ID: <20070921205704.GB7640@rhun.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709211553.35857.rob@landley.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 September 2007 2:07:38 pm Alexey Dobriyan wrote:
-> On Thu, Sep 20, 2007 at 01:22:45PM -0700, Tim Bird wrote:
-> > Alexey Dobriyan wrote:
-> > > Given that
-> > > a) there're plenty of printks without any KERN_* bloat,
-> > > b) there're printks that SHOULD NOT have KERN_* bloat,
-> >
-> > Just to clarify, which bloat are you concerned about?
-> > I presume source code bloat (but maybe you mean
-> > message size bloat, or object code bloat)?
->
-> Users of ignore_loglevel still has "<[0-7]>" prefixes in kernel image,
-> yes. On source level, too -- as someone who never saw value in them,
-> KERN_* are just needless characters, making code harder to read.
+The old check we used based on dev->bus->number is wrong for devices
+on CalIOC2. Instead look whether we have an IOMMU table for that bus -
+if not, translation is disabled.
 
-Yeah, I bumped into this when I implemented dmesg for busybox.  (Had to parse 
-and filter it out.)  That said, userspace kind of expects it now...
+Thanks to Murillo Fernandes Bernardes <bernarde@br.ibm.com> for
+spotting, suggesting a fix and testing.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Signed-off-by: Muli Ben-Yehuda <muli@il.ibm.com>
+Acked-by: Murillo Fernandes Bernardes <bernarde@br.ibm.com>
+---
+Andi, This is Calgary 2.6.24 material - please apply.
+
+ pci-calgary.c |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
+
+diff -r ca20f7bdb869 -r c9308d0538d9 arch/x86_64/kernel/pci-calgary.c
+--- a/arch/x86_64/kernel/pci-calgary.c	Sun Aug 12 11:38:08 2007 +0300
++++ b/arch/x86_64/kernel/pci-calgary.c	Sun Aug 12 11:43:49 2007 +0300
+@@ -220,6 +220,12 @@ static inline unsigned int num_dma_pages
+ 	return npages;
+ }
+ 
++static inline int translation_enabled(struct iommu_table *tbl)
++{
++	/* only PHBs with translation enabled have an IOMMU table */
++	return (tbl != NULL);
++}
++
+ static inline int translate_phb(struct pci_dev* dev)
+ {
+ 	int disabled = bus_info[dev->bus->number].translation_disabled;
+@@ -384,7 +390,7 @@ static void calgary_unmap_sg(struct devi
+ {
+ 	struct iommu_table *tbl = find_iommu_table(dev);
+ 
+-	if (!translate_phb(to_pci_dev(dev)))
++	if (!translation_enabled(tbl))
+ 		return;
+ 
+ 	while (nelems--) {
+@@ -424,7 +430,7 @@ static int calgary_map_sg(struct device 
+ 	unsigned long entry;
+ 	int i;
+ 
+-	if (!translate_phb(to_pci_dev(dev)))
++	if (!translation_enabled(tbl))
+ 		return calgary_nontranslate_map_sg(dev, sg, nelems, direction);
+ 
+ 	for (i = 0; i < nelems; i++ ) {
+@@ -471,7 +477,7 @@ static dma_addr_t calgary_map_single(str
+ 	uaddr = (unsigned long)vaddr;
+ 	npages = num_dma_pages(uaddr, size);
+ 
+-	if (translate_phb(to_pci_dev(dev)))
++	if (translation_enabled(tbl))
+ 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction);
+ 	else
+ 		dma_handle = virt_to_bus(vaddr);
+@@ -485,7 +491,7 @@ static void calgary_unmap_single(struct 
+ 	struct iommu_table *tbl = find_iommu_table(dev);
+ 	unsigned int npages;
+ 
+-	if (!translate_phb(to_pci_dev(dev)))
++	if (!translation_enabled(tbl))
+ 		return;
+ 
+ 	npages = num_dma_pages(dma_handle, size);
+@@ -510,7 +516,7 @@ static void* calgary_alloc_coherent(stru
+ 		goto error;
+ 	memset(ret, 0, size);
+ 
+-	if (translate_phb(to_pci_dev(dev))) {
++	if (translation_enabled(tbl)) {
+ 		/* set up tces to cover the allocated range */
+ 		mapping = iommu_alloc(tbl, ret, npages, DMA_BIDIRECTIONAL);
+ 		if (mapping == bad_dma_address)
