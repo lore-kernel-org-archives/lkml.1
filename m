@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765491AbXIUU6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbXIUU6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765491AbXIUU6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763514AbXIUUph
+	id S1765504AbXIUU6c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763483AbXIUUpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:45:37 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33042 "EHLO mx2.suse.de"
+	Fri, 21 Sep 2007 16:45:38 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50101 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762807AbXIUUpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751556AbXIUUpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Sep 2007 16:45:24 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709211044.901175000@suse.de>
 In-Reply-To: <200709211044.901175000@suse.de>
-To: venkatesh.pallipadi@intel.com, ak@suse.de, mingo@elte.hu,
-       johnstul@us.ibm.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [39/45] x86_64: block irq balancing for timer
-Message-Id: <20070921204522.5E4AB14F22@wotan.suse.de>
-Date: Fri, 21 Sep 2007 22:45:22 +0200 (CEST)
+To: rpjday@mindspring.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [40/45] i386: deactivate the test for the dead CONFIG_DEBUG_PAGE_TYPE
+Message-Id: <20070921204523.6CABA14EFF@wotan.suse.de>
+Date: Fri, 21 Sep 2007 22:45:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+From: "Robert P. J. Day" <rpjday@mindspring.com>
 
-Disable irq balancing on IRQ0.  Several SIS chipsets lock up when you try to
-change affinity of IRQ #0.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: john stultz <johnstul@us.ibm.com>
+Acked-by: Zachary Amsden <zach@vmware.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/x86_64/kernel/time.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/i386/kernel/vmi.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux/arch/x86_64/kernel/time.c
+Index: linux/arch/i386/kernel/vmi.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/time.c
-+++ linux/arch/x86_64/kernel/time.c
-@@ -360,7 +360,7 @@ void stop_timer_interrupt(void)
+--- linux.orig/arch/i386/kernel/vmi.c
++++ linux/arch/i386/kernel/vmi.c
+@@ -242,7 +242,7 @@ static void vmi_nop(void)
+ {
+ }
  
- static struct irqaction irq0 = {
- 	.handler	= timer_interrupt,
--	.flags		= IRQF_DISABLED | IRQF_IRQPOLL,
-+	.flags		= IRQF_DISABLED | IRQF_IRQPOLL | IRQF_NOBALANCING,
- 	.mask		= CPU_MASK_NONE,
- 	.name		= "timer"
- };
+-#ifdef CONFIG_DEBUG_PAGE_TYPE
++#if 0 /* debug page type */
+ 
+ #ifdef CONFIG_X86_PAE
+ #define MAX_BOOT_PTS (2048+4+1)
+@@ -343,7 +343,7 @@ static void vmi_check_page_type(u32 pfn,
+ #else
+ #define vmi_set_page_type(p,t) do { } while (0)
+ #define vmi_check_page_type(p,t) do { } while (0)
+-#endif
++#endif /* debug page type */
+ 
+ #ifdef CONFIG_HIGHPTE
+ static void *vmi_kmap_atomic_pte(struct page *page, enum km_type type)
