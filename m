@@ -1,133 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbXIUAtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbXIUAw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbXIUAtw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 20:49:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbXIUAtp
+	id S1754718AbXIUAw2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 20:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbXIUAwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 20:49:45 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38402 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbXIUAto (ORCPT
+	Thu, 20 Sep 2007 20:52:21 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:56781 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752256AbXIUAwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 20:49:44 -0400
-Date: Fri, 21 Sep 2007 09:50:54 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       ricknu-0@student.ltu.se
-Subject: Re: [RFC][PATCH] page->mapping clarification [1/3] base functions
-Message-Id: <20070921095054.6386bae1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0709201120510.8801@schroedinger.engr.sgi.com>
-References: <20070919164308.281f9960.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0709201120510.8801@schroedinger.engr.sgi.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Sep 2007 20:52:20 -0400
+X-Sasl-enc: xqFFhikEEeFM7Ot9doMAADjM5XbisNECyibVkVMxUVXC 1190335939
+Message-ID: <46F31603.1030901@imap.cc>
+Date: Fri, 21 Sep 2007 02:53:23 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.23-rc6-mm1
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>	<46F1AA6E.1030708@imap.cc>	<46F2C7F8.3040409@imap.cc> <20070920132506.27195aaa.akpm@linux-foundation.org>
+In-Reply-To: <20070920132506.27195aaa.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig181AE7F1AC6437BB6439F9F1"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 11:26:47 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig181AE7F1AC6437BB6439F9F1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> On Wed, 19 Sep 2007, KAMEZAWA Hiroyuki wrote:
-> 
-> > Any comments are welcome.
-> 
-> I am still a bit confused as to what the benefit of this is.
-> 
-Honestly, I have 3 purposes, 2 for readability/clarificaton and 1 for my trial.
+Am 20.09.2007 22:25 schrieb Andrew Morton:
+> There was a locking imbalance in the IPC code.  Do you have the fixes i=
+n
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc=
+6/2.6.23-rc6-mm1/hot-fixes/
+> applied?
 
-1. Clarify page cache <-> inode relationship before *new concept of page cache*,
-   yours or someone else's is introduced.
+I hadn't. Now that I have, all the troubles are gone. X comes up
+fine, and all of the segfault/invalid context/scheduling while atomic
+messages have disappeared.
 
-2. There are some places using PAGE_MAPPING_ANON directly. I don't want to see
-   following line in .c file. 
-   ==
-   anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON);
-   ==
+Thanks,
+Tilman
 
-3. I want to *try* page->mapping overriding... store  memory resource controller's   
-   information in page->mapping. By this, memory controller doesn't enlarge sizeof
-   struct page. (works well in my small test.)
-   Before doing that, I have to hide page->mapping from direct access.
-
-
-> > +/*
-> > + * On an anonymous page mapped into a user virtual memory area,
-> > + * page->mapping points to its anon_vma, not to a struct address_space;
-> > + * with the PAGE_MAPPING_ANON bit set to distinguish it.
-> > + *
-> > + * Please note that, confusingly, "page_mapping" refers to the inode
-> > + * address_space which maps the page from disk; whereas "page_mapped"
-> > + * refers to user virtual address space into which the page is mapped.
-> > + */
-> > +#define PAGE_MAPPING_ANON       1
-> > +
-> > +static inline bool PageAnon(struct page *page)
-> 
-> bool??? That is unusual?
-
-This is my first experience of using bool in Linux kernel.. :)
-
-I know bool is not very widely used in Linux now but I tried it because 
-this function obviously returns yes or no, and C language supports bool as
-_Bool now. If messy, I'll avoid using this in this time..
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
-> 
-> > +static inline struct address_space *page_mapping_cache(struct page *page)
-> > +{
-> > +	if (!page->mapping || PageAnon(page))
-> > +		return NULL;
-> > +	return page->mapping;
-> > +}
-> 
-> That is confusing.
-> 
-> if (PageAnon(page))
-> 	return NULL;
-> return page->mapping;
-ok,
+--------------enig181AE7F1AC6437BB6439F9F1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-> > +static inline struct address_space *page_mapping(struct page *page)
-> > +{
-> > +	struct address_space *mapping = page->mapping;
-> > +
-> > +	VM_BUG_ON(PageSlab(page));
-> > +	if (unlikely(PageSwapCache(page)))
-> > +		mapping = &swapper_space;
-> > +#ifdef CONFIG_SLUB
-> > +	else if (unlikely(PageSlab(page)))
-> > +		mapping = NULL;
-> > +#endif
-> 
-> The #ifdef does not exist in rc6-mm1. No need to reintroduce it.
-> 
-ok, thanks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-> > +static inline bool
-> > +is_page_consistent(struct page *page, struct address_space *mapping)
-> > +{
-> > +	struct address_space *check = page_mapping_cache(page);
-> > +	return (check == mapping);
-> > +}
-> 
-> Why do we need a special function? Why is it safer?
-> 
-For clarify meaning of compareing page_mapping_cache() with mapping.
-Does this reduce readability ?
+iD8DBQFG8xYDMdB4Whm86/kRAo8wAJwMLZxT8Nyx0WvMlBgrrvjdHJEqHACfb8EN
+eqXh2hWxOLNf1XTEx8ducnU=
+=q65e
+-----END PGP SIGNATURE-----
 
-Thank you for comments.
-
-Regards,
--Kame
-
-
-
-
-
+--------------enig181AE7F1AC6437BB6439F9F1--
