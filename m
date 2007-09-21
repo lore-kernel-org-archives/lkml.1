@@ -1,68 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762182AbXIUT0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762092AbXIUTap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762182AbXIUT0b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 15:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbXIUT0Y
+	id S1762092AbXIUTap (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 15:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbXIUTai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 15:26:24 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39587 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752183AbXIUT0X (ORCPT
+	Fri, 21 Sep 2007 15:30:38 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53057 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912AbXIUTai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 15:26:23 -0400
-Date: Fri, 21 Sep 2007 12:26:22 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       asit.k.mallick@intel.com
-Subject: Re: x86_64: potential critical issue with quicklists and page table
- pages
-In-Reply-To: <alpine.LFD.0.999.0709211212130.16478@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0709211221560.17698@schroedinger.engr.sgi.com>
-References: <20070921180742.GH20863@linux-os.sc.intel.com>
- <alpine.LFD.0.999.0709211139550.16478@woody.linux-foundation.org>
- <Pine.LNX.4.64.0709211149040.17160@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0709211153060.16478@woody.linux-foundation.org>
- <alpine.LFD.0.999.0709211204050.16478@woody.linux-foundation.org>
- <Pine.LNX.4.64.0709211205570.17160@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0709211212130.16478@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Sep 2007 15:30:38 -0400
+Date: Fri, 21 Sep 2007 21:30:35 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Fordham <peter.fordham@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: fpu IO port reservation (arch/i386)
+Message-ID: <20070921193035.GA16811@one.firstfloor.org>
+References: <a71b7b480709210622l23481221pd09302a827b55eb@mail.gmail.com> <Pine.LNX.4.64N.0709211440380.2724@blysk.ds.pg.gda.pl> <p73y7f07zuz.fsf@bingen.suse.de> <Pine.LNX.4.64N.0709211724470.2724@blysk.ds.pg.gda.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64N.0709211724470.2724@blysk.ds.pg.gda.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007, Linus Torvalds wrote:
+>  For the curious the details of all the hassle are reasonably well 
+> described in the Intel's AP-578 application note.
 
-> Yeah, and the whole thing seems totally bogus. It totally depends on 
-> mmu_gather doing everything right (which very much includes the dependency 
-> on mmu gathering disabling preempt).
+Thanks. Ok it has to stay for for i386 then; although it would be in theory
+possible to only reserve when the CPU is a real 386. For x86-64 it's
+gone now.
 
-The quicklists have been existing for a long time in this relationship 
-and were actually developed initially (by Dave Miller I believe) to work 
-this way. The generic TLB flushing thing may have developed in parallel on 
-other platforms that did not use quicklists.
-
-> For exmaple, if we were to go back to the original small tlb_gather with a 
-> simple quicklist on the stack, rather than the per-cpu datastructure, the 
-> quicklists would immediately break horribly - simply because they are 
-> incorrectly now depending on the internal semantics of that tlb-gather.
-
-Hmmmm.. Right the integration of the approaches that have now diverged on 
-various platforms could be better.
- 
-> As it is, the quicklists try to be something separate, but by virtue of 
-> being separate, they will always be buggy.
-
-I guess we need to re-join what was separated by developments on different 
-platforms.
-
-> The only way to fix it would be to integrate the quicklist stuff *with* 
-> the mmu_gather stuff, so that these kinds of implementation issues are 
-> explicitly shown in the relationship, instead of havign two "independent" 
-> pieces of code where one piece very subtly depends on the exact 
-> implementation of the other.
-
-Right. But will that not mean that quicklists would have to be used on all 
-platforms in a generic way?
+-Andi
