@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbXIUEV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbXIUEf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbXIUEV5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 00:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbXIUEVv
+	id S1755245AbXIUEf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 00:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbXIUEfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 00:21:51 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45003 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbXIUEVu (ORCPT
+	Fri, 21 Sep 2007 00:35:16 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:41643 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750837AbXIUEfO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 00:21:50 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] Remove broken netfilter binary sysctls from bridging code
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070921020554.GE31759@nineveh.local>
-Date: Thu, 20 Sep 2007 22:21:25 -0600
-In-Reply-To: <20070921020554.GE31759@nineveh.local> (Joseph Fannin's message
-	of "Thu, 20 Sep 2007 22:05:54 -0400")
-Message-ID: <m1fy18k5ru.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 21 Sep 2007 00:35:14 -0400
+In-Reply-To: <20070921022335.GA2849@router.lepton.home>
+To: lepton <ytht.net@gmail.com>
+Cc: lkm <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       netdev-owner@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [PATCH RESEND] 2.6.22.6 networking [ipv4]: fix wrong destination when
+ reply packetes
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFC759A0A2.B923AD69-ON8825735D.0017012F-8825735D.00191D21@us.ibm.com>
+From: David Stevens <dlstevens@us.ibm.com>
+Date: Thu, 20 Sep 2007 21:35:09 -0700
+X-MIMETrack: Serialize by Router on D03NM121/03/M/IBM(Release 7.0.2FP2HF51 | June 19, 2007) at
+ 09/20/2007 22:35:12,
+	Serialize complete at 09/20/2007 22:35:12
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jfannin@gmail.com (Joseph Fannin) writes:
+I'm not sure why it's using rt_src here, but there are relevant cases that
+your description doesn't cover. For example, what happens if  the source
+is not set in the original packet?  Does NAT affect this?
 
-> The netfilter sysctls in the bridging code don't set strategy routines:
->
->  sysctl table check failed: /net/bridge/bridge-nf-call-arptables .3.10.1 Missing
-> strategy
->  sysctl table check failed: /net/bridge/bridge-nf-call-iptables .3.10.2 Missing
-> strategy
->  sysctl table check failed: /net/bridge/bridge-nf-call-ip6tables .3.10.3 Missing
-> strategy
->  sysctl table check failed: /net/bridge/bridge-nf-filter-vlan-tagged .3.10.4
-> Missing strategy
->  sysctl table check failed: /net/bridge/bridge-nf-filter-pppoe-tagged .3.10.5
-> Missing strategy
->
->     These binary sysctls can't work. The binary sysctl numbers of
-> other netfilter sysctls with this problem are being removed.  These
-> need to go as well.
->
-> Signed-off-by: Joseph Fannin <jfannin@gmail.com>
+You quote RFC text for ICMP echo and the case where the receiving machine
+is the final destination, but you're modifying code that is used for all 
+ICMP
+types and used for ICMP errors generated when acting as an intermediate
+router.
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+In ordinary cases, and certainly with ICMP echo when the source is set in
+the original packet and no rewriting is going on (and the address is not 
+spoofed),
+using the original source as the destination is fine. But have you tested 
+or
+considered the other cases?
 
-> ---
->
->    This *really* needs to be reviewed by someone who knows what this
->    is all about.  I've simply extended the removal of netfilter binary
->    sysctl numbers so I could load bridge.ko.  I don't particularly
->    care if I get attributed for this fix or any of that.
->
->    It Works For Me.
+                                                +-DLS
 
-Hmm.  This is an interesting case.  The proc method is forcing
-the integer to be either 0 or 1 in a racy fashion.  But none of the
-users appear to depend upon that.
-
-So this is the least broken set of binary sysctls I have seen caught
-by my check.
-
-A really good fix would be to remove the binary side and then to
-modify brnf_sysctl_call_tables to allocate a temporary ctl_table and
-integer on the stack and only set ctl->data after we have normalized
-the written value.  But since in practice nothing cares about
-the race a better fix probably isn't worth it.
-
-Eric
