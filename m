@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbXIUUJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762974AbXIUULS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762750AbXIUUJo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755290AbXIUUJh
+	id S1762974AbXIUULS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbXIUULK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:09:37 -0400
-Received: from bizon.gios.gov.pl ([212.244.124.8]:58767 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754296AbXIUUJg (ORCPT
+	Fri, 21 Sep 2007 16:11:10 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:7944 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbXIUULJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:09:36 -0400
-X-Greylist: delayed 2137 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Sep 2007 16:09:35 EDT
-Date: Fri, 21 Sep 2007 21:33:39 +0200 (CEST)
-From: Krzysztof Oledzki <olel@ans.pl>
-X-X-Sender: olel@bizon.gios.gov.pl
-To: Denys Vlasenko <vda.linux@googlemail.com>
-cc: Valdis.Kletnieks@vt.edu, David Miller <davem@davemloft.net>,
-       jeff@garzik.org, mchan@broadcom.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
-In-Reply-To: <200709212018.06553.vda.linux@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0709212130490.11228@bizon.gios.gov.pl>
-References: <200709211201.24475.vda.linux@googlemail.com>
- <200709211905.23946.vda.linux@googlemail.com> <15775.1190399812@turing-police.cc.vt.edu>
- <200709212018.06553.vda.linux@googlemail.com>
+	Fri, 21 Sep 2007 16:11:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vc1St6bpDf1KUeroFw8PTzQEjHibGC7DywumWHyYWCDBWzmiNRCH1+4YRyDzNswr4p/BpjidVoy0+6amkAhk029BahD84hInvXTS6vgKnEzWNpEDakkEnRP7JxP/PsS6oTMV5r/ETSQmQ0I48/1xY+Kzht2I1/VnFmCgj7vchqA=
+Message-ID: <f870da180709211311r7e8da305x293214175098205a@mail.gmail.com>
+Date: Fri, 21 Sep 2007 22:11:08 +0200
+From: "Mike Rapoport" <mike.rapoport@gmail.com>
+To: me <mike@compulab.co.il>
+Subject: Re: [PATCH 02/03] CM-x270: ITE 8152 PCI bridge support
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.63.0709211240570.9343@pcgl.dsa-ac.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-1802889197-1190403219=:11228"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46F29A0A.4000407@compulab.co.il>
+	 <Pine.LNX.4.63.0709211240570.9343@pcgl.dsa-ac.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----187430788-1802889197-1190403219=:11228
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-
-
-
-On Fri, 21 Sep 2007, Denys Vlasenko wrote:
-
-> On Friday 21 September 2007 19:36, Valdis.Kletnieks@vt.edu wrote:
->> On Fri, 21 Sep 2007 19:05:23 BST, Denys Vlasenko said:
->>
->>> I plan to use gzip compression on following drivers' firmware,
->>> if patches will be accepted:
->>>
->>>    text    data     bss     dec     hex filename
->>>   17653  109968     240  127861   1f375 drivers/net/acenic.o
->>>    6628  120448       4  127080   1f068 drivers/net/dgrs.o
->>>          ^^^^^^
->>
->> Should this be redone to use the existing firmware loading framework to
->> load the firmware instead?
+On 9/21/07, Guennadi Liakhovetski <gl@dsa-ac.de> wrote:
+> On Thu, 20 Sep 2007, Mike Rapoport wrote:
 >
-> Not in every case.
+> > This patch provides driver for ITE 8152 PCI bridge.
+> >
+> > Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+> >
+> >  arch/arm/common/Makefile          |    1 +
+> >  arch/arm/common/it8152.c          |  387 +++++++++++++++++++++++++++++++++++++
 >
-> For example, bnx2 maintainer says that driver and
-> firmware are closely tied for his driver. IOW: you upgrade kernel
-> and your NIC is not working anymore.
-Firmware may come with a kernel. We have a "install modules", we can also=
-=20
-add "install firmware".
+> Shouldn't it go to drivers/pci and define a platform driver? it8152 is not
+> an ARM specific controller.
 
-> Another argument is to make kernel be able to bring up NICs
-> without needing firmware images in initramfs/initrd/hard drive.
+ITE 8152 is StrongArm and PXA255 companion chip. I can hardly imagine
+it's use with other architectures. Even making it work with PXA270 was
+pretty tough.
 
-It is not possible to bring up things like FC or WiFi without firmware,=20
-what special is in classic NICs?
+>
+> Thanks
+> Guennadi
+> ---------------------------------
+> Guennadi Liakhovetski, Ph.D.
+> DSA Daten- und Systemtechnik GmbH
+> Pascalstr. 28
+> D-52076 Aachen
+> Germany
+>
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+>
 
-Best regards,
 
- =09=09=09=09Krzysztof Ol=EAdzki
----187430788-1802889197-1190403219=:11228--
+
+-- 
+Sincerely Yours,
+Mike.
