@@ -1,38 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbXIUSSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbXIUShU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760386AbXIUSSy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbXIUSSr
+	id S1760090AbXIUShU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXIUShF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:18:47 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52420 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752163AbXIUSSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:18:47 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: x86_64: potential critical issue with quicklists and page table pages
-Date: Fri, 21 Sep 2007 20:18:41 +0200
-User-Agent: KMail/1.9.6
-Cc: torvalds@linux-foundation.org, clameter@sgi.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       asit.k.mallick@intel.com
-References: <20070921180742.GH20863@linux-os.sc.intel.com>
-In-Reply-To: <20070921180742.GH20863@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 21 Sep 2007 14:37:05 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:38182 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753097AbXIUShC (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 14:37:02 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
+In-Reply-To: Your message of "Fri, 21 Sep 2007 19:05:23 BST."
+             <200709211905.23946.vda.linux@googlemail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200709211201.24475.vda.linux@googlemail.com> <200709211803.55554.vda.linux@googlemail.com> <20070921.104912.41646795.davem@davemloft.net>
+            <200709211905.23946.vda.linux@googlemail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1190399812_2847P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709212018.41643.ak@suse.de>
+Date: Fri, 21 Sep 2007 14:36:52 -0400
+Message-ID: <15775.1190399812@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1190399812_2847P
+Content-Type: text/plain; charset=us-ascii
 
-> Can we revert this commit for 2.6.23 and look at this code post 2.6.23?
+On Fri, 21 Sep 2007 19:05:23 BST, Denys Vlasenko said:
 
-Fine by me to revert it. I must admit I never 100% understood how it was
-supposed to work anyways, but eventually gave up on it.
+> I plan to use gzip compression on following drivers' firmware,
+> if patches will be accepted:
+> 
+>    text    data     bss     dec     hex filename
+>   17653  109968     240  127861   1f375 drivers/net/acenic.o
+>    6628  120448       4  127080   1f068 drivers/net/dgrs.o
+>          ^^^^^^
 
--Andi
+Should this be redone to use the existing firmware loading framework to
+load the firmware instead?
+
+--==_Exmh_1190399812_2847P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG9A9EcC3lWbTT17ARAiYhAKCqI4hIp4QmE5WjzMk/i9i1SwxEwACfZMl3
+PB4PUEVlBwH+6zqjLgMX6yI=
+=tT+I
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1190399812_2847P--
