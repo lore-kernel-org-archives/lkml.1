@@ -1,93 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764531AbXIUVId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932445AbXIUVIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764531AbXIUVId (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 17:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbXIUVIZ
+	id S932445AbXIUVIt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 17:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765560AbXIUVIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 17:08:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40267 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753897AbXIUVIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 17:08:24 -0400
-Date: Fri, 21 Sep 2007 17:08:20 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <ak@suse.de>
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [12/45] i386: Fix arch/i386/kernel/nmi.c -
-	'unknown_nmi_panic_callback' declared 'static' but never defined
-	warning
-Message-ID: <20070921210820.GB8127@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
-	patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200709211044.901175000@suse.de> <20070921204453.A6E6D14F09@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070921204453.A6E6D14F09@wotan.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 21 Sep 2007 17:08:37 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:48834 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765320AbXIUVIf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 17:08:35 -0400
+To: adilger@clusterfs.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20070921183754.GO32520@schatzie.adilger.int> (message from
+	Andreas Dilger on Fri, 21 Sep 2007 12:37:54 -0600)
+Subject: Re: [patch 2/5] VFS: pass open file to ->getattr()
+References: <20070921122343.307289079@szeredi.hu> <20070921123331.655294226@szeredi.hu> <20070921183754.GO32520@schatzie.adilger.int>
+Message-Id: <E1IYpj8-00024f-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 21 Sep 2007 23:07:54 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 10:44:53PM +0200, Andi Kleen wrote:
- > 
- > I get this warning when CONFIG_SYSCTL is not set :
- > 
- > ...
- > 
- > arch/i386/kernel/nmi.c:52: warning: 'unknown_nmi_panic_callback' declared 'static' but never defined
+> On Sep 21, 2007  14:23 +0200, Miklos Szeredi wrote:
+> > @@ -1212,7 +1212,8 @@ struct inode_operations {
+> > -	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
+> > +	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *,
+> > +			struct file *file);
+> 
+> It's not much of an inode operation anymore if you need to pass a file
+> to it...  Since the attributes are really part of the inode and not
+> the file, this seems like a bit of a hack.
 
-If you move the function call after the declaration, you can do without
-both the prototype, and the ifdef.
+Well, the data is part of the inode and not the file as well.  So why
+are read/write special?
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+OK, I realize now, that with special files (device, fifo) the I/O is
+actually on the open file and _not_ on the inode.  So the above is
+only true for regular files.
 
-diff --git a/arch/i386/kernel/nmi.c b/arch/i386/kernel/nmi.c
-index c7227e2..9a8ff0b 100644
---- a/arch/i386/kernel/nmi.c
-+++ b/arch/i386/kernel/nmi.c
-@@ -48,9 +48,6 @@ static unsigned int nmi_hz = HZ;
- 
- static DEFINE_PER_CPU(short, wd_enabled);
- 
--/* local prototypes */
--static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu);
--
- static int endflag __initdata = 0;
- 
- #ifdef CONFIG_SMP
-@@ -389,15 +386,6 @@ __kprobes int nmi_watchdog_tick(struct pt_regs * regs, unsigned reason)
- 	return rc;
- }
- 
--int do_nmi_callback(struct pt_regs * regs, int cpu)
--{
--#ifdef CONFIG_SYSCTL
--	if (unknown_nmi_panic)
--		return unknown_nmi_panic_callback(regs, cpu);
--#endif
--	return 0;
--}
--
- #ifdef CONFIG_SYSCTL
- 
- static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu)
-@@ -451,6 +439,16 @@ int proc_nmi_enabled(struct ctl_table *table, int write, struct file *file,
- 
- #endif
- 
-+int do_nmi_callback(struct pt_regs * regs, int cpu)
-+{
-+#ifdef CONFIG_SYSCTL
-+	if (unknown_nmi_panic)
-+		return unknown_nmi_panic_callback(regs, cpu);
-+#endif
-+	return 0;
-+}
-+
-+
- void __trigger_all_cpu_backtrace(void)
- {
- 	int i;
+And so it really would make sense to make a separate fgetattr() file
+operation, so we only get it for regular files and not for special
+files.  Because for the specail file case it really doesn't make sense
+to pass the file pointer to the filesystem, since the filesystem knows
+nothing about the open file.
 
--- 
-http://www.codemonkey.org.uk
+Miklos
