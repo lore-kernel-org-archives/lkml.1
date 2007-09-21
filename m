@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbXIUXsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762869AbXIUXzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759776AbXIUXsd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 19:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758986AbXIUXsK
+	id S1762869AbXIUXzy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 19:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757073AbXIUXzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 19:48:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60071 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755792AbXIUXsI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 19:48:08 -0400
-Date: Fri, 21 Sep 2007 16:47:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [PATCH 07/25] r/o bind mounts: elevate write count for some
- ioctls
-Message-Id: <20070921164754.8fc03ab1.akpm@linux-foundation.org>
-In-Reply-To: <1190417980.26982.195.camel@localhost>
-References: <20070920195249.852667D5@kernel>
-	<20070920195257.0E38EED5@kernel>
-	<20070921160314.67b116ed.akpm@linux-foundation.org>
-	<1190417980.26982.195.camel@localhost>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Sep 2007 19:55:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42959 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756216AbXIUXzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 19:55:46 -0400
+Message-ID: <46F45A00.6040505@redhat.com>
+Date: Fri, 21 Sep 2007 19:55:44 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Doug Thompson <norsk5@xmission.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: edac_mc: sleeping function called from invalid context
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007 16:39:40 -0700
-Dave Hansen <haveblue@us.ibm.com> wrote:
+Kernel 2.6.22.6:
 
-> On Fri, 2007-09-21 at 16:03 -0700, Andrew Morton wrote:
-> > Dave Hansen <haveblue@us.ibm.com> wrote:
-> > 
-> > > Some ioctl()s can cause writes to the filesystem.  Take
-> > > these, and make them use mnt_want/drop_write() instead.
-> > > 
-> > > We need to pass the filp one layer deeper in XFS, but
-> > > somebody _just_ pulled it out in February because nobody
-> > > was using it, so I don't feel guilty for adding it back.
-> > 
-> > Note that -mm's ext2-reservations.patch adds EXT2_IOC_SETRSVSZ,
-> > and it doesn't do mnt_want_write().
-> 
-> That doesn't quite apply to mainline (at least after the patches I just
-> sent).  I'll wait and send you one on top of the next -mm so that I can
-> get a coherent view of what's going on if that's all right.
-> 
+# echo "1" >/sys/devices/system/edac/pci/check_pci_parity
+# dmesg | tail -14
+BUG: sleeping function called from invalid context at kernel/rwsem.c:20
+in_atomic():0, irqs_disabled():1
 
-Sure, that's OK.
-
-But I only noticed it because I happened to have my nose in there fixing a
-reject.
-
+Call Trace:
+ [<ffffffff81048161>] down_read+0x15/0x24
+ [<ffffffff81123b90>] pci_get_subsys+0x81/0x113
+ [<ffffffff8126cfe5>] schedule_timeout+0x85/0xad
+ [<ffffffff88347b9e>] :edac_mc:edac_kernel_thread+0x9e/0x104
+ [<ffffffff88347b00>] :edac_mc:edac_kernel_thread+0x0/0x104
+ [<ffffffff810457e8>] kthread+0x47/0x73
+ [<ffffffff8100a978>] child_rip+0xa/0x12
+ [<ffffffff810457a1>] kthread+0x0/0x73
+ [<ffffffff8100a96e>] child_rip+0x0/0x12
