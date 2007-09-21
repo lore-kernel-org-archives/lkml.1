@@ -1,38 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbXIUKQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXIUKRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbXIUKQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 06:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbXIUKQT
+	id S1757060AbXIUKRS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 06:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXIUKRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 06:16:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33875 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750809AbXIUKQS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 06:16:18 -0400
-Date: Fri, 21 Sep 2007 03:16:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: travis@sgi.com
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/1] x86: Reduce Memory Usage for large CPU count
- systems v2
-Message-Id: <20070921031606.055ab52e.akpm@linux-foundation.org>
-In-Reply-To: <20070920213004.527735000@sgi.com>
-References: <20070920213004.527735000@sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Sep 2007 06:17:12 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:48950 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751129AbXIUKRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 06:17:11 -0400
+From: Vitaliy Gusev <vgusev@openvz.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Problem: LTP linkat01 test fails on nfs directory (NFS v3)
+Date: Fri, 21 Sep 2007 14:16:33 +0400
+User-Agent: KMail/1.9.5
+References: <46F1541B.2040800@sw.ru>
+In-Reply-To: <46F1541B.2040800@sw.ru>
+MIME-Version: 1.0
+Message-Id: <200709211416.33548.vgusev@openvz.org>
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_Bo58Gc7dzhcPPNB"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 14:30:04 -0700 travis@sgi.com wrote:
+--Boundary-00=_Bo58Gc7dzhcPPNB
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Obviously, the IRQ arrays are of greater importance for
-> size reduction.  Any suggestions, or threads I should read
-> are gratefully accecpted... ;-)
+Hello.
 
-hard.  Convert them to a radix-tree I suppose.  powerpc alrady does that
-but it open-codes it in some fashion.  Don't look at it ;)
+Tested kernels: 2.6.18, 2.6.22, 2.6.23-rc2
+
+Steps to reproduce: Suppose that we have mounted some directory from nfs v3 
+server with default options. Also we  have the two directories in this 
+mountpoint and each directory has hard linked file. Try to open those files 
+and write to one and read from another. Data will not be equal. (Testcase: 
+attached hardlink_test.c)
+
+Analysis: Although these hard linked files have same nfs_fattr::fileid but 
+have different nfs_fh fhandle. In this case nfs_find_actor() function 
+(fs/nfs/inode.c) returns false during opening each file:
+
+nfs_find_actor()
+{
+...
+	if (nfs_compare_fh(NFS_FH(inode), fh))
+		return 0;
+...
+}
+
+Therefore for each of hard links new struct inode is allocated. It leads to 
+cache aliasing.
+
+Please explain why nfs_find_actor() function compares file handles?
+
+-- 
+Thanks,
+Vitaliy Gusev
+
+
+--Boundary-00=_Bo58Gc7dzhcPPNB
+Content-Type: text/x-csrc;
+  charset="utf-8";
+  name="hardlink_test.c"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment;
+	filename="hardlink_test.c"
+
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <err.h>
+
+#define SLEEP 15
+
+int main(int argc, char *argv[])
+{
+	int fd1,fd2;
+	char *f1 = argv[1];
+	char *f2 = argv[2];
+	char buf[1000]= {0,};
+	char wrbuf[200];
+	int ret;
+
+	assert(argc == 3);
+
+	printf("write to: %s\nread from: %s\n\n",
+	       f1, f2);
+
+	fd1 = open(f1, O_RDWR);
+	fd2 = open(f2, O_RDONLY);
+	if (fd1 < 0 || fd2 < 0)
+		err(1, "error open");
+		
+	sprintf(wrbuf, "test message-%d", getpid());
+	printf("Write: [%s]\n", wrbuf);
+	ret = write(fd1, wrbuf, strlen(wrbuf));
+	if (ret < 0)
+		err(1, "error write");
+
+	sleep(1);
+	ret = read(fd2, buf, sizeof(buf) - 1);
+	if (ret < 0)
+		err(1, "error read");
+	printf("Read:  [%s]\n", buf);
+	return 0;
+}
+
+--Boundary-00=_Bo58Gc7dzhcPPNB--
