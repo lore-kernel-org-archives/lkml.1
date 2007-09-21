@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbXIUOPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759940AbXIUOSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759709AbXIUOPZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758106AbXIUOPO
+	id S1759940AbXIUOSj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbXIUOSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:15:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:21591 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758111AbXIUOPM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:15:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qd/EirdvggtYbPWx8Bu7XVsI6RTMAghhyebglHnyQZOOxSyj42yEJVcY5eRwZIR3OnRWgl9PQJb40VQ8nsd8zEDyUB+MuL2oBSbNGyalNYw0TxTj4Ymqic+TOxqu0rnLj1oc51ThMfrZ2vrYR2oYXslGChDKJnFdUvzd0Qh6YJo=
-Message-ID: <d120d5000709210715q22682893ib87998727baffe38@mail.gmail.com>
-Date: Fri, 21 Sep 2007 10:15:10 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs rcu_read_lock()
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>,
+	Fri, 21 Sep 2007 10:18:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43206 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751928AbXIUOSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 10:18:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "huang ying" <huang.ying.caritas@gmail.com>
+Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Fri, 21 Sep 2007 16:31:18 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-pm@lists.linux-foundation.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Nigel Cunningham" <nigel@nigel.suspend2.net>, nigel@suspend2.net,
+       "Kexec Mailing List" <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>,
        "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>
-In-Reply-To: <20070921000155.GI9825@linux.vnet.ibm.com>
+       "Jeremy Maitin-Shepard" <jbms@cmu.edu>, "Len Brown" <lenb@kernel.org>
+References: <1190266447.21818.17.camel@caritas-dev.intel.com> <200709211409.25008.rjw@sisk.pl> <851fc09e0709210614q33cf3c81u1441fda17a66a6fd@mail.gmail.com>
+In-Reply-To: <851fc09e0709210614q33cf3c81u1441fda17a66a6fd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070919174857.GA11922@linux.vnet.ibm.com>
-	 <20070919214110.5d832f28@lappy>
-	 <d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
-	 <20070919221349.2935f69d@lappy>
-	 <d120d5000709191341p1c331e80qf7bad973bc899a0@mail.gmail.com>
-	 <20070919231943.4b121361@lappy>
-	 <d120d5000709191429n29f5dc78g2746de3ee4e9ca81@mail.gmail.com>
-	 <20070919234700.3b532dcd@lappy>
-	 <d120d5000709201031o687ac0d5qe4d32406c12a7886@mail.gmail.com>
-	 <20070921000155.GI9825@linux.vnet.ibm.com>
+Message-Id: <200709211631.19130.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/20/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> On Thu, Sep 20, 2007 at 01:31:35PM -0400, Dmitry Torokhov wrote:
+On Friday, 21 September 2007 15:14, huang ying wrote:
+> On 9/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Friday, 21 September 2007 05:33, Eric W. Biederman wrote:
+> > > Nigel Cunningham <nigel@nigel.suspend2.net> writes:
+[--snip--]
+> > >
+> > > No one has yet attacked the hard problem of coming up with separate
+> > > hibernate methods for drivers.
 > >
-> > OK, then what is the purpose of synchronize_sched() in -rt?
->
-> To wait for all preempt-disable, irq-disable, hard-irq, and SMI/NMI code
-> sequences to complete.
+> > Well, I've been playing a bit with that for some time, but it's not easy by any
+> > means.
+> >
+> > In short, I'm seeing some problems related to the handling of ACPI that seem to
+> > shatter the entire idea of having separate hibernate methods, at least as far
+> > as ACPI systems are concerned.
+> 
+> So sadly to hear this. Can you details it a little? Or a link?
 
-OK, so what spin_lock_irq[save]? Does is disable IRQs in -rt or not anymore?
-If IRQs are disabled it appears that I can continue using synchronize_sched().
+Well, the problem is that apparently some systems (eg. my HP nx6325) expect us
+to execute the _PTS ACPI global control method before creating the image _and_
+to execute acpi_enter_sleep_state(ACPI_STATE_S4) in order to finally put the
+system into the sleep state.  In particular, on nx6325, if we don't do that,
+then after the restore the status of the AC power will not be reported
+correctly (and if you replace the battery while in the sleep state, the
+battery status will not be updated correctly after the restore).  Similar
+issues have been reported for other machines.
 
->
-> > You really need to provide users with a replacement. There are several
-> > drivers that use it and for example r8169 is not what you'd call a
-> > 'low performer'.
->
-> I did look at making a synchronize_all_irq() some time back, and all
-> the approaches I came up with at the time were busted.
->
-> But I just took another look, and I think I see a way to handle it.
-> Either that, or I simply forgot the way in which this approach is
-> broken...
->
-> I will stare at is some more.
->
+Now, the ACPI specification requires us to put devices into low power states
+before executing _PTS and that's exactly what we're doing before a suspend to
+RAM.  Thus, it seems that in general we need to do the same for hibernation on
+ACPI systems.
 
-Thank you.
-
-> > I guess I can switch i8042 to use synchronize_irq(). That still works
-> > in -rt, doesn't it? That still leaves atkbd...
->
-> Yep, looks that way to me.  The only difference that I can see is that
-> in -rt, concurrent synchronize_irq() calls on the same descriptor mean
-> that the guy that gets there second has to wait for the next interrupt
-> to happen.
->
-
-Does this mean that there is a possibility for a thread to hang in
-synchronize_irq() if that second IRQ never comes?
-
--- 
-Dmitry
+Greetings,
+Rafael
