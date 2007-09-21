@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761055AbXIUPmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbXIUPoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761055AbXIUPmA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 11:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbXIUPlw
+	id S1760771AbXIUPoT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 11:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbXIUPoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 11:41:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43105 "EHLO mx1.redhat.com"
+	Fri, 21 Sep 2007 11:44:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44130 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758582AbXIUPlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 11:41:51 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <718847.32805.qm@web36601.mail.mud.yahoo.com>
-References: <718847.32805.qm@web36601.mail.mud.yahoo.com>
-To: casey@schaufler-ca.com
-Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
-       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 00/22] Introduce credential record
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Fri, 21 Sep 2007 16:40:16 +0100
-Message-ID: <9072.1190389216@redhat.com>
+	id S1752710AbXIUPoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 11:44:09 -0400
+Message-ID: <46F3E692.7070401@redhat.com>
+Date: Fri, 21 Sep 2007 11:43:14 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Matthias Hensler <matthias@wspse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       richard kennedy <richard@rsk.demon.co.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
+References: <46B10BB7.60900@redhat.com> <20070803113407.0b04d44e.akpm@linux-foundation.org> <20070804084426.GA20464@kobayashi-maru.wspse.de> <20070809095943.GA7763@kobayashi-maru.wspse.de> <20070809095534.25ae1c42.akpm@linux-foundation.org> <46F2E103.8000907@redhat.com> <20070920142927.d87ab5af.akpm@linux-foundation.org> <20070921093914.GB4750@shadowen.org>
+In-Reply-To: <20070921093914.GB4750@shadowen.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler <casey@schaufler-ca.com> wrote:
-
-> > One thing I'm not certain about is how this should interact with /proc,
-> > which can display some of the stuff in the cred struct.  I think it may be
-> > necessary to have a real cred pointer and an effective cred pointer, with
-> > the contents of /proc coming from the real, but the effective governing
-> > what actually goes on.
+On 09/21/2007 05:39 AM, Andy Whitcroft wrote:
+> This sounds an awful lot like the same problem I reported with fsck
+> hanging.  I believe that Hugh had a candidate patch for that, which was
+> related to dirty tracking limits.  It seems that that patch tested, and
+> acked by Peter.  All on lkml under:
 > 
-> I think you want the effective values to show up in /proc.
+> 	2.6.23-rc6-mm1 -- mkfs stuck in 'D'
+> 
 
-Perhaps - but bear in mind that in the override case they weren't set by the
-process itself.
-
-David
+Unfortunately that whole thread is about fixing bugs in an already
+much-changed balance_dirty_pages() in -mm.
