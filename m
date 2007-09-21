@@ -1,156 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbXIUAWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbXIUA0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbXIUAWe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 20:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXIUAW1
+	id S1754159AbXIUA0n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 20:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbXIUA0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 20:22:27 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:23564 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbXIUAW0 (ORCPT
+	Thu, 20 Sep 2007 20:26:36 -0400
+Received: from home.nigel.suspend2.net ([203.171.70.205]:57186 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbXIUA0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 20:22:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=maCBzZTHrHDg25Ap+5cOrPmEJlQtUrBUbMNvJu9Jm5pOwr4X3JN55a5VAF5GLH6z+sikF4MfM0AgpJI8E2VCc3Eg6D24dU9oTgnKl6im8uohYwAcOopbN90sDTBGpj0qmSh1RzWyjI2eQSrGPa0/xuOGfJbC9jNipJNEIAJ6E+U=
-Message-ID: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
-Date: Thu, 20 Sep 2007 17:22:26 -0700
-From: "Chakri n" <chakriin5@gmail.com>
-To: nfs@lists.sourceforge.net, Trond.Myklebust@netapp.com,
-       linux-kernel@vger.kernel.org
-Subject: NFS on loopback locks up entire system(2.6.23-rc6)?
+	Thu, 20 Sep 2007 20:26:36 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Fri, 21 Sep 2007 10:24:34 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Huang, Ying" <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1190266447.21818.17.camel@caritas-dev.intel.com> <20070920100941.GA12157@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20070920100941.GA12157@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200709211024.35991.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Andrew.
 
-I am testing NFS on loopback locks up entire system with 2.6.23-rc6 kernel.
+On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
+> Seems like good enough for -mm to me.
+> 
+> 									Pavel
 
-I have mounted a local ext3 partition using loopback NFS (version 3)
-and started my test program. The test program forks 20 threads
-allocates 10MB for each thread, writes & reads a file on the loopback
-NFS mount. After running for about 5 min, I cannot even login to the
-machine. Commands like ps etc, hang in a live session.
+Andrew, if I recall correctly, you said a while ago that you didn't want 
+another hibernation implementation in the vanilla kernel. If you're going to 
+consider merging this kexec code, will you also please consider merging 
+TuxOnIce?
 
-The machine is a DELL 1950 with 4Gig of RAM, so there is plenty of RAM
-& CPU to play around and no other io/heavy processes are running on
-the system.
+Regards,
 
-vmstat output shows no buffers are actually getting transferred in or
-out and iowait is 100%.
-
-[root@h46 ~]# vmstat 1
-procs -----------memory---------- ---swap-- -----io---- --system--
------cpu------
- r  b    swpd       free       buff       cache   si   so   bi   bo
-in     cs us sy id wa st
- 0 24    116 110080  11132 3045664    0    0     0     0   28  345  0
-1  0 99  0
- 0 24    116 110080  11132 3045664    0    0     0     0    5  329  0
-0  0 100  0
- 0 24    116 110080  11132 3045664    0    0     0     0   26  336  0
-0  0 100  0
- 0 24    116 110080  11132 3045664    0    0     0     0    8  335  0
-0  0 100  0
- 0 24    116 110080  11132 3045664    0    0     0     0   26  352  0
-0  0 100  0
- 0 24    116 110080  11132 3045664    0    0     0     0    8  351  0
-0  0 100  0
- 0 24    116 110080  11132 3045664    0    0     0     0   23  358  0
-1  0 99  0
- 0 24    116 110080  11132 3045664    0    0     0     0   10  350  0
-0  0 100  0
- 0 24    116 110080  11132 3045664    0    0     0     0   26  363  0
-0  0 100  0
- 0 24    116 110080  11132 3045664    0    0     0     0    8  346  0
-1  0 99  0
- 0 24    116 110080  11132 3045664    0    0     0     0   26  360  0
-0  0 100  0
- 0 24    116 110080  11140 3045656    0    0     8     0   11  345  0
-0  0 100  0
- 0 24    116 110080  11140 3045664    0    0     0     0   27  355  0
-0  2 97  0
- 0 24    116 110080  11140 3045664    0    0     0     0    9  330  0
-0  0 100  0
- 0 24    116 110080  11140 3045664    0    0     0     0   26  358  0
-0  0 100  0
-
-
-The following is the backtrace of
-1. one of the threads of my test program
-2. nfsd daemon and
-3. a generic command like pstree, after the machine hangs:
--------------------------------------------------------------
-crash> bt 3252
-PID: 3252   TASK: f6f3c610  CPU: 0   COMMAND: "test"
- #0 [f6bdcc10] schedule at c0624a34
- #1 [f6bdcc84] schedule_timeout at c06250ee
- #2 [f6bdccc8] io_schedule_timeout at c0624c15
- #3 [f6bdccdc] congestion_wait at c045eb7d
- #4 [f6bdcd00] balance_dirty_pages_ratelimited_nr at c045ab91
- #5 [f6bdcd54] generic_file_buffered_write at c0457148
- #6 [f6bdcde8] __generic_file_aio_write_nolock at c04576e5
- #7 [f6bdce40] try_to_wake_up at c042342b
- #8 [f6bdce5c] generic_file_aio_write at c0457799
- #9 [f6bdce8c] nfs_file_write at f8c25cee
-#10 [f6bdced0] do_sync_write at c0472e27
-#11 [f6bdcf7c] vfs_write at c0473689
-#12 [f6bdcf98] sys_write at c0473c95
-#13 [f6bdcfb4] sysenter_entry at c0404ddf
-    EAX: 00000004  EBX: 00000013  ECX: a4966008  EDX: 00980000
-    DS:  007b      ESI: 00980000  ES:  007b      EDI: a4966008
-    SS:  007b      ESP: a5ae6ec0  EBP: a5ae6ef0
-    CS:  0073      EIP: b7eed410  ERR: 00000004  EFLAGS: 00000246
-crash> bt 3188
-PID: 3188   TASK: f74c4000  CPU: 1   COMMAND: "nfsd"
- #0 [f6836c7c] schedule at c0624a34
- #1 [f6836cf0] __mutex_lock_slowpath at c062543d
- #2 [f6836d0c] mutex_lock at c0625326
- #3 [f6836d18] generic_file_aio_write at c0457784
- #4 [f6836d48] ext3_file_write at f8888fd7
- #5 [f6836d64] do_sync_readv_writev at c0472d1f
- #6 [f6836e08] do_readv_writev at c0473486
- #7 [f6836e6c] vfs_writev at c047358e
- #8 [f6836e7c] nfsd_vfs_write at f8e7f8d7
- #9 [f6836ee0] nfsd_write at f8e80139
-#10 [f6836f10] nfsd3_proc_write at f8e86afd
-#11 [f6836f44] nfsd_dispatch at f8e7c20c
-#12 [f6836f6c] svc_process at f89c18e0
-#13 [f6836fbc] nfsd at f8e7c794
-#14 [f6836fe4] kernel_thread_helper at c0405a35
-crash> ps|grep ps
-    234      2   3  cb194000  IN   0.0       0      0  [khpsbpkt]
-    520      2   0  f7e18c20  IN   0.0       0      0  [kpsmoused]
-   2859      1   2  f7f3cc20  IN   0.1    9600   2040  cupsd
-   3340   3310   0  f4a0f840  UN   0.0    4360    816  pstree
-   3343   3284   2  f4a0f230  UN   0.0    4212    944  ps
-crash> bt 3340
-PID: 3340   TASK: f4a0f840  CPU: 0   COMMAND: "pstree"
- #0 [e856be30] schedule at c0624a34
- #1 [e856bea4] rwsem_down_failed_common at c04df6c0
- #2 [e856bec4] rwsem_down_read_failed at c0625c2a
- #3 [e856bedc] call_rwsem_down_read_failed at c0625c96
- #4 [e856bee8] down_read at c043c21a
- #5 [e856bef0] access_process_vm at c0462039
- #6 [e856bf38] proc_pid_cmdline at c04a1bbb
- #7 [e856bf58] proc_info_read at c04a2f41
- #8 [e856bf7c] vfs_read at c04737db
- #9 [e856bf98] sys_read at c0473c2e
-#10 [e856bfb4] sysenter_entry at c0404ddf
-    EAX: 00000003  EBX: 00000005  ECX: 0804dc58  EDX: 00000062
-    DS:  007b      ESI: 00000cba  ES:  007b      EDI: 0804e0e0
-    SS:  007b      ESP: bfa3afe8  EBP: bfa3d4f8
-    CS:  0073      EIP: b7f64410  ERR: 00000003  EFLAGS: 00000246
-----------------------------------------------------------
-
-Any ideas what could potentially trigger this?
-
-Please let me know if you would like to get any other specific details.
-
-Thanks
---Chakri
+Nigel
+-- 
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
