@@ -1,57 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbXIUB45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbXIUB5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbXIUB45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 21:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbXIUB4u
+	id S1754780AbXIUB5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 21:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbXIUB5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 21:56:50 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:22467 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbXIUB4t (ORCPT
+	Thu, 20 Sep 2007 21:57:36 -0400
+Received: from home.nigel.suspend2.net ([203.171.70.205]:43679 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752517AbXIUB5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 21:56:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ETbefYiP37ZSzwr8dvCc6dnyVXiqldxv/TICcmUdDEOpXbTIfCCsDcLF/Bhxz9VnBkqzxxbY1BYnBuwqE6I0y5QyhHxBtWZwEavcBqkhXPyIDLFOnM666nFueSgs22e+mCQ1yXDfWOjdCotdqcFSiZYs6E3Nh4OnNxENCr/c3ik=
-Message-ID: <3402120c0709201856j58c3775bq8dc7886785a11344@mail.gmail.com>
-Date: Fri, 21 Sep 2007 03:56:47 +0200
-From: "Arvin Moezzi" <moezzia@gmail.com>
-To: "James Pearson" <james-p@moving-picture.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
-Cc: aarapov@redhat.com, akpm@linux-foundation.org, hpa@zytor.com
-In-Reply-To: <E1IXziD-0003YJ-0w@moving-picture.com>
+	Thu, 20 Sep 2007 21:57:35 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Fri, 21 Sep 2007 11:57:26 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: nigel@suspend2.net, Pavel Machek <pavel@ucw.cz>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1190266447.21818.17.camel@caritas-dev.intel.com> <200709211120.00448.ncunningham@crca.org.au> <20070920184106.79e1858a.akpm@linux-foundation.org>
+In-Reply-To: <20070920184106.79e1858a.akpm@linux-foundation.org>
+Organization: Christian Reformed Church of Cobden
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <E1IXziD-0003YJ-0w@moving-picture.com>
+Message-Id: <200709211157.28622.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/9/19, James Pearson <james-p@moving-picture.com>:
-> +       while (count > 0) {
-> +               int this_len, retval;
-> +
-> +               this_len = mm->env_end - (mm->env_start + src);
-> +
-> +               if (this_len <= 0)
-> +                       break;
-> +
-> +               if (this_len > max_len)
-> +                       this_len = max_len;
-> +
-> +               retval = access_process_vm(task, (mm->env_start + src),
-> +                       page, this_len, 0);
-> +
-> +               if (retval <= 0) {
-> +                       ret = retval;
-> +                       break;
-> +               }
-> +
-> +               if (copy_to_user(buf, page, retval)) {
-                                                                ^^^^
-shouldn't you only copy min(count,retval) bytes? otherwise you could
-write beyond the users buffer "buf", right?
+Hi.
 
-Arvin
+On Friday 21 September 2007 11:41:06 Andrew Morton wrote:
+> > On Friday 21 September 2007 11:06:23 Andrew Morton wrote:
+> > > On Fri, 21 Sep 2007 10:24:34 +1000 Nigel Cunningham 
+> > <nigel@nigel.suspend2.net> wrote:
+> > > 
+> > > > Hi Andrew.
+> > > > 
+> > > > On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
+> > > > > Seems like good enough for -mm to me.
+> > > > > 
+> > > > > 									Pavel
+> > > > 
+> > > > Andrew, if I recall correctly, you said a while ago that you didn't 
+want 
+> > > > another hibernation implementation in the vanilla kernel. If you're 
+going 
+> > to 
+> > > > consider merging this kexec code, will you also please consider 
+merging 
+> > > > TuxOnIce?
+> > > > 
+> > > 
+> > > The theory is that kexec-based hibernation will mainly use preexisting
+> > > kexec code and will permit us to delete the existing hibernation
+> > > implementation.
+> > > 
+> > > That's different from replacing it.
+> > 
+> > TuxOnIce doesn't remove the existing implementation either. It can 
+> > transparently replace it, but you can enable/disable that at compile time.
+> 
+> Right.  So we end up with two implementations in-tree.  Whereas
+> kexec-based-hibernation leads us to having zero implementations in-tree.
+> 
+> See, it's different.
+
+That's not true. Kexec will itself be an implementation, otherwise you'd end 
+up with people screaming about no hibernation support. And it won't result in 
+the complete removal of the existing hibernation code from the kernel. At the 
+very least, it's going to want the kernel being hibernated to have an 
+interface by which it can find out which pages need to be saved. I wouldn't 
+be surprised if it also ends up with an interface in which the kernel being 
+hibernated tells it what bdev/sectors in which to save the image as well 
+(otherwise you're going to need a dedicated, otherwise untouched partition 
+exclusively for the kexec'd kernel to use), or what network settings to use 
+if it wants to try to save the image to a network storage device. On top of 
+that, there are all the issues related to device reinitialisation and so on, 
+and it looks like there's greatly increased pain for users wanting to 
+configure this new implementation. Kexec is by no means proven to be the 
+panacea for all the issues.
+
+Regards,
+
+Nigel
+-- 
+Nigel Cunningham
+Pastor
+Christian Reformed Church of Cobden
+Victoria, Australia
++61 3 5595 1185
