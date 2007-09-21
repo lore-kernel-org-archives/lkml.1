@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759725AbXIUNic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbXIUNn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759725AbXIUNic (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbXIUNi0
+	id S1759002AbXIUNn6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbXIUNnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:38:26 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:49143 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752760AbXIUNiZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:38:25 -0400
-Date: Fri, 21 Sep 2007 09:38:20 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>, dsmith@redhat.com,
-       Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
-Message-ID: <20070921133820.GD13129@Krystal>
-References: <20070918211324.161373216@polymtl.ca> <20070919113737.GA18177@Krystal> <y0mtzpqvk1l.fsf@ton.toronto.redhat.com> <200709192132.00873.vda.linux@googlemail.com> <20070921125819.GA13129@Krystal> <20070921133006.GF8964@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 21 Sep 2007 09:43:50 -0400
+Received: from frosty.hhs.nl ([145.52.2.15]:58325 "EHLO frosty.hhs.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757181AbXIUNnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 09:43:50 -0400
+Message-ID: <46F3C704.5000203@hhs.nl>
+Date: Fri, 21 Sep 2007 15:28:36 +0200
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Hans de Goede <j.w.r.degoede@hhs.nl>
+Subject: USB autosuspend and turning of usb pendrive leds
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070921133006.GF8964@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:37:55 up 53 days, 13:56,  4 users,  load average: 0.07, 0.40, 0.63
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.2/RELEASE, bases: 21092007 #395929, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-> Hi -
-> 
-> On Fri, Sep 21, 2007 at 08:58:19AM -0400, Mathieu Desnoyers wrote:
-> > [...]
-> > > > Current systemtap marker support code relies on the __markers_strings
-> > > > section.
-> > > Let users know that in comment above section definition in ld script.
-> > [...]
-> >         /* Markers: strings (used by SystemTAP) */                      \
-> > [...]
-> 
-> I did not mean to imply that this was a necessary state of affairs.
-> 
-> The marker metadata must be stored in at least one place in the kernel
-> image - this just happens to be a convenient one that David Smith's
-> recent systemtap code used.  Without it, we'd probably have to do a
-> more complicated search, following the pointers within the __markers
-> structs.  That could work, but it hasn't been built/tested.
-> 
-> So, this proposed change (removal of this section) would break
-> systemtap, and we have to jump through more hoops to make it work
-> again.  Is the change worth it?
-> 
+Hi All,
 
-I guess so. Getting the markers as clean as we can is very important for
-kernel inclusion.
+Please keep me CC-ed as I'm not subscribed.
 
-Mathieu
+Some time ago a mail about turning of the leds on usb pendrives once unmounted 
+by hal was send to the fedora-devel list:
+https://www.redhat.com/archives/fedora-devel-list/2007-August/msg01807.html
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+This mail talked about echo 2 > power/state for usb devices.
+
+I tested the method described in the mail to turn of the drive light and it 
+worked well.
+
+As I think that turning of the drive led (as windows does) would be good visual 
+feedback to the end user that its safe to remove the device I've written a 
+patch for hal which does the power state change automatically when the last 
+partition of a usb massstorage device gets unmounted.
+
+However when testing the patch I found out that my now newer kernel no longer 
+has power/state for usb devices, it only has power/level. I can send suspend to 
+power/level, but then remounting the device won't work and me syslog fills 
+itself with:
+sd 2:0:0:0: [sdc] READ CAPACITY failed
+sd 2:0:0:0: [sdc] Result: hostbyte=DID_ERROR driverbyte=DRIVER_OK,SUGGEST_OK
+sd 2:0:0:0: [sdc] Sense not available.
+sd 2:0:0:0: [sdc] Write Protect is off
+sd 2:0:0:0: [sdc] Mode Sense: 00 00 00 00
+sd 2:0:0:0: [sdc] Assuming drive cache: write through
+
+Because hal keeps polling the device.
+
+So this leads me to a couple of questions:
+1) Would it be possible to funtionality to the kernel to suspend a device in
+    such a way that it will automatically unsuspend when used again?
+2) Would it be possible to still make the polls succeed then with out
+    unsuspending the device (or atleast without doing something that would make
+    the led light again, what makes the led light exactly is unknown), or should
+    hal stop polling then?
+
+Note I'm aware that some usb devices may not like being suspended, but thats a 
+problem for later, if this cannot be made to work with devices which do handle 
+suspend properly, then thinking about white and/or blacklisting it irrelevant.
+
+Regards,
+
+Hans
+
