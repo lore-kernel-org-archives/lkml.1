@@ -1,116 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbXIUK0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbXIUK3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbXIUK0I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 06:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbXIUKZ4
+	id S1756839AbXIUK3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 06:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbXIUK3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 06:25:56 -0400
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:4003 "EHLO
-	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755050AbXIUKZ4 (ORCPT
+	Fri, 21 Sep 2007 06:29:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38546 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751346AbXIUK3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 06:25:56 -0400
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-From: richard kennedy <richard@rsk.demon.co.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Matthias Hensler <matthias@wspse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20070920153654.b9e90616.akpm@linux-foundation.org>
-References: <46B10BB7.60900@redhat.com>
-	 <20070803113407.0b04d44e.akpm@linux-foundation.org>
-	 <20070804084426.GA20464@kobayashi-maru.wspse.de>
-	 <20070809095943.GA7763@kobayashi-maru.wspse.de>
-	 <20070809095534.25ae1c42.akpm@linux-foundation.org>
-	 <46F2E103.8000907@redhat.com>
-	 <20070920142927.d87ab5af.akpm@linux-foundation.org>
-	 <46F2EE76.4000203@redhat.com>
-	 <20070920153654.b9e90616.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 11:25:41 +0100
-Message-Id: <1190370341.3121.35.camel@castor.rsk.org>
+	Fri, 21 Sep 2007 06:29:15 -0400
+Date: Fri, 21 Sep 2007 03:29:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Peer Chen" <peerchen@gmail.com>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, "jeff" <jeff@garzik.org>,
+       "linux-ide" <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH] ahci: enable GHC.AE bit before set GHC.HR
+Message-Id: <20070921032903.45deb785.akpm@linux-foundation.org>
+In-Reply-To: <200709211327569648280@gmail.com>
+References: <200709211327569648280@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-20 at 15:36 -0700, Andrew Morton wrote:
-> On Thu, 20 Sep 2007 18:04:38 -0400
-> Chuck Ebbert <cebbert@redhat.com> wrote:
-> 
-> > > 
-> > >> Can we get some kind of band-aid, like making the endless 'for' loop in
-> > >> balance_dirty_pages() terminate after some number of iterations? Clearly
-> > >> if we haven't written "write_chunk" pages after a few tries, *and* we
-> > >> haven't encountered congestion, there's no point in trying forever...
-> > > 
-> > > Did my above questions get looked at?
-> > > 
-> > > Is anyone able to reproduce this?
-> > > 
-> > > Do we have a clue what's happening?
-> > 
-> > There are a ton of dirty pages for one disk, and zero or close to zero dirty
-> > for a different one. Kernel spins forever trying to write some arbitrary
-> > minimum amount of data ("write_chunk" pages) to the second disk...
-> 
-> That should be OK.  The caller will sit in that loop, sleeping in
-> congestion_wait(), polling the correct backing-dev occasionally and waiting
-> until the dirty limits subside to an acceptable limit, at which stage this:
-> 
-> 			if (nr_reclaimable +
-> 				global_page_state(NR_WRITEBACK)
-> 					<= dirty_thresh)
-> 						break;
-> 
-> 
-> will happen and we leave balance_dirty_pages().
-> 
-> That's all a bit crappy if the wrong races happen and some other task is
-> somehow exceeding the dirty limits each time this task polls them.  Seems
-> unlikely that such a condition would persist forever.
-> 
-> So the question is, why do we have large amounts of dirty pages for one
-> disk which appear to be sitting there not getting written?
+On Fri, 21 Sep 2007 13:28:01 +0800 "Peer Chen" <peerchen@gmail.com> wrote:
 
-The lockup I'm seeing intermittently occurs when I have 2+ tasks copying
-large files (1Gb+) on sda & a small read-mainly mysql db app running on
-sdb. The lockup seems to happen just after the copies finish -- there
-are lots of dirty pages but nothing left to write them until kupdate
-gets round to it. 
-BTW kupdate can loop for long periods of time when a disk is under this
-kind of load -- I regularly see it take over 20 seconds. and often it's
-unable to start as there are no pdflush threads available.
+> According to the description of section 5.2.2.1 and 10.1.2 of AHCI specification rev1_1/rev1_2, GHC.HR shall only be set to __1__
+> by software when GHC.AE is set to __1__.
 
-> Do we know if there's any writeout at all happening when the system is in
-> this state?
-> 
-No there doesn't seem to be any activity at all -- my machine is
-completely unresponsive only sysrq works.
+This text contained non-ascii garbage which came through as __1__.
+
+I'll assume that you actually meant "1".
 
 
-> I guess it's possible that the dirty inodes on the "other" disk got
-> themselves onto the wrong per-sb inode list, or are on the correct list,
-> but in the correct place.  If so, these:
+> --- linux-2.6.23-rc7/drivers/ata/ahci.c.orig	2007-09-20 11:01:55.000000000 -0400
+> +++ linux-2.6.23-rc7/drivers/ata/ahci.c	2007-09-20 11:07:31.000000000 -0400
+> @@ -834,6 +834,10 @@ static int ahci_reset_controller(struct 
+>  	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
+>  	u32 tmp;
+>  
+> +        /* turn on AHCI mode before controller reset*/
+> +        writel(HOST_AHCI_EN, mmio + HOST_CTL);
+> +        (void) readl(mmio + HOST_CTL);  /* flush */
+> +
+>  	/* global controller reset */
+>  	tmp = readl(mmio + HOST_CTL);
+>  	if ((tmp & HOST_RESET) == 0) {
 > 
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-2.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-3.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-4.patch
-> writeback-fix-comment-use-helper-function.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-5.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-6.patch
-> writeback-fix-time-ordering-of-the-per-superblock-dirty-inode-lists-7.patch
-> writeback-fix-periodic-superblock-dirty-inode-flushing.patch
-> 
-> from 2.6.23-rc6-mm1 should help.
- 
 
-> Did anyone try running /bin/sync when the system is in this state?
-I'm not able to run anything in this state, but sysrq-s doesn't make any
-difference.
-
-Richard 
-
+We don't normally do that (void) cast.
