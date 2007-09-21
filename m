@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbXIUMvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXIUM63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbXIUMvh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 08:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbXIUMv1
+	id S1757561AbXIUM63 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 08:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbXIUM6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 08:51:27 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:40809 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755212AbXIUMvZ (ORCPT
+	Fri, 21 Sep 2007 08:58:22 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:42702 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751078AbXIUM6V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 08:51:25 -0400
-Date: Fri, 21 Sep 2007 13:51:12 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andy Fleming <afleming@freescale.com>, Jeff Garzik <jgarzik@pobox.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-In-Reply-To: <20070920165348.0b25be3d.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64N.0709211334420.2724@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0709171750220.17606@blysk.ds.pg.gda.pl>
- <20070920165348.0b25be3d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Sep 2007 08:58:21 -0400
+Date: Fri, 21 Sep 2007 08:58:19 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, dsmith@redhat.com,
+       Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20070921125819.GA13129@Krystal>
+References: <20070918211324.161373216@polymtl.ca> <20070919113737.GA18177@Krystal> <y0mtzpqvk1l.fsf@ton.toronto.redhat.com> <200709192132.00873.vda.linux@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200709192132.00873.vda.linux@googlemail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:57:50 up 53 days, 13:16,  4 users,  load average: 2.14, 1.52, 1.02
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007, Andrew Morton wrote:
+* Denys Vlasenko (vda.linux@googlemail.com) wrote:
+> On Wednesday 19 September 2007 14:53, Frank Ch. Eigler wrote:
+> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+> > 
+> > > [...]  Do you think I should also remove the __markers_strings
+> > > section from here ?
+> > 
+> > Current systemtap marker support code relies on the __markers_strings
+> > section.
+> 
+> Let users know that in comment above section definition in ld script.
+> 
 
-> You always put boring, crappy, insufficient text in the for-the-changelog
-> section and interesting, useful, sufficient text in the not-for-the-changelog
-> section.
+Ok, I am changing it to:
 
- I'll swap the sections in the future then. ;-)  Frankly I was not sure 
-whether the changelog was happy about being fed with lengthy explanations 
-and it has not spoken out.
 
- I have to admit this is a habit carried over from the FSF-style ChangeLog 
--- where the enforced rule is actually *not* to provide any explanation 
-for why changes are done and only describe what has been modified (with 
-any discussion around archived in the respective mailing list).
+        /* Markers: strings (used by SystemTAP) */                      \
+        __markers_strings : AT(ADDR(__markers_strings) - LOAD_OFFSET) { \
+                *(__markers_strings)                                    \
+        }                                                               \
 
-> But you can't fool me!  I have an editor and I fix it up.
+Mathieu
 
- Thank you and sorry for the extra work I caused you -- I shall keep your 
-suggestion in mind in the future.
+> Thanks!
+> --
+> vda
 
-  Maciej
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
