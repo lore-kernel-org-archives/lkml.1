@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbXIUU6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765623AbXIUU6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765504AbXIUU6c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763483AbXIUUpi
+	id S1765623AbXIUU6q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763518AbXIUUpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:45:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50101 "EHLO mx1.suse.de"
+	Fri, 21 Sep 2007 16:45:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50104 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751556AbXIUUpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:45:24 -0400
+	id S1763414AbXIUUpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:45:25 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709211044.901175000@suse.de>
 In-Reply-To: <200709211044.901175000@suse.de>
-To: rpjday@mindspring.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [40/45] i386: deactivate the test for the dead CONFIG_DEBUG_PAGE_TYPE
-Message-Id: <20070921204523.6CABA14EFF@wotan.suse.de>
-Date: Fri, 21 Sep 2007 22:45:23 +0200 (CEST)
+To: mingo@elte.hu, oleg@tv-sign.ru, 76306.1226@compuserve.com, ak@suse.de,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [41/45] i386: remove unnecessary code
+Message-Id: <20070921204524.7BBAC14EFF@wotan.suse.de>
+Date: Fri, 21 Sep 2007 22:45:24 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: "Robert P. J. Day" <rpjday@mindspring.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Oleg Nesterov pointed out that the set_fs() calls in setup_frame()
+and setup_rt_frame() were superfluous.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Andi Kleen <ak@suse.de>
-Acked-by: Zachary Amsden <zach@vmware.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Chuck Ebbert <76306.1226@compuserve.com>
+Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/i386/kernel/vmi.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/i386/kernel/signal.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-Index: linux/arch/i386/kernel/vmi.c
+Index: linux/arch/i386/kernel/signal.c
 ===================================================================
---- linux.orig/arch/i386/kernel/vmi.c
-+++ linux/arch/i386/kernel/vmi.c
-@@ -242,7 +242,7 @@ static void vmi_nop(void)
- {
- }
+--- linux.orig/arch/i386/kernel/signal.c
++++ linux/arch/i386/kernel/signal.c
+@@ -387,7 +387,6 @@ static int setup_frame(int sig, struct k
+ 	regs->edx = (unsigned long) 0;
+ 	regs->ecx = (unsigned long) 0;
  
--#ifdef CONFIG_DEBUG_PAGE_TYPE
-+#if 0 /* debug page type */
+-	set_fs(USER_DS);
+ 	regs->xds = __USER_DS;
+ 	regs->xes = __USER_DS;
+ 	regs->xss = __USER_DS;
+@@ -481,7 +480,6 @@ static int setup_rt_frame(int sig, struc
+ 	regs->edx = (unsigned long) &frame->info;
+ 	regs->ecx = (unsigned long) &frame->uc;
  
- #ifdef CONFIG_X86_PAE
- #define MAX_BOOT_PTS (2048+4+1)
-@@ -343,7 +343,7 @@ static void vmi_check_page_type(u32 pfn,
- #else
- #define vmi_set_page_type(p,t) do { } while (0)
- #define vmi_check_page_type(p,t) do { } while (0)
--#endif
-+#endif /* debug page type */
- 
- #ifdef CONFIG_HIGHPTE
- static void *vmi_kmap_atomic_pte(struct page *page, enum km_type type)
+-	set_fs(USER_DS);
+ 	regs->xds = __USER_DS;
+ 	regs->xes = __USER_DS;
+ 	regs->xss = __USER_DS;
