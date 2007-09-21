@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbXIUFZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbXIUF2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbXIUFZj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 01:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbXIUFZS
+	id S1755090AbXIUF2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 01:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbXIUF2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 01:25:18 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:44119 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbXIUFZO (ORCPT
+	Fri, 21 Sep 2007 01:28:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:46880 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbXIUF2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 01:25:14 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] ext4: Fix spare warnings
-Date: Fri, 21 Sep 2007 10:55:06 +0530
-Message-Id: <11903523092904-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.5.3.1.91.gd3392-dirty
-In-Reply-To: <11903523063349-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <11903523063349-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+	Fri, 21 Sep 2007 01:28:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:x-mailer;
+        b=UZUV6duK9LRd1ajvdOtD/F435we0FJJLmr/lgf9PSwiks19aBleiNFwxm+fSneCWzffQF/SnrluQ75Z40EWKw0aKmQAbINQvm4Y9xk/Gne/nZ989NvL4Uuojq19IBxQpuk5vT/PQOqTFrAf+W0cqNjVs5HMeQK1wsOw1R7eE5xk=
+Date: Fri, 21 Sep 2007 13:28:01 +0800
+From: "Peer Chen" <peerchen@gmail.com>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Cc: "jeff" <jeff@garzik.org>, "akpm" <akpm@linux-foundation.org>,
+       "linux-ide" <linux-ide@vger.kernel.org>
+Subject: [PATCH] ahci: enable GHC.AE bit before set GHC.HR
+Message-ID: <200709211327569648280@gmail.com>
+X-mailer: Foxmail 6, 6, 105, 21 [cn]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- fs/ext4/inode.c         |    6 ++++--
- include/linux/ext4_fs.h |   16 ++++++++--------
- 2 files changed, 12 insertions(+), 10 deletions(-)
+According to the description of section 5.2.2.1 and 10.1.2 of AHCI specification rev1_1/rev1_2, GHC.HR shall only be set to ¡®1¡¯
+by software when GHC.AE is set to ¡®1¡¯.
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index a4848e0..307e240 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -3177,12 +3177,14 @@ int ext4_mark_inode_dirty(handle_t *handle, struct inode *inode)
- 						      iloc, handle);
- 			if (ret) {
- 				EXT4_I(inode)->i_state |= EXT4_STATE_NO_EXPAND;
--				if (mnt_count != sbi->s_es->s_mnt_count) {
-+				if (mnt_count !=
-+					le16_to_cpu(sbi->s_es->s_mnt_count)) {
- 					ext4_warning(inode->i_sb, __FUNCTION__,
- 					"Unable to expand inode %lu. Delete"
- 					" some EAs or run e2fsck.",
- 					inode->i_ino);
--					mnt_count = sbi->s_es->s_mnt_count;
-+					mnt_count =
-+					le16_to_cpu(sbi->s_es->s_mnt_count);
- 				}
- 			}
- 		}
-diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index c7b9bb2..ab7edaa 100644
---- a/include/linux/ext4_fs.h
-+++ b/include/linux/ext4_fs.h
-@@ -129,7 +129,7 @@ struct ext4_group_desc
- 	__le16	bg_free_blocks_count;	/* Free blocks count */
- 	__le16	bg_free_inodes_count;	/* Free inodes count */
- 	__le16	bg_used_dirs_count;	/* Directories count */
--	__u16	bg_flags;
-+	__le16	bg_flags;
- 	__u32	bg_reserved[3];
- 	__le32	bg_block_bitmap_hi;	/* Blocks bitmap block MSB */
- 	__le32	bg_inode_bitmap_hi;	/* Inodes bitmap block MSB */
-@@ -596,13 +596,13 @@ struct ext4_super_block {
- /*150*/	__le32	s_blocks_count_hi;	/* Blocks count */
- 	__le32	s_r_blocks_count_hi;	/* Reserved blocks count */
- 	__le32	s_free_blocks_count_hi;	/* Free blocks count */
--	__u16	s_min_extra_isize;	/* All inodes have at least # bytes */
--	__u16	s_want_extra_isize; 	/* New inodes should reserve # bytes */
--	__u32	s_flags;		/* Miscellaneous flags */
--	__u16   s_raid_stride;		/* RAID stride */
--	__u16   s_mmp_interval;         /* # seconds to wait in MMP checking */
--	__u64   s_mmp_block;            /* Block for multi-mount protection */
--	__u32   s_raid_stripe_width;    /* blocks on all data disks (N*stride)*/
-+	__le16	s_min_extra_isize;	/* All inodes have at least # bytes */
-+	__le16	s_want_extra_isize; 	/* New inodes should reserve # bytes */
-+	__le32	s_flags;		/* Miscellaneous flags */
-+	__le16  s_raid_stride;		/* RAID stride */
-+	__le16  s_mmp_interval;         /* # seconds to wait in MMP checking */
-+	__le64  s_mmp_block;            /* Block for multi-mount protection */
-+	__le32  s_raid_stripe_width;    /* blocks on all data disks (N*stride)*/
- 	__u32   s_reserved[163];        /* Padding to the end of the block */
- };
+Signed-off-by: Peer Chen <peerchen@gmail.com>
+---
+--- linux-2.6.23-rc7/drivers/ata/ahci.c.orig	2007-09-20 11:01:55.000000000 -0400
++++ linux-2.6.23-rc7/drivers/ata/ahci.c	2007-09-20 11:07:31.000000000 -0400
+@@ -834,6 +834,10 @@ static int ahci_reset_controller(struct 
+ 	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
+ 	u32 tmp;
  
--- 
-1.5.3.1.91.gd3392-dirty
++        /* turn on AHCI mode before controller reset*/
++        writel(HOST_AHCI_EN, mmio + HOST_CTL);
++        (void) readl(mmio + HOST_CTL);  /* flush */
++
+ 	/* global controller reset */
+ 	tmp = readl(mmio + HOST_CTL);
+ 	if ((tmp & HOST_RESET) == 0) {
+-
+ 				
+--------------
+Peer Chen
+2007-09-21
 
