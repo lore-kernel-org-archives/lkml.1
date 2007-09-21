@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbXIUDrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbXIUDrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbXIUDrQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 23:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXIUDrB
+	id S1756029AbXIUDrl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 23:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbXIUDrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 23:47:01 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:53492 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753069AbXIUDrB (ORCPT
+	Thu, 20 Sep 2007 23:47:33 -0400
+Received: from uni21mr.unity.ncsu.edu ([152.1.2.137]:61479 "EHLO
+	uni21mr.unity.ncsu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbXIUDrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 23:47:01 -0400
-Date: Thu, 20 Sep 2007 23:46:48 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Chris Rigg <cdrigg@comcast.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: MAX_RT_PRIO - 1 Highest prio?
-Message-ID: <20070921034648.GA15171@goodmis.org>
-References: <46EEE498.1080500@comcast.net> <20070918050043.GE10199@1wt.eu> <20070918062606.GA5138@elte.hu> <46F1AEBB.6000809@comcast.net>
+	Thu, 20 Sep 2007 23:47:32 -0400
+Message-ID: <46F33ED0.9080808@ncsu.edu>
+Date: Thu, 20 Sep 2007 23:47:28 -0400
+From: Casey Dahlin <cjdahlin@ncsu.edu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F1AEBB.6000809@comcast.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [Fwd: [BUG:] forcedeth: MCP55 not allowing DHCP]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.3.310218, Antispam-Engine: 2.5.2.313940, Antispam-Data: 2007.9.20.202046
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 05:20:27PM -0600, Chris Rigg wrote:
-> Hello,
+Apparently I posted this in the middle of an unrelated thread by 
+mistake. If this is the third message you are getting in regard to this 
+issue, sorry :( Just trying to get it in the right place.
 
-Hi Chris,
+-------- Original Message --------
+Subject: 	[BUG:] forcedeth: MCP55 not allowing DHCP
+Date: 	Tue, 11 Sep 2007 18:05:15 -0400
+From: 	Casey Dahlin <cjdahlin@ncsu.edu>
+To: 	Linux Kernel <linux-kernel@vger.kernel.org>
 
->
-> First, I'm assuming that if I want my task to have the HIGHEST priority in 
-> the system (i.e. preempt any other task whenever it is put into the ready 
-> queue (assuming I have preemption turned on/configured)), I use 
-> sched_setscheduler (...) and use the sched_priority in sched_param for 
-> MAX_RT_PRIO -1. Is this correct?
+	
 
-Actually it's probably best to use sched_get_priority_max for the max
-prio.
 
->
-> Second, assuming that MAX_RT_PRIO-1 is the highest, would it be bad on an 
-> SMP/Hyperthreading system (that's using the migration thread balancing in 
-> 2.6.20.7) to set a task's priority to MAX_RT_PRIO -1 given the fact that 
-> the migration threads are already set to MAX_RT_PRIO -1? Should I be 
-> setting my task's prio to MAX_RT_PRIO-2 to not interfere with the load 
-> balancing?
+I have an Asus Striker Extreme motherboard with two built in MCP55 GigE 
+interfaces. When I build with the original Fedora 7 release kernel ( 
+ftp://ftp.belnet.be/linux/fedora/linux/releases/7/Fedora/i386/os/Fedora/kernel-2.6.21-1.3194.fc7.i686.rpm 
+) everything works fine. However, when I boot with any updated kernels 
+or any other kernel (have tried building from several points in the 
+linus git tree between 2.6.20 and .23-rc3, and 2.6.21.2 in -stable) I 
+cannot get an IP address via dhcp. There is no error in dmesg. The card 
+shows a link and otherwise appears to be working, but it is as if the 
+dhcp server has been removed from the network.
 
-The migrate task of a given CPU isn't the only one that will take
-tasks off its CPU to push them to others (although it does do that).
-But there's other load balancing work going on in the scheduler
-(looking at the 2.6.20 sched.c).
+On a running system there is no indication that this is a kernel bug at 
+all, however by varying only the kernel the bug appears and disappears. 
+I've run all these tests repeatedly with no intervening updates of any 
+other packages.
 
-Although it would be interesting to see what the result would be if you
-had N+1 tasks running on N CPUs all doing busy loops, and make one of
-the tasks with the prio of MAX_RT_PRIO-1, and see if we have one task
-that is starved and never schedules. But I'm sure this should be fixed
-(if it was ever broken) with the latest scheduling work that's being
-done in the most recent kernels.
+As I said I attempted to build 2.6.21.2 ( the point of divergence 
+between the Fedora kernel in question and -stable ) and still the card 
+did not work. I will next attempt to manually build the rpm for the 
+release kernel. If this works I will try experimenting with the included 
+patches to narrow it down, but at this point I'm at a complete loss.
 
--- Steve
+-Casey Dahlin
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
