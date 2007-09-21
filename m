@@ -1,42 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762869AbXIUXzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbXIUX73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762869AbXIUXzy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 19:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757073AbXIUXzr
+	id S1763319AbXIUX73 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 19:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbXIUX7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 19:55:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42959 "EHLO mx1.redhat.com"
+	Fri, 21 Sep 2007 19:59:22 -0400
+Received: from smtp-out4.iol.cz ([194.228.2.92]:52524 "EHLO smtp-out4.iol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756216AbXIUXzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 19:55:46 -0400
-Message-ID: <46F45A00.6040505@redhat.com>
-Date: Fri, 21 Sep 2007 19:55:44 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1750987AbXIUX7V convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 19:59:21 -0400
+X-Greylist: delayed 1663 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Sep 2007 19:59:20 EDT
+Date: Fri, 21 Sep 2007 23:28:15 +0200
+From: Alexandr Andrijcuk <avk.mobil@seznam.cz>
+Organization: AVK s.r.o.
+To: linux-kernel <linux-kernel@vger.kernel.org>
+X-Mailer: The Bat! (v3.99.3)
+Message-ID: <232850284.20070921232815@seznam.cz>
 MIME-Version: 1.0
-To: Doug Thompson <norsk5@xmission.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: edac_mc: sleeping function called from invalid context
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1251"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel 2.6.22.6:
 
-# echo "1" >/sys/devices/system/edac/pci/check_pci_parity
-# dmesg | tail -14
-BUG: sleeping function called from invalid context at kernel/rwsem.c:20
-in_atomic():0, irqs_disabled():1
 
-Call Trace:
- [<ffffffff81048161>] down_read+0x15/0x24
- [<ffffffff81123b90>] pci_get_subsys+0x81/0x113
- [<ffffffff8126cfe5>] schedule_timeout+0x85/0xad
- [<ffffffff88347b9e>] :edac_mc:edac_kernel_thread+0x9e/0x104
- [<ffffffff88347b00>] :edac_mc:edac_kernel_thread+0x0/0x104
- [<ffffffff810457e8>] kthread+0x47/0x73
- [<ffffffff8100a978>] child_rip+0xa/0x12
- [<ffffffff810457a1>] kthread+0x0/0x73
- [<ffffffff8100a96e>] child_rip+0x0/0x12
+
+Новый сотовый телефон по цене использованного.
+
+Уважаемые господа,
+Преглагаем Вашему вниманию “refurbished” (обновленные) мобильные телефоны. 
+Это означает, что мобильный телефон имеет:
+б/у, но полностью функциональную материнскую плату
+новый оригинальный корпус
+новые аксессуары (зарядноеб аккумулятор, handsfree)
+новую оригинальную упаковку
+
+Внешне телефон является абсолютно новым и имеет гарантийный срок 12 месяцев
+
+ Выборочные цены для ознакомления:
+
+Model   Цена; USD
+Motorola V3     93,96
+Motorola V3x    160,08
+Motorola K1     195,39
+Nokia 6111      110,16
+Nokia 6131      160,20
+Nokia 6280      179,06
+Nokia 7360      126,12
+Nokia 7373      202,96
+Samsung E530    120,84
+Samsung E900    155,14
+Sony Ericsson K800i     266,23
+Sony Ericsson W300i     117,36
+Sony Ericsson W800i     172,56
+Sony Ericsson Z550i     135,12
+Sony Erisccon W810i     214,94
+
+Полный прайслист содержит около 180 моделей сотовых телефонов Motorola, Nokia, Panasonic, Samsung, Sony Ericsson. 
+Каждый из предложенных телефонов имеет следующий комплект поставки:
+Телефон + зарядное устройство + 2 аккумулятора +  HandsFree + инструкция + упаковка 
+
+По требованию вышлю полный прайслист .
+
+C наилучшими пожеланиями
+AVK Plus spol. s.r.o.
+Nam Svobody 1626
+27201 Kladno
+Czech Republic
+
+
+
+
+
+
+
