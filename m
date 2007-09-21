@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbXIUSty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbXIUSuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762103AbXIUSty (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760110AbXIUStm
+	id S1761433AbXIUSuV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760971AbXIUSuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:49:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47506 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760836AbXIUStl (ORCPT
+	Fri, 21 Sep 2007 14:50:05 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36796 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760110AbXIUSuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:49:41 -0400
-Date: Fri, 21 Sep 2007 11:48:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de,
-       yur@emcraft.com, saeed.bishara@gmail.com, shannon.nelson@intel.com
-Subject: Re: [PATCH 2.6.23-rc7 0/3] async_tx and md-accel fixes for 2.6.23
-Message-Id: <20070921114823.49d00263.akpm@linux-foundation.org>
-In-Reply-To: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com>
-References: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Sep 2007 14:50:03 -0400
+Date: Fri, 21 Sep 2007 11:50:01 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       asit.k.mallick@intel.com
+Subject: Re: x86_64: potential critical issue with quicklists and page table
+ pages
+In-Reply-To: <alpine.LFD.0.999.0709211139550.16478@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0709211149040.17160@schroedinger.engr.sgi.com>
+References: <20070921180742.GH20863@linux-os.sc.intel.com>
+ <alpine.LFD.0.999.0709211139550.16478@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 18:27:35 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
+On Fri, 21 Sep 2007, Linus Torvalds wrote:
 
-> Fix a couple bugs and provide documentation for the async_tx api.
+> > Can we revert this commit for 2.6.23 and look at this code post 2.6.23?
 > 
-> Neil, please 'ack' patch #3.
-> 
-> git://lost.foo-projects.org/~dwillia2/git/iop async-tx-fixes-for-linus
+> I'll happily revert it, but I want to understand this better, so more of 
+> an explanation of the codepath that actually does something wrong, please.
 
-Well it looks like Neil is on vacation or is hiding from us or something.
+The quicklists collect pages while we gather pages for TLB flushing. 
+These pages must be kept until the actual TLB flush has occurred. The 
+optimization of releasing off node pages early is therefore not valid.
 
-In which case our options would be to go ahead and merge your #3 with
-our fingers crossed, or wait and do it in 2.6.23.1 or .2.
-
-How serious is this bug which you're fixing?  Will it affect users
-of "legacy" MD setups, or only those who have enabled fancy dma-engine
-features?
-
-Either way, we need to get #2 (at least) in to Linus.
