@@ -1,135 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbXIUXXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760348AbXIUXca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760905AbXIUXXZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 19:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbXIUXXQ
+	id S1760348AbXIUXca (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 19:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbXIUXcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 19:23:16 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:61722 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbXIUXXP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 19:23:15 -0400
-Date: Fri, 21 Sep 2007 19:23:09 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, tytso@us.ibm.com,
-       dvhltc@us.ibm.com, Thomas Gleixner <tglx@linutronix.de>,
-       bunk@kernel.org, ego@in.ibm.com, oleg@tv-sign.ru
-Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
-In-Reply-To: <20070921224459.GD9059@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.58.0709211914310.419@gandalf.stny.rr.com>
-References: <20070910183004.GA3299@linux.vnet.ibm.com>
- <20070910183412.GC3819@linux.vnet.ibm.com> <20070921144003.GC15697@goodmis.org>
- <20070921174653.64c15a92@twins> <20070921223112.GG15697@goodmis.org>
- <20070921224459.GD9059@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Sep 2007 19:32:22 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:58450 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751136AbXIUXcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 19:32:20 -0400
+Subject: [PATCH] JBD2/ext4 naming cleanup
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ext4 development <linux-ext4@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1190416436.11349.13.camel@localhost.localdomain>
+References: <1189796027.3841.6.camel@localhost.localdomain>
+	 <1190057391.3845.22.camel@localhost.localdomain>
+	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
+	 <1190069851.6725.6.camel@localhost.localdomain>
+	 <20070918090407.GA671@infradead.org>
+	 <1190133347.3819.6.camel@localhost.localdomain>
+	 <1190138690.6528.23.camel@norville.austin.ibm.com>
+	 <1190163601.3819.15.camel@localhost.localdomain>
+	 <20070918191920.a2130a3c.akpm@linux-foundation.org>
+	 <1190229352.4318.12.camel@localhost.localdomain>
+	 <20070919194813.GT32520@schatzie.adilger.int>
+	 <1190239431.4318.34.camel@localhost.localdomain>
+	 <1190416436.11349.13.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 21 Sep 2007 16:32:17 -0700
+Message-Id: <1190417538.11349.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+JBD2 naming cleanup
 
+From: Mingming Cao <cmm@us.ibm.com>
 
---
-On Fri, 21 Sep 2007, Paul E. McKenney wrote:
+change micros name from JBD_XXX to JBD2_XXX in JBD2/Ext4
 
->
-> If you do a synchronize_rcu() it might well have to wait through the
-> following sequence of states:
->
-> Stage 0: (might have to wait through part of this to get out of "next" queue)
-> 	rcu_try_flip_idle_state,	/* "I" */
-> 	rcu_try_flip_waitack_state, 	/* "A" */
-> 	rcu_try_flip_waitzero_state,	/* "Z" */
-> 	rcu_try_flip_waitmb_state	/* "M" */
-> Stage 1:
-> 	rcu_try_flip_idle_state,	/* "I" */
-> 	rcu_try_flip_waitack_state, 	/* "A" */
-> 	rcu_try_flip_waitzero_state,	/* "Z" */
-> 	rcu_try_flip_waitmb_state	/* "M" */
-> Stage 2:
-> 	rcu_try_flip_idle_state,	/* "I" */
-> 	rcu_try_flip_waitack_state, 	/* "A" */
-> 	rcu_try_flip_waitzero_state,	/* "Z" */
-> 	rcu_try_flip_waitmb_state	/* "M" */
-> Stage 3:
-> 	rcu_try_flip_idle_state,	/* "I" */
-> 	rcu_try_flip_waitack_state, 	/* "A" */
-> 	rcu_try_flip_waitzero_state,	/* "Z" */
-> 	rcu_try_flip_waitmb_state	/* "M" */
-> Stage 4:
-> 	rcu_try_flip_idle_state,	/* "I" */
-> 	rcu_try_flip_waitack_state, 	/* "A" */
-> 	rcu_try_flip_waitzero_state,	/* "Z" */
-> 	rcu_try_flip_waitmb_state	/* "M" */
->
-> So yes, grace periods do indeed have some latency.
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+---
+ fs/ext4/extents.c         |    2 +-
+ fs/ext4/super.c           |    2 +-
+ fs/jbd2/commit.c          |    2 +-
+ fs/jbd2/journal.c         |    8 ++++----
+ fs/jbd2/recovery.c        |    2 +-
+ fs/jbd2/revoke.c          |    4 ++--
+ include/linux/ext4_jbd2.h |    6 +++---
+ include/linux/jbd2.h      |   30 +++++++++++++++---------------
+ 8 files changed, 28 insertions(+), 28 deletions(-)
 
-Yes they do. I'm now at the point that I'm just "trusting" you that you
-understand that each of these stages are needed. My IQ level only lets me
-understand next -> wait -> done, but not the extra 3 shifts in wait.
+Index: linux-2.6.23-rc6/fs/ext4/super.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/ext4/super.c	2007-09-21 16:27:31.000000000 -0700
++++ linux-2.6.23-rc6/fs/ext4/super.c	2007-09-21 16:27:46.000000000 -0700
+@@ -966,7 +966,7 @@ static int parse_options (char *options,
+ 			if (option < 0)
+ 				return 0;
+ 			if (option == 0)
+-				option = JBD_DEFAULT_MAX_COMMIT_AGE;
++				option = JBD2_DEFAULT_MAX_COMMIT_AGE;
+ 			sbi->s_commit_interval = HZ * option;
+ 			break;
+ 		case Opt_data_journal:
+Index: linux-2.6.23-rc6/include/linux/ext4_jbd2.h
+===================================================================
+--- linux-2.6.23-rc6.orig/include/linux/ext4_jbd2.h	2007-09-10 19:50:29.000000000 -0700
++++ linux-2.6.23-rc6/include/linux/ext4_jbd2.h	2007-09-21 16:27:46.000000000 -0700
+@@ -12,8 +12,8 @@
+  * Ext4-specific journaling extensions.
+  */
+ 
+-#ifndef _LINUX_EXT4_JBD_H
+-#define _LINUX_EXT4_JBD_H
++#ifndef _LINUX_EXT4_JBD2_H
++#define _LINUX_EXT4_JBD2_H
+ 
+ #include <linux/fs.h>
+ #include <linux/jbd2.h>
+@@ -228,4 +228,4 @@ static inline int ext4_should_writeback_
+ 	return 0;
+ }
+ 
+-#endif	/* _LINUX_EXT4_JBD_H */
++#endif	/* _LINUX_EXT4_JBD2_H */
+Index: linux-2.6.23-rc6/include/linux/jbd2.h
+===================================================================
+--- linux-2.6.23-rc6.orig/include/linux/jbd2.h	2007-09-21 09:07:09.000000000 -0700
++++ linux-2.6.23-rc6/include/linux/jbd2.h	2007-09-21 16:27:46.000000000 -0700
+@@ -13,8 +13,8 @@
+  * filesystem journaling support.
+  */
+ 
+-#ifndef _LINUX_JBD_H
+-#define _LINUX_JBD_H
++#ifndef _LINUX_JBD2_H
++#define _LINUX_JBD2_H
+ 
+ /* Allow this file to be included directly into e2fsprogs */
+ #ifndef __KERNEL__
+@@ -37,26 +37,26 @@
+ #define journal_oom_retry 1
+ 
+ /*
+- * Define JBD_PARANIOD_IOFAIL to cause a kernel BUG() if ext3 finds
++ * Define JBD2_PARANIOD_IOFAIL to cause a kernel BUG() if ext4 finds
+  * certain classes of error which can occur due to failed IOs.  Under
+- * normal use we want ext3 to continue after such errors, because
++ * normal use we want ext4 to continue after such errors, because
+  * hardware _can_ fail, but for debugging purposes when running tests on
+  * known-good hardware we may want to trap these errors.
+  */
+-#undef JBD_PARANOID_IOFAIL
++#undef JBD2_PARANOID_IOFAIL
+ 
+ /*
+  * The default maximum commit age, in seconds.
+  */
+-#define JBD_DEFAULT_MAX_COMMIT_AGE 5
++#define JBD2_DEFAULT_MAX_COMMIT_AGE 5
+ 
+ #ifdef CONFIG_JBD2_DEBUG
+ /*
+- * Define JBD_EXPENSIVE_CHECKING to enable more expensive internal
++ * Define JBD2_EXPENSIVE_CHECKING to enable more expensive internal
+  * consistency checks.  By default we don't do this unless
+  * CONFIG_JBD2_DEBUG is on.
+  */
+-#define JBD_EXPENSIVE_CHECKING
++#define JBD2_EXPENSIVE_CHECKING
+ extern u8 jbd2_journal_enable_debug;
+ 
+ #define jbd_debug(n, f, a...)						\
+@@ -163,8 +163,8 @@ typedef struct journal_block_tag_s
+ 	__be32		t_blocknr_high; /* most-significant high 32bits. */
+ } journal_block_tag_t;
+ 
+-#define JBD_TAG_SIZE32 (offsetof(journal_block_tag_t, t_blocknr_high))
+-#define JBD_TAG_SIZE64 (sizeof(journal_block_tag_t))
++#define JBD2_TAG_SIZE32 (offsetof(journal_block_tag_t, t_blocknr_high))
++#define JBD2_TAG_SIZE64 (sizeof(journal_block_tag_t))
+ 
+ /*
+  * The revoke descriptor: used on disk to describe a series of blocks to
+@@ -256,8 +256,8 @@ typedef struct journal_superblock_s
+ #include <linux/fs.h>
+ #include <linux/sched.h>
+ 
+-#define JBD_ASSERTIONS
+-#ifdef JBD_ASSERTIONS
++#define JBD2_ASSERTIONS
++#ifdef JBD2_ASSERTIONS
+ #define J_ASSERT(assert)						\
+ do {									\
+ 	if (!(assert)) {						\
+@@ -284,9 +284,9 @@ void buffer_assertion_failure(struct buf
+ 
+ #else
+ #define J_ASSERT(assert)	do { } while (0)
+-#endif		/* JBD_ASSERTIONS */
++#endif		/* JBD2_ASSERTIONS */
+ 
+-#if defined(JBD_PARANOID_IOFAIL)
++#if defined(JBD2_PARANOID_IOFAIL)
+ #define J_EXPECT(expr, why...)		J_ASSERT(expr)
+ #define J_EXPECT_BH(bh, expr, why...)	J_ASSERT_BH(bh, expr)
+ #define J_EXPECT_JH(jh, expr, why...)	J_ASSERT_JH(jh, expr)
+@@ -1104,4 +1104,4 @@ extern int jbd_blocks_per_page(struct in
+ 
+ #endif	/* __KERNEL__ */
+ 
+-#endif	/* _LINUX_JBD_H */
++#endif	/* _LINUX_JBD2_H */
+Index: linux-2.6.23-rc6/fs/jbd2/commit.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/jbd2/commit.c	2007-09-21 09:07:09.000000000 -0700
++++ linux-2.6.23-rc6/fs/jbd2/commit.c	2007-09-21 16:27:46.000000000 -0700
+@@ -278,7 +278,7 @@ static inline void write_tag_block(int t
+ 				   unsigned long long block)
+ {
+ 	tag->t_blocknr = cpu_to_be32(block & (u32)~0);
+-	if (tag_bytes > JBD_TAG_SIZE32)
++	if (tag_bytes > JBD2_TAG_SIZE32)
+ 		tag->t_blocknr_high = cpu_to_be32((block >> 31) >> 1);
+ }
+ 
+Index: linux-2.6.23-rc6/fs/jbd2/journal.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/jbd2/journal.c	2007-09-21 16:25:46.000000000 -0700
++++ linux-2.6.23-rc6/fs/jbd2/journal.c	2007-09-21 16:27:46.000000000 -0700
+@@ -670,7 +670,7 @@ static journal_t * journal_init_common (
+ 	spin_lock_init(&journal->j_list_lock);
+ 	spin_lock_init(&journal->j_state_lock);
+ 
+-	journal->j_commit_interval = (HZ * JBD_DEFAULT_MAX_COMMIT_AGE);
++	journal->j_commit_interval = (HZ * JBD2_DEFAULT_MAX_COMMIT_AGE);
+ 
+ 	/* The journal is marked for error until we succeed with recovery! */
+ 	journal->j_flags = JBD2_ABORT;
+@@ -1612,9 +1612,9 @@ int jbd2_journal_blocks_per_page(struct 
+ size_t journal_tag_bytes(journal_t *journal)
+ {
+ 	if (JBD2_HAS_INCOMPAT_FEATURE(journal, JBD2_FEATURE_INCOMPAT_64BIT))
+-		return JBD_TAG_SIZE64;
++		return JBD2_TAG_SIZE64;
+ 	else
+-		return JBD_TAG_SIZE32;
++		return JBD2_TAG_SIZE32;
+ }
+ 
+ /*
+@@ -1681,7 +1681,7 @@ static void journal_free_journal_head(st
+ {
+ #ifdef CONFIG_JBD2_DEBUG
+ 	atomic_dec(&nr_journal_heads);
+-	memset(jh, JBD_POISON_FREE, sizeof(*jh));
++	memset(jh, JBD2_POISON_FREE, sizeof(*jh));
+ #endif
+ 	kmem_cache_free(jbd2_journal_head_cache, jh);
+ }
+Index: linux-2.6.23-rc6/fs/jbd2/recovery.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/jbd2/recovery.c	2007-09-21 09:07:05.000000000 -0700
++++ linux-2.6.23-rc6/fs/jbd2/recovery.c	2007-09-21 16:27:46.000000000 -0700
+@@ -311,7 +311,7 @@ int jbd2_journal_skip_recovery(journal_t
+ static inline unsigned long long read_tag_block(int tag_bytes, journal_block_tag_t *tag)
+ {
+ 	unsigned long long block = be32_to_cpu(tag->t_blocknr);
+-	if (tag_bytes > JBD_TAG_SIZE32)
++	if (tag_bytes > JBD2_TAG_SIZE32)
+ 		block |= (u64)be32_to_cpu(tag->t_blocknr_high) << 32;
+ 	return block;
+ }
+Index: linux-2.6.23-rc6/fs/jbd2/revoke.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/jbd2/revoke.c	2007-09-19 14:23:45.000000000 -0700
++++ linux-2.6.23-rc6/fs/jbd2/revoke.c	2007-09-21 16:27:46.000000000 -0700
+@@ -352,7 +352,7 @@ int jbd2_journal_revoke(handle_t *handle
+ 		if (bh)
+ 			BUFFER_TRACE(bh, "found on hash");
+ 	}
+-#ifdef JBD_EXPENSIVE_CHECKING
++#ifdef JBD2_EXPENSIVE_CHECKING
+ 	else {
+ 		struct buffer_head *bh2;
+ 
+@@ -453,7 +453,7 @@ int jbd2_journal_cancel_revoke(handle_t 
+ 		}
+ 	}
+ 
+-#ifdef JBD_EXPENSIVE_CHECKING
++#ifdef JBD2_EXPENSIVE_CHECKING
+ 	/* There better not be one left behind by now! */
+ 	record = find_revoke_record(journal, bh->b_blocknr);
+ 	J_ASSERT_JH(jh, record == NULL);
+Index: linux-2.6.23-rc6/fs/ext4/extents.c
+===================================================================
+--- linux-2.6.23-rc6.orig/fs/ext4/extents.c	2007-09-21 09:07:04.000000000 -0700
++++ linux-2.6.23-rc6/fs/ext4/extents.c	2007-09-21 16:27:46.000000000 -0700
+@@ -33,7 +33,7 @@
+ #include <linux/fs.h>
+ #include <linux/time.h>
+ #include <linux/ext4_jbd2.h>
+-#include <linux/jbd.h>
++#include <linux/jbd2.h>
+ #include <linux/highuid.h>
+ #include <linux/pagemap.h>
+ #include <linux/quotaops.h>
 
-;-)
-
-> >
-> > True, but the "me" confused me. Since that task struct is not me ;-)
->
-> Well, who is it, then?  ;-)
-
-It's the app I watch sitting there waiting it's turn for it's callback to
-run.
-
-> > > >
-> > > > Isn't the GP detection done via a tasklet/softirq. So wouldn't a
-> > > > local_bh_disable be sufficient here? You already cover NMIs, which would
-> > > > also handle normal interrupts.
-> > >
-> > > This is also my understanding, but I think this disable is an
-> > > 'optimization' in that it avoids the regular IRQs from jumping through
-> > > these hoops outlined below.
-> >
-> > But isn't disabling irqs slower than doing a local_bh_disable? So the
-> > majority of times (where irqs will not happen) we have this overhead.
->
-> The current code absolutely must exclude the scheduling-clock hardirq
-> handler.
-
-ACKed,
-The reasoning you gave in Peter's reply most certainly makes sense.
-
-
-> > > > > + *
-> > > > > + * If anyone is nuts enough to run this CONFIG_PREEMPT_RCU implementation
-> > > >
-> > > > Oh, come now! It's not "nuts" to use this ;-)
-> > > >
-> > > > > + * on a large SMP, they might want to use a hierarchical organization of
-> > > > > + * the per-CPU-counter pairs.
-> > > > > + */
-> > >
-> > > Its the large SMP case that's nuts, and on that I have to agree with
-> > > Paul, its not really large SMP friendly.
-> >
-> > Hmm, that could be true. But on large SMP systems, you usually have a
-> > large amounts of memory, so hopefully a really long synchronize_rcu
-> > would not be a problem.
->
-> Somewhere in the range from 64 to a few hundred CPUs, the global lock
-> protecting the try_flip state machine would start sucking air pretty
-> badly.  But the real problem is synchronize_sched(), which loops through
-> all the CPUs --  this would likely cause problems at a few tens of
-> CPUs, perhaps as early as 10-20.
-
-hehe, From someone who's largest box is 4 CPUs, to me 16 CPUS is large.
-But I can see hundreds, let alone thousands of CPUs would make a huge
-grinding halt on things like synchronize_sched. God, imaging if all CPUs
-did that approximately at the same time. The system would should a huge
-jitter.
-
--- Steve
 
