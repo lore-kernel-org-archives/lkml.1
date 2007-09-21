@@ -1,133 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762849AbXIUWZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762833AbXIUWbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762849AbXIUWZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbXIUWZu
+	id S1762833AbXIUWbc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbXIUWbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:25:50 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:5563 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756471AbXIUWZt (ORCPT
+	Fri, 21 Sep 2007 18:31:24 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:38490 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbXIUWbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:25:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Tlw0KbdSeS3Fj+ydfxFWbeoGdh7ULqo55mOxBv8/20Xasdetj0ioBfUPm52rZwG1nW3UNai52KPOO8B2DEg25eJuaJQcR3vGzIj/cwyn/jbU9JlcZNIFiK9IPU6DcYayba+rSjpJTSqxizh0jscGTnUvGA2ShppkIVip/l+GKVA=
-Message-ID: <86802c440709211525x70d4ff66n3e7df59c44166102@mail.gmail.com>
-Date: Fri, 21 Sep 2007 15:25:47 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: + x86-convert-cpuinfo_x86-array-to-a-per_cpu-array-v2.patch added to -mm tree
-Cc: mm-commits@vger.kernel.org, travis@sgi.com, ak@suse.de, clameter@sgi.com
-In-Reply-To: <200709211012.l8LACrC3030383@imap1.linux-foundation.org>
+	Fri, 21 Sep 2007 18:31:22 -0400
+Date: Fri, 21 Sep 2007 18:31:12 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       tglx@linutronix.de, bunk@kernel.org, ego@in.ibm.com, oleg@tv-sign.ru
+Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
+Message-ID: <20070921223112.GG15697@goodmis.org>
+References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183412.GC3819@linux.vnet.ibm.com> <20070921144003.GC15697@goodmis.org> <20070921174653.64c15a92@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200709211012.l8LACrC3030383@imap1.linux-foundation.org>
+In-Reply-To: <20070921174653.64c15a92@twins>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/21/07, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
->
-> The patch titled
->      x86: Convert cpuinfo_x86 array to a per_cpu array
-> has been added to the -mm tree.  Its filename is
->      x86-convert-cpuinfo_x86-array-to-a-per_cpu-array-v2.patch
->
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
->
-> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> out what to do about this
->
-> ------------------------------------------------------
-> Subject: x86: Convert cpuinfo_x86 array to a per_cpu array
-> From: travis@sgi.com
->
-> cpu_data is currently an array defined using NR_CPUS.  This means that we
-> overallocate since we will rarely really use maximum configured cpus.  When
-> NR_CPU count is raised to 4096 the size of cpu_data becomes 3,145,728
-> bytes.
->
-> These changes were adopted from the sparc64 (and ia64) code.  An additional
-> field was added to cpuinfo_x86 to be a non-ambiguous cpu index.  This
-> corresponds to the index into a cpumask_t as well as the per_cpu index.
-> It's used in various places like show_cpuinfo().
->
-> cpu_data is defined to be the boot_cpu_data structure for the
-> NON-SMP case.
->
-> This patch is based on 2.6.23-rc6 with the prior per_cpu patches
-> applied.  I can also provide a version based on 2.6.23-rc4-mm1
-> which has some different changes.
->
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> Acked-by: Christoph Lameter <clameter@sgi.com>
-> Cc: Andi Kleen <ak@suse.de>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->
->  arch/i386/kernel/acpi/cstate.c                    |    4 -
->  arch/i386/kernel/acpi/processor.c                 |    2
->  arch/i386/kernel/alternative.c                    |    6 -
->  arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c       |    4 -
->  arch/i386/kernel/cpu/cpufreq/e_powersaver.c       |    2
->  arch/i386/kernel/cpu/cpufreq/elanfreq.c           |    4 -
->  arch/i386/kernel/cpu/cpufreq/longhaul.c           |    4 -
->  arch/i386/kernel/cpu/cpufreq/longrun.c            |    4 -
->  arch/i386/kernel/cpu/cpufreq/p4-clockmod.c        |    4 -
->  arch/i386/kernel/cpu/cpufreq/powernow-k6.c        |    2
->  arch/i386/kernel/cpu/cpufreq/powernow-k7.c        |    2
->  arch/i386/kernel/cpu/cpufreq/sc520_freq.c         |    4 -
->  arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |    6 -
->  arch/i386/kernel/cpu/cpufreq/speedstep-lib.c      |    2
->  arch/i386/kernel/cpu/intel_cacheinfo.c            |    8 +-
->  arch/i386/kernel/cpu/proc.c                       |    9 +-
->  arch/i386/kernel/cpuid.c                          |    2
->  arch/i386/kernel/microcode.c                      |    6 -
->  arch/i386/kernel/msr.c                            |    2
->  arch/i386/kernel/sched-clock.c                    |    2
->  arch/i386/kernel/smp.c                            |    2
->  arch/i386/kernel/smpboot.c                        |   45 ++++++------
->  arch/i386/kernel/tsc.c                            |    8 +-
->  arch/i386/lib/delay.c                             |    2
->  arch/i386/mach-voyager/voyager_smp.c              |   12 +--
->  arch/x86_64/kernel/mce.c                          |    2
->  arch/x86_64/kernel/mce_amd.c                      |    4 -
->  arch/x86_64/kernel/setup.c                        |   18 ++--
->  arch/x86_64/kernel/smpboot.c                      |   44 +++++------
->  arch/x86_64/kernel/tsc.c                          |    4 -
->  arch/x86_64/kernel/vsyscall.c                     |    2
->  arch/x86_64/lib/delay.c                           |    2
->  drivers/hwmon/coretemp.c                          |    6 -
->  drivers/hwmon/hwmon-vid.c                         |    2
->  drivers/input/gameport/gameport.c                 |    2
->  drivers/video/geode/video_gx.c                    |    2
->  include/asm-i386/processor.h                      |   10 +-
->  include/asm-i386/topology.h                       |    4 -
->  include/asm-x86_64/processor.h                    |   10 +-
->  include/asm-x86_64/topology.h                     |    4 -
->  40 files changed, 138 insertions(+), 126 deletions(-)
->
-> +++ a/arch/i386/kernel/cpu/cpufreq/elanfreq.c
-> @@ -199,7 +199,7 @@ static int elanfreq_target (struct cpufr
->
->  static int elanfreq_cpu_init(struct cpufreq_policy *policy)
->  {
-> -       struct cpuinfo_x86 *c = cpu_data;
-> +       struct cpuinfo_x86 *c = &cpu_data(cpu);
->         unsigned int i;
->         int result;
->
-> @@ -280,7 +280,7 @@ static struct cpufreq_driver elanfreq_dr
->
->  static int __init elanfreq_init(void)
->  {
-> -       struct cpuinfo_x86 *c = cpu_data;
-> +       struct cpuinfo_x86 *c = &cpu_data(cpu);
+On Fri, Sep 21, 2007 at 05:46:53PM +0200, Peter Zijlstra wrote:
+> On Fri, 21 Sep 2007 10:40:03 -0400 Steven Rostedt <rostedt@goodmis.org>
+> wrote:
+> 
+> > On Mon, Sep 10, 2007 at 11:34:12AM -0700, Paul E. McKenney wrote:
+> 
+> 
+> > Can you have a pointer somewhere that explains these states. And not a
+> > "it's in this paper or directory". Either have a short discription here,
+> > or specify where exactly to find the information (perhaps a
+> > Documentation/RCU/preemptible_states.txt?).
+> > 
+> > Trying to understand these states has caused me the most agony in
+> > reviewing these patches.
+> > 
+> > > + */
+> > > +
+> > > +enum rcu_try_flip_states {
+> > > +	rcu_try_flip_idle_state,	/* "I" */
+> > > +	rcu_try_flip_waitack_state, 	/* "A" */
+> > > +	rcu_try_flip_waitzero_state,	/* "Z" */
+> > > +	rcu_try_flip_waitmb_state	/* "M" */
+> > > +};
+> 
+> I thought the 4 flip states corresponded to the 4 GP stages, but now
+> you confused me. It seems to indeed progress one stage for every 4 flip
+> states.
 
-this is confusing, can you check simmiliar &cpu_data(cpu) to
-&cpu_data(0) instead...
+I'm still confused ;-)
 
-YH
+> 
+> Hmm, now I have to puzzle how these 4 stages are required by the lock
+> and unlock magic.
+> 
+> > > +/*
+> > > + * Return the number of RCU batches processed thus far.  Useful for debug
+> > > + * and statistics.  The _bh variant is identical to straight RCU.
+> > > + */
+> > 
+> > If they are identical, then why the separation?
+> 
+> I guess a smaller RCU domain makes for quicker grace periods.
+
+No, I mean that both the rcu_batches_completed and
+rcu_batches_completed_bh are identical. Perhaps we can just put in a
+
+#define rcu_batches_completed_bh rcu_batches_completed
+
+in rcupreempt.h.  In rcuclassic, they are different. But no need to have
+two identical functions in the preempt version. A macro should do.
+
+>  
+> > > +void __rcu_read_lock(void)
+> > > +{
+> > > +	int idx;
+> > > +	struct task_struct *me = current;
+> > 
+> > Nitpick, but other places in the kernel usually use "t" or "p" as a
+> > variable to assign current to.  It's just that "me" thows me off a
+> > little while reviewing this.  But this is just a nitpick, so do as you
+> > will.
+> 
+> struct task_struct *curr = current;
+> 
+> is also not uncommon.
+
+True, but the "me" confused me. Since that task struct is not me ;-)
+
+>  
+> > > +	int nesting;
+> > > +
+> > > +	nesting = ORDERED_WRT_IRQ(me->rcu_read_lock_nesting);
+> > > +	if (nesting != 0) {
+> > > +
+> > > +		/* An earlier rcu_read_lock() covers us, just count it. */
+> > > +
+> > > +		me->rcu_read_lock_nesting = nesting + 1;
+> > > +
+> > > +	} else {
+> > > +		unsigned long oldirq;
+> > 
+> > > +
+> > > +		/*
+> > > +		 * Disable local interrupts to prevent the grace-period
+> > > +		 * detection state machine from seeing us half-done.
+> > > +		 * NMIs can still occur, of course, and might themselves
+> > > +		 * contain rcu_read_lock().
+> > > +		 */
+> > > +
+> > > +		local_irq_save(oldirq);
+> > 
+> > Isn't the GP detection done via a tasklet/softirq. So wouldn't a
+> > local_bh_disable be sufficient here? You already cover NMIs, which would
+> > also handle normal interrupts.
+> 
+> This is also my understanding, but I think this disable is an
+> 'optimization' in that it avoids the regular IRQs from jumping through
+> these hoops outlined below.
+
+But isn't disabling irqs slower than doing a local_bh_disable? So the
+majority of times (where irqs will not happen) we have this overhead.
+
+> 
+> > > +
+> > > +		/*
+> > > +		 * Outermost nesting of rcu_read_lock(), so increment
+> > > +		 * the current counter for the current CPU.  Use volatile
+> > > +		 * casts to prevent the compiler from reordering.
+> > > +		 */
+> > > +
+> > > +		idx = ORDERED_WRT_IRQ(rcu_ctrlblk.completed) & 0x1;
+> > > +		smp_read_barrier_depends();  /* @@@@ might be unneeded */
+> > > +		ORDERED_WRT_IRQ(__get_cpu_var(rcu_flipctr)[idx])++;
+> > > +
+> > > +		/*
+> > > +		 * Now that the per-CPU counter has been incremented, we
+> > > +		 * are protected from races with rcu_read_lock() invoked
+> > > +		 * from NMI handlers on this CPU.  We can therefore safely
+> > > +		 * increment the nesting counter, relieving further NMIs
+> > > +		 * of the need to increment the per-CPU counter.
+> > > +		 */
+> > > +
+> > > +		ORDERED_WRT_IRQ(me->rcu_read_lock_nesting) = nesting + 1;
+> > > +
+> > > +		/*
+> > > +		 * Now that we have preventing any NMIs from storing
+> > > +		 * to the ->rcu_flipctr_idx, we can safely use it to
+> > > +		 * remember which counter to decrement in the matching
+> > > +		 * rcu_read_unlock().
+> > > +		 */
+> > > +
+> > > +		ORDERED_WRT_IRQ(me->rcu_flipctr_idx) = idx;
+> > > +		local_irq_restore(oldirq);
+> > > +	}
+> > > +}
+> 
+> > > +/*
+> > > + * Attempt a single flip of the counters.  Remember, a single flip does
+> > > + * -not- constitute a grace period.  Instead, the interval between
+> > > + * at least three consecutive flips is a grace period.
+> > > + *
+> > > + * If anyone is nuts enough to run this CONFIG_PREEMPT_RCU implementation
+> > 
+> > Oh, come now! It's not "nuts" to use this ;-)
+> > 
+> > > + * on a large SMP, they might want to use a hierarchical organization of
+> > > + * the per-CPU-counter pairs.
+> > > + */
+> 
+> Its the large SMP case that's nuts, and on that I have to agree with
+> Paul, its not really large SMP friendly.
+
+Hmm, that could be true. But on large SMP systems, you usually have a
+large amounts of memory, so hopefully a really long synchronize_rcu
+would not be a problem.
+
+-- Steve
+
