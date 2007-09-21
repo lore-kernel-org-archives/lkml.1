@@ -1,46 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbXIULLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbXIULNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbXIULLR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 07:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbXIULLJ
+	id S1757515AbXIULNV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 07:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbXIULNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 07:11:09 -0400
-Received: from mail.dsa-ac.de ([62.112.80.99]:44807 "EHLO mail.dsa-ac.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756282AbXIULLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 07:11:08 -0400
-X-Greylist: delayed 1690 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Sep 2007 07:11:08 EDT
-Date: Fri, 21 Sep 2007 12:42:55 +0200 (CEST)
-From: Guennadi Liakhovetski <gl@dsa-ac.de>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 02/03] CM-x270: ITE 8152 PCI bridge support
-In-Reply-To: <46F29A0A.4000407@compulab.co.il>
-Message-ID: <Pine.LNX.4.63.0709211240570.9343@pcgl.dsa-ac.de>
-References: <46F29A0A.4000407@compulab.co.il>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Sep 2007 07:13:14 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:39868 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756180AbXIULNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 07:13:13 -0400
+Date: Fri, 21 Sep 2007 13:15:20 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-ID: <20070921111520.GC1758@ff.dom.local>
+References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local> <46F398C3.3000804@bull.net> <20070921110347.GB1758@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070921110347.GB1758@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007, Mike Rapoport wrote:
+On Fri, Sep 21, 2007 at 01:03:47PM +0200, Jarek Poplawski wrote:
+...
+> any of them does ipc_rcu_getref() a bit later and sees old (cached)
 
-> This patch provides driver for ITE 8152 PCI bridge.
-> 
-> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
-> 
->  arch/arm/common/Makefile          |    1 +
->  arch/arm/common/it8152.c          |  387 +++++++++++++++++++++++++++++++++++++
+Should be:
+"any of them does ipc_rcu_putref() a bit later and sees old (cached)"
 
-Shouldn't it go to drivers/pci and define a platform driver? it8152 is not 
-an ARM specific controller.
-
-Thanks
-Guennadi
----------------------------------
-Guennadi Liakhovetski, Ph.D.
-DSA Daten- und Systemtechnik GmbH
-Pascalstr. 28
-D-52076 Aachen
-Germany
+Sorry,
+Jarek P.
