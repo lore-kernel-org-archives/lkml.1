@@ -1,69 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbXITXys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbXIUABA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbXITXys (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 19:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbXITXyi
+	id S1754240AbXIUABA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 20:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbXIUAAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 19:54:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41639 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751468AbXITXyg (ORCPT
+	Thu, 20 Sep 2007 20:00:53 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37162 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751364AbXIUAAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 19:54:36 -0400
-Date: Thu, 20 Sep 2007 16:53:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Andy Fleming <afleming@freescale.com>, Jeff Garzik <jgarzik@pobox.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PHYLIB: IRQ event workqueue handling fixes
-Message-Id: <20070920165348.0b25be3d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64N.0709171750220.17606@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0709171750220.17606@blysk.ds.pg.gda.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Sep 2007 20:00:53 -0400
+Date: Thu, 20 Sep 2007 19:00:51 -0500
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH][VER 4] mspec: handle shrinking virtual memory areas
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20070921000051.C4C6C3393A7@attica.americas.sgi.com>
+From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Sep 2007 15:38:19 +0100 (BST)
-"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
 
->  Keep track of disable_irq_nosync() invocations and call enable_irq() the 
-> right number of times if work has been cancelled that would include them.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
->  Now that the call to flush_work_keventd() (problematic because of 
-> rtnl_mutex being held) has been replaced by cancel_work_sync() another 
-> issue has arisen and been left unresolved.  As the MDIO bus cannot be 
-> accessed from the interrupt context the PHY interrupt handler uses 
-> disable_irq_nosync() to prevent from looping and schedules some work to be 
-> done as a softirq, which, apart from handling the state change of the 
-> originating PHY, is responsible for reenabling the interrupt.  Now if the 
-> interrupt line is shared by another device and a call to the softirq 
-> handler has been cancelled, that call to enable_irq() never happens and 
-> the other device cannot use its interrupt anymore as its stuck disabled.
-> 
->  I decided to use a counter rather than a flag because there may be more 
-> than one call to phy_change() cancelled in the queue -- a real one and a 
-> fake one triggered by free_irq() if DEBUG_SHIRQ is used, if nothing else.  
-> Therefore because of its nesting property enable_irq() has to be called 
-> the right number of times to match the number disable_irq_nosync() was 
-> called and restore the original state.  This DEBUG_SHIRQ feature is also 
-> the reason why free_irq() has to be called before cancel_work_sync().
-> 
->  While at it I updated the comment about phy_stop_interrupts() being 
-> called from `keventd' -- this is no longer relevant as the use of 
-> cancel_work_sync() makes such an approach unnecessary.  OTOH a similar 
-> comment referring to flush_scheduled_work() in phy_stop() still applies as 
-> using cancel_work_sync() there would be dangerous.
-> 
->  Checked with checkpatch.pl and at the run time (with and without 
-> DEBUG_SHIRQ).
+Stress testing revealed the need for (yet more) revision. sorry.
 
-You always put boring, crappy, insufficient text in the for-the-changelog
-section and interesting, useful, sufficient text in the not-for-the-changelog
-section.
+This is a revision of Andrew's mspec-handle-shrinking-virtual-memory-areas.patch
 
-But you can't fool me!  I have an editor and I fix it up.
+Version 4: clear/release fetchop pages only when vma_data is no longer shared
+
+The vma_data structure may be shared by vma's from multiple tasks, with
+no way of knowing which areas are shared or not shared, so release/clear
+pages only when the refcount (of vma's) goes to zero.
+
+Diffed against 2.6.23-rc7
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+---
+ drivers/char/mspec.c |   26 ++++++++------------------
+ 1 file changed, 8 insertions(+), 18 deletions(-)
+
+Index: linus.070920/drivers/char/mspec.c
+===================================================================
+--- linus.070920.orig/drivers/char/mspec.c
++++ linus.070920/drivers/char/mspec.c
+@@ -155,23 +155,22 @@ mspec_open(struct vm_area_struct *vma)
+  * mspec_close
+  *
+  * Called when unmapping a device mapping. Frees all mspec pages
+- * belonging to the vma.
++ * belonging to all the vma's sharing this vma_data structure.
+  */
+ static void
+ mspec_close(struct vm_area_struct *vma)
+ {
+ 	struct vma_data *vdata;
+-	int index, last_index, result;
++	int index, last_index;
+ 	unsigned long my_page;
+ 
+ 	vdata = vma->vm_private_data;
+ 
+-	BUG_ON(vma->vm_start < vdata->vm_start || vma->vm_end > vdata->vm_end);
++	if (!atomic_dec_and_test(&vdata->refcnt))
++		return;
+ 
+-	spin_lock(&vdata->lock);
+-	index = (vma->vm_start - vdata->vm_start) >> PAGE_SHIFT;
+-	last_index = (vma->vm_end - vdata->vm_start) >> PAGE_SHIFT;
+-	for (; index < last_index; index++) {
++	last_index = (vdata->vm_end - vdata->vm_start) >> PAGE_SHIFT;
++	for (index=0; index < last_index; index++) {
+ 		if (vdata->maddr[index] == 0)
+ 			continue;
+ 		/*
+@@ -180,20 +179,12 @@ mspec_close(struct vm_area_struct *vma)
+ 		 */
+ 		my_page = vdata->maddr[index];
+ 		vdata->maddr[index] = 0;
+-		spin_unlock(&vdata->lock);
+-		result = mspec_zero_block(my_page, PAGE_SIZE);
+-		if (!result)
++		if (!mspec_zero_block(my_page, PAGE_SIZE))
+ 			uncached_free_page(my_page);
+ 		else
+ 			printk(KERN_WARNING "mspec_close(): "
+-			       "failed to zero page %i\n",
+-			       result);
+-		spin_lock(&vdata->lock);
++			       "failed to zero page %ld\n", my_page);
+ 	}
+-	spin_unlock(&vdata->lock);
+-
+-	if (!atomic_dec_and_test(&vdata->refcnt))
+-		return;
+ 
+ 	if (vdata->flags & VMD_VMALLOCED)
+ 		vfree(vdata);
+@@ -201,7 +192,6 @@ mspec_close(struct vm_area_struct *vma)
+ 		kfree(vdata);
+ }
+ 
+-
+ /*
+  * mspec_nopfn
+  *
