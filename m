@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762286AbXIUUka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762711AbXIUUmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762286AbXIUUka (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbXIUUkX
+	id S1762711AbXIUUmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757666AbXIUUmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:40:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44284 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531AbXIUUkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:40:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
-Date: Fri, 21 Sep 2007 22:53:00 +0200
-User-Agent: KMail/1.9.5
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang\, Ying" <ying.huang@intel.com>,
-       linux-pm@lists.linux-foundation.org,
-       huang ying <huang.ying.caritas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org> <200709212215.26978.rjw@sisk.pl> <87hcln69zv.fsf@jbms.ath.cx>
-In-Reply-To: <87hcln69zv.fsf@jbms.ath.cx>
+	Fri, 21 Sep 2007 16:42:42 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34467 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757631AbXIUUml (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:42:41 -0400
+Date: Fri, 21 Sep 2007 21:42:24 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/6] LBS: fix unexported swapper_space
+Message-ID: <Pine.LNX.4.64.0709212141220.6532@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709212253.02158.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 21 September 2007 22:26, Jeremy Maitin-Shepard wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> [snip]
-> 
-> > The ACPI NVS area is explicitly marked as reserved and we don't save it.
-> > On x86_64 we don't save any memory areas marked as reserved and yet the above
-> > happens.
-> 
-> I think you have mentioned before, though, that ACPI is first
-> initialized by the boot kernel, before it is later initialized by
-> resuming kernel.  This could well be the source of the problem.
+If any loadable module uses the page_mapping() inline, we would need to
+export swapper_space (again: it was exported once, but janitorially
+unexported); but a filesystem sees only its own pages, so reiserfs can
+use page->mapping directly without needing the page_mapping() inline.
 
-No, it's not.  I have tested that too with an ACPI-less boot kernel.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-Greetings,
-Rafael
+--- 2.6.23-rc6-lbs/fs/reiserfs/stree.c	2007-09-11 20:01:08.000000000 +0100
++++ linux/fs/reiserfs/stree.c	2007-09-13 20:04:04.000000000 +0100
+@@ -1440,7 +1440,7 @@ static void unmap_buffers(struct page *p
+ 
+ 	if (page) {
+ 		if (page_has_buffers(page)) {
+-			tail_index = page_cache_offset(page_mapping(page), pos);
++			tail_index = page_cache_offset(page->mapping, pos);
+ 			cur_index = 0;
+ 			head = page_buffers(page);
+ 			bh = head;
+@@ -1461,7 +1461,7 @@ static void unmap_buffers(struct page *p
+ 			} while (bh != head);
+ 			if (PAGE_SIZE == bh->b_size) {
+ 				cancel_dirty_page(page,
+-					page_cache_size(page_mapping(page)));
++					page_cache_size(page->mapping));
+ 			}
+ 		}
+ 	}
