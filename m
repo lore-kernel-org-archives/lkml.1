@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933593AbXIUWw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933634AbXIUWwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933593AbXIUWw3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbXIUWdF
+	id S933634AbXIUWwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764794AbXIUWdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:33:05 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:48997 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763125AbXIUWdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:33:03 -0400
-Date: Fri, 21 Sep 2007 23:39:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Olof Johansson <olof@lixom.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, hch@lst.de, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2] pcmcia: Convert io_req_t to use kio_addr_t
-Message-ID: <20070921233936.2aeb2504@the-village.bc.nu>
-In-Reply-To: <20070921221516.GA7926@lixom.net>
-References: <20070905142742.GA1760@lixom.net>
-	<20070914034854.1658a9cf.akpm@linux-foundation.org>
-	<20070921221516.GA7926@lixom.net>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Sep 2007 18:33:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41974 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764757AbXIUWdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:33:46 -0400
+Message-ID: <46F446C3.9050600@garzik.org>
+Date: Fri, 21 Sep 2007 18:33:39 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Denys Vlasenko <vda.linux@googlemail.com>, Valdis.Kletnieks@vt.edu,
+       David Miller <davem@davemloft.net>, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
+References: <200709211201.24475.vda.linux@googlemail.com>	<200709211905.23946.vda.linux@googlemail.com>	<15775.1190399812@turing-police.cc.vt.edu>	<200709212018.06553.vda.linux@googlemail.com> <20070921220333.3b31afb5@the-village.bc.nu>
+In-Reply-To: <20070921220333.3b31afb5@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007 17:15:16 -0500
-Olof Johansson <olof@lixom.net> wrote:
+Alan Cox wrote:
+>> For example, bnx2 maintainer says that driver and
+>> firmware are closely tied for his driver. IOW: you upgrade kernel
+>> and your NIC is not working anymore.
+>>
+>> Another argument is to make kernel be able to bring up NICs
+>> without needing firmware images in initramfs/initrd/hard drive.
+> 
+> dgrs should be using the request_firmware interface. Actually dgrs is
+> probably a good candidate for /dev/null
 
-> Convert the io_req_t members to kio_addr_t, to allow use on machines with
-> more than 16 bits worth of IO ports (i.e. secondary busses on ppc64, etc).
+According to an earlier thread, dgrs was never really maintained, 
+written for hardware that was never really distributed widely, and very 
+likely hasn't had users in years... if ever.
 
-What about the formatting and field widths ?
+If that picture is accurate (it's a story I was told), then I am 
+definitely queueing up a deletion patch.
 
-ulong would probably be a lot saner than kio_addr_t and yet more type
-obfuscation.
+	Jeff
 
-Otherwise looks sensible to me
+
+
