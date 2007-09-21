@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933909AbXIUW7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933825AbXIUXBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933909AbXIUW7i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763865AbXIUW6Z
+	id S933825AbXIUXBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 19:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762519AbXIUXBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:58:25 -0400
-Received: from smtpoutm.mac.com ([17.148.16.73]:60791 "EHLO smtpoutm.mac.com"
+	Fri, 21 Sep 2007 19:01:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58920 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933788AbXIUW6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:58:23 -0400
-In-Reply-To: <1190412335.32660.55.camel@localhost>
-References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <59465.81.207.0.53.1190323573.squirrel@secure.samage.net> <200709201818.42125.rob@landley.net> <4477DB43-766B-4057-B33D-357A73AF69B0@mac.com> <1190412335.32660.55.camel@localhost>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <06405221-2131-49B4-B3C2-E9773255DC30@mac.com>
-Cc: Rob Landley <rob@landley.net>, Indan Zupancic <indan@nul.nu>,
-       linux-tiny@selenic.com, Michael Opdenacker <michael@free-electrons.com>,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
+	id S1753963AbXIUXBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 19:01:01 -0400
+Message-ID: <46F44D27.4050704@garzik.org>
+Date: Fri, 21 Sep 2007 19:00:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] [50/50] x86_64: Remove fpu io port resource
+References: <200709221231.836138000@suse.de> <20070921223251.1312913DCD@wotan.suse.de>
+In-Reply-To: <20070921223251.1312913DCD@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [Announce] Linux-tiny project revival
-Date: Fri, 21 Sep 2007 18:57:30 -0400
-To: Joe Perches <joe@perches.com>
-X-Mailer: Apple Mail (2.752.2)
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 21, 2007, at 18:05:34, Joe Perches wrote:
-> On Fri, 2007-09-21 at 17:34 -0400, Kyle Moffett wrote:
->> With a bit more glue that would cause GCC to notice that for a  
->> given qprintk_kmalloc the "qpk->type" is always zero because the  
->> level is too high, and therefore it would optimize out *ALL* of  
->> the _qprintk_kmalloc(), _qprintk(), and _qprintk_finish() calls.
->
-> A negative is that lockup conditions swallow partial messages.
+Andi Kleen wrote:
+> Not needed on modern systems without external FPU
+> 
+> TBD on i386 it is only needed for true 386s. Could remove it there
+> TBD for >= 486
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  arch/x86_64/kernel/setup.c |    2 --
+>  1 file changed, 2 deletions(-)
+> 
+> Index: linux/arch/x86_64/kernel/setup.c
+> ===================================================================
+> --- linux.orig/arch/x86_64/kernel/setup.c
+> +++ linux/arch/x86_64/kernel/setup.c
+> @@ -121,8 +121,6 @@ struct resource standard_io_resources[] 
+>  		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
+>  	{ .name = "dma2", .start = 0xc0, .end = 0xdf,
+>  		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
+> -	{ .name = "fpu", .start = 0xf0, .end = 0xff,
+> -		.flags = IORESOURCE_BUSY | IORESOURCE_IO }
 
-But typically you don't care if a "partial line" gets swallowed  
-regardless.  The only reason people really use partial lines is when  
-they're accumulating a variable number of things into a single line  
-and so a single printk() won't do, and in that case it's really not a  
-problem to "lose" the first half of the line in event of a crash.   
-And hell, if it matters that much you could just make the qprintk_ 
-{kmalloc,percpu,irq} functions chain the qpk variables on a little  
-linked list and stuff an smp_wmb() in the _gprint() function after  
-writing the text and before writing the size.  That way any panic  
-could very carefully look at the messages being queued during the  
-crash and attempt to write out partial buffers.
+Since we are merging x86 and x86-64, I think it would be nice at least 
+to CC Thomas on patches that increase 32/64-bit differences...  because 
+won't this patch have to be partial un-done when we merge i386 and x86-64?
 
-It's a technique which in combination with looking at the first 3  
-characters of the arguments to printk() would let you elide 99% of  
-the non-critical printks pretty easily while only needing to change  
-the much smaller proportion of the printk()s which are partial  
-lines.  Furthermore it's pretty easy to grep for the partial-line  
-printk()s and you can even have it emit warnings when you hit a  
-partial-line printk() (it doesn't start with "<"[0-9]">") in -mm to  
-help fix up the last few users and keep people from adding new ones.
+	Jeff
 
-Cheers,
-Kyle Moffett
 
