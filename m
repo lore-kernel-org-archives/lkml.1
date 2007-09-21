@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759221AbXIUNK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbXIUNMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759221AbXIUNK4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbXIUNKq
+	id S1758996AbXIUNMX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbXIUNMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:10:46 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52644 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758974AbXIUNKo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:10:44 -0400
-To: hch@infradead.org
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <20070921124504.GC8088@infradead.org> (message from Christoph
-	Hellwig on Fri, 21 Sep 2007 13:45:04 +0100)
-Subject: Re: [patch 5/5] VFS: allow filesystem to override mknod capability checks
-References: <20070921122343.307289079@szeredi.hu> <20070921123336.095183254@szeredi.hu> <20070921124504.GC8088@infradead.org>
-Message-Id: <E1IYiH4-0001eQ-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 21 Sep 2007 15:10:26 +0200
+	Fri, 21 Sep 2007 09:12:16 -0400
+Received: from web82106.mail.mud.yahoo.com ([209.191.84.219]:35941 "HELO
+	web82106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750871AbXIUNMP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 09:12:15 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Sep 2007 09:12:15 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=wdoGoZ8PIlWR2WIczLppdBRc18OSihJKTKZ+BCzyk05tWKQyMnH3WpUatixs1kqkohG9b6PiOv+/0eM6QJqwOw0y4L2o1TacPzDnRvdDUyXpRIF/ghJqlKZ3KzCZFas/LbbIIphuKUCrOYP57Mgh8hdY9pXV/qspQT5S/ShoxLM=;
+X-YMail-OSG: 9qdpgj8VM1nPuCWn5AVkd0I8MxThU.FyAzCmU7OffUFUCqKYJQ7IzG1CgfUQEMpXBA--
+X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
+Date: Fri, 21 Sep 2007 06:05:35 -0700 (PDT)
+From: Scott Preece <sepreece@yahoo.com>
+Subject: Re: [Celinux-dev] Re: [Announce] Linux-tiny project revival
+To: Tim Bird <tim.bird@am.sony.com>, Rob Landley <rob@landley.net>
+Cc: linux-tiny@selenic.com, linux kernel <linux-kernel@vger.kernel.org>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       Michael Opdenacker <michael@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Message-ID: <498851.95136.qm@web82106.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > Add a new filesystem flag, that results in the VFS not checking if the
-> > current process has enough privileges to do an mknod().
-> > 
-> > This is needed on filesystems, where an unprivileged user may be able
-> > to create a device node, without causing security problems.
-> 
-> A user should never be able to create devices.
+----- Original Message ----
+From: Tim Bird <tim.bird@am.sony.com>
 
-A user can already create a device with fuse implicitly.  This patch
-would just allow that explicitly.
+Rob Landley wrote:
 
-Take this example: I've loopback mounted an UML disk image using fuse
-(no privileges required), and want to create some device nodes.  I
-can't yet boot the UML because the device node is missing from the
-image.  So what should I do.  Currently I have to manipulate the
-mounted image as root.  But that's really shouldn't be needed.
 
-> And no, I don't want to see a filesystem that implements it's own
-> file operations for device nodes.
+Given that there are about 60,000 printks in the kernel (and that's
+not counting wrappers like dprintk() and other locally-defined
+functions and macros) it would be a huge task to examine the code
+and differentiate strings that really start a new log message
+(and thus should have an attached log level) and strings
+that don't.
+ -- Tim
 
-I don't want that either, and it has nothing to do with this patch.
+---
 
-Miklos
+So, if this is a good idea, maybe the new version with the separate argument should have a new name? Then you can mechanically convert the onces that fit the pattern to the new name and form and leave the others to clean up later.
+
+scott
+
+
+
