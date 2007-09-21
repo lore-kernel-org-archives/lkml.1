@@ -1,96 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbXIUOKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbXIUON4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759806AbXIUOKU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758322AbXIUOKG
+	id S1759452AbXIUON4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758322AbXIUONq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:10:06 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42701 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758026AbXIUOKE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:10:04 -0400
-From: "Jose R. Santos" <jrs@us.ibm.com>
-Date: Fri, 21 Sep 2007 09:06:49 -0500
-Subject: [PATCH] ext4: FLEX_BG Kernel support v2.
-To: akpm@linux-foundation.org
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <20070921140649.4352.30055.stgit@toolssf2>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.10
+	Fri, 21 Sep 2007 10:13:46 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:64570 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758211AbXIUONp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 10:13:45 -0400
+X-IronPort-AV: E=Sophos;i="4.20,284,1186383600"; 
+   d="scan'208";a="106402600"
+Subject: Re: [NFS] NFS on loopback locks up entire system(2.6.23-rc6)?
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Chakri n <chakriin5@gmail.com>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
+References: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
+	 <1190335423.6763.180.camel@heimdal.trondhjem.org>
+	 <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Fri, 21 Sep 2007 10:13:25 -0400
+Message-Id: <1190384005.6680.20.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 21 Sep 2007 14:13:27.0065 (UTC) FILETIME=[941E4890:01C7FC59]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jose R. Santos <jrs@us.ibm.com>
+On Thu, 2007-09-20 at 20:12 -0700, Chakri n wrote:
+> Thanks Trond, for clarifying this for me.
+> 
+> I have seen similar behavior when a remote NFS server is not
+> available. Many processes wait end up waiting in nfs_release_page. So,
+> what will happen if the remote server is not available,
+> nfs_release_page cannot free the memory since it waits on rpc request
+> to complete, which never completes and processes wait in there for
+> ever?
+> 
+> And unfortunately in my case, I cannot use "mount --bind". I want to
+> use the same file system from two different nodes, and I want file &
+> record locking to be consistent. The only way to make sure locking is
+> consistent is to use loopback NFS on 1 host and NFS mount the same
+> file system on other nodes, so that NFS server ensures file & record
+> locking to be consistent. Is there any alternative to this?
+> 
+> Is it possible or any efforts to integrate ext3 or other local file
+> systems locking & network file system locking, so that user can use
+> "mount --bind" on local host and NFS mount on remote nodes, but file &
+> record locking will be consistent between both the nodes?
 
-ext4: FLEX_BG Kernel support v2.
+Could you be a bit more specific? Is the problem that your application
+is using BSD locks (flock()) instead of POSIX locks?
 
-This feature relaxes check restrictions on where each block groups meta data is 
-located within the storage media.  This allows for the allocation of bitmaps or 
-inode tables outside the block group boundaries in cases where bad blocks forces
-us to look for new blocks which the owning block group can not satisfy.  This 
-will also allow for new meta-data allocation schemes to improve performance and
-scalability.
-
-Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
---
-
- fs/ext4/super.c         |    9 +++++++--
- include/linux/ext4_fs.h |    4 +++-
- 2 files changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 4550b83..dbce81d 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1248,13 +1248,17 @@ static int ext4_check_descriptors (struct super_block * sb)
- 	ext4_fsblk_t inode_table;
- 	struct ext4_group_desc * gdp = NULL;
- 	int desc_block = 0;
-+	int flexbg_flag = 0;
- 	int i;
- 
-+	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_FLEX_BG))
-+		flexbg_flag = 1;
-+
- 	ext4_debug ("Checking group descriptors");
- 
- 	for (i = 0; i < sbi->s_groups_count; i++)
- 	{
--		if (i == sbi->s_groups_count - 1)
-+		if (i == sbi->s_groups_count - 1 || flexbg_flag)
- 			last_block = ext4_blocks_count(sbi->s_es) - 1;
- 		else
- 			last_block = first_block +
-@@ -1291,7 +1295,8 @@ static int ext4_check_descriptors (struct super_block * sb)
- 				    i, inode_table);
- 			return 0;
- 		}
--		first_block += EXT4_BLOCKS_PER_GROUP(sb);
-+		if (!flexbg_flag)
-+			first_block += EXT4_BLOCKS_PER_GROUP(sb);
- 		gdp = (struct ext4_group_desc *)
- 			((__u8 *)gdp + EXT4_DESC_SIZE(sb));
- 	}
-diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index cdee7aa..d53e167 100644
---- a/include/linux/ext4_fs.h
-+++ b/include/linux/ext4_fs.h
-@@ -702,13 +702,15 @@ static inline int ext4_valid_inum(struct super_block *sb, unsigned long ino)
- #define EXT4_FEATURE_INCOMPAT_META_BG		0x0010
- #define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* extents support */
- #define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
-+#define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
- 
- #define EXT4_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_EXT_ATTR
- #define EXT4_FEATURE_INCOMPAT_SUPP	(EXT4_FEATURE_INCOMPAT_FILETYPE| \
- 					 EXT4_FEATURE_INCOMPAT_RECOVER| \
- 					 EXT4_FEATURE_INCOMPAT_META_BG| \
- 					 EXT4_FEATURE_INCOMPAT_EXTENTS| \
--					 EXT4_FEATURE_INCOMPAT_64BIT)
-+					 EXT4_FEATURE_INCOMPAT_64BIT| \
-+					 EXT4_FEATURE_INCOMPAT_FLEX_BG)
- #define EXT4_FEATURE_RO_COMPAT_SUPP	(EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER| \
- 					 EXT4_FEATURE_RO_COMPAT_LARGE_FILE| \
- 					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK | \
+Cheers
+   Trond
