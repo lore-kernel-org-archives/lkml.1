@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762319AbXIUTHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762515AbXIUTH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762319AbXIUTHk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 15:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762124AbXIUTHX
+	id S1762515AbXIUTH4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 15:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762164AbXIUTHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 15:07:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:40969 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762056AbXIUTHU (ORCPT
+	Fri, 21 Sep 2007 15:07:25 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38122 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762115AbXIUTHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 15:07:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=NGE4HBvk3uxwTUh4LWV/vfX7a/M0BBi3S2fDFOePWuSUrxZx4n7+KbvnJrRyHy26FEYZrzqVwUwX6vHdVxpRYKNI+Hb2JAi2OuofaretDlRznlOSm8InlFRb2bVdLlQc41656z4VKfpwpiKZqGhsLF2AhrPwRicBqfIY/RyeuDg=
-Subject: Redundent/missing code in dik_show_trace
-	(arch/alpha/kernel/traps.c)
-From: Gilboa Davara <gilboad@gmail.com>
-Reply-To: gilboad@gmail.com
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 21:07:15 +0200
-Message-Id: <1190401635.6759.7.camel@gilboa-home-dev.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Sep 2007 15:07:22 -0400
+Date: Fri, 21 Sep 2007 12:07:22 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       asit.k.mallick@intel.com
+Subject: Re: x86_64: potential critical issue with quicklists and page table
+ pages
+In-Reply-To: <alpine.LFD.0.999.0709211204050.16478@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0709211205570.17160@schroedinger.engr.sgi.com>
+References: <20070921180742.GH20863@linux-os.sc.intel.com>
+ <alpine.LFD.0.999.0709211139550.16478@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0709211149040.17160@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0709211153060.16478@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0709211204050.16478@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Fri, 21 Sep 2007, Linus Torvalds wrote:
 
-As the title suggest.
-"i" is declared as 0 and never assigned a new value.
-Down the code there's an if (i>40) and a certain dangling piece of code.
-I assume that I should have gotten a string length (?) from somewhere?
+> On Fri, 21 Sep 2007, Linus Torvalds wrote:
+> > 
+> > On Fri, 21 Sep 2007, Christoph Lameter wrote:
+> > > 
+> > > The quicklists collect pages while we gather pages for TLB flushing. 
+> > > These pages must be kept until the actual TLB flush has occurred. The 
+> > > optimization of releasing off node pages early is therefore not valid.
+> > 
+> > That should be the "mmu_gather" structure, not the quicklists.
+> 
+> Oh, and I see what's wrong: you not only switched "free_page()" to 
+> "quicklist_free()", you *also* switched "tlb_remove_page()" to 
+> "quicklist_free()".
+> 
+> Ok, that commit is totally and utterly broken. Will revert.
 
-Am I missing something?
+On x86_64 the quicklists partially replace the role of the mmu_gather
+list because we would otherwise create more overhead by having to move
+pages between the mmu gather and the quicklists lists.
+lists.
 
-- Gilboa
+The final flush does only check if there are too many pages on the
+quicklists. Otherwise the quicklist is not dumped/freed (unlike the
+mmu_gather list) but kept for the following page table page allocations
+since we have cache hot cpu objects there.
+
+The only problem is that we cannot release any pages before the TLB flush 
+has happened. The optimization of releasing off node pages in order to 
+keep only node local pages is therefore not valid.
+
+
 
 ---
-static void
-dik_show_trace(unsigned long *sp)
-{
-	long i = 0;
-	printk("Trace:\n");
-	while (0x1ff8 & (unsigned long) sp) {
-		extern char _stext[], _etext[];
-		unsigned long tmp = *sp;
-		sp++;
-		if (tmp < (unsigned long) &_stext)
-			continue;
-		if (tmp >= (unsigned long) &_etext)
-			continue;
-		printk("[<%lx>]", tmp);
-		print_symbol(" %s", tmp);
-		printk("\n");
-		if (i > 40) {
-			printk(" ...");
-			break;
-		}
-	}
-	printk("\n");
-}
+ include/linux/quicklist.h |    8 --------
+ 1 file changed, 8 deletions(-)
 
-
+Index: linux-2.6/include/linux/quicklist.h
+===================================================================
+--- linux-2.6.orig/include/linux/quicklist.h	2007-09-21 11:46:44.000000000 -0700
++++ linux-2.6/include/linux/quicklist.h	2007-09-21 11:55:01.000000000 -0700
+@@ -56,14 +56,6 @@ static inline void __quicklist_free(int 
+ 	struct page *page)
+ {
+ 	struct quicklist *q;
+-	int nid = page_to_nid(page);
+-
+-	if (unlikely(nid != numa_node_id())) {
+-		if (dtor)
+-			dtor(p);
+-		__free_page(page);
+-		return;
+-	}
+ 
+ 	q = &get_cpu_var(quicklist)[nr];
+ 	*(void **)p = q->page;
