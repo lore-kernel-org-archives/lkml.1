@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbXIUN3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbXIUNaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759432AbXIUN3f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758994AbXIUN3V
+	id S1759357AbXIUNaa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758033AbXIUNaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:29:21 -0400
-Received: from ns2.tasking.nl ([195.193.207.10]:19749 "EHLO ns2.tasking.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758846AbXIUN3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:29:20 -0400
-To: linux-kernel@vger.kernel.org
-Mime-Version: 1.0
-X-Newsreader: knews 1.0b.1
-Reply-To: dick.streefland@altium.nl (Dick Streefland)
-Organization: Altium BV
-X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
-References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <20070920195844.GA1805@martell.zuzino.mipt.ru> <20070920195844.GA1805@martell.zuzino.mipt.ru> <200709201702.08126.rob@landley.net>
-From: dick.streefland@altium.nl (Dick Streefland)
-Subject: Re: [Announce] Linux-tiny project revival
-Content-Type: text/plain; charset=us-ascii
-NNTP-Posting-Host: 172.17.1.66
-Message-ID: <2735.46f3c72e.5c662@altium.nl>
-Date: Fri, 21 Sep 2007 13:29:18 -0000
+	Fri, 21 Sep 2007 09:30:19 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:42029 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755285AbXIUNaR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 09:30:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VN70AaJ6NATm3UItkqC6HSz4rXtnyEOaJJTMHUSd/xKYmXKv7bpDx1BmABkoXhwp2HDEXhQQ4+VD3dHgEyX3kCwU0/CF4YDKJBE1JFNohtyz5T/zrG6izjXiXypsel4lSaGlagAuGDzzhSK7mYRZ3FSB55sPrZzfZK3GVLIOc3Q=
+Message-ID: <fbe8b1780709210630x492779f0s76322394467ff76b@mail.gmail.com>
+Date: Fri, 21 Sep 2007 15:30:15 +0200
+From: "Peter Stahlir" <peter.stahlir@googlemail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: Git as a filesystem
+Cc: "Muhammad Tayyab" <mail.tayyab@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0709211449370.30810@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fbe8b1780709210348n1b1bd739rf5bfe0a73381b3ec@mail.gmail.com>
+	 <46F3AAC1.5050409@gmail.com>
+	 <fbe8b1780709210437s18b24945jab5a3ffa07646427@mail.gmail.com>
+	 <fbe8b1780709210446i24a7ee84reaa232be2d3d089e@mail.gmail.com>
+	 <Pine.LNX.4.64.0709211449370.30810@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley <rob@landley.net> wrote:
-| I'm proposing allowing an ignore_loglevel to remove the unused messages at 
-| compile time so they don't take up space.  Doing that requires the levels to 
-| be integers so they can be compared with < or >, and the remaining changes 
-| follow logically.  (To me, anyway...)
+> >For example, imagine running a complete Debian mirror on top of a
+> >Debian system with gitfs. How big would the packfile be for this 252GB
+> >beast?
+>
+> Probably 252 GB. Lots of the packages are already compressed, and
+> each time a minimal change is done, the bytestream changes, so long
+> story short, deltifying between to compressed streams is likely to
+> deltify horribly.
 
-Gcc seems to be smart enough to do contant folding on string
-subscripts, so you don't need to change any of the printk()s.
-Here is what I mean:
-
-#include <stdio.h>
-
-#define	actual_printk	printf
-
-#define KERN_ERR        "<3>"   /* error conditions                     */
-#define KERN_WARNING    "<4>"   /* warning conditions                   */
-#define KERN_NOTICE     "<5>"   /* normal but significant condition     */
-
-#define printk(str, ...) \
-  do { \
-    if ((str)[0] != '<' || (str)[1] < '5') \
-      actual_printk((str), __VA_ARGS__); \
-  } while(0);
-
-int main(void)
-{
-	printk(KERN_ERR "error %d\n", 1);
-	printk(KERN_WARNING "warning %d\n", 2);
-	printk(KERN_NOTICE "notice %d\n", 3);
-	printk("no level %d\n", 4);
-	return 0;
-}
-
--- 
-Dick Streefland                      ////                      Altium BV
-dick.streefland@altium.nl           (@ @)          http://www.altium.com
---------------------------------oOO--(_)--OOo---------------------------
-
+What about adding deb or tar support to git?
+Then git doesn't store deb archives but the contents of archives.
+This way redundancy across architectures can be deltified.
