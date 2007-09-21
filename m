@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbXIUOgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbXIUOjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760598AbXIUOgf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758605AbXIUOg1
+	id S1757425AbXIUOjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbXIUOjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:36:27 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:52418 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758867AbXIUOgZ (ORCPT
+	Fri, 21 Sep 2007 10:39:10 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:50861 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754788AbXIUOjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:36:25 -0400
-Date: Fri, 21 Sep 2007 15:36:05 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Andrew Morton <akpm@linux-foundation.org>, Gerd Hoffmann <kraxel@suse.de>,
-       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       Yinghai.Lu@Sun.COM, bryan.wu@analog.com, dilinger@queued.net,
-       kraxel@redhat.com, lethal@linux-sh.org, rgetz@blackfin.uclinux.org,
-       vapier.adi@gmail.com
-Subject: Re: [PATCH] kernel/printk.c: Concerns about the console handover
-In-Reply-To: <20070921134331.GC20277@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64N.0709211454570.2724@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0709201749240.30788@blysk.ds.pg.gda.pl>
- <20070921010349.2caee558.akpm@linux-foundation.org>
- <Pine.LNX.4.64N.0709211428300.2724@blysk.ds.pg.gda.pl>
- <20070921134331.GC20277@flint.arm.linux.org.uk>
+	Fri, 21 Sep 2007 10:39:09 -0400
+Date: Fri, 21 Sep 2007 10:39:04 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Hans de Goede <j.w.r.degoede@hhs.nl>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] USB autosuspend and turning of usb pendrive
+ leds
+In-Reply-To: <Pine.LNX.4.64.0709211615520.22331@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.44L0.0709211032200.4167-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007, Russell King wrote:
+On Fri, 21 Sep 2007, Jiri Kosina wrote:
 
-> I suspect the correct fix for this is to take the fix in the ARM tree
-> for serial_core's console initialisation, and ensure that zs.c handles
-> the power management of the port (enabling/disabling transmitter)
-> in the power management callback.
-
- Hmm, it sounds a bit hackish to me.  The serial part is from the 1970s -- 
-nobody thought of power management back then.  And even though the 
-DECstation is about 20 years younger, it does not provide any means for 
-power management either -- it is a workstation/server class system after 
-all.
-
-> You can find the fix in the mbox archive:
+> (linux-usb-devel needs CC)
 > 
->  http://ftp.arm.linux.org.uk/pub/linux/arm/kernel/git-cut/arm:devel.mbox
+> On Fri, 21 Sep 2007, Hans de Goede wrote:
+> 
+> > 1) Would it be possible to funtionality to the kernel to suspend a device in
+> >    such a way that it will automatically unsuspend when used again?
+> 
+> It is possible - USB now supports autosuspend. After a long debate, it was 
+> however devcided that it is explicitly turned off, and userspace is free 
+> to turn it on via sysfs interface for whatever devices the user likes to 
+> do so.
+> 
+> This is mainly because there is a huge load of USB devices out there that 
+> don't support this feature correctly, and we will break them if we perform 
+> autosuspend automatically.
+> 
+> > 2) Would it be possible to still make the polls succeed then with out 
+> >    unsuspending the device (or atleast without doing something that 
+> >    would make the led light again, what makes the led light exactly is 
+> >    unknown), or should hal stop polling then?
 
- Hmm, nothing of relevance there.
+The correct answer is that HAL should top polling while the device is 
+suspended.
 
- I see no problem with implementing the ->pm() call as something like:
+In kernels starting with 2.6.23-rc6, the correct way to enable 
+autosuspend for a USB device is basically like this:
 
-void zs_pm(struct uart_port uport, unsigned int state, unsigned int oldstate)
-{
-	struct zs_port *zport = to_zport(uport);
+	echo D >/sys/bus/usb/devices/.../power/autosuspend
+	echo auto >/sys/bus/usb/devices/.../power/level
 
-	if (state < 3)
-		zport->regs[5] |= TxENAB;
-	else
-		zport->regs[5] &= ~TxENAB;
-	write_zsreg(zport, R5, zport->regs[5]);
-}
+where D is the time (in seconds) the device should remain idle before 
+it is autosuspended.  An autosuspended device will be woken up to 
+respond to polls.  (Note however that in this kernel, autosuspend 
+support for USB mass-storage devices was removed because it can 
+cause problems related to spinning down disk drives.)
 
-itself, but it looks more like a workaround than a fix to me.  I'll have 
-to think about it and also double-check it is safe.  The SCC is about as 
-complicated as you can get with a serial port.
+If instead you do
 
- Thanks for the hint though.
+	echo suspend >/sys/bus/usb/devices/.../power/level
 
-  Maciej
+it will simply suspend the device immediately.  The device will not be 
+woken up automatically and attempts to poll it (or do anything else) 
+will fail.
+
+Alan Stern
+
