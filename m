@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbXIUTU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761776AbXIUTZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762138AbXIUTU7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 15:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760971AbXIUTUw
+	id S1761776AbXIUTZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 15:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXIUTZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 15:20:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51855 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760281AbXIUTUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 15:20:51 -0400
-Date: Fri, 21 Sep 2007 12:21:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       asit.k.mallick@intel.com
-Subject: Re: x86_64: potential critical issue with quicklists and page table
- pages
-In-Reply-To: <Pine.LNX.4.64.0709211205570.17160@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.999.0709211212130.16478@woody.linux-foundation.org>
-References: <20070921180742.GH20863@linux-os.sc.intel.com>
- <alpine.LFD.0.999.0709211139550.16478@woody.linux-foundation.org>
- <Pine.LNX.4.64.0709211149040.17160@schroedinger.engr.sgi.com>
- <alpine.LFD.0.999.0709211153060.16478@woody.linux-foundation.org>
- <alpine.LFD.0.999.0709211204050.16478@woody.linux-foundation.org>
- <Pine.LNX.4.64.0709211205570.17160@schroedinger.engr.sgi.com>
+	Fri, 21 Sep 2007 15:25:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44017 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751903AbXIUTZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 15:25:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when booted, USB-related WARNING
+Date: Fri, 21 Sep 2007 21:37:57 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
+       linux-usb-devel@lists.sourceforge.net,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, miklos@szeredi.hu,
+       Len Brown <len.brown@intel.com>,
+       David Shaohua Li <shaohua.li@intel.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <200709212120.03044.rjw@sisk.pl> <1190402218.2993.2.camel@chaos>
+In-Reply-To: <1190402218.2993.2.camel@chaos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709212137.58703.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas,
 
-
-On Fri, 21 Sep 2007, Christoph Lameter wrote:
+On Friday, 21 September 2007 21:16, Thomas Gleixner wrote:
+> Rafael,
 > 
-> The final flush does only check if there are too many pages on the
-> quicklists. Otherwise the quicklist is not dumped/freed (unlike the
-> mmu_gather list) but kept for the following page table page allocations
-> since we have cache hot cpu objects there.
+> On Fri, 2007-09-21 at 21:20 +0200, Rafael J. Wysocki wrote:
+> > On Friday, 21 September 2007 18:27, Thomas Gleixner wrote:
+> > > I simply rmmod'ed the processor module before suspend and the problem is
+> > > solved as well. The cpuidle patches make this problem more prominent due
+> > > to the possible more direct switch into lower power states, when we wait for
+> > > a long time on something. 
+> > 
+> > So, perhaps we can add a .suspend()/.resume() routines to the processor driver
+> > and use them to disable/enable the cpuidle functionality during a
+> > suspend/resume?
+> 
+> http://tglx.de/private/tglx/p.diff
+> 
+> untested yet, but I'm on the way to do that :)
 
-Yeah, and the whole thing seems totally bogus. It totally depends on 
-mmu_gather doing everything right (which very much includes the dependency 
-on mmu gathering disabling preempt).
+Heh, I thought of the same thing. :-)
 
-For exmaple, if we were to go back to the original small tlb_gather with a 
-simple quicklist on the stack, rather than the per-cpu datastructure, the 
-quicklists would immediately break horribly - simply because they are 
-incorrectly now depending on the internal semantics of that tlb-gather.
-
-As it is, the quicklists try to be something separate, but by virtue of 
-being separate, they will always be buggy.
-
-The only way to fix it would be to integrate the quicklist stuff *with* 
-the mmu_gather stuff, so that these kinds of implementation issues are 
-explicitly shown in the relationship, instead of havign two "independent" 
-pieces of code where one piece very subtly depends on the exact 
-implementation of the other.
-
-		Linus
+Greetings,
+Rafael
