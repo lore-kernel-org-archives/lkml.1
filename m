@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbXIUQTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761080AbXIUQUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbXIUQTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 12:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbXIUQTP
+	id S1761080AbXIUQUW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 12:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759275AbXIUQUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 12:19:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:8180 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759267AbXIUQTO (ORCPT
+	Fri, 21 Sep 2007 12:20:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:40924 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759410AbXIUQUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 12:19:14 -0400
+	Fri, 21 Sep 2007 12:20:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QXkZ8KPqt7lJ069PYQWAHcxN6B6xTr1MPSYvdHkdaqOFHB49BtEyUHHQVkGmtYt6/FBwI37BQwtCvioTQgfxY7La+In8al3LMxmtrk3g8PkBIBk8WG4hTvdGUH4rPsEMwafYIrbPZ6Wb/1UMa2ZI30kvNYrMj/tZ3i7DtVwyfeo=
-Subject: Re: [PATCH] Reduce __print_symbol/sprint_symbol stack usage. (v3)
-From: Gilboa Davara <gilboad@gmail.com>
-Reply-To: gilboad@gmail.com
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: linux-kernel@vger.kernel.org, Satyam Sharma <satyam.sharma@gmail.com>
-In-Reply-To: <46F3EB15.3050706@grupopie.com>
-References: <1189856129.18191.11.camel@gilboa-home-dev.localdomain>
-	 <a781481a0709150602v6be754caw4fbe0f76c8db5beb@mail.gmail.com>
-	 <1189869329.18191.77.camel@gilboa-home-dev.localdomain>
-	 <1189879681.18191.93.camel@gilboa-home-dev.localdomain>
-	 <1190384893.30016.42.camel@gilboa-home-dev.localdomain>
-	 <46F3EB15.3050706@grupopie.com>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 18:19:08 +0200
-Message-Id: <1190391548.30016.99.camel@gilboa-home-dev.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bR29nWf6TwZO8pNewQIK9rB0JhXdNzzlNS9pi1WfGS/otUJRdst9C+rOMu3YVtS+UZemR8mTdxce9UkJcSh3Eqw5zr1XLVvCdDbMwY3huOiJNsv46bU/Bb88jzFAo9cg/uKqeVrN4mwX6UvCKGahfICnvrV4+bGxKsgjvfBd4U0=
+Message-ID: <92cbf19b0709210920p3647788dl11d8c4e0cee1f70f@mail.gmail.com>
+Date: Fri, 21 Sep 2007 09:20:06 -0700
+From: "Chakri n" <chakriin5@gmail.com>
+To: "Trond Myklebust" <Trond.Myklebust@netapp.com>
+Subject: Re: [NFS] NFS on loopback locks up entire system(2.6.23-rc6)?
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1190384005.6680.20.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
+	 <1190335423.6763.180.camel@heimdal.trondhjem.org>
+	 <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
+	 <1190384005.6680.20.camel@heimdal.trondhjem.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-21 at 17:02 +0100, Paulo Marques wrote:
-> Gilboa Davara wrote:
-> > Hello all,
-> 
-> Hi, Gilboa
-> 
-> > (1) Problem:
-> > I. When CONFIG_4KSTACKS and CONFIG_DEBUG_STACKOVERFLOW are enabled on
-> > i386 kernels, do_IRQ calls dump_stack which, down the path, uses
-> > print_symbol (display) and  sprint_symbol (format) to format and display
-> > the function name/address/module.
-> > Both function use stack based char array (~350 bytes) that, given the
-> > initial state (<512 bytes of stack space) may overrun the stack.
-> > II. (Comments - previous patches) Using spinlock protected static
-> > storage within these functions might block or even deadlock dump_stack
-> > (E.g. Crash within dump_stack itself)
-> > 
-> > (2) Solution:
-> > I. Break sprint_symbol into sprint_symbol (API functions; keeps the
-> > current interface) and sprint_symbol_helper (helper function with
-> > minimal local storage). 
-> > II. Replace the char array in __print_symbol with two spinlock protected
-> > static char arrays; call the __sprint_symbol helper function instead of
-> > sprint_symbol.
-> > III. Ignore the spinlock if oops_in_progress is set.
-> 
-> This is getting more and more convoluted :(
-> 
-> The problem with the spinlock isn't just that during a panic, we can not 
-> trust the kernel structures enough to use spinlocks. It might well 
-> happen that lockdep code might want to use print_symbol (and I think it 
-> does, so this is not just theoretical) to dump the stack when someone 
-> calls spin_lock_irqsave.
-> But now, because print_symbol itself uses spin_lock_irqsave, we might 
-> get into a recursive situation and a produce a deadlock.
-> 
-> On the other hand, if you take the other approach of reducing the stack 
-> usage by creating a printk_symbol interface, the stack usage would drop 
-> from 350 bytes to 128 bytes and your problem would go away entirely.
-> 
+Thanks.
 
-OK. I'll wait for additional comments while thinking about a third
-route. (Following your suggestion)
+I was using flock (BSD locking) and I think the problem should be
+solved if I move my application to use POSIX locks.
 
-- Gilboa
+And any option to avoid processes waiting indefinitely to free pages
+from NFS requests waiting on unresponsive NFS server?
 
+Thanks
+--Chakri
+
+On 9/21/07, Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
+> On Thu, 2007-09-20 at 20:12 -0700, Chakri n wrote:
+> > Thanks Trond, for clarifying this for me.
+> >
+> > I have seen similar behavior when a remote NFS server is not
+> > available. Many processes wait end up waiting in nfs_release_page. So,
+> > what will happen if the remote server is not available,
+> > nfs_release_page cannot free the memory since it waits on rpc request
+> > to complete, which never completes and processes wait in there for
+> > ever?
+> >
+> > And unfortunately in my case, I cannot use "mount --bind". I want to
+> > use the same file system from two different nodes, and I want file &
+> > record locking to be consistent. The only way to make sure locking is
+> > consistent is to use loopback NFS on 1 host and NFS mount the same
+> > file system on other nodes, so that NFS server ensures file & record
+> > locking to be consistent. Is there any alternative to this?
+> >
+> > Is it possible or any efforts to integrate ext3 or other local file
+> > systems locking & network file system locking, so that user can use
+> > "mount --bind" on local host and NFS mount on remote nodes, but file &
+> > record locking will be consistent between both the nodes?
+>
+> Could you be a bit more specific? Is the problem that your application
+> is using BSD locks (flock()) instead of POSIX locks?
+>
+> Cheers
+>    Trond
+>
