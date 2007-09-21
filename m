@@ -1,103 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXIUVDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932125AbXIUVEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932318AbXIUVDz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 17:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764670AbXIUU5J
+	id S932125AbXIUVEc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 17:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765760AbXIUU6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:57:09 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:4637 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762932AbXIUU5H (ORCPT
+	Fri, 21 Sep 2007 16:58:48 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:10218 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765750AbXIUU6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:57:07 -0400
-Date: Fri, 21 Sep 2007 22:57:04 +0200
+	Fri, 21 Sep 2007 16:58:47 -0400
+Date: Fri, 21 Sep 2007 22:58:33 +0200
 From: Muli Ben-Yehuda <muli@il.ibm.com>
 To: Andi Kleen <ak@suse.de>
-Cc: bernarde@br.ibm.com, Andrew Morton <akpm@osdl.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
+Cc: Andrew Morton <akpm@osdl.org>, Linux-Kernel <linux-kernel@vger.kernel.org>,
        Muli Ben-Yehuda <muli@il.ibm.com>
-Subject: [PATCH 1/2] x86-64: Calgary - fix calgary=disable=<busnum> for CalIOC2
-Message-ID: <20070921205704.GB7640@rhun.ibm.com>
+Subject: [PATCH 2/2] x86-64: Calgary - get rid of translate_phb
+Message-ID: <20070921205833.GC7640@rhun.ibm.com>
+References: <20070921205704.GB7640@rhun.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070921205704.GB7640@rhun.ibm.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The old check we used based on dev->bus->number is wrong for devices
-on CalIOC2. Instead look whether we have an IOMMU table for that bus -
-if not, translation is disabled.
-
-Thanks to Murillo Fernandes Bernardes <bernarde@br.ibm.com> for
-spotting, suggesting a fix and testing.
+Now that we check for translation enabled/disabled based on the
+presence of the IOMMU translation table, we can get rid of
+translate_phb.
 
 Signed-off-by: Muli Ben-Yehuda <muli@il.ibm.com>
-Acked-by: Murillo Fernandes Bernardes <bernarde@br.ibm.com>
 ---
-Andi, This is Calgary 2.6.24 material - please apply.
+ pci-calgary.c |   31 +++++++++++++++----------------
+ 1 files changed, 15 insertions(+), 16 deletions(-)
 
- pci-calgary.c |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
-
-diff -r ca20f7bdb869 -r c9308d0538d9 arch/x86_64/kernel/pci-calgary.c
---- a/arch/x86_64/kernel/pci-calgary.c	Sun Aug 12 11:38:08 2007 +0300
-+++ b/arch/x86_64/kernel/pci-calgary.c	Sun Aug 12 11:43:49 2007 +0300
-@@ -220,6 +220,12 @@ static inline unsigned int num_dma_pages
- 	return npages;
+diff -r c9308d0538d9 -r a7833c71f4df arch/x86_64/kernel/pci-calgary.c
+--- a/arch/x86_64/kernel/pci-calgary.c	Sun Aug 12 11:43:49 2007 +0300
++++ b/arch/x86_64/kernel/pci-calgary.c	Sun Aug 12 11:45:29 2007 +0300
+@@ -226,12 +226,6 @@ static inline int translation_enabled(st
+ 	return (tbl != NULL);
  }
  
-+static inline int translation_enabled(struct iommu_table *tbl)
-+{
-+	/* only PHBs with translation enabled have an IOMMU table */
-+	return (tbl != NULL);
-+}
+-static inline int translate_phb(struct pci_dev* dev)
+-{
+-	int disabled = bus_info[dev->bus->number].translation_disabled;
+-	return !disabled;
+-}
+-
+ static void iommu_range_reserve(struct iommu_table *tbl,
+ 	unsigned long start_addr, unsigned int npages)
+ {
+@@ -1197,7 +1191,7 @@ static int __init calgary_init(void)
+ {
+ 	int ret;
+ 	struct pci_dev *dev = NULL;
+-	void *tce_space;
++	struct calgary_bus_info *info;
+ 
+ 	ret = calgary_locate_bbars();
+ 	if (ret)
+@@ -1209,12 +1203,14 @@ static int __init calgary_init(void)
+ 			break;
+ 		if (!is_cal_pci_dev(dev->device))
+ 			continue;
+-		if (!translate_phb(dev)) {
 +
- static inline int translate_phb(struct pci_dev* dev)
++		info = &bus_info[dev->bus->number];
++		if (info->translation_disabled) {
+ 			calgary_init_one_nontraslated(dev);
+ 			continue;
+ 		}
+-		tce_space = bus_info[dev->bus->number].tce_space;
+-		if (!tce_space && !translate_empty_slots)
++
++		if (!info->tce_space && !translate_empty_slots)
+ 			continue;
+ 
+ 		ret = calgary_init_one(dev);
+@@ -1232,11 +1228,13 @@ error:
+ 			break;
+ 		if (!is_cal_pci_dev(dev->device))
+ 			continue;
+-		if (!translate_phb(dev)) {
++
++		info = &bus_info[dev->bus->number];
++		if (info->translation_disabled) {
+ 			pci_dev_put(dev);
+ 			continue;
+ 		}
+-		if (!bus_info[dev->bus->number].tce_space && !translate_empty_slots)
++		if (!info->tce_space && !translate_empty_slots)
+ 			continue;
+ 
+ 		calgary_disable_translation(dev);
+@@ -1549,7 +1547,7 @@ static int __init calgary_fixup_tce_spac
+ static int __init calgary_fixup_tce_spaces(void)
  {
- 	int disabled = bus_info[dev->bus->number].translation_disabled;
-@@ -384,7 +390,7 @@ static void calgary_unmap_sg(struct devi
- {
- 	struct iommu_table *tbl = find_iommu_table(dev);
+ 	struct pci_dev *dev = NULL;
+-	void *tce_space;
++	struct calgary_bus_info *info;
  
--	if (!translate_phb(to_pci_dev(dev)))
-+	if (!translation_enabled(tbl))
- 		return;
+ 	if (no_iommu || swiotlb || !calgary_detected)
+ 		return -ENODEV;
+@@ -1562,11 +1560,12 @@ static int __init calgary_fixup_tce_spac
+ 			break;
+ 		if (!is_cal_pci_dev(dev->device))
+ 			continue;
+-		if (!translate_phb(dev))
++
++		info = &bus_info[dev->bus->number];
++		if (info->translation_disabled)
+ 			continue;
  
- 	while (nelems--) {
-@@ -424,7 +430,7 @@ static int calgary_map_sg(struct device 
- 	unsigned long entry;
- 	int i;
+-		tce_space = bus_info[dev->bus->number].tce_space;
+-		if (!tce_space)
++		if (!info->tce_space)
+ 			continue;
  
--	if (!translate_phb(to_pci_dev(dev)))
-+	if (!translation_enabled(tbl))
- 		return calgary_nontranslate_map_sg(dev, sg, nelems, direction);
- 
- 	for (i = 0; i < nelems; i++ ) {
-@@ -471,7 +477,7 @@ static dma_addr_t calgary_map_single(str
- 	uaddr = (unsigned long)vaddr;
- 	npages = num_dma_pages(uaddr, size);
- 
--	if (translate_phb(to_pci_dev(dev)))
-+	if (translation_enabled(tbl))
- 		dma_handle = iommu_alloc(tbl, vaddr, npages, direction);
- 	else
- 		dma_handle = virt_to_bus(vaddr);
-@@ -485,7 +491,7 @@ static void calgary_unmap_single(struct 
- 	struct iommu_table *tbl = find_iommu_table(dev);
- 	unsigned int npages;
- 
--	if (!translate_phb(to_pci_dev(dev)))
-+	if (!translation_enabled(tbl))
- 		return;
- 
- 	npages = num_dma_pages(dma_handle, size);
-@@ -510,7 +516,7 @@ static void* calgary_alloc_coherent(stru
- 		goto error;
- 	memset(ret, 0, size);
- 
--	if (translate_phb(to_pci_dev(dev))) {
-+	if (translation_enabled(tbl)) {
- 		/* set up tces to cover the allocated range */
- 		mapping = iommu_alloc(tbl, ret, npages, DMA_BIDIRECTIONAL);
- 		if (mapping == bad_dma_address)
+ 		calgary_fixup_one_tce_space(dev);
