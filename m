@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764433AbXIUUzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765046AbXIUUzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764433AbXIUUzI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763027AbXIUUp0
+	id S1765046AbXIUUzp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763306AbXIUUp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:45:26 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33006 "EHLO mx2.suse.de"
+	Fri, 21 Sep 2007 16:45:27 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33012 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763375AbXIUUpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:45:15 -0400
+	id S1763377AbXIUUpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:45:16 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709211044.901175000@suse.de>
 In-Reply-To: <200709211044.901175000@suse.de>
-To: bunk@stusta.de, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [31/45] i386: make struct apic_probe static
-Message-Id: <20070921204513.D188A14F09@wotan.suse.de>
-Date: Fri, 21 Sep 2007 22:45:13 +0200 (CEST)
+To: vapier@gentoo.org, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [32/45] x86_64: hide cond_syscall behind __KERNEL__
+Message-Id: <20070921204514.DF01414EFF@wotan.suse.de>
+Date: Fri, 21 Sep 2007 22:45:14 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Adrian Bunk <bunk@stusta.de>
+From: Mike Frysinger <vapier@gentoo.org>
 
-This patch makes the needlessly global struct apic_probe static.
+This brings x86_64 into line with all other architectures by only defining
+cond_syscall() when __KERNEL__ is defined.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
 
- arch/i386/mach-generic/probe.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/asm-x86_64/unistd.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Index: linux/arch/i386/mach-generic/probe.c
+Index: linux/include/asm-x86_64/unistd.h
 ===================================================================
---- linux.orig/arch/i386/mach-generic/probe.c
-+++ linux/arch/i386/mach-generic/probe.c
-@@ -22,7 +22,7 @@ extern struct genapic apic_default;
+--- linux.orig/include/asm-x86_64/unistd.h
++++ linux/include/asm-x86_64/unistd.h
+@@ -676,6 +676,7 @@ asmlinkage long sys_rt_sigaction(int sig
+ #endif	/* __KERNEL__ */
+ #endif	/* __NO_STUBS */
  
- struct genapic *genapic = &apic_default;
++#ifdef __KERNEL__
+ /*
+  * "Conditional" syscalls
+  *
+@@ -683,5 +684,6 @@ asmlinkage long sys_rt_sigaction(int sig
+  * but it doesn't work on all toolchains, so we just do it by hand
+  */
+ #define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
++#endif	/* __KERNEL__ */
  
--struct genapic *apic_probe[] __initdata = { 
-+static struct genapic *apic_probe[] __initdata = {
- 	&apic_summit,
- 	&apic_bigsmp, 
- 	&apic_es7000,
+ #endif /* _ASM_X86_64_UNISTD_H_ */
