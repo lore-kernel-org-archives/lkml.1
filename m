@@ -1,85 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbXIUStQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbXIUSty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762165AbXIUStQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760110AbXIUStA
+	id S1762103AbXIUSty (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760110AbXIUStm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:49:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36719 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759454AbXIUSs7 (ORCPT
+	Fri, 21 Sep 2007 14:49:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47506 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760836AbXIUStl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:48:59 -0400
-Date: Fri, 21 Sep 2007 11:48:58 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, ak@suse.de,
-       linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       asit.k.mallick@intel.com
-Subject: Re: x86_64: potential critical issue with quicklists and page table
- pages
-In-Reply-To: <20070921180742.GH20863@linux-os.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0709211145520.17160@schroedinger.engr.sgi.com>
-References: <20070921180742.GH20863@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Sep 2007 14:49:41 -0400
+Date: Fri, 21 Sep 2007 11:48:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de,
+       yur@emcraft.com, saeed.bishara@gmail.com, shannon.nelson@intel.com
+Subject: Re: [PATCH 2.6.23-rc7 0/3] async_tx and md-accel fixes for 2.6.23
+Message-Id: <20070921114823.49d00263.akpm@linux-foundation.org>
+In-Reply-To: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com>
+References: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007, Siddha, Suresh B wrote:
+On Thu, 20 Sep 2007 18:27:35 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
 
-> Essentially quicklist free routines are doing something like
-> __quicklist_free()
-> 	...
-> 	if (unlikely(nid != numa_node_id())) {
-> 		__free_page(page);
-> 		...
-> 	}
+> Fix a couple bugs and provide documentation for the async_tx api.
 > 
-> 	....
+> Neil, please 'ack' patch #3.
 > 
-> 
-> Now this will potentially cause a problem, if a cpu in someother node starts
-> using this page, while the corresponding TLB entries are still alive
-> in the original cpu which is still freeing the page table pages.
+> git://lost.foo-projects.org/~dwillia2/git/iop async-tx-fixes-for-linus
 
-Hmmm... Yes could be.
+Well it looks like Neil is on vacation or is hiding from us or something.
 
-> This potentially can cause SW failures and hard to debug issues like
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0205.2/1254.html
+In which case our options would be to go ahead and merge your #3 with
+our fingers crossed, or wait and do it in 2.6.23.1 or .2.
 
-Cannot get to this page:
+How serious is this bug which you're fixing?  Will it affect users
+of "legacy" MD setups, or only those who have enabled fancy dma-engine
+features?
 
-Not Found
-
-The requested URL /hypermail/linux/kernel/0205.2/1254.htm was not found on 
-this server.
-
-
-> Can we revert this commit for 2.6.23 and look at this code post 2.6.23?
-
-We can remove this piece alone since it was an optimization.
-
----
- include/linux/quicklist.h |    7 -------
- 1 file changed, 7 deletions(-)
-
-Index: linux-2.6/include/linux/quicklist.h
-===================================================================
---- linux-2.6.orig/include/linux/quicklist.h	2007-09-21 11:46:44.000000000 -0700
-+++ linux-2.6/include/linux/quicklist.h	2007-09-21 11:47:01.000000000 -0700
-@@ -58,13 +58,6 @@ static inline void __quicklist_free(int 
- 	struct quicklist *q;
- 	int nid = page_to_nid(page);
- 
--	if (unlikely(nid != numa_node_id())) {
--		if (dtor)
--			dtor(p);
--		__free_page(page);
--		return;
--	}
--
- 	q = &get_cpu_var(quicklist)[nr];
- 	*(void **)p = q->page;
- 	q->page = p;
+Either way, we need to get #2 (at least) in to Linus.
