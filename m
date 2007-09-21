@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760557AbXIUPCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbXIUPEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760557AbXIUPCT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 11:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757803AbXIUPCH
+	id S1760778AbXIUPEm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 11:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758783AbXIUPEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 11:02:07 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:19225 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754899AbXIUPCG (ORCPT
+	Fri, 21 Sep 2007 11:04:35 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:55589 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757803AbXIUPEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 11:02:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CofaBDAFuWswxqPkgFlhZLPo604PlzPj0CZEasEvgTbXTxL7komPzeksh+L+U5giRXv+oZGpusYdEnWrPJbcDfMVQG00GXI5ZYVahJikf0B0pfTxJPjCIye7fSj6XQ/YdjHAas3jlUaCb34ruRLMXkN5x7b7+7lqElDNYKiZrzU=
-Message-ID: <851fc09e0709210802o3be2789s8e93410fa07f7066@mail.gmail.com>
-Date: Fri, 21 Sep 2007 23:02:01 +0800
-From: "huang ying" <huang.ying.caritas@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
-Cc: linux-pm@lists.linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Nigel Cunningham" <nigel@nigel.suspend2.net>, nigel@suspend2.net,
-       "Kexec Mailing List" <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jeremy Maitin-Shepard" <jbms@cmu.edu>, "Len Brown" <lenb@kernel.org>
-In-Reply-To: <200709211631.19130.rjw@sisk.pl>
+	Fri, 21 Sep 2007 11:04:34 -0400
+Date: Fri, 21 Sep 2007 17:04:49 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Peter Stahlir <peter.stahlir@googlemail.com>
+Cc: Muhammad Tayyab <mail.tayyab@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Git as a filesystem
+Message-ID: <20070921150449.GE13255@stusta.de>
+References: <fbe8b1780709210348n1b1bd739rf5bfe0a73381b3ec@mail.gmail.com> <46F3AAC1.5050409@gmail.com> <fbe8b1780709210437s18b24945jab5a3ffa07646427@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <1190266447.21818.17.camel@caritas-dev.intel.com>
-	 <200709211409.25008.rjw@sisk.pl>
-	 <851fc09e0709210614q33cf3c81u1441fda17a66a6fd@mail.gmail.com>
-	 <200709211631.19130.rjw@sisk.pl>
+In-Reply-To: <fbe8b1780709210437s18b24945jab5a3ffa07646427@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, 21 September 2007 15:14, huang ying wrote:
-> > On 9/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Friday, 21 September 2007 05:33, Eric W. Biederman wrote:
-> > > > Nigel Cunningham <nigel@nigel.suspend2.net> writes:
-> [--snip--]
-> > > >
-> > > > No one has yet attacked the hard problem of coming up with separate
-> > > > hibernate methods for drivers.
+On Fri, Sep 21, 2007 at 01:37:33PM +0200, Peter Stahlir wrote:
+> > Peter Stahlir wrote:
+> > > Hi!
 > > >
-> > > Well, I've been playing a bit with that for some time, but it's not easy by any
-> > > means.
+> > > Is it possible/feasible to use git as a filesystem?
+> > > Like having git on top of ext3.
 > > >
-> > > In short, I'm seeing some problems related to the handling of ACPI that seem to
-> > > shatter the entire idea of having separate hibernate methods, at least as far
-> > > as ACPI systems are concerned.
-> >
-> > So sadly to hear this. Can you details it a little? Or a link?
->
-> Well, the problem is that apparently some systems (eg. my HP nx6325) expect us
-> to execute the _PTS ACPI global control method before creating the image _and_
-> to execute acpi_enter_sleep_state(ACPI_STATE_S4) in order to finally put the
-> system into the sleep state.  In particular, on nx6325, if we don't do that,
-> then after the restore the status of the AC power will not be reported
-> correctly (and if you replace the battery while in the sleep state, the
-> battery status will not be updated correctly after the restore).  Similar
-> issues have been reported for other machines.
->
-> Now, the ACPI specification requires us to put devices into low power states
-> before executing _PTS and that's exactly what we're doing before a suspend to
-> RAM.  Thus, it seems that in general we need to do the same for hibernation on
-> ACPI systems.
+> > > This way I could do a gitfs-gc and there is only one
+> > > pack file sitting on the disk which is a compressed
+> > > version of the whole system.
+> > > I am not interested in a version controlled filesystem,
+> > > only in the space saving aspects.
+> 
+> 
+> 2007/9/21, Muhammad Tayyab <mail.tayyab@gmail.com>:
+> > Hi,
+> >    I think it would be a bad idea to use Git as a part of filesystem. If
+> > someone wants to install it and use it, its his choice, but if we make
+> > it the part of Filesystem, and just use it for compression, this will
+> > reduce the performance.
+> >    For compression, i think more preferable is to make a patch for ext3
+> > that implements the compression, like compression patch for ext2.
+> 
+> As I understand it the compression patches for ext2 only compress
+> a single file. I think gitfs would compress much better because it
+> deltifies between all files. So if you are not interested in
+> performance but space
+> efficiency a gitfs would be nice.
 
-Then, is it possible to separate device quiesce from device suspend.
-Perhaps not for swsusp, but for kexec based hibernation?
+git is kewl, so it must be the solution for all problems?
 
-Best Regards,
-Huang Ying
+git keeps information of all versions of a file.
+This can by definition not be smaller than only storing the current 
+version.
+
+And git doesn't perform any magic, it uses the zlib library that is 
+neither unusual nor the best compression method available.
+
+> Peter
+>...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
