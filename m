@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbXIUSi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbXIUSms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbXIUSi5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbXIUSit
+	id S1760979AbXIUSms (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbXIUSmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:38:49 -0400
-Received: from mail.clusterfs.com ([74.0.229.162]:43007 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752802AbXIUSis (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:38:48 -0400
-Date: Fri, 21 Sep 2007 12:39:15 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [patch 3/5] VFS: pass open file to ->xattr()
-Message-ID: <20070921183915.GP32520@schatzie.adilger.int>
-Mail-Followup-To: Miklos Szeredi <miklos@szeredi.hu>,
-	akpm@linux-foundation.org, hch@infradead.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20070921122343.307289079@szeredi.hu> <20070921123333.247493758@szeredi.hu>
-Mime-Version: 1.0
+	Fri, 21 Sep 2007 14:42:42 -0400
+Received: from zaphod.dth.net ([85.159.112.68]:35649 "EHLO zaphod.dth.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756646AbXIUSmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 14:42:42 -0400
+Date: Fri, 21 Sep 2007 20:42:36 +0200
+From: Danny ter Haar <dth@dth.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: typo fix Kernel config option
+Message-ID: <20070921184236.GA12584@dth.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070921123333.247493758@szeredi.hu>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 21, 2007  14:23 +0200, Miklos Szeredi wrote:
-> @@ -1214,10 +1214,12 @@ struct inode_operations {
-> +	int (*setxattr) (struct dentry *, const char *,const void *,size_t,int,
-> +			 struct file *);
-> +	ssize_t (*getxattr) (struct dentry *, const char *, void *, size_t,
-> +			     struct file *);
-> +	ssize_t (*listxattr) (struct dentry *, char *, size_t, struct file *);
-> +	int (*removexattr) (struct dentry *, const char *, struct file *);
+--- lib/Kconfig.debug.orig      2007-09-21 20:40:08.544353283 +0200
++++ lib/Kconfig.debug   2007-09-21 20:40:33.478816660 +0200
+@@ -284,7 +284,7 @@
+        select KALLSYMS_ALL
+ 
+ config LOCK_STAT
+-       bool "Lock usage statisitics"
++       bool "Lock usage statistics"
+        depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+        select LOCKDEP
+        select DEBUG_SPINLOCK
 
-Likewise - these are no longer inode operations if you need a file.
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+-- 
+The five R's of windows tech support: Retry, Reboot, Reinstall, Replace & Resign
