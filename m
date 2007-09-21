@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbXIUMpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbXIUMrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758417AbXIUMpz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 08:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbXIUMpr
+	id S1758264AbXIUMrR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 08:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXIUMrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 08:45:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:23110 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbXIUMpq (ORCPT
+	Fri, 21 Sep 2007 08:47:07 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:64505 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbXIUMrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 08:45:46 -0400
+	Fri, 21 Sep 2007 08:47:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Zn8iYf9gMxelF9Fy3zewASOeiqiB9TAZE3nNQfFwCMtiW+YvissxpZl1mlbWuf165iqK3GTFZRNRi90deb/L49uuxxcdTtCLHrh8uilCR4viskHobQU/eQP3x2WDuFCoiVBvLY2fsXkNJHJIjoVAtTMpXoZeJCSVTE6V0CBu9YU=
-Subject: Re: [PATCH] Reduce __print_symbol/sprint_symbol stack usage.
-From: Gilboa Davara <gilboad@gmail.com>
-Reply-To: gilboad@gmail.com
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <46F1314B.8040105@grupopie.com>
-References: <1189856129.18191.11.camel@gilboa-home-dev.localdomain>
-	 <a781481a0709150602v6be754caw4fbe0f76c8db5beb@mail.gmail.com>
-	 <1189869329.18191.77.camel@gilboa-home-dev.localdomain>
-	 <1189879681.18191.93.camel@gilboa-home-dev.localdomain>
-	 <alpine.LFD.0.999.0709190610540.26241@enigma.security.iitk.ac.in>
-	 <46F1314B.8040105@grupopie.com>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 14:45:37 +0200
-Message-Id: <1190378737.30016.15.camel@gilboa-home-dev.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZZINsEpFrC6J46tVQzelYCGRnv5CxS9wUw/t+QvM+C0r0nuZQMScw6SMHuzeAw6mWgnS55Ddp/EFDGWypAUGInZQgV0m5p+2pWLnGBe05sfiYeqBI6VUmXED/yHdr173B9lGFG+5cfnfuSgFgGI6OJj0IvyGEff9nTKdKzHKS2U=
+Message-ID: <3402120c0709210547mb66162fv759a8f088beb0437@mail.gmail.com>
+Date: Fri, 21 Sep 2007 14:47:04 +0200
+From: "Arvin Moezzi" <moezzia@gmail.com>
+To: "James Pearson" <james-p@moving-picture.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
+Cc: aarapov@redhat.com, akpm@linux-foundation.org, hpa@zytor.com
+In-Reply-To: <46F39319.9090705@moving-picture.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <E1IXziD-0003YJ-0w@moving-picture.com>
+	 <3402120c0709201856j58c3775bq8dc7886785a11344@mail.gmail.com>
+	 <46F39319.9090705@moving-picture.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Paulo,
+> >>+
+> >>+               if (copy_to_user(buf, page, retval)) {
+> >
+> >                                                                 ^^^^
+> > shouldn't you only copy min(count,retval) bytes? otherwise you could
+> > write beyond the users buffer "buf", right?
+>
+> AFAIK, 'retval' can never be greater than 'this_len', which can never be
+> greater than 'max_len', which can never be greater than 'count'
 
-[snip]
-> I must say I agree with Satyam here.
-> 
-> Locking in the panic path might leave us without some critical debug 
-> information, which is much more important than all this.
-> 
-> Maybe it would be better to change the print_symbol interface to avoid 
-> having a "char buffer[KSYM_SYMBOL_LEN];" at all.
-> 
-> Most print_symbol callers use something like "yada yada %s" as the 
-> format string, with an optional "\n" in the end.
-> 
-> if we change the interface from "print_symbol(fmt, addr)" to 
-> "print_symbol(prefix, addr, int newline)" we can simply do:
-> 
-> printk(prefix);
-> printk_symbol(addr);
-> if (newline)
-> 	printk("\n");
-> 
-> where "printk_symbol" is a new function that does the same as 
-> sprint_symbol, but does "printk" instead of "sprintf".
-> 
-> This should reduce immensely the stack usage of print_symbol without the 
-> need for locking.
+I think that's not true. 'count' is changing through the iteration.
+The difference in the mem_read():
 
-I fully agree.
-... Further more, multiple printk_symbols should be combined into a
-single, multi-line printk transaction. (To prevent debug printk's from
-trashing a BUG() dump_stack). 
+* while (count > 0) {
+*     int this_len, retval;
+*
+*      this_len = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+*      retval = access_process_vm(task, src, page, this_len, 0);
+*
+*      ...
+* }
 
-> 
-> Of course this requires changing _all_ callers of print_symbol to use 
-> the new interface, but these are less than 100 ;)
+is the fact, that this_len = min(PAGE_SIZE, count) is in the
+iteration block, hence retval <= this_len <= count in each iteration
+step. So this is ok. But IMHO in your code 'retval' may be bigger than
+'count' in the last iteration of the block, because 'max_len' is fix
+through your iteration but 'count' is changing. Or am i missing
+something?
 
-This is my first contribution to the Linux kernel. As such I rather
-start small, and work my way up slowly. (Read: solve the immediate stack
-over-run now, think about changing the symbol_display interface later)
+> James Pearson
 
-> 
-> Comments?
-
-I do agree that the current interface needs work.
-
-... But as I said, I rather start slowly and on small scale. (Though I
-did find a rather problematic place to start at... ;))
-
-- Gilboa
-
+Arvin
