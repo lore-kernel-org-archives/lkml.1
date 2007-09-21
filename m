@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbXIUNxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbXIUNxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbXIUNxA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbXIUNwx
+	id S1759925AbXIUNxc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758183AbXIUNxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:52:53 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:49290 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757230AbXIUNww (ORCPT
+	Fri, 21 Sep 2007 09:53:25 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:55389 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754686AbXIUNxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:52:52 -0400
-Date: Fri, 21 Sep 2007 14:52:44 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Peter Fordham <peter.fordham@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: fpu IO port reservation (arch/i386)
-In-Reply-To: <a71b7b480709210622l23481221pd09302a827b55eb@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64N.0709211440380.2724@blysk.ds.pg.gda.pl>
-References: <a71b7b480709210622l23481221pd09302a827b55eb@mail.gmail.com>
+	Fri, 21 Sep 2007 09:53:24 -0400
+Date: Fri, 21 Sep 2007 15:53:23 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Peter Stahlir <peter.stahlir@googlemail.com>
+cc: Muhammad Tayyab <mail.tayyab@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Git as a filesystem
+In-Reply-To: <fbe8b1780709210630x492779f0s76322394467ff76b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0709211552240.30810@fbirervta.pbzchgretzou.qr>
+References: <fbe8b1780709210348n1b1bd739rf5bfe0a73381b3ec@mail.gmail.com> 
+ <46F3AAC1.5050409@gmail.com>  <fbe8b1780709210437s18b24945jab5a3ffa07646427@mail.gmail.com>
+  <fbe8b1780709210446i24a7ee84reaa232be2d3d089e@mail.gmail.com> 
+ <Pine.LNX.4.64.0709211449370.30810@fbirervta.pbzchgretzou.qr>
+ <fbe8b1780709210630x492779f0s76322394467ff76b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
 
-> Does anybody know why we reserve this range of IO ports for 'fpu'?
-> AFAIK from all the IO maps I can find on the internet for various x86
-> chipsets only 0x00f0 is actaully ever used.
+On Sep 21 2007 15:30, Peter Stahlir wrote:
+>
+>> >For example, imagine running a complete Debian mirror on top of a
+>> >Debian system with gitfs. How big would the packfile be for this 252GB
+>> >beast?
+>>
+>> Probably 252 GB. Lots of the packages are already compressed, and
+>> each time a minimal change is done, the bytestream changes, so long
+>> story short, deltifying between to compressed streams is likely to
+>> deltify horribly.
+>
+>What about adding deb or tar support to git?
 
- There are two ports used: 0xf0 is the busy latch reset and 0xf1 is the 
-coprocessor reset.  They are legacy ports resulting from the interesting 
-way the FPU has been wired by IBM in their PC design.  None of them is 
-used by Linux for i486 and newer systems, which can support the FPU in its 
-native configuration.
+Blatant layering violation.
 
-> ./arch/i386/kernel/setup.c
-> 282 }, {
-> 283         .name   = "fpu",
-> 284         .start  = 0x00f0,
-> 285         .end    = 0x00ff,
-> 286         .flags  = IORESOURCE_BUSY | IORESOURCE_IO
-> 287 } };
+>Then git doesn't store deb archives but the contents of archives.
 
- The reason is most likely the definition of the address decoder for the 
-chip-select for this range in the IBM PC -- like with all motherboard port 
-I/O peripherals the smallest size of the chunk the decoder resolved to was 
-16 bytes, with unused locations aliasing to defined ones.
+And waht about metadata (e.g. rpm Vendor: tag)? tar does not store that.
 
-> The reason I ask is that I've written a watchdog driver for a Nexcom
-> MAX6600 server blade type device which has the watchdog control
-> register at 0xF2. Currently request_region fails due to the fpu
-> reservation.
+>This way redundancy across architectures can be deltified.
 
- Reservations for some of the legacy ranges have been shrunk in the past; 
-perhaps this one could too.  I hope you have a way to make sure not to 
-interact badly with the FPU possibly being decoded there on other systems 
--- the original registers are write-only.
+Not at all. Different instruction sets, different codes ==> delta -> 0.
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-  Maciej
