@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbXIUPZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbXIUPbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbXIUPZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 11:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbXIUPZR
+	id S1759916AbXIUPbm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 11:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbXIUPbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 11:25:17 -0400
-Received: from mga03.intel.com ([143.182.124.21]:47970 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752320AbXIUPZP convert rfc822-to-8bit (ORCPT
+	Fri, 21 Sep 2007 11:31:34 -0400
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:46039 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752986AbXIUPbd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 11:25:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,284,1186383600"; 
-   d="scan'208";a="283692270"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 21 Sep 2007 11:31:33 -0400
+X-Greylist: delayed 1248 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Sep 2007 11:31:33 EDT
+Message-ID: <46F3DEF6.3010404@opengridcomputing.com>
+Date: Fri, 21 Sep 2007 10:10:46 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.23-rc7 1/3] async_tx: usage documentation and developernotes
-Date: Fri, 21 Sep 2007 08:25:12 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C03157788@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20070921012740.17157.49639.stgit@dwillia2-linux.ch.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.23-rc7 1/3] async_tx: usage documentation and developernotes
-thread-index: Acf77pzpzzfuASQDQ++O27jJKRxfFQAc8dEA
-References: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com> <20070921012740.17157.49639.stgit@dwillia2-linux.ch.intel.com>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Williams, Dan J" <dan.j.williams@intel.com>,
-       <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>,
-       <neilb@suse.de>
-Cc: <akpm@linux-foundation.org>, <yur@emcraft.com>, <saeed.bishara@gmail.com>
-X-OriginalArrivalTime: 21 Sep 2007 15:25:13.0475 (UTC) FILETIME=[9AF04D30:01C7FC63]
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: rdreier@cisco.com, sean.hefty@intel.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [PATCH v2] iw_cxgb3: Support "iwarp-only" interfaces to avoid
+ 4-tuple conflicts.
+References: <20070913191617.30937.95960.stgit@dell3.ogc.int> <20070914130941.GG18517@2ka.mipt.ru> <46EC00BE.3020801@opengridcomputing.com> <20070916142241.GA26848@2ka.mipt.ru> <46EE9C50.7070406@opengridcomputing.com> <20070919105612.GA31158@2ka.mipt.ru>
+In-Reply-To: <20070919105612.GA31158@2ka.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Williams, Dan J 
->Sent: Thursday, September 20, 2007 6:28 PM
->To: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org; 
->neilb@suse.de
->Cc: akpm@linux-foundation.org; yur@emcraft.com; 
->saeed.bishara@gmail.com; Nelson, Shannon
->Subject: [PATCH 2.6.23-rc7 1/3] async_tx: usage documentation 
->and developernotes
->
->Signed-off-by: Dan Williams <dan.j.williams@intel.com>
->---
->
-> Documentation/crypto/async-tx-api.txt |  217 
->+++++++++++++++++++++++++++++++++
-> 1 files changed, 217 insertions(+), 0 deletions(-)
-
-Thanks, Dan.  In addition to Randy's most excellent nit-picking, here
-are a couple more minor nits.
-
-[...]
->+4.2 "My application needs finer control of hardware channels"
->+This requirement seems to arise from cases where a DMA engine 
->driver is
-[...]
->+dma_async_client_chan_request triggers dmaeninge to notify 
->the client of
-
-s/dmaeninge/dmaengine/
-
-[...]
->+5 SOURCE
->+drivers/dma/dmaengine.c: offload engine channel management routines
->+drivers/dma/: location for offload engine drivers
->+crypto/async_tx/async_tx.c: async_tx interface to dmaengine 
->and common code
->+crypto/async_tx/async_memcpy.c: copy offload
->+crypto/async_tx/async_memset.c: memory fill offload
->+crypto/async_tx/async_xor.c: xor offload
-
-Also include/linux/dmaengine.h
 
 
-sln
---
-======================================================================
-Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
-Shannon.Nelson@intel.com                I don't speak for Intel
-(503) 712-7659                    Parents can't afford to be squeamish.
+Evgeniy Polyakov wrote:
+> Hi Steve.
+> 
+> On Mon, Sep 17, 2007 at 10:25:04AM -0500, Steve Wise (swise@opengridcomputing.com) wrote:
+>>> Does creating the whole new netdevice is a too big overhead, or is it
+>>> considered bad idea?
+>> I think its too big overhead, and pretty invasive on the low level cxgb3 
+>> driver.  I think having a device in the 'ifconfig -a' after iw_cxgb3 is 
+>> loaded and devices discovered would be a good thing for the admin.  This 
+>> is the angle Roland suggested.  I'm just not sure how to implement it.
+>>
+>> But if someone could explain how I might create this full netdevice as a 
+>> pseudo device on top of the real one, maybe I could implement it.
+>>
+>> Note that non TCP traffic still needs to utilize this interface for ND 
+>> to work properly with the RDMA core.
+> 
+> Just a though - what about allowing secondary addresses with the same
+> address as main one? I.e. change bit of the core code to allow creating
+> aliases with the same address as main device, so that you would be able
+> to create ':iw' alias during rdma device initialization?
+> 
+
+The problem is that on rdma route/address resolution the rdma core CM 
+uses the routing table to look up which local device to use.  So what we 
+need is separate ip subnets for rdma vs non rdma tcp.
+
+Also, to avoid the original issue of 4-tuple conflicts, the rdma device 
+_must_ listen on specific local "rdma-only" ip addresses and thus they 
+must be not the same address as that used for native host tcp traffic.
+
+Steve.
