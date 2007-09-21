@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbXIUERe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbXIUEV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbXIUERe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 00:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbXIUER0
+	id S1755979AbXIUEV5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 00:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbXIUEVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 00:17:26 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:36838 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbXIUERY (ORCPT
+	Fri, 21 Sep 2007 00:21:51 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45003 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbXIUEVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 00:17:24 -0400
-Date: Fri, 21 Sep 2007 00:17:21 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl, bunk@kernel.org,
-       ego@in.ibm.com, oleg@tv-sign.ru, srostedt@redhat.com
-Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
-Message-ID: <20070921041721.GB15697@goodmis.org>
-References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183412.GC3819@linux.vnet.ibm.com>
+	Fri, 21 Sep 2007 00:21:50 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] Remove broken netfilter binary sysctls from bridging code
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070921020554.GE31759@nineveh.local>
+Date: Thu, 20 Sep 2007 22:21:25 -0600
+In-Reply-To: <20070921020554.GE31759@nineveh.local> (Joseph Fannin's message
+	of "Thu, 20 Sep 2007 22:05:54 -0400")
+Message-ID: <m1fy18k5ru.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070910183412.GC3819@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ continued here from comment on patch 1]
+jfannin@gmail.com (Joseph Fannin) writes:
 
-On Mon, Sep 10, 2007 at 11:34:12AM -0700, Paul E. McKenney wrote:
->  /* softirq mask and active fields moved to irq_cpustat_t in
-> diff -urpNa -X dontdiff linux-2.6.22-b-fixbarriers/include/linux/rcuclassic.h linux-2.6.22-c-preemptrcu/include/linux/rcuclassic.h
-> --- linux-2.6.22-b-fixbarriers/include/linux/rcuclassic.h	2007-08-22 14:42:23.000000000 -0700
-> +++ linux-2.6.22-c-preemptrcu/include/linux/rcuclassic.h	2007-08-22 15:21:06.000000000 -0700
-> @@ -142,8 +142,6 @@ extern int rcu_needs_cpu(int cpu);
->  extern void __rcu_init(void);
->  extern void rcu_check_callbacks(int cpu, int user);
->  extern void rcu_restart_cpu(int cpu);
-> -extern long rcu_batches_completed(void);
-> -extern long rcu_batches_completed_bh(void);
->  
->  #endif /* __KERNEL__ */
->  #endif /* __LINUX_RCUCLASSIC_H */
-> diff -urpNa -X dontdiff linux-2.6.22-b-fixbarriers/include/linux/rcupdate.h linux-2.6.22-c-preemptrcu/include/linux/rcupdate.h
-> --- linux-2.6.22-b-fixbarriers/include/linux/rcupdate.h	2007-07-19 14:02:36.000000000 -0700
-> +++ linux-2.6.22-c-preemptrcu/include/linux/rcupdate.h	2007-08-22 15:21:06.000000000 -0700
-> @@ -52,7 +52,11 @@ struct rcu_head {
->  	void (*func)(struct rcu_head *head);
->  };
->  
-> +#ifdef CONFIG_CLASSIC_RCU
->  #include <linux/rcuclassic.h>
-> +#else /* #ifdef CONFIG_CLASSIC_RCU */
-> +#include <linux/rcupreempt.h>
-> +#endif /* #else #ifdef CONFIG_CLASSIC_RCU */
->  
->  #define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
->  #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
-> @@ -218,10 +222,13 @@ extern void FASTCALL(call_rcu_bh(struct 
->  /* Exported common interfaces */
->  extern void synchronize_rcu(void);
->  extern void rcu_barrier(void);
-> +extern long rcu_batches_completed(void);
-> +extern long rcu_batches_completed_bh(void);
+> The netfilter sysctls in the bridging code don't set strategy routines:
 >
+>  sysctl table check failed: /net/bridge/bridge-nf-call-arptables .3.10.1 Missing
+> strategy
+>  sysctl table check failed: /net/bridge/bridge-nf-call-iptables .3.10.2 Missing
+> strategy
+>  sysctl table check failed: /net/bridge/bridge-nf-call-ip6tables .3.10.3 Missing
+> strategy
+>  sysctl table check failed: /net/bridge/bridge-nf-filter-vlan-tagged .3.10.4
+> Missing strategy
+>  sysctl table check failed: /net/bridge/bridge-nf-filter-pppoe-tagged .3.10.5
+> Missing strategy
+>
+>     These binary sysctls can't work. The binary sysctl numbers of
+> other netfilter sysctls with this problem are being removed.  These
+> need to go as well.
+>
+> Signed-off-by: Joseph Fannin <jfannin@gmail.com>
 
-And here we put back rcu_batches_completed and rcu_batches_completed_bh
-from rcuclassic.h to rcupdate.h ;-)
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
--- Steve
+> ---
+>
+>    This *really* needs to be reviewed by someone who knows what this
+>    is all about.  I've simply extended the removal of netfilter binary
+>    sysctl numbers so I could load bridge.ko.  I don't particularly
+>    care if I get attributed for this fix or any of that.
+>
+>    It Works For Me.
 
+Hmm.  This is an interesting case.  The proc method is forcing
+the integer to be either 0 or 1 in a racy fashion.  But none of the
+users appear to depend upon that.
+
+So this is the least broken set of binary sysctls I have seen caught
+by my check.
+
+A really good fix would be to remove the binary side and then to
+modify brnf_sysctl_call_tables to allocate a temporary ctl_table and
+integer on the stack and only set ctl->data after we have normalized
+the written value.  But since in practice nothing cares about
+the race a better fix probably isn't worth it.
+
+Eric
