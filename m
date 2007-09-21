@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbXIUBEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbXIUBHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbXIUBEe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 21:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbXIUBES
+	id S1754302AbXIUBHL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 21:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbXIUBHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 21:04:18 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:44336 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbXIUBER (ORCPT
+	Thu, 20 Sep 2007 21:07:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44618 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750778AbXIUBG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 21:04:17 -0400
-Date: Thu, 20 Sep 2007 21:03:38 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 4/4] Port of blktrace to the Linux Kernel Markers.
-Message-ID: <20070921010338.GB4951@goodmis.org>
-References: <20070918211324.161373216@polymtl.ca> <20070918211500.117442517@polymtl.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070918211500.117442517@polymtl.ca>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 20 Sep 2007 21:06:59 -0400
+Date: Thu, 20 Sep 2007 18:06:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: nigel@suspend2.net
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Message-Id: <20070920180623.5d7da7b9.akpm@linux-foundation.org>
+In-Reply-To: <200709211024.35991.nigel@nigel.suspend2.net>
+References: <1190266447.21818.17.camel@caritas-dev.intel.com>
+	<20070920100941.GA12157@atrey.karlin.mff.cuni.cz>
+	<200709211024.35991.nigel@nigel.suspend2.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 18, 2007 at 05:13:28PM -0400, Mathieu Desnoyers wrote:
-> +void blk_probe_disarm(void)
-> +{
-> +	int i, err;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
-> +		err = marker_disarm(probe_array[i].name);
-> +		BUG_ON(err);
-> +		err = IS_ERR(marker_probe_unregister(probe_array[i].name));
-> +		BUG_ON(err);
-> +	}
-> +}
+On Fri, 21 Sep 2007 10:24:34 +1000 Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
 
-As well as changing these to WARN_ON.
+> Hi Andrew.
+> 
+> On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
+> > Seems like good enough for -mm to me.
+> > 
+> > 									Pavel
+> 
+> Andrew, if I recall correctly, you said a while ago that you didn't want 
+> another hibernation implementation in the vanilla kernel. If you're going to 
+> consider merging this kexec code, will you also please consider merging 
+> TuxOnIce?
+> 
 
--- Steve
+The theory is that kexec-based hibernation will mainly use preexisting
+kexec code and will permit us to delete the existing hibernation
+implementation.
 
+That's different from replacing it.
