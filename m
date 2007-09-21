@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765046AbXIUUzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764714AbXIUUz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765046AbXIUUzp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763306AbXIUUp1
+	id S1764714AbXIUUz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763302AbXIUUp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:45:27 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33012 "EHLO mx2.suse.de"
+	Fri, 21 Sep 2007 16:45:28 -0400
+Received: from mail.suse.de ([195.135.220.2]:50079 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763377AbXIUUpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:45:16 -0400
+	id S1757631AbXIUUpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:45:17 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709211044.901175000@suse.de>
 In-Reply-To: <200709211044.901175000@suse.de>
-To: vapier@gentoo.org, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [32/45] x86_64: hide cond_syscall behind __KERNEL__
-Message-Id: <20070921204514.DF01414EFF@wotan.suse.de>
-Date: Fri, 21 Sep 2007 22:45:14 +0200 (CEST)
+To: bunk@stusta.de, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [33/45] i386: es7000 minor cleanups
+Message-Id: <20070921204515.EDCBD14EFF@wotan.suse.de>
+Date: Fri, 21 Sep 2007 22:45:15 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Mike Frysinger <vapier@gentoo.org>
+From: Adrian Bunk <bunk@stusta.de>
 
-This brings x86_64 into line with all other architectures by only defining
-cond_syscall() when __KERNEL__ is defined.
+This patch contains the following cleanups:
+- make some needlessly global functions static
+- #if 0 the unused es7000_stop_cpu()
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+AK: actually removed es7000_stop_cpu
+AK: fixed a non ISO prototype too
+
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
 
- include/asm-x86_64/unistd.h |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/i386/mach-es7000/es7000plat.c |   32 ++++++--------------------------
+ 1 file changed, 6 insertions(+), 26 deletions(-)
 
-Index: linux/include/asm-x86_64/unistd.h
+Index: linux/arch/i386/mach-es7000/es7000plat.c
 ===================================================================
---- linux.orig/include/asm-x86_64/unistd.h
-+++ linux/include/asm-x86_64/unistd.h
-@@ -676,6 +676,7 @@ asmlinkage long sys_rt_sigaction(int sig
- #endif	/* __KERNEL__ */
- #endif	/* __NO_STUBS */
- 
-+#ifdef __KERNEL__
- /*
-  * "Conditional" syscalls
-  *
-@@ -683,5 +684,6 @@ asmlinkage long sys_rt_sigaction(int sig
-  * but it doesn't work on all toolchains, so we just do it by hand
+--- linux.orig/arch/i386/mach-es7000/es7000plat.c
++++ linux/arch/i386/mach-es7000/es7000plat.c
+@@ -46,11 +46,11 @@
+  * ES7000 Globals
   */
- #define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
-+#endif	/* __KERNEL__ */
  
- #endif /* _ASM_X86_64_UNISTD_H_ */
+-volatile unsigned long	*psai = NULL;
+-struct mip_reg		*mip_reg;
+-struct mip_reg		*host_reg;
+-int 			mip_port;
+-unsigned long		mip_addr, host_addr;
++static volatile unsigned long	*psai = NULL;
++static struct mip_reg		*mip_reg;
++static struct mip_reg		*host_reg;
++static int 			mip_port;
++static unsigned long		mip_addr, host_addr;
+ 
+ /*
+  * GSI override for ES7000 platforms.
+@@ -288,28 +288,8 @@ es7000_start_cpu(int cpu, unsigned long 
+ 
+ }
+ 
+-int
+-es7000_stop_cpu(int cpu)
+-{
+-	int startup;
+-
+-	if (psai == NULL)
+-		return -1;
+-
+-	startup= (0x1000000 | cpu);
+-
+-	while ((*psai & 0xff00ffff) != startup)
+-		;
+-
+-	startup = (*psai & 0xff0000) >> 16;
+-	*psai &= 0xffffff;
+-
+-	return 0;
+-
+-}
+-
+ void __init
+-es7000_sw_apic()
++es7000_sw_apic(void)
+ {
+ 	if (es7000_plat) {
+ 		int mip_status;
