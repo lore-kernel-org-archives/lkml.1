@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbXIUTSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbXIUTU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761674AbXIUTSY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 15:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760430AbXIUTSO
+	id S1762138AbXIUTU7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 15:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760971AbXIUTUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 15:18:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:55042 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754772AbXIUTSN (ORCPT
+	Fri, 21 Sep 2007 15:20:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51855 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760281AbXIUTUv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 15:18:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Hn2j4WZQynTZ14R8KhEy/liz7+2ipNQ4u94OB1gUCd4DmNNdSX/Xy6zXYzdH8rZ+3O84v8OUQ2+ZpWJ0RKTBEj+HeIKX/h5/5Su9OOgHczjytRDBsvNqA3bLB/lv05dT2mGzi5oonH3avrWz7/U1cGvJiPzs9c7y4h5Uf2O88M0=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
-Date: Fri, 21 Sep 2007 20:18:06 +0100
-User-Agent: KMail/1.9.1
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <200709211201.24475.vda.linux@googlemail.com> <200709211905.23946.vda.linux@googlemail.com> <15775.1190399812@turing-police.cc.vt.edu>
-In-Reply-To: <15775.1190399812@turing-police.cc.vt.edu>
+	Fri, 21 Sep 2007 15:20:51 -0400
+Date: Fri, 21 Sep 2007 12:21:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       asit.k.mallick@intel.com
+Subject: Re: x86_64: potential critical issue with quicklists and page table
+ pages
+In-Reply-To: <Pine.LNX.4.64.0709211205570.17160@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.0.999.0709211212130.16478@woody.linux-foundation.org>
+References: <20070921180742.GH20863@linux-os.sc.intel.com>
+ <alpine.LFD.0.999.0709211139550.16478@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0709211149040.17160@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0709211153060.16478@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0709211204050.16478@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0709211205570.17160@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709212018.06553.vda.linux@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 September 2007 19:36, Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 21 Sep 2007 19:05:23 BST, Denys Vlasenko said:
+
+
+On Fri, 21 Sep 2007, Christoph Lameter wrote:
 > 
-> > I plan to use gzip compression on following drivers' firmware,
-> > if patches will be accepted:
-> > 
-> >    text    data     bss     dec     hex filename
-> >   17653  109968     240  127861   1f375 drivers/net/acenic.o
-> >    6628  120448       4  127080   1f068 drivers/net/dgrs.o
-> >          ^^^^^^
-> 
-> Should this be redone to use the existing firmware loading framework to
-> load the firmware instead?
+> The final flush does only check if there are too many pages on the
+> quicklists. Otherwise the quicklist is not dumped/freed (unlike the
+> mmu_gather list) but kept for the following page table page allocations
+> since we have cache hot cpu objects there.
 
-Not in every case.
+Yeah, and the whole thing seems totally bogus. It totally depends on 
+mmu_gather doing everything right (which very much includes the dependency 
+on mmu gathering disabling preempt).
 
-For example, bnx2 maintainer says that driver and
-firmware are closely tied for his driver. IOW: you upgrade kernel
-and your NIC is not working anymore.
+For exmaple, if we were to go back to the original small tlb_gather with a 
+simple quicklist on the stack, rather than the per-cpu datastructure, the 
+quicklists would immediately break horribly - simply because they are 
+incorrectly now depending on the internal semantics of that tlb-gather.
 
-Another argument is to make kernel be able to bring up NICs
-without needing firmware images in initramfs/initrd/hard drive.
---
-vda
+As it is, the quicklists try to be something separate, but by virtue of 
+being separate, they will always be buggy.
+
+The only way to fix it would be to integrate the quicklist stuff *with* 
+the mmu_gather stuff, so that these kinds of implementation issues are 
+explicitly shown in the relationship, instead of havign two "independent" 
+pieces of code where one piece very subtly depends on the exact 
+implementation of the other.
+
+		Linus
