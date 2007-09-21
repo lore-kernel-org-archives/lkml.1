@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXIUNIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbXIUNJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbXIUNIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbXIUNIL
+	id S1758866AbXIUNJt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbXIUNJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:08:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53174 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061AbXIUNIJ (ORCPT
+	Fri, 21 Sep 2007 09:09:43 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:49285 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbXIUNJm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:08:09 -0400
-Date: Fri, 21 Sep 2007 14:07:52 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, dsmith@redhat.com,
-       Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
-Message-ID: <20070921130752.GB9431@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Denys Vlasenko <vda.linux@googlemail.com>,
-	"Frank Ch. Eigler" <fche@redhat.com>, dsmith@redhat.com,
-	Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20070918211324.161373216@polymtl.ca> <20070919113737.GA18177@Krystal> <y0mtzpqvk1l.fsf@ton.toronto.redhat.com> <200709192132.00873.vda.linux@googlemail.com> <20070921125819.GA13129@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070921125819.GA13129@Krystal>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 21 Sep 2007 09:09:42 -0400
+Date: Fri, 21 Sep 2007 15:09:41 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Satyam Sharma <satyam@infradead.org>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: error from checkpatch.pl version 0.10
+In-Reply-To: <20070920155302.GA29224@shadowen.org>
+Message-ID: <Pine.LNX.4.64.0709211508480.30810@fbirervta.pbzchgretzou.qr>
+References: <200709202156.GFC11109.HOFQLOVOFFtSJM@I-love.SAKURA.ne.jp>
+ <alpine.LFD.0.999.0709201916400.17093@enigma.security.iitk.ac.in>
+ <20070920155302.GA29224@shadowen.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 08:58:19AM -0400, Mathieu Desnoyers wrote:
-> Ok, I am changing it to:
 
-As I mentioned before pleae just kill this gunk entirely as it's not needed
-at all intree.  markers are already getting far too complex, I'd rather
-want a simple useable version in now than trying to cater for every possible
-use-case.  Once the systemtap people are ready for merging their stuff into
-the kernel tree we can cater towards their needs.
+On Sep 20 2007 16:53, Andy Whitcroft wrote:
+>> >   ERROR: need consistent spacing around '*' (ctx:WxV)
+>> >   #2334: FILE: security/tomoyo/common.c:2306:
+>> >   +static unsigned int tmy_poll(struct file *file, poll_table *wait)
+>> >                                                               ^
+>> 
+>> Looks like a checkpatch.pl bug to me -- that was nothing to warn about.
+>
+>Hmm yeah this is a false positive, its hard to detect correctly.  Some
+>fool decided to use * as both a unary and binary operator and made life
+>very hard indeed.
 
+The C parser has no problem with it :p
+It is simple: there cannot be a binary * operator in the argument list.
