@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbXIUNva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbXIUNxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759700AbXIUNva (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758193AbXIUNvN
+	id S1759435AbXIUNxA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbXIUNwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:51:13 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:59223 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757709AbXIUNvL (ORCPT
+	Fri, 21 Sep 2007 09:52:53 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:49290 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757230AbXIUNww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:51:11 -0400
-Date: Fri, 21 Sep 2007 09:46:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 4/4] Port of blktrace to the Linux Kernel Markers.
-Message-ID: <20070921134602.GG13129@Krystal>
-References: <20070918211324.161373216@polymtl.ca> <20070918211500.117442517@polymtl.ca> <20070921010338.GB4951@goodmis.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070921010338.GB4951@goodmis.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:45:55 up 53 days, 14:04,  4 users,  load average: 0.44, 0.68, 0.71
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 21 Sep 2007 09:52:52 -0400
+Date: Fri, 21 Sep 2007 14:52:44 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Peter Fordham <peter.fordham@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: fpu IO port reservation (arch/i386)
+In-Reply-To: <a71b7b480709210622l23481221pd09302a827b55eb@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64N.0709211440380.2724@blysk.ds.pg.gda.pl>
+References: <a71b7b480709210622l23481221pd09302a827b55eb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Tue, Sep 18, 2007 at 05:13:28PM -0400, Mathieu Desnoyers wrote:
-> > +void blk_probe_disarm(void)
-> > +{
-> > +	int i, err;
-> > +
-> > +	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
-> > +		err = marker_disarm(probe_array[i].name);
-> > +		BUG_ON(err);
-> > +		err = IS_ERR(marker_probe_unregister(probe_array[i].name));
-> > +		BUG_ON(err);
-> > +	}
-> > +}
-> 
-> As well as changing these to WARN_ON.
-> 
-Yep.
+Hi Peter,
 
-> -- Steve
-> 
+> Does anybody know why we reserve this range of IO ports for 'fpu'?
+> AFAIK from all the IO maps I can find on the internet for various x86
+> chipsets only 0x00f0 is actaully ever used.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ There are two ports used: 0xf0 is the busy latch reset and 0xf1 is the 
+coprocessor reset.  They are legacy ports resulting from the interesting 
+way the FPU has been wired by IBM in their PC design.  None of them is 
+used by Linux for i486 and newer systems, which can support the FPU in its 
+native configuration.
+
+> ./arch/i386/kernel/setup.c
+> 282 }, {
+> 283         .name   = "fpu",
+> 284         .start  = 0x00f0,
+> 285         .end    = 0x00ff,
+> 286         .flags  = IORESOURCE_BUSY | IORESOURCE_IO
+> 287 } };
+
+ The reason is most likely the definition of the address decoder for the 
+chip-select for this range in the IBM PC -- like with all motherboard port 
+I/O peripherals the smallest size of the chunk the decoder resolved to was 
+16 bytes, with unused locations aliasing to defined ones.
+
+> The reason I ask is that I've written a watchdog driver for a Nexcom
+> MAX6600 server blade type device which has the watchdog control
+> register at 0xF2. Currently request_region fails due to the fpu
+> reservation.
+
+ Reservations for some of the legacy ranges have been shrunk in the past; 
+perhaps this one could too.  I hope you have a way to make sure not to 
+interact badly with the FPU possibly being decoded there on other systems 
+-- the original registers are write-only.
+
+  Maciej
