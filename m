@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbXIUF5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbXIUGDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbXIUF5l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 01:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXIUF5e
+	id S1754279AbXIUGDK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 02:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbXIUGC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 01:57:34 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34253 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751129AbXIUF5d (ORCPT
+	Fri, 21 Sep 2007 02:02:57 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:36092 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbXIUGC4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 01:57:33 -0400
-Date: Fri, 21 Sep 2007 11:26:11 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       mingo@elte.hu, akpm@linux-foundation.org, josht@linux.vnet.ibm.com,
-       tytso@us.ibm.com, dvhltc@us.ibm.com, tglx@linutronix.de,
-       a.p.zijlstra@chello.nl, bunk@kernel.org, ego@in.ibm.com,
-       oleg@tv-sign.ru, srostedt@redhat.com
-Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
-Message-ID: <20070921055611.GA17461@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183412.GC3819@linux.vnet.ibm.com> <20070921041721.GB15697@goodmis.org>
+	Fri, 21 Sep 2007 02:02:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=q5bSeglcG5NYV532WMerppsIibdAvRzQkfz86msXNDqwePSdp9gzfTj3+qvjWwWjDVKaGKht9WlchyoyyKB7ypSWRi2QHGjWf85RAfQ6p29Ahkl/4WkfHzUM6jr1knzX8GftmsrjIGwfZFpC9a0ybQjOULFzH+0Kfg9w3CYXKiE=
+Message-ID: <661de9470709202302l8f2352dt77541d24793a7d23@mail.gmail.com>
+Date: Fri, 21 Sep 2007 11:32:54 +0530
+From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ext4: Fix spare warnings
+Cc: akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <11903523092904-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070921041721.GB15697@goodmis.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+References: <11903523063349-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+	 <11903523092904-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+X-Google-Sender-Auth: eb9432ddacc02a9f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 12:17:21AM -0400, Steven Rostedt wrote:
-> [ continued here from comment on patch 1]
-> 
-> On Mon, Sep 10, 2007 at 11:34:12AM -0700, Paul E. McKenney wrote:
-> >  /* softirq mask and active fields moved to irq_cpustat_t in
-> > diff -urpNa -X dontdiff linux-2.6.22-b-fixbarriers/include/linux/rcuclassic.h linux-2.6.22-c-preemptrcu/include/linux/rcuclassic.h
-> > --- linux-2.6.22-b-fixbarriers/include/linux/rcuclassic.h	2007-08-22 14:42:23.000000000 -0700
-> > +++ linux-2.6.22-c-preemptrcu/include/linux/rcuclassic.h	2007-08-22 15:21:06.000000000 -0700
-> > @@ -142,8 +142,6 @@ extern int rcu_needs_cpu(int cpu);
-> >  #define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
-> >  #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
-> > @@ -218,10 +222,13 @@ extern void FASTCALL(call_rcu_bh(struct 
-> >  /* Exported common interfaces */
-> >  extern void synchronize_rcu(void);
-> >  extern void rcu_barrier(void);
-> > +extern long rcu_batches_completed(void);
-> > +extern long rcu_batches_completed_bh(void);
-> >
-> 
-> And here we put back rcu_batches_completed and rcu_batches_completed_bh
-> from rcuclassic.h to rcupdate.h ;-)
+Aneesh,
 
-Good questions :) I can't remember why I did this - probably because
-I was breaking up into classic and preemptible RCU in incremental
-patches with the goal that the break-up patch can be merged
-before the rcu-preempt patches. IIRC, I had to make *batches_completed*()
-a common RCU API later on.
+The subject is a bit confusing,  I presume you mean sparse warnings
 
-Thanks
-Dipankar
+Balbir
