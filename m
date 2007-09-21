@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933522AbXIUWxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933739AbXIUWyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933522AbXIUWxq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765519AbXIUWhM
+	id S933739AbXIUWyM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764654AbXIUWia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:37:12 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57473 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765051AbXIUWhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:37:09 -0400
-From: Andi Kleen <ak@suse.de>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] [20/45] x86_64: Use 8 byte stack alignment when possible
-Date: Sat, 22 Sep 2007 00:34:31 +0200
+	Fri, 21 Sep 2007 18:38:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:30023 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932136AbXIUWi1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:38:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=RjkYiMbC6BJSpqbM23hNzkkJ3tV9xl66pX0OHmZnooHqYkenLXDly7Hy9Hln9pg6Bw7gkr0F/DRjoHkbGYf2bxxJmjupc+ORShHaNceRcyTpLX5bPMFhIa/UE/ar2T+uYBUf2WFARYLbOvCzjlebZzBtH29eeAS1r+n5FCv7xW4=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
+Date: Fri, 21 Sep 2007 23:37:52 +0100
 User-Agent: KMail/1.9.1
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200709211044.901175000@suse.de> <20070921204502.2C61D14EFF@wotan.suse.de> <20070921211341.GC8127@redhat.com>
-In-Reply-To: <20070921211341.GC8127@redhat.com>
+Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, mchan@broadcom.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <200709211201.24475.vda.linux@googlemail.com> <200709211905.23946.vda.linux@googlemail.com> <p73ps0b93ph.fsf@bingen.suse.de>
+In-Reply-To: <p73ps0b93ph.fsf@bingen.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709220034.31227.ak@suse.de>
+Message-Id: <200709212337.53043.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 September 2007 23:13, Dave Jones wrote:
-> On Fri, Sep 21, 2007 at 10:45:02PM +0200, Andi Kleen wrote:
->  > Kernel doesn't use SSE2, so it doesn't need 16 byte alignment. Also
->  > the stack can be already unaligned so letting the compiler align
->  > is useless. This may make some stack frames smaller.
->  > Only works with very recent gcc 4.3
->
-> My gcc 4.1.2 from Fedora 7 (with who knows what backported)
-> references this in its manpage. How was it broken before 4.3 ?
+On Friday 21 September 2007 21:13, Andi Kleen wrote:
+> Denys Vlasenko <vda.linux@googlemail.com> writes:
+> > 
+> > I plan to use gzip compression on following drivers' firmware,
+> > if patches will be accepted:
+> > 
+> >    text    data     bss     dec     hex filename
+> >   17653  109968     240  127861   1f375 drivers/net/acenic.o
+> >    6628  120448       4  127080   1f068 drivers/net/dgrs.o
+> >          ^^^^^^
+> 
+> Just change the makefiles to always install gzip'ed modules
+> modutils knows how to unzip them on the fly.
 
-Try it. It is rejected by the compiler in 64bit mode.
-
--Andi
+But I compile net/* into bzImage. I like netbooting :)
+--
+vda
