@@ -1,81 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbXIUDbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbXIUDl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbXIUDbs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 23:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbXIUDbl
+	id S1755314AbXIUDl3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 23:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXIUDlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 23:31:41 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:55534 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751575AbXIUDbk (ORCPT
+	Thu, 20 Sep 2007 23:41:22 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34344 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbXIUDlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 23:31:40 -0400
-Date: Fri, 21 Sep 2007 13:32:16 +1000
-From: David McCullough <David_Mccullough@securecomputing.com>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com,
-       Bernd Schmidt <bernd.schmidt@analog.com>,
-       Greg Ungerer <gerg@snapgear.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ysato@users.sourceforge.jp,
-       miles@lsi.nec.co.jp, linux-m32r@ml.linux-m32r.org
-Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin relocations
-Message-ID: <20070921033216.GA11139@securecomputing.com>
-References: <1190102965.4406.9.camel@roc-desktop> <20070920142543.GA3268@linux-sh.org> <20070920150314.GA27079@securecomputing.com> <200709202144.16301.rgetz@blackfin.uclinux.org>
+	Thu, 20 Sep 2007 23:41:22 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nigel@suspend2.net,
+       Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+References: <1190266447.21818.17.camel@caritas-dev.intel.com>
+	<200709211120.00448.ncunningham@crca.org.au>
+	<20070920184106.79e1858a.akpm@linux-foundation.org>
+	<200709211157.28622.nigel@nigel.suspend2.net>
+Date: Thu, 20 Sep 2007 21:33:28 -0600
+In-Reply-To: <200709211157.28622.nigel@nigel.suspend2.net> (Nigel Cunningham's
+	message of "Fri, 21 Sep 2007 11:57:26 +1000")
+Message-ID: <m18x70ofp3.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709202144.16301.rgetz@blackfin.uclinux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nigel Cunningham <nigel@nigel.suspend2.net> writes:
+>
+> That's not true. Kexec will itself be an implementation, otherwise you'd end 
+> up with people screaming about no hibernation support. 
 
-Jivin Robin Getz lays it down ...
-> On Thu 20 Sep 2007 11:03, David McCullough pondered:
-> > I would say that (a) is definately not the case.  I am sure the BF guys
-> > will say they have been banging us on the head with changes for a long
-> > time and getting no where as we considered the changes to severe or out
-> > of line.
-> 
-> I don't think we have been "banging heads" with you (unless that is your 
-> feeling?) - how about "working together, but diverting to satisfy different 
-> needs" :)
+There needs to be an implementation of hibernation based on kexec with
+return yes.
 
-No head banging feelings here,  but I would understand if you guys felt
-that way occasionally ;-)  I obviously forgot the happy face on that
-statement.  It was meant as a good thing.
+> And it won't result in 
+> the complete removal of the existing hibernation code from the kernel. At the 
+> very least, it's going to want the kernel being hibernated to have an 
+> interface by which it can find out which pages need to be saved.
 
-> I think that we have had more issues in the uClinux-dist (userspace and build 
-> environment), but for kernel code, we have moved from some non-standard 
-> (stupid) things we were doing early on to what we have today - which is as 
-> common/standard with other archs as we can be.
-> 
-> Although this is slightly off topic - on the uClinux distribution side - most 
-> of our changes are based on requirements/desires from being able to support 
-> fdpic elf and flat formats, and to attempt to make things easier for end 
-> users/us to use/maintain. Where we do make changes - we always send the patch 
-> upstream and have the conversation with you (not everyone else does this), 
-> and some/most times rework things so they are more acceptable to you. We 
-> don't always come to an agreement - but we always have the discussion, and 
-> are willing to move if we can make things better that still meets both our 
-> needs/desires.
-> 
-> > This particular patch was trivial in comparison to others I've seen,
-> 
-> That is what we thought.
-> 
-> > it fixed all the existing arches (not something that is always done) and
-> > seemed a reasonable start to finally get the BF guys up and running.
-> > Still, happy to make it better of course ;-)
-> 
-> As always - we are more than happy to explore/review alternative patches if 
-> people want to write/sumbit them.
+That interface should be running kernel -> user space -> target kernel.
+Not direct kernel to kernel.
 
-Cheers,
-Davidm
+> I wouldn't 
+> be surprised if it also ends up with an interface in which the kernel being 
+> hibernated tells it what bdev/sectors in which to save the image as well 
+> (otherwise you're going to need a dedicated, otherwise untouched partition 
+> exclusively for the kexec'd kernel to use), or what network settings to use 
+> if it wants to try to save the image to a network storage device. 
 
--- 
-David McCullough,  david_mccullough@securecomputing.com,   Ph:+61 734352815
-Secure Computing - SnapGear  http://www.uCdot.org http://www.cyberguard.com
+initramfs.  We already seem to have that interface.  And distros
+seems to do a pretty decent job of using it to configure systems.
+
+> On top of 
+> that, there are all the issues related to device reinitialisation and so on, 
+
+Yes.
+
+> and it looks like there's greatly increased pain for users wanting to 
+> configure this new implementation. 
+
+Not to be callous but that really is a user space and distro issue.
+
+> Kexec is by no means proven to be the panacea for all the issues.
+
+I agree.  I'm still not quite convinced it will do a satisfactory job.
+But I think it does make sense to implement a general kexec with
+return and see if that can reasonably be used for handling hibernation
+issues.  If done cleanly and with care the implementation won't be
+hibernation specific.
+
+Frankly this looks like the best way I can see to implement a general
+mechanism for calling silly firmware/BIOS/EFI services after we
+have a kernel up and running.  It's a little bit like allowing
+X to call iopl(3) and do inb/outb directly.
+
+The configuration issues you raise pretty much exist for kexec on
+panic, and they seem to be being resolved for that case in a
+reasonable way.  I do agree that the current kexec+return effort seems
+to be one of those unfortunate cases where we give every mechanism in
+the kernel to do something in user space and then no one actually
+implements the user space.  That doesn't do any one any good.
+
+For hibernation we don't have the absolute need to step outside of the
+current kernel that we do in the kexec on panic approach.  However we
+have this practical fight about mechanism and policy, and kexec with
+return has this seductive allure that it appears to be the minimal
+necessary mechanism in the kernel.
+
+No one has yet attacked the hard problem of coming up with separate
+hibernate methods for drivers.  This should be the hard part of the
+puzzle, and the recurring work from a kernel maintenance point of
+view.  There is some reason to hope that things will be a maintenance
+will be a little simpler because you can get at all of the distinct
+pieces of the puzzle.
+
+Currently kexec with return appears to require the minimal amount of
+mechanism in the kernel and leaves the policy to someplace else, plus
+the code is not hibernation specific.  We could use it to make runtime
+EFI calls, or to implement cooperative multitasking between kernels.
+
+My current opinion is that the patches are starting to get close
+enough that it isn't a waste of my time reviewing them.  But there
+is still a fair amount to be done before this code is in shape for
+us to merge it into the kernel.
+
+At 500 or so lines I don't feel bad about pushing back until all of
+the core user interface issues are resolved, and we have the code
+calling the proper driver methods.
+
+Eric
