@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932650AbXIUWmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbXIUWmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932650AbXIUWmc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763886AbXIUWcg
+	id S932646AbXIUWmw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763971AbXIUWch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:32:36 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40490 "EHLO mx2.suse.de"
+	Fri, 21 Sep 2007 18:32:37 -0400
+Received: from mail.suse.de ([195.135.220.2]:57066 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762156AbXIUWc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:32:27 -0400
+	id S1762379AbXIUWc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:32:29 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709221231.836138000@suse.de>
 In-Reply-To: <200709221231.836138000@suse.de>
-To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [27/50] x86_64: Remove duplicated vsyscall nsec update
-Message-Id: <20070921223226.975E413DCD@wotan.suse.de>
-Date: Sat, 22 Sep 2007 00:32:26 +0200 (CEST)
+To: jbeulich@novell.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [28/50] i386: remove stub early_printk.c
+Message-Id: <20070921223227.A49D713DCD@wotan.suse.de>
+Date: Sat, 22 Sep 2007 00:32:27 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Spotted by Chuck Ebbert
+From: "Jan Beulich" <jbeulich@novell.com>
+.. and handle use of the x86-64 file by make logic instead.
 
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
----
- arch/x86_64/kernel/vsyscall.c |    1 -
- 1 file changed, 1 deletion(-)
+ arch/i386/kernel/Makefile       |    1 +
+ arch/i386/kernel/early_printk.c |    2 --
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-Index: linux/arch/x86_64/kernel/vsyscall.c
+Index: linux/arch/i386/kernel/Makefile
 ===================================================================
---- linux.orig/arch/x86_64/kernel/vsyscall.c
-+++ linux/arch/x86_64/kernel/vsyscall.c
-@@ -80,7 +80,6 @@ void update_vsyscall(struct timespec *wa
- 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
- 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
- 	vsyscall_gtod_data.sys_tz = sys_tz;
--	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
- 	vsyscall_gtod_data.wall_to_monotonic = wall_to_monotonic;
- 	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, flags);
- }
+--- linux.orig/arch/i386/kernel/Makefile
++++ linux/arch/i386/kernel/Makefile
+@@ -86,6 +86,7 @@ $(obj)/vsyscall-syms.o: $(src)/vsyscall.
+ 			$(obj)/vsyscall-sysenter.o $(obj)/vsyscall-note.o FORCE
+ 	$(call if_changed,syscall)
+ 
++early_printk-y            += ../../x86_64/kernel/early_printk.o
+ k8-y                      += ../../x86_64/kernel/k8.o
+ stacktrace-y		  += ../../x86_64/kernel/stacktrace.o
+ early-quirks-y		  += ../../x86_64/kernel/early-quirks.o
+Index: linux/arch/i386/kernel/early_printk.c
+===================================================================
+--- linux.orig/arch/i386/kernel/early_printk.c
++++ /dev/null
+@@ -1,2 +0,0 @@
+-
+-#include "../../x86_64/kernel/early_printk.c"
