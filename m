@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933649AbXIUWxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933522AbXIUWxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933649AbXIUWxY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764849AbXIUWd6
+	id S933522AbXIUWxq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765519AbXIUWhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:33:58 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4028 "EHLO perches.com"
+	Fri, 21 Sep 2007 18:37:12 -0400
+Received: from ns1.suse.de ([195.135.220.2]:57473 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764843AbXIUWd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:33:57 -0400
-Subject: RE: Message codes (Re: [Announce] Linux-tiny project revival)
-From: Joe Perches <joe@perches.com>
-To: "Gross, Mark" <mark.gross@intel.com>
-Cc: Rob Landley <rob@landley.net>, Oleg Verych <olecom@flower.upol.cz>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Michael Opdenacker <michael@free-electrons.com>, linux-tiny@selenic.com,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <5389061B65D50446B1783B97DFDB392D0715BCA1@orsmsx411.amr.corp.intel.com>
-References: <46F1645D.9050406@am.sony.com> <E1IYWps-0006fQ-83@flower>
-	 <5389061B65D50446B1783B97DFDB392D07126ACB@orsmsx411.amr.corp.intel.com>
-	 <200709211615.39898.rob@landley.net>
-	 <5389061B65D50446B1783B97DFDB392D0715BCA1@orsmsx411.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 15:33:18 -0700
-Message-Id: <1190413998.32660.67.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	id S1765051AbXIUWhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:37:09 -0400
+From: Andi Kleen <ak@suse.de>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] [20/45] x86_64: Use 8 byte stack alignment when possible
+Date: Sat, 22 Sep 2007 00:34:31 +0200
+User-Agent: KMail/1.9.1
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <200709211044.901175000@suse.de> <20070921204502.2C61D14EFF@wotan.suse.de> <20070921211341.GC8127@redhat.com>
+In-Reply-To: <20070921211341.GC8127@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709220034.31227.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-21 at 15:12 -0700, Gross, Mark wrote:
-> Use compiler tricks to remove ALL the static printk string from
-> the kernel and replace the printk with something that outputs a
-> decimal index followed by tuples, of zero to N, hex-strings on
+On Friday 21 September 2007 23:13, Dave Jones wrote:
+> On Fri, Sep 21, 2007 at 10:45:02PM +0200, Andi Kleen wrote:
+>  > Kernel doesn't use SSE2, so it doesn't need 16 byte alignment. Also
+>  > the stack can be already unaligned so letting the compiler align
+>  > is useless. This may make some stack frames smaller.
+>  > Only works with very recent gcc 4.3
+>
+> My gcc 4.1.2 from Fedora 7 (with who knows what backported)
+> references this in its manpage. How was it broken before 4.3 ?
 
-> I proposed a mechanism for keeping all the printk data and saving space
-> buy doing some table based compressions that has the side effect of
-> making the syslog not human readable.  You proposed a mechanism for
-> no-oping out complete log-levels.   
+Try it. It is rejected by the compiler in 64bit mode.
 
-How about compiler tricks to compress the static printk strings?
-These could be expanded at runtime to use as the format.
-
-Timothy Miller suggested something similar awhile ago.
-
+-Andi
