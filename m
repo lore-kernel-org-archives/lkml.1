@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763155AbXIUTy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763420AbXIUT5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763155AbXIUTy5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 15:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761915AbXIUTyt
+	id S1763420AbXIUT5L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 15:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762236AbXIUT45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 15:54:49 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:37945 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbXIUTys (ORCPT
+	Fri, 21 Sep 2007 15:56:57 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58252 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757575AbXIUT44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 15:54:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=G5jZeNK5rHyxntZhO3nlpL1nFVRiFE4BuczJhecKRzA3RBazYiFQ1NNsw+YV3avDP1RPhukIhwCG5dbSFh/uDcXIBmhDG7OCQKSkRJCrzzIDciU1ltNA3D4nzWdETMT11hTkDYQifxc4sTF6RnhEQjt88J4JtuAwMAwtQfSHYUM=
-Date: Fri, 21 Sep 2007 23:54:03 +0400
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, andrea@suse.de, clameter@sgi.com
-Subject: Re: + oom-move-prototypes-to-appropriate-header-file.patch added to -mm tree
-Message-ID: <20070921195403.GC1857@martell.zuzino.mipt.ru>
-References: <200709210910.l8L9AttS028186@imap1.linux-foundation.org> <20070921170548.GA1857@martell.zuzino.mipt.ru> <alpine.DEB.0.9999.0709211236130.29079@chino.kir.corp.google.com>
+	Fri, 21 Sep 2007 15:56:56 -0400
+Date: Fri, 21 Sep 2007 12:56:55 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       asit.k.mallick@intel.com
+Subject: Re: x86_64: potential critical issue with quicklists and page table
+ pages
+In-Reply-To: <alpine.LFD.0.999.0709211235220.16478@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0709211249330.18088@schroedinger.engr.sgi.com>
+References: <20070921180742.GH20863@linux-os.sc.intel.com>
+ <alpine.LFD.0.999.0709211139550.16478@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0709211149040.17160@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0709211153060.16478@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0709211204050.16478@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0709211205570.17160@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0709211212130.16478@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0709211221560.17698@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.999.0709211235220.16478@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.9999.0709211236130.29079@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 12:38:03PM -0700, David Rientjes wrote:
-> On Fri, 21 Sep 2007, Alexey Dobriyan wrote:
-> 
-> > > Move the OOM killer's extern function prototypes to include/linux/oom.h and
-> > > include it where necessary.
-> > > 
-> > > Cc: Andrea Arcangeli <andrea@suse.de>
-> > > Acked-by: Christoph Lameter <clameter@sgi.com>
-> > 
-> > NAK. Target in corresponding Kbuild is wrong. sched.h is overkill.
-> > Could we please also drop extern's while in protos?
-> > 
-> 
-> I'll prevent including sched.h in a follow-up patchset that I'll be 
-> posting soon (and you'll be Cc'd).  Which Kbuild target are you referring 
-> to?
+On Fri, 21 Sep 2007, Linus Torvalds wrote:
 
-It's header-y vs unifdef-y in include/linux/Kbuild. The former is for
-plain headers exported to userspace as-is. The latter need preprocessing
-to remove __KERNEL__, CONFIG_*, etc.
+> The problem with that commit that I just reverted was that it mixed the 
+> two, but not completely. It still kept them separate.
 
-Since you're going to clutter oom.h with some purely internal protos,
-preprocessing should be done as well ;-)
+The quicklists have a long history and this bug has therefore also been in 
+IA64 for a long time and it also likely exists on sparc64, sh and sh64. We 
+need the patch that I posted to fix the other platforms. And with this fix 
+there would be nothing amiss on x86_64 either.
+
+---
+ include/linux/quicklist.h |    8 --------
+ 1 file changed, 8 deletions(-)
+
+Index: linux-2.6/include/linux/quicklist.h
+===================================================================
+--- linux-2.6.orig/include/linux/quicklist.h	2007-09-21 11:46:44.000000000 -0700
++++ linux-2.6/include/linux/quicklist.h	2007-09-21 11:55:01.000000000 -0700
+@@ -56,14 +56,6 @@ static inline void __quicklist_free(int 
+ 	struct page *page)
+ {
+ 	struct quicklist *q;
+-	int nid = page_to_nid(page);
+-
+-	if (unlikely(nid != numa_node_id())) {
+-		if (dtor)
+-			dtor(p);
+-		__free_page(page);
+-		return;
+-	}
+ 
+ 	q = &get_cpu_var(quicklist)[nr];
+ 	*(void **)p = q->page;
