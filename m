@@ -1,76 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXIUAmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbXIUAnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887AbXIUAmQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 20:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbXIUAmF
+	id S1755174AbXIUAnz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 20:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXIUAnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 20:42:05 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:33947 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbXIUAmE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 20:42:04 -0400
-To: "Gross, Mark" <mark.gross@intel.com>
-Cc: "Rob Landley" <rob@landley.net>, "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Michael Opdenacker" <michael@free-electrons.com>,
-       <linux-tiny@selenic.com>,
-       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
-       "linux kernel" <linux-kernel@vger.kernel.org>
-Subject: Message codes (Re: [Announce] Linux-tiny project revival)
-In-Reply-To: <5389061B65D50446B1783B97DFDB392D07126574@orsmsx411.amr.corp.intel.com>
-References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <20070920195844.GA1805@martell.zuzino.mipt.ru> <200709201702.08126.rob@landley.net> <5389061B65D50446B1783B97DFDB392D07126574@orsmsx411.amr.corp.intel.com>
-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-Date: Fri, 21 Sep 2007 02:57:36 +0200
-Message-Id: <E1IYWps-0006fQ-83@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Thu, 20 Sep 2007 20:43:49 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:52678 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751142AbXIUAns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 20:43:48 -0400
+X-IronPort-AV: E=Sophos;i="4.20,280,1186383600"; 
+   d="scan'208";a="106238236"
+Subject: Re: NFS on loopback locks up entire system(2.6.23-rc6)?
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Chakri n <chakriin5@gmail.com>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
+References: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Thu, 20 Sep 2007 20:43:43 -0400
+Message-Id: <1190335423.6763.180.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 21 Sep 2007 00:43:45.0700 (UTC) FILETIME=[775E4640:01C7FBE8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Thu, 20 Sep 2007 15:15:47 -0700
-* X-MimeOLE: Produced By Microsoft Exchange V6.5
-[]
->>*Shrug*.
->>
->>My problem is that switching off printk is the single biggest bloat
-> cutter
->>in
->>the kernel, yet it makes the resulting system very hard to support.  It
->>combines a big upside with a big downside, and I'd like something in
->>between.
->
-> What about getting even more hard core? 
->
-> Use compiler tricks to remove ALL the static printk string from the
-> kernel and replace the printk with something that outputs an decimal
-> index followed by tuples, of zero to N, hex-strings on a single line.
+On Thu, 2007-09-20 at 17:22 -0700, Chakri n wrote:
+> Hi,
+> 
+> I am testing NFS on loopback locks up entire system with 2.6.23-rc6 kernel.
+> 
+> I have mounted a local ext3 partition using loopback NFS (version 3)
+> and started my test program. The test program forks 20 threads
+> allocates 10MB for each thread, writes & reads a file on the loopback
+> NFS mount. After running for about 5 min, I cannot even login to the
+> machine. Commands like ps etc, hang in a live session.
+> 
+> The machine is a DELL 1950 with 4Gig of RAM, so there is plenty of RAM
+> & CPU to play around and no other io/heavy processes are running on
+> the system.
+> 
+> vmstat output shows no buffers are actually getting transferred in or
+> out and iowait is 100%.
+> 
+> [root@h46 ~]# vmstat 1
+> procs -----------memory---------- ---swap-- -----io---- --system--
+> -----cpu------
+>  r  b    swpd       free       buff       cache   si   so   bi   bo
+> in     cs us sy id wa st
+>  0 24    116 110080  11132 3045664    0    0     0     0   28  345  0
+> 1  0 99  0
+>  0 24    116 110080  11132 3045664    0    0     0     0    5  329  0
+> 0  0 100  0
+>  0 24    116 110080  11132 3045664    0    0     0     0   26  336  0
+> 0  0 100  0
+>  0 24    116 110080  11132 3045664    0    0     0     0    8  335  0
+> 0  0 100  0
+>  0 24    116 110080  11132 3045664    0    0     0     0   26  352  0
+> 0  0 100  0
+>  0 24    116 110080  11132 3045664    0    0     0     0    8  351  0
+> 0  0 100  0
+>  0 24    116 110080  11132 3045664    0    0     0     0   23  358  0
+> 1  0 99  0
+>  0 24    116 110080  11132 3045664    0    0     0     0   10  350  0
+> 0  0 100  0
+>  0 24    116 110080  11132 3045664    0    0     0     0   26  363  0
+> 0  0 100  0
+>  0 24    116 110080  11132 3045664    0    0     0     0    8  346  0
+> 1  0 99  0
+>  0 24    116 110080  11132 3045664    0    0     0     0   26  360  0
+> 0  0 100  0
+>  0 24    116 110080  11140 3045656    0    0     8     0   11  345  0
+> 0  0 100  0
+>  0 24    116 110080  11140 3045664    0    0     0     0   27  355  0
+> 0  2 97  0
+>  0 24    116 110080  11140 3045664    0    0     0     0    9  330  0
+> 0  0 100  0
+>  0 24    116 110080  11140 3045664    0    0     0     0   26  358  0
+> 0  0 100  0
+> 
+> 
+> The following is the backtrace of
+> 1. one of the threads of my test program
+> 2. nfsd daemon and
+> 3. a generic command like pstree, after the machine hangs:
+> -------------------------------------------------------------
+> crash> bt 3252
+> PID: 3252   TASK: f6f3c610  CPU: 0   COMMAND: "test"
+>  #0 [f6bdcc10] schedule at c0624a34
+>  #1 [f6bdcc84] schedule_timeout at c06250ee
+>  #2 [f6bdccc8] io_schedule_timeout at c0624c15
+>  #3 [f6bdccdc] congestion_wait at c045eb7d
+>  #4 [f6bdcd00] balance_dirty_pages_ratelimited_nr at c045ab91
+>  #5 [f6bdcd54] generic_file_buffered_write at c0457148
+>  #6 [f6bdcde8] __generic_file_aio_write_nolock at c04576e5
+>  #7 [f6bdce40] try_to_wake_up at c042342b
+>  #8 [f6bdce5c] generic_file_aio_write at c0457799
+>  #9 [f6bdce8c] nfs_file_write at f8c25cee
+> #10 [f6bdced0] do_sync_write at c0472e27
+> #11 [f6bdcf7c] vfs_write at c0473689
+> #12 [f6bdcf98] sys_write at c0473c95
+> #13 [f6bdcfb4] sysenter_entry at c0404ddf
+>     EAX: 00000004  EBX: 00000013  ECX: a4966008  EDX: 00980000
+>     DS:  007b      ESI: 00980000  ES:  007b      EDI: a4966008
+>     SS:  007b      ESP: a5ae6ec0  EBP: a5ae6ef0
+>     CS:  0073      EIP: b7eed410  ERR: 00000004  EFLAGS: 00000246
+> crash> bt 3188
+> PID: 3188   TASK: f74c4000  CPU: 1   COMMAND: "nfsd"
+>  #0 [f6836c7c] schedule at c0624a34
+>  #1 [f6836cf0] __mutex_lock_slowpath at c062543d
+>  #2 [f6836d0c] mutex_lock at c0625326
+>  #3 [f6836d18] generic_file_aio_write at c0457784
+>  #4 [f6836d48] ext3_file_write at f8888fd7
+>  #5 [f6836d64] do_sync_readv_writev at c0472d1f
+>  #6 [f6836e08] do_readv_writev at c0473486
+>  #7 [f6836e6c] vfs_writev at c047358e
+>  #8 [f6836e7c] nfsd_vfs_write at f8e7f8d7
+>  #9 [f6836ee0] nfsd_write at f8e80139
+> #10 [f6836f10] nfsd3_proc_write at f8e86afd
+> #11 [f6836f44] nfsd_dispatch at f8e7c20c
+> #12 [f6836f6c] svc_process at f89c18e0
+> #13 [f6836fbc] nfsd at f8e7c794
+> #14 [f6836fe4] kernel_thread_helper at c0405a35
+> crash> ps|grep ps
+>     234      2   3  cb194000  IN   0.0       0      0  [khpsbpkt]
+>     520      2   0  f7e18c20  IN   0.0       0      0  [kpsmoused]
+>    2859      1   2  f7f3cc20  IN   0.1    9600   2040  cupsd
+>    3340   3310   0  f4a0f840  UN   0.0    4360    816  pstree
+>    3343   3284   2  f4a0f230  UN   0.0    4212    944  ps
+> crash> bt 3340
+> PID: 3340   TASK: f4a0f840  CPU: 0   COMMAND: "pstree"
+>  #0 [e856be30] schedule at c0624a34
+>  #1 [e856bea4] rwsem_down_failed_common at c04df6c0
+>  #2 [e856bec4] rwsem_down_read_failed at c0625c2a
+>  #3 [e856bedc] call_rwsem_down_read_failed at c0625c96
+>  #4 [e856bee8] down_read at c043c21a
+>  #5 [e856bef0] access_process_vm at c0462039
+>  #6 [e856bf38] proc_pid_cmdline at c04a1bbb
+>  #7 [e856bf58] proc_info_read at c04a2f41
+>  #8 [e856bf7c] vfs_read at c04737db
+>  #9 [e856bf98] sys_read at c0473c2e
+> #10 [e856bfb4] sysenter_entry at c0404ddf
+>     EAX: 00000003  EBX: 00000005  ECX: 0804dc58  EDX: 00000062
+>     DS:  007b      ESI: 00000cba  ES:  007b      EDI: 0804e0e0
+>     SS:  007b      ESP: bfa3afe8  EBP: bfa3d4f8
+>     CS:  0073      EIP: b7f64410  ERR: 00000003  EFLAGS: 00000246
+> ----------------------------------------------------------
+> 
+> Any ideas what could potentially trigger this?
 
-Not all, but critical info, that must exist in human-readable form of
-course.
+This is pretty much expected: the NFS server is trying to allocate
+memory. The VM then tries to satisfy that demand by freeing up resources
+from the NFS client by telling the client to write out cached pages. The
+client again is in a congested state in which it is waiting on the NFS
+server to finish writing out what it already sent.
+	Quod Erat Deadlocked...
 
-> Then have the syslogd or some other utility take this cryptic output and
-> convolve it with a table (created at compile time) to re-create what
-> would have been dumped to the sys-log ring buffer.  This way you strip
-> out most of the static text from the kernel and yet can still re-create
-> the kernlog output.
->
-> At least as a post processing operation....
+This is why 'mount --bind' is a good idea, and 'mount -t nfs localhost:'
+is generally a bad one...
 
-Sure, but a little problem is, that many kernel developers do C (mostly)
-and Perl (occasionally), i.e. very few do non-trivial userspace (even
-userspace do too much C and Perl sometimes [:
-<http://thread.gmane.org/gmane.comp.lib.glibc.alpha/12739>)
-
-> Is this an old idea?  I'm guessing this has been at least proposed
-> before....
-
-Seriously. When in the Windows there are only messages like:
-
-    "Error (Code:0x00002012)".
-
-In the Linux... well, embedded targets, this can be turned in a very
-efficient thing by means of userspace. On other setups this can be nice
-and pleasant one, with yet another L10N project, recently promoted by
-README translations. But,,, see problem above.
-____
+Cheers
+  Trond
