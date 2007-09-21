@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761070AbXIUOwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761264AbXIUOxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761070AbXIUOwv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759959AbXIUOt5
+	id S1761264AbXIUOxP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760027AbXIUOt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:49:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51363 "EHLO mx1.redhat.com"
+	Fri, 21 Sep 2007 10:49:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51380 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759098AbXIUOtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:49:42 -0400
+	id S1760765AbXIUOtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 10:49:46 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 21/22] AF_RXRPC: Save the operation ID for debugging
+Subject: [PATCH 18/22] AFS: Add a function to excise a rejected write from the
+	pagecache
 To: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
        sds@tycho.nsa.gov, casey@schaufler-ca.com
 Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 21 Sep 2007 15:48:51 +0100
-Message-ID: <20070921144851.8323.40332.stgit@warthog.procyon.org.uk>
+Date: Fri, 21 Sep 2007 15:48:35 +0100
+Message-ID: <20070921144835.8323.68414.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20070921144703.8323.50492.stgit@warthog.procyon.org.uk>
 References: <20070921144703.8323.50492.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -30,100 +31,137 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Save the operation ID to be used with a call that we're making for display
-through /proc/net/rxrpc_calls.  This helps debugging stuck operations as we
-then know what they are.
+Add a function - cancel_rejected_write() - to excise a rejected write from the
+pagecache.  This function is related to the truncation family of routines.  It
+permits the pages modified by a network filesystem client (such as AFS) to be
+excised and discarded from the pagecache if the attempt to write them back to
+the server fails.
+
+The dirty and writeback states of the afflicted pages are cancelled and the
+pages themselves are detached for recycling.  All PTEs referring to those
+pages are removed.
+
+Note that the locking is tricky as it's very easy to deadlock against
+truncate() and other routines once the pages have been unlocked as part of the
+writeback process.  To this end, the PG_error flag is set, then the
+PG_writeback flag is cleared, and only *then* can lock_page() be called.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/net/af_rxrpc.h  |    1 +
- net/rxrpc/af_rxrpc.c    |    3 +++
- net/rxrpc/ar-internal.h |    1 +
- net/rxrpc/ar-proc.c     |    7 ++++---
- 4 files changed, 9 insertions(+), 3 deletions(-)
+ include/linux/mm.h |    5 ++-
+ mm/truncate.c      |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 86 insertions(+), 2 deletions(-)
 
-diff --git a/include/net/af_rxrpc.h b/include/net/af_rxrpc.h
-index 00c2eaa..7e99733 100644
---- a/include/net/af_rxrpc.h
-+++ b/include/net/af_rxrpc.h
-@@ -38,6 +38,7 @@ extern void rxrpc_kernel_intercept_rx_messages(struct socket *,
- extern struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *,
- 						  struct sockaddr_rxrpc *,
- 						  struct key *,
-+						  u32,
- 						  unsigned long,
- 						  gfp_t);
- extern int rxrpc_kernel_send_data(struct rxrpc_call *, struct msghdr *,
-diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
-index c58fa0d..621c1dd 100644
---- a/net/rxrpc/af_rxrpc.c
-+++ b/net/rxrpc/af_rxrpc.c
-@@ -251,6 +251,7 @@ static struct rxrpc_transport *rxrpc_name_to_transport(struct socket *sock,
-  * @sock: The socket on which to make the call
-  * @srx: The address of the peer to contact (defaults to socket setting)
-  * @key: The security context to use (defaults to socket setting)
-+ * @operation_ID: The operation ID for this call (debugging only)
-  * @user_call_ID: The ID to use
-  *
-  * Allow a kernel service to begin a call on the nominated socket.  This just
-@@ -263,6 +264,7 @@ static struct rxrpc_transport *rxrpc_name_to_transport(struct socket *sock,
- struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *sock,
- 					   struct sockaddr_rxrpc *srx,
- 					   struct key *key,
-+					   u32 operation_ID,
- 					   unsigned long user_call_ID,
- 					   gfp_t gfp)
- {
-@@ -311,6 +313,7 @@ struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *sock,
- 	call = rxrpc_get_client_call(rx, trans, bundle, user_call_ID, true,
- 				     gfp);
- 	rxrpc_put_bundle(trans, bundle);
-+	call->op_id = operation_ID;
- out:
- 	rxrpc_put_transport(trans);
- 	release_sock(&rx->sk);
-diff --git a/net/rxrpc/ar-internal.h b/net/rxrpc/ar-internal.h
-index 58aaf89..f362e7e 100644
---- a/net/rxrpc/ar-internal.h
-+++ b/net/rxrpc/ar-internal.h
-@@ -367,6 +367,7 @@ struct rxrpc_call {
- 		RXRPC_CALL_DEAD,		/* - call is dead */
- 	} state;
- 	int			debug_id;	/* debug ID for printks */
-+	u32			op_id;		/* operation ID (for debugging only) */
- 	u8			channel;	/* connection channel occupied by this call */
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 1692dd6..49863df 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1091,12 +1091,13 @@ extern int do_munmap(struct mm_struct *, unsigned long, size_t);
  
- 	/* transmission-phase ACK management */
-diff --git a/net/rxrpc/ar-proc.c b/net/rxrpc/ar-proc.c
-index 2e83ce3..521b826 100644
---- a/net/rxrpc/ar-proc.c
-+++ b/net/rxrpc/ar-proc.c
-@@ -53,8 +53,8 @@ static int rxrpc_call_seq_show(struct seq_file *seq, void *v)
- 	if (v == &rxrpc_calls) {
- 		seq_puts(seq,
- 			 "Proto Local                  Remote                "
--			 " SvID ConnID   CallID   End Use State    Abort   "
--			 " UserID\n");
-+			 " SvID ConnID   CallID   OpID     End Use State   "
-+			 " Abort    UserID\n");
- 		return 0;
- 	}
+ extern unsigned long do_brk(unsigned long, unsigned long);
  
-@@ -70,13 +70,14 @@ static int rxrpc_call_seq_show(struct seq_file *seq, void *v)
- 		ntohs(trans->peer->srx.transport.sin.sin_port));
+-/* filemap.c */
+-extern unsigned long page_unuse(struct page *);
++/* truncate.c */
+ extern void truncate_inode_pages(struct address_space *, loff_t);
+ extern void truncate_inode_pages_range(struct address_space *,
+ 				       loff_t lstart, loff_t lend);
++extern void cancel_rejected_write(struct address_space *, pgoff_t, pgoff_t);
  
- 	seq_printf(seq,
--		   "UDP   %-22.22s %-22.22s %4x %08x %08x %s %3u"
-+		   "UDP   %-22.22s %-22.22s %4x %08x %08x %08x %s %3u"
- 		   " %-8.8s %08x %lx\n",
- 		   lbuff,
- 		   rbuff,
- 		   ntohs(call->conn->service_id),
- 		   ntohl(call->conn->cid),
- 		   ntohl(call->call_id),
-+		   call->op_id,
- 		   call->conn->in_clientflag ? "Svc" : "Clt",
- 		   atomic_read(&call->usage),
- 		   rxrpc_call_states[call->state],
++/* filemap.c */
+ /* generic vm_area_ops exported for stackable file systems */
+ extern int filemap_fault(struct vm_area_struct *, struct vm_fault *);
+ 
+diff --git a/mm/truncate.c b/mm/truncate.c
+index 5555cb0..92a68f7 100644
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -462,3 +462,86 @@ int invalidate_inode_pages2(struct address_space *mapping)
+ 	return invalidate_inode_pages2_range(mapping, 0, -1);
+ }
+ EXPORT_SYMBOL_GPL(invalidate_inode_pages2);
++
++/*
++ * Cancel that part of a rejected write that affects a particular page
++ */
++static void cancel_rejected_page(struct address_space *mapping,
++				 struct page *page, pgoff_t *_next)
++{
++	if (!TestSetPageError(page)) {
++		/* can't lock the page until we've cleared PG_writeback lest we
++		 * deadlock with truncate (amongst other things) */
++		end_page_writeback(page);
++		if (page->mapping == mapping) {
++			lock_page(page);
++			if (page->mapping == mapping) {
++				truncate_complete_page(mapping, page);
++				*_next = page->index + 1;
++			}
++			unlock_page(page);
++		}
++	} else if (PageWriteback(page) || PageDirty(page)) {
++		BUG();
++	}
++}
++
++/**
++ * cancel_rejected_write - Cancel a write on a contiguous set of pages
++ * @mapping: mapping affected
++ * @start: first page in set
++ * @end: last page in set
++ *
++ * Cancel a write of a contiguous set of pages when the writeback was rejected
++ * by the target medium or server.
++ *
++ * The pages in question are detached and discarded from the pagecache, and the
++ * writeback and dirty states are cleared prior to invalidation.  The caller
++ * must make sure that all the pages in the range are present in the pagecache,
++ * and the caller must hold PG_writeback on each of them.  NOTE! All the pages
++ * are locked and unlocked as part of this process, so the caller must take
++ * care to avoid deadlock.
++ *
++ * The PTEs pointing to those pages are also cleared, leading to the PTEs being
++ * reset when new pages are allocated and the contents reloaded.
++ */
++void cancel_rejected_write(struct address_space *mapping,
++			   pgoff_t start, pgoff_t end)
++{
++	struct pagevec pvec;
++	pgoff_t n;
++	int i;
++
++	BUG_ON(mapping->nrpages < end - start + 1);
++
++	/* dispose of any PTEs pointing to the affected pages */
++	unmap_mapping_range(mapping,
++			    (loff_t)start << PAGE_CACHE_SHIFT,
++			    (loff_t)(end - start + 1) << PAGE_CACHE_SHIFT,
++			    0);
++
++	pagevec_init(&pvec, 0);
++	do {
++		cond_resched();
++		n = end - start + 1;
++		if (n > PAGEVEC_SIZE)
++			n = PAGEVEC_SIZE;
++		n = pagevec_lookup(&pvec, mapping, start, n);
++		for (i = 0; i < n; i++) {
++			struct page *page = pvec.pages[i];
++
++			if (page->index < start || page->index > end)
++				continue;
++			start++;
++			cancel_rejected_page(mapping, page, &start);
++		}
++		pagevec_release(&pvec);
++	} while (start - 1 < end);
++
++	/* dispose of any new PTEs pointing to the affected pages */
++	unmap_mapping_range(mapping,
++			    (loff_t)start << PAGE_CACHE_SHIFT,
++			    (loff_t)(end - start + 1) << PAGE_CACHE_SHIFT,
++			    0);
++}
++EXPORT_SYMBOL_GPL(cancel_rejected_write);
 
