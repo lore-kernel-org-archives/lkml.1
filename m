@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXIUOzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761598AbXIUO4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbXIUOzB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761569AbXIUOyA
+	id S1761598AbXIUO4q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758978AbXIUO4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:54:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54887 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760752AbXIUOx5 (ORCPT
+	Fri, 21 Sep 2007 10:56:39 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:36663 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759048AbXIUO4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:53:57 -0400
-Date: Fri, 21 Sep 2007 15:53:56 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [patch 5/5] VFS: allow filesystem to override mknod capability checks
-Message-ID: <20070921145356.GA16379@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20070921122343.307289079@szeredi.hu> <20070921123336.095183254@szeredi.hu> <20070921124504.GC8088@infradead.org> <E1IYiH4-0001eQ-00@dorka.pomaz.szeredi.hu> <20070921131409.GA9988@infradead.org> <E1IYiOv-0001f6-00@dorka.pomaz.szeredi.hu> <20070921143338.GA14577@infradead.org> <E1IYjoQ-0001kT-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
+	Fri, 21 Sep 2007 10:56:38 -0400
+Date: Fri, 21 Sep 2007 10:56:29 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: Satyam Sharma <satyam@infradead.org>, Gilboa Davara <gilboad@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Reduce __print_symbol/sprint_symbol stack usage.
+Message-ID: <20070921145628.GE15697@goodmis.org>
+References: <1189856129.18191.11.camel@gilboa-home-dev.localdomain> <a781481a0709150602v6be754caw4fbe0f76c8db5beb@mail.gmail.com> <1189869329.18191.77.camel@gilboa-home-dev.localdomain> <1189879681.18191.93.camel@gilboa-home-dev.localdomain> <alpine.LFD.0.999.0709190610540.26241@enigma.security.iitk.ac.in> <46F1314B.8040105@grupopie.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1IYjoQ-0001kT-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <46F1314B.8040105@grupopie.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 04:48:58PM +0200, Miklos Szeredi wrote:
-> Ah, OK.  Well, that's what fuse would do with the above change.  So
-> you are basically saying, the change is OK, but we want proper
-> unprivileged mounts first.
+On Wed, Sep 19, 2007 at 03:25:15PM +0100, Paulo Marques wrote:
+>
+> if we change the interface from "print_symbol(fmt, addr)" to 
+> "print_symbol(prefix, addr, int newline)" we can simply do:
+>
+> printk(prefix);
+> printk_symbol(addr);
+> if (newline)
+> 	printk("\n");
 
-Yes, that and that it should be a mount flag, not a file_system_type
-flag.
+NACK
 
-> I'm sure we don't want it by default.
-> 
-> For example if user bind mounts / onto /home/user/myroot (with 'nodev'
-> of couse), we still don't want mknod to work on that mount, for
-> obvious reasons.
+I just wrote something that does "print_symbol(" %s)\n", addr);"
+Notice the ")" in the output.
 
-True, we'll have to deny it if there is any non-privilegued mount of
-the backing device possible.   At this point it's getting rather nasty
-and I wonder whether it's really worth it..
+-- Steve
+
+>
+> where "printk_symbol" is a new function that does the same as 
+> sprint_symbol, but does "printk" instead of "sprintf".
+>
+> This should reduce immensely the stack usage of print_symbol without the 
+> need for locking.
+>
+> Of course this requires changing _all_ callers of print_symbol to use the 
+> new interface, but these are less than 100 ;)
+>
+> Comments?
+>
+> -- 
+> Paulo Marques - www.grupopie.com
+>
+> "You're just jealous because the voices only talk to me."
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
