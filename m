@@ -1,199 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbXIUKBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbXIUKGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbXIUKBQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 06:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbXIUKA7
+	id S1757231AbXIUKGZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 06:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbXIUKGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 06:00:59 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:54581 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757731AbXIUKA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 06:00:58 -0400
-Date: Fri, 21 Sep 2007 11:00:56 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Pearson <james-p@moving-picture.com>, linux-kernel@vger.kernel.org,
-       aarapov@redhat.com, hpa@zytor.com
-Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
-Message-ID: <20070921100055.GA3562@skynet.ie>
-References: <E1IXziD-0003YJ-0w@moving-picture.com> <20070920164632.fd440b78.akpm@linux-foundation.org>
+	Fri, 21 Sep 2007 06:06:18 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44644 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbXIUKGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 06:06:17 -0400
+Message-ID: <46F398C3.3000804@bull.net>
+Date: Fri, 21 Sep 2007 12:11:15 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070920164632.fd440b78.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local>
+In-Reply-To: <20070921084453.GA1758@ff.dom.local>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 21/09/2007 12:11:33,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 21/09/2007 12:12:11,
+	Serialize complete at 21/09/2007 12:12:11
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (20/09/07 16:46), Andrew Morton didst pronounce:
-> On Wed, 19 Sep 2007 14:35:29 +0100
-> "James Pearson" <james-p@moving-picture.com> wrote:
+Jarek Poplawski wrote:
+> On Thu, Sep 20, 2007 at 03:08:42PM +0200, Nadia Derbey wrote:
 > 
-> > 
-> > From: James Pearson <james-p@moving-picture.com>
-> > 
-> > /proc/PID/environ currently truncates at 4096 characters, patch based on 
-> > the /proc/PID/mem code.
+>>Nadia Derbey wrote:
+>>
+>>>Jarek Poplawski wrote:
+>>>
+>>>
+>>>>On Thu, Sep 20, 2007 at 08:24:58AM +0200, Nadia Derbey wrote:
 > 
-> patch needs to be carefully reviewed from the security POV (ie: permissions)
-> as well as for correctness.  Does anyone have time to do that?
+> ...
 > 
-> > Signed-off-by: James Pearson <james-p@moving-picture.com>
-> > 
-> > --- ./fs/proc/base.c.dist	2007-09-19 12:29:46.244929651 +0100
-> > +++ ./fs/proc/base.c	2007-09-19 12:36:18.155648760 +0100
-> > @@ -202,27 +202,6 @@ static int proc_root_link(struct inode *
-> >  	 (task->state == TASK_STOPPED || task->state == TASK_TRACED) && \
-> >  	 security_ptrace(current,task) == 0))
-> >  
-> > -static int proc_pid_environ(struct task_struct *task, char * buffer)
-> > -{
-> > -	int res = 0;
-> > -	struct mm_struct *mm = get_task_mm(task);
-> > -	if (mm) {
-> > -		unsigned int len;
-> > -
-> > -		res = -ESRCH;
-> > -		if (!ptrace_may_attach(task))
-> > -			goto out;
-> > -
-> > -		len  = mm->env_end - mm->env_start;
-> > -		if (len > PAGE_SIZE)
-> > -			len = PAGE_SIZE;
-> > -		res = access_process_vm(task, mm->env_start, buffer, len, 0);
-> > -out:
-> > -		mmput(mm);
-> > -	}
-> > -	return res;
-> > -}
-> > -
-> >  static int proc_pid_cmdline(struct task_struct *task, char * buffer)
-> >  {
-> >  	int res = 0;
-> > @@ -740,6 +719,79 @@ static const struct file_operations proc
-> >  	.open		= mem_open,
-> >  };
-> >  
-> > +static ssize_t environ_read(struct file *file, char __user *buf,
-> > +			size_t count, loff_t *ppos)
-> > +{
-> > +	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
-> > +	char *page;
-> > +	unsigned long src = *ppos;
-> > +	int ret = -ESRCH;
-> > +	struct mm_struct *mm;
-> > +	size_t max_len;
-> > +
-> > +	if (!task)
-> > +		goto out_no_task;
-> > +
-> > +	if (!ptrace_may_attach(task))
-> > +		goto out;
-> > +
-> > +	ret = -ENOMEM;
-> > +	page = (char *)__get_free_page(GFP_TEMPORARY);
+>>>Actually, ipc_lock() is called most of the time without the 
+>>>ipc_ids.mutex held and without refcounting (maybe you didn't look for 
+>>>the msg_lock() sem_lock() and shm_lock() too).
+>>>So I think disabling preemption is needed, isn't it?
+>>>
+>>>
+>>>>so, these rcu_read_locks() don't
+>>>>work here at all. So, probably I miss something again, but IMHO,
+>>>>these rcu_read_locks/unlocks could be removed here or in
+>>>>ipc_lock_by_ptr() and it should be enough to use them directly, where
+>>>>really needed, e.g., in msg.c do_msgrcv().
+>>>>
+>>>
+>>>I have to check for the ipc_lock_by_ptr(): may be you're right!
+>>>
+>>
+>>So, here is the ipc_lock_by_ptr() status:
+>>1) do_msgsnd(), semctl_main(GETALL), semctl_main(SETALL) and find_undo() 
+>>call it inside a refcounting.
+>>  ==> no rcu read section needed.
+>>
+>>2) *_exit_ns(), ipc_findkey() and sysvipc_find_ipc() call it under the 
+>>ipc_ids mutex lock.
+>>  ==> no rcu read section needed.
+>>
+>>3) do_msgrcv() is the only path where ipc_lock_by_ptr() is not called 
+>>under refcounting
+>>  ==> rcu read section + some more checks needed once the spnlock is
+>>      taken.
+>>
+>>So I completely agree with you: we might remove the rcu_read_lock() from 
+>>the ipc_lock_by_ptr() and explicitley  call it when needed (actually, it 
+>>is already explicitly called in do_msgrcv()).
 > 
-> Now I wonder what inspired you to reach for GFP_TEMPORARY?  Perhaps the
-> fact that it is crappily named and undocumented.
 > 
+> Yes, IMHO, it should be at least more readable when we can see where
+> this RCU is really needed.
+> 
+> But, after 3-rd look, I have a few more doubts (btw., 3 looks are
+> still not enough for me with this code, so I cerainly can miss many
+> things here, and, alas, I manged to see util and msg code only):
+> 
+> 1. ipc_lock() and ipc_lock_check() are used without ipc_ids.mutex,
+> but it's probably wrong: they call idr_find() with ipc_ids pointer
+> which needs this mutex, just like in similar code in: ipc_findkey(),
+> ipc_get_maxid() or sysvipc_find_ipc().
+> 
+> 2. I'm not sure this refcounting with ipc_rcu_getref/putref is SMP
+> safe (memory barriers): it's not atomic, so locking is needed, but
+> e.g. in do_msgsnd() kern_ipc_perm lock is used for this, while
+> freeque() calls ipc_rcu_putref() with ipc_ids mutex only.
 
-Because it's a very short lived allocation? He allocates it here and
-frees it at the end of the function again.
+OK, but freeque() freeary() and shm_destroy() are special cases:
+we have the following path:
 
-> This should be GFP_KERNEL - the page you're allocating here is not
-> reclaimable by the VM.
-> 
+mutex_lock(ipc_ids.mutex)
+...
+ipc_lock(ipcp)
+... do whatever cleaning is needed ...
+ipc_rmid(ipcp)
+ipc_unlock(ipcp)
+....
+ipc_rcu_putref(ipcp)
 
-The patch leader documented how this works although you're right in that the
-code doesn't explain it adequately. Temporary and short-lived allocations
-are grouped with kernel-reclaimable pages such as inode and dcache pages
-intentionally.
+Once the rmid has been done the ipc structure is considered as not 
+visible anymore from the user side ==> any syscall called with the 
+corresponding id will return invalid.
+The only thing that could happen is that this structure be reused for a 
+newly allocated ipc structure. But this too cannot happen since we are 
+under the ipc_ids mutex lock.
 
-> > +	if (!page)
-> > +		goto out;
-> > +
-> > +	ret = 0;
-> > +
-> > +	mm = get_task_mm(task);
-> > +	if (!mm)
-> > +		goto out_free;
-> > +
-> > +	max_len = (count > PAGE_SIZE) ? PAGE_SIZE : count;
-> > +
-> > +	while (count > 0) {
-> > +		int this_len, retval;
-> > +
-> > +		this_len = mm->env_end - (mm->env_start + src);
-> > +
-> > +		if (this_len <= 0)
-> > +			break;
-> > +
-> > +		if (this_len > max_len)
-> > +			this_len = max_len;
-> > +
-> > +		retval = access_process_vm(task, (mm->env_start + src),
-> > +			page, this_len, 0);
-> > +
-> > +		if (retval <= 0) {
-> > +			ret = retval;
-> > +			break;
-> > +		}
-> > +
-> > +		if (copy_to_user(buf, page, retval)) {
-> > +			ret = -EFAULT;
-> > +			break;
-> > +		}
-> > +
-> > +		ret += retval;
-> > +		src += retval;
-> > +		buf += retval;
-> > +		count -= retval;
-> > +	}
-> 
-> Now that's a funky loop.  Someone please convince me that there is no way
-> in which `count - retval' can ever go negative (ie: huge positive).
-> 
-> 
-> > +	*ppos = src;
-> > +
-> > +	mmput(mm);
-> > +out_free:
-> > +	free_page((unsigned long) page);
-> > +out:
-> > +	put_task_struct(task);
-> > +out_no_task:
-> > +	return ret;
-> > +}
-> > +
-> > +static const struct file_operations proc_environ_operations = {
-> > +	.read		= environ_read,
-> > +};
-> > +
-> >  static ssize_t oom_adjust_read(struct file *file, char __user *buf,
-> >  				size_t count, loff_t *ppos)
-> >  {
-> > @@ -2092,7 +2144,7 @@ static const struct pid_entry tgid_base_
-> >  	DIR("task",       S_IRUGO|S_IXUGO, task),
-> >  	DIR("fd",         S_IRUSR|S_IXUSR, fd),
-> >  	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
-> > -	INF("environ",    S_IRUSR, pid_environ),
-> > +	REG("environ",    S_IRUSR, environ),
-> >  	INF("auxv",       S_IRUSR, pid_auxv),
-> >  	INF("status",     S_IRUGO, pid_status),
-> >  	INF("limits",	  S_IRUSR, pid_limits),
-> > @@ -2421,7 +2473,7 @@ out_no_task:
-> >  static const struct pid_entry tid_base_stuff[] = {
-> >  	DIR("fd",        S_IRUSR|S_IXUSR, fd),
-> >  	DIR("fdinfo",    S_IRUSR|S_IXUSR, fdinfo),
-> > -	INF("environ",   S_IRUSR, pid_environ),
-> > +	REG("environ",   S_IRUSR, environ),
-> >  	INF("auxv",      S_IRUSR, pid_auxv),
-> >  	INF("status",    S_IRUGO, pid_status),
-> >  	INF("limits",	 S_IRUSR, pid_limits),
-> 
+Am I wrong?
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Answers to the other questions in separate e-mails
+
+Regards,
+Nadia
+
