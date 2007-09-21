@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbXIUMrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbXIUMrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbXIUMrR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 08:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXIUMrH
+	id S1758691AbXIUMrm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 08:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbXIUMre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 08:47:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:64505 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbXIUMrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 08:47:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZZINsEpFrC6J46tVQzelYCGRnv5CxS9wUw/t+QvM+C0r0nuZQMScw6SMHuzeAw6mWgnS55Ddp/EFDGWypAUGInZQgV0m5p+2pWLnGBe05sfiYeqBI6VUmXED/yHdr173B9lGFG+5cfnfuSgFgGI6OJj0IvyGEff9nTKdKzHKS2U=
-Message-ID: <3402120c0709210547mb66162fv759a8f088beb0437@mail.gmail.com>
-Date: Fri, 21 Sep 2007 14:47:04 +0200
-From: "Arvin Moezzi" <moezzia@gmail.com>
-To: "James Pearson" <james-p@moving-picture.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
-Cc: aarapov@redhat.com, akpm@linux-foundation.org, hpa@zytor.com
-In-Reply-To: <46F39319.9090705@moving-picture.com>
+	Fri, 21 Sep 2007 08:47:34 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:56882 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751456AbXIUMrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 08:47:33 -0400
+Date: Fri, 21 Sep 2007 08:47:27 -0400
+To: Chakri n <chakriin5@gmail.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: NFS on loopback locks up entire system(2.6.23-rc6)?
+Message-ID: <20070921124727.GA15108@fieldses.org>
+References: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com> <1190335423.6763.180.camel@heimdal.trondhjem.org> <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <E1IXziD-0003YJ-0w@moving-picture.com>
-	 <3402120c0709201856j58c3775bq8dc7886785a11344@mail.gmail.com>
-	 <46F39319.9090705@moving-picture.com>
+In-Reply-To: <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>+
-> >>+               if (copy_to_user(buf, page, retval)) {
-> >
-> >                                                                 ^^^^
-> > shouldn't you only copy min(count,retval) bytes? otherwise you could
-> > write beyond the users buffer "buf", right?
->
-> AFAIK, 'retval' can never be greater than 'this_len', which can never be
-> greater than 'max_len', which can never be greater than 'count'
+On Thu, Sep 20, 2007 at 08:12:34PM -0700, Chakri n wrote:
+> And unfortunately in my case, I cannot use "mount --bind". I want to
+> use the same file system from two different nodes, and I want file &
+> record locking to be consistent. The only way to make sure locking is
+> consistent is to use loopback NFS on 1 host and NFS mount the same
+> file system on other nodes, so that NFS server ensures file & record
+> locking to be consistent. Is there any alternative to this?
 
-I think that's not true. 'count' is changing through the iteration.
-The difference in the mem_read():
+The NFS server acquires a lock on the exported filesystem before
+granting it to an NFS client, so loopback mounting shouldn't add any
+extra safety.  If you've witnessed some exception to this rule, please
+let us know.
 
-* while (count > 0) {
-*     int this_len, retval;
-*
-*      this_len = (count > PAGE_SIZE) ? PAGE_SIZE : count;
-*      retval = access_process_vm(task, src, page, this_len, 0);
-*
-*      ...
-* }
+> Is it possible or any efforts to integrate ext3 or other local file
+> systems locking & network file system locking, so that user can use
+> "mount --bind" on local host and NFS mount on remote nodes, but file &
+> record locking will be consistent between both the nodes?
 
-is the fact, that this_len = min(PAGE_SIZE, count) is in the
-iteration block, hence retval <= this_len <= count in each iteration
-step. So this is ok. But IMHO in your code 'retval' may be bigger than
-'count' in the last iteration of the block, because 'max_len' is fix
-through your iteration but 'count' is changing. Or am i missing
-something?
+That's the way it works already, more or less.
 
-> James Pearson
+(It depends a little on what you mean by "file and record locking".  The
+byte-range locks acquired by fcntl() have always been enforced over NFS.
+Locks acquired by flock() haven't always been, but loopback mounting
+doesn't solve this problem.)
 
-Arvin
+--b.
