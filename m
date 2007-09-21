@@ -1,100 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbXIUVPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932571AbXIUVQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765504AbXIUVPy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 17:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763507AbXIUVPp
+	id S932571AbXIUVQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 17:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765242AbXIUVPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 17:15:45 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38862
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1763416AbXIUVPo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 17:15:44 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Gross, Mark" <mark.gross@intel.com>
-Subject: Re: Message codes (Re: [Announce] Linux-tiny project revival)
-Date: Fri, 21 Sep 2007 16:15:39 -0500
-User-Agent: KMail/1.9.6
-Cc: "Oleg Verych" <olecom@flower.upol.cz>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "Michael Opdenacker" <michael@free-electrons.com>,
-       linux-tiny@selenic.com,
-       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
-       "linux kernel" <linux-kernel@vger.kernel.org>
-References: <46F1645D.9050406@am.sony.com> <E1IYWps-0006fQ-83@flower> <5389061B65D50446B1783B97DFDB392D07126ACB@orsmsx411.amr.corp.intel.com>
-In-Reply-To: <5389061B65D50446B1783B97DFDB392D07126ACB@orsmsx411.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 21 Sep 2007 17:15:52 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:38887 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764981AbXIUVPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 17:15:51 -0400
+Subject: Re: [PATCH 07/25] r/o bind mounts: elevate write count for some
+	ioctls
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
+       viro <viro@zeniv.linux.org.uk>
+In-Reply-To: <20070921011706.88e9bcdd.akpm@linux-foundation.org>
+References: <20070920195249.852667D5@kernel>
+	 <20070920195257.0E38EED5@kernel>
+	 <20070921011706.88e9bcdd.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 21 Sep 2007 14:15:43 -0700
+Message-Id: <1190409344.26982.192.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709211615.39898.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 September 2007 9:18:40 am Gross, Mark wrote:
-> >-----Original Message-----
-> >From: Oleg Verych [mailto:olecom@flower.upol.cz]
-> >Sent: Thursday, September 20, 2007 5:58 PM
-> >To: Gross, Mark
-> >Cc: Rob Landley; Alexey Dobriyan; Michael Opdenacker; linux-
-> >tiny@selenic.com; CE Linux Developers List; linux kernel
-> >Subject: Message codes (Re: [Announce] Linux-tiny project revival)
-> >
-> >* Thu, 20 Sep 2007 15:15:47 -0700
-> >* X-MimeOLE: Produced By Microsoft Exchange V6.5
-> >[]
-> >
-> >>>*Shrug*.
-> >>>
-> >>>My problem is that switching off printk is the single biggest bloat
-> >>
-> >> cutter
-> >>
-> >>>in
-> >>>the kernel, yet it makes the resulting system very hard to support.
->
-> It
->
-> >>>combines a big upside with a big downside, and I'd like something in
-> >>>between.
-> >>
-> >> What about getting even more hard core?
-> >>
-> >> Use compiler tricks to remove ALL the static printk string from the
-> >> kernel and replace the printk with something that outputs an decimal
-> >> index followed by tuples, of zero to N, hex-strings on a single line.
-> >
-> >Not all, but critical info, that must exist in human-readable form of
-> >course.
->
-> I disagree.  For a production product the you want minimal information
-> to reduce the communication bandwidth required between the remote
-> customer and the support organization.
->
-> In fact there is a good argument that you don't what the remote customer
-> to know enough to start guessing.
+On Fri, 2007-09-21 at 01:17 -0700, Andrew Morton wrote:
+> On Thu, 20 Sep 2007 12:52:57 -0700 Dave Hansen <haveblue@us.ibm.com> wrote:
+> 
+> > +		ret = mnt_want_write(filp->f_vfsmnt);
+> 
+> It still creeps me out that we have this sprinkled *all over* the tree and
+> people will forget to do it and there's no runtime or compile-time checking
+> that they remembered to do it and when they forget to do it nobody will
+> notice that it broke until ages and ages later.
+> 
+> IOW: it is a sheer horror for maintainability.
+> 
+> 
+> Please have a think about what we can do about this.  For example, if you'd
+> thought about this up-front, (and I think it's a big problem), we could
+> have done something grotty like, in mnt_want_write():
+> 
+> 	current->vfsmnt_im_allowed_to_write_to = inode;
+> 
+> and then check that current->vfsmnt_im_allowed_to_write_to is the correct
+> inode in __mark_inode_dirty() and various other strategic places.  That
+> sort of thing.
 
-Don't use Linux then.  Open source is a horrible fit for the way you think.
+Just brainstorming a bit...  I tried just keeping a writer count in the
+superblock which we bump at the same time as the mnt->__mnt_writers,
+which makes it quite easy to check whenever we have the inode around.
+This causes quite a few false positives with journal code, and I think a
+few more with direct block device access.  I think we can work around
+those, though.
 
-I'm sympathetic to "shrink the binary size" arguments.  I'm not really 
-sympathic to "keep the customer in the dark intentionally" arguments, whether 
-the justification is "because they're stupid", "to increase dependency on our 
-support staff", or any other reason.
+The true issue comes when we have a lot of users (more than one) of a
+superblock.  If anybody has a write request outstanding, then the check
+I put in will get skipped.  It's easy to mask real problems this way.
 
-> >Seriously. When in the Windows there are only messages like:
-> >
-> >    "Error (Code:0x00002012)".
->
-> Now it's been ~8 years since I did any serious windows work, but if I
-> recall correctly ALL THE FRICKING TIME!!! When was the last time you've
-> seen a bug check on windows?  This is about all you get.
+Putting the "inodes allowed" list in the task (or probably signal struct
+to support threads) should be workable, but I worry a bit about the
+cases where fds are sent across sockets.
 
-I believe he was holding it up as a bad example, and definitely not something 
-we want to emulate.
+We could also break up the mnt_want_write() requests into two classes,
+the common mnt_want_write() case and mnt_want_indefinite_write() or
+something.  The plain (and common) case is the one for things like
+rmdir, mknod, or chmod where the write is confined to a single syscall.
+mnt_want_indefinite_write() would be for things that do an open() and
+later work on a file descriptor.  Each of these cases could have a
+different variable or flag in (or hanging off) the task struct.  
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+In __mark_inode_dirty() we would first check to see if we are currently
+in one of the plain, more atomic, mnt_want_write() regions by checking a
+flag.  If not, we go looking through the task's file descriptors and
+seeing if one of them is open for write on the inode.  If both of these
+conditions fail, then we have a potential bug.  
+
+-- Dave
+
