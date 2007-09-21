@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbXIUNAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbXIUNAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbXIUNAR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbXIUNAF
+	id S1758304AbXIUNAk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbXIUNAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:00:05 -0400
-Received: from www.osadl.org ([213.239.205.134]:33596 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751606AbXIUNAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:00:04 -0400
-Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
-	booted, USB-related WARNING
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, miklos@szeredi.hu,
-       Len Brown <len.brown@intel.com>,
-       David Shaohua Li <shaohua.li@intel.com>
-In-Reply-To: <200709210030.20662.rjw@sisk.pl>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	 <alpine.LFD.0.999.0709201437310.16478@woody.linux-foundation.org>
-	 <1190325929.3085.79.camel@chaos>  <200709210030.20662.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 14:59:59 +0200
-Message-Id: <1190379599.3213.8.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Sep 2007 09:00:30 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:49694 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754276AbXIUNA3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 09:00:29 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20070921124323.GA8088@infradead.org> (message from Christoph
+	Hellwig on Fri, 21 Sep 2007 13:43:23 +0100)
+Subject: Re: [patch 3/5] VFS: pass open file to ->xattr()
+References: <20070921122343.307289079@szeredi.hu> <20070921123333.247493758@szeredi.hu> <20070921124323.GA8088@infradead.org>
+Message-Id: <E1IYi74-0001dX-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 21 Sep 2007 15:00:06 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
-
-On Fri, 2007-09-21 at 00:30 +0200, Rafael J. Wysocki wrote:
-> > -ETOOTIRED led me too a wrong conclusion, but still it is a valuable
-> > hint that this change is making things work again.
+> On Fri, Sep 21, 2007 at 02:23:46PM +0200, Miklos Szeredi wrote:
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > Pass the open file into the filesystem's *xattr() methods.
+> > 
+> > This is needed to be able to correctly implement open-unlink-f*xattr
+> > semantics, without having to resort to "silly-renaming".
+> > 
+> > Do this by adding a 'struct file *' parameter to i_op->*xattr().  For
+> > f... variants pass the open file pointer, in other cases pass NULL.
+> > 
+> > This is safe from a compatibility standpoint, out-of-tree old stuff
+> > will continue to work, but will get a warning at compile time.
 > 
-> Yes, it is.
+> NACK, no more optional arguments, and passing file structs to xattr
+> stuff is silly.  If your filesystem doesn't get open but unliked
+> right you will have to resort to silly renaming, I'm sorry.
 > 
-> > I need to go down into the details of the swsusp_suspend() code path to
-> > figure out, what's the root cause. 
-> 
-> If you need any help from me with that, please let me know.
+> Same argument applies to all pass file down patches in the series,
+> I won't comment on the separately.
 
-I'm zooming in. It seems, that the ACPI idle code plays tricks with us.
-After debugging the swsusp_suspend() code path I figured out, that we
-end up in C2 or deeper power states while we run the suspend code. The
-same happens when we come back on resume. It looks like we disable stuff
-in the ACPI BIOS, which makes the C2 and deeper power states misbehave.
-I hacked the idle loop arch code to use halt() right before we call
-device_suspend() and switch back to the acpi idle code right after
-device_resume(). This solves the problem as well.
+I don't think it's silly.  Read/write get passed the file descriptor,
+and it makes a lot of sense, if the filesystem has stateful opens.
 
-Len, any opinion on this one ?
+Similarly for any fs operation that gets a file descriptor, it makes
+sense to pass the relevant open file down into the filesystem.
 
-	tglx
+If you look carefully, the ftrunacate() already does this, becuse
+without that it's impossible to implement correct semantics in the
+filesystem in some cases.
 
+For other operations it's not impossible, but it would mean more hacks
+in the filesystem itself (such as sillyrenaming) that are entirely
+unneeded if the file info is available.
 
+I agree, that the xattr API is quite ugly already, but adding one more
+argument won't make it all that much worse.
+
+Miklos
