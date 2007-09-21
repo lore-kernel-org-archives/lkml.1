@@ -1,120 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbXIUNhm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759725AbXIUNic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759776AbXIUNhm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759589AbXIUNhY
+	id S1759725AbXIUNic (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbXIUNi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:37:24 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:49003 "EHLO
+	Fri, 21 Sep 2007 09:38:26 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:49143 "EHLO
 	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759557AbXIUNhW (ORCPT
+	by vger.kernel.org with ESMTP id S1752760AbXIUNiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:37:22 -0400
-Date: Fri, 21 Sep 2007 09:37:19 -0400
+	Fri, 21 Sep 2007 09:38:25 -0400
+Date: Fri, 21 Sep 2007 09:38:20 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch 1/8] Immediate Values - Global Modules List and Module Mutex
-Message-ID: <20070921133719.GC13129@Krystal>
-References: <20070911004541.GA4360@Krystal> <1189487938.20631.53.camel@localhost.localdomain> <20070911142733.GA7850@Krystal> <1189662432.32322.1.camel@localhost.localdomain> <20070913212107.GA15826@Krystal> <1189725317.7262.23.camel@localhost.localdomain> <20070914153230.GA29743@Krystal> <1190069659.7262.141.camel@localhost.localdomain> <20070918134131.GA22690@Krystal> <1190291351.7262.248.camel@localhost.localdomain>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, dsmith@redhat.com,
+       Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20070921133820.GD13129@Krystal>
+References: <20070918211324.161373216@polymtl.ca> <20070919113737.GA18177@Krystal> <y0mtzpqvk1l.fsf@ton.toronto.redhat.com> <200709192132.00873.vda.linux@googlemail.com> <20070921125819.GA13129@Krystal> <20070921133006.GF8964@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1190291351.7262.248.camel@localhost.localdomain>
+In-Reply-To: <20070921133006.GF8964@redhat.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:31:31 up 53 days, 13:50,  4 users,  load average: 0.32, 0.90, 0.84
+X-Uptime: 09:37:55 up 53 days, 13:56,  4 users,  load average: 0.07, 0.40, 0.63
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Tue, 2007-09-18 at 09:41 -0400, Mathieu Desnoyers wrote:
-> > * Rusty Russell (rusty@rustcorp.com.au) wrote:
-> > > On Fri, 2007-09-14 at 11:32 -0400, Mathieu Desnoyers wrote:
-> > > > * Rusty Russell (rusty@rustcorp.com.au) wrote:
-> > > > > Alternatively, if you called it "immediate_init" then the semantics
-> > > > > change slightly, but are more obvious (ie. only use this when the value
-> > > > > isn't being accessed yet).  But it can't be __init then anyway.
-> > > > > 
-> > > > 
-> > > > I think your idea is good. immediate_init() could be used to update the
-> > > > immediate values at boot time _and_ at module load time, and we could
-> > > > use an architecture specific arch_immediate_update_init() to support it.
-> > > 
-> > > Right.
-> > > 
-> > > > As for "when" to use this, it should be used at boot time when
-> > > > interrupts are still disabled, still running in UP. It can also be used
-> > > > at module load time before any of the module code is executed, as long
-> > > > as the module code pages are writable (which they always are, for
-> > > > now..). Therefore, the flag seems inappropriate for module load
-> > > > arch_immediate_update_init. It cannot be put in __init section neither
-> > > > though if we use it like this.
-> > > 
-> > > I think from a user's POV it would be nice to have a 1:1 mapping with
-> > > normal initialization semantics (ie. it will work as long as you don't
-> > > access this value until initialized).  And I think this would be the
-> > > case.  eg:
-> > > 
-> > >         int foo_func(void)
-> > >         {
-> > >         	if (immediate_read(&some_immediate))
-> > >         		return 0;
-> > >         	...
-> > >         }
-> > >         
-> > >         int some_init(void)
-> > >         {
-> > >         	immediate_init(some_immediate, 0);
-> > >         	register_foo(foo_func);
-> > >         	...
-> > >         }
-> > > 
-> > 
-> > There are other considerations that differs between the boot-time case
-> > and the general "init" case: the write-protection flag must be
-> > cleared-saved/restored when the kernel is running to patch read-only
-> > text, but we don't want to modify cr0 at early boot on i386 because
-> > paravirt is not executed yet (at boot time, pages are not
-> > write-protected yet).
-> > 
-> > And I am not sure that it buys us anything to create an immediate_init()
-> > when we can do exactly the same job with immediate_set. Yes, it might be
-> > a bit slower, but we are not on a fast path.
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+> Hi -
 > 
-> Good points.  Well I'd say hiding it all behind a friendly
-> "immediate_set()" interface is the best option then.
+> On Fri, Sep 21, 2007 at 08:58:19AM -0400, Mathieu Desnoyers wrote:
+> > [...]
+> > > > Current systemtap marker support code relies on the __markers_strings
+> > > > section.
+> > > Let users know that in comment above section definition in ld script.
+> > [...]
+> >         /* Markers: strings (used by SystemTAP) */                      \
+> > [...]
+> 
+> I did not mean to imply that this was a necessary state of affairs.
+> 
+> The marker metadata must be stored in at least one place in the kernel
+> image - this just happens to be a convenient one that David Smith's
+> recent systemtap code used.  Without it, we'd probably have to do a
+> more complicated search, following the pointers within the __markers
+> structs.  That could work, but it hasn't been built/tested.
+> 
+> So, this proposed change (removal of this section) would break
+> systemtap, and we have to jump through more hoops to make it work
+> again.  Is the change worth it?
 > 
 
-Then we can't benefit of the __init section to have the code removed
-after boot. I don't see the point in doing so.
-
-> > > OK, but can you justify the use of immediates within the nmi or mce
-> > > handlers?  They don't strike me as useful candidates for optimization.
-> > 
-> > Yes, immediate values are used by the Linux Kernel Markers, which
-> > instrument many code paths, including functions called from nmi and mce
-> > contexts (including printk).
-> 
-> Is this really worth worrying about?  Isn't there already a problem with
-> printk() in nmi?
-> 
-
-printk() is just an example taken from my current instrumentation. Let's
-say I plan to instrument kmalloc() (which will happen someday): it's
-used in every context, including NMI. And it's not because printk is
-broken that its instrumentation can afford to be broken even further,
-that logic seems wrong to me. Somebody go fix printk then ;)
+I guess so. Getting the markers as clean as we can is very important for
+kernel inclusion.
 
 Mathieu
-
-> Cheers,
-> Rusty.
-> 
 
 -- 
 Mathieu Desnoyers
