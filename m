@@ -1,108 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbXIUG2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbXIUGdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755405AbXIUG2e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 02:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXIUG21
+	id S1755628AbXIUGdv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 02:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXIUGdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 02:28:27 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59354 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbXIUG20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 02:28:26 -0400
-Date: Fri, 21 Sep 2007 08:29:49 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Indan Zupancic <indan@nul.nu>
-Cc: Rob Landley <rob@landley.net>, linux-tiny@selenic.com,
-       Michael Opdenacker <michael@free-electrons.com>,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Announce] Linux-tiny project revival
-Message-ID: <20070921062949.GA17131@uranus.ravnborg.org>
-References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <59465.81.207.0.53.1190323573.squirrel@secure.samage.net> <200709201818.42125.rob@landley.net> <38197.81.207.0.53.1190329581.squirrel@secure.samage.net>
+	Fri, 21 Sep 2007 02:33:44 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:38411 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbXIUGdn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 02:33:43 -0400
+Date: Thu, 20 Sep 2007 23:33:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Christoph Hellwig <hch@infradead.org>,
+       David Wilder <dwilder@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Test harness in the kernel for new syscalls? [Was: Trace code
+ and documentation (updated)]
+Message-Id: <20070920233317.edb29d58.randy.dunlap@oracle.com>
+In-Reply-To: <20070920215042.38fd3546.randy.dunlap@oracle.com>
+References: <1190177218.3190.18.camel@lc4eb748232119.ibm.com>
+	<p736427vz00.fsf@bingen.suse.de>
+	<46F12ED7.3060605@us.ibm.com>
+	<20070919162018.GA16237@infradead.org>
+	<20070919095223.83bd8226.randy.dunlap@oracle.com>
+	<20070919165507.GA18973@infradead.org>
+	<20070919174845.GD3115@uranus.ravnborg.org>
+	<20070919175109.GA23889@infradead.org>
+	<20070919180115.GE3115@uranus.ravnborg.org>
+	<20070920215042.38fd3546.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <38197.81.207.0.53.1190329581.squirrel@secure.samage.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 01:06:21AM +0200, Indan Zupancic wrote:
-> On Fri, September 21, 2007 01:18, Rob Landley wrote:
-> > On Thursday 20 September 2007 4:26:13 pm Indan Zupancic wrote:
-> >> A quick scroll through a vmlinux binary shows that there are quite a
-> >> lot areas consisting only of some repeated pattern. Mostly 0x00, but
-> >> also 0x90 and ".GCC: (GNU) 4.2.1.". Getting rid of those would save
-> >> something between 50 and 100KB.
-> >
-> > Worse, if you feed an absolute path to O= when you build the kernel out of
-> > tree, then it uses absolute paths for all the __FILE__ strings and that makes
-> > kernel BIIIIIG.  (Did that by accident a while back.)  Too bad there's no way
-> > to keep the __FILE__ strings compressed at runtime and gunzip them as needed
-> > like busybox does with help messages... :)
+On Thu, 20 Sep 2007 21:50:42 -0700 Randy Dunlap wrote:
+
+> On Wed, 19 Sep 2007 20:01:15 +0200 Sam Ravnborg wrote:
 > 
-> I suspect that can be fixed by changing the built system. How can using O=
-> change the source file path anyway? That seems unnecessary.
-Thats a bit unavoidable as the build system works.
-__FILE__ is passed the filename supplied as argument to gcc.
-
-Try:
-echo "char *s = __FILE__;" > sam.c
-
-gcc -E sam.c
-This gives you:
-# 1 "sam.c"
-# 1 "<built-in>"
-# 1 "<command line>"
-# 1 "sam.c"
-char *s="sam.c";
-
-gcc -E ~/sam.c
-This gives you:
-# 1 "/home/sam/sam.c"
-# 1 "<built-in>"
-# 1 "<command line>"
-# 1 "/home/sam/sam.c"
-char *s="/home/sam/sam.c";
- 
-So __FILE__ expand differently depending on the path on
-the gcc command line.
-I once posted a patch to fix up on this, especialy for BUG_ON and friends.
-The solution was to let kbuild generate the filename and to use
-this define in the source code.
-But a quick grep for __FILE__ in the kernel source made me chicken out.
-Simply too much chrunch at that time to justify it.
-
-Googeling a bit I found it here: http://lkml.org/lkml/2006/7/8/22
-The better approach would be to use at least the patch inside
-the kernel.
-This patch should be easy to update to latest kernel if anyone
-is up to play with it.
-
-I recall that there was some problems with the path used.
-But I cannot remember the details.
-Andrew had some inputs from his testing IIRC and google should
-be able to tell the full story.
-
-	Sam
-
-
-
-
-
+> > On Wed, Sep 19, 2007 at 06:51:09PM +0100, Christoph Hellwig wrote:
+> > > On Wed, Sep 19, 2007 at 07:48:45PM +0200, Sam Ravnborg wrote:
+> > > > > Well, this is kernel code - so util-linux is not the solution here
+> > > > > obviously :)
 > 
-> It seems to be worse, full pathnames are also used when giving a relative path.
-> (I'm using O=../obj/).
+> so kernel sample code goes in the new samples/ directory,
+> and userspace sample code gets pushed to util-linux ?
 > 
-> On the other hand, it doesn't seem to cause that much bloat here:
-> 
-> $ strings vmlinux | grep /home/ |wc
->     119     181    6400
-> 
-> CC'ing Sam Ravnborg, perhaps he has some ideas.
-> 
-> Greetings,
-> 
-> Indan
-> 
-> 
+> > > > Can you sketch what you have in mind.
+> > > > We right now have said we wnated to:
+> > > > 1) include a framework for executing simple new-syscall-test-stubs
+> > > > 2) have a nice place for kernel example code
+> > > > 
+> > > > I could come up with something but I expect you already have something
+> > > > in your mind where to put stuff.
+> > > > If I have a rough idea I can start looking into the kbuild bits of it.
+> > > > Not that I will have it ready within the next two weeks but nice buffer
+> > > > when I anyway drop sleeping..
+> > > 
+> > > I think for samples we just want a samples/ toplevel directory with
+> > > normal Kbuild and Kconfig files.  Not any different from drivers or
+> > > filesystems, just a new hiearchary.
+> > 
+> > OK - anyone can do this. So I will not worry.
+
+
+I began looking into this.
+
+Yes, we should add Makefile(s) so that sample code can be built.
+Does that mean that it has to be moved to a different directory?
+
+For some (not all) sample code, we either move its related txt or
+README file to the samples/ dir also, or we create the need to
+look in 2 places to see the sample code + related doc.
+
+The latter is not good, so I suppose that we move those related
+txt files with the sample code.  Then we have docs split into
+2 places (not counting drivers/ and fs/ .txt files & other README*
+files throughout the kernel tree).  Having docs split into more
+places isn't good either.
+
+I'm for just add Makefile(s) in the Documentation/ tree so that
+sample code can be built there (as well as moving the sample
+code out of .txt files and into standalone source files).
+
+
+I'll back up and re-read where this (new) requirement is coming
+from.
+
+[reads]
+
+It seems to mostly be about having the ability to build the sample
+code so that it doesn't bitrot.  That's good.  But docs and sample
+code are often very related.  I don't see why we would arbitrarily
+split them up.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
