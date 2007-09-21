@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbXIUAw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbXIUA7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754718AbXIUAw2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 20:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbXIUAwV
+	id S1755069AbXIUA7g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 20:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXIUA73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 20:52:21 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:56781 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752256AbXIUAwU (ORCPT
+	Thu, 20 Sep 2007 20:59:29 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:40300 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbXIUA72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 20:52:20 -0400
-X-Sasl-enc: xqFFhikEEeFM7Ot9doMAADjM5XbisNECyibVkVMxUVXC 1190335939
-Message-ID: <46F31603.1030901@imap.cc>
-Date: Fri, 21 Sep 2007 02:53:23 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
+	Thu, 20 Sep 2007 20:59:28 -0400
+Date: Thu, 20 Sep 2007 20:58:37 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent
+	Code
+Message-ID: <20070921005837.GA4951@goodmis.org>
+References: <20070918211324.161373216@polymtl.ca> <20070918211459.193904061@polymtl.ca>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.23-rc6-mm1
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>	<46F1AA6E.1030708@imap.cc>	<46F2C7F8.3040409@imap.cc> <20070920132506.27195aaa.akpm@linux-foundation.org>
-In-Reply-To: <20070920132506.27195aaa.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig181AE7F1AC6437BB6439F9F1"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070918211459.193904061@polymtl.ca>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig181AE7F1AC6437BB6439F9F1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Sep 18, 2007 at 05:13:25PM -0400, Mathieu Desnoyers wrote:
+> +/*
+> + * Sets the probe callback corresponding to one marker.
+> + */
+> +static int set_marker(struct marker_entry **entry,
+> +			struct __mark_marker *elem)
+> +{
+> +	int ret;
+> +	BUG_ON(strcmp((*entry)->name, elem->name) != 0);
 
-Am 20.09.2007 22:25 schrieb Andrew Morton:
-> There was a locking imbalance in the IPC code.  Do you have the fixes i=
-n
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc=
-6/2.6.23-rc6-mm1/hot-fixes/
-> applied?
+Can you switch this at least to WARN_ON?  Killing a system with X
+running where the user just sees a freeze is not that nice. But a nasty
+message in dmesg is very noticable.
 
-I hadn't. Now that I have, all the troubles are gone. X comes up
-fine, and all of the segfault/invalid context/scheduling while atomic
-messages have disappeared.
+-- Steve
 
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig181AE7F1AC6437BB6439F9F1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFG8xYDMdB4Whm86/kRAo8wAJwMLZxT8Nyx0WvMlBgrrvjdHJEqHACfb8EN
-eqXh2hWxOLNf1XTEx8ducnU=
-=q65e
------END PGP SIGNATURE-----
-
---------------enig181AE7F1AC6437BB6439F9F1--
+> +
+> +	if ((*entry)->format) {
+> +		if (strcmp((*entry)->format, elem->format) != 0) {
+> +			printk(KERN_NOTICE
+> +				"Format mismatch for probe %s "
+> +				"(%s), marker (%s)\n",
+> +				(*entry)->name,
+> +				(*entry)->format,
+> +				elem->format);
+> +			return -EPERM;
+> +		}
+> +	} else {
+> +		ret = marker_set_format(entry, elem->format);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +	elem->call = (*entry)->probe;
+> +	elem->pdata = (*entry)->pdata;
+> +	_immediate_set(elem->state, 1);
+> +	return 0;
+> +}
