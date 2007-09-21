@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbXIUOou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbXIUOqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbXIUOou (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbXIUOom
+	id S1759916AbXIUOqQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbXIUOqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:44:42 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:45144 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753078AbXIUOol (ORCPT
+	Fri, 21 Sep 2007 10:46:00 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56509 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753773AbXIUOqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:44:41 -0400
-To: trond.myklebust@fys.uio.no
-CC: hch@infradead.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <1190385151.6680.35.camel@heimdal.trondhjem.org> (message from
-	Trond Myklebust on Fri, 21 Sep 2007 10:32:31 -0400)
-Subject: Re: [patch 3/5] VFS: pass open file to ->xattr()
-References: <20070921122343.307289079@szeredi.hu>
-	 <20070921123333.247493758@szeredi.hu> <20070921124323.GA8088@infradead.org>
-	 <E1IYi74-0001dX-00@dorka.pomaz.szeredi.hu>
-	 <20070921130642.GA9431@infradead.org>
-	 <E1IYiN2-0001eq-00@dorka.pomaz.szeredi.hu> <1190385151.6680.35.camel@heimdal.trondhjem.org>
-Message-Id: <E1IYjjU-0001kB-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 21 Sep 2007 16:43:52 +0200
+	Fri, 21 Sep 2007 10:46:00 -0400
+Date: Fri, 21 Sep 2007 15:45:24 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, Yinghai.Lu@Sun.COM, bryan.wu@analog.com,
+       dilinger@queued.net, kraxel@redhat.com, lethal@linux-sh.org,
+       rgetz@blackfin.uclinux.org, vapier.adi@gmail.com
+Subject: Re: [PATCH] kernel/printk.c: Concerns about the console handover
+Message-ID: <20070921144523.GD20277@flint.arm.linux.org.uk>
+References: <Pine.LNX.4.64N.0709201749240.30788@blysk.ds.pg.gda.pl> <20070921010349.2caee558.akpm@linux-foundation.org> <Pine.LNX.4.64N.0709211428300.2724@blysk.ds.pg.gda.pl> <20070921134331.GC20277@flint.arm.linux.org.uk> <Pine.LNX.4.64N.0709211454570.2724@blysk.ds.pg.gda.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64N.0709211454570.2724@blysk.ds.pg.gda.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > ftruncate is a special case due to O_TRUNC.
+On Fri, Sep 21, 2007 at 03:36:05PM +0100, Maciej W. Rozycki wrote:
+> On Fri, 21 Sep 2007, Russell King wrote:
+> > You can find the fix in the mbox archive:
 > > 
-> > No, it's special, because it does not do permission checking, while
-> > truncate() does.
+> >  http://ftp.arm.linux.org.uk/pub/linux/arm/kernel/git-cut/arm:devel.mbox
 > 
-> So why not just add file->f_op->ftruncate() and file->f_op->fstat()?
+>  Hmm, nothing of relevance there.
 
-Sure, we could add those.
+Hmm, it does help to occasionally run the script which uploads the
+patches and stuff.  Also I typoed the URL:
 
-I'm not sure it's worth adding new file operations, instead of just
-adding a parameter to ->getattr(), and ->*xattr(), but if that's more
-acceptable. it's fine for me.
+ http://ftp.arm.linux.org.uk/pub/linux/arm/kernel/git-cur/arm:devel.mbox
 
-> Most filesystems can trivially redirect these to do_truncate() and their
-> existing getattr() method. Those, like FUSE, that care can use the hook.
-> In fact, I think that NFSv4 could also benefit from an ftruncate():
-> currently we have to hunt around for an open file context for that
-> particular case.
+>  I see no problem with implementing the ->pm() call as something like:
+> 
+> void zs_pm(struct uart_port uport, unsigned int state, unsigned int oldstate)
+> {
+> 	struct zs_port *zport = to_zport(uport);
+> 
+> 	if (state < 3)
+> 		zport->regs[5] |= TxENAB;
+> 	else
+> 		zport->regs[5] &= ~TxENAB;
+> 	write_zsreg(zport, R5, zport->regs[5]);
+> }
+> 
+> itself, but it looks more like a workaround than a fix to me.  I'll have 
+> to think about it and also double-check it is safe.  The SCC is about as 
+> complicated as you can get with a serial port.
 
-For ftruncate you can already access the open file from iattr->ia_file.
+You will need the serial patch from the above mbox.
 
-Miklos
+PS, Gerd's bouncing email address removed from the CC line.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
