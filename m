@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbXIUNCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbXIUNDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758828AbXIUNCn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbXIUNCe
+	id S1758921AbXIUNDF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbXIUNCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:02:34 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:33483 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757178AbXIUNCd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:02:33 -0400
-Date: Fri, 21 Sep 2007 09:01:38 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: "Paul E. McKenney" <paulmck@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH] Add CRC checksum for RCU lists
-In-Reply-To: <20070921140221.000a416a@twins>
-Message-ID: <Pine.LNX.4.58.0709210824220.23295@gandalf.stny.rr.com>
-References: <1190313251.4518.14.camel@localhost.localdomain>
- <20070921140221.000a416a@twins>
+	Fri, 21 Sep 2007 09:02:52 -0400
+Received: from mail.tmr.com ([64.65.253.246]:54330 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752031AbXIUNCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 09:02:51 -0400
+Message-ID: <46F3C1B4.6040804@tmr.com>
+Date: Fri, 21 Sep 2007 09:05:56 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dan Williams <dan.j.williams@intel.com>
+CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de,
+       akpm@linux-foundation.org, yur@emcraft.com, saeed.bishara@gmail.com,
+       shannon.nelson@intel.com
+Subject: Re: [PATCH 2.6.23-rc7 1/3] async_tx: usage documentation and developer
+ notes
+References: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com> <20070921012740.17157.49639.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20070921012740.17157.49639.stgit@dwillia2-linux.ch.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---
-On Fri, 21 Sep 2007, Peter Zijlstra wrote:
-
-> On Thu, 20 Sep 2007 14:34:11 -0400 Steven Rostedt <rostedt@goodmis.org>
-> wrote:
+Dan Williams wrote:
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
 >
+>  Documentation/crypto/async-tx-api.txt |  217 +++++++++++++++++++++++++++++++++
+>  1 files changed, 217 insertions(+), 0 deletions(-)
 >
-> > +static inline void rcu_crc_check(struct rcu_head *head)
-> > +{
-> > +	static int once;
-> > +	if (unlikely(head->crc != rcu_crc_calc(head)) && !once) {
-> > +		once++;
-> > +		printk("BUG: RCU check failed!");
-> > +		if (head->caller)
-> > +			printk(" (caller=%p)",
-> > +			       head->caller);
->
-> 		char sym[KSYM_SYMBOL_LEN];
-> 		sprint_symbol(sym, head->caller);
-> 		printk(" (caller: [<%p>] %s)", head->caller, sym);
->
+> diff --git a/Documentation/crypto/async-tx-api.txt b/Documentation/crypto/async-tx-api.txt
+> new file mode 100644
+> index 0000000..48d685a
+> --- /dev/null
+> +++ b/Documentation/crypto/async-tx-api.txt
+> @@ -0,0 +1,217 @@
+> +		 Asynchronous Transfers/Transforms API
+> +
+> +1 INTRODUCTION
+> +
+> +2 GENEALOGY
+> +
+> +3 USAGE
+> +3.1 General format of the API
+> +3.2 Supported operations
+> +3.2 Descriptor management
+> +3.3 When does the operation execute?
+> +3.4 When does the operation complete?
+> +3.5 Constraints
+> +3.6 Example
+> +
 
-Yes, good point!
+This is very readable, and appears extensible to any new forthcoming 
+technology I'm aware of. Great job!
 
-Although I may do it this way:
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
-              printk(" (caller: [<%p>]", head->caller);
-              print_symbol(" %s)\n", (unsigned long)head->caller);
-
-and eliminate the temp variable.
-
--- Steve
-
-> > +		printk("\n");
-> > +		printk("  CRC was %08lx, expected %08lx\n",
-> > +		       head->crc, rcu_crc_calc(head));
-> > +		printk("  %p %p\n",
-> > +		       head->next, head->func);
-> > +		dump_stack();
-> > +	}
-> > +}
->
->
