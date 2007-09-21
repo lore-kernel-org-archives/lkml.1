@@ -1,59 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765623AbXIUU6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbXIUU7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765623AbXIUU6q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763518AbXIUUpk
+	id S932093AbXIUU7F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763541AbXIUUpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:45:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50104 "EHLO mx1.suse.de"
+	Fri, 21 Sep 2007 16:45:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50110 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763414AbXIUUpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:45:25 -0400
+	id S1763417AbXIUUp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:45:26 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709211044.901175000@suse.de>
 In-Reply-To: <200709211044.901175000@suse.de>
-To: mingo@elte.hu, oleg@tv-sign.ru, 76306.1226@compuserve.com, ak@suse.de,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [41/45] i386: remove unnecessary code
-Message-Id: <20070921204524.7BBAC14EFF@wotan.suse.de>
-Date: Fri, 21 Sep 2007 22:45:24 +0200 (CEST)
+To: gcosta@redhat.com, ak@suse.de, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [42/45] x86_64: use descriptor's functions instead of inline assembly
+Message-Id: <20070921204525.92E8314EF1@wotan.suse.de>
+Date: Fri, 21 Sep 2007 22:45:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Ingo Molnar <mingo@elte.hu>
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
 
-Oleg Nesterov pointed out that the set_fs() calls in setup_frame()
-and setup_rt_frame() were superfluous.
+This patch provides a new set of functions for managing the descriptor
+tables that can be used instead of putting the raw assembly in .c files.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Remodeling of store_tr() suggested by Frederik Deweerdt.
+
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Chuck Ebbert <76306.1226@compuserve.com>
 Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/i386/kernel/signal.c |    2 --
- 1 file changed, 2 deletions(-)
+ arch/x86_64/kernel/head64.c  |    2 +-
+ arch/x86_64/kernel/reboot.c  |    3 ++-
+ arch/x86_64/kernel/setup64.c |    4 ++--
+ arch/x86_64/kernel/suspend.c |   11 ++++++-----
+ include/asm-x86_64/desc.h    |   29 +++++++++++++++++++++++++++++
+ 5 files changed, 40 insertions(+), 9 deletions(-)
 
-Index: linux/arch/i386/kernel/signal.c
+Index: linux/arch/x86_64/kernel/head64.c
 ===================================================================
---- linux.orig/arch/i386/kernel/signal.c
-+++ linux/arch/i386/kernel/signal.c
-@@ -387,7 +387,6 @@ static int setup_frame(int sig, struct k
- 	regs->edx = (unsigned long) 0;
- 	regs->ecx = (unsigned long) 0;
+--- linux.orig/arch/x86_64/kernel/head64.c
++++ linux/arch/x86_64/kernel/head64.c
+@@ -70,7 +70,7 @@ void __init x86_64_start_kernel(char * r
  
--	set_fs(USER_DS);
- 	regs->xds = __USER_DS;
- 	regs->xes = __USER_DS;
- 	regs->xss = __USER_DS;
-@@ -481,7 +480,6 @@ static int setup_rt_frame(int sig, struc
- 	regs->edx = (unsigned long) &frame->info;
- 	regs->ecx = (unsigned long) &frame->uc;
+ 	for (i = 0; i < IDT_ENTRIES; i++)
+ 		set_intr_gate(i, early_idt_handler);
+-	asm volatile("lidt %0" :: "m" (idt_descr));
++	load_idt((const struct desc_ptr *)&idt_descr);
  
--	set_fs(USER_DS);
- 	regs->xds = __USER_DS;
- 	regs->xes = __USER_DS;
- 	regs->xss = __USER_DS;
+ 	early_printk("Kernel alive\n");
+ 
+Index: linux/arch/x86_64/kernel/reboot.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/reboot.c
++++ linux/arch/x86_64/kernel/reboot.c
+@@ -11,6 +11,7 @@
+ #include <linux/sched.h>
+ #include <asm/io.h>
+ #include <asm/delay.h>
++#include <asm/desc.h>
+ #include <asm/hw_irq.h>
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+@@ -136,7 +137,7 @@ void machine_emergency_restart(void)
+ 		}
+ 
+ 		case BOOT_TRIPLE: 
+-			__asm__ __volatile__("lidt (%0)": :"r" (&no_idt));
++			load_idt((const struct desc_ptr *)&no_idt);
+ 			__asm__ __volatile__("int3");
+ 
+ 			reboot_type = BOOT_KBD;
+Index: linux/arch/x86_64/kernel/setup64.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/setup64.c
++++ linux/arch/x86_64/kernel/setup64.c
+@@ -224,8 +224,8 @@ void __cpuinit cpu_init (void)
+  		memcpy(cpu_gdt(cpu), cpu_gdt_table, GDT_SIZE);
+ 
+ 	cpu_gdt_descr[cpu].size = GDT_SIZE;
+-	asm volatile("lgdt %0" :: "m" (cpu_gdt_descr[cpu]));
+-	asm volatile("lidt %0" :: "m" (idt_descr));
++	load_gdt((const struct desc_ptr *)&cpu_gdt_descr[cpu]);
++	load_idt((const struct desc_ptr *)&idt_descr);
+ 
+ 	memset(me->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
+ 	syscall_init();
+Index: linux/arch/x86_64/kernel/suspend.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/suspend.c
++++ linux/arch/x86_64/kernel/suspend.c
+@@ -32,9 +32,9 @@ void __save_processor_state(struct saved
+ 	/*
+ 	 * descriptor tables
+ 	 */
+-	asm volatile ("sgdt %0" : "=m" (ctxt->gdt_limit));
+-	asm volatile ("sidt %0" : "=m" (ctxt->idt_limit));
+-	asm volatile ("str %0"  : "=m" (ctxt->tr));
++	store_gdt((struct desc_ptr *)&ctxt->gdt_limit);
++	store_idt((struct desc_ptr *)&ctxt->idt_limit);
++	store_tr(ctxt->tr);
+ 
+ 	/* XMM0..XMM15 should be handled by kernel_fpu_begin(). */
+ 	/*
+@@ -91,8 +91,9 @@ void __restore_processor_state(struct sa
+ 	 * now restore the descriptor tables to their proper values
+ 	 * ltr is done i fix_processor_context().
+ 	 */
+-	asm volatile ("lgdt %0" :: "m" (ctxt->gdt_limit));
+-	asm volatile ("lidt %0" :: "m" (ctxt->idt_limit));
++	load_gdt((const struct desc_ptr *)&ctxt->gdt_limit);
++	load_idt((const struct desc_ptr *)&ctxt->idt_limit);
++
+ 
+ 	/*
+ 	 * segment registers
+Index: linux/include/asm-x86_64/desc.h
+===================================================================
+--- linux.orig/include/asm-x86_64/desc.h
++++ linux/include/asm-x86_64/desc.h
+@@ -20,6 +20,15 @@ extern struct desc_struct cpu_gdt_table[
+ #define load_LDT_desc() asm volatile("lldt %w0"::"r" (GDT_ENTRY_LDT*8))
+ #define clear_LDT()  asm volatile("lldt %w0"::"r" (0))
+ 
++static inline unsigned long __store_tr(void)
++{
++       unsigned long tr;
++       asm volatile ("str %w0":"=r" (tr));
++       return tr;
++}
++
++#define store_tr(tr) (tr) = __store_tr()
++
+ /*
+  * This is the ldt that every process will get unless we need
+  * something other than this.
+@@ -31,6 +40,16 @@ extern struct desc_ptr cpu_gdt_descr[];
+ /* the cpu gdt accessor */
+ #define cpu_gdt(_cpu) ((struct desc_struct *)cpu_gdt_descr[_cpu].address)
+ 
++static inline void load_gdt(const struct desc_ptr *ptr)
++{
++	asm volatile("lgdt %w0"::"m" (*ptr));
++}
++
++static inline void store_gdt(struct desc_ptr *ptr)
++{
++       asm ("sgdt %w0":"=m" (*ptr));
++}
++
+ static inline void _set_gate(void *adr, unsigned type, unsigned long func, unsigned dpl, unsigned ist)  
+ {
+ 	struct gate_struct s; 	
+@@ -71,6 +90,16 @@ static inline void set_system_gate_ist(i
+ 	_set_gate(&idt_table[nr], GATE_INTERRUPT, (unsigned long) func, 3, ist);
+ }
+ 
++static inline void load_idt(const struct desc_ptr *ptr)
++{
++	asm volatile("lidt %w0"::"m" (*ptr));
++}
++
++static inline void store_idt(struct desc_ptr *dtr)
++{
++       asm ("sidt %w0":"=m" (*dtr));
++}
++
+ static inline void set_tssldt_descriptor(void *ptr, unsigned long tss, unsigned type, 
+ 					 unsigned size) 
+ { 
