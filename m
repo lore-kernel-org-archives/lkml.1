@@ -1,97 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbXIUB5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbXIUCEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754780AbXIUB5m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 21:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbXIUB5g
+	id S1754061AbXIUCEe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 22:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXIUCE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 21:57:36 -0400
-Received: from home.nigel.suspend2.net ([203.171.70.205]:43679 "EHLO
-	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752517AbXIUB5f (ORCPT
+	Thu, 20 Sep 2007 22:04:27 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:54313 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbXIUCE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 21:57:35 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
-Date: Fri, 21 Sep 2007 11:57:26 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: nigel@suspend2.net, Pavel Machek <pavel@ucw.cz>,
-       "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-References: <1190266447.21818.17.camel@caritas-dev.intel.com> <200709211120.00448.ncunningham@crca.org.au> <20070920184106.79e1858a.akpm@linux-foundation.org>
-In-Reply-To: <20070920184106.79e1858a.akpm@linux-foundation.org>
-Organization: Christian Reformed Church of Cobden
+	Thu, 20 Sep 2007 22:04:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=Tyc25VC87fSs1ko51KXVHCQ1oOBGIQNbwTqTY7UZtpOYRMgKR34EHjVr/yJHu8e9TBMdC4BGDB8pMCzWiDw/3rJnK+ntlGXgtC+h8VFmAP5WU+D9k3PNDhboMMpR0YOv1PpkiKkSi9BSY6iOsP8iRJSORx61CuBQwf1kFeSQ7P4=
+Date: Thu, 20 Sep 2007 22:04:18 -0400
+To: Kamalesh Babulal <kamalesh.babulal@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+Subject: Re: 2.6.23-rc6-mm1
+Message-ID: <20070921020417.GC31759@nineveh.local>
+Mail-Followup-To: Kamalesh Babulal <kamalesh.babulal@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Joseph Fannin <jfannin@gmail.com>, linux-kernel@vger.kernel.org,
+	Mike Travis <travis@sgi.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070919235828.GA31759@nineveh.local> <20070919170934.84f44e05.akpm@linux-foundation.org> <f86d6cc00709200721h6e8f7cf8xa2264e9d1f88883b@mail.gmail.com> <f86d6cc00709200912j37a3218boa882a044c0610779@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709211157.28622.nigel@nigel.suspend2.net>
+In-Reply-To: <f86d6cc00709200912j37a3218boa882a044c0610779@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: jfannin@gmail.com (Joseph Fannin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Thu, Sep 20, 2007 at 09:42:44PM +0530, Kamalesh Babulal wrote:
+> On 9/20/07, Kamalesh Babulal <kamalesh.babulal@gmail.com> wrote:
+> > On 9/20/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > >
+> > > On Wed, 19 Sep 2007 19:58:28 -0400
+> > > jfannin@gmail.com (Joseph Fannin) wrote:
+> > >
+> > > > On Tue, Sep 18, 2007 at 01:18:41AM -0700, Andrew Morton wrote:
+> > >
+> > > ---
+> > > a/include/asm-powerpc/smp.h~convert-cpu_sibling_map-to-a-per_cpu-data-array-ppc64-fix-2
+> > >
+> > > +++ a/include/asm-powerpc/smp.h
+> > > @@ -25,8 +25,8 @@
+> > >
+> > > #ifdef CONFIG_PPC64
+> > > #include <asm/paca.h>
+> > > -#include <asm/percpu.h>
+> > > #endif
+> > > +#include <asm/percpu.h>
+> > >
+> > > extern int boot_cpuid;
 
-On Friday 21 September 2007 11:41:06 Andrew Morton wrote:
-> > On Friday 21 September 2007 11:06:23 Andrew Morton wrote:
-> > > On Fri, 21 Sep 2007 10:24:34 +1000 Nigel Cunningham 
-> > <nigel@nigel.suspend2.net> wrote:
-> > > 
-> > > > Hi Andrew.
-> > > > 
-> > > > On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
-> > > > > Seems like good enough for -mm to me.
-> > > > > 
-> > > > > 									Pavel
-> > > > 
-> > > > Andrew, if I recall correctly, you said a while ago that you didn't 
-want 
-> > > > another hibernation implementation in the vanilla kernel. If you're 
-going 
-> > to 
-> > > > consider merging this kexec code, will you also please consider 
-merging 
-> > > > TuxOnIce?
-> > > > 
-> > > 
-> > > The theory is that kexec-based hibernation will mainly use preexisting
-> > > kexec code and will permit us to delete the existing hibernation
-> > > implementation.
-> > > 
-> > > That's different from replacing it.
-> > 
-> > TuxOnIce doesn't remove the existing implementation either. It can 
-> > transparently replace it, but you can enable/disable that at compile time.
-> 
-> Right.  So we end up with two implementations in-tree.  Whereas
-> kexec-based-hibernation leads us to having zero implementations in-tree.
-> 
-> See, it's different.
 
-That's not true. Kexec will itself be an implementation, otherwise you'd end 
-up with people screaming about no hibernation support. And it won't result in 
-the complete removal of the existing hibernation code from the kernel. At the 
-very least, it's going to want the kernel being hibernated to have an 
-interface by which it can find out which pages need to be saved. I wouldn't 
-be surprised if it also ends up with an interface in which the kernel being 
-hibernated tells it what bdev/sectors in which to save the image as well 
-(otherwise you're going to need a dedicated, otherwise untouched partition 
-exclusively for the kexec'd kernel to use), or what network settings to use 
-if it wants to try to save the image to a network storage device. On top of 
-that, there are all the issues related to device reinitialisation and so on, 
-and it looks like there's greatly increased pain for users wanting to 
-configure this new implementation. Kexec is by no means proven to be the 
-panacea for all the issues.
+> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > ---
+> > --- linux-2.6.23-rc6 /drivers/net/mace.c 2007-09-20 17:16:50.000000000+0530
+> > +++ linux-2.6.23-rc6/drivers/net/~mace.c        2007-09-20 17:12:
+> > 47.000000000 +0530
+> > @@ -633,7 +633,7 @@ static void mace_set_multicast(struct ne
+> >      spin_unlock_irqrestore(&mp->lock, flags);
+> >  }
+> >
+> > -static void mace_handle_misc_intrs(struct mace_data *mp, int intr)
+> > +static void mace_handle_misc_intrs(struct mace_data *mp, int intr, struct
+> > net_device *dev)
+> >  {
+> >      volatile struct mace __iomem *mb = mp->mace;
+> >      static int mace_babbles, mace_jabbers;
+> > @@ -669,7 +669,7 @@ static irqreturn_t mace_interrupt(int ir
+> >      spin_lock_irqsave(&mp->lock, flags);
+> >      intr = in_8(&mb->ir);              /* read interrupt register */
+> >      in_8(&mb->xmtrc);                  /* get retries */
+> > -    mace_handle_misc_intrs(mp, intr);
+> > +    mace_handle_misc_intrs(mp, intr, dev);
+> >
+> >      i = mp->tx_empty;
+> >      while (in_8(&mb->pr) & XMTSV) {
+> > @@ -682,7 +682,7 @@ static irqreturn_t mace_interrupt(int ir
+> >          */
+> >         intr = in_8(&mb->ir);
+> >         if (intr != 0)
+> > -           mace_handle_misc_intrs(mp, intr);
+> > +           mace_handle_misc_intrs(mp, intr, dev);
+> >         if (mp->tx_bad_runt) {
+> >             fs = in_8(&mb->xmtfs);
+> >             mp->tx_bad_runt = 0;
+> > @@ -817,7 +817,7 @@ static void mace_tx_timeout(unsigned lon
+> >         goto out;
+> >
+> >      /* update various counters */
+> > -    mace_handle_misc_intrs(mp, in_8(&mb->ir));
+> > +    mace_handle_misc_intrs(mp, in_8(&mb->ir), dev);
+> >
+> >      cp = mp->tx_cmds + NCMDS_TX * mp->tx_empty;
 
-Regards,
+    Both these patches have built and booted for me.
 
-Nigel
--- 
-Nigel Cunningham
-Pastor
-Christian Reformed Church of Cobden
-Victoria, Australia
-+61 3 5595 1185
+    I will send a patch for the following error separately, in what
+will hopefully be canonical patch submission format, in case that's of
+any use.
+
+    Thanks.
+
+> drivers/net/mv643xx_eth.c: In function 'mv643xx_eth_int_handler':
+> drivers/net/mv643xx_eth.c:564: error: 'bp' undeclared (first use in this
+> function)
+> drivers/net/mv643xx_eth.c:564: error: (Each undeclared identifier is
+> reported only once
+> drivers/net/mv643xx_eth.c:564: error: for each function it appears in.)
+> drivers/net/mv643xx_eth.c: At top level:
+> drivers/net/mv643xx_eth.c:1010: error: conflicting types for 'mv643xx_poll'
+> drivers/net/mv643xx_eth.c:68: error: previous declaration of 'mv643xx_poll'
+> was here
+> make[2]: *** [drivers/net/mv643xx_eth.o] Error 1
+> make[1]: *** [drivers/net] Error 2
+> make: *** [drivers] Error 2
+
+
+--
+Joseph Fannin
+jfannin@gmail.com
+
