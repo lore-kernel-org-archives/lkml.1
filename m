@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760266AbXIUSFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbXIUSFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760266AbXIUSFZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXIUSFM
+	id S1761391AbXIUSFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXIUSFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:05:12 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36373 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751435AbXIUSFK (ORCPT
+	Fri, 21 Sep 2007 14:05:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:60163 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760876AbXIUSFb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:05:10 -0400
-Date: Fri, 21 Sep 2007 19:10:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Phillip Susi <psusi@cfl.rr.com>
-Cc: David Newall <david@davidnewall.com>, Bill Davidsen <davidsen@tmr.com>,
-       majkls <majkls@prepere.com>, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-Message-ID: <20070921191012.15a0b51b@the-village.bc.nu>
-In-Reply-To: <46F401D6.6060609@cfl.rr.com>
-References: <46F0CD96.9030807@prepere.com>
-	<20070919104018.3a6bcfb1@the-village.bc.nu>
-	<46F16A0A.3070402@tmr.com>
-	<20070919194559.36015307@the-village.bc.nu>
-	<46F1A196.8060108@davidnewall.com>
-	<46F401D6.6060609@cfl.rr.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Sep 2007 14:05:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=O/o14PjY6Uj4/BAfPHWmE2kICRKzU+d4kXCXel3WOOaRcbTzGS/sfn0uZ5u1sg+ZIUltbOECVfD9KLGJUj2N45+hBW+3t7rhBQjIRKZhDypCFbXD3MFYZ2EomqJ52DNt3c/qcDlRW+2DJfOT/tukF8apb7BQNQJCQtF2AKB4c/o=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
+Date: Fri, 21 Sep 2007 19:05:23 +0100
+User-Agent: KMail/1.9.1
+Cc: jeff@garzik.org, mchan@broadcom.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <200709211201.24475.vda.linux@googlemail.com> <200709211803.55554.vda.linux@googlemail.com> <20070921.104912.41646795.davem@davemloft.net>
+In-Reply-To: <20070921.104912.41646795.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709211905.23946.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007 13:39:34 -0400
-Phillip Susi <psusi@cfl.rr.com> wrote:
-
-> David Newall wrote:
-> > * In particular, the superuser can escape from a =91chroot jail=92 by d=
-> > oing=20
-> > =91mkdir foo; chroot foo; cd ..=92.
+On Friday 21 September 2007 18:49, David Miller wrote:
+> From: Denys Vlasenko <vda.linux@googlemail.com>
+> Date: Fri, 21 Sep 2007 18:03:55 +0100
 > 
-> No, he can not.
+> > Do patches look ok to you?
+> 
+> I'm travelling so I haven't looked closely yet :-)
+> 
+> Michael can take a look and I'll try to do so as well
+> tonight.
 
-The superuser can escape that way - its expected and fine behaviour
+Good.
+
+I plan to use gzip compression on following drivers' firmware,
+if patches will be accepted:
+
+   text    data     bss     dec     hex filename
+  17653  109968     240  127861   1f375 drivers/net/acenic.o
+   6628  120448       4  127080   1f068 drivers/net/dgrs.o
+         ^^^^^^
+
+--
+vda
