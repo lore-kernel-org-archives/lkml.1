@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933634AbXIUWwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933649AbXIUWxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933634AbXIUWwu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764794AbXIUWdr
+	id S933649AbXIUWxY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764849AbXIUWd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:33:47 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41974 "EHLO mail.dvmed.net"
+	Fri, 21 Sep 2007 18:33:58 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4028 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764757AbXIUWdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:33:46 -0400
-Message-ID: <46F446C3.9050600@garzik.org>
-Date: Fri, 21 Sep 2007 18:33:39 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Denys Vlasenko <vda.linux@googlemail.com>, Valdis.Kletnieks@vt.edu,
-       David Miller <davem@davemloft.net>, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
-References: <200709211201.24475.vda.linux@googlemail.com>	<200709211905.23946.vda.linux@googlemail.com>	<15775.1190399812@turing-police.cc.vt.edu>	<200709212018.06553.vda.linux@googlemail.com> <20070921220333.3b31afb5@the-village.bc.nu>
-In-Reply-To: <20070921220333.3b31afb5@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1764843AbXIUWd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:33:57 -0400
+Subject: RE: Message codes (Re: [Announce] Linux-tiny project revival)
+From: Joe Perches <joe@perches.com>
+To: "Gross, Mark" <mark.gross@intel.com>
+Cc: Rob Landley <rob@landley.net>, Oleg Verych <olecom@flower.upol.cz>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Michael Opdenacker <michael@free-electrons.com>, linux-tiny@selenic.com,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <5389061B65D50446B1783B97DFDB392D0715BCA1@orsmsx411.amr.corp.intel.com>
+References: <46F1645D.9050406@am.sony.com> <E1IYWps-0006fQ-83@flower>
+	 <5389061B65D50446B1783B97DFDB392D07126ACB@orsmsx411.amr.corp.intel.com>
+	 <200709211615.39898.rob@landley.net>
+	 <5389061B65D50446B1783B97DFDB392D0715BCA1@orsmsx411.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Fri, 21 Sep 2007 15:33:18 -0700
+Message-Id: <1190413998.32660.67.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> For example, bnx2 maintainer says that driver and
->> firmware are closely tied for his driver. IOW: you upgrade kernel
->> and your NIC is not working anymore.
->>
->> Another argument is to make kernel be able to bring up NICs
->> without needing firmware images in initramfs/initrd/hard drive.
-> 
-> dgrs should be using the request_firmware interface. Actually dgrs is
-> probably a good candidate for /dev/null
+On Fri, 2007-09-21 at 15:12 -0700, Gross, Mark wrote:
+> Use compiler tricks to remove ALL the static printk string from
+> the kernel and replace the printk with something that outputs a
+> decimal index followed by tuples, of zero to N, hex-strings on
 
-According to an earlier thread, dgrs was never really maintained, 
-written for hardware that was never really distributed widely, and very 
-likely hasn't had users in years... if ever.
+> I proposed a mechanism for keeping all the printk data and saving space
+> buy doing some table based compressions that has the side effect of
+> making the syslog not human readable.  You proposed a mechanism for
+> no-oping out complete log-levels.   
 
-If that picture is accurate (it's a story I was told), then I am 
-definitely queueing up a deletion patch.
+How about compiler tricks to compress the static printk strings?
+These could be expanded at runtime to use as the format.
 
-	Jeff
-
-
+Timothy Miller suggested something similar awhile ago.
 
