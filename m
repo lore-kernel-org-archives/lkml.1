@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbXIUSGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761223AbXIUSHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761572AbXIUSGY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXIUSGP
+	id S1761223AbXIUSHu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbXIUSHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:06:15 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:30177 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbXIUSGO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:06:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TWMG5sjpukEF0YnTfI5R6bIWy+LdwAOtAxG8hYNo7BflM/CbXh8j9EZE2ii6R1OXwtS1ipPm076mWJUd++UGZEW7DPCJ1jlemJ0VtBaOQWmIs2v7aiFD0H5eokq9sc9IX5yz0Y74X7kJcMjFfbHbUnFuklL8EzlRQAvjfnLmkM8=
-Message-ID: <92cbf19b0709211106n12b1b4ecxc0d415aa097d21b2@mail.gmail.com>
-Date: Fri, 21 Sep 2007 11:06:13 -0700
-From: "Chakri n" <chakriin5@gmail.com>
-To: "Trond Myklebust" <Trond.Myklebust@netapp.com>
-Subject: Re: [NFS] NFS on loopback locks up entire system(2.6.23-rc6)?
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1190391881.6680.73.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Sep 2007 14:07:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:52778 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752474AbXIUSHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 14:07:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,284,1186383600"; 
+   d="scan'208";a="283777562"
+Date: Fri, 21 Sep 2007 11:07:42 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: torvalds@linux-foundation.org, clameter@sgi.com, akpm@linux-foundation.org,
+       ak@suse.de
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       asit.k.mallick@intel.com
+Subject: x86_64: potential critical issue with quicklists and page table pages
+Message-ID: <20070921180742.GH20863@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
-	 <1190335423.6763.180.camel@heimdal.trondhjem.org>
-	 <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
-	 <1190384005.6680.20.camel@heimdal.trondhjem.org>
-	 <92cbf19b0709210920p3647788dl11d8c4e0cee1f70f@mail.gmail.com>
-	 <1190391881.6680.73.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isn't this a strict requirement from client side, asking to guarantee
-that a server stays up all the time?
+git commit 34feb2c83beb3bdf13535a36770f7e50b47ef299 started using quicklists
+for freeing page table pages and removed the usage of tlb_remove_page()
 
-I have seen many cases, where people go and directly change IP of
-their NFS filers or servers worrying least about the clients using
-them.
+And looking at quicklist_free() and quicklist_free_page(), on a NUMA platform,
+this can potentially free the page before the corresponding TLB caches
+are flushed.
 
-Can we get around with some sort of congestion logic?
+Essentially quicklist free routines are doing something like
+__quicklist_free()
+	...
+	if (unlikely(nid != numa_node_id())) {
+		__free_page(page);
+		...
+	}
 
-Thanks
---Chakri
+	....
 
-On 9/21/07, Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
-> On Fri, 2007-09-21 at 09:20 -0700, Chakri n wrote:
-> > Thanks.
-> >
-> > I was using flock (BSD locking) and I think the problem should be
-> > solved if I move my application to use POSIX locks.
->
-> Yup.
->
-> > And any option to avoid processes waiting indefinitely to free pages
-> > from NFS requests waiting on unresponsive NFS server?
->
-> The only solution I know of is to use soft mounts, but that brings
-> another set of problems:
->      1. most applications don't know how to recover safely from an EIO
->         error.
->      2. You lose data.
->
-> Cheers
->   Trond
->
+
+Now this will potentially cause a problem, if a cpu in someother node starts
+using this page, while the corresponding TLB entries are still alive
+in the original cpu which is still freeing the page table pages.
+
+This violates the guideline documented in
+http://developer.intel.com/design/processor/applnots/317080.pdf
+
+This potentially can cause SW failures and hard to debug issues like
+http://www.ussg.iu.edu/hypermail/linux/kernel/0205.2/1254.html
+
+Can we revert this commit for 2.6.23 and look at this code post 2.6.23?
+
+thanks,
+suresh
