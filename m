@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbXIUOUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbXIUOVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760054AbXIUOUZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbXIUOUI
+	id S1760140AbXIUOVS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758636AbXIUOVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:20:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43228 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756728AbXIUOUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:20:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: 2.6.23-rc6: S4 and S5 no longer listed as supported on Toshiba Satellite A40
-Date: Fri, 21 Sep 2007 16:33:07 +0200
-User-Agent: KMail/1.9.5
-Cc: Frans Pop <elendil@planet.nl>, Pavel Machek <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Maciek Rutecki <maciej.rutecki@gmail.com>
-References: <200709192014.08443.elendil@planet.nl> <200709202253.07571.rjw@sisk.pl> <46F3CF88.4010303@gmail.com>
-In-Reply-To: <46F3CF88.4010303@gmail.com>
+	Fri, 21 Sep 2007 10:21:10 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:47676 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750981AbXIUOVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 10:21:08 -0400
+Message-ID: <46F3D351.2090506@grupopie.com>
+Date: Fri, 21 Sep 2007 15:21:05 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: gilboad@gmail.com
+CC: Satyam Sharma <satyam@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Reduce __print_symbol/sprint_symbol stack usage.
+References: <1189856129.18191.11.camel@gilboa-home-dev.localdomain>	 <a781481a0709150602v6be754caw4fbe0f76c8db5beb@mail.gmail.com>	 <1189869329.18191.77.camel@gilboa-home-dev.localdomain>	 <1189879681.18191.93.camel@gilboa-home-dev.localdomain>	 <alpine.LFD.0.999.0709190610540.26241@enigma.security.iitk.ac.in>	 <46F1314B.8040105@grupopie.com> <1190378737.30016.15.camel@gilboa-home-dev.localdomain>
+In-Reply-To: <1190378737.30016.15.camel@gilboa-home-dev.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709211633.08100.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 21 September 2007 16:04, Alexey Starikovskiy wrote:
-> Rafael J. Wysocki wrote:
-> > On Thursday, 20 September 2007 22:32, Frans Pop wrote:
-> >> On Thursday 20 September 2007, Rafael J. Wysocki wrote:
-> >>> On Thursday, 20 September 2007 20:33, Alexey Starikovskiy wrote:
-> >>>> Frans Pop wrote:
-> >>>>> On Thursday 20 September 2007, you wrote:
-> >>>>>> Please try this patch.
-> >>>>> Works. All states are now listed again.
-> >>>>> I've not tested suspend to disk, but suspend to ram and power off
-> >>>>> work fine.
-> >>>>>
-> >>>>>> +printk(KERN_INFO PREFIX "(supports");
-> >> Note that this printk should be indented.
-> >>
-> >>>>>>  #ifdef CONFIG_SUSPEND
-> >>>>>> -       printk(KERN_INFO PREFIX "(supports");
-> >>>>>>         for (i = ACPI_STATE_S0; i < ACPI_STATE_S4; i++) {
-> >>>>> Isn't there a risk now that we now end up printing
-> >>>>>    ACPI: (supports)
-> >>>>> if CONFIG_SUSPEND is not enabled and >S4 is not supported?
-> >>>>>
-> >>>>> Or, more probably, it would print
-> >>>>>    ACPI: (supports S5)
-> >>>> Don't know what does it mean to support S0 exactly... :)
-> >> Agreed, though arguably the same goes for S5. I guess you could say they are 
-> >> all states that can be switched to.
-> >>
-> >>>>> as it is unlikely that "off" is not supported :-)
-> >>>>>
-> >>>>> Maybe S0 should be taken outside the #ifdef and the loop as that
-> >>>>> state is also basically always there?
-> >>>> Don't think it is worth the trouble. We already have this loop almost
-> >>>> completely unrolled, let's not make it complete mess...
-> >>> Well, you could use "(supports S0" instead of just "(supports". ;-)
-> >> After thinking about this a bit more, I think this does make sense for three 
-> >> (admittedly minor) reasons:
-> >> - consistency between messages with and without CONFIG_SUSPEND
-> >> - consistency with /proc/acpi/sleep
-> >> - avoiding unnecessary change from previous versions.
-> >>
-> >> Please consider the attached patch which applies on top of Alexey's. Feel 
-> >> free to integrate it in his patch.
-> >>
-> >> Signed-off-by: Frans Pop <elendil@planet.nl>
-> > 
-> > Alexey, do you agree?
-> Yes, was thinking to do it myself, but my ISP died this morning....
+Gilboa Davara wrote:
+> Hello Paulo,
 
-OK
+Hi, Gilboa
 
-I'll push the Frans' patch to Len if you don't mind.
+> [snip]
+>> [...]
+>> if we change the interface from "print_symbol(fmt, addr)" to 
+>> "print_symbol(prefix, addr, int newline)" we can simply do:
+>>
+>> printk(prefix);
+>> printk_symbol(addr);
+>> if (newline)
+>> 	printk("\n");
+>>
+>> where "printk_symbol" is a new function that does the same as 
+>> sprint_symbol, but does "printk" instead of "sprintf".
+>>
+>> This should reduce immensely the stack usage of print_symbol without the 
+>> need for locking.
+> 
+> I fully agree.
+> ... Further more, multiple printk_symbols should be combined into a
+> single, multi-line printk transaction. (To prevent debug printk's from
+> trashing a BUG() dump_stack). 
 
-Greetings,
-Rafael
+Usually the developer can separate the output by hand in the unlikely 
+case of simultaneous concurrent users of printk, so I don't think this 
+is really a big problem.
+
+>> Of course this requires changing _all_ callers of print_symbol to use 
+>> the new interface, but these are less than 100 ;)
+> 
+> This is my first contribution to the Linux kernel. As such I rather
+> start small, and work my way up slowly. (Read: solve the immediate stack
+> over-run now, think about changing the symbol_display interface later)
+
+Yes, but this is a sensitive area, so you can not just implement 
+something now that can cause regressions, and just fix it later.
+
+Kernel panics are quite rare and the information provided by the stack 
+dump is _extremely_ precious.
+
+Even more, risking deadlocks caused by something that should only be 
+used to produce debug information is even worse.
+
+>> Comments?
+> 
+> I do agree that the current interface needs work.
+> 
+> ... But as I said, I rather start slowly and on small scale. (Though I
+> did find a rather problematic place to start at... ;))
+
+Well, if we agree that this is the way to go, then the way to start 
+slowly would be to submit a patch that makes both interfaces available 
+for a while and changes the most stack-critical callers to the new 
+interface.
+
+Then slowly keep submitting patches to change other callers 
+progressively until there are no more callers of the old interface. At 
+that point we can just drop it entirely.
+
+-- 
+Paulo Marques - www.grupopie.com
+
+"God is love. Love is blind. Ray Charles is blind. Ray Charles is God."
