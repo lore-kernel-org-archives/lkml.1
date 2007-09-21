@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbXIUShU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbXIUShq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760090AbXIUShU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXIUShF
+	id S1761329AbXIUShq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXIUShb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:37:05 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38182 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753097AbXIUShC (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:37:02 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, mchan@broadcom.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
-In-Reply-To: Your message of "Fri, 21 Sep 2007 19:05:23 BST."
-             <200709211905.23946.vda.linux@googlemail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200709211201.24475.vda.linux@googlemail.com> <200709211803.55554.vda.linux@googlemail.com> <20070921.104912.41646795.davem@davemloft.net>
-            <200709211905.23946.vda.linux@googlemail.com>
+	Fri, 21 Sep 2007 14:37:31 -0400
+Received: from mail.clusterfs.com ([74.0.229.162]:51613 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756676AbXIUSh3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 14:37:29 -0400
+Date: Fri, 21 Sep 2007 12:37:54 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 2/5] VFS: pass open file to ->getattr()
+Message-ID: <20070921183754.GO32520@schatzie.adilger.int>
+Mail-Followup-To: Miklos Szeredi <miklos@szeredi.hu>,
+	akpm@linux-foundation.org, hch@infradead.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070921122343.307289079@szeredi.hu> <20070921123331.655294226@szeredi.hu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190399812_2847P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 21 Sep 2007 14:36:52 -0400
-Message-ID: <15775.1190399812@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070921123331.655294226@szeredi.hu>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190399812_2847P
-Content-Type: text/plain; charset=us-ascii
+On Sep 21, 2007  14:23 +0200, Miklos Szeredi wrote:
+> @@ -1212,7 +1212,8 @@ struct inode_operations {
+> -	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
+> +	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *,
+> +			struct file *file);
 
-On Fri, 21 Sep 2007 19:05:23 BST, Denys Vlasenko said:
+It's not much of an inode operation anymore if you need to pass a file
+to it...  Since the attributes are really part of the inode and not
+the file, this seems like a bit of a hack.
 
-> I plan to use gzip compression on following drivers' firmware,
-> if patches will be accepted:
-> 
->    text    data     bss     dec     hex filename
->   17653  109968     240  127861   1f375 drivers/net/acenic.o
->    6628  120448       4  127080   1f068 drivers/net/dgrs.o
->          ^^^^^^
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
-Should this be redone to use the existing firmware loading framework to
-load the firmware instead?
-
---==_Exmh_1190399812_2847P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG9A9EcC3lWbTT17ARAiYhAKCqI4hIp4QmE5WjzMk/i9i1SwxEwACfZMl3
-PB4PUEVlBwH+6zqjLgMX6yI=
-=tT+I
------END PGP SIGNATURE-----
-
---==_Exmh_1190399812_2847P--
