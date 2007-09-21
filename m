@@ -1,94 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbXIUIIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbXIUIJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbXIUIIl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 04:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXIUII1
+	id S1756383AbXIUIJZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 04:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbXIUIJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 04:08:27 -0400
-Received: from canadatux.org ([85.214.62.144]:42823 "EHLO
-	zoidberg.canadatux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754480AbXIUIIZ (ORCPT
+	Fri, 21 Sep 2007 04:09:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58638 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753127AbXIUIJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 04:08:25 -0400
-Date: Fri, 21 Sep 2007 10:08:08 +0200
-From: Matthias Hensler <matthias@wspse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       richard kennedy <richard@rsk.demon.co.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-Message-ID: <20070921080808.GA28849@kobayashi-maru.wspse.de>
-Reply-To: Matthias Hensler <matthias@wspse.de>
-References: <46B10BB7.60900@redhat.com> <20070803113407.0b04d44e.akpm@linux-foundation.org> <20070804084426.GA20464@kobayashi-maru.wspse.de> <20070809095943.GA7763@kobayashi-maru.wspse.de> <20070809095534.25ae1c42.akpm@linux-foundation.org> <46F2E103.8000907@redhat.com> <20070920142927.d87ab5af.akpm@linux-foundation.org> <46F2EE76.4000203@redhat.com> <20070920153654.b9e90616.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fUYQa+Pmc3FrFX/N"
-Content-Disposition: inline
-In-Reply-To: <20070920153654.b9e90616.akpm@linux-foundation.org>
-Organization: WSPse (http://www.wspse.de/)
-X-Gummibears: Bouncing here and there and everywhere
-X-Face: &Tv]9SsNpb/$w8\G-O%>W02aApFW^P>[x+Upv9xQB!2;iD9Y1-Lz'qlc{+lL2Y>J(u76 Jk,cJ@$tP2-M%y?^'jn2J]3C'ss_~"u?kA^X&{]h?O?@*VwgSGob73I9r}&S%ktup0k2 !neScg3'HO}PU#Ac>jwNL|P@f|f*sz*cP'hi)/<JQC4|Q[$D@aQ"C{$>a=6.rc-P1vXa rjVXlzClmNfcSy/$4tQz
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 21 Sep 2007 04:09:10 -0400
+Date: Fri, 21 Sep 2007 01:03:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Gerd Hoffmann <kraxel@suse.de>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, Yinghai.Lu@Sun.COM, bryan.wu@analog.com,
+       dilinger@queued.net, kraxel@redhat.com, kraxel@suse.de,
+       lethal@linux-sh.org, rgetz@blackfin.uclinux.org, vapier.adi@gmail.com,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [PATCH] kernel/printk.c: Concerns about the console handover
+Message-Id: <20070921010349.2caee558.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64N.0709201749240.30788@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0709201749240.30788@blysk.ds.pg.gda.pl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 20 Sep 2007 18:28:49 +0100 (BST) "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
 
---fUYQa+Pmc3FrFX/N
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>  Move the hadover message to after the boot console has been released to 
+> avoid bad interactions between it and the real console.
+> 
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+>  The 69331af79cf29e26d1231152a172a1a10c2df511 commit of May 8th added a 
+> "console handover: ..." message to register_console() that is output 
+> during the short period when both the boot and the newly-registered 
+> console are registered.
+> 
+>  This is presumably fine for boot consoles implemented entirely by Linux 
+> as they are fully controlled.  But it may produce problems when the boot 
+> console is actually implemented as a call to the firmware which may not be 
+> quite happy about how the OS driver for the piece of hardware involved 
+> controls it.
+> 
+>  I hit this problem with the DECstation.  Depending on the configuration 
+> the fimrware uses a graphics adapter or a predefined serial port for 
+> console output -- which device actually that is cannot be reliably 
+> determined by Linux, though an approximation may be possible.  Now if the 
+> firmware uses the serial port and Linux is asked to use the same serial 
+> port for the real console, then this printk() hangs forever in the 
+> firmware.  The driver used is drivers/serial/zs.c.
+> 
+>  The reason is by the time the ->write() call is issued for the boot 
+> console as a result of this printk(), the zs.c driver has been initialised 
+> and because at the moment the serial port has not been opened, the serial 
+> transmitter is disabled.  The firmware polls for the transmit buffer empty 
+> condition, but does not enable the module, presumably under the assumption 
+> it will not be called once an OS driver has taken control of the device 
+> (the register containing the enable bit is write-only anyway, so it would 
+> be hard to restore the previous value).  This causes a hang, because once 
+> a single character is put into the transmit buffer it will not become 
+> empty until the transmitter has been enabled.
+> 
+>  The serial console as implemented by zs.c handles the case correctly, by 
+> enabling the transmitter, outputting what should be output, waiting for 
+> the transmit shift register to drain and restoring the state of the 
+> transmitter enable (which is held in a shadow variable).
+> 
+>  I feel a bit uneasy about keeping serial transmitters enabled for lines 
+> that have not been opened; I gather others may agree as for example while 
+> not explicitly mentioned, I believe it is implied by what is said in 
+> Documentation/serial/driver referring to the ->shutdown() call: "Disable 
+> the port, [...]" -- with the transmitter enabled a port can hardly be 
+> considered fully disabled.  Below is a change which makes the problem 
+> disappear for me, but I suppose there was a deliberate reason for placing 
+> the printk() where it is now and nowhere else.
+> 
+>  Any suggestions will be appreciated.
+> 
+>   Maciej
+> 
+> patch-mips-2.6.23-rc5-20070904-printk-handover-0
+> diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/kernel/printk.c linux-mips-2.6.23-rc5-20070904/kernel/printk.c
+> --- linux-mips-2.6.23-rc5-20070904.macro/kernel/printk.c	2007-09-04 04:56:21.000000000 +0000
+> +++ linux-mips-2.6.23-rc5-20070904/kernel/printk.c	2007-09-19 21:10:16.000000000 +0000
+> @@ -1014,11 +1014,11 @@ void register_console(struct console *co
+>  		return;
+>  
+>  	if (bootconsole && (console->flags & CON_CONSDEV)) {
+> +		unregister_console(bootconsole);
+> +		console->flags &= ~CON_PRINTBUFFER;
+>  		printk(KERN_INFO "console handover: boot [%s%d] -> real [%s%d]\n",
+>  		       bootconsole->name, bootconsole->index,
+>  		       console->name, console->index);
+> -		unregister_console(bootconsole);
+> -		console->flags &= ~CON_PRINTBUFFER;
+>  	} else {
+>  		printk(KERN_INFO "console [%s%d] enabled\n",
+>  		       console->name, console->index);
 
-On Thu, Sep 20, 2007 at 03:36:54PM -0700, Andrew Morton wrote:
-> That's all a bit crappy if the wrong races happen and some other task
-> is somehow exceeding the dirty limits each time this task polls them.
-> Seems unlikely that such a condition would persist forever.
+It would be useful to have some basic information like: Which kernel
+version was this found in?  Which kernel version last worked?
 
-How exactly do you define forever? It looks to me, that this condition
-never resolves on its own, at least not in a window of several hours
-(the system used to get stuck around 3am and was normally rebooted
-between 7am and 8am, so at least hours are not enough to have the problem
-resolve on its own).
-
-> So the question is, why do we have large amounts of dirty pages for
-> one disk which appear to be sitting there not getting written?
-
-Unfortunately I have no idea. The full stacktrace for all processes was
-attached to the original bugreport, maybe that can give a clue to that.
-
-> Do we know if there's any writeout at all happening when the system is
-> in this state?
-
-Not sure about that. The system is responsible on a still open SSH
-session, allowing several tasks still to be executed. However, that SSH
-session gets stuck very fast if the wrong commands are executed. New
-logins are not possible (Connection is akzepted but resulting in a
-timeout 60 seconds later, so most likely /bin/login is not able to log
-into wtmp).
-
-=46rom all that I suspect that there is no more write activity on that
-system, but cannot say for sure.
-
-> Did anyone try running /bin/sync when the system is in this state?
-
-I did not, no.
-
-Regards,
-Matthias
-
---fUYQa+Pmc3FrFX/N
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iQCVAwUBRvN74oagCBsispUdAQIpKwP/WdZAUgPDbPKcRe72BcsQTVlOuQOZWezJ
-7hSs41O23jmSFsXxrOUBBqVfOacQcSCv3JuI0jFLX1D8wiQaLIlzsQjDAGhqWGU1
-Gm/ob1OPfXM7FEfo8/EVzOFLKvT8H4KwkQd1UvuMM2VRG8hdhabc+1j2shhaza/X
-VYQDbXYsdOQ=
-=mqgu
------END PGP SIGNATURE-----
-
---fUYQa+Pmc3FrFX/N--
