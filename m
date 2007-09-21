@@ -1,78 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbXIUWpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932968AbXIUWqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932861AbXIUWpj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764081AbXIUWcn
+	id S932968AbXIUWqA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763864AbXIUWcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 21 Sep 2007 18:32:43 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57085 "EHLO mx1.suse.de"
+Received: from ns2.suse.de ([195.135.220.15]:40501 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763857AbXIUWcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:32:35 -0400
+	id S1763964AbXIUWch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:32:37 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709221231.836138000@suse.de>
 In-Reply-To: <200709221231.836138000@suse.de>
-To: satyam@infradead.org, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [34/50] i386: Fix argument signedness warnings
-Message-Id: <20070921223234.0A71513DCD@wotan.suse.de>
-Date: Sat, 22 Sep 2007 00:32:33 +0200 (CEST)
+To: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [36/50] x86: Use raw locks during oopses
+Message-Id: <20070921223236.26E361479D@wotan.suse.de>
+Date: Sat, 22 Sep 2007 00:32:36 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Satyam Sharma <satyam@infradead.org>
+Don't want any lockdep or other fragile machinery to run during oopses.
+Use raw spinlocks directly for oops locking.
+Also disables irq flag tracing there.
 
-
-These build warnings:
-
-In file included from include/asm/thread_info.h:16,
-from include/linux/thread_info.h:21,
-from include/linux/preempt.h:9,
-from include/linux/spinlock.h:49,
-from include/linux/vmalloc.h:4,
-from arch/i386/boot/compressed/misc.c:14:
-include/asm/processor.h: In function ‘cpuid_count’:
-include/asm/processor.h:615: warning: pointer targets in passing argument 1 of ‘native_cpuid’ differ in signedness
-include/asm/processor.h:615: warning: pointer targets in passing argument 2 of ‘native_cpuid’ differ in signedness
-include/asm/processor.h:615: warning: pointer targets in passing argument 3 of ‘native_cpuid’ differ in signedness
-include/asm/processor.h:615: warning: pointer targets in passing argument 4 of ‘native_cpuid’ differ in signedness
-
-come because the arguments have been specified as pointers to (signed) int
-types, not unsigned. So let's specify those as unsigned. Do some codingstyle
-here and there while at it.
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
+ arch/i386/kernel/traps.c   |   12 +++++++-----
+ arch/x86_64/kernel/traps.c |   17 ++++++++---------
+ 2 files changed, 15 insertions(+), 14 deletions(-)
 
- include/asm-i386/processor.h |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-Index: linux/include/asm-i386/processor.h
+Index: linux/arch/i386/kernel/traps.c
 ===================================================================
---- linux.orig/include/asm-i386/processor.h
-+++ linux/include/asm-i386/processor.h
-@@ -595,7 +595,9 @@ static inline void load_esp0(struct tss_
-  * clear %ecx since some cpus (Cyrix MII) do not set or clear %ecx
-  * resulting in stale register contents being returned.
-  */
--static inline void cpuid(unsigned int op, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
-+static inline void cpuid(unsigned int op,
-+			 unsigned int *eax, unsigned int *ebx,
-+			 unsigned int *ecx, unsigned int *edx)
+--- linux.orig/arch/i386/kernel/traps.c
++++ linux/arch/i386/kernel/traps.c
+@@ -447,11 +447,11 @@ void ler_enable(void) {
+ void die(const char * str, struct pt_regs * regs, long err)
  {
- 	*eax = op;
- 	*ecx = 0;
-@@ -603,8 +605,9 @@ static inline void cpuid(unsigned int op
+ 	static struct {
+-		spinlock_t lock;
++		raw_spinlock_t lock;
+ 		u32 lock_owner;
+ 		int lock_owner_depth;
+ 	} die = {
+-		.lock =			__SPIN_LOCK_UNLOCKED(die.lock),
++		.lock =			__RAW_SPIN_LOCK_UNLOCKED,
+ 		.lock_owner =		-1,
+ 		.lock_owner_depth =	0
+ 	};
+@@ -462,13 +462,14 @@ void die(const char * str, struct pt_reg
+ 
+ 	if (die.lock_owner != raw_smp_processor_id()) {
+ 		console_verbose();
+-		spin_lock_irqsave(&die.lock, flags);
++		__raw_spin_lock(&die.lock);
++		raw_local_save_flags(flags);
+ 		die.lock_owner = smp_processor_id();
+ 		die.lock_owner_depth = 0;
+ 		bust_spinlocks(1);
+ 	}
+ 	else
+-		local_save_flags(flags);
++		raw_local_save_flags(flags);
+ 
+ 	if (++die.lock_owner_depth < 3) {
+ 		unsigned long esp;
+@@ -511,7 +512,8 @@ void die(const char * str, struct pt_reg
+ 	bust_spinlocks(0);
+ 	die.lock_owner = -1;
+ 	add_taint(TAINT_DIE);
+-	spin_unlock_irqrestore(&die.lock, flags);
++	__raw_spin_unlock(&die.lock);
++	raw_local_irq_restore(flags);
+ 
+ 	if (!regs)
+ 		return;
+Index: linux/arch/x86_64/kernel/traps.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/traps.c
++++ linux/arch/x86_64/kernel/traps.c
+@@ -556,7 +556,7 @@ void ler_enable(void) {
+ 	}
  }
  
- /* Some CPUID calls want 'count' to be placed in ecx */
--static inline void cpuid_count(int op, int count, int *eax, int *ebx, int *ecx,
--			       int *edx)
-+static inline void cpuid_count(unsigned int op, int count,
-+			       unsigned int *eax, unsigned int *ebx,
-+			       unsigned int *ecx, unsigned int *edx)
- {
- 	*eax = op;
- 	*ecx = count;
+-static DEFINE_SPINLOCK(die_lock);
++static raw_spinlock_t die_lock = __RAW_SPIN_LOCK_UNLOCKED;
+ static int die_owner = -1;
+ static unsigned int die_nest_count;
+ 
+@@ -568,13 +568,13 @@ unsigned __kprobes long oops_begin(void)
+ 	oops_enter();
+ 
+ 	/* racy, but better than risking deadlock. */
+-	local_irq_save(flags);
++	raw_local_irq_save(flags);
+ 	cpu = smp_processor_id();
+-	if (!spin_trylock(&die_lock)) { 
++	if (!__raw_spin_trylock(&die_lock)) {
+ 		if (cpu == die_owner) 
+ 			/* nested oops. should stop eventually */;
+ 		else
+-			spin_lock(&die_lock);
++			__raw_spin_lock(&die_lock);
+ 	}
+ 	die_nest_count++;
+ 	die_owner = cpu;
+@@ -588,12 +588,11 @@ void __kprobes oops_end(unsigned long fl
+ 	die_owner = -1;
+ 	bust_spinlocks(0);
+ 	die_nest_count--;
+-	if (die_nest_count)
+-		/* We still own the lock */
+-		local_irq_restore(flags);
+-	else
++	if (!die_nest_count) {
+ 		/* Nest count reaches zero, release the lock. */
+-		spin_unlock_irqrestore(&die_lock, flags);
++		__raw_spin_unlock(&die_lock);
++	}
++	raw_local_irq_restore(flags);
+ 	if (!regs) {
+ 		oops_exit();
+ 		return;
