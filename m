@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761658AbXIUPHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbXIUPMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761658AbXIUPHy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 11:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759581AbXIUPHq
+	id S1760757AbXIUPMJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 11:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758543AbXIUPL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 11:07:46 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58942 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759121AbXIUPHp (ORCPT
+	Fri, 21 Sep 2007 11:11:56 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52024 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757762AbXIUPLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 11:07:45 -0400
-Date: Sat, 22 Sep 2007 00:06:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       ricknu-0@student.ltu.se
-Subject: Re: [RFC][PATCH] page->mapping clarification [1/3] base functions
-Message-Id: <20070922000655.6ab383bf.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070921134828.45ca967e@twins>
-References: <20070919164308.281f9960.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070921134828.45ca967e@twins>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Sep 2007 11:11:55 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20070921145356.GA16379@infradead.org> (message from Christoph
+	Hellwig on Fri, 21 Sep 2007 15:53:56 +0100)
+Subject: Re: [patch 5/5] VFS: allow filesystem to override mknod capability checks
+References: <20070921122343.307289079@szeredi.hu> <20070921123336.095183254@szeredi.hu> <20070921124504.GC8088@infradead.org> <E1IYiH4-0001eQ-00@dorka.pomaz.szeredi.hu> <20070921131409.GA9988@infradead.org> <E1IYiOv-0001f6-00@dorka.pomaz.szeredi.hu> <20070921143338.GA14577@infradead.org> <E1IYjoQ-0001kT-00@dorka.pomaz.szeredi.hu> <20070921145356.GA16379@infradead.org>
+Message-Id: <E1IYkAN-0001mh-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 21 Sep 2007 17:11:39 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007 13:48:28 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
-> > Followings are moved 
-> >  * page_mapping()       ... returns swapper_space or address_space a page is on.
-> > 			    (from mm.h)
-> >  * page_index()         ... returns position of a page in its inode
-> > 			    (from mm.h)
-> >  * remove_mapping()     ... a safe routine to remove page->mapping from page.
-> > 			    (from swap.h)
+> On Fri, Sep 21, 2007 at 04:48:58PM +0200, Miklos Szeredi wrote:
+> > Ah, OK.  Well, that's what fuse would do with the above change.  So
+> > you are basically saying, the change is OK, but we want proper
+> > unprivileged mounts first.
 > 
-> I have two other functions that might want integration with this scheme:
+> Yes, that and that it should be a mount flag, not a file_system_type
+> flag.
 > 
->   page_file_mapping()     ... returns backing address space
->   page_file_index()       ... returns the index therein
+> > I'm sure we don't want it by default.
+> > 
+> > For example if user bind mounts / onto /home/user/myroot (with 'nodev'
+> > of couse), we still don't want mknod to work on that mount, for
+> > obvious reasons.
 > 
-> They are identical to page_mapping_cache() and page_index() for
-> page cache pages, but they also work on swap cache pages.
-> 
-> That is, for swapcache pages they return:
-> 
-> page_file_mapping:
->   page_swap_info(page)->swap_file->f_mapping
-> 
-> page_file_index:
->   swp_offset((swp_offset_t)page_private(page))
-> 
-> When a filesystem uses these functions instead of page->mapping and
-> page->index, it allows passing swap cache pages into the regular
-> filesystem read/write paths.
-> 
-Oh,
-> This is useful for things like swap over NFS, where swap is backed by a
-> swapfile on a 'regular' filesystem.
-> 
-Okay, I'll try to add them in the next set.
+> True, we'll have to deny it if there is any non-privilegued mount of
+> the backing device possible.   At this point it's getting rather nasty
+> and I wonder whether it's really worth it..
 
-Thanks,
--Kame
+I think the assumption, that we want this as a generic service is
+false.
+
+We want this as a special service for a few filesystems, such as the
+unprivileged userspace loopback mounting I was talking about.
+
+So my thinking is: if an unprivileged filesystem explicitly asks for
+this, then it should be allowed.  It could be a per-superblock flag
+instead of a per fs-type flag, if that sounds better.
+
+My fuse implementation would have been exactly the same: the ->mknod()
+implementation would check a per filesystem flag, and if it's not set,
+check the permissions as normal mknod() would.  Here's the relevant
+patch snippet:
+
+Index: linux/fs/fuse/dir.c
+===================================================================
+--- linux.orig/fs/fuse/dir.c	2007-09-21 13:45:23.000000000 +0200
++++ linux/fs/fuse/dir.c	2007-09-21 13:45:25.000000000 +0200
+@@ -486,7 +486,13 @@ static int fuse_mknod(struct inode *dir,
+ {
+ 	struct fuse_mknod_in inarg;
+ 	struct fuse_conn *fc = get_fuse_conn(dir);
+-	struct fuse_req *req = fuse_get_req(fc);
++	struct fuse_req *req;
++
++	if (!fc->mknod_nocheck &&
++	    ((S_ISCHR(mode) || S_ISBLK(mode)) && !capable(CAP_MKNOD)))
++		return -EPERM;
++
++	req = fuse_get_req(fc);
+ 	if (IS_ERR(req))
+ 		return PTR_ERR(req);
+ 
+
