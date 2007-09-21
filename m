@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbXIUKcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbXIUKfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757126AbXIUKcd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 06:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbXIUKc0
+	id S1757267AbXIUKfO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 06:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbXIUKfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 06:32:26 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33548 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755333AbXIUKcY (ORCPT
+	Fri, 21 Sep 2007 06:35:01 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37207 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753420AbXIUKfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 06:32:24 -0400
-Date: Fri, 21 Sep 2007 11:39:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Peer Chen" <peerchen@gmail.com>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ide" <linux-ide@vger.kernel.org>,
-       "akpm" <akpm@linux-foundation.org>, "jeff" <jeff@garzik.org>
-Subject: Re: [PATCH] ahci: Add MCP79 support to AHCI driver
-Message-ID: <20070921113908.180cd154@the-village.bc.nu>
-In-Reply-To: <200709211406065332552@gmail.com>
-References: <200709211406065332552@gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 21 Sep 2007 06:35:00 -0400
+Date: Fri, 21 Sep 2007 03:33:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: richard kennedy <richard@rsk.demon.co.uk>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Matthias Hensler <matthias@wspse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
+Message-Id: <20070921033336.c327ffd9.akpm@linux-foundation.org>
+In-Reply-To: <1190370341.3121.35.camel@castor.rsk.org>
+References: <46B10BB7.60900@redhat.com>
+	<20070803113407.0b04d44e.akpm@linux-foundation.org>
+	<20070804084426.GA20464@kobayashi-maru.wspse.de>
+	<20070809095943.GA7763@kobayashi-maru.wspse.de>
+	<20070809095534.25ae1c42.akpm@linux-foundation.org>
+	<46F2E103.8000907@redhat.com>
+	<20070920142927.d87ab5af.akpm@linux-foundation.org>
+	<46F2EE76.4000203@redhat.com>
+	<20070920153654.b9e90616.akpm@linux-foundation.org>
+	<1190370341.3121.35.camel@castor.rsk.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007 14:06:10 +0800
-"Peer Chen" <peerchen@gmail.com> wrote:
+On Fri, 21 Sep 2007 11:25:41 +0100 richard kennedy <richard@rsk.demon.co.uk> wrote:
 
-> Add the MCP79 support to ahci driver.
-> The patch base on kernel 2.6.23-rc7
+> > That's all a bit crappy if the wrong races happen and some other task is
+> > somehow exceeding the dirty limits each time this task polls them.  Seems
+> > unlikely that such a condition would persist forever.
+> > 
+> > So the question is, why do we have large amounts of dirty pages for one
+> > disk which appear to be sitting there not getting written?
+> 
+> The lockup I'm seeing intermittently occurs when I have 2+ tasks copying
+> large files (1Gb+) on sda & a small read-mainly mysql db app running on
+> sdb. The lockup seems to happen just after the copies finish -- there
+> are lots of dirty pages but nothing left to write them until kupdate
+> gets round to it. 
 
-Is this actually needed or as they are standard ahci devices will the
-class match get them anyway ?
+Then what happens?  The system recovers?
