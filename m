@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761909AbXIUTPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbXIUTRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761909AbXIUTPQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 15:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbXIUTPB
+	id S1762106AbXIUTRQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 15:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbXIUTRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 15:15:01 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:56919 "EHLO
-	outbound4-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753808AbXIUTPA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 15:15:00 -0400
-X-BigFish: V
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 209.50.91.134;Service: EHS
-Message-ID: <46F4182C.9050202@amd.com>
-Date: Fri, 21 Sep 2007 15:14:52 -0400
-From: Slava Abramov <slava.abramov@amd.com>
-Reply-To: slava.abramov@amd.com
-Organization: Advanced Micro Devices
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: ptep_test_and_clear_young() i386 vs. x86_64 
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 21 Sep 2007 15:17:03 -0400
+Received: from www.osadl.org ([213.239.205.134]:52465 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759432AbXIUTRC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 15:17:02 -0400
+Subject: Re: 2.6.23-rc6-mm1: failure to boot on HP nx6325, no sound when
+	booted, USB-related WARNING
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jaroslav Kysela <perex@suse.cz>, Takashi Iwai <tiwai@suse.de>,
+       linux-usb-devel@lists.sourceforge.net,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, miklos@szeredi.hu,
+       Len Brown <len.brown@intel.com>,
+       David Shaohua Li <shaohua.li@intel.com>
+In-Reply-To: <200709212120.03044.rjw@sisk.pl>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	 <200709211620.53794.rjw@sisk.pl> <1190392033.2935.11.camel@chaos>
+	 <200709212120.03044.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Fri, 21 Sep 2007 21:16:58 +0200
+Message-Id: <1190402218.2993.2.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Sep 2007 19:14:53.0265 (UTC) FILETIME=[B0556410:01C7FC83]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All!
+Rafael,
 
-Is there any special reason why ptep_test_and_clear_young()
-implementation for x86_64 does not call pte_update()?
+On Fri, 2007-09-21 at 21:20 +0200, Rafael J. Wysocki wrote:
+> On Friday, 21 September 2007 18:27, Thomas Gleixner wrote:
+> > I simply rmmod'ed the processor module before suspend and the problem is
+> > solved as well. The cpuidle patches make this problem more prominent due
+> > to the possible more direct switch into lower power states, when we wait for
+> > a long time on something. 
+> 
+> So, perhaps we can add a .suspend()/.resume() routines to the processor driver
+> and use them to disable/enable the cpuidle functionality during a
+> suspend/resume?
 
-Compare the following:
+http://tglx.de/private/tglx/p.diff
 
-include/asm-x86_64/pgtable.h:
+untested yet, but I'm on the way to do that :)
 
-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma, 
-unsigned long addr, pte_t *ptep)
-{
-        if (!pte_young(*ptep))
-               return 0;
-        return test_and_clear_bit(_PAGE_BIT_ACCESSED, &ptep->pte);
+	tglx
 
-}
-
-include/asm-i386/pgtable.h:
-
-#define ptep_test_and_clear_young(vma, addr, ptep) ({                   \
-        int __ret = 0;                                                  \
-        if (pte_young(*(ptep)))                                         \
-                __ret = test_and_clear_bit(_PAGE_BIT_ACCESSED,          \
-                                                &(ptep)->pte_low);       \
-        if (__ret)                                                      \
-                pte_update((vma)->vm_mm, addr, ptep);                   
-     \
-        __ret;                                                          \
-
-})
-
-
-Slava
 
