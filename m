@@ -1,34 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761450AbXIUPj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761055AbXIUPmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761450AbXIUPj0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 11:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761329AbXIUPjA
+	id S1761055AbXIUPmA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 11:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbXIUPlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 11:39:00 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:56282 "EHLO
-	caffeine.uwaterloo.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761307AbXIUPi7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 11:38:59 -0400
-Date: Fri, 21 Sep 2007 11:38:59 -0400
-To: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Intel-Quad on GA-P35-S3 motherboard with 4*2GB
-Message-ID: <20070921153859.GK5386@csclub.uwaterloo.ca>
-References: <46EA4B50.7040904@dgt.com.pl> <20070914131859.GC5386@csclub.uwaterloo.ca> <46EF77D8.3090808@dgt.com.pl> <20070918142047.GF5386@csclub.uwaterloo.ca> <46EFE23F.8090100@dgt.com.pl> <20070918145009.GH5386@csclub.uwaterloo.ca> <46F0EBB0.9030909@dgt.com.pl> <46F224AE.60405@dgt.com.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F224AE.60405@dgt.com.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Fri, 21 Sep 2007 11:41:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43105 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758582AbXIUPlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 11:41:51 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <718847.32805.qm@web36601.mail.mud.yahoo.com>
+References: <718847.32805.qm@web36601.mail.mud.yahoo.com>
+To: casey@schaufler-ca.com
+Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 00/22] Introduce credential record
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Fri, 21 Sep 2007 16:40:16 +0100
+Message-ID: <9072.1190389216@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 09:43:42AM +0200, Wojciech Kromer wrote:
-> Uff. Now full memtest takes less than 2 hours.
+Casey Schaufler <casey@schaufler-ca.com> wrote:
 
-Being able to cache memory helps a lot.
+> > One thing I'm not certain about is how this should interact with /proc,
+> > which can display some of the stuff in the cred struct.  I think it may be
+> > necessary to have a real cred pointer and an effective cred pointer, with
+> > the contents of /proc coming from the real, but the effective governing
+> > what actually goes on.
+> 
+> I think you want the effective values to show up in /proc.
 
---
-Len Sorensen
+Perhaps - but bear in mind that in the override case they weren't set by the
+process itself.
+
+David
