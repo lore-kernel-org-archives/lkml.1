@@ -1,54 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbXIUGfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbXIUGp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbXIUGfQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 02:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbXIUGfE
+	id S1755628AbXIUGp2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 02:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbXIUGpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 02:35:04 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:48409 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbXIUGfC (ORCPT
+	Fri, 21 Sep 2007 02:45:18 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:38301 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753479AbXIUGpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 02:35:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VNTafJRbv4qDKiIXf6PIQXKaAleBcyhgtesumBYut1CNpRlbJ1ygyuRCHX/JwDPMoLcuam/btMrWAinWmrb6pqmuDcm6bivZE9tPJrR66/o1/oVNqNOp29+YKuxiEP0sqZ+68Va0AHRI+ADm5wogn6pyoaSWTR6z3ZWjEl9mjJQ=
-Message-ID: <46d6db660709202335w7fc75be7k72a2e9689e9b3205@mail.gmail.com>
-Date: Fri, 21 Sep 2007 08:35:01 +0200
-From: "Christian MICHON" <christian.michon@gmail.com>
-To: "Rob Landley" <rob@landley.net>
-Subject: Re: Monster switch for small size (was Linux-tiny revival)
-Cc: linux-tiny@selenic.com, "Michael Opdenacker" <michael@free-electrons.com>,
-       "linux kernel" <linux-kernel@vger.kernel.org>,
-       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
-       "Andy Whitcroft" <apw@shadowen.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200709201641.22580.rob@landley.net>
+	Fri, 21 Sep 2007 02:45:16 -0400
+Message-ID: <46F36801.3070908@linux.vnet.ibm.com>
+Date: Fri, 21 Sep 2007 12:13:13 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+CC: akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Introduce ext4_find_next_bit
+References: <11903523063349-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <11903523063349-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46F1645D.9050406@am.sony.com> <20070920091042.GA6035@shadowen.org>
-	 <46F2A99A.3080400@am.sony.com> <200709201641.22580.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/20/07, Rob Landley <rob@landley.net> wrote:
-> (I cut the bit where you reinvent miniconfig.  People keep doing this.  I dig
-> it up and resubmit it every year or so, so Roman Zippel can shoot it down
-> again.  Meanwhile, not only is Firmware Linux happily using it, but I even
-> wrote more documentation at
-> http://landley.net/code/firmware/new_platform.html although you have to
-> scroll down a bit to get to the stuff about miniconfig...)
+Aneesh Kumar K.V wrote:
+> Also add generic_find_next_le_bit
+> 
+> This gets used by the ext4 multi block allocator patches.
+> 
 
-DetaolB (see signature) is also using miniconfig, which is good
-existing code. It can actually be pushed further by storing a
-/proc/miniconfig.gz rather than the full /proc/config.gz
+Looks like it's a straight forward on Little Endian Architectures.
+I see something for powerpc, what about other architectures?
 
-You can find patches on how to perform this inside the iso of DetaolB v0.6
+> 
+> +unsigned long generic_find_next_le_bit(const unsigned long *addr, unsigned
+> +		long size, unsigned long offset)
+> +{
+
+Docbook style comments on the function and arguments would be nice.
+
+> +	const unsigned long *p = addr + BITOP_WORD(offset);
+> +	unsigned long result = offset & ~(BITS_PER_LONG - 1);
+> +	unsigned long tmp;
+> +
+> +	if (offset >= size)
+> +		return size;
+> +	size -= result;
+> +	offset &= (BITS_PER_LONG - 1UL);
+> +	if (offset) {
+> +		tmp = ext2_swabp(p++);
+> +		tmp &= (~0UL << offset);
+> +		if (size < BITS_PER_LONG)
+> +			goto found_first;
+> +		if (tmp)
+> +			goto found_middle;
+> +		size -= BITS_PER_LONG;
+> +		result += BITS_PER_LONG;
+> +	}
+> +
+> +	while (size & ~(BITS_PER_LONG - 1)) {
+> +		tmp = *(p++);
+> +		if (tmp)
+> +			goto found_middle_swap;
+> +		result += BITS_PER_LONG;
+> +		size -= BITS_PER_LONG;
+> +	}
+> +	if (!size)
+> +		return result;
+> +	tmp = ext2_swabp(p);
+> +found_first:
+> +	tmp &= (~0UL >> (BITS_PER_LONG - size));
+> +	if (tmp == 0UL)		/* Are any bits set? */
+> +		return result + size; /* Nope. */
+> +found_middle:
+> +	return result + __ffs(tmp);
+> +
+> +found_middle_swap:
+> +	return result + __ffs(ext2_swab(tmp));
+> +}
+> +EXPORT_SYMBOL(generic_find_next_le_bit);
+> +
+>  #endif /* __BIG_ENDIAN */
+
 
 -- 
-Christian
---
-http://detaolb.sourceforge.net/, a linux distribution for Qemu with Git inside !
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
