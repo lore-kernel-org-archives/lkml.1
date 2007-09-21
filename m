@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750717AbXIUJoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbXIUJrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750717AbXIUJoo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 05:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXIUJoi
+	id S1756869AbXIUJrR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 05:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbXIUJrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 05:44:38 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:59432 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752953AbXIUJoh (ORCPT
+	Fri, 21 Sep 2007 05:47:09 -0400
+Received: from mpc-26.sohonet.co.uk ([193.203.82.251]:43139 "EHLO
+	moving-picture.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753743AbXIUJrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 05:44:37 -0400
-Date: Fri, 21 Sep 2007 11:44:22 +0200
-To: "Gregory 'GaLi' Cavelier" <gali@cleia.org>
-Cc: kkeil@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ISDN: Change pci_find_device() calls to pci_get_device()
-Message-ID: <20070921094422.GA10599@ahaupt-debian-vm.localdomain>
-References: <20070921105508.d1a6a369.gali@cleia.org>
+	Fri, 21 Sep 2007 05:47:08 -0400
+Message-ID: <46F39319.9090705@moving-picture.com>
+Date: Fri, 21 Sep 2007 10:47:05 +0100
+From: James Pearson <james-p@moving-picture.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040524
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070921105508.d1a6a369.gali@cleia.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Andre Haupt <andre@bitwigglers.org>
-X-Provags-ID: V01U2FsdGVkX191SwthZMY1S9AdPZh3Fp6OwWu8aseJq3PTbJ6
- TJEF9GG3UvQbSqL62f2CUNHO1RgFEpT+khW3dZB8XD45OxgArL
- GcDquzKdwi8kQHxfl9D6Lf4HMb6xgA0+udMfMPcyM4=
+To: Arvin Moezzi <moezzia@gmail.com>
+CC: linux-kernel@vger.kernel.org, aarapov@redhat.com,
+       akpm@linux-foundation.org, hpa@zytor.com
+Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
+References: <E1IXziD-0003YJ-0w@moving-picture.com> <3402120c0709201856j58c3775bq8dc7886785a11344@mail.gmail.com>
+In-Reply-To: <3402120c0709201856j58c3775bq8dc7886785a11344@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Disclaimer: This email and any attachments are confidential, may be legally
+X-Disclaimer: privileged and intended solely for the use of addressee. If you
+X-Disclaimer: are not the intended recipient of this message, any disclosure,
+X-Disclaimer: copying, distribution or any action taken in reliance on it is
+X-Disclaimer: strictly prohibited and may be unlawful. If you have received
+X-Disclaimer: this message in error, please notify the sender and delete all
+X-Disclaimer: copies from your system.
+X-Disclaimer: 
+X-Disclaimer: Email may be susceptible to data corruption, interception and
+X-Disclaimer: unauthorised amendment, and we do not accept liability for any
+X-Disclaimer: such corruption, interception or amendment or the consequences
+X-Disclaimer: thereof.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 10:55:08AM +0200, Gregory 'GaLi' Cavelier wrote:
+Arvin Moezzi wrote:
+> 2007/9/19, James Pearson <james-p@moving-picture.com>:
 > 
-> The following patch removes the obsolete pci_find_device() calls and replaces them with pci_get_device() for all ISDN drivers.
+>>+       while (count > 0) {
+>>+               int this_len, retval;
+>>+
+>>+               this_len = mm->env_end - (mm->env_start + src);
+>>+
+>>+               if (this_len <= 0)
+>>+                       break;
+>>+
+>>+               if (this_len > max_len)
+>>+                       this_len = max_len;
+>>+
+>>+               retval = access_process_vm(task, (mm->env_start + src),
+>>+                       page, this_len, 0);
+>>+
+>>+               if (retval <= 0) {
+>>+                       ret = retval;
+>>+                       break;
+>>+               }
+>>+
+>>+               if (copy_to_user(buf, page, retval)) {
 > 
-No, it does not. It replaces the correct pci_get_device() calls in the
-isdn tree with the obsolete pci_find_device(). ;-)
+>                                                                 ^^^^
+> shouldn't you only copy min(count,retval) bytes? otherwise you could
+> write beyond the users buffer "buf", right?
 
-regards,
+AFAIK, 'retval' can never be greater than 'this_len', which can never be 
+greater than 'max_len', which can never be greater than 'count'
 
-Andre
+James Pearson
