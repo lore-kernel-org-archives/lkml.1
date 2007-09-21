@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbXIUVCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbXIUVDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932263AbXIUVCh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 17:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764281AbXIUUw2
+	id S932099AbXIUVDf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 17:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762670AbXIUU4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:52:28 -0400
-Received: from mga02.intel.com ([134.134.136.20]:7578 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764353AbXIUUw0 convert rfc822-to-8bit (ORCPT
+	Fri, 21 Sep 2007 16:56:51 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49295 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765271AbXIUU4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:52:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,285,1186383600"; 
-   d="scan'208";a="300320125"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.23-rc7 0/3] async_tx and md-accel fixes for 2.6.23
-Date: Fri, 21 Sep 2007 13:52:24 -0700
-Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E52027D909B@azsmsx413.amr.corp.intel.com>
-In-Reply-To: <20070921114823.49d00263.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.23-rc7 0/3] async_tx and md-accel fixes for 2.6.23
-Thread-Index: Acf8gCsqRifBIPbnTz6y0VavAn4AqwACQlGQ
-References: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com> <20070921114823.49d00263.akpm@linux-foundation.org>
-From: "Williams, Dan J" <dan.j.williams@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>,
-       <neilb@suse.de>, <yur@emcraft.com>, <saeed.bishara@gmail.com>,
-       "Nelson, Shannon" <shannon.nelson@intel.com>
-X-OriginalArrivalTime: 21 Sep 2007 20:52:24.0700 (UTC) FILETIME=[500F83C0:01C7FC91]
+	Fri, 21 Sep 2007 16:56:49 -0400
+Date: Fri, 21 Sep 2007 22:03:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Valdis.Kletnieks@vt.edu, David Miller <davem@davemloft.net>,
+       jeff@garzik.org, mchan@broadcom.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
+Message-ID: <20070921220333.3b31afb5@the-village.bc.nu>
+In-Reply-To: <200709212018.06553.vda.linux@googlemail.com>
+References: <200709211201.24475.vda.linux@googlemail.com>
+	<200709211905.23946.vda.linux@googlemail.com>
+	<15775.1190399812@turing-police.cc.vt.edu>
+	<200709212018.06553.vda.linux@googlemail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> > Fix a couple bugs and provide documentation for the async_tx api.
-> >
-> > Neil, please 'ack' patch #3.
-> >
-> > git://lost.foo-projects.org/~dwillia2/git/iop
-async-tx-fixes-for-linus
+> For example, bnx2 maintainer says that driver and
+> firmware are closely tied for his driver. IOW: you upgrade kernel
+> and your NIC is not working anymore.
 > 
-> Well it looks like Neil is on vacation or is hiding from us or
-something.
-> 
-> In which case our options would be to go ahead and merge your #3 with
-> our fingers crossed, or wait and do it in 2.6.23.1 or .2.
-> 
-> How serious is this bug which you're fixing?  Will it affect users
-> of "legacy" MD setups, or only those who have enabled fancy dma-engine
-> features?
-> 
-The symptom is raid array that fails to complete a read request.
+> Another argument is to make kernel be able to bring up NICs
+> without needing firmware images in initramfs/initrd/hard drive.
 
-It has only been triggered by Yuri when he tried a dma-engine
-configuration on his PPC platform with PAGE_SIZE=64K, this opens a large
-window for the bug to hit.  The window is much smaller but not 100%
-closed in the !dma-engine case, although no one else has hit it. 
+dgrs should be using the request_firmware interface. Actually dgrs is
+probably a good candidate for /dev/null
 
-2.6.22 returned reads from handle_stripe under the stripe lock so this
-patch can be seen as 'reverting a botched micro-optimization' versus
-'introducing a new way to handle reads'.
-
-> Either way, we need to get #2 (at least) in to Linus.
-
-#2 is less critical and cannot hit with any of the current drivers in
-the kernel, so it is ok if this one misses 2.6.23.
+Alan
