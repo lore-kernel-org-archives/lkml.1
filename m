@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbXIUUBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbXIUUCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763519AbXIUUBV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761891AbXIUUBN
+	id S1763519AbXIUUCq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761741AbXIUUCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:01:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:46200 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761306AbXIUUBL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:01:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=mvIHtC5v3pnTYgDhbyjV6DQ+n2v2vJH3fLa3nVzjr3yrhieDl0cRsv/7a90MRd+cfvPpSEvHDy//qXyLXb6EQcS9ZPSleksvs38mqsNyXA7TGuWJu/1pWk8WLZIc9QJOnzXFQOMaKSSYY8TPEDarRpmLHT9FvO1u8nT1Pab3sPU=
-Date: Sat, 22 Sep 2007 00:00:26 +0400
-To: linux-kernel@vger.kernel.org
-Cc: rientjes@google.com, andrea@suse.de, clameter@sgi.com, akpm@osdl.org
-Subject: Re: + oom-move-constraints-to-enum.patch added to -mm tree
-Message-ID: <20070921200026.GD1857@martell.zuzino.mipt.ru>
-References: <200709210910.l8L9Avh2028189@imap1.linux-foundation.org>
+	Fri, 21 Sep 2007 16:02:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44134 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755292AbXIUUCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:02:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Fri, 21 Sep 2007 22:15:25 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       linux-pm@lists.linux-foundation.org,
+       huang ying <huang.ying.caritas@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200709210910.l8L9Avh2028189@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+Message-Id: <200709212215.26978.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 02:10:57AM -0700, akpm@linux-foundation.org wrote:
-> The OOM killer's CONSTRAINT definitions are really more appropriate in an
-> enum, so define them in include/linux/oom.h.
+On Friday, 21 September 2007 21:45, Alan Stern wrote:
+> On Fri, 21 Sep 2007, Rafael J. Wysocki wrote:
+> 
+> > > > Well, the problem is that apparently some systems (eg. my HP nx6325) expect us
+> > > > to execute the _PTS ACPI global control method before creating the image _and_
+> > > > to execute acpi_enter_sleep_state(ACPI_STATE_S4) in order to finally put the
+> > > > system into the sleep state.  In particular, on nx6325, if we don't do that,
+> > > > then after the restore the status of the AC power will not be reported
+> > > > correctly (and if you replace the battery while in the sleep state, the
+> > > > battery status will not be updated correctly after the restore).  Similar
+> > > > issues have been reported for other machines.
+> > > 
+> > > Suppose that instead of using ACPI S4 state at all, you instead just
+> > > power off.  Yes, you'll lose wakeup event functionality, and flashy
+> > > LEDs, but doesn't this take care of the problem?
+> > 
+> > Nope.
+> > 
+> > > The firmware shouldn't see the hibernate as anything other than a shutdown
+> > > and reboot.
+> > 
+> > Actually, this assumption is apparently wrong.
+> 
+> One gets the impression that the hibernation image includes a memory 
+> area used by the firmware.  That could explain why devices need to be 
+> in a low-power state when the image is created -- so that when the 
+> image is restored, the firmware doesn't get confused about the device 
+> states.
+> 
+> It would also explain why the firmware sees
+> resume-from-power-off-hibernation as different from a regular reboot:
+> because its data area gets overwritten as part of the resume.
+> 
+> In reality it's probably more complicated than this, with weird 
+> interactions between the firmware and the various ACPI methods.  
+> Nevertheless, the main idea seems valid.
 
-OK with enum, but this series do not bring user outside of
-mm/oom_kill.c, so why move them to header.
+I guess so, but I'm not sure.
 
-> --- a/include/linux/oom.h~oom-move-constraints-to-enum
-> +++ a/include/linux/oom.h
-> @@ -11,6 +11,15 @@
->  
->  #ifdef __KERNEL__
->  
-> +/*
-> + * Types of limitations to the nodes from which allocations may occur
-> + */
-> +enum oom_constraint {
-> +	CONSTRAINT_NONE,
-> +	CONSTRAINT_CPUSET,
-> +	CONSTRAINT_MEMORY_POLICY,
-> +};
-> +
->  extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order);
->  extern int register_oom_notifier(struct notifier_block *nb);
->  extern int unregister_oom_notifier(struct notifier_block *nb);
-> diff -puN mm/oom_kill.c~oom-move-constraints-to-enum mm/oom_kill.c
-> --- a/mm/oom_kill.c~oom-move-constraints-to-enum
-> +++ a/mm/oom_kill.c
-> @@ -164,16 +164,10 @@ unsigned long badness(struct task_struct
->  }
->  
->  /*
-> - * Types of limitations to the nodes from which allocations may occur
-> - */
-> -#define CONSTRAINT_NONE 1
-> -#define CONSTRAINT_MEMORY_POLICY 2
-> -#define CONSTRAINT_CPUSET 3
-> -
-> -/*
->   * Determine the type of allocation constraint.
->   */
-> -static inline int constrained_alloc(struct zonelist *zonelist, gfp_t gfp_mask)
-> +static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-> +						    gfp_t gfp_mask)
->  {
->  #ifdef CONFIG_NUMA
->  	struct zone **z;
-> @@ -393,7 +387,7 @@ void out_of_memory(struct zonelist *zone
->  	struct task_struct *p;
->  	unsigned long points = 0;
->  	unsigned long freed = 0;
-> -	int constraint;
-> +	enum oom_constraint constraint;
+The ACPI NVS area is explicitly marked as reserved and we don't save it.
+On x86_64 we don't save any memory areas marked as reserved and yet the above
+happens.
+
+Greetings,
+Rafael
