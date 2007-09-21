@@ -1,111 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765901AbXIUWix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765993AbXIUWjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765901AbXIUWix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761999AbXIUWc2
+	id S1765993AbXIUWjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761899AbXIUWca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:32:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57054 "EHLO mx1.suse.de"
+	Fri, 21 Sep 2007 18:32:30 -0400
+Received: from ns.suse.de ([195.135.220.2]:57056 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763558AbXIUWcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:32:19 -0400
+	id S1763395AbXIUWcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:32:20 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709221231.836138000@suse.de>
 In-Reply-To: <200709221231.836138000@suse.de>
 To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [19/50] Experimental: detect if SVM is disabled by BIOS
-Message-Id: <20070921223218.22A8D13DCD@wotan.suse.de>
-Date: Sat, 22 Sep 2007 00:32:18 +0200 (CEST)
+Subject: [PATCH] [20/50] x86_64: Fix some broken white space in arch/x86_64/mm/init.c
+Message-Id: <20070921223219.30ADD13DCD@wotan.suse.de>
+Date: Sat, 22 Sep 2007 00:32:19 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Also allow to set svm lock.
-
-TBD double check, documentation, i386 support
-
+No functional changes
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/setup.c    |   25 +++++++++++++++++++++++--
- include/asm-i386/cpufeature.h |    1 +
- include/asm-i386/msr-index.h  |    3 +++
- 3 files changed, 27 insertions(+), 2 deletions(-)
+ arch/x86_64/mm/init.c |   40 ++++++++++++++++++++--------------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
-Index: linux/arch/x86_64/kernel/setup.c
+Index: linux/arch/x86_64/mm/init.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/setup.c
-+++ linux/arch/x86_64/kernel/setup.c
-@@ -565,7 +565,7 @@ static void __cpuinit early_init_amd(str
+--- linux.orig/arch/x86_64/mm/init.c
++++ linux/arch/x86_64/mm/init.c
+@@ -73,7 +73,7 @@ void show_mem(void)
+ 	printk(KERN_INFO "Free swap:       %6ldkB\n", nr_swap_pages<<(PAGE_SHIFT-10));
  
- static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ 	for_each_online_pgdat(pgdat) {
+-               for (i = 0; i < pgdat->node_spanned_pages; ++i) {
++		for (i = 0; i < pgdat->node_spanned_pages; ++i) {
+ 			/* this loop can take a while with 256 GB and 4k pages
+ 			   so update the NMI watchdog */
+ 			if (unlikely(i % MAX_ORDER_NR_PAGES == 0)) {
+@@ -89,7 +89,7 @@ void show_mem(void)
+ 				cached++;
+ 			else if (page_count(page))
+ 				shared += page_count(page) - 1;
+-               }
++		}
+ 	}
+ 	printk(KERN_INFO "%lu pages of RAM\n", total);
+ 	printk(KERN_INFO "%lu reserved pages\n",reserved);
+@@ -114,7 +114,7 @@ static __init void *spp_getpage(void)
+ } 
+ 
+ static __init void set_pte_phys(unsigned long vaddr,
+-			 unsigned long phys, pgprot_t prot)
++				unsigned long phys, pgprot_t prot)
  {
--	unsigned level;
-+	unsigned level, flags, dummy;
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+@@ -324,7 +324,7 @@ static void __init find_early_table_spac
+ 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
+ 	pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
+ 	tables = round_up(puds * sizeof(pud_t), PAGE_SIZE) +
+-		 round_up(pmds * sizeof(pmd_t), PAGE_SIZE);
++		round_up(pmds * sizeof(pmd_t), PAGE_SIZE);
  
- #ifdef CONFIG_SMP
- 	unsigned long value;
-@@ -634,7 +634,28 @@ static void __cpuinit init_amd(struct cp
- 	/* Family 10 doesn't support C states in MWAIT so don't use it */
- 	if (c->x86 == 0x10 && !force_mwait)
- 		clear_bit(X86_FEATURE_MWAIT, &c->x86_capability);
-+
-+	if (c->x86 >= 0xf && c->x86 <= 0x11 &&
-+	    !rdmsr_safe(MSR_VM_CR, &flags, &dummy) &&
-+	    (flags & 0x18))
-+		set_bit(X86_FEATURE_VIRT_DISABLED, &c->x86_capability);
-+}
-+
-+static int enable_svm_lock(char *s)
-+{
-+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
-+		boot_cpu_data.x86 >= 0xf && boot_cpu_data.x86 <= 0x11) {
-+		unsigned a,b;
-+		if (rdmsr_safe(MSR_VM_CR, &a, &b))
-+			return 0;
-+		a |= (1 << 3);	/* set SVM lock */
-+		if (!wrmsr_safe(MSR_VM_CR, &a, &b))
-+			return 1;
-+	}
-+	printk(KERN_ERR "CPU does not support svm_lock\n");
-+	return 0;
+  	/* RED-PEN putting page tables only on node 0 could
+  	   cause a hotspot and fill up ZONE_DMA. The page tables
+@@ -338,8 +338,8 @@ static void __init find_early_table_spac
+ 	table_end = table_start;
+ 
+ 	early_printk("kernel direct mapping tables up to %lx @ %lx-%lx\n",
+-		end, table_start << PAGE_SHIFT,
+-		(table_start << PAGE_SHIFT) + tables);
++		     end, table_start << PAGE_SHIFT,
++		     (table_start << PAGE_SHIFT) + tables);
  }
-+__setup("svm_lock", enable_svm_lock);
  
- static void __cpuinit detect_ht(struct cpuinfo_x86 *c)
+ /* Setup the direct mapping of the physical memory at PAGE_OFFSET.
+@@ -428,7 +428,7 @@ void __init clear_kernel_mapping(unsigne
+ 		if (0 == (pmd_val(*pmd) & _PAGE_PSE)) { 
+ 			/* Could handle this, but it should not happen currently. */
+ 			printk(KERN_ERR 
+-	       "clear_kernel_mapping: mapping has been split. will leak memory\n"); 
++			       "clear_kernel_mapping: mapping has been split. will leak memory\n");
+ 			pmd_ERROR(*pmd); 
+ 		}
+ 		set_pmd(pmd, __pmd(0)); 		
+@@ -539,7 +539,7 @@ void __init mem_init(void)
+ 	totalram_pages = free_all_bootmem();
+ #endif
+ 	reservedpages = end_pfn - totalram_pages -
+-					absent_pages_in_range(0, end_pfn);
++		absent_pages_in_range(0, end_pfn);
+ 
+ 	after_bootmem = 1;
+ 
+@@ -554,15 +554,15 @@ void __init mem_init(void)
+ 	kclist_add(&kcore_kernel, &_stext, _end - _stext);
+ 	kclist_add(&kcore_modules, (void *)MODULES_VADDR, MODULES_LEN);
+ 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_START, 
+-				 VSYSCALL_END - VSYSCALL_START);
++		   VSYSCALL_END - VSYSCALL_START);
+ 
+ 	printk("Memory: %luk/%luk available (%ldk kernel code, %ldk reserved, %ldk data, %ldk init)\n",
+-		(unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
+-		end_pfn << (PAGE_SHIFT-10),
+-		codesize >> 10,
+-		reservedpages << (PAGE_SHIFT-10),
+-		datasize >> 10,
+-		initsize >> 10);
++	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
++	       end_pfn << (PAGE_SHIFT-10),
++	       codesize >> 10,
++	       reservedpages << (PAGE_SHIFT-10),
++	       datasize >> 10,
++	       initsize >> 10);
+ }
+ 
+ void free_init_pages(char *what, unsigned long begin, unsigned long end)
+@@ -669,10 +669,10 @@ void __init reserve_bootmem_generic(unsi
+ int kern_addr_valid(unsigned long addr) 
+ { 
+ 	unsigned long above = ((long)addr) >> __VIRTUAL_MASK_SHIFT;
+-       pgd_t *pgd;
+-       pud_t *pud;
+-       pmd_t *pmd;
+-       pte_t *pte;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *pte;
+ 
+ 	if (above != 0 && above != -1UL)
+ 		return 0; 
+@@ -737,7 +737,7 @@ int in_gate_area_no_task(unsigned long a
+ void * __init alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
  {
-@@ -985,7 +1006,7 @@ static int show_cpuinfo(struct seq_file 
- 		NULL, NULL, NULL, NULL,
- 		"constant_tsc", "up", NULL, "arch_perfmon",
- 		"pebs", "bts", NULL, "sync_rdtsc",
--		"rep_good", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-+		"rep_good", "virtualization_bios_disabled", NULL, NULL, NULL, NULL, NULL, NULL,
- 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 	return __alloc_bootmem_core(pgdat->bdata, size,
+-			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
++				    SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
+ }
  
- 		/* Intel-defined (#2) */
-Index: linux/include/asm-i386/cpufeature.h
-===================================================================
---- linux.orig/include/asm-i386/cpufeature.h
-+++ linux/include/asm-i386/cpufeature.h
-@@ -82,6 +82,7 @@
- /* 14 free */
- #define X86_FEATURE_SYNC_RDTSC	(3*32+15)  /* RDTSC synchronizes the CPU */
- #define X86_FEATURE_REP_GOOD   (3*32+16) /* rep microcode works well on this CPU */
-+#define X86_FEATURE_VIRT_DISABLED (3*32+17) /* Hardware virt. BIOS disabled */
- 
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
-Index: linux/include/asm-i386/msr-index.h
-===================================================================
---- linux.orig/include/asm-i386/msr-index.h
-+++ linux/include/asm-i386/msr-index.h
-@@ -98,6 +98,9 @@
- #define K8_MTRRFIXRANGE_DRAM_MODIFY	0x00080000 /* MtrrFixDramModEn bit */
- #define K8_MTRR_RDMEM_WRMEM_MASK	0x18181818 /* Mask: RdMem|WrMem    */
- 
-+/* SVM */
-+#define MSR_VM_CR       0xc0010114
-+
- /* K7 MSRs */
- #define MSR_K7_EVNTSEL0			0xc0010000
- #define MSR_K7_PERFCTR0			0xc0010004
+ const char *arch_vma_name(struct vm_area_struct *vma)
