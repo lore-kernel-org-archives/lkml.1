@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbXIUNrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbXIUNvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758923AbXIUNrn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbXIUNrh
+	id S1758854AbXIUNvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXIUNvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:47:37 -0400
-Received: from mpc-26.sohonet.co.uk ([193.203.82.251]:58088 "EHLO
-	moving-picture.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757543AbXIUNrg (ORCPT
+	Fri, 21 Sep 2007 09:51:09 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:59217 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198AbXIUNvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:47:36 -0400
-Message-ID: <46F3CB76.3080304@moving-picture.com>
-Date: Fri, 21 Sep 2007 14:47:34 +0100
-From: James Pearson <james-p@moving-picture.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040524
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Arvin Moezzi <moezzia@gmail.com>
-CC: linux-kernel@vger.kernel.org, aarapov@redhat.com,
-       akpm@linux-foundation.org, hpa@zytor.com
-Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
-References: <E1IXziD-0003YJ-0w@moving-picture.com>	 <3402120c0709201856j58c3775bq8dc7886785a11344@mail.gmail.com>	 <46F39319.9090705@moving-picture.com> <3402120c0709210547mb66162fv759a8f088beb0437@mail.gmail.com>
-In-Reply-To: <3402120c0709210547mb66162fv759a8f088beb0437@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 21 Sep 2007 09:51:08 -0400
+Date: Fri, 21 Sep 2007 09:45:53 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20070921134553.GF13129@Krystal>
+References: <20070918211324.161373216@polymtl.ca> <20070918211459.193904061@polymtl.ca> <20070921005837.GA4951@goodmis.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Disclaimer: This email and any attachments are confidential, may be legally
-X-Disclaimer: privileged and intended solely for the use of addressee. If you
-X-Disclaimer: are not the intended recipient of this message, any disclosure,
-X-Disclaimer: copying, distribution or any action taken in reliance on it is
-X-Disclaimer: strictly prohibited and may be unlawful. If you have received
-X-Disclaimer: this message in error, please notify the sender and delete all
-X-Disclaimer: copies from your system.
-X-Disclaimer: 
-X-Disclaimer: Email may be susceptible to data corruption, interception and
-X-Disclaimer: unauthorised amendment, and we do not accept liability for any
-X-Disclaimer: such corruption, interception or amendment or the consequences
-X-Disclaimer: thereof.
+Content-Disposition: inline
+In-Reply-To: <20070921005837.GA4951@goodmis.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:45:48 up 53 days, 14:04,  4 users,  load average: 0.48, 0.69, 0.71
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arvin Moezzi wrote:
-
-> I think that's not true. 'count' is changing through the iteration.
-> The difference in the mem_read():
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> On Tue, Sep 18, 2007 at 05:13:25PM -0400, Mathieu Desnoyers wrote:
+> > +/*
+> > + * Sets the probe callback corresponding to one marker.
+> > + */
+> > +static int set_marker(struct marker_entry **entry,
+> > +			struct __mark_marker *elem)
+> > +{
+> > +	int ret;
+> > +	BUG_ON(strcmp((*entry)->name, elem->name) != 0);
 > 
-> * while (count > 0) {
-> *     int this_len, retval;
-> *
-> *      this_len = (count > PAGE_SIZE) ? PAGE_SIZE : count;
-> *      retval = access_process_vm(task, src, page, this_len, 0);
-> *
-> *      ...
-> * }
+> Can you switch this at least to WARN_ON?  Killing a system with X
+> running where the user just sees a freeze is not that nice. But a nasty
+> message in dmesg is very noticable.
 > 
-> is the fact, that this_len = min(PAGE_SIZE, count) is in the
-> iteration block, hence retval <= this_len <= count in each iteration
-> step. So this is ok. But IMHO in your code 'retval' may be bigger than
-> 'count' in the last iteration of the block, because 'max_len' is fix
-> through your iteration but 'count' is changing. Or am i missing
-> something?
+Sure.
 
-Yes, you are correct ...
+> -- Steve
+> 
+> > +
+> > +	if ((*entry)->format) {
+> > +		if (strcmp((*entry)->format, elem->format) != 0) {
+> > +			printk(KERN_NOTICE
+> > +				"Format mismatch for probe %s "
+> > +				"(%s), marker (%s)\n",
+> > +				(*entry)->name,
+> > +				(*entry)->format,
+> > +				elem->format);
+> > +			return -EPERM;
+> > +		}
+> > +	} else {
+> > +		ret = marker_set_format(entry, elem->format);
+> > +		if (ret)
+> > +			return ret;
+> > +	}
+> > +	elem->call = (*entry)->probe;
+> > +	elem->pdata = (*entry)->pdata;
+> > +	_immediate_set(elem->state, 1);
+> > +	return 0;
+> > +}
 
-Thanks
-
-James Pearson
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
