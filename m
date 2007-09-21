@@ -1,40 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762887AbXIUTr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXIUTtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762887AbXIUTr0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 15:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbXIUTrS
+	id S1762944AbXIUTtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 15:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762100AbXIUTtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 15:47:18 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:43625 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753046AbXIUTrR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 15:47:17 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] USB autosuspend and turning of usb pendrive leds
-Date: Fri, 21 Sep 2007 21:47:57 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
-Cc: Hans de Goede <j.w.r.degoede@hhs.nl>, Jiri Kosina <jikos@jikos.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <46F3C704.5000203@hhs.nl> <Pine.LNX.4.64.0709211615520.22331@twin.jikos.cz> <46F3D326.6050804@hhs.nl>
-In-Reply-To: <46F3D326.6050804@hhs.nl>
+	Fri, 21 Sep 2007 15:49:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52987 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759213AbXIUTtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 15:49:04 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 07/22] FS-Cache: Provide an add_wait_queue_tail() function
+To: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, dhowells@redhat.com
+Date: Fri, 21 Sep 2007 15:47:39 +0100
+Message-ID: <20070921144739.8323.74958.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20070921144703.8323.50492.stgit@warthog.procyon.org.uk>
+References: <20070921144703.8323.50492.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709212147.57978.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 21 September 2007 schrieb Hans de Goede:
-> Thats not what I had in mind, autosuspend doesn't work (presumably because hal 
-> keeps polling for media change) maybe I should fix hal to not keep polling for 
-> devices which don't have removable media?
+Provide an add_wait_queue_tail() function to add a waiter to the back of a
+wait queue instead of the front.
 
-If you find a way to tell which devices fall into that class.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-	Regards
-		Oliver
+ include/linux/wait.h |    1 +
+ kernel/wait.c        |   18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/wait.h b/include/linux/wait.h
+index 0e68628..4cae7db 100644
+--- a/include/linux/wait.h
++++ b/include/linux/wait.h
+@@ -118,6 +118,7 @@ static inline int waitqueue_active(wait_queue_head_t *q)
+ #define is_sync_wait(wait)	(!(wait) || ((wait)->private))
+ 
+ extern void FASTCALL(add_wait_queue(wait_queue_head_t *q, wait_queue_t * wait));
++extern void FASTCALL(add_wait_queue_tail(wait_queue_head_t *q, wait_queue_t * wait));
+ extern void FASTCALL(add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t * wait));
+ extern void FASTCALL(remove_wait_queue(wait_queue_head_t *q, wait_queue_t * wait));
+ 
+diff --git a/kernel/wait.c b/kernel/wait.c
+index 444ddbf..7acc9cc 100644
+--- a/kernel/wait.c
++++ b/kernel/wait.c
+@@ -29,6 +29,24 @@ void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
+ }
+ EXPORT_SYMBOL(add_wait_queue);
+ 
++/**
++ * add_wait_queue_tail - Add a waiter to the back of a waitqueue
++ * @q: the wait queue to append the waiter to
++ * @wait: the waiter to be queued
++ *
++ * Add a waiter to the back of a waitqueue so that it gets woken up last.
++ */
++void fastcall add_wait_queue_tail(wait_queue_head_t *q, wait_queue_t *wait)
++{
++	unsigned long flags;
++
++	wait->flags &= ~WQ_FLAG_EXCLUSIVE;
++	spin_lock_irqsave(&q->lock, flags);
++	__add_wait_queue_tail(q, wait);
++	spin_unlock_irqrestore(&q->lock, flags);
++}
++EXPORT_SYMBOL(add_wait_queue_tail);
++
+ void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
+ {
+ 	unsigned long flags;
 
