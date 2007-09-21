@@ -1,194 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbXIUDMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbXIUDNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755592AbXIUDMs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 23:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbXIUDMm
+	id S1756023AbXIUDNM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 23:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbXIUDMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 23:12:42 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:47016 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753428AbXIUDMl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 23:12:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fUmusbncfKQCFAWmQNSQwE1agfyALMAW2fiz7gTSoevzcXcpjgmTdVeQIcz5BYuxXN1054y9gLc+yzjOdGbqEqBchmQsBdiI6uBjHVMFpC2vZgG675wXkinl6JFcjEhhPcCI06q1SzXmNTFMaHBcKYt8GVckqjZDNONOCt8EGDs=
-Message-ID: <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
-Date: Thu, 20 Sep 2007 20:12:34 -0700
-From: "Chakri n" <chakriin5@gmail.com>
-To: "Trond Myklebust" <Trond.Myklebust@netapp.com>
-Subject: Re: NFS on loopback locks up entire system(2.6.23-rc6)?
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1190335423.6763.180.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Sep 2007 23:12:55 -0400
+Received: from 1wt.eu ([62.212.114.60]:2599 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755538AbXIUDMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 23:12:54 -0400
+Date: Fri, 21 Sep 2007 05:11:39 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [git] CFS-devel, group scheduler, fixes
+Message-ID: <20070921031139.GA19584@1wt.eu>
+References: <20070918201622.GA1632@elte.hu> <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com> <1190183324.9737.7.camel@Homer.simpson.net> <1190188261.9185.21.camel@Homer.simpson.net> <1190191368.8687.5.camel@Homer.simpson.net> <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com> <1190264114.6411.4.camel@Homer.simpson.net> <1190272507.27867.20.camel@Homer.simpson.net> <20070920194813.GH10199@1wt.eu> <1190342455.6461.6.camel@Homer.simpson.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
-	 <1190335423.6763.180.camel@heimdal.trondhjem.org>
+In-Reply-To: <1190342455.6461.6.camel@Homer.simpson.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Trond, for clarifying this for me.
+On Fri, Sep 21, 2007 at 04:40:55AM +0200, Mike Galbraith wrote:
+> On Thu, 2007-09-20 at 21:48 +0200, Willy Tarreau wrote:
+> 
+> > I don't know if this is relevant, but 4294966399 in nr_uninterruptible
+> > for cpu#0 equals -897, exactly the negation of cpu1.nr_uninterruptible.
+> > I don't know if this rings a bell for someone or if it's a completely
+> > useless comment, but just in case...
+> 
+> A task can block on one cpu, and wake up on another, which isn't
+> tracked, hence the fishy looking numbers.  The true nr_uninterruptible
+> is the sum of all.
 
-I have seen similar behavior when a remote NFS server is not
-available. Many processes wait end up waiting in nfs_release_page. So,
-what will happen if the remote server is not available,
-nfs_release_page cannot free the memory since it waits on rpc request
-to complete, which never completes and processes wait in there for
-ever?
+OK, thanks Mike for this clarification.
 
-And unfortunately in my case, I cannot use "mount --bind". I want to
-use the same file system from two different nodes, and I want file &
-record locking to be consistent. The only way to make sure locking is
-consistent is to use loopback NFS on 1 host and NFS mount the same
-file system on other nodes, so that NFS server ensures file & record
-locking to be consistent. Is there any alternative to this?
+Willy
 
-Is it possible or any efforts to integrate ext3 or other local file
-systems locking & network file system locking, so that user can use
-"mount --bind" on local host and NFS mount on remote nodes, but file &
-record locking will be consistent between both the nodes?
-
-Thanks
---Chakri
-
-On 9/20/07, Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
-> On Thu, 2007-09-20 at 17:22 -0700, Chakri n wrote:
-> > Hi,
-> >
-> > I am testing NFS on loopback locks up entire system with 2.6.23-rc6 kernel.
-> >
-> > I have mounted a local ext3 partition using loopback NFS (version 3)
-> > and started my test program. The test program forks 20 threads
-> > allocates 10MB for each thread, writes & reads a file on the loopback
-> > NFS mount. After running for about 5 min, I cannot even login to the
-> > machine. Commands like ps etc, hang in a live session.
-> >
-> > The machine is a DELL 1950 with 4Gig of RAM, so there is plenty of RAM
-> > & CPU to play around and no other io/heavy processes are running on
-> > the system.
-> >
-> > vmstat output shows no buffers are actually getting transferred in or
-> > out and iowait is 100%.
-> >
-> > [root@h46 ~]# vmstat 1
-> > procs -----------memory---------- ---swap-- -----io---- --system--
-> > -----cpu------
-> >  r  b    swpd       free       buff       cache   si   so   bi   bo
-> > in     cs us sy id wa st
-> >  0 24    116 110080  11132 3045664    0    0     0     0   28  345  0
-> > 1  0 99  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0    5  329  0
-> > 0  0 100  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0   26  336  0
-> > 0  0 100  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0    8  335  0
-> > 0  0 100  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0   26  352  0
-> > 0  0 100  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0    8  351  0
-> > 0  0 100  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0   23  358  0
-> > 1  0 99  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0   10  350  0
-> > 0  0 100  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0   26  363  0
-> > 0  0 100  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0    8  346  0
-> > 1  0 99  0
-> >  0 24    116 110080  11132 3045664    0    0     0     0   26  360  0
-> > 0  0 100  0
-> >  0 24    116 110080  11140 3045656    0    0     8     0   11  345  0
-> > 0  0 100  0
-> >  0 24    116 110080  11140 3045664    0    0     0     0   27  355  0
-> > 0  2 97  0
-> >  0 24    116 110080  11140 3045664    0    0     0     0    9  330  0
-> > 0  0 100  0
-> >  0 24    116 110080  11140 3045664    0    0     0     0   26  358  0
-> > 0  0 100  0
-> >
-> >
-> > The following is the backtrace of
-> > 1. one of the threads of my test program
-> > 2. nfsd daemon and
-> > 3. a generic command like pstree, after the machine hangs:
-> > -------------------------------------------------------------
-> > crash> bt 3252
-> > PID: 3252   TASK: f6f3c610  CPU: 0   COMMAND: "test"
-> >  #0 [f6bdcc10] schedule at c0624a34
-> >  #1 [f6bdcc84] schedule_timeout at c06250ee
-> >  #2 [f6bdccc8] io_schedule_timeout at c0624c15
-> >  #3 [f6bdccdc] congestion_wait at c045eb7d
-> >  #4 [f6bdcd00] balance_dirty_pages_ratelimited_nr at c045ab91
-> >  #5 [f6bdcd54] generic_file_buffered_write at c0457148
-> >  #6 [f6bdcde8] __generic_file_aio_write_nolock at c04576e5
-> >  #7 [f6bdce40] try_to_wake_up at c042342b
-> >  #8 [f6bdce5c] generic_file_aio_write at c0457799
-> >  #9 [f6bdce8c] nfs_file_write at f8c25cee
-> > #10 [f6bdced0] do_sync_write at c0472e27
-> > #11 [f6bdcf7c] vfs_write at c0473689
-> > #12 [f6bdcf98] sys_write at c0473c95
-> > #13 [f6bdcfb4] sysenter_entry at c0404ddf
-> >     EAX: 00000004  EBX: 00000013  ECX: a4966008  EDX: 00980000
-> >     DS:  007b      ESI: 00980000  ES:  007b      EDI: a4966008
-> >     SS:  007b      ESP: a5ae6ec0  EBP: a5ae6ef0
-> >     CS:  0073      EIP: b7eed410  ERR: 00000004  EFLAGS: 00000246
-> > crash> bt 3188
-> > PID: 3188   TASK: f74c4000  CPU: 1   COMMAND: "nfsd"
-> >  #0 [f6836c7c] schedule at c0624a34
-> >  #1 [f6836cf0] __mutex_lock_slowpath at c062543d
-> >  #2 [f6836d0c] mutex_lock at c0625326
-> >  #3 [f6836d18] generic_file_aio_write at c0457784
-> >  #4 [f6836d48] ext3_file_write at f8888fd7
-> >  #5 [f6836d64] do_sync_readv_writev at c0472d1f
-> >  #6 [f6836e08] do_readv_writev at c0473486
-> >  #7 [f6836e6c] vfs_writev at c047358e
-> >  #8 [f6836e7c] nfsd_vfs_write at f8e7f8d7
-> >  #9 [f6836ee0] nfsd_write at f8e80139
-> > #10 [f6836f10] nfsd3_proc_write at f8e86afd
-> > #11 [f6836f44] nfsd_dispatch at f8e7c20c
-> > #12 [f6836f6c] svc_process at f89c18e0
-> > #13 [f6836fbc] nfsd at f8e7c794
-> > #14 [f6836fe4] kernel_thread_helper at c0405a35
-> > crash> ps|grep ps
-> >     234      2   3  cb194000  IN   0.0       0      0  [khpsbpkt]
-> >     520      2   0  f7e18c20  IN   0.0       0      0  [kpsmoused]
-> >    2859      1   2  f7f3cc20  IN   0.1    9600   2040  cupsd
-> >    3340   3310   0  f4a0f840  UN   0.0    4360    816  pstree
-> >    3343   3284   2  f4a0f230  UN   0.0    4212    944  ps
-> > crash> bt 3340
-> > PID: 3340   TASK: f4a0f840  CPU: 0   COMMAND: "pstree"
-> >  #0 [e856be30] schedule at c0624a34
-> >  #1 [e856bea4] rwsem_down_failed_common at c04df6c0
-> >  #2 [e856bec4] rwsem_down_read_failed at c0625c2a
-> >  #3 [e856bedc] call_rwsem_down_read_failed at c0625c96
-> >  #4 [e856bee8] down_read at c043c21a
-> >  #5 [e856bef0] access_process_vm at c0462039
-> >  #6 [e856bf38] proc_pid_cmdline at c04a1bbb
-> >  #7 [e856bf58] proc_info_read at c04a2f41
-> >  #8 [e856bf7c] vfs_read at c04737db
-> >  #9 [e856bf98] sys_read at c0473c2e
-> > #10 [e856bfb4] sysenter_entry at c0404ddf
-> >     EAX: 00000003  EBX: 00000005  ECX: 0804dc58  EDX: 00000062
-> >     DS:  007b      ESI: 00000cba  ES:  007b      EDI: 0804e0e0
-> >     SS:  007b      ESP: bfa3afe8  EBP: bfa3d4f8
-> >     CS:  0073      EIP: b7f64410  ERR: 00000003  EFLAGS: 00000246
-> > ----------------------------------------------------------
-> >
-> > Any ideas what could potentially trigger this?
->
-> This is pretty much expected: the NFS server is trying to allocate
-> memory. The VM then tries to satisfy that demand by freeing up resources
-> from the NFS client by telling the client to write out cached pages. The
-> client again is in a congested state in which it is waiting on the NFS
-> server to finish writing out what it already sent.
->         Quod Erat Deadlocked...
->
-> This is why 'mount --bind' is a good idea, and 'mount -t nfs localhost:'
-> is generally a bad one...
->
-> Cheers
->   Trond
->
