@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbXIUNMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759115AbXIUNOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758996AbXIUNMX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 09:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbXIUNMQ
+	id S1759115AbXIUNOU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 09:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbXIUNOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 09:12:16 -0400
-Received: from web82106.mail.mud.yahoo.com ([209.191.84.219]:35941 "HELO
-	web82106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750871AbXIUNMP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 09:12:15 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Sep 2007 09:12:15 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=wdoGoZ8PIlWR2WIczLppdBRc18OSihJKTKZ+BCzyk05tWKQyMnH3WpUatixs1kqkohG9b6PiOv+/0eM6QJqwOw0y4L2o1TacPzDnRvdDUyXpRIF/ghJqlKZ3KzCZFas/LbbIIphuKUCrOYP57Mgh8hdY9pXV/qspQT5S/ShoxLM=;
-X-YMail-OSG: 9qdpgj8VM1nPuCWn5AVkd0I8MxThU.FyAzCmU7OffUFUCqKYJQ7IzG1CgfUQEMpXBA--
-X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
-Date: Fri, 21 Sep 2007 06:05:35 -0700 (PDT)
-From: Scott Preece <sepreece@yahoo.com>
-Subject: Re: [Celinux-dev] Re: [Announce] Linux-tiny project revival
-To: Tim Bird <tim.bird@am.sony.com>, Rob Landley <rob@landley.net>
-Cc: linux-tiny@selenic.com, linux kernel <linux-kernel@vger.kernel.org>,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       Michael Opdenacker <michael@free-electrons.com>
-MIME-Version: 1.0
+	Fri, 21 Sep 2007 09:14:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58844 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751665AbXIUNOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 09:14:10 -0400
+Date: Fri, 21 Sep 2007 14:14:09 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hch@infradead.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 5/5] VFS: allow filesystem to override mknod capability checks
+Message-ID: <20070921131409.GA9988@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070921122343.307289079@szeredi.hu> <20070921123336.095183254@szeredi.hu> <20070921124504.GC8088@infradead.org> <E1IYiH4-0001eQ-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Message-ID: <498851.95136.qm@web82106.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <E1IYiH4-0001eQ-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-From: Tim Bird <tim.bird@am.sony.com>
+On Fri, Sep 21, 2007 at 03:10:26PM +0200, Miklos Szeredi wrote:
+> Take this example: I've loopback mounted an UML disk image using fuse
+> (no privileges required), and want to create some device nodes.  I
+> can't yet boot the UML because the device node is missing from the
+> image.  So what should I do.  Currently I have to manipulate the
+> mounted image as root.  But that's really shouldn't be needed.
 
-Rob Landley wrote:
-
-
-Given that there are about 60,000 printks in the kernel (and that's
-not counting wrappers like dprintk() and other locally-defined
-functions and macros) it would be a huge task to examine the code
-and differentiate strings that really start a new log message
-(and thus should have an attached log level) and strings
-that don't.
- -- Tim
-
----
-
-So, if this is a good idea, maybe the new version with the separate argument should have a new name? Then you can mechanically convert the onces that fit the pattern to the new name and form and leave the others to clean up later.
-
-scott
-
-
+That's something that shouldn't be solved in the filesystem, but rather
+through exact semantics of unprivilegued mounts.  Given that an
+unprivilegued implies ignoring the device files we can easily allow
+users to create them, because they're nothing special anymore.
 
