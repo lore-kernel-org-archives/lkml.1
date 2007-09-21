@@ -1,368 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbXIUWif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765901AbXIUWix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932134AbXIUWif (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762358AbXIUWc1
+	id S1765901AbXIUWix (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761999AbXIUWc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:32:27 -0400
-Received: from mx1.suse.de ([195.135.220.2]:57051 "EHLO mx1.suse.de"
+	Fri, 21 Sep 2007 18:32:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57054 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763552AbXIUWcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:32:18 -0400
+	id S1763558AbXIUWcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:32:19 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709221231.836138000@suse.de>
 In-Reply-To: <200709221231.836138000@suse.de>
-To: rjw@sisk.pl, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [18/50] x86_64: Save registers in saved_context during suspend and hibernation
-Message-Id: <20070921223217.12E5013DCD@wotan.suse.de>
-Date: Sat, 22 Sep 2007 00:32:17 +0200 (CEST)
+To: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [19/50] Experimental: detect if SVM is disabled by BIOS
+Message-Id: <20070921223218.22A8D13DCD@wotan.suse.de>
+Date: Sat, 22 Sep 2007 00:32:18 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Also allow to set svm lock.
 
-During hibernation and suspend on x86_64 save CPU registers in the saved_context
-structure rather than in a handful of separate variables.
+TBD double check, documentation, i386 support
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Andi Kleen <ak@suse.de>
-Looks-ok-to: Pavel Machek <pavel@ucw.cz>
----
- arch/x86_64/kernel/acpi/wakeup.S |  101 ++++++++++++++++++++-------------------
- arch/x86_64/kernel/asm-offsets.c |   28 ++++++++++
- arch/x86_64/kernel/suspend.c     |    6 --
- arch/x86_64/kernel/suspend_asm.S |   72 ++++++++++++++-------------
- include/asm-x86_64/suspend.h     |   23 ++------
- 5 files changed, 125 insertions(+), 105 deletions(-)
 
-Index: linux/arch/x86_64/kernel/asm-offsets.c
+---
+ arch/x86_64/kernel/setup.c    |   25 +++++++++++++++++++++++--
+ include/asm-i386/cpufeature.h |    1 +
+ include/asm-i386/msr-index.h  |    3 +++
+ 3 files changed, 27 insertions(+), 2 deletions(-)
+
+Index: linux/arch/x86_64/kernel/setup.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/asm-offsets.c
-+++ linux/arch/x86_64/kernel/asm-offsets.c
-@@ -76,6 +76,34 @@ int main(void)
- 	DEFINE(pbe_orig_address, offsetof(struct pbe, orig_address));
- 	DEFINE(pbe_next, offsetof(struct pbe, next));
- 	BLANK();
-+#define ENTRY(entry) DEFINE(pt_regs_ ## entry, offsetof(struct pt_regs, entry))
-+	ENTRY(rbx);
-+	ENTRY(rbx);
-+	ENTRY(rcx);
-+	ENTRY(rdx);
-+	ENTRY(rsp);
-+	ENTRY(rbp);
-+	ENTRY(rsi);
-+	ENTRY(rdi);
-+	ENTRY(r8);
-+	ENTRY(r9);
-+	ENTRY(r10);
-+	ENTRY(r11);
-+	ENTRY(r12);
-+	ENTRY(r13);
-+	ENTRY(r14);
-+	ENTRY(r15);
-+	ENTRY(eflags);
-+	BLANK();
-+#undef ENTRY
-+#define ENTRY(entry) DEFINE(saved_context_ ## entry, offsetof(struct saved_context, entry))
-+	ENTRY(cr0);
-+	ENTRY(cr2);
-+	ENTRY(cr3);
-+	ENTRY(cr4);
-+	ENTRY(cr8);
-+	BLANK();
-+#undef ENTRY
- 	DEFINE(TSS_ist, offsetof(struct tss_struct, ist));
- 	BLANK();
- 	DEFINE(crypto_tfm_ctx_offset, offsetof(struct crypto_tfm, __crt_ctx));
-Index: linux/include/asm-x86_64/suspend.h
-===================================================================
---- linux.orig/include/asm-x86_64/suspend.h
-+++ linux/include/asm-x86_64/suspend.h
-@@ -3,6 +3,9 @@
-  * Based on code
-  * Copyright 2001 Patrick Mochel <mochel@osdl.org>
-  */
-+#ifndef __ASM_X86_64_SUSPEND_H
-+#define __ASM_X86_64_SUSPEND_H
-+
- #include <asm/desc.h>
- #include <asm/i387.h>
+--- linux.orig/arch/x86_64/kernel/setup.c
++++ linux/arch/x86_64/kernel/setup.c
+@@ -565,7 +565,7 @@ static void __cpuinit early_init_amd(str
  
-@@ -12,8 +15,9 @@ arch_prepare_suspend(void)
- 	return 0;
- }
- 
--/* Image of the saved processor state. If you touch this, fix acpi_wakeup.S. */
-+/* Image of the saved processor state. If you touch this, fix acpi/wakeup.S. */
- struct saved_context {
-+	struct pt_regs regs;
-   	u16 ds, es, fs, gs, ss;
- 	unsigned long gs_base, gs_kernel_base, fs_base;
- 	unsigned long cr0, cr2, cr3, cr4, cr8;
-@@ -29,27 +33,14 @@ struct saved_context {
- 	unsigned long tr;
- 	unsigned long safety;
- 	unsigned long return_address;
--	unsigned long eflags;
- } __attribute__((packed));
- 
--/* We'll access these from assembly, so we'd better have them outside struct */
--extern unsigned long saved_context_eax, saved_context_ebx, saved_context_ecx, saved_context_edx;
--extern unsigned long saved_context_esp, saved_context_ebp, saved_context_esi, saved_context_edi;
--extern unsigned long saved_context_r08, saved_context_r09, saved_context_r10, saved_context_r11;
--extern unsigned long saved_context_r12, saved_context_r13, saved_context_r14, saved_context_r15;
--extern unsigned long saved_context_eflags;
--
- #define loaddebug(thread,register) \
- 	set_debugreg((thread)->debugreg##register, register)
- 
- extern void fix_processor_context(void);
- 
--extern unsigned long saved_rip;
--extern unsigned long saved_rsp;
--extern unsigned long saved_rbp;
--extern unsigned long saved_rbx;
--extern unsigned long saved_rsi;
--extern unsigned long saved_rdi;
--
- /* routines for saving/restoring kernel state */
- extern int acpi_save_state_mem(void);
-+
-+#endif /* __ASM_X86_64_SUSPEND_H */
-Index: linux/arch/x86_64/kernel/suspend.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/suspend.c
-+++ linux/arch/x86_64/kernel/suspend.c
-@@ -19,12 +19,6 @@ extern const void __nosave_begin, __nosa
- 
- struct saved_context saved_context;
- 
--unsigned long saved_context_eax, saved_context_ebx, saved_context_ecx, saved_context_edx;
--unsigned long saved_context_esp, saved_context_ebp, saved_context_esi, saved_context_edi;
--unsigned long saved_context_r08, saved_context_r09, saved_context_r10, saved_context_r11;
--unsigned long saved_context_r12, saved_context_r13, saved_context_r14, saved_context_r15;
--unsigned long saved_context_eflags;
--
- void __save_processor_state(struct saved_context *ctxt)
+ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
  {
- 	kernel_fpu_begin();
-Index: linux/arch/x86_64/kernel/suspend_asm.S
-===================================================================
---- linux.orig/arch/x86_64/kernel/suspend_asm.S
-+++ linux/arch/x86_64/kernel/suspend_asm.S
-@@ -17,24 +17,24 @@
- #include <asm/asm-offsets.h>
+-	unsigned level;
++	unsigned level, flags, dummy;
  
- ENTRY(swsusp_arch_suspend)
--
--	movq %rsp, saved_context_esp(%rip)
--	movq %rax, saved_context_eax(%rip)
--	movq %rbx, saved_context_ebx(%rip)
--	movq %rcx, saved_context_ecx(%rip)
--	movq %rdx, saved_context_edx(%rip)
--	movq %rbp, saved_context_ebp(%rip)
--	movq %rsi, saved_context_esi(%rip)
--	movq %rdi, saved_context_edi(%rip)
--	movq %r8,  saved_context_r08(%rip)
--	movq %r9,  saved_context_r09(%rip)
--	movq %r10, saved_context_r10(%rip)
--	movq %r11, saved_context_r11(%rip)
--	movq %r12, saved_context_r12(%rip)
--	movq %r13, saved_context_r13(%rip)
--	movq %r14, saved_context_r14(%rip)
--	movq %r15, saved_context_r15(%rip)
--	pushfq ; popq saved_context_eflags(%rip)
-+	movq	$saved_context, %rax
-+	movq	%rsp, pt_regs_rsp(%rax)
-+	movq	%rbp, pt_regs_rbp(%rax)
-+	movq	%rsi, pt_regs_rsi(%rax)
-+	movq	%rdi, pt_regs_rdi(%rax)
-+	movq	%rbx, pt_regs_rbx(%rax)
-+	movq	%rcx, pt_regs_rcx(%rax)
-+	movq	%rdx, pt_regs_rdx(%rax)
-+	movq	%r8, pt_regs_r8(%rax)
-+	movq	%r9, pt_regs_r9(%rax)
-+	movq	%r10, pt_regs_r10(%rax)
-+	movq	%r11, pt_regs_r11(%rax)
-+	movq	%r12, pt_regs_r12(%rax)
-+	movq	%r13, pt_regs_r13(%rax)
-+	movq	%r14, pt_regs_r14(%rax)
-+	movq	%r15, pt_regs_r15(%rax)
-+	pushfq
-+	popq	pt_regs_eflags(%rax)
- 
- 	call swsusp_save
- 	ret
-@@ -87,23 +87,25 @@ done:
- 	movl	$24, %eax
- 	movl	%eax, %ds
- 
--	movq saved_context_esp(%rip), %rsp
--	movq saved_context_ebp(%rip), %rbp
--	/* Don't restore %rax, it must be 0 anyway */
--	movq saved_context_ebx(%rip), %rbx
--	movq saved_context_ecx(%rip), %rcx
--	movq saved_context_edx(%rip), %rdx
--	movq saved_context_esi(%rip), %rsi
--	movq saved_context_edi(%rip), %rdi
--	movq saved_context_r08(%rip), %r8
--	movq saved_context_r09(%rip), %r9
--	movq saved_context_r10(%rip), %r10
--	movq saved_context_r11(%rip), %r11
--	movq saved_context_r12(%rip), %r12
--	movq saved_context_r13(%rip), %r13
--	movq saved_context_r14(%rip), %r14
--	movq saved_context_r15(%rip), %r15
--	pushq saved_context_eflags(%rip) ; popfq
-+	/* We don't restore %rax, it must be 0 anyway */
-+	movq	$saved_context, %rax
-+	movq	pt_regs_rsp(%rax), %rsp
-+	movq	pt_regs_rbp(%rax), %rbp
-+	movq	pt_regs_rsi(%rax), %rsi
-+	movq	pt_regs_rdi(%rax), %rdi
-+	movq	pt_regs_rbx(%rax), %rbx
-+	movq	pt_regs_rcx(%rax), %rcx
-+	movq	pt_regs_rdx(%rax), %rdx
-+	movq	pt_regs_r8(%rax), %r8
-+	movq	pt_regs_r9(%rax), %r9
-+	movq	pt_regs_r10(%rax), %r10
-+	movq	pt_regs_r11(%rax), %r11
-+	movq	pt_regs_r12(%rax), %r12
-+	movq	pt_regs_r13(%rax), %r13
-+	movq	pt_regs_r14(%rax), %r14
-+	movq	pt_regs_r15(%rax), %r15
-+	pushq	pt_regs_eflags(%rax)
-+	popfq
- 
- 	xorq	%rax, %rax
- 
-Index: linux/arch/x86_64/kernel/acpi/wakeup.S
-===================================================================
---- linux.orig/arch/x86_64/kernel/acpi/wakeup.S
-+++ linux/arch/x86_64/kernel/acpi/wakeup.S
-@@ -4,6 +4,7 @@
- #include <asm/pgtable.h>
- #include <asm/page.h>
- #include <asm/msr.h>
-+#include <asm/asm-offsets.h>
- 
- # Copyright 2003 Pavel Machek <pavel@suse.cz>, distribute under GPLv2
- #
-@@ -395,31 +396,32 @@ do_suspend_lowlevel:
- 	xorl	%eax, %eax
- 	call	save_processor_state
- 
--	movq %rsp, saved_context_esp(%rip)
--	movq %rax, saved_context_eax(%rip)
--	movq %rbx, saved_context_ebx(%rip)
--	movq %rcx, saved_context_ecx(%rip)
--	movq %rdx, saved_context_edx(%rip)
--	movq %rbp, saved_context_ebp(%rip)
--	movq %rsi, saved_context_esi(%rip)
--	movq %rdi, saved_context_edi(%rip)
--	movq %r8,  saved_context_r08(%rip)
--	movq %r9,  saved_context_r09(%rip)
--	movq %r10, saved_context_r10(%rip)
--	movq %r11, saved_context_r11(%rip)
--	movq %r12, saved_context_r12(%rip)
--	movq %r13, saved_context_r13(%rip)
--	movq %r14, saved_context_r14(%rip)
--	movq %r15, saved_context_r15(%rip)
--	pushfq ; popq saved_context_eflags(%rip)
-+	movq	$saved_context, %rax
-+	movq	%rsp, pt_regs_rsp(%rax)
-+	movq	%rbp, pt_regs_rbp(%rax)
-+	movq	%rsi, pt_regs_rsi(%rax)
-+	movq	%rdi, pt_regs_rdi(%rax)
-+	movq	%rbx, pt_regs_rbx(%rax)
-+	movq	%rcx, pt_regs_rcx(%rax)
-+	movq	%rdx, pt_regs_rdx(%rax)
-+	movq	%r8, pt_regs_r8(%rax)
-+	movq	%r9, pt_regs_r9(%rax)
-+	movq	%r10, pt_regs_r10(%rax)
-+	movq	%r11, pt_regs_r11(%rax)
-+	movq	%r12, pt_regs_r12(%rax)
-+	movq	%r13, pt_regs_r13(%rax)
-+	movq	%r14, pt_regs_r14(%rax)
-+	movq	%r15, pt_regs_r15(%rax)
-+	pushfq
-+	popq	pt_regs_eflags(%rax)
- 
- 	movq	$.L97, saved_rip(%rip)
- 
--	movq %rsp,saved_rsp
--	movq %rbp,saved_rbp
--	movq %rbx,saved_rbx
--	movq %rdi,saved_rdi
--	movq %rsi,saved_rsi
-+	movq	%rsp, saved_rsp
-+	movq	%rbp, saved_rbp
-+	movq	%rbx, saved_rbx
-+	movq	%rdi, saved_rdi
-+	movq	%rsi, saved_rsi
- 
- 	addq	$8, %rsp
- 	movl	$3, %edi
-@@ -430,32 +432,35 @@ do_suspend_lowlevel:
- .L99:
- 	.align 4
- 	movl	$24, %eax
--	movw %ax, %ds
--	movq	saved_context+58(%rip), %rax
--	movq %rax, %cr4
--	movq	saved_context+50(%rip), %rax
--	movq %rax, %cr3
--	movq	saved_context+42(%rip), %rax
--	movq %rax, %cr2
--	movq	saved_context+34(%rip), %rax
--	movq %rax, %cr0
--	pushq saved_context_eflags(%rip) ; popfq
--	movq saved_context_esp(%rip), %rsp
--	movq saved_context_ebp(%rip), %rbp
--	movq saved_context_eax(%rip), %rax
--	movq saved_context_ebx(%rip), %rbx
--	movq saved_context_ecx(%rip), %rcx
--	movq saved_context_edx(%rip), %rdx
--	movq saved_context_esi(%rip), %rsi
--	movq saved_context_edi(%rip), %rdi
--	movq saved_context_r08(%rip), %r8
--	movq saved_context_r09(%rip), %r9
--	movq saved_context_r10(%rip), %r10
--	movq saved_context_r11(%rip), %r11
--	movq saved_context_r12(%rip), %r12
--	movq saved_context_r13(%rip), %r13
--	movq saved_context_r14(%rip), %r14
--	movq saved_context_r15(%rip), %r15
-+	movw	%ax, %ds
+ #ifdef CONFIG_SMP
+ 	unsigned long value;
+@@ -634,7 +634,28 @@ static void __cpuinit init_amd(struct cp
+ 	/* Family 10 doesn't support C states in MWAIT so don't use it */
+ 	if (c->x86 == 0x10 && !force_mwait)
+ 		clear_bit(X86_FEATURE_MWAIT, &c->x86_capability);
 +
-+	/* We don't restore %rax, it must be 0 anyway */
-+	movq	$saved_context, %rax
-+	movq	saved_context_cr4(%rax), %rbx
-+	movq	%rbx, %cr4
-+	movq	saved_context_cr3(%rax), %rbx
-+	movq	%rbx, %cr3
-+	movq	saved_context_cr2(%rax), %rbx
-+	movq	%rbx, %cr2
-+	movq	saved_context_cr0(%rax), %rbx
-+	movq	%rbx, %cr0
-+	pushq	pt_regs_eflags(%rax)
-+	popfq
-+	movq	pt_regs_rsp(%rax), %rsp
-+	movq	pt_regs_rbp(%rax), %rbp
-+	movq	pt_regs_rsi(%rax), %rsi
-+	movq	pt_regs_rdi(%rax), %rdi
-+	movq	pt_regs_rbx(%rax), %rbx
-+	movq	pt_regs_rcx(%rax), %rcx
-+	movq	pt_regs_rdx(%rax), %rdx
-+	movq	pt_regs_r8(%rax), %r8
-+	movq	pt_regs_r9(%rax), %r9
-+	movq	pt_regs_r10(%rax), %r10
-+	movq	pt_regs_r11(%rax), %r11
-+	movq	pt_regs_r12(%rax), %r12
-+	movq	pt_regs_r13(%rax), %r13
-+	movq	pt_regs_r14(%rax), %r14
-+	movq	pt_regs_r15(%rax), %r15
++	if (c->x86 >= 0xf && c->x86 <= 0x11 &&
++	    !rdmsr_safe(MSR_VM_CR, &flags, &dummy) &&
++	    (flags & 0x18))
++		set_bit(X86_FEATURE_VIRT_DISABLED, &c->x86_capability);
++}
++
++static int enable_svm_lock(char *s)
++{
++	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
++		boot_cpu_data.x86 >= 0xf && boot_cpu_data.x86 <= 0x11) {
++		unsigned a,b;
++		if (rdmsr_safe(MSR_VM_CR, &a, &b))
++			return 0;
++		a |= (1 << 3);	/* set SVM lock */
++		if (!wrmsr_safe(MSR_VM_CR, &a, &b))
++			return 1;
++	}
++	printk(KERN_ERR "CPU does not support svm_lock\n");
++	return 0;
+ }
++__setup("svm_lock", enable_svm_lock);
  
- 	xorl	%eax, %eax
- 	addq	$8, %rsp
+ static void __cpuinit detect_ht(struct cpuinfo_x86 *c)
+ {
+@@ -985,7 +1006,7 @@ static int show_cpuinfo(struct seq_file 
+ 		NULL, NULL, NULL, NULL,
+ 		"constant_tsc", "up", NULL, "arch_perfmon",
+ 		"pebs", "bts", NULL, "sync_rdtsc",
+-		"rep_good", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
++		"rep_good", "virtualization_bios_disabled", NULL, NULL, NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 
+ 		/* Intel-defined (#2) */
+Index: linux/include/asm-i386/cpufeature.h
+===================================================================
+--- linux.orig/include/asm-i386/cpufeature.h
++++ linux/include/asm-i386/cpufeature.h
+@@ -82,6 +82,7 @@
+ /* 14 free */
+ #define X86_FEATURE_SYNC_RDTSC	(3*32+15)  /* RDTSC synchronizes the CPU */
+ #define X86_FEATURE_REP_GOOD   (3*32+16) /* rep microcode works well on this CPU */
++#define X86_FEATURE_VIRT_DISABLED (3*32+17) /* Hardware virt. BIOS disabled */
+ 
+ /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
+ #define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */
+Index: linux/include/asm-i386/msr-index.h
+===================================================================
+--- linux.orig/include/asm-i386/msr-index.h
++++ linux/include/asm-i386/msr-index.h
+@@ -98,6 +98,9 @@
+ #define K8_MTRRFIXRANGE_DRAM_MODIFY	0x00080000 /* MtrrFixDramModEn bit */
+ #define K8_MTRR_RDMEM_WRMEM_MASK	0x18181818 /* Mask: RdMem|WrMem    */
+ 
++/* SVM */
++#define MSR_VM_CR       0xc0010114
++
+ /* K7 MSRs */
+ #define MSR_K7_EVNTSEL0			0xc0010000
+ #define MSR_K7_PERFCTR0			0xc0010004
