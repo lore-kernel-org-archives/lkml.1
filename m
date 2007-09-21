@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbXIUON4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbXIUOPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759452AbXIUON4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758322AbXIUONq
+	id S1759709AbXIUOPZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758106AbXIUOPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:13:46 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:64570 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758211AbXIUONp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:13:45 -0400
-X-IronPort-AV: E=Sophos;i="4.20,284,1186383600"; 
-   d="scan'208";a="106402600"
-Subject: Re: [NFS] NFS on loopback locks up entire system(2.6.23-rc6)?
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Chakri n <chakriin5@gmail.com>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
-References: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
-	 <1190335423.6763.180.camel@heimdal.trondhjem.org>
-	 <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
-Content-Type: text/plain
+	Fri, 21 Sep 2007 10:15:14 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:21591 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758111AbXIUOPM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 10:15:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qd/EirdvggtYbPWx8Bu7XVsI6RTMAghhyebglHnyQZOOxSyj42yEJVcY5eRwZIR3OnRWgl9PQJb40VQ8nsd8zEDyUB+MuL2oBSbNGyalNYw0TxTj4Ymqic+TOxqu0rnLj1oc51ThMfrZ2vrYR2oYXslGChDKJnFdUvzd0Qh6YJo=
+Message-ID: <d120d5000709210715q22682893ib87998727baffe38@mail.gmail.com>
+Date: Fri, 21 Sep 2007 10:15:10 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs rcu_read_lock()
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>
+In-Reply-To: <20070921000155.GI9825@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Fri, 21 Sep 2007 10:13:25 -0400
-Message-Id: <1190384005.6680.20.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 21 Sep 2007 14:13:27.0065 (UTC) FILETIME=[941E4890:01C7FC59]
+Content-Disposition: inline
+References: <20070919174857.GA11922@linux.vnet.ibm.com>
+	 <20070919214110.5d832f28@lappy>
+	 <d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
+	 <20070919221349.2935f69d@lappy>
+	 <d120d5000709191341p1c331e80qf7bad973bc899a0@mail.gmail.com>
+	 <20070919231943.4b121361@lappy>
+	 <d120d5000709191429n29f5dc78g2746de3ee4e9ca81@mail.gmail.com>
+	 <20070919234700.3b532dcd@lappy>
+	 <d120d5000709201031o687ac0d5qe4d32406c12a7886@mail.gmail.com>
+	 <20070921000155.GI9825@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-20 at 20:12 -0700, Chakri n wrote:
-> Thanks Trond, for clarifying this for me.
-> 
-> I have seen similar behavior when a remote NFS server is not
-> available. Many processes wait end up waiting in nfs_release_page. So,
-> what will happen if the remote server is not available,
-> nfs_release_page cannot free the memory since it waits on rpc request
-> to complete, which never completes and processes wait in there for
-> ever?
-> 
-> And unfortunately in my case, I cannot use "mount --bind". I want to
-> use the same file system from two different nodes, and I want file &
-> record locking to be consistent. The only way to make sure locking is
-> consistent is to use loopback NFS on 1 host and NFS mount the same
-> file system on other nodes, so that NFS server ensures file & record
-> locking to be consistent. Is there any alternative to this?
-> 
-> Is it possible or any efforts to integrate ext3 or other local file
-> systems locking & network file system locking, so that user can use
-> "mount --bind" on local host and NFS mount on remote nodes, but file &
-> record locking will be consistent between both the nodes?
+On 9/20/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> On Thu, Sep 20, 2007 at 01:31:35PM -0400, Dmitry Torokhov wrote:
+> >
+> > OK, then what is the purpose of synchronize_sched() in -rt?
+>
+> To wait for all preempt-disable, irq-disable, hard-irq, and SMI/NMI code
+> sequences to complete.
 
-Could you be a bit more specific? Is the problem that your application
-is using BSD locks (flock()) instead of POSIX locks?
+OK, so what spin_lock_irq[save]? Does is disable IRQs in -rt or not anymore?
+If IRQs are disabled it appears that I can continue using synchronize_sched().
 
-Cheers
-   Trond
+>
+> > You really need to provide users with a replacement. There are several
+> > drivers that use it and for example r8169 is not what you'd call a
+> > 'low performer'.
+>
+> I did look at making a synchronize_all_irq() some time back, and all
+> the approaches I came up with at the time were busted.
+>
+> But I just took another look, and I think I see a way to handle it.
+> Either that, or I simply forgot the way in which this approach is
+> broken...
+>
+> I will stare at is some more.
+>
+
+Thank you.
+
+> > I guess I can switch i8042 to use synchronize_irq(). That still works
+> > in -rt, doesn't it? That still leaves atkbd...
+>
+> Yep, looks that way to me.  The only difference that I can see is that
+> in -rt, concurrent synchronize_irq() calls on the same descriptor mean
+> that the guy that gets there second has to wait for the next interrupt
+> to happen.
+>
+
+Does this mean that there is a possibility for a thread to hang in
+synchronize_irq() if that second IRQ never comes?
+
+-- 
+Dmitry
