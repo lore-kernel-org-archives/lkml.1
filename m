@@ -1,41 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbXIUUwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764826AbXIUUwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764212AbXIUUwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763321AbXIUUpM
+	id S1764826AbXIUUwg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763342AbXIUUpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:45:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:32980 "EHLO mx2.suse.de"
+	Fri, 21 Sep 2007 16:45:13 -0400
+Received: from mx1.suse.de ([195.135.220.2]:50051 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763261AbXIUUpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:45:05 -0400
+	id S1761528AbXIUUpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:45:07 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709211044.901175000@suse.de>
 In-Reply-To: <200709211044.901175000@suse.de>
-To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [22/45] x86_64: Enable iommu_merge by default
-Message-Id: <20070921204504.48A2E14EFF@wotan.suse.de>
-Date: Fri, 21 Sep 2007 22:45:04 +0200 (CEST)
+To: jblunck@suse.de, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [23/45] i386: Make callgraph use dump_trace() on i386/x86_64
+Message-Id: <20070921204505.56F5114EFF@wotan.suse.de>
+Date: Fri, 21 Sep 2007 22:45:05 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+From: jblunck@suse.de
+This patch improves oprofile callgraphs for i386/x86_64. The old backtracing
+code was unable to produce even kernel backtraces if the kernel wasn't
+compiled with framepointers. The code now uses dump_trace().
+
+Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/pci-dma.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/i386/oprofile/backtrace.c |  104 ++++++++++++++---------------------------
+ 1 file changed, 38 insertions(+), 66 deletions(-)
 
-Index: linux/arch/x86_64/kernel/pci-dma.c
+Index: linux/arch/i386/oprofile/backtrace.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/pci-dma.c
-+++ linux/arch/x86_64/kernel/pci-dma.c
-@@ -11,7 +11,7 @@
- #include <asm/iommu.h>
- #include <asm/calgary.h>
+--- linux.orig/arch/i386/oprofile/backtrace.c
++++ linux/arch/i386/oprofile/backtrace.c
+@@ -13,25 +13,45 @@
+ #include <linux/mm.h>
+ #include <asm/ptrace.h>
+ #include <asm/uaccess.h>
++#include <asm/stacktrace.h>
  
--int iommu_merge __read_mostly = 0;
-+int iommu_merge __read_mostly = 1;
- EXPORT_SYMBOL(iommu_merge);
+-struct frame_head {
+-	struct frame_head * ebp;
+-	unsigned long ret;
+-} __attribute__((packed));
++static void backtrace_warning_symbol(void *data, char *msg,
++				     unsigned long symbol)
++{
++	/* Ignore warnings */
++}
  
- dma_addr_t bad_dma_address __read_mostly;
+-static struct frame_head *
+-dump_kernel_backtrace(struct frame_head * head)
++static void backtrace_warning(void *data, char *msg)
+ {
+-	oprofile_add_trace(head->ret);
++	/* Ignore warnings */
++}
+ 
+-	/* frame pointers should strictly progress back up the stack
+-	 * (towards higher addresses) */
+-	if (head >= head->ebp)
+-		return NULL;
++static int backtrace_stack(void *data, char *name)
++{
++	/* Yes, we want all stacks */
++	return 0;
++}
+ 
+-	return head->ebp;
++static void backtrace_address(void *data, unsigned long addr)
++{
++	unsigned int *depth = data;
++
++	if ((*depth)--)
++		oprofile_add_trace(addr);
+ }
+ 
++static struct stacktrace_ops backtrace_ops = {
++	.warning = backtrace_warning,
++	.warning_symbol = backtrace_warning_symbol,
++	.stack = backtrace_stack,
++	.address = backtrace_address,
++};
++
++struct frame_head {
++	struct frame_head * ebp;
++	unsigned long ret;
++} __attribute__((packed));
++
+ static struct frame_head *
+ dump_user_backtrace(struct frame_head * head)
+ {
+@@ -53,72 +73,24 @@ dump_user_backtrace(struct frame_head * 
+ 	return bufhead[0].ebp;
+ }
+ 
+-/*
+- * |             | /\ Higher addresses
+- * |             |
+- * --------------- stack base (address of current_thread_info)
+- * | thread info |
+- * .             .
+- * |    stack    |
+- * --------------- saved regs->ebp value if valid (frame_head address)
+- * .             .
+- * --------------- saved regs->rsp value if x86_64
+- * |             |
+- * --------------- struct pt_regs * stored on stack if 32-bit
+- * |             |
+- * .             .
+- * |             |
+- * --------------- %esp
+- * |             |
+- * |             | \/ Lower addresses
+- *
+- * Thus, regs (or regs->rsp for x86_64) <-> stack base restricts the
+- * valid(ish) ebp values. Note: (1) for x86_64, NMI and several other
+- * exceptions use special stacks, maintained by the interrupt stack table
+- * (IST). These stacks are set up in trap_init() in
+- * arch/x86_64/kernel/traps.c. Thus, for x86_64, regs now does not point
+- * to the kernel stack; instead, it points to some location on the NMI
+- * stack. On the other hand, regs->rsp is the stack pointer saved when the
+- * NMI occurred. (2) For 32-bit, regs->esp is not valid because the
+- * processor does not save %esp on the kernel stack when interrupts occur
+- * in the kernel mode.
+- */
+-#ifdef CONFIG_FRAME_POINTER
+-static int valid_kernel_stack(struct frame_head * head, struct pt_regs * regs)
+-{
+-	unsigned long headaddr = (unsigned long)head;
+-#ifdef CONFIG_X86_64
+-	unsigned long stack = (unsigned long)regs->rsp;
+-#else
+-	unsigned long stack = (unsigned long)regs;
+-#endif
+-	unsigned long stack_base = (stack & ~(THREAD_SIZE - 1)) + THREAD_SIZE;
+-
+-	return headaddr > stack && headaddr < stack_base;
+-}
+-#else
+-/* without fp, it's just junk */
+-static int valid_kernel_stack(struct frame_head * head, struct pt_regs * regs)
+-{
+-	return 0;
+-}
+-#endif
+-
+-
+ void
+ x86_backtrace(struct pt_regs * const regs, unsigned int depth)
+ {
+ 	struct frame_head *head;
++	unsigned long stack;
+ 
+ #ifdef CONFIG_X86_64
+ 	head = (struct frame_head *)regs->rbp;
++	stack = regs->rsp;
+ #else
+ 	head = (struct frame_head *)regs->ebp;
++	stack = regs->esp;
+ #endif
+ 
+ 	if (!user_mode_vm(regs)) {
+-		while (depth-- && valid_kernel_stack(head, regs))
+-			head = dump_kernel_backtrace(head);
++		if (depth)
++			dump_trace(NULL, regs, (unsigned long *)stack,
++				   &backtrace_ops, &depth);
+ 		return;
+ 	}
+ 
