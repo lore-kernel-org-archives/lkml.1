@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbXIUSFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbXIUSGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761391AbXIUSFn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXIUSFc
+	id S1761572AbXIUSGY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXIUSGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:05:32 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:60163 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760876AbXIUSFb (ORCPT
+	Fri, 21 Sep 2007 14:06:15 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:30177 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbXIUSGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:05:31 -0400
+	Fri, 21 Sep 2007 14:06:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=O/o14PjY6Uj4/BAfPHWmE2kICRKzU+d4kXCXel3WOOaRcbTzGS/sfn0uZ5u1sg+ZIUltbOECVfD9KLGJUj2N45+hBW+3t7rhBQjIRKZhDypCFbXD3MFYZ2EomqJ52DNt3c/qcDlRW+2DJfOT/tukF8apb7BQNQJCQtF2AKB4c/o=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
-Date: Fri, 21 Sep 2007 19:05:23 +0100
-User-Agent: KMail/1.9.1
-Cc: jeff@garzik.org, mchan@broadcom.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <200709211201.24475.vda.linux@googlemail.com> <200709211803.55554.vda.linux@googlemail.com> <20070921.104912.41646795.davem@davemloft.net>
-In-Reply-To: <20070921.104912.41646795.davem@davemloft.net>
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TWMG5sjpukEF0YnTfI5R6bIWy+LdwAOtAxG8hYNo7BflM/CbXh8j9EZE2ii6R1OXwtS1ipPm076mWJUd++UGZEW7DPCJ1jlemJ0VtBaOQWmIs2v7aiFD0H5eokq9sc9IX5yz0Y74X7kJcMjFfbHbUnFuklL8EzlRQAvjfnLmkM8=
+Message-ID: <92cbf19b0709211106n12b1b4ecxc0d415aa097d21b2@mail.gmail.com>
+Date: Fri, 21 Sep 2007 11:06:13 -0700
+From: "Chakri n" <chakriin5@gmail.com>
+To: "Trond Myklebust" <Trond.Myklebust@netapp.com>
+Subject: Re: [NFS] NFS on loopback locks up entire system(2.6.23-rc6)?
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1190391881.6680.73.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709211905.23946.vda.linux@googlemail.com>
+References: <92cbf19b0709201722k6265e647x31b7d25bc54b63a0@mail.gmail.com>
+	 <1190335423.6763.180.camel@heimdal.trondhjem.org>
+	 <92cbf19b0709202012s375c6f54m588987b4bbf552bc@mail.gmail.com>
+	 <1190384005.6680.20.camel@heimdal.trondhjem.org>
+	 <92cbf19b0709210920p3647788dl11d8c4e0cee1f70f@mail.gmail.com>
+	 <1190391881.6680.73.camel@heimdal.trondhjem.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 September 2007 18:49, David Miller wrote:
-> From: Denys Vlasenko <vda.linux@googlemail.com>
-> Date: Fri, 21 Sep 2007 18:03:55 +0100
-> 
-> > Do patches look ok to you?
-> 
-> I'm travelling so I haven't looked closely yet :-)
-> 
-> Michael can take a look and I'll try to do so as well
-> tonight.
+Isn't this a strict requirement from client side, asking to guarantee
+that a server stays up all the time?
 
-Good.
+I have seen many cases, where people go and directly change IP of
+their NFS filers or servers worrying least about the clients using
+them.
 
-I plan to use gzip compression on following drivers' firmware,
-if patches will be accepted:
+Can we get around with some sort of congestion logic?
 
-   text    data     bss     dec     hex filename
-  17653  109968     240  127861   1f375 drivers/net/acenic.o
-   6628  120448       4  127080   1f068 drivers/net/dgrs.o
-         ^^^^^^
+Thanks
+--Chakri
 
---
-vda
+On 9/21/07, Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
+> On Fri, 2007-09-21 at 09:20 -0700, Chakri n wrote:
+> > Thanks.
+> >
+> > I was using flock (BSD locking) and I think the problem should be
+> > solved if I move my application to use POSIX locks.
+>
+> Yup.
+>
+> > And any option to avoid processes waiting indefinitely to free pages
+> > from NFS requests waiting on unresponsive NFS server?
+>
+> The only solution I know of is to use soft mounts, but that brings
+> another set of problems:
+>      1. most applications don't know how to recover safely from an EIO
+>         error.
+>      2. You lose data.
+>
+> Cheers
+>   Trond
+>
