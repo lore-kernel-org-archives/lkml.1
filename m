@@ -1,134 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbXIUPhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbXIUPiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbXIUPhE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 11:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758666AbXIUPgz
+	id S1760592AbXIUPiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 11:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXIUPiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 11:36:55 -0400
-Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:35906 "HELO
-	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757841AbXIUPgy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 11:36:54 -0400
-X-YMail-OSG: d5PKSdgVM1naiFEVRIztppwEh4w7waUhy3Ge03kJTq5U_nJ90jCxhckXpc6ZYsHP7EFAYVAk7EtildhsAdp_v44pGWjw
-X-RocketYMMF: rancidfat
-Date: Fri, 21 Sep 2007 08:36:49 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 00/22] Introduce credential record
-To: David Howells <dhowells@redhat.com>, viro@ftp.linux.org.uk,
-       hch@infradead.org, Trond.Myklebust@netapp.com, sds@tycho.nsa.gov,
-       casey@schaufler-ca.com
-Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, dhowells@redhat.com
-In-Reply-To: <20070921144703.8323.50492.stgit@warthog.procyon.org.uk>
+	Fri, 21 Sep 2007 11:38:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43513 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751924AbXIUPiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 11:38:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "huang ying" <huang.ying.caritas@gmail.com>
+Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Fri, 21 Sep 2007 17:50:16 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-pm@lists.linux-foundation.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Nigel Cunningham" <nigel@nigel.suspend2.net>, nigel@suspend2.net,
+       "Kexec Mailing List" <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jeremy Maitin-Shepard" <jbms@cmu.edu>, "Len Brown" <lenb@kernel.org>
+References: <1190266447.21818.17.camel@caritas-dev.intel.com> <200709211631.19130.rjw@sisk.pl> <851fc09e0709210802o3be2789s8e93410fa07f7066@mail.gmail.com>
+In-Reply-To: <851fc09e0709210802o3be2789s8e93410fa07f7066@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <718847.32805.qm@web36601.mail.mud.yahoo.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709211750.17238.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday, 21 September 2007 17:02, huang ying wrote:
+> On 9/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Friday, 21 September 2007 15:14, huang ying wrote:
+> > > On 9/21/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > On Friday, 21 September 2007 05:33, Eric W. Biederman wrote:
+> > > > > Nigel Cunningham <nigel@nigel.suspend2.net> writes:
+> > [--snip--]
+> > > > >
+> > > > > No one has yet attacked the hard problem of coming up with separate
+> > > > > hibernate methods for drivers.
+> > > >
+> > > > Well, I've been playing a bit with that for some time, but it's not easy by any
+> > > > means.
+> > > >
+> > > > In short, I'm seeing some problems related to the handling of ACPI that seem to
+> > > > shatter the entire idea of having separate hibernate methods, at least as far
+> > > > as ACPI systems are concerned.
+> > >
+> > > So sadly to hear this. Can you details it a little? Or a link?
+> >
+> > Well, the problem is that apparently some systems (eg. my HP nx6325) expect us
+> > to execute the _PTS ACPI global control method before creating the image _and_
+> > to execute acpi_enter_sleep_state(ACPI_STATE_S4) in order to finally put the
+> > system into the sleep state.  In particular, on nx6325, if we don't do that,
+> > then after the restore the status of the AC power will not be reported
+> > correctly (and if you replace the battery while in the sleep state, the
+> > battery status will not be updated correctly after the restore).  Similar
+> > issues have been reported for other machines.
+> >
+> > Now, the ACPI specification requires us to put devices into low power states
+> > before executing _PTS and that's exactly what we're doing before a suspend to
+> > RAM.  Thus, it seems that in general we need to do the same for hibernation on
+> > ACPI systems.
+> 
+> Then, is it possible to separate device quiesce from device suspend.
 
---- David Howells <dhowells@redhat.com> wrote:
+It surely is possible, but I'm not sure if it's going to be useful.
 
-> 
-> 
-> Hi Al, Christoph, Trond, Stephen, Casey,
-> 
-> Here's a set of patches that implement a very basic set of COW credentials. 
-> It
-> compiles, links and runs for x86_64 with EXT3, (V)FAT, NFS, AFS, SELinux and
-> keyrings all enabled.  Most other filesystems are disabled, apart from things
-> like proc.  It is not intended to completely cover the kernel at this point.
-> 
-> The cred struct contains the credentials that the kernel needs to act upon
-> something or to create something.  Credentials that govern how a task may be
-> acted upon remain in the task struct.
-> 
-> In essence, the introduction of the cred struct separates a task's subjective
-> context (the authority with which it acts) from its objective context (the
-> authorisation required by others that want to act upon it), and permits
-> overriding of the subjective context by a kernel service so that the service
-> can act on the task's behalf to do something the task couldn't do on its own
-> authority.
-> 
-> Because keyrings and effective capabilities can be installed or changed in
-> one
-> process by another process, they are shadowed by the cred structure rather
-> than
-> residing there.  Additionally, the session and process keyrings are shared
-> between all the threads of a process.  The shadowing is performed by
-> update_current_cred() which is invoked on entry to any system call that might
-> need it.
-> 
-> A thread's cred struct may be read by that thread without any RCU precautions
-> as only that thread may replace the its own cred struct.  To change a
-> thread's
-> credentials, dup_cred() should be called to create a new copy, the copy
-> should
-> be changed, and then set_current_cred() should be called to make it live. 
-> Once
-> live, it may not be changed as it may then be shared with file descriptors,
-> RPC
-> calls and other threads.  RCU will be used to dispose of the old structure.
-> 
-> 
-> The four patches are:
-> 
->  (1) Introduce struct cred and migrate fsuid, fsgid, the groups list and the
->      keyrings pointer to it.
-> 
->  (2) Introduce a security pointer into the cred struct and add LSM hooks to
->      duplicate the information pointed to thereby and to free it.
-> 
->      Make SELinux implement the hooks, splitting out some the task security
->      data to be associated with struct cred instead.
-> 
->  (3) Migrate the effective capabilities mask into the cred struct.
-> 
->  (4) Provide a pair of LSM hooks so that a kernel service can (a) get a
->      credential record representing the authority with which it is permitted
-> to
->      act, and (b) alter the file creation context in a credential record.
-> 
-> In addition, as this works with cachefiles, I've included all the FS-Cache,
-> CacheFiles, NFS and AFS patches.
-> 
-> To substitute a temporary set of credentials, the cred struct attached to the
-> task should be altered, like so:
-> 
-> 	int get_privileged_creds(...)
-> 	{
-> 		/* get special privileged creds */
-> 		my_special_cred = get_kernel_cred("cachefiles", current);
-> 		change_create_files_as(my_special_cred, my_cache_dir);
-> 	}
-> 
-> 	int do_stuff(...)
-> 	{
-> 		struct cred *cred;
-> 
-> 		/* rotate in the new creds, saving the old */
-> 		cred = __set_current_cred(get_cred(my_special_cred));
-> 
-> 		do_privileged_stuff();
-> 
-> 		/* restore the old creds */
-> 		set_current_cred(cred);
-> 	}
-> 
-> One thing I'm not certain about is how this should interact with /proc, which
-> can display some of the stuff in the cred struct.  I think it may be
-> necessary
-> to have a real cred pointer and an effective cred pointer, with the contents
-> of
-> /proc coming from the real, but the effective governing what actually goes
-> on.
+I mean, if we need to do exactly the same thing before a suspend to RAM and
+before a hibernation (ie. to put devices into low power states), why would we
+want to use different methods for that in both cases?
 
-I think you want the effective values to show up in /proc.
+> Perhaps not for swsusp, but for kexec based hibernation?
 
+Frankly, I don't know.
 
+Generally, changing the way in which device drivers handle suspend (to RAM)
+and hibernation is a huge task.  After considering this issue for some time
+I think that we really should start from hardening suspend (to RAM) so that it
+doesn't need the freezer any more, because _that_ would require us to change
+the suspend-related drivers' callbacks anyway.
 
-Casey Schaufler
-casey@schaufler-ca.com
+When we are sure how we are going to eliminate the freezer from suspend
+(to RAM), we'll know how that affects hibernation and what to do about it.
+
+Greetings,
+Rafael
