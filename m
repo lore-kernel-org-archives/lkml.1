@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbXIUKrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbXIUKsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544AbXIUKrp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 06:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbXIUKri
+	id S1756912AbXIUKsy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 06:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbXIUKss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 06:47:38 -0400
-Received: from anchor-post-33.mail.demon.net ([194.217.242.91]:1612 "EHLO
-	anchor-post-33.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752771AbXIUKri (ORCPT
+	Fri, 21 Sep 2007 06:48:48 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:9627 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755503AbXIUKsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 06:47:38 -0400
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-From: richard kennedy <richard@rsk.demon.co.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Matthias Hensler <matthias@wspse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20070921033336.c327ffd9.akpm@linux-foundation.org>
-References: <46B10BB7.60900@redhat.com>
-	 <20070803113407.0b04d44e.akpm@linux-foundation.org>
-	 <20070804084426.GA20464@kobayashi-maru.wspse.de>
-	 <20070809095943.GA7763@kobayashi-maru.wspse.de>
-	 <20070809095534.25ae1c42.akpm@linux-foundation.org>
-	 <46F2E103.8000907@redhat.com>
-	 <20070920142927.d87ab5af.akpm@linux-foundation.org>
-	 <46F2EE76.4000203@redhat.com>
-	 <20070920153654.b9e90616.akpm@linux-foundation.org>
-	 <1190370341.3121.35.camel@castor.rsk.org>
-	 <20070921033336.c327ffd9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 11:47:33 +0100
-Message-Id: <1190371653.3121.42.camel@castor.rsk.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Fri, 21 Sep 2007 06:48:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=iQbixrNP7YGca9XIxAXWiIX/XgowY18QeqoS26GD17/h3+0fp9oElFKZZ5qfVwdCZonnXAfRE+kXfeuZlMV1QW+7EV6imwoUdUn6Iax5r60WeDpdE8H23sPuzYig5hil5+T8LuS/snaXvjqlByV/8NL4XEeaSrdizH62kiO1o9M=
+Message-ID: <fbe8b1780709210348n1b1bd739rf5bfe0a73381b3ec@mail.gmail.com>
+Date: Fri, 21 Sep 2007 12:48:44 +0200
+From: "Peter Stahlir" <peter.stahlir@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Git as a filesystem
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-21 at 03:33 -0700, Andrew Morton wrote:
-> On Fri, 21 Sep 2007 11:25:41 +0100 richard kennedy <richard@rsk.demon.co.uk> wrote:
-> 
-> > > That's all a bit crappy if the wrong races happen and some other task is
-> > > somehow exceeding the dirty limits each time this task polls them.  Seems
-> > > unlikely that such a condition would persist forever.
-> > > 
-> > > So the question is, why do we have large amounts of dirty pages for one
-> > > disk which appear to be sitting there not getting written?
-> > 
-> > The lockup I'm seeing intermittently occurs when I have 2+ tasks copying
-> > large files (1Gb+) on sda & a small read-mainly mysql db app running on
-> > sdb. The lockup seems to happen just after the copies finish -- there
-> > are lots of dirty pages but nothing left to write them until kupdate
-> > gets round to it. 
-> 
-> Then what happens?  The system recovers?
-Nothing -- it stays stuck forever.
-I don't think kupdate is getting started, I added some debug in there
-but haven't found out anything useful yet. But I am trying to build a
-better test case, the one I've got at the moment can take hours to
-trigger this problem. 
+Hi!
 
+Is it possible/feasible to use git as a filesystem?
+Like having git on top of ext3.
+
+This way I could do a gitfs-gc and there is only one
+pack file sitting on the disk which is a compressed
+version of the whole system.
+I am not interested in a version controlled filesystem,
+only in the space saving aspects.
+
+Thanks,
+
+Peter
