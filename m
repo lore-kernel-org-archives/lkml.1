@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbXIUGp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbXIUHAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755628AbXIUGp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 02:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbXIUGpS
+	id S1754532AbXIUHAm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 03:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXIUHAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 02:45:18 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:38301 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753479AbXIUGpQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 02:45:16 -0400
-Message-ID: <46F36801.3070908@linux.vnet.ibm.com>
-Date: Fri, 21 Sep 2007 12:13:13 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Fri, 21 Sep 2007 03:00:35 -0400
+Received: from sacred.ru ([62.205.161.221]:38137 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751827AbXIUHAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 03:00:34 -0400
+Message-ID: <46F36B74.2010705@openvz.org>
+Date: Fri, 21 Sep 2007 10:57:56 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-CC: akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Introduce ext4_find_next_bit
-References: <11903523063349-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <11903523063349-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
+Subject: Re: [PATCH] Consolidate sleeping routines in file locking code
+References: <46EFD574.5060705@openvz.org> <20070919183703.GE5946@fieldses.org> <46F238DF.4010000@openvz.org> <20070920203904.GH23287@fieldses.org>
+In-Reply-To: <20070920203904.GH23287@fieldses.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 21 Sep 2007 11:00:19 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aneesh Kumar K.V wrote:
-> Also add generic_find_next_le_bit
+J. Bruce Fields wrote:
+> On Thu, Sep 20, 2007 at 01:09:51PM +0400, Pavel Emelyanov wrote:
+>> J. Bruce Fields wrote:
+>>> On Tue, Sep 18, 2007 at 05:41:08PM +0400, Pavel Emelyanov wrote:
+>>>> This is the next step in fs/locks.c cleanup before turning
+>>>> it into using the struct pid *. 
+>>>>
+>>>> This time I found, that there are some places that do a
+>>>> similar thing - they try to apply a lock on a file and go 
+>>>> to sleep on error till the blocker exits.
+>>>>
+>>>> All these places can be easily consolidated, saving 28 
+>>>> lines of code and more than 600 bytes from the .text,
+>>>> but there is one minor note. 
+>>> I'm not opposed to consolidating this code, but would it be possible to
+>>> do so in a more straightforward way, without passing in a callback
+>>> function?  E.g. a single __posix_lock_file_wait that just took an inode
+>>> instead of a filp and called __posix_lock_file() could be called from
+>>> both posix_lock_file_wait() and locks_mandatory_locked, right?
+>> Well, the locks_mandatory_area() has to check for inode mode change
+>> in my lock callback, the fcntl_setlk() has to call the vfs_lock_file,
+>> and flock_lock_file_wait() has to call the flock_lock_file, so
+>> I don't see the ways of having one routine to lock the file.
+>>
+>> If you don't mind, I'd port the patch with this approach (with the
+>> "trylock" callback) on the latest Andrew's tree.
 > 
-> This gets used by the ext4 multi block allocator patches.
+> OK.
+
+:) Thanks.
+
+>>>> The locks_mandatory_area() code becomes a bit different 
+>>>> after this patch - it no longer checks for the inode's 
+>>>> permissions change. Nevertheless, this check is useless 
+>>>> without my another patch that wakes the waiter up in the
+>>>> notify_change(), which is not considered to be useful for
+>>>> now.
+>>> OK.  Might be better to submit this as a separate patch, though.
+>> This one is already accepted, but I have just noticed that
+>> the check for __mandatory_lock() in wait_event_interruptible
+>> is ambiguous :(
+> 
+> I'm not sure what you mean here....  Do you have a fix?
+
+Well, I do, but this patch is already dropped from -mm.
+
+> --b.
 > 
 
-Looks like it's a straight forward on Little Endian Architectures.
-I see something for powerpc, what about other architectures?
-
-> 
-> +unsigned long generic_find_next_le_bit(const unsigned long *addr, unsigned
-> +		long size, unsigned long offset)
-> +{
-
-Docbook style comments on the function and arguments would be nice.
-
-> +	const unsigned long *p = addr + BITOP_WORD(offset);
-> +	unsigned long result = offset & ~(BITS_PER_LONG - 1);
-> +	unsigned long tmp;
-> +
-> +	if (offset >= size)
-> +		return size;
-> +	size -= result;
-> +	offset &= (BITS_PER_LONG - 1UL);
-> +	if (offset) {
-> +		tmp = ext2_swabp(p++);
-> +		tmp &= (~0UL << offset);
-> +		if (size < BITS_PER_LONG)
-> +			goto found_first;
-> +		if (tmp)
-> +			goto found_middle;
-> +		size -= BITS_PER_LONG;
-> +		result += BITS_PER_LONG;
-> +	}
-> +
-> +	while (size & ~(BITS_PER_LONG - 1)) {
-> +		tmp = *(p++);
-> +		if (tmp)
-> +			goto found_middle_swap;
-> +		result += BITS_PER_LONG;
-> +		size -= BITS_PER_LONG;
-> +	}
-> +	if (!size)
-> +		return result;
-> +	tmp = ext2_swabp(p);
-> +found_first:
-> +	tmp &= (~0UL >> (BITS_PER_LONG - size));
-> +	if (tmp == 0UL)		/* Are any bits set? */
-> +		return result + size; /* Nope. */
-> +found_middle:
-> +	return result + __ffs(tmp);
-> +
-> +found_middle_swap:
-> +	return result + __ffs(ext2_swab(tmp));
-> +}
-> +EXPORT_SYMBOL(generic_find_next_le_bit);
-> +
->  #endif /* __BIG_ENDIAN */
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
