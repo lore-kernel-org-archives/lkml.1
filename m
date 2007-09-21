@@ -1,69 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764325AbXIUWd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764719AbXIUWe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764325AbXIUWd5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763129AbXIUWcH
+	id S1764719AbXIUWe2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763207AbXIUWcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:32:07 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57035 "EHLO mx1.suse.de"
+	Fri, 21 Sep 2007 18:32:09 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40449 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762091AbXIUWcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:32:04 -0400
+	id S1762310AbXIUWcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:32:05 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709221231.836138000@suse.de>
 In-Reply-To: <200709221231.836138000@suse.de>
-To: oliver.pntr@gmail.com, ak@suse.de, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [5/50] i386: change order in Kconfig.cpu
-Message-Id: <20070921223203.3370B13DCD@wotan.suse.de>
-Date: Sat, 22 Sep 2007 00:32:03 +0200 (CEST)
+To: xemul@openvz.org, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [6/50] i386: clean up oops/bug reports
+Message-Id: <20070921223204.43B8413DCD@wotan.suse.de>
+Date: Sat, 22 Sep 2007 00:32:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
+From: Pavel Emelyanov <xemul@openvz.org>
 
-Change the sort in arch/i386/Kconfig.cpu file, while it is logicaller (by
-productions time-line).
+Typically the oops first lines look like this:
 
-Signed-off-by: Oliver Pinter <oliver.pntr@gmail.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <ak@suse.de>
+BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
+ printing eip:
+c049dfbd
+*pde = 00000000
+Oops: 0002 [#1]
+PREEMPT SMP
+...
+
+Such output is gained with some ugly if (!nl) printk("\n"); code and
+besides being a waste of lines, this is also annoying to read. The
+following output looks better (and it is how it looks on x86_64):
+
+BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
+printing eip: c049dfbd *pde = 00000000
+Oops: 0002 [#1] PREEMPT SMP
+...
+
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
 ---
 
- arch/i386/Kconfig.cpu |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ arch/i386/kernel/traps.c |   16 ++++------------
+ arch/i386/mm/fault.c     |   13 +++++++------
+ 2 files changed, 11 insertions(+), 18 deletions(-)
 
-Index: linux/arch/i386/Kconfig.cpu
+Index: linux/arch/i386/kernel/traps.c
 ===================================================================
---- linux.orig/arch/i386/Kconfig.cpu
-+++ linux/arch/i386/Kconfig.cpu
-@@ -104,13 +104,6 @@ config MPENTIUMM
- 	  Select this for Intel Pentium M (not Pentium-4 M)
- 	  notebook chips.
+--- linux.orig/arch/i386/kernel/traps.c
++++ linux/arch/i386/kernel/traps.c
+@@ -444,31 +444,23 @@ void die(const char * str, struct pt_reg
+ 		local_save_flags(flags);
  
--config MCORE2
--	bool "Core 2/newer Xeon"
--	help
--	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and 53xx)
--	  CPUs. You can distinguish newer from older Xeons by the CPU family
--	  in /proc/cpuinfo. Newer ones have 6.
--
- config MPENTIUM4
- 	bool "Pentium-4/Celeron(P4-based)/Pentium-4 M/older Xeon"
- 	help
-@@ -147,6 +140,12 @@ config MPENTIUM4
+ 	if (++die.lock_owner_depth < 3) {
+-		int nl = 0;
+ 		unsigned long esp;
+ 		unsigned short ss;
  
- 	  more info: http://balusc.xs4all.nl/srv/har-cpu.html
+ 		report_bug(regs->eip, regs);
  
-+config MCORE2
-+	bool "Core 2/newer Xeon"
-+	help
-+	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and 53xx)
-+	  CPUs. You can distinguish newer from older Xeons by the CPU family
-+	  in /proc/cpuinfo. Newer ones have 6.
+-		printk(KERN_EMERG "%s: %04lx [#%d]\n", str, err & 0xffff, ++die_counter);
++		printk(KERN_EMERG "%s: %04lx [#%d] ", str, err & 0xffff, ++die_counter);
+ #ifdef CONFIG_PREEMPT
+-		printk(KERN_EMERG "PREEMPT ");
+-		nl = 1;
++		printk("PREEMPT ");
+ #endif
+ #ifdef CONFIG_SMP
+-		if (!nl)
+-			printk(KERN_EMERG);
+ 		printk("SMP ");
+-		nl = 1;
+ #endif
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+-		if (!nl)
+-			printk(KERN_EMERG);
+ 		printk("DEBUG_PAGEALLOC");
+-		nl = 1;
+ #endif
+-		if (nl)
+-			printk("\n");
++		printk("\n");
++
+ 		if (notify_die(DIE_OOPS, str, regs, err,
+ 					current->thread.trap_no, SIGSEGV) !=
+ 				NOTIFY_STOP) {
+Index: linux/arch/i386/mm/fault.c
+===================================================================
+--- linux.orig/arch/i386/mm/fault.c
++++ linux/arch/i386/mm/fault.c
+@@ -544,23 +544,22 @@ no_context:
+ 			printk(KERN_ALERT "BUG: unable to handle kernel paging"
+ 					" request");
+ 		printk(" at virtual address %08lx\n",address);
+-		printk(KERN_ALERT " printing eip:\n");
+-		printk("%08lx\n", regs->eip);
++		printk(KERN_ALERT "printing eip: %08lx ", regs->eip);
  
- config MK6
- 	bool "K6/K6-II/K6-III"
+ 		page = read_cr3();
+ 		page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
+ #ifdef CONFIG_X86_PAE
+-		printk(KERN_ALERT "*pdpt = %016Lx\n", page);
++		printk("*pdpt = %016Lx ", page);
+ 		if ((page >> PAGE_SHIFT) < max_low_pfn
+ 		    && page & _PAGE_PRESENT) {
+ 			page &= PAGE_MASK;
+ 			page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
+ 			                                         & (PTRS_PER_PMD - 1)];
+-			printk(KERN_ALERT "*pde = %016Lx\n", page);
++			printk(KERN_ALERT "*pde = %016Lx ", page);
+ 			page &= ~_PAGE_NX;
+ 		}
+ #else
+-		printk(KERN_ALERT "*pde = %08lx\n", page);
++		printk("*pde = %08lx ", page);
+ #endif
+ 
+ 		/*
+@@ -574,8 +573,10 @@ no_context:
+ 			page &= PAGE_MASK;
+ 			page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
+ 			                                         & (PTRS_PER_PTE - 1)];
+-			printk(KERN_ALERT "*pte = %0*Lx\n", sizeof(page)*2, (u64)page);
++			printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
+ 		}
++
++		printk("\n");
+ 	}
+ 
+ 	tsk->thread.cr2 = address;
