@@ -1,45 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbXIUVOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbXIUVPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932526AbXIUVOQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 17:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764931AbXIUVNq
+	id S1765504AbXIUVPy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 17:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763507AbXIUVPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 17:13:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41124 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764787AbXIUVNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 17:13:45 -0400
-Date: Fri, 21 Sep 2007 17:13:41 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <ak@suse.de>
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [20/45] x86_64: Use 8 byte stack alignment when
-	possible
-Message-ID: <20070921211341.GC8127@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
-	patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <200709211044.901175000@suse.de> <20070921204502.2C61D14EFF@wotan.suse.de>
+	Fri, 21 Sep 2007 17:15:45 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38862
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1763416AbXIUVPo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 17:15:44 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Gross, Mark" <mark.gross@intel.com>
+Subject: Re: Message codes (Re: [Announce] Linux-tiny project revival)
+Date: Fri, 21 Sep 2007 16:15:39 -0500
+User-Agent: KMail/1.9.6
+Cc: "Oleg Verych" <olecom@flower.upol.cz>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Michael Opdenacker" <michael@free-electrons.com>,
+       linux-tiny@selenic.com,
+       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
+References: <46F1645D.9050406@am.sony.com> <E1IYWps-0006fQ-83@flower> <5389061B65D50446B1783B97DFDB392D07126ACB@orsmsx411.amr.corp.intel.com>
+In-Reply-To: <5389061B65D50446B1783B97DFDB392D07126ACB@orsmsx411.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070921204502.2C61D14EFF@wotan.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200709211615.39898.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 10:45:02PM +0200, Andi Kleen wrote:
- > 
- > Kernel doesn't use SSE2, so it doesn't need 16 byte alignment. Also
- > the stack can be already unaligned so letting the compiler align
- > is useless. This may make some stack frames smaller.
- > Only works with very recent gcc 4.3
+On Friday 21 September 2007 9:18:40 am Gross, Mark wrote:
+> >-----Original Message-----
+> >From: Oleg Verych [mailto:olecom@flower.upol.cz]
+> >Sent: Thursday, September 20, 2007 5:58 PM
+> >To: Gross, Mark
+> >Cc: Rob Landley; Alexey Dobriyan; Michael Opdenacker; linux-
+> >tiny@selenic.com; CE Linux Developers List; linux kernel
+> >Subject: Message codes (Re: [Announce] Linux-tiny project revival)
+> >
+> >* Thu, 20 Sep 2007 15:15:47 -0700
+> >* X-MimeOLE: Produced By Microsoft Exchange V6.5
+> >[]
+> >
+> >>>*Shrug*.
+> >>>
+> >>>My problem is that switching off printk is the single biggest bloat
+> >>
+> >> cutter
+> >>
+> >>>in
+> >>>the kernel, yet it makes the resulting system very hard to support.
+>
+> It
+>
+> >>>combines a big upside with a big downside, and I'd like something in
+> >>>between.
+> >>
+> >> What about getting even more hard core?
+> >>
+> >> Use compiler tricks to remove ALL the static printk string from the
+> >> kernel and replace the printk with something that outputs an decimal
+> >> index followed by tuples, of zero to N, hex-strings on a single line.
+> >
+> >Not all, but critical info, that must exist in human-readable form of
+> >course.
+>
+> I disagree.  For a production product the you want minimal information
+> to reduce the communication bandwidth required between the remote
+> customer and the support organization.
+>
+> In fact there is a good argument that you don't what the remote customer
+> to know enough to start guessing.
 
-My gcc 4.1.2 from Fedora 7 (with who knows what backported)
-references this in its manpage. How was it broken before 4.3 ?
-(I'm curious if I'll suddenly see not expected behaviour with
- this change with that compiler).
+Don't use Linux then.  Open source is a horrible fit for the way you think.
 
-	Dave
+I'm sympathetic to "shrink the binary size" arguments.  I'm not really 
+sympathic to "keep the customer in the dark intentionally" arguments, whether 
+the justification is "because they're stupid", "to increase dependency on our 
+support staff", or any other reason.
 
+> >Seriously. When in the Windows there are only messages like:
+> >
+> >    "Error (Code:0x00002012)".
+>
+> Now it's been ~8 years since I did any serious windows work, but if I
+> recall correctly ALL THE FRICKING TIME!!! When was the last time you've
+> seen a bug check on windows?  This is about all you get.
+
+I believe he was holding it up as a bad example, and definitely not something 
+we want to emulate.
+
+Rob
 -- 
-http://www.codemonkey.org.uk
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
