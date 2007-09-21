@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761223AbXIUSHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbXIUSLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761223AbXIUSHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 14:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbXIUSHo
+	id S1760926AbXIUSLc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 14:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbXIUSLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 14:07:44 -0400
-Received: from mga03.intel.com ([143.182.124.21]:52778 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752474AbXIUSHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 14:07:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,284,1186383600"; 
-   d="scan'208";a="283777562"
-Date: Fri, 21 Sep 2007 11:07:42 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: torvalds@linux-foundation.org, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       asit.k.mallick@intel.com
-Subject: x86_64: potential critical issue with quicklists and page table pages
-Message-ID: <20070921180742.GH20863@linux-os.sc.intel.com>
+	Fri, 21 Sep 2007 14:11:25 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:57591 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752726AbXIUSLZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 14:11:25 -0400
+Date: Fri, 21 Sep 2007 14:11:22 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/11] Text Edit Lock for 2.6.23-rc6-mm1
+Message-ID: <20070921181122.GA30045@Krystal>
+References: <20070918210601.028313546@polymtl.ca> <20070920161018.0b4e7ec3.akpm@linux-foundation.org> <20070921172950.GA22972@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070921172950.GA22972@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:11:05 up 53 days, 18:29,  4 users,  load average: 0.81, 0.66, 0.63
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-git commit 34feb2c83beb3bdf13535a36770f7e50b47ef299 started using quicklists
-for freeing page table pages and removed the usage of tlb_remove_page()
+* Christoph Hellwig (hch@infradead.org) wrote:
+> On Thu, Sep 20, 2007 at 04:10:18PM -0700, Andrew Morton wrote:
+> > On Tue, 18 Sep 2007 17:06:01 -0400
+> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > 
+> > > Here are the text edit lock patches ported to 2.6.23-rc6-mm1.
+> > 
+> > I think I'll duck these one more time.  There was a bit of followup
+> > and for now I'd prefer to concentrate on obviously-safe stuff and
+> > stabilisation of the current 2.6.24 queue.
+> 
+> As much as I'd love to see markers as soon as possible I have to agree.
+> 
+> I really hate how the first post of a handfull easy patches touching
+> almost no core code has turned into this gigantic series.
+> 
+> Matthew, any chance you could resurrect a trivial, no-optimizations
+> marker variant that has so little impact it could go into 2.6.24?
+> 
+> I'd really love to have the infrastructure there so we can add optimizations
+> in parallel with actually adding the users to the tree.
 
-And looking at quicklist_free() and quicklist_free_page(), on a NUMA platform,
-this can potentially free the page before the corresponding TLB caches
-are flushed.
+Sure, I'll prepare that.
 
-Essentially quicklist free routines are doing something like
-__quicklist_free()
-	...
-	if (unlikely(nid != numa_node_id())) {
-		__free_page(page);
-		...
-	}
-
-	....
-
-
-Now this will potentially cause a problem, if a cpu in someother node starts
-using this page, while the corresponding TLB entries are still alive
-in the original cpu which is still freeing the page table pages.
-
-This violates the guideline documented in
-http://developer.intel.com/design/processor/applnots/317080.pdf
-
-This potentially can cause SW failures and hard to debug issues like
-http://www.ussg.iu.edu/hypermail/linux/kernel/0205.2/1254.html
-
-Can we revert this commit for 2.6.23 and look at this code post 2.6.23?
-
-thanks,
-suresh
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
