@@ -1,53 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764675AbXIUUvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764729AbXIUUvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764675AbXIUUvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758271AbXIUUpJ
+	id S1764729AbXIUUvz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761777AbXIUUpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:45:09 -0400
-Received: from ns.suse.de ([195.135.220.2]:50049 "EHLO mx1.suse.de"
+	Fri, 21 Sep 2007 16:45:10 -0400
+Received: from mx1.suse.de ([195.135.220.2]:50040 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758314AbXIUUpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:45:04 -0400
+	id S1763315AbXIUUpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:45:02 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709211044.901175000@suse.de>
 In-Reply-To: <200709211044.901175000@suse.de>
 To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [21/45] x86_64: Some cleanups for pci gart code
-Message-Id: <20070921204503.3A12E14EFF@wotan.suse.de>
-Date: Fri, 21 Sep 2007 22:45:03 +0200 (CEST)
+Subject: [PATCH] [19/45] x86_64: Always accumulate compiler options in CFLAGS
+Message-Id: <20070921204501.1CF6214EFF@wotan.suse.de>
+Date: Fri, 21 Sep 2007 22:45:01 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-- Mark function static
-- Clarify license
+This way they are used in further down cc-options tries
+This avoids a problem with a probe not failing without -m64.
+Analysis of original bug by Andy Whitcroft
+
+TBD do for i386 too
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/pci-gart.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/x86_64/Makefile |   62 +++++++++++++++++++++++++++------------------------
+ 1 file changed, 33 insertions(+), 29 deletions(-)
 
-Index: linux/arch/x86_64/kernel/pci-gart.c
+Index: linux/arch/x86_64/Makefile
 ===================================================================
---- linux.orig/arch/x86_64/kernel/pci-gart.c
-+++ linux/arch/x86_64/kernel/pci-gart.c
-@@ -8,6 +8,7 @@
-  * See Documentation/DMA-mapping.txt for the interface specification.
-  * 
-  * Copyright 2002 Andi Kleen, SuSE Labs.
-+ * Subject to the GNU General Public License v2 only.
-  */
+--- linux.orig/arch/x86_64/Makefile
++++ linux/arch/x86_64/Makefile
+@@ -26,50 +26,54 @@ OBJCOPYFLAGS	:= -O binary -R .note -R .c
+ LDFLAGS_vmlinux :=
+ CHECKFLAGS      += -D__x86_64__ -m64
  
- #include <linux/types.h>
-@@ -374,7 +375,8 @@ static inline int dma_map_cont(struct sc
-  * DMA map all entries in a scatterlist.
-  * Merge chunks that have page aligned sizes into a continuous mapping. 
-  */
--int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
-+static int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents,
-+			int dir)
- {
- 	int i;
- 	int out;
+-cflags-y	:=
+-cflags-kernel-y	:=
+-cflags-$(CONFIG_MK8) += $(call cc-option,-march=k8)
+-cflags-$(CONFIG_MPSC) += $(call cc-option,-march=nocona)
+-# gcc doesn't support -march=core2 yet as of gcc 4.3, but I hope it
+-# will eventually. Use -mtune=generic as fallback
+-cflags-$(CONFIG_MCORE2) += \
+-	$(call cc-option,-march=core2,$(call cc-option,-mtune=generic))
+-cflags-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=generic)
+-
+-cflags-y += -m64
+-cflags-y += -mno-red-zone
+-cflags-y += -mcmodel=kernel
+-cflags-y += -pipe
+-cflags-y += -Wno-sign-compare
+-cflags-y += -fno-asynchronous-unwind-tables
+-ifneq ($(CONFIG_DEBUG_INFO),y)
++AFLAGS += -m64
++CFLAGS += -m64
++CFLAGS += -mno-red-zone
++CFLAGS += -mcmodel=kernel
++CFLAGS += -pipe
++CFLAGS += -Wno-sign-compare
++CFLAGS += -fno-asynchronous-unwind-tables
++#ifneq ($(CONFIG_DEBUG_INFO),y)
+ # -fweb shrinks the kernel a bit, but the difference is very small
+ # it also messes up debugging, so don't use it for now.
+-#cflags-y += $(call cc-option,-fweb)
+-endif
++#CFLAGS += $(call cc-option,-fweb)
++#endif
+ # -funit-at-a-time shrinks the kernel .text considerably
+ # unfortunately it makes reading oopses harder.
+-cflags-y += $(call cc-option,-funit-at-a-time)
++CFLAGS += $(call cc-option,-funit-at-a-time)
+ # prevent gcc from generating any FP code by mistake
+-cflags-y += $(call cc-option,-mno-sse -mno-mmx -mno-sse2 -mno-3dnow,)
++CFLAGS += $(call cc-option,-mno-sse -mno-mmx -mno-sse2 -mno-3dnow,)
+ # this works around some issues with generating unwind tables in older gccs
+ # newer gccs do it by default
+-cflags-y += -maccumulate-outgoing-args
++CFLAGS += -maccumulate-outgoing-args
+ 
+ # do binutils support CFI?
+-cflags-y += $(call as-instr,.cfi_startproc\n.cfi_rel_offset rsp${comma}0\n.cfi_endproc,-DCONFIG_AS_CFI=1,)
++CFLAGS += $(call as-instr,.cfi_startproc\n.cfi_rel_offset rsp${comma}0\n.cfi_endproc,-DCONFIG_AS_CFI=1,)
+ AFLAGS += $(call as-instr,.cfi_startproc\n.cfi_rel_offset rsp${comma}0\n.cfi_endproc,-DCONFIG_AS_CFI=1,)
+ 
+ # is .cfi_signal_frame supported too?
+-cflags-y += $(call as-instr,.cfi_startproc\n.cfi_signal_frame\n.cfi_endproc,-DCONFIG_AS_CFI_SIGNAL_FRAME=1,)
++CFLAGS += $(call as-instr,.cfi_startproc\n.cfi_signal_frame\n.cfi_endproc,-DCONFIG_AS_CFI_SIGNAL_FRAME=1,)
+ AFLAGS += $(call as-instr,.cfi_startproc\n.cfi_signal_frame\n.cfi_endproc,-DCONFIG_AS_CFI_SIGNAL_FRAME=1,)
++CFLAGS_KERNEL += $(cflags-kernel-y)
+ 
+-cflags-$(CONFIG_CC_STACKPROTECTOR) += $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-x86_64-has-stack-protector.sh "$(CC)" -fstack-protector )
+-cflags-$(CONFIG_CC_STACKPROTECTOR_ALL) += $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-x86_64-has-stack-protector.sh "$(CC)" -fstack-protector-all )
++# CFLAGS is used by cc-option, so if combinations fail we notice
+ 
+-CFLAGS += $(cflags-y)
+-CFLAGS_KERNEL += $(cflags-kernel-y)
+-AFLAGS += -m64
++cflags-k8-$(CONFIG_MK8) += $(call cc-option,-march=k8)
++CFLAGS += $(cflags-k8-y)
++
++cflags-nocona-$(CONFIG_MPSC) += $(call cc-option,-march=nocona)
++CFLAGS += $(cflags-nocona-y)
++# gcc doesn't support -march=core2 yet as of gcc 4.3, but I hope it
++# will eventually. Use -mtune=generic as fallback
++cflags-core2-$(CONFIG_MCORE2) += \
++	$(call cc-option,-march=core2,$(call cc-option,-mtune=generic))
++CFLAGS += $(cflags-core2-y)
++cflags-generic-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=generic)
++CFLAGS += $(cflags-generic-y)
++
++cflags-sp-$(CONFIG_CC_STACKPROTECTOR) += $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-x86_64-has-stack-protector.sh "$(CC)" -fstack-protector )
++cflags-sp-$(CONFIG_CC_STACKPROTECTOR_ALL) += $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-x86_64-has-stack-protector.sh "$(CC)" -fstack-protector-all )
++CFLAGS += $(cflags-sp-y)
+ 
+ head-y := arch/x86_64/kernel/head.o arch/x86_64/kernel/head64.o arch/x86_64/kernel/init_task.o
+ 
