@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbXIUVDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbXIUVC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932099AbXIUVDf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 17:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762670AbXIUU4v
+	id S932214AbXIUVC6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 17:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764976AbXIUUxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:56:51 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49295 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765271AbXIUU4t (ORCPT
+	Fri, 21 Sep 2007 16:53:43 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:58199
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1764971AbXIUUxl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 16:56:49 -0400
-Date: Fri, 21 Sep 2007 22:03:33 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Valdis.Kletnieks@vt.edu, David Miller <davem@davemloft.net>,
-       jeff@garzik.org, mchan@broadcom.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
-Message-ID: <20070921220333.3b31afb5@the-village.bc.nu>
-In-Reply-To: <200709212018.06553.vda.linux@googlemail.com>
-References: <200709211201.24475.vda.linux@googlemail.com>
-	<200709211905.23946.vda.linux@googlemail.com>
-	<15775.1190399812@turing-police.cc.vt.edu>
-	<200709212018.06553.vda.linux@googlemail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Sep 2007 16:53:41 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: printk proposal - (was Linux-tiny project revival)
+Date: Fri, 21 Sep 2007 15:53:35 -0500
+User-Agent: KMail/1.9.6
+Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny@selenic.com,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       Michael Opdenacker <michael@free-electrons.com>
+References: <46F1645D.9050406@am.sony.com> <46F2D695.5070500@am.sony.com> <20070921190738.GB1857@martell.zuzino.mipt.ru>
+In-Reply-To: <20070921190738.GB1857@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709211553.35857.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> For example, bnx2 maintainer says that driver and
-> firmware are closely tied for his driver. IOW: you upgrade kernel
-> and your NIC is not working anymore.
-> 
-> Another argument is to make kernel be able to bring up NICs
-> without needing firmware images in initramfs/initrd/hard drive.
+On Friday 21 September 2007 2:07:38 pm Alexey Dobriyan wrote:
+> On Thu, Sep 20, 2007 at 01:22:45PM -0700, Tim Bird wrote:
+> > Alexey Dobriyan wrote:
+> > > Given that
+> > > a) there're plenty of printks without any KERN_* bloat,
+> > > b) there're printks that SHOULD NOT have KERN_* bloat,
+> >
+> > Just to clarify, which bloat are you concerned about?
+> > I presume source code bloat (but maybe you mean
+> > message size bloat, or object code bloat)?
+>
+> Users of ignore_loglevel still has "<[0-7]>" prefixes in kernel image,
+> yes. On source level, too -- as someone who never saw value in them,
+> KERN_* are just needless characters, making code harder to read.
 
-dgrs should be using the request_firmware interface. Actually dgrs is
-probably a good candidate for /dev/null
+Yeah, I bumped into this when I implemented dmesg for busybox.  (Had to parse 
+and filter it out.)  That said, userspace kind of expects it now...
 
-Alan
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
