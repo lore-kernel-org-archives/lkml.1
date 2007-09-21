@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752538AbXIUAlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXIUAmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752538AbXIUAlE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 20:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXIUAkx
+	id S1754887AbXIUAmQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 20:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbXIUAmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 20:40:53 -0400
-Received: from outbound-mail-16.bluehost.com ([69.89.20.231]:53774 "HELO
-	outbound-mail-16.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752129AbXIUAkw (ORCPT
+	Thu, 20 Sep 2007 20:42:05 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:33947 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752307AbXIUAmE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 20:40:52 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Lossy interrupts on x86_64
-Date: Thu, 20 Sep 2007 17:40:48 -0700
-User-Agent: KMail/1.9.7
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-References: <200709120833.15980.jbarnes@virtuousgeek.org> <200709201222.55278.jbarnes@virtuousgeek.org> <1190317818.3053.1.camel@chaos>
-In-Reply-To: <1190317818.3053.1.camel@chaos>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709201740.49339.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+	Thu, 20 Sep 2007 20:42:04 -0400
+To: "Gross, Mark" <mark.gross@intel.com>
+Cc: "Rob Landley" <rob@landley.net>, "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Michael Opdenacker" <michael@free-electrons.com>,
+       <linux-tiny@selenic.com>,
+       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
+Subject: Message codes (Re: [Announce] Linux-tiny project revival)
+In-Reply-To: <5389061B65D50446B1783B97DFDB392D07126574@orsmsx411.amr.corp.intel.com>
+References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <20070920195844.GA1805@martell.zuzino.mipt.ru> <200709201702.08126.rob@landley.net> <5389061B65D50446B1783B97DFDB392D07126574@orsmsx411.amr.corp.intel.com>
+User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+Date: Fri, 21 Sep 2007 02:57:36 +0200
+Message-Id: <E1IYWps-0006fQ-83@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, September 20, 2007, Thomas Gleixner wrote:
-> On Thu, 2007-09-20 at 12:22 -0700, Jesse Barnes wrote:
-> > > Eeek, that sounds scary. Can you add "highres=off" as well ?
-> >
-> > FWIW I just tried your linux-2.6-hires tree with the attached
-> > config and still see the problem.  It doesn't look like NO_HZ is
-> > even an option in that tree...
+* Thu, 20 Sep 2007 15:15:47 -0700
+* X-MimeOLE: Produced By Microsoft Exchange V6.5
+[]
+>>*Shrug*.
+>>
+>>My problem is that switching off printk is the single biggest bloat
+> cutter
+>>in
+>>the kernel, yet it makes the resulting system very hard to support.  It
+>>combines a big upside with a big downside, and I'd like something in
+>>between.
 >
-> Right, that's a 2.6-hrt update tree for Linus to pull. The 64 bit
-> parts are not in there. It's basically Linus + some fixes.
+> What about getting even more hard core? 
+>
+> Use compiler tricks to remove ALL the static printk string from the
+> kernel and replace the printk with something that outputs an decimal
+> index followed by tuples, of zero to N, hex-strings on a single line.
 
-Arg, looks like this is actually a DRM problem, but it doesn't exist in 
-the DRM upstream tree, only the upstream kernel tree.  I've only seen 
-it on 965 chips though, and they have other vblank related problems, so 
-I won't worry about it for 2.6.23 proper.
+Not all, but critical info, that must exist in human-readable form of
+course.
 
-Thanks,
-Jesse
+> Then have the syslogd or some other utility take this cryptic output and
+> convolve it with a table (created at compile time) to re-create what
+> would have been dumped to the sys-log ring buffer.  This way you strip
+> out most of the static text from the kernel and yet can still re-create
+> the kernlog output.
+>
+> At least as a post processing operation....
+
+Sure, but a little problem is, that many kernel developers do C (mostly)
+and Perl (occasionally), i.e. very few do non-trivial userspace (even
+userspace do too much C and Perl sometimes [:
+<http://thread.gmane.org/gmane.comp.lib.glibc.alpha/12739>)
+
+> Is this an old idea?  I'm guessing this has been at least proposed
+> before....
+
+Seriously. When in the Windows there are only messages like:
+
+    "Error (Code:0x00002012)".
+
+In the Linux... well, embedded targets, this can be turned in a very
+efficient thing by means of userspace. On other setups this can be nice
+and pleasant one, with yet another L10N project, recently promoted by
+README translations. But,,, see problem above.
+____
