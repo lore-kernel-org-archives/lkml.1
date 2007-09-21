@@ -1,164 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbXIUB2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbXIUB3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbXIUB2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 21:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbXIUB14
+	id S1755547AbXIUB3f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 21:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbXIUB30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 21:27:56 -0400
-Received: from mga09.intel.com ([134.134.136.24]:62794 "EHLO mga09.intel.com"
+	Thu, 20 Sep 2007 21:29:26 -0400
+Received: from mga01.intel.com ([192.55.52.88]:41303 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754851AbXIUB1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 21:27:52 -0400
+	id S1751056AbXIUB3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Sep 2007 21:29:25 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.20,280,1186383600"; 
-   d="scan'208";a="146527293"
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 2.6.23-rc7 3/3] raid5: fix ops_complete_biofill
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de
-Cc: akpm@linux-foundation.org, yur@emcraft.com, saeed.bishara@gmail.com,
-       shannon.nelson@intel.com
-Date: Thu, 20 Sep 2007 18:27:50 -0700
-Message-ID: <20070921012750.17157.26889.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com>
-References: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+   d="scan'208";a="316023302"
+Date: Fri, 21 Sep 2007 09:27:51 +0800
+From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Dave Airlie <airlied@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
+Message-ID: <20070921012751.GA3171@zhen-devel.sh.intel.com>
+Mail-Followup-To: Jiri Slaby <jirislaby@gmail.com>,
+	Dave Airlie <airlied@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <46F17CA1.5080205@gmail.com> <20070919195425.GF18707@one.firstfloor.org> <46F17F27.5080000@gmail.com> <21d7e9970709191851s1b3f35c1j42faae3ce6cd0b24@mail.gmail.com> <46F22048.8050401@gmail.com> <21d7e9970709200033k3f0f46feq7dae4e0a106f0372@mail.gmail.com> <20070920092441.GA1972@zhen-devel.sh.intel.com> <46F2EFD2.2090907@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F2EFD2.2090907@gmail.com>
+User-Agent: Mutt/1.4.2.1i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.22-rc6 i686
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ops_complete_biofill tried to avoid calling handle_stripe since all the
-state necessary to return read completions is available.  However the
-process of determining whether more read requests are pending requires
-locking the stripe (to block add_stripe_bio from updating dev->toead).
-ops_complete_biofill can run in tasklet context, so rather than upgrading
-all the stripe locks from spin_lock to spin_lock_bh this patch just moves
-read completion handling back into handle_stripe.
+On 2007.09.21 00:10:26 +0000, Jiri Slaby wrote:
+> > Could you try current xf86-video-intel driver? just do
+> > git clone git://anongit.freedesktop.org/git/xorg/driver/xf86-video-intel
+> 
+> It works! 
 
-Found-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
+yep, I also pushed a fix for G33 in xf86-video-intel when fixing the intel agp.
+So for G33 user, you should upgrade both to be able to work correctly.
 
- drivers/md/raid5.c |   90 +++++++++++++++++++++++++++-------------------------
- 1 files changed, 46 insertions(+), 44 deletions(-)
+> 3d problem, but it has maybe nothing to do with kernel:
+> $ glxinfo
+> name of display: :0.0
+> Unrecognized deviceID 29c2
+> X Error of failed request:  GLXBadContext
+> ...
 
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 4d63773..38c8893 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -512,54 +512,12 @@ async_copy_data(int frombio, struct bio *bio, struct page *page,
- static void ops_complete_biofill(void *stripe_head_ref)
- {
- 	struct stripe_head *sh = stripe_head_ref;
--	struct bio *return_bi = NULL;
--	raid5_conf_t *conf = sh->raid_conf;
--	int i, more_to_read = 0;
- 
- 	pr_debug("%s: stripe %llu\n", __FUNCTION__,
- 		(unsigned long long)sh->sector);
- 
--	/* clear completed biofills */
--	for (i = sh->disks; i--; ) {
--		struct r5dev *dev = &sh->dev[i];
--		/* check if this stripe has new incoming reads */
--		if (dev->toread)
--			more_to_read++;
--
--		/* acknowledge completion of a biofill operation */
--		/* and check if we need to reply to a read request
--		*/
--		if (test_bit(R5_Wantfill, &dev->flags) && !dev->toread) {
--			struct bio *rbi, *rbi2;
--			clear_bit(R5_Wantfill, &dev->flags);
--
--			/* The access to dev->read is outside of the
--			 * spin_lock_irq(&conf->device_lock), but is protected
--			 * by the STRIPE_OP_BIOFILL pending bit
--			 */
--			BUG_ON(!dev->read);
--			rbi = dev->read;
--			dev->read = NULL;
--			while (rbi && rbi->bi_sector <
--				dev->sector + STRIPE_SECTORS) {
--				rbi2 = r5_next_bio(rbi, dev->sector);
--				spin_lock_irq(&conf->device_lock);
--				if (--rbi->bi_phys_segments == 0) {
--					rbi->bi_next = return_bi;
--					return_bi = rbi;
--				}
--				spin_unlock_irq(&conf->device_lock);
--				rbi = rbi2;
--			}
--		}
--	}
--	clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
--	clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
--
--	return_io(return_bi);
--
--	if (more_to_read)
--		set_bit(STRIPE_HANDLE, &sh->state);
-+	set_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
-+	set_bit(STRIPE_HANDLE, &sh->state);
- 	release_stripe(sh);
- }
- 
-@@ -2112,6 +2070,42 @@ static void handle_issuing_new_read_requests6(struct stripe_head *sh,
- }
- 
- 
-+/* handle_completed_read_requests - return completion for reads and allow
-+ * new read operations to be submitted to the stripe.
-+ */
-+static void handle_completed_read_requests(raid5_conf_t *conf,
-+					    struct stripe_head *sh,
-+					    struct bio **return_bi)
-+{
-+	int i;
-+
-+	pr_debug("%s: stripe %llu\n", __FUNCTION__,
-+		(unsigned long long)sh->sector);
-+
-+	/* check if we need to reply to a read request */
-+	for (i = sh->disks; i--; ) {
-+		struct r5dev *dev = &sh->dev[i];
-+
-+		if (test_and_clear_bit(R5_Wantfill, &dev->flags)) {
-+			struct bio *rbi, *rbi2;
-+
-+			rbi = dev->read;
-+			dev->read = NULL;
-+			while (rbi && rbi->bi_sector <
-+				dev->sector + STRIPE_SECTORS) {
-+				rbi2 = r5_next_bio(rbi, dev->sector);
-+				spin_lock_irq(&conf->device_lock);
-+				if (--rbi->bi_phys_segments == 0) {
-+					rbi->bi_next = *return_bi;
-+					*return_bi = rbi;
-+				}
-+				spin_unlock_irq(&conf->device_lock);
-+				rbi = rbi2;
-+			}
-+		}
-+	}
-+}
-+
- /* handle_completed_write_requests
-  * any written block on an uptodate or failed drive can be returned.
-  * Note that if we 'wrote' to a failed drive, it will be UPTODATE, but
-@@ -2633,6 +2627,14 @@ static void handle_stripe5(struct stripe_head *sh)
- 	s.expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
- 	/* Now to look around and see what can be done */
- 
-+	if (test_bit(STRIPE_OP_BIOFILL, &sh->ops.complete)) {
-+		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.ack);
-+		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.pending);
-+		clear_bit(STRIPE_OP_BIOFILL, &sh->ops.complete);
-+
-+		handle_completed_read_requests(conf, sh, &return_bi);
-+	}
-+
- 	rcu_read_lock();
- 	for (i=disks; i--; ) {
- 		mdk_rdev_t *rdev;
+It looks you have an old version of mesa, that i915 dri driver doesn't know
+your chipset. Try mesa-7.X.
+
+I have also seen X exit broken with 2.6.23-rc6-mm1, will follow this thread
+and try Dave's patch.
+
+Thanks for testing!
