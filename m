@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765478AbXIUXPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765356AbXIUXSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765478AbXIUXPB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 19:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763404AbXIUXOv
+	id S1765356AbXIUXSa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 19:18:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762131AbXIUXSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 19:14:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57776 "EHLO mx1.redhat.com"
+	Fri, 21 Sep 2007 19:18:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58187 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763180AbXIUXOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 19:14:50 -0400
+	id S1761532AbXIUXSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 19:18:20 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1190403225.6721.6.camel@heimdal.trondhjem.org>
-References: <1190403225.6721.6.camel@heimdal.trondhjem.org> <20070921144703.8323.50492.stgit@warthog.procyon.org.uk> <20070921144800.8323.72246.stgit@warthog.procyon.org.uk>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
+In-Reply-To: <533105.53764.qm@web36610.mail.mud.yahoo.com>
+References: <533105.53764.qm@web36610.mail.mud.yahoo.com>
+To: casey@schaufler-ca.com
 Cc: dhowells@redhat.com, viro@ftp.linux.org.uk, hch@infradead.org,
-       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 11/22] CacheFiles: Permit the page lock state to be monitored
+       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 00/22] Introduce credential record
 X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Sat, 22 Sep 2007 00:14:41 +0100
-Message-ID: <10150.1190416481@redhat.com>
+Date: Sat, 22 Sep 2007 00:18:01 +0100
+Message-ID: <10185.1190416681@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Casey Schaufler <casey@schaufler-ca.com> wrote:
 
-Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
+> They are nonetheless in effect and (heaven forbid) should they be
+> abused you don't want to hide the facts from concerned observers.
 
-> > This is used by CacheFiles to detect read completion on a page in the
-> > backing filesystem so that it can then copy the data to the waiting netfs
-> > page.
-> 
-> Won't it in any case want to lock the page too?
-
-No.  Why would it?  All it wants to do is to read the page (copying it to the
-netfs's page), assuming it becomes PG_uptodate.
-
-> That would be the only way to ensure that the page is still mapped into the
-> address space when you're writing it out...
-
-I don't understand what you're getting at.  Write the page out where?  We've
-just read it in from the cache, so why would we be writing it back out?
+Because, I suspect, what the observer through /proc should see is what the
+process thinks it is doing, not what is transparently going on behind the
+scenes.
 
 David
