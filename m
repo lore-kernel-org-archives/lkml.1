@@ -1,396 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbXIUWez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765275AbXIUWfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbXIUWez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 18:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763374AbXIUWcM
+	id S1765275AbXIUWfR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 18:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763431AbXIUWcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 18:32:12 -0400
-Received: from ns2.suse.de ([195.135.220.15]:40451 "EHLO mx2.suse.de"
+	Fri, 21 Sep 2007 18:32:14 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40455 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763123AbXIUWcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 18:32:08 -0400
+	id S1763222AbXIUWcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 18:32:09 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200709221231.836138000@suse.de>
 In-Reply-To: <200709221231.836138000@suse.de>
-To: joe.korty@ccur.com, thockin@hockin.org, ak@suse.de, mingo@elte.hu,
-       hpa@zytor.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [7/50] x86: expand /proc/interrupts to include missing vectors, v2
-Message-Id: <20070921223205.51E0113DCD@wotan.suse.de>
-Date: Sat, 22 Sep 2007 00:32:05 +0200 (CEST)
+To: hancockr@shaw.ca, rajesh.shah@intel.com, jbarnes@virtuousgeek.org,
+       ak@suse.de, greg@kroah.com, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [9/50] i386: validate against ACPI motherboard resources
+Message-Id: <20070921223207.7BBE71479D@wotan.suse.de>
+Date: Sat, 22 Sep 2007 00:32:07 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Joe Korty <joe.korty@ccur.com>
+From: Robert Hancock <hancockr@shaw.ca>
 
-Add missing IRQs and IRQ descriptions to /proc/interrupts.
+This path adds validation of the MMCONFIG table against the ACPI reserved
+motherboard resources.  If the MMCONFIG table is found to be reserved in
+ACPI, we don't bother checking the E820 table.  The PCI Express firmware
+spec apparently tells BIOS developers that reservation in ACPI is required
+and E820 reservation is optional, so checking against ACPI first makes
+sense.  Many BIOSes don't reserve the MMCONFIG region in E820 even though
+it is perfectly functional, the existing check needlessly disables MMCONFIG
+in these cases.
 
-/proc/interrupts is most useful when it displays every IRQ vector in use by
-the system, not just those somebody thought would be interesting.
+In order to do this, MMCONFIG setup has been split into two phases.  If PCI
+configuration type 1 is not available then MMCONFIG is enabled early as
+before.  Otherwise, it is enabled later after the ACPI interpreter is
+enabled, since we need to be able to execute control methods in order to
+check the ACPI reserved resources.  Presently this is just triggered off
+the end of ACPI interpreter initialization.
 
-This patch inserts the following vector displays to the i386 and x86_64
-platforms, as appropriate:
+There are a few other behavioral changes here:
 
-	rescheduling interrupts
-	TLB flush interrupts
-	function call interrupts
-	thermal event interrupts
-	threshold interrupts
-	spurious interrupts
+- Validate all MMCONFIG configurations provided, not just the first one.
 
-A threshold interrupt occurs when ECC memory correction is occuring at too
-high a frequency.  Thresholds are used by the ECC hardware as occasional
-ECC failures are part of normal operation, but long sequences of ECC
-failures usually indicate a memory chip that is about to fail.
+- Validate the entire required length of each configuration according to
+  the provided ending bus number is reserved, not just the minimum required
+  allocation.
 
-Thermal event interrupts occur when a temperature threshold has been
-exceeded for some CPU chip.  IIRC, a thermal interrupt is also generated
-when the temperature drops back to a normal level.
+- Validate that the area is reserved even if we read it from the chipset
+  directly and not from the MCFG table.  This catches the case where the
+  BIOS didn't set the location properly in the chipset and has mapped it
+  over other things it shouldn't have.
 
-A spurious interrupt is an interrupt that was raised then lowered by the
-device before it could be fully processed by the APIC.  Hence the apic sees
-the interrupt but does not know what device it came from.  For this case
-the APIC hardware will assume a vector of 0xff.
+This also cleans up the MMCONFIG initialization functions so that they
+simply do nothing if MMCONFIG is not compiled in.
 
-Rescheduling, call, and TLB flush interrupts are sent from one CPU to
-another per the needs of the OS.  Typically, their statistics would be used
-to discover if an interrupt flood of the given type has been occuring.
+Based on an original patch by Rajesh Shah from Intel.
 
-AK: merged v2 and v4 which had some more tweaks
-
-Signed-off-by: Joe Korty <joe.korty@ccur.com>
+[akpm@linux-foundation.org: many fixes and cleanups]
+Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Tim Hockin <thockin@hockin.org>
+Cc: Rajesh Shah <rajesh.shah@intel.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Greg KH <greg@kroah.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- Documentation/filesystems/proc.txt   |   35 ++++++++++++++++++++++++++++++++++-
- arch/i386/kernel/apic.c              |    1 +
- arch/i386/kernel/cpu/mcheck/p4.c     |    1 +
- arch/i386/kernel/irq.c               |   31 +++++++++++++++++++++++++++++--
- arch/i386/kernel/smp.c               |    3 +++
- arch/i386/mach-voyager/voyager_smp.c |    1 +
- arch/i386/xen/smp.c                  |    1 +
- arch/x86_64/kernel/apic.c            |    1 +
- arch/x86_64/kernel/irq.c             |   30 ++++++++++++++++++++++++++++--
- arch/x86_64/kernel/mce_amd.c         |    1 +
- arch/x86_64/kernel/mce_intel.c       |    1 +
- arch/x86_64/kernel/smp.c             |    3 +++
- include/asm-i386/hardirq.h           |    5 +++++
- include/asm-x86_64/pda.h             |    6 ++++++
- 14 files changed, 115 insertions(+), 5 deletions(-)
+ arch/i386/pci/init.c            |    4 -
+ arch/i386/pci/mmconfig-shared.c |  151 +++++++++++++++++++++++++++++++++++-----
+ arch/i386/pci/pci.h             |    1 
+ drivers/acpi/bus.c              |    2 
+ include/linux/pci.h             |    8 ++
+ 5 files changed, 144 insertions(+), 22 deletions(-)
 
-Index: linux/arch/i386/kernel/apic.c
+Index: linux/arch/i386/pci/init.c
 ===================================================================
---- linux.orig/arch/i386/kernel/apic.c
-+++ linux/arch/i386/kernel/apic.c
-@@ -1277,6 +1277,7 @@ void smp_spurious_interrupt(struct pt_re
- 	/* see sw-dev-man vol 3, chapter 7.4.13.5 */
- 	printk(KERN_INFO "spurious APIC interrupt on CPU#%d, "
- 	       "should never happen.\n", smp_processor_id());
-+	__get_cpu_var(irq_stat).irq_spurious_counts++;
- 	irq_exit();
- }
- 
-Index: linux/arch/i386/kernel/cpu/mcheck/p4.c
-===================================================================
---- linux.orig/arch/i386/kernel/cpu/mcheck/p4.c
-+++ linux/arch/i386/kernel/cpu/mcheck/p4.c
-@@ -61,6 +61,7 @@ fastcall void smp_thermal_interrupt(stru
- {
- 	irq_enter();
- 	vendor_thermal_interrupt(regs);
-+	__get_cpu_var(irq_stat).irq_thermal_counts++;
- 	irq_exit();
- }
- 
-Index: linux/arch/i386/kernel/irq.c
-===================================================================
---- linux.orig/arch/i386/kernel/irq.c
-+++ linux/arch/i386/kernel/irq.c
-@@ -284,14 +284,41 @@ skip:
- 		seq_printf(p, "NMI: ");
- 		for_each_online_cpu(j)
- 			seq_printf(p, "%10u ", nmi_count(j));
--		seq_putc(p, '\n');
-+		seq_printf(p, "  Non-maskable interrupts\n");
- #ifdef CONFIG_X86_LOCAL_APIC
- 		seq_printf(p, "LOC: ");
- 		for_each_online_cpu(j)
- 			seq_printf(p, "%10u ",
- 				per_cpu(irq_stat,j).apic_timer_irqs);
--		seq_putc(p, '\n');
-+		seq_printf(p, "  Local interrupts\n");
+--- linux.orig/arch/i386/pci/init.c
++++ linux/arch/i386/pci/init.c
+@@ -11,9 +11,7 @@ static __init int pci_access_init(void)
+ #ifdef CONFIG_PCI_DIRECT
+ 	type = pci_direct_probe();
  #endif
-+#ifdef CONFIG_SMP
-+		seq_printf(p, "RES: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ",
-+				per_cpu(irq_stat,j).irq_resched_counts);
-+		seq_printf(p, "  Rescheduling interrupts\n");
-+		seq_printf(p, "CAL: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ",
-+				per_cpu(irq_stat,j).irq_call_counts);
-+		seq_printf(p, "  function call interrupts\n");
-+		seq_printf(p, "TLB: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ",
-+				per_cpu(irq_stat,j).irq_tlb_counts);
-+		seq_printf(p, "  TLB shootdowns\n");
-+#endif
-+		seq_printf(p, "TRM: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ",
-+				per_cpu(irq_stat,j).irq_thermal_counts);
-+		seq_printf(p, "  Thermal event interrupts\n");
-+		seq_printf(p, "SPU: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ",
-+				per_cpu(irq_stat,j).irq_spurious_counts);
-+		seq_printf(p, "  Spurious interrupts\n");
- 		seq_printf(p, "ERR: %10u\n", atomic_read(&irq_err_count));
- #if defined(CONFIG_X86_IO_APIC)
- 		seq_printf(p, "MIS: %10u\n", atomic_read(&irq_mis_count));
-Index: linux/arch/i386/kernel/smp.c
+-#ifdef CONFIG_PCI_MMCONFIG
+-	pci_mmcfg_init(type);
+-#endif
++	pci_mmcfg_early_init(type);
+ 	if (raw_pci_ops)
+ 		return 0;
+ #ifdef CONFIG_PCI_BIOS
+Index: linux/arch/i386/pci/mmconfig-shared.c
 ===================================================================
---- linux.orig/arch/i386/kernel/smp.c
-+++ linux/arch/i386/kernel/smp.c
-@@ -342,6 +342,7 @@ fastcall void smp_invalidate_interrupt(s
- 	smp_mb__after_clear_bit();
- out:
- 	put_cpu_no_resched();
-+	__get_cpu_var(irq_stat).irq_tlb_counts++;
+--- linux.orig/arch/i386/pci/mmconfig-shared.c
++++ linux/arch/i386/pci/mmconfig-shared.c
+@@ -206,9 +206,78 @@ static void __init pci_mmcfg_insert_reso
+ 	pci_mmcfg_resources_inserted = 1;
  }
  
- void native_flush_tlb_others(const cpumask_t *cpumaskp, struct mm_struct *mm,
-@@ -640,6 +641,7 @@ static void native_smp_send_stop(void)
- fastcall void smp_reschedule_interrupt(struct pt_regs *regs)
+-static void __init pci_mmcfg_reject_broken(int type)
++static acpi_status __init check_mcfg_resource(struct acpi_resource *res,
++					      void *data)
++{
++	struct resource *mcfg_res = data;
++	struct acpi_resource_address64 address;
++	acpi_status status;
++
++	if (res->type == ACPI_RESOURCE_TYPE_FIXED_MEMORY32) {
++		struct acpi_resource_fixed_memory32 *fixmem32 =
++			&res->data.fixed_memory32;
++		if (!fixmem32)
++			return AE_OK;
++		if ((mcfg_res->start >= fixmem32->address) &&
++		    (mcfg_res->end < (fixmem32->address +
++		    		      fixmem32->address_length))) {
++			mcfg_res->flags = 1;
++			return AE_CTRL_TERMINATE;
++		}
++	}
++	if ((res->type != ACPI_RESOURCE_TYPE_ADDRESS32) &&
++	    (res->type != ACPI_RESOURCE_TYPE_ADDRESS64))
++		return AE_OK;
++
++	status = acpi_resource_to_address64(res, &address);
++	if (ACPI_FAILURE(status) ||
++	   (address.address_length <= 0) ||
++	   (address.resource_type != ACPI_MEMORY_RANGE))
++		return AE_OK;
++
++	if ((mcfg_res->start >= address.minimum) &&
++	    (mcfg_res->end < (address.minimum + address.address_length))) {
++		mcfg_res->flags = 1;
++		return AE_CTRL_TERMINATE;
++	}
++	return AE_OK;
++}
++
++static acpi_status __init find_mboard_resource(acpi_handle handle, u32 lvl,
++		void *context, void **rv)
++{
++	struct resource *mcfg_res = context;
++
++	acpi_walk_resources(handle, METHOD_NAME__CRS,
++	  		    check_mcfg_resource, context);
++
++	if (mcfg_res->flags)
++		return AE_CTRL_TERMINATE;
++
++	return AE_OK;
++}
++
++static int __init is_acpi_reserved(unsigned long start, unsigned long end)
++{
++	struct resource mcfg_res;
++
++	mcfg_res.start = start;
++	mcfg_res.end = end;
++	mcfg_res.flags = 0;
++
++	acpi_get_devices("PNP0C01", find_mboard_resource, &mcfg_res, NULL);
++
++	if (!mcfg_res.flags)
++		acpi_get_devices("PNP0C02", find_mboard_resource, &mcfg_res,
++				 NULL);
++
++	return mcfg_res.flags;
++}
++
++static void __init pci_mmcfg_reject_broken(void)
  {
- 	ack_APIC_irq();
-+	__get_cpu_var(irq_stat).irq_resched_counts++;
- }
+ 	typeof(pci_mmcfg_config[0]) *cfg;
++	int i;
  
- fastcall void smp_call_function_interrupt(struct pt_regs *regs)
-@@ -660,6 +662,7 @@ fastcall void smp_call_function_interrup
- 	 */
- 	irq_enter();
- 	(*func)(info);
-+	__get_cpu_var(irq_stat).irq_call_counts++;
- 	irq_exit();
- 
- 	if (wait) {
-Index: linux/arch/i386/mach-voyager/voyager_smp.c
-===================================================================
---- linux.orig/arch/i386/mach-voyager/voyager_smp.c
-+++ linux/arch/i386/mach-voyager/voyager_smp.c
-@@ -1037,6 +1037,7 @@ smp_call_function_interrupt(void)
- 	 */
- 	irq_enter();
- 	(*func)(info);
-+	__get_cpu_var(irq_stat).irq_call_counts++;
- 	irq_exit();
- 	if (wait) {
- 		mb();
-Index: linux/arch/i386/xen/smp.c
-===================================================================
---- linux.orig/arch/i386/xen/smp.c
-+++ linux/arch/i386/xen/smp.c
-@@ -346,6 +346,7 @@ static irqreturn_t xen_call_function_int
- 	 */
- 	irq_enter();
- 	(*func)(info);
-+	__get_cpu_var(irq_stat).irq_call_counts++;
- 	irq_exit();
- 
- 	if (wait) {
-Index: linux/arch/x86_64/kernel/apic.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/apic.c
-+++ linux/arch/x86_64/kernel/apic.c
-@@ -1117,6 +1117,7 @@ asmlinkage void smp_spurious_interrupt(v
- 	if (v & (1 << (SPURIOUS_APIC_VECTOR & 0x1f)))
- 		ack_APIC_irq();
- 
-+	add_pda(irq_spurious_counts, 1);
- 	irq_exit();
- }
- 
-Index: linux/arch/x86_64/kernel/irq.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/irq.c
-+++ linux/arch/x86_64/kernel/irq.c
-@@ -88,11 +88,37 @@ skip:
- 		seq_printf(p, "NMI: ");
- 		for_each_online_cpu(j)
- 			seq_printf(p, "%10u ", cpu_pda(j)->__nmi_count);
--		seq_putc(p, '\n');
-+		seq_printf(p, "  Non-maskable interrupts\n");
- 		seq_printf(p, "LOC: ");
- 		for_each_online_cpu(j)
- 			seq_printf(p, "%10u ", cpu_pda(j)->apic_timer_irqs);
--		seq_putc(p, '\n');
-+		seq_printf(p, "  Local interrupts\n");
-+#ifdef CONFIG_SMP
-+		seq_printf(p, "RES: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", cpu_pda(j)->irq_resched_counts);
-+		seq_printf(p, "  Rescheduling interrupts\n");
-+		seq_printf(p, "CAL: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", cpu_pda(j)->irq_call_counts);
-+		seq_printf(p, "  function call interrupts\n");
-+		seq_printf(p, "TLB: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", cpu_pda(j)->irq_tlb_counts);
-+		seq_printf(p, "  TLB shootdowns\n");
-+#endif
-+		seq_printf(p, "TRM: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", cpu_pda(j)->irq_thermal_counts);
-+		seq_printf(p, "  Thermal event interrupts\n");
-+		seq_printf(p, "THR: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", cpu_pda(j)->irq_threshold_counts);
-+		seq_printf(p, "  Threshold APIC interrupts\n");
-+		seq_printf(p, "SPU: ");
-+		for_each_online_cpu(j)
-+			seq_printf(p, "%10u ", cpu_pda(j)->irq_spurious_counts);
-+		seq_printf(p, "  Spurious interrupts\n");
- 		seq_printf(p, "ERR: %10u\n", atomic_read(&irq_err_count));
+ 	if ((pci_mmcfg_config_num == 0) ||
+ 	    (pci_mmcfg_config == NULL) ||
+@@ -229,17 +298,37 @@ static void __init pci_mmcfg_reject_brok
+ 		goto reject;
  	}
- 	return 0;
-Index: linux/arch/x86_64/kernel/mce_amd.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/mce_amd.c
-+++ linux/arch/x86_64/kernel/mce_amd.c
-@@ -237,6 +237,7 @@ asmlinkage void mce_threshold_interrupt(
- 		}
+ 
+-	/*
+-	 * Only do this check when type 1 works. If it doesn't work
+-	 * assume we run on a Mac and always use MCFG
+-	 */
+-	if (type == 1 && !e820_all_mapped(cfg->address,
+-					  cfg->address + MMCONFIG_APER_MIN,
+-					  E820_RESERVED)) {
+-		printk(KERN_ERR "PCI: BIOS Bug: MCFG area at %Lx is not"
+-		       " E820-reserved\n", cfg->address);
+-		goto reject;
++	for (i = 0; i < pci_mmcfg_config_num; i++) {
++		u32 size = (cfg->end_bus_number + 1) << 20;
++		cfg = &pci_mmcfg_config[i];
++		printk(KERN_NOTICE "PCI: MCFG configuration %d: base %lu "
++		       "segment %hu buses %u - %u\n",
++		       i, (unsigned long)cfg->address, cfg->pci_segment,
++		       (unsigned int)cfg->start_bus_number,
++		       (unsigned int)cfg->end_bus_number);
++		if (is_acpi_reserved(cfg->address, cfg->address + size - 1)) {
++			printk(KERN_NOTICE "PCI: MCFG area at %Lx reserved "
++			       "in ACPI motherboard resources\n",
++			       cfg->address);
++		} else {
++			printk(KERN_ERR "PCI: BIOS Bug: MCFG area at %Lx is not"
++			       " reserved in ACPI motherboard resources\n",
++			       cfg->address);
++			/* Don't try to do this check unless configuration
++			   type 1 is available. */
++			if ((pci_probe & PCI_PROBE_CONF1) &&
++			    e820_all_mapped(cfg->address,
++			                    cfg->address + size - 1,
++					    E820_RESERVED))
++				printk(KERN_NOTICE
++				       "PCI: MCFG area at %Lx reserved in "
++					"E820\n",
++				       cfg->address);
++			else
++				goto reject;
++		}
  	}
- out:
-+	add_pda(irq_threshold_counts, 1);
- 	irq_exit();
++
+ 	return;
+ 
+ reject:
+@@ -249,20 +338,46 @@ reject:
+ 	pci_mmcfg_config_num = 0;
  }
  
-Index: linux/arch/x86_64/kernel/mce_intel.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/mce_intel.c
-+++ linux/arch/x86_64/kernel/mce_intel.c
-@@ -26,6 +26,7 @@ asmlinkage void smp_thermal_interrupt(vo
- 	if (therm_throt_process(msr_val & 1))
- 		mce_log_therm_throt_event(smp_processor_id(), msr_val);
- 
-+	add_pda(irq_thermal_counts, 1);
- 	irq_exit();
- }
- 
-Index: linux/arch/x86_64/kernel/smp.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/smp.c
-+++ linux/arch/x86_64/kernel/smp.c
-@@ -163,6 +163,7 @@ asmlinkage void smp_invalidate_interrupt
- out:
- 	ack_APIC_irq();
- 	cpu_clear(cpu, f->flush_cpumask);
-+	add_pda(irq_tlb_counts, 1);
- }
- 
- static void flush_tlb_others(cpumask_t cpumask, struct mm_struct *mm,
-@@ -493,6 +494,7 @@ void smp_send_stop(void)
- asmlinkage void smp_reschedule_interrupt(void)
+-void __init pci_mmcfg_init(int type)
++void __init pci_mmcfg_early_init(int type)
++{
++	if ((pci_probe & PCI_PROBE_MMCONF) == 0)
++		return;
++
++	/* If type 1 access is available, no need to enable MMCONFIG yet, we can
++	   defer until later when the ACPI interpreter is available to better
++	   validate things. */
++	if (type == 1)
++		return;
++
++	acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
++
++	if ((pci_mmcfg_config_num == 0) ||
++	    (pci_mmcfg_config == NULL) ||
++	    (pci_mmcfg_config[0].address == 0))
++		return;
++
++	if (pci_mmcfg_arch_init())
++		pci_probe = (pci_probe & ~PCI_PROBE_MASK) | PCI_PROBE_MMCONF;
++}
++
++void __init pci_mmcfg_late_init(void)
  {
- 	ack_APIC_irq();
-+	add_pda(irq_resched_counts, 1);
- }
+ 	int known_bridge = 0;
  
- asmlinkage void smp_call_function_interrupt(void)
-@@ -514,6 +516,7 @@ asmlinkage void smp_call_function_interr
- 	exit_idle();
- 	irq_enter();
- 	(*func)(info);
-+	add_pda(irq_call_counts, 1);
- 	irq_exit();
- 	if (wait) {
- 		mb();
-Index: linux/include/asm-i386/hardirq.h
++	/* MMCONFIG disabled */
+ 	if ((pci_probe & PCI_PROBE_MMCONF) == 0)
+ 		return;
+ 
+-	if (type == 1 && pci_mmcfg_check_hostbridge())
+-		known_bridge = 1;
++	/* MMCONFIG already enabled */
++	if (!(pci_probe & PCI_PROBE_MASK & ~PCI_PROBE_MMCONF))
++		return;
+ 
+-	if (!known_bridge) {
++	if ((pci_probe & PCI_PROBE_CONF1) && pci_mmcfg_check_hostbridge())
++		known_bridge = 1;
++	else
+ 		acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
+-		pci_mmcfg_reject_broken(type);
+-	}
++
++	pci_mmcfg_reject_broken();
+ 
+ 	if ((pci_mmcfg_config_num == 0) ||
+ 	    (pci_mmcfg_config == NULL) ||
+@@ -270,7 +385,7 @@ void __init pci_mmcfg_init(int type)
+ 		return;
+ 
+ 	if (pci_mmcfg_arch_init()) {
+-		if (type == 1)
++		if (pci_probe & PCI_PROBE_CONF1)
+ 			unreachable_devices();
+ 		if (known_bridge)
+ 			pci_mmcfg_insert_resources(IORESOURCE_BUSY);
+Index: linux/arch/i386/pci/pci.h
 ===================================================================
---- linux.orig/include/asm-i386/hardirq.h
-+++ linux/include/asm-i386/hardirq.h
-@@ -9,6 +9,11 @@ typedef struct {
- 	unsigned long idle_timestamp;
- 	unsigned int __nmi_count;	/* arch dependent */
- 	unsigned int apic_timer_irqs;	/* arch dependent */
-+	unsigned int irq_resched_counts;
-+	unsigned int irq_call_counts;
-+	unsigned int irq_tlb_counts;
-+	unsigned int irq_thermal_counts;
-+	unsigned int irq_spurious_counts;
- } ____cacheline_aligned irq_cpustat_t;
+--- linux.orig/arch/i386/pci/pci.h
++++ linux/arch/i386/pci/pci.h
+@@ -91,7 +91,6 @@ extern int pci_conf1_read(unsigned int s
+ extern int pci_direct_probe(void);
+ extern void pci_direct_init(int type);
+ extern void pci_pcbios_init(void);
+-extern void pci_mmcfg_init(int type);
+ extern void pcibios_sort(void);
  
- DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
-Index: linux/include/asm-x86_64/pda.h
+ /* pci-mmconfig.c */
+Index: linux/drivers/acpi/bus.c
 ===================================================================
---- linux.orig/include/asm-x86_64/pda.h
-+++ linux/include/asm-x86_64/pda.h
-@@ -29,6 +29,12 @@ struct x8664_pda {
- 	short isidle;
- 	struct mm_struct *active_mm;
- 	unsigned apic_timer_irqs;
-+	unsigned irq_resched_counts;
-+	unsigned irq_call_counts;
-+	unsigned irq_tlb_counts;
-+	unsigned irq_thermal_counts;
-+	unsigned irq_threshold_counts;
-+	unsigned irq_spurious_counts;
- } ____cacheline_aligned_in_smp;
+--- linux.orig/drivers/acpi/bus.c
++++ linux/drivers/acpi/bus.c
+@@ -35,6 +35,7 @@
+ #ifdef CONFIG_X86
+ #include <asm/mpspec.h>
+ #endif
++#include <linux/pci.h>
+ #include <acpi/acpi_bus.h>
+ #include <acpi/acpi_drivers.h>
  
- extern struct x8664_pda *_cpu_pda[];
-Index: linux/Documentation/filesystems/proc.txt
+@@ -757,6 +758,7 @@ static int __init acpi_init(void)
+ 	result = acpi_bus_init();
+ 
+ 	if (!result) {
++		pci_mmcfg_late_init();
+ #ifdef CONFIG_PM_LEGACY
+ 		if (!PM_IS_ACTIVE())
+ 			pm_active = 1;
+Index: linux/include/linux/pci.h
 ===================================================================
---- linux.orig/Documentation/filesystems/proc.txt
-+++ linux/Documentation/filesystems/proc.txt
-@@ -347,7 +347,40 @@ connects the CPUs in a SMP system. This 
- the IO-APIC automatically retry the transmission, so it should not be a big
- problem, but you should read the SMP-FAQ.
+--- linux.orig/include/linux/pci.h
++++ linux/include/linux/pci.h
+@@ -893,5 +893,13 @@ extern unsigned long pci_cardbus_mem_siz
  
--In this context it could be interesting to note the new irq directory in 2.4.
-+In 2.6.2* /proc/interrupts was expanded again.  This time the goal was for
-+/proc/interrupts to display every IRQ vector in use by the system, not
-+just those considered 'most important'.  The new vectors are:
+ extern int pcibios_add_platform_entries(struct pci_dev *dev);
+ 
++#ifdef CONFIG_PCI_MMCONFIG
++extern void __init pci_mmcfg_early_init(int type);
++extern void __init pci_mmcfg_late_init(void);
++#else
++static inline void pci_mmcfg_early_init(int type) { }
++static inline void pci_mmcfg_late_init(void) { }
++#endif
 +
-+  THR -- a threshold interrupt occurs when ECC memory correction is occuring
-+  at too high a frequency.  Threshold interrupt machinery is often put
-+  into the ECC logic, as occasional ECC memory corrections are part of
-+  normal operation (due to random alpha particles), but sequences of
-+  ECC corrections or outright failures over some short interval usually
-+  indicate a memory chip that is about to fail.  Note that not every
-+  platform has ECC threshold logic, and those that do generally require
-+  it to be explicitly turned on.
-+
-+  TRM -- a thermal event interrupt occurs when a temperature threshold
-+  has been exceeded for some CPU chip.  This interrupt may also be generated
-+  when the temperature drops back to normal.
-+
-+  SPU -- a spurious interrupt is some interrupt that was raised then lowered
-+  by some IO device before it could be fully processed by the APIC.  Hence
-+  the APIC sees the interrupt but does not know what device it came from.
-+  For this case the APIC will generate the interrupt with a IRQ vector
-+  of 0xff.
-+
-+  RES, CAL, TLB -- rescheduling, call and tlb flush interrupts are
-+  sent from one CPU to another per the needs of the OS.  Typically,
-+  their statistics are used by kernel developers and interested users to
-+  determine the occurance of interrupt floods of the given type.
-+
-+The above IRQ vectors are displayed only when relevent.  For example,
-+the threshold vector does not exist on x86_64 platforms.  Others are
-+suppressed when the system is a uniprocessor.  As of this writing, only
-+i386 and x86_64 platforms support the new IRQ vector displays.
-+
-+Of some interest is the introduction of the /proc/irq directory to 2.4.
- It could be used to set IRQ to CPU affinity, this means that you can "hook" an
- IRQ to only one CPU, or to exclude a CPU of handling IRQs. The contents of the
- irq subdir is one subdir for each IRQ, and one file; prof_cpu_mask
+ #endif /* __KERNEL__ */
+ #endif /* LINUX_PCI_H */
