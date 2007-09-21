@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbXIUOal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbXIUObT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759624AbXIUOal (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbXIUOae
+	id S1760065AbXIUObT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbXIUObJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:30:34 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:53802 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751822AbXIUOad (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:30:33 -0400
-Date: Fri, 21 Sep 2007 16:30:27 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: [RFC][PATCH 2/6] lockdep: validate rcu_dereference() vs
- rcu_read_lock()
-Message-ID: <20070921163027.21e1e124@twins>
-In-Reply-To: <d120d5000709210715q22682893ib87998727baffe38@mail.gmail.com>
-References: <20070919174857.GA11922@linux.vnet.ibm.com>
-	<20070919214110.5d832f28@lappy>
-	<d120d5000709191249w461967d6w8da303dc54f2dd41@mail.gmail.com>
-	<20070919221349.2935f69d@lappy>
-	<d120d5000709191341p1c331e80qf7bad973bc899a0@mail.gmail.com>
-	<20070919231943.4b121361@lappy>
-	<d120d5000709191429n29f5dc78g2746de3ee4e9ca81@mail.gmail.com>
-	<20070919234700.3b532dcd@lappy>
-	<d120d5000709201031o687ac0d5qe4d32406c12a7886@mail.gmail.com>
-	<20070921000155.GI9825@linux.vnet.ibm.com>
-	<d120d5000709210715q22682893ib87998727baffe38@mail.gmail.com>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Sep 2007 10:31:09 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:55076 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752768AbXIUObH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 10:31:07 -0400
+Message-ID: <46F3D5A3.1070201@overt.org>
+Date: Fri, 21 Sep 2007 07:30:59 -0700
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: sdhci-devel@list.drzeus.cx, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mmc: Disabler for Ricoh MMC controller
+References: <46EC3860.3070600@overt.org> <20070920182429.247b28fb@poseidon.drzeus.cx>
+In-Reply-To: <20070920182429.247b28fb@poseidon.drzeus.cx>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007 10:15:10 -0400 "Dmitry Torokhov"
-<dmitry.torokhov@gmail.com> wrote:
-
-> On 9/20/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > On Thu, Sep 20, 2007 at 01:31:35PM -0400, Dmitry Torokhov wrote:
-> > >
-> > > OK, then what is the purpose of synchronize_sched() in -rt?
-> >
-> > To wait for all preempt-disable, irq-disable, hard-irq, and SMI/NMI code
-> > sequences to complete.
+Pierre Ossman wrote:
+>>
 > 
-> OK, so what spin_lock_irq[save]? Does is disable IRQs in -rt or not anymore?
-> If IRQs are disabled it appears that I can continue using synchronize_sched().
+> Patch looks ok. Please try to sort out that completely disabled
+> controller that was reported first though.
 
-No it will not disable IRQs anymore.
+This remains confusing. I went and investigated and the SD disable
+bit is 0x20. The one lspci dump from the IFL90 shows that 0x80 is
+set by default, but setting this on my laptop did not disable the
+SD controller. I will need to collect more information from owners
+to find out what's really going on.
 
-> >
-> > > You really need to provide users with a replacement. There are several
-> > > drivers that use it and for example r8169 is not what you'd call a
-> > > 'low performer'.
-> >
-> > I did look at making a synchronize_all_irq() some time back, and all
-> > the approaches I came up with at the time were busted.
-> >
-> > But I just took another look, and I think I see a way to handle it.
-> > Either that, or I simply forgot the way in which this approach is
-> > broken...
-> >
-> > I will stare at is some more.
-> >
-> 
-> Thank you.
+Do you want to wait on this before taking this patch?
 
-I think the patch posted by Paul earlier today should work.
+--phil
