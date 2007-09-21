@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765433AbXIUU5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765580AbXIUU5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765433AbXIUU5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 16:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763484AbXIUUpf
+	id S1765580AbXIUU5x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 16:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763057AbXIUUpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 16:45:35 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34764 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762767AbXIUUpW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 16:45:36 -0400
+Received: from ns.suse.de ([195.135.220.2]:50097 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763374AbXIUUpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Sep 2007 16:45:22 -0400
-Date: Fri, 21 Sep 2007 21:45:05 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] LBS: fix uninitialized swapper_space
-In-Reply-To: <Pine.LNX.4.64.0709212141220.6532@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0709212144210.13529@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0709212141220.6532@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Andi Kleen <ak@suse.de>
+References: <200709211044.901175000@suse.de>
+In-Reply-To: <200709211044.901175000@suse.de>
+To: bunk@stusta.de, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [38/45] i386: setup_trampoline() must be __cpuinit
+Message-Id: <20070921204521.4193314EFF@wotan.suse.de>
+Date: Fri, 21 Sep 2007 22:45:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Swapping crashed immediately: must initialize new fields of swapper_space.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+From: Adrian Bunk <bunk@stusta.de>
 
---- 2.6.23-rc6-lbs/mm/swap_state.c	2007-07-26 19:49:58.000000000 +0100
-+++ linux/mm/swap_state.c	2007-09-13 20:00:45.000000000 +0100
-@@ -42,6 +42,10 @@ struct address_space swapper_space = {
- 	.a_ops		= &swap_aops,
- 	.i_mmap_nonlinear = LIST_HEAD_INIT(swapper_space.i_mmap_nonlinear),
- 	.backing_dev_info = &swap_backing_dev_info,
-+#ifdef CONFIG_LARGE_BLOCKSIZE
-+	.shift		= PAGE_SHIFT,
-+	.offset_mask	= PAGE_SIZE - 1,
-+#endif
- };
+WARNING: arch/i386/kernel/built-in.o(.text+0xf201): Section mismatch: reference to .init.data:trampoline_end (between 'setup_trampoline' and 'cpu_coregroup_map')
+WARNING: arch/i386/kernel/built-in.o(.text+0xf207): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
+WARNING: arch/i386/kernel/built-in.o(.text+0xf21a): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
+
+Harmless but annoying warnings present when building an i386 SMP kernel
+with CONFIG_HOTPLUG_CPU=n and gcc < 4.0 .
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+
+ arch/i386/kernel/smpboot.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/arch/i386/kernel/smpboot.c
+===================================================================
+--- linux.orig/arch/i386/kernel/smpboot.c
++++ linux/arch/i386/kernel/smpboot.c
+@@ -118,7 +118,7 @@ DEFINE_PER_CPU(int, cpu_state) = { 0 };
+  * has made sure it's suitably aligned.
+  */
  
- #define INC_CACHE_INFO(x)	do { swap_cache_info.x++; } while (0)
+-static unsigned long __devinit setup_trampoline(void)
++static unsigned long __cpuinit setup_trampoline(void)
+ {
+ 	memcpy(trampoline_base, trampoline_data, trampoline_end - trampoline_data);
+ 	return virt_to_phys(trampoline_base);
