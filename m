@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbXIURp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbXIURqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760106AbXIURp7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 13:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbXIURpv
+	id S1761371AbXIURqY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 13:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbXIURqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 13:45:51 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:45346 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbXIURpu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 13:45:50 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 21 Sep 2007 10:45:47 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Nagendra Tomar <tomer_iisc@yahoo.com>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2.6.23-rc6 Resending] NETWORKING : Edge Triggered EPOLLOUT
- events get missed for TCP sockets
-In-Reply-To: <798693.92196.qm@web53705.mail.re2.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0709211041050.15361@alien.or.mcafeemobile.com>
-References: <798693.92196.qm@web53705.mail.re2.yahoo.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Sep 2007 13:46:15 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3849 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753572AbXIURqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 13:46:14 -0400
+Subject: Re: [Announce] Linux-tiny project revival
+From: Joe Perches <joe@perches.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Rob Landley <rob@landley.net>, Indan Zupancic <indan@nul.nu>,
+       linux-tiny@selenic.com, Michael Opdenacker <michael@free-electrons.com>,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <10228.1190394985@turing-police.cc.vt.edu>
+References: <46F1645D.9050406@am.sony.com>
+	 <200709201538.43093.rob@landley.net>
+	 <59465.81.207.0.53.1190323573.squirrel@secure.samage.net>
+	 <200709201818.42125.rob@landley.net>
+	 <10228.1190394985@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Fri, 21 Sep 2007 10:45:27 -0700
+Message-Id: <1190396728.32660.42.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007, Nagendra Tomar wrote:
+On Fri, 2007-09-21 at 13:16 -0400, Valdis.Kletnieks@vt.edu wrote:
+> What about something *really* hardcore ugly like:
+> #ifdef __FILE__
+> #undef __FILE__
+> #define __FILE__ ""
+> #endif
+> (or similar preprocessor blecherousness) if you want to *really* shrink
+> that binary down?
 
-> > That's not what POLLOUT means in the Unix meaning. POLLOUT indicates the 
-> > ability to write, and it is not meant as to signal every time a packet 
-> > (skb) is sent on the wire (and the buffer released).
-> 
-> Aren't they both the same ? Everytime an incoming ACK frees up a buffer
-> from the retransmit queue, the writability condition is freshly asserted,
-> much the same way as the readability condition is asserted everytime a 
-> new data is queued in the socket receive queue (irrespective of 
-> whether there was data already waiting to be read in the receive queue).
-> 
-> This difference in meaning of POLLOUT only arises in the ET case, which was
-> not what traditional Unix poll referred to. 
+I prefer removing all __FILE__, __FUNCTION__, __LINE__ uses
+from printks and defining something that modifies pr_<level>.
 
-Again, events here are "readability" and "writeability" and the fact that 
-the lower network layer freed a buffer is not, per se, an event (unless 
-before, "writeability" was tested and reported as unavailable).
-In you case the solution looks pretty simple. Just create appropriately 
-sized buffers, split the single sendfile into multiple buffer-sized ones, 
-and recycle the buffer once each of them completes.
+Something like:
 
+#define PR_FILE
+#define PR_FUNCTION
+#define PR_LINE
 
+#if    defined PR_FILE &&  defined PR_FUNCTION &&  defined PR_LINE
+#define PR_FMT "(%s:%s:%u) "
+#define PR_ARG , __FILE__ , __FUNCTION__ , __LINE__ 
+#elif  defined PR_FILE &&  defined PR_FUNCTION && !defined PR_LINE
+#define PR_FMT "(%s:%s) "
+#define PR_ARG , __FILE__ , __FUNCTION__ 
+#elif  defined PR_FILE && !defined PR_FUNCTION &&  defined PR_LINE
+#define PR_FMT "(%s:%u) "
+#define PR_ARG , __FILE__ , __LINE__ 
+#elif  defined PR_FILE && !defined PR_FUNCTION && !defined PR_LINE
+#define PR_FMT "(%s) "
+#define PR_ARG , __FILE__ 
+#elif !defined PR_FILE &&  defined PR_FUNCTION &&  defined PR_LINE
+#define PR_FMT "(%s:%u) "
+#define PR_ARG , __FUNCTION__ , __LINE__ 
+#elif !defined PR_FILE &&  defined PR_FUNCTION && !defined PR_LINE
+#define PR_FMT "(%s) "
+#define PR_ARG , __FUNCTION__ 
+#elif !defined PR_FILE && !defined PR_FUNCTION && defined PR_LINE
+#define PR_FMT "(%u) "
+#define PR_ARG , __LINE__ 
+#else
+#define PR_FMT
+#define PR_ARG
+#endif
 
-- Davide
+#define pr_info(fmt, arg) printk(KERN_INFO PR_FMT fmt PR_ARG, ##arg)
 
 
