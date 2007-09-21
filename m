@@ -1,124 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbXIUCYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbXIUCZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbXIUCYo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 22:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbXIUCYf
+	id S1755192AbXIUCZh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 22:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbXIUCZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 22:24:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:19167 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbXIUCYe (ORCPT
+	Thu, 20 Sep 2007 22:25:31 -0400
+Received: from home.nigel.suspend2.net ([203.171.70.205]:52106 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbXIUCZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 22:24:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=OpHhbxmZDNB0AlgQdfJN+0EVEl4qDeKGdGnEnvmbMiXjg80QFCVa67y02gC1pXvGROgU2/IdsWfErfJ6sM3/AmhRiR8TxijlyC5SN/Z5OYBWBfcjIK/JAyERd9O7i9nKdhcYDv+XhoUDqCECNciJLNT3KNoTdh+a340LTYzmAck=
-Date: Fri, 21 Sep 2007 10:23:35 +0800
-From: lepton <ytht.net@gmail.com>
-To: netdev@vger.kernel.org
-Cc: lkm <linux-kernel@vger.kernel.org>
-Subject: [PATCH RESEND] 2.6.22.6 networking [ipv4]: fix wrong destination when reply packetes
-Message-ID: <20070921022335.GA2849@router.lepton.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 20 Sep 2007 22:25:30 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Fri, 21 Sep 2007 12:25:24 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, nigel@suspend2.net,
+       Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1190266447.21818.17.camel@caritas-dev.intel.com> <200709211157.28622.nigel@nigel.suspend2.net> <1190341137.21818.52.camel@caritas-dev.intel.com>
+In-Reply-To: <1190341137.21818.52.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Message-Id: <200709211225.25874.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  This is a resend of this patch with more details. I'd
-  like it can be accepted this time.
-  The problem: In icmp_reply and ip_send_reply function, 
-  we now use rt->rt_src as destination to send out packets.
-  For packets received in loopback device, this is wrong 
-  sometimes.
-  Here is an example (NOTE: eth0 address is set to 10.10.10.1/24):
+Hi.
 
-  #tcpdump -n -i lo icmp &
-  [1] 3155
-  ...
+On Friday 21 September 2007 12:18:57 Huang, Ying wrote:
+> > That's not true. Kexec will itself be an implementation, otherwise you'd 
+end 
+> > up with people screaming about no hibernation support. And it won't result 
+in 
+> > the complete removal of the existing hibernation code from the kernel. At 
+the 
+> > very least, it's going to want the kernel being hibernated to have an 
+> > interface by which it can find out which pages need to be saved. I 
+wouldn't 
+> 
+> This has been done by kexec/kdump guys. There is a makedumpfile utility
+> and vmcoreinfo kernel mechanism to implement this. We can just reuse the
+> work of kexec/kdump.
 
-  # hping3 --icmp --spoof 10.10.10.3 10.10.10.1
-  ...
-  09:53:49.508449 IP 10.10.10.3 > 10.10.10.1: icmp 8: echo request seq 0
-  09:53:49.508482 IP 10.10.10.1 > 10.10.10.1: icmp 8: echo reply seq 0
-  09:53:50.525560 IP 10.10.10.3 > 10.10.10.1: icmp 8: echo request seq 256
-  09:53:50.525589 IP 10.10.10.1 > 10.10.10.1: icmp 8: echo reply seq 256
+You've already said that you are currently saving all pages. How are you going 
+to avoid saving free pages if you don't get the information from the kernel 
+being saved? This will require more than just code reuse.
 
-  The same thing will happend for tcp:
+> > be surprised if it also ends up with an interface in which the kernel 
+being 
+> > hibernated tells it what bdev/sectors in which to save the image as well 
+> > (otherwise you're going to need a dedicated, otherwise untouched partition 
+> > exclusively for the kexec'd kernel to use), or what network settings to 
+use 
+> > if it wants to try to save the image to a network storage device. On top 
+of
+> 
+> These can be done in user space. The image writing will be done in user
+> space for kexec base hibernation.
 
-  # hping3 --syn --destport 1234 --spoof 10.10.10.3 10.10.10.1
-  (NOTE: there is no service to listen on port 1234)
-  ...
-  10:02:59.395715 IP 10.10.10.3.2787 > 10.10.10.1.1234: S
-  72057069:72057069(0) win 512 <mss 1414>
-  10:02:59.395746 IP 10.10.10.1.1234 > 10.10.10.1.2787: R 0:0(0) ack
-  72057070 win 0
+That only complicates things more. Now you need to get the information on 
+where to save the image from the kernel being saved, then transfer it to 
+userspace after switching to the kexec kernel. That's more kernel code, not 
+less.
 
-  As you can see, all destination address is wrong.
-  This problem comes from the fact that the route selection for packetes 
-travle on loopback device only happend once. When we send out packets
-from loopback device, the skb->dst is assigned in ip_route_output. It 
-won't be reassinged in packetes recveive path. So the rt->rt_src don't 
-equal to ip_hdr(skb)->saddr.
-  I don't know why we must use rt->rt_src as destionation address. at least 
-  for icmp reply packets, I thin we should use ip_hdr(skb)->saddr as 
-  destionation address. this is according to RFC792:
-   ...
-   Addresses
+> > that, there are all the issues related to device reinitialisation and so 
+on, 
+> 
+> Yes. Device reinitialisation is needed. But all in all, kexec based
+> hibernation can be much simpler on the kernel side.
 
-      The address of the source in an echo message will be the
-      destination of the echo reply message.  To form an echo reply
-      message, the source and destination addresses are simply reversed,
-      the type code changed to 0, and the checksum recomputed.
-  
-  A possible fix is to do ip_route_input in ip_rcv_finish for packtes 
-  received in loopback device. But I think just to use ip_hdr(skb)->saddr 
-  instead of rt->rt_src as destination to reply packetes is a more simple fix.
+Sorry, but I'm yet to be convinced. I'm not unwilling, I'm just not there yet.
  
-  Thanks Kenan Kalajdzic <kalajdzic@gmail.com> for help me with more details
-  about this problem.
-  
-Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+> > and it looks like there's greatly increased pain for users wanting to 
+> > configure this new implementation. Kexec is by no means proven to be the 
+> > panacea for all the issues.
+> 
+> Configuration is a problem, we will work on it.
+> 
+> But, because it is based on kexec/kdump instead of starting from
+> scratch, the duplicated part between hibernation and kexec/kdump can be
+> eliminated.
 
-diff -X linux-2.6.22.6/Documentation/dontdiff -pru linux-2.6.22.6/net/ipv4/icmp.c linux-2.6.22.6-lepton/net/ipv4/icmp.c
---- linux-2.6.22.6/net/ipv4/icmp.c	2007-09-14 17:41:18.000000000 +0800
-+++ linux-2.6.22.6-lepton/net/ipv4/icmp.c	2007-09-18 09:57:30.000000000 +0800
-@@ -382,6 +382,7 @@ static void icmp_reply(struct icmp_bxm *
- 	struct ipcm_cookie ipc;
- 	struct rtable *rt = (struct rtable *)skb->dst;
- 	__be32 daddr;
-+ 	struct iphdr *ip = ip_hdr(skb);
- 
- 	if (ip_options_echo(&icmp_param->replyopts, skb))
- 		return;
-@@ -393,7 +394,7 @@ static void icmp_reply(struct icmp_bxm *
- 	icmp_out_count(icmp_param->data.icmph.type);
- 
- 	inet->tos = ip_hdr(skb)->tos;
--	daddr = ipc.addr = rt->rt_src;
-+ 	daddr = ipc.addr = ip->saddr;
- 	ipc.opt = NULL;
- 	if (icmp_param->replyopts.optlen) {
- 		ipc.opt = &icmp_param->replyopts;
-diff -X linux-2.6.22.6/Documentation/dontdiff -pru linux-2.6.22.6/net/ipv4/ip_output.c linux-2.6.22.6-lepton/net/ipv4/ip_output.c
---- linux-2.6.22.6/net/ipv4/ip_output.c	2007-09-14 17:41:18.000000000 +0800
-+++ linux-2.6.22.6-lepton/net/ipv4/ip_output.c	2007-09-18 09:57:13.000000000 +0800
-@@ -1337,11 +1337,12 @@ void ip_send_reply(struct sock *sk, stru
- 	struct ipcm_cookie ipc;
- 	__be32 daddr;
- 	struct rtable *rt = (struct rtable*)skb->dst;
-+	struct iphdr *ip = ip_hdr(skb);
- 
- 	if (ip_options_echo(&replyopts.opt, skb))
- 		return;
- 
--	daddr = ipc.addr = rt->rt_src;
-+	daddr = ipc.addr = ip->saddr;
- 	ipc.opt = NULL;
- 
- 	if (replyopts.opt.optlen) {
+Regards,
 
-
+Nigel
+-- 
+Nigel, Michelle and Alisdair Cunningham
+5 Mitchell Street
+Cobden 3266
+Victoria, Australia
