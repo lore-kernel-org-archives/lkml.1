@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbXIUBoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbXIUB45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbXIUBoE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Sep 2007 21:44:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXIUBnz
+	id S1753987AbXIUB45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Sep 2007 21:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbXIUB4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Sep 2007 21:43:55 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:22657 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbXIUBny (ORCPT
+	Thu, 20 Sep 2007 21:56:50 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:22467 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbXIUB4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Sep 2007 21:43:54 -0400
-X-IronPort-AV: i="4.20,280,1186372800"; 
-   d="scan'208"; a="40027402:sNHT138442297"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: David McCullough <David_Mccullough@securecomputing.com>
-Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin relocations
-Date: Thu, 20 Sep 2007 21:44:16 -0400
-User-Agent: KMail/1.9.5
-Cc: Paul Mundt <lethal@linux-sh.org>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com,
-       Bernd Schmidt <bernd.schmidt@analog.com>,
-       Greg Ungerer <gerg@snapgear.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ysato@users.sourceforge.jp,
-       miles@lsi.nec.co.jp, linux-m32r@ml.linux-m32r.org
-References: <1190102965.4406.9.camel@roc-desktop> <20070920142543.GA3268@linux-sh.org> <20070920150314.GA27079@securecomputing.com>
-In-Reply-To: <20070920150314.GA27079@securecomputing.com>
+	Thu, 20 Sep 2007 21:56:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ETbefYiP37ZSzwr8dvCc6dnyVXiqldxv/TICcmUdDEOpXbTIfCCsDcLF/Bhxz9VnBkqzxxbY1BYnBuwqE6I0y5QyhHxBtWZwEavcBqkhXPyIDLFOnM666nFueSgs22e+mCQ1yXDfWOjdCotdqcFSiZYs6E3Nh4OnNxENCr/c3ik=
+Message-ID: <3402120c0709201856j58c3775bq8dc7886785a11344@mail.gmail.com>
+Date: Fri, 21 Sep 2007 03:56:47 +0200
+From: "Arvin Moezzi" <moezzia@gmail.com>
+To: "James Pearson" <james-p@moving-picture.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] Don't truncate /proc/PID/environ at 4096 characters
+Cc: aarapov@redhat.com, akpm@linux-foundation.org, hpa@zytor.com
+In-Reply-To: <E1IXziD-0003YJ-0w@moving-picture.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709202144.16301.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 21 Sep 2007 01:43:51.0918 (UTC) FILETIME=[DCD778E0:01C7FBF0]
+References: <E1IXziD-0003YJ-0w@moving-picture.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 20 Sep 2007 11:03, David McCullough pondered:
-> I would say that (a) is definately not the case.  I am sure the BF guys
-> will say they have been banging us on the head with changes for a long
-> time and getting no where as we considered the changes to severe or out
-> of line.
+2007/9/19, James Pearson <james-p@moving-picture.com>:
+> +       while (count > 0) {
+> +               int this_len, retval;
+> +
+> +               this_len = mm->env_end - (mm->env_start + src);
+> +
+> +               if (this_len <= 0)
+> +                       break;
+> +
+> +               if (this_len > max_len)
+> +                       this_len = max_len;
+> +
+> +               retval = access_process_vm(task, (mm->env_start + src),
+> +                       page, this_len, 0);
+> +
+> +               if (retval <= 0) {
+> +                       ret = retval;
+> +                       break;
+> +               }
+> +
+> +               if (copy_to_user(buf, page, retval)) {
+                                                                ^^^^
+shouldn't you only copy min(count,retval) bytes? otherwise you could
+write beyond the users buffer "buf", right?
 
-I don't think we have been "banging heads" with you (unless that is your 
-feeling?) - how about "working together, but diverting to satisfy different 
-needs" :)
-
-I think that we have had more issues in the uClinux-dist (userspace and build 
-environment), but for kernel code, we have moved from some non-standard 
-(stupid) things we were doing early on to what we have today - which is as 
-common/standard with other archs as we can be.
-
-Although this is slightly off topic - on the uClinux distribution side - most 
-of our changes are based on requirements/desires from being able to support 
-fdpic elf and flat formats, and to attempt to make things easier for end 
-users/us to use/maintain. Where we do make changes - we always send the patch 
-upstream and have the conversation with you (not everyone else does this), 
-and some/most times rework things so they are more acceptable to you. We 
-don't always come to an agreement - but we always have the discussion, and 
-are willing to move if we can make things better that still meets both our 
-needs/desires.
-
-> This particular patch was trivial in comparison to others I've seen,
-
-That is what we thought.
-
-> it fixed all the existing arches (not something that is always done) and
-> seemed a reasonable start to finally get the BF guys up and running.
-> Still, happy to make it better of course ;-)
-
-As always - we are more than happy to explore/review alternative patches if 
-people want to write/sumbit them.
-
--Robin
+Arvin
