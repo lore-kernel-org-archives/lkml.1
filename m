@@ -1,117 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbXIUPWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbXIUPZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760077AbXIUPWA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 11:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbXIUPVx
+	id S1760089AbXIUPZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 11:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbXIUPZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 11:21:53 -0400
-Received: from pne-smtpout4-sn2.hy.skanova.net ([81.228.8.154]:49362 "EHLO
-	pne-smtpout4-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754300AbXIUPVw (ORCPT
+	Fri, 21 Sep 2007 11:25:17 -0400
+Received: from mga03.intel.com ([143.182.124.21]:47970 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752320AbXIUPZP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 11:21:52 -0400
-Message-ID: <46F3DFA4.90909@kolumbus.fi>
-Date: Fri, 21 Sep 2007 18:13:40 +0300
-From: =?UTF-8?B?TWlrYSBQZW50dGlsw6Q=?= <mika.penttila@kolumbus.fi>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Fri, 21 Sep 2007 11:25:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,284,1186383600"; 
+   d="scan'208";a="283692270"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: huang ying <huang.ying.caritas@gmail.com>
-CC: "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-pm] [RFC][PATCH 0/2 -mm] kexec based hibernation -v3
-References: <1190266440.21818.16.camel@caritas-dev.intel.com>	 <46F39345.3040201@kolumbus.fi>	 <851fc09e0709210644y4a859a2bp223ef56b08a27f0@mail.gmail.com>	 <46F3DBAB.9010308@kolumbus.fi> <851fc09e0709210813s1bb3fb02y6096c74fdc9dc35d@mail.gmail.com>
-In-Reply-To: <851fc09e0709210813s1bb3fb02y6096c74fdc9dc35d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2.6.23-rc7 1/3] async_tx: usage documentation and developernotes
+Date: Fri, 21 Sep 2007 08:25:12 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C03157788@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20070921012740.17157.49639.stgit@dwillia2-linux.ch.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.23-rc7 1/3] async_tx: usage documentation and developernotes
+thread-index: Acf77pzpzzfuASQDQ++O27jJKRxfFQAc8dEA
+References: <20070921012141.17157.65717.stgit@dwillia2-linux.ch.intel.com> <20070921012740.17157.49639.stgit@dwillia2-linux.ch.intel.com>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>,
+       <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>,
+       <neilb@suse.de>
+Cc: <akpm@linux-foundation.org>, <yur@emcraft.com>, <saeed.bishara@gmail.com>
+X-OriginalArrivalTime: 21 Sep 2007 15:25:13.0475 (UTC) FILETIME=[9AF04D30:01C7FC63]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-huang ying wrote:
-> On 9/21/07, Mika Penttilä <mika.penttila@kolumbus.fi> wrote:
->   
->> huang ying wrote:
->>     
->>> On 9/21/07, Mika Penttilä <mika.penttila@kolumbus.fi> wrote:
->>>
->>>       
->>>>> Usage:
->>>>>
->>>>> 1. Compile kernel with following options selected:
->>>>>
->>>>> CONFIG_X86_32=y
->>>>> CONFIG_RELOCATABLE=y # not needed strictly, but it is more convenient with it
->>>>> CONFIG_KEXEC=y
->>>>> CONFIG_CRASH_DUMP=y # only needed by kexeced kernel to save/restore memory image
->>>>> CONFIG_PM=y
->>>>> CONFIG_KEXEC_JUMP=y
->>>>>
->>>>> 2. Download the kexec-tools-testing git tree, apply the kexec-tools
->>>>>    kjump patches (or download the source tar ball directly) and
->>>>>    compile.
->>>>>
->>>>> 3. Download and compile the krestore tool.
->>>>>
->>>>> 4. Prepare 2 root partition used by kernel A and kernel B/C, referred
->>>>>    as /dev/hda, /dev/hdb in following text. This is not strictly
->>>>>    necessary, I use this scheme for testing during development.
->>>>>
->>>>> 5. Boot kernel compiled for normal usage (kernal A).
->>>>>
->>>>> 6. Load kernel compiled for hibernating/restore usage (kernel B) with
->>>>>    kexec, the same kernel as that of 5 can be used if
->>>>>    CONFIG_RELOCATABLE=y and CONFIG_CRASH_DUMP=y are selected.
->>>>>
->>>>>    The --elf64-core-headers should be specified in command line of
->>>>>    kexec, because only the 64bit ELF is supported by krestore tool.
->>>>>
->>>>>    For example, the shell command line can be as follow:
->>>>>
->>>>>    kexec -p -n /boot/bzImage --mem-min=0x100000 --mem-max=0xffffff
->>>>>        --elf64-core-headers --append="root=/dev/hdb single"
->>>>>
->>>>> 7. Jump to the hibernating kernel (kernel B) with following shell
->>>>>    command line:
->>>>>
->>>>>    kexec -j
->>>>>
->>>>> 8. In the hibernating kernel (kernel B), the memory image of
->>>>>    hibernated kernel (kernel A) can be saved as follow:
->>>>>
->>>>>    cp /proc/vmcore .
->>>>>    cp /sys/kernel/kexec_jump_back_entry .
->>>>>
->>>>>
->>>>>           
->>>> Here we save also kernel B's pages.
->>>>
->>>>         
->>> No, the kernel B's pages will not be saved. Because when we build the
->>> elfcore (/proc/vmcore) header, we exclude memory area used by kernel
->>> B. The details can be found in kexec-tools patches.
->>>
->>>
->>>       
->> Ok I see. But should the kernel B's e820 mem map be limited to 1m-16m in
->> order not to allocate pages found also in A's space? Or does does the
->> --mem-min and --mem-max do that also?
->>     
+>From: Williams, Dan J 
+>Sent: Thursday, September 20, 2007 6:28 PM
+>To: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org; 
+>neilb@suse.de
+>Cc: akpm@linux-foundation.org; yur@emcraft.com; 
+>saeed.bishara@gmail.com; Nelson, Shannon
+>Subject: [PATCH 2.6.23-rc7 1/3] async_tx: usage documentation 
+>and developernotes
 >
-> That is what "memmap=exactmap memmap=640K@0K memmap=15M@1M" for. The
-> contents of e820 memmap will be overrided when these kernel parameters
-> are specified.
+>Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+>---
 >
-> Best Regards,
-> Huang Ying
->   
-Yes, you just didn't specify exactmap for kernel B in your instructions, 
-but only for C. But it is also required for kernel B then?
+> Documentation/crypto/async-tx-api.txt |  217 
+>+++++++++++++++++++++++++++++++++
+> 1 files changed, 217 insertions(+), 0 deletions(-)
 
-Thanks,
-Mika
+Thanks, Dan.  In addition to Randy's most excellent nit-picking, here
+are a couple more minor nits.
 
+[...]
+>+4.2 "My application needs finer control of hardware channels"
+>+This requirement seems to arise from cases where a DMA engine 
+>driver is
+[...]
+>+dma_async_client_chan_request triggers dmaeninge to notify 
+>the client of
+
+s/dmaeninge/dmaengine/
+
+[...]
+>+5 SOURCE
+>+drivers/dma/dmaengine.c: offload engine channel management routines
+>+drivers/dma/: location for offload engine drivers
+>+crypto/async_tx/async_tx.c: async_tx interface to dmaengine 
+>and common code
+>+crypto/async_tx/async_memcpy.c: copy offload
+>+crypto/async_tx/async_memset.c: memory fill offload
+>+crypto/async_tx/async_xor.c: xor offload
+
+Also include/linux/dmaengine.h
+
+
+sln
+--
+======================================================================
+Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
+Shannon.Nelson@intel.com                I don't speak for Intel
+(503) 712-7659                    Parents can't afford to be squeamish.
