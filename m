@@ -1,90 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbXIUOIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbXIUOKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759891AbXIUOIq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 10:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759387AbXIUOIe
+	id S1759806AbXIUOKU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 10:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758322AbXIUOKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 10:08:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37000 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758140AbXIUOIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 10:08:32 -0400
-Message-ID: <46F3D049.4080006@redhat.com>
-Date: Fri, 21 Sep 2007 16:08:09 +0200
-From: Michal Schmidt <mschmidt@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-CC: Frank Cusack <fcusack@fcusack.com>, Matt Domsch <Matt_Domsch@dell.com>,
-       linux-ppp@vger.kernel.org
-Subject: [PATCH] ppp_mppe: Don't put InterimKey on the stack
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Sep 2007 10:10:06 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:42701 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758026AbXIUOKE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 10:10:04 -0400
+From: "Jose R. Santos" <jrs@us.ibm.com>
+Date: Fri, 21 Sep 2007 09:06:49 -0500
+Subject: [PATCH] ext4: FLEX_BG Kernel support v2.
+To: akpm@linux-foundation.org
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-Id: <20070921140649.4352.30055.stgit@toolssf2>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.10
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Jose R. Santos <jrs@us.ibm.com>
 
-The interrupt stack can be in the __START_KERNEL_map region in which
-virt_to_page will not work. This caused ppp_mppe to crash on CentOS 5 on x86_64
-(http://bugs.centos.org/view.php?id=2076).
+ext4: FLEX_BG Kernel support v2.
 
-The fix is to avoid copying the interim key. We can simply use it in its
-original place, which is kmalloc'd.
+This feature relaxes check restrictions on where each block groups meta data is 
+located within the storage media.  This allows for the allocation of bitmaps or 
+inode tables outside the block group boundaries in cases where bad blocks forces
+us to look for new blocks which the owning block group can not satisfy.  This 
+will also allow for new meta-data allocation schemes to improve performance and
+scalability.
 
-Michal
----
- drivers/net/ppp_mppe.c |   14 ++++++--------
- 1 files changed, 6 insertions(+), 8 deletions(-)
+Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+--
 
-diff --git a/drivers/net/ppp_mppe.c b/drivers/net/ppp_mppe.c
-index f79cf87..c0b6d19 100644
---- a/drivers/net/ppp_mppe.c
-+++ b/drivers/net/ppp_mppe.c
-@@ -136,7 +136,7 @@ struct ppp_mppe_state {
-  * Key Derivation, from RFC 3078, RFC 3079.
-  * Equivalent to Get_Key() for MS-CHAP as described in RFC 3079.
-  */
--static void get_new_key_from_sha(struct ppp_mppe_state * state, unsigned char *InterimKey)
-+static void get_new_key_from_sha(struct ppp_mppe_state * state)
- {
- 	struct hash_desc desc;
- 	struct scatterlist sg[4];
-@@ -153,8 +153,6 @@ static void get_new_key_from_sha(struct ppp_mppe_state * state, unsigned char *I
- 	desc.flags = 0;
+ fs/ext4/super.c         |    9 +++++++--
+ include/linux/ext4_fs.h |    4 +++-
+ 2 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 4550b83..dbce81d 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1248,13 +1248,17 @@ static int ext4_check_descriptors (struct super_block * sb)
+ 	ext4_fsblk_t inode_table;
+ 	struct ext4_group_desc * gdp = NULL;
+ 	int desc_block = 0;
++	int flexbg_flag = 0;
+ 	int i;
  
- 	crypto_hash_digest(&desc, sg, nbytes, state->sha1_digest);
--
--	memcpy(InterimKey, state->sha1_digest, state->keylen);
- }
++	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_FLEX_BG))
++		flexbg_flag = 1;
++
+ 	ext4_debug ("Checking group descriptors");
  
- /*
-@@ -163,21 +161,21 @@ static void get_new_key_from_sha(struct ppp_mppe_state * state, unsigned char *I
-  */
- static void mppe_rekey(struct ppp_mppe_state * state, int initial_key)
- {
--	unsigned char InterimKey[MPPE_MAX_KEY_LEN];
- 	struct scatterlist sg_in[1], sg_out[1];
- 	struct blkcipher_desc desc = { .tfm = state->arc4 };
- 
--	get_new_key_from_sha(state, InterimKey);
-+	get_new_key_from_sha(state);
- 	if (!initial_key) {
--		crypto_blkcipher_setkey(state->arc4, InterimKey, state->keylen);
--		setup_sg(sg_in, InterimKey, state->keylen);
-+		crypto_blkcipher_setkey(state->arc4, state->sha1_digest,
-+					state->keylen);
-+		setup_sg(sg_in, state->sha1_digest, state->keylen);
- 		setup_sg(sg_out, state->session_key, state->keylen);
- 		if (crypto_blkcipher_encrypt(&desc, sg_out, sg_in,
- 					     state->keylen) != 0) {
-     		    printk(KERN_WARNING "mppe_rekey: cipher_encrypt failed\n");
+ 	for (i = 0; i < sbi->s_groups_count; i++)
+ 	{
+-		if (i == sbi->s_groups_count - 1)
++		if (i == sbi->s_groups_count - 1 || flexbg_flag)
+ 			last_block = ext4_blocks_count(sbi->s_es) - 1;
+ 		else
+ 			last_block = first_block +
+@@ -1291,7 +1295,8 @@ static int ext4_check_descriptors (struct super_block * sb)
+ 				    i, inode_table);
+ 			return 0;
  		}
- 	} else {
--		memcpy(state->session_key, InterimKey, state->keylen);
-+		memcpy(state->session_key, state->sha1_digest, state->keylen);
+-		first_block += EXT4_BLOCKS_PER_GROUP(sb);
++		if (!flexbg_flag)
++			first_block += EXT4_BLOCKS_PER_GROUP(sb);
+ 		gdp = (struct ext4_group_desc *)
+ 			((__u8 *)gdp + EXT4_DESC_SIZE(sb));
  	}
- 	if (state->keylen == 8) {
- 		/* See RFC 3078 */
-
+diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
+index cdee7aa..d53e167 100644
+--- a/include/linux/ext4_fs.h
++++ b/include/linux/ext4_fs.h
+@@ -702,13 +702,15 @@ static inline int ext4_valid_inum(struct super_block *sb, unsigned long ino)
+ #define EXT4_FEATURE_INCOMPAT_META_BG		0x0010
+ #define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* extents support */
+ #define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
++#define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
+ 
+ #define EXT4_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_EXT_ATTR
+ #define EXT4_FEATURE_INCOMPAT_SUPP	(EXT4_FEATURE_INCOMPAT_FILETYPE| \
+ 					 EXT4_FEATURE_INCOMPAT_RECOVER| \
+ 					 EXT4_FEATURE_INCOMPAT_META_BG| \
+ 					 EXT4_FEATURE_INCOMPAT_EXTENTS| \
+-					 EXT4_FEATURE_INCOMPAT_64BIT)
++					 EXT4_FEATURE_INCOMPAT_64BIT| \
++					 EXT4_FEATURE_INCOMPAT_FLEX_BG)
+ #define EXT4_FEATURE_RO_COMPAT_SUPP	(EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER| \
+ 					 EXT4_FEATURE_RO_COMPAT_LARGE_FILE| \
+ 					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK | \
