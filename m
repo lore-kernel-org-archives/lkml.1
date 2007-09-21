@@ -1,108 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbXIUIJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbXIUINg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbXIUIJZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 04:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbXIUIJN
+	id S1755956AbXIUINg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 04:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXIUINU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 04:09:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58638 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753127AbXIUIJK (ORCPT
+	Fri, 21 Sep 2007 04:13:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45949 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbXIUINT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 04:09:10 -0400
-Date: Fri, 21 Sep 2007 01:03:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Gerd Hoffmann <kraxel@suse.de>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, Yinghai.Lu@Sun.COM, bryan.wu@analog.com,
-       dilinger@queued.net, kraxel@redhat.com, kraxel@suse.de,
-       lethal@linux-sh.org, rgetz@blackfin.uclinux.org, vapier.adi@gmail.com,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [PATCH] kernel/printk.c: Concerns about the console handover
-Message-Id: <20070921010349.2caee558.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64N.0709201749240.30788@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0709201749240.30788@blysk.ds.pg.gda.pl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 21 Sep 2007 04:13:19 -0400
+Date: Fri, 21 Sep 2007 09:08:08 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Christoph Hellwig <hch@infradead.org>,
+       David Wilder <dwilder@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Test harness in the kernel for new syscalls? [Was: Trace code and documentation (updated)]
+Message-ID: <20070921080808.GB29050@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Sam Ravnborg <sam@ravnborg.org>, David Wilder <dwilder@us.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <1190177218.3190.18.camel@lc4eb748232119.ibm.com> <p736427vz00.fsf@bingen.suse.de> <46F12ED7.3060605@us.ibm.com> <20070919162018.GA16237@infradead.org> <20070919095223.83bd8226.randy.dunlap@oracle.com> <20070919165507.GA18973@infradead.org> <20070919174845.GD3115@uranus.ravnborg.org> <20070919175109.GA23889@infradead.org> <20070919180115.GE3115@uranus.ravnborg.org> <20070920215042.38fd3546.randy.dunlap@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070920215042.38fd3546.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 18:28:49 +0100 (BST) "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+On Thu, Sep 20, 2007 at 09:50:42PM -0700, Randy Dunlap wrote:
+> so kernel sample code goes in the new samples/ directory,
+> and userspace sample code gets pushed to util-linux ?
 
->  Move the hadover message to after the boot console has been released to 
-> avoid bad interactions between it and the real console.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
->  The 69331af79cf29e26d1231152a172a1a10c2df511 commit of May 8th added a 
-> "console handover: ..." message to register_console() that is output 
-> during the short period when both the boot and the newly-registered 
-> console are registered.
-> 
->  This is presumably fine for boot consoles implemented entirely by Linux 
-> as they are fully controlled.  But it may produce problems when the boot 
-> console is actually implemented as a call to the firmware which may not be 
-> quite happy about how the OS driver for the piece of hardware involved 
-> controls it.
-> 
->  I hit this problem with the DECstation.  Depending on the configuration 
-> the fimrware uses a graphics adapter or a predefined serial port for 
-> console output -- which device actually that is cannot be reliably 
-> determined by Linux, though an approximation may be possible.  Now if the 
-> firmware uses the serial port and Linux is asked to use the same serial 
-> port for the real console, then this printk() hangs forever in the 
-> firmware.  The driver used is drivers/serial/zs.c.
-> 
->  The reason is by the time the ->write() call is issued for the boot 
-> console as a result of this printk(), the zs.c driver has been initialised 
-> and because at the moment the serial port has not been opened, the serial 
-> transmitter is disabled.  The firmware polls for the transmit buffer empty 
-> condition, but does not enable the module, presumably under the assumption 
-> it will not be called once an OS driver has taken control of the device 
-> (the register containing the enable bit is write-only anyway, so it would 
-> be hard to restore the previous value).  This causes a hang, because once 
-> a single character is put into the transmit buffer it will not become 
-> empty until the transmitter has been enabled.
-> 
->  The serial console as implemented by zs.c handles the case correctly, by 
-> enabling the transmitter, outputting what should be output, waiting for 
-> the transmit shift register to drain and restoring the state of the 
-> transmitter enable (which is held in a shadow variable).
-> 
->  I feel a bit uneasy about keeping serial transmitters enabled for lines 
-> that have not been opened; I gather others may agree as for example while 
-> not explicitly mentioned, I believe it is implied by what is said in 
-> Documentation/serial/driver referring to the ->shutdown() call: "Disable 
-> the port, [...]" -- with the transmitter enabled a port can hardly be 
-> considered fully disabled.  Below is a change which makes the problem 
-> disappear for me, but I suppose there was a deliberate reason for placing 
-> the printk() where it is now and nowhere else.
-> 
->  Any suggestions will be appreciated.
-> 
->   Maciej
-> 
-> patch-mips-2.6.23-rc5-20070904-printk-handover-0
-> diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/kernel/printk.c linux-mips-2.6.23-rc5-20070904/kernel/printk.c
-> --- linux-mips-2.6.23-rc5-20070904.macro/kernel/printk.c	2007-09-04 04:56:21.000000000 +0000
-> +++ linux-mips-2.6.23-rc5-20070904/kernel/printk.c	2007-09-19 21:10:16.000000000 +0000
-> @@ -1014,11 +1014,11 @@ void register_console(struct console *co
->  		return;
->  
->  	if (bootconsole && (console->flags & CON_CONSDEV)) {
-> +		unregister_console(bootconsole);
-> +		console->flags &= ~CON_PRINTBUFFER;
->  		printk(KERN_INFO "console handover: boot [%s%d] -> real [%s%d]\n",
->  		       bootconsole->name, bootconsole->index,
->  		       console->name, console->index);
-> -		unregister_console(bootconsole);
-> -		console->flags &= ~CON_PRINTBUFFER;
->  	} else {
->  		printk(KERN_INFO "console [%s%d] enabled\n",
->  		       console->name, console->index);
+I'm not sure we want to have purely sample code in util-linux, but rather
+extended sample code that makes some use.  So if you're writing user space
+sample code for your new feature make sure it's somewhat production quality,
+has a useful interface and write a little manpage for it.  That'll also help
+us to win sysdamins hearts back because BSD and solaris already have all these
+neat little tools that need to be hacked from scratch in perl on Linux.
 
-It would be useful to have some basic information like: Which kernel
-version was this found in?  Which kernel version last worked?
-
+For kernel code a samples dir might make sense because say a demo of the
+firmware loader (one of those things in Documentation/ right now) of
+course never can be "real" code.  OTOH a fork probe as provided with the
+tracing code sounds more like a real thing that should go into drivers/misc/.
