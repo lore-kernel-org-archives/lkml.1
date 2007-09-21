@@ -1,97 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbXIULoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbXIULqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757048AbXIULoQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 07:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbXIULoB
+	id S1757383AbXIULqW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 07:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbXIULqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 07:44:01 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42662 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755528AbXIULoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 07:44:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
-Date: Fri, 21 Sep 2007 13:56:29 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, nigel@suspend2.net,
-       Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       Len Brown <lenb@kernel.org>
-References: <1190266447.21818.17.camel@caritas-dev.intel.com> <200709211120.00448.ncunningham@crca.org.au> <20070920184106.79e1858a.akpm@linux-foundation.org>
-In-Reply-To: <20070920184106.79e1858a.akpm@linux-foundation.org>
+	Fri, 21 Sep 2007 07:46:16 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:25041 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbXIULqP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 07:46:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VHiZzM3X5+llh1S20ivwl3xOohWnNcGueeInD1Z2+siCzFOzmbGmZQ/JdQe5r/tXUtg8Mq6aez3GgUlOU6W/nQ//uXw47R2TvwtxggeKgrjFU1/rRB4xiJ6zSHrPqmU3j0Auwpg9dpqsKNER2d6xqrBSf6OeGbez3j5UCThiUkE=
+Message-ID: <fbe8b1780709210446i24a7ee84reaa232be2d3d089e@mail.gmail.com>
+Date: Fri, 21 Sep 2007 13:46:13 +0200
+From: "Peter Stahlir" <peter.stahlir@googlemail.com>
+To: "Muhammad Tayyab" <mail.tayyab@gmail.com>
+Subject: Re: Git as a filesystem
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <fbe8b1780709210437s18b24945jab5a3ffa07646427@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709211356.30291.rjw@sisk.pl>
+References: <fbe8b1780709210348n1b1bd739rf5bfe0a73381b3ec@mail.gmail.com>
+	 <46F3AAC1.5050409@gmail.com>
+	 <fbe8b1780709210437s18b24945jab5a3ffa07646427@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+For example, imagine running a complete Debian mirror on top of a
+Debian system with gitfs. How big would the packfile be for this 252GB
+beast?
 
-On Friday, 21 September 2007 03:41, Andrew Morton wrote:
-> On Fri, 21 Sep 2007 11:19:59 +1000 Nigel Cunningham <ncunningham@crca.org.au> wrote:
-> 
-> > Hi.
-> > 
-> > On Friday 21 September 2007 11:06:23 Andrew Morton wrote:
-> > > On Fri, 21 Sep 2007 10:24:34 +1000 Nigel Cunningham 
-> > <nigel@nigel.suspend2.net> wrote:
-> > > 
-> > > > Hi Andrew.
-> > > > 
-> > > > On Thursday 20 September 2007 20:09:41 Pavel Machek wrote:
-> > > > > Seems like good enough for -mm to me.
-> > > > > 
-> > > > > 									Pavel
-> > > > 
-> > > > Andrew, if I recall correctly, you said a while ago that you didn't want 
-> > > > another hibernation implementation in the vanilla kernel. If you're going 
-> > to 
-> > > > consider merging this kexec code, will you also please consider merging 
-> > > > TuxOnIce?
-> > > > 
-> > > 
-> > > The theory is that kexec-based hibernation will mainly use preexisting
-> > > kexec code and will permit us to delete the existing hibernation
-> > > implementation.
-> > > 
-> > > That's different from replacing it.
-> > 
-> > TuxOnIce doesn't remove the existing implementation either. It can 
-> > transparently replace it, but you can enable/disable that at compile time.
-> 
-> Right.  So we end up with two implementations in-tree.  Whereas
-> kexec-based-hibernation leads us to having zero implementations in-tree.
-
-Well, I don't quite agree.
-
-For now, the kexec-based approach is missing the handling of devices, AFAICS.
-Namely, it's quite easy to snapshot memory with the help of kexec, but the
-state of devices gets trashed in the process, so you need some additional code
-saving the state of devices for you, executed before the kexec.
-
-Moreover, on ACPI systems the transition to the S4 sleep state and back to S0
-(working state) is more complicated than a system checkpointing, because we
-are supposed to take the platform firmware into consideration in that case.
-The more I think about this, the more it seems to me that it just can't be done
-on top of kexec in a reasonable fashion.  Of course, we could avoid handling
-the ACPI S4, but that would leave some people (including me ;-)) with
-semi-working hardware after the "restore".  I don't think that's generally
-acceptable in the long run.
-
-IMHO, for ACPI systems the way to go is to harden suspend to RAM (with s2ram
-in place and the graphics adapters specifications from Intel and AMD released
-we are in a good position to do that) and build the S4 transition mechanism
-on top of that.  It can be done easlily by adapting the current hibernation
-code, but not on top of kexec (I'm afraid).
-
-[Besides, the current hibernation userland interface is used by default by
-openSUSE and it's also used by quite some Debian users, so we can't drop
-it overnight and it can't be implemented in a compatible way on top of the
-kexec-based solution.]
+Peter
