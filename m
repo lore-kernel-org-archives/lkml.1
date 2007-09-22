@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbXIVTde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752564AbXIVTzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760632AbXIVTde (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 15:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXIVTd2
+	id S1752564AbXIVTzd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 15:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXIVTzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 15:33:28 -0400
-Received: from www.osadl.org ([213.239.205.134]:48934 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752819AbXIVTd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 15:33:27 -0400
-Subject: Re: [PATCH] [35/50] i386: Do cpuid_device_create() in
-	CPU_UP_PREPARE instead of CPU_ONLINE.
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-Cc: akinobu.mita@gmail.com, hpa@zytor.com, ego@in.ibm.com, oleg@tv-sign.ru,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070921223235.18A2A13DCD@wotan.suse.de>
-References: <200709221231.836138000@suse.de>
-	 <20070921223235.18A2A13DCD@wotan.suse.de>
-Content-Type: text/plain
-Date: Sat, 22 Sep 2007 21:33:25 +0200
-Message-Id: <1190489605.4035.104.camel@chaos>
+	Sat, 22 Sep 2007 15:55:23 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33774 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751174AbXIVTzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 15:55:22 -0400
+Date: Sat, 22 Sep 2007 21:55:19 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: akpm@linux-foundation.org, aacraid@adaptec.com, linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Update version information
+Message-ID: <20070922195519.GA5274@suse.de>
+Mail-Followup-To: akpm@linux-foundation.org, aacraid@adaptec.com,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-22 at 00:32 +0200, Andi Kleen wrote:
-> From: Akinobu Mita <akinobu.mita@gmail.com>
-> 
-> Do cpuid_device_create() in CPU_UP_PREPARE instead of CPU_ONLINE.
-> 
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> Cc: Gautham R Shenoy <ego@in.ibm.com>
-> Cc: Oleg Nesterov <oleg@tv-sign.ru>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/i386/kernel/cpuid.c |   32 +++++++++++++++++++-------------
->  1 file changed, 19 insertions(+), 13 deletions(-)
-> 
-> Index: linux/arch/i386/kernel/cpuid.c
-> ===================================================================
-> --- linux.orig/arch/i386/kernel/cpuid.c
-> +++ linux/arch/i386/kernel/cpuid.c
-> @@ -136,15 +136,18 @@ static const struct file_operations cpui
->  	.open = cpuid_open,
->  };
->  
-> -static int __cpuinit cpuid_device_create(int i)
-> +static int cpuid_device_create(int cpu)
+This patch just makes the version number in ips.c and ips.h consistent. It
+seems that this has been forgotten in a60768e2d43eb30a1adb8a119aeac35dc0d03ef6.
 
-	__cpuinit please
-
-Thanks,
-
-	tglx
+It also removes code duplication, each number is now only once in the code to
+avoid similar errors in the future.
 
 
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
+---
+ drivers/scsi/ips.c |    4 ++--
+ drivers/scsi/ips.h |   11 ++++++-----
+ 2 files changed, 8 insertions(+), 7 deletions(-)
+
+--- a/drivers/scsi/ips.c
++++ b/drivers/scsi/ips.c
+@@ -204,8 +204,8 @@ module_param(ips, charp, 0);
+ /*
+  * DRIVER_VER
+  */
+-#define IPS_VERSION_HIGH        "7.12"
+-#define IPS_VERSION_LOW         ".05 "
++#define IPS_VERSION_HIGH        IPS_VER_MAJOR_STRING "." IPS_VER_MINOR_STRING
++#define IPS_VERSION_LOW         "." IPS_VER_BUILD_STRING " "
+ 
+ #if !defined(__i386__) && !defined(__ia64__) && !defined(__x86_64__)
+ #warning "This driver has only been tested on the x86/ia64/x86_64 platforms"
+--- a/drivers/scsi/ips.h
++++ b/drivers/scsi/ips.h
+@@ -1172,12 +1172,13 @@ typedef struct {
+ *************************************************************************/
+ 
+ #define IPS_VER_MAJOR 7
+-#define IPS_VER_MAJOR_STRING "7"
++#define IPS_VER_MAJOR_STRING __stringify(IPS_VER_MAJOR)
+ #define IPS_VER_MINOR 12
+-#define IPS_VER_MINOR_STRING "12"
+-#define IPS_VER_BUILD 02
+-#define IPS_VER_BUILD_STRING "02"
+-#define IPS_VER_STRING "7.12.02"
++#define IPS_VER_MINOR_STRING __stringify(IPS_VER_MINOR)
++#define IPS_VER_BUILD 05
++#define IPS_VER_BUILD_STRING __stringify(IPS_VER_BUILD)
++#define IPS_VER_STRING IPS_VER_MAJOR_STRING "." \
++		IPS_VER_MINOR_STRING "." IPS_VER_BUILD_STRING
+ #define IPS_RELEASE_ID 0x00020000
+ #define IPS_BUILD_IDENT 761
+ #define IPS_LEGALCOPYRIGHT_STRING "(C) Copyright IBM Corp. 1994, 2002. All Rights Reserved."
