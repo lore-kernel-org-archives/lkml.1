@@ -1,72 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbXIVXVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbXIVXXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbXIVXVd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 19:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbXIVXVZ
+	id S1754115AbXIVXXU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 19:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbXIVXXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 19:21:25 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:36573 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbXIVXVY (ORCPT
+	Sat, 22 Sep 2007 19:23:13 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:39679 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750871AbXIVXXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 19:21:24 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 22 Sep 2007 16:21:19 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Michael Kerrisk <mtk-manpages@gmx.net>,
-       Ulrich Drepper <drepper@redhat.com>, geoff@gclare.org.uk,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
-       Randy Dunlap <rdunlap@xenotime.net>, vda.linux@googlemail.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       =?X-UNKNOWN?Q?David_H=E4rdeman?= <david@hardeman.nu>
-Subject: Re: RFC: A revised timerfd API
-In-Reply-To: <1190496385.4035.124.camel@chaos>
-Message-ID: <Pine.LNX.4.64.0709221619430.22085@alien.or.mcafeemobile.com>
-References: <46EF7DDA.2070401@gmx.net>  <Pine.LNX.4.64.0709180936480.22956@alien.or.mcafeemobile.com>
-  <46F514C9.5010208@gmx.net>  <Pine.LNX.4.64.0709221359190.22085@alien.or.mcafeemobile.com>
- <1190496385.4035.124.camel@chaos>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 22 Sep 2007 19:23:12 -0400
+To: =?koi8-r?Q?Carlos_Narv=E1ez?= <crakup@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Not kernel dev related story (Re: Linux Router)
+In-Reply-To: <e660b2250709221609l1475c061t5a1a78de4fa529f@mail.gmail.com>
+References: <e660b2250709221609l1475c061t5a1a78de4fa529f@mail.gmail.com>
+User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+Date: Sun, 23 Sep 2007 01:38:51 +0200
+Message-Id: <E1IZEYl-00069t-JE@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Sep 2007, Thomas Gleixner wrote:
+* Sat, 22 Sep 2007 18:09:15 -0500
 
-> On Sat, 2007-09-22 at 14:07 -0700, Davide Libenzi wrote:
-> > On Sat, 22 Sep 2007, Michael Kerrisk wrote:
-> > 
-> > > So I'm inclined to implement option (b), unless someone has strong
-> > > objections.  Davide, could I persuade you to help?
-> > 
-> > I guess I better do, otherwise you'll continue to stress me ;)
-> > 
-> > int timerfd_create(int clockid);
-> > int timerfd_settime(int ufd, int flags,
-> >                     const struct itimerspec *utmr,
-> >                     struct itimerspec *otmr);
-> > int timerfd_gettime(int ufd, struct itimerspec *otmr);
-> > 
-> > Patch below. Builds, not tested yet (you need to remove the "broken" 
-> > status from CONFIG_TIMERFD in case you want to test - and plug the new 
-> > syscall to arch/xxx).
-> > May that work for you?
-> > Thomas-san, hrtimer_try_to_cancel() does not touch ->expires and I assume
-> > it'll never do, granted?
-> 
-> Davide-san, I have no intention to change that, but remember there is
-> this file "Documentation/stable_api_nonsense.txt" :)
+>  This is starting to frustrate me, because it should be much simpler
+> than it seems to be, and I feel like I'm missing something small and
+> obvious.
 
-Heh, I guess that'll work then ;)
+Please address such questions to any user forum, or to
+<linux-net@vger.kernel.org> otherwise.
 
+While doing that, provide exact output of route and firewall tables,
+but not just semi hand-waving with just one command.
 
-
-- Davide
-
-
+Thank you.
+____
