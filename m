@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbXIVVTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbXIVV0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520AbXIVVTu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 17:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXIVVTm
+	id S1754900AbXIVV0h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 17:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXIVV02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 17:19:42 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:59968 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbXIVVTl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 17:19:41 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Unfortunate infinite make recursion
-To: Jan Engelhardt <jengelh@computergmbh.de>, sam@ravnborg.org,
-       zippel@linux-m68k.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Sat, 22 Sep 2007 23:19:30 +0200
-References: <96blF-29e-27@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IZCNu-0000ai-Rt@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+QAhIjV07/R5afgXmkkDQ8alD//OcWVkxpaLG
- QEQ+GtW1Udyu6Et8cZYpPd2d95O22FmM9M9yarojgyJTi+Js3x
- 7LvWoeBPBuU3vJiGx+Sdw==
+	Sat, 22 Sep 2007 17:26:28 -0400
+Received: from www.osadl.org ([213.239.205.134]:47612 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752496AbXIVV01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 17:26:27 -0400
+Subject: Re: RFC: A revised timerfd API
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Michael Kerrisk <mtk-manpages@gmx.net>,
+       Ulrich Drepper <drepper@redhat.com>, geoff@gclare.org.uk,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <rdunlap@xenotime.net>, vda.linux@googlemail.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       David =?ISO-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+In-Reply-To: <Pine.LNX.4.64.0709221359190.22085@alien.or.mcafeemobile.com>
+References: <46EF7DDA.2070401@gmx.net>
+	 <Pine.LNX.4.64.0709180936480.22956@alien.or.mcafeemobile.com>
+	 <46F514C9.5010208@gmx.net>
+	 <Pine.LNX.4.64.0709221359190.22085@alien.or.mcafeemobile.com>
+Content-Type: text/plain
+Date: Sat, 22 Sep 2007 23:26:25 +0200
+Message-Id: <1190496385.4035.124.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@computergmbh.de> wrote:
+On Sat, 2007-09-22 at 14:07 -0700, Davide Libenzi wrote:
+> On Sat, 22 Sep 2007, Michael Kerrisk wrote:
+> 
+> > So I'm inclined to implement option (b), unless someone has strong
+> > objections.  Davide, could I persuade you to help?
+> 
+> I guess I better do, otherwise you'll continue to stress me ;)
+> 
+> int timerfd_create(int clockid);
+> int timerfd_settime(int ufd, int flags,
+>                     const struct itimerspec *utmr,
+>                     struct itimerspec *otmr);
+> int timerfd_gettime(int ufd, struct itimerspec *otmr);
+> 
+> Patch below. Builds, not tested yet (you need to remove the "broken" 
+> status from CONFIG_TIMERFD in case you want to test - and plug the new 
+> syscall to arch/xxx).
+> May that work for you?
+> Thomas-san, hrtimer_try_to_cancel() does not touch ->expires and I assume
+> it'll never do, granted?
 
-> You can cause a recursion in kbuild/make with the following:
-> 
-> make O=$PWD kernel/time.o
-> make mrproper
-> 
-> Of course no one would use O=$PWD (that's just the testcase),
-> but this happened too often:
-> 
-> /ws/linux/linux-2.6.23$ make O=/ws/linux/linux-2.6.23 kernel/time.o
-> (Oops - should have been O=/ws/linux/obj-2.6.23!)
-> 
-> The make O=$PWD truncates the Makefile, making it necessary to run `git
-> checkout Makefile` - should you have git; or reextract the tarball
-> (should you /still/ have it). Well, can we catch this case somehow?
+Davide-san, I have no intention to change that, but remember there is
+this file "Documentation/stable_api_nonsense.txt" :)
 
-You can test for the existence of MAINTAINERS in the build dir and abort
-if it's there.
--- 
-My computer isn't that nervous...it's just a bit ANSI. 
+	tglx
 
-Friﬂ, Spammer: Z9asY@K.7eggert.dyndns.org nwJ@ACle6hUq.7eggert.dyndns.org
- l@zjuq.-z.7eggert.dyndns.org pjy.jbJ@rpodmsnk.7eggert.dyndns.org
+
+
