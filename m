@@ -1,67 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762131AbXIVHQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762571AbXIVHXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762131AbXIVHQu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 03:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbXIVHQn
+	id S1762571AbXIVHXN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 03:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbXIVHW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 03:16:43 -0400
-Received: from ozlabs.org ([203.10.76.45]:37937 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751833AbXIVHQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 03:16:42 -0400
-Subject: Re: [patch 1/8] Immediate Values - Global Modules List and Module
-	Mutex
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20070921133719.GC13129@Krystal>
-References: <20070911004541.GA4360@Krystal>
-	 <1189487938.20631.53.camel@localhost.localdomain>
-	 <20070911142733.GA7850@Krystal>
-	 <1189662432.32322.1.camel@localhost.localdomain>
-	 <20070913212107.GA15826@Krystal>
-	 <1189725317.7262.23.camel@localhost.localdomain>
-	 <20070914153230.GA29743@Krystal>
-	 <1190069659.7262.141.camel@localhost.localdomain>
-	 <20070918134131.GA22690@Krystal>
-	 <1190291351.7262.248.camel@localhost.localdomain>
-	 <20070921133719.GC13129@Krystal>
-Content-Type: text/plain
-Date: Sat, 22 Sep 2007 17:15:57 +1000
-Message-Id: <1190445357.27805.66.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Sep 2007 03:22:56 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37075 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758030AbXIVHWz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 03:22:55 -0400
+Date: Sat, 22 Sep 2007 12:55:50 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Mel Gorman <mel@skynet.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>,
+       Linux Netdev Mailing List <netdev@vger.kernel.org>
+Subject: Re: 2.6.23-rc6-mm1: Build failures on ppc64_defconfig
+In-Reply-To: <alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0709221248390.22517@enigma.security.iitk.ac.in>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+ <20070920132512.GF24105@skynet.ie>
+ <alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-21 at 09:37 -0400, Mathieu Desnoyers wrote:
-> > Good points.  Well I'd say hiding it all behind a friendly
-> > "immediate_set()" interface is the best option then.
+
+
+On Thu, 20 Sep 2007, Satyam Sharma wrote:
 > 
-> Then we can't benefit of the __init section to have the code removed
-> after boot. I don't see the point in doing so.
+> BTW ppc64_defconfig didn't quite like 2.6.23-rc6-mm1 either ...
+> IIRC I got build failures in:
 
-Because having a magic early version is a bad burden to place on
-programmers.  It's an admission of failure that we cannot create a
-simpler interface.
+> drivers/net/spider_net.c
 
-AFAICT it's a handful of bytes which would be freed.
+Fixing the above showed up another problem in another file of the
+same driver (drivers/net/spider_net_ethtool.c)
 
-> > Is this really worth worrying about?  Isn't there already a problem with
-> > printk() in nmi?
-> 
-> printk() is just an example taken from my current instrumentation. Let's
-> say I plan to instrument kmalloc() (which will happen someday): it's
-> used in every context, including NMI.
 
-Again, I don't think calling kmalloc in NMI is valid.  Unless I'm
-missing something, any code which uses locks is susceptible to deadlock
-if used from an NMI handler.   So you really can't do much.
+[PATCH -mm] spider_net_ethtool: Keep up with recent netdev stats changes
 
-It's nice that you have the perfect solution.  But I'd really rather see
-a sufficient solution which is 1/4 of the code and 1/10 the complexity.
+Unbreak the following:
 
-Rusty.
+drivers/net/spider_net_ethtool.c: In function 'spider_net_get_ethtool_stats':
+drivers/net/spider_net_ethtool.c:160: error: structure has no member named 'netdev_stats'
+drivers/net/spider_net_ethtool.c:161: error: structure has no member named 'netdev_stats'
+drivers/net/spider_net_ethtool.c:162: error: structure has no member named 'netdev_stats'
+drivers/net/spider_net_ethtool.c:163: error: structure has no member named 'netdev_stats'
+drivers/net/spider_net_ethtool.c:164: error: structure has no member named 'netdev_stats'
+drivers/net/spider_net_ethtool.c:165: error: structure has no member named 'netdev_stats'
+drivers/net/spider_net_ethtool.c:166: error: structure has no member named 'netdev_stats'
+make[2]: *** [drivers/net/spider_net_ethtool.o] Error 1
 
+Also do another ARRAY_SIZE() cleanup while at it.
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+
+---
+
+ drivers/net/spider_net_ethtool.c |   18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
+
+diff -ruNp a/drivers/net/spider_net_ethtool.c b/drivers/net/spider_net_ethtool.c
+--- a/drivers/net/spider_net_ethtool.c	2007-09-22 06:26:39.000000000 +0530
++++ b/drivers/net/spider_net_ethtool.c	2007-09-22 12:43:51.000000000 +0530
+@@ -28,8 +28,6 @@
+ #include "spider_net.h"
+ 
+ 
+-#define SPIDER_NET_NUM_STATS 13
+-
+ static struct {
+ 	const char str[ETH_GSTRING_LEN];
+ } ethtool_stats_keys[] = {
+@@ -149,7 +147,7 @@ spider_net_ethtool_get_ringparam(struct 
+ 
+ static int spider_net_get_stats_count(struct net_device *netdev)
+ {
+-	return SPIDER_NET_NUM_STATS;
++	return ARRAY_SIZE(ethtool_stats_keys);
+ }
+ 
+ static void spider_net_get_ethtool_stats(struct net_device *netdev,
+@@ -157,13 +155,13 @@ static void spider_net_get_ethtool_stats
+ {
+ 	struct spider_net_card *card = netdev->priv;
+ 
+-	data[0] = card->netdev_stats.tx_packets;
+-	data[1] = card->netdev_stats.tx_bytes;
+-	data[2] = card->netdev_stats.rx_packets;
+-	data[3] = card->netdev_stats.rx_bytes;
+-	data[4] = card->netdev_stats.tx_errors;
+-	data[5] = card->netdev_stats.tx_dropped;
+-	data[6] = card->netdev_stats.rx_dropped;
++	data[0] = netdev->stats.tx_packets;
++	data[1] = netdev->stats.tx_bytes;
++	data[2] = netdev->stats.rx_packets;
++	data[3] = netdev->stats.rx_bytes;
++	data[4] = netdev->stats.tx_errors;
++	data[5] = netdev->stats.tx_dropped;
++	data[6] = netdev->stats.rx_dropped;
+ 	data[7] = card->spider_stats.rx_desc_error;
+ 	data[8] = card->spider_stats.tx_timeouts;
+ 	data[9] = card->spider_stats.alloc_rx_skb_error;
