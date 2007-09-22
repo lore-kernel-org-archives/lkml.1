@@ -1,101 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760069AbXIVC5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbXIVDQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760069AbXIVC5U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 22:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756055AbXIVC5J
+	id S1759855AbXIVDQZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 23:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXIVDQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 22:57:09 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:53162 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755671AbXIVC5H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 22:57:07 -0400
-Date: Fri, 21 Sep 2007 22:56:56 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl, bunk@kernel.org,
-       ego@in.ibm.com, oleg@tv-sign.ru, srostedt@redhat.com
-Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
-In-Reply-To: <20070922014343.GM9059@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.58.0709212249270.6217@gandalf.stny.rr.com>
-References: <20070910183004.GA3299@linux.vnet.ibm.com>
- <20070910183412.GC3819@linux.vnet.ibm.com> <20070921152048.GF15697@goodmis.org>
- <20070921230343.GE9059@linux.vnet.ibm.com> <20070922003235.GJ9059@linux.vnet.ibm.com>
- <Pine.LNX.4.58.0709212115160.4791@gandalf.stny.rr.com>
- <20070922014343.GM9059@linux.vnet.ibm.com>
+	Fri, 21 Sep 2007 23:16:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32930 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753509AbXIVDQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 23:16:18 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] [11/45] x86_64: Remove rogue default m in drivers/video/Kconfig
+Date: Fri, 21 Sep 2007 23:15:59 -0400
+User-Agent: KMail/1.9.5
+Cc: luming.yu@gmail.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <200709211044.901175000@suse.de> <20070921204452.985B614F09@wotan.suse.de>
+In-Reply-To: <20070921204452.985B614F09@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709212315.59594.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Acked-by: Len Brown <len.brown@intel.com>
 
-[ sneaks away from the family for a bit to answer emails ]
+Sorry, i thought we fixed this earlier.
 
---
-On Fri, 21 Sep 2007, Paul E. McKenney wrote:
+thanks,
+-Len
 
-> On Fri, Sep 21, 2007 at 09:19:22PM -0400, Steven Rostedt wrote:
-> >
-> > --
-> > On Fri, 21 Sep 2007, Paul E. McKenney wrote:
-> > > >
-> > > > In any case, I will be looking at the scenarios more carefully.  If
-> > > > it turns out that GP_STAGES can indeed be cranked down a bit, well,
-> > > > that is an easy change!  I just fired off a POWER run with GP_STAGES
-> > > > set to 3, will let you know how it goes.
-> > >
-> > > The first attempt blew up during boot badly enough that ABAT was unable
-> > > to recover the machine (sorry, grahal!!!).  Just for grins, I am trying
-> > > it again on a machine that ABAT has had a better record of reviving...
-> >
-> > This still frightens the hell out of me. Going through 15 states and
-> > failing. Seems the CPU is holding off writes for a long long time. That
-> > means we flipped the counter 4 times, and that still wasn't good enough?
->
-> Might be that the other machine has its 2.6.22 version of .config messed
-> up.  I will try booting it on a stock 2.6.22 kernel when it comes back
-> to life -- not sure I ever did that before.  Besides, the other similar
-> machine seems to have gone down for the count, but without me torturing
-> it...
->
-> Also, keep in mind that various stages can "record" a memory misordering,
-> for example, by incrementing the wrong counter.
->
-> > Maybe I'll boot up my powerbook to see if it has the same issues.
-> >
-> > Well, I'm still finishing up on moving into my new house, so I wont be
-> > available this weekend.
->
-> The other machine not only booted, but has survived several minutes of
-> rcutorture thus far.  I am also trying POWER5 machine as well, as the
-> one currently running is a POWER4, which is a bit less aggressive about
-> memory reordering than is the POWER5.
->
-> Even if they pass, I refuse to reduce GP_STAGES until proven safe.
-> Trust me, you -don't- want to be unwittingly making use of a subtely
-> busted RCU implementation!!!
-
-I totally agree. This is the same reason I want to understand -why- it
-fails with 3 stages. To make sure that adding a 4th stage really does fix
-it, and doesn't just make the chances for the bug smaller.
-
-I just have that funny feeling that we are band-aiding this for POWER with
-extra stages and not really solving the bug.
-
-I could be totally out in left field on this. But the more people have a
-good understanding of what is happening (this includes why things fail)
-the more people in general can trust this code.  Right now I'm thinking
-you may be the only one that understands this code enough to trust it. I'm
-just wanting you to help people like me to trust the code by understanding
-and not just having faith in others.
-
-If you ever decide to give up jogging, we need to make sure that there are
-people here that can still fill those running shoes (-:
-
-
- -- Steve
-
+On Friday 21 September 2007 16:44, Andi Kleen wrote:
+> 
+> default m is near always wrong, like here. For some reason ACPI
+> likes to reintroduce these and I like to immediately squash them again 
+> before they pollute too many .configs.
+> 
+> Cc: len.brown@intel.com
+> Cc: luming.yu@gmail.com
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  drivers/video/Kconfig |    1 -
+>  1 file changed, 1 deletion(-)
+> 
+> Index: linux/drivers/video/Kconfig
+> ===================================================================
+> --- linux.orig/drivers/video/Kconfig
+> +++ linux/drivers/video/Kconfig
+> @@ -14,7 +14,6 @@ config VGASTATE
+>  
+>  config VIDEO_OUTPUT_CONTROL
+>  	tristate "Lowlevel video output switch controls"
+> -	default m
+>  	help
+>  	  This framework adds support for low-level control of the video 
+>  	  output switch.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
