@@ -1,381 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXIVSAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbXIVSBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbXIVSAV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 14:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbXIVSAI
+	id S1759358AbXIVSBR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 14:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbXIVSBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 14:00:08 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:52366 "EHLO e2.ny.us.ibm.com"
+	Sat, 22 Sep 2007 14:01:08 -0400
+Received: from smtpoutm.mac.com ([17.148.16.73]:65396 "EHLO smtpoutm.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbXIVSAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 14:00:05 -0400
-Date: Sat, 22 Sep 2007 10:59:58 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	id S1751131AbXIVSBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 14:01:06 -0400
+In-Reply-To: <200709221234.18426.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org> <878x6z67n8.fsf@jbms.ath.cx> <BF08447B-234F-4851-89BF-92A57EA801C6@mac.com> <200709221234.18426.rjw@sisk.pl>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3BCF760C-D77D-417A-809A-B20D04DD01D3@mac.com>
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       linux-pm@lists.linux-foundation.org,
+       huang ying <huang.ying.caritas@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH] Add CRC checksum for RCU lists
-Message-ID: <20070922175958.GD11123@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1190313251.4518.14.camel@localhost.localdomain> <20070921171256.GA9059@linux.vnet.ibm.com> <Pine.LNX.4.58.0709211550330.29857@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0709211550330.29857@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Sat, 22 Sep 2007 14:00:05 -0400
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 05:32:08PM -0400, Steven Rostedt wrote:
-> 
-> --
-> On Fri, 21 Sep 2007, Paul E. McKenney wrote:
-> 
-> > On Thu, Sep 20, 2007 at 02:34:11PM -0400, Steven Rostedt wrote:
-> > > In recent development of the RT kernel, some of our experimental code
-> > > corrupted the rcu header. But the side effect (crashing) didn't rear its
-> > > ugly head until way after the fact. Discussing this with Paul, he
-> > > suggested that RCU should have a "self checking" mechanism to detect
-> > > these kind of issues. He also suggested putting in a CRC into the
-> > > rcu_head structure.
-> > >
-> > > This patch does so.
-> >
-> > Very cool!!!
-> 
-> Thanks :-)
-> 
-> > > This patch also takes care to update the crc when rcu_head items are
-> > > moved from list to list and whenever the next pointer is modified due to
-> > > addition.
-> >
-> > We can only be thankful that it is not possible to cancel outstanding
-> > RCU callbacks...
-> 
-> true
-> 
-> > Looks good -- a few suggestions for better fault coverage interspersed
-> > below.  But would be useful as is.  (And it would be good to apply after
-> > the preempt/boost patches, which are currently undergoing integration
-> > with the CPU hotplug patches -- the good news is that this integration
-> > eliminates the need for patch #4!)
-> >
-> > Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> Thanks, but this is still going to go through changes, from your comments
-> as well as your latest patches.
+On Sep 22, 2007, at 06:34:17, Rafael J. Wysocki wrote:
+> On Saturday, 22 September 2007 01:19, Kyle Moffett wrote:
+>> On Sep 21, 2007, at 17:16:59, Jeremy Maitin-Shepard wrote:
+>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>>>> The ACPI platform firmware is allowed to preserve information  
+>>>> accross the hibernation-resume cycle, so this need not be the same.
+>>>
+>>> All of my comments related to the case where S4 is not being used  
+>>> (instead the system is just powered off normally), and a boot  
+>>> kernel that does not initialize ACPI is used.  In that case, the  
+>>> ACPI platform firmware should not be able to distinguish a normal  
+>>> boot from a resume from hibernation.
+>>
+>> I think that in order for this to work, there would need to be  
+>> some ABI whereby the resume-ing kernel can pass its entire ACPI  
+>> state and a bunch of other ACPI-related device details to the  
+>> resume-ed kernel, which I believe it does not do at the moment.
+>
+> In fact we don't need to do this.
+>
+> The solution is not to touch ACPI in the boot kernel (ie. the one  
+> that loads the image) and pass control to the image kernel.  This  
+> is how it's supposed to work according to the spec, more or less  
+> (well, there are some ugly details  that need handling, like the  
+> restoration of the NVS area).
 
-Good point...
+First of all, we will need to make the resumed kernel throw away  
+*ALL* of its ACPI state on S5 and completely reinitialize ACPI as  
+though it was booting for the first time on resume.  From what I can  
+tell, we "throw away" all the ACPI state in the boot kernel and  
+reinitialize it there, but then the reinitialized state is  
+overwritten with the resumed kernel's state and the two don't always  
+happen to be the same.  (Like if a battery got replaced or AC status  
+changed).
 
-> > > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > >
-> > > diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> > > index fe17d7d..baca7e6 100644
-> > > --- a/include/linux/rcupdate.h
-> > > +++ b/include/linux/rcupdate.h
-> > > @@ -50,13 +50,81 @@
-> > >  struct rcu_head {
-> > >  	struct rcu_head *next;
-> > >  	void (*func)(struct rcu_head *head);
-> > > +#ifdef CONFIG_RCU_CRC_HEADER_CHECK
-> > > +	/*
-> > > +	 * Checks are made in C files knowing that "next" is
-> > > +	 * the first element. So keep it the first element.
-> > > +	 */
-> > > +	unsigned long crc;
-> > > +	void *caller;
-> > > +#endif
-> > >  };
-> >
-> > Looks good, but one question -- why not include the caller in the CRC?
-> > Not a big deal either way, but would catch a few more cases of corruption.
-> > Also, as things stand, the caller pointer can be silently corrupted,
-> > which might causes confusion if someone had to examine the RCU callback
-> > lists from a crash dump.
-> 
-> One reason was that the caller was an addition. I originally didn't have
-> it, but during my tests, the output was basically useless. It didn't give
-> any hint to where things went wrong, so I added it. The CRC is to check
-> the rcu is working, not really the checker itself.
-> 
-> Note, it helped us out lately with Peter's latest file_table patches in
-> -rt. With this patch applied, it triggered corruption. That was due to the
-> union in the fs.h between the llist and rcu_head there was a dependency
-> in the llist where the rcu_head would not grow. The llist can still do a
-> spin lock on the lock _after_ the item was added to the call_rcu. Because
-> of that union, the locking of the lock corrupted the crc. Set it to one.
-> 
-> You'll see patches from Peter soon to get rid of that dependency.
+Umm, I don't see how that can possibly work properly.  For a laptop,  
+for example, the restore kernel will need to access the disk, the LCD  
+display, and possibly the AC/battery and current CPU frequency.  From  
+what I understand of ACPI, both of the former may need ACPI code to  
+operate properly (Isn't there an ATA taskfile object of some kind?)  
+and the latter two almost definitely need ACPI.  Ergo the boot kernel  
+may need to initialize and use ACPI just to run an ATA taskfile so it  
+can read from the HDD efficiently.
 
-Look forward to seeing them!
+>> I believe that what causes problems is the ACPI state data that  
+>> the kernel stores is *different* between identical sequential  
+>> boots, especially when you add/remove/replace batteries, AC, etc.
+>
+> Rather the ACPI state data that the platform firmware stores may be  
+> different, depending on whether you enter S4 or S5 during "power  
+> off" and that determines the interactions between the kernel and  
+> the firmware after the next boot.
 
-> > Interchanging the order of "crc" and "caller" would change the strategy,
-> > if I understand correctly.
-> 
-> yep.
-> 
-> >
-> > > -#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
-> > > +#ifdef CONFIG_RCU_CRC_HEADER_CHECK
-> > > +
-> > > +#define RCU_CRC_MAGIC 0xC4809168UL
-> >
-> > Very magic indeed -- Google doesn't find it, other than in your
-> > patch.  ;-)
-> 
-> Paul, I'm disappointed in you. That number doesn't ring a bell at all??
-> 
-> (hint, ignore the 'C' that was added by me).
+That's not what he was talking about.  The problem discussed was:
+   (A) You hibernate your box, entering S5 (IE: power off)
+   (B) You resume the box and the boot kernel inits all the ACPI stuff.
+   (C) The boot kernel's ACPI state is completely replaced by the  
+resumed kernel's state.
+   (D) Hardware stops working mysteriously because of ACPI problems.
 
-Well, once Kyle spilled the beans, it was pretty obvious.  ;-)
+The only possible conclusion is that the state between the boot  
+kernel and the resume kernel was *different* and so the device failed  
+because the ACPI state in the resume kernel doesn't match the actual  
+state of the hardware.
 
-Might well be a first!!!
-
-> > > +static inline unsigned long rcu_crc_calc(struct rcu_head *head)
-> > > +{
-> > > +	unsigned int *p = (unsigned int*)head; /* 32 bit */
-> > > +	unsigned long crc = RCU_CRC_MAGIC;
-> > > +
-> > > +	for (p=(void *)head; (void*)p < (void*)&head->crc; p++)
-> > > +		crc ^= *p;
-> > > +	return crc;
-> > > +}
-> >
-> > Why initialize "p" twice?  (Once in the declaration, and once in the
-> > "for" loop, but with different casts.)
-> 
-> Why? probably because I was half asleep when writing it ;-)
-> Will fix.
-> 
-> > > +static inline void rcu_crc_check(struct rcu_head *head)
-> > > +{
-> > > +	static int once;
-> > > +	if (unlikely(head->crc != rcu_crc_calc(head)) && !once) {
-> > > +		once++;
-> >
-> > Do we want exactly one (give or take concurrent checks), or do we want
-> > the first ten or so?  Sometimes having a modest sample rather than
-> > exactly one is helpful.
-> 
-> I added that because during testing, it would flood the serial console. I
-> can modify this to whatever deems fit.  Perhaps more hits will give a
-> better clue to what went wrong. I could also just add a print_ratelimit to
-> it too.
-
-Agreed -- using the already-defined print_ratelimit() sounds much better
-than reinventing the wheel.
-
-> > And I know that it doesn't matter in this case, but I cannot stop myself
-> > from pointing out the possibility of making "once" be an atomic_t
-> > that is initialized to (say) -10, then making the !once check be an
-> > atomic_add_return().  (Whew!  Good to get that off my chest!!!)
-> 
-> Would you prefer the above or the print_ratelimit? Maybe 10 would be best.
-> I really don't have a preference.
-
-Definitely print_ratelimit()!!!
-
-[ . . . ]
-
-> > > +# define RCU_CRC_INIT , .crc = RCU_CRC_MAGIC
-> >
-> > Would need to initialize caller here if you add it to the CRC.
-> >
-> > > +# define RCU_CRC_SET(ptr) (ptr)->crc = RCU_CRC_MAGIC
-> >
-> > And here as well.
-> >
-> > But this has the effect of causing the CRC to be born correct.  Do we
-> > really want that?  Suppose someone incorrectly re-initialized a callback
-> > that was still on a list.  Wouldn't it be better to get a CRC warning than
-> > a NULL pointer exception?  So suggest something like RCU_CRC_MAGIC+1 --
-> > perhaps with a RCU_CRC_BAD_MAGIC symbol.
-> 
-> Yeah, I can scrap those initialization macros. That came about my first
-> attempt where I forgot to add the assignment to the call_rcu and it
-> obviously failed.  So I added these macros, and it stilled failed. Then I
-> saw the mistake I made, fixed it, and it worked. But I never removed these
-> macros.  I think we can just keep the crc as zero. That would also fail
-> the test. Hmm, maybe we should add a BAD_CRC number so that it will give
-> us a hint that something was initiazed incorrectly.
-
-Or maybe a wrapper around the rcu_assign_crc() function that ensures
-that the CRC is wrong?
-
-> > > +#else
-> > > +# define rcu_crc_calc(head) 0
-> > > +# define rcu_crc_check(head) do { } while(0)
-> > > +# define rcu_assign_crc(head) do { } while(0)
-> > > +# define rcu_check_list(head) do { } while(0)
-> > > +# define RCU_CRC_INIT
-> > > +# define RCU_CRC_SET(ptr) do { } while(0)
-> > > +#endif /* CONFIG_RCU_CRC_HEADER_CHECK */
-> > > +
-> > > +#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL RCU_CRC_INIT }
-> > >  #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
-> > > -#define INIT_RCU_HEAD(ptr) do { \
-> > > -       (ptr)->next = NULL; (ptr)->func = NULL; \
-> > > -} while (0)
-> > > +#define INIT_RCU_HEAD(ptr) do {				\
-> > > +		(ptr)->next = NULL; (ptr)->func = NULL; \
-> > > +		RCU_CRC_SET(ptr);			\
-> > > +	} while (0)
-> > >
-> > >
-> > >
-> > > diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> > > index 2c2dd84..4c3cc9c 100644
-> > > --- a/kernel/rcupdate.c
-> > > +++ b/kernel/rcupdate.c
-> > > @@ -76,6 +76,23 @@ static atomic_t rcu_barrier_cpu_count;
-> > >  static DEFINE_MUTEX(rcu_barrier_mutex);
-> > >  static struct completion rcu_barrier_completion;
-> > >
-> > > +#ifdef CONFIG_RCU_CRC_HEADER_CHECK
-> > > +#define rcu_check_rdp(rdp)			\
-> > > +	do {					\
-> > > +		rcu_check_list(rdp->nxtlist);	\
-> > > +		rcu_check_list(rdp->curlist);	\
-> > > +		rcu_check_list(rdp->donelist);	\
-> > > +	} while(0)
-> > > +#define rcu_crc_update_tail(rdp, tail, list)				\
-> > > +	do {								\
-> > > +		if ((rdp)->tail != &(rdp)->list)			\
-> > > +			rcu_assign_crc((struct rcu_head*)(rdp)->tail);	\
-> > > +	} while(0)
-> > > +#else
-> > > +# define rcu_check_rdp(rdp) do { } while(0)
-> > > +# define rcu_crc_update_tail(rdp, tail, list) do { } while(0)
-> > > +#endif
-> > > +
-> > >  #ifdef CONFIG_SMP
-> > >  static void force_quiescent_state(struct rcu_data *rdp,
-> > >  			struct rcu_ctrlblk *rcp)
-> > > @@ -122,14 +139,19 @@ void fastcall call_rcu(struct rcu_head *head,
-> > >
-> > >  	head->func = func;
-> > >  	head->next = NULL;
-> > > +	rcu_assign_crc(head);
-> > >  	local_irq_save(flags);
-> > >  	rdp = &__get_cpu_var(rcu_data);
-> > >  	*rdp->nxttail = head;
-> >
-> > The CRC of the tail element is incorrect at this point, but that is OK
-> > because we have interrupts disabled and no other CPU can access our list
-> > in the meantime.
-> 
-> Yep, that was planned.
-> 
-> >
-> > > +	rcu_crc_update_tail(rdp, nxttail, nxtlist);
-> > >  	rdp->nxttail = &head->next;
-> > >  	if (unlikely(++rdp->qlen > qhimark)) {
-> > >  		rdp->blimit = INT_MAX;
-> > >  		force_quiescent_state(rdp, &rcu_ctrlblk);
-> > >  	}
-> > > +
-> > > +	rcu_check_rdp(rdp);
-> >
-> > This check is OK -- no other CPU should be able to manipulate our
-> > rdp, and we have interrupts disabled.  Same situation for call_rcu_bh()
-> > below.
-> >
-> > >  	local_irq_restore(flags);
-> > >  }
-> > >
-> > > @@ -157,9 +179,11 @@ void fastcall call_rcu_bh(struct rcu_head *head,
-> > >
-> > >  	head->func = func;
-> > >  	head->next = NULL;
-> > > +	rcu_assign_crc(head);
-> > >  	local_irq_save(flags);
-> > >  	rdp = &__get_cpu_var(rcu_bh_data);
-> > >  	*rdp->nxttail = head;
-> > > +	rcu_crc_update_tail(rdp, nxttail, nxtlist);
-> > >  	rdp->nxttail = &head->next;
-> > >
-> > >  	if (unlikely(++rdp->qlen > qhimark)) {
-> > > @@ -167,6 +191,8 @@ void fastcall call_rcu_bh(struct rcu_head *head,
-> > >  		force_quiescent_state(rdp, &rcu_bh_ctrlblk);
-> > >  	}
-> > >
-> > > +	rcu_check_rdp(rdp);
-> > > +
-> > >  	local_irq_restore(flags);
-> > >  }
-> > >
-> > > @@ -233,6 +259,8 @@ static void rcu_do_batch(struct rcu_data *rdp)
-> > >  	struct rcu_head *next, *list;
-> > >  	int count = 0;
-> > >
-> > > +	rcu_check_rdp(rdp);
-> >
-> > OK, interrupts disabled here.
-> >
-> > >  	list = rdp->donelist;
-> > >  	while (list) {
-> > >  		next = list->next;
-> >
-> > Why not invalidate the CRC of the element that we just removed?  This
-> > would catch some cases of list mangling.
-> 
-> Good idea, will add.
-> 
-> >
-> > > @@ -373,6 +401,7 @@ static void rcu_move_batch(struct rcu_data *this_rdp, struct rcu_head *list,
-> > >  {
-> > >  	local_irq_disable();
-> > >  	*this_rdp->nxttail = list;
-> >
-> > Momentarily wrong CRC OK, interrupts disabled here.  Ditto for
-> > __rcu_process_callbacks() below.
-> 
-> yep
-> 
-> >
-> > > +	rcu_crc_update_tail(this_rdp, nxttail, nxtlist);
-> > >  	if (list)
-> > >  		this_rdp->nxttail = tail;
-> > >  	local_irq_enable();
-> > > @@ -424,6 +453,7 @@ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
-> > >  {
-> > >  	if (rdp->curlist && !rcu_batch_before(rcp->completed, rdp->batch)) {
-> > >  		*rdp->donetail = rdp->curlist;
-> > > +		rcu_crc_update_tail(rdp, donetail, donelist);
-> > >  		rdp->donetail = rdp->curtail;
-> > >  		rdp->curlist = NULL;
-> > >  		rdp->curtail = &rdp->curlist;
-> > > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> > > index 50a94ee..981fc93 100644
-> > > --- a/lib/Kconfig.debug
-> > > +++ b/lib/Kconfig.debug
-> > > @@ -424,6 +424,17 @@ config RCU_TORTURE_TEST
-> > >  	  Say M if you want the RCU torture tests to build as a module.
-> > >  	  Say N if you are unsure.
-> > >
-> > > +config RCU_CRC_HEADER_CHECK
-> > > +	bool "RCU header self check"
-> > > +	depends on DEBUG_KERNEL
-> > > +	help
-> > > +	  This option enables CRC verification of RCU lists to catch
-> > > +	  possible corruption to the RCU list by improper application
-> > > +	  of RCU callbacks. This adds overhead to the running system
-> > > +	  so only enable it if you suspect RCU corruption is occurring.
-> > > +
-> > > +	  If unsure, say N.
-> > > +
-> > >  config LKDTM
-> > >  	tristate "Linux Kernel Dump Test Tool Module"
-> > >  	depends on DEBUG_KERNEL
-> > >
-> > >
-> >
-> 
-> Paul, thanks for all the comments. I'll put out a new round of patches
-> after yours becomes offical (no "not for inclussion" statements).
-
-Sounds good!!!
-
-						Thanx, Paul
+Cheers,
+Kyle Moffett
