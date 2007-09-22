@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbXIVIu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbXIVIzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754921AbXIVIu5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 04:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXIVIuu
+	id S1756221AbXIVIzZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 04:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbXIVIzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 04:50:50 -0400
-Received: from www.osadl.org ([213.239.205.134]:40223 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751089AbXIVIuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 04:50:50 -0400
-Subject: Re: clockevents: fix resume logic
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20070917183737.GB5966@ucw.cz>
-References: <200707220159.l6M1xBgH001236@hera.kernel.org>
-	 <200709111323.56030.rjw@sisk.pl>
-	 <20070911042228.1ef690e0.akpm@linux-foundation.org>
-	 <200709111409.13796.rjw@sisk.pl>
-	 <20070911112531.80bac380.akpm@linux-foundation.org>
-	 <1189535883.5235.13.camel@chaos>
-	 <20070911114417.3f6e9e1b.akpm@linux-foundation.org>
-	 <1189540321.5235.21.camel@chaos>
-	 <20070912021248.0c653525.akpm@linux-foundation.org>
-	 <20070917183737.GB5966@ucw.cz>
-Content-Type: text/plain
-Date: Sat, 22 Sep 2007 10:50:47 +0200
-Message-Id: <1190451047.4035.29.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Sep 2007 04:55:16 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:33606 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbXIVIzO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 04:55:14 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 22 Sep 2007 04:48:28 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: memset as memzero
+In-Reply-To: <20070922083355.GA7226@cvg>
+Message-ID: <Pine.LNX.4.64.0709220441090.21302@localhost.localdomain>
+References: <20070922083355.GA7226@cvg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-17 at 18:37 +0000, Pavel Machek wrote:
-> > That's a bit tricky because hitting the keyboard is what unsticks things. 
-> > And the video is black after resume-from-RAM (has always been thus) and we
-> 
-> Ok, can we try to fix the video issue for you? That should make the
-> development easier... I assume you tried s2ram from suspend.sf.net,
-> and no combination of switches helped?
+On Sat, 22 Sep 2007, Cyrill Gorcunov wrote:
 
-I have the same issue. Blank screen after suspend to ram. Hibernate
-works.
+> Hi list,
+>
+> could anyone tell me why there is no official memzero function (or
+> macros) in the kernel. As I see a lot of kernel parts calls for it
+> (defying own macros as alias to memset). Maybe there is a special
+> reason not to do so? Actually my suggestion is to define _one_
+> general macros for this.
 
-Do you have a debug patch or something ?
+i brought up this issue on the KJ list once upon a time:
 
-	tglx
+https://lists.linux-foundation.org/pipermail/kernel-janitors/2007-February/017847.html
 
+and there didn't seem to be much enthusiasm for it.
 
+  however, i am still curious why there isn't more use of the
+already-defined "clear_page" macro.  most architectures appear to
+define it:
+
+$ grep -r "define.*clear_page" include
+
+but there are still numerous explicit calls to memset() to zero a
+chunk of memory that is exactly PAGE_SIZE in size.  just an
+observation.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
