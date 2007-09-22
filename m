@@ -1,105 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbXIVUXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbXIVUhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbXIVUXQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 16:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXIVUXF
+	id S1753666AbXIVUhh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 16:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbXIVUh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 16:23:05 -0400
-Received: from www.osadl.org ([213.239.205.134]:47610 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751688AbXIVUXC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 16:23:02 -0400
-Subject: Re: [PATCH] usb-gadget-ether: Prevent oops caused by error
-	interrupt  race -V2 (comments update)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Brownell <david-b@pacbell.net>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org, bene@linutronix.de,
-       akpm@osdl.org
-In-Reply-To: <20070922201450.EB20823974D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <1190299611.3481.34.camel@chaos>
-	 <200709211508.42968.david-b@pacbell.net> <1190482861.4035.59.camel@chaos>
-	 <20070922191806.A2F59C2308@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	 <1190489440.4035.103.camel@chaos>
-	 <20070922201450.EB20823974D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Content-Type: text/plain
-Date: Sat, 22 Sep 2007 22:23:00 +0200
-Message-Id: <1190492580.4035.116.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Sep 2007 16:37:29 -0400
+Received: from main.gmane.org ([80.91.229.2]:55800 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751274AbXIVUh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 16:37:28 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Oleg Verych (nntp)" <olecom@flower.upol.cz>
+Subject: Re: memset as memzero
+Date: Sat, 22 Sep 2007 20:37:06 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnffb04u.d4n.!gmane?olecom.ENOMSG@flower.upol.cz>
+References: <20070922124659.741cca42@laptopd505.fenrus.org> <E1IZAbA-0001uz-00@calista.eckenfels.net>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+22-09-2007, Bernd Eckenfels:
+> In article <20070922124659.741cca42@laptopd505.fenrus.org> you wrote:
+>> it doesn't add value.... memset with a constant 0 is just as fast
+>> (since the compiler knows it's 0) than any wrapper around it, and the
+>> syntax around it is otherwise the same.
 
-On Sat, 2007-09-22 at 13:14 -0700, David Brownell wrote:
-> How's this?  Note that the queue should already have been stopped,
-> so I removed what should be an extra call (as well as fixing the
-> comments).
+linux/arch/x86_64/lib/memset.S isn't file for compile, but for
+assembler, isn't it? Removing argument processing will have size effect.
 
-Yeah, stop queue should be not necessary.
+> it would however allow easier changing if you need to add a page cleaning
+> system (for example new architecture which has support for it).
+[]
 
-> - Dave
-> 
-> ========
-> From: Thomas Gleixner <tglx@linutronix.de>
+> On the other hand, is memset used for anything else than zero filling
+> or redzone "filling"?
 
-Please change to:
+There are non zero ones (not sure what redzone is, though).
 
-From: Benedikt Spranger <bene@linutronix.de>
-
-He did all the grump work of figuring out what's going wrong. I was just
-the messenger.
-
-> This patch fixes a longstanding race in the Ethernet gadget driver,
-> which can cause an oops on device disconnect.  The fix is just to
-> make the TX path check whether its freelist is empty.  That check
-> is otherwise not necessary, since the queue is always stopped when
-> that list empties (and restarted when request completion puts an
-> entry back on that freelist).
-
-Sigh. I need a real deep look inside that code to understand, why
-tx_reqs is not a requestlist but a freelist. Very intuitive naming :)
-
-> The race window starts when the network code decides to transmit a
-> packet, and ends when hard_start_xmit() grabs the freelist lock.
-> If disconnect() is called inside that window, it shuts down the
-> TX queue and breaks the otherwise-solid assumption that packets are
-> never sent when the TX queue is stopped.
-
-Please add our signed offs as well
-
-Signed-off-by: Benedikt Spranger <bene@linutronix.de>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-
-Thanks,
-	tglx
-
-
-> --- a/drivers/usb/gadget/ether.c
-> +++ b/drivers/usb/gadget/ether.c
-> @@ -1989,8 +1989,20 @@ static int eth_start_xmit (struct sk_buff *skb, struct net_device *net)
->  	}
->  
->  	spin_lock_irqsave(&dev->req_lock, flags);
-> +	/*
-> +	 * the freelist can be empty if an interrupt triggered disconnect()
-> +	 * and reconfigured the gadget (shutting down this queue) after the
-> +	 * network stack decided to xmit but before we got the spinlock.
-> +	 */
-> +	if (list_empty(&dev->tx_reqs)) {
-> +		spin_unlock_irqrestore(&dev->req_lock, flags);
-> +		return 1;
-> +	}
-> +
->  	req = container_of (dev->tx_reqs.next, struct usb_request, list);
->  	list_del (&req->list);
-> +
-> +	/* temporarily stop TX queue when the freelist empties */
->  	if (list_empty (&dev->tx_reqs))
->  		netif_stop_queue (net);
->  	spin_unlock_irqrestore(&dev->req_lock, flags);
-> 
-> 
+> Gruss
+> Bernd
+(Here are reply-to-all people, BTW)
+_____
 
