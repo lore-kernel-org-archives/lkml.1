@@ -1,134 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbXIVGvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762166AbXIVG4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762257AbXIVGvc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 02:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbXIVGvY
+	id S1762166AbXIVG4L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 02:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbXIVGz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 02:51:24 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56974 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754746AbXIVGvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 02:51:22 -0400
-Date: Sat, 22 Sep 2007 12:24:18 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Mel Gorman <mel@skynet.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org,
-       Linux Netdev Mailing List <netdev@vger.kernel.org>, jeff@garzik.org
-Subject: Re: 2.6.23-rc6-mm1: Build failures on ppc64_defconfig
-In-Reply-To: <alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
-Message-ID: <alpine.LFD.0.999.0709221221500.22517@enigma.security.iitk.ac.in>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
- <20070920132512.GF24105@skynet.ie>
- <alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Sat, 22 Sep 2007 02:55:58 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59153 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756917AbXIVGz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 02:55:57 -0400
+Date: Sat, 22 Sep 2007 08:57:24 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
+       oliver.pntr@gmail.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [4/50] x86: add cpu codenames for Kconfig.cpu
+Message-ID: <20070922065724.GA26550@uranus.ravnborg.org>
+References: <200709221231.836138000@suse.de> <20070921223202.2504813DCD@wotan.suse.de> <20070921224539.GD8127@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070921224539.GD8127@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 20 Sep 2007, Satyam Sharma wrote:
+On Fri, Sep 21, 2007 at 06:45:39PM -0400, Dave Jones wrote:
+> On Sat, Sep 22, 2007 at 12:32:02AM +0200, Andi Kleen wrote:
 > 
-> BTW ppc64_defconfig didn't quite like 2.6.23-rc6-mm1 either ...
-> IIRC I got build failures in:
+> 
+>  > +	  Select this for:
+>  > +	    Pentiums (Pentium 4, Pentium D, Celeron, Celeron D) corename:
+>  > +		-Willamette
+>  > +		-Northwood
+>  > +		-Mobile Pentium 4
+>  > +		-Mobile Pentium 4 M
+>  > +		-Extreme Edition (Gallatin)
+>  > +		-Prescott
+>  > +		-Prescott 2M
+>  > +		-Cedar Mill
+>  > +		-Presler
+>  > +		-Smithfiled
+>  > +	    Xeons (Intel Xeon, Xeon MP, Xeon LV, Xeon MV) corename:
+>  > +	    	-Foster
+>  > +		-Prestonia
+>  > +		-Gallatin
+>  > +		-Nocona
+>  > +		-Irwindale
+>  > +		-Cranford
+>  > +		-Potomac
+>  > +		-Paxville
+>  > +		-Dempsey
+> 
+> This seems like yet another list that will need to be perpetually
+> kept up to date, and given 99% of users don't know the codename
+> of their core, just the marketing name, I question its value.
 
-> drivers/net/spider_net.c
+As a bare minimum requirement the list presented here shall use same
+names as used in /proc/cpuinfo
 
+On this box I read:
 
-[PATCH -mm] spider_net: Misc build fixes after recent netdev stats changes
+vendor_id	: GenuineIntel
+model name	: Pentium III (Coppermine)
 
-Unbreak the following:
+This info must be present in Kconfig text (help text) too.
+I always have trouble selecting the right CPU before so I welcome this patch
+that give me more info - and maybe a bit too much.
 
-drivers/net/spider_net.c: In function 'spider_net_release_tx_chain':
-drivers/net/spider_net.c:818: error: 'dev' undeclared (first use in this function)
-drivers/net/spider_net.c:818: error: (Each undeclared identifier is reported only once
-drivers/net/spider_net.c:818: error: for each function it appears in.)
-drivers/net/spider_net.c: In function 'spider_net_xmit':
-drivers/net/spider_net.c:922: error: 'dev' undeclared (first use in this function)
-drivers/net/spider_net.c: In function 'spider_net_pass_skb_up':
-drivers/net/spider_net.c:1018: error: 'dev' undeclared (first use in this function)
-drivers/net/spider_net.c: In function 'spider_net_decode_one_descr':
-drivers/net/spider_net.c:1215: error: 'dev' undeclared (first use in this function)
-make[2]: *** [drivers/net/spider_net.o] Error 1
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
- drivers/net/spider_net.c |   24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
-
-diff -ruNp a/drivers/net/spider_net.c b/drivers/net/spider_net.c
---- a/drivers/net/spider_net.c	2007-09-22 06:26:39.000000000 +0530
-+++ b/drivers/net/spider_net.c	2007-09-22 12:12:23.000000000 +0530
-@@ -795,6 +795,7 @@ spider_net_set_low_watermark(struct spid
- static int
- spider_net_release_tx_chain(struct spider_net_card *card, int brutal)
- {
-+	struct net_device *dev = card->netdev;
- 	struct spider_net_descr_chain *chain = &card->tx_chain;
- 	struct spider_net_descr *descr;
- 	struct spider_net_hw_descr *hwdescr;
-@@ -919,7 +920,7 @@ spider_net_xmit(struct sk_buff *skb, str
- 	spider_net_release_tx_chain(card, 0);
- 
- 	if (spider_net_prepare_tx_descr(card, skb) != 0) {
--		dev->stats.tx_dropped++;
-+		netdev->stats.tx_dropped++;
- 		netif_stop_queue(netdev);
- 		return NETDEV_TX_BUSY;
- 	}
-@@ -979,16 +980,12 @@ static void
- spider_net_pass_skb_up(struct spider_net_descr *descr,
- 		       struct spider_net_card *card)
- {
--	struct spider_net_hw_descr *hwdescr= descr->hwdescr;
--	struct sk_buff *skb;
--	struct net_device *netdev;
--	u32 data_status, data_error;
--
--	data_status = hwdescr->data_status;
--	data_error = hwdescr->data_error;
--	netdev = card->netdev;
-+	struct spider_net_hw_descr *hwdescr = descr->hwdescr;
-+	struct sk_buff *skb = descr->skb;
-+	struct net_device *netdev = card->netdev;
-+	u32 data_status = hwdescr->data_status;
-+	u32 data_error = hwdescr->data_error;
- 
--	skb = descr->skb;
- 	skb_put(skb, hwdescr->valid_size);
- 
- 	/* the card seems to add 2 bytes of junk in front
-@@ -1015,8 +1012,8 @@ spider_net_pass_skb_up(struct spider_net
- 	}
- 
- 	/* update netdevice statistics */
--	dev->stats.rx_packets++;
--	dev->stats.rx_bytes += skb->len;
-+	netdev->stats.rx_packets++;
-+	netdev->stats.rx_bytes += skb->len;
- 
- 	/* pass skb up to stack */
- 	netif_receive_skb(skb);
-@@ -1184,6 +1181,7 @@ static int spider_net_resync_tail_ptr(st
- static int
- spider_net_decode_one_descr(struct spider_net_card *card)
- {
-+	struct net_device *dev = card->netdev;
- 	struct spider_net_descr_chain *chain = &card->rx_chain;
- 	struct spider_net_descr *descr = chain->tail;
- 	struct spider_net_hw_descr *hwdescr = descr->hwdescr;
-@@ -1210,7 +1208,7 @@ spider_net_decode_one_descr(struct spide
- 	     (status == SPIDER_NET_DESCR_PROTECTION_ERROR) ||
- 	     (status == SPIDER_NET_DESCR_FORCE_END) ) {
- 		if (netif_msg_rx_err(card))
--			dev_err(&card->netdev->dev,
-+			dev_err(&dev->dev,
- 			       "dropping RX descriptor with state %d\n", status);
- 		dev->stats.rx_dropped++;
- 		goto bad_desc;
+	Sam
