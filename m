@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXIVJfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbXIVJfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762079AbXIVJfY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 05:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXIVJfN
+	id S1754563AbXIVJfj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 05:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXIVJfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 05:35:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35661 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbXIVJfL (ORCPT
+	Sat, 22 Sep 2007 05:35:18 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:51090 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754127AbXIVJfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 05:35:11 -0400
-Date: Sat, 22 Sep 2007 10:35:08 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "David J. Wilder" <dwilder@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Patch 1/2] Trace code and documentation (resend)
-Message-ID: <20070922093508.GC27827@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"David J. Wilder" <dwilder@us.ibm.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <1190435014.27362.16.camel@lc4eb748232119.ibm.com>
-Mime-Version: 1.0
+	Sat, 22 Sep 2007 05:35:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=WLyD9utmOEAlKsyeE/VseyNIfJxrBGE1ZJJNpc7kaX6ASucJ9jGY0PaExSzpW4waND/vx2Uw4KWuhDuXwAuLh9YK0/d51ZoKd+wsk9K6O+FzzrdLiue/HI4vgigxjrW3McbY2YAOWAc3u+0aamyM67XM8xbhg7AEZV7zvDzkxYo=
+Date: Sat, 22 Sep 2007 13:35:07 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: memset as memzero
+Message-ID: <20070922093507.GB7226@cvg>
+References: <20070922083355.GA7226@cvg> <Pine.LNX.4.64.0709220441090.21302@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1190435014.27362.16.camel@lc4eb748232119.ibm.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <Pine.LNX.4.64.0709220441090.21302@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 09:23:28PM -0700, David J. Wilder wrote:
-> My last posting was mangled by my mailer.  I hope this one is better.
-> Also corrected Randy's concerns.
-> 
-> Please see previous posting for more information:
-> http://lkml.org/lkml/2007/9/19/4 (PATCH 0/2)
-> 
-> Note: this patch requires "[Patch 2/2] Relay reset consumed" is applied.
-> 
-> ---------<start of patch>------------
-> Trace - Provides tracing primitives
-> 
-> Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
-> Signed-off-by: Martin Hunt <hunt@redhat.com>
-> Signed-off-by: David Wilder <dwilder@us.ibm.com>
-> ---
->  Documentation/trace/src/Makefile     |    7 +
->  Documentation/trace/src/README       |   18 +
->  Documentation/trace/src/fork_trace.c |  119 +++++++
->  Documentation/trace/trace.txt        |  164 ++++++++++
+[Robert P. J. Day - Sat, Sep 22, 2007 at 04:48:28AM -0400]
+| On Sat, 22 Sep 2007, Cyrill Gorcunov wrote:
+| 
+| > Hi list,
+| >
+| > could anyone tell me why there is no official memzero function (or
+| > macros) in the kernel. As I see a lot of kernel parts calls for it
+| > (defying own macros as alias to memset). Maybe there is a special
+| > reason not to do so? Actually my suggestion is to define _one_
+| > general macros for this.
+| 
+| i brought up this issue on the KJ list once upon a time:
+| 
+| https://lists.linux-foundation.org/pipermail/kernel-janitors/2007-February/017847.html
+| 
+| and there didn't seem to be much enthusiasm for it.
+| 
+|   however, i am still curious why there isn't more use of the
+| already-defined "clear_page" macro.  most architectures appear to
+| define it:
+| 
+| $ grep -r "define.*clear_page" include
+| 
+| but there are still numerous explicit calls to memset() to zero a
+| chunk of memory that is exactly PAGE_SIZE in size.  just an
+| observation.
+| 
+| rday
+| -- 
+| ========================================================================
+| Robert P. J. Day
+| Linux Consulting, Training and Annoying Kernel Pedantry
+| Waterloo, Ontario, CANADA
+| 
+| http://crashcourse.ca
+| ========================================================================
+| 
 
-NACK, don't put code into Documentation/.  Put it into kernel as it's
-actually useful kernel code.  And add clone,exec and exit while you're at it.
+Thanks Robert for the answer, I'll mark this (clear_page) in my "must to
+take a look" list ;)
+Well if there is no strong reason of keeping this separate '#define memzero'
+I think it's a good case to merge them in some _single_ #define ;)
+
+Waiting for other comments...
+
+P.S.
+In a mail you pointed to said that memset(...,0,...) is quite clear -
+yes it's quite clear indeed but we already _have_ a lot of '#define memzero'
+and who knows or may give the guarantee that new '#define memzero '_will not_'
+appear in the kernel.
+
+		Cyrill
 
