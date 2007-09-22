@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757465AbXIVTat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbXIVTca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757465AbXIVTat (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 15:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXIVTan
+	id S1760362AbXIVTca (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 15:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXIVTcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 15:30:43 -0400
-Received: from www.osadl.org ([213.239.205.134]:48918 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751549AbXIVTam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 15:30:42 -0400
-Subject: Re: [PATCH] usb-gadget-ether: Prevent oops caused by error
-	interrupt  race -V2 (comments update)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Brownell <david-b@pacbell.net>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org, bene@linutronix.de,
-       akpm@osdl.org
-In-Reply-To: <20070922191806.A2F59C2308@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <1190299611.3481.34.camel@chaos>
-	 <200709211508.42968.david-b@pacbell.net> <1190482861.4035.59.camel@chaos>
-	 <20070922191806.A2F59C2308@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Content-Type: text/plain
-Date: Sat, 22 Sep 2007 21:30:40 +0200
-Message-Id: <1190489440.4035.103.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Sep 2007 15:32:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:26348 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbXIVTcX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 15:32:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=k9O9HsqZgbf5c3FFBaig7gh0FfqDlJJaxrmZL1+aQYn4/KFrnwV7apczA7nPUkkCR9OGG+y2kC47TKXfc1T5+hvTHon86wEleOngtHq47+LuhjHZ09EgE3gIk+Qg+8ZY7J+EQcRU2Ql1xp00KqbiK3aSFdin/VKwe+kSemnszJA=
+Date: Sat, 22 Sep 2007 23:32:06 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: memset as memzero
+Message-ID: <20070922193206.GA15911@cvg>
+References: <20070922083355.GA7226@cvg> <20070922124659.741cca42@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070922124659.741cca42@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Arjan van de Ven - Sat, Sep 22, 2007 at 12:46:59PM -0700]
+| On Sat, 22 Sep 2007 12:33:55 +0400
+| Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > Hi list,
+| > 
+| > could anyone tell me why there is no official memzero function (or
+| > macros) in the kernel.
+| 
+| it doesn't add value.... memset with a constant 0 is just as fast
+| (since the compiler knows it's 0) than any wrapper around it, and the
+| syntax around it is otherwise the same.
+| 
 
-On Sat, 2007-09-22 at 12:18 -0700, David Brownell wrote:
-> I think you misread my comment.  Those requests are **NOT** pending!!
-> So this update has a *MORE* incorrect description of the issue. 
-> 
-> That's just the freelist ... it's a fairly conventional model whereby
-> there's a pool of "free" request slots which can be issued.  When the
-> pool empties, the TX queue shuts down until one of the requests which
-> is pending in the hardware completes, and makes a slot free.
-> 
-> The problem you're addressing is that there's a small window where a
-> disconnect IRQ can shut down the TX queue (and empty that freelist)
-> after upper layers in the network stack started a transmission on
-> an active (pre-disconnect) TX queue.
-> 
-> That problem is *NOT* related to any pending requests at all!!
+It seems I expressed wrong. I'm worried about code duplication. Look
+simple grep for memzero tells us that in particular:
 
-Sorry, I misunderstood your comment. Can you please add the correct
-comment yourself before we play some more rounds of ping pong ? 
+...
+-- arch/x86_64/boot/compressed/misc.c:110:#define memzero(s, n) memset ((s), 0, (n))
+-- init/do_mounts_rd.c:279:#define memzero(s, n)     memset ((s), 0, (n))
+-- init/initramfs.c:377:#define memzero(s, n)     memset ((s), 0, (n))
+-- lib/inflate.c:331:  memzero(stk->c, sizeof(stk->c));
+...
 
-	tglx
+So instead of several 'define' that are the _same_ maybe better just use
+_single common_ define? That's all I wanna ask. (Btw, it seems ARM has
+a special case for memzero ;)
 
+| 
+| > As I see a lot of  kernel parts calls for it
+| > (defying own macros as alias to memset). Maybe there is a special
+| > reason not to do so? Actually my suggestion is to define _one_
+| > general macros for this.
+| 
+| my suggestion is to nuke all the macros and just use memset().
+| 
+
+Quite clear, thanks. So if that is OK - I'm shutting up ;)
+
+		Cyrill
 
