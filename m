@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762624AbXIVKCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762380AbXIVKF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762624AbXIVKCE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 06:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbXIVKBz
+	id S1762380AbXIVKF5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 06:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbXIVKFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 06:01:55 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33472 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755174AbXIVKBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 06:01:53 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/qm1V5ej7qexYccL6KH9MqWaAZ6y7IUEMt5D6Ghh
-	Os+X7NSRrCZ34Y
-Subject: Re: [git] CFS-devel, group scheduler, fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Tong Li <tong.n.li@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, dimm <dmitry.adamushko@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
-References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu>
-	 <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com>
-	 <1190183324.9737.7.camel@Homer.simpson.net>
-	 <1190188261.9185.21.camel@Homer.simpson.net>
-	 <1190191368.8687.5.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
-	 <1190264114.6411.4.camel@Homer.simpson.net>
-	 <1190272507.27867.20.camel@Homer.simpson.net>
-	 <20070920075155.GA31641@elte.hu>
-	 <1190275870.9232.6.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
-Content-Type: text/plain
-Date: Sat, 22 Sep 2007 12:01:48 +0200
-Message-Id: <1190455308.7404.19.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sat, 22 Sep 2007 06:05:51 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:34544 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751089AbXIVKFu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 06:05:50 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 22 Sep 2007 05:55:04 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: memset as memzero
+In-Reply-To: <20070922093507.GB7226@cvg>
+Message-ID: <Pine.LNX.4.64.0709220553400.25743@localhost.localdomain>
+References: <20070922083355.GA7226@cvg> <Pine.LNX.4.64.0709220441090.21302@localhost.localdomain>
+ <20070922093507.GB7226@cvg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-21 at 20:27 -0700, Tong Li wrote:
-> Mike,
-> 
-> Could you try this patch to see if it solves the latency problem?
+On Sat, 22 Sep 2007, Cyrill Gorcunov wrote:
 
-No, but it helps some when running two un-pinned busy loops, one at nice
-0, and the other at nice 19.  Yesterday I hit latencies of up to 1.2
-_seconds_ doing this, and logging sched_debug and /proc/`pidof
-Xorg`/sched from SCHED_RR shells.
+> Thanks Robert for the answer, I'll mark this (clear_page) in my
+> "must to take a look" list ;)
 
-se.wait_max              :           164.242748
-se.wait_max              :           121.996128
-se.wait_max              :           194.464773
-se.wait_max              :           517.425411
-se.wait_max              :           131.453214
-se.wait_max              :           122.984190
-se.wait_max              :           111.729274
-se.wait_max              :           119.567580
-se.wait_max              :           126.980696
-se.wait_max              :           177.241452
-se.wait_max              :           129.604329
-se.wait_max              :           119.631657
+there's already been a discussion about clear_page() as well:
 
-It doesn't help at all with this oddity while running same:
+  http://lists.openwall.net/linux-kernel/2006/12/29/39
 
-root@Homer: now is
-the time
-foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooor aall good men to come to the aid of their country
+you might want to start there to get up to speed if you intend to
+invest any time in this.
 
-That was a nice 0 shell window.  I'm not a great typist, but I ain't
-_that_ bad :)
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-	-Mike
-
+http://crashcourse.ca
+========================================================================
