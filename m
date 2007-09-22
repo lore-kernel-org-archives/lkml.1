@@ -1,39 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbXIVIeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbXIVIjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759819AbXIVIeS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 04:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbXIVIeH
+	id S1758314AbXIVIjR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 04:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXIVIjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 04:34:07 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:8388 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbXIVIeE (ORCPT
+	Sat, 22 Sep 2007 04:39:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51245 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbXIVIjC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 04:34:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=CgrLfFvJlrnedAbQO+yiFJwuJ8IPhM7yV0azf2bSLrUyFrCYzlUy/jfk6t/VClqychlWQ48laN5kzisz8fBg4LBE3mdYCfl+lqKgFMMnNL99+Gyc7TDzE/A5tI9XPKnl6k0cxU+UQcTDWKxUU318mPKiUAfqUSadIufsiRDCzC0=
-Date: Sat, 22 Sep 2007 12:33:55 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: memset as memzero
-Message-ID: <20070922083355.GA7226@cvg>
+	Sat, 22 Sep 2007 04:39:02 -0400
+Date: Sat, 22 Sep 2007 14:11:56 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Mel Gorman <mel@skynet.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jason.wessel@windriver.com
+Subject: Re: 2.6.23-rc6-mm1
+In-Reply-To: <20070918174408.GC1804@skynet.ie>
+Message-ID: <alpine.LFD.0.999.0709221409260.22517@enigma.security.iitk.ac.in>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+ <20070918174408.GC1804@skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
 
-could anyone tell me why there is no official memzero function (or macros) in
-the kernel. As I see a lot of  kernel parts calls for it (defying own macros
-as alias to memset). Maybe there is a special reason not to do so? Actually
-my suggestion is to define _one_ general macros for this.
+> -static volatile int kgdb_hwbreak_sstep[NR_CPUS];
+> +volatile int kgdb_hwbreak_sstep[NR_CPUS];
 
-		Cyrill
-
+That looks fishy to me. Why is it volatile-qualified? And does that
+actually want to be a per-cpu var?
