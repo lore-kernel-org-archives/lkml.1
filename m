@@ -1,153 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbXIVEYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbXIVEaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760472AbXIVEYB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 00:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbXIVEXl
+	id S1759141AbXIVEaZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 00:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbXIVEaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 00:23:41 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:41236 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751137AbXIVEXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 00:23:40 -0400
-Subject: [Patch 2/2] Relay reset consumed
-From: "David J. Wilder" <dwilder@us.ibm.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 21:23:31 -0700
-Message-Id: <1190435015.27362.17.camel@lc4eb748232119.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Sep 2007 00:30:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42515 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbXIVEaK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 00:30:10 -0400
+Date: Sat, 22 Sep 2007 10:03:01 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org,
+       devel@openvz.org
+Subject: Re: [PATCH 2/3] user.c: use kmem_cache_zalloc()
+In-Reply-To: <20070921123425.54436b17.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0709220940470.19812@enigma.security.iitk.ac.in>
+References: <20070921093906.GB6812@localhost.sw.ru>
+ <20070921123425.54436b17.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows relay channels to be reset i.e. unconsumed.
-Basically allows a 'rewind' function for flight-recorder tracing.
-
-Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
----
- Documentation/filesystems/relay.txt |   11 ++++++
- include/linux/relay.h               |    1 +
- kernel/relay.c                      |   58 ++++++++++++++++++++++++++++++++---
- 3 files changed, 65 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
-index 18d23f9..d31113a 100644
---- a/Documentation/filesystems/relay.txt
-+++ b/Documentation/filesystems/relay.txt
-@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
-     relay_close(chan)
-     relay_flush(chan)
-     relay_reset(chan)
-+    relay_reset_consumed(chan)
- 
-   channel management typically called on instigation of userspace:
- 
-@@ -452,6 +453,16 @@ state without reallocating channel buffer memory or destroying
- existing mappings.  It should however only be called when it's safe to
- do so, i.e. when the channel isn't currently being written to.
- 
-+The read(2) implementation always 'consumes' the bytes read,
-+i.e. those bytes won't be available again to subsequent reads.
-+Certain applications may nonetheless wish to allow the 'consumed' data
-+to be re-read; relay_reset_consumed() is provided for that purpose -
-+it resets the internal consumed counters for all buffers in the
-+channel.  For example, if a first set of reads 'drains' the channel,
-+and then relay_reset_consumed() is called, a second set of reads will
-+get the exact same data (assuming no new data was written between the
-+first set of reads and the second).
-+
- Finally, there are a couple of utility callbacks that can be used for
- different purposes.  buf_mapped() is called whenever a channel buffer
- is mmapped from user space and buf_unmapped() is called when it's
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 6cd8c44..aca45fa 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -175,6 +175,7 @@ extern void relay_subbufs_consumed(struct rchan *chan,
- 				   unsigned int cpu,
- 				   size_t consumed);
- extern void relay_reset(struct rchan *chan);
-+extern void relay_reset_consumed(struct rchan *chan);
- extern int relay_buf_full(struct rchan_buf *buf);
- 
- extern size_t relay_switch_subbuf(struct rchan_buf *buf,
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 61134eb..6b55eaa 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -383,6 +383,57 @@ void relay_reset(struct rchan *chan)
- }
- EXPORT_SYMBOL_GPL(relay_reset);
- 
-+/**
-+ *	__relay_reset_consumed - reset a channel buffer's consumed count
-+ *	@buf: the channel buffer
-+ *
-+ *	See relay_reset_consumed for description of effect.
-+ */
-+static inline void __relay_reset_consumed(struct rchan_buf *buf)
-+{
-+	size_t n_subbufs = buf->chan->n_subbufs;
-+	size_t produced = buf->subbufs_produced;
-+	size_t consumed = buf->subbufs_consumed;
-+
-+	if (produced < n_subbufs)
-+		buf->subbufs_consumed = 0;
-+	else {
-+		consumed = produced - n_subbufs;
-+		if (buf->offset)
-+			consumed++;
-+		buf->subbufs_consumed = consumed;
-+	}
-+	buf->bytes_consumed = 0;
-+}
-+
-+/**
-+ *	relay_reset_consumed - reset the channel's consumed counts
-+ *	@chan: the channel
-+ *
-+ *	This has the effect of making all data previously read (and
-+ *	not overwritten by subsequent writes) from a channel available
-+ *	for reading again.
-+ *
-+ *	NOTE: Care should be taken that the channel isn't actually
-+ *	being used by anything when this call is made.
-+ */
-+void relay_reset_consumed(struct rchan *chan)
-+{
-+	unsigned int i;
-+	struct rchan_buf *prev = NULL;
-+
-+	if (!chan)
-+		return;
-+
-+	for (i = 0; i < NR_CPUS; i++) {
-+		if (!chan->buf[i] || chan->buf[i] == prev)
-+			break;
-+		__relay_reset_consumed(chan->buf[i]);
-+		prev = chan->buf[i];
-+	}
-+}
-+EXPORT_SYMBOL_GPL(relay_reset_consumed);
-+
- /*
-  *	relay_open_buf - create a new relay channel buffer
-  *
-@@ -845,11 +896,8 @@ static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
- 		return 1;
- 	}
- 
--	if (unlikely(produced - consumed >= n_subbufs)) {
--		consumed = produced - n_subbufs + 1;
--		buf->subbufs_consumed = consumed;
--		buf->bytes_consumed = 0;
--	}
-+	if (unlikely(produced - consumed >= n_subbufs))
-+		__relay_reset_consumed(buf);
- 
- 	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
- 	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
 
 
+On Fri, 21 Sep 2007, Andrew Morton wrote:
+> 
+> On Fri, 21 Sep 2007 13:39:06 +0400
+> Alexey Dobriyan <adobriyan@sw.ru> wrote:
+> 
+> > Quite a few fields are zeroed during user_struct creation, so use
+> > kmem_cache_zalloc() --  save a few lines and #ifdef. Also will help avoid
+> >  #ifdef CONFIG_POSIX_MQUEUE in next patch.
+> > 
+> > Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+> > ---
+> > 
+> >  kernel/user.c |   13 +------------
+> >  1 file changed, 1 insertion(+), 12 deletions(-)
+> > 
+> > --- a/kernel/user.c
+> > +++ b/kernel/user.c
+> > @@ -129,21 +129,11 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+> >  	if (!up) {
+> >  		struct user_struct *new;
+> >  
+> > -		new = kmem_cache_alloc(uid_cachep, GFP_KERNEL);
+> > +		new = kmem_cache_zalloc(uid_cachep, GFP_KERNEL);
+> >  		if (!new)
+> >  			return NULL;
+> >  		new->uid = uid;
+> >  		atomic_set(&new->__count, 1);
+> > -		atomic_set(&new->processes, 0);
+> > -		atomic_set(&new->files, 0);
+> > -		atomic_set(&new->sigpending, 0);
+> > -#ifdef CONFIG_INOTIFY_USER
+> > -		atomic_set(&new->inotify_watches, 0);
+> > -		atomic_set(&new->inotify_devs, 0);
+> > -#endif
+> > -
+> > -		new->mq_bytes = 0;
+> > -		new->locked_shm = 0;
+> 
+> 
+> This assumes that setting an atomic_t to the all-zeroes pattern is
+> equivalent to atomic_set(v, 0).
+> 
+> This happens to be true for all present architectures, afaik.  But an
+> architecture which has crappy primitives could quite legitimately implement
+> its atomic_t as:
+> 
+> typedef struct {
+> 	int counter;
+> 	spinlock_t lock;
+> } atomic_t;
+> 
+> in which case your assumption breaks.
+
+Agreed, and this (implementing atomic ops using spinlocks) is already true
+for the CRIS platform.
+
+However, cris' implementation explicitly takes care to ensure that
+atomic_t contains just a solitary int member, and no spinlock_t's
+inside the atomic_t itself. [ include/asm-cris/arch-v32/atomic.h ]
+
+Of course, that "128" limits scalability, so no more than 128 CPUs can be
+executing atomic ops at any given instant of time, but admittedly I'm
+getting anal here myself ... (but probably that's often perfectly the
+right attitude to have too)
+
+
+> So it's all a bit theoretical and a bit anal, and I'm sure we're making the
+> same mistake in other places, but it's not a change I particularly like..
+
+Hmm, it's borderline.
+
+Such changes make text smaller (in terms of LOC as well vmlinux size).
+
+But they also hurt grepping. Often we (at least I) want to grep for when
+is a variable/struct member/etc getting initialized or getting
+set/assigned to. Take this case, for example -- I bet it's important (for
+overall logic) that those variables get initialized to zero. But *zalloc()
+functions do that implicitly, so it wastes precious seconds or minutes of
+developer time when grepping that code.
+
+OTOH, we could make it standard practise to put a little comment on top
+of such *zalloc() usages, explicitly enumerating the struct members that
+that the *zalloc() is assumed to initialize to zero.
+
+<runs away>
+
+
+Satyam
