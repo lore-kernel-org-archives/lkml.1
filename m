@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762300AbXIVJac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXIVJfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762300AbXIVJac (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 05:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbXIVJaW
+	id S1762079AbXIVJfY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 05:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXIVJfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 05:30:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37829 "EHLO
+	Sat, 22 Sep 2007 05:35:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35661 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751230AbXIVJaU (ORCPT
+	with ESMTP id S1751089AbXIVJfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 05:30:20 -0400
-Date: Sat, 22 Sep 2007 10:30:17 +0100
+	Sat, 22 Sep 2007 05:35:11 -0400
+Date: Sat, 22 Sep 2007 10:35:08 +0100
 From: Christoph Hellwig <hch@infradead.org>
-To: Andi Kleen <ak@suse.de>
-Cc: vapier@gentoo.org, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [32/45] x86_64: hide cond_syscall behind __KERNEL__
-Message-ID: <20070922093017.GB27827@infradead.org>
+To: "David J. Wilder" <dwilder@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [Patch 1/2] Trace code and documentation (resend)
+Message-ID: <20070922093508.GC27827@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andi Kleen <ak@suse.de>, vapier@gentoo.org, patches@x86-64.org,
-	linux-kernel@vger.kernel.org
-References: <200709211044.901175000@suse.de> <20070921204514.DF01414EFF@wotan.suse.de>
+	"David J. Wilder" <dwilder@us.ibm.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <1190435014.27362.16.camel@lc4eb748232119.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070921204514.DF01414EFF@wotan.suse.de>
+In-Reply-To: <1190435014.27362.16.camel@lc4eb748232119.ibm.com>
 User-Agent: Mutt/1.4.2.3i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 10:45:14PM +0200, Andi Kleen wrote:
-> From: Mike Frysinger <vapier@gentoo.org>
+On Fri, Sep 21, 2007 at 09:23:28PM -0700, David J. Wilder wrote:
+> My last posting was mangled by my mailer.  I hope this one is better.
+> Also corrected Randy's concerns.
 > 
-> This brings x86_64 into line with all other architectures by only defining
-> cond_syscall() when __KERNEL__ is defined.
+> Please see previous posting for more information:
+> http://lkml.org/lkml/2007/9/19/4 (PATCH 0/2)
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Andi Kleen <ak@suse.de>
+> Note: this patch requires "[Patch 2/2] Relay reset consumed" is applied.
+> 
+> ---------<start of patch>------------
+> Trace - Provides tracing primitives
+> 
+> Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
+> Signed-off-by: Martin Hunt <hunt@redhat.com>
+> Signed-off-by: David Wilder <dwilder@us.ibm.com>
+> ---
+>  Documentation/trace/src/Makefile     |    7 +
+>  Documentation/trace/src/README       |   18 +
+>  Documentation/trace/src/fork_trace.c |  119 +++++++
+>  Documentation/trace/trace.txt        |  164 ++++++++++
 
-> Index: linux/include/asm-x86_64/unistd.h
-> ===================================================================
-> --- linux.orig/include/asm-x86_64/unistd.h
-> +++ linux/include/asm-x86_64/unistd.h
-> @@ -676,6 +676,7 @@ asmlinkage long sys_rt_sigaction(int sig
->  #endif	/* __KERNEL__ */
-
-This is the previous __KERNEL__ block.
-
->  #endif	/* __NO_STUBS */
-
-And this  one shouldn't extent iver the declarations of sys_iopl
-and sys_rt_sigactions I think.  If it should be there at all.
-
-So please make this file at least semi-clean while you're at it instead
-of much worse.
-
-The __KERNEL__ block should also be extended over the various __ARCH_WANT_
-definitions because they're not for userspace at all.
+NACK, don't put code into Documentation/.  Put it into kernel as it's
+actually useful kernel code.  And add clone,exec and exit while you're at it.
 
