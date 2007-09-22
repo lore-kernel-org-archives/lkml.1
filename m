@@ -1,98 +1,381 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbXIVRuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXIVSAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758512AbXIVRuf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 13:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbXIVRu1
+	id S1757847AbXIVSAV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 14:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbXIVSAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 13:50:27 -0400
-Received: from www.osadl.org ([213.239.205.134]:46721 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750981AbXIVRu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 13:50:27 -0400
-Subject: Re: [PATCH] [4/50] x86: add cpu codenames for Kconfig.cpu
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-Cc: oliver.pntr@gmail.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070921223202.2504813DCD@wotan.suse.de>
-References: <200709221231.836138000@suse.de>
-	 <20070921223202.2504813DCD@wotan.suse.de>
-Content-Type: text/plain
-Date: Sat, 22 Sep 2007 19:50:24 +0200
-Message-Id: <1190483424.4035.64.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Sep 2007 14:00:08 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:52366 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752440AbXIVSAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 14:00:05 -0400
+Date: Sat, 22 Sep 2007 10:59:58 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH] Add CRC checksum for RCU lists
+Message-ID: <20070922175958.GD11123@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1190313251.4518.14.camel@localhost.localdomain> <20070921171256.GA9059@linux.vnet.ibm.com> <Pine.LNX.4.58.0709211550330.29857@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0709211550330.29857@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-22 at 00:32 +0200, Andi Kleen wrote:
-> From: "Oliver Pinter" <oliver.pntr@gmail.com>
+On Fri, Sep 21, 2007 at 05:32:08PM -0400, Steven Rostedt wrote:
 > 
-> add cpu core name for arch/i386/Kconfig.cpu:Pentium 4 sections help
-> add Pentium D for arch/i386/Kconfig.cpu
-> add Pentium D for arch/x86_64/Kconfig
+> --
+> On Fri, 21 Sep 2007, Paul E. McKenney wrote:
 > 
-> Signed-off-by: Oliver Pinter <oliver.pntr@gmail.com>
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Andi Kleen <ak@suse.de>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
+> > On Thu, Sep 20, 2007 at 02:34:11PM -0400, Steven Rostedt wrote:
+> > > In recent development of the RT kernel, some of our experimental code
+> > > corrupted the rcu header. But the side effect (crashing) didn't rear its
+> > > ugly head until way after the fact. Discussing this with Paul, he
+> > > suggested that RCU should have a "self checking" mechanism to detect
+> > > these kind of issues. He also suggested putting in a CRC into the
+> > > rcu_head structure.
+> > >
+> > > This patch does so.
+> >
+> > Very cool!!!
 > 
->  arch/i386/Kconfig.cpu |   34 +++++++++++++++++++++++++++++++---
->  arch/x86_64/Kconfig   |    6 +++---
->  2 files changed, 34 insertions(+), 6 deletions(-)
+> Thanks :-)
 > 
-> Index: linux/arch/i386/Kconfig.cpu
-> ===================================================================
-> --- linux.orig/arch/i386/Kconfig.cpu
-> +++ linux/arch/i386/Kconfig.cpu
-> @@ -115,11 +115,39 @@ config MPENTIUM4
->  	bool "Pentium-4/Celeron(P4-based)/Pentium-4 M/older Xeon"
->  	help
->  	  Select this for Intel Pentium 4 chips.  This includes the
-> -	  Pentium 4, P4-based Celeron and Xeon, and Pentium-4 M
-> -	  (not Pentium M) chips.  This option enables compile flags
-> -	  optimized for the chip, uses the correct cache shift, and
-> +	  Pentium 4, Pentium D, P4-based Celeron and Xeon, and
-> +	  Pentium-4 M (not Pentium M) chips.  This option enables compile
-> +	  flags optimized for the chip, uses the correct cache shift, and
->  	  applies any applicable Pentium III optimizations.
->  
-> +	  CPUIDs: F[0-6][1-A] (in /proc/cpuinfo show = cpu family : 15 )
-> +
-> +	  Select this for:
-> +	    Pentiums (Pentium 4, Pentium D, Celeron, Celeron D) corename:
-> +		-Willamette
-> +		-Northwood
-> +		-Mobile Pentium 4
-> +		-Mobile Pentium 4 M
-> +		-Extreme Edition (Gallatin)
-> +		-Prescott
-> +		-Prescott 2M
-> +		-Cedar Mill
-> +		-Presler
-> +		-Smithfiled
-> +	    Xeons (Intel Xeon, Xeon MP, Xeon LV, Xeon MV) corename:
-> +	    	-Foster
-> +		-Prestonia
-> +		-Gallatin
-> +		-Nocona
-> +		-Irwindale
-> +		-Cranford
-> +		-Potomac
-> +		-Paxville
-> +		-Dempsey
-> +
-> +	  more info: http://balusc.xs4all.nl/srv/har-cpu.html
+> > > This patch also takes care to update the crc when rcu_head items are
+> > > moved from list to list and whenever the next pointer is modified due to
+> > > addition.
+> >
+> > We can only be thankful that it is not possible to cancel outstanding
+> > RCU callbacks...
+> 
+> true
+> 
+> > Looks good -- a few suggestions for better fault coverage interspersed
+> > below.  But would be useful as is.  (And it would be good to apply after
+> > the preempt/boost patches, which are currently undergoing integration
+> > with the CPU hotplug patches -- the good news is that this integration
+> > eliminates the need for patch #4!)
+> >
+> > Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> Thanks, but this is still going to go through changes, from your comments
+> as well as your latest patches.
 
-This will never be up to date. Also the URL above is redirected to an
-empty bye/bye page. Put this up to one of the kernel related wikis, if
-you think it might be useful at all. 99% of the users do not even know
-which CPU they have in their system.
+Good point...
 
-	tglx
+> > > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> > >
+> > > diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> > > index fe17d7d..baca7e6 100644
+> > > --- a/include/linux/rcupdate.h
+> > > +++ b/include/linux/rcupdate.h
+> > > @@ -50,13 +50,81 @@
+> > >  struct rcu_head {
+> > >  	struct rcu_head *next;
+> > >  	void (*func)(struct rcu_head *head);
+> > > +#ifdef CONFIG_RCU_CRC_HEADER_CHECK
+> > > +	/*
+> > > +	 * Checks are made in C files knowing that "next" is
+> > > +	 * the first element. So keep it the first element.
+> > > +	 */
+> > > +	unsigned long crc;
+> > > +	void *caller;
+> > > +#endif
+> > >  };
+> >
+> > Looks good, but one question -- why not include the caller in the CRC?
+> > Not a big deal either way, but would catch a few more cases of corruption.
+> > Also, as things stand, the caller pointer can be silently corrupted,
+> > which might causes confusion if someone had to examine the RCU callback
+> > lists from a crash dump.
+> 
+> One reason was that the caller was an addition. I originally didn't have
+> it, but during my tests, the output was basically useless. It didn't give
+> any hint to where things went wrong, so I added it. The CRC is to check
+> the rcu is working, not really the checker itself.
+> 
+> Note, it helped us out lately with Peter's latest file_table patches in
+> -rt. With this patch applied, it triggered corruption. That was due to the
+> union in the fs.h between the llist and rcu_head there was a dependency
+> in the llist where the rcu_head would not grow. The llist can still do a
+> spin lock on the lock _after_ the item was added to the call_rcu. Because
+> of that union, the locking of the lock corrupted the crc. Set it to one.
+> 
+> You'll see patches from Peter soon to get rid of that dependency.
 
+Look forward to seeing them!
 
+> > Interchanging the order of "crc" and "caller" would change the strategy,
+> > if I understand correctly.
+> 
+> yep.
+> 
+> >
+> > > -#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
+> > > +#ifdef CONFIG_RCU_CRC_HEADER_CHECK
+> > > +
+> > > +#define RCU_CRC_MAGIC 0xC4809168UL
+> >
+> > Very magic indeed -- Google doesn't find it, other than in your
+> > patch.  ;-)
+> 
+> Paul, I'm disappointed in you. That number doesn't ring a bell at all??
+> 
+> (hint, ignore the 'C' that was added by me).
 
+Well, once Kyle spilled the beans, it was pretty obvious.  ;-)
 
+Might well be a first!!!
+
+> > > +static inline unsigned long rcu_crc_calc(struct rcu_head *head)
+> > > +{
+> > > +	unsigned int *p = (unsigned int*)head; /* 32 bit */
+> > > +	unsigned long crc = RCU_CRC_MAGIC;
+> > > +
+> > > +	for (p=(void *)head; (void*)p < (void*)&head->crc; p++)
+> > > +		crc ^= *p;
+> > > +	return crc;
+> > > +}
+> >
+> > Why initialize "p" twice?  (Once in the declaration, and once in the
+> > "for" loop, but with different casts.)
+> 
+> Why? probably because I was half asleep when writing it ;-)
+> Will fix.
+> 
+> > > +static inline void rcu_crc_check(struct rcu_head *head)
+> > > +{
+> > > +	static int once;
+> > > +	if (unlikely(head->crc != rcu_crc_calc(head)) && !once) {
+> > > +		once++;
+> >
+> > Do we want exactly one (give or take concurrent checks), or do we want
+> > the first ten or so?  Sometimes having a modest sample rather than
+> > exactly one is helpful.
+> 
+> I added that because during testing, it would flood the serial console. I
+> can modify this to whatever deems fit.  Perhaps more hits will give a
+> better clue to what went wrong. I could also just add a print_ratelimit to
+> it too.
+
+Agreed -- using the already-defined print_ratelimit() sounds much better
+than reinventing the wheel.
+
+> > And I know that it doesn't matter in this case, but I cannot stop myself
+> > from pointing out the possibility of making "once" be an atomic_t
+> > that is initialized to (say) -10, then making the !once check be an
+> > atomic_add_return().  (Whew!  Good to get that off my chest!!!)
+> 
+> Would you prefer the above or the print_ratelimit? Maybe 10 would be best.
+> I really don't have a preference.
+
+Definitely print_ratelimit()!!!
+
+[ . . . ]
+
+> > > +# define RCU_CRC_INIT , .crc = RCU_CRC_MAGIC
+> >
+> > Would need to initialize caller here if you add it to the CRC.
+> >
+> > > +# define RCU_CRC_SET(ptr) (ptr)->crc = RCU_CRC_MAGIC
+> >
+> > And here as well.
+> >
+> > But this has the effect of causing the CRC to be born correct.  Do we
+> > really want that?  Suppose someone incorrectly re-initialized a callback
+> > that was still on a list.  Wouldn't it be better to get a CRC warning than
+> > a NULL pointer exception?  So suggest something like RCU_CRC_MAGIC+1 --
+> > perhaps with a RCU_CRC_BAD_MAGIC symbol.
+> 
+> Yeah, I can scrap those initialization macros. That came about my first
+> attempt where I forgot to add the assignment to the call_rcu and it
+> obviously failed.  So I added these macros, and it stilled failed. Then I
+> saw the mistake I made, fixed it, and it worked. But I never removed these
+> macros.  I think we can just keep the crc as zero. That would also fail
+> the test. Hmm, maybe we should add a BAD_CRC number so that it will give
+> us a hint that something was initiazed incorrectly.
+
+Or maybe a wrapper around the rcu_assign_crc() function that ensures
+that the CRC is wrong?
+
+> > > +#else
+> > > +# define rcu_crc_calc(head) 0
+> > > +# define rcu_crc_check(head) do { } while(0)
+> > > +# define rcu_assign_crc(head) do { } while(0)
+> > > +# define rcu_check_list(head) do { } while(0)
+> > > +# define RCU_CRC_INIT
+> > > +# define RCU_CRC_SET(ptr) do { } while(0)
+> > > +#endif /* CONFIG_RCU_CRC_HEADER_CHECK */
+> > > +
+> > > +#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL RCU_CRC_INIT }
+> > >  #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
+> > > -#define INIT_RCU_HEAD(ptr) do { \
+> > > -       (ptr)->next = NULL; (ptr)->func = NULL; \
+> > > -} while (0)
+> > > +#define INIT_RCU_HEAD(ptr) do {				\
+> > > +		(ptr)->next = NULL; (ptr)->func = NULL; \
+> > > +		RCU_CRC_SET(ptr);			\
+> > > +	} while (0)
+> > >
+> > >
+> > >
+> > > diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> > > index 2c2dd84..4c3cc9c 100644
+> > > --- a/kernel/rcupdate.c
+> > > +++ b/kernel/rcupdate.c
+> > > @@ -76,6 +76,23 @@ static atomic_t rcu_barrier_cpu_count;
+> > >  static DEFINE_MUTEX(rcu_barrier_mutex);
+> > >  static struct completion rcu_barrier_completion;
+> > >
+> > > +#ifdef CONFIG_RCU_CRC_HEADER_CHECK
+> > > +#define rcu_check_rdp(rdp)			\
+> > > +	do {					\
+> > > +		rcu_check_list(rdp->nxtlist);	\
+> > > +		rcu_check_list(rdp->curlist);	\
+> > > +		rcu_check_list(rdp->donelist);	\
+> > > +	} while(0)
+> > > +#define rcu_crc_update_tail(rdp, tail, list)				\
+> > > +	do {								\
+> > > +		if ((rdp)->tail != &(rdp)->list)			\
+> > > +			rcu_assign_crc((struct rcu_head*)(rdp)->tail);	\
+> > > +	} while(0)
+> > > +#else
+> > > +# define rcu_check_rdp(rdp) do { } while(0)
+> > > +# define rcu_crc_update_tail(rdp, tail, list) do { } while(0)
+> > > +#endif
+> > > +
+> > >  #ifdef CONFIG_SMP
+> > >  static void force_quiescent_state(struct rcu_data *rdp,
+> > >  			struct rcu_ctrlblk *rcp)
+> > > @@ -122,14 +139,19 @@ void fastcall call_rcu(struct rcu_head *head,
+> > >
+> > >  	head->func = func;
+> > >  	head->next = NULL;
+> > > +	rcu_assign_crc(head);
+> > >  	local_irq_save(flags);
+> > >  	rdp = &__get_cpu_var(rcu_data);
+> > >  	*rdp->nxttail = head;
+> >
+> > The CRC of the tail element is incorrect at this point, but that is OK
+> > because we have interrupts disabled and no other CPU can access our list
+> > in the meantime.
+> 
+> Yep, that was planned.
+> 
+> >
+> > > +	rcu_crc_update_tail(rdp, nxttail, nxtlist);
+> > >  	rdp->nxttail = &head->next;
+> > >  	if (unlikely(++rdp->qlen > qhimark)) {
+> > >  		rdp->blimit = INT_MAX;
+> > >  		force_quiescent_state(rdp, &rcu_ctrlblk);
+> > >  	}
+> > > +
+> > > +	rcu_check_rdp(rdp);
+> >
+> > This check is OK -- no other CPU should be able to manipulate our
+> > rdp, and we have interrupts disabled.  Same situation for call_rcu_bh()
+> > below.
+> >
+> > >  	local_irq_restore(flags);
+> > >  }
+> > >
+> > > @@ -157,9 +179,11 @@ void fastcall call_rcu_bh(struct rcu_head *head,
+> > >
+> > >  	head->func = func;
+> > >  	head->next = NULL;
+> > > +	rcu_assign_crc(head);
+> > >  	local_irq_save(flags);
+> > >  	rdp = &__get_cpu_var(rcu_bh_data);
+> > >  	*rdp->nxttail = head;
+> > > +	rcu_crc_update_tail(rdp, nxttail, nxtlist);
+> > >  	rdp->nxttail = &head->next;
+> > >
+> > >  	if (unlikely(++rdp->qlen > qhimark)) {
+> > > @@ -167,6 +191,8 @@ void fastcall call_rcu_bh(struct rcu_head *head,
+> > >  		force_quiescent_state(rdp, &rcu_bh_ctrlblk);
+> > >  	}
+> > >
+> > > +	rcu_check_rdp(rdp);
+> > > +
+> > >  	local_irq_restore(flags);
+> > >  }
+> > >
+> > > @@ -233,6 +259,8 @@ static void rcu_do_batch(struct rcu_data *rdp)
+> > >  	struct rcu_head *next, *list;
+> > >  	int count = 0;
+> > >
+> > > +	rcu_check_rdp(rdp);
+> >
+> > OK, interrupts disabled here.
+> >
+> > >  	list = rdp->donelist;
+> > >  	while (list) {
+> > >  		next = list->next;
+> >
+> > Why not invalidate the CRC of the element that we just removed?  This
+> > would catch some cases of list mangling.
+> 
+> Good idea, will add.
+> 
+> >
+> > > @@ -373,6 +401,7 @@ static void rcu_move_batch(struct rcu_data *this_rdp, struct rcu_head *list,
+> > >  {
+> > >  	local_irq_disable();
+> > >  	*this_rdp->nxttail = list;
+> >
+> > Momentarily wrong CRC OK, interrupts disabled here.  Ditto for
+> > __rcu_process_callbacks() below.
+> 
+> yep
+> 
+> >
+> > > +	rcu_crc_update_tail(this_rdp, nxttail, nxtlist);
+> > >  	if (list)
+> > >  		this_rdp->nxttail = tail;
+> > >  	local_irq_enable();
+> > > @@ -424,6 +453,7 @@ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
+> > >  {
+> > >  	if (rdp->curlist && !rcu_batch_before(rcp->completed, rdp->batch)) {
+> > >  		*rdp->donetail = rdp->curlist;
+> > > +		rcu_crc_update_tail(rdp, donetail, donelist);
+> > >  		rdp->donetail = rdp->curtail;
+> > >  		rdp->curlist = NULL;
+> > >  		rdp->curtail = &rdp->curlist;
+> > > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> > > index 50a94ee..981fc93 100644
+> > > --- a/lib/Kconfig.debug
+> > > +++ b/lib/Kconfig.debug
+> > > @@ -424,6 +424,17 @@ config RCU_TORTURE_TEST
+> > >  	  Say M if you want the RCU torture tests to build as a module.
+> > >  	  Say N if you are unsure.
+> > >
+> > > +config RCU_CRC_HEADER_CHECK
+> > > +	bool "RCU header self check"
+> > > +	depends on DEBUG_KERNEL
+> > > +	help
+> > > +	  This option enables CRC verification of RCU lists to catch
+> > > +	  possible corruption to the RCU list by improper application
+> > > +	  of RCU callbacks. This adds overhead to the running system
+> > > +	  so only enable it if you suspect RCU corruption is occurring.
+> > > +
+> > > +	  If unsure, say N.
+> > > +
+> > >  config LKDTM
+> > >  	tristate "Linux Kernel Dump Test Tool Module"
+> > >  	depends on DEBUG_KERNEL
+> > >
+> > >
+> >
+> 
+> Paul, thanks for all the comments. I'll put out a new round of patches
+> after yours becomes offical (no "not for inclussion" statements).
+
+Sounds good!!!
+
+						Thanx, Paul
