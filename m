@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbXIVSZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbXIVS0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbXIVSZj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 14:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbXIVSZd
+	id S1760095AbXIVS0M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 14:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbXIVSZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 14:25:33 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57468 "EHLO mx1.suse.de"
+	Sat, 22 Sep 2007 14:25:58 -0400
+Received: from mx2.suse.de ([195.135.220.15]:37077 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbXIVSZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 14:25:32 -0400
-Date: Sat, 22 Sep 2007 20:25:31 +0200
+	id S1755238AbXIVSZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 14:25:58 -0400
+Date: Sat, 22 Sep 2007 20:25:56 +0200
 From: Bernhard Walle <bwalle@suse.de>
 To: akpm@linux-foundation.org, kexec@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
 Subject: [PATCH] Add extended crashkernel syntax to kernel-parameters.txt
-Message-ID: <20070922182530.GA4765@suse.de>
+Message-ID: <20070922182556.GA3353@suse.de>
 Mail-Followup-To: akpm@linux-foundation.org,
 	kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
