@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXIVWHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbXIVWQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbXIVWHl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 18:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbXIVWHe
+	id S1755441AbXIVWQT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 18:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbXIVWQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 18:07:34 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:39102 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbXIVWHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 18:07:33 -0400
-Date: Sun, 23 Sep 2007 00:23:11 +0200
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, zippel@linux-m68k.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Unfortunate infinite make recursion
-Message-ID: <20070922222311.GQ24301@flower.upol.cz>
-References: <Pine.LNX.4.64.0709221319440.15712@fbirervta.pbzchgretzou.qr> <E1IZ788-0003LZ-Qs@flower> <20070922204002.GA31873@uranus.ravnborg.org>
+	Sat, 22 Sep 2007 18:16:10 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38450 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752600AbXIVWQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 18:16:10 -0400
+To: adaplas@gmail.com, sylvain.meyer@worldonline.fr, akpm@linux-foundation.org
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/4] Intel FB: cleanup and misc interlaced mode support
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sun, 23 Sep 2007 00:16:05 +0200
+Message-ID: <m33ax65ot6.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070922204002.GA31873@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 22, 2007 at 10:40:02PM +0200, Sam Ravnborg wrote:
-> On Sat, Sep 22, 2007 at 05:42:52PM +0200, Oleg Verych wrote:
-> > * Sat, 22 Sep 2007 13:24:32 +0200 (CEST)
-> > []
-> > > The make O=$PWD truncates the Makefile, making it necessary to run `git 
-> > > checkout Makefile` - should you have git; or reextract the tarball 
-> > > (should you /still/ have it). Well, can we catch this case somehow?
-> > 
-> > Read-only source-tree for kbuild user, end of question. By current kbuild
-> > one can garbage source by various means. Read-write for quilt, git and
-> > editor users.
-> 
-> Please Oleg.
-> You know very well that most people will not have their kernel src RO.
+Hi,
 
-Sure, if it will be not comfortable.
+I'll attach 4 patches for Intel FB (i830+) here:
 
-But if kbuild deals with this transparently, it must be OK. Brokenness
-due to binutils, kbuild, root user bugs won't garbage source. Only thing
-to ask from experienced users *and* kernel developers, is
-`useradd kbuild`, everything else will not bother anybody.
+1/4 - whitespace, bracket and other clean-ups (rather long)
+      working with kernel-style brackets instead of:
+----------------
+void
+function_name (int arg) {
+----------------
+      is a bit easier. I think it would be best to apply it in the
+      beginning of the "patch period" to avoid potential conflicts.
 
-I just express my vision, of course. But see, i can't play with kernel
-sources error-free now. If i type some `make` somewhere in obj or src
-tree, i need to know, that vanilla source stays so in any circumstances.
-Currently it's not.
+2/4 - obvious changes and corrections
 
-It is about making things in order on my working place (not looking to be
-in order, though :). Not thinking every time, if something fscked sources,
-saves my and time of diff/patch. Experimenting/testing/finding fixes with
-small amount of in-development sources in obj tree, also very helpful.
-____
+3/4 - the chip adds two halflines automatically in interlaced mode,
+      we have to force the number of lines to be even
+
+4/4 - allow odd- and even-field-first in interlaced modes, and
+      proper sync to vertical retrace. It enables video players
+      (got it working with MPlayer currently) to play perfect
+      field-synced stream to RGB-connected (VGA output) TV set.
+
+      This patch adds #define FB_VMODE_ODD_FLD_FIRST 4 in
+      include/linux/fb.h, to be able to force odd field first (analog
+      broadcast PAL and some PAL DVD discs use it) instead of even
+      field (bottom) first, as used by NTSC, DV PAL, some PAL
+      DVDs etc. Interlaced-only thing.
+
+      This change need a coresponding change in fbset and probably in
+      media players which want to set video mode themselves, I will
+      do the fbset part and maybe MPlayer's if the fb.h patch is ok.
+
+All four patches change only files in drivers/video/intelfb/, except
+patch 4/4 which also adds FB_VMODE_ODD_FLD_FIRST in include/linux/fb.h.
+
+Tested on i915G in 1440x576 50 Hz (I) with PAL TV.
+-- 
+Krzysztof Halasa
