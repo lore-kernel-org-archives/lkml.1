@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbXIVHGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763056AbXIVHGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761974AbXIVHGW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 03:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbXIVHGN
+	id S1763056AbXIVHGg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 03:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760821AbXIVHGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 03:06:13 -0400
-Received: from smtpoutm.mac.com ([17.148.16.71]:61486 "EHLO smtpoutm.mac.com"
+	Sat, 22 Sep 2007 03:06:16 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58968 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757485AbXIVHGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 03:06:12 -0400
-In-Reply-To: <Pine.LNX.4.58.0709211550330.29857@gandalf.stny.rr.com>
-References: <1190313251.4518.14.camel@localhost.localdomain> <20070921171256.GA9059@linux.vnet.ibm.com> <Pine.LNX.4.58.0709211550330.29857@gandalf.stny.rr.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B4DA08E1-19C1-4D46-B480-0B880F1443C9@mac.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [RFC PATCH] Add CRC checksum for RCU lists
-Date: Sat, 22 Sep 2007 03:04:47 -0400
-To: Steven Rostedt <rostedt@goodmis.org>
-X-Mailer: Apple Mail (2.752.2)
+	id S1760262AbXIVHGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 03:06:15 -0400
+Date: Sat, 22 Sep 2007 09:06:13 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch 7/7] Add documentation for extended crashkernel syntax
+Message-ID: <20070922070612.GA6125@suse.de>
+Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
+	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org
+References: <20070913161428.343951643@strauss.suse.de> <20070913161430.686458007@strauss.suse.de> <20070918172108.GD5966@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070918172108.GD5966@ucw.cz>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 21, 2007, at 17:32:08, Steven Rostedt wrote:
-> On Fri, 21 Sep 2007, Paul E. McKenney wrote:
->> On Thu, Sep 20, 2007 at 02:34:11PM -0400, Steven Rostedt wrote:
->>> -#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
->>> +#ifdef CONFIG_RCU_CRC_HEADER_CHECK
->>> +
->>> +#define RCU_CRC_MAGIC 0xC4809168UL
->>
->> Very magic indeed -- Google doesn't find it, other than in your  
->> patch.  ;-)
->
-> Paul, I'm disappointed in you. That number doesn't ring a bell at  
-> all??
->
-> (hint, ignore the 'C' that was added by me).
+* Pavel Machek <pavel@ucw.cz> [2007-09-18 19:21]:
+> > This adds the documentation for the extended crashkernel syntax into
+> > Documentation/kdump/kdump.txt.
+> 
+> Should you also update kernel-parameters.txt?
 
-LOL!  The RCU patent number; very clever indeed!
+Ok, I'll do.
 
-Cheers,
-Kyle Moffett
+> > +For example:
+> > +
+> > +    crashkernel=512M-2G:64M,2G-:128M
+> > +
+> > +This would mean:
+> > +
+> > +    1) if the RAM is smaller than 512M, then don't reserve anything
+> > +       (this is the "rescue" case)
+> > +    2) if the RAM size is between 512M and 2G, then reserve 64M
+> > +    3) if the RAM size is larger than 2G, then reserve 128M
+> 
+> Why is this useful? I mean... if 64M is enough to save a dump, why use
+> 128M? ...or does the required size somehow scale with memory in
+> machine? (pagetables?)
 
+A bit, yes (ELF core headers, DISCONT memory, per-CPU data), but
+consider also that saving may be faster if you have more RAM (e.g.
+saving over SSH, encryption, ...).
+
+
+Thanks,
+   Bernhard
