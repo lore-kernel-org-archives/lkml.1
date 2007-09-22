@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbXIUX73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbXIVACp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763319AbXIUX73 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 19:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbXIUX7W
+	id S1760652AbXIVACp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 20:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXIVACf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 19:59:22 -0400
-Received: from smtp-out4.iol.cz ([194.228.2.92]:52524 "EHLO smtp-out4.iol.cz"
+	Fri, 21 Sep 2007 20:02:35 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:4776 "EHLO baikonur.stro.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750987AbXIUX7V convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 19:59:21 -0400
-X-Greylist: delayed 1663 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Sep 2007 19:59:20 EDT
-Date: Fri, 21 Sep 2007 23:28:15 +0200
-From: Alexandr Andrijcuk <avk.mobil@seznam.cz>
-Organization: AVK s.r.o.
-To: linux-kernel <linux-kernel@vger.kernel.org>
-X-Mailer: The Bat! (v3.99.3)
-Message-ID: <232850284.20070921232815@seznam.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1251"
-Content-Transfer-Encoding: 8BIT
+	id S1751544AbXIVACe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 20:02:34 -0400
+Date: Sat, 22 Sep 2007 02:02:30 +0200
+From: maximilian attems <max@stro.at>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, Denys Vlasenko <vda.linux@googlemail.com>,
+       Valdis.Kletnieks@vt.edu, David Miller <davem@davemloft.net>,
+       mchan@broadcom.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] bnx2: factor out gzip unpacker
+Message-ID: <20070922000230.GF19918@baikonur.stro.at>
+References: <200709211201.24475.vda.linux@googlemail.com> <200709211905.23946.vda.linux@googlemail.com> <15775.1190399812@turing-police.cc.vt.edu> <200709212018.06553.vda.linux@googlemail.com> <20070921220333.3b31afb5@the-village.bc.nu> <46F446C3.9050600@garzik.org> <20070921234805.478efe15@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070921234805.478efe15@the-village.bc.nu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 21, 2007 at 11:48:05PM +0100, Alan Cox wrote:
+> > According to an earlier thread, dgrs was never really maintained, 
+> > written for hardware that was never really distributed widely, and very 
+> > likely hasn't had users in years... if ever.
+> > 
+> > If that picture is accurate (it's a story I was told), then I am 
+> > definitely queueing up a deletion patch.
+> 
+> I think thats sensible. If someone whines it can be put back but I really
+> don't think anyone will
 
+nobody did yet, please yell if you need a rebased patch.
 
-
-Новый сотовый телефон по цене использованного.
-
-Уважаемые господа,
-Преглагаем Вашему вниманию “refurbished” (обновленные) мобильные телефоны. 
-Это означает, что мобильный телефон имеет:
-б/у, но полностью функциональную материнскую плату
-новый оригинальный корпус
-новые аксессуары (зарядноеб аккумулятор, handsfree)
-новую оригинальную упаковку
-
-Внешне телефон является абсолютно новым и имеет гарантийный срок 12 месяцев
-
- Выборочные цены для ознакомления:
-
-Model   Цена; USD
-Motorola V3     93,96
-Motorola V3x    160,08
-Motorola K1     195,39
-Nokia 6111      110,16
-Nokia 6131      160,20
-Nokia 6280      179,06
-Nokia 7360      126,12
-Nokia 7373      202,96
-Samsung E530    120,84
-Samsung E900    155,14
-Sony Ericsson K800i     266,23
-Sony Ericsson W300i     117,36
-Sony Ericsson W800i     172,56
-Sony Ericsson Z550i     135,12
-Sony Erisccon W810i     214,94
-
-Полный прайслист содержит около 180 моделей сотовых телефонов Motorola, Nokia, Panasonic, Samsung, Sony Ericsson. 
-Каждый из предложенных телефонов имеет следующий комплект поставки:
-Телефон + зарядное устройство + 2 аккумулятора +  HandsFree + инструкция + упаковка 
-
-По требованию вышлю полный прайслист .
-
-C наилучшими пожеланиями
-AVK Plus spol. s.r.o.
-Nam Svobody 1626
-27201 Kladno
-Czech Republic
-
-
-
-
-
-
-
+-- 
+maks
