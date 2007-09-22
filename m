@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762707AbXIVKeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763022AbXIVKez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762707AbXIVKeQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 06:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbXIVKeC
+	id S1763022AbXIVKez (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 06:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbXIVKes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 06:34:02 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45991 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752194AbXIVKeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 06:34:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: clockevents: fix resume logic
-Date: Sat, 22 Sep 2007 12:47:00 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-References: <200707220159.l6M1xBgH001236@hera.kernel.org> <20070917183737.GB5966@ucw.cz> <1190451047.4035.29.camel@chaos>
-In-Reply-To: <1190451047.4035.29.camel@chaos>
+	Sat, 22 Sep 2007 06:34:48 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:25519 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbXIVKer (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 06:34:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bOkq0QkO4yr3tfDz7lekyMXxam9L/j2GUb1QlwyzW7iikx9tIgBPInrqkXOIQIb6F0Uubh+qRTQER2CqHYNFu/m4LXSLJUMOcG3MMgzvEZkO0QHH2iYgS8D6uGC/FSfsvoRzDqpTHlPMARMjZZOS6WgwSr90jXxn5OIS0GNyLkE=
+Message-ID: <6101e8c40709220334v7eefbb8g73128bc315ca07d4@mail.gmail.com>
+Date: Sat, 22 Sep 2007 12:34:45 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: stable@kernel.org, linux-kernel@vger.kernel.org, reiserfs-dev@namesys.com
+Subject: Re: [stable] [PATCH] 2.6.22.6 fix kernel panic on corrupted reiserfs directory
+Cc: lepton <ytht.net@gmail.com>, "Greg KH" <greg@kroah.com>
+In-Reply-To: <20070921224527.GA14632@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709221247.01820.rjw@sisk.pl>
+References: <20070914101019.GA12437@router.lepton.home>
+	 <6101e8c40709141004v57d74eb5hc683901fa267da2b@mail.gmail.com>
+	 <20070921224527.GA14632@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 22 September 2007 10:50, Thomas Gleixner wrote:
-> On Mon, 2007-09-17 at 18:37 +0000, Pavel Machek wrote:
-> > > That's a bit tricky because hitting the keyboard is what unsticks things. 
-> > > And the video is black after resume-from-RAM (has always been thus) and we
-> > 
-> > Ok, can we try to fix the video issue for you? That should make the
-> > development easier... I assume you tried s2ram from suspend.sf.net,
-> > and no combination of switches helped?
-> 
-> I have the same issue. Blank screen after suspend to ram. Hibernate
-> works.
-> 
-> Do you have a debug patch or something ?
+[snap]
 
-IIRC, Andrew said that the X server could restore the graphics after a resume
-from RAM on his Vaio.
+Hi,
+  When reading corrupted reiserfs directory data, d_reclen
+  could be a negative number or a big positive number, this
+  can lead to kernel panic or oop.
+  The following patch adds a sanity check. (against 2.6.20.4)
 
-Greetings,
-Rafael
+Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+
+diff -X linux-2.6.22.6-lepton/Documentation/dontdiff -pru
+linux-2.6.22.6/fs/reiserfs/dir.c
+linux-2.6.22.6-lepton/fs/reiserfs/dir.c
+--- linux-2.6.22.6/fs/reiserfs/dir.c    2007-09-14 17:41:15.000000000 +0800
++++ linux-2.6.22.6-lepton/fs/reiserfs/dir.c     2007-09-14
+18:02:10.000000000 +0800
+@@ -121,6 +121,16 @@ static int reiserfs_readdir(struct file
+                                        continue;
+                                d_reclen = entry_length(bh, ih, entry_num);
+                                d_name = B_I_DEH_ENTRY_FILE_NAME(bh, ih, deh);
++
++                               if (d_reclen <= 0 ||
++                                   d_name + d_reclen > bh->b_data +
+bh->b_size) {
++                                       /* There is corrupted data in entry,
++                                        * We'd better stop here */
++                                       pathrelse(&path_to_entry);
++                                       ret = -EIO;
++                                       goto out;
++                               }
++
+                                if (!d_name[d_reclen - 1])
+                                        d_reclen = strlen(d_name);
+
+[/snap]
+
+it is Lepton's patch.
+Namesys boys, this patch is OK?
+Greg, I neither do find this patch in Linus's tree.
+
+-- 
+Thanks,
+Oliver
