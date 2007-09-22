@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbXIVOlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbXIVOpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608AbXIVOlA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 10:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbXIVOky
+	id S1757169AbXIVOpk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 10:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXIVOpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 10:40:54 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:59893 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752495AbXIVOkx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 10:40:53 -0400
-Date: Sat, 22 Sep 2007 10:35:41 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Paul Mackerras <paulus@samba.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [patch 04/28] Add cmpxchg64 and cmpxchg64_local to powerpc
-Message-ID: <20070922143540.GA12865@Krystal>
-References: <20070827155234.062715780@polymtl.ca> <20070827155524.827591009@polymtl.ca> <18164.40462.991761.909735@cargo.ozlabs.ibm.com>
+	Sat, 22 Sep 2007 10:45:33 -0400
+Received: from tag.witbe.net ([81.88.96.48]:48444 "EHLO tag.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751907AbXIVOpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 10:45:32 -0400
+Date: Sat, 22 Sep 2007 16:45:28 +0200
+From: "Paul Rolland (=?ISO-2022-JP?Q?=1B$B%]!<%k!&%m%i%s=1B(B?=)" 
+	<rol@witbe.net>
+To: "Rob Hussey" <robjhussey@gmail.com>
+Cc: linux-kernel@vger.kernel.org, rol@witbe.net
+Subject: Re: 2.6.23-rc6 : crash with RTL8187 USB
+Message-ID: <20070922164528.0bb66335@tux.DEF.witbe.net>
+In-Reply-To: <6b8cef970709150921s48488096wa8089d8d9f5d28bf@mail.gmail.com>
+References: <20070915131656.4cddab33@tux.DEF.witbe.net>
+	<6b8cef970709150921s48488096wa8089d8d9f5d28bf@mail.gmail.com>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <18164.40462.991761.909735@cargo.ozlabs.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:34:09 up 54 days, 14:53,  2 users,  load average: 0.63, 0.80, 0.52
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul Mackerras (paulus@samba.org) wrote:
-> Mathieu Desnoyers writes:
+Hello,
+
+> [PATCH] mac80211: fix initialisation when built-in
+> http://article.gmane.org/gmane.linux.kernel.wireless.general/5710/match=patch+mac80211+initialisation
 > 
-> > Make sure that at least cmpxchg64_local is available on all architectures to use
-> > for unsigned long long values.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> 
-> Acked-by: Paul Mackerras <paulus@samba.org>
+> [PATCH] cfg80211: fix initialisation if built-in
+> http://article.gmane.org/gmane.linux.network/71326/match=patch+cfg80211+initialisation
 
-Thanks Paul,
+This is not present in 2.6.23-rc7 ! :(((
 
-Just make sure add-cmpxchg-local-to-generic-for-up.patch gets merged
-before this one, since it needs asm-generic/cmpxchg-local.h.
+Paul
 
-Mathieu
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Paul Rolland                                E-Mail : rol(at)witbe.net
+Witbe.net SA                                Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
+
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un navigateur 
+"Some people dream of success... while others wake up and work hard at it" 
+
+Volley Theory:
+	It is better to have lobbed and lost than never to have lobbed at all.
