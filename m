@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbXIVA11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbXIVAcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbXIVA11 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 20:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXIVA1T
+	id S1757485AbXIVAcs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 20:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbXIVAck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 20:27:19 -0400
-Received: from mga01.intel.com ([192.55.52.88]:25719 "EHLO mga01.intel.com"
+	Fri, 21 Sep 2007 20:32:40 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35990 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752252AbXIVA1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 20:27:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,285,1186383600"; 
-   d="scan'208";a="317320299"
-Date: Fri, 21 Sep 2007 17:27:17 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Howard Chu <hyc@symas.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MTRR initialization
-Message-ID: <20070922002717.GA16353@linux-os.sc.intel.com>
-References: <46EAB7DA.10507@symas.com>
-Mime-Version: 1.0
+	id S1754211AbXIVAcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 20:32:39 -0400
+Date: Fri, 21 Sep 2007 17:32:35 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl, bunk@kernel.org,
+       ego@in.ibm.com, oleg@tv-sign.ru, srostedt@redhat.com
+Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
+Message-ID: <20070922003235.GJ9059@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183412.GC3819@linux.vnet.ibm.com> <20070921152048.GF15697@goodmis.org> <20070921230343.GE9059@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46EAB7DA.10507@symas.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070921230343.GE9059@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 14, 2007 at 09:33:30AM -0700, Howard Chu wrote:
-> Hi, was wondering if anyone else has been tripped up by this... I've got
-> 4GB of
-> RAM in my Asus A8V Deluxe and memory hole mapping enabled in the BIOS. By
-> default, my system boots up with these MTRR settings:
-> 
-> reg00: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
-> reg01: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-> reg02: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
-> reg03: base=0xc0000000 (3072MB), size= 256MB: write-combining, count=1
-> 
-> The X server and various other programs try to add a mapping for my video
-> card's buffer, at 0xd0000000, size=256MB, type=write-combining, and this
-> always
-> fails with a type mismatch error (old type is write-back). Apparently it's
-> conflicting with mapping register 0. I can't just disable the existing
-> settings
-> and re-add them; the system hangs soon after disabling reg01.
-> 
-> I guess the kernel must be getting the initial setup from the BIOS. I've
-> hacked
-> around this in mtrr/generic.c by explicitly changing the MTRR state in
-> get_mtrr_state to split the first mapping into two; one at base 0 size
-> 2048M
-> and one at base 2048M size 1024M. So now I have this, which is pretty much
-> what
-> I wanted:
-> 
-> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-> reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
-> reg03: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
-> reg04: base=0xc0000000 (3072MB), size= 256MB: write-combining, count=1
-> reg05: base=0xd0000000 (3328MB), size= 256MB: write-combining, count=1
+On Fri, Sep 21, 2007 at 04:03:43PM -0700, Paul E. McKenney wrote:
+> On Fri, Sep 21, 2007 at 11:20:48AM -0400, Steven Rostedt wrote:
+> > On Mon, Sep 10, 2007 at 11:34:12AM -0700, Paul E. McKenney wrote:
 
-BTW, having overlapping WC, UC regions make the end result UC. So in this
-case, you may not be getting the desired performance.
+[ . . . ]
 
+> > Paul,
+> > 
+> > Looking further into this, I still think this is a bit of overkill. We
+> > go through 20 states from call_rcu to list->func().
+> > 
+> > On call_rcu we put our stuff on the next list. Before we move stuff from
+> > next to wait, we need to go through 4 states. So we have
+> > 
+> > next -> 4 states -> wait[0] -> 4 states -> wait[1] -> 4 states ->
+> > wait[2] -> 4 states -> wait[3] -> 4 states -> done.
+> > 
+> > That's 20 states that we go through from the time we add our function to
+> > the list to the time it actually gets called. Do we really need the 4
+> > wait lists?
+> > 
+> > Seems a bit overkill to me.
+> > 
+> > What am I missing?
 > 
-> So the question is - was there an easier/correct way to do this?
+> "Nothing kills like overkill!!!"  ;-)
 > 
-> It might have been nice if the MTRR ioctls allowed the register number to
-> be
-> specified on the Set commands, though I'm not sure that would have helped
-> in
-> this case.
+> Seriously, I do expect to be able to squeeze this down over time, but
+> feel the need to be a bit on the cowardly side at the moment.
+> 
+> In any case, I will be looking at the scenarios more carefully.  If
+> it turns out that GP_STAGES can indeed be cranked down a bit, well,
+> that is an easy change!  I just fired off a POWER run with GP_STAGES
+> set to 3, will let you know how it goes.
+
+The first attempt blew up during boot badly enough that ABAT was unable
+to recover the machine (sorry, grahal!!!).  Just for grins, I am trying
+it again on a machine that ABAT has had a better record of reviving...
+
+						Thanx, Paul
