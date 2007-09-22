@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbXIVUhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbXIVUin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbXIVUhh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 16:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbXIVUh3
+	id S1754435AbXIVUin (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 16:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbXIVUig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 16:37:29 -0400
-Received: from main.gmane.org ([80.91.229.2]:55800 "EHLO ciao.gmane.org"
+	Sat, 22 Sep 2007 16:38:36 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56563 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbXIVUh2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 16:37:28 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Oleg Verych (nntp)" <olecom@flower.upol.cz>
-Subject: Re: memset as memzero
-Date: Sat, 22 Sep 2007 20:37:06 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department.
-Message-ID: <slrnffb04u.d4n.!gmane?olecom.ENOMSG@flower.upol.cz>
-References: <20070922124659.741cca42@laptopd505.fenrus.org> <E1IZAbA-0001uz-00@calista.eckenfels.net>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	id S1752283AbXIVUig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 16:38:36 -0400
+Date: Sat, 22 Sep 2007 22:40:02 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, zippel@linux-m68k.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Unfortunate infinite make recursion
+Message-ID: <20070922204002.GA31873@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0709221319440.15712@fbirervta.pbzchgretzou.qr> <E1IZ788-0003LZ-Qs@flower>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1IZ788-0003LZ-Qs@flower>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-22-09-2007, Bernd Eckenfels:
-> In article <20070922124659.741cca42@laptopd505.fenrus.org> you wrote:
->> it doesn't add value.... memset with a constant 0 is just as fast
->> (since the compiler knows it's 0) than any wrapper around it, and the
->> syntax around it is otherwise the same.
+On Sat, Sep 22, 2007 at 05:42:52PM +0200, Oleg Verych wrote:
+> * Sat, 22 Sep 2007 13:24:32 +0200 (CEST)
+> []
+> > The make O=$PWD truncates the Makefile, making it necessary to run `git 
+> > checkout Makefile` - should you have git; or reextract the tarball 
+> > (should you /still/ have it). Well, can we catch this case somehow?
+> 
+> Read-only source-tree for kbuild user, end of question. By current kbuild
+> one can garbage source by various means. Read-write for quilt, git and
+> editor users.
 
-linux/arch/x86_64/lib/memset.S isn't file for compile, but for
-assembler, isn't it? Removing argument processing will have size effect.
+Please Oleg.
+You know very well that most people will not have their kernel src RO.
 
-> it would however allow easier changing if you need to add a page cleaning
-> system (for example new architecture which has support for it).
-[]
-
-> On the other hand, is memset used for anything else than zero filling
-> or redzone "filling"?
-
-There are non zero ones (not sure what redzone is, though).
-
-> Gruss
-> Bernd
-(Here are reply-to-all people, BTW)
-_____
-
+	Sam
