@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761712AbXIVJTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbXIVJ0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761712AbXIVJTz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 05:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbXIVJTs
+	id S1760137AbXIVJ0Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 05:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXIVJ0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 05:19:48 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45178 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752802AbXIVJTr (ORCPT
+	Sat, 22 Sep 2007 05:26:17 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35521 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752252AbXIVJ0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 05:19:47 -0400
-Date: Sat, 22 Sep 2007 11:19:45 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrey Mirkin <amirkin@sw.ru>, John McCutchan <ttb@tentacle.dhs.org>,
-       Robert Love <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@osdl.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] change inotifyfs magic as the same magic is used for
- futexfs
-In-Reply-To: <20070921085313.39717ba4.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0709221119340.15712@fbirervta.pbzchgretzou.qr>
-References: <200709211735.44814.amirkin@sw.ru> <20070921085313.39717ba4.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 22 Sep 2007 05:26:16 -0400
+Date: Sat, 22 Sep 2007 10:26:14 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <ak@suse.de>
+Cc: jblunck@suse.de, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [24/45] x86: Introduce frame_pointer() and stack_pointer()
+Message-ID: <20070922092613.GA27827@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andi Kleen <ak@suse.de>, jblunck@suse.de, patches@x86-64.org,
+	linux-kernel@vger.kernel.org
+References: <200709211044.901175000@suse.de> <20070921204506.65C9F14EFF@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070921204506.65C9F14EFF@wotan.suse.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 21, 2007 at 10:45:06PM +0200, Andi Kleen wrote:
+> From: jblunck@suse.de
+> This patch defines frame_pointer() and stack_pointer() similar to the
+> already defined instruction_pointer(). Thus the oprofile code can be written
+> in a more readable fashion.
 
-On Sep 21 2007 08:53, Randy Dunlap wrote:
->On Fri, 21 Sep 2007 17:35:43 +0400 Andrey Mirkin wrote:
->
->> From: Andrey Mirkin <major@openvz.org>
->> 
->> Right now futexfs and inotifyfs have one magic 0xBAD1DEA, that looks a little 
->> bit confusing.
->> Use 0xBAD1DEA as magic for futexfs and 0x2BAD1DEA as magic for inotifyfs.
->> 
->> Signed-off-by: Andrey Mirkin <major@openvz.org>
->
->A 'diffstat -p 1 -w 70' would be helpful so we can see which files
->are touched.
->
->Please add these magic numbers to include/linux/magic.h so that
->they are clearly visible and conflicts can be seen easier,
->then #include <linux/magic.h> in these source files.
-
-Also because userspace may want these magics too.
-
+Can we do these for all architectures, please?  They're quite useful for
+non-trivial kprobes.
 
