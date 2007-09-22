@@ -1,127 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbXIVFca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbXIVFh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759496AbXIVFca (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 01:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbXIVFcX
+	id S1759980AbXIVFh3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 01:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXIVFhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 01:32:23 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:57787 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752258AbXIVFcW (ORCPT
+	Sat, 22 Sep 2007 01:37:19 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:42388 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752307AbXIVFhR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 01:32:22 -0400
-To: Andi Kleen <ak@suse.de>
+	Sat, 22 Sep 2007 01:37:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EbysVvftsgeXQlWPcC3hY/Ue3vZNJrKMo/O3JnT9TNLtnbh+357CSOrYdIQqDEZmhCWQfqhWzNlL8s+Nd3GtaSdjW4keC0GQWX7tVb9YyARlS3gINQe30iJMwQpRT10Rf4KA9eeLZmkS0guOhIHSYNF+WceV/IMtQ1c8raubedU=
+Message-ID: <86802c440709212237p5aee8e41y385cb85b7cd2e165@mail.gmail.com>
+Date: Fri, 21 Sep 2007 22:37:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [patches] [PATCH] [12/50] x86_64: Untable __init references between IO data
 Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [13/50] x86: Fix and reenable CLFLUSH support in change_page_attr()
-In-Reply-To: <20070921223211.BB50413DCD@wotan.suse.de>
-References: <200709221231.836138000@suse.de> <20070921223211.BB50413DCD@wotan.suse.de>
-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-Date: Sat, 22 Sep 2007 07:47:59 +0200
-Message-Id: <E1IYxqR-0004uA-EA@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+In-Reply-To: <20070921223210.AD1FD13DCD@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200709221231.836138000@suse.de>
+	 <20070921223210.AD1FD13DCD@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sat, 22 Sep 2007 00:32:11 +0200 (CEST)
-[]
-> -	flush_map(&l);
-> +	flush_map(&arg);
-
-  +	flush_map(&arg.l);
-
-  CC      arch/x86_64/mm/pageattr.o
-arch/x86_64/mm/pageattr.c: In function 'global_flush_tlb':
-arch/x86_64/mm/pageattr.c:274: warning: passing argument 1 of 'flush_map' from incompatible pointer type
-
-(for i386 seems too)
-
-[]  
-> +#define PageFlush(p) test_bit(PG_owner_priv_1, &(p)->flags)
-> +#define SetPageFlush(p) set_bit(PG_owner_priv_1, &(p)->flags)
-> +#define TestClearPageFlush(p) test_and_clear_bit(PG_owner_priv_1, &(p)->flags)
-
-Is it worth introducing more of that Pascal style? Yes, page stuff is
-all about it, but still.
-
-[]
-> +static struct page *flush_page(unsigned long address)
+On 9/21/07, Andi Kleen <ak@suse.de> wrote:
+>
+> Earlier patch added IO APIC setup into local APIC setup. This caused
+> modpost warnings. Fix them by untangling setup_local_APIC() and splitting
+> it into smaller functions. The IO APIC initialization is only called
+> for the BP init.
+>
+> Also removed some outdated debugging code and minor cleanup.
+> Signed-off-by: Andi Kleen <ak@suse.de>
+>
+> ---
+>  arch/x86_64/kernel/apic.c    |   46 ++++++++++++++++++++-----------------------
+>  arch/x86_64/kernel/smpboot.c |    8 +++++++
+>  include/asm-x86_64/apic.h    |    1
+>  3 files changed, 31 insertions(+), 24 deletions(-)
+>
+> Index: linux/arch/x86_64/kernel/apic.c
+> ===================================================================
+> --- linux.orig/arch/x86_64/kernel/apic.c
+> +++ linux/arch/x86_64/kernel/apic.c
+> @@ -323,7 +323,7 @@ void __init init_bsp_APIC(void)
+>
+>  void __cpuinit setup_local_APIC (void)
 >  {
-> -	if (!test_and_set_bit(PG_arch_1, &kpte_page->flags))
-> -		list_add(&kpte_page->lru, &df_list);
-> +	struct page *p;
-> +	if (!(pfn_valid(__pa(address) >> PAGE_SHIFT)))
-> +		return NULL;
-> +	p = virt_to_page(address);
-> +	if ((PageFlush(p) || PageLRU(p)) && !test_bit(PG_arch_1, &p->flags))
-> +		return NULL;
-> +	return p;
->  }
+> -       unsigned int value, maxlvt;
+> +       unsigned int value;
+>         int i, j;
+>
+>         value = apic_read(APIC_LVR);
+> @@ -417,33 +417,22 @@ void __cpuinit setup_local_APIC (void)
+>         else
+>                 value = APIC_DM_NMI | APIC_LVT_MASKED;
+>         apic_write(APIC_LVT1, value);
+> +}
+>
+> +void __cpuinit lapic_setup_esr(void)
 
-Saves 16 bytes in non optimized compile (if tcc will ever do this :)
+static ?
 
-static struct page *flush_page(unsigned long address)
-{
-	struct page *p = NULL;
+> +{
+> +       unsigned maxlvt = get_maxlvt();
+> +       apic_write(APIC_LVTERR, ERROR_APIC_VECTOR);
+>         /*
+> -        * Now enable IO-APICs, actually call clear_IO_APIC
+> -        * We need clear_IO_APIC before enabling vector on BP
+> +        * spec says clear errors after enabling vector.
+>          */
+> -       if (!smp_processor_id())
+> -       if (!skip_ioapic_setup && nr_ioapics)
+> -               enable_IO_APIC();
+> -
+> -       {
+> -               unsigned oldvalue;
+> -               maxlvt = get_maxlvt();
+> -               oldvalue = apic_read(APIC_ESR);
+> -               value = ERROR_APIC_VECTOR;      // enables sending errors
+> -               apic_write(APIC_LVTERR, value);
+> -               /*
+> -                * spec says clear errors after enabling vector.
+> -                */
+> -               if (maxlvt > 3)
+> -                       apic_write(APIC_ESR, 0);
+> -               value = apic_read(APIC_ESR);
+> -               if (value != oldvalue)
+> -                       apic_printk(APIC_VERBOSE,
+> -                       "ESR value after enabling vector: %08x, after %08x\n",
+> -                       oldvalue, value);
+> -       }
+> +       if (maxlvt > 3)
+> +               apic_write(APIC_ESR, 0);
+> +}
+>
+> +void __cpuinit end_local_APIC_setup(void)
+> +{
+> +       lapic_setup_esr();
+>         nmi_watchdog_default();
+>         setup_apic_nmi_watchdog(NULL);
+>         apic_pm_activate();
+> @@ -1178,6 +1167,15 @@ int __init APIC_init_uniprocessor (void)
+>
+>         setup_local_APIC();
+>
+> +       /*
+> +        * Now enable IO-APICs, actually call clear_IO_APIC
+> +        * We need clear_IO_APIC before enabling vector on BP
 
-	if (pfn_valid(__pa(address) >> PAGE_SHIFT)) {
-		p = virt_to_page(address);
-		if (PageFlush(p) || PageLRU(p))
-			if (!test_bit(PG_arch_1, &p->flags))
-				p = NULL;
-	}
-	return p;
-}
+here it is uniprocessor...
+so
++        * We need clear_IO_APIC before enabling error vector
 
->  static int
-> @@ -158,6 +185,18 @@ __change_page_attr(struct page *page, pg
->  	kpte_page = virt_to_page(kpte);
->  	BUG_ON(PageLRU(kpte_page));
->  	BUG_ON(PageCompound(kpte_page));
-> +	BUG_ON(PageLRU(kpte_page));
+> +        */
+> +       if (!skip_ioapic_setup && nr_ioapics)
+> +               enable_IO_APIC();
+
+could it cause modpost warning too?
+
 > +
-> +	/* Do caching attributes change?
-> +	   Note: this will need changes if the PAT bit is used (it isn't
-> +   	   currently) because that one varies between 2MB and 4K pages. */
-> +	if ((pte_val(*kpte)&_PAGE_CACHE) != (pgprot_val(prot)&_PAGE_CACHE)) {
-> +		struct page *p = flush_page(address);
-> +		if (!p)
-> +			full_flush = 1;
-> +		else
-> +			save_page(p, 1);
-> +	}
->  
->  	if (pgprot_val(prot) != pgprot_val(PAGE_KERNEL)) { 
->  		if (!pte_huge(*kpte)) {
-> @@ -189,7 +228,7 @@ __change_page_attr(struct page *page, pg
->  	 * replace it with a largepage.
->  	 */
->  
-> -	save_page(kpte_page);
-> +	save_page(kpte_page, 0);
->  	if (!PageReserved(kpte_page)) {
->  		if (cpu_has_pse && (page_private(kpte_page) == 0)) {
->  			paravirt_release_pt(page_to_pfn(kpte_page));
-> @@ -235,18 +274,22 @@ int change_page_attr(struct page *page, 
->  
->  void global_flush_tlb(void)
->  {
-> -	struct list_head l;
-> +	struct flush_arg arg;
->  	struct page *pg, *next;
->  
->  	BUG_ON(irqs_disabled());
->  
->  	spin_lock_irq(&cpa_lock);
-> -	list_replace_init(&df_list, &l);
-> +	arg.full_flush = full_flush;
-> +	full_flush = 0;
-> +	list_replace_init(&df_list, &arg.l);
->  	spin_unlock_irq(&cpa_lock);
-> -	flush_map(&l);
-> -	list_for_each_entry_safe(pg, next, &l, lru) {
-> +	flush_map(&arg);
+> +       end_local_APIC_setup();
+> +
+>         if (smp_found_config && !skip_ioapic_setup && nr_ioapics)
+>                 setup_IO_APIC();
+>         else
+> Index: linux/arch/x86_64/kernel/smpboot.c
+> ===================================================================
+> --- linux.orig/arch/x86_64/kernel/smpboot.c
+> +++ linux/arch/x86_64/kernel/smpboot.c
+> @@ -211,6 +211,7 @@ void __cpuinit smp_callin(void)
+>
+>         Dprintk("CALLIN, before setup_local_APIC().\n");
+>         setup_local_APIC();
+> +       end_local_APIC_setup();
+>
+>         /*
+>          * Get our bogomips.
+> @@ -870,6 +871,13 @@ void __init smp_prepare_cpus(unsigned in
+>          */
+>         setup_local_APIC();
+>
+> +       /*
+> +        * Enable IO APIC before setting up error vector
+> +        */
+> +       if (!skip_ioapic_setup && nr_ioapics)
+> +               enable_IO_APIC();
+> +       end_local_APIC_setup();
+> +
+>         if (GET_APIC_ID(apic_read(APIC_ID)) != boot_cpu_id) {
+>                 panic("Boot APIC ID in local APIC unexpected (%d vs %d)",
+>                       GET_APIC_ID(apic_read(APIC_ID)), boot_cpu_id);
+> Index: linux/include/asm-x86_64/apic.h
+> ===================================================================
+> --- linux.orig/include/asm-x86_64/apic.h
+> +++ linux/include/asm-x86_64/apic.h
+> @@ -73,6 +73,7 @@ extern void cache_APIC_registers (void);
+>  extern void sync_Arb_IDs (void);
 
-i386 case here.
-____
+sync_Arb_IDs is still left there?
+
+YH
