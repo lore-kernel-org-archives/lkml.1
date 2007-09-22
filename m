@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbXIVQ2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbXIVRF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbXIVQ2l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 12:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXIVQ2e
+	id S1757152AbXIVRF3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 13:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbXIVRFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 12:28:34 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:26379 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753905AbXIVQ2d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 12:28:33 -0400
-Date: Sat, 22 Sep 2007 10:28:20 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] [9/50] i386: validate against ACPI motherboard resources
-In-reply-to: <86802c440709212349l3d968d1bgdc89e7c7415b54da@mail.gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andi Kleen <ak@suse.de>, rajesh.shah@intel.com, jbarnes@virtuousgeek.org,
-       greg@kroah.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Message-id: <46F542A4.9080207@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <200709221231.836138000@suse.de>
- <20070921223207.7BBE71479D@wotan.suse.de>
- <86802c440709212349l3d968d1bgdc89e7c7415b54da@mail.gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 22 Sep 2007 13:05:21 -0400
+Received: from www.osadl.org ([213.239.205.134]:52615 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752359AbXIVRFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 13:05:20 -0400
+Subject: Re: RFC: A revised timerfd API
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Kerrisk <mtk.linux.lists@gmail.com>
+Cc: Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>, geoff@gclare.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
+       Randy Dunlap <rdunlap@xenotime.net>, vda.linux@googlemail.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       David =?ISO-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>,
+       mtk-manpages@gmx.net
+In-Reply-To: <517f3f820709220907l4c4e693di3df6942bdca5bcfa@mail.gmail.com>
+References: <46F514C9.5010208@gmx.net>
+	 <E1IZ62P-0000EX-00@calista.eckenfels.net>
+	 <517f3f820709220907l4c4e693di3df6942bdca5bcfa@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 22 Sep 2007 19:05:17 +0200
+Message-Id: <1190480717.4035.45.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> No!
+On Sat, 2007-09-22 at 18:07 +0200, Michael Kerrisk wrote:
+> Hello Bernd,
 > 
-> MMCONFIG will not work with acpi=off any more.
+> Please don't trim the CC list when replying!  I nearly did not see
+> your reply, and others will have missed it also.
 
-I don't think this is unreasonable. The ACPI MCFG table is how we are 
-supposed to learn about the area in the first place. If we can't get the 
-table location via an approved mechanism, and can't validate it doesn't 
-overlap with another memory reservation or something, I really don't 
-think we should be using it.
+Yup.
 
-I don't think it's much of an issue anyway - the chances that somebody 
-will want to run without ACPI on a system with MCFG are pretty low given 
-that you'll end up losing a bunch of functionality (not least of which 
-is multi-cores).
+> On 9/22/07, Bernd Eckenfels <ecki@lina.inka.de> wrote:
+> > In article <46F514C9.5010208@gmx.net> you wrote:
+> > >  1. This design stretches the POSIX timers API in strange
+> > >     ways.
+> >
+> > Maybe it is possible to reimplement the POSIX API in usermode using the
+> > kernel's FD implementation?
 
+Yikes.
+
+> It's a clever idea...  Without thinking on it too long, I'm not sure
+> whether or not there might be some details which would make this
+> difficult.
+
+You'd need be quite masochistic to start such a project. The POSIX timer
+API consists mostly of corner cases and I doubt that you get them even
+halfway under control in a pure user space implementation.
+
+It would be a rather huge performance penalty as well. You need at least
+two user space context switches to get the most simple cases resolved.
+
+> > (and drop the posix support from kernel)
 > 
-> because acpi_init==>pci_mmcfg_late_init==>pci_mmcfg_check_hostbridge...
-> 
-> can you move pci_mmcfg_later_init out of acpi_init and just call
-> somewhere after acpi_init...
-> or put pci_mmcfg_check_hostbridge back to pci_mmcfg_early_init?
-> 
-> YH
-> 
+> However we couldn't drop POSIX support from the kernel, because that
+> would break the ABI.
+
+True. So there is no point in reinventing the wheel.
+
+	tglx
+
+
