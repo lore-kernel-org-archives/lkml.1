@@ -1,95 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761693AbXIVLcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbXIVMIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761693AbXIVLcV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 07:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbXIVLcK
+	id S1756933AbXIVMIq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 08:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbXIVMIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 07:32:10 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:42577 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbXIVLcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 07:32:08 -0400
-Date: Sat, 22 Sep 2007 15:31:30 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage. Security attributes and ducumentation update.
-Message-ID: <20070922113130.GA24473@2ka.mipt.ru>
-References: <20070831160611.GA21660@2ka.mipt.ru> <20070917182229.GA5966@ucw.cz>
+	Sat, 22 Sep 2007 08:08:38 -0400
+Received: from anchor-post-30.mail.demon.net ([194.217.242.88]:4640 "EHLO
+	anchor-post-30.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751230AbXIVMIi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 08:08:38 -0400
+Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
+From: richard kennedy <richard@rsk.demon.co.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Matthias Hensler <matthias@wspse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20070921033336.c327ffd9.akpm@linux-foundation.org>
+References: <46B10BB7.60900@redhat.com>
+	 <20070803113407.0b04d44e.akpm@linux-foundation.org>
+	 <20070804084426.GA20464@kobayashi-maru.wspse.de>
+	 <20070809095943.GA7763@kobayashi-maru.wspse.de>
+	 <20070809095534.25ae1c42.akpm@linux-foundation.org>
+	 <46F2E103.8000907@redhat.com>
+	 <20070920142927.d87ab5af.akpm@linux-foundation.org>
+	 <46F2EE76.4000203@redhat.com>
+	 <20070920153654.b9e90616.akpm@linux-foundation.org>
+	 <1190370341.3121.35.camel@castor.rsk.org>
+	 <20070921033336.c327ffd9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 22 Sep 2007 13:08:35 +0100
+Message-Id: <1190462915.3156.5.camel@castor.rsk.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070917182229.GA5966@ucw.cz>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel.
-
-On Mon, Sep 17, 2007 at 06:22:30PM +0000, Pavel Machek (pavel@ucw.cz) wrote:
-> > I'm pleased to announce third release of the distributed storage
-> > subsystem, which allows to form a storage on top of remote and local
-> > nodes, which in turn can be exported to another storage as a node to
-> > form tree-like storages.
+On Fri, 2007-09-21 at 03:33 -0700, Andrew Morton wrote:
+> On Fri, 21 Sep 2007 11:25:41 +0100 richard kennedy <richard@rsk.demon.co.uk> wrote:
 > 
-> How is this different from raid0/1 over nbd? Or raid0/1 over
-> ata-over-ethernet?
-
-I will repeate a quote I made for previous release:
-
-It has number of advantages, outlined in the first release and on the
-project homepage, namely:
-
-* non-blocking processing without busy loops (compared to iSCSI and NBD)
-* small, plugable architecture
-* failover recovery (reconnect to remote target)
-* autoconfiguration
-* no additional allocatins (not including network  part) - at least two
-	in device mapper for fast path
-* very simple - try to compare with iSCSI
-* works with different network protocols
-* storage can be formed on top of remote nodes and be exported
-	simultaneously (iSCSI is peer-to-peer only, NBD
-	requires device mapper, is synchronous and wants
-	special userspace thread)
-
-DST allows to remove any nodes and then turn it
-back into the storage without
-breaking the dataflow, dst core will
-reconnect automatically to the
-failed remote nodes, it allows to work
-with detouched devices just like
-with usual filesystems (in case it was
-not formed as a part of linear
-storage, since in that case meta
-information is spreaded between nodes).
-
-It does not require special processes on
-behalf of network connection,
-everything will be performed
-automatically on behalf of DST core
-workers, it allows to export new device,
-created on top of mirror or
-linear combination of the others, which
-in turn can be formed on top of
-another and so on...
-
-This was designed to allow to create a
-distributed storage with
-completely transparent failover
-recovery, with ability to detouch remote
-nodes from mirror array to became
-standalone realtime backups (or
-snapshots) and turn it back into the
-storage without stopping main
-device node. 
-
-> > +|---------------- DST storate -------------------|
+> > > That's all a bit crappy if the wrong races happen and some other task is
+> > > somehow exceeding the dirty limits each time this task polls them.  Seems
+> > > unlikely that such a condition would persist forever.
+> > > 
+> > > So the question is, why do we have large amounts of dirty pages for one
+> > > disk which appear to be sitting there not getting written?
+> > 
+> > The lockup I'm seeing intermittently occurs when I have 2+ tasks copying
+> > large files (1Gb+) on sda & a small read-mainly mysql db app running on
+> > sdb. The lockup seems to happen just after the copies finish -- there
+> > are lots of dirty pages but nothing left to write them until kupdate
+> > gets round to it. 
 > 
-> storage?
+> Then what happens?  The system recovers?
+when my system is locked up I get this from sysrq-w
+(2.6.23-rc7)
 
-Yep, thanks.
+SysRq : Show Blocked State
+auditd        D ffff8100b422fd28     0  1999      1
+ ffff8100b422fd78 0000000000000086 0000000000000000 ffff8100b4103020
+ 0000000000000286 ffff8100b4103020 ffff8100bf8af020 ffff8100b41032b8
+ 0000000100000000 0000000000000001 ffffffffffffffff 0000000000000003
+Call Trace:
+ [<ffffffff8802c8e9>] :jbd:log_wait_commit+0xa3/0xf5
+ [<ffffffff810482d9>] autoremove_wake_function+0x0/0x2e
+ [<ffffffff8802770b>] :jbd:journal_stop+0x1be/0x1ee
+ [<ffffffff810a79f7>] __writeback_single_inode+0x1f4/0x332
+ [<ffffffff8108c0b0>] vfs_statfs_native+0x29/0x34
+ [<ffffffff810a8362>] sync_inode+0x24/0x36
+ [<ffffffff8803c350>] :ext3:ext3_sync_file+0xb4/0xc8
+ [<ffffffff81240730>] mutex_lock+0x1e/0x2f
+ [<ffffffff810aa7fa>] do_fsync+0x52/0xa4
+ [<ffffffff810aa86f>] __do_fsync+0x23/0x36
+ [<ffffffff8100bc8e>] system_call+0x7e/0x83
 
--- 
-	Evgeniy Polyakov
+syslogd       D ffff8100b3f67d28     0  2022      1
+ ffff8100b3f67d78 0000000000000086 0000000000000000 0000000100000000
+ 0000000000000003 ffff810037c66810 ffff8100bf8af020 ffff810037c66aa8
+ 0000000100000000 0000000000000001 ffffffffffffffff 0000000000000003
+Call Trace:
+ [<ffffffff8802c8e9>] :jbd:log_wait_commit+0xa3/0xf5
+ [<ffffffff810482d9>] autoremove_wake_function+0x0/0x2e
+ [<ffffffff8802770b>] :jbd:journal_stop+0x1be/0x1ee
+ [<ffffffff810a79f7>] __writeback_single_inode+0x1f4/0x332
+ [<ffffffff810a8362>] sync_inode+0x24/0x36
+ [<ffffffff8803c350>] :ext3:ext3_sync_file+0xb4/0xc8
+ [<ffffffff81240730>] mutex_lock+0x1e/0x2f
+ [<ffffffff810aa7fa>] do_fsync+0x52/0xa4
+ [<ffffffff810aa86f>] __do_fsync+0x23/0x36
+ [<ffffffff8100be0c>] tracesys+0xdc/0xe1
+
+
