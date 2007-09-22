@@ -1,118 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbXIVEaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbXIVElD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759141AbXIVEaZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 00:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbXIVEaL
+	id S1758362AbXIVElD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 00:41:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbXIVEky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 00:30:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42515 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbXIVEaK (ORCPT
+	Sat, 22 Sep 2007 00:40:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:2077 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbXIVEkx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 00:30:10 -0400
-Date: Sat, 22 Sep 2007 10:03:01 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org,
-       devel@openvz.org
-Subject: Re: [PATCH 2/3] user.c: use kmem_cache_zalloc()
-In-Reply-To: <20070921123425.54436b17.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0709220940470.19812@enigma.security.iitk.ac.in>
-References: <20070921093906.GB6812@localhost.sw.ru>
- <20070921123425.54436b17.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Sat, 22 Sep 2007 00:40:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=sNHJkVICxkQTC5kR2hOutbuQAN/Q4mmdFyKok0I9dmAj9Kk9eIrmN7ABlXYctbXWy/JnpoVTwNgXRLMUjnboZIPP0DYesIWtnPHtXWHCBOWfpUT7pC/oIuauHkonD1TQ2rWg6dKe434PoqGCVKiM4ReSjG0D1T3d71X4QBvIv70=
+Date: Sat, 22 Sep 2007 12:39:55 +0800
+From: lepton <ytht.net@gmail.com>
+To: jdike@karaya.com
+Cc: lkm <linux-kernel@vger.kernel.org>
+Subject: [PATCH] 2.6.22.6 user-mode linux: use address instead of value as argument in os_free_irq_by_cb
+Message-ID: <20070922043955.GA4550@router.lepton.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+  There is a bug in os_free_irq_by_cb, when the first element
+  of active_fds list  is free, the value of active_fds is not
+  updated, just value in stack is updated.
 
+  The intresting thing is that without this patch, a poweroff
+  in user mode linux guest will halt the host linux system.It
+  seems that after the tracing thread is dead, the syscall to
+  sys_reboot of the traced thread is executed by host. I don't
+  know if it is another bug.
 
-On Fri, 21 Sep 2007, Andrew Morton wrote:
-> 
-> On Fri, 21 Sep 2007 13:39:06 +0400
-> Alexey Dobriyan <adobriyan@sw.ru> wrote:
-> 
-> > Quite a few fields are zeroed during user_struct creation, so use
-> > kmem_cache_zalloc() --  save a few lines and #ifdef. Also will help avoid
-> >  #ifdef CONFIG_POSIX_MQUEUE in next patch.
-> > 
-> > Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-> > ---
-> > 
-> >  kernel/user.c |   13 +------------
-> >  1 file changed, 1 insertion(+), 12 deletions(-)
-> > 
-> > --- a/kernel/user.c
-> > +++ b/kernel/user.c
-> > @@ -129,21 +129,11 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
-> >  	if (!up) {
-> >  		struct user_struct *new;
-> >  
-> > -		new = kmem_cache_alloc(uid_cachep, GFP_KERNEL);
-> > +		new = kmem_cache_zalloc(uid_cachep, GFP_KERNEL);
-> >  		if (!new)
-> >  			return NULL;
-> >  		new->uid = uid;
-> >  		atomic_set(&new->__count, 1);
-> > -		atomic_set(&new->processes, 0);
-> > -		atomic_set(&new->files, 0);
-> > -		atomic_set(&new->sigpending, 0);
-> > -#ifdef CONFIG_INOTIFY_USER
-> > -		atomic_set(&new->inotify_watches, 0);
-> > -		atomic_set(&new->inotify_devs, 0);
-> > -#endif
-> > -
-> > -		new->mq_bytes = 0;
-> > -		new->locked_shm = 0;
-> 
-> 
-> This assumes that setting an atomic_t to the all-zeroes pattern is
-> equivalent to atomic_set(v, 0).
-> 
-> This happens to be true for all present architectures, afaik.  But an
-> architecture which has crappy primitives could quite legitimately implement
-> its atomic_t as:
-> 
-> typedef struct {
-> 	int counter;
-> 	spinlock_t lock;
-> } atomic_t;
-> 
-> in which case your assumption breaks.
+Signed-off-by: Lepton Wu <ytht.net@gmail.com>
 
-Agreed, and this (implementing atomic ops using spinlocks) is already true
-for the CRIS platform.
-
-However, cris' implementation explicitly takes care to ensure that
-atomic_t contains just a solitary int member, and no spinlock_t's
-inside the atomic_t itself. [ include/asm-cris/arch-v32/atomic.h ]
-
-Of course, that "128" limits scalability, so no more than 128 CPUs can be
-executing atomic ops at any given instant of time, but admittedly I'm
-getting anal here myself ... (but probably that's often perfectly the
-right attitude to have too)
-
-
-> So it's all a bit theoretical and a bit anal, and I'm sure we're making the
-> same mistake in other places, but it's not a change I particularly like..
-
-Hmm, it's borderline.
-
-Such changes make text smaller (in terms of LOC as well vmlinux size).
-
-But they also hurt grepping. Often we (at least I) want to grep for when
-is a variable/struct member/etc getting initialized or getting
-set/assigned to. Take this case, for example -- I bet it's important (for
-overall logic) that those variables get initialized to zero. But *zalloc()
-functions do that implicitly, so it wastes precious seconds or minutes of
-developer time when grepping that code.
-
-OTOH, we could make it standard practise to put a little comment on top
-of such *zalloc() usages, explicitly enumerating the struct members that
-that the *zalloc() is assumed to initialize to zero.
-
-<runs away>
-
-
-Satyam
+diff -X linux-2.6.22.6/Documentation/dontdiff -pru linux-2.6.22.6/arch/um/include/os.h linux-2.6.22.6-lepton/arch/um/include/os.h
+--- linux-2.6.22.6/arch/um/include/os.h	2007-09-14 17:41:10.000000000 +0800
++++ linux-2.6.22.6-lepton/arch/um/include/os.h	2007-09-22 12:15:28.000000000 +0800
+@@ -325,7 +325,7 @@ extern void reboot_skas(void);
+ extern int os_waiting_for_events(struct irq_fd *active_fds);
+ extern int os_create_pollfd(int fd, int events, void *tmp_pfd, int size_tmpfds);
+ extern void os_free_irq_by_cb(int (*test)(struct irq_fd *, void *), void *arg,
+-		struct irq_fd *active_fds, struct irq_fd ***last_irq_ptr2);
++		struct irq_fd **active_fds_ptr, struct irq_fd ***last_irq_ptr2);
+ extern void os_free_irq_later(struct irq_fd *active_fds,
+ 		int irq, void *dev_id);
+ extern int os_get_pollfd(int i);
+diff -X linux-2.6.22.6/Documentation/dontdiff -pru linux-2.6.22.6/arch/um/kernel/irq.c linux-2.6.22.6-lepton/arch/um/kernel/irq.c
+--- linux-2.6.22.6/arch/um/kernel/irq.c	2007-09-14 17:41:10.000000000 +0800
++++ linux-2.6.22.6-lepton/arch/um/kernel/irq.c	2007-09-22 12:15:05.000000000 +0800
+@@ -218,7 +218,7 @@ static void free_irq_by_cb(int (*test)(s
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&irq_lock, flags);
+-	os_free_irq_by_cb(test, arg, active_fds, &last_irq_ptr);
++	os_free_irq_by_cb(test, arg, &active_fds, &last_irq_ptr);
+ 	spin_unlock_irqrestore(&irq_lock, flags);
+ }
+ 
+diff -X linux-2.6.22.6/Documentation/dontdiff -pru linux-2.6.22.6/arch/um/os-Linux/irq.c linux-2.6.22.6-lepton/arch/um/os-Linux/irq.c
+--- linux-2.6.22.6/arch/um/os-Linux/irq.c	2007-09-14 17:41:10.000000000 +0800
++++ linux-2.6.22.6-lepton/arch/um/os-Linux/irq.c	2007-09-22 12:15:42.000000000 +0800
+@@ -84,12 +84,12 @@ int os_create_pollfd(int fd, int events,
+ }
+ 
+ void os_free_irq_by_cb(int (*test)(struct irq_fd *, void *), void *arg,
+-		struct irq_fd *active_fds, struct irq_fd ***last_irq_ptr2)
++		struct irq_fd **active_fds_ptr, struct irq_fd ***last_irq_ptr2)
+ {
+ 	struct irq_fd **prev;
+ 	int i = 0;
+ 
+-	prev = &active_fds;
++	prev = active_fds_ptr;
+ 	while (*prev != NULL) {
+ 		if ((*test)(*prev, arg)) {
+ 			struct irq_fd *old_fd = *prev;
