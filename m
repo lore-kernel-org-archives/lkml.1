@@ -1,207 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbXIVVdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbXIVVii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbXIVVdH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 17:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbXIVVc4
+	id S1755322AbXIVVii (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 17:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbXIVVia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 17:32:56 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57893 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751767AbXIVVcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 17:32:55 -0400
-X-Authenticated: #2360897
-X-Provags-ID: V01U2FsdGVkX19rCHM3aGlrCHCsTM+G8JFRzRO1P7Hpih6UgsQ0+h
-	drJzcrRTOo7/AH
-Date: Sat, 22 Sep 2007 23:32:53 +0200
-From: Bernhard Walle <bernhard.walle@gmx.de>
-To: linux-parport@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC] IRQ sharing for PCI parport cards
-Message-ID: <20070922213253.GA6397@mail1.bwalle.de>
-Mail-Followup-To: linux-parport@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+	Sat, 22 Sep 2007 17:38:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47017 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751688AbXIVVi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 17:38:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Sat, 22 Sep 2007 23:51:30 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       linux-pm@lists.linux-foundation.org,
+       huang ying <huang.ying.caritas@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org> <200709221234.18426.rjw@sisk.pl> <3BCF760C-D77D-417A-809A-B20D04DD01D3@mac.com>
+In-Reply-To: <3BCF760C-D77D-417A-809A-B20D04DD01D3@mac.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
+Message-Id: <200709222351.32137.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Saturday, 22 September 2007 20:00, Kyle Moffett wrote:
+> On Sep 22, 2007, at 06:34:17, Rafael J. Wysocki wrote:
+> > On Saturday, 22 September 2007 01:19, Kyle Moffett wrote:
+> >> On Sep 21, 2007, at 17:16:59, Jeremy Maitin-Shepard wrote:
+> >>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >>>> The ACPI platform firmware is allowed to preserve information  
+> >>>> accross the hibernation-resume cycle, so this need not be the same.
+> >>>
+> >>> All of my comments related to the case where S4 is not being used  
+> >>> (instead the system is just powered off normally), and a boot  
+> >>> kernel that does not initialize ACPI is used.  In that case, the  
+> >>> ACPI platform firmware should not be able to distinguish a normal  
+> >>> boot from a resume from hibernation.
+> >>
+> >> I think that in order for this to work, there would need to be  
+> >> some ABI whereby the resume-ing kernel can pass its entire ACPI  
+> >> state and a bunch of other ACPI-related device details to the  
+> >> resume-ed kernel, which I believe it does not do at the moment.
+> >
+> > In fact we don't need to do this.
+> >
+> > The solution is not to touch ACPI in the boot kernel (ie. the one  
+> > that loads the image) and pass control to the image kernel.  This  
+> > is how it's supposed to work according to the spec, more or less  
+> > (well, there are some ugly details  that need handling, like the  
+> > restoration of the NVS area).
+> 
+> First of all, we will need to make the resumed kernel throw away  
+> *ALL* of its ACPI state on S5 and completely reinitialize ACPI as  
+> though it was booting for the first time on resume.
 
-currently, the parport_pc driver doesn't use IRQs automatically for
-PCI devices. However, why is it not possible? It's no problem to find
-out the corresponding IRQ, and it should also be possible to use IRQ
-sharing. The following patch implements this.
+Yes, if we entered S5 in the last step of the hibernation sequence, the right
+thing to do would be to make the resumed kernel reinitialize ACPI from
+scratch.
 
-Could somebody tell me what's wrong with that approach? _If_ it would
-be that simple, I'm sure that sombody would have implemented this
-already.
+> From what I can tell, we "throw away" all the ACPI state in the boot kernel
+> and reinitialize it there, but then the reinitialized state is  
+> overwritten with the resumed kernel's state and the two don't always  
+> happen to be the same.  (Like if a battery got replaced or AC status  
+> changed).
 
-At least it works here.
+Usually it goes like that.  Still, you can pass "acpi=off" to the boot kernel,
+in which case it won't reinitialize ACPI.
 
+> Umm, I don't see how that can possibly work properly.  For a laptop,  
+> for example, the restore kernel will need to access the disk, the LCD  
+> display, and possibly the AC/battery and current CPU frequency.  From  
+> what I understand of ACPI, both of the former may need ACPI code to  
+> operate properly (Isn't there an ATA taskfile object of some kind?)  
+> and the latter two almost definitely need ACPI.
 
-Thanks,
-   Bernhard
+Well, this is not the case on any systems that I have access to, including
+two quite modern notebooks.  Apparently, everything works without ACPI on
+these machines.
 
----
- drivers/parport/parport_cs.c     |    2 +-
- drivers/parport/parport_pc.c     |   39 +++++++++++++++++++++++++--------------
- drivers/parport/parport_serial.c |    2 +-
- include/linux/parport_pc.h       |    6 +++++-
- 4 files changed, 32 insertions(+), 17 deletions(-)
+Besides, in theory, it's possible to use an "intelligent" boot loader to read
+the hibernation image and that doesn't need ACPI for anything.
 
---- a/drivers/parport/parport_cs.c
-+++ b/drivers/parport/parport_cs.c
-@@ -200,7 +200,7 @@ static int parport_config(struct pcmcia_
+> Ergo the boot kernel may need to initialize and use ACPI just to run an ATA
+> taskfile so it can read from the HDD efficiently.
+
+It is possible, but I haven't seen that yet.
  
-     p = parport_pc_probe_port(link->io.BasePort1, link->io.BasePort2,
- 			      link->irq.AssignedIRQ, PARPORT_DMA_NONE,
--			      &link->dev);
-+			      &link->dev, 0);
-     if (p == NULL) {
- 	printk(KERN_NOTICE "parport_cs: parport_pc_probe_port() at "
- 	       "0x%3x, irq %u failed\n", link->io.BasePort1,
---- a/drivers/parport/parport_pc.c
-+++ b/drivers/parport/parport_pc.c
-@@ -274,8 +274,14 @@ static int clear_epp_timeout(struct parp
- 
- static irqreturn_t parport_pc_interrupt(int irq, void *dev_id)
- {
--	parport_generic_irq(irq, (struct parport *) dev_id);
--	/* FIXME! Was it really ours? */
-+	struct parport *pb = dev_id;
-+
-+	/* for shared interrupt handlers */
-+	if (parport_pc_read_status(pb) & (1<<2))
-+		return IRQ_NONE;
-+
-+	parport_generic_irq(irq, pb);
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -2149,7 +2155,8 @@ static DEFINE_SPINLOCK(ports_lock);
- struct parport *parport_pc_probe_port (unsigned long int base,
- 				       unsigned long int base_hi,
- 				       int irq, int dma,
--				       struct device *dev)
-+				       struct device *dev,
-+				       unsigned int flags)
- {
- 	struct parport_pc_private *priv;
- 	struct parport_operations *ops;
-@@ -2301,8 +2308,10 @@ struct parport *parport_pc_probe_port (u
- 		EPP_res = NULL;
- 	}
- 	if (p->irq != PARPORT_IRQ_NONE) {
-+		unsigned int irq_flags = flags & PARPORT_PC_SHARE_IRQ
-+			? IRQF_SHARED : 0;
- 		if (request_irq (p->irq, parport_pc_interrupt,
--				 0, p->name, p)) {
-+				irq_flags, p->name, p)) {
- 			printk (KERN_WARNING "%s: irq %d in use, "
- 				"resorting to polled operation\n",
- 				p->name, p->irq);
-@@ -2506,7 +2515,7 @@ static int __devinit sio_ite_8872_probe 
- 	 */
- 	release_resource(base_res);
- 	if (parport_pc_probe_port (ite8872_lpt, ite8872_lpthi,
--				   irq, PARPORT_DMA_NONE, &pdev->dev)) {
-+				   irq, PARPORT_DMA_NONE, &pdev->dev, 0)) {
- 		printk (KERN_INFO
- 			"parport_pc: ITE 8872 parallel port: io=0x%X",
- 			ite8872_lpt);
-@@ -2689,7 +2698,7 @@ static int __devinit sio_via_probe (stru
- 	}
- 
- 	/* finally, do the probe with values obtained */
--	if (parport_pc_probe_port (port1, port2, irq, dma, &pdev->dev)) {
-+	if (parport_pc_probe_port (port1, port2, irq, dma, &pdev->dev, 0)) {
- 		printk (KERN_INFO
- 			"parport_pc: VIA parallel port: io=0x%X", port1);
- 		if (irq != PARPORT_IRQ_NONE)
-@@ -2980,14 +2989,16 @@ static int parport_pc_pci_probe (struct 
- 			io_lo += hi; /* Reinterpret the meaning of
-                                         "hi" as an offset (see SYBA
-                                         def.) */
--		/* TODO: test if sharing interrupts works */
- 		printk (KERN_DEBUG "PCI parallel port detected: %04x:%04x, "
- 			"I/O at %#lx(%#lx)\n",
- 			parport_pc_pci_tbl[i + last_sio].vendor,
- 			parport_pc_pci_tbl[i + last_sio].device, io_lo, io_hi);
-+		/* according to PCI spec, IRQ sharing must be supported */
- 		data->ports[count] =
--			parport_pc_probe_port (io_lo, io_hi, PARPORT_IRQ_NONE,
--					       PARPORT_DMA_NONE, &dev->dev);
-+			parport_pc_probe_port (io_lo, io_hi, dev->irq,
-+					       PARPORT_DMA_NONE,
-+					       &dev->dev,
-+					       PARPORT_PC_SHARE_IRQ);
- 		if (data->ports[count])
- 			count++;
- 	}
-@@ -3095,7 +3106,7 @@ static int parport_pc_pnp_probe(struct p
- 		dma = PARPORT_DMA_NONE;
- 
- 	dev_info(&dev->dev, "reported by %s\n", dev->protocol->name);
--	if (!(pdata = parport_pc_probe_port (io_lo, io_hi, irq, dma, &dev->dev)))
-+	if (!(pdata = parport_pc_probe_port (io_lo, io_hi, irq, dma, &dev->dev, 0)))
- 		return -ENODEV;
- 
- 	pnp_set_drvdata(dev,pdata);
-@@ -3141,11 +3152,11 @@ parport_pc_find_isa_ports (int autoirq, 
- {
- 	int count = 0;
- 
--	if (parport_pc_probe_port(0x3bc, 0x7bc, autoirq, autodma, NULL))
-+	if (parport_pc_probe_port(0x3bc, 0x7bc, autoirq, autodma, NULL, 0))
- 		count++;
--	if (parport_pc_probe_port(0x378, 0x778, autoirq, autodma, NULL))
-+	if (parport_pc_probe_port(0x378, 0x778, autoirq, autodma, NULL, 0))
- 		count++;
--	if (parport_pc_probe_port(0x278, 0x678, autoirq, autodma, NULL))
-+	if (parport_pc_probe_port(0x278, 0x678, autoirq, autodma, NULL, 0))
- 		count++;
- 
- 	return count;
-@@ -3429,7 +3440,7 @@ static int __init parport_pc_init(void)
- 			if ((io_hi[i]) == PARPORT_IOHI_AUTO)
- 			       io_hi[i] = 0x400 + io[i];
- 			parport_pc_probe_port(io[i], io_hi[i],
--						  irqval[i], dmaval[i], NULL);
-+						  irqval[i], dmaval[i], NULL, 0);
- 		}
- 	} else
- 		parport_pc_find_ports (irqval[0], dmaval[0]);
---- a/drivers/parport/parport_serial.c
-+++ b/drivers/parport/parport_serial.c
-@@ -305,7 +305,7 @@ static int __devinit parport_register (s
- 		dev_dbg(&dev->dev, "PCI parallel port detected: I/O at "
- 			"%#lx(%#lx)\n", io_lo, io_hi);
- 		port = parport_pc_probe_port (io_lo, io_hi, PARPORT_IRQ_NONE,
--					      PARPORT_DMA_NONE, &dev->dev);
-+					      PARPORT_DMA_NONE, &dev->dev, 0);
- 		if (port) {
- 			priv->port[priv->num_par++] = port;
- 			success = 1;
---- a/include/linux/parport_pc.h
-+++ b/include/linux/parport_pc.h
-@@ -227,11 +227,15 @@ extern void parport_pc_release_resources
- 
- extern int parport_pc_claim_resources(struct parport *p);
- 
-+/* flags for parport_pc_probe_port */
-+#define PARPORT_PC_SHARE_IRQ		(1<<0)
-+
- /* PCMCIA code will want to get us to look at a port.  Provide a mechanism. */
- extern struct parport *parport_pc_probe_port (unsigned long base,
- 					      unsigned long base_hi,
- 					      int irq, int dma,
--					      struct device *dev);
-+					      struct device *dev,
-+					      unsigned int flags);
- extern void parport_pc_unregister_port (struct parport *p);
- 
- #endif
+> >> I believe that what causes problems is the ACPI state data that  
+> >> the kernel stores is *different* between identical sequential  
+> >> boots, especially when you add/remove/replace batteries, AC, etc.
+> >
+> > Rather the ACPI state data that the platform firmware stores may be  
+> > different, depending on whether you enter S4 or S5 during "power  
+> > off" and that determines the interactions between the kernel and  
+> > the firmware after the next boot.
+> 
+> That's not what he was talking about.  The problem discussed was:
+>    (A) You hibernate your box, entering S5 (IE: power off)
+>    (B) You resume the box and the boot kernel inits all the ACPI stuff.
+>    (C) The boot kernel's ACPI state is completely replaced by the  
+> resumed kernel's state.
+>    (D) Hardware stops working mysteriously because of ACPI problems.
+> 
+> The only possible conclusion is that the state between the boot  
+> kernel and the resume kernel was *different* and so the device failed  
+> because the ACPI state in the resume kernel doesn't match the actual  
+> state of the hardware.
+
+I think it's even more complicated.  The ACPI state of the resumed kernel
+has to match whatever is preserved by the platform.
+
+Well, my impression is that our current ACPI resume code actually expects
+the platform to preserve something and if that's missing the devices in
+question are not handled properly.  If that really is the case, there is the
+question whether we can do something about it in a reasonable way and I can't
+answer it right now.
+
+Besides, I really think that we should use the ACPI S4 state, because machines
+generally support that.
+
+Greetings,
+Rafael
