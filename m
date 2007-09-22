@@ -1,37 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbXIVG5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbXIVHGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762784AbXIVG5l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 02:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbXIVG5d
+	id S1761974AbXIVHGW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 03:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbXIVHGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 02:57:33 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59332 "EHLO pasmtpB.tele.dk"
+	Sat, 22 Sep 2007 03:06:13 -0400
+Received: from smtpoutm.mac.com ([17.148.16.71]:61486 "EHLO smtpoutm.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755476AbXIVG5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 02:57:33 -0400
-Date: Sat, 22 Sep 2007 08:59:00 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andi Kleen <ak@suse.de>
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [19/50] Experimental: detect if SVM is disabled by BIOS
-Message-ID: <20070922065900.GB26550@uranus.ravnborg.org>
-References: <200709221231.836138000@suse.de> <20070921223218.22A8D13DCD@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070921223218.22A8D13DCD@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+	id S1757485AbXIVHGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 03:06:12 -0400
+In-Reply-To: <Pine.LNX.4.58.0709211550330.29857@gandalf.stny.rr.com>
+References: <1190313251.4518.14.camel@localhost.localdomain> <20070921171256.GA9059@linux.vnet.ibm.com> <Pine.LNX.4.58.0709211550330.29857@gandalf.stny.rr.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B4DA08E1-19C1-4D46-B480-0B880F1443C9@mac.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [RFC PATCH] Add CRC checksum for RCU lists
+Date: Sat, 22 Sep 2007 03:04:47 -0400
+To: Steven Rostedt <rostedt@goodmis.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 22, 2007 at 12:32:18AM +0200, Andi Kleen wrote:
-> 
-> Also allow to set svm lock.
-> 
-> TBD double check, documentation, i386 support
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
+On Sep 21, 2007, at 17:32:08, Steven Rostedt wrote:
+> On Fri, 21 Sep 2007, Paul E. McKenney wrote:
+>> On Thu, Sep 20, 2007 at 02:34:11PM -0400, Steven Rostedt wrote:
+>>> -#define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
+>>> +#ifdef CONFIG_RCU_CRC_HEADER_CHECK
+>>> +
+>>> +#define RCU_CRC_MAGIC 0xC4809168UL
+>>
+>> Very magic indeed -- Google doesn't find it, other than in your  
+>> patch.  ;-)
+>
+> Paul, I'm disappointed in you. That number doesn't ring a bell at  
+> all??
+>
+> (hint, ignore the 'C' that was added by me).
 
-Could we have this patch tagged with x86 instead of "Experimental" in subject.
+LOL!  The RCU patent number; very clever indeed!
 
-	Sam
+Cheers,
+Kyle Moffett
+
