@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbXIVHw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761048AbXIVICe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761326AbXIVHw7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 03:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbXIVHwu
+	id S1761048AbXIVICe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 04:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXIVICW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 03:52:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47468 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbXIVHwt (ORCPT
+	Sat, 22 Sep 2007 04:02:22 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:60729 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754100AbXIVICV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 03:52:49 -0400
-Date: Sat, 22 Sep 2007 13:25:47 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Netdev Mailing List <netdev@vger.kernel.org>
-Subject: [PATCH -mm] iseries_veth: Kill unused variable
-In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0709221324430.22517@enigma.security.iitk.ac.in>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Sat, 22 Sep 2007 04:02:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=crhV2r6mZOnnSZb+5M2BQvVgDgqGe/wNEcciHtqB+gpTidUYPciEEBOrYULEm+Vq2sdVRDOrvQLxMKoDjvkx9ouNKRQ0+mS7NLc/kjzCi3HZd2DmNO/PhdSDZfFau2TeV28fS0mfkavjpflFaAMdpgYgrpognVtbZ2RFM83kEaM=
+Date: Sat, 22 Sep 2007 16:01:24 +0800
+From: lepton <ytht.net@gmail.com>
+To: jdike@karaya.com
+Cc: lkm <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH] 2.6.22.6 user-mode linux: before abort, we make it sure all children quit
+Message-ID: <20070922080124.GA7431@router.lepton.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  In a stock 2.6.22.6 kernel, poweroff a user mode linux guest
+(2.6.22.6 running in skas0 mode) will halt the host linux. I
+think the reason is the kernel thread abort because of a bug.
+Then the sys_reboot in process of user mode linux guest is
+not trapped by the user mode linux kernel and is executed by host.
+  I think it is better to make sure all of our children process
+to quit when user mode linux kernel abort.
 
-drivers/net/iseries_veth.c: In function 'veth_transmit_to_many':
-drivers/net/iseries_veth.c:1174: warning: unused variable 'port'
+Signed-off-by: Lepton Wu <ytht.net@gmail.com>
 
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
- drivers/net/iseries_veth.c |    1 -
- 1 file changed, 1 deletion(-)
-
-diff -ruNp a/drivers/net/iseries_veth.c b/drivers/net/iseries_veth.c
---- a/drivers/net/iseries_veth.c	2007-09-22 06:26:39.000000000 +0530
-+++ b/drivers/net/iseries_veth.c	2007-09-22 11:17:29.000000000 +0530
-@@ -1171,7 +1171,6 @@ static void veth_transmit_to_many(struct
- 					  HvLpIndexMap lpmask,
- 					  struct net_device *dev)
+diff -X linux-2.6.22.6/Documentation/dontdiff -pru linux-2.6.22.6/arch/um/os-Linux/util.c linux-2.6.22.6-lepton/arch/um/os-Linux/util.c
+--- linux-2.6.22.6/arch/um/os-Linux/util.c	2007-09-14 17:41:10.000000000 +0800
++++ linux-2.6.22.6-lepton/arch/um/os-Linux/util.c	2007-09-22 13:56:05.000000000 +0800
+@@ -106,5 +106,6 @@ int setjmp_wrapper(void (*proc)(void *, 
+ void os_dump_core(void)
  {
--	struct veth_port *port = (struct veth_port *) dev->priv;
- 	int i, success, error;
- 
- 	success = error = 0;
+ 	signal(SIGSEGV, SIG_DFL);
++	kill(0, SIGTERM);
+ 	abort();
+ }
