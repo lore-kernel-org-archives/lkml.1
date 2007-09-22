@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbXIVJfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761307AbXIVJqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563AbXIVJfj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 05:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXIVJfS
+	id S1761307AbXIVJqx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 05:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbXIVJqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 05:35:18 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:51090 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754127AbXIVJfQ (ORCPT
+	Sat, 22 Sep 2007 05:46:46 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46288 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbXIVJqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 05:35:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=WLyD9utmOEAlKsyeE/VseyNIfJxrBGE1ZJJNpc7kaX6ASucJ9jGY0PaExSzpW4waND/vx2Uw4KWuhDuXwAuLh9YK0/d51ZoKd+wsk9K6O+FzzrdLiue/HI4vgigxjrW3McbY2YAOWAc3u+0aamyM67XM8xbhg7AEZV7zvDzkxYo=
-Date: Sat, 22 Sep 2007 13:35:07 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: memset as memzero
-Message-ID: <20070922093507.GB7226@cvg>
-References: <20070922083355.GA7226@cvg> <Pine.LNX.4.64.0709220441090.21302@localhost.localdomain>
+	Sat, 22 Sep 2007 05:46:45 -0400
+Date: Sat, 22 Sep 2007 11:46:44 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
+       oliver.pntr@gmail.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [4/50] x86: add cpu codenames for Kconfig.cpu
+In-Reply-To: <20070922065724.GA26550@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0709221145300.15712@fbirervta.pbzchgretzou.qr>
+References: <200709221231.836138000@suse.de> <20070921223202.2504813DCD@wotan.suse.de>
+ <20070921224539.GD8127@redhat.com> <20070922065724.GA26550@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709220441090.21302@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Robert P. J. Day - Sat, Sep 22, 2007 at 04:48:28AM -0400]
-| On Sat, 22 Sep 2007, Cyrill Gorcunov wrote:
-| 
-| > Hi list,
-| >
-| > could anyone tell me why there is no official memzero function (or
-| > macros) in the kernel. As I see a lot of kernel parts calls for it
-| > (defying own macros as alias to memset). Maybe there is a special
-| > reason not to do so? Actually my suggestion is to define _one_
-| > general macros for this.
-| 
-| i brought up this issue on the KJ list once upon a time:
-| 
-| https://lists.linux-foundation.org/pipermail/kernel-janitors/2007-February/017847.html
-| 
-| and there didn't seem to be much enthusiasm for it.
-| 
-|   however, i am still curious why there isn't more use of the
-| already-defined "clear_page" macro.  most architectures appear to
-| define it:
-| 
-| $ grep -r "define.*clear_page" include
-| 
-| but there are still numerous explicit calls to memset() to zero a
-| chunk of memory that is exactly PAGE_SIZE in size.  just an
-| observation.
-| 
-| rday
-| -- 
-| ========================================================================
-| Robert P. J. Day
-| Linux Consulting, Training and Annoying Kernel Pedantry
-| Waterloo, Ontario, CANADA
-| 
-| http://crashcourse.ca
-| ========================================================================
-| 
 
-Thanks Robert for the answer, I'll mark this (clear_page) in my "must to
-take a look" list ;)
-Well if there is no strong reason of keeping this separate '#define memzero'
-I think it's a good case to merge them in some _single_ #define ;)
+On Sep 22 2007 08:57, Sam Ravnborg wrote:
+>> 
+>> This seems like yet another list that will need to be perpetually
+>> kept up to date, and given 99% of users don't know the codename
+>> of their core, just the marketing name, I question its value.
+>
+>As a bare minimum requirement the list presented here shall use same
+>names as used in /proc/cpuinfo
+>
+>On this box I read:
+>
+>vendor_id	: GenuineIntel
+>model name	: Pentium III (Coppermine)
+>
+>This info must be present in Kconfig text (help text) too.
+>I always have trouble selecting the right CPU before so I welcome this patch
+>that give me more info - and maybe a bit too much.
 
-Waiting for other comments...
+model name      : AMD Athlon(tm) XP 2000+
 
-P.S.
-In a mail you pointed to said that memset(...,0,...) is quite clear -
-yes it's quite clear indeed but we already _have_ a lot of '#define memzero'
-and who knows or may give the guarantee that new '#define memzero '_will not_'
-appear in the kernel.
-
-		Cyrill
-
+here. Seems like Intel encodes their codenames into cpuid :(
