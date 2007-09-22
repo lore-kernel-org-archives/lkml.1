@@ -1,98 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbXIVDTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760729AbXIVD1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760902AbXIVDTq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 23:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXIVDTk
+	id S1760729AbXIVD1m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 23:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbXIVD1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 23:19:40 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:56777 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756355AbXIVDTj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 23:19:39 -0400
-To: Andi Kleen <ak@suse.de>
-Cc: joe.korty@ccur.com, thockin@hockin.org, mingo@elte.hu, hpa@zytor.com,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: possible corrections in the docs (Re: [PATCH] [7/50] x86: expand /proc/interrupts to include missing vectors, v2)
-In-Reply-To: <20070921223205.51E0113DCD@wotan.suse.de>
-References: <200709221231.836138000@suse.de> <20070921223205.51E0113DCD@wotan.suse.de>
-Date: Sat, 22 Sep 2007 05:35:15 +0200
-Message-Id: <E1IYvlz-0006DE-W1@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Fri, 21 Sep 2007 23:27:35 -0400
+Received: from mga11.intel.com ([192.55.52.93]:54177 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754962AbXIVD1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Sep 2007 23:27:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,286,1186383600"; 
+   d="scan'208";a="147825229"
+Date: Fri, 21 Sep 2007 20:27:33 -0700 (PDT)
+From: Tong Li <tong.n.li@intel.com>
+X-X-Sender: tongli@tongli.jf.intel.com
+To: Mike Galbraith <efault@gmx.de>
+cc: Ingo Molnar <mingo@elte.hu>, Tong Li <tong.n.li@intel.com>,
+       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [git] CFS-devel, group scheduler, fixes
+In-Reply-To: <1190275870.9232.6.camel@Homer.simpson.net>
+Message-ID: <Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
+References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu>
+  <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com> 
+ <1190183324.9737.7.camel@Homer.simpson.net>  <1190188261.9185.21.camel@Homer.simpson.net>
+  <1190191368.8687.5.camel@Homer.simpson.net>  <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
+  <1190264114.6411.4.camel@Homer.simpson.net>  <1190272507.27867.20.camel@Homer.simpson.net>
+  <20070920075155.GA31641@elte.hu> <1190275870.9232.6.camel@Homer.simpson.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sat, 22 Sep 2007 00:32:05 +0200 (CEST)
+Mike,
 
-[]
-> Index: linux/Documentation/filesystems/proc.txt
->===================================================================
-> --- linux.orig/Documentation/filesystems/proc.txt
-> +++ linux/Documentation/filesystems/proc.txt
-> @@ -347,7 +347,40 @@ connects the CPUs in a SMP system. This 
->  the IO-APIC automatically retry the transmission, so it should not be a big
->  problem, but you should read the SMP-FAQ.
->  
-> -In this context it could be interesting to note the new irq directory in 2.4.
-> +In 2.6.2* /proc/interrupts was expanded again.  This time the goal was for
-> +/proc/interrupts to display every IRQ vector in use by the system, not
-> +just those considered 'most important'.  The new vectors are:
-> +
-> +  THR -- a threshold interrupt occurs when ECC memory correction is occuring
-> +  at too high a frequency.  Threshold interrupt machinery is often put
-> +  into the ECC logic, as occasional ECC memory corrections are part of
-> +  normal operation (due to random alpha particles), but sequences of
-> +  ECC corrections or outright failures over some short interval usually
-> +  indicate a memory chip that is about to fail.  Note that not every
-> +  platform has ECC threshold logic, and those that do generally require
-> +  it to be explicitly turned on.
+Could you try this patch to see if it solves the latency problem?
 
- +  THR -- a threshold interrupt happens, when frequency of ECC memory
- +  corrections is too high. Threshold interrupt machinery is often put
- +  into the ECC hardware, and must be explicitly enabled, if so. Occasional
- +  ECC memory corrections are part of the normal operation (ionizing radiation
- +  background). Sequences of ECC corrections or outright failures over some
- +  short interval, usually indicate a memory chip, that is about to fail
- +  completely.
+   tong
 
-(that "random alpha particles" bs, must be killed anyway)
+Changes:
 
-> +  TRM -- a thermal event interrupt occurs when a temperature threshold
-> +  has been exceeded for some CPU chip.  This interrupt may also be generated
-> +  when the temperature drops back to normal.
-> +
-> +  SPU -- a spurious interrupt is some interrupt that was raised then lowered
-> +  by some IO device before it could be fully processed by the APIC.  Hence
-> +  the APIC sees the interrupt but does not know what device it came from.
-> +  For this case the APIC will generate the interrupt with a IRQ vector
-> +  of 0xff.
+1. Modified vruntime adjustment logic in set_task_cpu(). See comments in 
+code. This fixed the negative vruntime problem.
 
- +  SPU -- a spurious interrupt. This is an interrupt, that was raised then lowered
- +  so quickly, that it was not fully processed by the APIC.  Hence,
- +  origin of it is unknown.
- +  For this case, interrupt with a IRQ vector of 0xff will be generated.
+2. This code in update_curr() seems to be wrong:
 
-> +  RES, CAL, TLB -- rescheduling, call and tlb flush interrupts are
-> +  sent from one CPU to another per the needs of the OS.  Typically,
-> +  their statistics are used by kernel developers and interested users to
-> +  determine the occurance of interrupt floods of the given type.
+if (unlikely(!curr))
+ 	return sync_vruntime(cfs_rq);
 
- +  RES, CAL, TLB -- rescheduling, call and tlb flush interrupts,
- +  produced by normal OS operation.  Typically,
- +  this information is used by kernel developers and interested users to
- +  determine the occurance of interrupt floods of the given type.
+cfs_rq->curr can be NULL even if cfs_rq->nr_running is non-zero (e.g., 
+when an RT task is running). We only want to call sync_vruntime when 
+cfs_rq->nr_running is 0. This fixed the large latency problem (at least in 
+my tests).
 
+Signed-off-by: Tong Li <tong.n.li@intel.com>
+---
+diff -uprN linux-2.6-sched-devel-orig/kernel/sched.c linux-2.6-sched-devel/kernel/sched.c
+--- linux-2.6-sched-devel-orig/kernel/sched.c	2007-09-20 12:15:41.000000000 -0700
++++ linux-2.6-sched-devel/kernel/sched.c	2007-09-21 19:40:08.000000000 -0700
+@@ -1033,9 +1033,20 @@ void set_task_cpu(struct task_struct *p,
+  	if (p->se.block_start)
+  		p->se.block_start -= clock_offset;
+  #endif
+-	if (likely(new_rq->cfs.min_vruntime))
+-		p->se.vruntime -= old_rq->cfs.min_vruntime -
+-						new_rq->cfs.min_vruntime;
++	/* 
++	 * Reset p's vruntime if it moves to new_cpu whose min_vruntime is 
++	 * 100,000,000 (equivalent to 100ms for nice-0 tasks) larger or
++	 * smaller than p's vruntime. This improves interactivity when
++	 * pinned and unpinned tasks co-exist. For example, pinning a few
++	 * tasks to a CPU can cause its min_vruntime much smaller than the
++	 * other CPUs. If a task moves to this CPU, its vruntime can be so
++	 * large it won't be scheduled until the locally pinned tasks'
++	 * vruntimes catch up, causing large delays.
++	 */
++	if (unlikely(old_cpu != new_cpu && p->se.vruntime && 
++		(p->se.vruntime > new_rq->cfs.min_vruntime + 100000000 || 
++		 p->se.vruntime + 100000000 < new_rq->cfs.min_vruntime)))
++		p->se.vruntime = new_rq->cfs.min_vruntime;
 
-> +The above IRQ vectors are displayed only when relevent.  For example,
-                                                 available?
-> +the threshold vector does not exist on x86_64 platforms.  Others are
-> +suppressed when the system is a uniprocessor.  As of this writing, only
-> +i386 and x86_64 platforms support the new IRQ vector displays.
-> +
-> +Of some interest is the introduction of the /proc/irq directory to 2.4.
->  It could be used to set IRQ to CPU affinity, this means that you can "hook" an
->  IRQ to only one CPU, or to exclude a CPU of handling IRQs. The contents of the
->  irq subdir is one subdir for each IRQ, and one file; prof_cpu_mask
-_____
+  	__set_task_cpu(p, new_cpu);
+  }
+@@ -1599,6 +1610,7 @@ static void __sched_fork(struct task_str
+  	p->se.exec_start		= 0;
+  	p->se.sum_exec_runtime		= 0;
+  	p->se.prev_sum_exec_runtime	= 0;
++	p->se.vruntime			= 0;
+
+  #ifdef CONFIG_SCHEDSTATS
+  	p->se.wait_start		= 0;
+diff -uprN linux-2.6-sched-devel-orig/kernel/sched_fair.c linux-2.6-sched-devel/kernel/sched_fair.c
+--- linux-2.6-sched-devel-orig/kernel/sched_fair.c	2007-09-20 12:15:41.000000000 -0700
++++ linux-2.6-sched-devel/kernel/sched_fair.c	2007-09-21 17:23:09.000000000 -0700
+@@ -306,8 +306,10 @@ static void update_curr(struct cfs_rq *c
+  	u64 now = rq_of(cfs_rq)->clock;
+  	unsigned long delta_exec;
+
+-	if (unlikely(!curr))
++	if (unlikely(!cfs_rq->nr_running))
+  		return sync_vruntime(cfs_rq);
++	if (unlikely(!curr))
++		return;
+
+  	/*
+  	 * Get the amount of time the current task was running
