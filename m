@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbXIVJTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761712AbXIVJTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760648AbXIVJTR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 05:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXIVJTI
+	id S1761712AbXIVJTz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 05:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbXIVJTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 05:19:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50230 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbXIVJTH (ORCPT
+	Sat, 22 Sep 2007 05:19:48 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45178 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752802AbXIVJTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 05:19:07 -0400
-Date: Sat, 22 Sep 2007 14:51:54 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Greg KH <greg@kroah.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1
-In-Reply-To: <20070918191740.GC11083@kroah.com>
-Message-ID: <alpine.LFD.0.999.0709221433160.28693@enigma.security.iitk.ac.in>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
- <46EF96CC.1080807@linux.vnet.ibm.com> <20070918022739.f25c2846.akpm@linux-foundation.org>
- <alpine.LFD.0.999.0709181504030.21091@enigma.security.iitk.ac.in>
- <20070918191740.GC11083@kroah.com>
+	Sat, 22 Sep 2007 05:19:47 -0400
+Date: Sat, 22 Sep 2007 11:19:45 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andrey Mirkin <amirkin@sw.ru>, John McCutchan <ttb@tentacle.dhs.org>,
+       Robert Love <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@osdl.org>,
+       devel@openvz.org
+Subject: Re: [PATCH] change inotifyfs magic as the same magic is used for
+ futexfs
+In-Reply-To: <20070921085313.39717ba4.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0709221119340.15712@fbirervta.pbzchgretzou.qr>
+References: <200709211735.44814.amirkin@sw.ru> <20070921085313.39717ba4.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+
+On Sep 21 2007 08:53, Randy Dunlap wrote:
+>On Fri, 21 Sep 2007 17:35:43 +0400 Andrey Mirkin wrote:
+>
+>> From: Andrey Mirkin <major@openvz.org>
+>> 
+>> Right now futexfs and inotifyfs have one magic 0xBAD1DEA, that looks a little 
+>> bit confusing.
+>> Use 0xBAD1DEA as magic for futexfs and 0x2BAD1DEA as magic for inotifyfs.
+>> 
+>> Signed-off-by: Andrey Mirkin <major@openvz.org>
+>
+>A 'diffstat -p 1 -w 70' would be helpful so we can see which files
+>are touched.
+>
+>Please add these magic numbers to include/linux/magic.h so that
+>they are clearly visible and conflicts can be seen easier,
+>then #include <linux/magic.h> in these source files.
+
+Also because userspace may want these magics too.
 
 
-On Tue, 18 Sep 2007, Greg KH wrote:
-> 
-> On Tue, Sep 18, 2007 at 03:04:48PM +0530, Satyam Sharma wrote:
-> > 
-> > But wait ... isn't that a statically-allocated kobject, which were
-> > supposed to be "naughty" in the first place?
-> 
-> Yes it is, if you want to dynamically create it, please do.
-
-Sorry for being late to reply, but do you still want such a patch (i.e.
-convert static to dynamic allocation)?
-
-I read elsewhere on this thread that you'd merge Kamalesh's patch and
-fix it up to also use kobject_name() yourself. But it's a small/trivial
-driver, so I think just converting it to dynamic allocation right now
-itself (when we've noticed it already) is probably better (?)
-
-[ BTW I don't see the fix in your git trees or quilt queue. So I'll
-  make a patch on top of 2.6.23-rc6-mm1 itself. ]
-
-
-Thanks,
-
-Satyam
