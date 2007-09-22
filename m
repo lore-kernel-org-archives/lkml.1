@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbXIVTca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbXIVTde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760362AbXIVTca (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 15:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXIVTcY
+	id S1760632AbXIVTde (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 15:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXIVTd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 15:32:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:26348 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752819AbXIVTcX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 15:32:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=k9O9HsqZgbf5c3FFBaig7gh0FfqDlJJaxrmZL1+aQYn4/KFrnwV7apczA7nPUkkCR9OGG+y2kC47TKXfc1T5+hvTHon86wEleOngtHq47+LuhjHZ09EgE3gIk+Qg+8ZY7J+EQcRU2Ql1xp00KqbiK3aSFdin/VKwe+kSemnszJA=
-Date: Sat, 22 Sep 2007 23:32:06 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: memset as memzero
-Message-ID: <20070922193206.GA15911@cvg>
-References: <20070922083355.GA7226@cvg> <20070922124659.741cca42@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070922124659.741cca42@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 22 Sep 2007 15:33:28 -0400
+Received: from www.osadl.org ([213.239.205.134]:48934 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752819AbXIVTd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 15:33:27 -0400
+Subject: Re: [PATCH] [35/50] i386: Do cpuid_device_create() in
+	CPU_UP_PREPARE instead of CPU_ONLINE.
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+Cc: akinobu.mita@gmail.com, hpa@zytor.com, ego@in.ibm.com, oleg@tv-sign.ru,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070921223235.18A2A13DCD@wotan.suse.de>
+References: <200709221231.836138000@suse.de>
+	 <20070921223235.18A2A13DCD@wotan.suse.de>
+Content-Type: text/plain
+Date: Sat, 22 Sep 2007 21:33:25 +0200
+Message-Id: <1190489605.4035.104.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Arjan van de Ven - Sat, Sep 22, 2007 at 12:46:59PM -0700]
-| On Sat, 22 Sep 2007 12:33:55 +0400
-| Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > Hi list,
-| > 
-| > could anyone tell me why there is no official memzero function (or
-| > macros) in the kernel.
-| 
-| it doesn't add value.... memset with a constant 0 is just as fast
-| (since the compiler knows it's 0) than any wrapper around it, and the
-| syntax around it is otherwise the same.
-| 
+On Sat, 2007-09-22 at 00:32 +0200, Andi Kleen wrote:
+> From: Akinobu Mita <akinobu.mita@gmail.com>
+> 
+> Do cpuid_device_create() in CPU_UP_PREPARE instead of CPU_ONLINE.
+> 
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> Cc: Gautham R Shenoy <ego@in.ibm.com>
+> Cc: Oleg Nesterov <oleg@tv-sign.ru>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  arch/i386/kernel/cpuid.c |   32 +++++++++++++++++++-------------
+>  1 file changed, 19 insertions(+), 13 deletions(-)
+> 
+> Index: linux/arch/i386/kernel/cpuid.c
+> ===================================================================
+> --- linux.orig/arch/i386/kernel/cpuid.c
+> +++ linux/arch/i386/kernel/cpuid.c
+> @@ -136,15 +136,18 @@ static const struct file_operations cpui
+>  	.open = cpuid_open,
+>  };
+>  
+> -static int __cpuinit cpuid_device_create(int i)
+> +static int cpuid_device_create(int cpu)
 
-It seems I expressed wrong. I'm worried about code duplication. Look
-simple grep for memzero tells us that in particular:
+	__cpuinit please
 
-...
--- arch/x86_64/boot/compressed/misc.c:110:#define memzero(s, n) memset ((s), 0, (n))
--- init/do_mounts_rd.c:279:#define memzero(s, n)     memset ((s), 0, (n))
--- init/initramfs.c:377:#define memzero(s, n)     memset ((s), 0, (n))
--- lib/inflate.c:331:  memzero(stk->c, sizeof(stk->c));
-...
+Thanks,
 
-So instead of several 'define' that are the _same_ maybe better just use
-_single common_ define? That's all I wanna ask. (Btw, it seems ARM has
-a special case for memzero ;)
+	tglx
 
-| 
-| > As I see a lot of  kernel parts calls for it
-| > (defying own macros as alias to memset). Maybe there is a special
-| > reason not to do so? Actually my suggestion is to define _one_
-| > general macros for this.
-| 
-| my suggestion is to nuke all the macros and just use memset().
-| 
 
-Quite clear, thanks. So if that is OK - I'm shutting up ;)
-
-		Cyrill
 
