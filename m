@@ -1,36 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbXIVEqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbXIVFDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759767AbXIVEqU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 00:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbXIVEqN
+	id S1758302AbXIVFDk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 01:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbXIVFDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 00:46:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:50018 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbXIVEqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 00:46:13 -0400
+	Sat, 22 Sep 2007 01:03:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44942 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751924AbXIVFDe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 01:03:34 -0400
+Date: Sat, 22 Sep 2007 10:36:30 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andi Kleen <ak@suse.de>
+cc: patches@x86-64.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [34/50] i386: Fix argument signedness warnings
+In-Reply-To: <20070921223234.0A71513DCD@wotan.suse.de>
+Message-ID: <alpine.LFD.0.999.0709221029170.19812@enigma.security.iitk.ac.in>
+References: <200709221231.836138000@suse.de>
+ <20070921223234.0A71513DCD@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18164.40462.991761.909735@cargo.ozlabs.ibm.com>
-Date: Sat, 22 Sep 2007 14:46:06 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [patch 04/28] Add cmpxchg64 and cmpxchg64_local to powerpc
-In-Reply-To: <20070827155524.827591009@polymtl.ca>
-References: <20070827155234.062715780@polymtl.ca>
-	<20070827155524.827591009@polymtl.ca>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers writes:
+Hi,
 
-> Make sure that at least cmpxchg64_local is available on all architectures to use
-> for unsigned long long values.
+
+On Sat, 22 Sep 2007, Andi Kleen wrote:
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> From: Satyam Sharma <satyam@infradead.org>
+> 
+> 
+> These build warnings:
+> 
+> In file included from include/asm/thread_info.h:16,
+> from include/linux/thread_info.h:21,
+> from include/linux/preempt.h:9,
+> from include/linux/spinlock.h:49,
+> from include/linux/vmalloc.h:4,
+> from arch/i386/boot/compressed/misc.c:14:
+> include/asm/processor.h: In function ‘cpuid_count’:
+                                       ^^^^^^^^^^           ^^^^^^^^^^
+> include/asm/processor.h:615: warning: pointer targets in passing
+> argument 1 of ‘native_cpuid’ differ in signedness
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+> include/asm/processor.h:615: warning: pointer targets in passing
+> argument 2 of ‘native_cpuid’ differ in signedness
+
+> include/asm/processor.h:615: warning: pointer targets in passing
+> argument 3 of ‘native_cpuid’ differ in signedness
+
+> include/asm/processor.h:615: warning: pointer targets in passing
+> argument 4 of ‘native_cpuid’ differ in signedness
+                ^^^^^^^^^^            ^^^^^^^^^^
+
+Yikes. My bad, I had faulty (default) alpine settings (and a sad
+combination of LANG=en_US.UTF-8) when I made and sent out that patch.
+Please ensure that this finally gets committed in a somewhat saner and
+more readable state to the tree.
+
+Thanks,
+
+Satyam
