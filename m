@@ -1,79 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760031AbXIVCfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbXIVCrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760031AbXIVCfj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Sep 2007 22:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbXIVCfd
+	id S1759855AbXIVCrk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Sep 2007 22:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbXIVCrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Sep 2007 22:35:33 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:56475 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753929AbXIVCfc (ORCPT
+	Fri, 21 Sep 2007 22:47:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34181 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754243AbXIVCra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Sep 2007 22:35:32 -0400
-To: Andi Kleen <ak@suse.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>, xemul@openvz.org, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Killing printk calls for size (Re: [PATCH] [6/50] i386: clean up oops/bug reports)
-In-Reply-To: <20070921223204.43B8413DCD@wotan.suse.de>
-References: <200709221231.836138000@suse.de> <20070921223204.43B8413DCD@wotan.suse.de>
-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-Date: Sat, 22 Sep 2007 04:51:08 +0200
-Message-Id: <E1IYv5I-0003zr-TX@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Fri, 21 Sep 2007 22:47:30 -0400
+Date: Sat, 22 Sep 2007 08:20:09 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jeff@garzik.org, linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       kamalesh@linux.vnet.ibm.com
+Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
+In-Reply-To: <20070920150925.0caf3aef@the-village.bc.nu>
+Message-ID: <alpine.LFD.0.999.0709220816170.14412@enigma.security.iitk.ac.in>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+ <20070920131315.GE24105@skynet.ie>
+ <20070920150925.0caf3aef@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sat, 22 Sep 2007 00:32:04 +0200 (CEST)
-[]
->  arch/i386/kernel/traps.c |   16 ++++------------
->  arch/i386/mm/fault.c     |   13 +++++++------
->  2 files changed, 11 insertions(+), 18 deletions(-)
+Hi,
 
-It seems, like size can be reduced even more now:
 
-[]
->  		report_bug(regs->eip, regs);
->  
-> -		printk(KERN_EMERG "%s: %04lx [#%d]\n", str, err & 0xffff, ++die_counter);
-> +		printk(KERN_EMERG "%s: %04lx [#%d] ", str, err & 0xffff, ++die_counter);
+On Thu, 20 Sep 2007, Alan Cox wrote:
+> 
+> On Thu, 20 Sep 2007 14:13:15 +0100
+> mel@skynet.ie (Mel Gorman) wrote:
+> 
+> > PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
+> > doesn't show up on other arches because this driver is specific to the
+> > architecture.
+> > 
+> > drivers/ata/pata_scc.c: In function `scc_bmdma_status'
+> 
+> Its not been updated to match the libata core changes. Try something like
+> this. Whoever is maintaining it should also remove the prereset cable handling
+> code and use the proper cable detect method.
 
-  +		printk(KERN_EMERG "%s: %04lx [#%d] %s", str, err &0xffff, ++die_counter,
+It appears you forgot to fix scc_std_softreset() and one of its callsites
+in scc_bdma_stop(). A complete patch is attempted below -- please review.
 
->  #ifdef CONFIG_PREEMPT
-> -		printk(KERN_EMERG "PREEMPT ");
-> -		nl = 1;
-> +		printk("PREEMPT ");
 
-  +		"PREEMPT "\
+[PATCH -mm] pata_scc: Keep up with libata core API changes
 
->  #endif
->  #ifdef CONFIG_SMP
-> -		if (!nl)
-> -			printk(KERN_EMERG);
->  		printk("SMP ");
+Little fixlets, that the build started erroring / warning about:
 
-  		"SMP "\
+drivers/ata/pata_scc.c: In function 'scc_bmdma_status':
+drivers/ata/pata_scc.c:734: error: structure has no member named 'active_tag'
+drivers/ata/pata_scc.c: In function 'scc_pata_prereset':
+drivers/ata/pata_scc.c:866: warning: passing arg 1 of 'ata_std_prereset' from incompatible pointer type
+drivers/ata/pata_scc.c: In function 'scc_error_handler':
+drivers/ata/pata_scc.c:908: warning: passing arg 2 of 'ata_bmdma_drive_eh' from incompatible pointer type
+drivers/ata/pata_scc.c:908: warning: passing arg 3 of 'ata_bmdma_drive_eh' from incompatible pointer type
+drivers/ata/pata_scc.c:908: warning: passing arg 5 of 'ata_bmdma_drive_eh' from incompatible pointer type
+make[2]: *** [drivers/ata/pata_scc.o] Error 1
 
-> -		nl = 1;
->  #endif
->  #ifdef CONFIG_DEBUG_PAGEALLOC
-> -		if (!nl)
-> -			printk(KERN_EMERG);
->  		printk("DEBUG_PAGEALLOC");
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+Cc: Alan Cox <alan@redhat.com>
+Cc: Mel Gorman <mel@skynet.ie>
 
-  		"DEBUG_PAGEALLOC"\
+---
 
-> -		nl = 1;
->  #endif
-> -		if (nl)
-> -			printk("\n");
-> +		printk("\n");
+Andrew, this includes (supercedes) the previous two ones from Mel / Alan.
 
-  +		"\n");
+ drivers/ata/pata_scc.c |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
-Just hand waving.
-
-FWIW, with more flexible kconfig, ifdiffery can be removed also...
-____
+diff -ruNp a/drivers/ata/pata_scc.c b/drivers/ata/pata_scc.c
+--- a/drivers/ata/pata_scc.c	2007-09-22 06:26:37.000000000 +0530
++++ b/drivers/ata/pata_scc.c	2007-09-22 08:04:42.000000000 +0530
+@@ -594,16 +594,17 @@ static unsigned int scc_bus_softreset(st
+  *	Note: Original code is ata_std_softreset().
+  */
+ 
+-static int scc_std_softreset (struct ata_port *ap, unsigned int *classes,
+-                              unsigned long deadline)
++static int scc_std_softreset(struct ata_link *link, unsigned int *classes,
++                             unsigned long deadline)
+ {
++	struct ata_port *ap = link->ap;
+ 	unsigned int slave_possible = ap->flags & ATA_FLAG_SLAVE_POSS;
+ 	unsigned int devmask = 0, err_mask;
+ 	u8 err;
+ 
+ 	DPRINTK("ENTER\n");
+ 
+-	if (ata_link_offline(&ap->link)) {
++	if (ata_link_offline(link)) {
+ 		classes[0] = ATA_DEV_NONE;
+ 		goto out;
+ 	}
+@@ -692,7 +693,7 @@ static void scc_bmdma_stop (struct ata_q
+ 			printk(KERN_WARNING "%s: Internal Bus Error\n", DRV_NAME);
+ 			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_BMSINT);
+ 			/* TBD: SW reset */
+-			scc_std_softreset(ap, &classes, deadline);
++			scc_std_softreset(&ap->link, &classes, deadline);
+ 			continue;
+ 		}
+ 
+@@ -731,7 +732,7 @@ static u8 scc_bmdma_status (struct ata_p
+ 	void __iomem *mmio = ap->ioaddr.bmdma_addr;
+ 	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
+ 	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
+-	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
++	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
+ 	static int retry = 0;
+ 
+ 	/* return if IOS_SS is cleared */
+@@ -860,10 +861,10 @@ static void scc_bmdma_freeze (struct ata
+  *	@deadline: deadline jiffies for the operation
+  */
+ 
+-static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)
++static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)
+ {
+-	ap->cbl = ATA_CBL_PATA80;
+-	return ata_std_prereset(ap, deadline);
++	link->ap->cbl = ATA_CBL_PATA80;
++	return ata_std_prereset(link, deadline);
+ }
+ 
+ /**
+@@ -874,8 +875,10 @@ static int scc_pata_prereset(struct ata_
+  *	Note: Original code is ata_std_postreset().
+  */
+ 
+-static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
++static void scc_std_postreset(struct ata_link *link, unsigned int *classes)
+ {
++	struct ata_port *ap = link->ap;
++
+ 	DPRINTK("ENTER\n");
+ 
+ 	/* is double-select really necessary? */
