@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbXIWDS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbXIWDSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbXIWDS2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 23:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbXIWDSW
+	id S1756476AbXIWDSt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 23:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbXIWDSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 23:18:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58810 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751683AbXIWDSW (ORCPT
+	Sat, 22 Sep 2007 23:18:40 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:61940 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755459AbXIWDSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 23:18:22 -0400
-Date: Sat, 22 Sep 2007 20:11:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: Thomas Gleixner <tglx@linutronix.de>, mihai.dontu@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 0/2] suspend/resume regression fixes
-In-Reply-To: <E1IZG8l-0002jB-2k@flower>
-Message-ID: <alpine.LFD.0.999.0709222008580.16478@woody.linux-foundation.org>
-References: <20070922220347.586903979@linutronix.de>
- <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org>
- <E1IZG8l-0002jB-2k@flower>
+	Sat, 22 Sep 2007 23:18:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=T8ob4QkqYs9qWaQTZOLxfEThv8gvmPJgRkAlVGwm6UWa4aO1M6wfUlJCGMsgd399FHN15ljD+v76ZHoebUSPiAGnvB8PA/uTE97EL6kYguFhmGXF2bwCQf19f9MD2QrE6BoyA5LDoUUM0L5U14ARnfinBGyefI1nateYaVHqoLE=
+Date: Sun, 23 Sep 2007 11:14:30 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Gerhard Mack <gmack@innerfire.net>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Dave Haywood <tla@oak.selfip.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux 2.6.23-rc7 - 14 compile warnings
+Message-ID: <20070923031430.GJ2475@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <46F39004.4050106@oak.selfip.net> <20070922022932.GC2480@hacking> <alpine.DEB.0.999.0709222212050.27608@mtl.rackplans.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.0.999.0709222212050.27608@mtl.rackplans.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 23 Sep 2007, Oleg Verych wrote:
+On Sat, Sep 22, 2007 at 10:23:59PM -0400, Gerhard Mack wrote:
+>On Sat, 22 Sep 2007, WANG Cong wrote:
 >
-> As i never had any suspend working ever, let me point this LKML post
-> 
-> http://mid.gmane.org/200709221746.14429.mihai.dontu@gmail.com
-> 
-> from Mihal, who just managed to do some other magic in sligtly
-> different context (maybe yet another anti "ACPI screwed up").
-> 
-> Mihai, you can find whole thread by above URL, requesting message-ids
-> from in-reply-to or references headers of this message.
+>> >Summary:
+>> >  CC      mm/slub.o
+>> >mm/slub.c: In function 'kfree':
+>> >mm/slub.c:2491: warning: passing argument 3 of 'slab_free' discards
+>> >qualifiers from pointer target type
+>
+>static void __slab_free(struct kmem_cache *s, struct page *page,
+>                                        void *x, void *addr)
+>but ..
+>
+>void kfree(const void *x)
+>
+>void is not the same as const void.
+>					
+>> >  CC      fs/autofs4/symlink.o
+>> >fs/autofs4/symlink.c: In function 'autofs4_follow_link':
+>> >fs/autofs4/symlink.c:18: warning: passing argument 2 of 'nd_set_link'
+>> >discards qualifiers from pointer target type
+>
+>Once again ino->u.symlink is a const char and it's dropping the const.
+>
 
->From a "future behaviour" standpoint it would probably be interesting to 
-hear whether Mihai can make his machine with not with the old IDE layer 
-(which distributions are migrating away from) but with the ATA layer 
-(libata) instead. It too should hopefully know about using ACPI to restore 
-any ATA controller quirks.
+slab_free(s, page, (void *)x, __builtin_return_address(0));
+                   ^^^^^^^^^
+I knew these things. But the explicit casts, such as the above one, mean
+that we are intended to discard to qualifiers and I think gcc shouldn't
+warn about this.
 
-		Linus
+Regards.
+
+
+WANG Cong
+
