@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbXIWWNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbXIWWUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbXIWWNl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 18:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbXIWWNd
+	id S1756306AbXIWWUw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 18:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbXIWWUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 18:13:33 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:54353 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbXIWWNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 18:13:32 -0400
-Message-ID: <46F6E502.9000101@tiscali.nl>
-Date: Mon, 24 Sep 2007 00:13:22 +0200
-From: roel <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: WANG Cong <xiyou.wangcong@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       marcel@holtmann.org, bluez-devel@lists.sourceforge.net,
-       maxk@qualcomm.com
-Subject: Re: [-mm Patch] net/bluetooth/hidp/core.c: Make hidp_setup_input()
- return int
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070923030105.GH2475@hacking>
-In-Reply-To: <20070923030105.GH2475@hacking>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Sep 2007 18:20:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48391 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753050AbXIWWUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 18:20:44 -0400
+Date: Sun, 23 Sep 2007 22:20:41 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.35.3
+Message-ID: <20070923222041.GA26070@hera.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WANG Cong wrote:
-> This patch does the following things:
-> 
-> - Make hidp_setup_input() return int to indicate errors.
-> - Check its return value to handle errors.
-> 
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-> 
-> ---
->  net/bluetooth/hidp/core.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6.23-rc6-mm1/net/bluetooth/hidp/core.c
-> ===================================================================
-> --- linux-2.6.23-rc6-mm1.orig/net/bluetooth/hidp/core.c
-> +++ linux-2.6.23-rc6-mm1/net/bluetooth/hidp/core.c
-> @@ -625,7 +625,7 @@ static struct device *hidp_get_device(st
->  	return conn ? &conn->dev : NULL;
->  }
->  
-> -static inline void hidp_setup_input(struct hidp_session *session, struct hidp_connadd_req *req)
-> +static inline int hidp_setup_input(struct hidp_session *session, struct hidp_connadd_req *req)
->  {
->  	struct input_dev *input = session->input;
->  	int i;
-> @@ -669,7 +669,7 @@ static inline void hidp_setup_input(stru
->  
->  	input->event = hidp_input_event;
->  
-> -	input_register_device(input);
-> +	return input_register_device(input);
->  }
->  
->  static int hidp_open(struct hid_device *hid)
-> @@ -823,7 +823,8 @@ int hidp_add_connection(struct hidp_conn
->  	session->idle_to = req->idle_to;
->  
->  	if (session->input)
-> -		hidp_setup_input(session, req);
-> +		if ((err = (hidp_setup_input(session, req))))
-> +			goto failed;
 
-This is confusing, why not just do
+I've just released Linux 2.4.35.3.
 
-	if (session->input) {
-		err = hidp_setup_input(session, req);
-		if (err)
-			goto failed;
-	}
+This version fixes CVE-2007-4573 which may lead to local privilege escalation
+on x86_64.
 
->  
->  	if (session->hid)
->  		hidp_setup_hid(session, req);
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+It also fixes another problem reported by Gilles Espinasse: If the ATM module
+is loaded with CLIP support but the CLIP module is not loaded yet, any user
+reading /proc/net/atm/arp would cause a kernel panic to occur. 
+
+Both x86_64 and ATM users are encouraged to upgrade. Note that USB DSL modems
+often use ATM.
+
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.35.3.bz2
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.35.3
+
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
+
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.35.y.git
+
+Willy
+
+-------
+
+Summary of changes from v2.4.35.2 to v2.4.35.3
+============================================
+
+Andi Kleen (1):
+      x86_64: Make sure to validate all 64bits of ptrace information
+
+Stephen Hemminger (1):
+      Bridge STP timer fixes
+
+Willy Tarreau (2):
+      ATM: avoid kernel panic upon access to /proc/net/atm/arp
+      Change VERSION to 2.4.35.3
 
