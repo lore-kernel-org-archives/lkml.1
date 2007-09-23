@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbXIWWBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbXIWWNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbXIWWBR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 18:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXIWWBB
+	id S1756025AbXIWWNl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 18:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbXIWWNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 18:01:01 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58690 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbXIWWBA (ORCPT
+	Sun, 23 Sep 2007 18:13:33 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:54353 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbXIWWNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 18:01:00 -0400
-Message-ID: <46F6E1C2.20905@torque.net>
-Date: Sun, 23 Sep 2007 17:59:30 -0400
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Sun, 23 Sep 2007 18:13:32 -0400
+Message-ID: <46F6E502.9000101@tiscali.nl>
+Date: Mon, 24 Sep 2007 00:13:22 +0200
+From: roel <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Broadcom 8603 SAS/SATA driver, rough draft
-References: <20070923040437.GA30170@havoc.gtf.org>
-In-Reply-To: <20070923040437.GA30170@havoc.gtf.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=us-ascii
+To: WANG Cong <xiyou.wangcong@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       marcel@holtmann.org, bluez-devel@lists.sourceforge.net,
+       maxk@qualcomm.com
+Subject: Re: [-mm Patch] net/bluetooth/hidp/core.c: Make hidp_setup_input()
+ return int
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070923030105.GH2475@hacking>
+In-Reply-To: <20070923030105.GH2475@hacking>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Rather than sitting on this for far too long, I wanted to go ahead and
-> get this out there.  I heard some chips might be trickling out into
-> public hands.
+WANG Cong wrote:
+> This patch does the following things:
 > 
-> This is a bare bones Broadcom 8603 SAS+SATA driver, attempting to use
-> the vaunted libsas.  Notes:
+> - Make hidp_setup_input() return int to indicate errors.
+> - Check its return value to handle errors.
 > 
-> * A quick glance at the FIXMEs will tell you obviously doesn't work.
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 > 
-> * The hardware is quite simple and straightforward and easy to program
->   in an efficient way:  each SAS port has a command queue (DMA ring) and
->   a response queue (DMA ring).  Or if in SATA mode, just a command
->   queue.
+> ---
+>  net/bluetooth/hidp/core.c |    7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 > 
-> * The SAS/SATA negotiation is largely out of our hands.  The silicon
->   does its thing, and then tells us what type of device connected.  We
->   are then expected to switch the port to either SAS mode or SATA mode,
->   accordingly.
-> 
-> * There is no firmware or anything.  Just DMA and register bitbanging.
->   We have plenty of low-level control.
-> 
-> * The state of SAS/SATA integration is perpetually pathetic.  Updates
->   in this area are likely.  There's a rumor Brian King @ IBM may look
->   into this area too.
-> 
-> * This driver pretty much completely lacks exception handling.
-> 
-> 
-> As an aside, I am also writing a driver for Marvell chips that behave
-> quite similarly to this chip.  It seems the future of storage might look
-> like these Broadcom and Marvell SAS+SATA DMA ring interfaces, in the
-> volume marketspace at least.
+> Index: linux-2.6.23-rc6-mm1/net/bluetooth/hidp/core.c
+> ===================================================================
+> --- linux-2.6.23-rc6-mm1.orig/net/bluetooth/hidp/core.c
+> +++ linux-2.6.23-rc6-mm1/net/bluetooth/hidp/core.c
+> @@ -625,7 +625,7 @@ static struct device *hidp_get_device(st
+>  	return conn ? &conn->dev : NULL;
+>  }
+>  
+> -static inline void hidp_setup_input(struct hidp_session *session, struct hidp_connadd_req *req)
+> +static inline int hidp_setup_input(struct hidp_session *session, struct hidp_connadd_req *req)
+>  {
+>  	struct input_dev *input = session->input;
+>  	int i;
+> @@ -669,7 +669,7 @@ static inline void hidp_setup_input(stru
+>  
+>  	input->event = hidp_input_event;
+>  
+> -	input_register_device(input);
+> +	return input_register_device(input);
+>  }
+>  
+>  static int hidp_open(struct hid_device *hid)
+> @@ -823,7 +823,8 @@ int hidp_add_connection(struct hidp_conn
+>  	session->idle_to = req->idle_to;
+>  
+>  	if (session->input)
+> -		hidp_setup_input(session, req);
+> +		if ((err = (hidp_setup_input(session, req))))
+> +			goto failed;
 
-Jeff,
-Is the lack of SMP support a driver limitation or is it
-the silicon?
+This is confusing, why not just do
 
-How about support for wide ports (i.e. when 2 or more HBA
-phys are attached to remote phys which have the same SAS
-addresses)?
+	if (session->input) {
+		err = hidp_setup_input(session, req);
+		if (err)
+			goto failed;
+	}
 
-Last question: can the chip run in SCSI target mode?
+>  
+>  	if (session->hid)
+>  		hidp_setup_hid(session, req);
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Doug Gilbert
