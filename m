@@ -1,95 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbXIWSPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbXIWSbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbXIWSPA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 14:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbXIWSOw
+	id S1757699AbXIWSbA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 14:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbXIWSaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 14:14:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48663 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755005AbXIWSOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 14:14:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Christian P. Schmidt" <charlie@digadd.de>
-Subject: Re: Memory allocation problem with 2.6.22 after suspend/resume cycle
-Date: Sun, 23 Sep 2007 20:28:04 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>
-References: <46F53793.3020102@digadd.de> <200709231503.47727.rjw@sisk.pl> <46F69224.2020003@digadd.de>
-In-Reply-To: <46F69224.2020003@digadd.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 23 Sep 2007 14:30:52 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:53462 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbXIWSav (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 14:30:51 -0400
+Subject: Re: Urgent bugzilla mainteinance needed
+From: David Woodhouse <dwmw2@infradead.org>
+To: Natalie Protasevich <protasnb@gmail.com>
+Cc: Diego Calleja <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
+       David Ames <david@linux-foundation.org>,
+       Jon Tollefson <kniht@linux.vnet.ibm.com>,
+       "Martin J. Bligh" <mbligh@mbligh.org>
+In-Reply-To: <32209efe0709231108v459c3559xf247db2c122513c0@mail.gmail.com>
+References: <20070923195821.cab02f42.diegocg@gmail.com>
+	 <32209efe0709231108v459c3559xf247db2c122513c0@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 23 Sep 2007 19:30:40 +0100
+Message-Id: <1190572240.22181.2.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709232028.05423.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 23 September 2007 18:19, Christian P. Schmidt wrote:
-> Rafael J. Wysocki wrote:
-> > On Sunday, 23 September 2007 14:38, Christian P. Schmidt wrote:
-> >> Rafael J. Wysocki wrote:
-> >>> On Saturday, 22 September 2007 17:41, Christian P. Schmidt wrote:
-> >>>> Hi all,
-> >>>>
-> >>>> I'm having a strange problem, of course not reproducible. Sometimes
-> >>>> after a suspend (to ram) and resume cycle, the kernel will try to free
-> >>>> all memory. This means, all running applications are flushed to swap (as
-> >>>> long as it is available), caches and buffers stay at around 15MB each.
-> >>>>
-> >>>> The following video (traded quality for bandwidth) shows what happens on
-> >>>> the way from no swap to "swapon -a" (that's the unreadable thing in the
-> >>>> small shell): http://digadd.de/swapping.avi
-> >>>>
-> >>>> The system:
-> >>>> Linux dnnote 2.6.22.5 #1 SMP PREEMPT Sat Aug 25 18:39:21 AST 2007 x86_64
-> >>>> Intel(R) Core(TM)2 CPU T7400 @ 2.16GHz GenuineIntel GNU/Linux
-> >>> Are you using an ATI binary graphics driver?
-> >> Yes. I do not (yet) have a choice... can't wait for the open source drivers.
-> > 
-> > That, most probably, is the source of the problem.  Please see:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8943
+
+On Sun, 2007-09-23 at 11:08 -0700, Natalie Protasevich wrote:
+> On 9/23/07, Diego Calleja <diegocg@gmail.com> wrote:
+> > Take a look at http://bugzilla.kernel.org/show_bug.cgi?id=3710
+> >
+> > bugzilla tries to send a mail to the reporter, it fails ("unknown user account"),
+> > but the error failure is appended as a bugzilla comment. Then bugzilla tries to
+> > send that comment to everyone involved in the bug, including the reporter,
+> > so it fails again.....Houston, we've a endless loop.
+> >
+> > There're 540 comments in that bug report already, and the bugme-daemon
+> > mail list is being spammed....
 > 
-> I do however not agree with Andrew's conclusion, as the memory is not
-> "used", so I wouldn't expect a memory leak. As soon as I turn swapping
-> off everything is loaded again, and works. If there was a leak it should
-> use the memory, shouldn't it?
-> If the problem would be 100% reproducible I could try without, but as
-> is, I have up to two weeks with 2-3 cycles daily (sometimes more, as I
-> receive untraceable SERR from my PCI-E WLAN after which I do not receive
-> interrupts any more - only a suspend/resume cycle helps...) before the
-> problem occurs.
-> 
-> Anyway, is there a way of unloading the module temporarily without
-> shutting X down?
+> I just sent emails to those who maintain bugzilla software and systems
+> that run it, hope someone will be online soon to help alleviate
+> this...
 
-I don't know.
+Bugzilla really shouldn't be accepting any mail with empty reverse-path
+(MAIL FROM:<>)
 
-Can you try another version of the ATI driver?  The reporter of this bugzilla
-entry did that and it apparently helped him:
-http://bugzilla.kernel.org/show_bug.cgi?id=8943#c4
+-- 
+dwmw2
 
-> >>>> A 32bit Kernel is unable to suspend/resume at all. No idea why. dmesg
-> >>>> shows nothing, logs show nothing. Any ideas for debugging are welcome.
-> >>> Well, that's interesting.
-> >>>
-> >>> Can you try in the minimal configuration (ie. boot with init=/bin/bash,
-> >>> mount /sys, mount /proc and run "echo mem > /sys/power/disk)?
-> >> Which? the 32bit or the 64bit?
-> > 
-> > 32-bit, but please do that without the ATI driver.
-> 
-> Did it. As before, suspends, but when I resume, I hear the CD-ROM spin
-> up, the backlight comes on, and nothing more. The system is a Lenovo
-> Thinkpad T60 8744-4XG, BIOS 1.09.
-
-Are you 100% sure that your 32-bit kernel configuration reflects the 64-bit
-one?  In particular, do you have CONFIG_NO_HZ set in the 32-bit .config?
-
-Also, would you be able to repeat this test with the latest -git kernel
-(currently 2.6.23-rc7-git4)?
-
-Greetings,
-Rafael
