@@ -1,89 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbXIWQqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbXIWQtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbXIWQqk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 12:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbXIWQqc
+	id S1758024AbXIWQtJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 12:49:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbXIWQs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 12:46:32 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:20075 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbXIWQqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 12:46:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:x-url:organization:user-agent:sender;
-        b=Qr8KvkOYwrz3+dt87mETtP2GtJEmvSDGQ9CGCABt8wt/a89DB6s84WOizOiWGNtS4COJgsjBELZEOe9b3GXl8qYViF4lVmlPeNV4lAxix75A77IbkjAUZBT0PftCtIRNVPcGkmR2lF32scpsfpMg6YXG6gH3lImsCiD2OcHg2Qc=
-Date: Sun, 23 Sep 2007 13:46:22 -0300
-From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Dave Jones <davej@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: memset as memzero
-Message-ID: <20070923164622.GA3766@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Dave Jones <davej@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Cyrill Gorcunov <gorcunov@gmail.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>
-References: <20070922083355.GA7226@cvg> <20070922124659.741cca42@laptopd505.fenrus.org> <alpine.LFD.0.999.0709221149480.16478@woody.linux-foundation.org> <20070923153243.GE8127@redhat.com> <Pine.LNX.4.64.0709231226140.14224@localhost.localdomain>
+	Sun, 23 Sep 2007 12:48:57 -0400
+Received: from mail.sousedi.net ([85.132.167.140]:39649 "EHLO mail.sousedi.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755245AbXIWQs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 12:48:57 -0400
+Message-ID: <46F698FC.4040304@prepere.com>
+Date: Sun, 23 Sep 2007 18:49:00 +0200
+From: Miloslav Semler <majkls@prepere.com>
+User-Agent: IceDove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709231226140.14224@localhost.localdomain>
-X-Url: http://oops.ghostprotocols.net:81/blog
-Organization: OOPS Labs
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] sysfs: backport of sysfs_readdir fix from 2.6.22.y to 2.6.16.y
+ (CVE-2007-3104)
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sun, Sep 23, 2007 at 12:33:13PM -0400, Robert P. J. Day escreveu:
-> On Sun, 23 Sep 2007, Dave Jones wrote:
-> 
-> > There is one useful argument for memzero (or bzero to give it its
-> > proper name), and that's that it's impossible to screw up. I'm still
-> > amazed at how many times I see
-> >
-> > 	memset (x,size,0);
-> >
-> > in various code. So much so, that my editor highlights it now to
-> > spot it during code review.  As does my mail client.  To be on the
-> > safe side, I also have a cron job grepping for it in my
-> > ~/Mail/commits for all the projects I'm interested in.
-> 
->   taking a step back, regardless of what constitutes a sane versus
-> not-sane definition of a useful macro, i think a lot of the content of
-> kernel.h could be moved out of there and put in a more appropriate
-> header file called, say, macros.h.
-> 
->   the first comment in kernel.h claims that
-> 
-> /*
->  * 'kernel.h' contains some often-used function prototypes etc
->  */
-> 
-> but there's buckets more stuff in there than just some function
-> prototypes.  macros for type limits, alignment, array sizes, rounding,
-> and on and on.  and as for those prototypes, is there any reason that
-> kernel.h includes them explicitly for the contents of lib/vsprintf.c
-> rather than just including, say, a hypothetical vsprintf.h?  just
-> curious.
-> 
-> in any case, it would seem that kernel.h could stand a good cleaning.
-> it give the impression of just being an arbitrary dumping ground when
-> folks can't figure out where to put something.
+This patch solves CVE-2007-3104  - sysfs_readdir oops.
+More can be found here: 
+http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=commit;h=dc351252b33f8fede396d6173dba117bcb933607
 
-In an ideal world kernel.h has no place, I guess. I guess too that
-janitors could make the world ideal in that respect. Keep moving things
-from there to the right place. Don't do it every other day tho. People
-find it annoying.
+Signed-off-by: Miloslav Semler
+---
+diff -uprN linux-2.6.16.53/fs/sysfs/dir.c linux-2.6.16.53-new/fs/sysfs/dir.c
+--- linux-2.6.16.53/fs/sysfs/dir.c      2007-07-25 23:05:45.000000000 +0200
++++ linux-2.6.16.53-new/fs/sysfs/dir.c  2007-09-23 18:18:09.000000000 +0200
+@@ -29,6 +29,14 @@ static struct dentry_operations sysfs_de
+        .d_iput         = sysfs_d_iput,
+ };
 
-- Arnaldo
++static unsigned int sysfs_inode_counter;
++ino_t sysfs_get_inum(void)
++{
++       if (unlikely(sysfs_inode_counter < 3))
++               sysfs_inode_counter = 3;
++       return sysfs_inode_counter++;
++}
++
+ /*
+  * Allocates a new sysfs_dirent and links it to the parent sysfs_dirent
+  */
+@@ -40,8 +48,10 @@ static struct sysfs_dirent * sysfs_new_d
+        sd = kmem_cache_alloc(sysfs_dir_cachep, GFP_KERNEL);
+        if (!sd)
+                return NULL;
++
+
+        memset(sd, 0, sizeof(*sd));
++       sd->s_ino = sysfs_get_inum();
+        atomic_set(&sd->s_count, 1);
+        INIT_LIST_HEAD(&sd->s_children);
+        list_add(&sd->s_sibling, &parent_sd->s_children);
+@@ -385,7 +395,7 @@ static int sysfs_readdir(struct file * f
+
+        switch (i) {
+                case 0:
+-                       ino = dentry->d_inode->i_ino;
++                        ino = parent_sd->s_ino;
+                        if (filldir(dirent, ".", 1, i, ino, DT_DIR) < 0)
+                                break;
+                        filp->f_pos++;
+@@ -415,10 +425,7 @@ static int sysfs_readdir(struct file * f
+
+                                name = sysfs_get_name(next);
+                                len = strlen(name);
+-                               if (next->s_dentry)
+-                                       ino = 
+next->s_dentry->d_inode->i_ino;
+-                               else
+-                                       ino = iunique(sysfs_sb, 2);
++                                ino = next->s_ino;
+
+                                if (filldir(dirent, name, len, 
+filp->f_pos, ino,
+                                                 dt_type(next)) < 0)
+diff -uprN linux-2.6.16.53/fs/sysfs/inode.c 
+linux-2.6.16.53-new/fs/sysfs/inode.c
+--- linux-2.6.16.53/fs/sysfs/inode.c    2007-07-25 23:05:45.000000000 +0200
++++ linux-2.6.16.53-new/fs/sysfs/inode.c        2007-09-23 
+18:18:09.000000000 +0200
+@@ -119,6 +119,7 @@ struct inode * sysfs_new_inode(mode_t mo
+                inode->i_mapping->a_ops = &sysfs_aops;
+                inode->i_mapping->backing_dev_info = 
+&sysfs_backing_dev_info;
+                inode->i_op = &sysfs_inode_operations;
++                inode->i_ino = sd->s_ino;
+
+                if (sd->s_iattr) {
+                        /* sysfs_dirent has non-default attributes
+diff -uprN linux-2.6.16.53/fs/sysfs/mount.c 
+linux-2.6.16.53-new/fs/sysfs/mount.c
+--- linux-2.6.16.53/fs/sysfs/mount.c    2007-07-25 23:05:45.000000000 +0200
++++ linux-2.6.16.53-new/fs/sysfs/mount.c        2007-09-23 
+18:18:09.000000000 +0200
+@@ -29,6 +29,7 @@ static struct sysfs_dirent sysfs_root =
+        .s_element      = NULL,
+        .s_type         = SYSFS_ROOT,
+        .s_iattr        = NULL,
++        .s_ino          = 1,
+ };
+
+ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+diff -uprN linux-2.6.16.53/include/linux/sysfs.h 
+linux-2.6.16.53-new/include/linux/sysfs.h
+--- linux-2.6.16.53/include/linux/sysfs.h       2007-07-25 
+23:05:45.000000000 +0200
++++ linux-2.6.16.53-new/include/linux/sysfs.h   2007-09-23 
+18:18:09.000000000 +0200
+@@ -72,6 +72,7 @@ struct sysfs_dirent {
+        void                    * s_element;
+        int                     s_type;
+        umode_t                 s_mode;
++        ino_t                   s_ino;
+        struct dentry           * s_dentry;
+        struct iattr            * s_iattr;
+ };
