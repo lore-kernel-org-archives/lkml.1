@@ -1,136 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbXIWNzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbXIWOEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbXIWNzo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 09:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbXIWNzf
+	id S1756177AbXIWOEu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 10:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXIWOEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 09:55:35 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:51021 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752621AbXIWNzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 09:55:33 -0400
-Date: Sun, 23 Sep 2007 22:55:11 +0900
-To: just.for.lkml@googlemail.com
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+	Sun, 23 Sep 2007 10:04:41 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41310 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750756AbXIWOEj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 10:04:39 -0400
+Date: Sun, 23 Sep 2007 15:11:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+Cc: "Jens Axboe" <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
        linux-ide@vger.kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp
 Subject: Re: What's in linux-2.6-block.git for 2.6.24
-From: FUJITA Tomonori <tomof@acm.org>
+Message-ID: <20070923151105.5d491df4@the-village.bc.nu>
 In-Reply-To: <64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
 References: <20070921085711.GG2367@kernel.dk>
 	<64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070923225320I.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Sep 2007 15:19:13 +0200
-"Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-
-> On 9/21/07, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > SG chaining bits:
-> > - This is the bulk of the patchset. It consists of three major
-> >   components:
-> >
-> >         - sglist-core, which add helpers for iterating sg lists and
-> >           switches the block layer and SCSI to use those. Should not
-> >           have any functional changes.
-> >         - sglist-drivers, which converts drivers to use the sg list
-> >           helpers. Again, should not contain functional changes.
-> >         - sglist-arch, which adds support to most architectures and
-> >           actually enables sg chaining.
-> 
-> Adding linux-ide and linux-scsi as CC like Andrew did with my last report.
-> 
-> I still have trouble with my Silicon Image, Inc. SiI 3132 Serial ATA
-> Raid II Controller as reported on 2.6.23-rc4-mm1 on the new
-> 2.6.23-rc6-mm1.
-> 
-> I'm not 100% sure if this caused by the sg chaining, but the patch
-> from http://lkml.org/lkml/2007/9/10/251 which touches that chaining
-> makes a difference, so it might be related.
-> 
-> First report: http://lkml.org/lkml/2007/9/1/92
-> With patch it fails fewer times: http://lkml.org/lkml/2007/9/14/107
-> 
-> To update the statistik:
-> prior to 2.6.23-rc4-mm1: no trouble with any drives on the SiI 3132.
-> 2.6.23-rc4-mm1 without patch: 2 out of 2 bad.
-> back to 2.6.23-rc3-mm1: 18x good.
-> 2.6.23-rc4-mm1 with patch:  2 out of 8 bad
-> after that second mail:
-> 2.6.23-rc4-mm1 with patch: 1 out of 5 bad
-> 2.6.23-rc6-mm1: 1 out of 2 bad
-
-git-block.patch in 2.6.23-rc6-mm1 includes my patch that disables sg
-chaining for libata but it still includes libata's sg chaining
-changes. So these changes breaks libata or libata was broken after
-2.6.23-rc3-mm1.
-
-Can you try Jens's sglist-arch branch? If it works, probably libata in
--mm has bugs.
-
-For your convenience, I put a sglist-arch branch patch against v2.6.23-rc7:
-
-http://www.kernel.org/pub/linux/kernel/people/tomo/misc/v2.6.23-rc7-sglist-arch.diff.bz2
-
-
-> switching back to 2.6.23-rc3-mm1 to rule out the hardware:
-> 2.6.23-rc3-mm1: 6x good
-> 
-> The error messages from the failed 2.6.23-rc6-mm1:
-> Sep 18 18:50:01 treogen [   33.340000] md1: bitmap initialized from
-> disk: read 10/10 pages, set 0 bits
-> Sep 18 18:50:01 treogen [   33.340000] created bitmap (145 pages) for device md1
-> Sep 18 18:50:01 treogen [   63.440000] ata1.00: exception Emask 0x0
-> SAct 0x1 SErr 0x0 action 0x6 frozen
-> Sep 18 18:50:01 treogen [   63.440000] ata1.00: cmd
-> 61/08:00:09:d6:42/00:00:25:00:00/40 tag 0 cdb 0x0 data 4096 out
-> Sep 18 18:50:01 treogen [   63.440000]          res
-> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
 > Sep 18 18:50:01 treogen [   63.440000] ata1.00: status: {DRDY }
 > Sep 18 18:50:01 treogen [   63.440000] ata1: hard resetting link
-> Sep 18 18:50:01 treogen [   65.740000] ata1: softreset failed (port not ready)
-> Sep 18 18:50:01 treogen [   65.740000] ata1: reset failed (errno=-5),
-> retrying in 8 secs
-> Sep 18 18:50:01 treogen [   73.440000] ata1: hard resetting link
-> Sep 18 18:50:01 treogen [   75.740000] ata1: softreset failed (port not ready)
-> Sep 18 18:50:01 treogen [   75.740000] ata1: reset failed (errno=-5),
-> retrying in 8 secs
-> Sep 18 18:50:01 treogen [   83.440000] ata1: hard resetting link
-> Sep 18 18:50:01 treogen [   85.740000] ata1: softreset failed (port not ready)
-> Sep 18 18:50:01 treogen [   85.740000] ata1: reset failed (errno=-5),
-> retrying in 33 secs
-> Sep 18 18:50:01 treogen [  118.440000] ata1: limiting SATA link speed
-> to 1.5 Gbps
-> Sep 18 18:50:01 treogen [  118.440000] ata1: hard resetting link
-> Sep 18 18:50:01 treogen [  120.740000] ata1: softreset failed (port not ready)
-> Sep 18 18:50:01 treogen [  120.740000] ata1: reset failed, giving up
-> Sep 18 18:50:01 treogen [  120.740000] ata1.00: disabled
-> Sep 18 18:50:01 treogen [  120.740000] ata1: EH complete
-> Sep 18 18:50:01 treogen [  120.740000] sd 0:0:0:0: [sda] Result:
-> hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-> Sep 18 18:50:01 treogen [  120.740000] end_request: I/O error, dev
-> sda, sector 625137161
-> Sep 18 18:50:01 treogen [  120.740000] md: super_written gets
-> error=-5, uptodate=0
-> Sep 18 18:50:01 treogen [  120.740000] raid5: Disk failure on sda2,
-> disabling device. Operation continuing on 2 devices
-> 
-> After that many more errors like this, only differing in the sector number:
-> Sep 18 18:50:01 treogen [  120.810000] sd 0:0:0:0: [sda] Result:
-> hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-> Sep 18 18:50:01 treogen [  120.810000] end_request: I/O error, dev
-> sda, sector 19550919
-> 
-> Any more infos needed?
-> 
-> Torsten
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Timed out waiting for data transfers to complete that didn't. Does sound
+like the device got told the wrong sized transfer.
+
+
+It then falls off the bus because Jeff hasn't merged Mark Lord's DRQ
+draining patch.
+
+Alan
