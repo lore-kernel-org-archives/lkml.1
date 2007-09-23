@@ -1,61 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbXIWNIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbXIWNT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbXIWNIW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 09:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbXIWNIN
+	id S1755951AbXIWNT1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 09:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbXIWNTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 09:08:13 -0400
-Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:15470 "EHLO
-	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754018AbXIWNIM (ORCPT
+	Sun, 23 Sep 2007 09:19:17 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:32200 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbXIWNTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 09:08:12 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Subject: Re: [2.6.23-rc7] main.c: undefined reference to `acpi_sleep_prepare'
-Date: Sun, 23 Sep 2007 15:08:06 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <200709230152.31120.elendil@planet.nl> <46F60AA2.1060500@gmail.com>
-In-Reply-To: <46F60AA2.1060500@gmail.com>
+	Sun, 23 Sep 2007 09:19:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JESdglCBSNHQCUBwctPg+SdLC0OJ8Qq7tboQmb/BxW8k/vYjigpLFHWHTBcu9lBMqgRwtyP8SZmdINn/y4KNVJmfuzxQLfdt5d3Z9RV/Akv6XPNmhn82kMTbvIu9AgPrYyVA1150p9zfm22Mckppdqto+fn8odB8mDKWcWczdfk=
+Message-ID: <64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
+Date: Sun, 23 Sep 2007 15:19:13 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: What's in linux-2.6-block.git for 2.6.24
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <20070921085711.GG2367@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709231508.07674.elendil@planet.nl>
-X-OriginalArrivalTime: 23 Sep 2007 13:08:09.0924 (UTC) FILETIME=[CA258040:01C7FDE2]
+References: <20070921085711.GG2367@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 23 September 2007, Alexey Starikovskiy wrote:
-> Frans Pop wrote:
-> > drivers/built-in.o: In function `acpi_power_off_prepare':
-> > main.c:(.text+0x32282): undefined reference to `acpi_sleep_prepare'
-> > drivers/built-in.o: In function `acpi_hibernation_prepare':
-> > main.c:(.text+0x3228c): undefined reference to `acpi_sleep_prepare'
+On 9/21/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> SG chaining bits:
+> - This is the bulk of the patchset. It consists of three major
+>   components:
 >
-> yep... acpi_sleep_prepare was put under CONFIG_SUSPEND spanning half of
-> the file... this patch moves it out.
+>         - sglist-core, which add helpers for iterating sg lists and
+>           switches the block layer and SCSI to use those. Should not
+>           have any functional changes.
+>         - sglist-drivers, which converts drivers to use the sg list
+>           helpers. Again, should not contain functional changes.
+>         - sglist-arch, which adds support to most architectures and
+>           actually enables sg chaining.
 
-Compiles and works fine with that patch applied. Thanks.
+Adding linux-ide and linux-scsi as CC like Andrew did with my last report.
 
+I still have trouble with my Silicon Image, Inc. SiI 3132 Serial ATA
+Raid II Controller as reported on 2.6.23-rc4-mm1 on the new
+2.6.23-rc6-mm1.
 
-One thing I noticed after booting with the kernel without CONFIG_SUSPEND.
-/proc/acpi/sleep no longer lists S3 (as expected), but /proc/acpi/wakeup 
-does still list the device status for S3, which seems somewhat 
-inconsistent:
+I'm not 100% sure if this caused by the sg chaining, but the patch
+from http://lkml.org/lkml/2007/9/10/251 which touches that chaining
+makes a difference, so it might be related.
 
-Device	S-state	  Status   Sysfs node
-VIY0	  S3	 disabled  pci:0000:01:0b.0
-USB1	  S3	 disabled  pci:0000:00:1d.0
-USB2	  S3	 disabled  pci:0000:00:1d.1
-USB4	  S3	 disabled  pci:0000:00:1d.7
-AMDM	  S3	 disabled  pci:0000:00:1f.6
-LID	  S4	*enabled   
-PWRB	  S4	*enabled   
+First report: http://lkml.org/lkml/2007/9/1/92
+With patch it fails fewer times: http://lkml.org/lkml/2007/9/14/107
 
-Not sure if it's worth fixing though.
+To update the statistik:
+prior to 2.6.23-rc4-mm1: no trouble with any drives on the SiI 3132.
+2.6.23-rc4-mm1 without patch: 2 out of 2 bad.
+back to 2.6.23-rc3-mm1: 18x good.
+2.6.23-rc4-mm1 with patch:  2 out of 8 bad
+after that second mail:
+2.6.23-rc4-mm1 with patch: 1 out of 5 bad
+2.6.23-rc6-mm1: 1 out of 2 bad
+switching back to 2.6.23-rc3-mm1 to rule out the hardware:
+2.6.23-rc3-mm1: 6x good
 
-Cheers,
-FJP
+The error messages from the failed 2.6.23-rc6-mm1:
+Sep 18 18:50:01 treogen [   33.340000] md1: bitmap initialized from
+disk: read 10/10 pages, set 0 bits
+Sep 18 18:50:01 treogen [   33.340000] created bitmap (145 pages) for device md1
+Sep 18 18:50:01 treogen [   63.440000] ata1.00: exception Emask 0x0
+SAct 0x1 SErr 0x0 action 0x6 frozen
+Sep 18 18:50:01 treogen [   63.440000] ata1.00: cmd
+61/08:00:09:d6:42/00:00:25:00:00/40 tag 0 cdb 0x0 data 4096 out
+Sep 18 18:50:01 treogen [   63.440000]          res
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Sep 18 18:50:01 treogen [   63.440000] ata1.00: status: {DRDY }
+Sep 18 18:50:01 treogen [   63.440000] ata1: hard resetting link
+Sep 18 18:50:01 treogen [   65.740000] ata1: softreset failed (port not ready)
+Sep 18 18:50:01 treogen [   65.740000] ata1: reset failed (errno=-5),
+retrying in 8 secs
+Sep 18 18:50:01 treogen [   73.440000] ata1: hard resetting link
+Sep 18 18:50:01 treogen [   75.740000] ata1: softreset failed (port not ready)
+Sep 18 18:50:01 treogen [   75.740000] ata1: reset failed (errno=-5),
+retrying in 8 secs
+Sep 18 18:50:01 treogen [   83.440000] ata1: hard resetting link
+Sep 18 18:50:01 treogen [   85.740000] ata1: softreset failed (port not ready)
+Sep 18 18:50:01 treogen [   85.740000] ata1: reset failed (errno=-5),
+retrying in 33 secs
+Sep 18 18:50:01 treogen [  118.440000] ata1: limiting SATA link speed
+to 1.5 Gbps
+Sep 18 18:50:01 treogen [  118.440000] ata1: hard resetting link
+Sep 18 18:50:01 treogen [  120.740000] ata1: softreset failed (port not ready)
+Sep 18 18:50:01 treogen [  120.740000] ata1: reset failed, giving up
+Sep 18 18:50:01 treogen [  120.740000] ata1.00: disabled
+Sep 18 18:50:01 treogen [  120.740000] ata1: EH complete
+Sep 18 18:50:01 treogen [  120.740000] sd 0:0:0:0: [sda] Result:
+hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
+Sep 18 18:50:01 treogen [  120.740000] end_request: I/O error, dev
+sda, sector 625137161
+Sep 18 18:50:01 treogen [  120.740000] md: super_written gets
+error=-5, uptodate=0
+Sep 18 18:50:01 treogen [  120.740000] raid5: Disk failure on sda2,
+disabling device. Operation continuing on 2 devices
+
+After that many more errors like this, only differing in the sector number:
+Sep 18 18:50:01 treogen [  120.810000] sd 0:0:0:0: [sda] Result:
+hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
+Sep 18 18:50:01 treogen [  120.810000] end_request: I/O error, dev
+sda, sector 19550919
+
+Any more infos needed?
+
+Torsten
