@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbXIWGNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXIWGRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756343AbXIWGNj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 02:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbXIWGNc
+	id S1756922AbXIWGRR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 02:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbXIWGRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 02:13:32 -0400
-Received: from [85.8.24.16] ([85.8.24.16]:58054 "EHLO smtp.drzeus.cx"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909AbXIWGNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 02:13:31 -0400
-Date: Sun, 23 Sep 2007 08:14:08 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: rpurdie@rpsys.net, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] leds: add missing header
-Message-ID: <20070923081408.312e02c3@poseidon.drzeus.cx>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Sep 2007 02:17:07 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46605 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752878AbXIWGRH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 02:17:07 -0400
+Date: Sun, 23 Sep 2007 08:17:05 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: zippel@linux-m68k.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Unfortunate infinite make recursion
+In-Reply-To: <20070922205216.GB31873@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0709230815580.15712@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0709221319440.15712@fbirervta.pbzchgretzou.qr>
+ <20070922205216.GB31873@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rwlocks are used in the structures so make sure the right header
-is included.
 
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+On Sep 22 2007 22:52, Sam Ravnborg wrote:
+>
+>Does the following patch fix it at your end?
+>Seems to work for me.
 
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index 4211750..6518c32 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -13,6 +13,7 @@
- #define __LINUX_LEDS_H_INCLUDED
- 
- #include <linux/list.h>
-+#include <linux/rwsem.h>
- 
- struct device;
- /*
+Yes.
 
+>-
+>+# Check the OUTPUT directory is not the same as where we have kernel src
+>+$(if $(filter-out $(KBUILD_OUTPUT),$(shell /bin/pwd)),, \
+>+     $(error Output directory (O=...) specify kernel src dir))
 
--- 
-     -- Pierre Ossman
+Should be "specifies".
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+> PHONY += $(MAKECMDGOALS)
+> 
+> $(filter-out _all,$(MAKECMDGOALS)) _all:
+>
+
