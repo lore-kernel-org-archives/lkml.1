@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbXIWSbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXIWSbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbXIWSbA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 14:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbXIWSaw
+	id S1758263AbXIWSbV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 14:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbXIWSbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 14:30:52 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:53462 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbXIWSav (ORCPT
+	Sun, 23 Sep 2007 14:31:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:31736 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbXIWSbH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 14:30:51 -0400
-Subject: Re: Urgent bugzilla mainteinance needed
-From: David Woodhouse <dwmw2@infradead.org>
-To: Natalie Protasevich <protasnb@gmail.com>
-Cc: Diego Calleja <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
-       David Ames <david@linux-foundation.org>,
-       Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>
-In-Reply-To: <32209efe0709231108v459c3559xf247db2c122513c0@mail.gmail.com>
-References: <20070923195821.cab02f42.diegocg@gmail.com>
-	 <32209efe0709231108v459c3559xf247db2c122513c0@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 23 Sep 2007 19:30:40 +0100
-Message-Id: <1190572240.22181.2.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 23 Sep 2007 14:31:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=JgRJsLrxqA4ukqxnVDjPTPZ/K0v3qk4G9J5jE5XdNLo2CUp+QUgKrLJBindeL3ZhhiziL0BrlD6LQqcevT8NbqrbstBUzzJLBtJAC8Cs+M/XpY+tASRGo4AfXbYJcp5Co+gwrk3FcHfmymU3XOuajS4/j081StPe8QdeFuUnSqA=
+From: Mihai =?utf-8?q?Don=C8=9Bu?= <mihai.dontu@gmail.com>
+Organization: Home
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 2.6.23-rc7 + radeonfb/s2ram
+Date: Sun, 23 Sep 2007 21:31:02 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200709220828.00078.mihai.dontu@gmail.com> <200709231937.13595.mihai.dontu@gmail.com> <200709232051.39949.mihai.dontu@gmail.com>
+In-Reply-To: <200709232051.39949.mihai.dontu@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200709232131.02348.mihai.dontu@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 23 September 2007, Mihai Donțu wrote:
+> I'll to do a full cleanup and start all over. I'm going to nail this thing down if
+> it's the last thing I do! (so help me God) :)
 
-On Sun, 2007-09-23 at 11:08 -0700, Natalie Protasevich wrote:
-> On 9/23/07, Diego Calleja <diegocg@gmail.com> wrote:
-> > Take a look at http://bugzilla.kernel.org/show_bug.cgi?id=3710
-> >
-> > bugzilla tries to send a mail to the reporter, it fails ("unknown user account"),
-> > but the error failure is appended as a bugzilla comment. Then bugzilla tries to
-> > send that comment to everyone involved in the bug, including the reporter,
-> > so it fails again.....Houston, we've a endless loop.
-> >
-> > There're 540 comments in that bug report already, and the bugme-daemon
-> > mail list is being spammed....
-> 
-> I just sent emails to those who maintain bugzilla software and systems
-> that run it, hope someone will be online soon to help alleviate
-> this...
+  Found it!
 
-Bugzilla really shouldn't be accepting any mail with empty reverse-path
-(MAIL FROM:<>)
+  The problem was "Framebuffer Console support". It was enabled by default in older
+  configs (like 2.6.22.7) but I think someone noticed this was bad and put it to
+  default N in newer (2.6.23-rc7); and since I reused the .config from 2.6.21.3 ...
+
+  So there, if one wants "ATI Radeon display support" on Radeon XPRESS 200M with
+  X using radeon_drv.so, *should* put "Framebuffer Console support" to N (if it's
+  not already).
+
+  Now all I have to do is figure out what's the equivalent of "vga=791" on the new
+  kernel (default text console looks really bad on my laptop).
+
+  Sorry for all the noise (and spam),
 
 -- 
-dwmw2
-
+Mihai Donțu
