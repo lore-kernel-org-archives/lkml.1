@@ -1,133 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbXIWBFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbXIWBU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbXIWBFz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 21:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbXIWBFr
+	id S1754841AbXIWBU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 21:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbXIWBUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 21:05:47 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:61957 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbXIWBFq (ORCPT
+	Sat, 22 Sep 2007 21:20:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:63880 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbXIWBUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 21:05:46 -0400
+	Sat, 22 Sep 2007 21:20:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Lh3v7gHX3DAsQKXzRgFmoo+kQfLyRgP6niW+FMKBPYW9PtM6kqMlfraLyhm8padEzDVsbLZ3F6OmeqMAWTPr65fPNatfGFbttWhBDcCFCuuXy+2b6RHWeMiIebBIwp5XUsEihBujUoGWBOl+OtbLub4FS11SFNsgCWiz+HoZLIk=
-Message-ID: <653402b90709221805pd1b7efel165a1c55100e3610@mail.gmail.com>
-Date: Sun, 23 Sep 2007 03:05:44 +0200
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [RFC] New kernel-message logging API
-Cc: LKML <linux-kernel@vger.kernel.org>, holzheu <holzheu@linux.vnet.ibm.com>,
-       "Joe Perches" <joe@perches.com>, "Rob Landley" <rob@landley.net>,
-       "Dick Streefland" <dick.streefland@altium.nl>
-In-Reply-To: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
+        b=jAItCzwIQ9Hk2a1SM6ovbMV0B+QdbkqNDzRxuO977yNBmCvoie2Z5SGKcVqFIgLVRpMmCbSegfC0ZeDXthSm4dGxC+N0lbZuKhh9cBIQ+SHaM8EM3Kwt8lRnSso9ZOyr3RrHaBZ77tLLAovOGc2pl7uUzN/c0mGXupsjhhYPDP8=
+Message-ID: <86802c440709221820y5dfdca5fmd74da31146bf78d9@mail.gmail.com>
+Date: Sat, 22 Sep 2007 18:20:18 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: [PATCH] [9/50] i386: validate against ACPI motherboard resources
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Andi Kleen" <ak@suse.de>,
+       rajesh.shah@intel.com, jbarnes@virtuousgeek.org, greg@kroah.com,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+In-Reply-To: <46F588D7.2030109@shaw.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
+References: <200709221231.836138000@suse.de>
+	 <20070921223207.7BBE71479D@wotan.suse.de>
+	 <86802c440709212349l3d968d1bgdc89e7c7415b54da@mail.gmail.com>
+	 <46F542A4.9080207@shaw.ca> <1190484117.4035.71.camel@chaos>
+	 <46F56208.90208@shaw.ca>
+	 <86802c440709221340h2cbbf423y239f399ab5da815d@mail.gmail.com>
+	 <46F588D7.2030109@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/22/07, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> After recent discussions on LKML and a general dissatisfaction at the
-> current printk() kernel-message logging interface, I've decided to
-> write down some of the ideas for a better system.
+On 9/22/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> Yinghai Lu wrote:
+> > On 9/22/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> >> Thomas Gleixner wrote:
+> >>> On Sat, 2007-09-22 at 10:28 -0600, Robert Hancock wrote:
+> >>>> Yinghai Lu wrote:
+> >>>>> No!
+> >>>>>
+> >>>>> MMCONFIG will not work with acpi=off any more.
+> >>>> I don't think this is unreasonable. The ACPI MCFG table is how we are
+> >>>> supposed to learn about the area in the first place. If we can't get the
+> >>>> table location via an approved mechanism, and can't validate it doesn't
+> >>>> overlap with another memory reservation or something, I really don't
+> >>>> think we should be using it.
+> >>> We all know how correct ACPI tables are. Specifications are nice,
+> >>> reality tells a different story.
+> >> MMCONFIG can't be used without ACPI in any case unless we know where the
+> >>   table is using chipset-specific knowledge (i.e. reading the registers
+> >> directly). Doing that without being told that this area is really
+> >> intended to be used, via the ACPI table, is dangerous, i.e. we don't
+> >> necessarily know if the MMCONFIG is broken on the platform in some way
+> >> we can't detect.
+> >
+> > the BIOS get these info from the chipset too.
+> > for AMD Fam 10h opteron, we can read that MSR for MMCONFIG base.
+> >
+> >>>> I don't think it's much of an issue anyway - the chances that somebody
+> >>>> will want to run without ACPI on a system with MCFG are pretty low given
+> >>>> that you'll end up losing a bunch of functionality (not least of which
+> >>>> is multi-cores).
+> >>> acpi=off is an often used debug switch and it _is_ quite useful. Taking
+> >>> away debug functionality is not a good idea.
+> >> If someone has to turn ACPI off, disabling MMCONFIG is probably the
+> >> least of their worries..
+> >
+> > MMCONFIG has nothing to do ACPI..., just becase MCFG in the ACPI, we
+> > must use ACPI for MMCONFIG?
+>
+> config PCI_MMCONFIG
+>           bool
+>           depends on PCI && ACPI && (PCI_GOMMCONFIG || PCI_GOANY)
+>           default y
+>
+> We already depend on ACPI for MMCONFIG support at compile time. This
+> patch does not change that.
+>
+> We could conceivably skip the validation if ACPI was disabled, though
+> this would only make a difference in the few cases where we can detect
+> the MMCONFIG area without it (looks like currently only Intel E7520 and
+> 945, at least in mainline).
 
-Nice. I would suggest having some kind of standard way to show the
-information on the screen/dmesg. I mean, instead of having plain lines
-being written to the log, having something very short like:
+can you make pci_mmcfg_late_init take one parameter about if acpi is
+there or not?
 
-SSL: Message sent.
+so in acpi_init will be
 
-Being:
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 9ba778a..a4a6a6f 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -746,6 +746,7 @@ static int __init acpi_init(void)
 
-SS - Subsystem ("EA"  for early code, "MM" for memory managment, "PU"
-for processor stuff, "HD" for hard disks, "PP" for parallel port, "NT"
-for networking, "VI" for video stuff, "FB" for framebuffers, "SN" for
-sound stuff, "KE" for keyboard, "MO" for mouse, ... I think you get
-the idea, just generic things).
-L - Log level (0 for emerg, ..., 7 for debug)
+        if (acpi_disabled) {
+                printk(KERN_INFO PREFIX "Interpreter disabled.\n");
++               pci_mmcfg_late_init(0);
+                return -ENODEV;
+        }
 
-And maybe some other character for other information. This would be
-great to read pretty easily dmesg and for grepping, like:
+@@ -757,6 +758,7 @@ static int __init acpi_init(void)
+        result = acpi_bus_init();
 
-  $ dmesg | grep ^FB
+        if (!result) {
++               pci_mmcfg_late_init(1);
+ #ifdef CONFIG_PM_LEGACY
+                if (!PM_IS_ACTIVE())
+                        pm_active = 1;
+@@ -767,8 +769,10 @@ static int __init acpi_init(void)
+                        result = -ENODEV;
+                }
+ #endif
+-       } else
++       } else {
++               pci_mmcfg_late_init(0);
+                disable_acpi();
++       }
 
-for getting just information about framebuffers, or
+        return result;
+ }
 
-  $ dmesg | grep ^..[0123]
-
-to get all the problems of the whole kernel/system.
-
-So, for example, userspace scripts will be able to separate into
-different log files the kernel stuff:
-
-  #!/bin/sh
-  dmesg | grep ^..[0123] > klog.errors
-  dmesg | grep ^NT > klog.networking
-  dmesg | grep ^HD > klog.harddisks
-  dmesg | grep ^FB > klog.framebuffers
-
-Maybe its weird at first, but I think it will speed up the reading of
-plain dmesg's outputs for everyone at the cost of 3-5 more characters
-at every line in dmesg.
-
-Also, it may help to make printk()'s messages to be more uniform,
-instead of having every .c file having differents ways to express
-similar things.
-
-Getting more complex, lets add another character:
-
-SSLR: Message sent.
-
-being R the reason of the message (D for information about a
-probed-and-detected hardware [like a PCI card], R for a new
-succesfully registered device [like a framebuffer], S for new settings
-in a device [like taking up a ethernet link, or that messages about
-IRQs], C for copyright/about/info lines, ...).
-
-Now we have at some dmesg (for example):
-
-  eth0: Broadcom 4400 10/100BaseT Ethernet 00:1f:a2:0c:4a:72
-  ieee80211_crypt: registered algorithm 'TKIP'
-  ipw3945: Intel(R) PRO/Wireless 3945 Network Connection 1.2.2d
-  ipw3945: Copyright(c) 2003-2006 Intel Corporation
-  ACPI: PCI Interrupt 0000:0c:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-  PCI: Setting latency timer of device 0000:0c:00.0 to 64
-  ipw3945: Detected Intel PRO/Wireless 3945ABG Network Connection
-  ipw3945: Detected geography ABG (13 802.11bg channels, 23 802.11a channels)
-  usb 6-1: new low speed USB device using uhci_hcd and address 2
-  usb 6-1: configuration #1 chosen from 1 choice
-  usbcore: registered new interface driver hiddev
-
-and we could have:
-
-  NT6R eth0: Broadcom 4400 10/100BaseT Ethernet 00:1f:a2:0c:4a:72
-  NT6R ieee80211_crypt: algorithm 'TKIP'
-  NT6C ipw3945: Intel(R) PRO/Wireless 3945 Network Connection driver 1.2.2d
-  NT7C ipw3945: Copyright(c) 2003-2006 Intel Corporation
-  XX6S ACPI: PCI Interrupt 0000:0c:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-  XX6S PCI: Latency timer of device 0000:0c:00.0 to 64
-  NT6R ipw3945: Intel PRO/Wireless 3945ABG Network Connection
-  NT6D ipw3945: geography ABG (13 802.11bg channels, 23 802.11a channels)
-  US6R usb 6-1: low speed USB device using uhci_hcd and address 2
-  US6S usb 6-1: configuration #1 chosen from 1 choice
-  US6R usbcore: new interface driver hiddev
-
-which I think its much more clear... Wanna know about registered
-networking-related devices? Then grep using "^NT.R":
-
-  NT6R eth0: Broadcom 4400 10/100BaseT Ethernet 00:1f:a2:0c:4a:72
-  NT6R ieee80211_crypt: algorithm 'TKIP'
-  NT6R ipw3945: Intel PRO/Wireless 3945ABG Network Connection
-
-...
-
-Nothing more, thanks for reading :)
-
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+YH
