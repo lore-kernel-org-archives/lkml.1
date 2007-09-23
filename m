@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbXIVXyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbXIWANR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbXIVXyO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 19:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbXIVXyA
+	id S1753373AbXIWANR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 20:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXIWANJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 19:54:00 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:29975 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbXIVXx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 19:53:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:organization:user-agent:x-accept-language:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=HuSfh1YNIgwQXurR/40N8IAbBtYK+SIKRnK568FpVvvCE6Egx9DXALJqTihCVsJOKR7VJC6A6HFnJakyCssJP+UhB4la4HbaunWbwrPklcJlZxCBYw49wSwH6VdDwvpeb0E4uE9s4m57ykB88nWKwkSASr7YBv+AycX+0Req8bw=
-Message-ID: <46F5AB46.3030202@gmail.com>
-Date: Sat, 22 Sep 2007 20:54:46 -0300
-From: Hernan G Solari <hgsolari@gmail.com>
-Reply-To: hgsolari@gmail.com
-Organization: Universidad de Buenos Aires
-User-Agent: Debian Thunderbird 1.0.2 (X11/20060927)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Serial ATA does not find partitions (Hitachi HD, new? ATI controller)
- where old SATA works
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Sat, 22 Sep 2007 20:13:09 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:4348 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751165AbXIWANI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 20:13:08 -0400
+Subject: Re: [RFC] New kernel-message logging API
+From: Joe Perches <joe@perches.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, holzheu <holzheu@linux.vnet.ibm.com>,
+       Rob Landley <rob@landley.net>,
+       Dick Streefland <dick.streefland@altium.nl>
+In-Reply-To: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
+References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 22 Sep 2007 17:13:03 -0700
+Message-Id: <1190506383.30132.11.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
-    I am disturbing you with this problem because I think there is
-something to be learnt, I have
-no urgency or further-problem with my work-around.
+On Sat, 2007-09-22 at 21:27 +0200, Vegard Nossum wrote:
+> #define kprint(fmt, ...)
 
-Description: trying to boot with kernel 2.6.22  the booting process
-stops not finding
-the root partition, in the previous line it gives an EMPTY list of
-available partitions.
-Disabling completely the (Serial) ATA driver and enabling the old SATA
-driver is my work-around (a regresion).
-Installing linux with debian 4.0 is possible (kernel 2.6.18.4-amd64),
-but ubuntu crashes
-silently after loading kernel and initrd.image (I guess it is the same
-problem).
+Good ideas.  Perhaps a prefix of klog or kp_ instead?
+Given the number of 80 column zealots, character naming length matters.
 
-Description of the machine, dmesg output with kernel 2.6.22, lspci,
-modules, cpu, iomem, ioports, acpi-table as well as instalation story at
-http://www.df.uba.ar/~solari/acer.html
+> Additionally, this would allow the compiler to completely optimize out
+> calls that are below a certain log-level severity level [2][3].
 
-Hitachi 120Gb drive
-scsi 0:0:0:0: Direct-Access ATA Hitachi HTS54161 SBDO PQ: 0 ANSI: 5
+Severity doesn't really equate to desire to log.
+I'd prefer arbitrary control of log levels.
 
-ATI controller
-00:12.0 IDE interface: ATI Technologies Inc 4379 Serial ATA Controller
-(rev 80)
- (prog-if 8f [Master SecP SecO PriP PriO])
-Subsystem: Acer Incorporated [ALI] Unknown device 010f
-(pci.ids are up-to-day)
-
-The acpi system does not work either, but I have reported the problem to
-a more specific list.
-
-I can test patches in case you want.
-
-                               thanks for your attention
-                                                                        
-      Hernan
-
-
--- 
-Hernán Gustavo Solari, solari@df.uba.ar, http://www.df.uba.ar/~solari
+cheers, Joe
 
