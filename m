@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbXIWPlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbXIWPxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757417AbXIWPlB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 11:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbXIWPkv
+	id S1757230AbXIWPxn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 11:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbXIWPxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 11:40:51 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:21750 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754764AbXIWPku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 11:40:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Nb9ifN7e9/68Qk16NP77hlXCei+SlPm2NQGHFvNRx2hNHzwjo3M54Jnm+YSAWFklTi9KxhDQUv4Rv19JyoVrctiipGLJF4CPBiDnyglBY5KaHibbTYKdYxGZePLrgIuzYnPI1niVAxgXXRuCVVTYmisbw5r4b28Tre7vDdBZIVY=
-Message-ID: <64bb37e0709230840o599a4e39l18f85d4791c36d42@mail.gmail.com>
-Date: Sun, 23 Sep 2007 17:40:44 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: What's in linux-2.6-block.git for 2.6.24
-Cc: "Jens Axboe" <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <20070923151105.5d491df4@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 23 Sep 2007 11:53:35 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41163 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751659AbXIWPxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 11:53:35 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18upIJoCzEuPAht0FidCf3aUxMBaI/2IRP8THGNYS
+	+ma/c/CArvZi7i
+Subject: Re: [git] CFS-devel, updates
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Tong Li <tong.n.li@intel.com>, dimm <dmitry.adamushko@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20070923115847.GA13061@elte.hu>
+References: <1190188261.9185.21.camel@Homer.simpson.net>
+	 <1190191368.8687.5.camel@Homer.simpson.net>
+	 <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
+	 <1190264114.6411.4.camel@Homer.simpson.net>
+	 <1190272507.27867.20.camel@Homer.simpson.net>
+	 <20070920075155.GA31641@elte.hu>
+	 <1190275870.9232.6.camel@Homer.simpson.net>
+	 <Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
+	 <1190455308.7404.19.camel@Homer.simpson.net>
+	 <1190531662.11524.15.camel@Homer.simpson.net>
+	 <20070923115847.GA13061@elte.hu>
+Content-Type: text/plain
+Date: Sun, 23 Sep 2007 17:53:30 +0200
+Message-Id: <1190562810.6531.10.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070921085711.GG2367@kernel.dk>
-	 <64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
-	 <20070923151105.5d491df4@the-village.bc.nu>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/23/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > Sep 18 18:50:01 treogen [   63.440000] ata1.00: status: {DRDY }
-> > Sep 18 18:50:01 treogen [   63.440000] ata1: hard resetting link
->
-> Timed out waiting for data transfers to complete that didn't. Does sound
-> like the device got told the wrong sized transfer.
->
->
-> It then falls off the bus because Jeff hasn't merged Mark Lord's DRQ
-> draining patch.
+On Sun, 2007-09-23 at 13:58 +0200, Ingo Molnar wrote:
 
-One time the error was different:
-Sep 11 19:19:24 treogen [   33.340000] ata1.00: exception Emask 0x20
-SAct 0x1 SErr 0x0 action 0x2
-Sep 11 19:19:24 treogen [   33.340000] ata1.00: irq_stat 0x00020002,
-PCI master abort while fetching SGT
-Sep 11 19:19:24 treogen [   33.340000] ata1.00: cmd
-61/08:00:09:d6:42/00:00:25:00:00/40 tag 0 cdb 0x0 data 4096 out
-Sep 11 19:19:24 treogen [   33.340000]          res
-50/00:00:af:ea:42/00:00:25:00:00/e0 Emask 0x20 (host bus error)
-Sep 11 19:19:24 treogen [   33.340000] ata1.00: status: {DRDY }
-Sep 11 19:19:24 treogen [   33.670000] ata1: soft resetting link
-Sep 11 19:19:24 treogen [   33.710000] ata1: SATA link up 3.0 Gbps
-(SStatus 123 SControl 300)
-Sep 11 19:19:24 treogen [   33.800000] ata1.00: configured for UDMA/100
-Sep 11 19:19:24 treogen [   33.800000] ata1: EH complete
+> i'm also wondering - do we even need sync_vruntime() at all? Now that we 
+> fix up vruntime while we migrate tasks across rqs, the global notion of 
+> vruntime makes less and less of a sense.
 
-This was repeated 12 times.
-(Diff between a good boot and one with that error is here:
-http://lkml.org/lkml/2007/9/14/107 )
+Yeah, I was wondering that too, but it does seem to be needed.  If I
+make it a noop, and run the pinned tasks with an unpinned make -j2 test,
+Xorg at nice -5 still takes hits...
 
-Torsten
+se.wait_max              :            11.513462
+se.wait_max              :             6.250911
+se.wait_max              :            15.181511
+se.wait_max              :           188.963625
+se.wait_max              :             4.951569
+se.wait_max              :            11.391749
+
+...which begs the question "gee, what happens if I pin a nice 0 hog to
+CPU0, and a nice 19 hog to CPU1 with the queues never ever syncing?".
+
+The answer to that one seems to be "Don't even think about it!".  This
+needs more investigation... there's gotta be a 32 bit thingie hiding in
+there.  I lost control for a few seconds, got it back, then lost it
+again forever (sysrq-b worked though, hmm).
+
+	-Mike
+
