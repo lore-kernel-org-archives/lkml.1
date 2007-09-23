@@ -1,131 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbXIWBU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbXIWBVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbXIWBU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 21:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbXIWBUV
+	id S1753692AbXIWBVG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 21:21:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbXIWBUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 21:20:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:63880 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbXIWBUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 21:20:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jAItCzwIQ9Hk2a1SM6ovbMV0B+QdbkqNDzRxuO977yNBmCvoie2Z5SGKcVqFIgLVRpMmCbSegfC0ZeDXthSm4dGxC+N0lbZuKhh9cBIQ+SHaM8EM3Kwt8lRnSso9ZOyr3RrHaBZ77tLLAovOGc2pl7uUzN/c0mGXupsjhhYPDP8=
-Message-ID: <86802c440709221820y5dfdca5fmd74da31146bf78d9@mail.gmail.com>
-Date: Sat, 22 Sep 2007 18:20:18 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: [PATCH] [9/50] i386: validate against ACPI motherboard resources
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Andi Kleen" <ak@suse.de>,
-       rajesh.shah@intel.com, jbarnes@virtuousgeek.org, greg@kroah.com,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-In-Reply-To: <46F588D7.2030109@shaw.ca>
+	Sat, 22 Sep 2007 21:20:55 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:54327 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752194AbXIWBUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 21:20:53 -0400
+Message-ID: <390510451.02278@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 23 Sep 2007 09:20:49 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Hugh Dickins <hugh@veritas.com>, Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       spamtrap@knobisoft.de
+Subject: Re: 2.6.23-rc6-mm1 -- mkfs stuck in 'D'
+Message-ID: <20070923012049.GA6010@mail.ustc.edu.cn>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070919164348.GC2519@shadowen.org> <Pine.LNX.4.64.0709192035370.14804@blonde.wat.veritas.com> <20070919224409.24baa75b@lappy> <Pine.LNX.4.64.0709201210470.13752@blonde.wat.veritas.com> <390426111.11400@ustc.edu.cn> <20070922151622.711178e2@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200709221231.836138000@suse.de>
-	 <20070921223207.7BBE71479D@wotan.suse.de>
-	 <86802c440709212349l3d968d1bgdc89e7c7415b54da@mail.gmail.com>
-	 <46F542A4.9080207@shaw.ca> <1190484117.4035.71.camel@chaos>
-	 <46F56208.90208@shaw.ca>
-	 <86802c440709221340h2cbbf423y239f399ab5da815d@mail.gmail.com>
-	 <46F588D7.2030109@shaw.ca>
+In-Reply-To: <20070922151622.711178e2@lappy>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/22/07, Robert Hancock <hancockr@shaw.ca> wrote:
-> Yinghai Lu wrote:
-> > On 9/22/07, Robert Hancock <hancockr@shaw.ca> wrote:
-> >> Thomas Gleixner wrote:
-> >>> On Sat, 2007-09-22 at 10:28 -0600, Robert Hancock wrote:
-> >>>> Yinghai Lu wrote:
-> >>>>> No!
-> >>>>>
-> >>>>> MMCONFIG will not work with acpi=off any more.
-> >>>> I don't think this is unreasonable. The ACPI MCFG table is how we are
-> >>>> supposed to learn about the area in the first place. If we can't get the
-> >>>> table location via an approved mechanism, and can't validate it doesn't
-> >>>> overlap with another memory reservation or something, I really don't
-> >>>> think we should be using it.
-> >>> We all know how correct ACPI tables are. Specifications are nice,
-> >>> reality tells a different story.
-> >> MMCONFIG can't be used without ACPI in any case unless we know where the
-> >>   table is using chipset-specific knowledge (i.e. reading the registers
-> >> directly). Doing that without being told that this area is really
-> >> intended to be used, via the ACPI table, is dangerous, i.e. we don't
-> >> necessarily know if the MMCONFIG is broken on the platform in some way
-> >> we can't detect.
-> >
-> > the BIOS get these info from the chipset too.
-> > for AMD Fam 10h opteron, we can read that MSR for MMCONFIG base.
-> >
-> >>>> I don't think it's much of an issue anyway - the chances that somebody
-> >>>> will want to run without ACPI on a system with MCFG are pretty low given
-> >>>> that you'll end up losing a bunch of functionality (not least of which
-> >>>> is multi-cores).
-> >>> acpi=off is an often used debug switch and it _is_ quite useful. Taking
-> >>> away debug functionality is not a good idea.
-> >> If someone has to turn ACPI off, disabling MMCONFIG is probably the
-> >> least of their worries..
-> >
-> > MMCONFIG has nothing to do ACPI..., just becase MCFG in the ACPI, we
-> > must use ACPI for MMCONFIG?
->
-> config PCI_MMCONFIG
->           bool
->           depends on PCI && ACPI && (PCI_GOMMCONFIG || PCI_GOANY)
->           default y
->
-> We already depend on ACPI for MMCONFIG support at compile time. This
-> patch does not change that.
->
-> We could conceivably skip the validation if ACPI was disabled, though
-> this would only make a difference in the few cases where we can detect
-> the MMCONFIG area without it (looks like currently only Intel E7520 and
-> 945, at least in mainline).
+On Sat, Sep 22, 2007 at 03:16:22PM +0200, Peter Zijlstra wrote:
+> On Sat, 22 Sep 2007 09:55:09 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn>
+> wrote:
+> 
+> > --- linux-2.6.22.orig/mm/page-writeback.c
+> > +++ linux-2.6.22/mm/page-writeback.c
+> > @@ -426,6 +426,14 @@ static void balance_dirty_pages(struct a
+> >  			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> >  		}
+> >  
+> > +		printk(KERN_DEBUG "balance_dirty_pages written %lu %lu congested %d limits %lu %lu %lu %lu %lu %ld\n",
+> > +				pages_written,
+> > +				write_chunk - wbc.nr_to_write,
+> > +				bdi_write_congested(bdi),
+> > +				background_thresh, dirty_thresh,
+> > +				bdi_thresh, bdi_nr_reclaimable, bdi_nr_writeback,
+> > +				bdi_thresh - bdi_nr_reclaimable - bdi_nr_writeback);
+> > +
+> >  		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> >  			break;
+> >  		if (pages_written >= write_chunk)
+> > 
+> 
+> > [ 1305.361511] balance_dirty_pages written 0 0 congested 0 limits 48869 195477 5801 5760 288 -247
+> 
+> <snip long series of mostly identical lines>
+> 
+> Could you perhaps instrument the writeback_inodes() path to see why
+> nothing is written out? - the attached patch would be a nice start.
 
-can you make pci_mmcfg_late_init take one parameter about if acpi is
-there or not?
+Curiously the lockup problem disappeared after upgrading to 2.6.23-rc6-mm1.
+(need to watch it in a longer time window).
 
-so in acpi_init will be
+Anyway here's the output of your patch:
+        sb_locked 0
+        sb_empty 97011
 
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index 9ba778a..a4a6a6f 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -746,6 +746,7 @@ static int __init acpi_init(void)
+> Most peculiar. It seems writeback_inodes() doesn't even attempt to
+> write out stuff. Nor are outstanding writeback pages completed.
 
-        if (acpi_disabled) {
-                printk(KERN_INFO PREFIX "Interpreter disabled.\n");
-+               pci_mmcfg_late_init(0);
-                return -ENODEV;
-        }
+Still true. Another problem is that balance_dirty_pages() is being called even
+when there are only 54 dirty pages. That could slow down writers unnecessarily.
 
-@@ -757,6 +758,7 @@ static int __init acpi_init(void)
-        result = acpi_bus_init();
+balance_dirty_pages() should not be entered at all with small nr_dirty.
 
-        if (!result) {
-+               pci_mmcfg_late_init(1);
- #ifdef CONFIG_PM_LEGACY
-                if (!PM_IS_ACTIVE())
-                        pm_active = 1;
-@@ -767,8 +769,10 @@ static int __init acpi_init(void)
-                        result = -ENODEV;
+Look at these lines:
+[  197.471619] balance_dirty_pages for tar written 405 405 congested 0 global 196554 54 403 196097 bdi 0 0 398 -398
+[  197.472196] balance_dirty_pages for tar written 405 0 congested 0 global 196554 54 372 196128 bdi 0 0 380 -380
+[  197.472893] balance_dirty_pages for tar written 405 0 congested 0 global 196554 54 372 196128 bdi 23 0 369 -346
+[  197.473158] balance_dirty_pages for tar written 405 0 congested 0 global 196554 54 372 196128 bdi 23 0 366 -343
+[  197.473403] balance_dirty_pages for tar written 405 0 congested 0 global 196554 54 372 196128 bdi 23 0 365 -342
+[  197.473674] balance_dirty_pages for tar written 405 0 congested 0 global 196554 54 372 196128 bdi 23 0 364 -341
+[  197.474265] balance_dirty_pages for tar written 405 0 congested 0 global 196554 54 372 196128 bdi 23 0 362 -339
+[  197.475440] balance_dirty_pages for tar written 405 0 congested 0 global 196554 54 341 196159 bdi 47 0 327 -280
+[  197.476970] balance_dirty_pages for tar written 405 0 congested 0 global 196546 54 279 196213 bdi 95 0 279 -184
+[  197.477773] balance_dirty_pages for tar written 405 0 congested 0 global 196546 54 248 196244 bdi 95 0 255 -160
+[  197.479463] balance_dirty_pages for tar written 405 0 congested 0 global 196546 54 217 196275 bdi 143 0 210 -67
+[  197.479656] balance_dirty_pages for tar written 405 0 congested 0 global 196546 54 217 196275 bdi 143 0 209 -66
+[  197.481159] balance_dirty_pages for tar written 405 0 congested 0 global 196546 54 155 196337 bdi 167 0 163 4
+
+The trace messages are generated by the following code:
+
+--- linux-2.6.23-rc6-mm1.orig/mm/page-writeback.c
++++ linux-2.6.23-rc6-mm1/mm/page-writeback.c
+@@ -421,6 +421,18 @@ static void balance_dirty_pages(struct a
+                        bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
                 }
- #endif
--       } else
-+       } else {
-+               pci_mmcfg_late_init(0);
-                disable_acpi();
-+       }
 
-        return result;
- }
++               printk(KERN_DEBUG "balance_dirty_pages for %s written %lu %lu congested %d "
++                               "global %lu %lu %lu %ld bdi %lu %lu %lu %ld\n",
++                               current->comm,
++                               pages_written, write_chunk - wbc.nr_to_write,
++                               bdi_write_congested(bdi),
++                               dirty_thresh,
++                               global_dirty_unstable_pages(), global_page_state(NR_WRITEBACK),
++                               dirty_thresh -
++                               global_dirty_unstable_pages() - global_page_state(NR_WRITEBACK),
++                               bdi_thresh, bdi_nr_reclaimable, bdi_nr_writeback,
++                               bdi_thresh - bdi_nr_reclaimable - bdi_nr_writeback);
++               
+                if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+                        break;
+                if (pages_written >= write_chunk)
 
-YH
+
