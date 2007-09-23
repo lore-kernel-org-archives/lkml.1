@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbXIWM2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbXIWMix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571AbXIWM2B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 08:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbXIWM1y
+	id S1756235AbXIWMix (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 08:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXIWMir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 08:27:54 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:53415 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbXIWM1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 08:27:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=cYN87QRcCu3Edt3YisMC2Fmjfvr4U1lPeN284Q9M9PPSXnyxpDC/dPYUQGke7V8styFN16My5KcX8hyBFR3orXPlMY8dU4weGKV7w4TC/rQ+sJFRcNvVFiGWUQOXaKVtpZ7SZ1Ku5UV4m2+TVOnkbZplraLIXjE/RIwedELQlGc=
-Date: Sun, 23 Sep 2007 20:26:53 +0800
-From: lepton <ytht.net@gmail.com>
-To: jdike@karaya.com
-Cc: lkm <linux-kernel@vger.kernel.org>
-Subject: [PATCH] 2.6.22.6 user-mode linux: fix error in check_sysemu
-Message-ID: <20070923122653.GA17386@router.lepton.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Sun, 23 Sep 2007 08:38:47 -0400
+Received: from echo.digadd.de ([195.47.195.234]:45195 "EHLO mx2.digadd.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751935AbXIWMiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 08:38:46 -0400
+Message-ID: <46F65E56.8090701@digadd.de>
+Date: Sun, 23 Sep 2007 15:38:46 +0300
+From: "Christian P. Schmidt" <charlie@digadd.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: Memory allocation problem with 2.6.22 after suspend/resume cycle
+References: <46F53793.3020102@digadd.de> <200709230000.09722.rjw@sisk.pl>
+In-Reply-To: <200709230000.09722.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  it is a error do count++ here, it will let the following compare (after 8 lines)   " if (!count)" always be false.
+Rafael J. Wysocki wrote:
+> On Saturday, 22 September 2007 17:41, Christian P. Schmidt wrote:
+>> Hi all,
+>>
+>> I'm having a strange problem, of course not reproducible. Sometimes
+>> after a suspend (to ram) and resume cycle, the kernel will try to free
+>> all memory. This means, all running applications are flushed to swap (as
+>> long as it is available), caches and buffers stay at around 15MB each.
+>>
+>> The following video (traded quality for bandwidth) shows what happens on
+>> the way from no swap to "swapon -a" (that's the unreadable thing in the
+>> small shell): http://digadd.de/swapping.avi
+>>
+>> The system:
+>> Linux dnnote 2.6.22.5 #1 SMP PREEMPT Sat Aug 25 18:39:21 AST 2007 x86_64
+>> Intel(R) Core(TM)2 CPU T7400 @ 2.16GHz GenuineIntel GNU/Linux
+> 
+> Are you using an ATI binary graphics driver?
 
-Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+Yes. I do not (yet) have a choice... can't wait for the open source drivers.
 
-diff -X linux-2.6.22.6/Documentation/dontdiff -pr -U 8 linux-2.6.22.6/arch/um/os-Linux/start_up.c linux-2.6.22.6-uml/arch/um/os-Linux/start_up.c
---- linux-2.6.22.6/arch/um/os-Linux/start_up.c	2007-09-14 17:41:10.000000000 +0800
-+++ linux-2.6.22.6-uml/arch/um/os-Linux/start_up.c	2007-09-23 20:14:08.000000000 +0800
-@@ -250,17 +250,16 @@ static void __init check_sysemu(void)
- 	non_fatal("Checking advanced syscall emulation patch for ptrace...");
- 	pid = start_ptraced_child(&stack);
- 
- 	if((ptrace(PTRACE_OLDSETOPTIONS, pid, 0,
- 		   (void *) PTRACE_O_TRACESYSGOOD) < 0))
- 		fatal_perror("check_ptrace: PTRACE_OLDSETOPTIONS failed");
- 
- 	while(1){
--		count++;
- 		if(ptrace(PTRACE_SYSEMU_SINGLESTEP, pid, 0, 0) < 0)
- 			goto fail;
- 		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
- 		if(n < 0)
- 			fatal_perror("check_ptrace : wait failed");
- 
- 		if(WIFSTOPPED(status) && (WSTOPSIG(status) == (SIGTRAP|0x80))){
- 			if (!count)
+
+>> A 32bit Kernel is unable to suspend/resume at all. No idea why. dmesg
+>> shows nothing, logs show nothing. Any ideas for debugging are welcome.
+> 
+> Well, that's interesting.
+> 
+> Can you try in the minimal configuration (ie. boot with init=/bin/bash,
+> mount /sys, mount /proc and run "echo mem > /sys/power/disk)?
+
+Which? the 32bit or the 64bit?
+
+Regards,
+Chris
+
+> Greetings,
+> Rafael
+
