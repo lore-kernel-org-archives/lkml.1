@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbXIWOEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbXIWOG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbXIWOEu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 10:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXIWOEl
+	id S1756741AbXIWOG4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 10:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbXIWOGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 10:04:41 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41310 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750756AbXIWOEj (ORCPT
+	Sun, 23 Sep 2007 10:06:49 -0400
+Received: from cavan.codon.org.uk ([78.32.9.130]:59410 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753819AbXIWOGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 10:04:39 -0400
-Date: Sun, 23 Sep 2007 15:11:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-Cc: "Jens Axboe" <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: What's in linux-2.6-block.git for 2.6.24
-Message-ID: <20070923151105.5d491df4@the-village.bc.nu>
-In-Reply-To: <64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
-References: <20070921085711.GG2367@kernel.dk>
-	<64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Sep 2007 10:06:48 -0400
+Date: Sun, 23 Sep 2007 15:06:16 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Oleg Verych <olecom@flower.upol.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       mihai.dontu@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Message-ID: <20070923140615.GA10006@srcf.ucam.org>
+References: <20070922220347.586903979@linutronix.de> <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org> <E1IZG8l-0002jB-2k@flower> <alpine.LFD.0.999.0709222008580.16478@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0709222008580.16478@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [patch 0/2] suspend/resume regression fixes
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sep 18 18:50:01 treogen [   63.440000] ata1.00: status: {DRDY }
-> Sep 18 18:50:01 treogen [   63.440000] ata1: hard resetting link
+On Sat, Sep 22, 2007 at 08:11:06PM -0700, Linus Torvalds wrote:
 
-Timed out waiting for data transfers to complete that didn't. Does sound
-like the device got told the wrong sized transfer.
+> From a "future behaviour" standpoint it would probably be interesting to 
+> hear whether Mihai can make his machine with not with the old IDE layer 
+> (which distributions are migrating away from) but with the ATA layer 
+> (libata) instead. It too should hopefully know about using ACPI to restore 
+> any ATA controller quirks.
 
+It does, but it's disabled by default. libata needs to be loaded with 
+noacpi=0.
 
-It then falls off the bus because Jeff hasn't merged Mark Lord's DRQ
-draining patch.
-
-Alan
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
