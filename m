@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXIWIp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbXIWJKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbXIWIp2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 04:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbXIWIpU
+	id S1757026AbXIWJKa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 05:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXIWJKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 04:45:20 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:47822 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbXIWIpT (ORCPT
+	Sun, 23 Sep 2007 05:10:23 -0400
+Received: from shards.monkeyblade.net ([198.137.202.13]:34236 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753887AbXIWJKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 04:45:19 -0400
-Date: Sun, 23 Sep 2007 10:45:17 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>,
-       holzheu <holzheu@linux.vnet.ibm.com>, Rob Landley <rob@landley.net>,
-       Dick Streefland <dick.streefland@altium.nl>
-Subject: Re: [RFC] New kernel-message logging API
-In-Reply-To: <19f34abd0709230139s56b9a9b1yc2cae89488ea5112@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0709231044290.15712@fbirervta.pbzchgretzou.qr>
-References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com> 
- <1190506383.30132.11.camel@localhost> <19f34abd0709230139s56b9a9b1yc2cae89488ea5112@mail.gmail.com>
+	Sun, 23 Sep 2007 05:10:22 -0400
+X-Greylist: delayed 832 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Sep 2007 05:10:22 EDT
+Message-ID: <46F62A2A.60101@kernel.org>
+Date: Sun, 23 Sep 2007 01:56:10 -0700
+From: "J.H." <warthog9@kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: users@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [KORG] Downtime - Master & other servers
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Sep 23 2007 10:39, Vegard Nossum wrote:
->On 9/23/07, Joe Perches <joe@perches.com> wrote:
->> On Sat, 2007-09-22 at 21:27 +0200, Vegard Nossum wrote:
->> > #define kprint(fmt, ...)
->>
->> Good ideas.  Perhaps a prefix of klog or kp_ instead?
->> Given the number of 80 column zealots, character naming length matters.
->
->I don't know. Compare the following two lines:
->
->printk(KERN_INFO "Message.\n");
->kprint_info("Message.");
->
->By dropping the lengthy macro (it's not like it's going to change
->while we're running anyway, so why not make it a part of the function
->name?) and the final newline, we actually end up with a net decrease
->in line length.
->
->I thought it would be nice to have something that looks familiar,
->since that would ease an eventual transition. klog is a valid
->alternative, but isn't kp a bit cryptic?
+Good Evening,
 
-I'd rather fix up code to reduce its indent rather than
-trying microoptimizations at the function name level!
+Just a heads up master.kernel.org (hera) will be rebooted at roughly
+1900 UTC (1200 PDT), for a kernel update.  I apologize for the short
+notice as this is an unexpected downtime.  Estimated downtime should be
+less then five minutes.
+
+As always if you have questions, comments or concerns please e-mail
+ftpadmin@kernel.org.
+
+- - John 'Warthog9' Hawley
+Kernel.org Admin
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFG9iop/E3kyWU9dicRAsO6AJ0QTswAoRYRaIIZttDObhR7nWjoBQCfXKxw
+oXH3SD4ci4eCV7uor7xDyEw=
+=vxiW
+-----END PGP SIGNATURE-----
