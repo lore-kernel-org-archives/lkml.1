@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbXIWSgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbXIWSln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758527AbXIWSgS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 14:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756028AbXIWSgJ
+	id S1758252AbXIWSln (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 14:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbXIWSlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 14:36:09 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:49540 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755995AbXIWSgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 14:36:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=WwQsDSN//VOxQ4+TmnMqbw7nY3cWO19iSNBfb+GqazXdZou/nKFuFEwx7BneINFzaKSff6AldGU8mYWD/Pm1rrbNdtLluQFJlnLRtZP8i0DJBQjF0u34IspiT7xJ7b5z;
-Message-ID: <46F6B215.3050500@simon.arlott.org.uk>
-Date: Sun, 23 Sep 2007 19:36:05 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Sun, 23 Sep 2007 14:41:36 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:54508 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755928AbXIWSlf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 14:41:35 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 23 Sep 2007 11:41:32 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+cc: Ulrich Drepper <drepper@redhat.com>, geoff@gclare.org.uk,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Christoph Hellwig <hch@lst.de>,
+       Jonathan Corbet <corbet@lwn.net>, Randy Dunlap <rdunlap@xenotime.net>,
+       vda.linux@googlemail.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       =?X-UNKNOWN?Q?David_H=E4rdeman?= <david@hardeman.nu>
+Subject: Re: RFC: A revised timerfd API
+In-Reply-To: <Pine.LNX.4.64.0709231128070.22989@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0709231138260.22989@alien.or.mcafeemobile.com>
+References: <46EF7DDA.2070401@gmx.net> <Pine.LNX.4.64.0709180936480.22956@alien.or.mcafeemobile.com>
+ <46F514C9.5010208@gmx.net> <Pine.LNX.4.64.0709221359190.22085@alien.or.mcafeemobile.com>
+ <46F6A37C.9010009@gmx.net> <Pine.LNX.4.64.0709231128070.22989@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Duncan Sands <duncan.sands@math.u-psud.fr>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 3/3] cxacru: Cleanup code by removing "ret = ret;" assignments
-References: <46F68708.6070409@simon.arlott.org.uk> <46F687E8.3010101@simon.arlott.org.uk> <200709231820.33086.duncan.sands@math.u-psud.fr>
-In-Reply-To: <200709231820.33086.duncan.sands@math.u-psud.fr>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23/09/07 17:20, Duncan Sands wrote:
-> On Sunday 23 September 2007 17:36:08 Simon Arlott wrote:
->> Cleanup code by removing "ret = ret;" assignments.
->> 
->> Signed-Off-By: Simon Arlott <simon@fire.lp0.eu>
+On Sun, 23 Sep 2007, Davide Libenzi wrote:
+
+> On Sun, 23 Sep 2007, Michael Kerrisk wrote:
 > 
-> Acked-by: Duncan Sands <baldrick@free.fr>
+> > I applied this patch against 2.6.27-rc7, and wired up the syscalls as shown
+> > in the definitions below.  When I ran the the program below, my system
+> > immediately froze.  Can you try it on your system please.
+> 
+> There's an hrtimer_init() missing in timerfd_create(). I'll refactor the 
+> patch.
 
-Nacked-by: Simon Arlott <simon@fire.lp0.eu>
+There's the case of a timerfd_gettime return status when the timerfd has 
+not been set yet (ie, soon after a timerfd_create), to handle.
+Current way is to return an (itimerspec) { 0, 0 }. Ok?
 
-I'm only going to create a merge conflict with myself with this :|
-It'll be included with 1/3 shortly.
 
--- 
-Simon Arlott
+
+- Davide
+
+
