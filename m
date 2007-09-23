@@ -1,97 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbXIWWWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbXIWW15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbXIWWWq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 18:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbXIWWWi
+	id S1756697AbXIWW15 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 18:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbXIWW1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 18:22:38 -0400
-Received: from mta-fs-be-07.sunrise.ch ([194.158.229.19]:43670 "EHLO
-	mail-fs.sunrise.ch" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753100AbXIWWWi convert rfc822-to-8bit (ORCPT
+	Sun, 23 Sep 2007 18:27:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:34646 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753133AbXIWW1t convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 18:22:38 -0400
-X-Greylist: delayed 1641 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Sep 2007 18:22:38 EDT
-Date: Sun, 23 Sep 2007 21:55:13 +0000
-Message-ID: <46E1184D0000CFD8@mta-fs-be-07.sunrise.ch>
-From: osth@freesurf.ch
-Subject: Xen kernel 2.6.23-rc7 bug at xen_mc_flush (arch/i386/xen/multicalls.c:68)
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
+	Sun, 23 Sep 2007 18:27:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=TLpW0g9Ez6A2xmswSm9eYxm04IYbRJw6/9UoDpZWqmt9nrxvUgKOZYk84yDoTTHvYvAnvrhgFIXV3WMhv/WM2SvdC4PkAbOICONLVoUV2lJOEX9T3RRDmJbrqiU0Ko7Et9QE474W4CPNKUrawEr0eX+gxm5ctmhaGBs9vDKjLes=
+Date: Mon, 24 Sep 2007 00:25:13 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Hector Martin <hector@marcansoft.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Coding FATX support for 2.6
+Message-Id: <20070924002513.f11d1546.diegocg@gmail.com>
+In-Reply-To: <46F6D1C3.2070208@marcansoft.com>
+References: <46F6D1C3.2070208@marcansoft.com>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using kernel 2.6.23-rc7 as xen domU client system I observe a kernel bug
-which occurs reproducibly when calling a shell from midnight commander F2
-context menu or with testcase given below  (However most other programs seem
-to
-be well behaved and do not trigger this bug). - A kernel compiled with debug
-info gives:
+El Sun, 23 Sep 2007 16:51:15 -0400, Hector Martin <hector@marcansoft.com> escribió:
 
-Kernel BUG at c01037dc [verbose debug info unavailable]
-invalid opcode: 0000 [#5]
-PREEMPT SMP
-...
-Call Trace:
-[<c0103de9>] <0> [<c015d1d1>] <0> [<c0190078>] <0> [<c012633e>] <0> [<c016fa54>]
-<0> [<c0106547>] <0> [<c01080d2>] <0> =======================
-...
-gdb) l *0xc01037dc
-0xc01037dc is in xen_mc_flush (arch/i386/xen/multicalls.c:68).
-63              } else
-64                      BUG_ON(b->argidx != 0);
-65
-66              local_irq_restore(flags);
-67
-68              BUG_ON(ret);
-69      }
-0xc0103de9 is in xen_exit_mmap (arch/i386/xen/multicalls.h:42).
-0xc015d1d1 is in exit_mmap (include/asm/paravirt.h:722).
-0xc0190078 is in load_script (fs/binfmt_script.c:19).
-0xc012633e is in mmput (kernel/fork.c:395).
-0xc016fa54 is in do_execve (fs/exec.c:1421).
-0xc0106547 is in sys_execve (arch/i386/kernel/process.c:793).
-No source file for address 0xc01080d2.
+> Most xbox-linux users are stuck using 2.4, since there is no FATX driver
+> for 2.6 and the 2.4 one is unmaintained. I've been thinking about
+> writing FATX support into 2.6, to finally end this problem (this is
+> basically the only thing holding up 2.6 for Xbox Linux distros). While I
+> have done a little kernel coding in the past, I've never messed with
+> filesystems in Linux and I'm not entirely sure what the best approach
+> would be here. I would like to do it in such a way that it can be
 
-/proc/cpuinfo: ...AMD Athlon(tm) X2 Dual Core Processor BE-2350 ...
-
-full info is at http://spblinux.de/xen/20070923/
-
-Same bug if preempt is disabled; same bug if vcpus is reduced to 1 in xen
-domU.
-
-Please cc to osth at freesurf.ch because I am not on the list.
-
-Christian Ostheimer
-
-testcase which triggers the bug:
-
-#!/bin/bash
-#
-# modified configure script: max commandline length test
-CONFIG_SHELL=/bin/bash
-i=0
-export teststring=ABCD
-    while (test "X"`$CONFIG_SHELL -c "echo X$teststring" 2>/dev/null` \
-	       = "XX$teststring") >/dev/null 2>&1 &&
-	    new_result=`expr "X$teststring" : ".*" 2>&1` &&
-	    lt_cv_sys_max_cmd_len=$new_result &&
-	    test $i != 17 # 1/2 MB should be enough
-    do 
-      i=`expr $i + 1`
-      teststring=$teststring$teststring
-    done
-    teststring=
-    # Add a significant safety factor because C++ compilers can tack on massive
-    # amounts of additional arguments before passing them to the linker.
-    # It appears as though 1/2 is a usable value.
-    echo `expr $lt_cv_sys_max_cmd_len \/ 2`
-
-
-Neu: Das erste ADSL-Abo ohne Monatsgebühr! Steigen Sie jetzt auf sunrise
-ADSL free um.
-http://www.sunrise.ch/privatkunden/iminternetsurfen/adsl/adsl_abosundpreise/adsl_gelegenheitssurfer/adsl_free.htm
-
-
-
+FUSE could be an acceptable solution.
