@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXIWSbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbXIWSdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbXIWSbV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 14:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbXIWSbI
+	id S1758209AbXIWSdR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 14:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618AbXIWSdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 14:31:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:31736 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbXIWSbH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 14:31:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=JgRJsLrxqA4ukqxnVDjPTPZ/K0v3qk4G9J5jE5XdNLo2CUp+QUgKrLJBindeL3ZhhiziL0BrlD6LQqcevT8NbqrbstBUzzJLBtJAC8Cs+M/XpY+tASRGo4AfXbYJcp5Co+gwrk3FcHfmymU3XOuajS4/j081StPe8QdeFuUnSqA=
-From: Mihai =?utf-8?q?Don=C8=9Bu?= <mihai.dontu@gmail.com>
-Organization: Home
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.23-rc7 + radeonfb/s2ram
-Date: Sun, 23 Sep 2007 21:31:02 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200709220828.00078.mihai.dontu@gmail.com> <200709231937.13595.mihai.dontu@gmail.com> <200709232051.39949.mihai.dontu@gmail.com>
-In-Reply-To: <200709232051.39949.mihai.dontu@gmail.com>
+	Sun, 23 Sep 2007 14:33:07 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:60437 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755474AbXIWSdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 14:33:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
+	b=C7H7vhkapR0G4JsY/tTUedDcX0UYAmKRuLW/ZaQmb1EuL9SgGguNRbqV25j+R8P37fytl6Za3BCBRqF8NZeaM04Iko8fPRE0SlO3M/zo8EogpldwZ4fi7S8zcTrLnG2G;
+Message-ID: <46F6B15E.7020601@simon.arlott.org.uk>
+Date: Sun, 23 Sep 2007 19:33:02 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200709232131.02348.mihai.dontu@gmail.com>
+To: Duncan Sands <duncan.sands@math.u-psud.fr>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 2/3] cxacru: Reduce initialisation delay
+References: <46F68708.6070409@simon.arlott.org.uk> <46F6879A.8040408@simon.arlott.org.uk> <200709231823.22957.duncan.sands@math.u-psud.fr>
+In-Reply-To: <200709231823.22957.duncan.sands@math.u-psud.fr>
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 23 September 2007, Mihai Donțu wrote:
-> I'll to do a full cleanup and start all over. I'm going to nail this thing down if
-> it's the last thing I do! (so help me God) :)
+On 23/09/07 17:23, Duncan Sands wrote:
+> Hi Simon,
+> 
+>> +	usb_info(usbatm, "started firmware\n");
+> ...
+>> +		usb_info(usbatm, "loaded config data\n");
+> 
+> maybe these should be debug messages.  When are they useful?
 
-  Found it!
+They are probably only useful as debug messages - although it 
+may be desirable to know when the configuration has been set.
 
-  The problem was "Framebuffer Console support". It was enabled by default in older
-  configs (like 2.6.22.7) but I think someone noticed this was bad and put it to
-  default N in newer (2.6.23-rc7); and since I reused the .config from 2.6.21.3 ...
 
-  So there, if one wants "ATI Radeon display support" on Radeon XPRESS 200M with
-  X using radeon_drv.so, *should* put "Framebuffer Console support" to N (if it's
-  not already).
 
-  Now all I have to do is figure out what's the equivalent of "vga=791" on the new
-  kernel (default text console looks really bad on my laptop).
-
-  Sorry for all the noise (and spam),
+Also... it doesn't make sense to load the configuration only 
+in heavy_init - if the configuration is changed then there's 
+no way in the module to resend it without powering the device 
+down and up. Some sysfs parameters to change configuration 
+could be useful... except there's no information as to what 
+these settings are.
 
 -- 
-Mihai Donțu
+Simon Arlott
