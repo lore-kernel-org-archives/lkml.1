@@ -1,83 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbXIWRtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbXIWRvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbXIWRtB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 13:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXIWRsw
+	id S1757201AbXIWRvx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 13:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbXIWRvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 13:48:52 -0400
-Received: from lazybastard.de ([212.112.238.170]:35801 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753644AbXIWRsv (ORCPT
+	Sun, 23 Sep 2007 13:51:46 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:38071 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754471AbXIWRvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 13:48:51 -0400
-Date: Sun, 23 Sep 2007 19:44:03 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Andrea Arcangeli <andrea@suse.de>,
-       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070923174402.GA15525@lazybastard.org>
-References: <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070915155100.GA21861@v2.random> <87tzpvy9cb.fsf@informatik.uni-tuebingen.de> <20070915223032.GA6708@v2.random> <20070916174657.GA2393@lazybastard.org> <alpine.LFD.0.999.0709161112410.16478@woody.linux-foundation.org> <20070916182136.GC2393@lazybastard.org> <alpine.LFD.0.999.0709161128350.16478@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+	Sun, 23 Sep 2007 13:51:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=cRPP6JEoS00GW1OhN5+q268vi0OB9ENfuQDA7OGORH0e+a9E1U//092loo1afQ1L+42ANgTwNLoJhsFIzCPUcY5SazhqQ4l0+YOD6Vu5P8RLUIDxXJg+1+fD9nRS8XMVsEjY9rRWHrSPjzlNOzmMfCNpXV3hT6BEzfnlO5h9MbE=
+From: Mihai =?utf-8?q?Don=C8=9Bu?= <mihai.dontu@gmail.com>
+Organization: Home
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 2.6.23-rc7 + radeonfb/s2ram
+Date: Sun, 23 Sep 2007 20:51:39 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200709220828.00078.mihai.dontu@gmail.com> <1190542810.3723.27.camel@localhost.localdomain> <200709231937.13595.mihai.dontu@gmail.com>
+In-Reply-To: <200709231937.13595.mihai.dontu@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.0.999.0709161128350.16478@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Disposition: inline
+Message-Id: <200709232051.39949.mihai.dontu@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 September 2007 11:44:09 -0700, Linus Torvalds wrote:
-> On Sun, 16 Sep 2007, Jörn Engel wrote:
+On Sunday 23 September 2007, Mihai Donțu wrote:
+> On Sunday 23 September 2007, Benjamin Herrenschmidt wrote:
+> > Heh, yup.
 > > 
-> > My approach is to have one for mount points and ramfs/tmpfs/sysfs/etc.
-> > which are pinned for their entire lifetime and another for regular
-> > files/inodes.  One could take a three-way approach and have
-> > always-pinned, often-pinned and rarely-pinned.
+> > There have been some radeonfb patches around -rc6 or so. Can you try
+> > backing them out and letting us know if that helps a) ?
 > > 
-> > We won't get never-pinned that way.
+> > In that case, Linus, we probably want to revert them...
+> > 
+> > Though looking at your PCI ID (5955), I don't think the patches should
+> > have changed anything.
 > 
-> That sounds pretty good. The problem, of course, is that most of the time, 
-> the actual dentry allocation itself is done before you really know which 
-> case the dentry will be in, and the natural place for actually giving the 
-> dentry lifetime hint is *not* at "d_alloc()", but when we "instantiate" 
-> it with d_add() or d_instantiate().
+> After four hours of bisecting, I got this, which dates back to 2.6.21, but
+> I've been on 2.6.21.3 for too long and thus missed the commit (I just decided
+> to be a good citizen and test things before they get out).
 > 
-> [...]
+> dd1447134454b169d5ae353aceb93f2368db8547 is first bad commit
+> commit dd1447134454b169d5ae353aceb93f2368db8547
+> Author: johan henriksson <jhn98032@gmail.com>
+> Date:   Tue May 8 00:37:59 2007 -0700
 > 
-> And yes, you'd end up with the reallocation overhead quite often, but at 
-> least it would now happen only when filling in a dentry, not in the 
-> (*much* more critical) cached lookup path.
+>     radeonfb: Add support for Radeon xpress 200m
+> 
+>     Added support for radeon xpress 200m(rs480).  Note that the card doesn't
+>     like dynclk turned on.
+> 
+>     Signed-off-by: Johan Henriksson <jhn98032@gmail.com>
+>     Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>     Cc: "Antonino A. Daplas" <adaplas@pol.net>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> :040000 040000 e553664a656ee329152789818b5b071a36ac1e45 0a698ad7daa8cdfd9eb5304812845306c9feb2f9 M      drivers
+> 
+> I turned dynclk off, no result (although dynclk is preferred).
+> 
+> What is interesting, is that the driver ignores "vga=normal" and "jumps" to
+> a quite high res (I think is 1024x768 or something; the fonts look really nice
+> though :)).
 
-There may be another approach.  We could create a never-pinned cache,
-without trying hard to keep it full.  Instead of moving a hot dentry at
-dput() time, we move a cold one from the end of lru.  And if the lru
-list is short, we just chicken out.
+  Something strange is going on here: after I cleaned up the bisect kernels,
+  I booted 2.6.23-rc7 using something like:
+  "vga=normal nohz=on root=/dev/sda7 libata.noacpi=0 pci=assing-busses"
+  and explicitly selecting "Enable Video Mode Handling Helpers" (which normally
+  gets automatically selected once I choose "ATI Radeon display support" but I
+  - suffering from intense paranoia - selected it by hand prior to selecting ATI
+  Radeon ...).
 
-Our definition of "short lru list" can either be based on a ratio of
-pinned to unpinned dentries or on a metric of cache hits vs. cache
-misses.  I tend to dislike the cache hit metric, because updatedb would
-cause tons of misses and result in the same mess we have right now.
+  I works! X is no longer acting weird. I can't use "vga=791" anymore (the screen
+  goes blank until X loads => timings definitely changed) but it *works* and I don't
+  know why _and_ I can't seem to be able to make it go back to being bad :)
+  
+  I did a diff between the .config used in bisect and the current .config. I don't
+  see anything suspicious.
 
-With this double cache, we have a source of slabs to cheaply reap under
-memory pressure, but still have a performance advantage (memcpy beats
-disk io by orders of magnitude).
-
-Jörn
+  I'll to do a full cleanup and start all over. I'm going to nail this thing down if
+  it's the last thing I do! (so help me God) :)
 
 -- 
-The story so far:
-In the beginning the Universe was created.  This has made a lot
-of people very angry and been widely regarded as a bad move.
--- Douglas Adams
+Mihai Donțu
