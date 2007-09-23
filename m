@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbXIWMix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbXIWMqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbXIWMix (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 08:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXIWMir
+	id S1755417AbXIWMqR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 08:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbXIWMqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 08:38:47 -0400
-Received: from echo.digadd.de ([195.47.195.234]:45195 "EHLO mx2.digadd.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751935AbXIWMiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 08:38:46 -0400
-Message-ID: <46F65E56.8090701@digadd.de>
-Date: Sun, 23 Sep 2007 15:38:46 +0300
-From: "Christian P. Schmidt" <charlie@digadd.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: Memory allocation problem with 2.6.22 after suspend/resume cycle
-References: <46F53793.3020102@digadd.de> <200709230000.09722.rjw@sisk.pl>
-In-Reply-To: <200709230000.09722.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
+	Sun, 23 Sep 2007 08:46:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35882 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751935AbXIWMqE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 08:46:04 -0400
+Date: Sun, 23 Sep 2007 13:45:59 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: "David J. Wilder" <dwilder@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [Patch 2/2] Relay reset consumend
+Message-ID: <20070923124559.GA8064@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"David J. Wilder" <dwilder@us.ibm.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <1190177220.3190.19.camel@lc4eb748232119.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190177220.3190.19.camel@lc4eb748232119.ibm.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Saturday, 22 September 2007 17:41, Christian P. Schmidt wrote:
->> Hi all,
->>
->> I'm having a strange problem, of course not reproducible. Sometimes
->> after a suspend (to ram) and resume cycle, the kernel will try to free
->> all memory. This means, all running applications are flushed to swap (as
->> long as it is available), caches and buffers stay at around 15MB each.
->>
->> The following video (traded quality for bandwidth) shows what happens on
->> the way from no swap to "swapon -a" (that's the unreadable thing in the
->> small shell): http://digadd.de/swapping.avi
->>
->> The system:
->> Linux dnnote 2.6.22.5 #1 SMP PREEMPT Sat Aug 25 18:39:21 AST 2007 x86_64
->> Intel(R) Core(TM)2 CPU T7400 @ 2.16GHz GenuineIntel GNU/Linux
-> 
-> Are you using an ATI binary graphics driver?
+On Tue, Sep 18, 2007 at 09:46:59PM -0700, David J. Wilder wrote:
+> This patch allows relay channels to be reset i.e. unconsumed.
+> Basically allows a 'rewind' function for flight-recorder tracing.
 
-Yes. I do not (yet) have a choice... can't wait for the open source drivers.
+This should be patch 1 because relay_reset_consumed is used by
+the other patch.
 
+> +/**
+> + *	__relay_reset_consumed - reset a channel buffer's consumed count
+> + *	@buf: the channel buffer
+> + *
+> + *	See relay_reset_consumed for description of effect.
+> + */
+> +static inline void __relay_reset_consumed(struct rchan_buf *buf)
 
->> A 32bit Kernel is unable to suspend/resume at all. No idea why. dmesg
->> shows nothing, logs show nothing. Any ideas for debugging are welcome.
-> 
-> Well, that's interesting.
-> 
-> Can you try in the minimal configuration (ie. boot with init=/bin/bash,
-> mount /sys, mount /proc and run "echo mem > /sys/power/disk)?
-
-Which? the 32bit or the 64bit?
-
-Regards,
-Chris
-
-> Greetings,
-> Rafael
+Please don't mark functions explicitly inline unless needed.
 
