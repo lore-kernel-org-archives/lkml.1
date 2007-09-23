@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbXIWAre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbXIWBEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbXIWAre (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Sep 2007 20:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXIWAr0
+	id S1754091AbXIWBEf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Sep 2007 21:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbXIWBE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Sep 2007 20:47:26 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:4377 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbXIWAr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Sep 2007 20:47:26 -0400
-Subject: Re: [RFC] New kernel-message logging API
-From: Joe Perches <joe@perches.com>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       holzheu <holzheu@linux.vnet.ibm.com>, Rob Landley <rob@landley.net>,
-       Dick Streefland <dick.streefland@altium.nl>
-In-Reply-To: <BD6BFDD9-65C4-4780-BAF8-975A5A25913C@mac.com>
-References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
-	 <1190506383.30132.11.camel@localhost>
-	 <BD6BFDD9-65C4-4780-BAF8-975A5A25913C@mac.com>
-Content-Type: text/plain
-Date: Sat, 22 Sep 2007 17:47:21 -0700
-Message-Id: <1190508441.30132.15.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Sep 2007 21:04:28 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:40485 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbXIWBE2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Sep 2007 21:04:28 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, mihai.dontu@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch 0/2] suspend/resume regression fixes
+In-Reply-To: <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org>
+References: <20070922220347.586903979@linutronix.de> <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org>
+Date: Sun, 23 Sep 2007 03:20:07 +0200
+Message-Id: <E1IZG8l-0002jB-2k@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-22 at 20:40 -0400, Kyle Moffett wrote:
-> Severity is *exactly* "desirability of logging".
+* Sat, 22 Sep 2007 15:59:25 -0700 (PDT)
 
-Disagree.
+As i never had any suspend working ever, let me point this LKML post
 
-What's info to someone is an alert to someone else.
-The problem is the valuation of the reasoning.
+http://mid.gmane.org/200709221746.14429.mihai.dontu@gmail.com
 
-It's all opinion.
+from Mihal, who just managed to do some other magic in sligtly
+different context (maybe yet another anti "ACPI screwed up").
 
-cheers, Joe
-
+Mihai, you can find whole thread by above URL, requesting message-ids
+from in-reply-to or references headers of this message.
+_____
