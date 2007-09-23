@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbXIWPxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbXIWQIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbXIWPxn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 11:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbXIWPxf
+	id S1757311AbXIWQIR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 12:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbXIWQIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 11:53:35 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41163 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751659AbXIWPxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 11:53:35 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18upIJoCzEuPAht0FidCf3aUxMBaI/2IRP8THGNYS
-	+ma/c/CArvZi7i
-Subject: Re: [git] CFS-devel, updates
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tong Li <tong.n.li@intel.com>, dimm <dmitry.adamushko@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20070923115847.GA13061@elte.hu>
-References: <1190188261.9185.21.camel@Homer.simpson.net>
-	 <1190191368.8687.5.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
-	 <1190264114.6411.4.camel@Homer.simpson.net>
-	 <1190272507.27867.20.camel@Homer.simpson.net>
-	 <20070920075155.GA31641@elte.hu>
-	 <1190275870.9232.6.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
-	 <1190455308.7404.19.camel@Homer.simpson.net>
-	 <1190531662.11524.15.camel@Homer.simpson.net>
-	 <20070923115847.GA13061@elte.hu>
-Content-Type: text/plain
-Date: Sun, 23 Sep 2007 17:53:30 +0200
-Message-Id: <1190562810.6531.10.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sun, 23 Sep 2007 12:08:05 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:5910 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751405AbXIWQID (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 12:08:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:x-url:organization:user-agent:sender;
+        b=BDLCws7bwa1Tpyt7W2FEcHNhMZoIqnhflCmn3MIrPNgGB5JwCvdpfLkEoAXVqRSJBdybEVJuUMH65BUBtEh9Mut3yuk22dbEHvws8bAnemEL6+eoBWczsK4e4BykCFwVrjZWBe5rtmBf6WjB4+iXJWdM8n5lp39fJh26PL5IxBk=
+Date: Sun, 23 Sep 2007 13:07:50 -0300
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+To: Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: memset as memzero
+Message-ID: <20070923160750.GO4887@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+	Dave Jones <davej@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Cyrill Gorcunov <gorcunov@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>
+References: <20070922083355.GA7226@cvg> <20070922124659.741cca42@laptopd505.fenrus.org> <alpine.LFD.0.999.0709221149480.16478@woody.linux-foundation.org> <20070923153243.GE8127@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070923153243.GE8127@redhat.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+Organization: OOPS Labs
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-23 at 13:58 +0200, Ingo Molnar wrote:
+Em Sun, Sep 23, 2007 at 11:32:43AM -0400, Dave Jones escreveu:
+> On Sat, Sep 22, 2007 at 11:53:53AM -0700, Linus Torvalds wrote:
+>  > 
+>  > 
+>  > On Sat, 22 Sep 2007, Arjan van de Ven wrote:
+>  > > 
+>  > > it doesn't add value.... memset with a constant 0 is just as fast
+>  > > (since the compiler knows it's 0) than any wrapper around it, and the
+>  > > syntax around it is otherwise the same.
+>  > 
+>  > Indeed.
+>  > 
+>  > The reason we have "clear_page()" is not because the value we're writing 
+>  > is constant - that doesn't really help/change anything at all. We could 
+>  > have had a "fill_page()" that sets the value to any random byte, it's just 
+>  > that zero is the only value that we really care about.
+>  > 
+>  > So the reason we have "clear_page()" is because the *size* and *alignment* 
+>  > is constant and known at compile time, and unlike the value you write, 
+>  > that actually matters.
+>  > 
+>  > So "memzero()" would never really make sense as anything but a syntactic 
+>  > wrapper around "memset(x,0,size)". 
+> 
+> There is one useful argument for memzero (or bzero to give it its proper
+> name), and that's that it's impossible to screw up.
+> I'm still amazed at how many times I see
+> 
+> 	memset (x,size,0);
+> 
+> in various code. So much so, that my editor highlights it now to spot
+> it during code review.  As does my mail client.  To be on the safe
+> side, I also have a cron job grepping for it in my ~/Mail/commits
+> for all the projects I'm interested in.
+> 
+> It's tragic really just how easy it is to screw it up.
 
-> i'm also wondering - do we even need sync_vruntime() at all? Now that we 
-> fix up vruntime while we migrate tasks across rqs, the global notion of 
-> vruntime makes less and less of a sense.
+bzero! That is it, its nothing new, just a sane name to something that
+is useful to humans, even being of sheer arrogant disdain for machines
+as a useless stuff only humans couldn't get right. Yeah, us screw up
+pretty much more than them.
 
-Yeah, I was wondering that too, but it does seem to be needed.  If I
-make it a noop, and run the pinned tasks with an unpinned make -j2 test,
-Xorg at nice -5 still takes hits...
-
-se.wait_max              :            11.513462
-se.wait_max              :             6.250911
-se.wait_max              :            15.181511
-se.wait_max              :           188.963625
-se.wait_max              :             4.951569
-se.wait_max              :            11.391749
-
-...which begs the question "gee, what happens if I pin a nice 0 hog to
-CPU0, and a nice 19 hog to CPU1 with the queues never ever syncing?".
-
-The answer to that one seems to be "Don't even think about it!".  This
-needs more investigation... there's gotta be a 32 bit thingie hiding in
-there.  I lost control for a few seconds, got it back, then lost it
-again forever (sysrq-b worked though, hmm).
-
-	-Mike
-
+- Arnaldo
