@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbXIXUlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbXIXUoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbXIXUlr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 16:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXIXUlj
+	id S1754475AbXIXUoZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 16:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbXIXUoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 16:41:39 -0400
-Received: from main.gmane.org ([80.91.229.2]:48604 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbXIXUli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 16:41:38 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH] Remove broken netfilter binary sysctls from bridging
- code
-Date: Mon, 24 Sep 2007 13:14:58 -0700
-Organization: Linux Foundation
-Message-ID: <20070924131458.0daa4562@freepuppy.rosehill>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070921020554.GE31759@nineveh.local>
-	<m1fy18k5ru.fsf@ebiederm.dsl.xmission.com>
-	<46F7EC0A.9030506@trash.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
-In-Reply-To: <46F7EC0A.9030506@trash.net>
-X-Newsreader: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+	Mon, 24 Sep 2007 16:44:17 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:60959 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751395AbXIXUoQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 16:44:16 -0400
+Date: Mon, 24 Sep 2007 16:44:08 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Jaswinder Singh <jaswinderlinux@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-rt-users@vger.kernel.org
+Message-ID: <20070924204408.GA4748@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 18:55:38 +0200
-Patrick McHardy <kaber@trash.net> wrote:
+linux-rt-users@vger.kernel.org
+Bcc: 
+Subject: Re: realtime preemption performance difference
+Reply-To: 
+In-Reply-To: <3f9a31f40709240448h4a9e8337t437328b5c675ecd5@mail.gmail.com>
 
-> Eric W. Biederman wrote:
-> > jfannin@gmail.com (Joseph Fannin) writes:
-> > 
-> > 
-> >>The netfilter sysctls in the bridging code don't set strategy routines:
-> >>
-> >> sysctl table check failed: /net/bridge/bridge-nf-call-arptables .3.10.1 Missing
-> >>strategy
-> >> sysctl table check failed: /net/bridge/bridge-nf-call-iptables .3.10.2 Missing
-> >>strategy
-> >> sysctl table check failed: /net/bridge/bridge-nf-call-ip6tables .3.10.3 Missing
-> >>strategy
-> >> sysctl table check failed: /net/bridge/bridge-nf-filter-vlan-tagged .3.10.4
-> >>Missing strategy
-> >> sysctl table check failed: /net/bridge/bridge-nf-filter-pppoe-tagged .3.10.5
-> >>Missing strategy
-> >>
-> >>    These binary sysctls can't work. The binary sysctl numbers of
-> >>other netfilter sysctls with this problem are being removed.  These
-> >>need to go as well.
-> >>
-> >>Signed-off-by: Joseph Fannin <jfannin@gmail.com>
-> > 
-> > 
-> > Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+On Mon, Sep 24, 2007 at 05:18:01PM +0530, Jaswinder Singh wrote:
+> Hi all,
 > 
+> I want to check performance difference by using realtime preemption patch :
 > 
-> Queued for 2.6.24, thanks.
+> http://www.kernel.org/pub/linux/kernel/projects/rt/
 > 
-> > Hmm.  This is an interesting case.  The proc method is forcing
-> > the integer to be either 0 or 1 in a racy fashion.  But none of the
-> > users appear to depend upon that.
-> > 
-> > So this is the least broken set of binary sysctls I have seen caught
-> > by my check.
-> > 
-> > A really good fix would be to remove the binary side and then to
-> > modify brnf_sysctl_call_tables to allocate a temporary ctl_table and
-> > integer on the stack and only set ctl->data after we have normalized
-> > the written value.  But since in practice nothing cares about
-> > the race a better fix probably isn't worth it.
+> Please let me know from where I can download samples to test realtime
+> preemption performance difference.
 > 
+> Can someone please share performance numbers for your hardware:-
 > 
-> I seem to be missing something, the entire brnf_sysctl_call_tables
-> thing looks purely cosmetic to me, wouldn't it be better to simply
-> remove it?
+> 1. Interrupt latency
+> 2. Task switching time
+> 3. hard-realtime scheduling latency
+> 
 
+see http://rt.wiki.kernel.org/index.php/Main_Page
 
-I agree, removing seems like a better option.  But probably need to go
-through a 3-6mo warning period, since sysctl's are technically an API.
+There's also an RT mailing list for users (CC'd).
 
-
-
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
-
+-- Steve
