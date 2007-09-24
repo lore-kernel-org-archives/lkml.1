@@ -1,132 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbXIXV02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbXIXV05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757262AbXIXV02 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 17:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbXIXV0T
+	id S1758722AbXIXV05 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 17:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbXIXV0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 17:26:19 -0400
-Received: from mithrandir.softwarenexus.net ([66.98.186.96]:3786 "EHLO
-	mail.genesi-usa.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbXIXV0S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 17:26:18 -0400
-Message-ID: <46F82BCF.1020702@genesi-usa.com>
-Date: Mon, 24 Sep 2007 22:27:43 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: IDE broken on Pegasos PPC platform
-References: <46F80BB1.7050902@redhat.com>
-In-Reply-To: <46F80BB1.7050902@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Sep 2007 17:26:47 -0400
+Received: from pat.uio.no ([129.240.10.15]:59333 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753676AbXIXV0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 17:26:45 -0400
+Subject: Re: [NFS] [BUG] 2.6.23-rc5 kernel BUG at fs/nfs/nfs4xdr.c:945
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, bfields@fieldses.org,
+       neilb@suse.de, nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <46F80991.6010001@linux.vnet.ibm.com>
+References: <46E121B8.4080105@linux.vnet.ibm.com>
+	 <6bffcb0e0709071656o6881fa17y61818a9733293a4c@mail.gmail.com>
+	 <1189289549.13713.4.camel@localhost.localdomain>
+	 <46E54156.8060706@linux.vnet.ibm.com>
+	 <1190223091.6734.2.camel@heimdal.trondhjem.org>
+	 <46F80991.6010001@linux.vnet.ibm.com>
+Content-Type: multipart/mixed; boundary="=-66wfFotqyvYbgdOpVsSB"
+Date: Mon, 24 Sep 2007 17:26:12 -0400
+Message-Id: <1190669172.6700.20.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, AWL=0.021)
+X-UiO-Scanned: F8FC2D686BA9BF7F31F53990DE258E74B8972C3E
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 333 total 4082428 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yeah I'll ack it if it matters, although I'd make a nit about the
-fixing of device tree entries in prom_init and have it moved to
-nvramrc or a Forth script or boot loader..
 
-Pegasos IDE quirks have been "fixed" so many times now in Linux,
-this code's going to get reshuffled again in other changes, I
-think the device tree should be fixed at the firmware level and
-not in the kernel.
+--=-66wfFotqyvYbgdOpVsSB
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+On Tue, 2007-09-25 at 00:31 +0530, Kamalesh Babulal wrote:
+> > I'm mystified. I'm quite unable to reproduce this on my own setup: the
+> > ENAMETOOLONG error reporting mechanism prevents me from even getting
+> > near the above bug.
+> > 
+> > Could you add a little printk into the 'encode_lookup' routine on line
+> > 944 of fs/nfs/nfs4xdr.c to display the value of 'len'?
+> > 
+> > Cheers
+> >   Trond
+> 
+> Hi Trond,
+> 
+> Sorry, for replying so late, i have included the printk as you have requested.
+> 
+> len passed on encode_lookup [811]RESERVE_SPACE(819) failed in function encode_lookup
 
-Chuck Ebbert wrote:
-> Without this patch, taken from a Suse 2.6.22 kernel, the Pegasos
-> PPC machines can't use their IDE interface. Is this the right fix?
-> 
-> Bug:
-> https://bugzilla.redhat.com/show_bug.cgi?id=247602
-> Patch (also below):
-> https://bugzilla.redhat.com/attachment.cgi?id=167747
-> 
-> ===============
-> 
-> The built-in IDE controller is configured in legacy mode,
-> but the PCI registers advertise native mode.
-> Force the PCI class into legacy mode. This allows pata_via to access
-> two drives.
-> The Pegasos specific irq enforcement in the via82cxxx driver
-> must stay because there is aparently no generic way to setup irq per channel.
-> 
-> Tested on Pegasos2 with firmware version 20040810, and two IDE disks.
-> 
-> ---
->  arch/powerpc/kernel/prom_init.c   |   11 ++++++++---
->  arch/powerpc/platforms/chrp/pci.c |   29 +++++++++++++++++++++++++++++
->  2 files changed, 37 insertions(+), 3 deletions(-)
-> 
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -2044,6 +2044,7 @@ static void __init fixup_device_tree_map
->  /*
->   * Pegasos and BriQ lacks the "ranges" property in the isa node
->   * Pegasos needs decimal IRQ 14/15, not hexadecimal
-> + * Pegasos has the IDE configured in legacy mode, but advertised as native
->   */
->  static void __init fixup_device_tree_chrp(void)
->  {
-> @@ -2081,9 +2082,13 @@ static void __init fixup_device_tree_chr
->  		prom_printf("Fixing up IDE interrupt on Pegasos...\n");
->  		prop[0] = 14;
->  		prop[1] = 0x0;
-> -		prop[2] = 15;
-> -		prop[3] = 0x0;
-> -		prom_setprop(ph, name, "interrupts", prop, 4*sizeof(u32));
-> +		prom_setprop(ph, name, "interrupts", prop, 2*sizeof(u32));
-> +		prom_printf("Fixing up IDE class-code on Pegasos...\n");
-> +		rc = prom_getprop(ph, "class-code", prop, sizeof(u32));
-> +		if (rc == sizeof(u32)) {
-> +			prop[0] &= ~0x5;
-> +			prom_setprop(ph, name, "class-code", prop, sizeof(u32));
-> +		}
->  	}
->  }
->  #else
-> --- a/arch/powerpc/platforms/chrp/pci.c
-> +++ b/arch/powerpc/platforms/chrp/pci.c
-> @@ -338,3 +338,32 @@ void chrp_pci_fixup_winbond_ata(struct p
->  }
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
->  		chrp_pci_fixup_winbond_ata);
-> +
-> +/* Pegasos2 firmware version 20040810 configures the built-in IDE controller
-> + * in legacy mode, but sets the PCI registers to PCI native mode.
-> + * The chip can only operate in legacy mode, so force the PCI class into legacy
-> + * mode as well. The same fixup must be done to the class-code property in
-> + * the IDE node /pci@80000000/ide@C,1
-> + */
-> +static void chrp_pci_fixup_vt8231_ata(struct pci_dev *viaide)
-> +{
-> +	u8 progif;
-> +	struct pci_dev *viaisa;
-> +
-> +	if (!machine_is(chrp) || _chrp_type != _CHRP_Pegasos)
-> +		return;
-> +	if (viaide->irq != 14)
-> +		return;
-> +
-> +	viaisa = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8231, NULL);
-> +	if (!viaisa)
-> +		return;
-> +	printk("Fixing VIA IDE, force legacy mode on '%s'\n", viaide->dev.bus_id);
-> +
-> +	pci_read_config_byte(viaide, PCI_CLASS_PROG, &progif);
-> +	pci_write_config_byte(viaide, PCI_CLASS_PROG, progif & ~0x5);
-> +	viaide->class &= ~0x5;
-> +
-> +	pci_dev_put(viaisa);
-> +}
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_1, chrp_pci_fixup_vt8231_ata);
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+OK. That is definitely wrong! We shouldn't be allowing anything > 255
+according to <limits.h>.
+
+Looks like that code in fs/nfs/client.c has been wrong since its
+inception in 2.6.18. Not only for NFSv4, but for NFSv2 and v3 too. We
+only caught it 'cos v4 has more stringent tests...
+
+Take two on the patch attached...
+
+Trond
+
+--=-66wfFotqyvYbgdOpVsSB
+Content-Disposition: inline; filename=linux-2.6.23-002-fix_nfs4_namelen.dif
+Content-Type: message/rfc822; name=linux-2.6.23-002-fix_nfs4_namelen.dif
+
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Sun, 9 Sep 2007 00:10:51 +0200
+NFS: Fix an Oops in encode_lookup()
+Subject: No Subject
+Message-Id: <1190669172.6700.21.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+It doesn't look as if the NFS file name limit is being initialised correctly
+in the struct nfs_server. Make sure that we limit whatever is being set in
+nfs_probe_fsinfo() and nfs_init_server().
+
+Also ensure that readdirplus and nfs4_path_walk respect our file name
+limits.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/client.c  |   29 +++++++++++++++++++----------
+ fs/nfs/dir.c     |    2 ++
+ fs/nfs/getroot.c |    3 +++
+ 3 files changed, 24 insertions(+), 10 deletions(-)
+
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index a49f9fe..a204484 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -588,16 +588,6 @@ static int nfs_init_server(struct nfs_server *server, const struct nfs_mount_dat
+ 	server->namelen  = data->namlen;
+ 	/* Create a client RPC handle for the NFSv3 ACL management interface */
+ 	nfs_init_server_aclclient(server);
+-	if (clp->cl_nfsversion == 3) {
+-		if (server->namelen == 0 || server->namelen > NFS3_MAXNAMLEN)
+-			server->namelen = NFS3_MAXNAMLEN;
+-		if (!(data->flags & NFS_MOUNT_NORDIRPLUS))
+-			server->caps |= NFS_CAP_READDIRPLUS;
+-	} else {
+-		if (server->namelen == 0 || server->namelen > NFS2_MAXNAMLEN)
+-			server->namelen = NFS2_MAXNAMLEN;
+-	}
+-
+ 	dprintk("<-- nfs_init_server() = 0 [new %p]\n", clp);
+ 	return 0;
+ 
+@@ -794,6 +784,16 @@ struct nfs_server *nfs_create_server(const struct nfs_mount_data *data,
+ 	error = nfs_probe_fsinfo(server, mntfh, &fattr);
+ 	if (error < 0)
+ 		goto error;
++	if (server->nfs_client->rpc_ops->version == 3) {
++		if (server->namelen == 0 || server->namelen > NFS3_MAXNAMLEN)
++			server->namelen = NFS3_MAXNAMLEN;
++		if (!(data->flags & NFS_MOUNT_NORDIRPLUS))
++			server->caps |= NFS_CAP_READDIRPLUS;
++	} else {
++		if (server->namelen == 0 || server->namelen > NFS2_MAXNAMLEN)
++			server->namelen = NFS2_MAXNAMLEN;
++	}
++
+ 	if (!(fattr.valid & NFS_ATTR_FATTR)) {
+ 		error = server->nfs_client->rpc_ops->getattr(server, mntfh, &fattr);
+ 		if (error < 0) {
+@@ -984,6 +984,9 @@ struct nfs_server *nfs4_create_server(const struct nfs4_mount_data *data,
+ 	if (error < 0)
+ 		goto error;
+ 
++	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
++		server->namelen = NFS4_MAXNAMLEN;
++
+ 	BUG_ON(!server->nfs_client);
+ 	BUG_ON(!server->nfs_client->rpc_ops);
+ 	BUG_ON(!server->nfs_client->rpc_ops->file_inode_ops);
+@@ -1056,6 +1059,9 @@ struct nfs_server *nfs4_create_referral_server(struct nfs_clone_mount *data,
+ 	if (error < 0)
+ 		goto error;
+ 
++	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
++		server->namelen = NFS4_MAXNAMLEN;
++
+ 	dprintk("Referral FSID: %llx:%llx\n",
+ 		(unsigned long long) server->fsid.major,
+ 		(unsigned long long) server->fsid.minor);
+@@ -1115,6 +1121,9 @@ struct nfs_server *nfs_clone_server(struct nfs_server *source,
+ 	if (error < 0)
+ 		goto out_free_server;
+ 
++	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
++		server->namelen = NFS4_MAXNAMLEN;
++
+ 	dprintk("Cloned FSID: %llx:%llx\n",
+ 		(unsigned long long) server->fsid.major,
+ 		(unsigned long long) server->fsid.minor);
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index ea97408..e4a04d1 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1162,6 +1162,8 @@ static struct dentry *nfs_readdir_lookup(nfs_readdir_descriptor_t *desc)
+ 	}
+ 	if (!desc->plus || !(entry->fattr->valid & NFS_ATTR_FATTR))
+ 		return NULL;
++	if (name.len > NFS_SERVER(dir)->namelen)
++		return NULL;
+ 	/* Note: caller is already holding the dir->i_mutex! */
+ 	dentry = d_alloc(parent, &name);
+ 	if (dentry == NULL)
+diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
+index d1cbf0a..522e5ad 100644
+--- a/fs/nfs/getroot.c
++++ b/fs/nfs/getroot.c
+@@ -175,6 +175,9 @@ next_component:
+ 		path++;
+ 	name.len = path - (const char *) name.name;
+ 
++	if (name.len > NFS4_MAXNAMLEN)
++		return -ENAMETOOLONG;
++
+ eat_dot_dir:
+ 	while (*path == '/')
+ 		path++;
+
+--=-66wfFotqyvYbgdOpVsSB--
+
