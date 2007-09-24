@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbXIXQLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbXIXQOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760046AbXIXQLa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbXIXQLX
+	id S1759941AbXIXQOU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756411AbXIXQON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:11:23 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:51237 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755798AbXIXQLX (ORCPT
+	Mon, 24 Sep 2007 12:14:13 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:46202 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755257AbXIXQOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:11:23 -0400
-Message-ID: <46F7E18D.2000205@linux.vnet.ibm.com>
-Date: Mon, 24 Sep 2007 21:40:53 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7B3B3.7010600@linux.vnet.ibm.com> <46F7B737.4020001@openvz.org> <46F7B9C6.4000901@linux.vnet.ibm.com> <46F7D8EE.4000201@openvz.org>
-In-Reply-To: <46F7D8EE.4000201@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Sep 2007 12:14:12 -0400
+Date: Mon, 24 Sep 2007 09:13:10 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: David Wilder <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [Patch 1/2] Trace code and documentation (resend)
+Message-Id: <20070924091310.c306df35.randy.dunlap@oracle.com>
+In-Reply-To: <20070924154114.GA25368@infradead.org>
+References: <1190435014.27362.16.camel@lc4eb748232119.ibm.com>
+	<20070922093508.GC27827@infradead.org>
+	<46F7D9FA.3090108@us.ibm.com>
+	<20070924154114.GA25368@infradead.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov wrote:
-> Balbir Singh wrote:
->> Pavel Emelyanov wrote:
->>> Please, try with this patch too:
->>>
->>> diff --git a/fs/locks.c b/fs/locks.c
->>> index c0fe71a..f599508 100644
->>> --- a/fs/locks.c
->>> +++ b/fs/locks.c
->>> @@ -1423,7 +1423,7 @@ int generic_setlease(struct file *filp, 
->>>  	locks_copy_lock(new_fl, lease);
->>>  	locks_insert_lock(before, new_fl);
->>>
->>> -	*flp = fl;
->>> +	*flp = new_fl;
->>>  	return 0;
->>>
->>>  out:
->>>
->> Hi, Pavel,
->>
->> You did not signoff on the patch.
-> 
-> I did not, but this is just a patch to test. I know, that it
-> most likely fixes the problem, but since Kamalesh didn't tell
-> us how he had triggered it, I'd like him to Ack it :)
-> 
-> Thanks,
-> Pavel
-> 
-> 
+On Mon, 24 Sep 2007 16:41:14 +0100 Christoph Hellwig wrote:
 
-Ok, just wanted to let you know in case you missed it out.
-In case Andrew picked it up. That's all!
+> On Mon, Sep 24, 2007 at 08:38:34AM -0700, David Wilder wrote:
+> > >NACK, don't put code into Documentation/.  Put it into kernel as it's
+> > >actually useful kernel code.  
+> > 
+> > Are you suggesting moving the example code into kernel? Or complaining 
+> > about example code in /Documentation?
+> 
+> Both.  example code should be integrated with the build system so it
+> gets built.
+
+How about if we build the sample files in the Documentation/ tree?
+
+with added Kconfig, Makefiles etc.
 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> > And add clone,exec and exit while you're at it.
+> > 
+> > Hu?  A syscall tracer sounds like a nice idea but that is not what I am 
+> > trying to accomplish.  I will let Systemtap handle that.
+> 
+> Systemtap doesn't help anyone as it's not in the tree.  I haven't even
+> asked you to provide a full system call tracing modulem but provide at
+> least one that's useful for a certain use-case (looking at processes)
+> instead of almost useless code.
+
+---
+~Randy
+Phaedrus says that Quality is about caring.
