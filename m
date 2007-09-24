@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbXIXQbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761487AbXIXQbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759324AbXIXQbI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760569AbXIXQZy
+	id S1761487AbXIXQbc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760215AbXIXQZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:25:54 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:47363 "EHLO
+	Mon, 24 Sep 2007 12:25:56 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47376 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760387AbXIXQZv (ORCPT
+	with ESMTP id S1760273AbXIXQZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:25:51 -0400
-Date: Mon, 24 Sep 2007 09:20:53 -0700
+	Mon, 24 Sep 2007 12:25:55 -0400
+Date: Mon, 24 Sep 2007 09:20:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,49 +21,59 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [17/50] Fix debug regression in video/pwc
-Message-ID: <20070924162053.GR13510@kroah.com>
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [18/50] splice: fix direct splice error handling
+Message-ID: <20070924162057.GS13510@kroah.com>
 References: <20070924161246.983665021@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-debug-regression-in-video-pwc.patch"
+Content-Disposition: inline; filename="splice-fix-direct-splice-error-handling.patch"
 In-Reply-To: <20070924161733.GA13510@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Jens Axboe <jens.axboe@oracle.com>
 
-Commit 85237f202d46d55c1bffe0c5b1aa3ddc0f1dce4d introduced the
-following warning:
-drivers/media/video/pwc/pwc-if.c: In function "pwc_video_close":
-drivers/media/video/pwc/pwc-if.c:1211: warning: "i" may be used uninitialized in this function
+This is a splice patch for 2.6.22 and 2.6.21 (and earlier, I did not
+check. Let me know if you still maintain older stable trees!). It fixes
+an infinite loop in do_splice_direct(), when there's either nothing to
+read or nothing to write and blocking doesn't help. It could be things
+like running out of disk space. We need to exit both for failure and
+zero return, or we could be going around forever.
 
-This is true, and can cause a broken debug message to be logged.
-Here's a fix.
+This got fixed in 2.6.23-git with commit 51a92c0f6ce8fa85fa0e18ecda1d847e606e8066
 
-Fix is already in Linus' tree for 2.6.23:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7b9fbc3e30f785412a26819aa4daf0b6c27f6c53
+Herbert Poetzl <herbert@13thfloor.at> noticed this bug in 2.6.22, and
+has verified that this minimal fix works.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/pwc/pwc-if.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/splice.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/media/video/pwc/pwc-if.c
-+++ b/drivers/media/video/pwc/pwc-if.c
-@@ -1243,7 +1243,7 @@ static int pwc_video_close(struct inode 
- 				PWC_ERROR("Failed to power down camera (%d)\n", i);
- 		}
- 		pdev->vopen--;
--		PWC_DEBUG_OPEN("<< video_close() vopen=%d\n", i);
-+		PWC_DEBUG_OPEN("<< video_close() vopen=%d\n", pdev->vopen);
- 	} else {
- 		pwc_cleanup(pdev);
- 		/* Free memory (don't set pdev to 0 just yet) */
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -1011,7 +1011,7 @@ long do_splice_direct(struct file *in, l
+ 		max_read_len = min(len, (size_t)(PIPE_BUFFERS*PAGE_SIZE));
+ 
+ 		ret = do_splice_to(in, ppos, pipe, max_read_len, flags);
+-		if (unlikely(ret < 0))
++		if (unlikely(ret <= 0))
+ 			goto out_release;
+ 
+ 		read_len = ret;
+@@ -1023,7 +1023,7 @@ long do_splice_direct(struct file *in, l
+ 		 */
+ 		ret = do_splice_from(pipe, out, &out_off, read_len,
+ 				     flags & ~SPLICE_F_NONBLOCK);
+-		if (unlikely(ret < 0))
++		if (unlikely(ret <= 0))
+ 			goto out_release;
+ 
+ 		bytes += ret;
 
 -- 
