@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759380AbXIXPjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbXIXPkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759380AbXIXPjc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 11:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbXIXPjY
+	id S1760128AbXIXPkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 11:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbXIXPju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 11:39:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39858 "EHLO gir.skynet.ie"
+	Mon, 24 Sep 2007 11:39:50 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34801 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755947AbXIXPjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 11:39:23 -0400
-Date: Mon, 24 Sep 2007 16:39:21 +0100
-To: Chris Holvenstot <cholvenstot@comcast.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>, dwmw2@infradead.org
-Subject: Re: Mask Issue?
-Message-ID: <20070924153920.GB32550@skynet.ie>
-References: <1190242676.16474.6.camel@localhost>
+	id S1757881AbXIXPjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 11:39:49 -0400
+Date: Mon, 24 Sep 2007 17:39:46 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+Cc: Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Message-ID: <20070924153946.GI4608@v2.random>
+References: <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070915155100.GA21861@v2.random> <20070916181504.GB16406@skynet.ie> <20070916185052.GG6708@v2.random> <87lkb643ug.fsf@informatik.uni-tuebingen.de> <20070918193102.GC7541@v2.random> <87d4w97tug.fsf@informatik.uni-tuebingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1190242676.16474.6.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+In-Reply-To: <87d4w97tug.fsf@informatik.uni-tuebingen.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (19/09/07 17:57), Chris Holvenstot didst pronounce:
-> Still being a little new at this I am not sure if this is an issue at
-> all or not but I noted that while building the 2.6.23-rc6-git8 kernel
-> this afternoon I received the following error message: 
-> 
-> Building modules, stage 2.
->   MODPOST 1670 modules
-> WARNING: Can't handle masks in drivers/mtd/nand/cafe_nand:FFFF0
-> 
-> I have been building each of the kernels in the 2.6.23-rc series and had
-> not noted this message before.  I apologize if this is a non-issue.
-> 
+On Sun, Sep 23, 2007 at 08:56:39AM +0200, Goswin von Brederlow wrote:
+> As a user I know it because I didn't put a kernel source into /tmp. A
+> programm can't reasonably know that.
 
-I noticed this in a -mm recently and never got around to kicking it
-properly because I suspected it was a compiler issue. What version
-of gcc and binutils are you using?
+Various apps requires you (admin/user) to tune the size of their
+caches. Seems like you never tried to setup a database, oh well.
 
-David Woodhouse added to cc in case this is a known problem.
+> Xen has its own memory pool and can quite agressively reclaim memory
+> from dom0 when needed. I just ment to say that the number in
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+The whole point is if there's not enough ram of course... this is why
+you should check.
+
+> /proc/meminfo can change in a second so it is not much use knowing
+> what it said last minute.
+
+The numbers will change depending on what's running on your
+system. It's up to you to know plus I normally keep vmstat monitored
+in the background to see how the cache/free levels change over
+time. Those numbers are worthless if they could be fragmented...
+
+> I would kill any programm that does that to find out how much free ram
+> the system has.
+
+The admin should do that if he's unsure, not a program of course!
