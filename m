@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbXIXMiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbXIXMjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758656AbXIXMiZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 08:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbXIXMiR
+	id S1758712AbXIXMjq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 08:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbXIXMji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 08:38:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40217 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756102AbXIXMiQ (ORCPT
+	Mon, 24 Sep 2007 08:39:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:45757 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756044AbXIXMjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 08:38:16 -0400
-Date: Mon, 24 Sep 2007 13:38:13 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, trond.myklebust@fys.uio.no, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [patch 2/2] VFS: allow filesystem to override mknod capability checks
-Message-ID: <20070924123813.GB17409@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Miklos Szeredi <miklos@szeredi.hu>, trond.myklebust@fys.uio.no,
-	adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu> <E1IZn0c-0003qS-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IZn0c-0003qS-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 24 Sep 2007 08:39:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=S1DzfMgmW9Qr1xfBk81SAmRsl362RCd0Y/cphMPhGKUSxH75Xs7IWKbWkFS8RwYPAPOjrgMfVFFgfKxZdm/74UWUXBdR5ftSwGLFoqV1OJe+3CEepwyCLJOf6jOVFJyiKxOWCrA5oQz81FiDUJh9JbhvXaE+3y5V6Q1ppxQcuzs=
+Message-ID: <46F7B006.40309@gmail.com>
+Date: Mon, 24 Sep 2007 14:39:34 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Antoine Zen-Ruffinen <antoine.zen@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Compilation problem with kernel 2.6.9
+References: <2cbbd8de0709240252x34d4d66ci6bd2e20e397a7cc1@mail.gmail.com>
+In-Reply-To: <2cbbd8de0709240252x34d4d66ci6bd2e20e397a7cc1@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 02:25:54PM +0200, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
+On 09/24/2007 11:52 AM, Antoine Zen-Ruffinen wrote:
+> Hello,
 > 
-> Add a new super block flag, that results in the VFS not checking if
-> the current process has enough privileges to do an mknod().
+> I tried to compile the kernel 2.6.9 because I want to use it with
+> RTLinux and that the only 2.6.x kernel supported. I used gcc 2.95.3 as
+> recommended.
+> But I have an error by compilation of process.c :
 > 
-> If this flag is set, all mounts for this super block will have the
-> "nodev" flag implied.
+>   CC      arch/i386/kernel/process.o
+> {standard input}: Assembler messages:
+> {standard input}:777: Error: suffix or operands invalid for `mov'
+> {standard input}:778: Error: suffix or operands invalid for `mov'
+> {standard input}:978: Error: suffix or operands invalid for `mov'
+> {standard input}:979: Error: suffix or operands invalid for `mov'
+> {standard input}:1051: Error: suffix or operands invalid for `mov'
+> {standard input}:1052: Error: suffix or operands invalid for `mov'
+> {standard input}:1161: Error: suffix or operands invalid for `mov'
+> {standard input}:1162: Error: suffix or operands invalid for `mov'
+> {standard input}:1172: Error: suffix or operands invalid for `mov'
+> {standard input}:1184: Error: suffix or operands invalid for `mov'
+> make[1]: *** [arch/i386/kernel/process.o] Error 1
+> make: *** [arch/i386/kernel] Error 2
 > 
-> This is needed on filesystems, where an unprivileged user may be able
-> to create a device node, without causing security problems.
-> 
-> One such example is "mountlo" a loopback mount utility implemented
-> with fuse and UML, which runs as an unprivileged userspace process.
-> In this case the user does in fact have the right to create device
-> nodes within the filesystem image, as long as the user has write
-> access to the image.  Since the filesystem is mounted with "nodev",
-> adding device nodes is not a security concern.
+> Can someone help me ?
 
-This one looks okay, but I'd prefer to not put it in until we actually
-have proper non-privilegued mounts.
+Probably use older binutils, your gas is too new and doesn't like the input.
 
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
