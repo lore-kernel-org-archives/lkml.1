@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbXIXSUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761679AbXIXSWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761767AbXIXSUH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761407AbXIXSTw
+	id S1761679AbXIXSWP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758518AbXIXSWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:19:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54641 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761192AbXIXSTv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:19:51 -0400
-Date: Mon, 24 Sep 2007 19:19:47 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 4/7] Linux Kernel Markers - Architecture Independent Code
-Message-ID: <20070924181947.GB3810@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	"Frank Ch. Eigler" <fche@redhat.com>,
-	Rusty Russell <rusty@rustcorp.com.au>
-References: <20070924164950.006047409@polymtl.ca> <20070924165427.717587684@polymtl.ca> <20070924174817.GB1608@infradead.org> <Pine.LNX.4.64.0709241413450.22210@localhost.localdomain>
-Mime-Version: 1.0
+	Mon, 24 Sep 2007 14:22:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60717 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754502AbXIXSV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 14:21:59 -0400
+Date: Mon, 24 Sep 2007 14:21:26 -0400
+From: Dave Jones <davej@redhat.com>
+To: David Newall <david@davidnewall.com>
+Cc: Antoine Martin <antoine@nagafix.co.uk>, tytso@thunk.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: bug in fsck or ext2/ext3?
+Message-ID: <20070924182125.GN11455@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	David Newall <david@davidnewall.com>,
+	Antoine Martin <antoine@nagafix.co.uk>, tytso@thunk.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
+References: <46F7EC47.9010803@nagafix.co.uk> <20070924170439.GF8127@redhat.com> <46F7FEF9.2070702@davidnewall.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709241413450.22210@localhost.localdomain>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <46F7FEF9.2070702@davidnewall.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 02:15:12PM -0400, Robert P. J. Day wrote:
-> On Mon, 24 Sep 2007, Christoph Hellwig wrote:
-> 
-> > static inline void __mark_check_format(const char *fmt, ...)
-> > 		__attribute__ ((format (printf, 1, 2)))
-> > {
-> > }
-> 
-> the header file compiler-gcc.h defines the shorter macro "__printf".
-> is it worth encouraging its use, or does it matter?
+On Tue, Sep 25, 2007 at 03:46:25AM +0930, David Newall wrote:
+ > Dave Jones wrote:
+ > > On Mon, Sep 24, 2007 at 05:56:39PM +0100, Antoine Martin wrote:
+ > >
+ > >  > # rm -fr tmp/chroot.broken
+ > >  > rm: cannot remove directory (...)
+ > >  > Same result when trying to do anything to those files chown/chmod/touch:
+ > >  > "Operation not permitted"
+ > >
+ > > Various files in the directories it complains about have their 'i'
+ > > bit set.  lsattr will show you.   chattr -i those files, and the
+ > > directory is removable again.
+ > 
+ > Additionally, this is a classic symptom of malware.  A directory  named 
+ > "..." is a big hint.
 
-Yes, that's even better.
+That was "..." as in "more stuff follows" rather than the actual name
+being reported.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
