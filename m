@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761869AbXIXRxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761668AbXIXRyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761869AbXIXRxG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 13:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958AbXIXRwz
+	id S1761668AbXIXRyY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 13:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbXIXRyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 13:52:55 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:64601 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756139AbXIXRwz (ORCPT
+	Mon, 24 Sep 2007 13:54:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41225 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754358AbXIXRyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 13:52:55 -0400
-Date: Mon, 24 Sep 2007 13:52:52 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/7] Seq_file add support for sorted list
-Message-ID: <20070924175252.GA28347@Krystal>
-References: <20070924164950.006047409@polymtl.ca> <20070924165426.841607414@polymtl.ca> <20070924173759.GA1608@infradead.org>
+	Mon, 24 Sep 2007 13:54:15 -0400
+Date: Mon, 24 Sep 2007 18:54:11 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
+Message-ID: <20070924175411.GA2314@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Dave Hansen <haveblue@us.ibm.com>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org
+References: <20070920195249.852667D5@kernel> <20070920195320.38C8E20D@kernel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070924173759.GA1608@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:47:48 up 56 days, 18:06,  6 users,  load average: 1.53, 1.20, 1.45
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070920195320.38C8E20D@kernel>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Mon, Sep 24, 2007 at 12:49:51PM -0400, Mathieu Desnoyers wrote:
-> > Add support for sorted list in seq_file. It aims at changing the way
-> > /proc/modules and kallsyms iterates on the module list to remove a race between
-> > module unload and module/symbol listing.
-> > 
-> > The list is sorted by ascending list_head pointer address.
-> 
-> While I think we really want this patch I don't quite see how it's
-> related to the markers.  I think patch 1 and 2 stand on their own.
-> 
+As we already say in various messages the percpu counters in here
+look rather fishy.  I'd recomment to take a look at the per-cpu
+superblock counters in XFS as they've been debugged quite well
+now and could probably be lifted into a generic library for this
+kind of think.  The code is mostly in fs/xfs/xfs_mount.c can
+can be spotted by beeing under #ifdef HAVE_PERCPU_SB.
 
-As they are currently implemented, the markers use the sorted module
-list for marker listing, but I can change their implementation so they
-do not require this (and make it a subsequent patch instead).
+It also handles cases like hotplug cpu nicely that this code
+seems to work around by always iterating over all possible cpus
+which might not be nice on a dual core laptop with a distro kernel
+that also has to support big iron.
 
-I could do that to diminish the patchset size a little more. However, it
-implies using an interface with a known race condition. Could we just
-post this as two different patchsets instead ? I really think the sorted
-module list would be important to get in and I don't like to use buggy
-unfixed lower level functions.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
