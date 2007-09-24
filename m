@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbXIXHiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbXIXHlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757155AbXIXHiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 03:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXIXHir
+	id S1756888AbXIXHlQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 03:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXIXHlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 03:38:47 -0400
-Received: from web52004.mail.re2.yahoo.com ([206.190.49.251]:37174 "HELO
-	web52004.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751310AbXIXHiq convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 03:38:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=kg2JxPbX1ZNkWh1AF9ZqpWgvmadp6IGVNdAexjbC8+dOTO6uyV1sCzdUXpmMgYF9dOpUna9hgcEAuGrQpS3XDDZOJgRZfKMhaUjbtavPUwnj8JcTIsQ5OWoS15I8vRqqYTbbdi7+qhPdQOhfLMR6mNR/vh4xxprlIYXi5QcvOwk=;
-X-YMail-OSG: 0yN726wVM1kbM8yxuOhBnwLyuNePKgMk_u81MH2tJZRdksn9vzC8weykOdOErj37qhGPq.9zQk9fWGsYHMRpS7lHi32gvMjRG9tudAhSkD67lHmyF6yyxz_sC5UL9_tO0Z4VmHYvh_gr7KdrdchDfnGPfw--
-X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
-Date: Mon, 24 Sep 2007 00:38:45 -0700 (PDT)
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: [PATCH] include/linux/mutex.h: unclear reference to convention
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <377076.1597.qm@web52004.mail.re2.yahoo.com>
+	Mon, 24 Sep 2007 03:41:09 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:46436 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751756AbXIXHlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 03:41:08 -0400
+Date: Mon, 24 Sep 2007 09:43:23 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-ID: <20070924074323.GA2480@ff.dom.local>
+References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local> <46F398C3.3000804@bull.net> <20070921110347.GB1758@ff.dom.local> <20070924065407.GA1776@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070924065407.GA1776@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap <randy.dunlap@oracle.com>:
-> Another convention is that we put kernel-doc with the implementation
-> (i.e., in .c files) when possible, not with the function prototype.
-> Of course, for inline functions or macros in header files, that's
-> where the kernel-doc has to live.
->
-> so we don't need this patch.
+On Mon, Sep 24, 2007 at 08:54:07AM +0200, Jarek Poplawski wrote:
+> After rethinking, this scenario seems to be wrong or very unprobable
+> (I'm not sure of all ways "if (--container...)" could be compiled),
+> so there should be no such risk - double kfree/vfree is more probable,
+> so no danger. More likely is such refcount abuse: ipc_rcu_getref() in
+> do_msgsnd() done a bit after ipc_rcu_putref() in freeque() (msq
+> pointer acquired by do_msgsend() before freeque() started); then,
+> after schedule(), do_msgsnd() can work with kfreed msq_queue structure
+> (at least considering classic RCU).
 
- You should not expect that every reader of the kernel files is aware of 
-that convention. I was not and therefore I sought referenced files for 
-some time.
+I see this scenario is even more impossible, so you were right,
+it's all right at this point.
 
-
-
-
-
-      Machen Sie Yahoo! zu Ihrer Startseite. Los geht's: 
-http://de.yahoo.com/set
+Jarek P.
