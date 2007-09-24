@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759095AbXIXSqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbXIXSsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759095AbXIXSqI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:46:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760262AbXIXSp3
+	id S1761544AbXIXSsV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758166AbXIXSsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:45:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57461 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760147AbXIXSp2 (ORCPT
+	Mon, 24 Sep 2007 14:48:07 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:51167 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757558AbXIXSsE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:45:28 -0400
-Date: Mon, 24 Sep 2007 19:45:22 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Denys Vlasenko <vda.linux@googlemail.com>
-Subject: Re: [patch 4/7] Linux Kernel Markers - Architecture Independent Code
-Message-ID: <20070924184522.GA5013@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	"Frank Ch. Eigler" <fche@redhat.com>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Denys Vlasenko <vda.linux@googlemail.com>
-References: <20070924164950.006047409@polymtl.ca> <20070924165427.717587684@polymtl.ca> <20070924174817.GB1608@infradead.org> <20070924184309.GB28347@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Sep 2007 14:48:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bpaW3OlsMQ3jQDxvQZIzS9OwuGX4+Y1pN4iJ51XbbUjoi1sLyXQfDi86S60G9902ne8Q3kP/wto+bhLx2N3fXLdiDs2g18PMM51RIuMLZi9fzxus95C3bnRlWaq7UGrgU/4epLsd1wl1VAz+tGIcu2nNWDLnBzCfZxTlmEf3b2Q=
+Message-ID: <64bb37e0709241148r58a99403k5f51f364de64eeb5@mail.gmail.com>
+Date: Mon, 24 Sep 2007 20:48:03 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "FUJITA Tomonori" <tomof@acm.org>
+Subject: Re: What's in linux-2.6-block.git for 2.6.24
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+In-Reply-To: <64bb37e0709230831t16eaa86dub5abcb97fdce12eb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070924184309.GB28347@Krystal>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <20070921085711.GG2367@kernel.dk>
+	 <64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
+	 <20070923225320I.tomof@acm.org>
+	 <64bb37e0709230831t16eaa86dub5abcb97fdce12eb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 02:43:09PM -0400, Mathieu Desnoyers wrote:
-> gcc doesn't like it if I put the attribute after the function in the
-> implementation. Should I leave it before or separate the prototype from
-> the implementation ?
+On 9/23/07, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> On 9/23/07, FUJITA Tomonori <tomof@acm.org> wrote:
+> > Can you try Jens's sglist-arch branch? If it works, probably libata in
+> > -mm has bugs.
+> >
+> > For your convenience, I put a sglist-arch branch patch against v2.6.23-rc7:
+> >
+> > http://www.kernel.org/pub/linux/kernel/people/tomo/misc/v2.6.23-rc7-sglist-arch.diff.bz2
+>
+> Thanks for the patch.
+> I tried it and 3 out of 3 boot attempts worked without problems.
+> But I can't rule out that the bug is still there, as I have no way to
+> trigger it on demand.
 
-Just keep it where it was.
+Short update:
+2 more boots with that kernel did also work.
+I have just installed 2.6.23-rc7-mm1 and booted three times.
+Also no problems with that version.
 
-> > There seem to be a lot of exports and some functions that don't seem
-> > to be used by the obvious marker use-cases like your example, blktrace
-> > or sputrace.  Care to explain why we'd really want them or better cut
-> > them out for this first submission?
-> 
-> If you are referring to the exports you just told about in this email,
-> I'll remove them, they are not needed. As for the "marker_get_iter" and
-> friends, they are used to list the markers (I provide a /proc interface
-> to list the markers in the subsequent modules and also use it to dump
-> the marker list in a trace channel at trace start so I can later
-> understand the event data by using the format strings as type
-> identifiers).
+I will keep on using 2.6.23-rc7-mm1 and post again, if the error shows up again.
 
-Sounds conceptually fine, but can we introduce this together with
-the actualy users?
+Torsten
