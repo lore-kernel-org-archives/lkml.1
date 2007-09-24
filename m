@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbXIXWGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbXIXWG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760233AbXIXWGN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 18:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbXIXWF6
+	id S1760526AbXIXWG5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 18:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbXIXWGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 18:05:58 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:44673 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755441AbXIXWF5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 18:05:57 -0400
-Message-ID: <46F834BD.2040704@tiscali.nl>
-Date: Tue, 25 Sep 2007 00:05:49 +0200
-From: roel <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       Jiri Kosina <jkosina@suse.cz>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [42/50] Fix ipv6 source address handling.
-References: <20070924161246.983665021@mini.kroah.org> <20070924162227.GQ13510@kroah.com>
-In-Reply-To: <20070924162227.GQ13510@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Sep 2007 18:06:48 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42997 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754412AbXIXWGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 18:06:47 -0400
+Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+In-Reply-To: <20070923231713.f81ee0db.akpm@linux-foundation.org>
+References: <20070920195249.852667D5@kernel>
+	 <20070920195320.38C8E20D@kernel>
+	 <20070923231713.f81ee0db.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 24 Sep 2007 15:06:42 -0700
+Message-Id: <1190671602.26982.261.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2007-09-23 at 23:17 -0700, Andrew Morton wrote:
+> It look like a false positive to me, but really, for a patchset of this
+> complexity and maturity I cannot fathom how it could have escaped any
+> lockdep testing.
 
-can't we also decrease the number of brackets here?
+I test with lockdep all the time.  The problem was that lockdep doesn't
+complain until you have 8 nested locks, and I only tested on a 4-cpu
+system.
 
---- a/net/ipv6/addrconf.c
-+++ b/net/ipv6/addrconf.c
-@@ -1021,7 +1021,7 @@ int ipv6_dev_get_saddr(struct net_device
- 				hiscore.rule++;
- 			}
- 			if (ipv6_saddr_preferred(score.addr_type) ||
--			   (((ifa_result->flags &
-+			   (((ifa->flags &
- 			    (IFA_F_DEPRECATED|IFA_F_OPTIMISTIC)) == 0))) {
+I lowered the lockdep nesting limit to 3, and got the warning on my
+machine.
 
-make this like this
- 			if (ipv6_saddr_preferred(score.addr_type) ||
-			   (ifa->flags &
- 			    (IFA_F_DEPRECATED|IFA_F_OPTIMISTIC)) == 0) {
+-- Dave
 
-or even for clarity's sake:
- 			if (ipv6_saddr_preferred(score.addr_type) ||
-			   (ifa->flags & (IFA_F_DEPRECATED|IFA_F_OPTIMISTIC)) == 0) {
