@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbXIXVxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbXIXV4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758062AbXIXVxF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 17:53:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbXIXVwy
+	id S1759000AbXIXV4f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 17:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbXIXV42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 17:52:54 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:41249 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbXIXVwx (ORCPT
+	Mon, 24 Sep 2007 17:56:28 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54701 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753192AbXIXV41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 17:52:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BMC8j5mZLwg38aCHObKnN06eY6k0Jzh8p2x+X+qzZz/Xl+OpD1MxU4vNmhhMeTm5q5qeZ5e9TpkFKccz1UxSUkIorgkluS1HrhcZDesL+80o+6wVU5+qdZBHSNEvWJxMNTlR9fWUXVEVwKD8PnLJr+IEKJ4A4qaPrjtpIvS/wsg=
-Message-ID: <e4c519350709241452l33c2f1b6m8ab943460248656f@mail.gmail.com>
-Date: Mon, 24 Sep 2007 23:52:51 +0200
-From: "Maurizio Monge" <maurizio.monge@gmail.com>
-To: "Catalin Constantin" <catalin@efirst.ro>
-Subject: Re: HSM violation with ahci+WDC WD1600BEVS-22RST0
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <138995186.20070924163607@efirst.ro>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Sep 2007 17:56:27 -0400
+Date: Mon, 24 Sep 2007 14:55:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [git] CFS-devel, latest code
+Message-Id: <20070924145530.5b09acd9.akpm@linux-foundation.org>
+In-Reply-To: <20070924214537.GA18980@elte.hu>
+References: <20070924214537.GA18980@elte.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <138995186.20070924163607@efirst.ro>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No, i did not manage to improve (it should NOT be a dangerous error BTW).
-I simply think that this issue is because of buggy firmware, so i
-posted to linux-ide a patch to blacklist this hard disk from using NCQ
-(because it is triggering spurious completions).
-I don't know what the "blacklisting policy" is for linux kernel
-developers, i think that, since there probably are a lot of buggy
-drives for NCQ and so, a module parameter to disable NCQ while loading
-libata could be useful.
-Best regards.
+On Mon, 24 Sep 2007 23:45:37 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-On 9/24/07, Catalin Constantin <catalin@efirst.ro> wrote:
-> Hello,
->
-> Did you manage to find out why were you getting thoes messages ATA
-> related ?
->
-> I am having the same issue and some help would be very handy.
->
-> Thank you and sorry for disturbing you,
->
-> --
-> Catalin Constantin
-> Efirst - www.efirst.ro
-> http://www.cabanova.ro
->
->
+> 
+> The latest sched-devel.git tree can be pulled from:
+>  
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
 
+I'm pulling linux-2.6-sched.git, and it's oopsing all over the place on
+ia64, and Lee's observations about set_leftmost()'s weirdness are
+pertinent.
 
--- 
-Ciao
-Maurizio
-http://stregatto.wordpress.com
+Should I instead be pulling linux-2.6-sched-devel.git?
 
-"Well we all shine on
-Like the moon and the stars and the sun" (John Lennon)
