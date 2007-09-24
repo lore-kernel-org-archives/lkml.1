@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbXIXKfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbXIXKfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbXIXKfd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 06:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbXIXKf1
+	id S1755148AbXIXKfx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 06:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757034AbXIXKfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 06:35:27 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:46031 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751875AbXIXKf0 (ORCPT
+	Mon, 24 Sep 2007 06:35:45 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:35701 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbXIXKfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 06:35:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lPaisSIn5q/sMME/zy6oFJXkWXOtQ+q+4vpDyFVUA1TPXM+I/bzPUBFrTqriXXMHpWLqq53Ns2Tt9hRVhVvm45XST+9QzteGi/Bh+xsKbq7TgSEnGsEWt8KI7A97JOcz2AvjbxKZxdH8r3JWWD2KXt6HBK7b3KGojCqQfzWi5hk=
-Message-ID: <3f9a31f40709240335w441699b5y366211baeebde871@mail.gmail.com>
-Date: Mon, 24 Sep 2007 16:05:25 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: 2.6.22.7 autoconf.h is screwed up
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0709240625140.31104@localhost.localdomain>
+	Mon, 24 Sep 2007 06:35:44 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Subject: Re: USB autosuspend and turning of usb pendrive leds
+Date: Mon, 24 Sep 2007 12:36:37 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
+Cc: Hans de Goede <j.w.r.degoede@hhs.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net
+References: <46F3C704.5000203@hhs.nl> <46F3D326.6050804@hhs.nl> <Pine.LNX.4.64.0709211715250.22331@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0709211715250.22331@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3f9a31f40709240320mb213a7an87cee8bf5517d7f7@mail.gmail.com>
-	 <Pine.LNX.4.64.0709240625140.31104@localhost.localdomain>
+Message-Id: <200709241236.37406.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello rday,
+Am Freitag 21 September 2007 schrieb Jiri Kosina:
+> On Fri, 21 Sep 2007, Hans de Goede wrote:
+> 
+> > Thats not what I had in mind, autosuspend doesn't work (presumably 
+> > because hal keeps polling for media change) maybe I should fix hal to 
+> > not keep polling for devices which don't have removable media?
+> 
+> Hi Hans,
+> 
+> I think the correct solution is that HAL stops polling the device as soon 
+> as it sees that it got autosuspended.
 
-In my view autoconf.h is the index of kernel you are using. By reading
-autoconf.h you will know what Architecture, drivers is selected.
+And how would we notice a medium change then? If there's an alternative
+way to notice it or we know it cannot happen there's no reason to poll at all.
 
-For example, If we are using some ARM based board, If you give me your
-autoconf.h , I can replicate same environment as yours. If it is not
-properly formatted it is very difficult to read and come to some
-conclusion.
-
-Thank you,
-
-Jaswinder Singh.
+	Regards
+		Oliver
 
 
-On 9/24/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> On Mon, 24 Sep 2007, Jaswinder Singh wrote:
->
-> > Hi all,
-> >
-> > 2.6.22.7's include/linux/autoconf.h is completely screwed up as
-> > compare to 2.6.10's autoconf.h .
-> >
-> > 2.6.22.7 totally changed the meaning of autoconf.h
-> ... snip ...
->
->  why do you care what autoconf.h looks like?  it's automatically
-> generated, it's not something you should be messing with.
->
-> rday
->
-> --
-> ========================================================================
-> Robert P. J. Day
-> Linux Consulting, Training and Annoying Kernel Pedantry
-> Waterloo, Ontario, CANADA
->
-> http://crashcourse.ca
-> ========================================================================
->
+
