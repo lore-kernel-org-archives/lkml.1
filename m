@@ -1,37 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbXIXTlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbXIXTld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760147AbXIXTlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXIXTlL
+	id S1757949AbXIXTld (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXIXTlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:41:11 -0400
-Received: from [193.23.136.160] ([193.23.136.160]:46446 "EHLO team-rmt.com"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753359AbXIXTlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:41:10 -0400
-X-Greylist: delayed 23838 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Sep 2007 15:41:10 EDT
-Date: Mon, 24 Sep 2007 15:03:49 +0200
-To: linux-kernel@vger.kernel.org
-From: Szamoni Ramona <ramona@team-rmt.com>
-Subject: =?UTF-8?Q?Szija._Aj=C3=A1nlat_Ram=C3=B3n=C3=A1t=C3=B3l?=
-Message-ID: <afaf0ecde231e1157ca0f437661ea2f0@193.23.136.160>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.72]
+	Mon, 24 Sep 2007 15:41:23 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57012 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760608AbXIXTlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 15:41:22 -0400
+Date: Mon, 24 Sep 2007 15:41:20 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] 2.6.23-rc7-mm1
+In-Reply-To: <46F80D85.9020209@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0709241540420.5920-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Szia!
+On Mon, 24 Sep 2007, Jiri Slaby wrote:
 
-Találtam egy jó letöltős oldalt olcsó, és nagy tartalom van rajta
-Filmek,(Shrek 3 Karibtenger3 és sok egyéb más... ) Havonta uj sorozat..( Jóbarátok, Dr Hause.. teljes évadok) Játékok(Medal of Honor: Airborne.. ), Zenék stb... Én már töltök is.
-http://data.ihb.hu
-http://data.ihb.hu
+> Hmm, I have usb legacy keyboard switched on because of grub and bios to allow me
+>  typing.
+> 
+> I booted 23-rc7 4 times, and the latest -mm 3 times just now and can't reproduce
+> it, I just wonder by what is this conditioned.
 
+Warm boot vs. cold boot, maybe.
 
-Ha nem érdekel a dolog csak hagyad figyelmen kívül az e-mailt.. 
-Üdv: Ramóna
-
+Alan Stern
 
