@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbXIXUGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbXIXUMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759386AbXIXUGM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 16:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbXIXUF6
+	id S1758970AbXIXUMx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 16:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbXIXUMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 16:05:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39241 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751642AbXIXUF4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 16:05:56 -0400
-Date: Mon, 24 Sep 2007 13:04:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Badari Pulavarty <pbadari@gmail.com>
-cc: Andy Whitcroft <apw@shadowen.org>, sct@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, adilger@clusterfs.com,
-       ext4 <linux-ext4@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       mel@csn.ul.ie
-Subject: Re: 2.6.23-rc6: hanging ext3 dbench tests
-In-Reply-To: <1190656918.13955.7.camel@dyn9047017100.beaverton.ibm.com>
-Message-ID: <alpine.LFD.0.999.0709241243530.3579@woody.linux-foundation.org>
-References: <20070911124202.GI9556@shadowen.org> 
- <alpine.LFD.0.999.0709110949250.16478@woody.linux-foundation.org> 
- <20070911173049.GA10499@shadowen.org> <20070914094905.GA32670@shadowen.org>
-  <20070919181546.GA4343@shadowen.org>
- <1190656918.13955.7.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 24 Sep 2007 16:12:45 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:38785 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753331AbXIXUMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 16:12:44 -0400
+Subject: [PATCH] ext2 reservations: fix for r/o bind mounts: take-writer-count (v2)
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, mbligh@mbligh.org,
+       Dave Hansen <haveblue@us.ibm.com>
+From: Dave Hansen <haveblue@us.ibm.com>
+Date: Mon, 24 Sep 2007 13:12:41 -0700
+Message-Id: <20070924201241.487335A5@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Please throw away what I send a moment ago, it was the wrong
+patch.
 
-On Mon, 24 Sep 2007, Badari Pulavarty wrote:
-> 
-> Whats happening on my machine is ..
-> 
-> dbench forks of 4 children and sends them a signal to start the work.
-> 3 out of 4 children gets the signal and does the work. One of the child
-> never gets the signal so, it waits forever in pause(). So, parent waits
-> for a longtime to kill it.
+This is on top of the ext2-reservations.patch in -mm.
 
-Since this *seems* to have nothing to do with the filesystem, and since it 
-*seems* to have been introduced between -rc3 and -rc4, I did
+The original r/o bind mount set didn't address the new
+ext2 ioctl: EXT2_IOC_SETRSVSZ, because it doesn't exist
+in mainline.  This fixes that up for -mm.  
 
-	gitk v2.6.23-rc3..v2.6.23-rc4 -- kernel/
-
-to see what has changed. One of the commits was signal-related, and that 
-one doesn't look like it could possibly matter.
-
-The rest were scheduler-related, which doesn't surprise me. In fact, even 
-before I looked, my reaction to your bug report was "That sounds like an 
-application race condition".
-
-Applications shouldn't use "pause()" for waiting for a signal. It's a 
-fundamentally racy interface - the signal could have happened just 
-*before* calling pause. So it's almost always a bug to use pause(), and 
-any users should be fixed to use "sigsuspend()" instead, which can 
-atomically (and correctly) pause for a signal while the process has masked 
-it outside of the system call.
-
-Now, I took a look at the dbench sources, and I have to say that the race 
-looks *very* unlikely (there's quite a small window in which it does
-
-	children[i].status = getpid();
-	** race window here **
-	pause();
-
-and it would require *just* the right timing so that the parent doesn't 
-end up doing the "sleep(1)" (which would make the window even less likely 
-to be hit), but there does seem to be a race condition there. And it 
-*could* be that you just happen to hit it on your hw setup.
-
-So before you do anything else, does this patch (TOTALLY UNTESTED! DONE 
-ENTIRELY LOOKING AT THE SOURCE! IT MAY RAPE ALL YOUR PETS, AND CALL YOU 
-BAD NAMES!) make any difference?
-
-(patch against unmodified dbench-2.0)
-
-		Linus
-
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
-diff --git a/dbench.c b/dbench.c
-index ccf5624..4be5712 100644
---- a/dbench.c
-+++ b/dbench.c
-@@ -91,10 +91,15 @@ static double create_procs(int nprocs, void (*fn)(struct child_struct * ))
+
+ lxc-dave/fs/ext2/ioctl.c |   24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
+
+diff -puN fs/ext2/ioctl.c~ext2-reservations-take-writer-count fs/ext2/ioctl.c
+--- lxc/fs/ext2/ioctl.c~ext2-reservations-take-writer-count	2007-09-24 13:08:29.000000000 -0700
++++ lxc-dave/fs/ext2/ioctl.c	2007-09-24 13:12:09.000000000 -0700
+@@ -111,14 +111,18 @@ setflags_out:
+ 		if (!test_opt(inode->i_sb, RESERVATION) ||!S_ISREG(inode->i_mode))
+ 			return -ENOTTY;
  
- 	for (i=0;i<nprocs;i++) {
- 		if (fork() == 0) {
-+			sigset_t old, blocked;
+-		if (IS_RDONLY(inode))
+-			return -EROFS;
+-
+-		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
+-			return -EACCES;
+-
+-		if (get_user(rsv_window_size, (int __user *)arg))
+-			return -EFAULT;
++		ret = mnt_want_write(filp->f_vfsmnt);
++		if (ret)
++			return ret;
 +
-+			sigemptyset(&blocked);
-+			sigaddset(&blocked, SIGCONT);
-+			sigprocmask(SIG_BLOCK, &blocked, &old);
- 			setbuffer(stdout, NULL, 0);
- 			nb_setup(&children[i]);
- 			children[i].status = getpid();
--			pause();
-+			sigsuspend(&old);
- 			fn(&children[i]);
- 			_exit(0);
++		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
++			ret = -EACCES;
++			goto setrsvsz_out;
++		}
++		if (get_user(rsv_window_size, (int __user *)arg)) {
++			ret = -EFAULT;
++			goto setrsvsz_out;
++		}
+ 
+ 		if (rsv_window_size > EXT2_MAX_RESERVE_BLOCKS)
+ 			rsv_window_size = EXT2_MAX_RESERVE_BLOCKS;
+@@ -140,7 +144,9 @@ setflags_out:
+ 			rsv->rsv_goal_size = rsv_window_size;
  		}
+ 		mutex_unlock(&ei->truncate_mutex);
+-		return 0;
++	setrsvsz_out:
++		mnt_drop_write(filp->f_vfsmnt);
++		return ret;
+ 	}
+ 	default:
+ 		return -ENOTTY;
+diff -puN fs/namespace.c~ext2-reservations-take-writer-count fs/namespace.c
+_
