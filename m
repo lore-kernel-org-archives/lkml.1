@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbXIXQz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXIXQzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbXIXQz1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXIXQzN
+	id S1755994AbXIXQzq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757480AbXIXQzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:55:13 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41690 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751119AbXIXQzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:55:11 -0400
-Message-Id: <20070924164950.006047409@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Mon, 24 Sep 2007 12:49:50 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@infradead.org>
-Subject: [patch 0/7] Linux Kernel Markers (redux)
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 24 Sep 2007 16:54:27 +0000
+	Mon, 24 Sep 2007 12:55:35 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:63486 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752830AbXIXQzd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:55:33 -0400
+Date: Mon, 24 Sep 2007 09:53:44 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: vatsa@linux.vnet.ibm.com
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       dmitry.adamushko@gmail.com, linux-kernel@vger.kernel.org,
+       dhaval@linux.vnet.ibm.com, containers@lists.osdl.org,
+       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com, efault@gmx.de
+Subject: Re: [PATCH 3/5] Cleanup code under CONFIG_FAIR_GROUP_SCHED
+Message-Id: <20070924095344.ee9ab10e.randy.dunlap@oracle.com>
+In-Reply-To: <20070924163937.GD10291@linux.vnet.ibm.com>
+References: <20070924163326.GA10291@linux.vnet.ibm.com>
+	<20070924163937.GD10291@linux.vnet.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Mon, 24 Sep 2007 22:09:37 +0530 Srivatsa Vaddagiri wrote:
 
-Following Christoph Hellwig's suggestion, aiming at a Linux Kernel Markers
-inclusion for 2.6.24, I made a simplified version of the Linux Kernel Markers.
-There are no more dependencies on any other patchset.
+> With the view of supporting user-id based fair scheduling (and not just
+> container-based fair scheduling), this patch renames several functions
+> and makes them independent of whether they are being used for container
+> or user-id based fair scheduling.
+> 
+> Also fix a problem reported by KAMEZAWA Hiroyuki (wrt allocating
+> less-sized array for tg->cfs_rq[] and tf->se[]).
+> 
+> 
+> Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> 
+> 
+> ---
+>  include/linux/sched.h |   12 +++
+>  init/Kconfig          |   11 +--
+>  kernel/sched.c        |  172 ++++++++++++++++++--------------------------------
+>  kernel/sched_fair.c   |    5 +
+>  4 files changed, 83 insertions(+), 117 deletions(-)
+> 
+> Index: current/init/Kconfig
+> ===================================================================
+> --- current.orig/init/Kconfig
+> +++ current/init/Kconfig
+> @@ -282,13 +282,12 @@ config CPUSETS
+>  	  Say N if unsure.
+>  
+>  config FAIR_GROUP_SCHED
+> -	bool "Fair group scheduler"
+> -	depends on EXPERIMENTAL && CONTAINERS
+> +	bool "Fair group cpu scheduler"
 
-The modification only involved turning the immediate values into static
-variables and adapting the documentation accordingly. It will have a little more
-data cache impact when disabled than the version based on the immediate values,
-but it is far less complex.
+Can we have "CPU" instead of "cpu" ?
 
-Since things have not moved much in the markers area recently (most of the
-concerns were about the immediate values), I expect it to be ready for 2.6.24.
 
-It applies to 2.6.23-rc7-mm1
+> +	default n
+> +	depends on EXPERIMENTAL
+>  	help
+> -	  This option enables you to group tasks and control CPU resource
+> -	  allocation to such groups.
+> -
+> -	  Say N if unsure.
+> +	  This feature lets cpu scheduler recognize task groups and control cpu
+> +	  bandwidth allocation to such task groups.
+>  
+>  config SYSFS_DEPRECATED
+>  	bool "Create deprecated sysfs files"
 
-Patches apply in this order:
 
-seq_file_sorted.patch
-module.c-sort-module-list.patch
-kconfig-instrumentation.patch
-linux-kernel-markers-architecture-independent-code.patch
-linux-kernel-markers-instrumentation-menu.patch
-linux-kernel-markers-documentation.patch
-linux-kernel-markers-port-blktrace-to-markers.patch
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+---
+~Randy
+Phaedrus says that Quality is about caring.
