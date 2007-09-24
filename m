@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbXIXQSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbXIXQXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759917AbXIXQSw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbXIXQSp
+	id S1759936AbXIXQXM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbXIXQW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:18:45 -0400
-Received: from mga07.intel.com ([143.182.124.22]:26572 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753899AbXIXQSo (ORCPT
+	Mon, 24 Sep 2007 12:22:59 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:56277 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754044AbXIXQW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:18:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,292,1186383600"; 
-   d="scan'208";a="285534869"
-Date: Mon, 24 Sep 2007 09:18:22 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: lkml <linux-kernel@vger.kernel.org>,
-       usbdev <linux-usb-devel@lists.sourceforge.net>
-Subject: [patch] usb-skeleton leaking locks on open.
-Message-ID: <20070924161822.GA4525@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-MIME-Version: 1.0
+	Mon, 24 Sep 2007 12:22:58 -0400
+Date: Mon, 24 Sep 2007 22:03:26 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Cc: dmitry.adamushko@gmail.com, linux-kernel@vger.kernel.org,
+       dhaval@linux.vnet.ibm.com, containers@lists.osdl.org,
+       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com, efault@gmx.de
+Subject: [PATCH 0/5] Fair group scheduler - various fixes
+Message-ID: <20070924163326.GA10291@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This weekend I was hacking around with a trivial USB driver for talking
-to the boot load firmware of a USB Bit Whacker.  It's running the
-MicroChip Pic18 boot loader firmware and I'm putting together a flash
-program for writing new FW to the thing.
+Hello Ingo and Andrew,
+	Here are various patches to fair group scheduler code present in
+sched-devel and in 2.6.23-rc7-mm1. These patches should apply against
+both sched-devel git tree and 2.6.23-rc7-mm1 (as they are both in sync
+now).
 
-Anyway in my use of the usb-skeleton.c as my starting point I discovered
-my test program was getting hung up after attempting to write a buffer.
-The application and driver where hung in a way that required me to
-reboot to get it to clean up so I could try again.
+Pls consider for inclusion after review.
 
-It turned out the code path through skel_open can grap the driver's
-io_mutex lock and forget to release it.
+[there is still room for improving group fairness obtained on smp
+systems. By sending out these patches, i am hoping more folks can test
+and improve that aspect]
 
-The following patch fixes the problem for me.
+Ingo,
+	You may want to avoid picking Patch 5/5 as it makes sense only in
+-mm tree atm.
 
---mgross
-
-Signed-off-by: Mark Gross <mgross@linux.intel.com>
-
-diff -urN -X linux-2.6.23-rc7/Documentation/dontdiff linux-2.6.23-rc7/drivers/usb/usb-skeleton.c linux-2.6.23-rc7-bugfix/drivers/usb/usb-skeleton.c
---- linux-2.6.23-rc7/drivers/usb/usb-skeleton.c	2007-09-24 08:57:54.000000000 -0700
-+++ linux-2.6.23-rc7-bugfix/drivers/usb/usb-skeleton.c	2007-09-24 09:01:43.000000000 -0700
-@@ -125,6 +125,7 @@
- 
- 	/* save our object in the file's private structure */
- 	file->private_data = dev;
-+	mutex_unlock(&dev->io_mutex);
- 
- exit:
- 	return retval;
+-- 
+Regards,
+vatsa
