@@ -1,641 +1,488 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbXIXJRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbXIXJV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbXIXJRo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 05:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXIXJRd
+	id S1755220AbXIXJV1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 05:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbXIXJVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 05:17:33 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36625 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752054AbXIXJRb (ORCPT
+	Mon, 24 Sep 2007 05:21:20 -0400
+Received: from omr4.networksolutionsemail.com ([205.178.146.54]:51305 "EHLO
+	omr4.networksolutionsemail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752225AbXIXJVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 05:17:31 -0400
-Date: Mon, 24 Sep 2007 02:17:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	Mon, 24 Sep 2007 05:21:19 -0400
+X-Greylist: delayed 1802 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Sep 2007 05:21:19 EDT
+Message-ID: <46F77A85.6020202@nerdgrounds.com>
+Date: Mon, 24 Sep 2007 01:51:17 -0700
+From: Jonathan Campbell <jon@nerdgrounds.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Subject: 2.6.23-rc7-mm1
-Message-Id: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] Patches for tiny 386 kernels, again. Linux kernel 2.6.22.7
+Content-Type: multipart/mixed;
+ boundary="------------020504050109050407060300"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
-
-- New git tree git-powerpc-galak.patch added to the -mm lineup: ppc32
-  things, mainly (Kumar Gala <galak@gate.crashing.org>)
-
-
-
-Boilerplate:
-
-- See the `hot-fixes' directory for any important updates to this patchset.
-
-- To fetch an -mm tree using git, use (for example)
-
-  git-fetch git://git.kernel.org/pub/scm/linux/kernel/git/smurf/linux-trees.git tag v2.6.16-rc2-mm1
-  git-checkout -b local-v2.6.16-rc2-mm1 v2.6.16-rc2-mm1
-
-- -mm kernel commit activity can be reviewed by subscribing to the
-  mm-commits mailing list.
-
-        echo "subscribe mm-commits" | mail majordomo@vger.kernel.org
-
-- If you hit a bug in -mm and it is not obvious which patch caused it, it is
-  most valuable if you can perform a bisection search to identify which patch
-  introduced the bug.  Instructions for this process are at
-
-        http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
-
-  But beware that this process takes some time (around ten rebuilds and
-  reboots), so consider reporting the bug first and if we cannot immediately
-  identify the faulty patch, then perform the bisection search.
-
-- When reporting bugs, please try to Cc: the relevant maintainer and mailing
-  list on any email.
-
-- When reporting bugs in this kernel via email, please also rewrite the
-  email Subject: in some manner to reflect the nature of the bug.  Some
-  developers filter by Subject: when looking for messages to read.
-
-- Occasional snapshots of the -mm lineup are uploaded to
-  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/ and are announced on
-  the mm-commits list.
-
-
-
-Changes since 2.6.23-rc6-mm1:
-
- origin.patch
- git-acpi.patch
- git-alsa.patch
- git-arm.patch
- git-audit-master.patch
- git-avr32.patch
- git-cifs.patch
- git-cpufreq.patch
- git-powerpc.patch
- git-powerpc-galak.patch
- git-drm.patch
- git-dvb.patch
- git-hwmon.patch
- git-gfs2-nmw.patch
- git-hid.patch
- git-ieee1394.patch
- git-infiniband.patch
- git-input.patch
- git-jfs.patch
- git-jg-misc.patch
- git-kbuild.patch
- git-kvm.patch
- git-libata-all.patch
- git-md-accel.patch
- git-mips.patch
- git-mmc.patch
- git-mtd.patch
- git-ubi.patch
- git-net.patch
- git-backlight.patch
- git-battery.patch
- git-nfs.patch
- git-nfsd.patch
- git-ocfs2.patch
- git-r8169.patch
- git-selinux.patch
- git-s390.patch
- git-sched.patch
- git-sh.patch
- git-scsi-misc.patch
- git-scsi-rc-fixes.patch
- git-block.patch
- git-unionfs.patch
- git-watchdog.patch
- git-wireless.patch
- git-ipwireless_cs.patch
- git-newsetup.patch
- git-xfs.patch
- git-cryptodev.patch
- git-kgdb.patch
- git-block-vs-reiser4.patch
- git-nfsd-broke-reiser4.patch
-
- git trees
-
--fix-dac960-driver-on-machines-which-dont-support-64-bit-dma-fix.patch
--uml-use-correct-type-in-blkgetsize-ioctl.patch
--atyfb-force-29mhz-xtal-on-g3-powerbooks.patch
--fix-failure-to-resume-from-initrds.patch
--fix-uts-corruption-during-cloneclone_newuts.patch
--rtc-ds1742c-should-use-resource_size_t-for-base-address.patch
--rtc-rtc-ds1553c-should-use-resource_size_t-for-base.patch
--mspec-handle-shrinking-virtual-memory-areas.patch
--mspec-handle-shrinking-virtual-memory-areas-3.patch
--pci-fix-unterminated-pci_device_id-lists.patch
--pci-fix-unterminated-pci_device_id-lists-fix.patch
--xen-dont-bother-trying-to-set-cr4.patch
--intelfb-fix-bug-in-dpll-disable.patch
--intel-agp-fix-i830-mask-variable-that-changed-with-g33-support.patch
--dir_index-error-out-instead-of-bug-on-corrupt-dx-dirs.patch
--nfs-fix-oops-re-sysctls-and-v4-support.patch
--disable-sys_timerfd-for-2623.patch
--ext34-ensure-do_split-leaves-enough-free-space-in-both-blocks.patch
--kernel-userc-use-list_for_each_entry-instead-of-list_for_each.patch
--convert-uid-hash-to-hlist.patch
--fix-user-namespace-exiting-oops.patch
--fix-numa-memory-policy-reference-counting.patch
--git-alsa-sc6000-build-fix.patch
--ess-maestro-1-2-2e-sound-card-use-list_for_each_entry.patch
--routines-for-effect-processor-fx8010-use-list_for_each_entry.patch
--arm-unbalanced-parenthesis-fix.patch
--ppc-remove-apus-support.patch
--fix-gregkh-driver-sysfs-spit-a-warning-to-users-when-they-try-to-create-a-duplicate-sysfs-file.patch
--drivers-char-nozomic-__devexit_p-usage-build-fix.patch
--i2c-i801-documentation-patch-for-intel-tolapai.patch
--i2c-i801-smbus-patch-for-intel-tolapai.patch
--i2c-i801-smbus-patch-for-intel-tolapai-fix.patch
--ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61patch.patch
--ahci-raid-mode-sata-patch-for-intel-tolapai.patch
--st340823a-hpa-and-libata.patch
--ata-increase-allowed-config-flags.patch
--ata_piix-replace-spaces-with-tabs.patch
--ide-ide-remove-ide-rate-filter-from-speedproc.patch
--ide-ide-use-only-set-pio-mode-for-programming-pio-modes.patch
--ide-ide-remove-ide-dma-check.patch
--ide-ide-add-mwdma-mask-and-swdma-mask-to-ide-pci-device-t.patch
--git-net-fix-2.patch
--nit-net-skge-build-fix.patch
--git-net-af_iucv-fixes.patch
--git-net-sgiseeq-fix.patch
--git-net-fix-ibmveth.patch
--git-net-af_iucv-fixes.patch
--git-net-sgiseeq-fix.patch
--git-net-fix-ibmveth.patch
--sky2-118.patch
--sb1250-macc-de-typedef-de-volatile-de-etc.patch
--net_sb1250_mac-update-kconfig-entry.patch
--net_sb1250_mac-rename-to-sb1250_mac.patch
--ipg-add-ip1000a-driver-to-kernel-tree.patch
--git-net-broke-ipg-add-ip1000a-driver-to-kernel-tree.patch
--use-mutex-instead-of-semaphore-in-the-onstream-scsi-tape-driver.patch
--git-block-fix-u14-34f.patch
--ll_rw_blk-blk_cpu_notifier-should-be-__cpuinitdata.patch
--x86_64-mm-fix-section-mismatch-warnings.patch
--therm_throtc-fix-section-mismatch.patch
--i386-cpuid_count-fix-argument-signedness-warnings.patch
--i386-fix-section-mismatch-warning-in-intelc.patch
--x86-misc-constifications.patch
--x86-constify-wd_ops.patch
--x86-multi-byte-single-instruction-nops.patch
--enforce-noreplace-smp-in-alternative_instructions.patch
--i386-apic-fix-4-bit-apicid-assumption-of-mach-default.patch
--scsi-use-lock-per-host-instead-of-per-device-for-shared-queue-tag-host.patch
--x86_64-nx-bit-handling-in-change_page_attr.patch
--driver-core-fix-deprectated-sysfs-structure-for-nested-class-devices.patch
--pvrusb2-hdw-terminate-usb-device-id-table-differently.patch
--cpu-hotplug-cpuid-fix-cpu-hotplug-error-handling.patch
-
- Merged into mainline or a subsystem tree
-
-+ufs-fix-sun-state.patch
-+fix-potential-oops-in-generic_setlease.patch
-+fix-potential-oops-in-generic_setlease-v2.patch
-+fix-mspec-handle-shrinking-virtual-memory-areas.patch
-+missing-null-termination-in-one-wire-uevent.patch
-+typo-fix-kernel-config-option.patch
-
- 2.6.23 queue
-
-+fix-oops-in-platform-uevent.patch
-
- Also 2.6.23 I guess
-
--git-acpi-fixup.patch
-
- Unneeded
-
-+acpi-sbs-fix-sbs-add-alarm-patch.patch
-
- ACPI fix
-
-+agk-dm-dm-ioctl-fix-compat-bounds-test.patch
-+agk-dm-dm-tidy-bio_io_error-usage.patch
-+agk-dm-dm-ioctl-remove-vmalloc-void-cast.patch
-+agk-dm-dm-crypt-use-per-device-singlethread-workqueues.patch
-+agk-dm-dm-crypt-add-post-processing-queue.patch
-
- device mapped tree updates
-
-+fix-3-gregkh-driver-kobject-remove-the-static-array-for-the-name.patch
-+kobject-temporarily-save-k_name-on-cleanup-for-debug-message.patch
-
- Fix Greg's driver core tree
-
-+jdelvare-i2c-i2c-i801-tolapai-support.patch
-
- i2c tree update
-
- Dropped
-
-+first-stab-at-elantech-touchpad-driver-for-26226-testers.patch
-+first-stab-at-elantech-touchpad-driver-for-26226-testers-fix.patch
-+make-wistron-btns-recognize-special-keys-on-medion-wim2160-notebooks.patch
-
- Input stuff
-
-+menuconfig-distinguish-between-selected-by-another-options-and-comments.patch
-
- Kconfig
-
-+pata_acpi-use-ata_sff_port_start.patch
-
- pata update
-
-+libata-add-a-horkage-entry-for-drq-mishandling-atapi.patch
-+ahci-add-mcp79-support-to-ahci-driver.patch
-+ahci-add-mcp79-support-to-ahci-driver-update.patch
-
- ata updates
-
-+ide-ide-call-udma_filter-before-resorting-to-the-ultradma-mask.patch
-+ide-ide-remove-ide-rate-filter-from-speedproc-take-2.patch
-+ide-ide-use-only-set-pio-mode-for-programming-pio-modes-take-2.patch
-+ide-ide-remove-ide-dma-check-take-2.patch
-+ide-ide-add-mwdma-mask-and-swdma-mask-to-ide-pci-device-t-take-2.patch
-+ide-alim15x3-fix-cd_rom-dma-and-pio-fifo-settings-setup.patch
-+ide-alim15x3-use-host-flags-and-udma-mask-fields-from-ide-pci-device-t.patch
-+ide-aec62xx-remove-aec62xx-dma-lost-irq.patch
-+ide-siimage-separate-pata-and-sata-methods.patch
-+ide-ide-add-fixup-method-to-ide-hwif-t.patch
-+ide-ide-add-ide-device-add.patch
-+ide-maintainers-mark-ide-scsi-as-orhpan.patch
-+ide-ide-add-ide-find-port-helper.patch
-+ide-ide-remove-redundant-comments-from-ide-h.patch
-+ide-ide-add-config-ide-arch-obsolete-init.patch
-
- IDE tree updates
-
-+git-mtd-vs-powerpc.patch
-
- Fix mtd borkage
-
-+git-net-fix-macec.patch
-+git-net-sky2-fixups.patch
-+git-net-fix-wireless-kconfig.patch
-+git-net-fix-spidernet-build.patch
-+spider_net_ethtool-keep-up-with-recent-netdev-stats-changes.patch
-+pasemi_mac-build-fix-after-recent-netdev-stats.patch
-+make-mv643xx_ethc-build-again.patch
-+dgrs-remove-from-build-config-and-maintainer-list.patch
-
- net fixes
-
-+phylib-spinlock-fixes-for-softirqs.patch
-+forcedeth-power-down-phy-when-interface-is-down.patch
-+forcedeth-no-link-is-informational.patch
-+phylib-irq-event-workqueue-handling-fixes.patch
-+phylib-fix-an-interrupt-loop-potential-when-halting.patch
-
- netdev updates
-
-+git-battery.patch
-+revert-git-battery.patch
-
- Greg's driver tree breaks this git tree
-
--git-nfsd-fixup.patch
-
- Unneeded
-
-+provide-stubs-for-enable_irq_wake-and-disable_irq_wake.patch
-+serial_txx9-use-upf_fixed_port.patch
-
- serial stuff
-
-+some-proc-entries-are-missed-in-sched_domain-sys_ctl-debug.patch
-
- sched fix
-
-+mpt-fusion-shut-up-uninitialized-variable.patch
-+mptbase-reset-ioc-initiator-during-pci-resume.patch
-
- scsi fixes
-
-+usb-gadget-ether-prevent-oops-caused-by-error-interrupt-race.patch
-
- USB fix
-
-+9p-fix-compile-error-if-config_sysctl.patch
-
- 9pfs fix
-
--git-net-vs-git-wireless.patch
--git-net-vs-git-wireless-2.patch
--ath5k-panic-fix.patch
--git-net-vs-git-wireless-3.patch
--git-net-broke-git-wireless.patch
--more-wireless-borkage.patch
--more-wireless-borkage-2.patch
--more-wireless-borkage-3.patch
--git-wireless-fix-99.patch
-
- more wireless churn, getting sorted out now.  b44 is still disabled in -mm,
- perhaps unjustly.
-
-+x86_64-mm-misc_-constifications.patch
-+x86_64-mm-constify-stacktrace_ops.patch
-+x86_64-mm-unwinder-default.patch
-+x86_64-mm-less-stack-alignment.patch
-+x86_64-mm-fix-argument-signedness-warnings.patch
-+x86_64-mm-cpu-hotplug-cpuid-fix-cpu-hotplug-error-handling.patch
-+x86_64-mm-die-lock.patch
-+x86_64-mm-mce-setup.patch
-+x86_64-mm-fix-off-by-one-in-find_next_zero_string.patch
-+x86_64-mm-fix-4-bit-apicid-assumption-of-mach-default.patch
-+x86_64-mm-fix-section-mismatch.patch
-+x86_64-mm-fix-section-mismatch-warning-in-intel_c.patch
-+x86_64-mm-constify-wd_ops.patch
-+x86_64-mm-multi-byte-single-instruction-nops.patch
-+x86_64-mm-introduce-used_vectors-bitmap-which-can-be-used-to-reserve-vectors.patch
-+x86_64-mm-configure-hpet_emulate_rtc-automatically.patch
-+x86_64-mm-also-show-non-zero-irq-counts-for-vectors-that-currently-dont-have-a-handler.patch
-+x86_64-mm-avoid-temporarily-inconsistent-pte-s.patch
-+x86_64-mm-return-correct-error-code-from-child_rip-in-x86_64-entry_s.patch
-+x86_64-mm-agp-flush.patch
-+x86_64-mm-aout-regs.patch
-+x86_64-mm-remove-fpu-port.patch
-
- x86 tree updates
-
-+agp-fix-race-condition-between-unmapping-and-freeing-pages.patch
-
- AGP fix
-
-+convert-cpu_sibling_map-to-a-per_cpu-data-array-ppc64-fix-2.patch
-
- Fix convert-cpu_sibling_map-to-a-per_cpu-data-array.patch even more
-
-+x86_64-nx-bit-handling-in-change_page_attr.patch
-
- x86 fix
-
-+kgdb-fix-help-text.patch
-+kgdb-fix-docbook-and-kernel-doc-typos.patch
-
- kgdb updates
-
-+usb-dont-propagate-freeze-or-prethaw-suspends.patch
-+ppp_mppe-dont-put-interimkey-on-the-stack.patch
-
- Maybe 2.6.23 material
-
-+mm-use-pagevec-to-rotate-reclaimable-page.patch
-+mm-use-pagevec-to-rotate-reclaimable-page-fix.patch
-+git-nfs-vs-nfs-convert-to-new-aops-fix.patch
-+slub-avoid-touching-page-struct-when-freeing-to-per-cpu-slab-fix.patch
-+fix-memory-hot-remove-not-configured-case.patch
-+fix-memory-hot-remove-not-configured-case-fix.patch
-+mm-per-device-dirty-threshold-fix.patch
-
- MM updates
-
-+oom-move-prototypes-to-appropriate-header-file.patch
-+oom-move-constraints-to-enum.patch
-+oom-change-all_unreclaimable-zone-member-to-flags.patch
-+oom-change-all_unreclaimable-zone-member-to-flags-fix.patch
-+oom-add-per-zone-locking.patch
-+oom-serialize-out-of-memory-calls.patch
-+oom-add-oom_kill_allocating_task-sysctl.patch
-+oom-suppress-extraneous-stack-and-memory-dump.patch
-+oom-compare-cpuset-mems_allowed-instead-of-exclusive.patch
-+oom-do-not-take-callback_mutex.patch
-+oom-do-not-take-callback_mutex-fix.patch
-
- oom-killer work
-
-+alpha-beautify-vmlinuxlds.patch
-
- alpha cleanup
-
-+tty-bring-the-old-cris-driver-back-somewhere-into-the.patch
-
- cris update
-
-+uml-stop-saving-process-fp-state-fix.patch
-
- Fix uml-stop-saving-process-fp-state.patch
-
-+uml-rename-pt_regs-general-purpose-register-file-fix.patch
-
- Fix uml-rename-pt_regs-general-purpose-register-file.patch
-
-+uml-eliminate-hz.patch
-+uml-fix-timer-switching.patch
-+uml-simplify-interval-setting.patch
-+uml-separate-timer-initialization.patch
-+uml-generic_time-support.patch
-+uml-generic_clockevents-support.patch
-+uml-clocksource-support.patch
-+uml-clocksource-support-fix.patch
-+uml-tickless-support.patch
-+uml-tickless-support-fix.patch
-+uml-eliminate-interrupts-in-the-idle-loop.patch
-+uml-eliminate-sigalrm.patch
-+uml-use-sec_per_sec-constants.patch
-
- UML updates
-
--remove-superfluous-definition-of-__setup_null_param-macro-and-broken-for-module-__setup_param.patch
-
- Dropped
-
-+keys-make-request_key-and-co-fundamentally-asynchronous-update.patch
-+keys-missing-word-in-documentation.patch
-
- Fix keys-make-request_key-and-co-fundamentally-asynchronous.patch
-
-+jbd-slab-cleanups-2.patch
-+jbd-slab-cleanups-3.patch
-
- Fix jbd-slab-cleanups.patch
-
-+shrink_dcache_sb-speedup.patch
-+add-consts-where-appropriate-in-fs-nls.patch
-+reiserfs-workaround-for-dead-loop-in-finish_unfinished.patch
-+reiserfs-workaround-for-dead-loop-in-finish_unfinished-fix.patch
-+unify-dma_bit_mask-definitions-v31.patch
-+delete-gcc-295-compatible-structure-definition.patch
-+fs-isofs-nameic-remove-uninitialized-local-vars-warning.patch
-+ide-cd-is-unmaintained.patch
-+tty-expose-new-methods-needed-for-drivers-to-get-termios.patch
-+tty-expose-new-methods-needed-for-drivers-to-get-termios-fix.patch
-+kernel-printkc-concerns-about-the-console-handover.patch
-+atomic_opstxt-has-incorrect-misleading-and-insufficient-information.patch
-+udf-code-style-fixup-v3.patch
-+aio-dont-confuse-debug-define-location.patch
-+userc-deinline.patch
-+userc-ifdef-mq_bytes.patch
-+userc-ifdef-mq_bytes-fix.patch
-
- Misc
-
-+isdn-hisax-hfc_usbc-fix-check-after-use.patch
-
- ISDN fix
-
-+ecryptfs-remove-header_extent_size.patch
-+ecryptfs-remove-assignments-in-if-statements.patch
-+ecryptfs-read_writec-routines.patch
-+ecryptfs-replace-encrypt-decrypt-and-inode-size-write.patch
-+ecryptfs-set-up-and-destroy-persistent-lower-file.patch
-+ecryptfs-update-metadata-read-write-functions.patch
-+ecryptfs-make-open-truncate-and-setattr-use-persistent-file.patch
-+ecryptfs-convert-mmap-functions-to-use-persistent-file.patch
-+ecryptfs-convert-mmap-functions-to-use-persistent-file-fix.patch
-+ecryptfs-initialize-persistent-lower-file-on-inode-create.patch
-+ecryptfs-remove-unused-functions-and-kmem_cache.patch
-+ecryptfs-replace-magic-numbers.patch
-
- ecryptfs update (ugly, can't think of a better way, needs better review)
-
-+radeonfb-xpress-200m-rc410-support-patch.patch
-+drivers-video-pmag-ba-fbc-improve-diagnostics.patch
-+drivers-video-pmag-ba-fbc-improve-diagnostics-fix.patch
-
- fbdev updates
-
-+ext4-uninitialized-block-groups.patch
-+ext4-uninitialized-block-groups-fix.patch
-+introduce-ext4_find_next_bit.patch
-+ext4-fix-sparse-warnings.patch
-+ext4-flex_bg-kernel-support-v2.patch
-
- ext4 stuff
-
-+ecryptfs-allow-lower-fs-to-interpret-attr_kill_sid.patch
-+knfsd-only-set-attr_kill_sid-if-attr_mode-isnt-being-explicitly-set.patch
-+reiserfs-turn-of-attr_kill_sid-at-beginning-of-reiserfs_setattr.patch
-+unionfs-fix-unionfs_setattr-to-handle-attr_kill_sid.patch
-+vfs-make-notify_change-pass-attr_kill_sid-to-setattr-operations.patch
-+nfs-if-attr_kill_sid-bits-are-set-then-skip-mode-change.patch
-+cifs-ignore-mode-change-if-its-just-for-clearing-setuid-setgid-bits.patch
-
- VFS attributes work
-
-+r-o-bind-mounts-filesystem-helpers-for-custom-struct-files.patch
-+r-o-bind-mounts-rearrange-may_open-to-be-r-o-friendly.patch
-+r-o-bind-mounts-give-permission-a-local-mnt-variable.patch
-+r-o-bind-mounts-create-cleanup-helper-svc_msnfs.patch
-+r-o-bind-mounts-stub-functions.patch
-+r-o-bind-mounts-elevate-write-count-opend-files.patch
-+r-o-bind-mounts-elevate-write-count-for-some-ioctls.patch
-+r-o-bind-mounts-elevate-writer-count-for-chown-and-friends.patch
-+r-o-bind-mounts-make-access-use-mnt-check.patch
-+r-o-bind-mounts-elevate-mnt-writers-for-callers-of-vfs_mkdir.patch
-+r-o-bind-mounts-elevate-write-count-during-entire-ncp_ioctl.patch
-+r-o-bind-mounts-elevate-write-count-during-entire-ncp_ioctl-fix.patch
-+r-o-bind-mounts-elevate-write-count-for-link-and-symlink-calls.patch
-+r-o-bind-mounts-elevate-mount-count-for-extended-attributes.patch
-+r-o-bind-mounts-elevate-write-count-for-file_update_time.patch
-+r-o-bind-mounts-unix_find_other-elevate-write-count-for-touch_atime.patch
-+r-o-bind-mounts-elevate-write-count-over-calls-to-vfs_rename.patch
-+r-o-bind-mounts-nfs-check-mnt-instead-of-superblock-directly.patch
-+r-o-bind-mounts-elevate-writer-count-for-do_sys_truncate.patch
-+r-o-bind-mounts-elevate-write-count-for-do_utimes.patch
-+r-o-bind-mounts-elevate-write-count-for-do_sys_utime-and-touch_atime.patch
-+r-o-bind-mounts-sys_mknodat-elevate-write-count-for-vfs_mknod-create.patch
-+r-o-bind-mounts-elevate-mnt-writers-for-vfs_unlink-callers.patch
-+r-o-bind-mounts-do_rmdir-elevate-write-count.patch
-+r-o-bind-mounts-track-number-of-mount-writers.patch
-+r-o-bind-mounts-track-number-of-mount-writers-hack-hack-hack.patch
-+r-o-bind-mounts-honor-r-w-changes-at-do_remount-time.patch
-
- read-only bind mounts
-
-+add-a-missing-00-index-file-for-documentation-vm-fix.patch
-
- Fix add-a-missing-00-index-file-for-documentation-vm.patch
-
-+remove-broken-netfilter-binary-sysctls-from-bridging-code.patch
-
- sysctl fixes
-
-+make-access-to-tasks-nsproxy-lighterpatch-breaks-unshare.patch
-
- Fix make-access-to-tasks-nsproxy-lighter.patch
-
--isolate-some-explicit-usage-of-task-tgid-fix.patch
--isolate-some-explicit-usage-of-task-tgid-fix-fix.patch
-
- Folded into isolate-some-explicit-usage-of-task-tgid.patch
-
-+memory-controller-oom-handling-v7-vs-oom-killer-stuff.patch
-
- Fix memory-controller-oom-handling-v7.patch
-
-+mem-controller-gfp-mask-fix.patch
-
- Fix memory-controller patches in -mm.
-
-+ipc-integrate-ipc_checkid-into-ipc_lock-fix-2.patch
-+ipc-integrate-ipc_checkid-into-ipc_lock-fix-3.patch
-
- Fix ipc-integrate-ipc_checkid-into-ipc_lock-fix.patch
-
-+ipc_fix_wrong_comments.patch
-
- Fix ipc comments
-
-+extended-crashkernel-command-line.patch
-+use-extended-crashkernel-command-line-on-i386.patch
-+use-extended-crashkernel-command-line-on-x86_64.patch
-+use-extended-crashkernel-command-line-on-ia64.patch
-+use-extended-crashkernel-command-line-on-ppc64.patch
-+use-extended-crashkernel-command-line-on-sh.patch
-+add-documentation-for-extended-crashkernel-syntax.patch
-
- kdump stuff
-
-+cleanup-macros-for-distinguishing-mandatory-locks.patch
-+gfs2-cleanup-explicit-check-for-mandatory-locks.patch
-+9pfs-cleanup-explicit-check-for-mandatory-locks.patch
-+afs-cleanup-explicit-check-for-mandatory-locks.patch
-+nfs-cleanup-explicit-check-for-mandatory-locks.patch
-+rework-proc-locks-via-seq_files-and-seq_list-helpers.patch
-+rework-proc-locks-via-seq_files-and-seq_list-helpers-fix.patch
-+rework-proc-locks-via-seq_files-and-seq_list-helpers-fix-2.patch
-
- file locking rework
-
-+exportfs-add-fid-type.patch
-+exportfs-add-new-methods.patch
-+ext2-new-export-ops.patch
-+ext3-new-export-ops.patch
-+ext4-new-export-ops.patch
-+efs-new-export-ops.patch
-+jfs-new-export-ops.patch
-+ntfs-new-export-ops.patch
-+xfs-new-export-ops.patch
-+fat-new-export-ops.patch
-+isofs-new-export-ops.patch
-+shmem-new-export-ops.patch
-+reiserfs-new-export-ops.patch
-+gfs2-new-export-ops.patch
-+ocfs2-new-export-ops.patch
-+exportfs-remove-old-methods.patch
-+exportfs-make-struct-export_operations-const.patch
-+exportfs-update-documentation.patch
-
- nfsd export rework
-
-
-5392 commits in 2031 patch files
-
-
-All patches:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/patch-list
-
-
+This is a multi-part message in MIME format.
+--------------020504050109050407060300
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Sorry for the long delay, been very busy since I last posted the 386 
+kernel patches back in July.
+Now that I have more free time I remade the patches in a cleaner manner, 
+broken down into
+smaller patches, with fewer #ifdefs all over the place. most #ifdefs are 
+in the include/asm-i386 headers
+now.
+
+linux-2.6.22.7-embedded-disable-rdtsc.patch:
+    * Allows you to remove Pentium TSC register-based timing, which 
+would never be used on
+       a kernel targeting 386 and 486 boxes exclusively. Apparently 
+there is already a
+       CONFIG_X86_TSC out there, this patch makes it work as a means to 
+disable TSC support
+       entirely. Depends on CONFIG_EMBEDDED.
+
+linux-2.6.22.7-embedded-dmi-disable-option.patch:
+    * Allows you to remove DMI (Desktop Management Interface) parsing. 
+Older computers do
+       not have DMI structures in the BIOS, on these computers the DMI 
+code is a waste of space.
+       In my tests with applying this patch and disabling DMI removes 
+6KB from
+       arch/i386/boot/bzImage after compile. Apparently there is already 
+a CONFIG_DMI out there,
+       and #ifdef's in some parts to check this, so all this patch does 
+is make CONFIG_DMI visible
+       from "make menuconfig" while patching up other parts (like ACPI) 
+that simply assume DMI
+       functions are there. Depends on CONFIG_EMBEDDED.
+
+
+
+--------------020504050109050407060300
+Content-Type: text/plain;
+ name="linux-2.6.22.7-embedded-dmi-disable-option.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6.22.7-embedded-dmi-disable-option.patch"
+
+diff -u -r linux-2.6.22.7-old/arch/i386/Kconfig linux-2.6.22.7/arch/i386/Kconfig
+--- linux-2.6.22.7-old/arch/i386/Kconfig	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/arch/i386/Kconfig	2007-09-23 19:40:15.000000000 +0000
+@@ -83,10 +83,6 @@
+ 	bool
+ 	default y
+ 
+-config DMI
+-	bool
+-	default y
+-
+ source "init/Kconfig"
+ 
+ menu "Processor type and features"
+@@ -395,6 +391,19 @@
+           XFree86 to initialize some video cards via BIOS. Disabling this
+           option saves about 6k.
+ 
++config DMI
++	default y
++	bool "Enable DMI support" if EMBEDDED
++	depends on X86
++	help
++	  This enables support for processing the Desktop Management
++	  Interface structures present in most modern BIOSes. If you are
++	  building a kernel for an older Pentium, 486, or 386 system and
++	  memory is tight, you can disable this to help reduce the size
++	  of your kernel by about 6K.
++	  
++	  If unsure, say Y
++
+ config TOSHIBA
+ 	tristate "Toshiba Laptop support"
+ 	---help---
+diff -u -r linux-2.6.22.7-old/arch/i386/kernel/acpi/boot.c linux-2.6.22.7/arch/i386/kernel/acpi/boot.c
+--- linux-2.6.22.7-old/arch/i386/kernel/acpi/boot.c	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/arch/i386/kernel/acpi/boot.c	2007-09-23 19:37:12.000000000 +0000
+@@ -891,6 +891,7 @@
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_DMI
+ static int __init dmi_disable_acpi(struct dmi_system_id *d)
+ {
+ 	if (!acpi_force) {
+@@ -1097,6 +1098,7 @@
+ 	 },
+ 	{}
+ };
++#endif /* CONFIG_DMI */
+ 
+ #endif				/* __i386__ */
+ 
+@@ -1127,7 +1129,7 @@
+ {
+ 	int error;
+ 
+-#ifdef __i386__
++#if defined(__i386__) && defined(CONFIG_DMI)
+ 	dmi_check_system(acpi_dmi_table);
+ #endif
+ 
+diff -u -r linux-2.6.22.7-old/arch/i386/kernel/acpi/sleep.c linux-2.6.22.7/arch/i386/kernel/acpi/sleep.c
+--- linux-2.6.22.7-old/arch/i386/kernel/acpi/sleep.c	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/arch/i386/kernel/acpi/sleep.c	2007-09-23 19:36:07.000000000 +0000
+@@ -86,6 +86,7 @@
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_DMI
+ static __initdata struct dmi_system_id acpisleep_dmi_table[] = {
+ 	{			/* Reset video mode after returning from ACPI S3 sleep */
+ 	 .callback = reset_videomode_after_s3,
+@@ -104,3 +105,5 @@
+ }
+ 
+ core_initcall(acpisleep_dmi_init);
++#endif
++
+diff -u -r linux-2.6.22.7-old/arch/i386/kernel/setup.c linux-2.6.22.7/arch/i386/kernel/setup.c
+--- linux-2.6.22.7-old/arch/i386/kernel/setup.c	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/arch/i386/kernel/setup.c	2007-09-23 19:30:59.000000000 +0000
+@@ -611,7 +611,9 @@
+ 	 * NOTE: at this point the bootmem allocator is fully available.
+ 	 */
+ 
++#ifdef CONFIG_DMI
+ 	dmi_scan_machine();
++#endif
+ 
+ #ifdef CONFIG_X86_GENERICARCH
+ 	generic_apic_probe();
+diff -u -r linux-2.6.22.7-old/arch/i386/kernel/tsc.c linux-2.6.22.7/arch/i386/kernel/tsc.c
+--- linux-2.6.22.7-old/arch/i386/kernel/tsc.c	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/arch/i386/kernel/tsc.c	2007-09-23 19:36:37.000000000 +0000
+@@ -290,6 +290,7 @@
+ }
+ EXPORT_SYMBOL_GPL(mark_tsc_unstable);
+ 
++#ifdef CONFIG_DMI
+ static int __init dmi_mark_tsc_unstable(struct dmi_system_id *d)
+ {
+ 	printk(KERN_NOTICE "%s detected: marking TSC unstable.\n",
+@@ -310,6 +311,7 @@
+ 	 },
+ 	 {}
+ };
++#endif
+ 
+ /*
+  * Make an educated guess if the TSC is trustworthy and synchronized
+@@ -369,8 +371,10 @@
+ 	set_cyc2ns_scale(cpu_khz);
+ 	use_tsc_delay();
+ 
++#ifdef CONFIG_DMI
+ 	/* Check and install the TSC clocksource */
+ 	dmi_check_system(bad_tsc_dmi_table);
++#endif
+ 
+ 	unsynchronized_tsc();
+ 	check_geode_tsc_reliable();
+diff -u -r linux-2.6.22.7-old/drivers/acpi/Kconfig linux-2.6.22.7/drivers/acpi/Kconfig
+--- linux-2.6.22.7-old/drivers/acpi/Kconfig	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/drivers/acpi/Kconfig	2007-09-23 19:48:07.000000000 +0000
+@@ -263,6 +263,7 @@
+ 
+ config ACPI_BLACKLIST_YEAR
+ 	int "Disable ACPI for systems before Jan 1st this year" if X86_32
++	depends on DMI
+ 	default 0
+ 	help
+ 	  enter a 4-digit year, eg. 2001 to disable ACPI by default
+diff -u -r linux-2.6.22.7-old/drivers/acpi/osl.c linux-2.6.22.7/drivers/acpi/osl.c
+--- linux-2.6.22.7-old/drivers/acpi/osl.c	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/drivers/acpi/osl.c	2007-09-23 19:24:27.000000000 +0000
+@@ -139,7 +139,9 @@
+ 
+ acpi_status __init acpi_os_initialize(void)
+ {
++#ifdef CONFIG_DMI
+ 	dmi_check_system(acpi_osl_dmi_table);
++#endif
+ 	return AE_OK;
+ }
+ 
+
+--------------020504050109050407060300
+Content-Type: text/plain;
+ name="linux-2.6.22.7-embedded-disable-rdtsc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6.22.7-embedded-disable-rdtsc.patch"
+
+diff -u -r linux-2.6.22.7-old/arch/i386/Kconfig linux-2.6.22.7/arch/i386/Kconfig
+--- linux-2.6.22.7-old/arch/i386/Kconfig	2007-09-23 20:44:10.000000000 +0000
++++ linux-2.6.22.7/arch/i386/Kconfig	2007-09-23 22:15:57.000000000 +0000
+@@ -362,6 +362,18 @@
+ 	  to disable it.  MCE support simply ignores non-MCE processors like
+ 	  the 386 and 486, so nearly everyone can say Y here.
+ 
++config X86_TSC
++	bool "Use TSC as time source" if EMBEDDED
++	depends on X86
++	default y
++	help
++	  Uses the TSC (time stamp counter) in Pentium and newer systems as a
++	  high resolution timer. If you are compiling a kernel for older 386
++	  and 486 systems that do not have this counter, you can say N here
++	  to help reduce the size of your kernel.
++	  
++	  If unsure, say Y.
++
+ config X86_MCE_NONFATAL
+ 	tristate "Check for non-fatal errors on AMD Athlon/Duron / Intel Pentium 4"
+ 	depends on X86_MCE
+diff -u -r linux-2.6.22.7-old/arch/i386/kernel/Makefile linux-2.6.22.7/arch/i386/kernel/Makefile
+--- linux-2.6.22.7-old/arch/i386/kernel/Makefile	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/arch/i386/kernel/Makefile	2007-09-23 22:17:36.000000000 +0000
+@@ -7,8 +7,9 @@
+ obj-y	:= process.o signal.o entry.o traps.o irq.o \
+ 		ptrace.o time.o ioport.o ldt.o setup.o i8259.o sys_i386.o \
+ 		pci-dma.o i386_ksyms.o i387.o bootflag.o e820.o\
+-		quirks.o i8237.o topology.o alternative.o i8253.o tsc.o
++		quirks.o i8237.o topology.o alternative.o i8253.o
+ 
++obj-$(CONFIG_X86_TSC)		+= tsc.o
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-y				+= cpu/
+ obj-y				+= acpi/
+diff -u -r linux-2.6.22.7-old/arch/i386/kernel/cpu/amd.c linux-2.6.22.7/arch/i386/kernel/cpu/amd.c
+--- linux-2.6.22.7-old/arch/i386/kernel/cpu/amd.c	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/arch/i386/kernel/cpu/amd.c	2007-09-23 23:39:11.000000000 +0000
+@@ -117,6 +117,7 @@
+ 				break;
+ 			}
+ 			
++#ifdef CONFIG_X86_TSC /* this test requires the presence of the TSC */
+ 			if ( c->x86_model == 6 && c->x86_mask == 1 ) {
+ 				const int K6_BUG_LOOP = 1000000;
+ 				int n;
+@@ -144,6 +145,7 @@
+ 					printk("probably OK (after B9730xxxx).\n");
+ 				printk(KERN_INFO "Please see http://membres.lycos.fr/poulot/k6bug.html\n");
+ 			}
++#endif
+ 
+ 			/* K6 with old style WHCR */
+ 			if (c->x86_model < 8 ||
+diff -u -r linux-2.6.22.7-old/arch/i386/lib/delay.c linux-2.6.22.7/arch/i386/lib/delay.c
+--- linux-2.6.22.7-old/arch/i386/lib/delay.c	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/arch/i386/lib/delay.c	2007-09-23 23:15:42.000000000 +0000
+@@ -37,6 +37,7 @@
+ 		:"0" (loops));
+ }
+ 
++#ifdef CONFIG_X86_TSC
+ /* TSC based delay: */
+ static void delay_tsc(unsigned long loops)
+ {
+@@ -48,6 +49,7 @@
+ 		rdtscl(now);
+ 	} while ((now-bclock) < loops);
+ }
++#endif
+ 
+ /*
+  * Since we calibrate only once at boot, this
+@@ -55,6 +57,7 @@
+  */
+ static void (*delay_fn)(unsigned long) = delay_loop;
+ 
++#ifdef CONFIG_X86_TSC
+ void use_tsc_delay(void)
+ {
+ 	delay_fn = delay_tsc;
+@@ -68,6 +71,7 @@
+ 	}
+ 	return -1;
+ }
++#endif
+ 
+ void __delay(unsigned long loops)
+ {
+diff -u -r linux-2.6.22.7-old/include/asm-i386/cpufeature.h linux-2.6.22.7/include/asm-i386/cpufeature.h
+--- linux-2.6.22.7-old/include/asm-i386/cpufeature.h	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/include/asm-i386/cpufeature.h	2007-09-23 23:32:13.000000000 +0000
+@@ -119,7 +119,11 @@
+ #define cpu_has_vme		boot_cpu_has(X86_FEATURE_VME)
+ #define cpu_has_de		boot_cpu_has(X86_FEATURE_DE)
+ #define cpu_has_pse		boot_cpu_has(X86_FEATURE_PSE)
++#ifdef CONFIG_X86_TSC
+ #define cpu_has_tsc		boot_cpu_has(X86_FEATURE_TSC)
++#else
++#define cpu_has_tsc		0
++#endif
+ #define cpu_has_pae		boot_cpu_has(X86_FEATURE_PAE)
+ #define cpu_has_pge		boot_cpu_has(X86_FEATURE_PGE)
+ #define cpu_has_apic		boot_cpu_has(X86_FEATURE_APIC)
+diff -u -r linux-2.6.22.7-old/include/asm-i386/delay.h linux-2.6.22.7/include/asm-i386/delay.h
+--- linux-2.6.22.7-old/include/asm-i386/delay.h	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/include/asm-i386/delay.h	2007-09-23 23:16:25.000000000 +0000
+@@ -26,6 +26,10 @@
+ 	((n) > 20000 ? __bad_ndelay() : __const_udelay((n) * 5ul)) : \
+ 	__ndelay(n))
+ 
++#ifdef CONFIG_X86_TSC
+ void use_tsc_delay(void);
++#else
++static inline void use_tsc_delay(void) { }
++#endif
+ 
+ #endif /* defined(_I386_DELAY_H) */
+diff -u -r linux-2.6.22.7-old/include/asm-i386/msr.h linux-2.6.22.7/include/asm-i386/msr.h
+--- linux-2.6.22.7-old/include/asm-i386/msr.h	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/include/asm-i386/msr.h	2007-09-23 23:41:08.000000000 +0000
+@@ -60,12 +60,14 @@
+ 	return err;
+ }
+ 
++#ifdef CONFIG_X86_TSC
+ static inline unsigned long long native_read_tsc(void)
+ {
+ 	unsigned long long val;
+ 	asm volatile("rdtsc" : "=A" (val));
+ 	return val;
+ }
++#endif
+ 
+ static inline unsigned long long native_read_pmc(void)
+ {
+@@ -117,6 +119,8 @@
+ 		__err;							\
+ 	})
+ 
++#ifdef CONFIG_X86_TSC
++
+ #define rdtscl(low)						\
+ 	((low) = (u32)native_read_tsc())
+ 
+@@ -125,6 +129,16 @@
+ 
+ #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
+ 
++#else /* CONFIG_X86_TSC */
++
++#define rdtscl(low) ((low) = 0)
++
++#define rdtscll(val) ((val) = 0)
++
++#define write_tsc(val1,val2)
++
++#endif /* CONFIG_X86_TSC */
++
+ #define rdpmc(counter,low,high)					\
+ 	do {							\
+ 		u64 _l = native_read_pmc();			\
+diff -u -r linux-2.6.22.7-old/include/asm-i386/processor.h linux-2.6.22.7/include/asm-i386/processor.h
+--- linux-2.6.22.7-old/include/asm-i386/processor.h	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/include/asm-i386/processor.h	2007-09-23 22:58:59.000000000 +0000
+@@ -24,7 +24,11 @@
+ #include <asm/processor-flags.h>
+ 
+ /* flag for disabling the tsc */
++#ifdef CONFIG_X86_TSC
+ extern int tsc_disable;
++#else
++#  define tsc_disable 1
++#endif
+ 
+ struct desc_struct {
+ 	unsigned long a,b;
+diff -u -r linux-2.6.22.7-old/include/asm-i386/timer.h linux-2.6.22.7/include/asm-i386/timer.h
+--- linux-2.6.22.7-old/include/asm-i386/timer.h	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/include/asm-i386/timer.h	2007-09-23 23:12:35.000000000 +0000
+@@ -12,7 +12,12 @@
+ extern int timer_ack;
+ extern int no_timer_check;
+ extern int no_sync_cmos_clock;
++
++#ifdef CONFIG_X86_TSC
+ extern int recalibrate_cpu_khz(void);
++#else
++static inline int recalibrate_cpu_khz(void) { return -ENODEV; }
++#endif
+ 
+ #ifndef CONFIG_PARAVIRT
+ #define get_scheduled_cycles(val) rdtscll(val)
+diff -u -r linux-2.6.22.7-old/include/asm-i386/timex.h linux-2.6.22.7/include/asm-i386/timex.h
+--- linux-2.6.22.7-old/include/asm-i386/timex.h	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/include/asm-i386/timex.h	2007-09-23 23:20:42.000000000 +0000
+@@ -15,8 +15,12 @@
+ #  define CLOCK_TICK_RATE 1193182 /* Underlying HZ */
+ #endif
+ 
+-
++#ifdef CONFIG_X86_TSC
+ extern int read_current_timer(unsigned long *timer_value);
++#else
++static inline int read_current_timer(unsigned long *timer_value) { return -1; }
++#endif
++
+ #define ARCH_HAS_READ_CURRENT_TIMER	1
+ 
+ #endif
+diff -u -r linux-2.6.22.7-old/include/asm-i386/tsc.h linux-2.6.22.7/include/asm-i386/tsc.h
+--- linux-2.6.22.7-old/include/asm-i386/tsc.h	2007-09-21 22:38:23.000000000 +0000
++++ linux-2.6.22.7/include/asm-i386/tsc.h	2007-09-23 23:36:29.000000000 +0000
+@@ -25,7 +25,7 @@
+ 		return 0;
+ #endif
+ 
+-#if defined(CONFIG_X86_GENERIC) || defined(CONFIG_X86_TSC)
++#if defined(CONFIG_X86_GENERIC) && defined(CONFIG_X86_TSC)
+ 	rdtscll(ret);
+ #endif
+ 	return ret;
+@@ -34,6 +34,7 @@
+ /* Like get_cycles, but make sure the CPU is synchronized. */
+ static __always_inline cycles_t get_cycles_sync(void)
+ {
++#ifdef CONFIG_X86_TSC
+ 	unsigned long long ret;
+ 	unsigned eax, edx;
+ 
+@@ -57,8 +58,12 @@
+ 	rdtscll(ret);
+ 
+ 	return ret;
++#else
++	return 0;
++#endif
+ }
+ 
++#ifdef CONFIG_X86_TSC
+ extern void tsc_init(void);
+ extern void mark_tsc_unstable(char *reason);
+ extern int unsynchronized_tsc(void);
+@@ -70,5 +75,15 @@
+  */
+ extern void check_tsc_sync_source(int cpu);
+ extern void check_tsc_sync_target(void);
++#else /* CONFIG_X86_TSC */
++/* effectively disable all calls to TSC functions.
++ * GCC should optimize these inline functions down to nothing. */
++static inline void tsc_init(void) { }
++static inline void mark_tsc_unstable(char *reason) { }
++static inline int unsynchronized_tsc(void) { return 1; }
++static inline void init_tsc_clocksource(void) { }
++static inline void check_tsc_sync_source(int cpu) { }
++static inline void check_tsc_sync_target(void) { }
++#endif /* CONFIG_X86_TSC */
+ 
+ #endif
+
+
+--------------020504050109050407060300--
