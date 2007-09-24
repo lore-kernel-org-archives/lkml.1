@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbXIXSpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759095AbXIXSqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbXIXSpq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760086AbXIXSp1
+	id S1759095AbXIXSqI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760262AbXIXSp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:45:27 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:49345 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759997AbXIXSp0 (ORCPT
+	Mon, 24 Sep 2007 14:45:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57461 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760147AbXIXSp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:45:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=DWQA0/xiEGsarI2ZczaIacafQulskSM9lFB7So9kATrrgV0HJA+EhPHMjF7UdNC3FoWmX8sFmTqnXLmvMcnh/Ksp3AciZwjg7d0kuZBfKgNToPaZJMqj6UmxQVB7iHRbGZzHd/khxxw9yFlNl+HS6GjMGaGwrvTnLwl8H9XCVdY=
-Message-ID: <46F805BE.5090609@gmail.com>
-Date: Mon, 24 Sep 2007 20:45:18 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] 2.6.23-rc7-mm1
-References: <Pine.LNX.4.44L0.0709241039040.4256-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0709241039040.4256-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Sep 2007 14:45:28 -0400
+Date: Mon, 24 Sep 2007 19:45:22 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Denys Vlasenko <vda.linux@googlemail.com>
+Subject: Re: [patch 4/7] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20070924184522.GA5013@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	"Frank Ch. Eigler" <fche@redhat.com>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Denys Vlasenko <vda.linux@googlemail.com>
+References: <20070924164950.006047409@polymtl.ca> <20070924165427.717587684@polymtl.ca> <20070924174817.GB1608@infradead.org> <20070924184309.GB28347@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070924184309.GB28347@Krystal>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/24/2007 04:41 PM, Alan Stern wrote:
-> On Mon, 24 Sep 2007, Jiri Slaby wrote:
-> 
->> On 09/24/2007 11:17 AM, Andrew Morton wrote:
->>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
->> Fine, but on some boots (I noticed this on rc6-mm1 too, but not before):
->> 0000:00:1a.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
->> 0000:00:1d.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
-> 
-> Any changes in your BIOS setup?
+On Mon, Sep 24, 2007 at 02:43:09PM -0400, Mathieu Desnoyers wrote:
+> gcc doesn't like it if I put the attribute after the function in the
+> implementation. Should I leave it before or separate the prototype from
+> the implementation ?
 
-unlikely, but still possible -- I've made some changes in BIOS recently when I
-looking backwards. Which concrete changes would turn it in such behaviour?
+Just keep it where it was.
 
-> What about with vanilla 2.6.23-rc6?  Or vanilla 2.6.23-rc7?
+> > There seem to be a lot of exports and some functions that don't seem
+> > to be used by the obvious marker use-cases like your example, blktrace
+> > or sputrace.  Care to explain why we'd really want them or better cut
+> > them out for this first submission?
 > 
-> The USB part of the code here hasn't changed in quite a while.  Any 
-> difference in behavior must be the result of changes in some other part 
-> of the kernel.  Possibly ACPI.
-> 
-> This might be a good job for git-bisect.
+> If you are referring to the exports you just told about in this email,
+> I'll remove them, they are not needed. As for the "marker_get_iter" and
+> friends, they are used to list the markers (I provide a /proc interface
+> to list the markers in the subsequent modules and also use it to dump
+> the marker list in a trace channel at trace start so I can later
+> understand the event data by using the format strings as type
+> identifiers).
 
-Ok, I'll play with that little bit.
-
-thanks,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+Sounds conceptually fine, but can we introduce this together with
+the actualy users?
