@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbXIXWbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbXIXWfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760248AbXIXWbU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 18:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbXIXWbM
+	id S1758846AbXIXWfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 18:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbXIXWfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 18:31:12 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:33633 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756328AbXIXWbM (ORCPT
+	Mon, 24 Sep 2007 18:35:32 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:30461 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755530AbXIXWfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 18:31:12 -0400
-Message-ID: <46F83A5F.1070606@oracle.com>
-Date: Mon, 24 Sep 2007 15:29:51 -0700
+	Mon, 24 Sep 2007 18:35:32 -0400
+Date: Mon, 24 Sep 2007 15:32:53 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: lkml <linux-kernel@vger.kernel.org>, prasanna@in.ibm.com,
+To: roel <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>, prasanna@in.ibm.com,
        ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, hch@infradead.org,
-       akpm <akpm@linux-foundation.org>, sam@ravnborg.org, davem@davemloft.net
+       mathieu.desnoyers@polymtl.ca, akpm <akpm@linux-foundation.org>,
+       sam@ravnborg.org, davem@davemloft.net
 Subject: Re: [PATCH/RFC] samples/: move kprobes sources to samples
-References: <20070924145828.d279abac.randy.dunlap@oracle.com> <20070924222144.GA12041@Krystal>
-In-Reply-To: <20070924222144.GA12041@Krystal>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <20070924153253.f83a6b76.randy.dunlap@oracle.com>
+In-Reply-To: <46F83900.6060209@tiscali.nl>
+References: <20070924145828.d279abac.randy.dunlap@oracle.com>
+	<46F83900.6060209@tiscali.nl>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Brightmail-Tracker: AAAAAQAAAAI=
@@ -31,31 +34,15 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Randy Dunlap (randy.dunlap@oracle.com) wrote:
->> This is RFC patch 2/2.
->> Patch 1/2 introduces the samples/ infrastructure:
->>   http://lkml.org/lkml/2007/9/24/397
->>
-> 
-> Hi Randy,
-> 
-> I got this when building my markers (which looks alike your kprobes):
-> 
-> ld: samples/built-in.o: No such file: No such file or directory
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> And the Makefile from samples does not seem to be executed. And why is
-> there a Kbuild file in your first patch ?
+On Tue, 25 Sep 2007 00:24:00 +0200 roel wrote:
 
-samples/Kbuild should be renamed to samples/Makefile.
-Sorry about that.
+> I could only point to three nitpicks 
 
-I made the kprobes files build only as modules.
-You are probably attempting to build markers built-in, not as
-modules?  That needs some makefile foo, I think.  Sam??
+Yes, hopefully the kprobes people will chime in here sometime and
+merge those as well, or just ack them and I can change the code.
 
+Thanks.
 
--- 
+---
 ~Randy
 Phaedrus says that Quality is about caring.
