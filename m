@@ -1,156 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbXIWX7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbXIXAH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbXIWX7V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 19:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbXIWX7L
+	id S1757279AbXIXAH3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 20:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbXIXAHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 19:59:11 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:49398 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755052AbXIWX7K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 19:59:10 -0400
-Subject: Re: [PATCH] Broadcom 8603 SAS/SATA driver, rough draft
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <46F6FA11.2070501@garzik.org>
-References: <20070923040437.GA30170@havoc.gtf.org>
-	 <1190588723.3378.25.camel@localhost.localdomain>
-	 <46F6FA11.2070501@garzik.org>
-Content-Type: text/plain
-Date: Sun, 23 Sep 2007 18:59:07 -0500
-Message-Id: <1190591947.3378.31.camel@localhost.localdomain>
+	Sun, 23 Sep 2007 20:07:23 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56167 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753796AbXIXAHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Sep 2007 20:07:22 -0400
+Subject: Re: 2.6.23-rc7 + radeonfb/s2ram
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mihai =?UTF-8?Q?Don=C8=9Bu?= <mihai.dontu@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <200709232222.29066.mihai.dontu@gmail.com>
+References: <200709220828.00078.mihai.dontu@gmail.com>
+	 <200709232131.02348.mihai.dontu@gmail.com> <200709232118.09884.rjw@sisk.pl>
+	 <200709232222.29066.mihai.dontu@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 24 Sep 2007 10:06:50 +1000
+Message-Id: <1190592411.6886.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-23 at 19:43 -0400, Jeff Garzik wrote:
-> James Bottomley wrote:
-> > On Sun, 2007-09-23 at 00:04 -0400, Jeff Garzik wrote:
-> >> Rather than sitting on this for far too long, I wanted to go ahead and
-> >> get this out there.  I heard some chips might be trickling out into
-> >> public hands.
-> > 
-> > The first thing to note is about the specs and the pre-production
-> > hardware: the Linux Foundation has mechanism to get both into the hands
-> > of interested developers; if you can point me to contacts, I can at
-> > least get the NDA documentation programme ball rolling.
-> 
-> Well, are there interested, motivated, skilled developers with time?  :)
-> 
-> Otherwise it's a moot point.
 
-We have GregKH's minions ... this would be a good project for them.
-
-> >> This is a bare bones Broadcom 8603 SAS+SATA driver, attempting to use
-> >> the vaunted libsas.  Notes:
-> > 
-> > I wouldn't call it "vaunted" but it's been a fun project.
+On Sun, 2007-09-23 at 22:22 +0300, Mihai Donțu wrote:
 > 
-> That was sarcasm :)
-> 
-> libsas is a big 'ole pain, that I'm finding has many aic94xx-isms buried 
-> in the lib.
+>   Bottom line: no radeonfb for me :( at least, not now; but I have to
+> be honest with
+>   you: I don't see what commit
+> dd1447134454b169d5ae353aceb93f2368db8547 brought new
+>   into the picture. The previous radeonfb worked just great, but then,
+> again, maybe I'm
+>   not using the console at it's full power :)
 
-Well, that's hardly surprising ... it was written by Adaptec and there
-was no other device to help with its production.
+It might have simply not initialized :-)
 
-> >> * A quick glance at the FIXMEs will tell you obviously doesn't work.
-> > 
-> > The first thing I really noted is that SMP and STP protocol support is
-> > stubbed out ... you really can't do anything other than direct device
-> > connection without them.
-> 
-> That's sorta the way I read the hardware docs, too.
-> 
-> I have some engineering questions pending with Broadcom, but from my 
-> read, SMP and STP don't seem supported.
-
-That would effectively render the device pretty much useless.  The maing
-benefit of SAS is that you can support expanders, which are the
-predominant connection infrastructure.  Direct connect SAS is OK, but
-SATA tends to be cheaper.
-
-> >> * The hardware is quite simple and straightforward and easy to program
-> >>   in an efficient way:  each SAS port has a command queue (DMA ring) and
-> >>   a response queue (DMA ring).  Or if in SATA mode, just a command
-> >>   queue.
-> > 
-> > That's not such a bad way of doing it ... it pretty much mimics the wire
-> > protocol, which is simply frame in/frame out for SAS.
-> 
-> Yep.  The hardware (on my end of the spectrum) seems to be moving 
-> towards forcing software to generate all "packets," except (a) data 
-> frames [generated via DMA engine] or (b) special frames that need to 
-> modify the software-generate frame.
-
-SMP and STP, by the way, are simple frame in, frame out.  If it
-identifies the initiator and target protocols and allows us to send
-frames, we can probably transmit both protocols.
-
-> >> * The SAS/SATA negotiation is largely out of our hands.  The silicon
-> >>   does its thing, and then tells us what type of device connected.  We
-> >>   are then expected to switch the port to either SAS mode or SATA mode,
-> >>   accordingly.
-> >>
-> >> * There is no firmware or anything.  Just DMA and register bitbanging.
-> >>   We have plenty of low-level control.
-> >>
-> >> * The state of SAS/SATA integration is perpetually pathetic.  Updates
-> >>   in this area are likely.  There's a rumor Brian King @ IBM may look
-> >>   into this area too.
-> >>
-> >> * This driver pretty much completely lacks exception handling.
-> > 
-> > I also note there's a slight nomenclature issue which will trip up SAS
-> > people.  All through the driver, you seem to use the word "port" to
-> > refer to a physical phy.  the struct bs_port seems to actually be a phy
-> > descriptor ... unless there's some missing phy<->port setup logic that
-> > will be in the final driver?  The trouble is that phys and ports are
-> > distinct (and not equivalent) objects in SAS.
-> 
-> Nomemclature came straight from the hardware docs, I'm afraid.
-> 
-> Comparing with the Marvell hardware, I can see how (with Marvell) wide 
-> ports can be set up, and the port/phy distinction is easily programmable 
-> depending on the situation.
-> 
-> Not so with BCM8603.
-
-That's going to be a bit of a bit oops ...
-
-> The only places where the docs mention SMP and STP at all is in the SAS 
-> outgoing DMA descriptor docs, when you fill in connection type.  The 
-> _only_ other mention of SMP or STP at all is a note saying neither is 
-> supported.  So, even the docs contradict themselves, but overall I have 
-> the feeling that SMP/STP are out of my hands.
-
-Heh, well, I suppose it was designed for simple direct connection ...
-
-> I wonder if Broadcom's interface is born out of the closed RAID-on-chip 
-> product that this is descended from.
-> 
-> Hopefully more knowledge will be gained soon, as I debug simple SAS and 
-> SATA device plug/unplug, and ask Broadcom questions.
-> 
-> 
-> >> As an aside, I am also writing a driver for Marvell chips that behave
-> >> quite similarly to this chip.  It seems the future of storage might look
-> >> like these Broadcom and Marvell SAS+SATA DMA ring interfaces, in the
-> >> volume marketspace at least.
-> > 
-> > If you have a contact here too, I can get the LF NDA and hardware
-> > programmes rolling.
-> 
-> Same response as at the top :)  Marvell is actually better at responding 
-> than Broadcom, but I'm quite reluctant to make /another/ introduction 
-> (already did so for one hacker) that leads nowhere.
-
-Same answer ... GregKH has a legion ... lets use it.
-
-James
+Ben.
 
 
