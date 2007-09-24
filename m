@@ -1,79 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764300AbXIXQsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764353AbXIXQsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764300AbXIXQsW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763342AbXIXQnU
+	id S1764353AbXIXQsj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763675AbXIXQpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:43:20 -0400
-Received: from mga11.intel.com ([192.55.52.93]:15700 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763382AbXIXQnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:43:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,292,1186383600"; 
-   d="scan'208";a="320727940"
-Date: Mon, 24 Sep 2007 09:43:17 -0700 (PDT)
-From: Tong Li <tong.n.li@intel.com>
-X-X-Sender: tongli@tongli.jf.intel.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [git] CFS-devel, group scheduler, fixes
-In-Reply-To: <20070924135158.1359013b@twins>
-Message-ID: <Pine.LNX.4.64.0709240935170.25564@tongli.jf.intel.com>
-References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu>
- <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com>
- <1190183324.9737.7.camel@Homer.simpson.net> <1190188261.9185.21.camel@Homer.simpson.net>
- <1190191368.8687.5.camel@Homer.simpson.net> <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
- <1190264114.6411.4.camel@Homer.simpson.net> <1190272507.27867.20.camel@Homer.simpson.net>
- <20070920075155.GA31641@elte.hu> <1190275870.9232.6.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
- <1190455308.7404.19.camel@Homer.simpson.net> <1190531662.11524.15.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0709232259150.23861@tongli.jf.intel.com>
- <1190628609.6389.14.camel@Homer.simpson.net> <20070924122422.75562c41@twins>
- <1190630535.7406.2.camel@Homer.simpson.net> <1190632934.7853.1.camel@Homer.simpson.net>
- <20070924135158.1359013b@twins>
+	Mon, 24 Sep 2007 12:45:00 -0400
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:35049 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763661AbXIXQo6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:44:58 -0400
+X-YMail-OSG: TmNl7kIVM1mYnA3KbYTz3JvvP_sczkwl9HtypqvUQD5qdofzoMKo6wBy9PD_BEqfxlg_naF5Y_Y9qJj65xVzWpwLQXMwviHlZMNWiZ3XjHzEVi6v1xcGzZGmleor
+Date: Mon, 24 Sep 2007 09:44:55 -0700
+From: Chris Wedgwood <cw@f00f.org>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [00/50] 2.6.22-stable review
+Message-ID: <20070924164455.GA17895@puku.stupidest.org>
+References: <20070924161733.GA13510@kroah.com> <20070924163148.GA17746@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070924163148.GA17746@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007, Peter Zijlstra wrote:
+On Mon, Sep 24, 2007 at 09:31:48AM -0700, Greg KH wrote:
 
-> On Mon, 24 Sep 2007 13:22:14 +0200 Mike Galbraith <efault@gmx.de> wrote:
->
->> On Mon, 2007-09-24 at 12:42 +0200, Mike Galbraith wrote:
->>> On Mon, 2007-09-24 at 12:24 +0200, Peter Zijlstra wrote:
->>>
->>>> how about something like:
->>>>
->>>>  s64 delta = (s64)(vruntime - min_vruntime);
->>>>  if (delta > 0)
->>>>   min_vruntime += delta;
->>>>
->>>> That would rid us of most of the funny conditionals there.
->>>
->>> That still left me with negative min_vruntimes.  The pinned hogs didn't
->>> lock my box up, but I quickly got the below, so hastily killed it.
->>
->> Shouldn't the max() in place_entity() be the max_vruntime() that my
->> lysdexia told me it was when I looked at it earlier? ;-)
->>
->
-> probably, my tree doesn't have that max anymore so I'm not sure.
->
+> A tarball of the patches can be found at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-testing/patch-2.6.22.8-rc1.gz
+                                                ^^^^^^^
 
-Last time I looked, I thought the max() in place_entity() was fine and the 
-problem seemed to be in set_task_cpu() that was causing the negative 
-vruntimes:
+s/testing/review/
 
-         if (likely(new_rq->cfs.min_vruntime))
-                 p->se.vruntime -= old_rq->cfs.min_vruntime -
-                                                 new_rq->cfs.min_vruntime;
+ http://kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.22.8-rc1.gz
 
-I think it's fine we get rid of sync_vruntime(). I need to think more 
-about how to make global fairness work based on this--it seems to be more 
-complicated than if we had sync_vruntime().
-
-   tong
+(to make it easier for people to click)
