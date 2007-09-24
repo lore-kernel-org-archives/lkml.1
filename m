@@ -1,62 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763326AbXIXTm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762336AbXIXTpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763326AbXIXTm1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758566AbXIXTmI
+	id S1762336AbXIXTpb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758891AbXIXTpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:42:08 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:49893 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758907AbXIXTmF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:42:05 -0400
-Date: Mon, 24 Sep 2007 12:38:42 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
-Message-Id: <20070924123842.64cf298b.randy.dunlap@oracle.com>
-In-Reply-To: <20070924192504.GB6629@infradead.org>
-References: <20070924164950.006047409@polymtl.ca>
-	<20070924165428.335030720@polymtl.ca>
-	<20070924175044.GD1608@infradead.org>
-	<20070924191811.GF28347@Krystal>
-	<20070924192504.GB6629@infradead.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 24 Sep 2007 15:45:23 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43020 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757949AbXIXTpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 15:45:21 -0400
+Date: Mon, 24 Sep 2007 12:45:33 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: "Moore, Eric" <Eric.Moore@lsi.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, DL-MPTFusionLinux@lsi.com,
+       "Support, Software" <support@lsi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mptbase: Reset ioc initiator during PCI resume
+Message-ID: <20070924194533.GA13359@tree.beaverton.ibm.com>
+References: <20070920211014.GA24047@tree.beaverton.ibm.com> <664A4EBB07F29743873A87CF62C26D702A99DD@NAMAIL4.ad.lsil.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <664A4EBB07F29743873A87CF62C26D702A99DD@NAMAIL4.ad.lsil.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 20:25:04 +0100 Christoph Hellwig wrote:
+On Thu, Sep 20, 2007 at 07:06:35PM -0600, Moore, Eric wrote:
+> Darrick - MESSAGE_UNIT_RESET is already issued from inside
+> mpt_do_ioc_recovery(), so you don't need to send this in advance of
+> that.    YOu will find that occuring from the function MakeIocReady.
+> Anyways... would it be possible for you to enable debug logging so I can
+> see what problem your having?   I suggest MPT_DEBUG and MPT_DEBUG_INIT.
+> If its possible for you to manually load mptbase, that way you can set
+> the command line option. 
 
-> On Mon, Sep 24, 2007 at 03:18:11PM -0400, Mathieu Desnoyers wrote:
-> > > putting code into Documentation is a good idea.  Either of you really
-> > > should start a sample/ toplevel directory for this kind of stuff
-> > > including a Kconfig menu etc to be able to build these samples as
-> > > part of an allmodconfig.
-> > > 
-> > 
-> > One should have a look at Documentation/kprobes.txt for that kind of
-> > example code / documentation mix.
-> 
-> That one is particularly bad.  It's high on my todo list of things to fix.
-> -
+I took a look at MakeIocReady(), and this section caught my eye:
 
-I already have it split and building.   Just need to know
-where to put it.  :)
+/* Is it already READY? */
+if (!statefault && (ioc_state & MPI_IOC_STATE_MASK) == MPI_IOC_STATE_READY)
+	return 0;
 
+So I turned on a whole lot more debugging (mpt_debug_level=65535), and
+caught this from the dhsprintk() just above that code snippet:
 
----
-~Randy
-Phaedrus says that Quality is about caring.
+mptbase::MakeIocReady, ioc0 [raw] state=10000000
+
+state=10000000 seems to correspond with MPI_IOC_STATE_READY, which means
+that the adapter isn't getting reset because the chip claims to be
+ready.  It doesn't seem to be ready, as demonstrated by the original error
+message that I reported with the patch.  I'll append the log entries
+pertaining to mpt to the end of this message.
+
+--D
+
+(Driver sign-on message if you were curious)
+
+[  164.467481] Fusion MPT base driver 3.04.05
+[  164.471706] Copyright (c) 1999-2007 LSI Logic Corporation
+[  164.492483] Fusion MPT SAS Host driver 3.04.05
+[  167.066482] ACPI: PCI Interrupt 0000:0c:03.0[A] -> <6>ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+[  167.066534] mptbase: Initiating ioc0 bringup
+[  167.761481] ioc0: LSISAS1064E B0: Capabilities={Initiator}
+[  178.681050] scsi6 : ioc0: LSISAS1064E B0, FwRev=00060200h, Ports=1, MaxQ=511, IRQ=16
+[  178.741821] scsi 6:0:0:0: Direct-Access     IBM-ESXS GNA073C3ESTT0Z N BH0C PQ: 0 ANSI: 5
+[  178.816476] sd 6:0:0:0: [sda] 143374000 512-byte hardware sectors (73407 MB)
+[  178.825198] sd 6:0:0:0: [sda] Write Protect is off
+[  178.830088] sd 6:0:0:0: [sda] Mode Sense: d3 00 10 08
+[  178.831204] sd 6:0:0:0: [sda] Write cache: disabled, read cache: enabled, supports DPO and FUA
+[  178.845101] sd 6:0:0:0: [sda] 143374000 512-byte hardware sectors (73407 MB)
+[  178.853483] sd 6:0:0:0: [sda] Write Protect is off
+[  178.858343] sd 6:0:0:0: [sda] Mode Sense: d3 00 10 08
+[  178.859961] sd 6:0:0:0: [sda] Write cache: disabled, read cache: enabled, supports DPO and FUA
+[  178.869069]  sda: sda1 sda2 sda3 sda4
+[  178.877690] sd 6:0:0:0: [sda] Attached SCSI disk
+[  178.912356] sd 6:0:0:0: Attached scsi generic sg0 type 0
+
+(put system to sleep)
+
+[  821.678155] mptbase: ioc0: pci-suspend: pdev=0xffff81003f64a000, slot=0000:01:00.0, Entering operating state [D3]
+[  821.678195] mptbase: ioc0: Sending IOC reset(0x40)!
+[  821.813585] mptbase: ioc0: WaitForDoorbell ACK (count=16)
+[  821.814120] ACPI: PCI interrupt for device 0000:01:00.0 disabled
+
+(wake system up)
+
+[  891.307583] mptbase: ioc0: pci-resume: pdev=0xffff81003f64a000, slot=0000:01:00.0, Previous operating state [D3]
+[  891.431146] PM: Writing back config space on device 0000:01:00.0 at offset 1 (was 100000, writing 100107)
+[  891.431174] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+[  891.431179] mptbase: ioc0: pci-resume: ioc-state=0x1,doorbell=0x10000000
+[  891.431182] mptbase: Initiating ioc0 recovery
+[  891.431184] mptbase::MakeIocReady, ioc0 [raw] state=10000000
+[  891.431187] mptbase: ioc0: Sending get IocFacts request req_sz=12 reply_sz=80
+[  894.723823] mptbase: ioc0: WaitForDoorbell INT (cnt=412) howlong=5
+[  894.723826] mptbase: ioc0: HandShake request start reqBytes=12, WaitCnt=412
+[  894.723830] mptbase: ioc0: Sending get IocFacts request req_sz=12 reply_sz=80
+[  894.731815] mptbase: ioc0: WaitForDoorbell INT (cnt=1) howlong=5
+[  894.731817] mptbase: ioc0: HandShake request start reqBytes=12, WaitCnt=1
+[  894.739806] mptbase: ioc0: WaitForDoorbell ACK (count=0)
+[  894.747799] mptbase: ioc0: WaitForDoorbell ACK (count=0)
+[  894.755791] mptbase: ioc0: WaitForDoorbell ACK (count=0)
+[  894.763781] mptbase: ioc0: WaitForDoorbell ACK (count=0)
+[  894.763784] mptbase: ioc0: Handshake request frame (@ffff810028c81918) header
+[  894.763786] mptbase: ioc0: HandShake request post done, WaitCnt=0
+[  894.763789] mptbase: ioc0: WaitForDoorbell INT (cnt=0) howlong=5
+[  894.771775] mptbase: ioc0: WaitForDoorbell INT (cnt=1) howlong=5
+[  894.771778] mptbase: ioc0: WaitCnt=1 First handshake reply word=03000000
+[  894.779766] mptbase: ioc0: WaitForDoorbell INT (cnt=1) howlong=5
+[  894.779769] mptbase: ioc0: Got Handshake reply:
+[  894.779770] mptbase: ioc0: WaitForDoorbell REPLY WaitCnt=1 (sz=1)
+[  894.779772] mptbase: ioc0: HandShake reply count=1
+[  894.779775] mptbase: ioc0: ERROR - Invalid IOC facts reply, msgLength=0 offsetof=6!
+<repeat>
