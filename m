@@ -1,37 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbXIXJwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbXIXJw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbXIXJwQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 05:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbXIXJwD
+	id S1753499AbXIXJw2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 05:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbXIXJwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 05:52:03 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:32566 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751578AbXIXJwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 05:52:01 -0400
-Date: Mon, 24 Sep 2007 13:51:05 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, haveblue@us.ibm.com
-Subject: 2.6.23-rc7-mm1: r/o mounts joke with lockdep
-Message-ID: <20070924095105.GD6757@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Sep 2007 05:52:06 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:52747 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753282AbXIXJwF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 05:52:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Vsj93B69Mu6Svwd+pfs0x/8rG2ohoqwvlOwZAUCBaZlGBQCQ0xHGnmoc4oPtdSAMu2J6f0fM0LA6OM1fb9ehUAl9aVPOKhowRWSr5UwxuOJySKOfsK77su3ZPp+icrlPMYA1ITnDezcLfpbva9exqc3XP/AvAksawPf6ZShO6wo=
+Message-ID: <2cbbd8de0709240252x34d4d66ci6bd2e20e397a7cc1@mail.gmail.com>
+Date: Mon, 24 Sep 2007 11:52:03 +0200
+From: "Antoine Zen-Ruffinen" <antoine.zen@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Compilation problem with kernel 2.6.9
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-static void lock_and_coalesce_cpu_mnt_writer_counts(void)
-{
-	int cpu;
-	struct mnt_writer *cpu_writer;
+Hello,
 
-	for_each_possible_cpu(cpu) {
-		cpu_writer = &per_cpu(mnt_writers, cpu);
-		spin_lock_nested(&cpu_writer->lock, 42);
-		                                   ^^^^
+I tried to compile the kernel 2.6.9 because I want to use it with
+RTLinux and that the only 2.6.x kernel supported. I used gcc 2.95.3 as
+recommended.
+But I have an error by compilation of process.c :
 
-What the heck is going on? Given that MAX_LOCKDEP_SUBCLASSES is only 8,
-this reliably turns off lockdep at boot.
+  CC      arch/i386/kernel/process.o
+{standard input}: Assembler messages:
+{standard input}:777: Error: suffix or operands invalid for `mov'
+{standard input}:778: Error: suffix or operands invalid for `mov'
+{standard input}:978: Error: suffix or operands invalid for `mov'
+{standard input}:979: Error: suffix or operands invalid for `mov'
+{standard input}:1051: Error: suffix or operands invalid for `mov'
+{standard input}:1052: Error: suffix or operands invalid for `mov'
+{standard input}:1161: Error: suffix or operands invalid for `mov'
+{standard input}:1162: Error: suffix or operands invalid for `mov'
+{standard input}:1172: Error: suffix or operands invalid for `mov'
+{standard input}:1184: Error: suffix or operands invalid for `mov'
+make[1]: *** [arch/i386/kernel/process.o] Error 1
+make: *** [arch/i386/kernel] Error 2
 
+Can someone help me ?
