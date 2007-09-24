@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbXIXMtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759166AbXIXMtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758979AbXIXMtc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 08:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757268AbXIXMtK
+	id S1759166AbXIXMtr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 08:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbXIXMtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 08:49:10 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43192 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756590AbXIXMtI (ORCPT
+	Mon, 24 Sep 2007 08:49:13 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:45959 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757314AbXIXMtL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 08:49:08 -0400
-Message-ID: <46F7B23D.7080101@fr.ibm.com>
-Date: Mon, 24 Sep 2007 14:49:01 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, David Rientjes <rientjes@google.com>
-Subject: Re: 2.6.23-rc7-mm1 -- s390 compile failures
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <20070924123207.GB30855@shadowen.org>
-In-Reply-To: <20070924123207.GB30855@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Sep 2007 08:49:11 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, hch@infradead.org, trond.myklebust@fys.uio.no,
+       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <20070924123640.GA17409@infradead.org> (message from Christoph
+	Hellwig on Mon, 24 Sep 2007 13:36:40 +0100)
+Subject: Re: [patch 1/2] VFS: new fgetattr() file operation
+References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu> <20070924123640.GA17409@infradead.org>
+Message-Id: <E1IZnM8-0003sG-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 24 Sep 2007 14:48:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> Getting compile errors on S390:
+> On Mon, Sep 24, 2007 at 02:24:54PM +0200, Miklos Szeredi wrote:
+> > Thanks to everyone for the feedback.  Here's two of the VFS patches
+> > reworked according to comments.  I also plan to rework the setattr()
+> > patch accordingly and perhaps the xattr patch, altough that is the
+> > lowest priority.
+> > 
+> > Christoph, are these OK with you in this form?
 > 
->     CC      arch/s390/mm/cmm.o
->   arch/s390/mm/cmm.c: In function `cmm_init':
->   arch/s390/mm/cmm.c:431: error: implicit declaration of function
->   				`register_oom_notifier'
->   arch/s390/mm/cmm.c:443: error: implicit declaration of function
->   				`unregister_oom_notifier'
->   make[1]: *** [arch/s390/mm/cmm.o] Error 1
->   make: *** [arch/s390/mm] Error 2
+> Not at all.  Attribute operations like this have no business at all
+> looking at the struct file.  Please fix your dreaded filesystem to
+> implement proper unix semantics intead,
 
-yes. It's from oom-move-prototypes-to-appropriate-header-file.patch.
+It's a fixed protocol, with servers installed on millions of servers.
+The protocol is called SFTP and the server is part of the OpenSSH
+package.  There's nothing I can change there.
 
-I think this patch fixes it.
+And even if I could change the protocol, it's impossible to implement
+full UNIX semantics with a userspace server.  Please think a bit about
+it.
 
-C.
+> and if that means adding silly rename support so be it.
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
----
- arch/s390/mm/cmm.c |    1 +
- 1 file changed, 1 insertion(+)
+That's what is done currently.
 
-Index: 2.6.23-rc7-mm1/arch/s390/mm/cmm.c
-===================================================================
---- 2.6.23-rc7-mm1.orig/arch/s390/mm/cmm.c
-+++ 2.6.23-rc7-mm1/arch/s390/mm/cmm.c
-@@ -17,6 +17,7 @@
- #include <linux/ctype.h>
- #include <linux/swap.h>
- #include <linux/kthread.h>
-+#include <linux/oom.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/uaccess.h>
+But it's has various dawbacks, like rmdir doesn't work if there are
+open files within an otherwise empty directory.
+
+I'd happily accept suggestions on how to deal with this differenty.
+
+Thanks,
+Miklos
