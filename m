@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbXIXKm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbXIXKnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757941AbXIXKm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 06:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbXIXKmV
+	id S1758283AbXIXKnP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 06:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbXIXKnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 06:42:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49254 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753359AbXIXKmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 06:42:20 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+HXIg2cYWHLPrPK+VqRVQo9e3szkM+aHwF4Y7V+2
-	K+K3DQ6SWpWyoW
-Subject: Re: [git] CFS-devel, group scheduler, fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-In-Reply-To: <20070924122422.75562c41@twins>
-References: <1190144190.5204.24.camel@earth> <20070918201622.GA1632@elte.hu>
-	 <Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com>
-	 <1190183324.9737.7.camel@Homer.simpson.net>
-	 <1190188261.9185.21.camel@Homer.simpson.net>
-	 <1190191368.8687.5.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
-	 <1190264114.6411.4.camel@Homer.simpson.net>
-	 <1190272507.27867.20.camel@Homer.simpson.net>
-	 <20070920075155.GA31641@elte.hu>
-	 <1190275870.9232.6.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
-	 <1190455308.7404.19.camel@Homer.simpson.net>
-	 <1190531662.11524.15.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0709232259150.23861@tongli.jf.intel.com>
-	 <1190628609.6389.14.camel@Homer.simpson.net>
-	 <20070924122422.75562c41@twins>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 12:42:15 +0200
-Message-Id: <1190630535.7406.2.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Mon, 24 Sep 2007 06:43:00 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:52462 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753276AbXIXKnA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 06:43:00 -0400
+Message-ID: <46F7948B.7000802@linux.vnet.ibm.com>
+Date: Mon, 24 Sep 2007 16:12:19 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC][PATCH] mm: couple rcu and memory reclaim
+References: <20070924104517.7d8126ae@twins>
+In-Reply-To: <20070924104517.7d8126ae@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 12:24 +0200, Peter Zijlstra wrote:
-
-> how about something like:
+Peter Zijlstra wrote:
 > 
->  s64 delta = (s64)(vruntime - min_vruntime);
->  if (delta > 0)
->   min_vruntime += delta;
+> Just an idea I had, it seems like a good idea to wait for RCU callbacks
+> in reclaim so that we won't get all of memory stuck there.
 > 
-> That would rid us of most of the funny conditionals there.
+> If this location is too aggressive we might stick it next to
+> disable_swap_token().
+> 
+> ---
+> Couple RCU and reclaim.
+> 
+> There could be a lot of memory stuck in RCU callbacks. Wait for RCU to
+> finish before giving it another go.
+> 
+> Placed in kswapd and not direct reclaim path because kswapd never holds
+> rcu_read_lock() at this point and can thus not deadlock. Direct reclaim
+> callers might hold rcu_read_lock() and would suffer from deadlocks if
+> sync_rcu() were to be called.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  mm/vmscan.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.orig/mm/vmscan.c
+> +++ linux-2.6/mm/vmscan.c
+> @@ -1435,8 +1435,10 @@ loop_again:
+>  		unsigned long lru_pages = 0;
+> 
+>  		/* The swap token gets in the way of swapout... */
+> -		if (!priority)
+> +		if (!priority) {
+> +			synchronize_rcu();
 
-That still left me with negative min_vruntimes.  The pinned hogs didn't
-lock my box up, but I quickly got the below, so hastily killed it.
+Interesting change
 
-se.wait_max              :             7.846949
-se.wait_max              :           301.951601
-se.wait_max              :             7.071359
+1. I suspect that synchronize_rcu() is most likely to free up
+   slab pages, so shrink_slab() will clean up all the freed
+   pages. Could we add a comment to indicate the same?
+2. Shouldn't we do this in balance_pgdat() as well?
 
-	-Mike
 
+>  			disable_swap_token();
+> +		}
+> 
+>  		all_zones_ok = 1;
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
