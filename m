@@ -1,122 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761269AbXIXWYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbXIXW0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761269AbXIXWYj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 18:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760528AbXIXWYW
+	id S1761102AbXIXW0I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 18:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbXIXWZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 18:24:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35265 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760323AbXIXWYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 18:24:21 -0400
-Date: Tue, 25 Sep 2007 00:24:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: 2.6.23-rc7-mm1:  panic in scheduler
-Message-ID: <20070924222409.GA28997@elte.hu>
-References: <1190668373.5030.10.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190668373.5030.10.camel@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 24 Sep 2007 18:25:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47355 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753568AbXIXWZy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 18:25:54 -0400
+Date: Mon, 24 Sep 2007 15:25:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
+Message-Id: <20070924152532.305ec951.akpm@linux-foundation.org>
+In-Reply-To: <1190671602.26982.261.camel@localhost>
+References: <20070920195249.852667D5@kernel>
+	<20070920195320.38C8E20D@kernel>
+	<20070923231713.f81ee0db.akpm@linux-foundation.org>
+	<1190671602.26982.261.camel@localhost>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 24 Sep 2007 15:06:42 -0700
+Dave Hansen <haveblue@us.ibm.com> wrote:
 
-* Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-
-> Taking a quick look at [__]{en|de|queue_entity() and the functions 
-> they call, I see something suspicious in set_leftmost() in 
-> sched_fair.c:
+> On Sun, 2007-09-23 at 23:17 -0700, Andrew Morton wrote:
+> > It look like a false positive to me, but really, for a patchset of this
+> > complexity and maturity I cannot fathom how it could have escaped any
+> > lockdep testing.
 > 
-> static inline void
-> set_leftmost(struct cfs_rq *cfs_rq, struct rb_node *leftmost)
-> {
->         struct sched_entity *se;
+> I test with lockdep all the time.  The problem was that lockdep doesn't
+> complain until you have 8 nested locks, and I only tested on a 4-cpu
+> system.
 > 
->         cfs_rq->rb_leftmost = leftmost;
->         if (leftmost)
->                 se = rb_entry(leftmost, struct sched_entity, run_node);
-> }
+> I lowered the lockdep nesting limit to 3, and got the warning on my
+> machine.
 > 
-> Missing code?  corrupt patch?
 
-could you pull this git tree ontop of a -rc7 (or later) upstream tree:
+hm.  I saw that warning on my 2-way.  It has CONFIG_NR_CPUS=8 so perhaps
+the kernel has decided that this machine can possibly have eight CPUs.
 
-  git-pull git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+It's an old super-micro board, doesn't have ACPI.
 
-does the solve the crash?
+OEM ID: INTEL    Product ID: 440BX        APIC at: 0xFEE00000
+Processor #0 6:8 APIC version 17
+Processor #1 6:8 APIC version 17
+I/O APIC #2 Version 17 at 0xFEC00000.
+Enabling APIC mode:  Flat.  Using 1 I/O APICs
+Processors: 2
 
-the above set_leftmost() code used to be larger and now indeed those 
-bits are mostly dead code. I've queued up a clean-up patch for that - 
-see the patch below. It should not impact correctness though, so if you 
-can still trigger the crash with the latest sched-devel.git tree we'd 
-like to know about it.
+...
 
-	Ingo
+Checking if this processor honours the WP bit even in supervisor mode... Ok.
+Calibrating delay using timer specific routine.. 1707.03 BogoMIPS (lpj=3414067)
+Mount-cache hash table entries: 512
+CPU: After generic identify, caps: 0383fbff 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+CPU: L1 I cache: 16K, L1 D cache: 16K
+CPU: L2 cache: 256K
+CPU: After all inits, caps: 0383fbff 00000000 00000000 00000040 00000000 00000000 00000000 00000000
+Intel machine check architecture supported.
+Intel machine check reporting enabled on CPU#0.
+Compat vDSO mapped to ffffe000.
+Checking 'hlt' instruction... OK.
+lockdep: not fixing up alternatives.
+CPU0: Intel Pentium III (Coppermine) stepping 03
+lockdep: not fixing up alternatives.
+Booting processor 1/1 eip 2000
+Initializing CPU#1
+Calibrating delay using timer specific routine.. 1704.02 BogoMIPS (lpj=3408054)
+CPU: After generic identify, caps: 0383fbff 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+CPU: L1 I cache: 16K, L1 D cache: 16K
+CPU: L2 cache: 256K
+CPU: After all inits, caps: 0383fbff 00000000 00000000 00000040 00000000 00000000 00000000 00000000
+Intel machine check architecture supported.
+Intel machine check reporting enabled on CPU#1.
+CPU1: Intel Pentium III (Coppermine) stepping 03
+Total of 2 processors activated (3411.06 BogoMIPS).
+ExtINT not setup in hardware but reported by MP table
+ENABLING IO-APIC IRQs
+..TIMER: vector=0x31 apic1=0 pin1=2 apic2=0 pin2=0
+APIC timer registered as dummy, due to nmi_watchdog=1!
+checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+Brought up 2 CPUs
 
-------------------->
-Subject: sched: remove set_leftmost()
-From: Ingo Molnar <mingo@elte.hu>
 
-Lee Schermerhorn noticed that set_leftmost() contains dead code,
-remove this.
+One would think that the kernel would work out that eight CPUs ain't
+possible on such a machine.  But we don't seem to print out any info which
+allows me to confirm that this is really what the kernel did.
 
-Reported-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_fair.c |   14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
 
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -124,16 +124,6 @@ max_vruntime(u64 min_vruntime, u64 vrunt
- 	return min_vruntime;
- }
- 
--static inline void
--set_leftmost(struct cfs_rq *cfs_rq, struct rb_node *leftmost)
--{
--	struct sched_entity *se;
--
--	cfs_rq->rb_leftmost = leftmost;
--	if (leftmost)
--		se = rb_entry(leftmost, struct sched_entity, run_node);
--}
--
- static inline s64
- entity_key(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
-@@ -175,7 +165,7 @@ __enqueue_entity(struct cfs_rq *cfs_rq, 
- 	 * used):
- 	 */
- 	if (leftmost)
--		set_leftmost(cfs_rq, &se->run_node);
-+		cfs_rq->rb_leftmost = &se->run_node;
- 
- 	rb_link_node(&se->run_node, parent, link);
- 	rb_insert_color(&se->run_node, &cfs_rq->tasks_timeline);
-@@ -185,7 +175,7 @@ static void
- __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
- 	if (cfs_rq->rb_leftmost == &se->run_node)
--		set_leftmost(cfs_rq, rb_next(&se->run_node));
-+		cfs_rq->rb_leftmost = rb_next(&se->run_node);
- 
- 	rb_erase(&se->run_node, &cfs_rq->tasks_timeline);
- }
