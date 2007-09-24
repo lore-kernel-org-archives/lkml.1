@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764848AbXIXRBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbXIXRCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764848AbXIXRBu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 13:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759579AbXIXRB2
+	id S1763926AbXIXRCk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 13:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbXIXRCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 13:01:28 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1486 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757561AbXIXRB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 13:01:26 -0400
-Subject: Re: [RFC] New kernel-message logging API
-From: Joe Perches <joe@perches.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: holzheu@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       Rob Landley <rob@landley.net>,
-       Dick Streefland <dick.streefland@altium.nl>
-In-Reply-To: <19f34abd0709240943s13472c97ma7a4aff3a6089e8f@mail.gmail.com>
-References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
-	 <1190625742.12666.30.camel@localhost.localdomain>
-	 <1190647156.30132.92.camel@localhost>
-	 <19f34abd0709240943s13472c97ma7a4aff3a6089e8f@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 10:00:50 -0700
-Message-Id: <1190653250.2010.2.camel@localhost>
+	Mon, 24 Sep 2007 13:02:31 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:48430 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755378AbXIXRCa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 13:02:30 -0400
+Date: Mon, 24 Sep 2007 13:02:20 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: lepton <ytht.net@gmail.com>
+Cc: lkm <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] 2.6.22.6 user-mode linux: use address instead of value as argument in os_free_irq_by_cb
+Message-ID: <20070924170220.GE23078@c2.user-mode-linux.org>
+References: <20070922043955.GA4550@router.lepton.home>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070922043955.GA4550@router.lepton.home>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 18:43 +0200, Vegard Nossum wrote:
-> Storing the format-string separately allows us to hash THAT instead of
-> the formatted (ie. console output) message. Since this will never
-> change from message to message, it can be looked up in a table or
-> whatever and allow user-space to do translations without for example
-> regular expressions.
+On Sat, Sep 22, 2007 at 12:39:55PM +0800, lepton wrote:
+>   There is a bug in os_free_irq_by_cb, when the first element
+>   of active_fds list  is free, the value of active_fds is not
+>   updated, just value in stack is updated.
 
-That hash will change with each linux version given the
-inevitable spelling fixes, message reformatting and such.
+Man, that sucks.
 
-> I will follow up with some code to demonstrate as soon as I can.
+Nice spotting.
 
-Looking forward to it.
+> 
+>   The intresting thing is that without this patch, a poweroff
+>   in user mode linux guest will halt the host linux system.It
+>   seems that after the tracing thread is dead, the syscall to
+>   sys_reboot of the traced thread is executed by host. I don't
+>   know if it is another bug.
 
+I would say that you shouldn't be running UMLs as root.  However, a
+sys_reboot shouldn't escape being ptraced either.  This is a bug, but
+I don't see any connection between it and ptrace missing a final
+system call.
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
