@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762121AbXIXQee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762170AbXIXQew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762121AbXIXQee (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758785AbXIXQ0e
+	id S1762170AbXIXQew (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760342AbXIXQ0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:26:34 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:47501 "EHLO
+	Mon, 24 Sep 2007 12:26:42 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47518 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760663AbXIXQ0c (ORCPT
+	with ESMTP id S1760684AbXIXQ0j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:26:32 -0400
-Date: Mon, 24 Sep 2007 09:21:27 -0700
+	Mon, 24 Sep 2007 12:26:39 -0400
+Date: Mon, 24 Sep 2007 09:21:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -21,119 +21,274 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bfields@fieldses.org,
-       trond.myklebust@fys.uio.no, xemul@openvz.org
-Subject: [26/50] Leases can be hidden by flocks
-Message-ID: <20070924162127.GA13510@kroah.com>
+       alan@lxorguk.ukuu.org.uk, sandeen@redhat.com, hooanon05@yahoo.co.jp,
+       linux-ext4@vger.kernel.org, adilger@clusterfs.com
+Subject: [27/50] ext34: ensure do_split leaves enough free space in both
+	blocks
+Message-ID: <20070924162131.GB13510@kroah.com>
 References: <20070924161246.983665021@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="leases-can-be-hidden-by-flocks.patch"
+Content-Disposition: inline; filename="ext34-ensure-do_split-leaves-enough-free-space-in-both-blocks.patch"
 In-Reply-To: <20070924161733.GA13510@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Eric Sandeen <sandeen@redhat.com>
 
-From: Pavel Emelyanov <xemul@openvz.org>
+commit ef2b02d3e617cb0400eedf2668f86215e1b0e6af in mainline.
 
-commit 0e2f6db88a6900bc9db576d6b478b12ee60d61f7 in mainline.
+The do_split() function for htree dir blocks is intended to split a leaf
+block to make room for a new entry.  It sorts the entries in the original
+block by hash value, then moves the last half of the entries to the new
+block - without accounting for how much space this actually moves.  (IOW,
+it moves half of the entry *count* not half of the entry *space*).  If by
+chance we have both large & small entries, and we move only the smallest
+entries, and we have a large new entry to insert, we may not have created
+enough space for it.
 
-The inode->i_flock list contains the leases, flocks and posix
-locks in the specified order. However, the flocks are added in
-the head of this list thus hiding the leases from F_GETLEASE
-command, from time_out_leases() and other code that expects
-the leases to come first.
+The patch below stores each record size when calculating the dx_map, and
+then walks the hash-sorted dx_map, calculating how many entries must be
+moved to more evenly split the existing entries between the old block and
+the new block, guaranteeing enough space for the new entry.
 
-The following example will demonstrate this:
+The dx_map "offs" member is reduced to u16 so that the overall map size
+does not change - it is temporarily stored at the end of the new block, and
+if it grows too large it may be overwritten.  By making offs and size both
+u16, we won't grow the map size.
 
-#define _GNU_SOURCE
+Also add a few comments to the functions involved.
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <sys/file.h>
+This fixes the testcase reported by hooanon05@yahoo.co.jp on the
+linux-ext4 list, "ext3 dir_index causes an error"
 
-static void show_lease(int fd)
-{
-        int res;
+Thanks to Andreas Dilger for discussing the problem & solution with me.
 
-        res = fcntl(fd, F_GETLEASE);
-        switch (res) {
-                case F_RDLCK:
-                        printf("Read lease\n");
-                        break;
-                case F_WRLCK:
-                        printf("Write lease\n");
-                        break;
-                case F_UNLCK:
-                        printf("No leases\n");
-                        break;
-                default:
-                        printf("Some shit\n");
-                        break;
-        }
-}
-
-int main(int argc, char **argv)
-{
-        int fd, res;
-
-        fd = open(argv[1], O_RDONLY);
-        if (fd == -1) {
-                perror("Can't open file");
-                return 1;
-        }
-
-        res = fcntl(fd, F_SETLEASE, F_WRLCK);
-        if (res == -1) {
-                perror("Can't set lease");
-                return 1;
-        }
-
-        show_lease(fd);
-
-        if (flock(fd, LOCK_SH) == -1) {
-                perror("Can't flock shared");
-                return 1;
-        }
-
-        show_lease(fd);
-
-        return 0;
-}
-
-The first call to show_lease() will show the write lease set, but
-the second will show no leases.
-
-Fix the flock adding so that the leases always stay in the head
-of this list.
-
-Found during making the flocks pid-namespaces aware.
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Acked-by: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
+Tested-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
+Cc: Theodore Ts'o <tytso@mit.edu>
+Cc: ext4 <linux-ext4@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/locks.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ext3/namei.c |   39 +++++++++++++++++++++++++++++++++++----
+ fs/ext4/namei.c |   39 +++++++++++++++++++++++++++++++++++----
+ 2 files changed, 70 insertions(+), 8 deletions(-)
 
---- a/fs/locks.c
-+++ b/fs/locks.c
-@@ -786,7 +786,7 @@ find_conflict:
- 	if (request->fl_flags & FL_ACCESS)
- 		goto out;
- 	locks_copy_lock(new_fl, request);
--	locks_insert_lock(&inode->i_flock, new_fl);
-+	locks_insert_lock(before, new_fl);
- 	new_fl = NULL;
- 	error = 0;
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -140,7 +140,8 @@ struct dx_frame
+ struct dx_map_entry
+ {
+ 	u32 hash;
+-	u32 offs;
++	u16 offs;
++	u16 size;
+ };
  
+ #ifdef CONFIG_EXT3_INDEX
+@@ -671,6 +672,10 @@ errout:
+  * Directory block splitting, compacting
+  */
+ 
++/*
++ * Create map of hash values, offsets, and sizes, stored at end of block.
++ * Returns number of entries mapped.
++ */
+ static int dx_make_map (struct ext3_dir_entry_2 *de, int size,
+ 			struct dx_hash_info *hinfo, struct dx_map_entry *map_tail)
+ {
+@@ -684,7 +689,8 @@ static int dx_make_map (struct ext3_dir_
+ 			ext3fs_dirhash(de->name, de->name_len, &h);
+ 			map_tail--;
+ 			map_tail->hash = h.hash;
+-			map_tail->offs = (u32) ((char *) de - base);
++			map_tail->offs = (u16) ((char *) de - base);
++			map_tail->size = le16_to_cpu(de->rec_len);
+ 			count++;
+ 			cond_resched();
+ 		}
+@@ -694,6 +700,7 @@ static int dx_make_map (struct ext3_dir_
+ 	return count;
+ }
+ 
++/* Sort map by hash value */
+ static void dx_sort_map (struct dx_map_entry *map, unsigned count)
+ {
+         struct dx_map_entry *p, *q, *top = map + count - 1;
+@@ -1081,6 +1088,10 @@ static inline void ext3_set_de_type(stru
+ }
+ 
+ #ifdef CONFIG_EXT3_INDEX
++/*
++ * Move count entries from end of map between two memory locations.
++ * Returns pointer to last entry moved.
++ */
+ static struct ext3_dir_entry_2 *
+ dx_move_dirents(char *from, char *to, struct dx_map_entry *map, int count)
+ {
+@@ -1099,6 +1110,10 @@ dx_move_dirents(char *from, char *to, st
+ 	return (struct ext3_dir_entry_2 *) (to - rec_len);
+ }
+ 
++/*
++ * Compact each dir entry in the range to the minimal rec_len.
++ * Returns pointer to last entry in range.
++ */
+ static struct ext3_dir_entry_2* dx_pack_dirents(char *base, int size)
+ {
+ 	struct ext3_dir_entry_2 *next, *to, *prev, *de = (struct ext3_dir_entry_2 *) base;
+@@ -1121,6 +1136,11 @@ static struct ext3_dir_entry_2* dx_pack_
+ 	return prev;
+ }
+ 
++/*
++ * Split a full leaf block to make room for a new dir entry.
++ * Allocate a new block, and move entries so that they are approx. equally full.
++ * Returns pointer to de in block into which the new entry will be inserted.
++ */
+ static struct ext3_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+ 			struct buffer_head **bh,struct dx_frame *frame,
+ 			struct dx_hash_info *hinfo, int *error)
+@@ -1132,7 +1152,7 @@ static struct ext3_dir_entry_2 *do_split
+ 	u32 hash2;
+ 	struct dx_map_entry *map;
+ 	char *data1 = (*bh)->b_data, *data2;
+-	unsigned split;
++	unsigned split, move, size, i;
+ 	struct ext3_dir_entry_2 *de = NULL, *de2;
+ 	int	err = 0;
+ 
+@@ -1160,8 +1180,19 @@ static struct ext3_dir_entry_2 *do_split
+ 	count = dx_make_map ((struct ext3_dir_entry_2 *) data1,
+ 			     blocksize, hinfo, map);
+ 	map -= count;
+-	split = count/2; // need to adjust to actual middle
+ 	dx_sort_map (map, count);
++	/* Split the existing block in the middle, size-wise */
++	size = 0;
++	move = 0;
++	for (i = count-1; i >= 0; i--) {
++		/* is more than half of this entry in 2nd half of the block? */
++		if (size + map[i].size/2 > blocksize/2)
++			break;
++		size += map[i].size;
++		move++;
++	}
++	/* map index at which we will split */
++	split = count - move;
+ 	hash2 = map[split].hash;
+ 	continued = hash2 == map[split - 1].hash;
+ 	dxtrace(printk("Split block %i at %x, %i/%i\n",
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -140,7 +140,8 @@ struct dx_frame
+ struct dx_map_entry
+ {
+ 	u32 hash;
+-	u32 offs;
++	u16 offs;
++	u16 size;
+ };
+ 
+ #ifdef CONFIG_EXT4_INDEX
+@@ -671,6 +672,10 @@ errout:
+  * Directory block splitting, compacting
+  */
+ 
++/*
++ * Create map of hash values, offsets, and sizes, stored at end of block.
++ * Returns number of entries mapped.
++ */
+ static int dx_make_map (struct ext4_dir_entry_2 *de, int size,
+ 			struct dx_hash_info *hinfo, struct dx_map_entry *map_tail)
+ {
+@@ -684,7 +689,8 @@ static int dx_make_map (struct ext4_dir_
+ 			ext4fs_dirhash(de->name, de->name_len, &h);
+ 			map_tail--;
+ 			map_tail->hash = h.hash;
+-			map_tail->offs = (u32) ((char *) de - base);
++			map_tail->offs = (u16) ((char *) de - base);
++			map_tail->size = le16_to_cpu(de->rec_len);
+ 			count++;
+ 			cond_resched();
+ 		}
+@@ -694,6 +700,7 @@ static int dx_make_map (struct ext4_dir_
+ 	return count;
+ }
+ 
++/* Sort map by hash value */
+ static void dx_sort_map (struct dx_map_entry *map, unsigned count)
+ {
+ 	struct dx_map_entry *p, *q, *top = map + count - 1;
+@@ -1079,6 +1086,10 @@ static inline void ext4_set_de_type(stru
+ }
+ 
+ #ifdef CONFIG_EXT4_INDEX
++/*
++ * Move count entries from end of map between two memory locations.
++ * Returns pointer to last entry moved.
++ */
+ static struct ext4_dir_entry_2 *
+ dx_move_dirents(char *from, char *to, struct dx_map_entry *map, int count)
+ {
+@@ -1097,6 +1108,10 @@ dx_move_dirents(char *from, char *to, st
+ 	return (struct ext4_dir_entry_2 *) (to - rec_len);
+ }
+ 
++/*
++ * Compact each dir entry in the range to the minimal rec_len.
++ * Returns pointer to last entry in range.
++ */
+ static struct ext4_dir_entry_2* dx_pack_dirents(char *base, int size)
+ {
+ 	struct ext4_dir_entry_2 *next, *to, *prev, *de = (struct ext4_dir_entry_2 *) base;
+@@ -1119,6 +1134,11 @@ static struct ext4_dir_entry_2* dx_pack_
+ 	return prev;
+ }
+ 
++/*
++ * Split a full leaf block to make room for a new dir entry.
++ * Allocate a new block, and move entries so that they are approx. equally full.
++ * Returns pointer to de in block into which the new entry will be inserted.
++ */
+ static struct ext4_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+ 			struct buffer_head **bh,struct dx_frame *frame,
+ 			struct dx_hash_info *hinfo, int *error)
+@@ -1130,7 +1150,7 @@ static struct ext4_dir_entry_2 *do_split
+ 	u32 hash2;
+ 	struct dx_map_entry *map;
+ 	char *data1 = (*bh)->b_data, *data2;
+-	unsigned split;
++	unsigned split, move, size, i;
+ 	struct ext4_dir_entry_2 *de = NULL, *de2;
+ 	int	err = 0;
+ 
+@@ -1158,8 +1178,19 @@ static struct ext4_dir_entry_2 *do_split
+ 	count = dx_make_map ((struct ext4_dir_entry_2 *) data1,
+ 			     blocksize, hinfo, map);
+ 	map -= count;
+-	split = count/2; // need to adjust to actual middle
+ 	dx_sort_map (map, count);
++	/* Split the existing block in the middle, size-wise */
++	size = 0;
++	move = 0;
++	for (i = count-1; i >= 0; i--) {
++		/* is more than half of this entry in 2nd half of the block? */
++		if (size + map[i].size/2 > blocksize/2)
++			break;
++		size += map[i].size;
++		move++;
++	}
++	/* map index at which we will split */
++	split = count - move;
+ 	hash2 = map[split].hash;
+ 	continued = hash2 == map[split - 1].hash;
+ 	dxtrace(printk("Split block %i at %x, %i/%i\n",
 
 -- 
