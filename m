@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762845AbXIXQjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbXIXQj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762845AbXIXQjk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760768AbXIXQ1u
+	id S1759637AbXIXQj6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759148AbXIXQ2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:27:50 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:58039 "EHLO
+	Mon, 24 Sep 2007 12:28:00 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:58054 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760673AbXIXQ1s (ORCPT
+	with ESMTP id S1761001AbXIXQ16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:27:48 -0400
-Date: Mon, 24 Sep 2007 09:22:10 -0700
+	Mon, 24 Sep 2007 12:27:58 -0400
+Date: Mon, 24 Sep 2007 09:22:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,65 +21,66 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
+       Nick Bowler <nbowler@ellipticsemi.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [38/50] Fix IPV6 append OOPS.
-Message-ID: <20070924162210.GM13510@kroah.com>
+Subject: [39/50] Fix IPSEC AH4 options handling
+Message-ID: <20070924162216.GN13510@kroah.com>
 References: <20070924161246.983665021@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-ipv6-append-oops.patch"
+Content-Disposition: inline; filename="fix-ipsec-ah4-options-handling.patch"
 In-Reply-To: <20070924161733.GA13510@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+From: Nick Bowler <nbowler@ellipticsemi.com>
 
-commit e1f52208bb968291f7d9142eff60b62984b4a511 in mainline.
+commit 8ee4f391831cb96916a8e8a05f04b1c1d7dd30d8 in mainline.
 
-[IPv6]: Fix NULL pointer dereference in ip6_flush_pending_frames
+In testing our ESP/AH offload hardware, I discovered an issue with how
+AH handles mutable fields in IPv4.  RFC 4302 (AH) states the following
+on the subject:
 
-Some of skbs in sk->write_queue do not have skb->dst because
-we do not fill skb->dst when we allocate new skb in append_data().
+        For IPv4, the entire option is viewed as a unit; so even
+        though the type and length fields within most options are immutable
+        in transit, if an option is classified as mutable, the entire option
+        is zeroed for ICV computation purposes.
 
-BTW, I think we may not need to (or we should not) increment some stats
-when using corking; if 100 sendmsg() (with MSG_MORE) result in 2 packets,
-how many should we increment?
+The current implementation does not zero the type and length fields,
+resulting in authentication failures when communicating with hosts
+that do (i.e. FreeBSD).
 
-If 100, we should set skb->dst for every queued skbs.
+I have tested record route and timestamp options (ping -R and ping -T)
+on a small network involving Windows XP, FreeBSD 6.2, and Linux hosts,
+with one router.  In the presence of these options, the FreeBSD and
+Linux hosts (with the patch or with the hardware) can communicate.
+The Windows XP host simply fails to accept these packets with or
+without the patch.
 
-If 1 (or 2 (*)), we increment the stats for the first queued skb and
-we should just skip incrementing OutDiscards for the rest of queued skbs,
-adn we should also impelement this semantics in other places;
-e.g., we should increment other stats just once, not 100 times.
+I have also been trying to test source routing options (using
+traceroute -g), but haven't had much luck getting this option to work
+*without* AH, let alone with.
 
-*: depends on the place we are discarding the datagram.
-
-I guess should just increment by 1 (or 2).
-
-Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+Signed-off-by: Nick Bowler <nbowler@ellipticsemi.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/ip6_output.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ net/ipv4/ah4.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/ipv6/ip6_output.c
-+++ b/net/ipv6/ip6_output.c
-@@ -1423,8 +1423,9 @@ void ip6_flush_pending_frames(struct soc
- 	struct sk_buff *skb;
- 
- 	while ((skb = __skb_dequeue_tail(&sk->sk_write_queue)) != NULL) {
--		IP6_INC_STATS(ip6_dst_idev(skb->dst),
--			      IPSTATS_MIB_OUTDISCARDS);
-+		if (skb->dst)
-+			IP6_INC_STATS(ip6_dst_idev(skb->dst),
-+				      IPSTATS_MIB_OUTDISCARDS);
- 		kfree_skb(skb);
- 	}
- 
+--- a/net/ipv4/ah4.c
++++ b/net/ipv4/ah4.c
+@@ -46,7 +46,7 @@ static int ip_clear_mutable_options(stru
+ 			memcpy(daddr, optptr+optlen-4, 4);
+ 			/* Fall through */
+ 		default:
+-			memset(optptr+2, 0, optlen-2);
++			memset(optptr, 0, optlen);
+ 		}
+ 		l -= optlen;
+ 		optptr += optlen;
 
 -- 
