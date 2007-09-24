@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762309AbXIXSxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762178AbXIXSyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762309AbXIXSxg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbXIXSxP
+	id S1762178AbXIXSyt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbXIXSym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:53:15 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:58151 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755772AbXIXSxN (ORCPT
+	Mon, 24 Sep 2007 14:54:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58703 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756582AbXIXSyl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:53:13 -0400
-Date: Mon, 24 Sep 2007 14:53:11 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Denys Vlasenko <vda.linux@googlemail.com>
-Subject: Re: [patch 4/7] Linux Kernel Markers - Architecture Independent Code
-Message-ID: <20070924185311.GD28347@Krystal>
-References: <20070924164950.006047409@polymtl.ca> <20070924165427.717587684@polymtl.ca> <20070924174817.GB1608@infradead.org> <20070924184309.GB28347@Krystal> <20070924184522.GA5013@infradead.org>
+	Mon, 24 Sep 2007 14:54:41 -0400
+Date: Mon, 24 Sep 2007 19:54:31 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
+Message-ID: <20070924185431.GA5618@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	"Frank Ch. Eigler" <fche@redhat.com>
+References: <20070924164950.006047409@polymtl.ca> <20070924165428.335030720@polymtl.ca> <20070924175044.GD1608@infradead.org> <20070924105632.009aba7f.randy.dunlap@oracle.com> <20070924180041.GB2435@infradead.org> <20070924111318.f16cde07.randy.dunlap@oracle.com> <20070924181931.GA3810@infradead.org> <46F800A7.7090005@oracle.com> <20070924183042.GA4418@infradead.org> <46F806AB.1050509@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070924184522.GA5013@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:52:52 up 56 days, 19:11,  6 users,  load average: 0.79, 1.13, 1.11
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <46F806AB.1050509@oracle.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Mon, Sep 24, 2007 at 02:43:09PM -0400, Mathieu Desnoyers wrote:
-> > gcc doesn't like it if I put the attribute after the function in the
-> > implementation. Should I leave it before or separate the prototype from
-> > the implementation ?
+On Mon, Sep 24, 2007 at 11:49:15AM -0700, Randy Dunlap wrote:
+> I think that samples are perfectly fine for documentation and
+> that the trace example is a good example.  I think that most people
+> who need something like that would need to customize it for their
+> specific needs anyway.
 > 
-> Just keep it where it was.
-> 
-> > > There seem to be a lot of exports and some functions that don't seem
-> > > to be used by the obvious marker use-cases like your example, blktrace
-> > > or sputrace.  Care to explain why we'd really want them or better cut
-> > > them out for this first submission?
-> > 
-> > If you are referring to the exports you just told about in this email,
-> > I'll remove them, they are not needed. As for the "marker_get_iter" and
-> > friends, they are used to list the markers (I provide a /proc interface
-> > to list the markers in the subsequent modules and also use it to dump
-> > the marker list in a trace channel at trace start so I can later
-> > understand the event data by using the format strings as type
-> > identifiers).
-> 
-> Sounds conceptually fine, but can we introduce this together with
-> the actualy users?
+> We don't seem to be making progress...
 
-Sure, I'll move that down in my patch queue.
+Time to bring in a Tie-Breaker :)
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
