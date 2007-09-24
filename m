@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762351AbXIXSBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762414AbXIXSDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762351AbXIXSBM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbXIXSA6
+	id S1762414AbXIXSDI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbXIXSC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:00:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33654 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635AbXIXSA5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:00:57 -0400
-Date: Mon, 24 Sep 2007 19:00:41 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
-Message-ID: <20070924180041.GB2435@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	"Frank Ch. Eigler" <fche@redhat.com>
-References: <20070924164950.006047409@polymtl.ca> <20070924165428.335030720@polymtl.ca> <20070924175044.GD1608@infradead.org> <20070924105632.009aba7f.randy.dunlap@oracle.com>
-Mime-Version: 1.0
+	Mon, 24 Sep 2007 14:02:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42255 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754635AbXIXSC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 14:02:56 -0400
+Date: Mon, 24 Sep 2007 20:01:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, dmitry.adamushko@gmail.com,
+       linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       containers@lists.osdl.org, kamezawa.hiroyu@jp.fujitsu.com,
+       menage@google.com, efault@gmx.de
+Subject: Re: [PATCH 4/5] Add fair-user scheduler
+Message-ID: <20070924180155.GA551@elte.hu>
+References: <20070924163326.GA10291@linux.vnet.ibm.com> <20070924164059.GE10291@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070924105632.009aba7f.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070924164059.GE10291@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 10:56:32AM -0700, Randy Dunlap wrote:
-> I don't have a problem with a samples/ directory except (as I have
-> already pointed out) it means that people will end up having to look
-> in 2 places for the information that they need, i.e., both in
-> samples/ and in Documentation/.  So I really don't see a big need
-> to split the samples and docs.
-> 
-> What's wrong with building sample code in the Documentation/ directory?
 
-It's not really documentation, it's code :)  If you want to build
-documentation from the samples use kerneldoc or similar to extrace the
-comments.  Having Documentation/ purely for things not affecting the build
-make things a whole lot clearer, but if you absolutely insist on it
-we can put it under Documentation/ as long as it's fully integrated into
-kbuild and will be built as part of allmodconfig, unlike the current
-two patches showing code there.
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+
+> Enable user-id based fair group scheduling. This is usefull for anyone 
+> who wants to test the group scheduler w/o having to enable 
+> CONFIG_CGROUPS.
+
+excellent! I'll make this default-enabled.
+
+	Ingo
