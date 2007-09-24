@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbXIXWHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbXIXWIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760641AbXIXWHv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 18:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbXIXWHm
+	id S1760018AbXIXWIg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 18:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbXIXWI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 18:07:42 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:14082 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754613AbXIXWHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 18:07:41 -0400
-X-IronPort-AV: E=Sophos;i="4.20,292,1186383600"; 
-   d="txt'?scan'208";a="107433993"
-Subject: lockdep wierdness...
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary="=-chrVdzo1LP0W6ThHhrcK"
-Organization: Network Appliance Inc
-Date: Mon, 24 Sep 2007 18:07:38 -0400
-Message-Id: <1190671658.6700.31.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 24 Sep 2007 22:07:40.0285 (UTC) FILETIME=[52CC5AD0:01C7FEF7]
+	Mon, 24 Sep 2007 18:08:28 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:51991 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755745AbXIXWI1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 18:08:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=XbpU9ljX5x4VxHAgwFfTsuxXeP8n7mxxvgH9lnnkzFmpEC4chlq9KH9xhFxldDJIlhZ77S2sqSlXOkc7uLQ5WIDa5lE/LZNvFpmwbyEfwgeinUabT4z8BJysm8EYOzkNWIygOi8YPn8j32h1YlxyEHb+DA8u1MO6Mw0wMuhINxo=
+Date: Tue, 25 Sep 2007 01:08:17 +0300
+To: linux-kernel@vger.kernel.org
+Cc: hpa@zytor.com
+Subject: i386: Fix null interrupt handler (ignore_int) message ?
+Message-ID: <20070924220817.GA3447@Ahmed>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
---=-chrVdzo1LP0W6ThHhrcK
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I'm getting little confused by some ignore_int (null interrupt handler) code in
+head.S. Code notifies the user about the unknown raised interrupt by below
+string:
 
-I'm seeing lockdep warning about a potential lock inversion between
-&mm->mmap_sem and &inode->i_mutex in NFS (see attachment).
+int_msg:
+	.asciz "Unknown interrupt or fault at EIP %p %p %p\n"
 
-Unfortunately the basis for the warning appears to be the behaviour in
-ext3(???). AFAICS there is no way for NFS to share an inode->i_mutex
-with ext3. What to do?
+and prints it using below code path:
 
-Trond
+ignore_int:
+	pushl %eax; pushl %ecx; pushl %edx; pushl %es; pushl %ds
+	[...]
+	pushl 16(%esp); pushl 24(%esp); 
+	pushl 32(%esp); pushl 40(%esp); 
+	pushl $int_msg
+	[...]
+	call printk
 
---=-chrVdzo1LP0W6ThHhrcK
-Content-Description: 
-Content-Disposition: inline; filename=wierd_lockdep.txt
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
+** But here's the state of stack before calling printk:
 
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0K
-WyBJTkZPOiBwb3NzaWJsZSBjaXJjdWxhciBsb2NraW5nIGRlcGVuZGVuY3kgZGV0ZWN0ZWQgXQ0K
-Mi42LjIzLXJjNy1nODgwOWU5MjEgIzENCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCmJlYWdsZS1idWlsZC1pbi8yNDM3NSBpcyB0cnlpbmcg
-dG8gYWNxdWlyZSBsb2NrOg0KICgmbW0tPm1tYXBfc2VtKXstLS0tfSwgYXQ6IFs8YzA1YTI4ODc+
-XSBkb19wYWdlX2ZhdWx0KzB4MTdkLzB4NTkxDQoNCmJ1dCB0YXNrIGlzIGFscmVhZHkgaG9sZGlu
-ZyBsb2NrOg0KICgmaW5vZGUtPmlfbXV0ZXgpey0tLi59LCBhdDogWzxjMDU5ZjllMz5dIG11dGV4
-X2xvY2srMHgxYy8weDFmDQoNCndoaWNoIGxvY2sgYWxyZWFkeSBkZXBlbmRzIG9uIHRoZSBuZXcg
-bG9jay4NCg0KDQp0aGUgZXhpc3RpbmcgZGVwZW5kZW5jeSBjaGFpbiAoaW4gcmV2ZXJzZSBvcmRl
-cikgaXM6DQoNCi0+ICMxICgmaW5vZGUtPmlfbXV0ZXgpey0tLi59Og0KICAgICAgIFs8YzA0M2Q0
-ZGE+XSBfX2xvY2tfYWNxdWlyZSsweDlmMy8weGJhNg0KICAgICAgIFs8YzA0M2RhNjI+XSBsb2Nr
-X2FjcXVpcmUrMHg1Zi8weDc4DQogICAgICAgWzxjMDU5ZjgzMj5dIF9fbXV0ZXhfbG9ja19zbG93
-cGF0aCsweGU1LzB4MjdhDQogICAgICAgWzxjMDU5ZjllMz5dIG11dGV4X2xvY2srMHgxYy8weDFm
-DQogICAgICAgWzxmOGM5MjQ5NT5dIG5mc19yZXZhbGlkYXRlX21hcHBpbmcrMHg2NC8weDljIFtu
-ZnNdDQogICAgICAgWzxmOGM4ZmYyYT5dIG5mc19maWxlX21tYXArMHg0Ni8weDc1IFtuZnNdDQog
-ICAgICAgWzxjMDQ2MDk3Yz5dIG1tYXBfcmVnaW9uKzB4MWVhLzB4M2I4DQogICAgICAgWzxjMDQ2
-MGU5Yj5dIGRvX21tYXBfcGdvZmYrMHgyN2IvMHgyZGENCiAgICAgICBbPGMwNDA3ZDc3Pl0gc3lz
-X21tYXAyKzB4OWIvMHhiNQ0KICAgICAgIFs8YzA0MDQwNWU+XSBzeXNlbnRlcl9wYXN0X2VzcCsw
-eDVmLzB4OTkNCiAgICAgICBbPGZmZmZmZmZmPl0gMHhmZmZmZmZmZg0KDQotPiAjMCAoJm1tLT5t
-bWFwX3NlbSl7LS0tLX06DQogICAgICAgWzxjMDQzZDNjNj5dIF9fbG9ja19hY3F1aXJlKzB4OGRm
-LzB4YmE2DQogICAgICAgWzxjMDQzZGE2Mj5dIGxvY2tfYWNxdWlyZSsweDVmLzB4NzgNCiAgICAg
-ICBbPGMwNDM2MGRiPl0gZG93bl9yZWFkKzB4M2EvMHg0Yw0KICAgICAgIFs8YzA1YTI4ODc+XSBk
-b19wYWdlX2ZhdWx0KzB4MTdkLzB4NTkxDQogICAgICAgWzxjMDVhMTM4Mj5dIGVycm9yX2NvZGUr
-MHg3Mi8weDc4DQogICAgICAgWzxmODhhY2FhYz5dIGNhbGxfZmlsbGRpcisweGFjLzB4YzMgW2V4
-dDNdDQogICAgICAgWzxmODhhY2RiMj5dIGV4dDNfcmVhZGRpcisweDIxNy8weDVlNSBbZXh0M10N
-CiAgICAgICBbPGMwNDc5OGExPl0gdmZzX3JlYWRkaXIrMHg2Ny8weDkzDQogICAgICAgWzxjMDQ3
-OWFmNj5dIHN5c19nZXRkZW50cysweDVmLzB4OWQNCiAgICAgICBbPGMwNDA0MDVlPl0gc3lzZW50
-ZXJfcGFzdF9lc3ArMHg1Zi8weDk5DQogICAgICAgWzxmZmZmZmZmZj5dIDB4ZmZmZmZmZmYNCg0K
-b3RoZXIgaW5mbyB0aGF0IG1pZ2h0IGhlbHAgdXMgZGVidWcgdGhpczoNCg0KMSBsb2NrIGhlbGQg
-YnkgYmVhZ2xlLWJ1aWxkLWluLzI0Mzc1Og0KICMwOiAgKCZpbm9kZS0+aV9tdXRleCl7LS0uLn0s
-IGF0OiBbPGMwNTlmOWUzPl0gbXV0ZXhfbG9jaysweDFjLzB4MWYNCg0Kc3RhY2sgYmFja3RyYWNl
-Og0KIFs8YzA0MDUwZWU+XSBzaG93X3RyYWNlX2xvZ19sdmwrMHgxYS8weDJmDQogWzxjMDQwNWI1
-OD5dIHNob3dfdHJhY2UrMHgxMi8weDE0DQogWzxjMDQwNWI3MD5dIGR1bXBfc3RhY2srMHgxNi8w
-eDE4DQogWzxjMDQzYmMwNT5dIHByaW50X2NpcmN1bGFyX2J1Z190YWlsKzB4NWYvMHg2OA0KIFs8
-YzA0M2QzYzY+XSBfX2xvY2tfYWNxdWlyZSsweDhkZi8weGJhNg0KIFs8YzA0M2RhNjI+XSBsb2Nr
-X2FjcXVpcmUrMHg1Zi8weDc4DQogWzxjMDQzNjBkYj5dIGRvd25fcmVhZCsweDNhLzB4NGMNCiBb
-PGMwNWEyODg3Pl0gZG9fcGFnZV9mYXVsdCsweDE3ZC8weDU5MQ0KIFs8YzA1YTEzODI+XSBlcnJv
-cl9jb2RlKzB4NzIvMHg3OA0KIFs8Zjg4YWNhYWM+XSBjYWxsX2ZpbGxkaXIrMHhhYy8weGMzIFtl
-eHQzXQ0KIFs8Zjg4YWNkYjI+XSBleHQzX3JlYWRkaXIrMHgyMTcvMHg1ZTUgW2V4dDNdDQogWzxj
-MDQ3OThhMT5dIHZmc19yZWFkZGlyKzB4NjcvMHg5Mw0KIFs8YzA0NzlhZjY+XSBzeXNfZ2V0ZGVu
-dHMrMHg1Zi8weDlkDQogWzxjMDQwNDA1ZT5dIHN5c2VudGVyX3Bhc3RfZXNwKzB4NWYvMHg5OQ0K
-ID09PT09PT09PT09PT09PT09PT09PT09DQo=
+     ???            <-- 40(%esp)             
+     ???            <-- 36(%esp)
+     --> (Automatically pushed by the processor)
+     %eflags        <-- 32(%esp)
+     %cs	    <-- 28(%esp)
+     %eip	    <-- 24(%esp)
+     error-code     <-- 20(%esp)
+     --> (Pushed by first lines of ignore_int)
+     %eax	    <-- 16(%esp)
+     %ecx	    <--	12(%esp)
+     %edx	    <-- 8(%esp)
+     %es	    <-- 4(%esp)
+     %ds	    <-- %esp      
 
+Does 40(%esp) hold a meaningfule value here ?. Also why passing 4 arguments after
+the string to prinkt while the string only has 3 conversion specifications (i.e.,
+3 * %p) ?.
 
---=-chrVdzo1LP0W6ThHhrcK--
+Best regards,
+
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
