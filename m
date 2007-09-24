@@ -1,107 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761121AbXIXTRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762712AbXIXTSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761121AbXIXTRb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbXIXTRX
+	id S1762712AbXIXTSW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXIXTSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:17:23 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:42720 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755564AbXIXTRX (ORCPT
+	Mon, 24 Sep 2007 15:18:14 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:40360 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756305AbXIXTSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:17:23 -0400
-Date: Mon, 24 Sep 2007 21:14:24 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, adobriyan@sw.ru,
-       Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [PATCH] make lockdep happy with r/o bind mounts
-Message-ID: <20070924211424.16582124@lappy>
-In-Reply-To: <20070924174658.2B3D54B8@kernel>
-References: <20070924174658.2B3D54B8@kernel>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i486-pc-linux-gnu)
+	Mon, 24 Sep 2007 15:18:13 -0400
+Date: Mon, 24 Sep 2007 15:18:11 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
+       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
+Message-ID: <20070924191811.GF28347@Krystal>
+References: <20070924164950.006047409@polymtl.ca> <20070924165428.335030720@polymtl.ca> <20070924175044.GD1608@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070924175044.GD1608@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:16:44 up 56 days, 19:35,  6 users,  load average: 1.43, 0.91, 0.90
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 10:46:58 -0700 Dave Hansen <haveblue@us.ibm.com>
-wrote:
+* Christoph Hellwig (hch@infradead.org) wrote:
+> On Mon, Sep 24, 2007 at 12:49:56PM -0400, Mathieu Desnoyers wrote:
+> > Here is some documentation explaining what is/how to use the Linux
+> > Kernel Markers.
+> 
+> As mentioned in the tracing infrastructure thread I don't think
+> putting code into Documentation is a good idea.  Either of you really
+> should start a sample/ toplevel directory for this kind of stuff
+> including a Kconfig menu etc to be able to build these samples as
+> part of an allmodconfig.
+> 
 
-> 
-> With the r/o bind mount patches, we can have as many
-> spinlocks nested as there are CPUs on the system.
-> Lockdep freaks out after 8.
-> 
-> So, create a new lockdep class of locks for the
-> mnt_writer spinlocks, and initialize each of the
-> cpu locks to be in a different class.
-> 
-> It should shut up warnings like this, while still
-> allowing some of the lockdep goodness to remain:
-> 
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.23-rc6 #6
-> ---------------------------------------------
-> swapper/1 is trying to acquire lock:
->  (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
-> 
-> but task is already holding lock:
->  (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
-> 
-> other info that might help us debug this:
-> 1 lock held by swapper/1:
->  #0:  (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
-> 
-> stack backtrace:
->  [<c01034ab>] show_trace_log_lvl+0x19/0x2e
->  [<c01034d2>] show_trace+0x12/0x14
->  [<c01035be>] dump_stack+0x14/0x16
->  [<c0130ab2>] print_deadlock_bug+0xb7/0xc1
->  [<c0130afc>] check_deadlock+0x40/0x54
->  [<c013100a>] validate_chain+0x26e/0x319
->  [<c0132cca>] __lock_acquire+0x6c4/0x731
->  [<c01332da>] lock_acquire+0x7a/0x94
->  [<c031bb01>] _spin_lock+0x38/0x62
->  [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
->  [<c016c5f8>] mntput_no_expire+0x38/0xad
->  [<c015fbed>] path_release_on_umount+0x15/0x18
->  [<c016cc76>] sys_umount+0x67/0x6f
->  [<c010058a>] name_to_dev_t+0x22a/0x24c
->  [<c0427207>] prepare_namespace+0x89/0x187
->  [<c0426cdd>] kernel_init+0x9a/0xa3
->  [<c010336f>] kernel_thread_helper+0x7/0x10
->  =======================
-> 
-> Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+One should have a look at Documentation/kprobes.txt for that kind of
+example code / documentation mix.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Mathieu
 
-> ---
-> 
->  lxc-dave/fs/namespace.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff -puN fs/namespace.c~make-lockdep-happy-with-ro-bind-mounts fs/namespace.c
-> --- lxc/fs/namespace.c~make-lockdep-happy-with-ro-bind-mounts	2007-09-24 10:32:23.000000000 -0700
-> +++ lxc-dave/fs/namespace.c	2007-09-24 10:41:37.000000000 -0700
-> @@ -116,6 +116,7 @@ struct mnt_writer {
->  	 * must be ordered by cpu number.
->  	 */
->  	spinlock_t lock;
-> +	struct lock_class_key lock_class; /* compiles out with !lockdep */
->  	unsigned long count;
->  	struct vfsmount *mnt;
->  } ____cacheline_aligned_in_smp;
-> @@ -127,6 +128,7 @@ static int __init init_mnt_writers(void)
->  	for_each_possible_cpu(cpu) {
->  		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
->  		spin_lock_init(&writer->lock);
-> +		lockdep_set_class(&writer->lock, &writer->lock_class);
->  		writer->count = 0;
->  	}
->  	return 0;
-> diff -puN include/linux/lockdep.h~make-lockdep-happy-with-ro-bind-mounts include/linux/lockdep.h
-> _
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
