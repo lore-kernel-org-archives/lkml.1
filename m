@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbXIXNHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbXIXNK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbXIXNHZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbXIXNHL
+	id S1758663AbXIXNK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXIXNKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:07:11 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:57398 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413AbXIXNHJ (ORCPT
+	Mon, 24 Sep 2007 09:10:19 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:36850 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbXIXNKS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:07:09 -0400
-To: matthew@wil.cx
-CC: miklos@szeredi.hu, hch@infradead.org, trond.myklebust@fys.uio.no,
-       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <20070924125948.GM10625@parisc-linux.org> (message from Matthew
-	Wilcox on Mon, 24 Sep 2007 06:59:48 -0600)
-Subject: Re: [patch 1/2] VFS: new fgetattr() file operation
-References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu> <20070924123640.GA17409@infradead.org> <E1IZnM8-0003sG-00@dorka.pomaz.szeredi.hu> <20070924125948.GM10625@parisc-linux.org>
-Message-Id: <E1IZndW-0003uI-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 24 Sep 2007 15:06:06 +0200
+	Mon, 24 Sep 2007 09:10:18 -0400
+Message-ID: <46F7B735.2090509@fr.ibm.com>
+Date: Mon, 24 Sep 2007 15:10:13 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Vlad Yasevich <vladislav.yasevich@hp.com>
+Subject: Re: 2.6.23-rc7-mm1
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7B4F2.1040506@fr.ibm.com>
+In-Reply-To: <46F7B4F2.1040506@fr.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > and if that means adding silly rename support so be it.
-> > 
-> > That's what is done currently.
-> > 
-> > But it's has various dawbacks, like rmdir doesn't work if there are
-> > open files within an otherwise empty directory.
-> > 
-> > I'd happily accept suggestions on how to deal with this differenty.
+putting Vlad in Cc: 
+
+Cedric Le Goater wrote:
+> Andrew Morton wrote:
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
 > 
-> Only sillyrename files with nlink > 1?  I don't see how attributes can
-> change anything for a deleted file.
+> I also get this compile error on s390. 'linux/scatterlist.h' has disappeared 
+> from the #include pile but where ? 
+>
+> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c: In function `sctp_auth_calculate_hmac':
+> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c:695: error: storage size of 'sg' isn't known
+> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c:695: warning: unused variable `sg'
 
-I don't quite understand your suggestion.
+The following patch works of course but it seems to simplistic for s390.
 
-A file isn't deleted while there are still links or open files
-refering to it.  So getting the attributes for a file with nlink==0 is
-perfectly valid while the file is still open.
+Cheers,
 
-If a network filesystem protocol can't handle operations (be it data
-or metadata) on an unlinked file, we must do sillirenaming, so that
-the file is not actually unlinked.
+C.
 
-Miklos
+
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+---
+ net/sctp/auth.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: 2.6.23-rc7-mm1/net/sctp/auth.c
+===================================================================
+--- 2.6.23-rc7-mm1.orig/net/sctp/auth.c
++++ 2.6.23-rc7-mm1/net/sctp/auth.c
+@@ -36,6 +36,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/crypto.h>
++#include <linux/scatterlist.h>
+ #include <net/sctp/sctp.h>
+ #include <net/sctp/auth.h>
