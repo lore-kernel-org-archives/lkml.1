@@ -1,280 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763320AbXIXQpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763624AbXIXQop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763320AbXIXQpB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761013AbXIXQaU
+	id S1763624AbXIXQop (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761018AbXIXQ3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:30:20 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:49607 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761410AbXIXQaS (ORCPT
+	Mon, 24 Sep 2007 12:29:09 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:58187 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761310AbXIXQ3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:30:18 -0400
-Date: Mon, 24 Sep 2007 22:10:59 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-Cc: dmitry.adamushko@gmail.com, linux-kernel@vger.kernel.org,
-       dhaval@linux.vnet.ibm.com, containers@lists.osdl.org,
-       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com, efault@gmx.de
-Subject: [PATCH 4/5] Add fair-user scheduler
-Message-ID: <20070924164059.GE10291@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070924163326.GA10291@linux.vnet.ibm.com>
-Mime-Version: 1.0
+	Mon, 24 Sep 2007 12:29:07 -0400
+Date: Mon, 24 Sep 2007 09:22:56 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Larry Finger <Larry.Finger@lwfinger.net>, Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [50/50] bcm43xx: Fix cancellation of work queue crashes
+Message-ID: <20070924162256.GY13510@kroah.com>
+References: <20070924161246.983665021@mini.kroah.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070924163326.GA10291@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Disposition: inline; filename="bcm43xx-fix-cancellation-of-work-queue-crashes.patch"
+In-Reply-To: <20070924161733.GA13510@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-Enable user-id based fair group scheduling. This is usefull for anyone
-who wants to test the group scheduler w/o having to enable
-CONFIG_CGROUPS.
+port of 3f7086978fc0193eff24a77d8b57ac4debc088fa from mainline.
 
-A separate scheduling group (i.e struct task_grp) is automatically created for 
-every new user added to the system. Upon uid change for a task, it is made to 
-move to the corresponding scheduling group.
+A crash upon booting that is caused by bcm43xx has been reported [1] and
+found to be due to a work queue being reinitialized while work on that
+queue is still pending. This fix modifies the shutdown of work queues and
+prevents periodic work from being requeued during shutdown. With this patch,
+no more crashes on reboot were observed by the original reporter. I do not
+get that particular failure on my system; however, when running a large
+number of ifdown/ifup sequences, my system would kernel panic with the
+'caps lock' light blinking at roughly a 1 Hz rate. In addition, there were
+infrequent failures in the firmware that resulted in 'IRQ READY TIMEOUT'
+errors. With this patch, no more of the first type of failure occur, and
+incidence of the second type is greatly reduced.
 
-A /proc tunable (/proc/root_user_share) is also provided to tune root
-user's quota of cpu bandwidth.
+[1] http://bugzilla.kernel.org/show_bug.cgi?id=8937
 
-Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
-
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Acked-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/sched.h |    4 +++
- init/Kconfig          |   13 ++++++++++++
- kernel/sched.c        |    9 ++++++++
- kernel/sched_debug.c  |   52 ++++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/user.c         |   43 +++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 121 insertions(+)
+ drivers/net/wireless/bcm43xx/bcm43xx_main.c  |   28 +++++++++++++++++++--------
+ drivers/net/wireless/bcm43xx/bcm43xx_main.h  |    2 -
+ drivers/net/wireless/bcm43xx/bcm43xx_sysfs.c |    2 -
+ 3 files changed, 22 insertions(+), 10 deletions(-)
 
-Index: linux-2.6.23-rc6/include/linux/sched.h
-===================================================================
---- linux-2.6.23-rc6.orig/include/linux/sched.h
-+++ linux-2.6.23-rc6/include/linux/sched.h
-@@ -596,6 +596,10 @@ struct user_struct {
- 	/* Hash table maintenance information */
- 	struct hlist_node uidhash_node;
- 	uid_t uid;
-+
-+#ifdef CONFIG_FAIR_USER_SCHED
-+	struct task_grp *tg;
-+#endif
- };
+--- a/drivers/net/wireless/bcm43xx/bcm43xx_main.c
++++ b/drivers/net/wireless/bcm43xx/bcm43xx_main.c
+@@ -3183,6 +3183,9 @@ static void bcm43xx_periodic_work_handle
+ 	unsigned long orig_trans_start = 0;
  
- extern struct user_struct *find_user(uid_t);
-Index: linux-2.6.23-rc6/init/Kconfig
-===================================================================
---- linux-2.6.23-rc6.orig/init/Kconfig
-+++ linux-2.6.23-rc6/init/Kconfig
-@@ -289,6 +289,19 @@ config FAIR_GROUP_SCHED
- 	  This feature lets cpu scheduler recognize task groups and control cpu
- 	  bandwidth allocation to such task groups.
- 
-+choice
-+	depends on FAIR_GROUP_SCHED
-+	prompt "Basis for grouping tasks"
-+	default FAIR_USER_SCHED
-+
-+ 	config FAIR_USER_SCHED
-+ 		bool "user id"
-+ 		help
-+ 		  This option will choose userid as the basis for grouping
-+		  tasks, thus providing equal cpu bandwidth to each user.
-+
-+endchoice
-+
- config SYSFS_DEPRECATED
- 	bool "Create deprecated sysfs files"
- 	default y
-Index: linux-2.6.23-rc6/kernel/sched.c
-===================================================================
---- linux-2.6.23-rc6.orig/kernel/sched.c
-+++ linux-2.6.23-rc6/kernel/sched.c
-@@ -199,7 +199,12 @@ struct task_grp init_task_grp =  {
- 				.cfs_rq = init_cfs_rq_p,
- 				 };
- 
-+#ifdef CONFIG_FAIR_USER_SCHED
-+#define INIT_TASK_GRP_LOAD	2*NICE_0_LOAD
-+#else
- #define INIT_TASK_GRP_LOAD	NICE_0_LOAD
-+#endif
-+
- static int init_task_grp_load = INIT_TASK_GRP_LOAD;
- 
- /* return group to which a task belongs */
-@@ -207,7 +212,11 @@ static inline struct task_grp *task_grp(
- {
- 	struct task_grp *tg;
- 
-+#ifdef CONFIG_FAIR_USER_SCHED
-+	tg = p->user->tg;
-+#else
- 	tg  = &init_task_grp;
-+#endif
- 
- 	return tg;
- }
-Index: linux-2.6.23-rc6/kernel/sched_debug.c
-===================================================================
---- linux-2.6.23-rc6.orig/kernel/sched_debug.c
-+++ linux-2.6.23-rc6/kernel/sched_debug.c
-@@ -214,6 +214,49 @@ static void sysrq_sched_debug_show(void)
- 	sched_debug_show(NULL, NULL);
+ 	mutex_lock(&bcm->mutex);
++	/* keep from doing and rearming periodic work if shutting down */
++	if (bcm43xx_status(bcm) == BCM43xx_STAT_UNINIT)
++		goto unlock_mutex;
+ 	if (unlikely(bcm->periodic_state % 60 == 0)) {
+ 		/* Periodic work will take a long time, so we want it to
+ 		 * be preemtible.
+@@ -3228,14 +3231,10 @@ static void bcm43xx_periodic_work_handle
+ 	mmiowb();
+ 	bcm->periodic_state++;
+ 	spin_unlock_irqrestore(&bcm->irq_lock, flags);
++unlock_mutex:
+ 	mutex_unlock(&bcm->mutex);
  }
  
-+#ifdef CONFIG_FAIR_USER_SCHED
-+
-+static DEFINE_MUTEX(root_user_share_mutex);
-+
-+static int
-+root_user_share_read_proc(char *page, char **start, off_t off, int count,
-+				 int *eof, void *data)
-+{
-+	int len;
-+
-+	len = sprintf(page, "%d\n", init_task_grp_load);
-+
-+	return len;
-+}
-+
-+static int
-+root_user_share_write_proc(struct file *file, const char __user *buffer,
-+				 unsigned long count, void *data)
-+{
-+	unsigned long shares;
-+	char kbuf[sizeof(unsigned long)+1];
-+	int rc = 0;
-+
-+	if (copy_from_user(kbuf, buffer, sizeof(kbuf)))
-+		return -EFAULT;
-+
-+	shares = simple_strtoul(kbuf, NULL, 0);
-+
-+	if (!shares)
-+		shares = NICE_0_LOAD;
-+
-+	mutex_lock(&root_user_share_mutex);
-+
-+	init_task_grp_load = shares;
-+	rc = sched_group_set_shares(&init_task_grp, shares);
-+
-+	mutex_unlock(&root_user_share_mutex);
-+
-+	return (rc < 0 ? rc : count);
-+}
-+
-+#endif	/* CONFIG_FAIR_USER_SCHED */
-+
- static int sched_debug_open(struct inode *inode, struct file *filp)
+-void bcm43xx_periodic_tasks_delete(struct bcm43xx_private *bcm)
+-{
+-	cancel_rearming_delayed_work(&bcm->periodic_work);
+-}
+-
+ void bcm43xx_periodic_tasks_setup(struct bcm43xx_private *bcm)
  {
- 	return single_open(filp, sched_debug_show, NULL);
-@@ -236,6 +279,15 @@ static int __init init_sched_debug_procf
+ 	struct delayed_work *work = &bcm->periodic_work;
+@@ -3285,6 +3284,14 @@ static int bcm43xx_rng_init(struct bcm43
+ 	return err;
+ }
  
- 	pe->proc_fops = &sched_debug_fops;
++void bcm43xx_cancel_work(struct bcm43xx_private *bcm)
++{
++	/* The system must be unlocked when this routine is entered.
++	 * If not, the next 2 steps may deadlock */
++	cancel_work_sync(&bcm->restart_work);
++	cancel_rearming_delayed_work(&bcm->periodic_work);
++}
++
+ static int bcm43xx_shutdown_all_wireless_cores(struct bcm43xx_private *bcm)
+ {
+ 	int ret = 0;
+@@ -3321,7 +3328,12 @@ static void bcm43xx_free_board(struct bc
+ {
+ 	bcm43xx_rng_exit(bcm);
+ 	bcm43xx_sysfs_unregister(bcm);
+-	bcm43xx_periodic_tasks_delete(bcm);
++
++	mutex_lock(&(bcm)->mutex);
++	bcm43xx_set_status(bcm, BCM43xx_STAT_UNINIT);
++	mutex_unlock(&(bcm)->mutex);
++
++	bcm43xx_cancel_work(bcm);
  
-+#ifdef CONFIG_FAIR_USER_SCHED
-+	pe = create_proc_entry("root_user_share", 0644, NULL);
-+	if (!pe)
-+		return -ENOMEM;
-+
-+	pe->read_proc = root_user_share_read_proc;
-+	pe->write_proc = root_user_share_write_proc;
-+#endif
-+
+ 	mutex_lock(&(bcm)->mutex);
+ 	bcm43xx_shutdown_all_wireless_cores(bcm);
+@@ -4018,7 +4030,7 @@ static int bcm43xx_net_stop(struct net_d
+ 	err = bcm43xx_disable_interrupts_sync(bcm);
+ 	assert(!err);
+ 	bcm43xx_free_board(bcm);
+-	flush_scheduled_work();
++	bcm43xx_cancel_work(bcm);
+ 
  	return 0;
  }
+@@ -4150,9 +4162,9 @@ static void bcm43xx_chip_reset(struct wo
+ 	struct bcm43xx_phyinfo *phy;
+ 	int err = -ENODEV;
  
-Index: linux-2.6.23-rc6/kernel/user.c
-===================================================================
---- linux-2.6.23-rc6.orig/kernel/user.c
-+++ linux-2.6.23-rc6/kernel/user.c
-@@ -50,8 +50,41 @@ struct user_struct root_user = {
- 	.uid_keyring	= &root_user_keyring,
- 	.session_keyring = &root_session_keyring,
- #endif
-+#ifdef CONFIG_FAIR_USER_SCHED
-+	.tg		= &init_task_grp,
-+#endif
- };
++	bcm43xx_cancel_work(bcm);
+ 	mutex_lock(&(bcm)->mutex);
+ 	if (bcm43xx_status(bcm) == BCM43xx_STAT_INITIALIZED) {
+-		bcm43xx_periodic_tasks_delete(bcm);
+ 		phy = bcm43xx_current_phy(bcm);
+ 		err = bcm43xx_select_wireless_core(bcm, phy->type);
+ 		if (!err)
+--- a/drivers/net/wireless/bcm43xx/bcm43xx_main.h
++++ b/drivers/net/wireless/bcm43xx/bcm43xx_main.h
+@@ -122,7 +122,7 @@ void bcm43xx_wireless_core_reset(struct 
+ void bcm43xx_mac_suspend(struct bcm43xx_private *bcm);
+ void bcm43xx_mac_enable(struct bcm43xx_private *bcm);
  
-+#ifdef CONFIG_FAIR_USER_SCHED
-+static void sched_destroy_user(struct user_struct *up)
-+{
-+	sched_destroy_group(up->tg);
-+}
-+
-+static int sched_create_user(struct user_struct *up)
-+{
-+	int rc = 0;
-+
-+	up->tg = sched_create_group();
-+	if (IS_ERR(up->tg))
-+		rc = -ENOMEM;
-+
-+	return rc;
-+}
-+
-+static void sched_switch_user(struct task_struct *p)
-+{
-+	sched_move_task(p);
-+}
-+
-+#else	/* CONFIG_FAIR_USER_SCHED */
-+
-+static void sched_destroy_user(struct user_struct *up) { }
-+static int sched_create_user(struct user_struct *up) { return 0; }
-+static void sched_switch_user(struct task_struct *p) { }
-+
-+#endif	/* CONFIG_FAIR_USER_SCHED */
-+
- /*
-  * These routines must be called with the uidhash spinlock held!
-  */
-@@ -109,6 +142,7 @@ void free_uid(struct user_struct *up)
- 	if (atomic_dec_and_lock(&up->__count, &uidhash_lock)) {
- 		uid_hash_remove(up);
- 		spin_unlock_irqrestore(&uidhash_lock, flags);
-+		sched_destroy_user(up);
- 		key_put(up->uid_keyring);
- 		key_put(up->session_keyring);
- 		kmem_cache_free(uid_cachep, up);
-@@ -150,6 +184,13 @@ struct user_struct * alloc_uid(struct us
- 			return NULL;
- 		}
+-void bcm43xx_periodic_tasks_delete(struct bcm43xx_private *bcm);
++void bcm43xx_cancel_work(struct bcm43xx_private *bcm);
+ void bcm43xx_periodic_tasks_setup(struct bcm43xx_private *bcm);
  
-+		if (sched_create_user(new) < 0) {
-+			key_put(new->uid_keyring);
-+			key_put(new->session_keyring);
-+			kmem_cache_free(uid_cachep, new);
-+			return NULL;
-+		}
-+
- 		/*
- 		 * Before adding this, check whether we raced
- 		 * on adding the same user already..
-@@ -157,6 +198,7 @@ struct user_struct * alloc_uid(struct us
- 		spin_lock_irq(&uidhash_lock);
- 		up = uid_hash_find(uid, hashent);
- 		if (up) {
-+			sched_destroy_user(new);
- 			key_put(new->uid_keyring);
- 			key_put(new->session_keyring);
- 			kmem_cache_free(uid_cachep, new);
-@@ -184,6 +226,7 @@ void switch_uid(struct user_struct *new_
- 	atomic_dec(&old_user->processes);
- 	switch_uid_keyring(new_user);
- 	current->user = new_user;
-+	sched_switch_user(current);
+ void bcm43xx_controller_restart(struct bcm43xx_private *bcm, const char *reason);
+--- a/drivers/net/wireless/bcm43xx/bcm43xx_sysfs.c
++++ b/drivers/net/wireless/bcm43xx/bcm43xx_sysfs.c
+@@ -327,7 +327,7 @@ static ssize_t bcm43xx_attr_phymode_stor
+ 		goto out;
+ 	}
  
- 	/*
- 	 * We need to synchronize with __sigqueue_alloc()
+-	bcm43xx_periodic_tasks_delete(bcm);
++	bcm43xx_cancel_work(bcm);
+ 	mutex_lock(&(bcm)->mutex);
+ 	err = bcm43xx_select_wireless_core(bcm, phytype);
+ 	if (!err)
 
 -- 
-Regards,
-vatsa
