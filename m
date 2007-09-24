@@ -1,26 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbXIXLGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbXIXLJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbXIXLGd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 07:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbXIXLG0
+	id S1758379AbXIXLJM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 07:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbXIXLI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 07:06:26 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:53661 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753840AbXIXLGZ (ORCPT
+	Mon, 24 Sep 2007 07:08:58 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:47040 "EHLO
+	viefep32-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754934AbXIXLI5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 07:06:25 -0400
-Date: Mon, 24 Sep 2007 13:06:16 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: balbir@linux.vnet.ibm.com
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [RFC][PATCH] mm: couple rcu and memory reclaim
-Message-ID: <20070924130616.4141a084@twins>
-In-Reply-To: <46F7948B.7000802@linux.vnet.ibm.com>
-References: <20070924104517.7d8126ae@twins>
-	<46F7948B.7000802@linux.vnet.ibm.com>
+	Mon, 24 Sep 2007 07:08:57 -0400
+Date: Mon, 24 Sep 2007 13:08:51 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [git] CFS-devel, group scheduler, fixes
+Message-ID: <20070924130851.201d18ed@twins>
+In-Reply-To: <1190630535.7406.2.camel@Homer.simpson.net>
+References: <1190144190.5204.24.camel@earth>
+	<20070918201622.GA1632@elte.hu>
+	<Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com>
+	<1190183324.9737.7.camel@Homer.simpson.net>
+	<1190188261.9185.21.camel@Homer.simpson.net>
+	<1190191368.8687.5.camel@Homer.simpson.net>
+	<Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
+	<1190264114.6411.4.camel@Homer.simpson.net>
+	<1190272507.27867.20.camel@Homer.simpson.net>
+	<20070920075155.GA31641@elte.hu>
+	<1190275870.9232.6.camel@Homer.simpson.net>
+	<Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
+	<1190455308.7404.19.camel@Homer.simpson.net>
+	<1190531662.11524.15.camel@Homer.simpson.net>
+	<Pine.LNX.4.64.0709232259150.23861@tongli.jf.intel.com>
+	<1190628609.6389.14.camel@Homer.simpson.net>
+	<20070924122422.75562c41@twins>
+	<1190630535.7406.2.camel@Homer.simpson.net>
 X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,71 +44,41 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 16:12:19 +0530 Balbir Singh
-<balbir@linux.vnet.ibm.com> wrote:
+On Mon, 24 Sep 2007 12:42:15 +0200 Mike Galbraith <efault@gmx.de> wrote:
 
-> Peter Zijlstra wrote:
-> > 
-> > Just an idea I had, it seems like a good idea to wait for RCU callbacks
-> > in reclaim so that we won't get all of memory stuck there.
-> > 
-> > If this location is too aggressive we might stick it next to
-> > disable_swap_token().
-> > 
-> > ---
-> > Couple RCU and reclaim.
-> > 
-> > There could be a lot of memory stuck in RCU callbacks. Wait for RCU to
-> > finish before giving it another go.
-> > 
-> > Placed in kswapd and not direct reclaim path because kswapd never holds
-> > rcu_read_lock() at this point and can thus not deadlock. Direct reclaim
-> > callers might hold rcu_read_lock() and would suffer from deadlocks if
-> > sync_rcu() were to be called.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  mm/vmscan.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/mm/vmscan.c
-> > ===================================================================
-> > --- linux-2.6.orig/mm/vmscan.c
-> > +++ linux-2.6/mm/vmscan.c
-> > @@ -1435,8 +1435,10 @@ loop_again:
-> >  		unsigned long lru_pages = 0;
-> > 
-> >  		/* The swap token gets in the way of swapout... */
-> > -		if (!priority)
-> > +		if (!priority) {
-> > +			synchronize_rcu();
-
-Bah, it seems I send the wrong patch out :-/
-
-this is the one against disable_swap_token(). I meant to send out this
-one:
-
-@@ -1527,8 +1527,10 @@ loop_again:
-                 * OK, kswapd is getting into trouble.  Take a nap, then take
-                 * another pass across the zones.
-                 */
--               if (total_scanned && priority < DEF_PRIORITY - 2)
-+               if (total_scanned && priority < DEF_PRIORITY - 2) {
-+                       synchronize_rcu();
-                        congestion_wait(WRITE, HZ/10);
-+               }
-
- 
-> Interesting change
+> On Mon, 2007-09-24 at 12:24 +0200, Peter Zijlstra wrote:
 > 
-> 1. I suspect that synchronize_rcu() is most likely to free up
->    slab pages, so shrink_slab() will clean up all the freed
->    pages. Could we add a comment to indicate the same?
+> > how about something like:
+> > 
+> >  s64 delta = (s64)(vruntime - min_vruntime);
+> >  if (delta > 0)
+> >   min_vruntime += delta;
+> > 
+> > That would rid us of most of the funny conditionals there.
+> 
+> That still left me with negative min_vruntimes.  The pinned hogs didn't
+> lock my box up, but I quickly got the below, so hastily killed it.
+> 
+> se.wait_max              :             7.846949
+> se.wait_max              :           301.951601
+> se.wait_max              :             7.071359
+>
 
-Yes indeed, will add such a comment.
+Odd, the idea (which I think is clear) is that min_vruntime can wrap
+around the u64 spectrum. And by using min_vruntime as offset to base
+the key around, we get a signed but limited range key-space. (because
+we update min_vruntime to be the leftmost task (in a monotonic fashion))
 
-> 2. Shouldn't we do this in balance_pgdat() as well?
+So I'm having trouble with these patches, that is, both your wrap
+around condition of:
 
-Uhm, this is balance_pgdat() (both these changes) :-)
+  if (likely(new_rq->cfs.min_vruntime))
 
-Only kswapd can do this, direct reclaim has deadlock potential.
+as well as the last patchlet:
+
+  if (((s64)vruntime > (s64)min_vruntime) ||
+
+in that neither of these changes make sense in what its trying to do.
+
+Its perfectly valid for min_vruntime to exist in 1ULL << 63.
+
