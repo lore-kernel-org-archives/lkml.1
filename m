@@ -1,111 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762772AbXIXTKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbXIXTLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762772AbXIXTKv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbXIXTKn
+	id S1762984AbXIXTLT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759138AbXIXTLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:10:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40609 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756677AbXIXTKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:10:42 -0400
-Message-ID: <46F80BB1.7050902@redhat.com>
-Date: Mon, 24 Sep 2007 15:10:41 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: IDE/ATA development list <linux-ide@vger.kernel.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: IDE broken on Pegasos PPC platform
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Sep 2007 15:11:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45658 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756235AbXIXTLD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 15:11:03 -0400
+Date: Mon, 24 Sep 2007 12:10:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
+Message-Id: <20070924121035.8d8c6ce2.akpm@linux-foundation.org>
+In-Reply-To: <20070924175411.GA2314@infradead.org>
+References: <20070920195249.852667D5@kernel>
+	<20070920195320.38C8E20D@kernel>
+	<20070924175411.GA2314@infradead.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Without this patch, taken from a Suse 2.6.22 kernel, the Pegasos
-PPC machines can't use their IDE interface. Is this the right fix?
+On Mon, 24 Sep 2007 18:54:11 +0100
+Christoph Hellwig <hch@infradead.org> wrote:
 
-Bug:
-https://bugzilla.redhat.com/show_bug.cgi?id=247602
-Patch (also below):
-https://bugzilla.redhat.com/attachment.cgi?id=167747
+> As we already say in various messages the percpu counters in here
+> look rather fishy.  I'd recomment to take a look at the per-cpu
+> superblock counters in XFS as they've been debugged quite well
+> now and could probably be lifted into a generic library for this
+> kind of think.  The code is mostly in fs/xfs/xfs_mount.c can
+> can be spotted by beeing under #ifdef HAVE_PERCPU_SB.
+> 
+> It also handles cases like hotplug cpu nicely that this code
+> seems to work around by always iterating over all possible cpus
+> which might not be nice on a dual core laptop with a distro kernel
+> that also has to support big iron.
 
-===============
-
-The built-in IDE controller is configured in legacy mode,
-but the PCI registers advertise native mode.
-Force the PCI class into legacy mode. This allows pata_via to access
-two drives.
-The Pegasos specific irq enforcement in the via82cxxx driver
-must stay because there is aparently no generic way to setup irq per channel.
-
-Tested on Pegasos2 with firmware version 20040810, and two IDE disks.
-
----
- arch/powerpc/kernel/prom_init.c   |   11 ++++++++---
- arch/powerpc/platforms/chrp/pci.c |   29 +++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+), 3 deletions(-)
-
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -2044,6 +2044,7 @@ static void __init fixup_device_tree_map
- /*
-  * Pegasos and BriQ lacks the "ranges" property in the isa node
-  * Pegasos needs decimal IRQ 14/15, not hexadecimal
-+ * Pegasos has the IDE configured in legacy mode, but advertised as native
-  */
- static void __init fixup_device_tree_chrp(void)
- {
-@@ -2081,9 +2082,13 @@ static void __init fixup_device_tree_chr
- 		prom_printf("Fixing up IDE interrupt on Pegasos...\n");
- 		prop[0] = 14;
- 		prop[1] = 0x0;
--		prop[2] = 15;
--		prop[3] = 0x0;
--		prom_setprop(ph, name, "interrupts", prop, 4*sizeof(u32));
-+		prom_setprop(ph, name, "interrupts", prop, 2*sizeof(u32));
-+		prom_printf("Fixing up IDE class-code on Pegasos...\n");
-+		rc = prom_getprop(ph, "class-code", prop, sizeof(u32));
-+		if (rc == sizeof(u32)) {
-+			prop[0] &= ~0x5;
-+			prom_setprop(ph, name, "class-code", prop, sizeof(u32));
-+		}
- 	}
- }
- #else
---- a/arch/powerpc/platforms/chrp/pci.c
-+++ b/arch/powerpc/platforms/chrp/pci.c
-@@ -338,3 +338,32 @@ void chrp_pci_fixup_winbond_ata(struct p
- }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
- 		chrp_pci_fixup_winbond_ata);
-+
-+/* Pegasos2 firmware version 20040810 configures the built-in IDE controller
-+ * in legacy mode, but sets the PCI registers to PCI native mode.
-+ * The chip can only operate in legacy mode, so force the PCI class into legacy
-+ * mode as well. The same fixup must be done to the class-code property in
-+ * the IDE node /pci@80000000/ide@C,1
-+ */
-+static void chrp_pci_fixup_vt8231_ata(struct pci_dev *viaide)
-+{
-+	u8 progif;
-+	struct pci_dev *viaisa;
-+
-+	if (!machine_is(chrp) || _chrp_type != _CHRP_Pegasos)
-+		return;
-+	if (viaide->irq != 14)
-+		return;
-+
-+	viaisa = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8231, NULL);
-+	if (!viaisa)
-+		return;
-+	printk("Fixing VIA IDE, force legacy mode on '%s'\n", viaide->dev.bus_id);
-+
-+	pci_read_config_byte(viaide, PCI_CLASS_PROG, &progif);
-+	pci_write_config_byte(viaide, PCI_CLASS_PROG, progif & ~0x5);
-+	viaide->class &= ~0x5;
-+
-+	pci_dev_put(viaisa);
-+}
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_1, chrp_pci_fixup_vt8231_ata);
+hm.  How come xfs invented a new version of percpu_counters?
