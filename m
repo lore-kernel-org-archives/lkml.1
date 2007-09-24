@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbXIXHY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbXIXHfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757070AbXIXHY2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 03:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbXIXHYV
+	id S1755814AbXIXHfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 03:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbXIXHfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 03:24:21 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45814 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835AbXIXHYU (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 03:24:20 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Uninline kcalloc()
-In-Reply-To: Your message of "Mon, 24 Sep 2007 08:22:31 +0200."
-             <Pine.LNX.4.64.0709240821340.23305@fbirervta.pbzchgretzou.qr>
-From: Valdis.Kletnieks@vt.edu
-References: <20070922200349.GA2119@martell.zuzino.mipt.ru> <25045.1190612108@turing-police.cc.vt.edu>
-            <Pine.LNX.4.64.0709240821340.23305@fbirervta.pbzchgretzou.qr>
+	Mon, 24 Sep 2007 03:35:33 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:40340 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751756AbXIXHfd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 03:35:33 -0400
+Date: Mon, 24 Sep 2007 09:35:23 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Hugh Dickins <hugh@veritas.com>, Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       spamtrap@knobisoft.de
+Subject: Re: 2.6.23-rc6-mm1 -- mkfs stuck in 'D'
+Message-ID: <20070924093523.0fec7330@twins>
+In-Reply-To: <390602872.13640@ustc.edu.cn>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070919164348.GC2519@shadowen.org>
+	<Pine.LNX.4.64.0709192035370.14804@blonde.wat.veritas.com>
+	<20070919224409.24baa75b@lappy>
+	<Pine.LNX.4.64.0709201210470.13752@blonde.wat.veritas.com>
+	<390426111.11400@ustc.edu.cn>
+	<20070922151622.711178e2@lappy>
+	<390510451.02278@ustc.edu.cn>
+	<20070923150235.284b49bf@twins>
+	<390602872.13640@ustc.edu.cn>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190618652_3132P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Sep 2007 03:24:12 -0400
-Message-ID: <3721.1190618652@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190618652_3132P
-Content-Type: text/plain; charset=us-ascii
+On Mon, 24 Sep 2007 11:01:10 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn>
+wrote:
 
-On Mon, 24 Sep 2007 08:22:31 +0200, Jan Engelhardt said:
+> > That is an interesting idea how about this:
 > 
-> On Sep 24 2007 01:35, Valdis.Kletnieks@vt.edu wrote:
-> >On Sun, 23 Sep 2007 00:03:49 +0400, Alexey Dobriyan said:
-> >
-> >> -static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
-> >> -{
-> >> -	if (n != 0 && size > ULONG_MAX / n)
-> >> -		return NULL;
-> >> -	return __kmalloc(n * size, flags | __GFP_ZERO);
-> >> -}
-> >> +void *kcalloc(size_t n, size_t size, gfp_t flags);
-> >
-> >NAK.
-> >
-> >This busticates some pretty subtle code in mm/slab.c that uses
-> >uses __builtin_return_address() for debugging - if you do this, then
-> >the "calling function" gets listed as "kcalloc()" rather than the much more
-> >useful "function that called kcalloc()" (which is what you care about).
-> >
-> >(I remember going around and around multiple times getting those stupid
-> >inlines set up right, so that feature actually did something useful, otherwise
-> >kcalloc and kzalloc didn't report where they were called from).
+> It looks like a workaround, but it does solve the most important problem.
+> And it is a good logic by itself.  So I'd vote for it.
 > 
-> Since 'inline' is only a hint , should not it be __always_inline,
-> so that __builtin_return_address() always works?
+> The fundamental problem is that the per-bdi-writeback-completion based
+> estimation is not accurate under light loads. The problem remains for
+> a light-load sda when there is a heavy-load sdb. 
 
-At the time I was trying to fix that, saying "inline" actually forced it
-to be so.  Probably need to go re-check that, since there's been about
-forty-leven different "tweak the semantics of inline" since then....
+Well, sure, in that case sda would get to write out a lot of small
+things. But in that case it would be fair wrt the other writers.
 
---==_Exmh_1190618652_3132P
-Content-Type: application/pgp-signature
+> One more workaround
+> could be to grant bdi(s) a minimal bdi_thresh. 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Ah, no, that is no good. For if there were a lot of BDIs this might
+happen:
+  nr_bdis * min_thresh > dirty_limit.
 
-iD8DBQFG92YccC3lWbTT17ARAhHyAJ0bUKdrFU9L+TMXDpSHwx2UiBS4/wCdHv2F
-OwedN+mpvKrcNTSvcCmEZAA=
-=P5C0
------END PGP SIGNATURE-----
+> Or better to adjust the estimation logic?
 
---==_Exmh_1190618652_3132P--
+Not sure what we can do here. The current thing is simple, fast and fair.
+
+> > +		/*
+> > +		 * break out early when:
+> > +		 *  - we're below the bdi limit
+> > +		 *  - we're below half the total limit
+> > +		 *
+> > +		 * we let the numbers exceed the strict bdi limit if the total
+> > +		 * numbers are too low, this avoids (excessive) small writeouts.
+> > +		 */
+> > +		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh ||
+> > +		    nr_reclaimable + nr_writeback < dirty_thresh / 2)
+> >  			break;
+> 
+> This may be slightly better:
+> 
+> 		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+>                         break;
+>                 /*
+>                  * Throttle it only when the background writeback cannot catchup.
+>                  */
+>                 if (nr_reclaimable + nr_writeback <
+>                                 (background_thresh + dirty_thresh) / 2)
+> 			break;
+
+Ah, indeed. Good idea.
