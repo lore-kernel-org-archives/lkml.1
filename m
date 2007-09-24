@@ -1,95 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761934AbXIXQde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbXIXQdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761934AbXIXQde (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760630AbXIXQ0X
+	id S1761627AbXIXQdt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760486AbXIXQ02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:26:23 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:47468 "EHLO
+	Mon, 24 Sep 2007 12:26:28 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47488 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760571AbXIXQ0V (ORCPT
+	with ESMTP id S1760651AbXIXQ01 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:26:21 -0400
-Date: Mon, 24 Sep 2007 09:21:18 -0700
+	Mon, 24 Sep 2007 12:26:27 -0400
+Date: Mon, 24 Sep 2007 09:21:22 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux1394-devel@lists.sourceforge.net,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [24/50] firewire: fw-ohci: ignore failure of pci_set_power_state
-	(fix suspend regression)
-Message-ID: <20070924162118.GY13510@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, arnd@arndb.de, davem@davemloft.net,
+       tglx@linutronix.de, mingo@elte.hu
+Subject: [25/50] futex_compat: fix list traversal bugs
+Message-ID: <20070924162122.GZ13510@kroah.com>
 References: <20070924161246.983665021@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="firewire-fw-ohci-ignore-failure-of-pci_set_power_state.patch"
+Content-Disposition: inline; filename="futex_compat-fix-list-traversal-bugs.patch"
 In-Reply-To: <20070924161733.GA13510@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Minor regression since 2.6.22-rc1:  If the experimental firewire-ohci
-driver instead of ohci1394 was loaded, iBook G3 and older PowerBooks
-refused to suspend.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Same as commit 5511142870046a7bed947d51ec9b320856ee120a plus format
-string touch-ups from 8a8cea2734808522f02941ea16125810ee42c9c7,
-"firewire: missing newline in printk".  Original patch description:
+commit 179c85ea53bef807621f335767e41e23f86f01df in mainline.
 
-Fixes (papers over) "Sleep problems with kernels >= 2.6.21 on powerpc",
-http://lkml.org/lkml/2007/8/25/155.  The issue is that the FireWire
-controller's pci_dev.current_state of iBook G3 and presumably older
-PowerBooks is still in PCI_UNKNOWN instead of PCI_D0 when the firewire
-driver's .suspend method is called.
+The futex list traversal on the compat side appears to have
+a bug.
 
-Like it was suggested earlier in http://lkml.org/lkml/2006/10/24/13, we
-do not fail .suspend anymore if pci_set_power_state failed.
+It's loop termination condition compares:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+        while (compat_ptr(uentry) != &head->list)
+
+But that can't be right because "uentry" has the special
+"pi" indicator bit still potentially set at bit 0.  This
+is cleared by fetch_robust_entry() into the "entry"
+return value.
+
+What this seems to mean is that the list won't terminate
+when list iteration gets back to the the head.  And we'll
+also process the list head like a normal entry, which could
+cause all kinds of problems.
+
+So we should check for equality with "entry".  That pointer
+is of the non-compat type so we have to do a little casting
+to keep the compiler and sparse happy.
+
+The same problem can in theory occur with the 'pending'
+variable, although that has not been reported from users
+so far.
+
+Based on the original patch from David Miller.
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: David Miller <davem@davemloft.net>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/firewire/fw-ohci.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ kernel/futex_compat.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/firewire/fw-ohci.c
-+++ b/drivers/firewire/fw-ohci.c
-@@ -1934,14 +1934,12 @@ static int pci_suspend(struct pci_dev *p
- 	free_irq(pdev->irq, ohci);
- 	err = pci_save_state(pdev);
- 	if (err) {
--		fw_error("pci_save_state failed with %d", err);
-+		fw_error("pci_save_state failed with %d\n", err);
- 		return err;
- 	}
- 	err = pci_set_power_state(pdev, pci_choose_state(pdev, state));
--	if (err) {
--		fw_error("pci_set_power_state failed with %d", err);
--		return err;
--	}
-+	if (err)
-+		fw_error("pci_set_power_state failed with %d\n", err);
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -61,10 +61,10 @@ void compat_exit_robust_list(struct task
+ 	if (fetch_robust_entry(&upending, &pending,
+ 			       &head->list_op_pending, &pip))
+ 		return;
+-	if (upending)
++	if (pending)
+ 		handle_futex_death((void __user *)pending + futex_offset, curr, pip);
  
- 	return 0;
- }
-@@ -1955,7 +1953,7 @@ static int pci_resume(struct pci_dev *pd
- 	pci_restore_state(pdev);
- 	err = pci_enable_device(pdev);
- 	if (err) {
--		fw_error("pci_enable_device failed with %d", err);
-+		fw_error("pci_enable_device failed with %d\n", err);
- 		return err;
- 	}
- 
+-	while (compat_ptr(uentry) != &head->list) {
++	while (entry != (struct robust_list __user *) &head->list) {
+ 		/*
+ 		 * A pending lock might already be on the list, so
+ 		 * dont process it twice:
 
 -- 
