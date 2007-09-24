@@ -1,56 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbXIXQ5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763439AbXIXQ53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758784AbXIXQ5H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760183AbXIXQ4q
+	id S1763439AbXIXQ53 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759278AbXIXQ44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:56:46 -0400
-Received: from mail.nagafix.co.uk ([194.145.196.85]:41028 "EHLO
-	mail.nagafix.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757610AbXIXQ4p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:56:45 -0400
-Message-ID: <46F7EC47.9010803@nagafix.co.uk>
-Date: Mon, 24 Sep 2007 17:56:39 +0100
-From: Antoine Martin <antoine@nagafix.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070806)
-MIME-Version: 1.0
-To: tytso@thunk.org, Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: bug in fsck or ext2/ext3?
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=F18AD6BB;
-	url=http://users.nagafix.co.uk/~antoine/antoine.asc
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Sep 2007 12:56:56 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41882 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763439AbXIXQ4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:56:54 -0400
+Message-Id: <20070924165427.171557835@polymtl.ca>
+References: <20070924164950.006047409@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 24 Sep 2007 12:49:52 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 2/7] Sort module list by pointer address to get coherent sleepable seq_file iterators
+Content-Disposition: inline; filename=module.c-sort-module-list.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 24 Sep 2007 16:54:27 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+A race that appears both in /proc/modules and in kallsyms: if, between the
+seq file reads, the process is put to sleep and at this moment a module is
+or removed from the module list, the listing will skip an amount of
+modules/symbols corresponding to the amount of elements present in the unloaded
+module, but at the current position in the list if the iteration is located
+after the removed module.
 
-Hi Ted / LKML,
+The cleanest way I found to deal with this problem is to sort the module list.
+We can then keep the old struct module * as the old iterator, knowing the it may
+be removed between the seq file reads, but we only use it as "get next". If it
+is not present in the module list, the next pointer will be used.
 
-I've got this snapshot of an ext3 filesystem with a directory that
-simply cannot be removed! (image below is just 1.2MB)
-As root:
-# wget http://users.nagafix.co.uk/~antoine/root-broken.bz2
-# bunzip2 root-broken.bz2
-# mount -o loop -t ext2 root-broken ./tmp
-# rm -fr tmp/chroot.broken
-rm: cannot remove directory (...)
-Same result when trying to do anything to those files chown/chmod/touch:
-"Operation not permitted"
+By doing this, removing a given module will now only fuzz the output related to
+this specific module, not any random module anymore. Since modprobe uses
+/proc/modules, it might be important to make sure multiple concurrent running
+modprobes won't interfere with each other.
 
-Tested with e2fsprogs v1.39 on 3 systems.
-Not sure where else to post this...
 
-Cheers
-Antoine
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Small test program for this:
 
-iD8DBQFG9+xHGK2zHPGK1rsRCn6/AJ0S9/D1LTTxsi69uVovKRURa1fFhACfcEzx
-8I6nOimUYCFKh9oX6ebnLc0=
-=FhTL
------END PGP SIGNATURE-----
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define BUFSIZE 1024
+
+int main()
+{
+	int fd = open("/proc/modules", O_RDONLY);
+	char buf[BUFSIZE];
+	ssize_t size;
+
+	do {
+		size = read(fd, buf, 1);
+		printf("%c", buf[0]);
+		usleep(100000);
+	} while(size > 0);
+
+	close(fd);
+	return 0;
+}
+
+
+Actual test (kernel 2.6.23-rc3):
+
+dijkstra:~# lsmod
+Module                  Size  Used by
+pl2303                 18564  0
+usbserial              29032  1 pl2303
+ppdev                   7844  0
+sky2                   37476  0
+skge                   36368  0
+rtc                    10104  0
+snd_hda_intel         265628  0
+
+  (here, while we are printing the 2nd line, I rmmod pl2303)
+compudj@dijkstra:~/test$ ./module
+pl2303 18564 0 - Live 0xf886e000
+usbserial 29032 1 pl2303, Live 0xf8865000
+sky2 37476 0 - Live 0xf884f000
+skge 36368 0 - Live 0xf8838000
+rtc 10104 0 - Live 0xf8825000
+
+We see the the 2nd line is garbage.
+
+Now, with my patch applied:
+  (here, while we are printing the rtc module, I rmmod rtc)
+nd_hda_intel 268708 0 - Live 0xf8820000
+ltt_control 2372 0 - Live 0xf8866000
+rtc 10392 0 - Live 0xf886d000
+skge 36768 0 - Live 0xf8871000
+ltt_statedump 8516 0 - Live 0xf887b000
+
+We see that since the rtc line was already in the buffer, it has been
+printed completely.
+
+
+  (here, while we are printing the skge module, I rmmod rtc)
+snd_hda_intel 268708 0 - Live 0xf8820000
+ltt_control 2372 0 - Live 0xf8866000
+rtc 10392 0 - Live 0xf886d000
+skge 36768 0 - Live 0xf8871000
+ltt_statedump 8516 0 - Live 0xf887b000
+sky2 38420 0 - Live 0xf88cd000
+
+We see that the iteration continued at the same position even though the
+rtc module, located in earlier addresses, was removed.
+
+Changelog:
+
+When reading the data by small chunks (i.e. byte by byte), the index (ppos) is
+incremented by seq_read() directly and no "next" callback is called when going
+to the next module.
+
+Therefore, use ppos instead of m->private to deal with the fact that this index
+is incremented directly to pass to the next module in seq_read() after the
+buffer has been emptied.
+
+Before fix, it prints the first module indefinitely. The patch fixes
+this.
+
+Changelog:
+- Remove module_mutex usage: depend on functions implemented in module.c for
+  that.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ kernel/module.c |   23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
+
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2007-09-21 14:19:51.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2007-09-21 14:20:43.000000000 -0400
+@@ -63,7 +63,8 @@ extern int module_sysfs_initialized;
+ #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
+ 
+ /* List of modules, protected by module_mutex or preempt_disable
+- * (add/delete uses stop_machine). */
++ * (add/delete uses stop_machine). Sorted by ascending list node address.
++ */
+ static DEFINE_MUTEX(module_mutex);
+ static LIST_HEAD(modules);
+ static DECLARE_MUTEX(notify_mutex);
+@@ -2116,10 +2117,24 @@ nomodsectinfo:
+ /*
+  * link the module with the whole machine is stopped with interrupts off
+  * - this defends against kallsyms not taking locks
++ * We sort the modules by struct module pointer address to permit correct
++ * iteration over modules of, at least, kallsyms for preemptible operations,
++ * such as read(). Sorting by struct module pointer address is equivalent to
++ * sort by list node address.
+  */
+ static int __link_module(void *_mod)
+ {
+-	struct module *mod = _mod;
++	struct module *mod = _mod, *iter;
++
++	list_for_each_entry_reverse(iter, &modules, list) {
++		BUG_ON(iter == mod);	/* Should never be in the list twice */
++		if (iter < mod) {
++			/* We belong to the location right after iter. */
++			list_add(&mod->list, &iter->list);
++			return 0;
++		}
++	}
++	/* We should be added at the head of the list */
+ 	list_add(&mod->list, &modules);
+ 	return 0;
+ }
+@@ -2384,12 +2399,12 @@ unsigned long module_kallsyms_lookup_nam
+ static void *m_start(struct seq_file *m, loff_t *pos)
+ {
+ 	mutex_lock(&module_mutex);
+-	return seq_list_start(&modules, *pos);
++	return seq_sorted_list_start(&modules, pos);
+ }
+ 
+ static void *m_next(struct seq_file *m, void *p, loff_t *pos)
+ {
+-	return seq_list_next(p, &modules, pos);
++	return seq_sorted_list_next(p, &modules, pos);
+ }
+ 
+ static void m_stop(struct seq_file *m, void *p)
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
