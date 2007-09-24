@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbXIXI2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbXIXIbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbXIXI2W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 04:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbXIXI2P
+	id S1757510AbXIXIbI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 04:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbXIXIa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 04:28:15 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37468 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbXIXI2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 04:28:14 -0400
-Date: Mon, 24 Sep 2007 10:29:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Christoph Hellwig <hch@infradead.org>, Alexey Dobriyan <adobriyan@sw.ru>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH] Move kasprintf.o to obj-y
-Message-ID: <20070924082940.GA1981@uranus.ravnborg.org>
-References: <20070924071826.GA6757@localhost.sw.ru> <20070924074110.GA7721@infradead.org> <20070924075949.GA1742@uranus.ravnborg.org> <20070924080948.GA8525@infradead.org>
+	Mon, 24 Sep 2007 04:30:59 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:7294
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754745AbXIXIa6 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 04:30:58 -0400
+Message-Id: <46F79221.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 24 Sep 2007 09:32:01 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
+Subject: Re: [patches] [PATCH] [15/50] x86_64: Return EINVAL for
+	unknown addressin change_page_attr
+References: <200709221231.836138000@suse.de>
+ <20070921223213.D92CC13DCD@wotan.suse.de>
+In-Reply-To: <20070921223213.D92CC13DCD@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070924080948.GA8525@infradead.org>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 09:09:48AM +0100, Christoph Hellwig wrote:
-> On Mon, Sep 24, 2007 at 09:59:49AM +0200, Sam Ravnborg wrote:
-> > > Please kill lib-y while you're at it.  It's useless and a constant
-> > > source of pain like this.
-> > Kernel-bloat is another "constant source of pain".
-> > But the troubles are that increased blot does not result in compiler erros.
-> > 
-> > And your proposal to kil lib-y is a counter-act here.
-> 
-> Killing lib-y doesn't create kernel bloat if done right.  Just introduce
-> proper Kconfig dependencies for the truely optional parts.  But if you
-> look at the list of objects in lib-y you'll see that they fall in basically
-> three categories:
-> 
->  (1) always used by core code - should be obj-y
->  (2) generic implementation for arch-specific functionality, should be
->      guarded by Kconfig for clarity reasons anyway
->  (3) library code often but not always used by code that's not always
->      built in.  Here we run into the move to obj-y to avoid compiler
->      warning when used as module issue all the time.  Adding a CONFIG
->      for the bigger onces actually avoids bloat over obj-y here, and
->      when it's small enough obj-y is a lot safer in the presence of
->      modular users
-> 
-> Really, trying to use the old static library use on demand concept simply
-> doesn't fit the way the kernel is built with it's modules and dependencies.
+This should be accompanied by
 
-I objected to just killing lib-y (the way I read your original proposal).
-If we introduce proper kconfig dependencies as in (3) then I am all for it.
+ 			addr2 = __START_KERNEL_map + __pa(address);
+ 			/* Make sure the kernel mappings stay executable */
+ 			prot2 = pte_pgprot(pte_mkexec(pfn_pte(0, prot)));
+-			err = __change_page_attr(addr2, pfn, prot2,
++			(void)__change_page_attr(addr2, pfn, prot2,
+ 						 kref_prot(addr2));
+ 		} 
+ 	} 	
 
-	Sam
+as otherwise it is non-obvious why there's no check of err (which so far really
+was missing). The reason this must be tolerated here is free_init_pages()/
+free_initmem() removing the translation for the affected kernel image pages
+altogether.
+
+Jan
+
+>>> Andi Kleen <ak@suse.de> 22.09.07 00:32 >>>
+
+Matches what i386 does and makes more sense.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ arch/x86_64/mm/pageattr.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux/arch/x86_64/mm/pageattr.c
+===================================================================
+--- linux.orig/arch/x86_64/mm/pageattr.c
++++ linux/arch/x86_64/mm/pageattr.c
+@@ -151,7 +151,9 @@ __change_page_attr(unsigned long address
+ 	pgprot_t ref_prot2;
+ 
+ 	kpte = lookup_address(address);
+-	if (!kpte) return 0;
++	if (!kpte)
++		return -EINVAL;
++
+ 	kpte_page = virt_to_page(((unsigned long)kpte) & PAGE_MASK);
+ 	BUG_ON(PageCompound(kpte_page));
+ 	BUG_ON(PageLRU(kpte_page));
+_______________________________________________
+patches mailing list
+patches@x86-64.org 
+https://www.x86-64.org/mailman/listinfo/patches
+
