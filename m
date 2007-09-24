@@ -1,51 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764338AbXIXQ5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbXIXQ6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764338AbXIXQ5s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758398AbXIXQ5B
+	id S1763531AbXIXQ6I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757782AbXIXQ5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:57:01 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:7264 "EHLO kernel.dk"
+	Mon, 24 Sep 2007 12:57:06 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41903 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763649AbXIXQ47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:56:59 -0400
-Date: Mon, 24 Sep 2007 18:58:14 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Vlad Yasevich <vladislav.yasevich@hp.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: 2.6.23-rc7-mm1
-Message-ID: <20070924165813.GH2367@kernel.dk>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7B4F2.1040506@fr.ibm.com> <46F7B735.2090509@fr.ibm.com> <46F7BB9E.70504@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F7BB9E.70504@hp.com>
+	id S1759110AbXIXQ5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:57:04 -0400
+Message-Id: <20070924165426.841607414@polymtl.ca>
+References: <20070924164950.006047409@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 24 Sep 2007 12:49:51 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 1/7] Seq_file add support for sorted list
+Content-Disposition: inline; filename=seq_file_sorted.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 24 Sep 2007 16:54:27 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24 2007, Vlad Yasevich wrote:
-> Cedric Le Goater wrote:
-> > putting Vlad in Cc: 
-> > 
-> > Cedric Le Goater wrote:
-> >> Andrew Morton wrote:
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
-> >> I also get this compile error on s390. 'linux/scatterlist.h' has disappeared 
-> >> from the #include pile but where ? 
-> >>
-> >> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c: In function `sctp_auth_calculate_hmac':
-> >> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c:695: error: storage size of 'sg' isn't known
-> >> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c:695: warning: unused variable `sg'
-> > 
-> > The following patch works of course but it seems to simplistic for s390.
-> 
-> Odd that it didn't show up on x86 or ia64, but simple enough.
+Add support for sorted list in seq_file. It aims at changing the way
+/proc/modules and kallsyms iterates on the module list to remove a race between
+module unload and module/symbol listing.
 
-Most likely those archs end up pulling in scatterlist.h through some
-other maze of includes.
+The list is sorted by ascending list_head pointer address.
+
+Changelog:
+
+When reading the data by small chunks (i.e. byte by byte), the index (ppos) is
+incremented by seq_read() directly and no "next" callback is called when going
+to the next module.
+
+Therefore, use ppos instead of m->private to deal with the fact that this index
+is incremented directly to pass to the next module in seq_read() after the
+buffer has been emptied.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ fs/seq_file.c            |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/seq_file.h |   20 ++++++++++++++++++++
+ 2 files changed, 67 insertions(+)
+
+Index: linux-2.6-lttng/fs/seq_file.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/seq_file.c	2007-08-25 14:39:03.000000000 -0400
++++ linux-2.6-lttng/fs/seq_file.c	2007-08-27 11:11:33.000000000 -0400
+@@ -510,3 +510,50 @@ struct list_head *seq_list_next(void *v,
+ }
+ 
+ EXPORT_SYMBOL(seq_list_next);
++
++struct list_head *seq_sorted_list_start(struct list_head *head, loff_t *ppos)
++{
++	struct list_head *lh;
++
++	list_for_each(lh, head)
++		if ((unsigned long)lh >= *ppos) {
++			*ppos = (unsigned long)lh;
++			return lh;
++		}
++	return NULL;
++}
++
++EXPORT_SYMBOL(seq_sorted_list_start);
++
++struct list_head *seq_sorted_list_start_head(struct list_head *head,
++		loff_t *ppos)
++{
++	struct list_head *lh;
++
++	if (!*ppos) {
++		*ppos = (unsigned long)head;
++		return head;
++	}
++	list_for_each(lh, head)
++		if ((unsigned long)lh >= *ppos) {
++			*ppos = (long)lh->prev;
++			return lh->prev;
++		}
++	return NULL;
++}
++
++EXPORT_SYMBOL(seq_sorted_list_start_head);
++
++struct list_head *seq_sorted_list_next(void *p, struct list_head *head,
++		loff_t *ppos)
++{
++	struct list_head *lh;
++	void *next;
++
++	lh = ((struct list_head *)p)->next;
++	next = (lh == head) ? NULL : lh;
++	*ppos = next ? (unsigned long)next : -1UL;
++	return next;
++}
++
++EXPORT_SYMBOL(seq_sorted_list_next);
+Index: linux-2.6-lttng/include/linux/seq_file.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/seq_file.h	2007-08-25 14:39:03.000000000 -0400
++++ linux-2.6-lttng/include/linux/seq_file.h	2007-08-27 11:11:33.000000000 -0400
+@@ -63,5 +63,25 @@ extern struct list_head *seq_list_start_
+ extern struct list_head *seq_list_next(void *v, struct list_head *head,
+ 		loff_t *ppos);
+ 
++/*
++ * Helpers for iteration over a list sorted by ascending head pointer address.
++ * To be used in contexts where preemption cannot be disabled to insure to
++ * continue iteration on a modified list starting at the same location where it
++ * stopped, or at a following location. It insures that the lost information
++ * will only be in elements added/removed from the list between iterations.
++ * void *pos is only used to get the next list element and may not be a valid
++ * list_head anymore when given to seq_sorted_list_start() or
++ * seq_sorted_list_start_head().
++ */
++extern struct list_head *seq_sorted_list_start(struct list_head *head,
++		loff_t *ppos);
++extern struct list_head *seq_sorted_list_start_head(struct list_head *head,
++		loff_t *ppos);
++/*
++ * next must be called with an existing p node
++ */
++extern struct list_head *seq_sorted_list_next(void *p, struct list_head *head,
++		loff_t *ppos);
++
+ #endif
+ #endif
 
 -- 
-Jens Axboe
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
