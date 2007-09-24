@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbXIXTGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbXIXTH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760162AbXIXTGn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbXIXTGf
+	id S1757285AbXIXTH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758249AbXIXTHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:06:35 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41047 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755401AbXIXTGf (ORCPT
+	Mon, 24 Sep 2007 15:07:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45801 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758011AbXIXTHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:06:35 -0400
-Date: Mon, 24 Sep 2007 15:06:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] 2.6.23-rc7-mm1
-In-Reply-To: <46F805BE.5090609@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0709241504590.5501-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 24 Sep 2007 15:07:12 -0400
+Date: Mon, 24 Sep 2007 20:07:08 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/7] Linux Kernel Markers (redux)
+Message-ID: <20070924190708.GA6262@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070924164950.006047409@polymtl.ca> <20070924181148.GA3285@infradead.org> <20070924190452.GE28347@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070924190452.GE28347@Krystal>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007, Jiri Slaby wrote:
+On Mon, Sep 24, 2007 at 03:04:52PM -0400, Mathieu Desnoyers wrote:
+> I provided blktrace as a first user of the markers, but I agree that it
+> may be a little late for merging. I can keep it for later too.
 
-> On 09/24/2007 04:41 PM, Alan Stern wrote:
-> > On Mon, 24 Sep 2007, Jiri Slaby wrote:
-> > 
-> >> On 09/24/2007 11:17 AM, Andrew Morton wrote:
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
-> >> Fine, but on some boots (I noticed this on rc6-mm1 too, but not before):
-> >> 0000:00:1a.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
-> >> 0000:00:1d.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
-> > 
-> > Any changes in your BIOS setup?
-> 
-> unlikely, but still possible -- I've made some changes in BIOS recently when I
-> looking backwards. Which concrete changes would turn it in such behaviour?
-
-USB Legacy Support is about the only change which springs to mind.  But 
-who knows...  A buggy BIOS could do almost anything.
-
-Alan Stern
+I we manage to get Dave's trace patches and your markers in I'll make
+sure to get a sputrace version using them in as a demo for both.
 
