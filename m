@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbXIXVvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbXIXVxF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbXIXVvn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 17:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbXIXVvf
+	id S1758062AbXIXVxF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 17:53:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbXIXVwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 17:51:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:26575 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965AbXIXVve (ORCPT
+	Mon, 24 Sep 2007 17:52:54 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:41249 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648AbXIXVwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 17:51:34 -0400
+	Mon, 24 Sep 2007 17:52:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gq47TgaSaZYRoohAV6r/Dk4gXwQFo3vrEo9Sz/EDTGNpzjSKYfbFz//a1Ycoem5oe3CYFdTN8sGIGU1SW/KtIt6xBMJkPd50QN5OXrUBhbxUxlyN158yA5ouwQqlWo/HSZkwBSlPNkllcOQdZyvc9QdAl6ck1Gcu8qoEYdA11RY=
-Message-ID: <b647ffbd0709241451r23a8f12fld9d5cccc987ed57@mail.gmail.com>
-Date: Mon, 24 Sep 2007 23:51:29 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>
-Subject: Re: [PATCH] sched: cleanup adjusting sched_class
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-In-Reply-To: <46F8236B.9020902@ct.jp.nec.com>
+        b=BMC8j5mZLwg38aCHObKnN06eY6k0Jzh8p2x+X+qzZz/Xl+OpD1MxU4vNmhhMeTm5q5qeZ5e9TpkFKccz1UxSUkIorgkluS1HrhcZDesL+80o+6wVU5+qdZBHSNEvWJxMNTlR9fWUXVEVwKD8PnLJr+IEKJ4A4qaPrjtpIvS/wsg=
+Message-ID: <e4c519350709241452l33c2f1b6m8ab943460248656f@mail.gmail.com>
+Date: Mon, 24 Sep 2007 23:52:51 +0200
+From: "Maurizio Monge" <maurizio.monge@gmail.com>
+To: "Catalin Constantin" <catalin@efirst.ro>
+Subject: Re: HSM violation with ahci+WDC WD1600BEVS-22RST0
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <138995186.20070924163607@efirst.ro>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <46F8236B.9020902@ct.jp.nec.com>
+References: <138995186.20070924163607@efirst.ro>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/09/2007, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> Hi Ingo and Dmitry,
->
-> I made a clean-up patch about fixing invalid sched_class use.
+No, i did not manage to improve (it should NOT be a dangerous error BTW).
+I simply think that this issue is because of buggy firmware, so i
+posted to linux-ide a patch to blacklist this hard disk from using NCQ
+(because it is triggering spurious completions).
+I don't know what the "blacklisting policy" is for linux kernel
+developers, i think that, since there probably are a lot of buggy
+drives for NCQ and so, a module parameter to disable NCQ while loading
+libata could be useful.
+Best regards.
 
-thanks!
-
+On 9/24/07, Catalin Constantin <catalin@efirst.ro> wrote:
+> Hello,
 >
-> Dmitry, could you please review and sign it?
+> Did you manage to find out why were you getting thoes messages ATA
+> related ?
+>
+> I am having the same issue and some help would be very handy.
+>
+> Thank you and sorry for disturbing you,
+>
+> --
+> Catalin Constantin
+> Efirst - www.efirst.ro
+> http://www.cabanova.ro
 >
 >
-> The adjusting sched_class is a missing part of the already existing
-> "do not leak PI boosting priority to the child" at the sched_fork().
-> This patch moves the adjusting sched_class from wake_up_new_task()
-> to sched_fork().
->
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
 
 -- 
-Best regards,
-Dmitry Adamushko
+Ciao
+Maurizio
+http://stregatto.wordpress.com
+
+"Well we all shine on
+Like the moon and the stars and the sun" (John Lennon)
