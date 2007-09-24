@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764820AbXIXRQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762178AbXIXRQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764820AbXIXRQg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 13:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760414AbXIXRQJ
+	id S1762178AbXIXRQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 13:16:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762208AbXIXRQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 13:16:09 -0400
-Received: from mx1.suse.de ([195.135.220.2]:42660 "EHLO mx1.suse.de"
+	Mon, 24 Sep 2007 13:16:45 -0400
+Received: from mail0.scram.de ([78.47.204.202]:39084 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759752AbXIXRQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 13:16:08 -0400
-Date: Mon, 24 Sep 2007 10:14:22 -0700
-From: Greg KH <gregkh@suse.de>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [00/50] 2.6.22-stable review
-Message-ID: <20070924171422.GB4928@suse.de>
-References: <20070924161733.GA13510@kroah.com> <20070924163148.GA17746@kroah.com> <20070924164455.GA17895@puku.stupidest.org> <20070924164628.GB17895@puku.stupidest.org>
+	id S1760396AbXIXRQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 13:16:44 -0400
+X-Spam-Score: -3.902
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.5 AWL AWL: From: address is in the auto white-list
+Message-ID: <46F7F0B7.2090205@scram.de>
+Date: Mon, 24 Sep 2007 19:15:35 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070924164628.GB17895@puku.stupidest.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: linuxppc-embedded@ozlabs.org
+CC: linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>
+Subject: [PATCH#2 3/4] [PPC] Compile fix for 8xx CPM Ehernet driver
+Content-Type: multipart/mixed;
+ boundary="------------020809090603030000000606"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 09:46:28AM -0700, Chris Wedgwood wrote:
-> > (to make it easier for people to click)
-> 
-> actually, it's not a tarball either...  am I seeing something stale or
-> perhaps the result of slow 'kernel.org replication?
+This is a multi-part message in MIME format.
+--------------020809090603030000000606
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-It's not a tarball, just a gzip file.  And it might be the kernel.org
-replication, I see the file correctly on the "master" site.  Give it a
-bit of time...
 
-thanks,
+Add #include <asm/cacheflush.h> for flush_dcache_range
+to make the driver compile again.
 
-greg k-h
+  CC      arch/ppc/8xx_io/enet.o
+arch/ppc/8xx_io/enet.c: In function 'scc_enet_start_xmit':
+arch/ppc/8xx_io/enet.c:240: error: implicit declaration of function
+'flush_dcache_range'
+make[1]: *** [arch/ppc/8xx_io/enet.o] Error 1
+make: *** [arch/ppc/8xx_io] Error 2
+
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/ppc/8xx_io/enet.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+--------------020809090603030000000606
+Content-Type: text/x-patch;
+ name="bf5c2f419c8f731109b1c39e390338dcea780e94.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bf5c2f419c8f731109b1c39e390338dcea780e94.diff"
+
+diff --git a/arch/ppc/8xx_io/enet.c b/arch/ppc/8xx_io/enet.c
+index 703d47e..eace3bc 100644
+--- a/arch/ppc/8xx_io/enet.c
++++ b/arch/ppc/8xx_io/enet.c
+@@ -44,6 +44,7 @@
+ #include <asm/mpc8xx.h>
+ #include <asm/uaccess.h>
+ #include <asm/commproc.h>
++#include <asm/cacheflush.h>
+ 
+ /*
+  *				Theory of Operation
+
+
+--------------020809090603030000000606--
