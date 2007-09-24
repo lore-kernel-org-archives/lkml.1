@@ -1,122 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbXIXVb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbXIXVcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757994AbXIXVb3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 17:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbXIXVbU
+	id S1759323AbXIXVcX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 17:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbXIXVcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 17:31:20 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:60363 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753357AbXIXVbT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 17:31:19 -0400
-Message-ID: <46F82C88.1080907@linux.vnet.ibm.com>
-Date: Tue, 25 Sep 2007 03:00:48 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 24 Sep 2007 17:32:12 -0400
+Received: from tornado.reub.net ([210.185.126.1]:40515 "EHLO tornado.reub.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755003AbXIXVcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 17:32:11 -0400
+Message-ID: <46F82CCE.5080703@reub.net>
+Date: Tue, 25 Sep 2007 07:31:58 +1000
+From: Reuben Farrelly <reuben-linuxkernel@reub.net>
+User-Agent: Thunderbird 2.0.0.7pre (Windows/20070922)
 MIME-Version: 1.0
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.23-rc7-mm1:  panic in scheduler
-References: <1190668373.5030.10.camel@localhost>
-In-Reply-To: <1190668373.5030.10.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: 2.6.23-rc7-mm1
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7CF2E.9030609@reub.net> <20070924095929.76fce85c.akpm@linux-foundation.org> <20070924171200.GB22868@fieldses.org>
+In-Reply-To: <20070924171200.GB22868@fieldses.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Schermerhorn wrote:
-> I looked around on the MLs for mention of this, but didn't find anything
-> that appeared to match.
-> 
-> Platform:  HP rx8620 - 16-cpu/32GB/4-node ia64 [Madison]
-> 
-> 2.6.23-rc7-mm1 broken out -- panic occurs when git-sched.patch pushed:
-> 
-> Unable to handle kernel NULL pointer dereference (address 0000000000000000)
-> swapper[0]: Oops 8813272891392 [1]
-> Modules linked in: scsi_wait_scan ehci_hcd ohci_hcd uhci_hcd usbcore
-> 
-> Pid: 0, CPU 14, comm:              swapper
-> psr : 0000101008522030 ifs : 8000000000000002 ip  : [<a0000001003014e0>]    Not tainted
-> ip is at rb_next+0x0/0x140
-> unat: 0000000000000000 pfs : 0000000000000308 rsc : 0000000000000003
-> rnat: 8000000000000012 bsps: 000000000001003e pr  : 6609a840599519a5
-> ldrs: 0000000000000000 ccv : 0000000000000002 fpsr: 0009804c8a70433f
-> csd : 0000000000000000 ssd : 0000000000000000
-> b0  : a000000100078dc0 b6  : a000000100074a40 b7  : a000000100078e00
-> f6  : 1003e0000000000000000 f7  : 1003e0000000000400000
-> f8  : 1003e000000002aaaaaab f9  : 1003e0000000d43798a2b
-> f10 : 1003e35e9970b967dd8b9 f11 : 1003e0000000000000002
-> r1  : a000000100bc0920 r2  : e0000760000577f0 r3  : e000076000057f10
-> r8  : fffffffffffffff0 r9  : 0000000000000002 r10 : e000076000057780
-> r11 : 0000000000000000 r12 : e00007004160fe10 r13 : e000070041608000
-> r14 : 0000000000000000 r15 : 000000000000000e r16 : 00000007f6c30a22
-> r17 : e000070041608040 r18 : a0000001008383a8 r19 : a000000100078e00
-> r20 : e000076000055bb8 r21 : e000076000055bb0 r22 : e000076000057ed0
-> r23 : 00000000000f4240 r24 : a0000001009e0440 r25 : e000070041608bb4
-> r26 : 0000000000000000 r27 : 0000000000000000 r28 : e000076000057f80
-> r29 : 00000000000002e7 r30 : 0000000000000000 r31 : e000076000057780
-> 
-> Call Trace:
->  [<a000000100014f60>] show_stack+0x80/0xa0
->                                 sp=e00007004160f9e0 bsp=e000070041609008
->  [<a000000100015bf0>] show_regs+0x870/0x8a0
->                                 sp=e00007004160fbb0 bsp=e000070041608fa8
->  [<a00000010003d170>] die+0x190/0x300
->                                 sp=e00007004160fbb0 bsp=e000070041608f60
->  [<a000000100071bc0>] ia64_do_page_fault+0x780/0xa80
->                                 sp=e00007004160fbb0 bsp=e000070041608f08
->  [<a00000010000b5c0>] ia64_leave_kernel+0x0/0x270
->                                 sp=e00007004160fc40 bsp=e000070041608f08
->  [<a0000001003014e0>] rb_next+0x0/0x140
->                                 sp=e00007004160fe10 bsp=e000070041608ef8
->  [<a000000100078dc0>] __dequeue_entity+0x80/0xc0
->                                 sp=e00007004160fe10 bsp=e000070041608ec8
->  [<a000000100078e60>] pick_next_task_fair+0x60/0x180
->                                 sp=e00007004160fe10 bsp=e000070041608e98
->  [<a0000001006a5880>] schedule+0x340/0x19c0
->                                 sp=e00007004160fe10 bsp=e000070041608cc0
->  [<a000000100014cb0>] cpu_idle+0x290/0x3e0
->                                 sp=e00007004160fe30 bsp=e000070041608c50
->  [<a000000100066020>] start_secondary+0x380/0x5a0
->                                 sp=e00007004160fe30 bsp=e000070041608c00
->  [<a0000001006abca0>] __kprobes_text_end+0x6c0/0x6f0
->                                 sp=e00007004160fe30 bsp=e000070041608c00
-> 
-> 
-> Taking a quick look at [__]{en|de|queue_entity() and the functions they call,
-> I see something suspicious in set_leftmost() in sched_fair.c:
-> 
-> static inline void
-> set_leftmost(struct cfs_rq *cfs_rq, struct rb_node *leftmost)
-> {
->         struct sched_entity *se;
-> 
->         cfs_rq->rb_leftmost = leftmost;
->         if (leftmost)
->                 se = rb_entry(leftmost, struct sched_entity, run_node);
-> }
-> 
-> Missing code?  corrupt patch?
-> 
-> config available on request, but there doesn't seem to be much in the way
-> of scheduler config option.  A few that might apply:
-> 
-> SCHED_SMT is not set
-> SCHED_DEBUG=y
-> SCHEDSTATS=y
-> 
-> 
-> Regards,
-> Lee Schermerhorn
-> 
 
-Exactly same call trace is produced over IA64 Madison (up to 9M cache) with 8 cpu's.
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+
+On 25/09/2007 3:12 AM, J. Bruce Fields wrote:
+> On Mon, Sep 24, 2007 at 09:59:29AM -0700, Andrew Morton wrote:
+>> On Tue, 25 Sep 2007 00:52:30 +1000 Reuben Farrelly <reuben-linuxkernel@reub.net> wrote:
+>>
+>>>
+>>> On 24/09/2007 7:17 PM, Andrew Morton wrote:
+>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
+>>>>
+>>>> - New git tree git-powerpc-galak.patch added to the -mm lineup: ppc32
+>>>>   things, mainly (Kumar Gala <galak@gate.crashing.org>)
+>>> I'm observing a problem with this kernel (as well as 2.6.23-rc6-mm1) which 
+>>> manifests itself only in my Postfix/application mail.logs:
+>>>
+>>> Sep 25 00:25:40 tornado postfix/smtp[12520]: fatal: select lock: Cannot allocate 
+>>> memory
+>>> Sep 25 00:25:41 tornado postfix/master[8002]: warning: process 
+>>> /usr/lib64/postfix/smtp pid 12520 exit status 1
+>>>
+>>> This is happening frequently with processes started via 'master' (smtp, smtpd 
+>>> and cleanup), but it does not appear to have any noticeable operational impact 
+>>> apart from logging a lot of copies of this message.
+>>>
+>>> The corresponding code in Postfix which triggers this is (choice of 3 files in 
+>>> src/master are all possibilities which all have much the same code)
+> 
+> Oog.  Looks like it's the "Memory shortage can result in inconsistent
+> flocks state" patch--the error variable is being set in some cases when
+> it shouldn't be.  Does the following fix it?
+> 
+> That's in my git tree, not in mainline.  I'll fix up my copy.
+> 
+> And I'll spend some time today figuring out what to do about regression
+> testing for the posix lock, flock, and lease code.
+> 
+> Thanks for the bug report!
+> 
+> --b.
+> 
+> diff --git a/fs/locks.c b/fs/locks.c
+> index a6c5917..3e8bfd2 100644
+> --- a/fs/locks.c
+> +++ b/fs/locks.c
+> @@ -740,6 +740,7 @@ static int flock_lock_file(struct file *filp, struct file_lock *request)
+>  		new_fl = locks_alloc_lock();
+>  		if (new_fl == NULL)
+>  			goto out;
+> +		error = 0;
+>  	}
+>  
+>  	for_each_lock(inode, before) {
+
+Yes that has fixed it, thanks!
+
+Reuben
