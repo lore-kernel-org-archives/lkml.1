@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbXIXNOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbXIXNOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758989AbXIXNOR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbXIXNOF
+	id S1759398AbXIXNOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbXIXNOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:14:05 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:47386 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751642AbXIXNOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:14:04 -0400
-Message-ID: <46F7B7FD.1000905@linux.vnet.ibm.com>
-Date: Mon, 24 Sep 2007 18:43:33 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-In-Reply-To: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Sep 2007 09:14:36 -0400
+Received: from kanga.kvack.org ([66.96.29.28]:39769 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756516AbXIXNOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 09:14:36 -0400
+Date: Mon, 24 Sep 2007 08:43:20 -0400
+From: Marcelo Tosatti <marcelo@kvack.org>
+To: Jochen Friedrich <jochen@scram.de>, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
+       Marcelo Tosatti <marcelo@kvack.org>
+Subject: Re: [PATCH0/4] Various bug fixes
+Message-ID: <20070924124320.GA5648@dmt>
+References: <46F6C9B0.8020200@scram.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F6C9B0.8020200@scram.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-Kernel BUG over x86_64 (AMD Opteron(tm) Processor 844).
+Paul, please apply.
 
-Similar kernel Bug was reported for 2.6.23-rc2-mm1
-at http://lkml.org/lkml/2007/8/10/20 and the 
-mm-dirty-balancing-for-tasks.patch was dropped from 2.6.23-rc2-mm2.
-And the same patch is in this -mm version, suspect whether is it the
-same patch triggering this Bug.
-
-BUG: soft lockup - CPU#0 stuck for 11s! [events/0:15]
-CPU 0:
-Modules linked in:
-Pid: 15, comm: events/0 Tainted: G      D 2.6.23-rc7-mm1-autokern1 #1
-RIP: 0010:[<ffffffff8021be46>]  [<ffffffff8021be46>] __smp_call_function_mask+0x9a/0xc4
-RSP: 0000:ffff8100017add80  EFLAGS: 00000297
-RAX: 00000000000000fc RBX: ffff8100017adde0 RCX: 0000000000000001
-RDX: 00000000000008fc RSI: 00000000000000fc RDI: 000000000000000e
-RBP: ffffc20002d11000 R08: ffff8100017ac000 R09: ffffffff80675e38
-R10: 0000000000000000 R11: 0000000000000000 R12: 000000000000000f
-R13: ffffffff8021bcfe R14: 0000000000000000 R15: 0000000000000001
-FS:  0000000000000000(0000) GS:ffffffff8065a000(0000) knlGS:00000000556aa2a0
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: ffffc20002d11008 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-
-Call Trace:
-Inexact backtrace:
- [<ffffffff802157a4>] mcheck_check_cpu+0x0/0x31
- [<ffffffff802157a4>] mcheck_check_cpu+0x0/0x31
- [<ffffffff8021becf>] smp_call_function_mask+0x5f/0x72
- [<ffffffff802157a4>] mcheck_check_cpu+0x0/0x31
- [<ffffffff8021bf82>] smp_call_function+0x19/0x1b
- [<ffffffff8023a773>] on_each_cpu+0x16/0x2b
- [<ffffffff802158a2>] mcheck_timer+0x0/0x7c
- [<ffffffff802158c0>] mcheck_timer+0x1e/0x7c
- [<ffffffff802444b9>] run_workqueue+0x88/0x109
- [<ffffffff8024453a>] worker_thread+0x0/0xf4
- [<ffffffff80244623>] worker_thread+0xe9/0xf4
- [<ffffffff8024841d>] autoremove_wake_function+0x0/0x37
- [<ffffffff8024841d>] autoremove_wake_function+0x0/0x37
- [<ffffffff80247e5c>] kthread+0x44/0x6d
- [<ffffffff8020c5a8>] child_rip+0xa/0x12
- [<ffffffff80247e18>] kthread+0x0/0x6d
- [<ffffffff8020c59e>] child_rip+0x0/0x12
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+On Sun, Sep 23, 2007 at 10:16:48PM +0200, Jochen Friedrich wrote:
+> Here is a series fixing some bugs for 8xx powerpc CPUs.
+> 
+> 1. [POWERPC] Fix copy'n'paste typo in commproc.c
+> 2. [PPC] Fix cpm_dpram_addr returning phys mem instead of virt mem
+> 3. [PPC] Compile fix for 8xx CPM Ehernet driver
+> 4. [POWERPC] Fix cpm_uart driver
+> 
+> This series can be pulled from git://git.bocc.de/dbox2.git ppc-fixes
+> 
+> Thanks,
+> Jochen
