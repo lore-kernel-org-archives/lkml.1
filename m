@@ -1,84 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbXIXLJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbXIXLJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbXIXLJM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 07:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbXIXLI6
+	id S1758489AbXIXLJm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 07:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755703AbXIXLJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 07:08:58 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:47040 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754934AbXIXLI5 (ORCPT
+	Mon, 24 Sep 2007 07:09:34 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:32801 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbXIXLJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 07:08:57 -0400
-Date: Mon, 24 Sep 2007 13:08:51 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       dimm <dmitry.adamushko@gmail.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [git] CFS-devel, group scheduler, fixes
-Message-ID: <20070924130851.201d18ed@twins>
-In-Reply-To: <1190630535.7406.2.camel@Homer.simpson.net>
-References: <1190144190.5204.24.camel@earth>
-	<20070918201622.GA1632@elte.hu>
-	<Pine.LNX.4.64.0709182250120.9990@tongli.jf.intel.com>
-	<1190183324.9737.7.camel@Homer.simpson.net>
-	<1190188261.9185.21.camel@Homer.simpson.net>
-	<1190191368.8687.5.camel@Homer.simpson.net>
-	<Pine.LNX.4.64.0709190944560.11561@tongli.jf.intel.com>
-	<1190264114.6411.4.camel@Homer.simpson.net>
-	<1190272507.27867.20.camel@Homer.simpson.net>
-	<20070920075155.GA31641@elte.hu>
-	<1190275870.9232.6.camel@Homer.simpson.net>
-	<Pine.LNX.4.64.0709212018480.16240@tongli.jf.intel.com>
-	<1190455308.7404.19.camel@Homer.simpson.net>
-	<1190531662.11524.15.camel@Homer.simpson.net>
-	<Pine.LNX.4.64.0709232259150.23861@tongli.jf.intel.com>
-	<1190628609.6389.14.camel@Homer.simpson.net>
-	<20070924122422.75562c41@twins>
-	<1190630535.7406.2.camel@Homer.simpson.net>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 24 Sep 2007 07:09:33 -0400
+Message-ID: <46F79AC4.9010308@linux.vnet.ibm.com>
+Date: Mon, 24 Sep 2007 16:38:52 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: 2.6.23-rc7-mm1 - 'touch' command causes Oops.
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <3339.1190630150@turing-police.cc.vt.edu>
+In-Reply-To: <3339.1190630150@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 12:42:15 +0200 Mike Galbraith <efault@gmx.de> wrote:
-
-> On Mon, 2007-09-24 at 12:24 +0200, Peter Zijlstra wrote:
+Valdis.Kletnieks@vt.edu wrote:
+> On Mon, 24 Sep 2007 02:17:16 PDT, Andrew Morton said:
 > 
-> > how about something like:
-> > 
-> >  s64 delta = (s64)(vruntime - min_vruntime);
-> >  if (delta > 0)
-> >   min_vruntime += delta;
-> > 
-> > That would rid us of most of the funny conditionals there.
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
 > 
-> That still left me with negative min_vruntimes.  The pinned hogs didn't
-> lock my box up, but I quickly got the below, so hastily killed it.
+> It lived fast, it died young, it didn't leave a pretty corpse...
 > 
-> se.wait_max              :             7.846949
-> se.wait_max              :           301.951601
-> se.wait_max              :             7.071359
->
+> Something in the startup scripts did a 'touch', and ker-blam.
+> 
+> [   15.668000] Unable to handle kernel NULL pointer dereference at 0000000000000252 RIP: 
+> [   15.668000]  [<ffffffff802a1dd1>] __mnt_is_readonly+0x9/0x1e
+> [   15.668000] PGD 52be067 PUD 5645067 PMD 0 
+> [   15.668000] Oops: 0000 [1] PREEMPT SMP 
+> [   15.668000] last sysfs file: /block/dm-13/dev
+> [   15.668000] CPU 0 
+> [   15.668000] Modules linked in: rtc
+> [   15.668000] Pid: 528, comm: touch Not tainted 2.6.23-rc7-mm1 #1
+> [   15.668000] RIP: 0010:[<ffffffff802a1dd1>]  [<ffffffff802a1dd1>] __mnt_is_readonly+0x9/0x1e
+> [   15.668000] RSP: 0018:ffff8100045fddd8  EFLAGS: 00010202
+> [   15.668000] RAX: 0000000000000001 RBX: ffff810002c10680 RCX: 0000000000000001
+> [   15.668000] RDX: ffff810082504000 RSI: ffff810005243168 RDI: 0000000000000202
+> [   15.668000] RBP: ffff8100045fddd8 R08: 0000000000000001 R09: 0000000000000002
+> [   15.668000] R10: 0000000000000000 R11: ffff8100045fde68 R12: 0000000000000202
+> [   15.668000] R13: 00000000ffffffe2 R14: ffff8100052c1d80 R15: ffff8100039aa8a0
+> [   15.668000] FS:  00007f9527f596f0(0000) GS:ffffffff806b6000(0000) knlGS:0000000000000000
+> [   15.668000] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [   15.668000] CR2: 0000000000000252 CR3: 00000000052cb000 CR4: 00000000000006e0
+> [   15.668000] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [   15.668000] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [   15.668000] Process touch (pid: 528, threadinfo ffff8100045fc000, task ffff8100047517e0)
+> [   15.668000] last branch before last exception/interrupt
+> [   15.668000]  from  [<ffffffff802a4d1b>] mnt_want_write+0x44/0xb5
+> [   15.668000]  to  [<ffffffff802a1dc8>] __mnt_is_readonly+0x0/0x1e
+> [   15.668000] Stack:  ffff8100045fde08 ffffffff802a4d20 ffff8100045fddf8 0000000000000000
+> [   15.668000]  00000000fffffff7 ffff810005243140 ffff8100045fdf28 ffffffff802ad288
+> [   15.668000]  ffff8100045fde58 0000000000000202 ffff8100045fde58 ffffffff8035437b
+> [   15.668000] Call Trace:
+> [   15.668000]  [<ffffffff802a4d20>] mnt_want_write+0x49/0xb5
+> [   15.668000]  [<ffffffff802ad288>] do_utimes+0xd0/0x220
+> [   15.668000]  [<ffffffff8035437b>] __up_read+0x7a/0x83
+> [   15.668000]  [<ffffffff8024b1af>] up_read+0x9/0xb
+> [   15.668000]  [<ffffffff8051977c>] do_page_fault+0x421/0x7d0
+> [   15.668000]  [<ffffffff8028b370>] do_filp_open+0x36/0x46
+> [   15.668000]  [<ffffffff802ad519>] sys_utimensat+0x8b/0xa5
+> [   15.668000]  [<ffffffff80517a4d>] error_exit+0x0/0x84
+> [   15.668000]  [<ffffffff8020c10e>] system_call+0x7e/0x83
+> [   15.668000] 
+> [   15.668000] 
+> [   15.668000] Code: f6 47 50 40 75 0d 48 8b 47 28 8a 40 58 83 e0 01 0f b6 c0 c9 
+> [   15.668000] RIP  [<ffffffff802a1dd1>] __mnt_is_readonly+0x9/0x1e
+> [   15.668000]  RSP <ffff8100045fddd8>
+> [   15.668000] CR2: 0000000000000252
+> 
 
-Odd, the idea (which I think is clear) is that min_vruntime can wrap
-around the u64 spectrum. And by using min_vruntime as offset to base
-the key around, we get a signed but limited range key-space. (because
-we update min_vruntime to be the leftmost task (in a monotonic fashion))
+CC'ing Dave, he might be interested in looking into this. Do you know
+which file was touched. I suspect either mnt or mnt_sb is NULL in
+__mnt_is_readonly(). mnt is extracted from the nameidata structure.
+It's interesting to see utimenstat in the stack, I suspect that
+the filename was probably NULL and dfd was something other than
+AT_FDCWD (Just a wild guess). I'll try to reproduce your problem.
 
-So I'm having trouble with these patches, that is, both your wrap
-around condition of:
-
-  if (likely(new_rq->cfs.min_vruntime))
-
-as well as the last patchlet:
-
-  if (((s64)vruntime > (s64)min_vruntime) ||
-
-in that neither of these changes make sense in what its trying to do.
-
-Its perfectly valid for min_vruntime to exist in 1ULL << 63.
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
