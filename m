@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbXIXPiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759380AbXIXPjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760004AbXIXPiq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 11:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbXIXPii
+	id S1759380AbXIXPjc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 11:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbXIXPjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 11:38:38 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:56456 "EHLO e2.ny.us.ibm.com"
+	Mon, 24 Sep 2007 11:39:24 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:39858 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759930AbXIXPih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 11:38:37 -0400
-Message-ID: <46F7D9FA.3090108@us.ibm.com>
-Date: Mon, 24 Sep 2007 08:38:34 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	id S1755947AbXIXPjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 11:39:23 -0400
+Date: Mon, 24 Sep 2007 16:39:21 +0100
+To: Chris Holvenstot <cholvenstot@comcast.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>, dwmw2@infradead.org
+Subject: Re: Mask Issue?
+Message-ID: <20070924153920.GB32550@skynet.ie>
+References: <1190242676.16474.6.camel@localhost>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       "David J. Wilder" <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [Patch 1/2] Trace code and documentation (resend)
-References: <1190435014.27362.16.camel@lc4eb748232119.ibm.com> <20070922093508.GC27827@infradead.org>
-In-Reply-To: <20070922093508.GC27827@infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1190242676.16474.6.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Fri, Sep 21, 2007 at 09:23:28PM -0700, David J. Wilder wrote:
->> My last posting was mangled by my mailer.  I hope this one is better.
->> Also corrected Randy's concerns.
->>
->> Please see previous posting for more information:
->> http://lkml.org/lkml/2007/9/19/4 (PATCH 0/2)
->>
->> Note: this patch requires "[Patch 2/2] Relay reset consumed" is applied.
->>
->> ---------<start of patch>------------
->> Trace - Provides tracing primitives
->>
->> Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
->> Signed-off-by: Martin Hunt <hunt@redhat.com>
->> Signed-off-by: David Wilder <dwilder@us.ibm.com>
->> ---
->>  Documentation/trace/src/Makefile     |    7 +
->>  Documentation/trace/src/README       |   18 +
->>  Documentation/trace/src/fork_trace.c |  119 +++++++
->>  Documentation/trace/trace.txt        |  164 ++++++++++
+On (19/09/07 17:57), Chris Holvenstot didst pronounce:
+> Still being a little new at this I am not sure if this is an issue at
+> all or not but I noted that while building the 2.6.23-rc6-git8 kernel
+> this afternoon I received the following error message: 
 > 
-> NACK, don't put code into Documentation/.  Put it into kernel as it's
-> actually useful kernel code.  
+> Building modules, stage 2.
+>   MODPOST 1670 modules
+> WARNING: Can't handle masks in drivers/mtd/nand/cafe_nand:FFFF0
+> 
+> I have been building each of the kernels in the 2.6.23-rc series and had
+> not noted this message before.  I apologize if this is a non-issue.
+> 
 
-Are you suggesting moving the example code into kernel? Or complaining 
-about example code in /Documentation?
+I noticed this in a -mm recently and never got around to kicking it
+properly because I suspected it was a compiler issue. What version
+of gcc and binutils are you using?
 
-And add clone,exec and exit while you're at it.
+David Woodhouse added to cc in case this is a known problem.
 
-Hu?  A syscall tracer sounds like a nice idea but that is not what I am 
-trying to accomplish.  I will let Systemtap handle that.
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
