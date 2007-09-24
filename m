@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbXIXCC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbXIXCQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756284AbXIXCC2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 22:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbXIXCCU
+	id S1756331AbXIXCQk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 22:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbXIXCQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 22:02:20 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:5156 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754090AbXIXCCT (ORCPT
+	Sun, 23 Sep 2007 22:16:32 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:30963 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbXIXCQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 22:02:19 -0400
+	Sun, 23 Sep 2007 22:16:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:from:to:cc:references:subject:message-id:x-mailer;
-        b=EdWcRqnqkOwuDAisq/YQQGvipHtLd3uGyXyEL38qrOgxZi+P1Li2ZMAqtH9GItnfoE6VBA1hMy2chJZTiGCXXTKcwXEV6DQHhLzzqM4LWg+i4fCqSo/0lkph9Xo/xeXnO0e1vVjUZN3bNo0q9K5Tr4NuybZjapkhJGOTSHW/HwM=
-Date: Mon, 24 Sep 2007 10:02:12 +0800
+        b=gz//M/tMPcmFSIZi5qSy0bdTCgv4rmalk7dYdELozr3ZHGKafVZJAm03Iqtf9UdR/RlEmTwd3NovgqvqCctp1BBRA9C2EKUO1vlyEix2QVnq0foYWMNmv3y/e2jOwyC0ei0UFARMw19DK3UAw456fPy2Ku5zMyM6CYzBFQZMlUM=
+Date: Mon, 24 Sep 2007 10:16:25 +0800
 From: "Peer Chen" <peerchen@gmail.com>
 To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
 Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
@@ -23,12 +23,33 @@ Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
 References: <200709211406065332552@gmail.com>,
  <20070921113908.180cd154@the-village.bc.nu>
 Subject: Re: Re: [PATCH] ahci: Add MCP79 support to AHCI driver
-Message-ID: <200709241002079067823@gmail.com>
+Message-ID: <200709241016214230742@gmail.com>
 X-mailer: Foxmail 6, 6, 105, 21 [cn]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes,it's necessary because our RAID controller also use the ahci driver.
+Code change, remove some Device IDs.
+
+Signed-off-by: Peer Chen <peerchen@gmail.com>
+---
+--- linux-2.6.23-rc7/drivers/ata/ahci.c.orig	2007-09-20 11:01:55.000000000 -0400
++++ linux-2.6.23-rc7/drivers/ata/ahci.c	2007-09-24 10:08:03.000000000 -0400
+@@ -472,6 +472,14 @@ static const struct pci_device_id ahci_p
+ 	{ PCI_VDEVICE(NVIDIA, 0x0ad9), board_ahci },		/* MCP77 */
+ 	{ PCI_VDEVICE(NVIDIA, 0x0ada), board_ahci },		/* MCP77 */
+ 	{ PCI_VDEVICE(NVIDIA, 0x0adb), board_ahci },		/* MCP77 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ab8), board_ahci },		/* MCP79 */
++	{ PCI_VDEVICE(NVIDIA, 0x0ab9), board_ahci },		/* MCP79 */
++	{ PCI_VDEVICE(NVIDIA, 0x0aba), board_ahci },		/* MCP79 */
++	{ PCI_VDEVICE(NVIDIA, 0x0abb), board_ahci },		/* MCP79 */
++	{ PCI_VDEVICE(NVIDIA, 0x0abc), board_ahci },		/* MCP79 */
++	{ PCI_VDEVICE(NVIDIA, 0x0abd), board_ahci },		/* MCP79 */
++	{ PCI_VDEVICE(NVIDIA, 0x0abe), board_ahci },		/* MCP79 */
++	{ PCI_VDEVICE(NVIDIA, 0x0abf), board_ahci },		/* MCP79 */
+ 
+ 	/* SiS */
+ 	{ PCI_VDEVICE(SI, 0x1184), board_ahci }, /* SiS 966 */
+-
 
 ------------------				 
 Peer Chen
