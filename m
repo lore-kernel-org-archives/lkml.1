@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbXIXNQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXIXNRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759328AbXIXNQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbXIXNQT
+	id S1759426AbXIXNRr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXIXNRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:16:19 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:41104 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756492AbXIXNQR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:16:17 -0400
-Date: Mon, 24 Sep 2007 07:16:15 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, trond.myklebust@fys.uio.no, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [patch 1/2] VFS: new fgetattr() file operation
-Message-ID: <20070924131615.GN10625@parisc-linux.org>
-References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu> <20070924123640.GA17409@infradead.org> <E1IZnM8-0003sG-00@dorka.pomaz.szeredi.hu> <20070924125948.GM10625@parisc-linux.org> <E1IZndW-0003uI-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IZndW-0003uI-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 24 Sep 2007 09:17:39 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:54616 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755506AbXIXNRj (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 09:17:39 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Uninline kcalloc()
+In-Reply-To: Your message of "Mon, 24 Sep 2007 08:59:56 EDT."
+             <902BC866-59A0-4E50-8299-64D38D9E93B1@mac.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070922200349.GA2119@martell.zuzino.mipt.ru> <25045.1190612108@turing-police.cc.vt.edu>
+            <902BC866-59A0-4E50-8299-64D38D9E93B1@mac.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1190639853_3721P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Sep 2007 09:17:33 -0400
+Message-ID: <5202.1190639853@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 03:06:06PM +0200, Miklos Szeredi wrote:
-> A file isn't deleted while there are still links or open files
-> refering to it.  So getting the attributes for a file with nlink==0 is
-> perfectly valid while the file is still open.
+--==_Exmh_1190639853_3721P
+Content-Type: text/plain; charset=us-ascii
 
-Is it?  Why not just pretend that the attributes are wiped when the file
-is deleted.  Effectively, they are, since they can't affect anything.
+On Mon, 24 Sep 2007 08:59:56 EDT, Kyle Moffett said:
 
-> If a network filesystem protocol can't handle operations (be it data
-> or metadata) on an unlinked file, we must do sillirenaming, so that
-> the file is not actually unlinked.
+> Proper fix is to give __kmalloc a "void *caller" parameter and have  
+> all of the various wrapper functions pass in the value of  
+> __builtin_return_address() appropriately.  I believe that even works  
+> properly for inline functions which may or may not be inlined.
 
-Or you could call getattr right before you unlink and cache the result
-in the client.
+I think I looked at that, and it wasn't as easy as it looked, because there
+were ugly corner cases for what __builtin_return_address() returned depending
+on exactly what did or didn't get inlined. Basically, it's ugly stuff - if you
+try to use __builtin_retur_address inside kcalloc to pass to __kmalloc, and
+then kcalloc gets inlined, you end up passing not the routine you wanted (the
+caller of kcalloc), but the *parent* of that...
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--==_Exmh_1190639853_3721P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG97jtcC3lWbTT17ARAuy4AJ96r42B1NdMGfWMBQmG/kVAMNSdQwCgvPQO
+7VttJDCHf8+91WDTjuCEmRs=
+=lg4p
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1190639853_3721P--
