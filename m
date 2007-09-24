@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbXIXQzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbXIXQ4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbXIXQzq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757480AbXIXQzf
+	id S1759566AbXIXQ4B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbXIXQzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 24 Sep 2007 12:55:36 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:7247 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752329AbXIXQzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 24 Sep 2007 12:55:35 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63486 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbXIXQzd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:55:33 -0400
-Date: Mon, 24 Sep 2007 09:53:44 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: vatsa@linux.vnet.ibm.com
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       dmitry.adamushko@gmail.com, linux-kernel@vger.kernel.org,
-       dhaval@linux.vnet.ibm.com, containers@lists.osdl.org,
-       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com, efault@gmx.de
-Subject: Re: [PATCH 3/5] Cleanup code under CONFIG_FAIR_GROUP_SCHED
-Message-Id: <20070924095344.ee9ab10e.randy.dunlap@oracle.com>
-In-Reply-To: <20070924163937.GD10291@linux.vnet.ibm.com>
-References: <20070924163326.GA10291@linux.vnet.ibm.com>
-	<20070924163937.GD10291@linux.vnet.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Date: Mon, 24 Sep 2007 18:56:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: 2.6.23-rc7-mm1
+Message-ID: <20070924165649.GF2367@kernel.dk>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7B1F9.4070501@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F7B1F9.4070501@fr.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 22:09:37 +0530 Srivatsa Vaddagiri wrote:
-
-> With the view of supporting user-id based fair scheduling (and not just
-> container-based fair scheduling), this patch renames several functions
-> and makes them independent of whether they are being used for container
-> or user-id based fair scheduling.
+On Mon, Sep 24 2007, Cedric Le Goater wrote:
+> Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
 > 
-> Also fix a problem reported by KAMEZAWA Hiroyuki (wrt allocating
-> less-sized array for tg->cfs_rq[] and tf->se[]).
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c: In function `dasd_eckd_build_cp':
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1181: error: syntax error before "struct"
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1209: error: `iter' undeclared (first use in this function)
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1209: error: (Each undeclared identifier is reported only once
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1209: error: for each function it appears in.)
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1209: error: `bv' undeclared (first use in this function)
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1209: warning: left-hand operand of comma expression has no effect
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1209: warning: left-hand operand of comma expression has no effect
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1257: warning: left-hand operand of comma expression has no effect
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1257: warning: left-hand operand of comma expression has no effect
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1209: warning: statement with no effect
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1209: warning: statement with no effect
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1257: warning: statement with no effect
+> /home/clg/linux/2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c:1257: warning: statement with no effect
+> make[3]: *** [drivers/s390/block/dasd_eckd.o] Error 1
+> make[2]: *** [drivers/s390/block] Error 2
 > 
-> 
-> Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> 
-> 
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
 > ---
->  include/linux/sched.h |   12 +++
->  init/Kconfig          |   11 +--
->  kernel/sched.c        |  172 ++++++++++++++++++--------------------------------
->  kernel/sched_fair.c   |    5 +
->  4 files changed, 83 insertions(+), 117 deletions(-)
+>  drivers/s390/block/dasd_eckd.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Index: current/init/Kconfig
+> Index: 2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c
 > ===================================================================
-> --- current.orig/init/Kconfig
-> +++ current/init/Kconfig
-> @@ -282,13 +282,12 @@ config CPUSETS
->  	  Say N if unsure.
->  
->  config FAIR_GROUP_SCHED
-> -	bool "Fair group scheduler"
-> -	depends on EXPERIMENTAL && CONTAINERS
-> +	bool "Fair group cpu scheduler"
+> --- 2.6.23-rc7-mm1.orig/drivers/s390/block/dasd_eckd.c
+> +++ 2.6.23-rc7-mm1/drivers/s390/block/dasd_eckd.c
+> @@ -1176,7 +1176,7 @@ dasd_eckd_build_cp(struct dasd_device * 
+>         struct LO_eckd_data *LO_data;
+>         struct dasd_ccw_req *cqr;
+>         struct ccw1 *ccw;
+> -       struct req_iterator iter
+> +       struct req_iterator iter;
+>         struct bio_vec *bv;
+>         char *dst;
+>         unsigned int blksize, blk_per_trk, off;
 
-Can we have "CPU" instead of "cpu" ?
+Oops, looks like neither Neil nor I cross compiled this on s390. Thanks,
+I'll apply it.
 
+-- 
+Jens Axboe
 
-> +	default n
-> +	depends on EXPERIMENTAL
->  	help
-> -	  This option enables you to group tasks and control CPU resource
-> -	  allocation to such groups.
-> -
-> -	  Say N if unsure.
-> +	  This feature lets cpu scheduler recognize task groups and control cpu
-> +	  bandwidth allocation to such task groups.
->  
->  config SYSFS_DEPRECATED
->  	bool "Create deprecated sysfs files"
-
-
----
-~Randy
-Phaedrus says that Quality is about caring.
