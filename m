@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbXIXNh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbXIXNi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611AbXIXNh1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXIXNhN
+	id S1759075AbXIXNi6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbXIXNit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:37:13 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41603 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754693AbXIXNhL (ORCPT
+	Mon, 24 Sep 2007 09:38:49 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:41080 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753331AbXIXNis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:37:11 -0400
-Date: Mon, 24 Sep 2007 14:42:29 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, miklos@szeredi.hu, trond.myklebust@fys.uio.no,
-       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
+	Mon, 24 Sep 2007 09:38:48 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, hch@infradead.org, matthew@wil.cx,
+       trond.myklebust@fys.uio.no, adilger@clusterfs.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <20070924132725.GA20116@infradead.org> (message from Christoph
+	Hellwig on Mon, 24 Sep 2007 14:27:25 +0100)
 Subject: Re: [patch 1/2] VFS: new fgetattr() file operation
-Message-ID: <20070924144229.03c4aec2@the-village.bc.nu>
-In-Reply-To: <E1IZnM8-0003sG-00@dorka.pomaz.szeredi.hu>
-References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu>
-	<20070924123640.GA17409@infradead.org>
-	<E1IZnM8-0003sG-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu> <20070924123640.GA17409@infradead.org> <E1IZnM8-0003sG-00@dorka.pomaz.szeredi.hu> <20070924125948.GM10625@parisc-linux.org> <E1IZndW-0003uI-00@dorka.pomaz.szeredi.hu> <20070924131047.GA19017@infradead.org> <E1IZnpC-0003vk-00@dorka.pomaz.szeredi.hu> <20070924132725.GA20116@infradead.org>
+Message-Id: <E1IZo8U-0003xW-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 24 Sep 2007 15:38:06 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But it's has various dawbacks, like rmdir doesn't work if there are
-> open files within an otherwise empty directory.
+> On Mon, Sep 24, 2007 at 03:18:10PM +0200, Miklos Szeredi wrote:
+> > > Or not support such a broken protocol at all.
+> > 
+> > Wonder what people would say if we removed support for NFSv[23].
+> > 
+> > Just because a protocol does not support "perfect" UNIX semantics, it
+> > doesn't mean it's broken.  By that standard almost all network
+> > filesystem protocols are severely broken.
 > 
-> I'd happily accept suggestions on how to deal with this differenty.
+> Well, they are broken by these and other standards.  At least nfs and
+> cifs maintainers do the workarounds for this brokeness where they belong.
 
-NFS has that problem because it really has to sillyrename into the same
-directory. I don't see that ssh/sftp needs to do that. Instead it can
-sillyrename anywhere in the filesystem.
+And my patch is not working around a problem, rather solving a problem
+in a correct way.
 
-Alan
+Let me summarise it:
+
+There are valid reasons we have fstat() in addition to stat/lstat.
+For example we want to protect agains races involving unlink/rename on
+an open file.
+
+Say I want to implement a network filesystem with a pure unprivileged
+userspace sever (this is basically what sshfs does).
+
+I want my filesystem client implementation to keep all these
+advantages of fstat().  So how can I do that?  There's a simple way:
+implement this operation with fstat() on the server.  I get all the
+advantages on the remote system automatically.
+
+But for that the filesystem needs to have the open file that the
+fstat() on the client was performed on.
+
+It's that simple.  There's really no ugly hacks going on behind the
+scenes.  It's just that we do want to delegate some properties of this
+operation onto the server, and the simplest and best implementation is
+to just let the filesystem have the information it needs.
+
+Why is that such a big problem?
+
+Miklos
