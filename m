@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbXIXGHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbXIXGRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbXIXGHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 02:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXIXGGy
+	id S1755306AbXIXGRv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 02:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXIXGRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 02:06:54 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:18451 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbXIXGGx (ORCPT
+	Mon, 24 Sep 2007 02:17:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37441 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751191AbXIXGRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 02:06:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=AN0ibv9z5EzxtqS/AViZvBP9QCM9+bPkn+E5hk1uLrUPtWMhLgabXmg7z3+7hQAdTAd8TEtP/XQtE9sFvK/gA3hgtGukDT3YJz52il0wwS4ptMTcC6CBHBn6wo/3L0InFZ2kdGjO+nHOghCkF2PBgEK+5noMfgSUSDXG1ygZXPA=
-Message-ID: <46F753F5.7060707@gmail.com>
-Date: Mon, 24 Sep 2007 08:06:45 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Matt Mackall <mpm@selenic.com>, Dave Airlie <airlied@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: X-freeze after clflush changes [Was: 2.6.23-rc6-mm1]
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F10B69.5070008@gmail.com> <46F10DCB.1090302@gmail.com> <46F13938.1070709@gmail.com> <20070919121017.0cbcbc30.akpm@linux-foundation.org> <20070919192453.GB18707@one.firstfloor.org> <21d7e9970709191842h3111390cl8f09745bed6bd8f9@mail.gmail.com> <20070920220604.GA17536@waste.org> <10207.1190394975@turing-police.cc.vt.edu> <46F3FF9C.7040200@gmail.com> <4109.1190403228@turing-police.cc.vt.edu> <46F41DC0.9060407@gmail.com>            <46F41ED8.3020301@gmail.com> <18727.1190604314@turing-police.cc.vt.edu>
-In-Reply-To: <18727.1190604314@turing-police.cc.vt.edu>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Sep 2007 02:17:43 -0400
+Date: Sun, 23 Sep 2007 23:17:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
+Message-Id: <20070923231713.f81ee0db.akpm@linux-foundation.org>
+In-Reply-To: <20070920195320.38C8E20D@kernel>
+References: <20070920195249.852667D5@kernel>
+	<20070920195320.38C8E20D@kernel>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/24/2007 05:25 AM, Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 21 Sep 2007 21:43:20 +0200, Jiri Slaby said:
->> On 09/21/2007 09:38 PM, Jiri Slaby wrote:
->>> It is rather the other user who adds the page to some other list while bein
-> g at
->>> deferred_pages list. Could you try my debug patch
->>> (http://lkml.org/lkml/2007/9/19/141)?
->> or the whitespace non-damaged version:
->> http://www.fi.muni.cz/~xslaby/sklad/pageattr_debug
+On Thu, 20 Sep 2007 12:53:20 -0700 Dave Hansen <haveblue@us.ibm.com> wrote:
+
+> This is the real meat of the entire series.  It actually
+> implements the tracking of the number of writers to a mount.
+> However, it causes scalability problems because there can
+> be hundreds of cpus doing open()/close() on files on the
+> same mnt at the same time.  Even an atomic_t in the mnt
+> has massive scalaing problems because the cacheline gets
+> so terribly contended.
 > 
-> Gaak. Is that thing *supposed* to spew zillions of lines of output?
+> This uses a statically-allocated percpu variable.  All
+> operations are local to a cpu as long that cpu operates on
+> the same mount, and there are no writer count imbalances.
+> Writer count imbalances happen when a write is taken on one
+> cpu, and released on another, like when an open/close pair
+> is performed on two different cpus because the task moved.
 
-Oh, probably yes.
 
-> Some of the hits we get (I'm wondering if anything after the first makes
-> any sense, or if we're just slowly watching the corruption spread - the
-> thing ended up near 23K lines long before I gave up and hit the poweroff
-> button because there was no end in sight):
+Did you test with lockdep enabled?
 
-Yes. it's not perfect, most of them are false positives (It's OK).
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.23-rc7-mm1 #1
+---------------------------------------------
+swapper/1 is trying to acquire lock:
+ (&writer->lock){--..}, at: [<c0197a32>] lock_and_coalesce_cpu_mnt_writer_counts+0x32/0x70
 
-> (If there's something specific you want me to find in the output,
-> like "the first time we see XYZ", yell...)
+but task is already holding lock:
+ (&writer->lock){--..}, at: [<c0197a32>] lock_and_coalesce_cpu_mnt_writer_counts+0x32/0x70
 
-Heh :). The few last before the list corruption BUG (you have to have LIST_DEBUG
-enabled) -- but it seems you never reached that phase?
+other info that might help us debug this:
+1 lock held by swapper/1:
+ #0:  (&writer->lock){--..}, at: [<c0197a32>] lock_and_coalesce_cpu_mnt_writer_counts+0x32/0x70
 
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+stack backtrace:
+ [<c0103ffa>] show_trace_log_lvl+0x1a/0x30
+ [<c0104b82>] show_trace+0x12/0x20
+ [<c0104c96>] dump_stack+0x16/0x20
+ [<c0144dc5>] __lock_acquire+0xde5/0x10a0
+ [<c01450fa>] lock_acquire+0x7a/0xa0
+ [<c03e734c>] _spin_lock+0x2c/0x40
+ [<c0197a32>] lock_and_coalesce_cpu_mnt_writer_counts+0x32/0x70
+ [<c01982c6>] mntput_no_expire+0x36/0xc0
+ [<c0188f15>] path_release_on_umount+0x15/0x20
+ [<c0198930>] sys_umount+0x40/0x230
+ [<c010070b>] name_to_dev_t+0x9b/0x270
+ [<c05230c2>] prepare_namespace+0x62/0x1b0
+ [<c05226ca>] kernel_init+0x21a/0x320
+ [<c0103b47>] kernel_thread_helper+0x7/0x10
+ =======================
+
+It look like a false positive to me, but really, for a patchset of this
+complexity and maturity I cannot fathom how it could have escaped any
+lockdep testing.
+
