@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbXIXQ2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761268AbXIXQ2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760840AbXIXQ2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760521AbXIXQZ3
+	id S1761268AbXIXQ2w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759649AbXIXQZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:25:29 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:47283 "EHLO
+	Mon, 24 Sep 2007 12:25:32 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47287 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760510AbXIXQZ1 (ORCPT
+	with ESMTP id S1760523AbXIXQZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:25:27 -0400
-Date: Mon, 24 Sep 2007 09:20:23 -0700
+	Mon, 24 Sep 2007 12:25:29 -0400
+Date: Mon, 24 Sep 2007 09:20:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,68 +21,148 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kumar Gala <galak@kernel.crashing.org>
-Subject: [11/50] POWERPC: Flush registers to proper task context
-Message-ID: <20070924162023.GL13510@kroah.com>
+       Zhao Yakui <yakui.zhao@intel.com>,
+       Vincet Fortier <Vincent.Fortier1@EC.GC.CA>,
+       Len Brown <len.brown@intel.com>
+Subject: [10/50] ACPI: Validate XSDT, use RSDT if XSDT fails
+Message-ID: <20070924162019.GK13510@kroah.com>
 References: <20070924161246.983665021@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-flush-registers-to-proper-task-context.patch"
+Content-Disposition: inline; filename="acpi-validate-xsdt-use-rsdt-if-xsdt-fails.patch"
 In-Reply-To: <20070924161733.GA13510@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kumar Gala <galak@kernel.crashing.org>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-commit 0ee6c15e7ba7b36a217cdadb292eeaf32a057a59 in mainline.
+commit 9f3119b70cf189530f1b46a006a052e171a1622f in mainline.
 
-When we flush register state for FP, Altivec, or SPE in flush_*_to_thread
-we need to respect the task_struct that the caller has passed to us.
+ACPI 1.0 used an RSDT with 32-bit physical addresses.
+ACPI 2.0 adds an XSDT with 32-bit physical addresses.
+An ACPI 2.0 aware OS is supposed to use the XSDT
+(when present) instead of the RSDT.
 
-Most cases we are called with current, however sometimes (ptrace) we may
-be passed a different task_struct.
+However, several systems have failed because the XSDT
+contains NULL entries -- while it is missing pointers
+to needed tables, such as SSDTs.
 
-This showed up when using gdbserver debugging a simple program that used
-floating point. When gdb tried to show the FP regs they all showed up as
-0, because the child's FP registers were never properly flushed to memory.
+When we find an XSDT with NULL entries, discard it
+and use the ACPI 1.0 RSDT instead.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+http://bugzilla.kernel.org/show_bug.cgi?id=8630
+
+Signed-off-by: Zhao Yakui  <yakui.zhao@intel.com>
+Cc: Vincet Fortier <Vincent.Fortier1@EC.GC.CA>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/kernel/process.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/acpi/tables/tbutils.c |   71 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 71 insertions(+)
 
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -83,7 +83,7 @@ void flush_fp_to_thread(struct task_stru
- 			 */
- 			BUG_ON(tsk != current);
- #endif
--			giveup_fpu(current);
-+			giveup_fpu(tsk);
- 		}
- 		preempt_enable();
- 	}
-@@ -143,7 +143,7 @@ void flush_altivec_to_thread(struct task
- #ifdef CONFIG_SMP
- 			BUG_ON(tsk != current);
- #endif
--			giveup_altivec(current);
-+			giveup_altivec(tsk);
- 		}
- 		preempt_enable();
- 	}
-@@ -182,7 +182,7 @@ void flush_spe_to_thread(struct task_str
- #ifdef CONFIG_SMP
- 			BUG_ON(tsk != current);
- #endif
--			giveup_spe(current);
-+			giveup_spe(tsk);
- 		}
- 		preempt_enable();
- 	}
+--- a/drivers/acpi/tables/tbutils.c
++++ b/drivers/acpi/tables/tbutils.c
+@@ -51,6 +51,65 @@ ACPI_MODULE_NAME("tbutils")
+ static acpi_physical_address
+ acpi_tb_get_root_table_entry(u8 * table_entry,
+ 			     acpi_native_uint table_entry_size);
++/*******************************************************************************
++ *
++ * FUNCTION:    acpi_tb_check_xsdt
++ *
++ * PARAMETERS:  address                    - Pointer to the XSDT
++ *
++ * RETURN:      status
++ *		AE_OK - XSDT is okay
++ *		AE_NO_MEMORY - can't map XSDT
++ *		AE_INVALID_TABLE_LENGTH - invalid table length
++ *		AE_NULL_ENTRY - XSDT has NULL entry
++ *
++ * DESCRIPTION: validate XSDT
++******************************************************************************/
++
++static acpi_status
++acpi_tb_check_xsdt(acpi_physical_address address)
++{
++	struct acpi_table_header *table;
++	u32 length;
++	u64 xsdt_entry_address;
++	u8 *table_entry;
++	u32 table_count;
++	int i;
++
++	table = acpi_os_map_memory(address, sizeof(struct acpi_table_header));
++	if (!table)
++		return AE_NO_MEMORY;
++
++	length = table->length;
++	acpi_os_unmap_memory(table, sizeof(struct acpi_table_header));
++	if (length < sizeof(struct acpi_table_header))
++		return AE_INVALID_TABLE_LENGTH;
++
++	table = acpi_os_map_memory(address, length);
++	if (!table)
++		return AE_NO_MEMORY;
++
++	/* Calculate the number of tables described in XSDT */
++	table_count =
++		(u32) ((table->length -
++		sizeof(struct acpi_table_header)) / sizeof(u64));
++	table_entry =
++		ACPI_CAST_PTR(u8, table) + sizeof(struct acpi_table_header);
++	for (i = 0; i < table_count; i++) {
++		ACPI_MOVE_64_TO_64(&xsdt_entry_address, table_entry);
++		if (!xsdt_entry_address) {
++			/* XSDT has NULL entry */
++			break;
++		}
++		table_entry += sizeof(u64);
++	}
++	acpi_os_unmap_memory(table, length);
++
++	if (i < table_count)
++		return AE_NULL_ENTRY;
++	else
++		return AE_OK;
++}
+ 
+ /*******************************************************************************
+  *
+@@ -341,6 +400,7 @@ acpi_tb_parse_root_table(acpi_physical_a
+ 	u32 table_count;
+ 	struct acpi_table_header *table;
+ 	acpi_physical_address address;
++	acpi_physical_address rsdt_address;
+ 	u32 length;
+ 	u8 *table_entry;
+ 	acpi_status status;
+@@ -369,6 +429,8 @@ acpi_tb_parse_root_table(acpi_physical_a
+ 		 */
+ 		address = (acpi_physical_address) rsdp->xsdt_physical_address;
+ 		table_entry_size = sizeof(u64);
++		rsdt_address = (acpi_physical_address)
++					rsdp->rsdt_physical_address;
+ 	} else {
+ 		/* Root table is an RSDT (32-bit physical addresses) */
+ 
+@@ -382,6 +444,15 @@ acpi_tb_parse_root_table(acpi_physical_a
+ 	 */
+ 	acpi_os_unmap_memory(rsdp, sizeof(struct acpi_table_rsdp));
+ 
++	if (table_entry_size == sizeof(u64)) {
++		if (acpi_tb_check_xsdt(address) == AE_NULL_ENTRY) {
++			/* XSDT has NULL entry, RSDT is used */
++			address = rsdt_address;
++			table_entry_size = sizeof(u32);
++			ACPI_WARNING((AE_INFO, "BIOS XSDT has NULL entry,"
++					"using RSDT"));
++		}
++	}
+ 	/* Map the RSDT/XSDT table header to get the full table length */
+ 
+ 	table = acpi_os_map_memory(address, sizeof(struct acpi_table_header));
 
 -- 
