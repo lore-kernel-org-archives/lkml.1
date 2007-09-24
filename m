@@ -1,167 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763624AbXIXQop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763553AbXIXQpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763624AbXIXQop (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761018AbXIXQ3J
+	id S1763553AbXIXQpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761334AbXIXQbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:29:09 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:58187 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761310AbXIXQ3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:29:07 -0400
-Date: Mon, 24 Sep 2007 09:22:56 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Larry Finger <Larry.Finger@lwfinger.net>, Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [50/50] bcm43xx: Fix cancellation of work queue crashes
-Message-ID: <20070924162256.GY13510@kroah.com>
-References: <20070924161246.983665021@mini.kroah.org>
-MIME-Version: 1.0
+	Mon, 24 Sep 2007 12:31:18 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45920 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759460AbXIXQbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:31:16 -0400
+Date: Mon, 24 Sep 2007 22:11:59 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Cc: dmitry.adamushko@gmail.com, linux-kernel@vger.kernel.org,
+       dhaval@linux.vnet.ibm.com, containers@lists.osdl.org,
+       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com, efault@gmx.de
+Subject: [PATCH 5/5] Add fair "control groups" scheduler
+Message-ID: <20070924164159.GF10291@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070924163326.GA10291@linux.vnet.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bcm43xx-fix-cancellation-of-work-queue-crashes.patch"
-In-Reply-To: <20070924161733.GA13510@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Disposition: inline
+In-Reply-To: <20070924163326.GA10291@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
 
-port of 3f7086978fc0193eff24a77d8b57ac4debc088fa from mainline.
+Enable "cgroup" (formerly containers) based fair group scheduling.
+This will let administrator create arbitrary groups of tasks (using
+"cgroup" psuedo filesystem) and control their cpu bandwidth usage.
 
-A crash upon booting that is caused by bcm43xx has been reported [1] and
-found to be due to a work queue being reinitialized while work on that
-queue is still pending. This fix modifies the shutdown of work queues and
-prevents periodic work from being requeued during shutdown. With this patch,
-no more crashes on reboot were observed by the original reporter. I do not
-get that particular failure on my system; however, when running a large
-number of ifdown/ifup sequences, my system would kernel panic with the
-'caps lock' light blinking at roughly a 1 Hz rate. In addition, there were
-infrequent failures in the firmware that resulted in 'IRQ READY TIMEOUT'
-errors. With this patch, no more of the first type of failure occur, and
-incidence of the second type is greatly reduced.
+Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-[1] http://bugzilla.kernel.org/show_bug.cgi?id=8937
-
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Acked-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/bcm43xx/bcm43xx_main.c  |   28 +++++++++++++++++++--------
- drivers/net/wireless/bcm43xx/bcm43xx_main.h  |    2 -
- drivers/net/wireless/bcm43xx/bcm43xx_sysfs.c |    2 -
- 3 files changed, 22 insertions(+), 10 deletions(-)
+ include/linux/cgroup_subsys.h |    6 ++
+ init/Kconfig                  |   24 +++++---
+ kernel/sched.c                |  122 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 145 insertions(+), 7 deletions(-)
 
---- a/drivers/net/wireless/bcm43xx/bcm43xx_main.c
-+++ b/drivers/net/wireless/bcm43xx/bcm43xx_main.c
-@@ -3183,6 +3183,9 @@ static void bcm43xx_periodic_work_handle
- 	unsigned long orig_trans_start = 0;
+Index: current/include/linux/cgroup_subsys.h
+===================================================================
+--- current.orig/include/linux/cgroup_subsys.h
++++ current/include/linux/cgroup_subsys.h
+@@ -36,3 +36,9 @@ SUBSYS(mem_cgroup)
+ #endif
  
- 	mutex_lock(&bcm->mutex);
-+	/* keep from doing and rearming periodic work if shutting down */
-+	if (bcm43xx_status(bcm) == BCM43xx_STAT_UNINIT)
-+		goto unlock_mutex;
- 	if (unlikely(bcm->periodic_state % 60 == 0)) {
- 		/* Periodic work will take a long time, so we want it to
- 		 * be preemtible.
-@@ -3228,14 +3231,10 @@ static void bcm43xx_periodic_work_handle
- 	mmiowb();
- 	bcm->periodic_state++;
- 	spin_unlock_irqrestore(&bcm->irq_lock, flags);
-+unlock_mutex:
- 	mutex_unlock(&bcm->mutex);
- }
+ /* */
++
++#ifdef CONFIG_FAIR_CGROUP_SCHED
++SUBSYS(cpu_cgroup)
++#endif
++
++/* */
+Index: current/init/Kconfig
+===================================================================
+--- current.orig/init/Kconfig
++++ current/init/Kconfig
+@@ -327,13 +327,6 @@ config FAIR_GROUP_SCHED
+ 	  This feature lets cpu scheduler recognize task groups and control cpu
+ 	  bandwidth allocation to such task groups.
  
--void bcm43xx_periodic_tasks_delete(struct bcm43xx_private *bcm)
--{
--	cancel_rearming_delayed_work(&bcm->periodic_work);
--}
+-config RESOURCE_COUNTERS
+-	bool "Resource counters"
+-	help
+-	  This option enables controller independent resource accounting
+-          infrastructure that works with cgroups
+-	depends on CGROUPS
 -
- void bcm43xx_periodic_tasks_setup(struct bcm43xx_private *bcm)
- {
- 	struct delayed_work *work = &bcm->periodic_work;
-@@ -3285,6 +3284,14 @@ static int bcm43xx_rng_init(struct bcm43
- 	return err;
+ choice
+ 	depends on FAIR_GROUP_SCHED
+ 	prompt "Basis for grouping tasks"
+@@ -345,8 +338,25 @@ choice
+  		  This option will choose userid as the basis for grouping
+ 		  tasks, thus providing equal cpu bandwidth to each user.
+ 
++	config FAIR_CGROUP_SCHED
++		bool "Control groups"
++		depends on CGROUPS
++		help
++		   This option allows you to create arbitrary task groups
++		   using the "cgroup" psuedo filesystem and control
++		   the cpu bandwidth allocated to each such task group.
++		   Refer to Documentation/cgroups.txt for more information
++		   on "cgroup" psuedo filesystem.
++
+ endchoice
+ 
++config RESOURCE_COUNTERS
++	bool "Resource counters"
++	help
++	  This option enables controller independent resource accounting
++          infrastructure that works with cgroups
++	depends on CGROUPS
++
+ config SYSFS_DEPRECATED
+ 	bool "Create deprecated sysfs files"
+ 	default y
+Index: current/kernel/sched.c
+===================================================================
+--- current.orig/kernel/sched.c
++++ current/kernel/sched.c
+@@ -179,10 +179,16 @@ EXPORT_SYMBOL_GPL(cpu_clock);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 
++#include <linux/cgroup.h>
++
+ struct cfs_rq;
+ 
+ /* task group related information */
+ struct task_grp {
++#ifdef CONFIG_FAIR_CGROUP_SCHED
++	struct cgroup_subsys_state css;
++#endif
++
+ 	/* schedulable entities of this group on each cpu */
+ 	struct sched_entity **se;
+ 	/* runqueue "owned" by this group on each cpu */
+@@ -221,6 +227,9 @@ static inline struct task_grp *task_grp(
+ 
+ #ifdef CONFIG_FAIR_USER_SCHED
+ 	tg = p->user->tg;
++#elif CONFIG_FAIR_CGROUP_SCHED
++	tg = container_of(task_subsys_state(p, cpu_cgroup_subsys_id),
++				struct task_grp, css);
+ #else
+ 	tg  = &init_task_grp;
+ #endif
+@@ -6950,3 +6959,116 @@ int sched_group_set_shares(struct task_g
  }
  
-+void bcm43xx_cancel_work(struct bcm43xx_private *bcm)
+ #endif 	/* CONFIG_FAIR_GROUP_SCHED */
++
++#ifdef CONFIG_FAIR_CGROUP_SCHED
++
++/* return corresponding task_grp object of a cgroup */
++static inline struct task_grp *cgroup_tg(struct cgroup *cont)
 +{
-+	/* The system must be unlocked when this routine is entered.
-+	 * If not, the next 2 steps may deadlock */
-+	cancel_work_sync(&bcm->restart_work);
-+	cancel_rearming_delayed_work(&bcm->periodic_work);
++	return container_of(cgroup_subsys_state(cont, cpu_cgroup_subsys_id),
++					 struct task_grp, css);
 +}
 +
- static int bcm43xx_shutdown_all_wireless_cores(struct bcm43xx_private *bcm)
- {
- 	int ret = 0;
-@@ -3321,7 +3328,12 @@ static void bcm43xx_free_board(struct bc
- {
- 	bcm43xx_rng_exit(bcm);
- 	bcm43xx_sysfs_unregister(bcm);
--	bcm43xx_periodic_tasks_delete(bcm);
++static struct cgroup_subsys_state *
++cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	struct task_grp *tg;
 +
-+	mutex_lock(&(bcm)->mutex);
-+	bcm43xx_set_status(bcm, BCM43xx_STAT_UNINIT);
-+	mutex_unlock(&(bcm)->mutex);
++	if (!cont->parent) {
++		/* This is early initialization for the top cgroup */
++		init_task_grp.css.cgroup = cont;
++		return &init_task_grp.css;
++	}
 +
-+	bcm43xx_cancel_work(bcm);
- 
- 	mutex_lock(&(bcm)->mutex);
- 	bcm43xx_shutdown_all_wireless_cores(bcm);
-@@ -4018,7 +4030,7 @@ static int bcm43xx_net_stop(struct net_d
- 	err = bcm43xx_disable_interrupts_sync(bcm);
- 	assert(!err);
- 	bcm43xx_free_board(bcm);
--	flush_scheduled_work();
-+	bcm43xx_cancel_work(bcm);
- 
- 	return 0;
- }
-@@ -4150,9 +4162,9 @@ static void bcm43xx_chip_reset(struct wo
- 	struct bcm43xx_phyinfo *phy;
- 	int err = -ENODEV;
- 
-+	bcm43xx_cancel_work(bcm);
- 	mutex_lock(&(bcm)->mutex);
- 	if (bcm43xx_status(bcm) == BCM43xx_STAT_INITIALIZED) {
--		bcm43xx_periodic_tasks_delete(bcm);
- 		phy = bcm43xx_current_phy(bcm);
- 		err = bcm43xx_select_wireless_core(bcm, phy->type);
- 		if (!err)
---- a/drivers/net/wireless/bcm43xx/bcm43xx_main.h
-+++ b/drivers/net/wireless/bcm43xx/bcm43xx_main.h
-@@ -122,7 +122,7 @@ void bcm43xx_wireless_core_reset(struct 
- void bcm43xx_mac_suspend(struct bcm43xx_private *bcm);
- void bcm43xx_mac_enable(struct bcm43xx_private *bcm);
- 
--void bcm43xx_periodic_tasks_delete(struct bcm43xx_private *bcm);
-+void bcm43xx_cancel_work(struct bcm43xx_private *bcm);
- void bcm43xx_periodic_tasks_setup(struct bcm43xx_private *bcm);
- 
- void bcm43xx_controller_restart(struct bcm43xx_private *bcm, const char *reason);
---- a/drivers/net/wireless/bcm43xx/bcm43xx_sysfs.c
-+++ b/drivers/net/wireless/bcm43xx/bcm43xx_sysfs.c
-@@ -327,7 +327,7 @@ static ssize_t bcm43xx_attr_phymode_stor
- 		goto out;
- 	}
- 
--	bcm43xx_periodic_tasks_delete(bcm);
-+	bcm43xx_cancel_work(bcm);
- 	mutex_lock(&(bcm)->mutex);
- 	err = bcm43xx_select_wireless_core(bcm, phytype);
- 	if (!err)
++	/* we support only 1-level deep hierarchical scheduler atm */
++	if (cont->parent->parent)
++		return ERR_PTR(-EINVAL);
++
++	tg = sched_create_group();
++	if (IS_ERR(tg))
++		return ERR_PTR(-ENOMEM);
++
++	/* Bind the cgroup to task_grp object we just created */
++	tg->css.cgroup = cont;
++
++	return &tg->css;
++}
++
++static void cpu_cgroup_destroy(struct cgroup_subsys *ss,
++					struct cgroup *cont)
++{
++	struct task_grp *tg = cgroup_tg(cont);
++
++	sched_destroy_group(tg);
++}
++
++static int cpu_cgroup_can_attach(struct cgroup_subsys *ss,
++			     struct cgroup *cont, struct task_struct *tsk)
++{
++	/* We don't support RT-tasks being in separate groups */
++	if (tsk->sched_class != &fair_sched_class)
++		return -EINVAL;
++
++	return 0;
++}
++
++static void
++cpu_cgroup_attach(struct cgroup_subsys *ss, struct cgroup *cont,
++			struct cgroup *old_cont, struct task_struct *tsk)
++{
++	sched_move_task(tsk);
++}
++
++static ssize_t cpu_shares_write(struct cgroup *cont, struct cftype *cftype,
++				struct file *file, const char __user *userbuf,
++				size_t nbytes, loff_t *ppos)
++{
++	unsigned long shareval;
++	struct task_grp *tg = cgroup_tg(cont);
++	char buffer[2*sizeof(unsigned long) + 1];
++	int rc;
++
++	if (nbytes > 2*sizeof(unsigned long))	/* safety check */
++		return -E2BIG;
++
++	if (copy_from_user(buffer, userbuf, nbytes))
++		return -EFAULT;
++
++	buffer[nbytes] = 0;	/* nul-terminate */
++	shareval = simple_strtoul(buffer, NULL, 10);
++
++	rc = sched_group_set_shares(tg, shareval);
++
++	return (rc < 0 ? rc : nbytes);
++}
++
++static u64 cpu_shares_read_uint(struct cgroup *cont, struct cftype *cft)
++{
++	struct task_grp *tg = cgroup_tg(cont);
++
++	return (u64) tg->shares;
++}
++
++static struct cftype cpu_shares = {
++	.name = "shares",
++	.read_uint = cpu_shares_read_uint,
++	.write = cpu_shares_write,
++};
++
++static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	return cgroup_add_file(cont, ss, &cpu_shares);
++}
++
++struct cgroup_subsys cpu_cgroup_subsys = {
++	.name = "cpu",
++	.create = cpu_cgroup_create,
++	.destroy  = cpu_cgroup_destroy,
++	.can_attach = cpu_cgroup_can_attach,
++	.attach = cpu_cgroup_attach,
++	.populate = cpu_cgroup_populate,
++	.subsys_id = cpu_cgroup_subsys_id,
++	.early_init = 1,
++};
++
++#endif	/* CONFIG_FAIR_CGROUP_SCHED */
 
 -- 
+Regards,
+vatsa
