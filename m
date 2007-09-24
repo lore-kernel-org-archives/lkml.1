@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbXIXF55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbXIXGGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbXIXF55 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 01:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbXIXF5u
+	id S1755162AbXIXGGR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 02:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXIXGGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 01:57:50 -0400
-Received: from ozlabs.org ([203.10.76.45]:54305 "EHLO ozlabs.org"
+	Mon, 24 Sep 2007 02:06:01 -0400
+Received: from main.gmane.org ([80.91.229.2]:49276 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191AbXIXF5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 01:57:49 -0400
-Subject: [PATCH] fix modules oopsing in lguest guests
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lguest <lguest@ozlabs.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 15:57:04 +1000
-Message-Id: <1190613424.27805.181.camel@localhost.localdomain>
+	id S1751241AbXIXGGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 02:06:00 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: PROBLEM: Network sky2 Module, kernel version 2.6.23-rc7
+Date: Sun, 23 Sep 2007 23:06:24 -0700
+Organization: Linux Foundation
+Message-ID: <20070923230624.6f25ace5@oldman>
+References: <46E2BC6A.4070800@gmx.de>
+	<46EF4DE1.4000707@soo.com>
+	<46EFE09B.6090901@tmr.com>
+	<20070918080525.7a49d110@freepuppy.rosehill.hemminger.net>
+	<46F21692.4020607@soo.com>
+	<46F5C7B4.7050802@soo.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
+In-Reply-To: <46F5C7B4.7050802@soo.com>
+X-Newsreader: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The assembly templates for lguest guest patching are in the .init.text
-section.  This means that modules get patched with "cc cc cc cc" or
-similar junk.
+On Sat, 22 Sep 2007 21:56:04 -0400
+ben soo <lnx-kern@soo.com> wrote:
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> i spoke too soon.  The Gbit interface still dies.  Lasted around 
+> 19hrs. or so.  i can't tell if there are hardware issues: yesterday 
+> a Gbit NIC on the firewall died.  Different chip (Realtek), 
+> different driver, different machine, same segment.  Segment is a 
+> mix of 100Mbit and 1Gbit machines.
+> 
+> Symptoms of the failure are it just stops functioning with no error 
+> messages.  ifconfig says there are packets being TX'd and none 
+> being RX'd.  Interface can't be brought up again.
+> 
+> i use this box as the secondary DNS for our Internet domains 
+> (unblocked by firewall), as well as the database server for our 
+> developmental web CMS and the LAN ntp server (both services 
+> invisible outside the LAN).
+> 
+> 
+> dmesg says this on bootup:
+> 
+> > ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 18 (level, low) -> IRQ 16
+> > PCI: Setting latency timer of device 0000:01:00.0 to 64
+> > sky2 0000:01:00.0: v1.17 addr 0xdfefc000 irq 16 Yukon-EC (0xb6) rev 2
+> > sky2 eth0: addr 00:01:29:d6:35:f4
+> > ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 19 (level, low) -> IRQ 17
+> > PCI: Setting latency timer of device 0000:02:00.0 to 64
+> > sky2 0000:02:00.0: v1.17 addr 0xdfcfc000 irq 17 Yukon-EC (0xb6) rev 2
+> > sky2 eth1: addr 00:01:29:d6:36:26
 
-diff -r 554f72e059aa drivers/lguest/lguest_asm.S
---- a/drivers/lguest/lguest_asm.S	Thu Sep 13 16:56:44 2007 +1000
-+++ b/drivers/lguest/lguest_asm.S	Mon Sep 24 15:34:31 2007 +1000
-@@ -22,8 +22,9 @@
- 	jmp lguest_init
- 
- /*G:055 We create a macro which puts the assembler code between lgstart_ and
-- * lgend_ markers.  These templates end up in the .init.text section, so they
-- * are discarded after boot. */
-+ * lgend_ markers.  These templates are put in the .text section: they can't be
-+ * discarded after boot as we may need to patch modules, too. */
-+.text
- #define LGUEST_PATCH(name, insns...)			\
- 	lgstart_##name:	insns; lgend_##name:;		\
- 	.globl lgstart_##name; .globl lgend_##name
-@@ -34,7 +35,6 @@ LGUEST_PATCH(pushf, movl lguest_data+LGU
- LGUEST_PATCH(pushf, movl lguest_data+LGUEST_DATA_irq_enabled, %eax)
- /*:*/
- 
--.text
- /* These demark the EIP range where host should never deliver interrupts. */
- .global lguest_noirq_start
- .global lguest_noirq_end
+Does your network switch support flowcontrol?  The Yukon-EC may have
+a hardware problem that happens if FIFO gets full. If flow control is enabled,
+that shouldn't happen. 
 
+The newest version of the driver has a watchdog to try
+and detect and do an automatic reset, but it still means there would be about
+2 seconds of downtime.
 
