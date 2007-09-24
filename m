@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbXIXINd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbXIXIWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbXIXINd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 04:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXIXINY
+	id S1757318AbXIXIWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 04:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbXIXIWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 04:13:24 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52931 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755363AbXIXINX (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 04:13:23 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Uninline kcalloc()
-In-Reply-To: Your message of "Mon, 24 Sep 2007 11:44:35 +0400."
-             <b6fcc0a0709240044x62369dbcv1b5c69ce0be68581@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070922200349.GA2119@martell.zuzino.mipt.ru> <25045.1190612108@turing-police.cc.vt.edu>
-            <b6fcc0a0709240044x62369dbcv1b5c69ce0be68581@mail.gmail.com>
+	Mon, 24 Sep 2007 04:22:31 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:6810
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751558AbXIXIWb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 04:22:31 -0400
+Message-Id: <46F79021.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 24 Sep 2007 09:23:29 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
+Subject: Re: [patches] [PATCH] [13/50] x86: Fix and reenable CLFLUSH
+	support inchange_page_attr()
+References: <200709221231.836138000@suse.de>
+ <20070921223211.BB50413DCD@wotan.suse.de>
+In-Reply-To: <20070921223211.BB50413DCD@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190621599_3891P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Sep 2007 04:13:19 -0400
-Message-ID: <6227.1190621599@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190621599_3891P
-Content-Type: text/plain; charset=us-ascii
-
-On Mon, 24 Sep 2007 11:44:35 +0400, Alexey Dobriyan said:
-
-> Interesting. Here is output from kernel with patch applied and leak
-> plugged into proc_dointvec() (I checked twice):
+>@@ -162,7 +198,7 @@ __change_page_attr(unsigned long address
+> 	/* on x86-64 the direct mapping set at boot is not using 4k pages */
+>  	BUG_ON(PageReserved(kpte_page));
 > 
->         $ grep kcalloc /proc/slab_allocators
->         $ grep proc_dointvec /proc/slab_allocators
->         size-64: 19 proc_dointvec+0x48/0xa0
+>-	save_page(kpte_page);
+>+	save_page(kpte_page, 0);
+> 	if (page_private(kpte_page) == 0)
+> 		revert_page(address, ref_prot);
+> 	return 0;
 
-Argh, went to "cancel" that previous msg and retry when I realized you meant it was
-with *your* patch installed, managed to send it anyhow..
+What is the point of continuing to launder kpte_page here? Page table pages
+never get their caching attributes changed, nor would their direct mapping
+ever change. (Same for i386, obviously.)
 
-I wonder if the only reason it's working for you is because gcc is doing
-some tail-recursion magic on the kcalloc() call (which calls to __kmalloc),
-which just happens to make it work, and if the tail-recursion wasn't happening
-it would be busticated.
+Jan
 
---==_Exmh_1190621599_3891P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG93GfcC3lWbTT17ARAkcYAJ9b0MeN7NC6j3AcSfYvFQt7IFCWbwCg0hz0
-khbqcUPBJiBlwOVo0QEnJzo=
-=XZ9G
------END PGP SIGNATURE-----
-
---==_Exmh_1190621599_3891P--
