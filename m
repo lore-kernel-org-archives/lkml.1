@@ -1,94 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbXIXRrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760609AbXIXRsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759540AbXIXRrS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 13:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbXIXRrF
+	id S1760609AbXIXRsb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 13:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbXIXRsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 13:47:05 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35937 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753938AbXIXRrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 13:47:02 -0400
-Subject: [PATCH] make lockdep happy with r/o bind mounts
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, adobriyan@sw.ru, peterz@infradead.org,
-       Dave Hansen <haveblue@us.ibm.com>
-From: Dave Hansen <haveblue@us.ibm.com>
-Date: Mon, 24 Sep 2007 10:46:58 -0700
-Message-Id: <20070924174658.2B3D54B8@kernel>
+	Mon, 24 Sep 2007 13:48:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48197 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756629AbXIXRsW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 13:48:22 -0400
+Date: Mon, 24 Sep 2007 18:48:17 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 4/7] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20070924174817.GB1608@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	"Frank Ch. Eigler" <fche@redhat.com>,
+	Rusty Russell <rusty@rustcorp.com.au>
+References: <20070924164950.006047409@polymtl.ca> <20070924165427.717587684@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070924165427.717587684@polymtl.ca>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Sep 24, 2007 at 12:49:54PM -0400, Mathieu Desnoyers wrote:
+> +struct __mark_marker {
+> +	const char *name;	/* Marker name */
+> +	const char *format;	/* Marker format string, describing the
+> +				 * variable argument list.
+> +				 */
+> +	char state;		/* Marker state. */
+> +	marker_probe_func *call;/* Probe handler function pointer */
+> +	void *pdata;		/* Private probe data */
 
-With the r/o bind mount patches, we can have as many
-spinlocks nested as there are CPUs on the system.
-Lockdep freaks out after 8.
+This is normally called private in the kernel, and keeping this
+consistant would be nice.
 
-So, create a new lockdep class of locks for the
-mnt_writer spinlocks, and initialize each of the
-cpu locks to be in a different class.
+> +} __attribute__((aligned(8)));
 
-It should shut up warnings like this, while still
-allowing some of the lockdep goodness to remain:
+Why do we care about the alignment here?
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.23-rc6 #6
----------------------------------------------
-swapper/1 is trying to acquire lock:
- (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
+> +/* To be used for string format validity checking with gcc */
+> +static inline void __attribute__ ((format (printf, 1, 2)))
+> +	__mark_check_format(const char *fmt, ...) { }
 
-but task is already holding lock:
- (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
+Please put each of the curly braces on a line of it's own, so it's
+clear this is an empty inline from the 1000 feet few, as it first
+looks like a prototype.  Also aren't __attributes__ normally afer
+the function identifier, ala:
 
-other info that might help us debug this:
-1 lock held by swapper/1:
- #0:  (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
+static inline void __mark_check_format(const char *fmt, ...)
+		__attribute__ ((format (printf, 1, 2)))
+{
+}
 
-stack backtrace:
- [<c01034ab>] show_trace_log_lvl+0x19/0x2e
- [<c01034d2>] show_trace+0x12/0x14
- [<c01035be>] dump_stack+0x14/0x16
- [<c0130ab2>] print_deadlock_bug+0xb7/0xc1
- [<c0130afc>] check_deadlock+0x40/0x54
- [<c013100a>] validate_chain+0x26e/0x319
- [<c0132cca>] __lock_acquire+0x6c4/0x731
- [<c01332da>] lock_acquire+0x7a/0x94
- [<c031bb01>] _spin_lock+0x38/0x62
- [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
- [<c016c5f8>] mntput_no_expire+0x38/0xad
- [<c015fbed>] path_release_on_umount+0x15/0x18
- [<c016cc76>] sys_umount+0x67/0x6f
- [<c010058a>] name_to_dev_t+0x22a/0x24c
- [<c0427207>] prepare_namespace+0x89/0x187
- [<c0426cdd>] kernel_init+0x9a/0xa3
- [<c010336f>] kernel_thread_helper+0x7/0x10
- =======================
+or is this after notation only for prototypes but not actual implementations?
+(yeah, gnu C extensions sometimes have syntax that odd)
 
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
----
 
- lxc-dave/fs/namespace.c |    2 ++
- 1 file changed, 2 insertions(+)
+> +#ifdef CONFIG_MARKERS
+> +void module_update_markers(struct module *probe_module, int *refcount)
+> +{
+> +	struct module *mod;
+> +
+> +	mutex_lock(&module_mutex);
+> +	list_for_each_entry(mod, &modules, list)
+> +		if (!mod->taints)
+> +			marker_update_probe_range(mod->markers,
+> +				mod->markers + mod->num_markers,
+> +				probe_module, refcount);
+> +	mutex_unlock(&module_mutex);
+> +}
+> +EXPORT_SYMBOL_GPL(module_update_markers);
 
-diff -puN fs/namespace.c~make-lockdep-happy-with-ro-bind-mounts fs/namespace.c
---- lxc/fs/namespace.c~make-lockdep-happy-with-ro-bind-mounts	2007-09-24 10:32:23.000000000 -0700
-+++ lxc-dave/fs/namespace.c	2007-09-24 10:41:37.000000000 -0700
-@@ -116,6 +116,7 @@ struct mnt_writer {
- 	 * must be ordered by cpu number.
- 	 */
- 	spinlock_t lock;
-+	struct lock_class_key lock_class; /* compiles out with !lockdep */
- 	unsigned long count;
- 	struct vfsmount *mnt;
- } ____cacheline_aligned_in_smp;
-@@ -127,6 +128,7 @@ static int __init init_mnt_writers(void)
- 	for_each_possible_cpu(cpu) {
- 		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
- 		spin_lock_init(&writer->lock);
-+		lockdep_set_class(&writer->lock, &writer->lock_class);
- 		writer->count = 0;
- 	}
- 	return 0;
-diff -puN include/linux/lockdep.h~make-lockdep-happy-with-ro-bind-mounts include/linux/lockdep.h
-_
+Why is this exported?  The markers code is always built into the kernel,
+isn't it?
+
+> +EXPORT_SYMBOL_GPL(module_get_iter_markers);
+
+Same here.
+
+> +/*
+> + * Add the marker to the marker hash table. Must be called with markers_mutex
+> + * held.
+> + */
+> +static int add_marker(const char *name,
+> +	const char *format, marker_probe_func *probe, void *pdata)
+
+static int add_marker(const char *name, const char *format,
+		marker_probe_func *probe, void *private)
+
+> +void marker_update_probe_range(
+> +	struct __mark_marker *begin,
+> +	struct __mark_marker *end,
+> +	struct module *probe_module,
+> +	int *refcount)
+
+void marker_update_probe_range(struct __mark_marker *begin,
+		struct __mark_marker *end, struct module *probe_module,
+		int *refcount)
+
+> +EXPORT_SYMBOL_GPL(marker_update_probe_range);
+
+What is this one exported for?
+
+> +/*
+> + * Update probes, removing the faulty probes.
+> + * Issues a synchronize_sched() when no reference to the module passed
+> + * as parameter is found in the probes so the probe module can be
+> + * safely unloaded from now on.
+> + */
+> +static inline void marker_update_probes(struct module *probe_module)
+
+no need to mark this inline, the compiler takes care of that for you
+if nessecary.
+
+> +int marker_get_iter_range(struct __mark_marker **marker,
+> +	struct __mark_marker *begin,
+> +	struct __mark_marker *end)
+
+int marker_get_iter_range(struct __mark_marker **marker,
+		struct __mark_marker *begin, struct __mark_marker *end)
+
+> +	int found = 0;
+> +
+> +	if (!*marker && begin != end) {
+> +		found = 1;
+> +		*marker = begin;
+> +	} else if (*marker >= begin && *marker < end) {
+> +		found = 1;
+> +		/*
+> +		 * *marker is known to be a valid marker from now on.
+> +		 */
+> +	}
+> +	return found;
+
+	if (!*marker && begin != end) {
+		*marker = begin;
+		return 1;
+	}
+
+	if (*marker >= begin && *marker < end)
+		return 1;
+	return 0;
+
+?
+
+
+There seem to be a lot of exports and some functions that don't seem
+to be used by the obvious marker use-cases like your example, blktrace
+or sputrace.  Care to explain why we'd really want them or better cut
+them out for this first submission?
