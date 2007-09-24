@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbXIXVBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbXIXVEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756258AbXIXVBK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 17:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXIXVA5
+	id S1756190AbXIXVEc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 17:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbXIXVEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 17:00:57 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:41122 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753386AbXIXVA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 17:00:56 -0400
-Date: Mon, 24 Sep 2007 23:02:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.23-rc7-mm1
-Message-ID: <20070924210222.GA4595@uranus.ravnborg.org>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F78C73.5040505@linux.vnet.ibm.com>
+	Mon, 24 Sep 2007 17:04:23 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37253 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750858AbXIXVEW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 17:04:22 -0400
+Date: Mon, 24 Sep 2007 22:10:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Olaf Hering <olaf@aepfle.de>
+Subject: Re: libata broken on Pegasos PPC platform (was: Re: IDE broken on
+ Pegasos PPC platform)
+Message-ID: <20070924221041.309b08e9@the-village.bc.nu>
+In-Reply-To: <200709242258.28497.bzolnier@gmail.com>
+References: <46F80BB1.7050902@redhat.com>
+	<200709242258.28497.bzolnier@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F78C73.5040505@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kamalesh.
+On Mon, 24 Sep 2007 22:58:28 +0200
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> The link error for a PowerMac G5 (powerpc) is still seen with 
-> 2.6.23-rc7-mm1,
-> and was reported for 2.6.23-rc6-mm1 (http://lkml.org/lkml/2007/9/19/62).
+> On Monday 24 September 2007, Chuck Ebbert wrote:
+> > Without this patch, taken from a Suse 2.6.22 kernel, the Pegasos
+> > PPC machines can't use their IDE interface. Is this the right fix?
 > 
->  KSYM    .tmp_kallsyms1.S
->  AS      .tmp_kallsyms1.o
->  LD      .tmp_vmlinux2
->  KSYM    .tmp_kallsyms2.S
->  AS      .tmp_kallsyms2.o
->  LD      vmlinux.o
-> ld: dynreloc miscount for fs/built-in.o, section .opd
-> ld: can not edit opd Bad value
-> make: *** [vmlinux.o] Error 1
+> This or use IDE via82cxxx driver.
 
-Can you try to narrow it down a bit further...
-As this happens when building fs/built-in.o it should be
-straightforward to do so.
+Which contains a similar hack in the IDE driver where it doesn't belong 8)
 
-First step would be to do:
-rm fs/built-in.o
-make fs/ V=1
+> IIRC the patch comes from Olaf Hering (added to cc:) and is the way to go
+> 
+> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Then copy the ld invocation and try to remove the input .o files one-by-one.
-This should tell you which .o file is causing the bug.
+Acked-by: Alan Cox <alan@redhat.com>
 
-Next step is to try to squeze down the offending file until the
-errornous part remains.
-
-Last time I did a
-make fs/file.i
-
-And then I used gcc & ld to compile and link.
-Gradually removing stuff from file.i made me spot the problem
-with the weak prototype in a header file.
-
-I guess something else is making ld hit this error now.
-
-PS. Just reinstalled my dev box so no crosscompiler atm.
-
-	Sam
+hopefully that means the hack in the old VIA driver can also be killed
+off.
