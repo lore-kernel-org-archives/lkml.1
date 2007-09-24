@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764664AbXIXQ65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764700AbXIXQ7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764664AbXIXQ65 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764321AbXIXQ5q
+	id S1764700AbXIXQ7a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbXIXQ7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:57:46 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:10739 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758562AbXIXQ5p (ORCPT
+	Mon, 24 Sep 2007 12:59:10 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:52648 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762170AbXIXQ7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:57:45 -0400
-Date: Mon, 24 Sep 2007 18:57:37 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1
-Message-ID: <20070924185737.717b2650@twins>
-In-Reply-To: <20070924094448.d08cf3a6.akpm@linux-foundation.org>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-	<46F7B7FD.1000905@linux.vnet.ibm.com>
-	<20070924094448.d08cf3a6.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Mon, 24 Sep 2007 12:59:08 -0400
+Date: Mon, 24 Sep 2007 12:59:03 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>,
+       Alexey Dobriyan <adobriyan@sw.ru>
+Subject: Re: MAX_LOCKDEP_SUBCLASSES too low in 2.6.23-rc7-mm1
+Message-ID: <20070924165903.GA24220@Krystal>
+References: <20070924160358.GA19736@Krystal> <20070924183759.085d901c@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070924183759.085d901c@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:57:00 up 56 days, 17:15,  4 users,  load average: 7.62, 3.93, 1.98
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 09:44:48 -0700 Andrew Morton
-<akpm@linux-foundation.org> wrote:
-
-> On Mon, 24 Sep 2007 18:43:33 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Mon, 24 Sep 2007 12:03:58 -0400 Mathieu Desnoyers
+> <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> > Hi Andrew,
+> > Hi Ingo,
 > > 
-> > Kernel BUG over x86_64 (AMD Opteron(tm) Processor 844).
+> > I got the following printk when booting 2.6.23-rc7-mm1 :
 > > 
-> > Similar kernel Bug was reported for 2.6.23-rc2-mm1
-> > at http://lkml.org/lkml/2007/8/10/20 and the 
-> > mm-dirty-balancing-for-tasks.patch was dropped from 2.6.23-rc2-mm2.
-> > And the same patch is in this -mm version, suspect whether is it the
-> > same patch triggering this Bug.
+> > BUG: MAX_LOCKDEP_SUBCLASSES too low!
+> > turning off the locking correctness validator.
 > > 
-> > BUG: soft lockup - CPU#0 stuck for 11s! [events/0:15]
-> > CPU 0:
-> > Modules linked in:
-> > Pid: 15, comm: events/0 Tainted: G      D 2.6.23-rc7-mm1-autokern1 #1
-> > RIP: 0010:[<ffffffff8021be46>]  [<ffffffff8021be46>] __smp_call_function_mask+0x9a/0xc4
-> > RSP: 0000:ffff8100017add80  EFLAGS: 00000297
-> > RAX: 00000000000000fc RBX: ffff8100017adde0 RCX: 0000000000000001
-> > RDX: 00000000000008fc RSI: 00000000000000fc RDI: 000000000000000e
-> > RBP: ffffc20002d11000 R08: ffff8100017ac000 R09: ffffffff80675e38
-> > R10: 0000000000000000 R11: 0000000000000000 R12: 000000000000000f
-> > R13: ffffffff8021bcfe R14: 0000000000000000 R15: 0000000000000001
-> > FS:  0000000000000000(0000) GS:ffffffff8065a000(0000) knlGS:00000000556aa2a0
-> > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > CR2: ffffc20002d11008 CR3: 0000000000201000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > 
-> > Call Trace:
-> > Inexact backtrace:
-> >  [<ffffffff802157a4>] mcheck_check_cpu+0x0/0x31
-> >  [<ffffffff802157a4>] mcheck_check_cpu+0x0/0x31
-> >  [<ffffffff8021becf>] smp_call_function_mask+0x5f/0x72
-> >  [<ffffffff802157a4>] mcheck_check_cpu+0x0/0x31
-> >  [<ffffffff8021bf82>] smp_call_function+0x19/0x1b
-> >  [<ffffffff8023a773>] on_each_cpu+0x16/0x2b
-> >  [<ffffffff802158a2>] mcheck_timer+0x0/0x7c
-> >  [<ffffffff802158c0>] mcheck_timer+0x1e/0x7c
-> >  [<ffffffff802444b9>] run_workqueue+0x88/0x109
-> >  [<ffffffff8024453a>] worker_thread+0x0/0xf4
-> >  [<ffffffff80244623>] worker_thread+0xe9/0xf4
-> >  [<ffffffff8024841d>] autoremove_wake_function+0x0/0x37
-> >  [<ffffffff8024841d>] autoremove_wake_function+0x0/0x37
-> >  [<ffffffff80247e5c>] kthread+0x44/0x6d
-> >  [<ffffffff8020c5a8>] child_rip+0xa/0x12
-> >  [<ffffffff80247e18>] kthread+0x0/0x6d
-> >  [<ffffffff8020c59e>] child_rip+0x0/0x12
+> > Is it known/correct situation ?
 > 
-> hm, I thought we'd fixed the problems in that patchset.  Peter, were
-> you aware of this one?
+> Known, bug in r/o mounts code:
+> 
+> > static void lock_and_coalesce_cpu_mnt_writer_counts(void)
+> > {
+> > 	int cpu;
+> > 	struct mnt_writer *cpu_writer;
+> > 
+> > 	for_each_possible_cpu(cpu) {
+> > 		cpu_writer = &per_cpu(mnt_writers, cpu);
+> > 		spin_lock_nested(&cpu_writer->lock, 42);
+> > 		                                   ^^^^
+> > 
 
-Nope, and the stacktrace is utterly puzzling.
+How could the Ultimate Answer be wrong ? ;)
 
-/me goes read the lkml.org link
+Cheers,
 
-Kamalesh Babulal: do you still get:
-  BUG: spinlock bad magic on
+Mathieu
 
-msgs?
+> > What the heck is going on? Given that MAX_LOCKDEP_SUBCLASSES is only 8,
+> > this reliably turns off lockdep at boot.
 
-Because those I could reproduce using fsx, and I fixed all that.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
