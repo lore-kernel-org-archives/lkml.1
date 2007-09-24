@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbXIXNBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbXIXNFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759352AbXIXNBU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbXIXNBK
+	id S1758799AbXIXNFR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbXIXNFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:01:10 -0400
-Received: from smtpoutm.mac.com ([17.148.16.78]:60180 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757899AbXIXNBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:01:08 -0400
-In-Reply-To: <25045.1190612108@turing-police.cc.vt.edu>
-References: <20070922200349.GA2119@martell.zuzino.mipt.ru> <25045.1190612108@turing-police.cc.vt.edu>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <902BC866-59A0-4E50-8299-64D38D9E93B1@mac.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
+	Mon, 24 Sep 2007 09:05:04 -0400
+Received: from www.osadl.org ([213.239.205.134]:41328 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751117AbXIXNFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 09:05:03 -0400
+Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325,
+	related to clockevents
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200709241457.40669.rjw@sisk.pl>
+References: <200709231257.12213.rjw@sisk.pl>
+	 <200709232252.41975.rjw@sisk.pl> <1190621243.4035.171.camel@chaos>
+	 <200709241457.40669.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 24 Sep 2007 15:05:01 +0200
+Message-Id: <1190639101.4035.185.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH] Uninline kcalloc()
-Date: Mon, 24 Sep 2007 08:59:56 -0400
-To: Valdis.Kletnieks@vt.edu
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 24, 2007, at 01:35:08, Valdis.Kletnieks@vt.edu wrote:
-> On Sun, 23 Sep 2007 00:03:49 +0400, Alexey Dobriyan said:
->> -static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
->> -{
->> -	if (n != 0 && size > ULONG_MAX / n)
->> -		return NULL;
->> -	return __kmalloc(n * size, flags | __GFP_ZERO);
->> -}
->> +void *kcalloc(size_t n, size_t size, gfp_t flags);
->
-> NAK.
->
-> This busticates some pretty subtle code in mm/slab.c that uses uses  
-> __builtin_return_address() for debugging - if you do this, then the  
-> "calling function" gets listed as "kcalloc()" rather than the much  
-> more useful "function that called kcalloc()" (which is what you  
-> care about).
->
-> (I remember going around and around multiple times getting those  
-> stupid inlines set up right, so that feature actually did something  
-> useful, otherwise kcalloc and kzalloc didn't report where they were  
-> called from).
+On Mon, 2007-09-24 at 14:57 +0200, Rafael J. Wysocki wrote:
+> > > http://tglx.de/projects/hrtimers/2.6.23-rc4/patch-2.6.23-rc4-hrt1.patches.tar.bz2
+> > > 
+> > > applied.  I also have the 2.6.23-rc6-mm1 dmesg output ready, but there's some
+> > > -mm-specific noise in it.  Please let me know if you want it, though.
+> > 
+> > Hmm:
+> > 
+> > > Command line: root=/dev/sda3 vga=792 resume=/dev/sda1 noacpitimer apic=verbose 2
+> > --------------------------------------------------------^^^^^^^^^^^
+> > 
+> > noacpitimer is not a valid commandline option.
+> > 
+> > I asked for: 
+> > >> > > noapictimer
+> 
+> I'm blind, sorry.
+> 
+> > So I really wonder, why noacpitimer on the kernel command line makes any
+> > difference. I'm confused.
+> 
+> \metoo
+> 
+> Well, it was probably read as "noacpi". :-)
 
-Proper fix is to give __kmalloc a "void *caller" parameter and have  
-all of the various wrapper functions pass in the value of  
-__builtin_return_address() appropriately.  I believe that even works  
-properly for inline functions which may or may not be inlined.
+Hmm, ACPI is in the log all over the place.
 
-Cheers,
-Kyle Moffett
+> Fortunately, noapictimer helps as well, dmesg attached (I have the one
+> from 2.6.23-rc6-mm1 ready, too).
+
+Ok, at which point is the box stopping, when you omit noa* ? Is
+earlyprintk giving you any useful info ?
+
+	tglx
+
+
+
 
