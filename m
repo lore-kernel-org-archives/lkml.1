@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763794AbXIXQqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763906AbXIXQq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763794AbXIXQqA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758816AbXIXQcJ
+	id S1763906AbXIXQq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761495AbXIXQdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:32:09 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:46839 "EHLO e6.ny.us.ibm.com"
+	Mon, 24 Sep 2007 12:33:06 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:39152 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759423AbXIXQcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:32:08 -0400
-Message-ID: <46F7E685.4020609@us.ibm.com>
-Date: Mon, 24 Sep 2007 09:32:05 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, David Wilder <dwilder@us.ibm.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [Patch 1/2] Trace code and documentation (resend)
-References: <1190435014.27362.16.camel@lc4eb748232119.ibm.com> <20070922093508.GC27827@infradead.org> <46F7D9FA.3090108@us.ibm.com> <20070924154114.GA25368@infradead.org>
-In-Reply-To: <20070924154114.GA25368@infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	id S1759346AbXIXQdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:33:04 -0400
+Subject: Re: 2.6.23-rc7-mm1: r/o mounts joke with lockdep
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070924092658.91c17511.akpm@linux-foundation.org>
+References: <20070924095105.GD6757@localhost.sw.ru>
+	 <20070924092658.91c17511.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 24 Sep 2007 09:33:00 -0700
+Message-Id: <1190651581.26982.230.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Mon, Sep 24, 2007 at 08:38:34AM -0700, David Wilder wrote:
->>> NACK, don't put code into Documentation/.  Put it into kernel as it's
->>> actually useful kernel code.  
->> Are you suggesting moving the example code into kernel? Or complaining 
->> about example code in /Documentation?
+On Mon, 2007-09-24 at 09:26 -0700, Andrew Morton wrote:
+> On Mon, 24 Sep 2007 13:51:05 +0400 Alexey Dobriyan <adobriyan@sw.ru> wrote:
 > 
-> Both.  example code should be integrated with the build system so it
-> gets built.
-
-I agree, but I have not seen this done before, can you point me at an 
-example of how to structure this?
-
+> > static void lock_and_coalesce_cpu_mnt_writer_counts(void)
+> > {
+> > 	int cpu;
+> > 	struct mnt_writer *cpu_writer;
+> > 
+> > 	for_each_possible_cpu(cpu) {
+> > 		cpu_writer = &per_cpu(mnt_writers, cpu);
+> > 		spin_lock_nested(&cpu_writer->lock, 42);
+> > 		                                   ^^^^
+> > 
+> > What the heck is going on?
 > 
->> And add clone,exec and exit while you're at it.
->>
->> Hu?  A syscall tracer sounds like a nice idea but that is not what I am 
->> trying to accomplish.  I will let Systemtap handle that.
+> that was some random 2:00AM hack by me to make the warnings go away.
 > 
-> Systemtap doesn't help anyone as it's not in the tree.  I haven't even
-> asked you to provide a full system call tracing modulem but provide at
-> least one that's useful for a certain use-case (looking at processes)
-> instead of almost useless code.
+> > Given that MAX_LOCKDEP_SUBCLASSES is only 8,
+> > this reliably turns off lockdep at boot.
 > 
+> that explains why it worked so well.
 
-I don't have a problem adding additional trace points to the example 
-code.  However, anyone trying to use the code for some real purpose will 
-want to tweak the code based on their needs, at a minimum to select what 
-data to trace.  I don't think we gain much by adding more to the example 
-other than to make it more complicated.  I am strong believer in keeping 
-example code as simple as possible.
+Arjan gave me some ideas on how to fix this more properly.  I'm trying
+to reproduce it and working on a patch now.
 
-If you are suggesting adding a separate feature for process tracing (not 
-just an example) that is a good idea also.  But is should be a separate 
-patch, not part of the trace patch.
+-- Dave
+
