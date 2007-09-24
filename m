@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbXIXLnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbXIXLsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756951AbXIXLnj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 07:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757108AbXIXLn1
+	id S1756826AbXIXLsR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 07:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbXIXLsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 07:43:27 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:38288 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756894AbXIXLn0 (ORCPT
+	Mon, 24 Sep 2007 07:48:05 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:65136 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754140AbXIXLsC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 07:43:26 -0400
-Message-ID: <46F7A2BA.6070406@linux.vnet.ibm.com>
-Date: Mon, 24 Sep 2007 17:12:50 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 24 Sep 2007 07:48:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=dl5ZjfGpiWacgKV4sEdl2TUxqTfBYDHqt0PJWzZiJvLs7xUvnutSsJL0Fldgi01ucStLvOf+FMUUI2YYJDxgpSA06IExKswuiVfRLpDR8QKfMCOXkLg2/pyPkgCxdqD/0KyQBDaiXrS5auGgKUueoNx+yVHZVR0UK9fYGtreuCU=
+Message-ID: <3f9a31f40709240448h4a9e8337t437328b5c675ecd5@mail.gmail.com>
+Date: Mon, 24 Sep 2007 17:18:01 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: realtime preemption performance difference
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-In-Reply-To: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Hi all,
 
-The kernel build fails with 
+I want to check performance difference by using realtime preemption patch :
 
-  CC      arch/ia64/kernel/efi.o
-arch/ia64/kernel/efi.c: In function 'efi_memmap_init':
-arch/ia64/kernel/efi.c:1088: error: 'total_memory' undeclared (first use in this function)
-arch/ia64/kernel/efi.c:1088: error: (Each undeclared identifier is reported only once
-arch/ia64/kernel/efi.c:1088: error: for each function it appears in.)
-make[1]: *** [arch/ia64/kernel/efi.o] Error 1
-make: *** [arch/ia64/kernel] Error 2
+http://www.kernel.org/pub/linux/kernel/projects/rt/
 
-The use-extended-crashkernel-command-line-on-ia64.patch uses total_mem and 
-return total_memory.
+Please let me know from where I can download samples to test realtime
+preemption performance difference.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
----
---- linux-2.6.23-rc7/arch/ia64/kernel/efi.c     2007-09-24 15:28:06.000000000 +0530
-+++ linux-2.6.23-rc7/arch/ia64/kernel/~efi.c    2007-09-24 16:56:03.000000000 +0530
-@@ -1085,7 +1085,7 @@ efi_memmap_init(unsigned long *s, unsign
-        *s = (u64)kern_memmap;
-        *e = (u64)++k;
- 
--       return total_memory;
-+       return total_mem;
- }
- 
- void
+Can someone please share performance numbers for your hardware:-
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+1. Interrupt latency
+2. Task switching time
+3. hard-realtime scheduling latency
+
+Thank you,
+
+Jaswinder Singh.
