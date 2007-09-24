@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbXIXHFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbXIXHLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbXIXHFh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 03:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXIXHF3
+	id S1756847AbXIXHLM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 03:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXIXHK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 03:05:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44474 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbXIXHF3 (ORCPT
+	Mon, 24 Sep 2007 03:10:59 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:48881 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbXIXHK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 03:05:29 -0400
-Date: Mon, 24 Sep 2007 08:05:28 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Hector Martin <hector@marcansoft.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Coding FATX support for 2.6
-Message-ID: <20070924070528.GA6938@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Hector Martin <hector@marcansoft.com>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <46F6D1C3.2070208@marcansoft.com>
+	Mon, 24 Sep 2007 03:10:59 -0400
+Subject: Re: [-mm Patch] net/bluetooth/hidp/core.c: Make hidp_setup_input()
+	return int
+From: Marcel Holtmann <marcel@holtmann.org>
+To: roel <12o3l@tiscali.nl>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, maxk@qualcomm.com
+In-Reply-To: <46F6E502.9000101@tiscali.nl>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	 <20070923030105.GH2475@hacking>  <46F6E502.9000101@tiscali.nl>
+Content-Type: text/plain
+Date: Mon, 24 Sep 2007 09:09:11 +0200
+Message-Id: <1190617751.5133.88.camel@aeonflux.holtmann.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F6D1C3.2070208@marcansoft.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 23, 2007 at 04:51:15PM -0400, Hector Martin wrote:
-> I see several options for implementing this:
-> - Add support to the standard FAT driver. This should probably be made a
-> configurable suboption.
-> - Add support that piggybacks onto the standard FAT driver, but
-> otherwise doesn't touch it. I don't know how feasible this is.
-> - Modify the FAT driver to allow the basic changes needed to support
-> FATX, then piggyback it for the actual implementation. See above.
-> - Fork the FAT driver and make it into a FATX driver.
-> - Start from scratch.
-> 
-> I'm unsure about what the best option would be. Obviously changes to FAT
-> should be made with care, as we don't want to cause a regression.
-> However, much of the code (allocation strategies, FAT handling, etc)
-> should be the same or very similar, so it seems stupid to start from
-> scratch.
+Hi,
 
-I'd start with modifying the existing FAT driver.  Once you have working
-code you can look at the amount of changes and decided if you want to
-add support to the existing driver or fork it.  If you think you can't
-just judge it by yourself send your prototype to lkml or -fsdevel for
-an rfc so we can look over it and guide you a little on how to do it.
+> > This patch does the following things:
+> > 
+> > - Make hidp_setup_input() return int to indicate errors.
+> > - Check its return value to handle errors.
+> > 
+> > Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> > 
+> > ---
+> >  net/bluetooth/hidp/core.c |    7 ++++---
+> >  1 file changed, 4 insertions(+), 3 deletions(-)
+> > 
+> > Index: linux-2.6.23-rc6-mm1/net/bluetooth/hidp/core.c
+> > ===================================================================
+> > --- linux-2.6.23-rc6-mm1.orig/net/bluetooth/hidp/core.c
+> > +++ linux-2.6.23-rc6-mm1/net/bluetooth/hidp/core.c
+> > @@ -625,7 +625,7 @@ static struct device *hidp_get_device(st
+> >  	return conn ? &conn->dev : NULL;
+> >  }
+> >  
+> > -static inline void hidp_setup_input(struct hidp_session *session, struct hidp_connadd_req *req)
+> > +static inline int hidp_setup_input(struct hidp_session *session, struct hidp_connadd_req *req)
+> >  {
+> >  	struct input_dev *input = session->input;
+> >  	int i;
+> > @@ -669,7 +669,7 @@ static inline void hidp_setup_input(stru
+> >  
+> >  	input->event = hidp_input_event;
+> >  
+> > -	input_register_device(input);
+> > +	return input_register_device(input);
+> >  }
+> >  
+> >  static int hidp_open(struct hid_device *hid)
+> > @@ -823,7 +823,8 @@ int hidp_add_connection(struct hidp_conn
+> >  	session->idle_to = req->idle_to;
+> >  
+> >  	if (session->input)
+> > -		hidp_setup_input(session, req);
+> > +		if ((err = (hidp_setup_input(session, req))))
+> > +			goto failed;
+> 
+> This is confusing, why not just do
+> 
+> 	if (session->input) {
+> 		err = hidp_setup_input(session, req);
+> 		if (err)
+> 			goto failed;
+> 	}
+
+lets use "if (err < 0)" and I am okay with that patch.
+
+Regards
+
+Marcel
+
+
