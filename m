@@ -1,53 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbXIXGWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbXIXGdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbXIXGWk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 02:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXIXGWd
+	id S1756018AbXIXGdt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 02:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbXIXGdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 02:22:33 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56411 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752062AbXIXGWc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 02:22:32 -0400
-Date: Mon, 24 Sep 2007 08:22:31 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Valdis.Kletnieks@vt.edu
-cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Uninline kcalloc()
-In-Reply-To: <25045.1190612108@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.64.0709240821340.23305@fbirervta.pbzchgretzou.qr>
-References: <20070922200349.GA2119@martell.zuzino.mipt.ru>
- <25045.1190612108@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 24 Sep 2007 02:33:40 -0400
+Received: from tag.witbe.net ([81.88.96.48]:49126 "EHLO tag.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751487AbXIXGdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 02:33:39 -0400
+Date: Mon, 24 Sep 2007 08:33:36 +0200
+From: Paul Rolland (=?UTF-8?Q?=E3=83=9D=E3=83=BC=E3=83=AB=E3=83=BB?=
+	=?UTF-8?Q?=E3=83=AD=E3=83=A9=E3=83=B3?=) <rol@witbe.net>
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Cc: rol@witbe.net
+Subject: 2.6.23-rc7 - _random_ IRQ23 : nobody cared
+Message-ID: <20070924083336.7a08fd61@tux.DEF.witbe.net>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Sep 24 2007 01:35, Valdis.Kletnieks@vt.edu wrote:
->On Sun, 23 Sep 2007 00:03:49 +0400, Alexey Dobriyan said:
->
->> -static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
->> -{
->> -	if (n != 0 && size > ULONG_MAX / n)
->> -		return NULL;
->> -	return __kmalloc(n * size, flags | __GFP_ZERO);
->> -}
->> +void *kcalloc(size_t n, size_t size, gfp_t flags);
->
->NAK.
->
->This busticates some pretty subtle code in mm/slab.c that uses
->uses __builtin_return_address() for debugging - if you do this, then
->the "calling function" gets listed as "kcalloc()" rather than the much more
->useful "function that called kcalloc()" (which is what you care about).
->
->(I remember going around and around multiple times getting those stupid
->inlines set up right, so that feature actually did something useful, otherwise
->kcalloc and kzalloc didn't report where they were called from).
+I already reported kernel 2.6.23-rcX warning about irq X : nobody cared, and
+it seemed to have been fixed in 2.6.23-rc6... Unfortunately, just rebooting
+with my 2.6.23-rc7, I got it appearing again, though the previous boot was
+just fine, and I didn't change/recompile my kernel in between.
 
-Since 'inline' is only a hint , should not it be __always_inline,
-so that __builtin_return_address() always works?
+So, what changed ? I've compiled two modules : qc-usb-messenger, and
+hsf-modem, to make sure all my hardware is fully supported.
 
+And now, I have :
+....
+scsi 3:0:1:0: Direct-Access     ATA      ST3500641AS      3.AA PQ: 0 ANSI: 5 
+sd 3:0:1:0: [sdd] 976773168 512-byte hardware sectors (500108 MB) 
+sd 3:0:1:0: [sdd] Write Protect is off 
+sd 3:0:1:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support
+DPO or FUA 
+sd 3:0:1:0: [sdd] 976773168 512-byte hardware sectors (500108 MB) 
+sd 3:0:1:0: [sdd] Write Protect is off 
+sd 3:0:1:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support
+DPO or FUA 
+irq 23: nobody cared (try booting with the "irqpoll" option) 
+ 
+Call Trace: 
+ <IRQ>  [<ffffffff8105d21b>] __report_bad_irq+0x30/0x72 
+ [<ffffffff8105d46c>] note_interrupt+0x20f/0x253 
+ [<ffffffff8105dd38>] handle_fasteoi_irq+0xa9/0xd1 
+ [<ffffffff8100ec65>] do_IRQ+0xf1/0x160 
+ [<ffffffff8100b25b>] mwait_idle+0x0/0x45 
+ [<ffffffff8100c431>] ret_from_intr+0x0/0xa 
+ <EOI>  [<ffffffff8100b29d>] mwait_idle+0x42/0x45 
+ [<ffffffff8100b1f3>] cpu_idle+0xbd/0xe0 
+ [<ffffffff8175ca8e>] start_kernel+0x2bb/0x2c7 
+ [<ffffffff8175c140>] _sinittext+0x140/0x144 
+ 
+handlers: 
+[<ffffffff81307485>] (ata_interrupt+0x0/0x1d3) 
+Disabling IRQ #23 
+ sdd:<3>ata4.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen 
+ata4.01: cmd c8/00:08:00:00:00/00:00:00:00:00/f0 tag 0 cdb 0x0 data 4096 in 
+         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout) 
+ata4: soft resetting port 
+ata4.01: qc timeout (cmd 0x27) 
+ata4.01: ata_hpa_resize 1: hpa sectors (0) is smaller than sectors
+(976773168) ata4.00: failed to IDENTIFY (I/O error, err_mask=0x40) 
+ata4: failed to recover some devices, retrying in 5 secs 
+ata4: soft resetting port 
+ata4.01: qc timeout (cmd 0x27) 
+
+....
+
+
+Booting with irqpoll is Ok, and I have :
+
+2 [14:55] rol@donald:~> cat /proc/interrupts 
+           CPU0       CPU1       
+  0:      31263          0   IO-APIC-edge      timer
+  1:        201          0   IO-APIC-edge      i8042
+  4:        219          0   IO-APIC-edge      serial
+  6:          5          0   IO-APIC-edge      floppy
+  8:          1          0   IO-APIC-edge      rtc
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 12:        129       1124   IO-APIC-edge      i8042
+ 14:       7010       1235   IO-APIC-edge      libata
+ 15:          0          0   IO-APIC-edge      libata
+ 17:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
+ 18:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
+ 19:       4250          0   IO-APIC-fasteoi   uhci_hcd:usb5, HDA Intel
+ 20:       1251         44   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+ 21:        422        640   IO-APIC-fasteoi   pata_pdc2027x, firewire_ohci
+ 23:      24023          0   IO-APIC-fasteoi   libata, hsfpcibasic2
+378:         93        108   PCI-MSI-edge      eth0
+379:          1          0   PCI-MSI-edge      eth1
+NMI:          0          0 
+LOC:      31000      30803 
+ERR:          0
+
+Hell, IRQ 23 is shared between libata and my modem !!!
+
+OK, just reboot, and see what happens.... Cool, now it is booting fine, 
+no more complaint, even without irqpoll, IRQ 23 still shared...
+Another one, and Ok again... So, this looks really random :(
+
+Anything I could do to try to collect usefull traces ?
+
+Paul
