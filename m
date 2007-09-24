@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbXIXVNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbXIXVPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754963AbXIXVNt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 17:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756956AbXIXVNf
+	id S1758066AbXIXVPV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 17:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbXIXVPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 17:13:35 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56031 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756878AbXIXVNc (ORCPT
+	Mon, 24 Sep 2007 17:15:05 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:58371 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754761AbXIXVPD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 17:13:32 -0400
-Date: Mon, 24 Sep 2007 14:13:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: David Chinner <dgc@sgi.com>, Andrea Arcangeli <andrea@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nathan Scott <nscott@aconex.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <Pine.LNX.4.64.0709212044280.6532@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0709241411120.30982@schroedinger.engr.sgi.com>
-References: <200709161853.12050.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0709171510280.29993@schroedinger.engr.sgi.com>
- <200709181116.22573.nickpiggin@yahoo.com.au>
- <alpine.LFD.0.999.0709181126330.16478@woody.linux-foundation.org>
- <20070918191853.GB7541@v2.random> <alpine.LFD.0.999.0709181239320.16478@woody.linux-foundation.org>
- <1190163523.24970.378.camel@edge.yarra.acx>
- <alpine.LFD.0.999.0709181803020.16478@woody.linux-foundation.org>
- <20070919050910.GK995458@sgi.com> <20070919140430.GJ4608@v2.random>
- <20070920013821.GR995458@sgi.com> <Pine.LNX.4.64.0709201105350.8626@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0709212044280.6532@blonde.wat.veritas.com>
+	Mon, 24 Sep 2007 17:15:03 -0400
+Date: Mon, 24 Sep 2007 17:14:26 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: linux-rt-users <linux-rt-users@vger.kernel.org>, mingo@goodmis.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [HACK] convert i_alloc_sem for direct_io.c craziness!
+Message-ID: <Pine.LNX.4.58.0709241700290.13164@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007, Hugh Dickins wrote:
 
-> I've found some fixes needed on top of your Large Blocksize Support
-> patches: I'll send those to you in a moment.  Looks like you didn't
-> try much swapping!
+Hopefully I will get some attention from those that are responsible for
+fs/direct_io.c
 
-yup. Thanks for looking at it.
+Ingo and Thomas,
 
-> 
-> I only managed to get ext2 working with larger blocksizes:
-> reiserfs -b 8192 wouldn't mount ("reiserfs_fill_super: can not find
-> reiserfs on /dev/sdb1"); ext3 gave me mysterious errors ("JBD: tar
-> wants too many credits", even after adding JBD patches that you
-> turned out to be depending on); and I didn't try ext4 or xfs
-> (I'm guessing the latter has been quite well tested ;)
+This patch converts the i_alloc_sem into a compat_rw_semaphore for the -rt
+patch.  Seems that the code in fs/direct_io.c does some nasty logic with
+the i_alloc_sem.  For DIO_LOCKING, I'm assuming that the i_alloc_sem is
+used as a reference counter for pending requests. When the request is
+made, the down_read is performed. When the request is handled by the block
+softirq, then that softirq does an up on the request. So the owner is not
+the same between down and up. When all requests are handled, the semaphore
+counter should be zero. This keeps away any write access while requests
+are pending.
 
-Yes, there were issues with the first releases of the JBD patches. The 
-current crop in mm is fine but much of that may have bypassed this list.
+Now this may all be well and dandy for vanilla Linux, but it breaks
+miserbly when converted to -rt.
 
+1) In RT rw_semaphores must be up'd by the same thread that down's it.
 
+2) We can't do PI on the correct processes.
 
+This patch converts (for now) the i_alloc_sem into a compat_rw_semaphore
+to give back the old features to the sem. This fixes deadlocks that we've
+been having WRT direct_io.  But unfortunately, it now opens up
+unbonded priority inversion with this semaphore.  But really, those that
+can be affected by this, shouldn't be doing disk IO anyway.
+
+The real fix would be to get rid of the read semaphore trickery in
+direct_io.c.
+
+Signed-off-by: Steve Rostedt <rostedt@goodmis.org>
+
+Index: linux-2.6.23-rc4-rt1/include/linux/fs.h
+===================================================================
+--- linux-2.6.23-rc4-rt1.orig/include/linux/fs.h	2007-09-24 16:58:59.000000000 -0400
++++ linux-2.6.23-rc4-rt1/include/linux/fs.h	2007-09-24 16:59:11.000000000 -0400
+@@ -577,7 +577,7 @@ struct inode {
+ 	umode_t			i_mode;
+ 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
+ 	struct mutex		i_mutex;
+-	struct rw_semaphore	i_alloc_sem;
++	struct compat_rw_semaphore	i_alloc_sem;
+ 	const struct inode_operations	*i_op;
+ 	const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
+ 	struct super_block	*i_sb;
