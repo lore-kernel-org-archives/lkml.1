@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbXIXOfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbXIXOlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759037AbXIXOfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 10:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbXIXOfO
+	id S1758816AbXIXOlv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 10:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbXIXOlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 10:35:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34745 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbXIXOfM (ORCPT
+	Mon, 24 Sep 2007 10:41:44 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43099 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751639AbXIXOlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 10:35:12 -0400
-Date: Mon, 24 Sep 2007 07:34:47 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       hch@infradead.org
-Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
-Message-ID: <20070924073447.5669fc0d@laptopd505.fenrus.org>
-In-Reply-To: <20070923231713.f81ee0db.akpm@linux-foundation.org>
-References: <20070920195249.852667D5@kernel>
-	<20070920195320.38C8E20D@kernel>
-	<20070923231713.f81ee0db.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 24 Sep 2007 10:41:44 -0400
+Date: Mon, 24 Sep 2007 10:41:43 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] 2.6.23-rc7-mm1
+In-Reply-To: <46F7AEA7.7060809@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0709241039040.4256-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 24 Sep 2007, Jiri Slaby wrote:
 
-> It look like a false positive to me, but really, for a patchset of
-> this complexity and maturity I cannot fathom how it could have
-> escaped any lockdep testing.
+> On 09/24/2007 11:17 AM, Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
+> 
+> Fine, but on some boots (I noticed this on rc6-mm1 too, but not before):
+> 0000:00:1a.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
+> 0000:00:1d.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
 
-the code tries to implement per cpu spinlocks, or rather it tries
-to bring back the brlocks from way past.... cute.
+Any changes in your BIOS setup?
 
-we can educate lockdep about this quite easily; but isn't there some
-primitive already in existence that we can use?
+What about with vanilla 2.6.23-rc6?  Or vanilla 2.6.23-rc7?
+
+The USB part of the code here hasn't changed in quite a while.  Any 
+difference in behavior must be the result of changes in some other part 
+of the kernel.  Possibly ACPI.
+
+This might be a good job for git-bisect.
+
+Alan Stern
 
