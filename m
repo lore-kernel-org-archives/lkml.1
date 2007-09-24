@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXIXQIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbXIXQLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759935AbXIXQIs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXIXQIl
+	id S1760046AbXIXQLa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbXIXQLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:08:41 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48604 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753383AbXIXQIk (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:08:40 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
+	Mon, 24 Sep 2007 12:11:23 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:51237 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755798AbXIXQLX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:11:23 -0400
+Message-ID: <46F7E18D.2000205@linux.vnet.ibm.com>
+Date: Mon, 24 Sep 2007 21:40:53 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1 - 'touch' command causes Oops.
-In-Reply-To: Your message of "Mon, 24 Sep 2007 08:45:32 PDT."
-             <1190648733.26982.227.camel@localhost>
-From: Valdis.Kletnieks@vt.edu
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <3339.1190630150@turing-police.cc.vt.edu> <20070924120508.GA15648@infradead.org> <3982.1190638701@turing-police.cc.vt.edu>
-            <1190648733.26982.227.camel@localhost>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190650097_3721P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Subject: Re: 2.6.23-rc7-mm1
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7B3B3.7010600@linux.vnet.ibm.com> <46F7B737.4020001@openvz.org> <46F7B9C6.4000901@linux.vnet.ibm.com> <46F7D8EE.4000201@openvz.org>
+In-Reply-To: <46F7D8EE.4000201@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Sep 2007 12:08:17 -0400
-Message-ID: <14164.1190650097@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190650097_3721P
-Content-Type: text/plain; charset=us-ascii
+Pavel Emelyanov wrote:
+> Balbir Singh wrote:
+>> Pavel Emelyanov wrote:
+>>> Please, try with this patch too:
+>>>
+>>> diff --git a/fs/locks.c b/fs/locks.c
+>>> index c0fe71a..f599508 100644
+>>> --- a/fs/locks.c
+>>> +++ b/fs/locks.c
+>>> @@ -1423,7 +1423,7 @@ int generic_setlease(struct file *filp, 
+>>>  	locks_copy_lock(new_fl, lease);
+>>>  	locks_insert_lock(before, new_fl);
+>>>
+>>> -	*flp = fl;
+>>> +	*flp = new_fl;
+>>>  	return 0;
+>>>
+>>>  out:
+>>>
+>> Hi, Pavel,
+>>
+>> You did not signoff on the patch.
+> 
+> I did not, but this is just a patch to test. I know, that it
+> most likely fixes the problem, but since Kamalesh didn't tell
+> us how he had triggered it, I'd like him to Ack it :)
+> 
+> Thanks,
+> Pavel
+> 
+> 
 
-On Mon, 24 Sep 2007 08:45:32 PDT, Dave Hansen said:
+Ok, just wanted to let you know in case you missed it out.
+In case Andrew picked it up. That's all!
 
-> Any idea which fs and distro this was?  I'd like to add it to my tests.
 
-initscripts-8.56-1, from Fedora Rawhide, /etc/rc.sysinit, line 325:
-
-touch /dev/.in_sysinit >/dev/null 2>&1
-
-Specific enough? :)
-
---==_Exmh_1190650097_3721P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG9+DxcC3lWbTT17ARAghwAJ9thfkFmCYdjwAuaiHmEpsgi8XWJwCg9Zcf
-z+XvTpLsZFVImEUa20BDyN0=
-=3hCu
------END PGP SIGNATURE-----
-
---==_Exmh_1190650097_3721P--
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
