@@ -1,61 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXIXNRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbXIXNSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759426AbXIXNRr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXIXNRj
+	id S1759506AbXIXNSU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXIXNSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:17:39 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:54616 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755506AbXIXNRj (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:17:39 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org,
+	Mon, 24 Sep 2007 09:18:11 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:48201 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754456AbXIXNSK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 09:18:10 -0400
+Date: Mon, 24 Sep 2007 14:17:38 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Uninline kcalloc()
-In-Reply-To: Your message of "Mon, 24 Sep 2007 08:59:56 EDT."
-             <902BC866-59A0-4E50-8299-64D38D9E93B1@mac.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070922200349.GA2119@martell.zuzino.mipt.ru> <25045.1190612108@turing-police.cc.vt.edu>
-            <902BC866-59A0-4E50-8299-64D38D9E93B1@mac.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1190639853_3721P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Sep 2007 09:17:33 -0400
-Message-ID: <5202.1190639853@turing-police.cc.vt.edu>
+Subject: [PATCH rc7-mm1] fix BUG at mm/swap.c:405!
+In-Reply-To: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0709241413460.2056@blonde.wat.veritas.com>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1190639853_3721P
-Content-Type: text/plain; charset=us-ascii
+a.k.a. mm-use-pagevec-to-rotate-reclaimable-page-fix-2.patch
 
-On Mon, 24 Sep 2007 08:59:56 EDT, Kyle Moffett said:
+rotate_reclaimable_page() is not necessarily called with IRQ disabled:
+it must do so when calling the helpfully commented pagevec_move_tail().
 
-> Proper fix is to give __kmalloc a "void *caller" parameter and have  
-> all of the various wrapper functions pass in the value of  
-> __builtin_return_address() appropriately.  I believe that even works  
-> properly for inline functions which may or may not be inlined.
+Hmm, if pagevec_move_tail() is assuming IRQ disabled, why should it
+bother with irqsave/irqrestore variants of spin_lock?  Because we like
+to see them on lru_lock?  But vmscan.c already has one bare spin_lock().
 
-I think I looked at that, and it wasn't as easy as it looked, because there
-were ugly corner cases for what __builtin_return_address() returned depending
-on exactly what did or didn't get inlined. Basically, it's ugly stuff - if you
-try to use __builtin_retur_address inside kcalloc to pass to __kmalloc, and
-then kcalloc gets inlined, you end up passing not the routine you wanted (the
-caller of kcalloc), but the *parent* of that...
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
---==_Exmh_1190639853_3721P
-Content-Type: application/pgp-signature
+ mm/swap.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG97jtcC3lWbTT17ARAuy4AJ96r42B1NdMGfWMBQmG/kVAMNSdQwCgvPQO
-7VttJDCHf8+91WDTjuCEmRs=
-=lg4p
------END PGP SIGNATURE-----
-
---==_Exmh_1190639853_3721P--
+--- 2.6.23-rc7-mm1/mm/swap.c	2007-09-24 11:05:55.000000000 +0100
++++ linux/mm/swap.c	2007-09-24 13:08:12.000000000 +0100
+@@ -102,7 +102,6 @@ static void pagevec_move_tail(struct pag
+ 	int i;
+ 	int pgmoved = 0;
+ 	struct zone *zone = NULL;
+-	unsigned long uninitialized_var(flags);
+ 
+ 	for (i = 0; i < pagevec_count(pvec); i++) {
+ 		struct page *page = pvec->pages[i];
+@@ -110,9 +109,9 @@ static void pagevec_move_tail(struct pag
+ 
+ 		if (pagezone != zone) {
+ 			if (zone)
+-				spin_unlock_irqrestore(&zone->lru_lock, flags);
++				spin_unlock(&zone->lru_lock);
+ 			zone = pagezone;
+-			spin_lock_irqsave(&zone->lru_lock, flags);
++			spin_lock(&zone->lru_lock);
+ 		}
+ 		if (PageLRU(page) && !PageActive(page)) {
+ 			list_move_tail(&page->lru, &zone->inactive_list);
+@@ -120,7 +119,7 @@ static void pagevec_move_tail(struct pag
+ 		}
+ 	}
+ 	if (zone)
+-		spin_unlock_irqrestore(&zone->lru_lock, flags);
++		spin_unlock(&zone->lru_lock);
+ 	__count_vm_events(PGROTATED, pgmoved);
+ 	release_pages(pvec->pages, pvec->nr, pvec->cold);
+ 	pagevec_reinit(pvec);
+@@ -150,6 +149,7 @@ void move_tail_pages()
+ int rotate_reclaimable_page(struct page *page)
+ {
+ 	struct pagevec *pvec;
++	unsigned long flags;
+ 
+ 	if (PageLocked(page))
+ 		return 1;
+@@ -162,9 +162,11 @@ int rotate_reclaimable_page(struct page 
+ 
+ 	if (PageLRU(page) && !PageActive(page)) {
+ 		page_cache_get(page);
++		local_irq_save(flags);
+ 		pvec = &__get_cpu_var(rotate_pvecs);
+ 		if (!pagevec_add(pvec, page))
+ 			pagevec_move_tail(pvec);
++		local_irq_restore(flags);
+ 	}
+ 	if (!test_clear_page_writeback(page))
+ 		BUG();
