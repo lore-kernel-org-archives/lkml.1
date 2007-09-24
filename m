@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbXIXTNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762926AbXIXTOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762038AbXIXTNo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbXIXTNh
+	id S1762926AbXIXTOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXIXTOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:13:37 -0400
-Received: from www.osadl.org ([213.239.205.134]:55908 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752148AbXIXTNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:13:36 -0400
-Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325,
-	related to clockevents
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200709242111.07806.rjw@sisk.pl>
-References: <200709231257.12213.rjw@sisk.pl>
-	 <200709241718.23526.rjw@sisk.pl> <1190652380.4035.236.camel@chaos>
-	 <200709242111.07806.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 21:13:32 +0200
-Message-Id: <1190661212.4035.242.camel@chaos>
+	Mon, 24 Sep 2007 15:14:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39288 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755322AbXIXTOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 15:14:34 -0400
+Date: Mon, 24 Sep 2007 12:12:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, sct@redhat.com,
+       adilger@clusterfs.com, ext4 <linux-ext4@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>, mel@csn.ul.ie,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: 2.6.23-rc6: hanging ext3 dbench tests
+Message-Id: <20070924121255.2ef7ab3a.akpm@linux-foundation.org>
+In-Reply-To: <1190656918.13955.7.camel@dyn9047017100.beaverton.ibm.com>
+References: <20070911124202.GI9556@shadowen.org>
+	<alpine.LFD.0.999.0709110949250.16478@woody.linux-foundation.org>
+	<20070911173049.GA10499@shadowen.org>
+	<20070914094905.GA32670@shadowen.org>
+	<20070919181546.GA4343@shadowen.org>
+	<1190656918.13955.7.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 21:11 +0200, Rafael J. Wysocki wrote:
-> > /me scratches head
+On Mon, 24 Sep 2007 11:01:58 -0700
+Badari Pulavarty <pbadari@gmail.com> wrote:
+
+> Hi Andy,
 > 
-> Retested.
+> I managed to reproduce the dbench problem. (not sure if its the same
+> thing or not - but symptoms are same). My problem has nothing to do 
+> with ext3. I can produce it on ext2, jfs also.
 > 
-> > We know, that
-> > - disabling local apic timers work
+> Whats happening on my machine is ..
 > 
-> This works reproducibly accross the board.
-
-Ok
-
-> > - local apic timers (which turn off PIT) work. when noacpiFSCKEDPARSING
+> dbench forks of 4 children and sends them a signal to start the work.
+> 3 out of 4 children gets the signal and does the work. One of the child
+> never gets the signal so, it waits forever in pause(). So, parent waits
+> for a longtime to kill it.
 > 
-> This stopped working, although it evidently worked yesterday (wtf?).
+> BTW, I was trying to find out when this problem started showing up.
+> So far, I managed to track it to 2.6.23-rc4. (2.6.23-rc3 doesn't seem
+> to have this problem). I am going to do bi-sect and find out which
+> patch caused this.
 > 
-> There seems to be a history effect in the box, to make things more
-> "interesting".
+> I am using dbench-2.0 which consistently reproduces the problem on
+> my x86-64 box. Did you find anything new with your setup ?
+> 
 
-Did you connect this box to Andrews VAIO during KS ?
-
-> I think the only solid data point so far is that "noapictimer" makes the box
-> boot.
-
-Ok. Can you add "nmi_watchdog=1" to the command line please. This runs
-through the calibration of APIC, but registers it as a dummy clock
-source (the PIT must run to make the watchdog work).
-
-If it boots, please provide the output of /proc/timer_list
-
-Thanks,	
-
-	tlgx
-
-
+Thanks, Badari.  That sounds like a bit of a showstopper for 2.6.23.
+Michal, do you have this regression in the dirt file?
