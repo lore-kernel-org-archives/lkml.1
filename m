@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbXIXHlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbXIXHla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbXIXHlQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 03:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXIXHlJ
+	id S1757805AbXIXHla (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 03:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbXIXHlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 03:41:09 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:46436 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751756AbXIXHlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 03:41:08 -0400
-Date: Mon, 24 Sep 2007 09:43:23 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-Message-ID: <20070924074323.GA2480@ff.dom.local>
-References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local> <46F398C3.3000804@bull.net> <20070921110347.GB1758@ff.dom.local> <20070924065407.GA1776@ff.dom.local>
+	Mon, 24 Sep 2007 03:41:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55497 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755794AbXIXHlP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 03:41:15 -0400
+Date: Mon, 24 Sep 2007 08:41:10 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH] Move kasprintf.o to obj-y
+Message-ID: <20070924074110.GA7721@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Alexey Dobriyan <adobriyan@sw.ru>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org, devel@openvz.org
+References: <20070924071826.GA6757@localhost.sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070924065407.GA1776@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070924071826.GA6757@localhost.sw.ru>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 08:54:07AM +0200, Jarek Poplawski wrote:
-> After rethinking, this scenario seems to be wrong or very unprobable
-> (I'm not sure of all ways "if (--container...)" could be compiled),
-> so there should be no such risk - double kfree/vfree is more probable,
-> so no danger. More likely is such refcount abuse: ipc_rcu_getref() in
-> do_msgsnd() done a bit after ipc_rcu_putref() in freeque() (msq
-> pointer acquired by do_msgsend() before freeque() started); then,
-> after schedule(), do_msgsnd() can work with kfreed msq_queue structure
-> (at least considering classic RCU).
+On Mon, Sep 24, 2007 at 11:18:26AM +0400, Alexey Dobriyan wrote:
+> Modular puppyvisor started giving linking errors
+> 
+> 	  MODPOST 1 modules
+> 	ERROR: "kasprintf" [drivers/lguest/lg.ko] undefined!
 
-I see this scenario is even more impossible, so you were right,
-it's all right at this point.
+Please kill lib-y while you're at it.  It's useless and a constant
+source of pain like this.
 
-Jarek P.
