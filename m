@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbXIXHSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbXIXHY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbXIXHSx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 03:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbXIXHSq
+	id S1757070AbXIXHY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 03:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbXIXHYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 03:18:46 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:40645 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750835AbXIXHSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 03:18:45 -0400
-Date: Mon, 24 Sep 2007 11:18:26 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH] Move kasprintf.o to obj-y
-Message-ID: <20070924071826.GA6757@localhost.sw.ru>
+	Mon, 24 Sep 2007 03:24:21 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:45814 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835AbXIXHYU (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 03:24:20 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Uninline kcalloc()
+In-Reply-To: Your message of "Mon, 24 Sep 2007 08:22:31 +0200."
+             <Pine.LNX.4.64.0709240821340.23305@fbirervta.pbzchgretzou.qr>
+From: Valdis.Kletnieks@vt.edu
+References: <20070922200349.GA2119@martell.zuzino.mipt.ru> <25045.1190612108@turing-police.cc.vt.edu>
+            <Pine.LNX.4.64.0709240821340.23305@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; boundary="==_Exmh_1190618652_3132P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Sep 2007 03:24:12 -0400
+Message-ID: <3721.1190618652@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Modular puppyvisor started giving linking errors
+--==_Exmh_1190618652_3132P
+Content-Type: text/plain; charset=us-ascii
 
-	  MODPOST 1 modules
-	ERROR: "kasprintf" [drivers/lguest/lg.ko] undefined!
+On Mon, 24 Sep 2007 08:22:31 +0200, Jan Engelhardt said:
+> 
+> On Sep 24 2007 01:35, Valdis.Kletnieks@vt.edu wrote:
+> >On Sun, 23 Sep 2007 00:03:49 +0400, Alexey Dobriyan said:
+> >
+> >> -static inline void *kcalloc(size_t n, size_t size, gfp_t flags)
+> >> -{
+> >> -	if (n != 0 && size > ULONG_MAX / n)
+> >> -		return NULL;
+> >> -	return __kmalloc(n * size, flags | __GFP_ZERO);
+> >> -}
+> >> +void *kcalloc(size_t n, size_t size, gfp_t flags);
+> >
+> >NAK.
+> >
+> >This busticates some pretty subtle code in mm/slab.c that uses
+> >uses __builtin_return_address() for debugging - if you do this, then
+> >the "calling function" gets listed as "kcalloc()" rather than the much more
+> >useful "function that called kcalloc()" (which is what you care about).
+> >
+> >(I remember going around and around multiple times getting those stupid
+> >inlines set up right, so that feature actually did something useful, otherwise
+> >kcalloc and kzalloc didn't report where they were called from).
+> 
+> Since 'inline' is only a hint , should not it be __always_inline,
+> so that __builtin_return_address() always works?
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+At the time I was trying to fix that, saying "inline" actually forced it
+to be so.  Probably need to go re-check that, since there's been about
+forty-leven different "tweak the semantics of inline" since then....
 
- lib/Makefile |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+--==_Exmh_1190618652_3132P
+Content-Type: application/pgp-signature
 
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -2,7 +2,7 @@
- # Makefile for some libs needed in the kernel.
- #
- 
--lib-y := ctype.o string.o vsprintf.o kasprintf.o cmdline.o \
-+lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 rbtree.o radix-tree.o dump_stack.o \
- 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
- 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o
-@@ -13,7 +13,7 @@ lib-$(CONFIG_SMP) += cpumask.o
- lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
- 
- obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
--	 bust_spinlocks.o hexdump.o
-+	 bust_spinlocks.o hexdump.o kasprintf.o
- 
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFG92YccC3lWbTT17ARAhHyAJ0bUKdrFU9L+TMXDpSHwx2UiBS4/wCdHv2F
+OwedN+mpvKrcNTSvcCmEZAA=
+=P5C0
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1190618652_3132P--
