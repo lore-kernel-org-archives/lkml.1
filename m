@@ -1,64 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762926AbXIXTOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761121AbXIXTRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762926AbXIXTOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXIXTOf
+	id S1761121AbXIXTRb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbXIXTRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:14:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39288 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755322AbXIXTOe (ORCPT
+	Mon, 24 Sep 2007 15:17:23 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42720 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755564AbXIXTRX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:14:34 -0400
-Date: Mon, 24 Sep 2007 12:12:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: Andy Whitcroft <apw@shadowen.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, sct@redhat.com,
-       adilger@clusterfs.com, ext4 <linux-ext4@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>, mel@csn.ul.ie,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: 2.6.23-rc6: hanging ext3 dbench tests
-Message-Id: <20070924121255.2ef7ab3a.akpm@linux-foundation.org>
-In-Reply-To: <1190656918.13955.7.camel@dyn9047017100.beaverton.ibm.com>
-References: <20070911124202.GI9556@shadowen.org>
-	<alpine.LFD.0.999.0709110949250.16478@woody.linux-foundation.org>
-	<20070911173049.GA10499@shadowen.org>
-	<20070914094905.GA32670@shadowen.org>
-	<20070919181546.GA4343@shadowen.org>
-	<1190656918.13955.7.camel@dyn9047017100.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 24 Sep 2007 15:17:23 -0400
+Date: Mon, 24 Sep 2007 21:14:24 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, adobriyan@sw.ru,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [PATCH] make lockdep happy with r/o bind mounts
+Message-ID: <20070924211424.16582124@lappy>
+In-Reply-To: <20070924174658.2B3D54B8@kernel>
+References: <20070924174658.2B3D54B8@kernel>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.11.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 11:01:58 -0700
-Badari Pulavarty <pbadari@gmail.com> wrote:
+On Mon, 24 Sep 2007 10:46:58 -0700 Dave Hansen <haveblue@us.ibm.com>
+wrote:
 
-> Hi Andy,
 > 
-> I managed to reproduce the dbench problem. (not sure if its the same
-> thing or not - but symptoms are same). My problem has nothing to do 
-> with ext3. I can produce it on ext2, jfs also.
+> With the r/o bind mount patches, we can have as many
+> spinlocks nested as there are CPUs on the system.
+> Lockdep freaks out after 8.
 > 
-> Whats happening on my machine is ..
+> So, create a new lockdep class of locks for the
+> mnt_writer spinlocks, and initialize each of the
+> cpu locks to be in a different class.
 > 
-> dbench forks of 4 children and sends them a signal to start the work.
-> 3 out of 4 children gets the signal and does the work. One of the child
-> never gets the signal so, it waits forever in pause(). So, parent waits
-> for a longtime to kill it.
+> It should shut up warnings like this, while still
+> allowing some of the lockdep goodness to remain:
 > 
-> BTW, I was trying to find out when this problem started showing up.
-> So far, I managed to track it to 2.6.23-rc4. (2.6.23-rc3 doesn't seem
-> to have this problem). I am going to do bi-sect and find out which
-> patch caused this.
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.23-rc6 #6
+> ---------------------------------------------
+> swapper/1 is trying to acquire lock:
+>  (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
 > 
-> I am using dbench-2.0 which consistently reproduces the problem on
-> my x86-64 box. Did you find anything new with your setup ?
+> but task is already holding lock:
+>  (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
 > 
+> other info that might help us debug this:
+> 1 lock held by swapper/1:
+>  #0:  (&writer->lock){--..}, at: [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
+> 
+> stack backtrace:
+>  [<c01034ab>] show_trace_log_lvl+0x19/0x2e
+>  [<c01034d2>] show_trace+0x12/0x14
+>  [<c01035be>] dump_stack+0x14/0x16
+>  [<c0130ab2>] print_deadlock_bug+0xb7/0xc1
+>  [<c0130afc>] check_deadlock+0x40/0x54
+>  [<c013100a>] validate_chain+0x26e/0x319
+>  [<c0132cca>] __lock_acquire+0x6c4/0x731
+>  [<c01332da>] lock_acquire+0x7a/0x94
+>  [<c031bb01>] _spin_lock+0x38/0x62
+>  [<c016c094>] lock_and_coalesce_cpu_mnt_writer_counts+0x29/0x5c
+>  [<c016c5f8>] mntput_no_expire+0x38/0xad
+>  [<c015fbed>] path_release_on_umount+0x15/0x18
+>  [<c016cc76>] sys_umount+0x67/0x6f
+>  [<c010058a>] name_to_dev_t+0x22a/0x24c
+>  [<c0427207>] prepare_namespace+0x89/0x187
+>  [<c0426cdd>] kernel_init+0x9a/0xa3
+>  [<c010336f>] kernel_thread_helper+0x7/0x10
+>  =======================
+> 
+> Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 
-Thanks, Badari.  That sounds like a bit of a showstopper for 2.6.23.
-Michal, do you have this regression in the dirt file?
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> ---
+> 
+>  lxc-dave/fs/namespace.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff -puN fs/namespace.c~make-lockdep-happy-with-ro-bind-mounts fs/namespace.c
+> --- lxc/fs/namespace.c~make-lockdep-happy-with-ro-bind-mounts	2007-09-24 10:32:23.000000000 -0700
+> +++ lxc-dave/fs/namespace.c	2007-09-24 10:41:37.000000000 -0700
+> @@ -116,6 +116,7 @@ struct mnt_writer {
+>  	 * must be ordered by cpu number.
+>  	 */
+>  	spinlock_t lock;
+> +	struct lock_class_key lock_class; /* compiles out with !lockdep */
+>  	unsigned long count;
+>  	struct vfsmount *mnt;
+>  } ____cacheline_aligned_in_smp;
+> @@ -127,6 +128,7 @@ static int __init init_mnt_writers(void)
+>  	for_each_possible_cpu(cpu) {
+>  		struct mnt_writer *writer = &per_cpu(mnt_writers, cpu);
+>  		spin_lock_init(&writer->lock);
+> +		lockdep_set_class(&writer->lock, &writer->lock_class);
+>  		writer->count = 0;
+>  	}
+>  	return 0;
+> diff -puN include/linux/lockdep.h~make-lockdep-happy-with-ro-bind-mounts include/linux/lockdep.h
+> _
