@@ -1,47 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762178AbXIXSyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762443AbXIXS53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762178AbXIXSyt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbXIXSym
+	id S1762443AbXIXS53 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757345AbXIXS5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:54:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58703 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756582AbXIXSyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:54:41 -0400
-Date: Mon, 24 Sep 2007 19:54:31 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
-Message-ID: <20070924185431.GA5618@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	"Frank Ch. Eigler" <fche@redhat.com>
-References: <20070924164950.006047409@polymtl.ca> <20070924165428.335030720@polymtl.ca> <20070924175044.GD1608@infradead.org> <20070924105632.009aba7f.randy.dunlap@oracle.com> <20070924180041.GB2435@infradead.org> <20070924111318.f16cde07.randy.dunlap@oracle.com> <20070924181931.GA3810@infradead.org> <46F800A7.7090005@oracle.com> <20070924183042.GA4418@infradead.org> <46F806AB.1050509@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Sep 2007 14:57:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52824 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756941AbXIXS5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 14:57:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents
+Date: Mon, 24 Sep 2007 21:11:06 +0200
+User-Agent: KMail/1.9.5
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <200709231257.12213.rjw@sisk.pl> <200709241718.23526.rjw@sisk.pl> <1190652380.4035.236.camel@chaos>
+In-Reply-To: <1190652380.4035.236.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46F806AB.1050509@oracle.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200709242111.07806.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 11:49:15AM -0700, Randy Dunlap wrote:
-> I think that samples are perfectly fine for documentation and
-> that the trace example is a good example.  I think that most people
-> who need something like that would need to customize it for their
-> specific needs anyway.
+On Monday, 24 September 2007 18:46, Thomas Gleixner wrote:
+> On Mon, 2007-09-24 at 17:18 +0200, Rafael J. Wysocki wrote:
+> > > > Well, "noacpi" seems to be a synonym for "pci=noacpi".
+> > > > 
+> > > > Anyway, it causes acpi_disable_pci() to be executed, which according to
+> > > > Documentation/kernel-parameters.txt means "Do not use ACPI for IRQ routing or
+> > > > for PCI scanning" (it works like this on x86_64 too, although the doc says it's
+> > > > x86_32-specific).
+> > > 
+> > > Hrm. The local apic timer calibration does not use anything which is
+> > > related to interrupts, but if we use the local APIC timer we switch off
+> > > PIT.
+> > > 
+> > > Can you boot Linus latest (w/o hrt patches) and add "apicmaintimer" to
+> > > the kernel command line please ?
+> > 
+> > Works, dmesg attached.
 > 
-> We don't seem to be making progress...
+> /me scratches head
 
-Time to bring in a Tie-Breaker :)
+Retested.
 
+> We know, that
+> - disabling local apic timers work
+
+This works reproducibly accross the board.
+
+> - local apic timers (which turn off PIT) work. when noacpiFSCKEDPARSING
+
+This stopped working, although it evidently worked yesterday (wtf?).
+
+There seems to be a history effect in the box, to make things more
+"interesting".
+
+> is given on the kernel command line.
+> 
+> I have no clue, what might be the difference of noacpiFSCKEDPARSING. The
+> boot log is not giving any hint at all.
+> 
+> acpi_disable_pci() sets acpi_pci_disabled and acpi_noirq to 1.
+> 
+> What happens, if you set "acpi=noirq" instead ?
+
+That obviously doesn't help.
+
+I think the only solid data point so far is that "noapictimer" makes the box
+boot.
+
+Greetings,
+Rafael
