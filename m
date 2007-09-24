@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760184AbXIXQ4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375AbXIXQ4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760184AbXIXQ4b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbXIXQ4P
+	id S1754375AbXIXQ4p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbXIXQ40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:56:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53113 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757544AbXIXQ4M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:56:12 -0400
-Date: Mon, 24 Sep 2007 09:55:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sb1250-mac: Driver model & phylib update
-Message-Id: <20070924095559.c81f7061.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64N.0709241529570.22491@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0709191811040.24627@blysk.ds.pg.gda.pl>
-	<20070921124409.7f3d122b.akpm@linux-foundation.org>
-	<Pine.LNX.4.64N.0709241529570.22491@blysk.ds.pg.gda.pl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Sep 2007 12:56:26 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:7259 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758286AbXIXQ4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:56:25 -0400
+Date: Mon, 24 Sep 2007 18:57:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Vlad Yasevich <vladislav.yasevich@hp.com>
+Subject: Re: 2.6.23-rc7-mm1
+Message-ID: <20070924165739.GG2367@kernel.dk>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7B4F2.1040506@fr.ibm.com> <46F7B735.2090509@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F7B735.2090509@fr.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 15:41:54 +0100 (BST) "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
-
-> On Fri, 21 Sep 2007, Andrew Morton wrote:
+On Mon, Sep 24 2007, Cedric Le Goater wrote:
+> putting Vlad in Cc: 
 > 
-> > >  A driver model and phylib update.
+> Cedric Le Goater wrote:
+> > Andrew Morton wrote:
+> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
 > > 
-> > akpm:/usr/src/25> diffstat patches/git-net.patch | tail -n 1
-> >  1013 files changed, 187667 insertions(+), 23587 deletions(-)
-> > 
-> > Sorry, but raising networking patches against Linus's crufty
-> > old mainline tree just isn't viable at present.
+> > I also get this compile error on s390. 'linux/scatterlist.h' has disappeared 
+> > from the #include pile but where ? 
+> >
+> > /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c: In function `sctp_auth_calculate_hmac':
+> > /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c:695: error: storage size of 'sg' isn't known
+> > /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c:695: warning: unused variable `sg'
 > 
->  Well, this is against Jeff's netdev-2.6 tree which hopefully is not as 
-> crufty as Linus's old mainline; if it is not possible to queue this change 
-> for 2.6.25 or suchlike, then I will try to resubmit later.
+> The following patch works of course but it seems to simplistic for s390.
+> 
+> Cheers,
+> 
+> C.
+> 
+> 
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> ---
+>  net/sctp/auth.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> Index: 2.6.23-rc7-mm1/net/sctp/auth.c
+> ===================================================================
+> --- 2.6.23-rc7-mm1.orig/net/sctp/auth.c
+> +++ 2.6.23-rc7-mm1/net/sctp/auth.c
+> @@ -36,6 +36,7 @@
+>  
+>  #include <linux/types.h>
+>  #include <linux/crypto.h>
+> +#include <linux/scatterlist.h>
+>  #include <net/sctp/sctp.h>
+>  #include <net/sctp/auth.h>
 
-Most of Jeff's netdev tree got dumped into Dave's net-2.6.24 tree.  That's
-the one you want to be raising patches against for the next few weeks.
+Thanks, applied.
+
+-- 
+Jens Axboe
 
