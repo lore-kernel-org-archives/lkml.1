@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbXIXNZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759316AbXIXN1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759325AbXIXNZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbXIXNZF
+	id S1759316AbXIXN1k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbXIXN1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:25:05 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:39551 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757338AbXIXNZE (ORCPT
+	Mon, 24 Sep 2007 09:27:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43520 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753899AbXIXN1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:25:04 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Hans de Goede <j.w.r.degoede@hhs.nl>
-Subject: Re: USB autosuspend and turning of usb pendrive leds
-Date: Mon, 24 Sep 2007 15:25:50 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
-Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net
-References: <46F3C704.5000203@hhs.nl> <200709241236.37406.oliver@neukum.org> <46F7A1CF.4010509@hhs.nl>
-In-Reply-To: <46F7A1CF.4010509@hhs.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Sep 2007 09:27:30 -0400
+Date: Mon, 24 Sep 2007 14:27:25 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hch@infradead.org, matthew@wil.cx, trond.myklebust@fys.uio.no,
+       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 1/2] VFS: new fgetattr() file operation
+Message-ID: <20070924132725.GA20116@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Miklos Szeredi <miklos@szeredi.hu>, matthew@wil.cx,
+	trond.myklebust@fys.uio.no, adilger@clusterfs.com,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu> <20070924123640.GA17409@infradead.org> <E1IZnM8-0003sG-00@dorka.pomaz.szeredi.hu> <20070924125948.GM10625@parisc-linux.org> <E1IZndW-0003uI-00@dorka.pomaz.szeredi.hu> <20070924131047.GA19017@infradead.org> <E1IZnpC-0003vk-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709241525.51187.oliver@neukum.org>
+In-Reply-To: <E1IZnpC-0003vk-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 24 September 2007 schrieb Hans de Goede:
-> Oliver Neukum wrote:
-> > Am Freitag 21 September 2007 schrieb Jiri Kosina:
-> >> On Fri, 21 Sep 2007, Hans de Goede wrote:
-> >>
-> >>> Thats not what I had in mind, autosuspend doesn't work (presumably 
-> >>> because hal keeps polling for media change) maybe I should fix hal to 
-> >>> not keep polling for devices which don't have removable media?
-> >> Hi Hans,
-> >>
-> >> I think the correct solution is that HAL stops polling the device as soon 
-> >> as it sees that it got autosuspended.
-> > 
-> > And how would we notice a medium change then? If there's an alternative
-> > way to notice it or we know it cannot happen there's no reason to poll at all.
-> > 
+On Mon, Sep 24, 2007 at 03:18:10PM +0200, Miklos Szeredi wrote:
+> > Or not support such a broken protocol at all.
 > 
-> It looks like hal is currently polling device of which it knows the medium is 
-> not removable, like USB-pens.
+> Wonder what people would say if we removed support for NFSv[23].
+> 
+> Just because a protocol does not support "perfect" UNIX semantics, it
+> doesn't mean it's broken.  By that standard almost all network
+> filesystem protocols are severely broken.
 
-It doesn't, which is the point. The overwhelming number of USB devices
-don't bother to correctly declare themselves not removable SCSI devices.
-The discrimination will have to happen on a product:vendor basis, which
-means that a large database has to be built and maintained.
-
-	Regards
-		Oliver
+Well, they are broken by these and other standards.  At least nfs and
+cifs maintainers do the workarounds for this brokeness where they belong.
