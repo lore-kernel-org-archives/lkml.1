@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXIXU7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbXIXVBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbXIXU7M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 16:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbXIXU65
+	id S1756258AbXIXVBK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 17:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXIXVA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 16:58:57 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:41131 "EHLO mo10.iij4u.or.jp"
+	Mon, 24 Sep 2007 17:00:57 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41122 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753236AbXIXU65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 16:58:57 -0400
-Date: Tue, 25 Sep 2007 05:58:33 +0900 (JST)
-Message-Id: <20070925.055833.207495508.jet@gyve.org>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, e1000-devel@lists.sourceforge.net
-Subject: [patch] fix typo about TBI in e1000 comment
-From: Masatake YAMATO <jet@gyve.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1.50 / Mule 5.0 (SAKAKI)
+	id S1753386AbXIXVA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 17:00:56 -0400
+Date: Mon, 24 Sep 2007 23:02:22 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.23-rc7-mm1
+Message-ID: <20070924210222.GA4595@uranus.ravnborg.org>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F78C73.5040505@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F78C73.5040505@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've found a typo in a comment of e1000 driver.
+Hi Kamalesh.
 
-I don't know the Signed-off-by for such a short and trivial patch. Any way
-I put it here.
+> The link error for a PowerMac G5 (powerpc) is still seen with 
+> 2.6.23-rc7-mm1,
+> and was reported for 2.6.23-rc6-mm1 (http://lkml.org/lkml/2007/9/19/62).
+> 
+>  KSYM    .tmp_kallsyms1.S
+>  AS      .tmp_kallsyms1.o
+>  LD      .tmp_vmlinux2
+>  KSYM    .tmp_kallsyms2.S
+>  AS      .tmp_kallsyms2.o
+>  LD      vmlinux.o
+> ld: dynreloc miscount for fs/built-in.o, section .opd
+> ld: can not edit opd Bad value
+> make: *** [vmlinux.o] Error 1
 
-Signed-off-by: Masatake YAMATO <jet@gyve.org>
+Can you try to narrow it down a bit further...
+As this happens when building fs/built-in.o it should be
+straightforward to do so.
 
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index 4a22595..50e9c41 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -3594,7 +3594,7 @@ e1000_update_stats(struct e1000_adapter *adapter)
- 
- 	spin_lock_irqsave(&adapter->stats_lock, flags);
- 
--	/* these counters are modified from e1000_adjust_tbi_stats,
-+	/* these counters are modified from e1000_tbi_adjust_stats,
- 	 * called from the interrupt context, so they must only
- 	 * be written while holding adapter->stats_lock
- 	 */
+First step would be to do:
+rm fs/built-in.o
+make fs/ V=1
+
+Then copy the ld invocation and try to remove the input .o files one-by-one.
+This should tell you which .o file is causing the bug.
+
+Next step is to try to squeze down the offending file until the
+errornous part remains.
+
+Last time I did a
+make fs/file.i
+
+And then I used gcc & ld to compile and link.
+Gradually removing stuff from file.i made me spot the problem
+with the weak prototype in a header file.
+
+I guess something else is making ld hit this error now.
+
+PS. Just reinstalled my dev box so no crosscompiler atm.
+
+	Sam
