@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762644AbXIXSXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762549AbXIXSYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762644AbXIXSXP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761679AbXIXSW4
+	id S1762549AbXIXSYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbXIXSYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:22:56 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:60787 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760412AbXIXSWz (ORCPT
+	Mon, 24 Sep 2007 14:24:46 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:44624 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756040AbXIXSYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:22:55 -0400
-Date: Mon, 24 Sep 2007 14:22:53 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Mon, 24 Sep 2007 14:24:45 -0400
+Message-ID: <46F800A7.7090005@oracle.com>
+Date: Mon, 24 Sep 2007 11:23:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
 To: Christoph Hellwig <hch@infradead.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 4/7] Linux Kernel Markers - Architecture Independent Code
-Message-ID: <20070924182252.GA30059@Krystal>
-References: <20070924164950.006047409@polymtl.ca> <20070924165427.717587684@polymtl.ca> <20070924174817.GB1608@infradead.org> <Pine.LNX.4.64.0709241413450.22210@localhost.localdomain> <20070924181947.GB3810@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
+References: <20070924164950.006047409@polymtl.ca> <20070924165428.335030720@polymtl.ca> <20070924175044.GD1608@infradead.org> <20070924105632.009aba7f.randy.dunlap@oracle.com> <20070924180041.GB2435@infradead.org> <20070924111318.f16cde07.randy.dunlap@oracle.com> <20070924181931.GA3810@infradead.org>
+In-Reply-To: <20070924181931.GA3810@infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070924181947.GB3810@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:22:45 up 56 days, 18:41,  7 users,  load average: 1.19, 1.23, 1.07
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Mon, Sep 24, 2007 at 02:15:12PM -0400, Robert P. J. Day wrote:
-> > On Mon, 24 Sep 2007, Christoph Hellwig wrote:
-> > 
-> > > static inline void __mark_check_format(const char *fmt, ...)
-> > > 		__attribute__ ((format (printf, 1, 2)))
-> > > {
-> > > }
-> > 
-> > the header file compiler-gcc.h defines the shorter macro "__printf".
-> > is it worth encouraging its use, or does it matter?
+Christoph Hellwig wrote:
+> On Mon, Sep 24, 2007 at 11:13:18AM -0700, Randy Dunlap wrote:
+>>  Documentation/trace/src/Makefile     |    7 +
+>>  Documentation/trace/src/README       |   18 +
+>>  Documentation/trace/src/fork_trace.c |  119 +++++++
+>>  Documentation/trace/trace.txt        |  164 ++++++++++
+>>  include/linux/trace.h                |   99 ++++++
+>>  lib/Kconfig                          |    9 +
+>>  lib/Makefile                         |    2 +
+>>  lib/trace.c                          |  563 +++++++++++++++++++++++++++
+>> +++++++
+>>  8 files changed, 981 insertions(+), 0 deletions(-)
+>>
+>>
+>> All of the trace/src/ subdirectory?
 > 
-> Yes, that's even better.
+> Yes, but only as a single file.  We don't really want READMES in source
+> directories.  Instead these 18 lines would do a perfect comment on the
+> top of the file.
 
-Ok, fixing.
+That might be OK for this case, but sometimes it makes sense to have
+README etc. about how to use the software.  So you would want this
+in the Documentation/ tree?  That makes it harder on users.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+~Randy
+Phaedrus says that Quality is about caring.
