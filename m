@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763906AbXIXQq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763744AbXIXQqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763906AbXIXQq3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761495AbXIXQdG
+	id S1763744AbXIXQqq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761849AbXIXQdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:33:06 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:39152 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759346AbXIXQdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:33:04 -0400
-Subject: Re: 2.6.23-rc7-mm1: r/o mounts joke with lockdep
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070924092658.91c17511.akpm@linux-foundation.org>
-References: <20070924095105.GD6757@localhost.sw.ru>
-	 <20070924092658.91c17511.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 09:33:00 -0700
-Message-Id: <1190651581.26982.230.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Sep 2007 12:33:46 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:53422 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761989AbXIXQdp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:33:45 -0400
+Date: Mon, 24 Sep 2007 09:31:48 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [00/50] 2.6.22-stable review
+Message-ID: <20070924163148.GA17746@kroah.com>
+References: <20070924161733.GA13510@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070924161733.GA13510@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 09:26 -0700, Andrew Morton wrote:
-> On Mon, 24 Sep 2007 13:51:05 +0400 Alexey Dobriyan <adobriyan@sw.ru> wrote:
-> 
-> > static void lock_and_coalesce_cpu_mnt_writer_counts(void)
-> > {
-> > 	int cpu;
-> > 	struct mnt_writer *cpu_writer;
-> > 
-> > 	for_each_possible_cpu(cpu) {
-> > 		cpu_writer = &per_cpu(mnt_writers, cpu);
-> > 		spin_lock_nested(&cpu_writer->lock, 42);
-> > 		                                   ^^^^
-> > 
-> > What the heck is going on?
-> 
-> that was some random 2:00AM hack by me to make the warnings go away.
-> 
-> > Given that MAX_LOCKDEP_SUBCLASSES is only 8,
-> > this reliably turns off lockdep at boot.
-> 
-> that explains why it worked so well.
+On Mon, Sep 24, 2007 at 09:17:33AM -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.22.8 release.
 
-Arjan gave me some ideas on how to fix this more properly.  I'm trying
-to reproduce it and working on a patch now.
+A tarball of the patches can be found at:
+	kernel.org/pub/linux/kernel/v2.6/stable-testing/patch-2.6.22.8-rc1.gz
 
--- Dave
+thanks,
 
+greg k-h
