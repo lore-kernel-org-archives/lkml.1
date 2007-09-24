@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbXIXBgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbXIXCC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbXIXBgV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 21:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbXIXBgO
+	id S1756284AbXIXCC2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Sep 2007 22:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbXIXCCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 21:36:14 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:17541 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754090AbXIXBgN (ORCPT
+	Sun, 23 Sep 2007 22:02:20 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:5156 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754090AbXIXCCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 21:36:13 -0400
-Date: Sun, 23 Sep 2007 18:34:38 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: hce <webmail.hce@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Ethernet driver on 2.6.22
-Message-Id: <20070923183438.8807b5da.randy.dunlap@oracle.com>
-In-Reply-To: <95455e980709231552l73bd8c78u46d3a45266749902@mail.gmail.com>
-References: <95455e980709231552l73bd8c78u46d3a45266749902@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sun, 23 Sep 2007 22:02:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:references:subject:message-id:x-mailer;
+        b=EdWcRqnqkOwuDAisq/YQQGvipHtLd3uGyXyEL38qrOgxZi+P1Li2ZMAqtH9GItnfoE6VBA1hMy2chJZTiGCXXTKcwXEV6DQHhLzzqM4LWg+i4fCqSo/0lkph9Xo/xeXnO0e1vVjUZN3bNo0q9K5Tr4NuybZjapkhJGOTSHW/HwM=
+Date: Mon, 24 Sep 2007 10:02:12 +0800
+From: "Peer Chen" <peerchen@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ide" <linux-ide@vger.kernel.org>,
+       "akpm" <akpm@linux-foundation.org>, "jeff" <jeff@garzik.org>
+References: <200709211406065332552@gmail.com>,
+ <20070921113908.180cd154@the-village.bc.nu>
+Subject: Re: Re: [PATCH] ahci: Add MCP79 support to AHCI driver
+Message-ID: <200709241002079067823@gmail.com>
+X-mailer: Foxmail 6, 6, 105, 21 [cn]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 08:52:36 +1000 hce wrote:
+Yes,it's necessary because our RAID controller also use the ahci driver.
 
-> Hi,
-> 
-> I am upgrading from kernel 2.6.11 to 2.6.22 on ARM S3C2400A and found
-> a following issue on 2.6.22.
-> 
-> On 2.6.11, I selected CONFIG_ISA,  CONFIG_NET_PCI and CONFIG_CS89X0 to
-> build  CS8900A Ethernet driver to kernel, it was running perfect.
-> 
-> But on 2.6.22, I made the same configuration for CS8900A, the cs89x0.o
-> could not be compiled in to the kernel (or as a module when I tried to
-> CONFIG_CS89X0=m) unless I commented out depends statement in
-> drivers/net/Kconfig. I double checked all three are CONFIG_ISA=y,
-> CONFIG_NET_PCI=y and CONFIG_CS89X0=y. Any explanation please, was I
-> missing something here?
+------------------				 
+Peer Chen
+2007-09-24
 
-I didn't look in 2.6.11 Kconfig files, but in 2.6.22, this driver is
-limited to 3 specific boards:
+-------------------------------------------------------------
+发件人：Alan Cox
+发送日期：2007-09-21 18:32:09
+收件人：Peer Chen
+抄送：linux-kernel; linux-ide; akpm; jeff
+主题：Re: [PATCH] ahci: Add MCP79 support to AHCI driver
 
-config CS89x0
-	tristate "CS89x0 support"
-	depends on NET_PCI && (ISA || MACH_IXDP2351 || ARCH_IXDP2X01 || ARCH_PNX010X)
+On Fri, 21 Sep 2007 14:06:10 +0800
+"Peer Chen" <peerchen@gmail.com> wrote:
 
-Does ARM S3C2400A qualify as any of those?  (MACH_... or ARCH_...)
+> Add the MCP79 support to ahci driver.
+> The patch base on kernel 2.6.23-rc7
 
-(latter: ARCH_PNX010X is not used anywhere else AFAICT)
+Is this actually needed or as they are standard ahci devices will the
+class match get them anyway ?
 
----
-~Randy
-Phaedrus says that Quality is about caring.
