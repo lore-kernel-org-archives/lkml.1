@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbXIXQHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXIXQIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759645AbXIXQHP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbXIXQHE
+	id S1759935AbXIXQIs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXIXQIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:07:04 -0400
-Received: from dvhart.com ([64.146.134.43]:58346 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754948AbXIXQHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:07:03 -0400
-Message-ID: <46F7E0A0.8070905@mbligh.org>
-Date: Mon, 24 Sep 2007 09:06:56 -0700
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Cc: Natalie Protasevich <protasnb@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Diego Calleja <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
-       David Ames <david@linux-foundation.org>
-Subject: Re: Urgent bugzilla mainteinance needed
-References: <20070923195821.cab02f42.diegocg@gmail.com>	 <32209efe0709231108v459c3559xf247db2c122513c0@mail.gmail.com>	 <1190572240.22181.2.camel@shinybook.infradead.org> <32209efe0709231134t1dda4965i6e1d49a8d134c664@mail.gmail.com> <46F72D80.20504@mbligh.org> <46F7DEF2.1020104@linux.vnet.ibm.com>
-In-Reply-To: <46F7DEF2.1020104@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 24 Sep 2007 12:08:41 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:48604 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753383AbXIXQIk (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 12:08:40 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc7-mm1 - 'touch' command causes Oops.
+In-Reply-To: Your message of "Mon, 24 Sep 2007 08:45:32 PDT."
+             <1190648733.26982.227.camel@localhost>
+From: Valdis.Kletnieks@vt.edu
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <3339.1190630150@turing-police.cc.vt.edu> <20070924120508.GA15648@infradead.org> <3982.1190638701@turing-police.cc.vt.edu>
+            <1190648733.26982.227.camel@localhost>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1190650097_3721P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Sep 2007 12:08:17 -0400
+Message-ID: <14164.1190650097@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1190650097_3721P
+Content-Type: text/plain; charset=us-ascii
 
->>>> Bugzilla really shouldn't be accepting any mail with empty reverse-path
->>>> (MAIL FROM:<>)
-> Updated to handle this case.
->>> Ah, then should be easy fix then. I don't have access to the system
->>> though, will have to helplessly wait until one of the guys picks up...
->>> :(
->> Sorry, can't fix this - I don't have direct access to the system,
->> and I don't think the others will be back until Monday ;-(
->>
->> M.
-> It should be working now.  Thanks to David Ames for handling the mailer
-> part.  I cleaned the spam(1353 msgs) out of the bug.
+On Mon, 24 Sep 2007 08:45:32 PDT, Dave Hansen said:
 
-Awesome - thanks to both of you.
+> Any idea which fs and distro this was?  I'd like to add it to my tests.
 
-M.
+initscripts-8.56-1, from Fedora Rawhide, /etc/rc.sysinit, line 325:
+
+touch /dev/.in_sysinit >/dev/null 2>&1
+
+Specific enough? :)
+
+--==_Exmh_1190650097_3721P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG9+DxcC3lWbTT17ARAghwAJ9thfkFmCYdjwAuaiHmEpsgi8XWJwCg9Zcf
+z+XvTpLsZFVImEUa20BDyN0=
+=3hCu
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1190650097_3721P--
