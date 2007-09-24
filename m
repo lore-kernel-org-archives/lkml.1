@@ -1,115 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbXIXLXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbXIXLfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbXIXLXN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 07:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbXIXLW6
+	id S1756138AbXIXLfY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 07:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbXIXLfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 07:22:58 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:56339 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754227AbXIXLW6 (ORCPT
+	Mon, 24 Sep 2007 07:35:10 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:8259 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753383AbXIXLfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 07:22:58 -0400
-Message-ID: <46F79DE7.40402@linux.vnet.ibm.com>
-Date: Mon, 24 Sep 2007 16:52:15 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 24 Sep 2007 07:35:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=e2iob5tzJvEXpymL65CTZLlGNe8FikqmrWB0F+PHtEx8/Wk/FgbgUI6Q19OE2JxTLTgRKnPFeNNOeLEMdTNx4DZlSnwSYjIT6iz4cxwqb8p9IHifCbv6PEEPYLcV1RozBVq7Rs3ABwJcMBjI6KzIMj7CwszxlrLDflUNZrmNt7s=
+Date: Mon, 24 Sep 2007 19:30:35 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: roel <12o3l@tiscali.nl>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, maxk@qualcomm.com,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: [-mm Patch] net/bluetooth/hidp/core.c: Make hidp_setup_input()
+	return int
+Message-ID: <20070924113035.GE2442@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [RFC][PATCH] mm: couple rcu and memory reclaim
-References: <20070924104517.7d8126ae@twins> <46F7948B.7000802@linux.vnet.ibm.com> <20070924130616.4141a084@twins>
-In-Reply-To: <20070924130616.4141a084@twins>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 24 Sep 2007 16:12:19 +0530 Balbir Singh
-> <balbir@linux.vnet.ibm.com> wrote:
-> 
->> Peter Zijlstra wrote:
->>> Just an idea I had, it seems like a good idea to wait for RCU callbacks
->>> in reclaim so that we won't get all of memory stuck there.
->>>
->>> If this location is too aggressive we might stick it next to
->>> disable_swap_token().
->>>
->>> ---
->>> Couple RCU and reclaim.
->>>
->>> There could be a lot of memory stuck in RCU callbacks. Wait for RCU to
->>> finish before giving it another go.
->>>
->>> Placed in kswapd and not direct reclaim path because kswapd never holds
->>> rcu_read_lock() at this point and can thus not deadlock. Direct reclaim
->>> callers might hold rcu_read_lock() and would suffer from deadlocks if
->>> sync_rcu() were to be called.
->>>
->>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>> ---
->>>  mm/vmscan.c |    4 +++-
->>>  1 file changed, 3 insertions(+), 1 deletion(-)
->>>
->>> Index: linux-2.6/mm/vmscan.c
->>> ===================================================================
->>> --- linux-2.6.orig/mm/vmscan.c
->>> +++ linux-2.6/mm/vmscan.c
->>> @@ -1435,8 +1435,10 @@ loop_again:
->>>  		unsigned long lru_pages = 0;
->>>
->>>  		/* The swap token gets in the way of swapout... */
->>> -		if (!priority)
->>> +		if (!priority) {
->>> +			synchronize_rcu();
-> 
-> Bah, it seems I send the wrong patch out :-/
-> 
 
-Looks like I reviewed the wrong thing then :-)
+This patch:
+- makes hidp_setup_input() return int to indicate errors;
+- checks its return value to handle errors.
 
-> this is the one against disable_swap_token(). I meant to send out this
-> one:
-> 
-> @@ -1527,8 +1527,10 @@ loop_again:
->                  * OK, kswapd is getting into trouble.  Take a nap, then take
->                  * another pass across the zones.
->                  */
-> -               if (total_scanned && priority < DEF_PRIORITY - 2)
-> +               if (total_scanned && priority < DEF_PRIORITY - 2) {
-> +                       synchronize_rcu();
->                         congestion_wait(WRITE, HZ/10);
-> +               }
-> 
-> 
->> Interesting change
->>
->> 1. I suspect that synchronize_rcu() is most likely to free up
->>    slab pages, so shrink_slab() will clean up all the freed
->>    pages. Could we add a comment to indicate the same?
-> 
-> Yes indeed, will add such a comment.
-> 
->> 2. Shouldn't we do this in balance_pgdat() as well?
-> 
-> Uhm, this is balance_pgdat() (both these changes) :-)
-> 
+And this time it is against -rc7-mm1 tree.
 
-Hmm.. Could you please generate the diff with -p.
+Thanks to roel and Marcel Holtmann for comments.
 
-> Only kswapd can do this, direct reclaim has deadlock potential.
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Yes, but not in all cases, do you want to add any gfp_mask
-based smartness for direct reclaim?
+---
+ net/bluetooth/hidp/core.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Index: linux-2.6.23-rc7-mm1/net/bluetooth/hidp/core.c
+===================================================================
+--- linux-2.6.23-rc7-mm1.orig/net/bluetooth/hidp/core.c
++++ linux-2.6.23-rc7-mm1/net/bluetooth/hidp/core.c
+@@ -625,7 +625,7 @@ static struct device *hidp_get_device(st
+ 	return conn ? &conn->dev : NULL;
+ }
+ 
+-static inline void hidp_setup_input(struct hidp_session *session, struct hidp_connadd_req *req)
++static inline int hidp_setup_input(struct hidp_session *session, struct hidp_connadd_req *req)
+ {
+ 	struct input_dev *input = session->input;
+ 	int i;
+@@ -669,7 +669,7 @@ static inline void hidp_setup_input(stru
+ 
+ 	input->event = hidp_input_event;
+ 
+-	input_register_device(input);
++	return input_register_device(input);
+ }
+ 
+ static int hidp_open(struct hid_device *hid)
+@@ -822,8 +822,11 @@ int hidp_add_connection(struct hidp_conn
+ 	session->flags   = req->flags & (1 << HIDP_BLUETOOTH_VENDOR_ID);
+ 	session->idle_to = req->idle_to;
+ 
+-	if (session->input)
+-		hidp_setup_input(session, req);
++	if (session->input) {
++		err = hidp_setup_input(session, req);
++		if (err < 0)
++			goto failed;
++	}
+ 
+ 	if (session->hid)
+ 		hidp_setup_hid(session, req);
