@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbXIXIbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbXIXIph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757510AbXIXIbI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 04:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbXIXIa7
+	id S1754261AbXIXIph (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 04:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbXIXIpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 04:30:59 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:7294
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754745AbXIXIa6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 04:30:58 -0400
-Message-Id: <46F79221.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Mon, 24 Sep 2007 09:32:01 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [patches] [PATCH] [15/50] x86_64: Return EINVAL for
-	unknown addressin change_page_attr
-References: <200709221231.836138000@suse.de>
- <20070921223213.D92CC13DCD@wotan.suse.de>
-In-Reply-To: <20070921223213.D92CC13DCD@wotan.suse.de>
+	Mon, 24 Sep 2007 04:45:30 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42942 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbXIXIp3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 04:45:29 -0400
+Date: Mon, 24 Sep 2007 10:45:17 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Rik van Riel <riel@redhat.com>
+Subject: [RFC][PATCH] mm: couple rcu and memory reclaim
+Message-ID: <20070924104517.7d8126ae@twins>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This should be accompanied by
 
- 			addr2 = __START_KERNEL_map + __pa(address);
- 			/* Make sure the kernel mappings stay executable */
- 			prot2 = pte_pgprot(pte_mkexec(pfn_pte(0, prot)));
--			err = __change_page_attr(addr2, pfn, prot2,
-+			(void)__change_page_attr(addr2, pfn, prot2,
- 						 kref_prot(addr2));
- 		} 
- 	} 	
 
-as otherwise it is non-obvious why there's no check of err (which so far really
-was missing). The reason this must be tolerated here is free_init_pages()/
-free_initmem() removing the translation for the affected kernel image pages
-altogether.
+Just an idea I had, it seems like a good idea to wait for RCU callbacks
+in reclaim so that we won't get all of memory stuck there.
 
-Jan
-
->>> Andi Kleen <ak@suse.de> 22.09.07 00:32 >>>
-
-Matches what i386 does and makes more sense.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
+If this location is too aggressive we might stick it next to
+disable_swap_token().
 
 ---
- arch/x86_64/mm/pageattr.c |    4 +++-
+Couple RCU and reclaim.
+
+There could be a lot of memory stuck in RCU callbacks. Wait for RCU to
+finish before giving it another go.
+
+Placed in kswapd and not direct reclaim path because kswapd never holds
+rcu_read_lock() at this point and can thus not deadlock. Direct reclaim
+callers might hold rcu_read_lock() and would suffer from deadlocks if
+sync_rcu() were to be called.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ mm/vmscan.c |    4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux/arch/x86_64/mm/pageattr.c
+Index: linux-2.6/mm/vmscan.c
 ===================================================================
---- linux.orig/arch/x86_64/mm/pageattr.c
-+++ linux/arch/x86_64/mm/pageattr.c
-@@ -151,7 +151,9 @@ __change_page_attr(unsigned long address
- 	pgprot_t ref_prot2;
+--- linux-2.6.orig/mm/vmscan.c
++++ linux-2.6/mm/vmscan.c
+@@ -1435,8 +1435,10 @@ loop_again:
+ 		unsigned long lru_pages = 0;
  
- 	kpte = lookup_address(address);
--	if (!kpte) return 0;
-+	if (!kpte)
-+		return -EINVAL;
-+
- 	kpte_page = virt_to_page(((unsigned long)kpte) & PAGE_MASK);
- 	BUG_ON(PageCompound(kpte_page));
- 	BUG_ON(PageLRU(kpte_page));
-_______________________________________________
-patches mailing list
-patches@x86-64.org 
-https://www.x86-64.org/mailman/listinfo/patches
-
+ 		/* The swap token gets in the way of swapout... */
+-		if (!priority)
++		if (!priority) {
++			synchronize_rcu();
+ 			disable_swap_token();
++		}
+ 
+ 		all_zones_ok = 1;
+ 
