@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbXIXOlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbXIXOmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758816AbXIXOlv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 10:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbXIXOlo
+	id S1759342AbXIXOmX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 10:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbXIXOmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 10:41:44 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:43099 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751639AbXIXOlo (ORCPT
+	Mon, 24 Sep 2007 10:42:07 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:59332 "EHLO
+	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754690AbXIXOmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 10:41:44 -0400
-Date: Mon, 24 Sep 2007 10:41:43 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] 2.6.23-rc7-mm1
-In-Reply-To: <46F7AEA7.7060809@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0709241039040.4256-100000@iolanthe.rowland.org>
+	Mon, 24 Sep 2007 10:42:06 -0400
+Date: Mon, 24 Sep 2007 15:41:54 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sb1250-mac: Driver model & phylib update
+In-Reply-To: <20070921124409.7f3d122b.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64N.0709241529570.22491@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0709191811040.24627@blysk.ds.pg.gda.pl>
+ <20070921124409.7f3d122b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007, Jiri Slaby wrote:
+On Fri, 21 Sep 2007, Andrew Morton wrote:
 
-> On 09/24/2007 11:17 AM, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
+> >  A driver model and phylib update.
 > 
-> Fine, but on some boots (I noticed this on rc6-mm1 too, but not before):
-> 0000:00:1a.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
-> 0000:00:1d.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
+> akpm:/usr/src/25> diffstat patches/git-net.patch | tail -n 1
+>  1013 files changed, 187667 insertions(+), 23587 deletions(-)
+> 
+> Sorry, but raising networking patches against Linus's crufty
+> old mainline tree just isn't viable at present.
 
-Any changes in your BIOS setup?
+ Well, this is against Jeff's netdev-2.6 tree which hopefully is not as 
+crufty as Linus's old mainline; if it is not possible to queue this change 
+for 2.6.25 or suchlike, then I will try to resubmit later.  Thanks for 
+your attention though.
 
-What about with vanilla 2.6.23-rc6?  Or vanilla 2.6.23-rc7?
-
-The USB part of the code here hasn't changed in quite a while.  Any 
-difference in behavior must be the result of changes in some other part 
-of the kernel.  Possibly ACPI.
-
-This might be a good job for git-bisect.
-
-Alan Stern
-
+  Maciej
