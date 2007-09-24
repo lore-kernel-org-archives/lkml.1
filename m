@@ -1,148 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761604AbXIXXvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbXIXXwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761604AbXIXXvN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 19:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757935AbXIXXu6
+	id S1761660AbXIXXwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 19:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759265AbXIXXwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 19:50:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51019 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757899AbXIXXu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 19:50:57 -0400
+	Mon, 24 Sep 2007 19:52:05 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57127
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758509AbXIXXwE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 19:52:04 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Joe Perches <joe@perches.com>
+Subject: Re: [RFC] New kernel-message logging API
+Date: Mon, 24 Sep 2007 18:51:59 -0500
+User-Agent: KMail/1.9.6
+Cc: holzheu@linux.vnet.ibm.com, Vegard Nossum <vegard.nossum@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dick Streefland <dick.streefland@altium.nl>
+References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com> <1190625742.12666.30.camel@localhost.localdomain> <1190647156.30132.92.camel@localhost>
+In-Reply-To: <1190647156.30132.92.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Cc: David Woodhouse <dwmw2@redhat.com>
-Subject: [PATCH 1/2] powerpc: ptrace CHECK_FULL_REGS
-X-Fcc: ~/Mail/linus
-X-Shopping-List: (1) Trenchant catatonic aluminum
-   (2) Televised baskets
-   (3) Parliamentary bums
-   (4) Olympic Slanty-wise longitudes
-Message-Id: <20070924235052.5AFC24D04B7@magilla.localdomain>
-Date: Mon, 24 Sep 2007 16:50:52 -0700 (PDT)
+Content-Disposition: inline
+Message-Id: <200709241851.59611.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 24 September 2007 10:19:16 am Joe Perches wrote:
+> On Mon, 2007-09-24 at 11:22 +0200, Michael Holzheu wrote:
+> > Together with the idea of not allowing multiple lines in the kprint_xxx
+> > functions, that would go with our approach having message numbers to
+> > identify a message.
+>
+> How does this equate/give message numbers?
 
-This restores the CHECK_FULL_REGS sanity check to every place that can
-access the nonvolatile GPRs for ptrace.  This is already done for
-native-bitwidth PTRACE_PEEKUSR, but was omitted for many other cases
-(32-bit ptrace, PTRACE_GETREGS, etc.); I think there may have been more
-uniform checks before that were lost in the recent cleanup of GETREGS et al.
+I actively want to avoid giving message numbers.  My interest is in 
+selectively removing messages from the kernel to shrink the binary size (and 
+NOT make it up in either a larger userspace utility to translate them, or 
+else magic proprietary numbers you can only diagnose if you pay my support 
+staff).
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/kernel/ptrace.c   |    4 ++++
- arch/powerpc/kernel/ptrace32.c |    8 ++++++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+> An added pass between gcc preprocessor and compiler could compact
+> or compress the format string without modifying the conversion
+> specifications so __attribute__ ((format (printf)) would still work.
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 8a177bd..40d34b3 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -331,6 +331,7 @@ static long arch_ptrace_old(struct task_struct *child, long request, long addr,
- 		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
- 		unsigned long __user *tmp = (unsigned long __user *)addr;
- 
-+		CHECK_FULL_REGS(child->thread.regs);
- 		for (i = 0; i < 32; i++) {
- 			ret = put_user(*reg, tmp);
- 			if (ret)
-@@ -346,6 +347,7 @@ static long arch_ptrace_old(struct task_struct *child, long request, long addr,
- 		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
- 		unsigned long __user *tmp = (unsigned long __user *)addr;
- 
-+		CHECK_FULL_REGS(child->thread.regs);
- 		for (i = 0; i < 32; i++) {
- 			ret = get_user(*reg, tmp);
- 			if (ret)
-@@ -517,6 +519,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 			ret = -EIO;
- 			break;
- 		}
-+		CHECK_FULL_REGS(child->thread.regs);
- 		ret = 0;
- 		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
- 			ret |= __put_user(ptrace_get_reg(child, ui),
-@@ -537,6 +540,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 			ret = -EIO;
- 			break;
- 		}
-+		CHECK_FULL_REGS(child->thread.regs);
- 		ret = 0;
- 		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
- 			ret = __get_user(tmp, (unsigned long __user *) data);
-diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
-index 9e6baea..6b86960 100644
---- a/arch/powerpc/kernel/ptrace32.c
-+++ b/arch/powerpc/kernel/ptrace32.c
-@@ -53,6 +53,7 @@ static long compat_ptrace_old(struct task_struct *child, long request,
- 		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
- 		unsigned int __user *tmp = (unsigned int __user *)addr;
- 
-+		CHECK_FULL_REGS(child->thread.regs);
- 		for (i = 0; i < 32; i++) {
- 			ret = put_user(*reg, tmp);
- 			if (ret)
-@@ -68,6 +69,7 @@ static long compat_ptrace_old(struct task_struct *child, long request,
- 		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
- 		unsigned int __user *tmp = (unsigned int __user *)addr;
- 
-+		CHECK_FULL_REGS(child->thread.regs);
- 		for (i = 0; i < 32; i++) {
- 			ret = get_user(*reg, tmp);
- 			if (ret)
-@@ -164,6 +166,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
- 		if ((addr & 3) || (index > PT_FPSCR32))
- 			break;
- 
-+		CHECK_FULL_REGS(child->thread.regs);
- 		if (index < PT_FPR0) {
- 			tmp = ptrace_get_reg(child, index);
- 		} else {
-@@ -210,6 +213,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
- 		if ((addr & 3) || numReg > PT_FPSCR)
- 			break;
- 
-+		CHECK_FULL_REGS(child->thread.regs);
- 		if (numReg >= PT_FPR0) {
- 			flush_fp_to_thread(child);
- 			tmp = ((unsigned long int *)child->thread.fpr)[numReg - PT_FPR0];
-@@ -270,6 +274,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
- 		if ((addr & 3) || (index > PT_FPSCR32))
- 			break;
- 
-+		CHECK_FULL_REGS(child->thread.regs);
- 		if (index < PT_FPR0) {
- 			ret = ptrace_put_reg(child, index, data);
- 		} else {
-@@ -307,6 +312,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
- 		 */
- 		if ((addr & 3) || (numReg > PT_FPSCR))
- 			break;
-+		CHECK_FULL_REGS(child->thread.regs);
- 		if (numReg < PT_FPR0) {
- 			unsigned long freg = ptrace_get_reg(child, numReg);
- 			if (index % 2)
-@@ -342,6 +348,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
- 			ret = -EIO;
- 			break;
- 		}
-+		CHECK_FULL_REGS(child->thread.regs);
- 		ret = 0;
- 		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
- 			ret |= __put_user(ptrace_get_reg(child, ui),
-@@ -359,6 +366,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
- 			ret = -EIO;
- 			break;
- 		}
-+		CHECK_FULL_REGS(child->thread.regs);
- 		ret = 0;
- 		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
- 			ret = __get_user(tmp, (unsigned int __user *) data);
+This does not address my problem.  Spitting out a proprietary hash code 
+instead of a human readable message is not a solution for my use case.
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
