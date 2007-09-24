@@ -1,86 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbXIXDjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbXIXEAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757917AbXIXDjp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Sep 2007 23:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbXIXDjh
+	id S1754562AbXIXEAo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 00:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750731AbXIXEAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Sep 2007 23:39:37 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:55568 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751071AbXIXDjh (ORCPT
+	Mon, 24 Sep 2007 00:00:36 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:49689 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbXIXEAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Sep 2007 23:39:37 -0400
-Date: Sun, 23 Sep 2007 20:39:10 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: hce <webmail.hce@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Ethernet driver on 2.6.22
-Message-Id: <20070923203910.8b414cc6.randy.dunlap@oracle.com>
-In-Reply-To: <95455e980709231940m571c628cj887628aba4a21c4b@mail.gmail.com>
-References: <95455e980709231552l73bd8c78u46d3a45266749902@mail.gmail.com>
-	<20070923183438.8807b5da.randy.dunlap@oracle.com>
-	<95455e980709231940m571c628cj887628aba4a21c4b@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 24 Sep 2007 00:00:35 -0400
+Date: Sun, 23 Sep 2007 23:00:35 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-rc6-mm1 - make access to tasks nsproxy ligther (fix)
+Message-ID: <20070924040035.GB27284@sergelap.austin.ibm.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46F2324E.9020707@fr.ibm.com> <46F23681.2030400@openvz.org> <46F2396D.7090404@fr.ibm.com> <46F2A8F6.4080508@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F2A8F6.4080508@fr.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 12:40:07 +1000 hce wrote:
+Quoting Cedric Le Goater (clg@fr.ibm.com):
+> Cedric Le Goater wrote:
+> > Pavel Emelyanov wrote:
+> >> Looks sane :)
+> >>
+> >> [snip]
+> >>
+> >>> Index: 2.6.23-rc6-mm1/kernel/exit.c
+> >>> ===================================================================
+> >>> --- 2.6.23-rc6-mm1.orig/kernel/exit.c
+> >>> +++ 2.6.23-rc6-mm1/kernel/exit.c
+> >>> @@ -408,6 +408,8 @@ void daemonize(const char *name, ...)
+> >>>  	current->fs = fs;
+> >>>  	atomic_inc(&fs->count);
+> >>>  
+> >>> +	if (current->nsproxy != init_task.nsproxy)
+> >>> +		get_nsproxy(init_task.nsproxy);
+> >>>  	switch_task_namespaces(current, init_task.nsproxy);
+> >> shouldn't we make the switch under this if() as well?
+> > 
+> > right. we can probably simplify switch_task_namespaces() and remove :
+> > 
+> > 	if (ns == new)
+> > 		return;
+> > 
+> > I'll cook a better one today.
+> 
+> So I removed this test in
+> 
+> * daemonize() bc it is already done 
+> * sys_unshare() bc the nsproxy is always new one 
+> * exit_task_namespaces() bc it is called with NULL and the
+>   task will die right after that.
+> 
+> C.
+> 
+> 
+> make-access-to-tasks-nsproxy-lighter.patch breaks unshare()
+> 
+> when called from unshare(), switch_task_namespaces() takes an 
+> extra refcount on the nsproxy, leading to a memory leak of 
+> nsproxy objects. 
+> 
+> Now the problem is that we still need that extra ref when called 
+> from daemonize(). Here's an ugly fix for it.
+> 
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> Cc: Serge E. Hallyn <serue@us.ibm.com>
 
-> Thanks Randy.
-> 
-> On 9/24/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > On Mon, 24 Sep 2007 08:52:36 +1000 hce wrote:
-> >
-> > > Hi,
-> > >
-> > > I am upgrading from kernel 2.6.11 to 2.6.22 on ARM S3C2400A and found
-> > > a following issue on 2.6.22.
-> > >
-> > > On 2.6.11, I selected CONFIG_ISA,  CONFIG_NET_PCI and CONFIG_CS89X0 to
-> > > build  CS8900A Ethernet driver to kernel, it was running perfect.
-> > >
-> > > But on 2.6.22, I made the same configuration for CS8900A, the cs89x0.o
-> > > could not be compiled in to the kernel (or as a module when I tried to
-> > > CONFIG_CS89X0=m) unless I commented out depends statement in
-> > > drivers/net/Kconfig. I double checked all three are CONFIG_ISA=y,
-> > > CONFIG_NET_PCI=y and CONFIG_CS89X0=y. Any explanation please, was I
-> > > missing something here?
-> >
-> > I didn't look in 2.6.11 Kconfig files, but in 2.6.22, this driver is
-> > limited to 3 specific boards:
-> >
-> > config CS89x0
-> >         tristate "CS89x0 support"
-> >         depends on NET_PCI && (ISA || MACH_IXDP2351 || ARCH_IXDP2X01 || ARCH_PNX010X)
-> 
-> The Kconfig for CS89x0 in 2.6.11 is exactly the same as 2.6.22.
-> 
-> > Does ARM S3C2400A qualify as any of those?  (MACH_... or ARCH_...)
-> 
-> I can run CS89x0 for ARM S3C2400 in 2.6.11, at least I can say yes,
-> the ARM S3C2400A qualifies those in 2.6.11, I don't know the 2.6.22
-> and I hope someone knows 2.6.22 well can answer it.
-> 
-> > (latter: ARCH_PNX010X is not used anywhere else AFAICT)
-> 
-> Yes, but you only need to enable ISA and NET_PCI to use CS89x0.
+Looks good.  Thanks for catching the leak.
 
-Right.
+Acked-by: Serge E. Hallyn <serue@us.ibm.com>
 
-I don't have any problem building CS89x0 for X86_32:
-make defconfig then enable ISA (what!?!?  why not in defconfig?)
-and then enable CS89x0.
-
-Please send your .config file.
-
----
-~Randy
-Phaedrus says that Quality is about caring.
+> Cc: Pavel Emelyanov <xemul@openvz.org>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> Cc: Oleg Nesterov <oleg@tv-sign.ru>
+> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> ---
+>  include/linux/nsproxy.h |    5 +++++
+>  kernel/exit.c           |    5 ++++-
+>  kernel/nsproxy.c        |    9 ---------
+>  3 files changed, 9 insertions(+), 10 deletions(-)
+> 
+> Index: 2.6.23-rc6-mm1/kernel/nsproxy.c
+> ===================================================================
+> --- 2.6.23-rc6-mm1.orig/kernel/nsproxy.c
+> +++ 2.6.23-rc6-mm1/kernel/nsproxy.c
+> @@ -25,11 +25,6 @@ static struct kmem_cache *nsproxy_cachep
+> 
+>  struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
+> 
+> -static inline void get_nsproxy(struct nsproxy *ns)
+> -{
+> -	atomic_inc(&ns->count);
+> -}
+> -
+>  /*
+>   * creates a copy of "orig" with refcount 1.
+>   */
+> @@ -205,11 +200,7 @@ void switch_task_namespaces(struct task_
+>  	might_sleep();
+> 
+>  	ns = p->nsproxy;
+> -	if (ns == new)
+> -		return;
+> 
+> -	if (new)
+> -		get_nsproxy(new);
+>  	rcu_assign_pointer(p->nsproxy, new);
+> 
+>  	if (ns && atomic_dec_and_test(&ns->count)) {
+> Index: 2.6.23-rc6-mm1/kernel/exit.c
+> ===================================================================
+> --- 2.6.23-rc6-mm1.orig/kernel/exit.c
+> +++ 2.6.23-rc6-mm1/kernel/exit.c
+> @@ -408,7 +408,10 @@ void daemonize(const char *name, ...)
+>  	current->fs = fs;
+>  	atomic_inc(&fs->count);
+> 
+> -	switch_task_namespaces(current, init_task.nsproxy);
+> +	if (current->nsproxy != init_task.nsproxy) {
+> +		get_nsproxy(init_task.nsproxy);
+> +		switch_task_namespaces(current, init_task.nsproxy);
+> +	}
+> 
+>  	exit_files(current);
+>  	current->files = init_task.files;
+> Index: 2.6.23-rc6-mm1/include/linux/nsproxy.h
+> ===================================================================
+> --- 2.6.23-rc6-mm1.orig/include/linux/nsproxy.h
+> +++ 2.6.23-rc6-mm1/include/linux/nsproxy.h
+> @@ -77,6 +77,11 @@ static inline void put_nsproxy(struct ns
+>  	}
+>  }
+> 
+> +static inline void get_nsproxy(struct nsproxy *ns)
+> +{
+> +	atomic_inc(&ns->count);
+> +}
+> +
+>  #ifdef CONFIG_CONTAINER_NS
+>  int ns_container_clone(struct task_struct *tsk);
+>  #else
