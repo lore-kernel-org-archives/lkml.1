@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762583AbXIXQg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762446AbXIXQh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762583AbXIXQg5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760793AbXIXQ1Q
+	id S1762446AbXIXQh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbXIXQ1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:27:16 -0400
-Received: from mga07.intel.com ([143.182.124.22]:44815 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760282AbXIXQ1O (ORCPT
+	Mon, 24 Sep 2007 12:27:17 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:57969 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760797AbXIXQ1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 24 Sep 2007 12:27:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,292,1186383600"; 
-   d="scan'208";a="285538169"
-Date: Mon, 24 Sep 2007 09:26:52 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: lkml <linux-kernel@vger.kernel.org>,
-       usbdev <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [patch] usb-skeleton leaking locks on open.
-Message-ID: <20070924162652.GA5227@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20070924161822.GA4525@linux.intel.com>
+Date: Mon, 24 Sep 2007 09:21:53 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Bob Gilligan <gilligan@vyatta.com>
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [33/50] crypto: blkcipher_get_spot() handling of buffer at end of
+	page
+Message-ID: <20070924162153.GH13510@kroah.com>
+References: <20070924161246.983665021@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070924161822.GA4525@linux.intel.com>
-User-Agent: Mutt/1.5.11
+Content-Disposition: inline; filename="crypto-blkcipher_get_spot-handling-of-buffer-at-end-of-page.patch"
+In-Reply-To: <20070924161733.GA13510@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-forgot to CC greg ...
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
+This corresponds to upstream changesets
+e4630f9fd8cdc14eb1caa08dafe649eb5ae09985 and
+32528d0fbda1093eeeaa7d0a2c498bbb5154099d.
 
-On Mon, Sep 24, 2007 at 09:18:22AM -0700, Mark Gross wrote:
-> This weekend I was hacking around with a trivial USB driver for talking
-> to the boot load firmware of a USB Bit Whacker.  It's running the
-> MicroChip Pic18 boot loader firmware and I'm putting together a flash
-> program for writing new FW to the thing.
-> 
-> Anyway in my use of the usb-skeleton.c as my starting point I discovered
-> my test program was getting hung up after attempting to write a buffer.
-> The application and driver where hung in a way that required me to
-> reboot to get it to clean up so I could try again.
-> 
-> It turned out the code path through skel_open can grap the driver's
-> io_mutex lock and forget to release it.
-> 
-> The following patch fixes the problem for me.
-> 
-> --mgross
-> 
-> Signed-off-by: Mark Gross <mgross@linux.intel.com>
-> 
-> diff -urN -X linux-2.6.23-rc7/Documentation/dontdiff linux-2.6.23-rc7/drivers/usb/usb-skeleton.c linux-2.6.23-rc7-bugfix/drivers/usb/usb-skeleton.c
-> --- linux-2.6.23-rc7/drivers/usb/usb-skeleton.c	2007-09-24 08:57:54.000000000 -0700
-> +++ linux-2.6.23-rc7-bugfix/drivers/usb/usb-skeleton.c	2007-09-24 09:01:43.000000000 -0700
-> @@ -125,6 +125,7 @@
->  
->  	/* save our object in the file's private structure */
->  	file->private_data = dev;
-> +	mutex_unlock(&dev->io_mutex);
->  
->  exit:
->  	return retval;
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+[CRYPTO] blkcipher: Fix handling of kmalloc page straddling
+
+The function blkcipher_get_spot tries to return a buffer of
+the specified length that does not straddle a page.  It has
+an off-by-one bug so it may advance a page unnecessarily.
+
+What's worse, one of its callers doesn't provide a buffer
+that's sufficiently long for this operation.
+
+This patch fixes both problems.  Thanks to Bob Gilligan for
+diagnosing this problem and providing a fix.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ crypto/blkcipher.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+--- a/crypto/blkcipher.c
++++ b/crypto/blkcipher.c
+@@ -59,11 +59,13 @@ static inline void blkcipher_unmap_dst(s
+ 	scatterwalk_unmap(walk->dst.virt.addr, 1);
+ }
+ 
++/* Get a spot of the specified length that does not straddle a page.
++ * The caller needs to ensure that there is enough space for this operation.
++ */
+ static inline u8 *blkcipher_get_spot(u8 *start, unsigned int len)
+ {
+-	if (offset_in_page(start + len) < len)
+-		return (u8 *)((unsigned long)(start + len) & PAGE_MASK);
+-	return start;
++	u8 *end_page = (u8 *)(((unsigned long)(start + len - 1)) & PAGE_MASK);
++	return start > end_page ? start : end_page;
+ }
+ 
+ static inline unsigned int blkcipher_done_slow(struct crypto_blkcipher *tfm,
+@@ -155,7 +157,8 @@ static inline int blkcipher_next_slow(st
+ 	if (walk->buffer)
+ 		goto ok;
+ 
+-	n = bsize * 2 + (alignmask & ~(crypto_tfm_ctx_alignment() - 1));
++	n = bsize * 3 - (alignmask + 1) +
++	    (alignmask & ~(crypto_tfm_ctx_alignment() - 1));
+ 	walk->buffer = kmalloc(n, GFP_ATOMIC);
+ 	if (!walk->buffer)
+ 		return blkcipher_walk_done(desc, walk, -ENOMEM);
+
+-- 
