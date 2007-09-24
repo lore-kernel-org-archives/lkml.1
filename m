@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbXIXTYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763322AbXIXTZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759747AbXIXTYp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763010AbXIXTY2
+	id S1763322AbXIXTZG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763153AbXIXTYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:24:28 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:40756 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759213AbXIXTY1 (ORCPT
+	Mon, 24 Sep 2007 15:24:32 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57707 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763136AbXIXTYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:24:27 -0400
-Date: Mon, 24 Sep 2007 15:24:25 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/7] Linux Kernel Markers (redux)
-Message-ID: <20070924192425.GA2467@Krystal>
-References: <20070924164950.006047409@polymtl.ca> <20070924181148.GA3285@infradead.org> <20070924190452.GE28347@Krystal> <20070924190708.GA6262@infradead.org>
+	Mon, 24 Sep 2007 15:24:30 -0400
+Date: Mon, 24 Sep 2007 20:24:26 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Dave Hansen <haveblue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
+Message-ID: <20070924192425.GA6629@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+	xfs@oss.sgi.com
+References: <20070920195249.852667D5@kernel> <20070920195320.38C8E20D@kernel> <20070924175411.GA2314@infradead.org> <20070924121035.8d8c6ce2.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070924190708.GA6262@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:23:04 up 56 days, 19:41,  6 users,  load average: 2.10, 1.90, 1.31
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070924121035.8d8c6ce2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Mon, Sep 24, 2007 at 03:04:52PM -0400, Mathieu Desnoyers wrote:
-> > I provided blktrace as a first user of the markers, but I agree that it
-> > may be a little late for merging. I can keep it for later too.
+On Mon, Sep 24, 2007 at 12:10:35PM -0700, Andrew Morton wrote:
+> > As we already say in various messages the percpu counters in here
+> > look rather fishy.  I'd recomment to take a look at the per-cpu
+> > superblock counters in XFS as they've been debugged quite well
+> > now and could probably be lifted into a generic library for this
+> > kind of think.  The code is mostly in fs/xfs/xfs_mount.c can
+> > can be spotted by beeing under #ifdef HAVE_PERCPU_SB.
+> > 
+> > It also handles cases like hotplug cpu nicely that this code
+> > seems to work around by always iterating over all possible cpus
+> > which might not be nice on a dual core laptop with a distro kernel
+> > that also has to support big iron.
 > 
-> I we manage to get Dave's trace patches and your markers in I'll make
-> sure to get a sputrace version using them in as a demo for both.
-> 
+> hm.  How come xfs invented a new version of percpu_counters?
 
-Great!
-
-So the state of the patches for next post:
-
-kconfig-instrumentation.patch
-linux-kernel-markers.patch
-
-(yeah, only 2 patches!) :)
-
-I'm only waiting for you guys to settle about documentation/samples
-before I can repost.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+This code actually predates the generic percpu_counters even if it
+was merged to mainline later.  Neither Dave who wrote it nor me
+who reviewed it before it was merged thought of percpu_counters
+probably.  Then again this code is considerably more complex due
+to features actually needed in a very hot fastpath.
