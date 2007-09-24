@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761836AbXIXSbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbXIXSoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761836AbXIXSbE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756628AbXIXSay
+	id S1759620AbXIXSoy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbXIXSop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:30:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58166 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755012AbXIXSax (ORCPT
+	Mon, 24 Sep 2007 14:44:45 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:49196 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756040AbXIXSoo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:30:53 -0400
-Date: Mon, 24 Sep 2007 19:30:42 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
-Message-ID: <20070924183042.GA4418@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	"Frank Ch. Eigler" <fche@redhat.com>
-References: <20070924164950.006047409@polymtl.ca> <20070924165428.335030720@polymtl.ca> <20070924175044.GD1608@infradead.org> <20070924105632.009aba7f.randy.dunlap@oracle.com> <20070924180041.GB2435@infradead.org> <20070924111318.f16cde07.randy.dunlap@oracle.com> <20070924181931.GA3810@infradead.org> <46F800A7.7090005@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 24 Sep 2007 14:44:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=j6oB1oehooHr+VAE51d5CzBv6SpdqlF7+r95Y7SfAbhtLYKDg7BIpW1FQTolNJ/kDo5/lBYrq9GIHQoo/nMCwwtLJ0JtT/Q/R1dLh32qSSDHPuUqTApTKitp/kQWeSenV/1DvtBFZjkoCoDoJGtM68f7PqCItqwKKMOwhQ7kXcU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 3/4] ide: make ide_rate_filter() also respect PIO and SW/MW DMA mode masks (take 2)
+Date: Mon, 24 Sep 2007 20:48:00 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200709022344.18565.sshtylyov@ru.mvista.com> <46E2900D.5010004@ru.mvista.com> <46F7B117.5000202@ru.mvista.com>
+In-Reply-To: <46F7B117.5000202@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46F800A7.7090005@oracle.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200709242048.00192.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 11:23:35AM -0700, Randy Dunlap wrote:
-> That might be OK for this case, but sometimes it makes sense to have
-> README etc. about how to use the software.  So you would want this
-> in the Documentation/ tree?  That makes it harder on users.
+On Monday 24 September 2007, Sergei Shtylyov wrote:
+> Once I quothed:
+> 
+> >> Make ide_rate_filter() also respect PIO/SWDMA/MWDMA mode masks.  While 
+> >> at it,
+> >> make the udma_filter() method calls take precedence over using the 
+> >> mode masks.
+> 
+> >    This one not looking to pretty -- I've geve some thought on how to 
+> > beautify all these switch fallthoughs but haven't got something much 
+> > better then uour original approach (AKA Occam's razor :-).
+> 
+>     So, it's probably better forget about this patch. But please do take patch 
+> 4/4 to merge either before or after your "Occam's razor" -- it makes its best 
+> at masking out the MWDMA modes anyways...
 
-If it's so complex that we can't describe it in a few dozens lines
-it shouldn't be anywhere but the place it belongs and better have a
-real use and not just be a sample.  And in the trace case I must
-admit that I'd prefer a real use like some simple syscall-trace
-over this hack anyway..
+Sure, could you re-send patch 4/4 synced against current Linus' tree?
 
+Thanks,
+Bart
