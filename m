@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761268AbXIXQ2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761123AbXIXQ3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761268AbXIXQ2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 12:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759649AbXIXQZc
+	id S1761123AbXIXQ3P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 12:29:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760288AbXIXQZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 12:25:32 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:47287 "EHLO
+	Mon, 24 Sep 2007 12:25:37 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47297 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760523AbXIXQZ3 (ORCPT
+	with ESMTP id S1760251AbXIXQZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 12:25:29 -0400
-Date: Mon, 24 Sep 2007 09:20:19 -0700
+	Mon, 24 Sep 2007 12:25:33 -0400
+Date: Mon, 24 Sep 2007 09:20:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,148 +21,86 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhao Yakui <yakui.zhao@intel.com>,
-       Vincet Fortier <Vincent.Fortier1@EC.GC.CA>,
-       Len Brown <len.brown@intel.com>
-Subject: [10/50] ACPI: Validate XSDT, use RSDT if XSDT fails
-Message-ID: <20070924162019.GK13510@kroah.com>
+       Adam Radford <linuxraid@amcc.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: [12/50] 3w-9xxx: Fix dma mask setting
+Message-ID: <20070924162027.GM13510@kroah.com>
 References: <20070924161246.983665021@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-validate-xsdt-use-rsdt-if-xsdt-fails.patch"
+Content-Disposition: inline; filename="3w-9xxx-fix-dma-mask-setting.patch"
 In-Reply-To: <20070924161733.GA13510@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Adam Radford <linuxraid@amcc.com>
 
-commit 9f3119b70cf189530f1b46a006a052e171a1622f in mainline.
+[SCSI] 3w-9xxx: Fix dma mask setting
 
-ACPI 1.0 used an RSDT with 32-bit physical addresses.
-ACPI 2.0 adds an XSDT with 32-bit physical addresses.
-An ACPI 2.0 aware OS is supposed to use the XSDT
-(when present) instead of the RSDT.
+Extracted from commit 0e78d158b67fba3977f577f293c323359d80dd0e
 
-However, several systems have failed because the XSDT
-contains NULL entries -- while it is missing pointers
-to needed tables, such as SSDTs.
+The attached patch updates the 3ware 9000 driver:
 
-When we find an XSDT with NULL entries, discard it
-and use the ACPI 1.0 RSDT instead.
+- Fix dma mask setting to fallback to 32-bit if 64-bit fails.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8630
-
-Signed-off-by: Zhao Yakui  <yakui.zhao@intel.com>
-Cc: Vincet Fortier <Vincent.Fortier1@EC.GC.CA>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Adam Radford <linuxraid@amcc.com>
+Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/tables/tbutils.c |   71 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 71 insertions(+)
+ drivers/scsi/3w-9xxx.c |   18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
---- a/drivers/acpi/tables/tbutils.c
-+++ b/drivers/acpi/tables/tbutils.c
-@@ -51,6 +51,65 @@ ACPI_MODULE_NAME("tbutils")
- static acpi_physical_address
- acpi_tb_get_root_table_entry(u8 * table_entry,
- 			     acpi_native_uint table_entry_size);
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_tb_check_xsdt
-+ *
-+ * PARAMETERS:  address                    - Pointer to the XSDT
-+ *
-+ * RETURN:      status
-+ *		AE_OK - XSDT is okay
-+ *		AE_NO_MEMORY - can't map XSDT
-+ *		AE_INVALID_TABLE_LENGTH - invalid table length
-+ *		AE_NULL_ENTRY - XSDT has NULL entry
-+ *
-+ * DESCRIPTION: validate XSDT
-+******************************************************************************/
-+
-+static acpi_status
-+acpi_tb_check_xsdt(acpi_physical_address address)
-+{
-+	struct acpi_table_header *table;
-+	u32 length;
-+	u64 xsdt_entry_address;
-+	u8 *table_entry;
-+	u32 table_count;
-+	int i;
-+
-+	table = acpi_os_map_memory(address, sizeof(struct acpi_table_header));
-+	if (!table)
-+		return AE_NO_MEMORY;
-+
-+	length = table->length;
-+	acpi_os_unmap_memory(table, sizeof(struct acpi_table_header));
-+	if (length < sizeof(struct acpi_table_header))
-+		return AE_INVALID_TABLE_LENGTH;
-+
-+	table = acpi_os_map_memory(address, length);
-+	if (!table)
-+		return AE_NO_MEMORY;
-+
-+	/* Calculate the number of tables described in XSDT */
-+	table_count =
-+		(u32) ((table->length -
-+		sizeof(struct acpi_table_header)) / sizeof(u64));
-+	table_entry =
-+		ACPI_CAST_PTR(u8, table) + sizeof(struct acpi_table_header);
-+	for (i = 0; i < table_count; i++) {
-+		ACPI_MOVE_64_TO_64(&xsdt_entry_address, table_entry);
-+		if (!xsdt_entry_address) {
-+			/* XSDT has NULL entry */
-+			break;
+--- a/drivers/scsi/3w-9xxx.c
++++ b/drivers/scsi/3w-9xxx.c
+@@ -4,7 +4,7 @@
+    Written By: Adam Radford <linuxraid@amcc.com>
+    Modifications By: Tom Couch <linuxraid@amcc.com>
+ 
+-   Copyright (C) 2004-2006 Applied Micro Circuits Corporation.
++   Copyright (C) 2004-2007 Applied Micro Circuits Corporation.
+ 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+@@ -69,6 +69,7 @@
+    2.26.02.008 - Free irq handler in __twa_shutdown().
+                  Serialize reset code.
+                  Add support for 9650SE controllers.
++   2.26.02.009 - Fix dma mask setting to fallback to 32-bit if 64-bit fails.
+ */
+ 
+ #include <linux/module.h>
+@@ -92,7 +93,7 @@
+ #include "3w-9xxx.h"
+ 
+ /* Globals */
+-#define TW_DRIVER_VERSION "2.26.02.008"
++#define TW_DRIVER_VERSION "2.26.02.009"
+ static TW_Device_Extension *twa_device_extension_list[TW_MAX_SLOT];
+ static unsigned int twa_device_extension_count;
+ static int twa_major = -1;
+@@ -2063,11 +2064,14 @@ static int __devinit twa_probe(struct pc
+ 
+ 	pci_set_master(pdev);
+ 
+-	retval = pci_set_dma_mask(pdev, sizeof(dma_addr_t) > 4 ? DMA_64BIT_MASK : DMA_32BIT_MASK);
+-	if (retval) {
+-		TW_PRINTK(host, TW_DRIVER, 0x23, "Failed to set dma mask");
+-		goto out_disable_device;
+-	}
++	if (pci_set_dma_mask(pdev, DMA_64BIT_MASK)
++	    || pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK))
++		if (pci_set_dma_mask(pdev, DMA_32BIT_MASK)
++		    || pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK)) {
++			TW_PRINTK(host, TW_DRIVER, 0x23, "Failed to set dma mask");
++			retval = -ENODEV;
++			goto out_disable_device;
 +		}
-+		table_entry += sizeof(u64);
-+	}
-+	acpi_os_unmap_memory(table, length);
-+
-+	if (i < table_count)
-+		return AE_NULL_ENTRY;
-+	else
-+		return AE_OK;
-+}
  
- /*******************************************************************************
-  *
-@@ -341,6 +400,7 @@ acpi_tb_parse_root_table(acpi_physical_a
- 	u32 table_count;
- 	struct acpi_table_header *table;
- 	acpi_physical_address address;
-+	acpi_physical_address rsdt_address;
- 	u32 length;
- 	u8 *table_entry;
- 	acpi_status status;
-@@ -369,6 +429,8 @@ acpi_tb_parse_root_table(acpi_physical_a
- 		 */
- 		address = (acpi_physical_address) rsdp->xsdt_physical_address;
- 		table_entry_size = sizeof(u64);
-+		rsdt_address = (acpi_physical_address)
-+					rsdp->rsdt_physical_address;
- 	} else {
- 		/* Root table is an RSDT (32-bit physical addresses) */
- 
-@@ -382,6 +444,15 @@ acpi_tb_parse_root_table(acpi_physical_a
- 	 */
- 	acpi_os_unmap_memory(rsdp, sizeof(struct acpi_table_rsdp));
- 
-+	if (table_entry_size == sizeof(u64)) {
-+		if (acpi_tb_check_xsdt(address) == AE_NULL_ENTRY) {
-+			/* XSDT has NULL entry, RSDT is used */
-+			address = rsdt_address;
-+			table_entry_size = sizeof(u32);
-+			ACPI_WARNING((AE_INFO, "BIOS XSDT has NULL entry,"
-+					"using RSDT"));
-+		}
-+	}
- 	/* Map the RSDT/XSDT table header to get the full table length */
- 
- 	table = acpi_os_map_memory(address, sizeof(struct acpi_table_header));
+ 	host = scsi_host_alloc(&driver_template, sizeof(TW_Device_Extension));
+ 	if (!host) {
 
 -- 
