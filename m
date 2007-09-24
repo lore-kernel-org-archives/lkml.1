@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbXIXPQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759014AbXIXPT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbXIXPQm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 11:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbXIXPQf
+	id S1759014AbXIXPT3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 11:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbXIXPTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 11:16:35 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:59730 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751790AbXIXPQe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 11:16:34 -0400
-Message-ID: <46F7D4CE.4050603@us.ibm.com>
-Date: Mon, 24 Sep 2007 08:16:30 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       "David J. Wilder" <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [Patch 1/2] Trace code and documentation (updated)
-References: <1190177218.3190.18.camel@lc4eb748232119.ibm.com> <20070923124650.GB8064@infradead.org>
-In-Reply-To: <20070923124650.GB8064@infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 24 Sep 2007 11:19:23 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1430 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753532AbXIXPTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 11:19:22 -0400
+Subject: Re: [RFC] New kernel-message logging API
+From: Joe Perches <joe@perches.com>
+To: holzheu@linux.vnet.ibm.com
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Rob Landley <rob@landley.net>,
+       Dick Streefland <dick.streefland@altium.nl>
+In-Reply-To: <1190625742.12666.30.camel@localhost.localdomain>
+References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
+	 <1190625742.12666.30.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 24 Sep 2007 08:19:16 -0700
+Message-Id: <1190647156.30132.92.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> Your mailer wrapper the patch so I can't actually apply it to start
-> playing with the patch.
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-This one should be better: http://lkml.org/lkml/2007/9/22/4
-You already responded, so you must have found it.
+On Mon, 2007-09-24 at 11:22 +0200, Michael Holzheu wrote:
+> Together with the idea of not allowing multiple lines in the kprint_xxx
+> functions, that would go with our approach having message numbers to
+> identify a message.
+
+How does this equate/give message numbers?
+
+> If you do it like that, you can't support "%s", since then you would
+> store only the pointer and not the whole string. I think, that we can't
+> live without %s.
+
+long long would not work either.
+
+Perhaps it's better to scan the format string or indirect the
+printk formatting logic.
+
+Another possibility:
+
+An added pass between gcc preprocessor and compiler could compact
+or compress the format string without modifying the conversion
+specifications so __attribute__ ((format (printf)) would still work.
+
+printk could expand the compacted/compressed format.
+
+
