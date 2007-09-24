@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbXIXUMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbXIXUPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbXIXUMx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 16:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbXIXUMp
+	id S1759854AbXIXUPg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 16:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbXIXUP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 16:12:45 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:38785 "EHLO e6.ny.us.ibm.com"
+	Mon, 24 Sep 2007 16:15:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51712 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753331AbXIXUMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 16:12:44 -0400
-Subject: [PATCH] ext2 reservations: fix for r/o bind mounts: take-writer-count (v2)
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, mbligh@mbligh.org,
-       Dave Hansen <haveblue@us.ibm.com>
-From: Dave Hansen <haveblue@us.ibm.com>
-Date: Mon, 24 Sep 2007 13:12:41 -0700
-Message-Id: <20070924201241.487335A5@kernel>
+	id S1753205AbXIXUP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 16:15:28 -0400
+Message-ID: <46F81ADD.1030205@redhat.com>
+Date: Mon, 24 Sep 2007 16:15:25 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Danny ter Haar <dth@dth.net>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Q: new kernel not booting (init segfaults) : how to debug ?
+References: <20070924192410.GA8881@dth.net>
+In-Reply-To: <20070924192410.GA8881@dth.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/24/2007 03:24 PM, Danny ter Haar wrote:
+> System: firewall
+> -Epia 5000 via c3 system 
+> -bios 2.07 (latest available, upgraded from 1.09 with same behaviour)
+> -128Mb flash memory (ide emulation)
+> -256mb ram
+> -voyage linux (debian based)
+> Runs "standard" kernel just fine, 2.6.22.17 also compiles/runs
+> where as 2.6.23-rcX wont
+> 
+> Typed over from screenshot:
+> 
+> ---------------------------------------
+> NET: Registered protocol family 1
+> NET: Registered protocol family 17
+> Using IPI Shortcut mode
+> Freeing unused kernel memory: 148k freed
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+> printk: 788820 messages suppressed.
+> ---------------------------------------
+> 
+> The only thing changed is the kernel.
+> I'm just plain flabbergasted about why this occurs and complete
+> lost how to debug/persue this any further.
+> 
+> Kernel config/systemmap etc at http://www.dth.net/kernel/c3/
+> 
 
-Please throw away what I send a moment ago, it was the wrong
-patch.
-
-This is on top of the ext2-reservations.patch in -mm.
-
-The original r/o bind mount set didn't address the new
-ext2 ioctl: EXT2_IOC_SETRSVSZ, because it doesn't exist
-in mainline.  This fixes that up for -mm.  
-
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
----
-
- lxc-dave/fs/ext2/ioctl.c |   24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
-
-diff -puN fs/ext2/ioctl.c~ext2-reservations-take-writer-count fs/ext2/ioctl.c
---- lxc/fs/ext2/ioctl.c~ext2-reservations-take-writer-count	2007-09-24 13:08:29.000000000 -0700
-+++ lxc-dave/fs/ext2/ioctl.c	2007-09-24 13:12:09.000000000 -0700
-@@ -111,14 +111,18 @@ setflags_out:
- 		if (!test_opt(inode->i_sb, RESERVATION) ||!S_ISREG(inode->i_mode))
- 			return -ENOTTY;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
--
--		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
--			return -EACCES;
--
--		if (get_user(rsv_window_size, (int __user *)arg))
--			return -EFAULT;
-+		ret = mnt_want_write(filp->f_vfsmnt);
-+		if (ret)
-+			return ret;
-+
-+		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
-+			ret = -EACCES;
-+			goto setrsvsz_out;
-+		}
-+		if (get_user(rsv_window_size, (int __user *)arg)) {
-+			ret = -EFAULT;
-+			goto setrsvsz_out;
-+		}
- 
- 		if (rsv_window_size > EXT2_MAX_RESERVE_BLOCKS)
- 			rsv_window_size = EXT2_MAX_RESERVE_BLOCKS;
-@@ -140,7 +144,9 @@ setflags_out:
- 			rsv->rsv_goal_size = rsv_window_size;
- 		}
- 		mutex_unlock(&ei->truncate_mutex);
--		return 0;
-+	setrsvsz_out:
-+		mnt_drop_write(filp->f_vfsmnt);
-+		return ret;
- 	}
- 	default:
- 		return -ENOTTY;
-diff -puN fs/namespace.c~ext2-reservations-take-writer-count fs/namespace.c
-_
+What address is that in your init?
