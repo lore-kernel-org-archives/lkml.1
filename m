@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbXIXPgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759899AbXIXPi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759878AbXIXPgx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 11:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbXIXPgp
+	id S1759899AbXIXPi2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 11:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbXIXPiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 11:36:45 -0400
-Received: from sacred.ru ([62.205.161.221]:53309 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756163AbXIXPgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 11:36:44 -0400
-Message-ID: <46F7D8EE.4000201@openvz.org>
-Date: Mon, 24 Sep 2007 19:34:06 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 24 Sep 2007 11:38:21 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51914 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755737AbXIXPiT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 11:38:19 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 24 Sep 2007 08:38:13 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 2/3] new timerfd API - wire the new timerfd API to the
+ x86 family
+In-Reply-To: <46F75E4D.2080209@gmx.net>
+Message-ID: <Pine.LNX.4.64.0709240835030.23830@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.19354.1190587750.2>
+ <46F75E4D.2080209@gmx.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc7-mm1
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7B3B3.7010600@linux.vnet.ibm.com> <46F7B737.4020001@openvz.org> <46F7B9C6.4000901@linux.vnet.ibm.com>
-In-Reply-To: <46F7B9C6.4000901@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 24 Sep 2007 19:36:27 +0400 (MSD)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Pavel Emelyanov wrote:
->> Please, try with this patch too:
->>
->> diff --git a/fs/locks.c b/fs/locks.c
->> index c0fe71a..f599508 100644
->> --- a/fs/locks.c
->> +++ b/fs/locks.c
->> @@ -1423,7 +1423,7 @@ int generic_setlease(struct file *filp, 
->>  	locks_copy_lock(new_fl, lease);
->>  	locks_insert_lock(before, new_fl);
->>
->> -	*flp = fl;
->> +	*flp = new_fl;
->>  	return 0;
->>
->>  out:
->>
-> 
-> Hi, Pavel,
-> 
-> You did not signoff on the patch.
+On Mon, 24 Sep 2007, Michael Kerrisk wrote:
 
-I did not, but this is just a patch to test. I know, that it
-most likely fixes the problem, but since Kamalesh didn't tell
-us how he had triggered it, I'd like him to Ack it :)
+> Davide,
+> 
+> Is it perhaps not better to group the three syscalls contiguously with
+> respect to syscall numbers?  The old timerfd slot can be re-used for some
+> other syscall later.
 
-Thanks,
-Pavel
+There's no problem if they're not contiguous. Holes, unless filled 
+immediately, need to be remembered to be filled.
+
+
+- Davide
 
 
