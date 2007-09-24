@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbXIXXwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761733AbXIXXxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761660AbXIXXwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 19:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759265AbXIXXwF
+	id S1761733AbXIXXxc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 19:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbXIXXxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 19:52:05 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57127
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758509AbXIXXwE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 19:52:04 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Joe Perches <joe@perches.com>
-Subject: Re: [RFC] New kernel-message logging API
-Date: Mon, 24 Sep 2007 18:51:59 -0500
-User-Agent: KMail/1.9.6
-Cc: holzheu@linux.vnet.ibm.com, Vegard Nossum <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dick Streefland <dick.streefland@altium.nl>
-References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com> <1190625742.12666.30.camel@localhost.localdomain> <1190647156.30132.92.camel@localhost>
-In-Reply-To: <1190647156.30132.92.camel@localhost>
+	Mon, 24 Sep 2007 19:53:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51308 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753878AbXIXXxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 19:53:23 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709241851.59611.rob@landley.net>
+From: Roland McGrath <roland@redhat.com>
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Cc: David Woodhouse <dwmw2@redhat.com>
+Subject: [PATCH 2/2] powerpc: FULL_REGS on exec
+X-Shopping-List: (1) Chronic hair
+   (2) Recalcitrant samples
+   (3) Sensuous chains
+Message-Id: <20070924235244.2F3BB4D04B7@magilla.localdomain>
+Date: Mon, 24 Sep 2007 16:52:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 24 September 2007 10:19:16 am Joe Perches wrote:
-> On Mon, 2007-09-24 at 11:22 +0200, Michael Holzheu wrote:
-> > Together with the idea of not allowing multiple lines in the kprint_xxx
-> > functions, that would go with our approach having message numbers to
-> > identify a message.
->
-> How does this equate/give message numbers?
 
-I actively want to avoid giving message numbers.  My interest is in 
-selectively removing messages from the kernel to shrink the binary size (and 
-NOT make it up in either a larger userspace utility to translate them, or 
-else magic proprietary numbers you can only diagnose if you pay my support 
-staff).
+When PTRACE_O_TRACEEXEC is used, a ptrace call to fetch the registers at
+the PTRACE_EVENT_EXEC stop (PTRACE_PEEKUSR) will oops in CHECK_FULL_REGS.
+With recent versions, "gdb --args /bin/sh -c 'exec /bin/true'" and "run" at
+the (gdb) prompt is sufficient to produce this.  I also have written an
+isolated test case, see https://bugzilla.redhat.com/show_bug.cgi?id=301791#c15.
 
-> An added pass between gcc preprocessor and compiler could compact
-> or compress the format string without modifying the conversion
-> specifications so __attribute__ ((format (printf)) would still work.
+This change fixes the problem by clearing the low bit of pt_regs.trap in
+start_thread so that FULL_REGS is true again.  This is correct since all of
+the GPRs that "full" refers to are cleared in start_thread.
 
-This does not address my problem.  Spitting out a proprietary hash code 
-instead of a human readable message is not a solution for my use case.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/powerpc/kernel/process.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index e477c9d..fd799d2 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -605,6 +605,13 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+ 	regs->ccr = 0;
+ 	regs->gpr[1] = sp;
+ 
++	/*
++	 * We have just cleared all the nonvolatile GPRs, so make
++	 * FULL_REGS(regs) return true.  This is necessary to allow
++	 * ptrace to examine the thread immediately after exec.
++	 */
++	regs->trap &= ~1UL;
++
+ #ifdef CONFIG_PPC32
+ 	regs->mq = 0;
+ 	regs->nip = start;
