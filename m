@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbXIXIMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbXIXINJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbXIXIMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 04:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXIXIMO
+	id S1758141AbXIXINJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 04:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbXIXIM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 04:12:14 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:37206 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752888AbXIXIMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 04:12:13 -0400
-Message-ID: <390621530.21855@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 24 Sep 2007 16:12:07 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Hugh Dickins <hugh@veritas.com>, Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       spamtrap@knobisoft.de
-Subject: Re: 2.6.23-rc6-mm1 -- mkfs stuck in 'D'
-Message-ID: <20070924081207.GA2266@mail.ustc.edu.cn>
-References: <20070919164348.GC2519@shadowen.org> <Pine.LNX.4.64.0709192035370.14804@blonde.wat.veritas.com> <20070919224409.24baa75b@lappy> <Pine.LNX.4.64.0709201210470.13752@blonde.wat.veritas.com> <390426111.11400@ustc.edu.cn> <20070922151622.711178e2@lappy> <390510451.02278@ustc.edu.cn> <20070923150235.284b49bf@twins> <390602872.13640@ustc.edu.cn> <20070924093523.0fec7330@twins>
+	Mon, 24 Sep 2007 04:12:57 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56156 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811AbXIXIM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 04:12:56 -0400
+Message-ID: <46F772DA.5060100@bull.net>
+Date: Mon, 24 Sep 2007 10:18:34 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070924093523.0fec7330@twins>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local> <46F398C3.3000804@bull.net> <20070921110347.GB1758@ff.dom.local> <20070924065407.GA1776@ff.dom.local>
+In-Reply-To: <20070924065407.GA1776@ff.dom.local>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 24/09/2007 10:18:50,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 24/09/2007 10:18:51,
+	Serialize complete at 24/09/2007 10:18:51
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 24, 2007 at 09:35:23AM +0200, Peter Zijlstra wrote:
-> On Mon, 24 Sep 2007 11:01:10 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn>
-> wrote:
+Jarek Poplawski wrote:
+> On Fri, Sep 21, 2007 at 01:03:47PM +0200, Jarek Poplawski wrote:
+> ...
 > 
-> > > That is an interesting idea how about this:
-> > 
-> > It looks like a workaround, but it does solve the most important problem.
-> > And it is a good logic by itself.  So I'd vote for it.
-> > 
-> > The fundamental problem is that the per-bdi-writeback-completion based
-> > estimation is not accurate under light loads. The problem remains for
-> > a light-load sda when there is a heavy-load sdb. 
+>>I hope not! But, then it would be probably another logical trick:
+>>ipc_rcu_getref/putref() seems to prevent kfreeing of a structure, so
+>>if it's used in do_msgsnd() there should be a risk something can do
+>>this kfree at this moment, and it seems freeque() is the only one,
+>>which both: can do this and cares for this refcount. Then, e.g., if
+>>any of them does ipc_rcu_getref() a bit later and sees old (cached)
+>>value - kfree can be skipped forever. [...]
 > 
-> Well, sure, in that case sda would get to write out a lot of small
-> things. But in that case it would be fair wrt the other writers.
-
-Hmm, I cannot agree it to be fair - but pretty acceptable ;-)
-Your patch already brings great improvements in the multi-bdi case.
-
-> > One more workaround
-> > could be to grant bdi(s) a minimal bdi_thresh. 
 > 
-> Ah, no, that is no good. For if there were a lot of BDIs this might
-> happen:
->   nr_bdis * min_thresh > dirty_limit.
-
-Sure it is in the extreme case. However the limit could be ensured
-if we really want(which I'm really not sure;-) it:
-
-        if (nr_reclaimable + nr_writeback < dirty_thresh &&
-                bdi_nr_reclaimable + bdi_nr_writeback <= bdi_min_thresh)
-                break;
-
-> > Or better to adjust the estimation logic?
+> After rethinking, this scenario seems to be wrong or very unprobable
+> (I'm not sure of all ways "if (--container...)" could be compiled),
+> so there should be no such risk - double kfree/vfree is more probable,
+> so no danger. More likely is such refcount abuse: ipc_rcu_getref() in
+> do_msgsnd() done a bit after ipc_rcu_putref() in freeque() (msq
+> pointer acquired by do_msgsend() before freeque() started); then,
+> after schedule(), do_msgsnd() can work with kfreed msq_queue structure
+> (at least considering classic RCU).
 > 
-> Not sure what we can do here. The current thing is simple, fast and fair.
 
-Agreed.
+If msgsnd() acquires the pointer first, it does it under lock + 
+rcu_getref(). ==> refcount = 2
+When schedule() is called if freeque() takes the pointer it will call 
+msg_rmid() that sets the deleted field in the msg queue. When the lock 
+is released by freeque(), we have either 1) or 2):
+1) freeque()'s putref called 1st ==> refocunt = 1
+    Then msgsnd()'s lock_by_ptr() is called ==> rcu lock
+    Then msgsnd()'s putref is called ==> refcount = 0
+    But this is done under RCU lock, so should be no problem
+    Then the deleted field is checked ==> return
+2) msgsnd()'s lock_by_ptr() is called ==> rcu lock
+    Then we don't mind in which order are done the other operations
+    since we under rcu_lock: the structure won't disappear till we test
+    the deleted field.
 
-> > > +		/*
-> > > +		 * break out early when:
-> > > +		 *  - we're below the bdi limit
-> > > +		 *  - we're below half the total limit
-> > > +		 *
-> > > +		 * we let the numbers exceed the strict bdi limit if the total
-> > > +		 * numbers are too low, this avoids (excessive) small writeouts.
-> > > +		 */
-> > > +		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh ||
-> > > +		    nr_reclaimable + nr_writeback < dirty_thresh / 2)
-> > >  			break;
-> > 
-> > This may be slightly better:
-> > 
-> > 		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-> >                         break;
-> >                 /*
-> >                  * Throttle it only when the background writeback cannot catchup.
-> >                  */
-> >                 if (nr_reclaimable + nr_writeback <
-> >                                 (background_thresh + dirty_thresh) / 2)
-> > 			break;
-> 
-> Ah, indeed. Good idea.
-
-Thank you :-)
+Regards,
+Nadia
 
