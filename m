@@ -1,128 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbXIXJZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbXIXJox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbXIXJZa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 05:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbXIXJZQ
+	id S1754939AbXIXJox (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 05:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXIXJoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 05:25:16 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:55182 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbXIXJZO (ORCPT
+	Mon, 24 Sep 2007 05:44:46 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59775 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752719AbXIXJop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 05:25:14 -0400
-Subject: Re: [RFC] New kernel-message logging API
-From: Michael Holzheu <holzheu@linux.vnet.ibm.com>
-Reply-To: holzheu@linux.vnet.ibm.com
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Joe Perches <joe@perches.com>,
-       Rob Landley <rob@landley.net>,
-       Dick Streefland <dick.streefland@altium.nl>
-In-Reply-To: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
-References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Mon, 24 Sep 2007 11:22:22 +0200
-Message-Id: <1190625742.12666.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+	Mon, 24 Sep 2007 05:44:45 -0400
+Message-ID: <46F7885F.4080906@bull.net>
+Date: Mon, 24 Sep 2007 11:50:23 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local>
+In-Reply-To: <20070921084453.GA1758@ff.dom.local>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 24/09/2007 11:50:39,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 24/09/2007 11:50:42,
+	Serialize complete at 24/09/2007 11:50:42
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vegard,
-
-On Sat, 2007-09-22 at 21:27 +0200, Vegard Nossum wrote:
-> After recent discussions on LKML and a general dissatisfaction at the
-> current printk() kernel-message logging interface, I've decided to
-> write down some of the ideas for a better system.
-
-Good luck :-)
-
-[snip]
-
-> Example: {
-> 	struct kprint_buffer buf;
+Jarek Poplawski wrote:
+> On Thu, Sep 20, 2007 at 03:08:42PM +0200, Nadia Derbey wrote:
 > 
-> 	kprint_buffer_init(&buf, KPRINT_DEBUG);
-> 	kprint_buffer(&buf, "Stack trace:");
+>>Nadia Derbey wrote:
+>>
+>>>Jarek Poplawski wrote:
+>>>
+>>>
+>>>>On Thu, Sep 20, 2007 at 08:24:58AM +0200, Nadia Derbey wrote:
 > 
-> 	while(unwind_stack()) {
-> 		kprint_buffer(&buf, "%p %s", address, symbol);
-> 	}
+> ...
 > 
-> 	kprint_buffer_flush(&buf);
-> }
+>>>Actually, ipc_lock() is called most of the time without the 
+>>>ipc_ids.mutex held and without refcounting (maybe you didn't look for 
+>>>the msg_lock() sem_lock() and shm_lock() too).
+>>>So I think disabling preemption is needed, isn't it?
+>>>
+>>>
+>>>>so, these rcu_read_locks() don't
+>>>>work here at all. So, probably I miss something again, but IMHO,
+>>>>these rcu_read_locks/unlocks could be removed here or in
+>>>>ipc_lock_by_ptr() and it should be enough to use them directly, where
+>>>>really needed, e.g., in msg.c do_msgrcv().
+>>>>
+>>>
+>>>I have to check for the ipc_lock_by_ptr(): may be you're right!
+>>>
+>>
+>>So, here is the ipc_lock_by_ptr() status:
+>>1) do_msgsnd(), semctl_main(GETALL), semctl_main(SETALL) and find_undo() 
+>>call it inside a refcounting.
+>>  ==> no rcu read section needed.
+>>
+>>2) *_exit_ns(), ipc_findkey() and sysvipc_find_ipc() call it under the 
+>>ipc_ids mutex lock.
+>>  ==> no rcu read section needed.
+>>
+>>3) do_msgrcv() is the only path where ipc_lock_by_ptr() is not called 
+>>under refcounting
+>>  ==> rcu read section + some more checks needed once the spnlock is
+>>      taken.
+>>
+>>So I completely agree with you: we might remove the rcu_read_lock() from 
+>>the ipc_lock_by_ptr() and explicitley  call it when needed (actually, it 
+>>is already explicitly called in do_msgrcv()).
+> 
+> 
+> Yes, IMHO, it should be at least more readable when we can see where
+> this RCU is really needed.
+> 
+> But, after 3-rd look, I have a few more doubts (btw., 3 looks are
+> still not enough for me with this code, so I cerainly can miss many
+> things here, and, alas, I manged to see util and msg code only):
 > 
 
-Together with the idea of not allowing multiple lines in the kprint_xxx
-functions, that would go with our approach having message numbers to
-identify a message. Multiple lines are combined explicitly to one
-message. I think it is a good idea to be able to identify, which lines
-of a message belong together.
+Jarek,
 
-[snip]
+I'm realizing I did'nt give you an answer to issues # 1 and 3. Sorry for 
+that!
 
-> With such a modular interface, message attributes (for example the
-> current time) and arguments can be recorded separately from the actual
-> format string, instead of written formatted to a ring buffer as a
-> sequence of characters. Parameters would be formatted to their own
-> strings (regardless of the original type) and saved in an array.
+> 1. ipc_lock() and ipc_lock_check() are used without ipc_ids.mutex,
+> but it's probably wrong: they call idr_find() with ipc_ids pointer
+> which needs this mutex, just like in similar code in: ipc_findkey(),
+> ipc_get_maxid() or sysvipc_find_ipc().
+
+I think you're completely right: the rcu_read_lock() is not enough in 
+this case.
+I have to solve this issue, but keeping the original way the ipc 
+developers have done it: I think they didn't want to take the mutex lock 
+for every single operation. E.g. sending a message to a given message 
+queue shouldn't avoid creating new message queues.
+I'll come up with a solution.
+
 > 
-> Example: {
-> 	struct kprint_message {
-> 		const char *format;
+> 2. I'm not sure this refcounting with ipc_rcu_getref/putref is SMP
+> safe (memory barriers): it's not atomic, so locking is needed, but
+> e.g. in do_msgsnd() kern_ipc_perm lock is used for this, while
+> freeque() calls ipc_rcu_putref() with ipc_ids mutex only.
 > 
-> 		unsigned int argc;
-> 		char **argv;
+> 3. Probably similar problem is possible with msr_d.r_msg which is
+> read in do_msgrcv() under rcu_read_lock() only.
 > 
-> 	#ifdef KPRINT_TIMESTAMP
-> 		unsigned long long timestamp;
-> 	#endif
-> 
-> 	#ifndef KPRINT_LOCATION
-> 		const char *file;
-> 		unsigned int line;
-> 
-> 		const char *function;
-> 	#endif
-> 	};
-> }
 
-[snip]
+In think here they have avoided refcoutning by using r_msg:
+r_msg is initialzed to -EAGAIN before releasing the msq lock. if 
+freequeue() is called it sets r_msg to EIDRM (see expunge_all(-EIDRM)).
+Setting r_msg is always done under the msq lock (expunge_all() / 
+pipelined_Sned()).
+  Since rcu_read_lock is called right after schedule, they are sure the 
+msq pointer is still valid when they re-lock it once a msg is present in 
+the receive queue.
 
-> The message entry and a message's arguments are kept separately. Most
-> likely, there will be a huge number of tiny allocations. I am not sure
-> how well this is handled in the kernel. Or we could try to merge the
-> allocation of the struct kprint_message and its arguments into a
-> single allocation by looking at the arguments before they're
-> formatted. After all, the arguments cannot exist without the message
-> or vice versa. Alternatively, a statically-sized ring buffer of struct
-> kprint_message objects could be used, and then only arguments would
-> need to be allocated dynamically. Either way, I think it should be
-> possible to come up with a fairly memory-efficient system even for
-> this method of storing the kernel log.
+Please tell me if I'm not clear ;-)
 
-Would be nice to have some code here. How do you want to implement that?
-You have to allocate / preallocate memory for the argv array. Something
-like:
-
-kprint_err(const char* fmt, ...)
-{
-	va_list   ap;
-	struct kprint_message *msg;
-
-	msg = &message_arry[current];
-	
-	va_start(ap, fmt);
-	msg->argv = kmalloc(sizeof(long) * argc, GFP_KERNEL);
-	...
-	for (i = 0; i < argc, i++) {
-		msg->argv[i] = va_arg(ap, long);
-	}
-
-If you do it like that, you can't support "%s", since then you would
-store only the pointer and not the whole string. I think, that we can't
-live without %s.
-
-Michael
+Regards,
+Nadia
 
