@@ -1,146 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbXIXGxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbXIXHFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbXIXGxd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 02:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbXIXGx0
+	id S1755974AbXIXHFh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 03:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXIXHF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 02:53:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55700 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751487AbXIXGxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 02:53:25 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX19vMuBMXvJvUkDzePpScWG9vgNG9D7aa/tQvLkmYz
-	kS1cM1MUGVKQl4
-Message-ID: <46F75E4D.2080209@gmx.net>
-Date: Mon, 24 Sep 2007 08:50:53 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 2/3] new timerfd API - wire the new timerfd API to the
- x86 family
-References: <send-serie.davidel@xmailserver.org.19354.1190587750.2>
-In-Reply-To: <send-serie.davidel@xmailserver.org.19354.1190587750.2>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Mon, 24 Sep 2007 03:05:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44474 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbXIXHF3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 03:05:29 -0400
+Date: Mon, 24 Sep 2007 08:05:28 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Hector Martin <hector@marcansoft.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Coding FATX support for 2.6
+Message-ID: <20070924070528.GA6938@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Hector Martin <hector@marcansoft.com>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <46F6D1C3.2070208@marcansoft.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F6D1C3.2070208@marcansoft.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide,
+On Sun, Sep 23, 2007 at 04:51:15PM -0400, Hector Martin wrote:
+> I see several options for implementing this:
+> - Add support to the standard FAT driver. This should probably be made a
+> configurable suboption.
+> - Add support that piggybacks onto the standard FAT driver, but
+> otherwise doesn't touch it. I don't know how feasible this is.
+> - Modify the FAT driver to allow the basic changes needed to support
+> FATX, then piggyback it for the actual implementation. See above.
+> - Fork the FAT driver and make it into a FATX driver.
+> - Start from scratch.
+> 
+> I'm unsure about what the best option would be. Obviously changes to FAT
+> should be made with care, as we don't want to cause a regression.
+> However, much of the code (allocation strategies, FAT handling, etc)
+> should be the same or very similar, so it seems stupid to start from
+> scratch.
 
-Is it perhaps not better to group the three syscalls contiguously with
-respect to syscall numbers?  The old timerfd slot can be re-used for some
-other syscall later.
-
-Cheers,
-
-Michael
-
-Davide Libenzi wrote:
-> Wires up the new timerfd API to the x86 family.
-> 
-> 
-> 
-> Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-> 
-> 
-> - Davide
-> 
-> 
-> ---
->  arch/i386/kernel/syscall_table.S |    5 ++++-
->  arch/x86_64/ia32/ia32entry.S     |    4 +++-
->  include/asm-i386/unistd.h        |    6 ++++--
->  include/asm-x86_64/unistd.h      |    8 ++++++--
->  4 files changed, 17 insertions(+), 6 deletions(-)
-> 
-> Index: linux-2.6.mod/arch/i386/kernel/syscall_table.S
-> ===================================================================
-> --- linux-2.6.mod.orig/arch/i386/kernel/syscall_table.S	2007-09-23 15:28:48.000000000 -0700
-> +++ linux-2.6.mod/arch/i386/kernel/syscall_table.S	2007-09-23 15:28:52.000000000 -0700
-> @@ -321,6 +321,9 @@
->  	.long sys_epoll_pwait
->  	.long sys_utimensat		/* 320 */
->  	.long sys_signalfd
-> -	.long sys_timerfd
-> +	.long sys_timerfd_create
->  	.long sys_eventfd
->  	.long sys_fallocate
-> +	.long sys_timerfd_settime	/* 325 */
-> +	.long sys_timerfd_gettime
-> +
-> Index: linux-2.6.mod/arch/x86_64/ia32/ia32entry.S
-> ===================================================================
-> --- linux-2.6.mod.orig/arch/x86_64/ia32/ia32entry.S	2007-09-23 15:28:48.000000000 -0700
-> +++ linux-2.6.mod/arch/x86_64/ia32/ia32entry.S	2007-09-23 15:28:52.000000000 -0700
-> @@ -730,7 +730,9 @@
->  	.quad sys_epoll_pwait
->  	.quad compat_sys_utimensat	/* 320 */
->  	.quad compat_sys_signalfd
-> -	.quad compat_sys_timerfd
-> +	.quad sys_timerfd_create
->  	.quad sys_eventfd
->  	.quad sys32_fallocate
-> +	.quad compat_sys_timerfd_settime	/* 325 */
-> +	.quad compat_sys_timerfd_gettime
->  ia32_syscall_end:
-> Index: linux-2.6.mod/include/asm-i386/unistd.h
-> ===================================================================
-> --- linux-2.6.mod.orig/include/asm-i386/unistd.h	2007-09-23 15:28:48.000000000 -0700
-> +++ linux-2.6.mod/include/asm-i386/unistd.h	2007-09-23 15:28:52.000000000 -0700
-> @@ -327,13 +327,15 @@
->  #define __NR_epoll_pwait	319
->  #define __NR_utimensat		320
->  #define __NR_signalfd		321
-> -#define __NR_timerfd		322
-> +#define __NR_timerfd_create	322
->  #define __NR_eventfd		323
->  #define __NR_fallocate		324
-> +#define __NR_timerfd_settime	325
-> +#define __NR_timerfd_gettime	326
->  
->  #ifdef __KERNEL__
->  
-> -#define NR_syscalls 325
-> +#define NR_syscalls 327
->  
->  #define __ARCH_WANT_IPC_PARSE_VERSION
->  #define __ARCH_WANT_OLD_READDIR
-> Index: linux-2.6.mod/include/asm-x86_64/unistd.h
-> ===================================================================
-> --- linux-2.6.mod.orig/include/asm-x86_64/unistd.h	2007-09-23 15:28:48.000000000 -0700
-> +++ linux-2.6.mod/include/asm-x86_64/unistd.h	2007-09-23 15:28:52.000000000 -0700
-> @@ -626,12 +626,16 @@
->  __SYSCALL(__NR_epoll_pwait, sys_epoll_pwait)
->  #define __NR_signalfd		282
->  __SYSCALL(__NR_signalfd, sys_signalfd)
-> -#define __NR_timerfd		283
-> -__SYSCALL(__NR_timerfd, sys_timerfd)
-> +#define __NR_timerfd_create	283
-> +__SYSCALL(__NR_timerfd_create, sys_timerfd_create)
->  #define __NR_eventfd		284
->  __SYSCALL(__NR_eventfd, sys_eventfd)
->  #define __NR_fallocate		285
->  __SYSCALL(__NR_fallocate, sys_fallocate)
-> +#define __NR_timerfd_settime	286
-> +__SYSCALL(__NR_timerfd_settime, sys_timerfd_settime)
-> +#define __NR_timerfd_gettime	287
-> +__SYSCALL(__NR_timerfd_gettime, sys_timerfd_gettime)
->  
->  #ifndef __NO_STUBS
->  #define __ARCH_WANT_OLD_READDIR
-> 
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
+I'd start with modifying the existing FAT driver.  Once you have working
+code you can look at the amount of changes and decided if you want to
+add support to the existing driver or fork it.  If you think you can't
+just judge it by yourself send your prototype to lkml or -fsdevel for
+an rfc so we can look over it and guide you a little on how to do it.
