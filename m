@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763326AbXIXT2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762809AbXIXTa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763326AbXIXT2X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbXIXT2P
+	id S1762809AbXIXTa1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbXIXTaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:28:15 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:50691 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754901AbXIXT2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:28:14 -0400
-Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070924175411.GA2314@infradead.org>
-References: <20070920195249.852667D5@kernel>
-	 <20070920195320.38C8E20D@kernel>  <20070924175411.GA2314@infradead.org>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 12:28:11 -0700
-Message-Id: <1190662091.26982.246.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 24 Sep 2007 15:30:16 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:34438 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756604AbXIXTaO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 15:30:14 -0400
+Message-ID: <46F8101E.1050000@freescale.com>
+Date: Mon, 24 Sep 2007 14:29:34 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddedalley.com>
+CC: Jochen Friedrich <jochen@scram.de>, linux-kernel@vger.kernel.org,
+       linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH4/4] [POWERPC] Fix cpm_uart driver
+References: <46F6C9DC.90008@scram.de> <46F7DE85.7000401@freescale.com> <46F7EE95.1040509@scram.de> <46F80049.2030509@freescale.com> <FF1A2486-BE77-49F8-99F3-B09B4EEAF50D@embeddedalley.com>
+In-Reply-To: <FF1A2486-BE77-49F8-99F3-B09B4EEAF50D@embeddedalley.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 18:54 +0100, Christoph Hellwig wrote:
-> As we already say in various messages the percpu counters in here
-> look rather fishy.  I'd recomment to take a look at the per-cpu
-> superblock counters in XFS as they've been debugged quite well
-> now and could probably be lifted into a generic library for this
-> kind of think.  The code is mostly in fs/xfs/xfs_mount.c can
-> can be spotted by beeing under #ifdef HAVE_PERCPU_SB.
+Dan Malek wrote:
 > 
-> It also handles cases like hotplug cpu nicely that this code
-> seems to work around by always iterating over all possible cpus
-> which might not be nice on a dual core laptop with a distro kernel
-> that also has to support big iron.
+> On Sep 24, 2007, at 11:22 AM, Scott Wood wrote:
+> 
+>> cpmp is a physical address on arch/ppc?
+> 
+> No, it's a well known ioremaped() address into the IMMR space.
 
-I'll take a look at xfs to see what I can get out of it.
+Maybe that's how it was, but the current code initializes it (more or
+less) directly with IMAP_ADDR, which also gets fed into ioremap.
 
-There are basically two times when you have to do this
-for_each_possible_cpu() stuff:
-1. when doing a r/w->r/o transition, which is rare, and
-   certainly not a fast path
-2. Where the per-cpu writer count underflows.  This requires
-   a _minimum_ of 1<<16 file opens (configurable) each of which
-   is closed on a different cpu than it was opened on.  Even
-   if you were trying, I'm not sure you'd notice the overhead.
+One of the two has got to be wrong.
 
--- Dave
-
+-Scott
