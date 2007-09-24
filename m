@@ -1,42 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbXIXWG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbXIXWHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760526AbXIXWG5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 18:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbXIXWGs
+	id S1760641AbXIXWHv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 18:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbXIXWHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 18:06:48 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:42997 "EHLO e5.ny.us.ibm.com"
+	Mon, 24 Sep 2007 18:07:42 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:14082 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754412AbXIXWGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 18:06:47 -0400
-Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-In-Reply-To: <20070923231713.f81ee0db.akpm@linux-foundation.org>
-References: <20070920195249.852667D5@kernel>
-	 <20070920195320.38C8E20D@kernel>
-	 <20070923231713.f81ee0db.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 15:06:42 -0700
-Message-Id: <1190671602.26982.261.camel@localhost>
+	id S1754613AbXIXWHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 18:07:41 -0400
+X-IronPort-AV: E=Sophos;i="4.20,292,1186383600"; 
+   d="txt'?scan'208";a="107433993"
+Subject: lockdep wierdness...
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="=-chrVdzo1LP0W6ThHhrcK"
+Organization: Network Appliance Inc
+Date: Mon, 24 Sep 2007 18:07:38 -0400
+Message-Id: <1190671658.6700.31.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Sep 2007 22:07:40.0285 (UTC) FILETIME=[52CC5AD0:01C7FEF7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-23 at 23:17 -0700, Andrew Morton wrote:
-> It look like a false positive to me, but really, for a patchset of this
-> complexity and maturity I cannot fathom how it could have escaped any
-> lockdep testing.
 
-I test with lockdep all the time.  The problem was that lockdep doesn't
-complain until you have 8 nested locks, and I only tested on a 4-cpu
-system.
+--=-chrVdzo1LP0W6ThHhrcK
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-I lowered the lockdep nesting limit to 3, and got the warning on my
-machine.
+I'm seeing lockdep warning about a potential lock inversion between
+&mm->mmap_sem and &inode->i_mutex in NFS (see attachment).
 
--- Dave
+Unfortunately the basis for the warning appears to be the behaviour in
+ext3(???). AFAICS there is no way for NFS to share an inode->i_mutex
+with ext3. What to do?
 
+Trond
+
+--=-chrVdzo1LP0W6ThHhrcK
+Content-Description: 
+Content-Disposition: inline; filename=wierd_lockdep.txt
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0K
+WyBJTkZPOiBwb3NzaWJsZSBjaXJjdWxhciBsb2NraW5nIGRlcGVuZGVuY3kgZGV0ZWN0ZWQgXQ0K
+Mi42LjIzLXJjNy1nODgwOWU5MjEgIzENCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCmJlYWdsZS1idWlsZC1pbi8yNDM3NSBpcyB0cnlpbmcg
+dG8gYWNxdWlyZSBsb2NrOg0KICgmbW0tPm1tYXBfc2VtKXstLS0tfSwgYXQ6IFs8YzA1YTI4ODc+
+XSBkb19wYWdlX2ZhdWx0KzB4MTdkLzB4NTkxDQoNCmJ1dCB0YXNrIGlzIGFscmVhZHkgaG9sZGlu
+ZyBsb2NrOg0KICgmaW5vZGUtPmlfbXV0ZXgpey0tLi59LCBhdDogWzxjMDU5ZjllMz5dIG11dGV4
+X2xvY2srMHgxYy8weDFmDQoNCndoaWNoIGxvY2sgYWxyZWFkeSBkZXBlbmRzIG9uIHRoZSBuZXcg
+bG9jay4NCg0KDQp0aGUgZXhpc3RpbmcgZGVwZW5kZW5jeSBjaGFpbiAoaW4gcmV2ZXJzZSBvcmRl
+cikgaXM6DQoNCi0+ICMxICgmaW5vZGUtPmlfbXV0ZXgpey0tLi59Og0KICAgICAgIFs8YzA0M2Q0
+ZGE+XSBfX2xvY2tfYWNxdWlyZSsweDlmMy8weGJhNg0KICAgICAgIFs8YzA0M2RhNjI+XSBsb2Nr
+X2FjcXVpcmUrMHg1Zi8weDc4DQogICAgICAgWzxjMDU5ZjgzMj5dIF9fbXV0ZXhfbG9ja19zbG93
+cGF0aCsweGU1LzB4MjdhDQogICAgICAgWzxjMDU5ZjllMz5dIG11dGV4X2xvY2srMHgxYy8weDFm
+DQogICAgICAgWzxmOGM5MjQ5NT5dIG5mc19yZXZhbGlkYXRlX21hcHBpbmcrMHg2NC8weDljIFtu
+ZnNdDQogICAgICAgWzxmOGM4ZmYyYT5dIG5mc19maWxlX21tYXArMHg0Ni8weDc1IFtuZnNdDQog
+ICAgICAgWzxjMDQ2MDk3Yz5dIG1tYXBfcmVnaW9uKzB4MWVhLzB4M2I4DQogICAgICAgWzxjMDQ2
+MGU5Yj5dIGRvX21tYXBfcGdvZmYrMHgyN2IvMHgyZGENCiAgICAgICBbPGMwNDA3ZDc3Pl0gc3lz
+X21tYXAyKzB4OWIvMHhiNQ0KICAgICAgIFs8YzA0MDQwNWU+XSBzeXNlbnRlcl9wYXN0X2VzcCsw
+eDVmLzB4OTkNCiAgICAgICBbPGZmZmZmZmZmPl0gMHhmZmZmZmZmZg0KDQotPiAjMCAoJm1tLT5t
+bWFwX3NlbSl7LS0tLX06DQogICAgICAgWzxjMDQzZDNjNj5dIF9fbG9ja19hY3F1aXJlKzB4OGRm
+LzB4YmE2DQogICAgICAgWzxjMDQzZGE2Mj5dIGxvY2tfYWNxdWlyZSsweDVmLzB4NzgNCiAgICAg
+ICBbPGMwNDM2MGRiPl0gZG93bl9yZWFkKzB4M2EvMHg0Yw0KICAgICAgIFs8YzA1YTI4ODc+XSBk
+b19wYWdlX2ZhdWx0KzB4MTdkLzB4NTkxDQogICAgICAgWzxjMDVhMTM4Mj5dIGVycm9yX2NvZGUr
+MHg3Mi8weDc4DQogICAgICAgWzxmODhhY2FhYz5dIGNhbGxfZmlsbGRpcisweGFjLzB4YzMgW2V4
+dDNdDQogICAgICAgWzxmODhhY2RiMj5dIGV4dDNfcmVhZGRpcisweDIxNy8weDVlNSBbZXh0M10N
+CiAgICAgICBbPGMwNDc5OGExPl0gdmZzX3JlYWRkaXIrMHg2Ny8weDkzDQogICAgICAgWzxjMDQ3
+OWFmNj5dIHN5c19nZXRkZW50cysweDVmLzB4OWQNCiAgICAgICBbPGMwNDA0MDVlPl0gc3lzZW50
+ZXJfcGFzdF9lc3ArMHg1Zi8weDk5DQogICAgICAgWzxmZmZmZmZmZj5dIDB4ZmZmZmZmZmYNCg0K
+b3RoZXIgaW5mbyB0aGF0IG1pZ2h0IGhlbHAgdXMgZGVidWcgdGhpczoNCg0KMSBsb2NrIGhlbGQg
+YnkgYmVhZ2xlLWJ1aWxkLWluLzI0Mzc1Og0KICMwOiAgKCZpbm9kZS0+aV9tdXRleCl7LS0uLn0s
+IGF0OiBbPGMwNTlmOWUzPl0gbXV0ZXhfbG9jaysweDFjLzB4MWYNCg0Kc3RhY2sgYmFja3RyYWNl
+Og0KIFs8YzA0MDUwZWU+XSBzaG93X3RyYWNlX2xvZ19sdmwrMHgxYS8weDJmDQogWzxjMDQwNWI1
+OD5dIHNob3dfdHJhY2UrMHgxMi8weDE0DQogWzxjMDQwNWI3MD5dIGR1bXBfc3RhY2srMHgxNi8w
+eDE4DQogWzxjMDQzYmMwNT5dIHByaW50X2NpcmN1bGFyX2J1Z190YWlsKzB4NWYvMHg2OA0KIFs8
+YzA0M2QzYzY+XSBfX2xvY2tfYWNxdWlyZSsweDhkZi8weGJhNg0KIFs8YzA0M2RhNjI+XSBsb2Nr
+X2FjcXVpcmUrMHg1Zi8weDc4DQogWzxjMDQzNjBkYj5dIGRvd25fcmVhZCsweDNhLzB4NGMNCiBb
+PGMwNWEyODg3Pl0gZG9fcGFnZV9mYXVsdCsweDE3ZC8weDU5MQ0KIFs8YzA1YTEzODI+XSBlcnJv
+cl9jb2RlKzB4NzIvMHg3OA0KIFs8Zjg4YWNhYWM+XSBjYWxsX2ZpbGxkaXIrMHhhYy8weGMzIFtl
+eHQzXQ0KIFs8Zjg4YWNkYjI+XSBleHQzX3JlYWRkaXIrMHgyMTcvMHg1ZTUgW2V4dDNdDQogWzxj
+MDQ3OThhMT5dIHZmc19yZWFkZGlyKzB4NjcvMHg5Mw0KIFs8YzA0NzlhZjY+XSBzeXNfZ2V0ZGVu
+dHMrMHg1Zi8weDlkDQogWzxjMDQwNDA1ZT5dIHN5c2VudGVyX3Bhc3RfZXNwKzB4NWYvMHg5OQ0K
+ID09PT09PT09PT09PT09PT09PT09PT09DQo=
+
+
+--=-chrVdzo1LP0W6ThHhrcK--
