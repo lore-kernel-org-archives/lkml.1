@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbXIXKfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbXIXKgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbXIXKfx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 06:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757034AbXIXKfp
+	id S1757999AbXIXKgb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 06:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbXIXKgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 06:35:45 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:35701 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbXIXKfo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 06:35:44 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Jiri Kosina <jikos@jikos.cz>
-Subject: Re: USB autosuspend and turning of usb pendrive leds
-Date: Mon, 24 Sep 2007 12:36:37 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
-Cc: Hans de Goede <j.w.r.degoede@hhs.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net
-References: <46F3C704.5000203@hhs.nl> <46F3D326.6050804@hhs.nl> <Pine.LNX.4.64.0709211715250.22331@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0709211715250.22331@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709241236.37406.oliver@neukum.org>
+	Mon, 24 Sep 2007 06:36:22 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:60437 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752839AbXIXKgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 06:36:22 -0400
+Date: Mon, 24 Sep 2007 12:34:08 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: giometti@enneenne.com, i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
+       rpurdie@rpsys.net
+Subject: Re: [Linux-fbdev-devel] [RFC] driving a LCD panel via I2C
+Message-ID: <20070924123408.596a3c69@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <41784.213.84.50.107.1190624288.squirrel@webmail.enneenne.com>
+References: <41784.213.84.50.107.1190624288.squirrel@webmail.enneenne.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 21 September 2007 schrieb Jiri Kosina:
-> On Fri, 21 Sep 2007, Hans de Goede wrote:
+On Mon, 24 Sep 2007 10:58:08 +0200 (CEST)
+"Rodolfo Giometti" <giometti@enneenne.com> wrote:
+
+> Hello,
 > 
-> > Thats not what I had in mind, autosuspend doesn't work (presumably 
-> > because hal keeps polling for media change) maybe I should fix hal to 
-> > not keep polling for devices which don't have removable media?
+> I have an LCD panel on a custom PXA27x based board and it must be
+> turned on/off by some special commands via a GPIO throught a I2C chip.
 > 
-> Hi Hans,
-> 
-> I think the correct solution is that HAL stops polling the device as soon 
-> as it sees that it got autosuspended.
+> I'd like some suggestion about I can easily manage this situation.
 
-And how would we notice a medium change then? If there's an alternative
-way to notice it or we know it cannot happen there's no reason to poll at all.
+I have a similar panel in the sense that it needs a bunch of SPI
+commands to get started. I implemented a LCD driver
+(drivers/video/backlight) for it so that it is automatically turned
+on/off at bootup/shutdown, and can be manually turned on/off
+through /sys/class/lcd/ltv350qv/power. AFAIK the driver is currently
+sitting in the backlight tree scheduled for inclusion in 2.6.24.
 
-	Regards
-		Oliver
+> Maybe can I add a special I2C function to get i2c_client pointer and
+> then using it to send on/off commands to the LCD?
 
+Just implement it as a regular I2C chip driver which registers a device
+with the LCD framework when it is successfully probed.
 
-
+Håvard
