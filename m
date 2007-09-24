@@ -1,61 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbXIXIW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbXIXI0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbXIXIW6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 04:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbXIXIWt
+	id S1757477AbXIXI0U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 04:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbXIXI0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 04:22:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42090 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756701AbXIXIWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 04:22:48 -0400
-Date: Mon, 24 Sep 2007 01:21:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Dobriyan <adobriyan@sw.ru>,
-       linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH] Move kasprintf.o to obj-y
-Message-Id: <20070924012117.7827f3c7.akpm@linux-foundation.org>
-In-Reply-To: <20070924080948.GA8525@infradead.org>
-References: <20070924071826.GA6757@localhost.sw.ru>
-	<20070924074110.GA7721@infradead.org>
-	<20070924075949.GA1742@uranus.ravnborg.org>
-	<20070924080948.GA8525@infradead.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 24 Sep 2007 04:26:13 -0400
+Received: from www.osadl.org ([213.239.205.134]:36538 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751811AbXIXI0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 04:26:12 -0400
+Subject: Re: [patch 1/3] new timerfd API - new timerfd API
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michael Kerrisk <mtk-manpages@gmx.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <send-serie.davidel@xmailserver.org.19354.1190587749.1>
+References: <send-serie.davidel@xmailserver.org.19354.1190587749.1>
+Content-Type: text/plain
+Date: Mon, 24 Sep 2007 10:26:04 +0200
+Message-Id: <1190622364.4035.182.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 09:09:48 +0100 Christoph Hellwig <hch@infradead.org> wrote:
+Davide,
 
-> On Mon, Sep 24, 2007 at 09:59:49AM +0200, Sam Ravnborg wrote:
-> > > Please kill lib-y while you're at it.  It's useless and a constant
-> > > source of pain like this.
-> > Kernel-bloat is another "constant source of pain".
-> > But the troubles are that increased blot does not result in compiler erros.
-> > 
-> > And your proposal to kil lib-y is a counter-act here.
+On Sun, 2007-09-23 at 15:49 -0700, Davide Libenzi wrote:
+> This is the new timerfd API as it is implemented by the following patch:
+> ---
+>  fs/compat.c              |   32 ++++++-
+>  fs/timerfd.c             |  199 ++++++++++++++++++++++++++++++-----------------
+>  include/linux/compat.h   |    7 +
+>  include/linux/syscalls.h |    7 +
+>  4 files changed, 168 insertions(+), 77 deletions(-)
 > 
-> Killing lib-y doesn't create kernel bloat if done right.  Just introduce
-> proper Kconfig dependencies for the truely optional parts.  But if you
-> look at the list of objects in lib-y you'll see that they fall in basically
-> three categories:
-> 
->  (1) always used by core code - should be obj-y
->  (2) generic implementation for arch-specific functionality, should be
->      guarded by Kconfig for clarity reasons anyway
->  (3) library code often but not always used by code that's not always
->      built in.  Here we run into the move to obj-y to avoid compiler
->      warning when used as module issue all the time.  Adding a CONFIG
->      for the bigger onces actually avoids bloat over obj-y here, and
->      when it's small enough obj-y is a lot safer in the presence of
->      modular users
-> 
-> Really, trying to use the old static library use on demand concept simply
-> doesn't fit the way the kernel is built with it's modules and dependencies.
+> Index: linux-2.6.mod/fs/timerfd.c
+> ===================================================================
+> --- linux-2.6.mod.orig/fs/timerfd.c	2007-09-23 15:18:09.000000000 -0700
+> +++ linux-2.6.mod/fs/timerfd.c	2007-09-23 15:25:55.000000000 -0700
+> @@ -23,15 +23,17 @@
+>  
+>  struct timerfd_ctx {
+>  	struct hrtimer tmr;
+> +	int clockid;
+>  	ktime_t tintv;
+>  	wait_queue_head_t wqh;
+>  	int expired;
+> +	u64 ticks;
+>  };
 
-yup, it duplicates what the config system does and is a common source of
-problems.
+Can you please restructure the struct in a way which does not result in
+padding by the compiler ?
+
+struct timerfd_ctx {
+	struct hrtimer tmr;
+	ktime_t tintv;
+	wait_queue_head_t wqh;
+	u64 ticks;
+	int expired;
+	int clockid;
+};
+
+> +			ticks += (u64)
+>  				hrtimer_forward(&ctx->tmr,
+>  						hrtimer_cb_get_time(&ctx->tmr),
+
+You need to use ctx->tmr.base->get_time() here, otherwise you might read
+a stale time value (in case that CONFIG_HIGH_RES_TIMERS is off).
+
+> -						ctx->tintv);
+> +						ctx->tintv) - 1;
+>  			hrtimer_restart(&ctx->tmr);
+>
+> +asmlinkage long sys_timerfd_create(int clockid)
+>  {
+> -	int error;
+> +	int error, ufd;
+>  	struct timerfd_ctx *ctx;
+>  	struct file *file;
+>  	struct inode *inode;
+> -	struct itimerspec ktmr;
+> -
+> -	if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
+> -		return -EFAULT;
+>  
+>  	if (clockid != CLOCK_MONOTONIC &&
+>  	    clockid != CLOCK_REALTIME)
+>  		return -EINVAL;
+> +
+> +	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+> +	if (!ctx)
+> +		return -ENOMEM;
+> +
+> +	init_waitqueue_head(&ctx->wqh);
+> +	ctx->clockid = clockid;
+> +	hrtimer_init(&ctx->tmr, clockid, HRTIMER_MODE_ABS);
+> +
+> +	error = anon_inode_getfd(&ufd, &inode, &file, "[timerfd]",
+> +				 &timerfd_fops, ctx);
+> +	if (error)
+> +		goto err_kfree_ctx;
+> +
+> +	return ufd;
+> +
+> +err_kfree_ctx:
+> +	kfree(ctx);
+> +	return error;
+
+You really can avoid the goto here.
+
+	tglx
+
+
