@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbXIXUCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbXIXUEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758460AbXIXUCX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 16:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXIXUCQ
+	id S1758934AbXIXUEQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 16:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbXIXUEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 16:02:16 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:49095 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752075AbXIXUCP (ORCPT
+	Mon, 24 Sep 2007 16:04:04 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38852 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755511AbXIXUED (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 16:02:15 -0400
-Date: Mon, 24 Sep 2007 16:01:27 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Paolo Giarrusso <p.giarrusso@gmail.com>
-Cc: user-mode-linux-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [uml-devel] [PATCH] UML - Fix irqstack crash
-Message-ID: <20070924200127.GB25202@c2.user-mode-linux.org>
-References: <20070918233336.GA9746@c2.user-mode-linux.org> <20070918170733.c6399124.akpm@linux-foundation.org> <200709201757.56298.p.giarrusso@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709201757.56298.p.giarrusso@gmail.com>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 24 Sep 2007 16:04:03 -0400
+Subject: [PATCH] ext2 reservations: fix for r/o bind mounts: take-writer-count
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, mbligh@mbligh.org,
+       Dave Hansen <haveblue@us.ibm.com>
+From: Dave Hansen <haveblue@us.ibm.com>
+Date: Mon, 24 Sep 2007 13:03:57 -0700
+Message-Id: <20070924200357.1FAD17C2@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 20, 2007 at 05:57:49PM +0200, Paolo Giarrusso wrote:
-> Yes, indeed - or sign extension on 64bit machines would set to 1 the whole 
-> high-word.
-> 
-> But using long for that mask makes no difference; either int or long
-> long (or  better, either u32 or u64) should be used, given that the
-> used signal range  is the same on 32 and 64bit machines, it should
-> be u32 for normal signals or u64 if RT-signals are also allowed.
 
-We don't use RT signals for anything, so we could use u32.  I don't
-see it making much difference though.
+This is on top of the ext2-reservations.patch in -mm.
 
-				Jeff
+The original r/o bind mount set didn't address the new
+ext2 ioctl: EXT2_IOC_SETRSVSZ, because it doesn't exist
+in mainline.  This fixes that up for -mm.  
 
--- 
-Work email - jdike at linux dot intel dot com
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+---
+
+ lxc-dave/fs/ext2/ioctl.c |   17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff -puN fs/ext2/ioctl.c~ext2-reservations-take-writer-count fs/ext2/ioctl.c
+--- lxc/fs/ext2/ioctl.c~ext2-reservations-take-writer-count	2007-09-24 11:00:18.000000000 -0700
++++ lxc-dave/fs/ext2/ioctl.c	2007-09-24 11:07:08.000000000 -0700
+@@ -107,18 +107,21 @@ setflags_out:
+ 		}
+ 		return -ENOTTY;
+ 	case EXT2_IOC_SETRSVSZ: {
+-
++		int ret;
+ 		if (!test_opt(inode->i_sb, RESERVATION) ||!S_ISREG(inode->i_mode))
+ 			return -ENOTTY;
+ 
+-		if (IS_RDONLY(inode))
+-			return -EROFS;
++		ret = mnt_want_write(filp->f_vfsmnt);
++		if (ret)
++			return ret;
+ 
++		ret = -EACCES;
+ 		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
+-			return -EACCES;
++			goto setrsvsz_out;
+ 
++		ret = -EFAULT;
+ 		if (get_user(rsv_window_size, (int __user *)arg))
+-			return -EFAULT;
++			goto setrsvsz_out;
+ 
+ 		if (rsv_window_size > EXT2_MAX_RESERVE_BLOCKS)
+ 			rsv_window_size = EXT2_MAX_RESERVE_BLOCKS;
+@@ -140,7 +143,9 @@ setflags_out:
+ 			rsv->rsv_goal_size = rsv_window_size;
+ 		}
+ 		mutex_unlock(&ei->truncate_mutex);
+-		return 0;
++	setrsvsz_out:
++		mnt_drop_write(filp->f_vfsmnt);
++		return ret;
+ 	}
+ 	default:
+ 		return -ENOTTY;
+diff -puN fs/namespace.c~ext2-reservations-take-writer-count fs/namespace.c
+_
