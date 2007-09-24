@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbXIXNWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbXIXNZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbXIXNWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbXIXNW2
+	id S1759325AbXIXNZR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbXIXNZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:22:28 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:50090 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756492AbXIXNW1 (ORCPT
+	Mon, 24 Sep 2007 09:25:05 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:39551 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757338AbXIXNZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:22:27 -0400
-To: matthew@wil.cx
-CC: miklos@szeredi.hu, hch@infradead.org, trond.myklebust@fys.uio.no,
-       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <20070924131615.GN10625@parisc-linux.org> (message from Matthew
-	Wilcox on Mon, 24 Sep 2007 07:16:15 -0600)
-Subject: Re: [patch 1/2] VFS: new fgetattr() file operation
-References: <E1IZmze-0003q9-00@dorka.pomaz.szeredi.hu> <20070924123640.GA17409@infradead.org> <E1IZnM8-0003sG-00@dorka.pomaz.szeredi.hu> <20070924125948.GM10625@parisc-linux.org> <E1IZndW-0003uI-00@dorka.pomaz.szeredi.hu> <20070924131615.GN10625@parisc-linux.org>
-Message-Id: <E1IZnsm-0003vx-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 24 Sep 2007 15:21:52 +0200
+	Mon, 24 Sep 2007 09:25:04 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Hans de Goede <j.w.r.degoede@hhs.nl>
+Subject: Re: USB autosuspend and turning of usb pendrive leds
+Date: Mon, 24 Sep 2007 15:25:50 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
+Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net
+References: <46F3C704.5000203@hhs.nl> <200709241236.37406.oliver@neukum.org> <46F7A1CF.4010509@hhs.nl>
+In-Reply-To: <46F7A1CF.4010509@hhs.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709241525.51187.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Sep 24, 2007 at 03:06:06PM +0200, Miklos Szeredi wrote:
-> > A file isn't deleted while there are still links or open files
-> > refering to it.  So getting the attributes for a file with nlink==0 is
-> > perfectly valid while the file is still open.
+Am Montag 24 September 2007 schrieb Hans de Goede:
+> Oliver Neukum wrote:
+> > Am Freitag 21 September 2007 schrieb Jiri Kosina:
+> >> On Fri, 21 Sep 2007, Hans de Goede wrote:
+> >>
+> >>> Thats not what I had in mind, autosuspend doesn't work (presumably 
+> >>> because hal keeps polling for media change) maybe I should fix hal to 
+> >>> not keep polling for devices which don't have removable media?
+> >> Hi Hans,
+> >>
+> >> I think the correct solution is that HAL stops polling the device as soon 
+> >> as it sees that it got autosuspended.
+> > 
+> > And how would we notice a medium change then? If there's an alternative
+> > way to notice it or we know it cannot happen there's no reason to poll at all.
+> > 
 > 
-> Is it?  Why not just pretend that the attributes are wiped when the file
-> is deleted.
+> It looks like hal is currently polling device of which it knows the medium is 
+> not removable, like USB-pens.
 
-You mean "when finally unlinked"?  Delete happens when the file is
-closed.
+It doesn't, which is the point. The overwhelming number of USB devices
+don't bother to correctly declare themselves not removable SCSI devices.
+The discrimination will have to happen on a product:vendor basis, which
+means that a large database has to be built and maintained.
 
-> Effectively, they are, since they can't affect anything.
-
-Sure it can.  It may be open on the server as well.
-
-> > If a network filesystem protocol can't handle operations (be it data
-> > or metadata) on an unlinked file, we must do sillirenaming, so that
-> > the file is not actually unlinked.
-> 
-> Or you could call getattr right before you unlink and cache the result
-> in the client.
-
-The file can still be modified after being unlinked.
-
-And even if we did this caching thing and modify the attributes when
-the file is modified, it would not deal with access on the remote end,
-and would be much more complex than the other alternatives.
-
-Miklos
+	Regards
+		Oliver
