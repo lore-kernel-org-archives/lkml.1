@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760322AbXIXWEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbXIXWGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760322AbXIXWEv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 18:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbXIXWEl
+	id S1760233AbXIXWGN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 18:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbXIXWF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 18:04:41 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:34186 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755737AbXIXWEk (ORCPT
+	Mon, 24 Sep 2007 18:05:58 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:44673 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755441AbXIXWF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 18:04:40 -0400
-Message-ID: <46F83474.5040503@davidnewall.com>
-Date: Tue, 25 Sep 2007 07:34:36 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Mon, 24 Sep 2007 18:05:57 -0400
+Message-ID: <46F834BD.2040704@tiscali.nl>
+Date: Tue, 25 Sep 2007 00:05:49 +0200
+From: roel <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serge@hallyn.com>
-CC: Bill Davidsen <davidsen@tmr.com>, Philipp Marek <philipp@marek.priv.at>,
-       7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       majkls <majkls@prepere.com>, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-References: <952DN-83o-31@gated-at.bofh.it> <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com> <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com>
-In-Reply-To: <20070924213215.GA32716@vino.hallyn.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@kernel.org,
+       Jiri Kosina <jkosina@suse.cz>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [42/50] Fix ipv6 source address handling.
+References: <20070924161246.983665021@mini.kroah.org> <20070924162227.GQ13510@kroah.com>
+In-Reply-To: <20070924162227.GQ13510@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> No reason for any new parameters to pivot_root.  Just clone your mounts
-> namespace first.
->
-> 	unshare(CLONE_NEWNS);
-> 	chdir(new_dir);
-> 	pivot_root(new_dir, oldroot);
->
-> Since pivot_root actually fiddles with the vfsmnts, this is really the
-> only way to go about having it "work with just one process".
 
-I think the point is that, whereas we'd like to be able to pivot the 
-root for a single process, in practice this causes startup issues to 
-which the easy solution is to pivot the whole system.  At least that's 
-my reading of the man page.
+can't we also decrease the number of brackets here?
 
-It might be tidy if pivot_root could be used (instead of a hack based on 
-a chroot bug), but it'd still be unportable.
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -1021,7 +1021,7 @@ int ipv6_dev_get_saddr(struct net_device
+ 				hiscore.rule++;
+ 			}
+ 			if (ipv6_saddr_preferred(score.addr_type) ||
+-			   (((ifa_result->flags &
++			   (((ifa->flags &
+ 			    (IFA_F_DEPRECATED|IFA_F_OPTIMISTIC)) == 0))) {
+
+make this like this
+ 			if (ipv6_saddr_preferred(score.addr_type) ||
+			   (ifa->flags &
+ 			    (IFA_F_DEPRECATED|IFA_F_OPTIMISTIC)) == 0) {
+
+or even for clarity's sake:
+ 			if (ipv6_saddr_preferred(score.addr_type) ||
+			   (ifa->flags & (IFA_F_DEPRECATED|IFA_F_OPTIMISTIC)) == 0) {
