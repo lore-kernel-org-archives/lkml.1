@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbXIXMd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbXIXMfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbXIXMd4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 08:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXIXMdt
+	id S1758280AbXIXMfN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 08:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbXIXMe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 08:33:49 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:38886 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752839AbXIXMds (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 08:33:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BAUlo1rGBuZj7q3CnRvupndAwJBt+XDtMRf1GnwCJtbJIMrzlFdOij8B8XOI9VL9m2gYv2md9VbnfZ3rQy2uIY34KfJnGBUUx8q+qkZUVLfbZeT+e3bfOM3x4THbx7GtqVUfuwqeBJPrJ+LlXHWNROOLZ8YRIw5dK5NHCLTlfYw=
-Message-ID: <46F7AEA7.7060809@gmail.com>
-Date: Mon, 24 Sep 2007 14:33:43 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.23-rc7-mm1
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-In-Reply-To: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Sep 2007 08:34:58 -0400
+Received: from smtpoutm.mac.com ([17.148.16.75]:53657 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756103AbXIXMe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 08:34:57 -0400
+In-Reply-To: <87r6kp7vfv.fsf@informatik.uni-tuebingen.de>
+References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <20070911121225.GE13132@lazybastard.org> <20070915014449.4f9cdb51.akpm@linux-foundation.org> <87ir6c3z2l.fsf@informatik.uni-tuebingen.de> <20070916181313.GA16406@skynet.ie> <87k5qq5l36.fsf@informatik.uni-tuebingen.de> <20070917100350.GC25706@skynet.ie> <87r6kp7vfv.fsf@informatik.uni-tuebingen.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FC0BC57A-E5D3-487F-A0A6-00AA8E3578AC@mac.com>
+Cc: mel@skynet.ie (Mel Gorman), Andrew Morton <akpm@linux-foundation.org>,
+       Joern Engel <joern@logfs.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Date: Mon, 24 Sep 2007 08:32:30 -0400
+To: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/24/2007 11:17 AM, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
+On Sep 23, 2007, at 02:22:12, Goswin von Brederlow wrote:
+> mel@skynet.ie (Mel Gorman) writes:
+>> On (16/09/07 23:58), Goswin von Brederlow didst pronounce:
+>>> But when you already have say 10% of the ram in mixed groups then  
+>>> it is a sign the external fragmentation happens and some time  
+>>> should be spend on moving movable objects.
+>>
+>> I'll play around with it on the side and see what sort of results  
+>> I get.  I won't be pushing anything any time soon in relation to  
+>> this though.  For now, I don't intend to fiddle more with grouping  
+>> pages by mobility for something that may or may not be of benefit  
+>> to a feature that hasn't been widely tested with what exists today.
+>
+> I watched the videos you posted. A nice and quite clear improvement  
+> with and without your logic. Cudos.
+>
+> When you play around with it may I suggest a change to the display  
+> of the memory information. I think it would be valuable to use a  
+> Hilbert Curve to arange the pages into pixels. Like this:
+>
+> # #  0  3
+> # #
+> ###  1  2
+>
+> ### ###  0 1 E F
+>   # #
+> ### ###  3 2 D C
+> #     #
+> # ### #  4 7 8 B
+> # # # #
+> ### ###  5 6 9 A
 
-Fine, but on some boots (I noticed this on rc6-mm1 too, but not before):
-0000:00:1a.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
-0000:00:1d.7 EHCI: BIOS handoff failed (BIOS bug ?) 01010001
+Here's an excellent example of an 0-255 numbered hilbert curve used  
+to enumerate the various top-level allocations of IPv4 space:
+http://xkcd.com/195/
 
-# lspci -vns 0000:00:1a.7
-00:1a.7 0c03: 8086:293c (rev 02) (prog-if 20 [EHCI])
-        Subsystem: 8086:293c
-        Flags: bus master, medium devsel, latency 0, IRQ 19
-        Memory at ffa7b400 (32-bit, non-prefetchable) [size=1K]
-        Capabilities: [50] Power Management version 2
-        Capabilities: [58] Debug port
-        Capabilities: [98] Vendor Specific Information
+Cheers,
+Kyle Moffett
 
-# lspci -vns 0000:00:1d.7
-00:1d.7 0c03: 8086:293a (rev 02) (prog-if 20 [EHCI])
-        Subsystem: 8086:293a
-        Flags: bus master, medium devsel, latency 0, IRQ 23
-        Memory at ffa7b000 (32-bit, non-prefetchable) [size=1K]
-        Capabilities: [50] Power Management version 2
-        Capabilities: [58] Debug port
-        Capabilities: [98] Vendor Specific Information
-
-regards,
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
