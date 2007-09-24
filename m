@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbXIXSoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbXIXSpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759620AbXIXSoy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 14:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbXIXSop
+	id S1760647AbXIXSpc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 14:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbXIXSpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 14:44:45 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:49196 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756040AbXIXSoo (ORCPT
+	Mon, 24 Sep 2007 14:45:18 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:46332 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756188AbXIXSpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 14:44:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=j6oB1oehooHr+VAE51d5CzBv6SpdqlF7+r95Y7SfAbhtLYKDg7BIpW1FQTolNJ/kDo5/lBYrq9GIHQoo/nMCwwtLJ0JtT/Q/R1dLh32qSSDHPuUqTApTKitp/kQWeSenV/1DvtBFZjkoCoDoJGtM68f7PqCItqwKKMOwhQ7kXcU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 3/4] ide: make ide_rate_filter() also respect PIO and SW/MW DMA mode masks (take 2)
-Date: Mon, 24 Sep 2007 20:48:00 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200709022344.18565.sshtylyov@ru.mvista.com> <46E2900D.5010004@ru.mvista.com> <46F7B117.5000202@ru.mvista.com>
-In-Reply-To: <46F7B117.5000202@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 24 Sep 2007 14:45:16 -0400
+Date: Mon, 24 Sep 2007 14:45:14 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: [patch 5/7] Linux Kernel Markers - Use instrumentation kconfig menu
+Message-ID: <20070924184514.GC28347@Krystal>
+References: <20070924164950.006047409@polymtl.ca> <20070924165428.009275376@polymtl.ca> <20070924174924.GC1608@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709242048.00192.bzolnier@gmail.com>
+In-Reply-To: <20070924174924.GC1608@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:44:32 up 56 days, 19:03,  6 users,  load average: 1.32, 1.45, 1.18
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 24 September 2007, Sergei Shtylyov wrote:
-> Once I quothed:
+* Christoph Hellwig (hch@infradead.org) wrote:
+> Subject and description sounds rather odd for just wiring up Kconfig
+> and Makefile.  I'd suggest merging this into the previous patch.
+> In fact given how small markers are it might make sense to put the
+> documentation into it aswell, it's probably still a lot below 400k.
 > 
-> >> Make ide_rate_filter() also respect PIO/SWDMA/MWDMA mode masks.  While 
-> >> at it,
-> >> make the udma_filter() method calls take precedence over using the 
-> >> mode masks.
-> 
-> >    This one not looking to pretty -- I've geve some thought on how to 
-> > beautify all these switch fallthoughs but haven't got something much 
-> > better then uour original approach (AKA Occam's razor :-).
-> 
->     So, it's probably better forget about this patch. But please do take patch 
-> 4/4 to merge either before or after your "Occam's razor" -- it makes its best 
-> at masking out the MWDMA modes anyways...
 
-Sure, could you re-send patch 4/4 synced against current Linus' tree?
+Good point, let's do it.
 
-Thanks,
-Bart
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
