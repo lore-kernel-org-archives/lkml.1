@@ -1,94 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbXIXVSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbXIXV02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbXIXVSX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 17:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbXIXVSO
+	id S1757262AbXIXV02 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 17:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbXIXV0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 17:18:14 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43511 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754571AbXIXVSN (ORCPT
+	Mon, 24 Sep 2007 17:26:19 -0400
+Received: from mithrandir.softwarenexus.net ([66.98.186.96]:3786 "EHLO
+	mail.genesi-usa.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbXIXV0S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 17:18:13 -0400
-Subject: Re: 2.6.23-rc6: hanging ext3 dbench tests
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, sct@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, adilger@clusterfs.com,
-       ext4 <linux-ext4@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       mel@csn.ul.ie
-In-Reply-To: <alpine.LFD.0.999.0709241243530.3579@woody.linux-foundation.org>
-References: <20070911124202.GI9556@shadowen.org>
-	 <alpine.LFD.0.999.0709110949250.16478@woody.linux-foundation.org>
-	 <20070911173049.GA10499@shadowen.org> <20070914094905.GA32670@shadowen.org>
-	 <20070919181546.GA4343@shadowen.org>
-	 <1190656918.13955.7.camel@dyn9047017100.beaverton.ibm.com>
-	 <alpine.LFD.0.999.0709241243530.3579@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 14:20:45 -0700
-Message-Id: <1190668846.13955.15.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+	Mon, 24 Sep 2007 17:26:18 -0400
+Message-ID: <46F82BCF.1020702@genesi-usa.com>
+Date: Mon, 24 Sep 2007 22:27:43 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: IDE broken on Pegasos PPC platform
+References: <46F80BB1.7050902@redhat.com>
+In-Reply-To: <46F80BB1.7050902@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 13:04 -0700, Linus Torvalds wrote:
-> 
-> On Mon, 24 Sep 2007, Badari Pulavarty wrote:
-> > 
-> > Whats happening on my machine is ..
-> > 
-> > dbench forks of 4 children and sends them a signal to start the work.
-> > 3 out of 4 children gets the signal and does the work. One of the child
-> > never gets the signal so, it waits forever in pause(). So, parent waits
-> > for a longtime to kill it.
-> 
-> Since this *seems* to have nothing to do with the filesystem, and since it 
-> *seems* to have been introduced between -rc3 and -rc4, I did
-> 
-> 	gitk v2.6.23-rc3..v2.6.23-rc4 -- kernel/
+Yeah I'll ack it if it matters, although I'd make a nit about the
+fixing of device tree entries in prom_init and have it moved to
+nvramrc or a Forth script or boot loader..
 
-I was wrong. I managed to reproduce on 2.6.23-rc3, but it took a long
-time. But I never reproduced it on 2.6.22. Ran test for a day.
+Pegasos IDE quirks have been "fixed" so many times now in Linux,
+this code's going to get reshuffled again in other changes, I
+think the device tree should be fixed at the firmware level and
+not in the kernel.
 
-> 
-> to see what has changed. One of the commits was signal-related, and that 
-> one doesn't look like it could possibly matter.
-> 
-> The rest were scheduler-related, which doesn't surprise me. In fact, even 
-> before I looked, my reaction to your bug report was "That sounds like an 
-> application race condition".
-> 
-> Applications shouldn't use "pause()" for waiting for a signal. It's a 
-> fundamentally racy interface - the signal could have happened just 
-> *before* calling pause. So it's almost always a bug to use pause(), and 
-> any users should be fixed to use "sigsuspend()" instead, which can 
-> atomically (and correctly) pause for a signal while the process has masked 
-> it outside of the system call.
-> 
-> Now, I took a look at the dbench sources, and I have to say that the race 
-> looks *very* unlikely (there's quite a small window in which it does
-> 
-> 	children[i].status = getpid();
-> 	** race window here **
-> 	pause();
-> 
-> and it would require *just* the right timing so that the parent doesn't 
-> end up doing the "sleep(1)" (which would make the window even less likely 
-> to be hit), but there does seem to be a race condition there. And it 
-> *could* be that you just happen to hit it on your hw setup.
-> 
-> So before you do anything else, does this patch (TOTALLY UNTESTED! DONE 
-> ENTIRELY LOOKING AT THE SOURCE! IT MAY RAPE ALL YOUR PETS, AND CALL YOU 
-> BAD NAMES!) make any difference?
-> 
-> (patch against unmodified dbench-2.0)
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
-I am testing the updated version of dbench now. Normally, it takes
-30min-1hour to reproduce the problem (when I do infinite "dbench 4").
-I will post the results soon.
-
-Thanks,
-Badari
-
+Chuck Ebbert wrote:
+> Without this patch, taken from a Suse 2.6.22 kernel, the Pegasos
+> PPC machines can't use their IDE interface. Is this the right fix?
+> 
+> Bug:
+> https://bugzilla.redhat.com/show_bug.cgi?id=247602
+> Patch (also below):
+> https://bugzilla.redhat.com/attachment.cgi?id=167747
+> 
+> ===============
+> 
+> The built-in IDE controller is configured in legacy mode,
+> but the PCI registers advertise native mode.
+> Force the PCI class into legacy mode. This allows pata_via to access
+> two drives.
+> The Pegasos specific irq enforcement in the via82cxxx driver
+> must stay because there is aparently no generic way to setup irq per channel.
+> 
+> Tested on Pegasos2 with firmware version 20040810, and two IDE disks.
+> 
+> ---
+>  arch/powerpc/kernel/prom_init.c   |   11 ++++++++---
+>  arch/powerpc/platforms/chrp/pci.c |   29 +++++++++++++++++++++++++++++
+>  2 files changed, 37 insertions(+), 3 deletions(-)
+> 
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2044,6 +2044,7 @@ static void __init fixup_device_tree_map
+>  /*
+>   * Pegasos and BriQ lacks the "ranges" property in the isa node
+>   * Pegasos needs decimal IRQ 14/15, not hexadecimal
+> + * Pegasos has the IDE configured in legacy mode, but advertised as native
+>   */
+>  static void __init fixup_device_tree_chrp(void)
+>  {
+> @@ -2081,9 +2082,13 @@ static void __init fixup_device_tree_chr
+>  		prom_printf("Fixing up IDE interrupt on Pegasos...\n");
+>  		prop[0] = 14;
+>  		prop[1] = 0x0;
+> -		prop[2] = 15;
+> -		prop[3] = 0x0;
+> -		prom_setprop(ph, name, "interrupts", prop, 4*sizeof(u32));
+> +		prom_setprop(ph, name, "interrupts", prop, 2*sizeof(u32));
+> +		prom_printf("Fixing up IDE class-code on Pegasos...\n");
+> +		rc = prom_getprop(ph, "class-code", prop, sizeof(u32));
+> +		if (rc == sizeof(u32)) {
+> +			prop[0] &= ~0x5;
+> +			prom_setprop(ph, name, "class-code", prop, sizeof(u32));
+> +		}
+>  	}
+>  }
+>  #else
+> --- a/arch/powerpc/platforms/chrp/pci.c
+> +++ b/arch/powerpc/platforms/chrp/pci.c
+> @@ -338,3 +338,32 @@ void chrp_pci_fixup_winbond_ata(struct p
+>  }
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
+>  		chrp_pci_fixup_winbond_ata);
+> +
+> +/* Pegasos2 firmware version 20040810 configures the built-in IDE controller
+> + * in legacy mode, but sets the PCI registers to PCI native mode.
+> + * The chip can only operate in legacy mode, so force the PCI class into legacy
+> + * mode as well. The same fixup must be done to the class-code property in
+> + * the IDE node /pci@80000000/ide@C,1
+> + */
+> +static void chrp_pci_fixup_vt8231_ata(struct pci_dev *viaide)
+> +{
+> +	u8 progif;
+> +	struct pci_dev *viaisa;
+> +
+> +	if (!machine_is(chrp) || _chrp_type != _CHRP_Pegasos)
+> +		return;
+> +	if (viaide->irq != 14)
+> +		return;
+> +
+> +	viaisa = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8231, NULL);
+> +	if (!viaisa)
+> +		return;
+> +	printk("Fixing VIA IDE, force legacy mode on '%s'\n", viaide->dev.bus_id);
+> +
+> +	pci_read_config_byte(viaide, PCI_CLASS_PROG, &progif);
+> +	pci_write_config_byte(viaide, PCI_CLASS_PROG, progif & ~0x5);
+> +	viaide->class &= ~0x5;
+> +
+> +	pci_dev_put(viaisa);
+> +}
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_1, chrp_pci_fixup_vt8231_ata);
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
