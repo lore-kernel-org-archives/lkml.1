@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762810AbXIXTsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761097AbXIXTwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762810AbXIXTsG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 15:48:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757224AbXIXTrz
+	id S1761097AbXIXTwr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 15:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXIXTwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 15:47:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52327 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757104AbXIXTrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 15:47:55 -0400
-Date: Mon, 24 Sep 2007 12:42:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
-Message-Id: <20070924124233.9197d6b6.akpm@linux-foundation.org>
-In-Reply-To: <1190662091.26982.246.camel@localhost>
-References: <20070920195249.852667D5@kernel>
-	<20070920195320.38C8E20D@kernel>
-	<20070924175411.GA2314@infradead.org>
-	<1190662091.26982.246.camel@localhost>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 24 Sep 2007 15:52:40 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50201 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754597AbXIXTwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 15:52:39 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX18q4tIA6AoqBpK2HU5a9YanEm2+mm4+dJ6Wjzybjf
+	n8RHS+AzX8uENu
+Message-ID: <46F814F1.60201@gmx.net>
+Date: Mon, 24 Sep 2007 21:50:09 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 2/3] new timerfd API - wire the new timerfd API to the
+ x86 family
+References: <send-serie.davidel@xmailserver.org.19354.1190587750.2> <46F75E4D.2080209@gmx.net> <Pine.LNX.4.64.0709240835030.23830@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0709240835030.23830@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 12:28:11 -0700
-Dave Hansen <haveblue@us.ibm.com> wrote:
+Hi Davide,
 
-> On Mon, 2007-09-24 at 18:54 +0100, Christoph Hellwig wrote:
-> > As we already say in various messages the percpu counters in here
-> > look rather fishy.  I'd recomment to take a look at the per-cpu
-> > superblock counters in XFS as they've been debugged quite well
-> > now and could probably be lifted into a generic library for this
-> > kind of think.  The code is mostly in fs/xfs/xfs_mount.c can
-> > can be spotted by beeing under #ifdef HAVE_PERCPU_SB.
-> > 
-> > It also handles cases like hotplug cpu nicely that this code
-> > seems to work around by always iterating over all possible cpus
-> > which might not be nice on a dual core laptop with a distro kernel
-> > that also has to support big iron.
+Davide Libenzi wrote:
+> On Mon, 24 Sep 2007, Michael Kerrisk wrote:
+>> Is it perhaps not better to group the three syscalls contiguously with
+>> respect to syscall numbers?  The old timerfd slot can be re-used for some
+>> other syscall later.
 > 
-> I'll take a look at xfs to see what I can get out of it.
+> There's no problem if they're not contiguous. 
 
-And at include/linux/percpu_counter.h, please.
+I realise there is no problem, in a technical sense.  But it strikes me as
+more aesthetic to make related syscalls numerically contiguous.  Thus, we
+see such as the following in the kernel source
 
-> There are basically two times when you have to do this
-> for_each_possible_cpu() stuff:
-> 1. when doing a r/w->r/o transition, which is rare, and
->    certainly not a fast path
-> 2. Where the per-cpu writer count underflows.  This requires
->    a _minimum_ of 1<<16 file opens (configurable) each of which
->    is closed on a different cpu than it was opened on.  Even
->    if you were trying, I'm not sure you'd notice the overhead.
-> 
+#define __NR_epoll_create       254
+#define __NR_epoll_ctl          255
+#define __NR_epoll_wait         256
 
-Sounds like what you're doing is more akin to the local_t-based module
-refcounting.  `grep local_ kernel/module.c'.
+and
 
-That code should be converted from NR_CPUS to for_each_possible_cpu()..
+#define __NR_timer_create       259
+#define __NR_timer_settime      (__NR_timer_create+1)
+#define __NR_timer_gettime      (__NR_timer_create+2)
+#define __NR_timer_getoverrun   (__NR_timer_create+3)
+#define __NR_timer_delete       (__NR_timer_create+4)
+
+and
+
+#define __NR_inotify_init       291
+#define __NR_inotify_add_watch  292
+#define __NR_inotify_rm_watch   293
+
+> Holes, unless filled 
+> immediately, need to be remembered to be filled.
+
+Well, in the past it seems they do get filled soon enough though.  There's
+fair odds that you'll be the one to fill it with the next syscall you write
+;-).
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
+
