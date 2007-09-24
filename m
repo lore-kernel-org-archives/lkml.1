@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbXIXN3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbXIXNcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbXIXN3w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 09:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbXIXN3p
+	id S1758809AbXIXNcP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 09:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbXIXNb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 09:29:45 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:49246 "EHLO atlrel7.hp.com"
+	Mon, 24 Sep 2007 09:31:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34225 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756171AbXIXN3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 09:29:45 -0400
-Message-ID: <46F7BB9E.70504@hp.com>
-Date: Mon, 24 Sep 2007 09:29:02 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	id S1753842AbXIXNb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 09:31:57 -0400
+Message-ID: <46F7BC3D.2040408@redhat.com>
+Date: Mon, 24 Sep 2007 09:31:41 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070718)
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: 2.6.23-rc7-mm1
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F7B4F2.1040506@fr.ibm.com> <46F7B735.2090509@fr.ibm.com>
-In-Reply-To: <46F7B735.2090509@fr.ibm.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Howells <dhowells@redhat.com>
+CC: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 14/22] NFS: Use local caching
+References: <10249.1190416956@redhat.com> <46F3F8BF.1030404@redhat.com> <20070921144703.8323.50492.stgit@warthog.procyon.org.uk> <20070921144815.8323.77745.stgit@warthog.procyon.org.uk> <10304.1190417846@redhat.com>
+In-Reply-To: <10304.1190417846@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric Le Goater wrote:
-> putting Vlad in Cc: 
-> 
-> Cedric Le Goater wrote:
->> Andrew Morton wrote:
->>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc7/2.6.23-rc7-mm1/
->> I also get this compile error on s390. 'linux/scatterlist.h' has disappeared 
->> from the #include pile but where ? 
+David Howells wrote:
+> David Howells <dhowells@redhat.com> wrote:
+>
+>   
+>> Peter Staubach <staubach@redhat.com> wrote:
 >>
->> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c: In function `sctp_auth_calculate_hmac':
->> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c:695: error: storage size of 'sg' isn't known
->> /home/clg/linux/2.6.23-rc7-mm1/net/sctp/auth.c:695: warning: unused variable `sg'
-> 
-> The following patch works of course but it seems to simplistic for s390.
+>>     
+>>> Did I miss the section where the modified semantics about which
+>>> mounted file systems can use the cache and which ones can not
+>>> was implemented?
+>>>       
+>> Yes.
+>>     
+>
+> fs/nfs/super.c:
+>
+> 		case Opt_sharecache:
+> 			mnt->flags &= ~NFS_MOUNT_UNSHARED;
+> 			break;
+> 		case Opt_nosharecache:
+> 			mnt->flags |= NFS_MOUNT_UNSHARED;
+> 			mnt->options &= ~NFS_OPTION_FSCACHE;
+> 			break;
+> 		case Opt_fscache:
+> 			/* sharing is mandatory with fscache */
+> 			mnt->options |= NFS_OPTION_FSCACHE;
+> 			mnt->flags &= ~NFS_MOUNT_UNSHARED;
+> 			break;
+> 		case Opt_nofscache:
+> 			mnt->options &= ~NFS_OPTION_FSCACHE;
+> 			break;
+>
+> Hmmm...  Actually, I'm not sure this is sufficient.
 
-Odd that it didn't show up on x86 or ia64, but simple enough.
+This doesn't seem to take into account any of the other options
+which can cause sharing to be disabled.  Perhaps SteveD can add
+his patch to the mix which does resolve the issues?
 
-ACK.
+    Thanx...
 
--vlad
-
-> 
-> Cheers,
-> 
-> C.
-> 
-> 
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> ---
->  net/sctp/auth.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: 2.6.23-rc7-mm1/net/sctp/auth.c
-> ===================================================================
-> --- 2.6.23-rc7-mm1.orig/net/sctp/auth.c
-> +++ 2.6.23-rc7-mm1/net/sctp/auth.c
-> @@ -36,6 +36,7 @@
->  
->  #include <linux/types.h>
->  #include <linux/crypto.h>
-> +#include <linux/scatterlist.h>
->  #include <net/sctp/sctp.h>
->  #include <net/sctp/auth.h>
-> 
-
+       ps
