@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbXIXUja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbXIXUlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755054AbXIXUja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 16:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbXIXUjW
+	id S1753807AbXIXUlr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 16:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXIXUlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 16:39:22 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:45218 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752248AbXIXUjV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 16:39:21 -0400
-Date: Mon, 24 Sep 2007 13:37:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
-Message-Id: <20070924133730.c9b7c0e6.randy.dunlap@oracle.com>
-In-Reply-To: <46F80863.2090102@oracle.com>
-References: <20070924164950.006047409@polymtl.ca>
-	<20070924165428.335030720@polymtl.ca>
-	<20070924175044.GD1608@infradead.org>
-	<20070924105632.009aba7f.randy.dunlap@oracle.com>
-	<20070924180041.GB2435@infradead.org>
-	<20070924111318.f16cde07.randy.dunlap@oracle.com>
-	<20070924181931.GA3810@infradead.org>
-	<46F800A7.7090005@oracle.com>
-	<20070924183042.GA4418@infradead.org>
-	<46F806AB.1050509@oracle.com>
-	<20070924185431.GA5618@infradead.org>
-	<46F80863.2090102@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 24 Sep 2007 16:41:39 -0400
+Received: from main.gmane.org ([80.91.229.2]:48604 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752366AbXIXUli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 16:41:38 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH] Remove broken netfilter binary sysctls from bridging
+ code
+Date: Mon, 24 Sep 2007 13:14:58 -0700
+Organization: Linux Foundation
+Message-ID: <20070924131458.0daa4562@freepuppy.rosehill>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070921020554.GE31759@nineveh.local>
+	<m1fy18k5ru.fsf@ebiederm.dsl.xmission.com>
+	<46F7EC0A.9030506@trash.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 069-064-229-129.pdx.net
+In-Reply-To: <46F7EC0A.9030506@trash.net>
+X-Newsreader: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 11:56:35 -0700 Randy Dunlap wrote:
+On Mon, 24 Sep 2007 18:55:38 +0200
+Patrick McHardy <kaber@trash.net> wrote:
 
-> Christoph Hellwig wrote:
-> > On Mon, Sep 24, 2007 at 11:49:15AM -0700, Randy Dunlap wrote:
-> >> I think that samples are perfectly fine for documentation and
-> >> that the trace example is a good example.  I think that most people
-> >> who need something like that would need to customize it for their
-> >> specific needs anyway.
-> >>
-> >> We don't seem to be making progress...
+> Eric W. Biederman wrote:
+> > jfannin@gmail.com (Joseph Fannin) writes:
 > > 
-> > Time to bring in a Tie-Breaker :)
+> > 
+> >>The netfilter sysctls in the bridging code don't set strategy routines:
+> >>
+> >> sysctl table check failed: /net/bridge/bridge-nf-call-arptables .3.10.1 Missing
+> >>strategy
+> >> sysctl table check failed: /net/bridge/bridge-nf-call-iptables .3.10.2 Missing
+> >>strategy
+> >> sysctl table check failed: /net/bridge/bridge-nf-call-ip6tables .3.10.3 Missing
+> >>strategy
+> >> sysctl table check failed: /net/bridge/bridge-nf-filter-vlan-tagged .3.10.4
+> >>Missing strategy
+> >> sysctl table check failed: /net/bridge/bridge-nf-filter-pppoe-tagged .3.10.5
+> >>Missing strategy
+> >>
+> >>    These binary sysctls can't work. The binary sysctl numbers of
+> >>other netfilter sysctls with this problem are being removed.  These
+> >>need to go as well.
+> >>
+> >>Signed-off-by: Joseph Fannin <jfannin@gmail.com>
+> > 
+> > 
+> > Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 > 
-> Yes.  Is anyone else interested?   :(
+> 
+> Queued for 2.6.24, thanks.
+> 
+> > Hmm.  This is an interesting case.  The proc method is forcing
+> > the integer to be either 0 or 1 in a racy fashion.  But none of the
+> > users appear to depend upon that.
+> > 
+> > So this is the least broken set of binary sysctls I have seen caught
+> > by my check.
+> > 
+> > A really good fix would be to remove the binary side and then to
+> > modify brnf_sysctl_call_tables to allocate a temporary ctl_table and
+> > integer on the stack and only set ctl->data after we have normalized
+> > the written value.  But since in practice nothing cares about
+> > the race a better fix probably isn't worth it.
+> 
+> 
+> I seem to be missing something, the entire brnf_sysctl_call_tables
+> thing looks purely cosmetic to me, wouldn't it be better to simply
+> remove it?
 
 
-I guess that's everyone (except those who are sleeping).
+I agree, removing seems like a better option.  But probably need to go
+through a 3-6mo warning period, since sysctl's are technically an API.
 
-Let's not hold up progress.  Just use samples/ for code.
 
----
-~Randy
-Phaedrus says that Quality is about caring.
+
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
+
