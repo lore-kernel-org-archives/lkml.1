@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbXIYNrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbXIYN4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbXIYNrP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 09:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXIYNrB
+	id S1753664AbXIYN4l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 09:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXIYN4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 09:47:01 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4557 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbXIYNrA (ORCPT
+	Tue, 25 Sep 2007 09:56:32 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:34833 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751385AbXIYN4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 09:47:00 -0400
-Date: Tue, 25 Sep 2007 14:46:53 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.23-rc8-mm1 -- powerpc link failure
-Message-ID: <20070925134653.GB8447@shadowen.org>
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Tue, 25 Sep 2007 09:56:31 -0400
+Date: Tue, 25 Sep 2007 19:37:07 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git] CFS-devel, latest code
+Message-ID: <20070925140707.GO26289@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <1190705759.11910.10.camel@Homer.simpson.net> <1190709207.11226.6.camel@Homer.simpson.net> <20070925091331.GA22905@elte.hu> <20070925094440.GK26289@linux.vnet.ibm.com> <20070925094040.GA28391@elte.hu> <20070925101044.GA923@elte.hu> <20070925102855.GL26289@linux.vnet.ibm.com> <20070925103617.GA3426@elte.hu> <20070925125129.GA26310@linux.vnet.ibm.com> <1190727317.11260.8.camel@Homer.simpson.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+In-Reply-To: <1190727317.11260.8.camel@Homer.simpson.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.23-rc6-mm1, 2.6.23-rc7-mm1 and 2.6.23-rc8-mm1 all fail to link
-correctly on a powerpc machine (elm3b19) in our test grid.  It fails as
-below:
+On Tue, Sep 25, 2007 at 03:35:17PM +0200, Mike Galbraith wrote:
+> > I tried the following patch. I *think* I see some improvement, wrt
+> > latency seen when I type on the shell. Before this patch, I noticed
+> > oddities like "kill -9 chew-max-pid" wont kill chew-max (it is queued in
+> > runqueue waiting for a looong time to run before it can acknowledge
+> > signal and exit). With this patch, I don't see such oddities ..So I am hoping 
+> > it fixes the latency problem you are seeing as well.
+> 
+> http://lkml.org/lkml/2007/9/25/117 plus the below seems to be the SIlver
+> Bullet for the latencies I was seeing.
 
-    LD      vmlinux.o
-  ld: dynreloc miscount for fs/built-in.o, section .opd
-  ld: can not edit opd Bad value
-  make: *** [vmlinux.o] Error 1
+Cool ..Thanks for the quick feedback.
 
-Compiler versions and linker versions as below:
+Ingo, do the two patches fix the latency problems you were seeing as
+well?
 
-root@elm3b19:~/apw/linux-2.6.22# gcc -v
-Using built-in specs.
-Target: powerpc-linux-gnu
-Configured with: ../src/configure -v
---enable-languages=c,c++,java,f95,objc,ada,treelang --prefix=/usr
---with-gxx-include-dir=/usr/include/c++/4.0.2 --enable-shared
---with-system-zlib --libexecdir=/usr/lib --enable-nls
---without-included-gettext --enable-threads=posix --program-suffix=-4.0
---enable-__cxa_atexit --enable-libstdcxx-allocator=mt
---enable-clocale=gnu --enable-libstdcxx-debug --enable-java-gc=boehm
---enable-java-awt=gtk-default --enable-gtk-cairo
---with-java-home=/usr/lib/jvm/java-1.4.2-gcj-4.0-1.4.2.0/jre
---enable-mpfr --disable-softfloat
---enable-targets=powerpc-linux,powerpc64-linux --with-cpu=default32
---disable-werror --enable-checking=release powerpc-linux-gnu
-Thread model: posix
-gcc version 4.0.2 20050808 (prerelease) (Ubuntu 4.0.1-4ubuntu9)
-root@elm3b19:~/apw/linux-2.6.22# ld -v
-GNU ld version 2.16.1 Debian GNU/Linux
-
-As suggested elsewhere I have had a go at tracking this down.  Previous
-problems of this kind were introduced as a result of using 'weak'
-declarations to provide default implementations.  This investigation led
-me to the following commit:
-
-  commit c60473b5d32ea6cf4561232bc852bacd3a513528
-  Author: Jiri Kosina <jkosina@suse.cz>
-  Date:   Sat Sep 15 01:49:49 2007 +0000
-
-    i386-and-x86_64-randomize-brk
-
-Backing this change out seems to get us past this problem.  If we are to
-support compilers of this age, and I believe we currently do, then we
-probabally need to avoid the weak declarations and use the Kconfig
-system to provide the alternatives here.
-
-Jiri?
-
--apw
+-- 
+Regards,
+vatsa
