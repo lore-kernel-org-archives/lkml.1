@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbXIYH2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbXIYHdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbXIYH2Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 03:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbXIYH2D
+	id S1755730AbXIYHdO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 03:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXIYHc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 03:28:03 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:47854 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751534AbXIYH2B (ORCPT
+	Tue, 25 Sep 2007 03:32:59 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:54714 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751576AbXIYHc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 03:28:01 -0400
-Date: Tue, 25 Sep 2007 09:28:00 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Dave Jones <davej@redhat.com>
-cc: Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Patches for tiny 386 kernels, again. Linux kernel 2.6.22.7
-In-Reply-To: <20070924190917.GG8127@redhat.com>
-Message-ID: <Pine.LNX.4.64.0709250927301.23305@fbirervta.pbzchgretzou.qr>
-References: <46F77A85.6020202@nerdgrounds.com> <20070924190917.GG8127@redhat.com>
+	Tue, 25 Sep 2007 03:32:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=R1VLyz3AvgFw0J2HsV+TUukXu9Y2A0Y7daC5PK/x7LtL2jIorOoqdtnp9r7r41XJdVrEwM8W8XY+jAx2AqFX3YXXqxtkcU102JlhENB5L0OxsZq4OD0I2//wiwstUOZonfE2dglaQ7svYnkoJEaW8xabKXbzWUfp0D0bbgLXFF4=
+Message-ID: <64bb37e0709250032j4d2e23c3iccc48fe2e647cbd4@mail.gmail.com>
+Date: Tue, 25 Sep 2007 09:32:57 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: 2.6.23-rc7-mm1
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Len Brown" <lenb@kernel.org>
+In-Reply-To: <1190665512.4035.247.camel@chaos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+	 <64bb37e0709241207q1c188b35ua485a06776ed4bf2@mail.gmail.com>
+	 <20070924123450.f9e54d3d.akpm@linux-foundation.org>
+	 <1190665512.4035.247.camel@chaos>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sep 24 2007 15:09, Dave Jones wrote:
+On 9/24/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Can your check whether 2.6.23-rc7 +
+> http://tglx.de/projects/hrtimers/2.6.23-rc7/patch-2.6.23-rc7-hrt1.patch
 >
-> > +#if defined(__i386__) && defined(CONFIG_DMI)
-> >  	dmi_check_system(acpi_dmi_table);
-> >  #endif
-> >  
-> > +#ifdef CONFIG_DMI
-> >  	dmi_scan_machine();
-> > +#endif
-> >  
-> > +#ifdef CONFIG_DMI
-> >  	/* Check and install the TSC clocksource */
-> >  	dmi_check_system(bad_tsc_dmi_table);
-> > +#endif
-> >  
-> > +#ifdef CONFIG_DMI
-> >  	dmi_check_system(acpi_osl_dmi_table);
-> > +#endif
-> 
->Instead of adding all these ifdefs, we could just define
->add something along the lines of..
->
->#ifndef CONFIG_DMI
->#define dmi_check_system do {} while (0)
->#endif
->
->in some header, which hides the uglies away from the code
->whilst having the same net effect.
+> works for you ?
 
-Need #define dmi_check_system(x) otherwise you get
+Yes, powers off normally.
 
-	/* Check and install the TSC clocksource */
-	do {} while (0) (bad_tsc_dmi_table);
+Torsten
