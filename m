@@ -1,129 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbXIYIDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbXIYIDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758664AbXIYIDF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbXIYICu
+	id S1759084AbXIYIDr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbXIYIDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:02:50 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:3759 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753676AbXIYICr (ORCPT
+	Tue, 25 Sep 2007 04:03:32 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:5211 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754739AbXIYIDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:02:47 -0400
-Date: Tue, 25 Sep 2007 10:02:43 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, folkert@vanheusden.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22] circular lock detected
-Message-ID: <20070925100243.2ceebd9e@twins>
-In-Reply-To: <20070903140135.GE7524@duck.suse.cz>
-References: <20070824210033.GB13237@vanheusden.com>
-	<20070902045529.c66eddc9.akpm@linux-foundation.org>
-	<20070903122702.GC29908@atrey.karlin.mff.cuni.cz>
-	<20070903054959.3ecd9576.akpm@linux-foundation.org>
-	<20070903140135.GE7524@duck.suse.cz>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Sep 2007 04:03:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=hbWzC72Ju50H9VxXGl2oDSnA/ENNK6jjH6IYV6By/RnEqsiQXCFMl90EH+Wmr+/9wQnX5UTP4lCSiLdWBN1z8rAoYzGGED/DoBofbPGpsHjpXuGmWnxKInCY/3i4ytH/9/qkBeQy6WJmloYEmVWuM+7mvwKMoh9b0VTzg5MyM98=
+Message-ID: <20f65d530709250103s556231a5vbb3741e11197df6c@mail.gmail.com>
+Date: Tue, 25 Sep 2007 20:03:27 +1200
+From: "Keith Chew" <keith.chew@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: oom on wireless network saturation
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Sep 2007 16:01:35 +0200 Jan Kara <jack@suse.cz> wrote:
+Hi
 
-> On Mon 03-09-07 05:49:59, Andrew Morton wrote:
-> > > On Mon, 3 Sep 2007 14:27:02 +0200 Jan Kara <jack@suse.cz> wrote:
-> > > > > On Fri, 24 Aug 2007 23:00:33 +0200 Folkert van Heusden <folkert@vanheusden.com> wrote:
+We are stress testing the wireless network driver on our linux system.
+We use ping flood to saturate the network, and within 24 hours, we
+managed to crash the driver.
 
-> > > > Has been reported before, but I don't recall whether we fixed it.  Jan,
-> > > > do you know>?
-> > >   I think we at least found a solution: Teach lockdep that I_MUTEX for
-> > > different filesystems is different. Peter Zilstra wrote a patch for that
-> > > and Folkert even confirmed that it fixes the problem for him. I'm not
-> > > sure what happened with the patch afterwards though. Adding Peter to CC
-> > > :).
-> > 
-> > But this is a tty_lock-versus-dqptr_sem ranking error.  Unrelated to i_mutex?
->   The final report is for this ranking but the locking chain (if I understand it
-> right) is:
-> tty_mutex (con_close) -> i_mutex (sysfs: remove_subdir)
-> i_mutex (do_truncate) -> i_alloc_sem (notify_change) -> truncate_mutex (ext3_truncate)
-> truncate_mutex (ext3_get_blocks_handle) -> dqptr_sem (dquot_alloc_space)
-> 
-> So it complains about tty_mutex vs dqptr_sem (I don't know why it does not
-> complain about tty_mutex vs i_mutex) but the wrong link in the chain is
-> that i_mutex from remove_subdir() [sysfs] and i_mutex from do_truncate()
-> [ext3] are different and should never depend on each other...
-> 
+This was a good test, as it hightlighted a timer problem in the
+driver. After fixing that, we are now getting out of memory errors.
+The OOM killer starts to kick in and the system freezes.
 
-Found it again.
+Can someone advise at a high level, what should the network driver do
+in such a scenario? Essentially, the wireless packets get queued up in
+the driver and eventually it just breaks. What is the correct way to
+handle this gracefully?
 
----
-
-Give each filesystem its own inode lock class. The various filesystems have
-different locking order wrt the inode locks; esp. the pseudo filesystems
-differ from the rest.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/inode.c         |   12 +++++++++---
- include/linux/fs.h |    5 +++++
- 2 files changed, 14 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c
-+++ linux-2.6/fs/inode.c
-@@ -142,6 +142,15 @@ static struct inode *alloc_inode(struct 
- 			return NULL;
- 		}
- 
-+		spin_lock_init(&inode->i_lock);
-+		lockdep_set_class(&inode->i_lock, &sb->s_type->i_lock_key);
-+
-+		mutex_init(&inode->i_mutex);
-+		lockdep_set_class(&inode->i_mutex, &sb->s_type->i_mutex_key);
-+
-+		init_rwsem(&inode->i_alloc_sem);
-+		lockdep_set_class(&inode->i_alloc_sem, &sb->s_type->i_alloc_sem_key);
-+
- 		mapping->a_ops = &empty_aops;
-  		mapping->host = inode;
- 		mapping->flags = 0;
-@@ -190,8 +199,6 @@ void inode_init_once(struct inode *inode
- 	INIT_HLIST_NODE(&inode->i_hash);
- 	INIT_LIST_HEAD(&inode->i_dentry);
- 	INIT_LIST_HEAD(&inode->i_devices);
--	mutex_init(&inode->i_mutex);
--	init_rwsem(&inode->i_alloc_sem);
- 	INIT_RADIX_TREE(&inode->i_data.page_tree, GFP_ATOMIC);
- 	rwlock_init(&inode->i_data.tree_lock);
- 	spin_lock_init(&inode->i_data.i_mmap_lock);
-@@ -199,7 +206,6 @@ void inode_init_once(struct inode *inode
- 	spin_lock_init(&inode->i_data.private_lock);
- 	INIT_RAW_PRIO_TREE_ROOT(&inode->i_data.i_mmap);
- 	INIT_LIST_HEAD(&inode->i_data.i_mmap_nonlinear);
--	spin_lock_init(&inode->i_lock);
- 	i_size_ordered_init(inode);
- #ifdef CONFIG_INOTIFY
- 	INIT_LIST_HEAD(&inode->inotify_watches);
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -1302,8 +1302,13 @@ struct file_system_type {
- 	struct module *owner;
- 	struct file_system_type * next;
- 	struct list_head fs_supers;
-+
- 	struct lock_class_key s_lock_key;
- 	struct lock_class_key s_umount_key;
-+
-+	struct lock_class_key i_lock_key;
-+	struct lock_class_key i_mutex_key;
-+	struct lock_class_key i_alloc_sem_key;
- };
- 
- extern int get_sb_bdev(struct file_system_type *fs_type,
-
+Regards
+Keith
