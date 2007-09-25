@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbXIYQKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbXIYQMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758988AbXIYQKw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 12:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXIYQKo
+	id S1758536AbXIYQMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 12:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbXIYQMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 12:10:44 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:42838 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753272AbXIYQKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 12:10:43 -0400
-Subject: Re: [PATCH 24/25] r/o bind mounts: track number of mount writers
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-In-Reply-To: <20070924161555.aad68a72.akpm@linux-foundation.org>
-References: <20070920195249.852667D5@kernel>
-	 <20070920195320.38C8E20D@kernel>
-	 <20070923231713.f81ee0db.akpm@linux-foundation.org>
-	 <1190671602.26982.261.camel@localhost>
-	 <20070924152532.305ec951.akpm@linux-foundation.org>
-	 <1190675137.26982.266.camel@localhost>
-	 <20070924161555.aad68a72.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 09:10:39 -0700
-Message-Id: <1190736639.26982.279.camel@localhost>
+	Tue, 25 Sep 2007 12:12:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41113 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752210AbXIYQMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 12:12:14 -0400
+Date: Tue, 25 Sep 2007 09:12:03 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Patrick McHardy <kaber@trash.net>
+Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] Remove broken netfilter binary sysctls from bridging
+ code
+Message-ID: <20070925091203.371879e2@fujitsu-loaner>
+In-Reply-To: <46F8897C.5010504@trash.net>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070921020554.GE31759@nineveh.local>
+	<m1fy18k5ru.fsf@ebiederm.dsl.xmission.com>
+	<46F7EC0A.9030506@trash.net>
+	<20070924131458.0daa4562@freepuppy.rosehill>
+	<46F8897C.5010504@trash.net>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 16:15 -0700, Andrew Morton wrote:
-> On Mon, 24 Sep 2007 16:05:37 -0700
-> Dave Hansen <haveblue@us.ibm.com> wrote:
-> 
-> > On Mon, 2007-09-24 at 15:25 -0700, Andrew Morton wrote:
-> > > hm.  I saw that warning on my 2-way.  It has CONFIG_NR_CPUS=8 so perhaps
-> > > the kernel has decided that this machine can possibly have eight CPUs.
-> > > 
-> > > It's an old super-micro board, doesn't have ACPI.
+On Tue, 25 Sep 2007 06:07:24 +0200
+Patrick McHardy <kaber@trash.net> wrote:
+
+> Stephen Hemminger wrote:
+> > On Mon, 24 Sep 2007 18:55:38 +0200
+> > Patrick McHardy <kaber@trash.net> wrote:
 > > 
-> > Well, it's looking like we only set cpu_possible_map from data we find
-> > in the MP table, which makes sense.  The only question is how your
-> > system gets more than ~8 possible cpus.  Do you have the .config handy?
+> >>Eric W. Biederman wrote:
+> >>
+> >>>A really good fix would be to remove the binary side and then to
+> >>>modify brnf_sysctl_call_tables to allocate a temporary ctl_table
+> >>>and integer on the stack and only set ctl->data after we have
+> >>>normalized the written value.  But since in practice nothing cares
+> >>>about the race a better fix probably isn't worth it.
+> >>
+> >>
+> >>I seem to be missing something, the entire brnf_sysctl_call_tables
+> >>thing looks purely cosmetic to me, wouldn't it be better to simply
+> >>remove it?
+> > 
+> > 
+> > I agree, removing seems like a better option.  But probably need to
+> > go through a 3-6mo warning period, since sysctl's are technically
+> > an API.
 > 
-> http://userweb.kernel.org/~akpm/config-vmm.txt
+> 
+> I meant removing brnf_sysctl_call_tables function, not the sysctls
+> themselves, all it does is change values != 0 to 1. Or did you
+> actually mean that something in userspace might depend on reading
+> back the value 1 after writing a value != 0?
 
-I've reproduced this.  I'll do more runtime testing with all of the
-debugging, CONFIG_CPU_HOTPLUG=y, and NR_CPUS to a high value.  It should
-help catch things like this in the future.  
-
--- Dave
-
+I was going farther, because don't really see the value of having
+a sysctl for this. It seems better to just not load filters if
+they aren't going to be used. Having another enable/disable hook
+just adds needless complexity.
