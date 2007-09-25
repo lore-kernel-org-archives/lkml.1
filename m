@@ -1,168 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbXIYD6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759825AbXIYD67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759438AbXIYD6j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 23:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXIYD6c
+	id S1759825AbXIYD67 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 23:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXIYD6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 23:58:32 -0400
-Received: from ozlabs.org ([203.10.76.45]:43536 "EHLO ozlabs.org"
+	Mon, 24 Sep 2007 23:58:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:43538 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755506AbXIYD6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 23:58:31 -0400
-Subject: [PATCH] Delay creation of khcvd thread
+	id S1753506AbXIYD6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 23:58:46 -0400
+Subject: [PATCH 1/3] Virtualization config cleanup: Select CONFIG_PARAVIRT
+	when required
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Anton Blanchard <anton@au1.ibm.com>, paulus <paulus@au1.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Ryan S. Arnold" <rsa@us.ibm.com>, Dave Jones <davej@codemonkey.org.uk>
+To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: virtualization <virtualization@lists.linux-foundation.org>,
+       Andi Kleen <ak@muc.de>
 Content-Type: text/plain
-Date: Tue, 25 Sep 2007 13:46:24 +1000
-Message-Id: <1190691984.27805.270.camel@localhost.localdomain>
+Date: Tue, 25 Sep 2007 13:58:08 +1000
+Message-Id: <1190692688.27805.276.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This changes hvc_init() to be called only when someone actually uses
-the hvc_console driver.  Dave Jones complained when profiling bootup.
+(Unless there are complaints, I'll push this as part of the lguest
+patches for 2.6.24, since there are lguest config changes there too).
 
-hvc_console used to only be for Power aka pSeries: now lguest and Xen
-both want it built-in in case the kernel is a guest under one of
-those, even though usually it will be a native boot.
+Andi points out that PARAVIRT is an option best selected when needed.
+
+We introduce PARAVIRT_GUEST for the menu itself, and select PARAVIRT
+if the user turns on anything which needs it.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- drivers/char/Kconfig       |    8 ++---
- drivers/char/hvc_console.c |   66 ++++++++++++++++++++++++++++++--------------
- 2 files changed, 49 insertions(+), 25 deletions(-)
+ arch/i386/Kconfig     |   33 ++++++++++++++++++++-------------
+ arch/i386/xen/Kconfig |    1 +
+ 2 files changed, 21 insertions(+), 13 deletions(-)
 
 ===================================================================
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -568,10 +568,10 @@ config HVC_DRIVER
- config HVC_DRIVER
- 	bool
+--- a/arch/i386/Kconfig
++++ b/arch/i386/Kconfig
+@@ -214,24 +214,30 @@ config X86_ES7000
+ 
+ endchoice
+ 
+-menuconfig PARAVIRT
++config PARAVIRT
++	bool
++	depends on !(X86_VISWS || X86_VOYAGER)
++	help
++	  This changes the kernel so it can modify itself when it is run
++	  under a hypervisor, potentially improving performance significantly
++	  over full virtualization.  However, when run without a hypervisor
++	  the kernel is theoretically slower and slightly larger.
++
++menuconfig PARAVIRT_GUEST
+-	bool "Paravirtualized guest support (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
++	bool "Paravirtualized guest support"
+-	depends on !(X86_VISWS || X86_VOYAGER)
+-	help
+-	  Paravirtualization is a way of running multiple instances of
+-	  Linux on the same machine, under a hypervisor.  This option
+-	  changes the kernel so it can modify itself when it is run
+-	  under a hypervisor, improving performance significantly.
+-	  However, when run without a hypervisor the kernel is
+-	  theoretically slower.  If in doubt, say N.
+-
+-if PARAVIRT
++	help
++	  Say Y here to get to see options related to running Linux under
++	  various hypervisors.  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
++
++if PARAVIRT_GUEST
+ 
+ source "arch/i386/xen/Kconfig"
+ 
+ config VMI
+ 	bool "VMI Guest support"
++	select PARAVIRT
  	help
--	  Users of pSeries machines that want to utilize the hvc console front-end
--	  module for their backend console driver should select this option.
-+	  Generic "hypervisor virtual console" infrastructure for various
-+	  hypervisors (pSeries, Xen, lguest).
- 	  It will automatically be selected if one of the back-end console drivers
- 	  is selected.
+ 	  VMI provides a paravirtualized interface to the VMware ESX server
+ 	  (it could be used by other hypervisors in theory too, but is not
+@@ -239,6 +246,7 @@ config VMI
  
- 
- config HVC_CONSOLE
+ config LGUEST_GUEST
+ 	bool "Lguest guest support"
++	select PARAVIRT
+ 	depends on !X86_PAE
+ 	help
+ 	  Lguest is a tiny in-kernel hypervisor.  Selecting this will
 ===================================================================
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -68,6 +68,8 @@ static struct task_struct *hvc_task;
+--- a/arch/i386/xen/Kconfig
++++ b/arch/i386/xen/Kconfig
+@@ -4,6 +4,7 @@
  
- /* Picks up late kicks after list walk but before schedule() */
- static int hvc_kicked;
-+
-+static int hvc_init(void);
- 
- #ifdef CONFIG_MAGIC_SYSRQ
- static int sysrq_pressed;
-@@ -754,6 +756,13 @@ struct hvc_struct __devinit *hvc_alloc(u
- 	struct hvc_struct *hp;
- 	int i;
- 
-+	/* We wait until a driver actually comes along */
-+	if (!hvc_driver) {
-+		int err = hvc_init();
-+		if (err)
-+			return ERR_PTR(err);
-+	}
-+
- 	hp = kmalloc(ALIGN(sizeof(*hp), sizeof(long)) + outbuf_size,
- 			GFP_KERNEL);
- 	if (!hp)
-@@ -829,16 +838,18 @@ int __devexit hvc_remove(struct hvc_stru
- 	return 0;
- }
- 
--/* Driver initialization.  Follow console initialization.  This is where the TTY
-- * interfaces start to become available. */
--static int __init hvc_init(void)
-+/* Driver initialization: called as soon as someone uses hvc_alloc(). */
-+static int hvc_init(void)
- {
- 	struct tty_driver *drv;
-+	int err;
- 
- 	/* We need more than hvc_count adapters due to hotplug additions. */
- 	drv = alloc_tty_driver(HVC_ALLOC_TTY_ADAPTERS);
--	if (!drv)
--		return -ENOMEM;
-+	if (!drv) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
- 
- 	drv->owner = THIS_MODULE;
- 	drv->driver_name = "hvc";
-@@ -854,30 +865,43 @@ static int __init hvc_init(void)
- 	 * added later. */
- 	hvc_task = kthread_run(khvcd, NULL, "khvcd");
- 	if (IS_ERR(hvc_task)) {
--		panic("Couldn't create kthread for console.\n");
--		put_tty_driver(drv);
--		return -EIO;
--	}
--
--	if (tty_register_driver(drv))
--		panic("Couldn't register hvc console driver\n");
--
-+		printk(KERN_ERR "Couldn't create kthread for console.\n");
-+		err = PTR_ERR(hvc_task);
-+		goto put_tty;
-+	}
-+
-+	err = tty_register_driver(drv);
-+	if (err) {
-+		printk(KERN_ERR "Couldn't register hvc console driver\n");
-+		goto stop_thread;
-+	}
-+
-+	/* FIXME: This mb() seems completely random.  Remove it. */
- 	mb();
- 	hvc_driver = drv;
- 	return 0;
--}
--module_init(hvc_init);
-+
-+put_tty:
-+	put_tty_driver(hvc_driver);
-+stop_thread:
-+	kthread_stop(hvc_task);
-+	hvc_task = NULL;
-+out:
-+	return err;
-+}
- 
- /* This isn't particularly necessary due to this being a console driver
-  * but it is nice to be thorough.
-  */
- static void __exit hvc_exit(void)
- {
--	kthread_stop(hvc_task);
--
--	tty_unregister_driver(hvc_driver);
--	/* return tty_struct instances allocated in hvc_init(). */
--	put_tty_driver(hvc_driver);
--	unregister_console(&hvc_con_driver);
-+	if (hvc_driver) {
-+		kthread_stop(hvc_task);
-+
-+		tty_unregister_driver(hvc_driver);
-+		/* return tty_struct instances allocated in hvc_init(). */
-+		put_tty_driver(hvc_driver);
-+		unregister_console(&hvc_con_driver);
-+	}
- }
- module_exit(hvc_exit);
+ config XEN
+ 	bool "Xen guest support"
++	select PARAVIRT
+ 	depends on X86_CMPXCHG && X86_TSC && !NEED_MULTIPLE_NODES
+ 	help
+ 	  This is the Linux Xen port.  Enabling this will allow the
 
 
