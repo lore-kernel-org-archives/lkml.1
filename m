@@ -1,90 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbXIYLeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbXIYLna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbXIYLeB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 07:34:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbXIYLdw
+	id S1753258AbXIYLna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXIYLnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 07:33:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40071 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbXIYLdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 07:33:52 -0400
-Date: Tue, 25 Sep 2007 13:33:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git] CFS-devel, latest code
-Message-ID: <20070925113306.GA19166@elte.hu>
-References: <20070924214537.GA18980@elte.hu> <1190700652.6482.7.camel@Homer.simpson.net> <1190705759.11910.10.camel@Homer.simpson.net> <1190709207.11226.6.camel@Homer.simpson.net> <20070925091331.GA22905@elte.hu> <20070925094440.GK26289@linux.vnet.ibm.com> <20070925094040.GA28391@elte.hu> <20070925101044.GA923@elte.hu> <20070925102855.GL26289@linux.vnet.ibm.com> <20070925103617.GA3426@elte.hu>
+	Tue, 25 Sep 2007 07:43:22 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:38132 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751917AbXIYLnV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 07:43:21 -0400
+Date: Tue, 25 Sep 2007 13:43:17 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Joe Perches <joe@perches.com>
+cc: Rob Landley <rob@landley.net>,
+       Michael Opdenacker <michael@free-electrons.com>, linux-tiny@selenic.com,
+       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Celinux-dev] Re: [Announce] Linux-tiny project revival
+In-Reply-To: <1190319360.26101.154.camel@localhost>
+Message-ID: <Pine.LNX.4.62.0709251340310.14632@pademelon.sonytel.be>
+References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net>
+ <1190319360.26101.154.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070925103617.GA3426@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-461112960-1190720597=:14632"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+---584337861-461112960-1190720597=:14632
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> hm. perhaps this fixup in kernel/sched.c:set_task_cpu():
+On Thu, 20 Sep 2007, Joe Perches wrote:
+> On Thu, 2007-09-20 at 15:38 -0500, Rob Landley wrote:
+> > And so far no behavior has changed.  But now the _fun_ part is, you can add a 
+> > config symbol for "what is the minimum loglevel I care about?"  Set that as a 
+> > number from 0-9.  And then you can define the printk to do:
+> > 
+> > #define printk(level, str, ...) \
+> >   do { \
+> >     if (level < CONFIG_PRINTK_DOICARE) \
+> >       actual_printk("<" #level ">" str, __VA_ARGS__); \
+> >   } while(0);
+> > 
+> > And viola (however you spell that, I think I'm using the stringed instrument 
 > 
->         p->se.vruntime -= old_rq->cfs.min_vruntime - new_rq->cfs.min_vruntime;
+> > But this doesn't _completely_ eliminate 
+> > printks, so you can still get the panic() calls and such.  You tweak precisly 
+> > how much bloat you want, using the granularity information that's already 
+> > there in the source code...
+> > Opinions?
 > 
-> needs to become properly group-hierarchy aware?
+> I'd rather take the opportunity to convert all the printks to
+> use pr_<level>.  That way, you can pick'n'choose if you want
+> arbitrary combinations of KERN_<level> compiled in or not.
 
-a quick first stab like the one below does not appear to solve the 
-problem.
+Or:
 
-	Ingo
+    if ((1 << level) & CONFIG_PRINTK_MASK)
+	actual_printk("<" #level ">" str, __VA_ARGS__);
 
-------------------->
-Subject: sched: group scheduler SMP migration fix
-From: Ingo Molnar <mingo@elte.hu>
+But it would indeed be nice to have all of pr_<level> (and not only pr_info()
+and pr_debug()) anyway.
 
-group scheduler SMP migration fix.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -1039,7 +1039,8 @@ void set_task_cpu(struct task_struct *p,
- {
- 	int old_cpu = task_cpu(p);
- 	struct rq *old_rq = cpu_rq(old_cpu), *new_rq = cpu_rq(new_cpu);
--	u64 clock_offset;
-+	struct sched_entity *se;
-+	u64 clock_offset, voffset;
+With kind regards,
  
- 	clock_offset = old_rq->clock - new_rq->clock;
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
  
-@@ -1051,7 +1052,11 @@ void set_task_cpu(struct task_struct *p,
- 	if (p->se.block_start)
- 		p->se.block_start -= clock_offset;
- #endif
--	p->se.vruntime -= old_rq->cfs.min_vruntime - new_rq->cfs.min_vruntime;
-+
-+	se = &p->se;
-+	voffset = old_rq->cfs.min_vruntime - new_rq->cfs.min_vruntime;
-+	for_each_sched_entity(se)
-+		se->vruntime -= voffset;
- 
- 	__set_task_cpu(p, new_cpu);
- }
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-461112960-1190720597=:14632--
