@@ -1,98 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbXIYUkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbXIYUk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756129AbXIYUkl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 16:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXIYUke
+	id S1757428AbXIYUk5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 16:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXIYUkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 16:40:34 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:61215 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751750AbXIYUkd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 16:40:33 -0400
-Date: Tue, 25 Sep 2007 16:40:28 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 3/5] Add samples subdir
-Message-ID: <20070925204028.GA16652@Krystal>
-References: <20070925121145.262664884@polymtl.ca> <20070925121251.954162366@polymtl.ca> <20070925190036.GA14579@uranus.ravnborg.org> <20070925133234.cdd9edf1.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070925133234.cdd9edf1.randy.dunlap@oracle.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:40:15 up 57 days, 20:59,  5 users,  load average: 0.29, 0.30, 0.24
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 25 Sep 2007 16:40:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36319 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756551AbXIYUkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 16:40:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86-64: Disable local APIC timer use on AMD systems with C1E
+Date: Tue, 25 Sep 2007 22:55:04 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>
+References: <1190749021.17409.35.camel@chaos>
+In-Reply-To: <1190749021.17409.35.camel@chaos>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_qWX+G+xP5PvOLcC"
+Message-Id: <200709252255.06039.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Randy Dunlap (randy.dunlap@oracle.com) wrote:
-> On Tue, 25 Sep 2007 21:00:36 +0200 Sam Ravnborg wrote:
-> 
-> Hi Sam,
-> 
-> Thanks for looking.  I was hoping that you would find time to
-> look/comment on it.
-> 
-> > Hi Mathieu & Randy.
-> > 
-> > On Tue, Sep 25, 2007 at 08:11:48AM -0400, Mathieu Desnoyers wrote:
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > > Begin infrastructure for kernel code samples in the samples/ directory.
-> > > Add its Kconfig and Kbuild files.
-> > > Source its Kconfig file in all arch/ Kconfigs.
-> > 
-> > Sorry for not commenting on this before...
-> > The samples directory contains sample code so it is wrong to actually
-> > include it as part of the kernel IMHO.
-> > We only want to keep the samples buildable and to do so
-> > we can make a much simpler hack in the top-level Makefile.
-> > Consider following patch:
-> > 
-> > @@ -760,6 +760,9 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) $(kallsyms.o) vmlinux.o
-> >  ifdef CONFIG_HEADERS_CHECK
-> >         $(Q)$(MAKE) -f $(srctree)/Makefile headers_check
-> >  endif
-> > +ifdef CONFIG_SAMPLES
-> > +       $(Q)$(MAKE) $(build)=samples
-> > +endif
-> >         $(call vmlinux-modpost)
-> >         $(call if_changed_rule,vmlinux__)
-> >         $(Q)rm -f .old_version
-> > 
-> > 
-> > With this we build the samples when CONFIG_SAMPLES are selected and
-> > when the kernel is about to be linked.
-> > 
-> > 
-> > As for the Kconfig file I am in favour of it but think a much more
-> > natural place is to source it in lib/Kconfig.debug.
-> > Then it will appear in "Kernel hacking" and the smaples
-> > are used for kernel hacking and not for regular people
-> > building their own kernel.
-> > 
-> > Sourcing samples/Kconfig from lib/Kconfig.debug will then
-> > take effect for all archs so the result is a much simpler
-> > Kconfig patch too.
-> 
-> These changes all sound good to me.
-> 
-> Mathieu, can you find time to do this or should I do it?
-> 
+--Boundary-00=_qWX+G+xP5PvOLcC
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I'll take care of it.
+On Tuesday, 25 September 2007 21:37, Thomas Gleixner wrote:
+> commit 3556ddfa9284a86a59a9b78fe5894430f6ab4eef titled
+> 
+>  [PATCH] x86-64: Disable local APIC timer use on AMD systems with C1E
+> 
+> solves a problem with AMD dual core laptops e.g. HP nx6325 (Turion 64
+> X2) with C1E enabled:
+> 
+> When both cores go into idle at the same time, then the system switches
+> into C1E state, which is basically the same as C3. This stops the local
+> apic timer.
+> 
+> This was debugged right after the dyntick merge on i386 and despite the
+> patch title it fixes only the 32 bit path.
+> 
+> x86_64 is still missing this fix. It seems that mainline is not really
+> affected by this issue, as the PIT is running and keeps jiffies
+> incrementing, but that's just waiting for trouble. 
+> 
+> -mm suffers from this problem due to the x86_64 high resolution timer
+> patches.
+> 
+> This is a quick and dirty port of the i386 code to x86_64. 
+> 
+> I spent quite a time with Rafael to debug the -mm / hrt wreckage until
+> someone pointed us to this. I really had forgotten that we debugged this
+> half a year ago already. 
+> 
+> Sigh, is it just me or is there something yelling arch/x86 into my ear?
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-> ---
-> ~Randy
-> Phaedrus says that Quality is about caring.
+I have reworked the patch a bit so that it applies on top of 2.6.23-rc8-mm1
+and compiles (my version is attached).
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+With this patch applied, the kernel boots correctly on the nx6325.
+
+Greetings,
+Rafael
+
+--Boundary-00=_qWX+G+xP5PvOLcC
+Content-Type: text/x-diff;
+  charset="iso-8859-15";
+  name="x86-64-disable-local-APIC-timer-use-on-AMD-systems-with-C1E.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="x86-64-disable-local-APIC-timer-use-on-AMD-systems-with-C1E.patch"
+
+
+---
+ arch/x86_64/kernel/apic.c  |    2 +-
+ arch/x86_64/kernel/setup.c |   34 ++++++++++++++++++++++++++++++++++
+ include/asm-x86_64/apic.h  |    1 +
+ 3 files changed, 36 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.23-rc8-mm1/arch/x86_64/kernel/setup.c
+===================================================================
+--- linux-2.6.23-rc8-mm1.orig/arch/x86_64/kernel/setup.c
++++ linux-2.6.23-rc8-mm1/arch/x86_64/kernel/setup.c
+@@ -620,6 +620,37 @@ static void __cpuinit early_init_amd(str
+ #endif
+ }
+ 
++#define ENABLE_C1E_MASK		0x18000000
++#define CPUID_PROCESSOR_SIGNATURE	1
++#define CPUID_XFAM		0x0ff00000
++#define CPUID_XFAM_K8		0x00000000
++#define CPUID_XFAM_10H		0x00100000
++#define CPUID_XFAM_11H		0x00200000
++#define CPUID_XMOD		0x000f0000
++#define CPUID_XMOD_REV_F	0x00040000
++
++/* AMD systems with C1E don't have a working lAPIC timer. Check for that. */
++static __cpuinit int amd_apic_timer_broken(void)
++{
++	u32 lo, hi;
++	u32 eax = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
++	switch (eax & CPUID_XFAM) {
++	case CPUID_XFAM_K8:
++		if ((eax & CPUID_XMOD) < CPUID_XMOD_REV_F)
++			break;
++	case CPUID_XFAM_10H:
++	case CPUID_XFAM_11H:
++		rdmsr(MSR_K8_ENABLE_C1E, lo, hi);
++		if (lo & ENABLE_C1E_MASK)
++			return 1;
++		break;
++	default:
++		/* err on the side of caution */
++		return 1;
++	}
++	return 0;
++}
++
+ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ {
+ 	unsigned level, flags, dummy;
+@@ -692,6 +723,9 @@ static void __cpuinit init_amd(struct cp
+ 	if (c->x86 == 0x10 && !force_mwait)
+ 		clear_bit(X86_FEATURE_MWAIT, &c->x86_capability);
+ 
++	if (amd_apic_timer_broken())
++		disable_apic_timer = 1;
++
+ 	if (c->x86 >= 0xf && c->x86 <= 0x11 &&
+ 	    !rdmsr_safe(MSR_VM_CR, &flags, &dummy) &&
+ 	    (flags & 0x18))
+Index: linux-2.6.23-rc8-mm1/include/asm-x86_64/apic.h
+===================================================================
+--- linux-2.6.23-rc8-mm1.orig/include/asm-x86_64/apic.h
++++ linux-2.6.23-rc8-mm1/include/asm-x86_64/apic.h
+@@ -19,6 +19,7 @@
+ extern int apic_verbosity;
+ extern int apic_runs_main_timer;
+ extern int ioapic_force;
++extern int disable_apic_timer;
+ 
+ /*
+  * Define the default level of output to be very little
+Index: linux-2.6.23-rc8-mm1/arch/x86_64/kernel/apic.c
+===================================================================
+--- linux-2.6.23-rc8-mm1.orig/arch/x86_64/kernel/apic.c
++++ linux-2.6.23-rc8-mm1/arch/x86_64/kernel/apic.c
+@@ -41,8 +41,8 @@
+ #include <asm/apic.h>
+ 
+ int apic_verbosity;
++int disable_apic_timer __initdata;
+ static int apic_calibrate_pmtmr __initdata;
+-static int disable_apic_timer __initdata;
+ 
+ /* Local APIC timer works in C2? */
+ int local_apic_timer_c2_ok;
+
+--Boundary-00=_qWX+G+xP5PvOLcC--
