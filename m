@@ -1,70 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXIYMiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbXIYMk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbXIYMiR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 08:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbXIYMiE
+	id S1754377AbXIYMk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 08:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXIYMkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 08:38:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34312 "EHLO ogre.sisk.pl"
+	Tue, 25 Sep 2007 08:40:18 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:34393 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbXIYMiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 08:38:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents
-Date: Tue, 25 Sep 2007 14:52:00 +0200
-User-Agent: KMail/1.9.5
-Cc: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       Chuck Ebbert <cebbert@redhat.com>
-References: <20070925101418.68d30a72@localhost> <200709251420.44345.rjw@sisk.pl> <1190723305.4035.327.camel@chaos>
-In-Reply-To: <1190723305.4035.327.camel@chaos>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709251452.01415.rjw@sisk.pl>
+	id S1752646AbXIYMkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 08:40:17 -0400
+Message-Id: <20070925121252.259601577@polymtl.ca>
+References: <20070925121145.262664884@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 25 Sep 2007 08:11:49 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 4/5] Linux Kernel Markers - Samples
+Content-Disposition: inline; filename=linux-kernel-markers-samples.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 25 Sep 2007 12:39:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 25 September 2007 14:28, Thomas Gleixner wrote:
-> On Tue, 2007-09-25 at 14:20 +0200, Rafael J. Wysocki wrote:
-> > > > > As i can see from the log, you are booting on computer with dualcore AMD
-> > > > > processor. Do you have C1E feature enabled? 
-> > 
-> > That's possible, how to check?
-> > 
-> > > > > i386 kernel disable lapic on dualcore AMD with C1E support (see 
-> > > > > http://lkml.org/lkml/2007/3/29/199). x86_64 kernel do not have this
-> > > > > patch still (it's required for tickless kernel only).
-> > > > 
-> > > > Well it is required for non tickless mode as well.
-> > > > 
-> > > > >  As result, if
-> > > > > you run x86_64 kernel with hrt patch on such computer, the system
-> > > > > will stall during boot on lapic timer calibration.
-> > > > 
-> > > > Thanks for the reminder. I have a look into this.
-> > > 
-> > > Can you please boot mainline and provide the output of:
-> > > 
-> > > # cat /proc/interrupts; sleep 10; cat /proc/interrupts
-> > 
-> > albercik:~ # cat /proc/interrupts; sleep 10; cat /proc/interrupts
-> >            CPU0       CPU1
-> >   0:    1159492          0  local-APIC-edge      timer
-> > LOC:          0    1158220   Local interrupts
-> >
-> >   0:    1161996          0  local-APIC-edge      timer
-> > LOC:          0    1160723   Local interrupts
-> 
-> Hmm. That's strange. It looks like the local apic timer is not used, but
-> x86_64 definitely lacks the above check.
+Module example showing how to use the Linux Kernel Markers.
 
-Ouch, sorry.  This is from the kernel booted with "noapictimer".
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ samples/Kconfig                  |    5 +
+ samples/Makefile                 |    3 +
+ samples/markers/Makefile         |    4 +
+ samples/markers/marker-example.c |   55 +++++++++++++++++++++
+ samples/markers/probe-example.c  |   98 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 165 insertions(+)
 
-I'll get the correct output in a little while.
+Index: linux-2.6-lttng/samples/markers/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/markers/Makefile	2007-09-24 18:41:08.000000000 -0400
+@@ -0,0 +1,4 @@
++# builds the kprobes example kernel modules;
++# then to use one (as root):  insmod <module_name.ko>
++
++obj-$(CONFIG_SAMPLE_MARKERS) += probe-example.o marker-example.o
+Index: linux-2.6-lttng/samples/markers/marker-example.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/markers/marker-example.c	2007-09-24 18:41:08.000000000 -0400
+@@ -0,0 +1,55 @@
++/* marker-example.c
++ *
++ * Executes a marker when /proc/marker-example is opened.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <linux/sched.h>
++#include <linux/proc_fs.h>
++
++struct proc_dir_entry *pentry_example = NULL;
++
++static int my_open(struct inode *inode, struct file *file)
++{
++	int i;
++
++	trace_mark(subsystem_event, "%d %s", 123, "example string");
++	for (i=0; i<10; i++) {
++		trace_mark(subsystem_eventb, MARK_NOARGS);
++	}
++	return -EPERM;
++}
++
++static struct file_operations mark_ops = {
++	.open = my_open,
++};
++
++static int example_init(void)
++{
++	printk(KERN_ALERT "example init\n");
++	pentry_example = create_proc_entry("marker-example", 0444, NULL);
++	if (pentry_example)
++		pentry_example->proc_fops = &mark_ops;
++	else
++		return -EPERM;
++	return 0;
++}
++
++static void example_exit(void)
++{
++	printk(KERN_ALERT "example exit\n");
++	remove_proc_entry("marker-example", NULL);
++}
++
++module_init(example_init)
++module_exit(example_exit)
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Marker example");
+Index: linux-2.6-lttng/samples/markers/probe-example.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/markers/probe-example.c	2007-09-24 18:41:08.000000000 -0400
+@@ -0,0 +1,98 @@
++/* probe-example.c
++ *
++ * Connects two functions to marker call sites.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <asm/atomic.h>
++
++struct probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
++};
++
++void probe_subsystem_event(const struct __mark_marker *mdata,
++		void *private, const char *format, ...)
++{
++	va_list ap;
++	/* Declare args */
++	unsigned int value;
++	const char *mystr;
++
++	/* Assign args */
++	va_start(ap, format);
++	value = va_arg(ap, typeof(value));
++	mystr = va_arg(ap, typeof(mystr));
++
++	/* Call printk */
++	printk("Value %u, string %s\n", value, mystr);
++
++	/* or count, check rights, serialize data in a buffer */
++
++	va_end(ap);
++}
++
++atomic_t eventb_count = ATOMIC_INIT(0);
++
++void probe_subsystem_eventb(const struct __mark_marker *mdata,
++	void *private, const char *format, ...)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++static struct probe_data probe_array[] =
++{
++	{	.name = "subsystem_event",
++		.format = "%d %s",
++		.probe_func = probe_subsystem_event },
++	{	.name = "subsystem_eventb",
++		.format = MARK_NOARGS,
++		.probe_func = probe_subsystem_eventb },
++};
++
++static int __init probe_init(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_probe_register(probe_array[i].name,
++				probe_array[i].format,
++				probe_array[i].probe_func, &probe_array[i]);
++		if (result)
++			printk(KERN_INFO "Unable to register probe %s\n",
++				probe_array[i].name);
++		result = marker_arm(probe_array[i].name);
++		if (result)
++			printk(KERN_INFO "Unable to arm probe %s\n",
++				probe_array[i].name);
++	}
++	return 0;
++}
++
++static void __exit probe_fini(void)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		marker_probe_unregister(probe_array[i].name);
++	}
++	printk("Number of event b : %u\n", atomic_read(&eventb_count));
++}
++
++module_init(probe_init);
++module_exit(probe_fini);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("SUBSYSTEM Probe");
+Index: linux-2.6-lttng/samples/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/samples/Makefile	2007-09-24 18:43:41.000000000 -0400
+@@ -0,0 +1,3 @@
++# Makefile for Linux samples code
++
++obj-$(CONFIG_SAMPLES)	+= markers/
+Index: linux-2.6-lttng/samples/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/samples/Kconfig	2007-09-24 18:20:40.000000000 -0400
++++ linux-2.6-lttng/samples/Kconfig	2007-09-24 18:41:08.000000000 -0400
+@@ -7,5 +7,10 @@ menuconfig SAMPLES
+ 
+ if SAMPLES
+ 
++config SAMPLE_MARKERS
++	tristate "Build markers examples -- loadable modules only"
++	depends on MARKERS && m
++	help
++	  This build markers example modules.
+ 
+ endif # SAMPLES
 
-Greetings,
-Rafael
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
