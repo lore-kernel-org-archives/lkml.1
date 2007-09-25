@@ -1,126 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbXIYThW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbXIYThl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbXIYThW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 15:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbXIYThL
+	id S1757276AbXIYThl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 15:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbXIYThZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 15:37:11 -0400
-Received: from www.osadl.org ([213.239.205.134]:45787 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752604AbXIYThJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 15:37:09 -0400
-Subject: [PATCH] x86-64: Disable local APIC timer use on AMD systems with
-	C1E
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andi Kleen <ak@suse.de>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 21:37:01 +0200
-Message-Id: <1190749021.17409.35.camel@chaos>
+	Tue, 25 Sep 2007 15:37:25 -0400
+Received: from xenotime.net ([66.160.160.81]:42501 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755429AbXIYThW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 15:37:22 -0400
+Date: Tue, 25 Sep 2007 12:37:18 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: menuconfig idea: lift fs menu
+Message-Id: <20070925123718.c98fd8c9.rdunlap@xenotime.net>
+In-Reply-To: <Pine.LNX.4.64.0709250134010.23305@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0709250128510.23305@fbirervta.pbzchgretzou.qr>
+	<Pine.LNX.4.64.0709250132300.23305@fbirervta.pbzchgretzou.qr>
+	<Pine.LNX.4.64.0709250134010.23305@fbirervta.pbzchgretzou.qr>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 3556ddfa9284a86a59a9b78fe5894430f6ab4eef titled
+On Tue, 25 Sep 2007 10:10:26 +0200 (CEST) Jan Engelhardt wrote:
 
- [PATCH] x86-64: Disable local APIC timer use on AMD systems with C1E
+> 
+> Lift the FS menu a bit by moving filesystem-specific
+> parts into their own menu.
+> 
+> This is an idea I had. Comments please, if any.
+> 
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-solves a problem with AMD dual core laptops e.g. HP nx6325 (Turion 64
-X2) with C1E enabled:
+Hi Jan,
 
-When both cores go into idle at the same time, then the system switches
-into C1E state, which is basically the same as C3. This stops the local
-apic timer.
+The current fs menu is too long IMO, so this helps.
 
-This was debugged right after the dyntick merge on i386 and despite the
-patch title it fixes only the 32 bit path.
-
-x86_64 is still missing this fix. It seems that mainline is not really
-affected by this issue, as the PIT is running and keeps jiffies
-incrementing, but that's just waiting for trouble. 
-
--mm suffers from this problem due to the x86_64 high resolution timer
-patches.
-
-This is a quick and dirty port of the i386 code to x86_64. 
-
-I spent quite a time with Rafael to debug the -mm / hrt wreckage until
-someone pointed us to this. I really had forgotten that we debugged this
-half a year ago already. 
-
-Sigh, is it just me or is there something yelling arch/x86 into my ear?
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
-index af838f6..32054bf 100644
---- a/arch/x86_64/kernel/setup.c
-+++ b/arch/x86_64/kernel/setup.c
-@@ -546,6 +546,37 @@ static void __init amd_detect_cmp(struct cpuinfo_x86 *c)
- #endif
- }
- 
-+#define ENABLE_C1E_MASK		0x18000000
-+#define CPUID_PROCESSOR_SIGNATURE	1
-+#define CPUID_XFAM		0x0ff00000
-+#define CPUID_XFAM_K8		0x00000000
-+#define CPUID_XFAM_10H		0x00100000
-+#define CPUID_XFAM_11H		0x00200000
-+#define CPUID_XMOD		0x000f0000
-+#define CPUID_XMOD_REV_F	0x00040000
-+
-+/* AMD systems with C1E don't have a working lAPIC timer. Check for that. */
-+static __cpuinit int amd_apic_timer_broken(void)
-+{
-+	u32 lo, hi;
-+	u32 eax = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
-+	switch (eax & CPUID_XFAM) {
-+	case CPUID_XFAM_K8:
-+		if ((eax & CPUID_XMOD) < CPUID_XMOD_REV_F)
-+			break;
-+	case CPUID_XFAM_10H:
-+	case CPUID_XFAM_11H:
-+		rdmsr(MSR_K8_ENABLE_C1E, lo, hi);
-+		if (lo & ENABLE_C1E_MASK)
-+			return 1;
-+		break;
-+	default:
-+		/* err on the side of caution */
-+		return 1;
-+	}
-+	return 0;
-+}
-+
- static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- {
- 	unsigned level;
-@@ -617,6 +648,9 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 	/* Family 10 doesn't support C states in MWAIT so don't use it */
- 	if (c->x86 == 0x10 && !force_mwait)
- 		clear_bit(X86_FEATURE_MWAIT, &c->x86_capability);
-+
-+	if (amd_apic_timer_broken())
-+		disable_apic_timer = 1;
- }
- 
- static void __cpuinit detect_ht(struct cpuinfo_x86 *c)
-diff --git a/include/asm-x86_64/apic.h b/include/asm-x86_64/apic.h
-index 85125ef..e458020 100644
---- a/include/asm-x86_64/apic.h
-+++ b/include/asm-x86_64/apic.h
-@@ -20,6 +20,7 @@ extern int apic_verbosity;
- extern int apic_runs_main_timer;
- extern int ioapic_force;
- extern int apic_mapped;
-+extern int disable_apic_timer;
- 
- /*
-  * Define the default level of output to be very little
+This leaves minixfs and romfs in the main fs menu (where they were,
+i.e., no change).  I would move them to the Miscellaneous fs menu...
+and then move Quota support to after Dnotify so that Inotify & Dnotify
+are next to each other.  Yes, I realize that they were already
+separated by Quota and that this patch did not cause that.
 
 
+> ---
+>  fs/Kconfig      |   19 ++++++++++++++++---
+>  fs/gfs2/Kconfig |    9 ++++++---
+>  fs/xfs/Kconfig  |   10 +++++-----
+>  3 files changed, 27 insertions(+), 11 deletions(-)
+> 
+> Index: linux-2.6.23/fs/Kconfig
+> ===================================================================
+> --- linux-2.6.23.orig/fs/Kconfig
+> +++ linux-2.6.23/fs/Kconfig
+> @@ -6,6 +6,17 @@ menu "File systems"
+>  
+>  if BLOCK
+>  
+> +menuconfig EXT_FS
+> +	bool "Extended filesystem family"
+> +	default y
+> +	---help---
+> +	  Say Y here to get to see options for the 'ext' filesystems.
+> +	  This option alone does not add any kernel code.
+> +
+> +	  If you say N, all options in this submenu will be skipped and disabled.
+> +
+> +if EXT_FS
+> +
+>  config EXT2_FS
+>  	tristate "Second extended fs support"
+>  	help
+> @@ -272,7 +283,9 @@ config FS_MBCACHE
+>  	default y if EXT2_FS=y || EXT3_FS=y || EXT4DEV_FS=y
+>  	default m if EXT2_FS=m || EXT3_FS=m || EXT4DEV_FS=m
+>  
+> -config REISERFS_FS
+> +endif # EXT_FS
+> +
+> +menuconfig REISERFS_FS
+>  	tristate "Reiserfs support"
+>  	help
+>  	  Stores not just filenames but the files themselves in a balanced
+> @@ -358,7 +371,7 @@ config REISERFS_FS_SECURITY
+>  	  If you are not using a security module that requires using
+>  	  extended attributes for file security labels, say N.
+>  
+> -config JFS_FS
+> +menuconfig JFS_FS
+>  	tristate "JFS filesystem support"
+>  	select NLS
+>  	help
+> @@ -420,7 +433,7 @@ config FS_POSIX_ACL
+>  source "fs/xfs/Kconfig"
+>  source "fs/gfs2/Kconfig"
+>  
+> -config OCFS2_FS
+> +menuconfig OCFS2_FS
+>  	tristate "OCFS2 file system support"
+>  	depends on NET && SYSFS
+>  	select CONFIGFS_FS
+> Index: linux-2.6.23/fs/gfs2/Kconfig
+> ===================================================================
+> --- linux-2.6.23.orig/fs/gfs2/Kconfig
+> +++ linux-2.6.23/fs/gfs2/Kconfig
+> @@ -1,4 +1,4 @@
+> -config GFS2_FS
+> +menuconfig GFS2_FS
+>  	tristate "GFS2 file system support"
+>  	depends on EXPERIMENTAL
+>  	select FS_POSIX_ACL
+> @@ -18,9 +18,10 @@ config GFS2_FS
+>  	  the below locking modules. Documentation and utilities for GFS2 can
+>  	  be found here: http://sources.redhat.com/cluster
+>  
+> +if GFS2_FS
+> +
+>  config GFS2_FS_LOCKING_NOLOCK
+>  	tristate "GFS2 \"nolock\" locking module"
+> -	depends on GFS2_FS
+>  	help
+>  	  Single node locking module for GFS2.
+>  
+> @@ -34,7 +35,7 @@ config GFS2_FS_LOCKING_NOLOCK
+>  
+>  config GFS2_FS_LOCKING_DLM
+>  	tristate "GFS2 DLM locking module"
+> -	depends on GFS2_FS && SYSFS && NET && INET && (IPV6 || IPV6=n)
+> +	depends on SYSFS && NET && INET && (IPV6 || IPV6=n)
+>  	select IP_SCTP if DLM_SCTP
+>  	select CONFIGFS_FS
+>  	select DLM
+> @@ -44,3 +45,5 @@ config GFS2_FS_LOCKING_DLM
+>  	  Most users of GFS2 will require this module. It provides the locking
+>  	  interface between GFS2 and the DLM, which is required to use GFS2
+>  	  in a cluster environment.
+> +
+> +endif # GFS2_FS
+> Index: linux-2.6.23/fs/xfs/Kconfig
+> ===================================================================
+> --- linux-2.6.23.orig/fs/xfs/Kconfig
+> +++ linux-2.6.23/fs/xfs/Kconfig
+> @@ -1,4 +1,4 @@
+> -config XFS_FS
+> +menuconfig XFS_FS
+>  	tristate "XFS filesystem support"
+>  	depends on BLOCK
+>  	help
+> @@ -18,9 +18,10 @@ config XFS_FS
+>  	  system of your root partition is compiled as a module, you'll need
+>  	  to use an initial ramdisk (initrd) to boot.
+>  
+> +if XFS_FS
+> +
+>  config XFS_QUOTA
+>  	bool "XFS Quota support"
+> -	depends on XFS_FS
+>  	help
+>  	  If you say Y here, you will be able to set limits for disk usage on
+>  	  a per user and/or a per group basis under XFS.  XFS considers quota
+> @@ -37,7 +38,6 @@ config XFS_QUOTA
+>  
+>  config XFS_SECURITY
+>  	bool "XFS Security Label support"
+> -	depends on XFS_FS
+>  	help
+>  	  Security labels support alternative access control models
+>  	  implemented by security modules like SELinux.  This option
+> @@ -49,7 +49,6 @@ config XFS_SECURITY
+>  
+>  config XFS_POSIX_ACL
+>  	bool "XFS POSIX ACL support"
+> -	depends on XFS_FS
+>  	help
+>  	  POSIX Access Control Lists (ACLs) support permissions for users and
+>  	  groups beyond the owner/group/world scheme.
+> @@ -61,7 +60,6 @@ config XFS_POSIX_ACL
+>  
+>  config XFS_RT
+>  	bool "XFS Realtime subvolume support"
+> -	depends on XFS_FS
+>  	help
+>  	  If you say Y here you will be able to mount and use XFS filesystems
+>  	  which contain a realtime subvolume.  The realtime subvolume is a
+> @@ -76,3 +74,5 @@ config XFS_RT
+>  	  See the xfs man page in section 5 for additional information.
+>  
+>  	  If unsure, say N.
+> +
+> +endif # XFS_FS
+> 
+
+
+---
+~Randy
+Phaedrus says that Quality is about caring.
