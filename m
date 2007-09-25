@@ -1,140 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbXIYQW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760374AbXIYQXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760191AbXIYQW2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 12:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXIYQWU
+	id S1760374AbXIYQXt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 12:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbXIYQXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 12:22:20 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:34525 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967AbXIYQWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 12:22:19 -0400
-Date: Tue, 25 Sep 2007 22:03:02 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] Fix size bloat for !CONFIG_FAIR_GROUP_SCHED
-Message-ID: <20070925163302.GC3231@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070925144443.GA17858@elte.hu> <20070925162502.GA3231@linux.vnet.ibm.com>
+	Tue, 25 Sep 2007 12:23:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45589 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754213AbXIYQXj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 12:23:39 -0400
+Date: Tue, 25 Sep 2007 09:23:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       Damien Wyart <damien.wyart@free.fr>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Frans Pop <elendil@planet.nl>, linux-acpi@vger.kernel.org
+Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
+Message-Id: <20070925092323.17442600.akpm@linux-foundation.org>
+In-Reply-To: <46F91EFB.2050802@suse.de>
+References: <20070925065109.GA3080@localhost.localdomain>
+	<200709251618.06064.rjw@sisk.pl>
+	<46F918F8.1080808@suse.de>
+	<200709251652.05589.rjw@sisk.pl>
+	<46F91EFB.2050802@suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070925162502.GA3231@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recent fix to check_preempt_wakeup() to check for preemption at higher
-levels caused a size bloat for !CONFIG_FAIR_GROUP_SCHED.
+On Tue, 25 Sep 2007 18:45:15 +0400 Alexey Starikovskiy <astarikovskiy@suse.de> wrote:
 
-Fix the problem.
+> [fix-ACPI_SLEEP_states.patch  text/x-patch (2.0KB)]
+> ACPI: suspend: fix ACPI_SLEEP states
+> 
+> From: Alexey Starikovskiy <astarikovskiy@suse.de>
+> 
+> Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> ---
+> 
+>  drivers/acpi/sleep/Makefile |    2 +-
+>  drivers/acpi/sleep/main.c   |    4 ++++
+>  include/acpi/acpi_drivers.h |    4 ----
+>  3 files changed, 5 insertions(+), 5 deletions(-)
 
-  42277   10598     320   53195    cfcb kernel/sched.o-before_this_patch
-  42216   10598     320   53134    cf8e kernel/sched.o-after_this_patch
+I get a reject applying this to current mainline.  Easy enough to fix it,
+but I worry that the fix might be incorrect when applied to some tree other
+than that which you were working on.
 
-
-Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-
-
----
- kernel/sched_fair.c |   43 +++++++++++++++++++++++++------------------
- 1 files changed, 25 insertions(+), 18 deletions(-)
-
-Index: current/kernel/sched_fair.c
-===================================================================
---- current.orig/kernel/sched_fair.c
-+++ current/kernel/sched_fair.c
-@@ -640,15 +640,21 @@ static inline struct cfs_rq *cpu_cfs_rq(
- #define for_each_leaf_cfs_rq(rq, cfs_rq) \
- 	list_for_each_entry(cfs_rq, &rq->leaf_cfs_rq_list, leaf_cfs_rq_list)
- 
--/* Do the two (enqueued) tasks belong to the same group ? */
--static inline int is_same_group(struct task_struct *curr, struct task_struct *p)
-+/* Do the two (enqueued) entities belong to the same group ? */
-+static inline int
-+is_same_group(struct sched_entity *se, struct sched_entity *pse)
- {
--	if (curr->se.cfs_rq == p->se.cfs_rq)
-+	if (se->cfs_rq == pse->cfs_rq)
- 		return 1;
- 
- 	return 0;
- }
- 
-+static inline struct sched_entity *parent_entity(struct sched_entity *se)
-+{
-+	return se->parent;
-+}
-+
- #else	/* CONFIG_FAIR_GROUP_SCHED */
- 
- #define for_each_sched_entity(se) \
-@@ -681,11 +687,17 @@ static inline struct cfs_rq *cpu_cfs_rq(
- #define for_each_leaf_cfs_rq(rq, cfs_rq) \
- 		for (cfs_rq = &rq->cfs; cfs_rq; cfs_rq = NULL)
- 
--static inline int is_same_group(struct task_struct *curr, struct task_struct *p)
-+static inline int
-+is_same_group(struct sched_entity *se, struct sched_entity *pse)
- {
- 	return 1;
- }
- 
-+static inline struct sched_entity *parent_entity(struct sched_entity *se)
-+{
-+	return NULL;
-+}
-+
- #endif	/* CONFIG_FAIR_GROUP_SCHED */
- 
- /*
-@@ -775,8 +787,9 @@ static void yield_task_fair(struct rq *r
- static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
- {
- 	struct task_struct *curr = rq->curr;
--	struct cfs_rq *cfs_rq = task_cfs_rq(curr), *pcfs_rq;
-+	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
- 	struct sched_entity *se = &curr->se, *pse = &p->se;
-+	s64 delta;
- 
- 	if (unlikely(rt_prio(p->prio))) {
- 		update_rq_clock(rq);
-@@ -785,21 +798,15 @@ static void check_preempt_wakeup(struct 
- 		return;
- 	}
- 
--	for_each_sched_entity(se) {
--		cfs_rq = cfs_rq_of(se);
--		pcfs_rq = cfs_rq_of(pse);
-+	while (!is_same_group(se, pse)) {
-+		se = parent_entity(se);
-+		pse = parent_entity(pse);
-+	}
- 
--		if (cfs_rq == pcfs_rq) {
--			s64 delta = se->vruntime - pse->vruntime;
-+	delta = se->vruntime - pse->vruntime;
- 
--			if (delta > (s64)sysctl_sched_wakeup_granularity)
--				resched_task(curr);
--			break;
--		}
--#ifdef CONFIG_FAIR_GROUP_SCHED
--		pse = pse->parent;
--#endif
--	}
-+	if (delta > (s64)sysctl_sched_wakeup_granularity)
-+		resched_task(curr);
- }
- 
- static struct task_struct *pick_next_task_fair(struct rq *rq)
-
-
--- 
-Regards,
-vatsa
