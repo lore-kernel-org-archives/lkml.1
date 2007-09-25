@@ -1,47 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760031AbXIYIjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751117AbXIYImZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760031AbXIYIjR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbXIYIjB
+	id S1751117AbXIYImZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXIYImR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:39:01 -0400
-Received: from web51407.mail.re2.yahoo.com ([206.190.38.186]:24998 "HELO
-	web51407.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755506AbXIYIjA convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:39:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=jPIZL2FgvZ/sR0e0UvY4s6rfo6kBmgn+Dax1Y5Q3eLV+mYmzzAzEv7U7pXTUkJ8j8TocyJ8T3smVM4XrtcHoqK3KBKgtDOIU8Hi7QCwazagXce4W1VfLAs7UAp1Vr3i92fMfzW5S5CEjo3fiHmWZTGdMTVNSybyDb+WPexY1NNo=;
-X-YMail-OSG: cXXA5bAVM1krJhBT6pze4by73MTPSL1mMAklcK7oZ3ul_7f8kTzjlDTfu5m1SKEdvYKulvmulkOJB_akiVqB31X9BR4Qk5NahyxfPblKff4q9DKmprYjvlsligAEmCZfLcZPl.elLxOrJbYb4X6avqbS3w--
-X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
-Date: Tue, 25 Sep 2007 01:38:59 -0700 (PDT)
-From: Joerg Pommnitz <pommnitz@yahoo.com>
-Subject: RE: Problems with 2.6.23-rc6 on AMD Geode LX800
-To: Jordan Crouse <jordan.crouse@amd.com>
-Cc: cebbert@redhat.com, linux-kernel@vger.kernel.org
+	Tue, 25 Sep 2007 04:42:17 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:60551 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734AbXIYImQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 04:42:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Aal6lrMO6/MBAxYOzFh+WgD78YRiyvx6czpSjxcZe3Ms5BSTtLSWVSRyjHCCS4SemkCizItRRnlUz4AymclHW6wZwp1tTX/MZ86X473mvGOqV1r+Y37i36TMbNOqgwE/iDY4kZJ4Ubl9w9kCGA3sOBOxP62s3oxFpbOpvWc+8qA=
+Message-ID: <21d7e9970709250142v49ba4bedp4ae5ccfe0f2277e7@mail.gmail.com>
+Date: Tue, 25 Sep 2007 18:42:14 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH/RFC] video gfx: merge kconfig menus
+Cc: lkml <linux-kernel@vger.kernel.org>, airlied@linux.ie, adaplas@gmail.com,
+       akpm <akpm@linux-foundation.org>
+In-Reply-To: <20070924232536.b1123359.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <267869.77756.qm@web51407.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070924232536.b1123359.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck, Jordan,
-thanks for taking an interest in this problem. As suggested by Jordan I tried a new
-BIOS revision from
-http://www.digitallogic.ch/index.php?id=256&dir=/MSEP800%20-%20SM800PCX%20%20-%20MPC20%20-%20MPC21&mountpoint=23
+On 9/25/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> Is there some reason that we don't put all video gfx config in one
+> place?  Is the split just historical, based on subdirectory locations,
+> or is there a bigger reason for it?
+>
+> [to apply cleanly, this patch depends on a patch that was sent
+> to linux-fbdev-devel, which is subscribers-only, so I didn't cc: lkml
+> on it:  http://marc.info/?l=linux-fbdev-devel&m=119070044232621&w=2]
+>
+> ---
+>
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> Move AGP and DRM menus into the video graphics support menu.
+>   They use 'menuconfig' so that they can all be disabled with
+>   one selection.
+> Make the console menu use 'menuconfig' so that it can all be
+>   disabled with one selection.
+> Make the frame buffer menu use 'menuconfig' so that it can all be
+>   disabled with one selection.
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Unfortunately the kernel still fails to boot in the same way.
+Fine by me.. some day we might move the directories but this is a good start..
 
-Do you still need the disassembled reserve_bootmem_core? 
---  
-Thanks and kind regards
- Joerg
+Acked-by: Dave Airlie <airlied@linux.ie>
 
-
-
-      ________ 
-Yahoo! Clever: Stellen Sie Fragen und finden Sie Antworten. Teilen Sie Ihr Wissen. www.yahoo.de/clever
-
+Dave.
+> ---
+>  drivers/char/Kconfig     |    4 ----
+>  drivers/char/agp/Kconfig |    2 +-
+>  drivers/char/drm/Kconfig |    2 +-
+>  drivers/video/Kconfig    |   11 +++++++----
+>  4 files changed, 9 insertions(+), 10 deletions(-)
+>
+> --- linux-2.6.23-rc8.orig/drivers/char/Kconfig
+> +++ linux-2.6.23-rc8/drivers/char/Kconfig
+> @@ -896,10 +896,6 @@ config GPIO_TB0219
+>         depends on TANBAC_TB022X
+>         select GPIO_VR41XX
+>
+> -source "drivers/char/agp/Kconfig"
+> -
+> -source "drivers/char/drm/Kconfig"
+> -
+>  source "drivers/char/pcmcia/Kconfig"
+>
+>  config MWAVE
+> --- linux-2.6.23-rc8.orig/drivers/video/Kconfig
+> +++ linux-2.6.23-rc8/drivers/video/Kconfig
+> @@ -5,8 +5,9 @@
+>  menu "Graphics support"
+>         depends on HAS_IOMEM
+>
+> -source "drivers/video/backlight/Kconfig"
+> -source "drivers/video/display/Kconfig"
+> +source "drivers/char/agp/Kconfig"
+> +
+> +source "drivers/char/drm/Kconfig"
+>
+>  config VGASTATE
+>         tristate
+> @@ -19,7 +20,7 @@ config VIDEO_OUTPUT_CONTROL
+>           This framework adds support for low-level control of the video
+>           output switch.
+>
+> -config FB
+> +menuconfig FB
+>         tristate "Support for frame buffer devices"
+>         ---help---
+>           The frame buffer device provides an abstraction for the graphics
+> @@ -1860,6 +1861,9 @@ if ARCH_OMAP
+>         source "drivers/video/omap/Kconfig"
+>  endif
+>
+> +source "drivers/video/backlight/Kconfig"
+> +source "drivers/video/display/Kconfig"
+> +
+>  if VT
+>         source "drivers/video/console/Kconfig"
+>  endif
+> @@ -1869,4 +1873,3 @@ if FB || SGI_NEWPORT_CONSOLE
+>  endif
+>
+>  endmenu
+> -
+> --- linux-2.6.23-rc8.orig/drivers/char/agp/Kconfig
+> +++ linux-2.6.23-rc8/drivers/char/agp/Kconfig
+> @@ -1,4 +1,4 @@
+> -config AGP
+> +menuconfig AGP
+>         tristate "/dev/agpgart (AGP Support)"
+>         depends on ALPHA || IA64 || PARISC || PPC || X86
+>         depends on PCI
+> --- linux-2.6.23-rc8.orig/drivers/char/drm/Kconfig
+> +++ linux-2.6.23-rc8/drivers/char/drm/Kconfig
+> @@ -4,7 +4,7 @@
+>  # This driver provides support for the
+>  # Direct Rendering Infrastructure (DRI) in XFree86 4.1.0 and higher.
+>  #
+> -config DRM
+> +menuconfig DRM
+>         tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
+>         depends on (AGP || AGP=n) && PCI && !EMULATED_CMPXCHG
+>         help
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
