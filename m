@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbXIYOHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbXIYOPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbXIYOHX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 10:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbXIYOHK
+	id S1754639AbXIYOPq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 10:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbXIYOPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 10:07:10 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:26566 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbXIYOHI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 10:07:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=e5Qd3g76zDH+r3aweQZD6TtrRVi3gWmA7lp3yNEuO34GwMG4XTsmgcP/TOVwJlF8hKwdT0ZPlAQ3lQbVFne2PT0UY3kfoB6o8QwT1EH4dSzTcDYbK9Y8FATNroqt6i7Rs4dkjjaSwJi8HyCxHVFeY8aVf9yEW+V7wN0QP9tETxU=
-Message-ID: <46F915AC.4030301@gmail.com>
-Date: Tue, 25 Sep 2007 23:05:32 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Tue, 25 Sep 2007 10:15:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34786 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbXIYOPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 10:15:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.23-rc8-mm1, -rc7-mm1 kill audio on HP nx6325
+Date: Tue, 25 Sep 2007 16:29:45 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>
+References: <200709251408.54361.rjw@sisk.pl> <200709251520.09794.rjw@sisk.pl> <1190727843.4035.345.camel@chaos>
+In-Reply-To: <1190727843.4035.345.camel@chaos>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Jonathan Corbet <corbet@lwn.net>, ebiederm@xmission.com,
-       cornelia.huck@de.ibm.com, greg@kroah.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] module: implement module_inhibit_unload()
-References: <25380.1190671205@lwn.net>  <46F845B2.7030002@gmail.com>	 <1190677332.27805.229.camel@localhost.localdomain>	 <46F86727.4050004@gmail.com>	 <1190686320.27805.258.camel@localhost.localdomain>	 <46F874DB.5070205@gmail.com>	 <1190690493.27805.263.camel@localhost.localdomain>	 <46F8822D.2010003@gmail.com>	 <1190695118.27805.307.camel@localhost.localdomain>	 <46F8C5ED.6060101@gmail.com>  <46F8C8AA.3030803@gmail.com> <1190710249.27805.326.camel@localhost.localdomain>
-In-Reply-To: <1190710249.27805.326.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709251629.46493.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Tue, 2007-09-25 at 17:36 +0900, Tejun Heo wrote:
->> Hmmm.... There doesn't seem to any reason why the blocking should be
->> after calling ->exit().  And, yeah, it would be more useful and
->> intuitive if blocking happens before ->exit().  What do you think?
+On Tuesday, 25 September 2007 15:44, Thomas Gleixner wrote:
+> On Tue, 2007-09-25 at 15:20 +0200, Rafael J. Wysocki wrote:
+> > > The patch is correct. Instead of returning "Success" in the case of a
+> > > failure of lookup_address, it now returns -EINVAL, which in turn makes
+> > > the ioremap fail.
+> > > 
+> > > OTOH, the driver ioremap call looks straight forward. Can you apply the
+> > > patch below and provide the resulting debug output please ?
+> > 
+> > lookup failed for 18446604438082158592
+> > [--snipped some USB messages--]
+> > ALSA /home/rafael/src/mm/linux-2.6.23-rc8-mm1/sound/pci/hda/hda_intel.c:1756: hda-intel: ioremap error: 2349334528 16384
 > 
-> *That* I have no problem with.
+> Stupid me, hex formatting would have been easier to read :)
 > 
-> I was going to say "just grab a reference to every module" except if a
-> new module is loaded you don't know about it.
+> Lookup failed for 0xFFFF 8100 8C08 0000
+> ioremap:          0x0000 0000 8C08 0000 length 16384
 > 
-> If you move your blocking, it seems fine.
+> It seems, that this patch only reveals some other wreckage. The code is
+> called as part of ioremap, where it adjusts the caching attributes of
+> the mapping, which was setup right before change_page_attr_address() is
+> called.
 
-Great, I think I was too occupied with the sysfs case when I was writing
-it.  I'll update the patch.  Thanks a lot.
+Hm, it looks like the first address is a kernel one and the second one is
+physical, so they apparently match, which means that the lookup shouldn't fail,
+if I understand this correctly.
 
--- 
-tejun
+Greetings,
+Rafael
