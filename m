@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbXIYHCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbXIYHGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbXIYHCv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 03:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXIYHCo
+	id S1756605AbXIYHGj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 03:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbXIYHGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 03:02:44 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:7870 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbXIYHCn (ORCPT
+	Tue, 25 Sep 2007 03:06:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:32939 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752711AbXIYHGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 03:02:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=kvWpkksHG6wVYkAfSBXm6nYzItcRdJskrHaDxkCY6n4+nHnrQ0kzVruL9G+6+AUTYclViRjd8qNTNDuCecaf7DcDxS3TSfyxD+T0BjjFAnuC+xIjEoOdSWwPwZV/a6bL0mt7MGnA3fS6Izb7WpAOXIWsvXeF4JgwC3yO2iM0N9g=
-Message-ID: <661de9470709250002u73c1089dx94870586ce23b5b5@mail.gmail.com>
-Date: Tue, 25 Sep 2007 12:32:42 +0530
-From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.23-rc7-mm1: panic in scheduler
-Cc: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@redhat.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <46F82C88.1080907@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Sep 2007 03:06:31 -0400
+Date: Tue, 25 Sep 2007 00:06:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix CONFIG_NOHIGHMEM for extended crashkernel command
+ line
+Message-Id: <20070925000624.46bcf2b7.akpm@linux-foundation.org>
+In-Reply-To: <20070925065528.GA25783@suse.de>
+References: <20070925065528.GA25783@suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1190668373.5030.10.camel@localhost>
-	 <46F82C88.1080907@linux.vnet.ibm.com>
-X-Google-Sender-Auth: bc91c80bede0f873
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/25/07, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> Exactly same call trace is produced over IA64 Madison (up to 9M cache) with 8 cpu's.
-> --
+On Tue, 25 Sep 2007 08:55:29 +0200 Bernhard Walle <bwalle@suse.de> wrote:
 
-Hi, Kamalesh,
+> @@ -381,6 +381,20 @@ extern unsigned long __init setup_memory
+>  extern void zone_sizes_init(void);
+>  #endif /* !CONFIG_NEED_MULTIPLE_NODES */
+>  
+> +
 
-Could you please reproduce the problem or share the steps to reproduce
-the problem?
+Only one line is needed between functions, please.
 
-Thanks,
-Balbir
+> +#ifdef CONFIG_HIGHMEM
+> +static inline unsigned long long get_total_mem(void)
+> +{
+> +	return (max_low_pfn + highend_pfn - highstart_pfn) << PAGE_SHIFT;
+> +}
+> +#else
+> +static inline unsigned long long get_total_mem(void)
+> +{
+> +	return max_low_pfn << PAGE_SHIFT;
+> +}
+> +#endif
+> +
+> +
+
+Full of bugs.  (unsigned long << foo) returns an unsigned long.  With >4G
+there will be truncation.
+
+Please review the full patchset for other occurrences of this.
