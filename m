@@ -1,148 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbXIYKvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbXIYK5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752843AbXIYKvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 06:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXIYKvP
+	id S1752506AbXIYK5c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 06:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXIYK5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 06:51:15 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52201 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbXIYKvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 06:51:14 -0400
-Date: Tue, 25 Sep 2007 12:51:12 +0200
-From: Jan Kara <jack@suse.cz>
-To: richard kennedy <richard@rsk.demon.co.uk>
-Cc: sct@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: jbd : config_jbd_debug cannot create /proc entry
-Message-ID: <20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
-References: <1190713240.3154.20.camel@castor.rsk.org>
+	Tue, 25 Sep 2007 06:57:24 -0400
+Received: from sacred.ru ([62.205.161.221]:39752 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750913AbXIYK5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 06:57:24 -0400
+Message-ID: <46F8E8C5.2050502@openvz.org>
+Date: Tue, 25 Sep 2007 14:53:57 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190713240.3154.20.camel@castor.rsk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@osdl.org>
+CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH] Uninline the task_xid_nr_ns() calls
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 25 Sep 2007 14:56:23 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I enabled config_jbd_debug in the hope that it may help track down the
-> lockup I'm seeing, but unfortunately the /proc entry does not get
-> created.
-> 
-> any ideas how to fix this ?
-  Attached is a patch that should fix it. Andrew, would you queue it up?
+Since these are expanded into call to pid_nr_ns() anyway, it's
+OK to move the whole routine out-of-line. This is a cheap way 
+to save ~100 bytes from vmlinux. Together with the previous two
+patches, it saves half-a-kilo from the vmlinux.
 
-									Honza
+Un-inline other (currently inlined) functions must be done with
+additional performance testing.
 
-JBD debug code used old way of creating proc entries for jbd-debug file.
-Change it to use sysctl instead.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-Signed-off-by: Jan Kara <jack@suse.cz>
+---
 
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc6/fs/jbd/journal.c linux-2.6.23-rc6-1-jbddebug_fix/fs/jbd/journal.c
---- linux-2.6.23-rc6/fs/jbd/journal.c	2007-09-25 12:39:53.000000000 +0200
-+++ linux-2.6.23-rc6-1-jbddebug_fix/fs/jbd/journal.c	2007-09-25 13:05:05.000000000 +0200
-@@ -1944,58 +1944,29 @@ void journal_put_journal_head(struct jou
- #if defined(CONFIG_JBD_DEBUG)
- int journal_enable_debug;
- EXPORT_SYMBOL(journal_enable_debug);
--#endif
--
--#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_PROC_FS)
--
--static struct proc_dir_entry *proc_jbd_debug;
--
--static int read_jbd_debug(char *page, char **start, off_t off,
--			  int count, int *eof, void *data)
--{
--	int ret;
--
--	ret = sprintf(page + off, "%d\n", journal_enable_debug);
--	*eof = 1;
--	return ret;
--}
--
--static int write_jbd_debug(struct file *file, const char __user *buffer,
--			   unsigned long count, void *data)
--{
--	char buf[32];
--
--	if (count > ARRAY_SIZE(buf) - 1)
--		count = ARRAY_SIZE(buf) - 1;
--	if (copy_from_user(buf, buffer, count))
--		return -EFAULT;
--	buf[ARRAY_SIZE(buf) - 1] = '\0';
--	journal_enable_debug = simple_strtoul(buf, NULL, 10);
--	return count;
--}
-+static struct ctl_table_header *jbd_debug_table;
- 
--#define JBD_PROC_NAME "sys/fs/jbd-debug"
--
--static void __init create_jbd_proc_entry(void)
--{
--	proc_jbd_debug = create_proc_entry(JBD_PROC_NAME, 0644, NULL);
--	if (proc_jbd_debug) {
--		/* Why is this so hard? */
--		proc_jbd_debug->read_proc = read_jbd_debug;
--		proc_jbd_debug->write_proc = write_jbd_debug;
--	}
--}
--
--static void __exit remove_jbd_proc_entry(void)
--{
--	if (proc_jbd_debug)
--		remove_proc_entry(JBD_PROC_NAME, NULL);
--}
--
--#else
--
--#define create_jbd_proc_entry() do {} while (0)
--#define remove_jbd_proc_entry() do {} while (0)
-+static ctl_table fs_table[] = {
-+	{
-+                .ctl_name       = -1,	/* Don't want it */
-+                .procname       = "jbd-debug",
-+                .data           = &journal_enable_debug,
-+                .maxlen         = sizeof(int),
-+                .mode           = 0644,
-+                .proc_handler   = &proc_dointvec,
-+        },
-+        { .ctl_name = 0 },
-+};
-+
-+static ctl_table sys_table[] = {
-+        {
-+                .ctl_name       = CTL_FS,
-+                .procname       = "fs",
-+                .mode           = 0555,
-+                .child          = fs_table,
-+        },
-+        { .ctl_name = 0 },
-+};
- 
- #endif
- 
-@@ -2054,7 +2025,10 @@ static int __init journal_init(void)
- 	ret = journal_init_caches();
- 	if (ret != 0)
- 		journal_destroy_caches();
--	create_jbd_proc_entry();
-+
-+#ifdef CONFIG_JBD_DEBUG
-+	jbd_debug_table = register_sysctl_table(sys_table);
-+#endif
- 	return ret;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index fe238fb..4108cce 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1228,11 +1228,7 @@ static inline pid_t task_pid_nr(struct t
+ 	return tsk->pid;
  }
  
-@@ -2064,8 +2038,8 @@ static void __exit journal_exit(void)
- 	int n = atomic_read(&nr_journal_heads);
- 	if (n)
- 		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
-+	unregister_sysctl_table(jbd_debug_table);
- #endif
--	remove_jbd_proc_entry();
- 	journal_destroy_caches();
+-static inline pid_t task_pid_nr_ns(struct task_struct *tsk,
+-		struct pid_namespace *ns)
+-{
+-	return pid_nr_ns(task_pid(tsk), ns);
+-}
++pid_t task_pid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns);
+ 
+ static inline pid_t task_pid_vnr(struct task_struct *tsk)
+ {
+@@ -1245,11 +1241,7 @@ static inline pid_t task_tgid_nr(struct 
+ 	return tsk->tgid;
  }
  
+-static inline pid_t task_tgid_nr_ns(struct task_struct *tsk,
+-		struct pid_namespace *ns)
+-{
+-	return pid_nr_ns(task_tgid(tsk), ns);
+-}
++pid_t task_tgid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns);
+ 
+ static inline pid_t task_tgid_vnr(struct task_struct *tsk)
+ {
+@@ -1262,11 +1254,7 @@ static inline pid_t task_pgrp_nr(struct 
+ 	return tsk->signal->__pgrp;
+ }
+ 
+-static inline pid_t task_pgrp_nr_ns(struct task_struct *tsk,
+-		struct pid_namespace *ns)
+-{
+-	return pid_nr_ns(task_pgrp(tsk), ns);
+-}
++pid_t task_pgrp_nr_ns(struct task_struct *tsk, struct pid_namespace *ns);
+ 
+ static inline pid_t task_pgrp_vnr(struct task_struct *tsk)
+ {
+@@ -1279,11 +1267,7 @@ static inline pid_t task_session_nr(stru
+ 	return tsk->signal->__session;
+ }
+ 
+-static inline pid_t task_session_nr_ns(struct task_struct *tsk,
+-		struct pid_namespace *ns)
+-{
+-	return pid_nr_ns(task_session(tsk), ns);
+-}
++pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns);
+ 
+ static inline pid_t task_session_vnr(struct task_struct *tsk)
+ {
+diff --git a/kernel/pid.c b/kernel/pid.c
+index e2e060e..0032a88 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -412,6 +412,30 @@ pid_t pid_nr_ns(struct pid *pid, struct 
+ 	return nr;
+ }
+ 
++pid_t task_pid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
++{
++	return pid_nr_ns(task_pid(tsk), ns);
++}
++EXPORT_SYMBOL(task_pid_nr_ns);
++
++pid_t task_tgid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
++{
++	return pid_nr_ns(task_tgid(tsk), ns);
++}
++EXPORT_SYMBOL(task_tgid_nr_ns);
++
++pid_t task_pgrp_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
++{
++	return pid_nr_ns(task_pgrp(tsk), ns);
++}
++EXPORT_SYMBOL(task_pgrp_nr_ns);
++
++pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
++{
++	return pid_nr_ns(task_session(tsk), ns);
++}
++EXPORT_SYMBOL(task_session_nr_ns);
++
+ /*
+  * Used by proc to find the first pid that is greater then or equal to nr.
+  *
