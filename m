@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760799AbXIYRDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbXIYRFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760799AbXIYRDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 13:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbXIYRD1
+	id S1760580AbXIYRFX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 13:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXIYRFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 13:03:27 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39837 "EHLO
+	Tue, 25 Sep 2007 13:05:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39133 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbXIYRDZ (ORCPT
+	with ESMTP id S1751464AbXIYRFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 13:03:25 -0400
-Date: Tue, 25 Sep 2007 19:03:24 +0200 (CEST)
+	Tue, 25 Sep 2007 13:05:07 -0400
+Date: Tue, 25 Sep 2007 19:05:06 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Greg KH <gregkh@suse.de>
-cc: Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.22.8, pata_ali issue
-In-Reply-To: <20070925161430.GA14212@suse.de>
-Message-ID: <Pine.LNX.4.64.0709251858520.945@fbirervta.pbzchgretzou.qr>
-References: <20070925062115.GA18444@kroah.com>
- <6101e8c40709250909x53b44274i17694e64dccae427@mail.gmail.com>
- <20070925161430.GA14212@suse.de>
+To: Miloslav Semler <majkls@prepere.com>
+cc: serge@hallyn.com, davidsen@tmr.com, philipp@marek.priv.at, 7eggert@gmx.de,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Chroot bug
+In-Reply-To: <46F93EAF.20706@prepere.com>
+Message-ID: <Pine.LNX.4.64.0709251903480.945@fbirervta.pbzchgretzou.qr>
+References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>
+ <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5>
+ <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com>
+ <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com>
+ <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com>
+ <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com>
+ <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com>
+ <Pine.LNX.4.64.0709251715390.945@fbirervta.pbzchgretzou.qr>
+ <46F92C17.3060405@davidnewall.com> <Pine.LNX.4.64.0709251748240.945@fbirervta.pbzchgretzou.qr>
+ <46F9351D.8020906@prepere.com> <Pine.LNX.4.64.0709251847570.945@fbirervta.pbzchgretzou.qr>
+ <46F93EAF.20706@prepere.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From my point, sorry for thread hijacking, but I did not have
-the upper node anymore.
+On Sep 25 2007 19:00, Miloslav Semler wrote:
+>> > This  does not help.  Let's try:
+>> > chroot somewhere
+>> > mkdir foo
+>> > fd = open /
+>> > chroot foo
+>> >     
+>>
+>> ('fd' implicitly closed and chdir to /foo)
+>>   
+> Really? Try it. I am sure, that this works. You can create directory in chroot
+> and break chroot by this. fd is not closed, because linux doesn't close
+> descriptors by chroot syscall. this can be done every time if you have
+> CAP_SYS_CHROOT.
 
-So, here is something that I think should go into the next 2.6.22.
-A proper fix is already in 2.6.23-git-du-jour.
+In case you have not followed my earlier email, I'll repost:
 
-/home/build/rt.jengelh.10.2-i386/var/tmp/kernel-source-2.6.22.7-build
-/usr/src/linux-2.6.22.7-13.1/drivers/ata/pata_ali.c:
-In function ■ali_init_chipset■:
+|>> So what? Just do this: chdir into the root after chroot.
+|>
+|> I don't think so.  His exploit just got me all the way out of a 
+|> chroot within a chroot within a chroot, inclusive of lots of 
+|> chdirs.
+|>
+|
+|Close all fds that point to directories outside the root ;-)
 
-/home/build/rt.jengelh.10.2-i386/var/tmp/kernel-source-2.6.22.7-build
-/usr/src/linux-2.6.22.7-13.1/drivers/ata/pata_ali.c:466:
-warning: ■rev■ is used uninitialized in this function
-
-Yes, it is indeed used uninitialized, and that is dangerous,
-given that I do have a chipset that uses pata_ali.ko and
-currently runs a 'broken' kernel...it has not exploded yet, though.
-
-I could not backport and create a patch because struct pci_dev
-does not have the ->revision field in 2.6.22 yet. Ideas?
+Perhaps that was formulated a bit sloppy. It of course means
+"On chroot(2), implicitly close all FDs that point outside."
