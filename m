@@ -1,83 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbXIYFxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbXIYF4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbXIYFxO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 01:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXIYFw4
+	id S1757348AbXIYF4y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 01:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbXIYF4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 01:52:56 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:17867 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbXIYFwy (ORCPT
+	Tue, 25 Sep 2007 01:56:47 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:38687 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751664AbXIYF4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 01:52:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RppyTvAkM3nqsEbxO8DCaca4EbuGW6hQH1e0udCUgTteTa1AwV6NacQ8jp4sDWByrjvW+yaj2x1HwEjpMpyWssA3ixz4TsoH6Gi+WSkHpEbXtEhkK28qQxbh505gORbLSjneORq+lppFc5ceRU32LkQZnXOseBYdc/OMCeZpy48=
-Message-ID: <64bb37e0709242252l48d54d16w5f645d324914fd16@mail.gmail.com>
-Date: Tue, 25 Sep 2007 07:52:53 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "FUJITA Tomonori" <tomof@acm.org>
-Subject: Re: What's in linux-2.6-block.git for 2.6.24
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-In-Reply-To: <64bb37e0709241148r58a99403k5f51f364de64eeb5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Sep 2007 01:56:46 -0400
+Date: Mon, 24 Sep 2007 22:55:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: hce <webmail.hce@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Ethernet driver on 2.6.22
+Message-Id: <20070924225517.f15d5a41.randy.dunlap@oracle.com>
+In-Reply-To: <95455e980709241937y7bc45eedgc0a977b156cf852d@mail.gmail.com>
+References: <95455e980709231552l73bd8c78u46d3a45266749902@mail.gmail.com>
+	<20070923183438.8807b5da.randy.dunlap@oracle.com>
+	<95455e980709231940m571c628cj887628aba4a21c4b@mail.gmail.com>
+	<20070923203910.8b414cc6.randy.dunlap@oracle.com>
+	<95455e980709241539m133d0098y5d3c7147188d9508@mail.gmail.com>
+	<20070924154430.f19136e1.randy.dunlap@oracle.com>
+	<95455e980709241937y7bc45eedgc0a977b156cf852d@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070921085711.GG2367@kernel.dk>
-	 <64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
-	 <20070923225320I.tomof@acm.org>
-	 <64bb37e0709230831t16eaa86dub5abcb97fdce12eb@mail.gmail.com>
-	 <64bb37e0709241148r58a99403k5f51f364de64eeb5@mail.gmail.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/24/07, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-> I will keep on using 2.6.23-rc7-mm1 and post again, if the error shows up again.
+On Tue, 25 Sep 2007 12:37:32 +1000 hce wrote:
 
-On the next boot it did show up again, so 2.6.23-rc7-mm1 still has the bug.
+> On 9/25/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > On Tue, 25 Sep 2007 08:39:07 +1000 hce wrote:
+> >
+> > > On 9/24/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > > On Mon, 24 Sep 2007 12:40:07 +1000 hce wrote:
+> > > >
+> > > > > Thanks Randy.
+> > > > >
+> > > > > On 9/24/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > > > > On Mon, 24 Sep 2007 08:52:36 +1000 hce wrote:
+> > > > > >
+> > > > > > > Hi,
+> > > > > > >
+> > > > > > > I am upgrading from kernel 2.6.11 to 2.6.22 on ARM S3C2400A and found
+> > > > > > > a following issue on 2.6.22.
+> > > > > > >
+> > > > > > > On 2.6.11, I selected CONFIG_ISA,  CONFIG_NET_PCI and CONFIG_CS89X0 to
+> > > > > > > build  CS8900A Ethernet driver to kernel, it was running perfect.
+> > > > > > >
+> > > > > > > But on 2.6.22, I made the same configuration for CS8900A, the cs89x0.o
+> > > > > > > could not be compiled in to the kernel (or as a module when I tried to
+> > > > > > > CONFIG_CS89X0=m) unless I commented out depends statement in
+> > > > > > > drivers/net/Kconfig. I double checked all three are CONFIG_ISA=y,
+> > > > > > > CONFIG_NET_PCI=y and CONFIG_CS89X0=y. Any explanation please, was I
+> > > > > > > missing something here?
+> > > > > >
+> > > > > > I didn't look in 2.6.11 Kconfig files, but in 2.6.22, this driver is
+> > > > > > limited to 3 specific boards:
+> > > > > >
+> > > > > > config CS89x0
+> > > > > >         tristate "CS89x0 support"
+> > > > > >         depends on NET_PCI && (ISA || MACH_IXDP2351 || ARCH_IXDP2X01 || ARCH_PNX010X)
+> > > > >
+> > > > > The Kconfig for CS89x0 in 2.6.11 is exactly the same as 2.6.22.
+> > > > >
+> > > > > > Does ARM S3C2400A qualify as any of those?  (MACH_... or ARCH_...)
+> > > > >
+> > > > > I can run CS89x0 for ARM S3C2400 in 2.6.11, at least I can say yes,
+> > > > > the ARM S3C2400A qualifies those in 2.6.11, I don't know the 2.6.22
+> > > > > and I hope someone knows 2.6.22 well can answer it.
+> > > > >
+> > > > > > (latter: ARCH_PNX010X is not used anywhere else AFAICT)
+> > > > >
+> > > > > Yes, but you only need to enable ISA and NET_PCI to use CS89x0.
+> > > >
+> > > > Right.
+> > > >
+> > > > I don't have any problem building CS89x0 for X86_32:
+> > > > make defconfig then enable ISA (what!?!?  why not in defconfig?)
+> > > > and then enable CS89x0.
+> > >
+> > > I don't have my embedded system here, I'll try when I get there. But,
+> > > let me clarify it, did you mean to type "make defconfig" on linux
+> > > (kernel) directory, and enable ISA, NET_PCI and CS89x0 from the
+> > > prompt?
+> > >
+> > > My procedure was to edit .config to enable ISA, NET_PCI and CS89x0
+> > > from vim, then type "make menuconfig" and "make oldconfig" (The same
+> > > procedure I did in 2.6.11 which works fine). Does that make things
+> > > differently?
+> >
+> > You should do "make oldconfig" immediately after editing the .config
+> > file (AFAIK).  Or the "make menuconfig" might run the oldconfig
+> > changes for you.
+> 
+> Sorry, I was not clear. The procedure was actually I type "make
+> ARCH=arm menuconfig" first, then I could not find the CONFIG_ISA,
+> CONFIG_NET_SPI and CONFIG_CS89x0 on config screen, this is still
+> puzzles me why could "make menuconfig" displays all possible
+> configurations on 2.6.22? Could you please explain?
 
-[   33.810000] md1: bitmap initialized from disk: read 10/10 pages, set 0 bits
-[   33.810000] created bitmap (145 pages) for device md1
-[   63.910000] ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
-[   63.910000] ata1.00: cmd 61/08:00:09:d6:42/00:00:25:00:00/40 tag 0
-cdb 0x0 data 4096 out
-[   63.910000]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-0x4 (timeout)
-[   63.910000] ata1.00: status: {DRDY }
-[   63.910000] ata1: hard resetting link
-[   66.210000] ata1: softreset failed (port not ready)
-[   66.210000] ata1: reset failed (errno=-5), retrying in 8 secs
-[   73.910000] ata1: hard resetting link
-[   76.210000] ata1: softreset failed (port not ready)
-[   76.210000] ata1: reset failed (errno=-5), retrying in 8 secs
-[   83.910000] ata1: hard resetting link
-[   86.210000] ata1: softreset failed (port not ready)
-[   86.210000] ata1: reset failed (errno=-5), retrying in 33 secs
-[  118.910000] ata1: limiting SATA link speed to 1.5 Gbps
-[  118.910000] ata1: hard resetting link
-[  121.210000] ata1: softreset failed (port not ready)
-[  121.210000] ata1: reset failed, giving up
-[  121.210000] ata1.00: disabled
-[  121.210000] ata1: EH complete
-[  121.210000] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
-driverbyte=DRIVER_OK,SUGGEST_OK
-[  121.210000] end_request: I/O error, dev sda, sector 625137161
-[  121.210000] md: super_written gets error=-5, uptodate=0
-[  121.210000] raid5: Disk failure on sda2, disabling device.
-Operation continuing on 2 devices
+Probably not.
 
-After that there are many more error like this in the log:
-[  135.760000] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
-driverbyte=DRIVER_OK,SUGGEST_OK
-[  135.760000] end_request: I/O error, dev sda, sector 19551113
-[  135.760000] Buffer I/O error on device sda2, logical block 1
-or:
-[  135.760000] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
-driverbyte=DRIVER_OK,SUGGEST_OK
-[  135.760000] end_request: I/O error, dev sda, sector 19551105
+> Because I was not able to add CONFIG_ISA, CONFIG_NET_SPI and
+                                                   NET_PCI
+> CONFIG_CS89x0 from "make menuconfig", I used vim to manually added
+> those and then "make oldconfig".
+> 
+> > Then I would just double-check the final .config file
+> > to make sure that it contains what you expect it to contain.
+> 
+> Yes, I did double-check with the .config file, all three are =y.
 
-Torsten
+After you ran "make oldconfig" ?
+
+
+I don't know much about ARM configs.  You should probably be asking
+about this on some linux-arm mailing list.
+
+However, I did
+  make ARCH=arm s3c2410_defconfig
+and that particular board config enables ISA.  Then if I enabled
+NET_PCI, I can also enable CS89x0.
+
+The default ARM config (if there is one) doesn't seem to enable ISA.
+
+
+---
+~Randy
+Phaedrus says that Quality is about caring.
