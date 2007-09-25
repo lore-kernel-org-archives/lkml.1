@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbXIYLCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbXIYLEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753378AbXIYLCb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 07:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbXIYLCX
+	id S1753320AbXIYLEn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbXIYLEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 07:02:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49757 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751554AbXIYLCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 07:02:22 -0400
-Cc: akpm@linux-foundation.org, astarikovskiy@suse.de
-Content-Type: multipart/mixed; boundary="========GMX189531190718140614822"
-Date: Tue, 25 Sep 2007 13:02:20 +0200
-From: "Daniel Ritz" <daniel.ritz@gmx.ch>
-Message-ID: <20070925110220.189530@gmx.net>
+	Tue, 25 Sep 2007 07:04:34 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:42059 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751787AbXIYLEd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 07:04:33 -0400
+Message-ID: <46F8EB26.2090104@linux.vnet.ibm.com>
+Date: Tue, 25 Sep 2007 16:34:06 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
-To: linux-kernel@vger.kernel.org, Damien Wyart <damien.wyart@free.fr>,
-       "Torsten Kaiser" <just.for.lkml@googlemail.com>
-X-Authenticated: #2813124
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX18wh5AOyy4wP1VVN9v2gRv/ks2gyN1Lw/0bFRNNXD
- r1ssdighV9wKggh4eIWMcXh7cdcXE1FHtZXQ== 
-X-GMX-UID: 0oeaEk5qbXB+YqGeGDQ2jIwiLyUmZch0
+To: Jan Kara <jack@suse.cz>
+CC: richard kennedy <richard@rsk.demon.co.uk>, sct@redhat.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: jbd : config_jbd_debug cannot create /proc entry
+References: <1190713240.3154.20.camel@castor.rsk.org> <20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---========GMX189531190718140614822
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 
-does that one help?
 
-[ as attachment since i'm on webmail ]
+Jan Kara wrote:
+>> 
+> -#define create_jbd_proc_entry() do {} while (0)
+> -#define remove_jbd_proc_entry() do {} while (0)
+> +static ctl_table fs_table[] = {
+> +	{
+> +                .ctl_name       = -1,	/* Don't want it */
 
-ACPI: acpi_sleep_prepare() should not depent on CONFIG_SUSPEND
-Signed-off-by: Daniel Ritz <daniel.ritz@gmx.ch>
--- 
-Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
-Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
 
---========GMX189531190718140614822
-Content-Type: application/octet-stream; name="acpi-sleep.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="acpi-sleep.patch"
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvYWNwaS9zbGVlcC9tYWluLmMgYi9kcml2ZXJzL2FjcGkvc2xl
-ZXAvbWFpbi5jCmluZGV4IDg1NjMzYzUuLmI5YzZmY2IgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvYWNw
-aS9zbGVlcC9tYWluLmMKKysrIGIvZHJpdmVycy9hY3BpL3NsZWVwL21haW4uYwpAQCAtNTksNiAr
-NTksNyBAQCBzdGF0aWMgaW50IGFjcGlfcG1fc2V0X3RhcmdldChzdXNwZW5kX3N0YXRlX3QgcG1f
-c3RhdGUpCiAJfQogCXJldHVybiBlcnJvcjsKIH0KKyNlbmRpZiAvKiBDT05GSUdfU1VTUEVORCAq
-LwogCiBpbnQgYWNwaV9zbGVlcF9wcmVwYXJlKHUzMiBhY3BpX3N0YXRlKQogewpAQCAtODEsNiAr
-ODIsNyBAQCBpbnQgYWNwaV9zbGVlcF9wcmVwYXJlKHUzMiBhY3BpX3N0YXRlKQogCXJldHVybiAw
-OwogfQogCisjaWZkZWYgQ09ORklHX1NVU1BFTkQKIC8qKgogICoJYWNwaV9wbV9wcmVwYXJlIC0g
-RG8gcHJlbGltaW5hcnkgc3VzcGVuZCB3b3JrLgogICoJQHBtX3N0YXRlOiBpZ25vcmVkCg==
---========GMX189531190718140614822--
+shouldn't this be CTL_UNNUMBERED ?
+
+
+> +                .procname       = "jbd-debug",
+> +                .data           = &journal_enable_debug,
+> +                .maxlen         = sizeof(int),
+> +                .mode           = 0644,
+> +                .proc_handler   = &proc_dointvec,
+> +        },
+> +        { .ctl_name = 0 },
+> +};
+>
+
+-aneesh
