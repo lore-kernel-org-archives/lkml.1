@@ -1,80 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbXIYEls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbXIYEqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759871AbXIYEls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 00:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbXIYEll
+	id S1760259AbXIYEqF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 00:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbXIYEp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 00:41:41 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40218 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752904AbXIYElk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 00:41:40 -0400
-Date: Tue, 25 Sep 2007 14:41:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Anton Blanchard <anton@au1.ibm.com>, paulus <paulus@au1.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Ryan S. Arnold" <rsa@us.ibm.com>, Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH] Delay creation of khcvd thread
-Message-Id: <20070925144125.b25fbe23.sfr@canb.auug.org.au>
-In-Reply-To: <1190694461.27805.295.camel@localhost.localdomain>
-References: <1190691984.27805.270.camel@localhost.localdomain>
-	<20070925140454.566803e5.sfr@canb.auug.org.au>
-	<1190694461.27805.295.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__25_Sep_2007_14_41_25_+1000_.yD9G.pY_+QlvvI+"
+	Tue, 25 Sep 2007 00:45:56 -0400
+Received: from donetsk.donpac.ru ([80.254.111.38]:40790 "EHLO
+	donetsk.donpac.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755268AbXIYEpz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 00:45:55 -0400
+Date: Tue, 25 Sep 2007 08:45:50 +0400
+From: Andrey Panin <pazke@donpac.ru>
+To: Dave Jones <davej@redhat.com>, Jonathan Campbell <jon@nerdgrounds.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Patches for tiny 386 kernels, again. Linux kernel
+	2.6.22.7
+Message-ID: <20070925044550.GA5419@pazke.donpac.ru>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jonathan Campbell <jon@nerdgrounds.com>,
+	linux-kernel@vger.kernel.org
+References: <46F77A85.6020202@nerdgrounds.com> <20070924190917.GG8127@redhat.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SUOF0GtieIMvvwua"
+Content-Disposition: inline
+In-Reply-To: <20070924190917.GG8127@redhat.com>
+X-Uname: Linux 2.6.23-rc3 x86_64
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__25_Sep_2007_14_41_25_+1000_.yD9G.pY_+QlvvI+
-Content-Type: text/plain; charset=US-ASCII
+
+--SUOF0GtieIMvvwua
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Rusty,
-
-On Tue, 25 Sep 2007 14:27:41 +1000 Rusty Russell <rusty@rustcorp.com.au> wr=
-ote:
->
-> HVC console is also used by iSeries, so add that to HVC_DRIVER help.
+On 267, 09 24, 2007 at 03:09:17PM -0400, Dave Jones wrote:
+> On Mon, Sep 24, 2007 at 01:51:17AM -0700, Jonathan Campbell wrote:
 >=20
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 >=20
-> diff -r 85d39cbbd21c drivers/char/Kconfig
-> --- a/drivers/char/Kconfig	Tue Sep 25 14:23:07 2007 +1000
-> +++ b/drivers/char/Kconfig	Tue Sep 25 14:26:01 2007 +1000
-> @@ -569,7 +569,7 @@ config HVC_DRIVER
->  	bool
->  	help
->  	  Generic "hypervisor virtual console" infrastructure for various
-> -	  hypervisors (pSeries, Xen, lguest).
-> +	  hypervisors (pSeries, iSeries, Xen, lguest).
->  	  It will automatically be selected if one of the back-end console driv=
-ers
->  	  is selected.
+>  > +#if defined(__i386__) && defined(CONFIG_DMI)
+>  >  	dmi_check_system(acpi_dmi_table);
+>  >  #endif
+>  > =20
+>  > +#ifdef CONFIG_DMI
+>  >  	dmi_scan_machine();
+>  > +#endif
+>  > =20
+>  > +#ifdef CONFIG_DMI
+>  >  	/* Check and install the TSC clocksource */
+>  >  	dmi_check_system(bad_tsc_dmi_table);
+>  > +#endif
+>  > =20
+>  > +#ifdef CONFIG_DMI
+>  >  	dmi_check_system(acpi_osl_dmi_table);
+>  > +#endif
+> =20
+> Instead of adding all these ifdefs, we could just define
+> add something along the lines of..
+>=20
+> #ifndef CONFIG_DMI
+> #define dmi_check_system do {} while (0)
+> #endif
+>=20
+> in some header, which hides the uglies away from the code
+> whilst having the same net effect.
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Let take a look at linux/dmi.h:
 
-;-)
+#ifdef CONFIG_DMI
+
+extern int dmi_check_system(struct dmi_system_id *list);
+extern char * dmi_get_system_info(int field);
+extern struct dmi_device * dmi_find_device(int type, const char *name,
+	struct dmi_device *from);
+extern void dmi_scan_machine(void);
+extern int dmi_get_year(int field);
+extern int dmi_name_in_vendors(char *str);
+
+#else
+
+static inline int dmi_check_system(struct dmi_system_id *list) { return 0; }
+static inline char * dmi_get_system_info(int field) { return NULL; }
+static inline struct dmi_device * dmi_find_device(int type, const char *nam=
+e,
+	struct dmi_device *from) { return NULL; }
+static inline int dmi_get_year(int year) { return 0; }
+static inline int dmi_name_in_vendors(char *s) { return 0; }
+
+#endif
+
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Andrey Panin		| Linux and UNIX system administrator
+pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
 
---Signature=_Tue__25_Sep_2007_14_41_25_+1000_.yD9G.pY_+QlvvI+
-Content-Type: application/pgp-signature
+--SUOF0GtieIMvvwua
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFG+JF5TgG2atn1QN8RAgmcAJ0RvH1fZqBcYSGKcZMnzDKVZ6Hn5ACfav4l
-dPQu0PG5Z4nr6aEv6X632LA=
-=jQQ/
+iD8DBQFG+JJ+IWZCBzwS8mkRAqRKAJ9fHJSc90E4YvGS2FZWq2EHiN+p/QCdGM0j
+M9jLMfWuaFhNBIj4IVYwspw=
+=WcYO
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__25_Sep_2007_14_41_25_+1000_.yD9G.pY_+QlvvI+--
+--SUOF0GtieIMvvwua--
