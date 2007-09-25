@@ -1,121 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759118AbXIYChn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbXIYClQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759118AbXIYChn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 22:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXIYChf
+	id S1759302AbXIYClQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 22:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbXIYClF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 22:37:35 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:27864 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752944AbXIYChe (ORCPT
+	Mon, 24 Sep 2007 22:41:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:54724 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754993AbXIYClE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 22:37:34 -0400
+	Mon, 24 Sep 2007 22:41:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Kn5pF+iomaUqElVt2tyOYZpm73AwMmGJJBcXNiTYjpEV9vNrwV1e+LJgzfQzhjCmZTHAKV32xRX3HES+I0EyfQgE+hGIlnZ7GKYfufo11lYP+jAap9xpZSBwaog+FH8PIdYw8yhysU8Bm+La2C42YcShWbFiOJf/5VYplbudseQ=
-Message-ID: <95455e980709241937y7bc45eedgc0a977b156cf852d@mail.gmail.com>
-Date: Tue, 25 Sep 2007 12:37:32 +1000
-From: hce <webmail.hce@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: Ethernet driver on 2.6.22
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070924154430.f19136e1.randy.dunlap@oracle.com>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=gDn5gs0TrZlth88PREb6wYegb4571g25gJbkCG3UkPggAqiapi9RmUY+0Hm3EAjSPk673511IQWHzDvoANiLgh+06BPKOMnHXPKzshBgecVvz8uy4/bRpQbWVkYpjqmJmf4b/uFp57fAQKRsPkUdJuPApuICVi9r3p8w6DKPTvQ=
+Message-ID: <46F874DB.5070205@gmail.com>
+Date: Tue, 25 Sep 2007 11:39:23 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Jonathan Corbet <corbet@lwn.net>, ebiederm@xmission.com,
+       cornelia.huck@de.ibm.com, greg@kroah.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] module: implement module_inhibit_unload()
+References: <25380.1190671205@lwn.net>  <46F845B2.7030002@gmail.com>	 <1190677332.27805.229.camel@localhost.localdomain>	 <46F86727.4050004@gmail.com> <1190686320.27805.258.camel@localhost.localdomain>
+In-Reply-To: <1190686320.27805.258.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <95455e980709231552l73bd8c78u46d3a45266749902@mail.gmail.com>
-	 <20070923183438.8807b5da.randy.dunlap@oracle.com>
-	 <95455e980709231940m571c628cj887628aba4a21c4b@mail.gmail.com>
-	 <20070923203910.8b414cc6.randy.dunlap@oracle.com>
-	 <95455e980709241539m133d0098y5d3c7147188d9508@mail.gmail.com>
-	 <20070924154430.f19136e1.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/25/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Tue, 25 Sep 2007 08:39:07 +1000 hce wrote:
->
-> > On 9/24/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > On Mon, 24 Sep 2007 12:40:07 +1000 hce wrote:
-> > >
-> > > > Thanks Randy.
-> > > >
-> > > > On 9/24/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > > > On Mon, 24 Sep 2007 08:52:36 +1000 hce wrote:
-> > > > >
-> > > > > > Hi,
-> > > > > >
-> > > > > > I am upgrading from kernel 2.6.11 to 2.6.22 on ARM S3C2400A and found
-> > > > > > a following issue on 2.6.22.
-> > > > > >
-> > > > > > On 2.6.11, I selected CONFIG_ISA,  CONFIG_NET_PCI and CONFIG_CS89X0 to
-> > > > > > build  CS8900A Ethernet driver to kernel, it was running perfect.
-> > > > > >
-> > > > > > But on 2.6.22, I made the same configuration for CS8900A, the cs89x0.o
-> > > > > > could not be compiled in to the kernel (or as a module when I tried to
-> > > > > > CONFIG_CS89X0=m) unless I commented out depends statement in
-> > > > > > drivers/net/Kconfig. I double checked all three are CONFIG_ISA=y,
-> > > > > > CONFIG_NET_PCI=y and CONFIG_CS89X0=y. Any explanation please, was I
-> > > > > > missing something here?
-> > > > >
-> > > > > I didn't look in 2.6.11 Kconfig files, but in 2.6.22, this driver is
-> > > > > limited to 3 specific boards:
-> > > > >
-> > > > > config CS89x0
-> > > > >         tristate "CS89x0 support"
-> > > > >         depends on NET_PCI && (ISA || MACH_IXDP2351 || ARCH_IXDP2X01 || ARCH_PNX010X)
-> > > >
-> > > > The Kconfig for CS89x0 in 2.6.11 is exactly the same as 2.6.22.
-> > > >
-> > > > > Does ARM S3C2400A qualify as any of those?  (MACH_... or ARCH_...)
-> > > >
-> > > > I can run CS89x0 for ARM S3C2400 in 2.6.11, at least I can say yes,
-> > > > the ARM S3C2400A qualifies those in 2.6.11, I don't know the 2.6.22
-> > > > and I hope someone knows 2.6.22 well can answer it.
-> > > >
-> > > > > (latter: ARCH_PNX010X is not used anywhere else AFAICT)
-> > > >
-> > > > Yes, but you only need to enable ISA and NET_PCI to use CS89x0.
-> > >
-> > > Right.
-> > >
-> > > I don't have any problem building CS89x0 for X86_32:
-> > > make defconfig then enable ISA (what!?!?  why not in defconfig?)
-> > > and then enable CS89x0.
-> >
-> > I don't have my embedded system here, I'll try when I get there. But,
-> > let me clarify it, did you mean to type "make defconfig" on linux
-> > (kernel) directory, and enable ISA, NET_PCI and CS89x0 from the
-> > prompt?
-> >
-> > My procedure was to edit .config to enable ISA, NET_PCI and CS89x0
-> > from vim, then type "make menuconfig" and "make oldconfig" (The same
-> > procedure I did in 2.6.11 which works fine). Does that make things
-> > differently?
->
-> You should do "make oldconfig" immediately after editing the .config
-> file (AFAIK).  Or the "make menuconfig" might run the oldconfig
-> changes for you.
+Rusty Russell wrote:
+>>> I really wonder if an explicit "kill_this_attribute()" is a better way
+>>> to go than this...
+>> I think this sort of temporary unload blocking would be useful for other
+>> cases like this.
+> 
+> I hope not: this doesn't work in general.  Calling into a module after
+> ->exit has called assumes that the exit function doesn't free up or
+> overwrite stuff the other functions need.
 
-Sorry, I was not clear. The procedure was actually I type "make
-ARCH=arm menuconfig" first, then I could not find the CONFIG_ISA,
-CONFIG_NET_SPI and CONFIG_CS89x0 on config screen, this is still
-puzzles me why could "make menuconfig" displays all possible
-configurations on 2.6.22? Could you please explain?
+Right, the sole purpose the unload inhibition is to hold onto the 'code'
+section from going away.  The rest of object lifetime management should
+be implemented using separate mechanisms anyway.  I was talking about
+similar cases where the 'code' should be protected for a short time.
 
-Because I was not able to add CONFIG_ISA, CONFIG_NET_SPI and
-CONFIG_CS89x0 from "make menuconfig", I used vim to manually added
-those and then "make oldconfig".
+Thanks.
 
-> Then I would just double-check the final .config file
-> to make sure that it contains what you expect it to contain.
-
-Yes, I did double-check with the .config file, all three are =y.
-
-Thanks Randy.
-
-Regards,
-
-Jim
+-- 
+tejun
