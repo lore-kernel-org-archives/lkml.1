@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbXIYC6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbXIYDWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758685AbXIYC6e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 22:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbXIYC6Z
+	id S1758141AbXIYDWJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 23:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbXIYDV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 22:58:25 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:63011 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753898AbXIYC6Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 22:58:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:references:subject:message-id:x-mailer;
-        b=UrehqI82UfvRGRB96+MEGdJFpxQ0YMKSJ47/r9MrGDJUzEpzY2O0eLTE9BpiaDmSjbGikSE7ewqvOFV4AQ1vpbUuWmuBGFWUwkbz/cg+R49CLDVDlpzpN3lJOdxL9nNqXj4SYTUec1dkszjh93+ZWjhcX2zEJ7uaJE2DH1IXZTg=
-Date: Tue, 25 Sep 2007 10:58:13 +0800
-From: "Peer Chen" <peerchen@gmail.com>
-To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ide" <linux-ide@vger.kernel.org>,
-       "akpm" <akpm@linux-foundation.org>, "jeff" <jeff@garzik.org>
-References: <200709211406065332552@gmail.com>,
- <20070921113908.180cd154@the-village.bc.nu>,
- <200709241016214230742@gmail.com>,
- <46F7B344.7050903@ru.mvista.com>
-Subject: Re: Re: [PATCH] ahci: Add MCP79 support to AHCI driver
-Message-ID: <200709251058091899290@gmail.com>
-X-mailer: Foxmail 6, 6, 105, 21 [cn]
+	Mon, 24 Sep 2007 23:21:57 -0400
+Received: from ozlabs.org ([203.10.76.45]:58330 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752357AbXIYDV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 23:21:56 -0400
+Subject: Re: [PATCH 1/4] module: implement module_inhibit_unload()
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, ebiederm@xmission.com,
+       cornelia.huck@de.ibm.com, greg@kroah.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
+In-Reply-To: <46F874DB.5070205@gmail.com>
+References: <25380.1190671205@lwn.net>  <46F845B2.7030002@gmail.com>
+	 <1190677332.27805.229.camel@localhost.localdomain>
+	 <46F86727.4050004@gmail.com>
+	 <1190686320.27805.258.camel@localhost.localdomain>
+	 <46F874DB.5070205@gmail.com>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 13:21:33 +1000
+Message-Id: <1190690493.27805.263.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes,they all belong to AHCI controllers, 4 of them use ahci class code and others use RAID class code.
+On Tue, 2007-09-25 at 11:39 +0900, Tejun Heo wrote:
+> Rusty Russell wrote:
+> >>> I really wonder if an explicit "kill_this_attribute()" is a better way
+> >>> to go than this...
+> >> I think this sort of temporary unload blocking would be useful for other
+> >> cases like this.
+> > 
+> > I hope not: this doesn't work in general.  Calling into a module after
+> > ->exit has called assumes that the exit function doesn't free up or
+> > overwrite stuff the other functions need.
+> 
+> Right, the sole purpose the unload inhibition is to hold onto the 'code'
+> section from going away.  The rest of object lifetime management should
+> be implemented using separate mechanisms anyway.  I was talking about
+> similar cases where the 'code' should be protected for a short time.
 
-------------------				 
-Peer Chen
-2007-09-25
+As stated you cannot protect arbitrary code this way, as you are trying
+to do.  I do not think you've broken any of the current code, but I
+cannot tell.  You're certainly going to surprise unsuspecting future
+authors.
 
--------------------------------------------------------------
-发件人：Sergei Shtylyov
-发送日期：2007-09-24 20:53:44
-收件人：Peer Chen
-抄送：Alan Cox; linux-kernel; linux-ide; akpm; jeff
-主题：Re: [PATCH] ahci: Add MCP79 support to AHCI driver
+Can you really not figure out the module owner of the sysfs entry to inc
+its use count during this procedure?  (__module_get()).
 
-Hello.
-
-Peer Chen wrote:
-
-> Code change, remove some Device IDs.
-
-> Signed-off-by: Peer Chen <peerchen@gmail.com>
-> ---
-> --- linux-2.6.23-rc7/drivers/ata/ahci.c.orig	2007-09-20 11:01:55.000000000 -0400
-> +++ linux-2.6.23-rc7/drivers/ata/ahci.c	2007-09-24 10:08:03.000000000 -0400
-> @@ -472,6 +472,14 @@ static const struct pci_device_id ahci_p
->  	{ PCI_VDEVICE(NVIDIA, 0x0ad9), board_ahci },		/* MCP77 */
->  	{ PCI_VDEVICE(NVIDIA, 0x0ada), board_ahci },		/* MCP77 */
->  	{ PCI_VDEVICE(NVIDIA, 0x0adb), board_ahci },		/* MCP77 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0ab8), board_ahci },		/* MCP79 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0ab9), board_ahci },		/* MCP79 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0aba), board_ahci },		/* MCP79 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0abb), board_ahci },		/* MCP79 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0abc), board_ahci },		/* MCP79 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0abd), board_ahci },		/* MCP79 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0abe), board_ahci },		/* MCP79 */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0abf), board_ahci },		/* MCP79 */
-
-    I wonder whether all of those 8 IDs belong to AHCI controllers...
-
-MBR, Sergei
+Rusty.
 
