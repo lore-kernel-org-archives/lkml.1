@@ -1,109 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbXIYOiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbXIYOia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbXIYOiN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 10:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbXIYOhz
+	id S1757209AbXIYOia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 10:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbXIYOiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 10:37:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34872 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751992AbXIYOhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 10:37:54 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
-Date: Tue, 25 Sep 2007 16:52:04 +0200
-User-Agent: KMail/1.9.5
-Cc: Alexey Starikovskiy <aystarik@gmail.com>,
-       Damien Wyart <damien.wyart@free.fr>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       Frans Pop <elendil@planet.nl>, linux-acpi@vger.kernel.org
-References: <20070925065109.GA3080@localhost.localdomain> <200709251618.06064.rjw@sisk.pl> <46F918F8.1080808@suse.de>
-In-Reply-To: <46F918F8.1080808@suse.de>
+	Tue, 25 Sep 2007 10:38:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:63221 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756302AbXIYOiT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 10:38:19 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/5] ibmebus: Remove bus match/probe/remove functions
+Date: Tue, 25 Sep 2007 16:29:51 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+References: <200709251410.29780.fenkes@de.ibm.com> <200709251411.54465.fenkes@de.ibm.com>
+In-Reply-To: <200709251411.54465.fenkes@de.ibm.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200709251652.05589.rjw@sisk.pl>
+Message-Id: <200709251629.52376.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+E6nTSfsgwLeufR6EjfadQVzW6wni/OeLYwAd
+ f9MSTcCXTA7W4LBzDr7oyGr67mrNIg2z4SovK00zVW2B125UTX
+ VUFpaPUIA7DwPJVQXoZ7w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 25 September 2007 16:19, Alexey Starikovskiy wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday, 25 September 2007 15:15, Alexey Starikovskiy wrote:
-> >> Rafael J. Wysocki wrote:
-> >>> On Tuesday, 25 September 2007 14:53, Alexey Starikovskiy wrote:
-> >>>> Rafael J. Wysocki wrote:
-> >>>>> On Tuesday, 25 September 2007 14:05, Alexey Starikovskiy wrote:
-> >>>>>> Rafael J. Wysocki wrote:
-> >>>>>>> On Tuesday, 25 September 2007 13:45, Rafael J. Wysocki wrote:
-> >>>>>>>> On Tuesday, 25 September 2007 11:58, Damien Wyart wrote:
-> >>>>>>>>>>> No, I do not have CONFIG_ACPI_SLEEP set,
-> >>>>>>>>>>> because I do not have CONFIG_PM_SLEEP set,
-> >>>>>>>>>>> because I do not want SUSPEND and/or HIBERNATION.
-> >>>>>>>>>> Same answer from my side: I do not have CONFIG_ACPI_SLEEP for the same
-> >>>>>>>>>> reason (and this worked fine without them in rc7). I do not think
-> >>>>>>>>>> these settings should have changed between rc7 and rc8.
-> >>>>>>>> Well, we haven't changed much.
-> >>>>>>>>
-> >>>>>>>>> Also, another test I just did: on another computer, rc8 is fine
-> >>>>>>>>> regarding ACPI power off, even if CONFIG_ACPI_SLEEP is not set. I can
-> >>>>>>>>> provide config if needed.
-> >>>>>>>> On the box that fails to power off, can you please test -rc8 with these two
-> >>>>>>>> commits reverted:
-> >>>>>>>>
-> >>>>>>>> commit 5a50fe709d527f31169263e36601dd83446d5744
-> >>>>>>>> ACPI: suspend: consolidate handling of Sx states addendum
-> >>>>>>>>
-> >>>>>>>> commit f216cc3748a3a22c2b99390fddcdafa0583791a2
-> >>>>>>>> ACPI: suspend: consolidate handling of Sx states.
-> >>>>>>>>
-> >>>>>>>> and see if it works?
-> >>>>>>> If it does, please test the patch from this message
-> >>>>>>>
-> >>>>>>> http://marc.info/?l=linux-kernel&m=119052978117735&w=4
-> >>>>>>>
-> >>>>>>> on top of vanilla 2.6.23-rc8.
-> >>>>>> You will need one more patch on top of just mentioned one.
-> >>>>> Hm, why did you put acpi_target_sleep_state under CONFIG_SUSPEND?
-> >>>>>
-> >>>>> CONFIG_HIBERNATION needs acpi_target_sleep_state  too.
-> >>>> Agree, attaching updated patch.
-> >>> Well, please use "ifdef CONFIG_PM_SLEEP" instead of
-> >>> "if defined(CONFIG_SUSPEND)||defined(CONFIG_HIBERNATION)",
-> >>> as you did with the second block.
-> >> I was thinking about that, but it seem to be less clear... 
-> >> We need this variable only for suspend or hibernation, nothing else.
-> >> with pm_sleep it is not visible at all.
-> >>
-> >> Thoughts?
-> > 
-> > Well, PM_SLEEP is defined as (SUSPEND || HIBERNATION), please have a look
-> > at kernel/power/Kconfig, and it was introduced exactly for the conditions like
-> > this.
-> I've seen this then I wrote the patch :) See my point, it is not clear, 
-> that PM_SLEEP is equivalent to SUSPEND || HIBERNATION, one needs to 
-> grep Kconfig files to find that -- it means that code becomes less readable, 
-> and I would like to avoid that.
+On Tuesday 25 September 2007, Joachim Fenkes wrote:
+> ibmebus_{,un}register_driver() are replaced by dummy functions because
+> ibmebus is temporarily unusable in this transitional state.
+> 
+> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> ---
+>  arch/powerpc/kernel/ibmebus.c |  199 ++---------------------------------------
+>  1 files changed, 6 insertions(+), 193 deletions(-)
+> 
 
-I see your point.  Still, you are using PM_SLEEP in the same file, so someone
-reading the code for the first time will have to find out what it is anyway.
+Great diffstat!
 
-OTOH, the only function of PM_SLEEP is to be a replacement for
-(SUSPEND || HIBERNATION).  It has no other meaning whatsoever.
+The description makes it sound like a git-bisect would get broken
+by this patch, which should never happen. If the patch indeed
+ends up with a broken kernel, it would be better to merge it with
+the later patch that fixes the code again.
 
-[Well, sorry, I couldn't invent a better name.]
- 
-> > IOW, if we want something to be used for anything else than suspend or
-> > hibernation, it shouldn't be defined under PM_SLEEP.
-> Agree, but we should distinguish there it is better to use PM_SLEEP, 
-> and there it is better to use (SUSPEND || HIBERNATION) just to be more expressive...
-
-Well, since PM_SLEEP is used as (SUSPEND || HIBERNATION) everywhere else,
-I think that it would actually be confusing not to use it here. :-)
-
-Greetings,
-Rafael
+	Arnd <><
