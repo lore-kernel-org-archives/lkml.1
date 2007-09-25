@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752377AbXIYJRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752405AbXIYJSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752377AbXIYJRu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 05:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXIYJRm
+	id S1752405AbXIYJSD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 05:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXIYJRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 05:17:42 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53321 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751296AbXIYJRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 05:17:41 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+yFl0Do/ayMlgyrv360ftGccUTV8bR/vOmo68ePt
-	WlSsujiK2oR1uw
-Subject: Re: [git] CFS-devel, latest code
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
+	Tue, 25 Sep 2007 05:17:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33392 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752017AbXIYJRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 05:17:48 -0400
+Date: Tue, 25 Sep 2007 11:17:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
 Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>,
        Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070925091331.GA22905@elte.hu>
-References: <20070924214537.GA18980@elte.hu>
-	 <1190700652.6482.7.camel@Homer.simpson.net>
-	 <1190705759.11910.10.camel@Homer.simpson.net>
-	 <1190709207.11226.6.camel@Homer.simpson.net>
-	 <20070925091331.GA22905@elte.hu>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 11:17:38 +0200
-Message-Id: <1190711858.13861.10.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Subject: Re: [git] CFS-devel, latest code
+Message-ID: <20070925091727.GB22905@elte.hu>
+References: <20070924214537.GA18980@elte.hu> <200709250950.59861.caglar@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200709250950.59861.caglar@pardus.org.tr>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-25 at 11:13 +0200, Ingo Molnar wrote:
 
-> > [...] Latencies of up to 336ms hit me during the recompile (make -j3), 
-> > with nothing else running. Since reboot, latencies are, so far, very 
-> > very nice. [...]
+* S.Çağlar Onur <caglar@pardus.org.tr> wrote:
+
+> Seems like following trivial change needed to compile without 
+> CONFIG_SCHEDSTATS
 > 
-> 'very very nice' == 'best ever' ? :-)
+> caglar@zangetsu linux-2.6 $ LC_ALL=C make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/linux/compile.h
+>   CC      kernel/sched.o
+> In file included from kernel/sched.c:853:
+> kernel/sched_debug.c: In function `print_cfs_rq':
+> kernel/sched_debug.c:139: error: structure has no member named `bkl_cnt'
+> kernel/sched_debug.c:139: error: structure has no member named `bkl_cnt'
+> make[1]: *** [kernel/sched.o] Error 1
+> make: *** [kernel] Error 2
+> 
+> Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 
-Yes.  Very VERY nice feel.
+thanks, applied!
 
-	-Mike
-
+	Ingo
