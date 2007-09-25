@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbXIYWNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbXIYWRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbXIYWNp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 18:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbXIYWNh
+	id S1753092AbXIYWRx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 18:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbXIYWRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 18:13:37 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:47514 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbXIYWNh (ORCPT
+	Tue, 25 Sep 2007 18:17:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36032 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751576AbXIYWRp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 18:13:37 -0400
-Subject: KPROBES: Instrumenting a function's call site
-From: Avishay Traeger <atraeger@cs.sunysb.edu>
-To: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 18:12:38 -0400
-Message-Id: <1190758358.30061.13.camel@rockstar.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 18:17:45 -0400
+Date: Tue, 25 Sep 2007 15:17:36 -0700
+From: Greg KH <greg@kroah.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: ebiederm@xmission.com, cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver
+	model
+Message-ID: <20070925221736.GA3566@kroah.com>
+References: <11902755392688-git-send-email-htejun@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11902755392688-git-send-email-htejun@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I am trying to use kprobes to measure the latency of a function by
-instrumenting its call site.  Basically, I find the call instruction,
-and insert a kprobe with a pre-handler and post-handler at that point.
-The pre-handler measures the latency (reads the TSC counter).  The
-post-handler measures the latency again, and subtracts the value that
-was read in the pre-handler to compute the total latency of the called
-function.
+On Thu, Sep 20, 2007 at 05:05:39PM +0900, Tejun Heo wrote:
+> Subject: [PATCHSET 3/4] sysfs: divorce sysfs from kobject and driver model
+> 
+> Hello, all.
+> 
+> This is the third patchset of four sysfs update patchset series[1] and
+> to be applied on top of the second patchset[2].
+> 
+> Currently, sysfs interface is based on kobj.  This made more sense
+> before because lifetime of sysfs nodes were tracked using kobj
+> reference counts.  However, this is no longer true.  sysfs nodes are
+> represented with a sysfs_dirent and external reference is severed
+> immediately on node removal.  The internal implementation reflects
+> that too and mostly handles sysfs_dirents.
+> 
+> This patchset divorces sysfs from kobject and driver model by
+> implementing sysfs_dirent based interface.  This has the following
+> advantages.
+> 
+> * sysfs becomes a separate module and driver model becomes a user of
+>   sysfs.  Those two are not entangled anymore.  Things are easier to
+>   understand and test this way.
 
-So to measure the latency of foo(), I basically want kprobes to do this:
-pre_handler();
-foo();
-post_handler();
+This is good, I like this.
 
-The problem is that the latencies that I am getting are consistently low
-(~10,000 cycles).  When I manually instrument the functions, the latency
-is about 20,000,000 cycles.  Clearly something is not right here.
+> * Non-driver model users of sysfs (modules, blkdev, etc...) don't have
+>   to jump through hoops to use sysfs.  kobj based interface requires
+>   attribute wrapping and is awkward to use directly.  Also, the user
+>   is required to create a dummy kobj which doesn't serve much purpose
+>   than being a token for sysfs reference.  New sysfs-dirent based
+>   interface is straight forward proc-fs like interface and should be
+>   easier and more intuitive for those users.
 
-Is this a known issue?  Instead of using the post-handler, I can try to
-add a kprobe to the following instruction with a pre-handler.  I was
-just curious if there was something fundamentally wrong with the
-approach I took, or maybe a bug that you should be made aware of.
+This is not good, I don't like this :(
 
-Please CC me on any replies (not subscribed to LKML).
+As we spoke a few weeks ago, the non-driver model users of sysfs are ok.
+Yes, it's not trivial to use sysfs in this manner, and it should be made
+easier, but we still need to keep our tree of objects.  Using a kobject
+for sysfs access is a good thing as it provides a tiny grasp on keeping
+the usage of sysfs under control.
 
-Thanks,
-Avishay
+So while I like the separation of sysfs and kobjects from an
+architectural and conceptual level for testing and understanding, I do
+not want to allow the use of sysfs without creating a backing kobject
+like we do today.
 
+I'm all for making the "raw" kobject access easier, cleaning up the
+attribute "mess" that you need to go through.  The cleanups that Kay and
+I have been doing in the kset and subsystem area are steps in that
+direction and I have more I want to do there to help make it easier to
+use and understand.
+
+So, I'll try to pick and choose from this patchset what I feel is ok for
+now.
+
+Or does it depend on the second set of patches that are yet to be
+applied due to disagreements about module lifetimes?
+
+thanks,
+
+greg k-h
