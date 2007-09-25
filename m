@@ -1,114 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760389AbXIYR1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314AbXIYR1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760389AbXIYR1Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 13:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXIYR1A
+	id S1756314AbXIYR1n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 13:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXIYR1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 13:27:00 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:42391 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753028AbXIYR07 (ORCPT
+	Tue, 25 Sep 2007 13:27:34 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:60950 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbXIYR1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 13:26:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SOMUkLHOtQJp6mLsBZlw9rx/C8RbjlOuPEVqcoi7NI/0QNF4HXH1Qh6XMd7eLuMf9xKNwR/yMA2ngYaRfOgp0cslCc/vJ8NQFQTchwKKulWo80XLLMxPWkIWlnLOd3igErgVY/sdxh2y64K/+so6yizj7bqkp/0aSNFI9OlTu9Q=
-Message-ID: <6101e8c40709251026k21e71a66xd10fbac690e5359b@mail.gmail.com>
-Date: Tue, 25 Sep 2007 19:26:57 +0200
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: Linux 2.6.22.8, pata_ali issue
-Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-In-Reply-To: <6101e8c40709251025r1137f246xad8e99f273f65677@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Sep 2007 13:27:32 -0400
+Date: Tue, 25 Sep 2007 10:26:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>, unionfs@filesystems.org
+Cc: linux-kernel@vger.kernel.org, jsipek@cs.sunysb.edu
+Subject: Re: 2.6.23-rc8-mm1
+Message-Id: <20070925102637.79e1dc75.randy.dunlap@oracle.com>
+In-Reply-To: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070925062115.GA18444@kroah.com>
-	 <6101e8c40709250909x53b44274i17694e64dccae427@mail.gmail.com>
-	 <20070925161430.GA14212@suse.de>
-	 <Pine.LNX.4.64.0709251858520.945@fbirervta.pbzchgretzou.qr>
-	 <6101e8c40709251021s602f8f55id40c327ac871345f@mail.gmail.com>
-	 <Pine.LNX.4.64.0709251923410.945@fbirervta.pbzchgretzou.qr>
-	 <6101e8c40709251025r1137f246xad8e99f273f65677@mail.gmail.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hey, your's tree is 2.6-git and not 2.6.22.8 ;)
+On Tue, 25 Sep 2007 01:46:25 -0700 Andrew Morton wrote:
+
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm1/
+> 
+> - Various fixes against 2.6.23-rc7-mm1.
+> 
+> 
+>  git-unionfs.patch
+
+in unionfs debug.c:
+
+#if BITS_PER_LONG == 32
+#define POISONED_PTR		((void*) 0x5a5a5a5a)
+#elif BITS_PER_LONG == 64
+#define POISONED_PTR		((void*) 0x5a5a5a5a5a5a5a5a)
+#else
+#error Unknown BITS_PER_LONG value
+#endif /* BITS_PER_LONG != known */
 
 
-On 9/25/07, Oliver Pinter <oliver.pntr@gmail.com> wrote:
-> my git top is:
->
-> commit 0dc661f882011b941b8b4d4dac84d7a0371f7a7b
-> Author: Greg Kroah-Hartman <gregkh@suse.de>
-> Date:   Mon Sep 24 23:05:13 2007 -0700
->
->     Linux 2.6.22.8
->
->
-> On 9/25/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> >
-> > On Sep 25 2007 19:21, Oliver Pinter wrote:
-> > >
-> > >the rev is locali declared:
-> > >
-> > >[snap]
-> > >
-> > > ...
-> > >
-> > >static void ali_init_chipset(struct pci_dev *pdev)
-> > >{
-> > >        u8 rev, tmp;
-> > >        struct pci_dev *north, *isa_bridge;
-> > >
-> > >        pci_read_config_byte(pdev, PCI_REVISION_ID, &rev);
-> > >
-> > > ...
-> > >
-> > >[snap]
-> > >
-> > >what's the git id in git tree?
-> >
-> > Huh? My top git is 4942de4a0e914f205d351a81873f4f63986bcc3c
-> > and it has this:
-> >
-> > static void ali_init_chipset(struct pci_dev *pdev)
-> >
-> > {
-> >
-> >         u8 tmp;
-> >
-> >         struct pci_dev *north, *isa_bridge;
-> >
-> >
-> >         /*
-> >
-> >          * The chipset revision selects the driver operations and
-> >
-> >          * mode data.
-> >
-> >          */
-> >
-> >
-> >         if (pdev->revision >= 0x20 && pdev->revision < 0xC2) {
-> >
-> >
-> >
-> > No pci_read_config_byte here..
-> >
-> >
->
->
-> --
-> Thanks,
-> Oliver
->
+We try to keep all poison values in include/linux/poison.h so that
+when digging around for them, it's easier to locate the one in
+question.
 
+Also, on x86_64, the 64-bit version wants a L or UL suffix:
 
--- 
-Thanks,
-Oliver
+fs/unionfs/debug.c:96:30: warning: constant 0x5a5a5a5a5a5a5a5a is so big it is long
+fs/unionfs/debug.c:264:30: warning: constant 0x5a5a5a5a5a5a5a5a is so big it is long
+
+---
+~Randy
+Phaedrus says that Quality is about caring.
