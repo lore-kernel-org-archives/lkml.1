@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbXIYNo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbXIYNrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755144AbXIYNo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 09:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXIYNoT
+	id S1755141AbXIYNrP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 09:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXIYNrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 09:44:19 -0400
-Received: from www.osadl.org ([213.239.205.134]:40139 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752209AbXIYNoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 09:44:19 -0400
-Subject: Re: 2.6.23-rc8-mm1, -rc7-mm1 kill audio on HP nx6325
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200709251520.09794.rjw@sisk.pl>
-References: <200709251408.54361.rjw@sisk.pl>
-	 <1190722710.4035.320.camel@chaos>  <200709251520.09794.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 15:44:03 +0200
-Message-Id: <1190727843.4035.345.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 09:47:01 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4557 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750721AbXIYNrA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 09:47:00 -0400
+Date: Tue, 25 Sep 2007 14:46:53 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.23-rc8-mm1 -- powerpc link failure
+Message-ID: <20070925134653.GB8447@shadowen.org>
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-25 at 15:20 +0200, Rafael J. Wysocki wrote:
-> > The patch is correct. Instead of returning "Success" in the case of a
-> > failure of lookup_address, it now returns -EINVAL, which in turn makes
-> > the ioremap fail.
-> > 
-> > OTOH, the driver ioremap call looks straight forward. Can you apply the
-> > patch below and provide the resulting debug output please ?
-> 
-> lookup failed for 18446604438082158592
-> [--snipped some USB messages--]
-> ALSA /home/rafael/src/mm/linux-2.6.23-rc8-mm1/sound/pci/hda/hda_intel.c:1756: hda-intel: ioremap error: 2349334528 16384
+2.6.23-rc6-mm1, 2.6.23-rc7-mm1 and 2.6.23-rc8-mm1 all fail to link
+correctly on a powerpc machine (elm3b19) in our test grid.  It fails as
+below:
 
-Stupid me, hex formatting would have been easier to read :)
+    LD      vmlinux.o
+  ld: dynreloc miscount for fs/built-in.o, section .opd
+  ld: can not edit opd Bad value
+  make: *** [vmlinux.o] Error 1
 
-Lookup failed for 0xFFFF 8100 8C08 0000
-ioremap:          0x0000 0000 8C08 0000 length 16384
+Compiler versions and linker versions as below:
 
-It seems, that this patch only reveals some other wreckage. The code is
-called as part of ioremap, where it adjusts the caching attributes of
-the mapping, which was setup right before change_page_attr_address() is
-called.
+root@elm3b19:~/apw/linux-2.6.22# gcc -v
+Using built-in specs.
+Target: powerpc-linux-gnu
+Configured with: ../src/configure -v
+--enable-languages=c,c++,java,f95,objc,ada,treelang --prefix=/usr
+--with-gxx-include-dir=/usr/include/c++/4.0.2 --enable-shared
+--with-system-zlib --libexecdir=/usr/lib --enable-nls
+--without-included-gettext --enable-threads=posix --program-suffix=-4.0
+--enable-__cxa_atexit --enable-libstdcxx-allocator=mt
+--enable-clocale=gnu --enable-libstdcxx-debug --enable-java-gc=boehm
+--enable-java-awt=gtk-default --enable-gtk-cairo
+--with-java-home=/usr/lib/jvm/java-1.4.2-gcj-4.0-1.4.2.0/jre
+--enable-mpfr --disable-softfloat
+--enable-targets=powerpc-linux,powerpc64-linux --with-cpu=default32
+--disable-werror --enable-checking=release powerpc-linux-gnu
+Thread model: posix
+gcc version 4.0.2 20050808 (prerelease) (Ubuntu 4.0.1-4ubuntu9)
+root@elm3b19:~/apw/linux-2.6.22# ld -v
+GNU ld version 2.16.1 Debian GNU/Linux
 
-	tglx
+As suggested elsewhere I have had a go at tracking this down.  Previous
+problems of this kind were introduced as a result of using 'weak'
+declarations to provide default implementations.  This investigation led
+me to the following commit:
 
+  commit c60473b5d32ea6cf4561232bc852bacd3a513528
+  Author: Jiri Kosina <jkosina@suse.cz>
+  Date:   Sat Sep 15 01:49:49 2007 +0000
 
+    i386-and-x86_64-randomize-brk
+
+Backing this change out seems to get us past this problem.  If we are to
+support compilers of this age, and I believe we currently do, then we
+probabally need to avoid the weak declarations and use the Kconfig
+system to provide the alternatives here.
+
+Jiri?
+
+-apw
