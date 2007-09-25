@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXIYVZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbXIYVen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760187AbXIYVZF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 17:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbXIYVYz
+	id S1756433AbXIYVen (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 17:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbXIYVeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 17:24:55 -0400
-Received: from www.osadl.org ([213.239.205.134]:43875 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753970AbXIYVYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 17:24:55 -0400
-Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325,
-	related to clockevents
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200709252328.54843.rjw@sisk.pl>
-References: <200709231257.12213.rjw@sisk.pl>
-	 <200709252207.02532.rjw@sisk.pl> <1190753192.17409.62.camel@chaos>
-	 <200709252328.54843.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 23:24:53 +0200
-Message-Id: <1190755493.17409.72.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 17:34:37 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:47784 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752814AbXIYVeg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 17:34:36 -0400
+Date: Tue, 25 Sep 2007 14:32:32 -0700
+From: Greg KH <greg@kroah.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: ebiederm@xmission.com, cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/15] sysfs: kill SYSFS_FLAG_REMOVED
+Message-ID: <20070925213232.GA30973@kroah.com>
+References: <11902719091692-git-send-email-htejun@gmail.com> <1190271909505-git-send-email-htejun@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190271909505-git-send-email-htejun@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
-
-On Tue, 2007-09-25 at 23:28 +0200, Rafael J. Wysocki wrote:
-> > I'm a bit confused by your earlier confirmation, that mainline w/o the
-> > -hrt patches boots fine, when you add "apicmaintimer" to the kernel
-> > command line. "apicmaintimer" stops the PIT like we do in -hrt and we
-> > just use the local APIC timer for everything. Can you please retest and
-> > confirm that this is correct ?
+On Thu, Sep 20, 2007 at 04:05:09PM +0900, Tejun Heo wrote:
+> With sysfs_get_dentry() simplified, there's no user of
+> SYSFS_FLAG_REMOVED left.  Kill it.
 > 
-> No, it's not.  The mainline _usually_ doesn't boot with "apicmaintimer".
-> 
-> It seems to me that _sometimes_ the CPU just doesn't enter this C1E state
-> and then everything goes fine ...
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+> This patch reverts driver/sysfs-kill-sysfs_flag_removed.patch and thus
+> can be removed together with it.
 
-I'm relieved. I really started to go nuts on this contradicting
-patterns.
+Ok, I've just removed that original one so this isn't needed either.
 
-Your box seems to be worse than the VAIO, it has some random surprise
-generator built in :)
+thanks,
 
-> > Is the 32 bit kernel working on that box ?
-> 
-> Can't tell, I have only 64-bit userland here.
-
-Should be fine. The check is there since late 2.6.21-rc. I really could
-kick my own ass that I did not remember the nx6325 wreckage in the
-2.6.21-rc time frame. Sigh, way too much broken hardware out there to
-keep track of it.
-
-> > Thanks for your patience.
-> 
-> Well, I'm only making sure that future kernels will run on my box. ;-)
-
-Nothing wrong with that. Thanks again for your help,
-
-	tglx
-
-
+greg k-h
