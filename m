@@ -1,170 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbXIYFX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbXIYF1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbXIYFX0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 01:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXIYFXS
+	id S1759143AbXIYF1n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 01:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbXIYF1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 01:23:18 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:43978 "EHLO
+	Tue, 25 Sep 2007 01:27:35 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:50817 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbXIYFXR (ORCPT
+	with ESMTP id S1753832AbXIYF1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 01:23:17 -0400
+	Tue, 25 Sep 2007 01:27:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer;
-        b=MH9RCX4nSETLwwxVCckZdKOCxDgMrcM7CA/ptGFY4GUBARfw9vg6xcEvepopfnH2EtovUIcOK+Zr6N5RxrjEZLbjB437w4UOc/M2Ji2QUE9bf0p2K88iUv8HNdcJchMrsN45vehodEOk1HM2OBOCVXA35H2GsUyr5M315ZunVM8=
-Date: Tue, 25 Sep 2007 13:23:08 +0800
-From: "Peer Chen" <peerchen@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ide" <linux-ide@vger.kernel.org>
-Cc: "akpm" <akpm@linux-foundation.org>, "jeff" <jeff@garzik.org>
-Subject: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
-Message-ID: <200709251323031982245@gmail.com>
-X-mailer: Foxmail 6, 6, 105, 21 [cn]
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=H4MStYgFAl+OgIDCa0Hp+MFrbHaiIkw8l6GHctU/1Ok7TavmHcA+pjXFj88k7p7BgVJCwESrrWIAh7AFNnWMVMWJGFyEJZulodkTqNfYiCbJ2o4VWNLMYCi3qdnn3+sStqXcXFf02l7EqWQSQfpD4gvU/l1E/1LbvlBq2dXq95M=
+Message-ID: <19f34abd0709242227n5ac1f7dp5b1589ceeb3e4c0e@mail.gmail.com>
+Date: Tue, 25 Sep 2007 07:27:33 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Miguel Ojeda" <maxextreme@gmail.com>
+Subject: Re: [RFC] New kernel-message logging API
+Cc: LKML <linux-kernel@vger.kernel.org>, holzheu <holzheu@linux.vnet.ibm.com>,
+       "Joe Perches" <joe@perches.com>, "Rob Landley" <rob@landley.net>,
+       "Dick Streefland" <dick.streefland@altium.nl>
+In-Reply-To: <653402b90709221805pd1b7efel165a1c55100e3610@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0709221227v67443c0bg2cd2010e5bd5a6c1@mail.gmail.com>
+	 <653402b90709221805pd1b7efel165a1c55100e3610@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the ahci controller legacy mode support to sata_nv.
-Move the DIDs of legacy mode from ahci.c to sata_nv.c
+On 9/23/07, Miguel Ojeda <maxextreme@gmail.com> wrote:
+> Nice. I would suggest having some kind of standard way to show the
+> information on the screen/dmesg. I mean, instead of having plain lines
+> being written to the log, having something very short like:
 
-The patch base on kernel 2.6.23-rc8
+Thanks for the idea. Is this something you want to (manually) insert
+in each printk, or would it be passed like a parameter? For the
+subsystem part, it might be possible to #define a subsystem name at
+the beginning of each file and have printing functions automatically
+use this. But otherwise, I think the usefulness of this is perhaps a
+little low compared to the effort needed (ie. for this to be useful,
+each and every printk of the kernel would need to be changed). Also
+notice, even in your examples, that most subsystems/drivers already
+prefix their messages to identify the source. Perhaps a better effort
+spent would be to go through the ones that are missing this "source"
+prefix and fix them?
 
-Signed-off-by: Peer Chen <peerchen@gmail.com>
----
-diff -uprN -X linux-2.6.23-rc8-vanilla/Documentation/dontdiff linux-2.6.23-rc8-vanilla/drivers/ata/ahci.c linux-2.6.23-rc8/drivers/ata/ahci.c
---- linux-2.6.23-rc8-vanilla/drivers/ata/ahci.c	2007-09-25 11:53:40.000000000 -0400
-+++ linux-2.6.23-rc8/drivers/ata/ahci.c	2007-09-25 11:53:25.000000000 -0400
-@@ -434,14 +434,6 @@ static const struct pci_device_id ahci_p
- 	{ PCI_VDEVICE(NVIDIA, 0x044d), board_ahci },		/* MCP65 */
- 	{ PCI_VDEVICE(NVIDIA, 0x044e), board_ahci },		/* MCP65 */
- 	{ PCI_VDEVICE(NVIDIA, 0x044f), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x045c), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x045d), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x045e), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x045f), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x0550), board_ahci },		/* MCP67 */
--	{ PCI_VDEVICE(NVIDIA, 0x0551), board_ahci },		/* MCP67 */
--	{ PCI_VDEVICE(NVIDIA, 0x0552), board_ahci },		/* MCP67 */
--	{ PCI_VDEVICE(NVIDIA, 0x0553), board_ahci },		/* MCP67 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0554), board_ahci },		/* MCP67 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0555), board_ahci },		/* MCP67 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0556), board_ahci },		/* MCP67 */
-@@ -450,10 +442,6 @@ static const struct pci_device_id ahci_p
- 	{ PCI_VDEVICE(NVIDIA, 0x0559), board_ahci },		/* MCP67 */
- 	{ PCI_VDEVICE(NVIDIA, 0x055a), board_ahci },		/* MCP67 */
- 	{ PCI_VDEVICE(NVIDIA, 0x055b), board_ahci },		/* MCP67 */
--	{ PCI_VDEVICE(NVIDIA, 0x07f0), board_ahci },		/* MCP73 */
--	{ PCI_VDEVICE(NVIDIA, 0x07f1), board_ahci },		/* MCP73 */
--	{ PCI_VDEVICE(NVIDIA, 0x07f2), board_ahci },		/* MCP73 */
--	{ PCI_VDEVICE(NVIDIA, 0x07f3), board_ahci },		/* MCP73 */
- 	{ PCI_VDEVICE(NVIDIA, 0x07f4), board_ahci },		/* MCP73 */
- 	{ PCI_VDEVICE(NVIDIA, 0x07f5), board_ahci },		/* MCP73 */
- 	{ PCI_VDEVICE(NVIDIA, 0x07f6), board_ahci },		/* MCP73 */
-@@ -462,10 +450,6 @@ static const struct pci_device_id ahci_p
- 	{ PCI_VDEVICE(NVIDIA, 0x07f9), board_ahci },		/* MCP73 */
- 	{ PCI_VDEVICE(NVIDIA, 0x07fa), board_ahci },		/* MCP73 */
- 	{ PCI_VDEVICE(NVIDIA, 0x07fb), board_ahci },		/* MCP73 */
--	{ PCI_VDEVICE(NVIDIA, 0x0ad0), board_ahci },		/* MCP77 */
--	{ PCI_VDEVICE(NVIDIA, 0x0ad1), board_ahci },		/* MCP77 */
--	{ PCI_VDEVICE(NVIDIA, 0x0ad2), board_ahci },		/* MCP77 */
--	{ PCI_VDEVICE(NVIDIA, 0x0ad3), board_ahci },		/* MCP77 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ad4), board_ahci },		/* MCP77 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ad5), board_ahci },		/* MCP77 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0ad6), board_ahci },		/* MCP77 */
-diff -uprN -X linux-2.6.23-rc8-vanilla/Documentation/dontdiff linux-2.6.23-rc8-vanilla/drivers/ata/sata_nv.c linux-2.6.23-rc8/drivers/ata/sata_nv.c
---- linux-2.6.23-rc8-vanilla/drivers/ata/sata_nv.c	2007-09-25 11:31:03.000000000 -0400
-+++ linux-2.6.23-rc8/drivers/ata/sata_nv.c	2007-09-25 11:19:48.000000000 -0400
-@@ -266,6 +266,7 @@ static void nv_adma_tf_read(struct ata_p
- enum nv_host_type
- {
- 	GENERIC,
-+	AHCI_LEG,
- 	NFORCE2,
- 	NFORCE3 = NFORCE2,	/* NF2 == NF3 as far as sata_nv is concerned */
- 	CK804,
-@@ -287,6 +288,29 @@ static const struct pci_device_id nv_pci
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA), GENERIC },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA2), GENERIC },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA3), GENERIC },
-+	{ PCI_VDEVICE(NVIDIA, 0x45c), AHCI_LEG },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x45d), AHCI_LEG },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x45e), AHCI_LEG },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x45f), AHCI_LEG },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x550), AHCI_LEG },	/* MCP67 */
-+	{ PCI_VDEVICE(NVIDIA, 0x551), AHCI_LEG },	/* MCP67 */
-+	{ PCI_VDEVICE(NVIDIA, 0x552), AHCI_LEG },	/* MCP67 */
-+	{ PCI_VDEVICE(NVIDIA, 0x553), AHCI_LEG },	/* MCP67 */
-+	{ PCI_VDEVICE(NVIDIA, 0x7f0), AHCI_LEG },	/* MCP73 */
-+	{ PCI_VDEVICE(NVIDIA, 0x7f1), AHCI_LEG },	/* MCP73 */
-+	{ PCI_VDEVICE(NVIDIA, 0x7f2), AHCI_LEG },	/* MCP73 */
-+	{ PCI_VDEVICE(NVIDIA, 0x7f3), AHCI_LEG },	/* MCP73 */
-+	{ PCI_VDEVICE(NVIDIA, 0xad0), AHCI_LEG },	/* MCP77 */
-+	{ PCI_VDEVICE(NVIDIA, 0xad1), AHCI_LEG },	/* MCP77 */
-+	{ PCI_VDEVICE(NVIDIA, 0xad2), AHCI_LEG },	/* MCP77 */
-+	{ PCI_VDEVICE(NVIDIA, 0xad3), AHCI_LEG },	/* MCP77 */
-+	{ PCI_VDEVICE(NVIDIA, 0xab4), AHCI_LEG },	/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0xab5), AHCI_LEG },	/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0xab6), AHCI_LEG },	/* MCP79 */
-+	{ PCI_VDEVICE(NVIDIA, 0xab7), AHCI_LEG },	/* MCP79 */	
-+	{ PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
-+		PCI_ANY_ID, PCI_ANY_ID,
-+		PCI_CLASS_STORAGE_IDE<<8, 0xffff00, AHCI_LEG },
- 
- 	{ } /* terminate list */
- };
-@@ -365,6 +389,30 @@ static const struct ata_port_operations 
- 	.port_start		= ata_port_start,
- };
- 
-+static const struct ata_port_operations nv_ahci_leg_ops = {
-+	.port_disable		= ata_port_disable,
-+	.tf_load		= ata_tf_load,
-+	.tf_read		= ata_tf_read,
-+	.exec_command		= ata_exec_command,
-+	.check_status		= ata_check_status,
-+	.dev_select		= ata_std_dev_select,
-+	.bmdma_setup		= ata_bmdma_setup,
-+	.bmdma_start		= ata_bmdma_start,
-+	.bmdma_stop		= ata_bmdma_stop,
-+	.bmdma_status		= ata_bmdma_status,
-+	.qc_prep		= ata_qc_prep,
-+	.qc_issue		= ata_qc_issue_prot,
-+	.freeze			= ata_bmdma_freeze,
-+	.thaw			= ata_bmdma_thaw,
-+	.error_handler		= nv_error_handler,
-+	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
-+	.data_xfer		= ata_data_xfer,
-+	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
-+	.port_start		= ata_port_start,
-+};
-+
- static const struct ata_port_operations nv_nf2_ops = {
- 	.port_disable		= ata_port_disable,
- 	.tf_load		= ata_tf_load,
-@@ -463,6 +511,17 @@ static const struct ata_port_info nv_por
- 		.port_ops	= &nv_generic_ops,
- 		.irq_handler	= nv_generic_interrupt,
- 	},
-+	/* ahci legacy */
-+	{
-+		.sht		= &nv_sht,
-+		.flags		= ATA_FLAG_SATA | ATA_FLAG_SLAVE_POSS |
-+				  ATA_FLAG_HRST_TO_RESUME,
-+		.pio_mask	= NV_PIO_MASK,
-+		.mwdma_mask	= NV_MWDMA_MASK,
-+		.udma_mask	= NV_UDMA_MASK,
-+		.port_ops	= &nv_ahci_leg_ops,
-+		.irq_handler	= nv_generic_interrupt,
-+	},
- 	/* nforce2/3 */
- 	{
- 		.sht		= &nv_sht,
--
- 				
---------------
-Peer Chen
-2007-09-25
-
+Vegard
