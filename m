@@ -1,74 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbXIYIK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbXIYILT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760251AbXIYIK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756904AbXIYIKW
+	id S1760598AbXIYILT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758849AbXIYIKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:10:22 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:36011 "EHLO
+	Tue, 25 Sep 2007 04:10:30 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:36019 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755511AbXIYIKU (ORCPT
+	with ESMTP id S1758134AbXIYIK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:10:20 -0400
-Date: Tue, 25 Sep 2007 10:10:19 +0200 (CEST)
+	Tue, 25 Sep 2007 04:10:27 -0400
+Date: Tue, 25 Sep 2007 10:10:26 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <rdunlap@xenotime.net>
 cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       rdunlap@xenotime.net, neilb@suse.de, trond.myklebust@fys.uio.no,
-       sfrench@samba.org
-Subject: [patch 2/2] menuconfig: transform Network Filesystems menu
-In-Reply-To: <Pine.LNX.4.64.0709250128510.23305@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0709250132300.23305@fbirervta.pbzchgretzou.qr>
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: menuconfig idea: lift fs menu
+In-Reply-To: <Pine.LNX.4.64.0709250132300.23305@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0709250134010.23305@fbirervta.pbzchgretzou.qr>
 References: <Pine.LNX.4.64.0709250128510.23305@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.64.0709250132300.23305@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Turn Network File Systems into a menuconfig so that it can be
-disabled at once.
+Lift the FS menu a bit by moving filesystem-specific
+parts into their own menu.
 
-(Note: I added a "default y". If you do not like that, speak up.)
+This is an idea I had. Comments please, if any.
 
 Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
 ---
- fs/Kconfig |   16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ fs/Kconfig      |   19 ++++++++++++++++---
+ fs/gfs2/Kconfig |    9 ++++++---
+ fs/xfs/Kconfig  |   10 +++++-----
+ 3 files changed, 27 insertions(+), 11 deletions(-)
 
 Index: linux-2.6.23/fs/Kconfig
 ===================================================================
 --- linux-2.6.23.orig/fs/Kconfig
 +++ linux-2.6.23/fs/Kconfig
-@@ -1516,8 +1516,20 @@ config UFS_DEBUG
- 
- endmenu
- 
--menu "Network File Systems"
-+menuconfig NETWORK_FILESYSTEMS
-+	bool "Network File Systems"
-+	default y
- 	depends on NET
-+	---help---
-+	  Say Y here to get to see options for network filesystems and
-+	  filesystem-related networking code, such as NFS daemon and
-+	  RPCSEC security modules.
-+	  This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and
-+	  disabled; if unsure, say Y here.
-+
-+if NETWORK_FILESYSTEMS
- 
- config NFS_FS
- 	tristate "NFS file system support"
-@@ -2055,7 +2067,7 @@ config 9P_FS
- 
- 	  If unsure, say N.
- 
--endmenu
-+endif # NETWORK_FILESYSTEMS
+@@ -6,6 +6,17 @@ menu "File systems"
  
  if BLOCK
- menu "Partition Types"
+ 
++menuconfig EXT_FS
++	bool "Extended filesystem family"
++	default y
++	---help---
++	  Say Y here to get to see options for the 'ext' filesystems.
++	  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
++
++if EXT_FS
++
+ config EXT2_FS
+ 	tristate "Second extended fs support"
+ 	help
+@@ -272,7 +283,9 @@ config FS_MBCACHE
+ 	default y if EXT2_FS=y || EXT3_FS=y || EXT4DEV_FS=y
+ 	default m if EXT2_FS=m || EXT3_FS=m || EXT4DEV_FS=m
+ 
+-config REISERFS_FS
++endif # EXT_FS
++
++menuconfig REISERFS_FS
+ 	tristate "Reiserfs support"
+ 	help
+ 	  Stores not just filenames but the files themselves in a balanced
+@@ -358,7 +371,7 @@ config REISERFS_FS_SECURITY
+ 	  If you are not using a security module that requires using
+ 	  extended attributes for file security labels, say N.
+ 
+-config JFS_FS
++menuconfig JFS_FS
+ 	tristate "JFS filesystem support"
+ 	select NLS
+ 	help
+@@ -420,7 +433,7 @@ config FS_POSIX_ACL
+ source "fs/xfs/Kconfig"
+ source "fs/gfs2/Kconfig"
+ 
+-config OCFS2_FS
++menuconfig OCFS2_FS
+ 	tristate "OCFS2 file system support"
+ 	depends on NET && SYSFS
+ 	select CONFIGFS_FS
+Index: linux-2.6.23/fs/gfs2/Kconfig
+===================================================================
+--- linux-2.6.23.orig/fs/gfs2/Kconfig
++++ linux-2.6.23/fs/gfs2/Kconfig
+@@ -1,4 +1,4 @@
+-config GFS2_FS
++menuconfig GFS2_FS
+ 	tristate "GFS2 file system support"
+ 	depends on EXPERIMENTAL
+ 	select FS_POSIX_ACL
+@@ -18,9 +18,10 @@ config GFS2_FS
+ 	  the below locking modules. Documentation and utilities for GFS2 can
+ 	  be found here: http://sources.redhat.com/cluster
+ 
++if GFS2_FS
++
+ config GFS2_FS_LOCKING_NOLOCK
+ 	tristate "GFS2 \"nolock\" locking module"
+-	depends on GFS2_FS
+ 	help
+ 	  Single node locking module for GFS2.
+ 
+@@ -34,7 +35,7 @@ config GFS2_FS_LOCKING_NOLOCK
+ 
+ config GFS2_FS_LOCKING_DLM
+ 	tristate "GFS2 DLM locking module"
+-	depends on GFS2_FS && SYSFS && NET && INET && (IPV6 || IPV6=n)
++	depends on SYSFS && NET && INET && (IPV6 || IPV6=n)
+ 	select IP_SCTP if DLM_SCTP
+ 	select CONFIGFS_FS
+ 	select DLM
+@@ -44,3 +45,5 @@ config GFS2_FS_LOCKING_DLM
+ 	  Most users of GFS2 will require this module. It provides the locking
+ 	  interface between GFS2 and the DLM, which is required to use GFS2
+ 	  in a cluster environment.
++
++endif # GFS2_FS
+Index: linux-2.6.23/fs/xfs/Kconfig
+===================================================================
+--- linux-2.6.23.orig/fs/xfs/Kconfig
++++ linux-2.6.23/fs/xfs/Kconfig
+@@ -1,4 +1,4 @@
+-config XFS_FS
++menuconfig XFS_FS
+ 	tristate "XFS filesystem support"
+ 	depends on BLOCK
+ 	help
+@@ -18,9 +18,10 @@ config XFS_FS
+ 	  system of your root partition is compiled as a module, you'll need
+ 	  to use an initial ramdisk (initrd) to boot.
+ 
++if XFS_FS
++
+ config XFS_QUOTA
+ 	bool "XFS Quota support"
+-	depends on XFS_FS
+ 	help
+ 	  If you say Y here, you will be able to set limits for disk usage on
+ 	  a per user and/or a per group basis under XFS.  XFS considers quota
+@@ -37,7 +38,6 @@ config XFS_QUOTA
+ 
+ config XFS_SECURITY
+ 	bool "XFS Security Label support"
+-	depends on XFS_FS
+ 	help
+ 	  Security labels support alternative access control models
+ 	  implemented by security modules like SELinux.  This option
+@@ -49,7 +49,6 @@ config XFS_SECURITY
+ 
+ config XFS_POSIX_ACL
+ 	bool "XFS POSIX ACL support"
+-	depends on XFS_FS
+ 	help
+ 	  POSIX Access Control Lists (ACLs) support permissions for users and
+ 	  groups beyond the owner/group/world scheme.
+@@ -61,7 +60,6 @@ config XFS_POSIX_ACL
+ 
+ config XFS_RT
+ 	bool "XFS Realtime subvolume support"
+-	depends on XFS_FS
+ 	help
+ 	  If you say Y here you will be able to mount and use XFS filesystems
+ 	  which contain a realtime subvolume.  The realtime subvolume is a
+@@ -76,3 +74,5 @@ config XFS_RT
+ 	  See the xfs man page in section 5 for additional information.
+ 
+ 	  If unsure, say N.
++
++endif # XFS_FS
