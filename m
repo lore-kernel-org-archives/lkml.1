@@ -1,126 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbXIYTzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbXIYUAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758688AbXIYTzZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 15:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbXIYTzN
+	id S1756824AbXIYUAk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 16:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXIYUAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 15:55:13 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:10705 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755095AbXIYTzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 15:55:11 -0400
-X-IronPort-AV: E=Sophos;i="4.20,297,1186383600"; 
-   d="scan'208";a="107787355"
-Subject: NLM: Fix a circular lock dependency in lockd
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>, stable@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Content-Type: text/plain
+	Tue, 25 Sep 2007 16:00:33 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:56972 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923AbXIYUAc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 16:00:32 -0400
+Message-ID: <46F968C2.7080900@linux.vnet.ibm.com>
+Date: Wed, 26 Sep 2007 01:30:02 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kamezawa.hiroyu@jp.fujitsu.com, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-rc8-mm1 - powerpc memory hotplug link failure
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+In-Reply-To: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Tue, 25 Sep 2007 15:55:03 -0400
-Message-Id: <1190750103.7330.32.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 25 Sep 2007 19:55:05.0070 (UTC) FILETIME=[F788A0E0:01C7FFAD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The problem is that the garbage collector for the 'host' structures
-nlm_gc_hosts(), holds nlm_host_mutex while calling down to
-nlmsvc_mark_resources, which, eventually takes the file->f_mutex.
+Hi Andrew,
 
-We cannot therefore call nlmsvc_lookup_host() from within
-nlmsvc_create_block, since the caller will already hold file->f_mutex, so
-the attempt to grab nlm_host_mutex may deadlock.
+The 2.6.23-rc8-mm1 kernel linking fails on the powerpc (P5+) box
 
-Fix the problem by calling nlmsvc_lookup_host() outside the file->f_mutex.
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+drivers/built-in.o: In function `memory_block_action':
+/root/scrap/linux-2.6.23-rc8/drivers/base/memory.c:188: undefined reference to `.remove_memory'
+make: *** [.tmp_vmlinux1] Error 1
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+# gcc -v
+Using built-in specs.
+Target: powerpc64-suse-linux
+Configured with: ../configure --enable-threads=posix --prefix=/usr 
+--with-local-prefix=/usr/local --infodir=/usr/share/info 
+--mandir=/usr/share/man --libdir=/usr/lib --libexecdir=/usr/lib 
+--enable-languages=c,c++,objc,fortran,obj-c++,java,ada 
+--enable-checking=release --with-gxx-include-dir=/usr/include/c++/4.1.2 
+--enable-ssp --disable-libssp --disable-libgcj --with-slibdir=/lib 
+--with-system-zlib --enable-shared --enable-__cxa_atexit 
+--enable-libstdcxx-allocator=new --program-suffix=-4.1 
+--enable-version-specific-runtime-libs --without-system-libunwind 
+--with-cpu=default32 --enable-secureplt --with-long-double-128 --host=powerpc64-suse-linux
+Thread model: posix
+gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)
 
- fs/lockd/svclock.c |   29 ++++++++++++++++++-----------
- 1 files changed, 18 insertions(+), 11 deletions(-)
+ # ld -v
+GNU ld version 2.17.50.0.5 20060927 (SUSE Linux)
 
-diff --git a/fs/lockd/svclock.c b/fs/lockd/svclock.c
-index a21e4bc..d098c7a 100644
---- a/fs/lockd/svclock.c
-+++ b/fs/lockd/svclock.c
-@@ -171,19 +171,14 @@ found:
-  * GRANTED_RES message by cookie, without having to rely on the client's IP
-  * address. --okir
-  */
--static inline struct nlm_block *
--nlmsvc_create_block(struct svc_rqst *rqstp, struct nlm_file *file,
--		struct nlm_lock *lock, struct nlm_cookie *cookie)
-+static struct nlm_block *
-+nlmsvc_create_block(struct svc_rqst *rqstp, struct nlm_host *host,
-+		    struct nlm_file *file, struct nlm_lock *lock,
-+		    struct nlm_cookie *cookie)
- {
- 	struct nlm_block	*block;
--	struct nlm_host		*host;
- 	struct nlm_rqst		*call = NULL;
- 
--	/* Create host handle for callback */
--	host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
--	if (host == NULL)
--		return NULL;
--
- 	call = nlm_alloc_call(host);
- 	if (call == NULL)
- 		return NULL;
-@@ -366,6 +361,7 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
- 			struct nlm_lock *lock, int wait, struct nlm_cookie *cookie)
- {
- 	struct nlm_block	*block = NULL;
-+	struct nlm_host		*host;
- 	int			error;
- 	__be32			ret;
- 
-@@ -377,6 +373,10 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
- 				(long long)lock->fl.fl_end,
- 				wait);
- 
-+	/* Create host handle for callback */
-+	host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
-+	if (host == NULL)
-+		return nlm_lck_denied_nolocks;
- 
- 	/* Lock file against concurrent access */
- 	mutex_lock(&file->f_mutex);
-@@ -385,7 +385,8 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
- 	 */
- 	block = nlmsvc_lookup_block(file, lock);
- 	if (block == NULL) {
--		block = nlmsvc_create_block(rqstp, file, lock, cookie);
-+		block = nlmsvc_create_block(rqstp, nlm_get_host(host), file,
-+				lock, cookie);
- 		ret = nlm_lck_denied_nolocks;
- 		if (block == NULL)
- 			goto out;
-@@ -449,6 +450,7 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
- out:
- 	mutex_unlock(&file->f_mutex);
- 	nlmsvc_release_block(block);
-+	nlm_release_host(host);
- 	dprintk("lockd: nlmsvc_lock returned %u\n", ret);
- 	return ret;
- }
-@@ -477,10 +479,15 @@ nlmsvc_testlock(struct svc_rqst *rqstp, struct nlm_file *file,
- 
- 	if (block == NULL) {
- 		struct file_lock *conf = kzalloc(sizeof(*conf), GFP_KERNEL);
-+		struct nlm_host	*host;
- 
- 		if (conf == NULL)
- 			return nlm_granted;
--		block = nlmsvc_create_block(rqstp, file, lock, cookie);
-+		/* Create host handle for callback */
-+		host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
-+		if (host == NULL)
-+			return nlm_lck_denied_nolocks;
-+		block = nlmsvc_create_block(rqstp, host, file, lock, cookie);
- 		if (block == NULL) {
- 			kfree(conf);
- 			return nlm_granted;
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
