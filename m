@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbXIYGzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbXIYHBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbXIYGzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 02:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXIYGzb
+	id S1756086AbXIYHBT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 03:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXIYHBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 02:55:31 -0400
-Received: from ns1.suse.de ([195.135.220.2]:37659 "EHLO mx1.suse.de"
+	Tue, 25 Sep 2007 03:01:08 -0400
+Received: from tag.witbe.net ([81.88.96.48]:42152 "EHLO tag.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbXIYGza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 02:55:30 -0400
-Date: Tue, 25 Sep 2007 08:55:29 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: akpm@linux-foundation.org
-Cc: Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix CONFIG_NOHIGHMEM for extended crashkernel command line
-Message-ID: <20070925065528.GA25783@suse.de>
-Mail-Followup-To: akpm@linux-foundation.org,
-	Laurent Riffard <laurent.riffard@free.fr>,
-	linux-kernel@vger.kernel.org
+	id S1752329AbXIYHBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 03:01:07 -0400
+Date: Tue, 25 Sep 2007 09:00:57 +0200
+From: Paul Rolland <rol@as2917.net>
+To: David Newall <david@davidnewall.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>, rol@witbe.net
+Subject: Re: 2.6.23-rc7 - _random_ IRQ23 : nobody cared
+Message-ID: <20070925090057.5778aa2a@tux.DEF.witbe.net>
+In-Reply-To: <46F7C933.4080003@davidnewall.com>
+References: <20070924083336.7a08fd61@tux.DEF.witbe.net>
+	<46F7C933.4080003@davidnewall.com>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a build error with CONFIG_KEXEC=y and CONFIG_NOHIGHMEM=y.
+Hi David,
 
-linux-2.6-mm$ LANG=C make
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CC      arch/i386/kernel/setup.o
-arch/i386/kernel/setup.c: In function 'reserve_crashkernel':
-arch/i386/kernel/setup.c:391: error: 'highend_pfn' undeclared (first use in this function)
-arch/i386/kernel/setup.c:391: error: (Each undeclared identifier is reported only once
-arch/i386/kernel/setup.c:391: error: for each function it appears in.)
-arch/i386/kernel/setup.c:391: error: 'highstart_pfn' undeclared (first use in this function)
-make[1]: *** [arch/i386/kernel/setup.o] Error 1
-make: *** [arch/i386/kernel] Error 2
+On Mon, 24 Sep 2007 23:56:59 +0930
+David Newall <david@davidnewall.com> wrote:
 
+> Paul Rolland "(???????) wrote:
+> > Hell, IRQ 23 is shared between libata and my modem !!!
+> >   
+> 
+> Tried using the modem?
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
+When no problem is reported, both the libata part and the modem are OK.
+When the problem is reported, at that time, only libata is handling IRQ23
+(the modem is a WinModem, and the driver is an out-kernel module), this 
+is still kernel boot time, and the disabling of the IRQ makes my machine
+unable to complete the boot process (too many disk timeout).
 
----
- arch/i386/kernel/setup.c |   16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+It could be good to be able to delay the disabling of an IRQ something long
+enough to allow all the modules to be loaded...
 
---- a/arch/i386/kernel/setup.c
-+++ b/arch/i386/kernel/setup.c
-@@ -381,6 +381,20 @@ extern unsigned long __init setup_memory
- extern void zone_sizes_init(void);
- #endif /* !CONFIG_NEED_MULTIPLE_NODES */
- 
-+
-+#ifdef CONFIG_HIGHMEM
-+static inline unsigned long long get_total_mem(void)
-+{
-+	return (max_low_pfn + highend_pfn - highstart_pfn) << PAGE_SHIFT;
-+}
-+#else
-+static inline unsigned long long get_total_mem(void)
-+{
-+	return max_low_pfn << PAGE_SHIFT;
-+}
-+#endif
-+
-+
- #ifdef CONFIG_KEXEC
- static void __init reserve_crashkernel(void)
- {
-@@ -388,7 +402,7 @@ static void __init reserve_crashkernel(v
- 	unsigned long long 	crash_size, crash_base;
- 	int			ret;
- 
--	free_mem = (max_low_pfn + highend_pfn - highstart_pfn) << PAGE_SHIFT;
-+	free_mem = get_total_mem();
- 
- 	ret = parse_crashkernel(boot_command_line, free_mem,
- 			&crash_size, &crash_base);
+Paul
+
