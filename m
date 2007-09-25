@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbXIYPKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbXIYPLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbXIYPKm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 11:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbXIYPKd
+	id S1758013AbXIYPLh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 11:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbXIYPLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 11:10:33 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:34251 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754835AbXIYPKc (ORCPT
+	Tue, 25 Sep 2007 11:11:30 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:51288 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754600AbXIYPL3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 11:10:32 -0400
-Message-ID: <46F924E3.50205@davidnewall.com>
-Date: Wed, 26 Sep 2007 00:40:27 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serge@hallyn.com>
-CC: Bill Davidsen <davidsen@tmr.com>, Philipp Marek <philipp@marek.priv.at>,
-       7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       majkls <majkls@prepere.com>, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Chroot bug (was: sys_chroot+sys_fchdir Fix)
-References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com> <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com> <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com> <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com> <46F91417.9050600@davidnewall.com>
-In-Reply-To: <46F91417.9050600@davidnewall.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 11:11:29 -0400
+Date: Tue, 25 Sep 2007 10:11:12 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH4/4] [POWERPC] Fix cpm_uart driver
+Message-ID: <20070925151112.GB15739@ld0162-tx32.am.freescale.net>
+References: <46F6C9DC.90008@scram.de> <46F7DE85.7000401@freescale.com> <46F7EE95.1040509@scram.de> <46F80049.2030509@freescale.com> <46F8FA5F.3050907@scram.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F8FA5F.3050907@scram.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miloslav Semler pointed out that a root process can chdir("..") out of 
-its chroot.  Although this is documented in the man page, it conflicts 
-with the essential function, which is to change the root directory of 
-the process.  In addition to any creative uses, for example Philipp 
-Marek's loading dynamic libraries, it seems clear that the prime purpose 
-of chroot is to aid security.  Being able to cd your way out is handy 
-for the bad guys, but the good guys don't need it; there are a thousand 
-better, safer solutions.
+On Tue, Sep 25, 2007 at 02:09:03PM +0200, Jochen Friedrich wrote:
+> In cpm_uart_core.c, the operation "pinfo->rx_bd_base - DPRAM_BASE" is 
+> used to calculate the DPRAM offset. So DPRAM_BASE must be relative to 
+> dpram_vbase in commproc.c as well. However, cpm_uart_cpm1.h uses cpmp in 
+> commproc.c to initialize DPRAM_BASE.
+> 
+> On ARCH=ppc, cpmp is a physical address with 1:1 virtual mapping ("well 
+> known address"). On ARC=powerpc, this is an address obtained by 
+> ioremap(), however it's a different ioremap() call than dpram_vbase is 
+> obtained from, so noone can guarantee
+> cpmp is always the same as dpram_vbase even on ARCH=powerpc.
 
-If there truly is a need to be able to pop in and out of a chroot, then 
-the solution should be obvious, such as with real versus effective user 
-and group ids.  An important quality of a solution would be a way to fix 
-that essential function: to set the root in such a way that you can no 
-longer pop out.  But that is a separate question.
+I have patches submitted in which they're from the same ioremap, but
+I agree that using cpm_dpram_addr(0) is a more robust way.
 
-The question: is chroot buggy?  I'm pleased to turn to SCO for an 
-independent definition for chroot, from which I get the following:
-
-http://osr600doc.sco.com/en/man/html.S/chroot.S.html:
->
-> The *..* entry in the root directory is interpreted to mean the root 
-> directory itself. Thus, *..* cannot be used to access files outside 
-> the subtree rooted at the root directory.
->
-
-I argue chroot is buggy.  Miloslav's patch might not be the right 
-solution, but he has the right idea (i.e. fix it.)
+-Scott
