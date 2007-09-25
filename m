@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbXIYQMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbXIYQOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758536AbXIYQMa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 12:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbXIYQMS
+	id S1756521AbXIYQOn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 12:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXIYQOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 12:12:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41113 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752210AbXIYQMO (ORCPT
+	Tue, 25 Sep 2007 12:14:36 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51796 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754342AbXIYQOf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 12:12:14 -0400
-Date: Tue, 25 Sep 2007 09:12:03 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Patrick McHardy <kaber@trash.net>
-Cc: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] Remove broken netfilter binary sysctls from bridging
- code
-Message-ID: <20070925091203.371879e2@fujitsu-loaner>
-In-Reply-To: <46F8897C.5010504@trash.net>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070921020554.GE31759@nineveh.local>
-	<m1fy18k5ru.fsf@ebiederm.dsl.xmission.com>
-	<46F7EC0A.9030506@trash.net>
-	<20070924131458.0daa4562@freepuppy.rosehill>
-	<46F8897C.5010504@trash.net>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Tue, 25 Sep 2007 12:14:35 -0400
+Date: Tue, 25 Sep 2007 21:55:03 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/3] More group scheduler related fixes
+Message-ID: <20070925162502.GA3231@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070925144443.GA17858@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070925144443.GA17858@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Sep 2007 06:07:24 +0200
-Patrick McHardy <kaber@trash.net> wrote:
-
-> Stephen Hemminger wrote:
-> > On Mon, 24 Sep 2007 18:55:38 +0200
-> > Patrick McHardy <kaber@trash.net> wrote:
-> > 
-> >>Eric W. Biederman wrote:
-> >>
-> >>>A really good fix would be to remove the binary side and then to
-> >>>modify brnf_sysctl_call_tables to allocate a temporary ctl_table
-> >>>and integer on the stack and only set ctl->data after we have
-> >>>normalized the written value.  But since in practice nothing cares
-> >>>about the race a better fix probably isn't worth it.
-> >>
-> >>
-> >>I seem to be missing something, the entire brnf_sysctl_call_tables
-> >>thing looks purely cosmetic to me, wouldn't it be better to simply
-> >>remove it?
-> > 
-> > 
-> > I agree, removing seems like a better option.  But probably need to
-> > go through a 3-6mo warning period, since sysctl's are technically
-> > an API.
+On Tue, Sep 25, 2007 at 04:44:43PM +0200, Ingo Molnar wrote:
 > 
+> The latest sched-devel.git tree can be pulled from:
+>   
+>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
 > 
-> I meant removing brnf_sysctl_call_tables function, not the sysctls
-> themselves, all it does is change values != 0 to 1. Or did you
-> actually mean that something in userspace might depend on reading
-> back the value 1 after writing a value != 0?
 
-I was going farther, because don't really see the value of having
-a sysctl for this. It seems better to just not load filters if
-they aren't going to be used. Having another enable/disable hook
-just adds needless complexity.
+Ingo,
+	Few more patches follow on top of this latest sched-devel tree.
+
+Pls consider for inclusion.
+
+--
+Regards,
+vatsa
