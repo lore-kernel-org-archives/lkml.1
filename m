@@ -1,108 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759825AbXIYD67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759647AbXIYD7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759825AbXIYD67 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 23:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXIYD6r
+	id S1759647AbXIYD7Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 23:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbXIYD7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 23:58:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:43538 "EHLO ozlabs.org"
+	Mon, 24 Sep 2007 23:59:03 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40802 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753506AbXIYD6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 23:58:46 -0400
-Subject: [PATCH 1/3] Virtualization config cleanup: Select CONFIG_PARAVIRT
-	when required
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: virtualization <virtualization@lists.linux-foundation.org>,
-       Andi Kleen <ak@muc.de>
+	id S1758934AbXIYD7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 23:59:01 -0400
+Subject: Re: [PATCH 1/2] powerpc: ptrace CHECK_FULL_REGS
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       David Woodhouse <dwmw2@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070925005945.02E924D04B7@magilla.localdomain>
+References: <20070924235052.5AFC24D04B7@magilla.localdomain>
+	 <1190680406.12382.9.camel@localhost.localdomain>
+	 <20070925005945.02E924D04B7@magilla.localdomain>
 Content-Type: text/plain
-Date: Tue, 25 Sep 2007 13:58:08 +1000
-Message-Id: <1190692688.27805.276.camel@localhost.localdomain>
+Date: Tue, 25 Sep 2007 13:58:46 +1000
+Message-Id: <1190692726.31978.0.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Unless there are complaints, I'll push this as part of the lguest
-patches for 2.6.24, since there are lguest config changes there too).
 
-Andi points out that PARAVIRT is an option best selected when needed.
+On Mon, 2007-09-24 at 17:59 -0700, Roland McGrath wrote:
+> > Yup, I think I ditched most of them.. for some reason I decided it
+> > couldn't happen, but maybe I'm wrong ?
+> 
+> Well, it's a BUG_ON.  It's supposed to be for something that "can't happen".
+> That's why it's a sanity check, not a wild assertion. ;-)
+> 
+> The 2/2 patch is an example of a bug that CHECK_FULL_REGS catches.
+> In the status quo, using PTRACE_PEEKUSR in a bug case crashes while using
+> PTRACE_GETREGS in the same place might get bogus data.  (In the actual bug
+> thus found, the data is not bogus and only the bit that FULL_REGS checks is.)
 
-We introduce PARAVIRT_GUEST for the menu itself, and select PARAVIRT
-if the user turns on anything which needs it.
+Fair enough.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/i386/Kconfig     |   33 ++++++++++++++++++++-------------
- arch/i386/xen/Kconfig |    1 +
- 2 files changed, 21 insertions(+), 13 deletions(-)
-
-===================================================================
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -214,24 +214,30 @@ config X86_ES7000
- 
- endchoice
- 
--menuconfig PARAVIRT
-+config PARAVIRT
-+	bool
-+	depends on !(X86_VISWS || X86_VOYAGER)
-+	help
-+	  This changes the kernel so it can modify itself when it is run
-+	  under a hypervisor, potentially improving performance significantly
-+	  over full virtualization.  However, when run without a hypervisor
-+	  the kernel is theoretically slower and slightly larger.
-+
-+menuconfig PARAVIRT_GUEST
--	bool "Paravirtualized guest support (EXPERIMENTAL)"
--	depends on EXPERIMENTAL
-+	bool "Paravirtualized guest support"
--	depends on !(X86_VISWS || X86_VOYAGER)
--	help
--	  Paravirtualization is a way of running multiple instances of
--	  Linux on the same machine, under a hypervisor.  This option
--	  changes the kernel so it can modify itself when it is run
--	  under a hypervisor, improving performance significantly.
--	  However, when run without a hypervisor the kernel is
--	  theoretically slower.  If in doubt, say N.
--
--if PARAVIRT
-+	help
-+	  Say Y here to get to see options related to running Linux under
-+	  various hypervisors.  This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
-+
-+if PARAVIRT_GUEST
- 
- source "arch/i386/xen/Kconfig"
- 
- config VMI
- 	bool "VMI Guest support"
-+	select PARAVIRT
- 	help
- 	  VMI provides a paravirtualized interface to the VMware ESX server
- 	  (it could be used by other hypervisors in theory too, but is not
-@@ -239,6 +246,7 @@ config VMI
- 
- config LGUEST_GUEST
- 	bool "Lguest guest support"
-+	select PARAVIRT
- 	depends on !X86_PAE
- 	help
- 	  Lguest is a tiny in-kernel hypervisor.  Selecting this will
-===================================================================
---- a/arch/i386/xen/Kconfig
-+++ b/arch/i386/xen/Kconfig
-@@ -4,6 +4,7 @@
- 
- config XEN
- 	bool "Xen guest support"
-+	select PARAVIRT
- 	depends on X86_CMPXCHG && X86_TSC && !NEED_MULTIPLE_NODES
- 	help
- 	  This is the Linux Xen port.  Enabling this will allow the
+Ben.
 
 
