@@ -1,259 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbXIYVRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbXIYVS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbXIYVRN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 17:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbXIYVQ7
+	id S1758673AbXIYVS1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 17:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbXIYVST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 17:16:59 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:31449 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752944AbXIYVQ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 17:16:58 -0400
-Date: Tue, 25 Sep 2007 14:16:19 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "David J. Wilder" <dwilder@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, ananth@in.ibm.com
-Subject: Re: [RFC Patch] Trace - Samples
-Message-Id: <20070925141619.22db8bce.randy.dunlap@oracle.com>
-In-Reply-To: <1190752548.30301.8.camel@lc4eb748232119.ibm.com>
-References: <1190752548.30301.8.camel@lc4eb748232119.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Sep 2007 17:18:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36428 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751407AbXIYVSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 17:18:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86-64: Disable local APIC timer use on AMD systems with C1E
+Date: Tue, 25 Sep 2007 23:32:40 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>
+References: <1190749021.17409.35.camel@chaos> <200709252255.06039.rjw@sisk.pl> <1190753706.17409.64.camel@chaos>
+In-Reply-To: <1190753706.17409.64.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200709252332.41710.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Sep 2007 13:35:47 -0700 David J. Wilder wrote:
-
-> This patch Moves the trace example into the new samples/ infrastructure
+On Tuesday, 25 September 2007 22:55, Thomas Gleixner wrote:
+> On Tue, 2007-09-25 at 22:55 +0200, Rafael J. Wysocki wrote:
+> > I have reworked the patch a bit so that it applies on top of 2.6.23-rc8-mm1
+> > and compiles (my version is attached).
+> > 
+> > With this patch applied, the kernel boots correctly on the nx6325.
 > 
-> Requires: [patch 3/5] Add samples subdir  (http://lkml.org/lkml/2007/9/25/157)
-> and create samples/Makefile or apply: 
-> [patch 4/5] Linux Kernel Markers - Samples (http://lkml.org/lkml/2007/9/25/166) 
+> I know. It's basically enforced "noapictimer". 
 > 
-> Signed-off-by: David Wilder <dwilder@us.ibm.com>
+> But this still does not explain why your nasty box booted current
+> mainline with "apicmaintimer" on the kernel command line.
 
-Looks good.  Thanks.
+Now it doesn't do that any more.
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+As I wrote in the other thread, I think that _sometimes_ the CPU doesn't enter
+the C1E state (or how it's called) and then the box boots and works.
 
-Andrew, Mathieu is making changes to patch 3/5 referenced above.
-When that is done, do you need a resend of all of these samples/
-patches or do you have them straight?
-
-Basically we have:
-a.  add samples/ infrastructure  (new coming from Mathieu)
-b.  add markers to samples/  (Mathieu)
-c.  add trace/ to samples/  (this patch from David)
-d.  add kprobes/ to samples  (move some from Documentation)
-
-
-> ---
->  samples/Kbuild             |    2 -
->  samples/Kconfig            |    5 ++
->  samples/Makefile           |    3 +
->  samples/trace/Makefile     |    4 +
->  samples/trace/fork_trace.c |  132 ++++++++++++++++++++++++++++++++++++++++++++
->  5 files changed, 144 insertions(+), 2 deletions(-)
-> 
-> diff --git a/samples/Kbuild b/samples/Kbuild
-> deleted file mode 100644
-> index 8af00e9..0000000
-> --- a/samples/Kbuild
-> +++ /dev/null
-> @@ -1,2 +0,0 @@
-> -# Makefile for Linux samples code
-> -
-> diff --git a/samples/Kconfig b/samples/Kconfig
-> index b46b4cf..e5c6963 100644
-> --- a/samples/Kconfig
-> +++ b/samples/Kconfig
-> @@ -7,5 +7,10 @@ menuconfig SAMPLES
->  
->  if SAMPLES
->  
-> +config SAMPLE_TRACE
-> +	tristate "Build trace example -- loadable modules only"
-> +	depends on TRACE && m
-> +	help
-> +	  This builds a trace example module.
->  
->  endif # SAMPLES
-> diff --git a/samples/Makefile b/samples/Makefile
-> new file mode 100644
-> index 0000000..07a32e6
-> --- /dev/null
-> +++ b/samples/Makefile
-> @@ -0,0 +1,3 @@
-> +# Makefile for Linux samples code
-> +
-> +obj-$(CONFIG_SAMPLES) += trace/
-> diff --git a/samples/trace/Makefile b/samples/trace/Makefile
-> new file mode 100644
-> index 0000000..a2da8af
-> --- /dev/null
-> +++ b/samples/trace/Makefile
-> @@ -0,0 +1,4 @@
-> +# builds the trace example kernel modules;
-> +# then to use (as root):  insmod <fork_trace.ko>
-> +
-> +obj-$(CONFIG_SAMPLE_TRACE) := fork_trace.o
-> diff --git a/samples/trace/fork_trace.c b/samples/trace/fork_trace.c
-> new file mode 100644
-> index 0000000..71c04c7
-> --- /dev/null
-> +++ b/samples/trace/fork_trace.c
-> @@ -0,0 +1,132 @@
-> +/*
-> + * An example of using trace in a kprobes module
-> + *
-> + * Copyright (C) 2007 IBM Inc.
-> + *
-> + * David Wilder <dwilder@us.ibm.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-> + *
-> + * -------
-> + * This module creates a trace channel and places a kprobe
-> + * on the function do_fork(). The value of current->pid is written to
-> + * the trace channel each time the kprobe is hit..
-> + *
-> + * How to run the example:
-> + * $ mount -t debugfs /debug
-> + * $ insmod fork_trace.ko
-> + *
-> + * To view the data produced by the module:
-> + * $ cat /debug/trace_example/do_fork/trace0
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/kprobes.h>
-> +#include <linux/trace.h>
-> +
-> +#define USE_GLOBAL_BUFFERS 1
-> +#define USE_FLIGHT 1
-> +
-> +#define PROBE_POINT "do_fork"
-> +
-> +static struct kprobe kp;
-> +static struct trace_info *kprobes_trace;
-> +
-> +#ifdef USE_GLOBAL_BUFFERS
-> +static DEFINE_SPINLOCK(trace_lock);
-> +#endif
-> +
-> +/*
-> + * Send formatted trace data to trace channel.
-> + * @note Preemption must be disabled to use this.
-> + */
-> +static void trace_printf(struct trace_info *trace, const char *format, ...)
-> +{
-> +	va_list ap, aq;
-> +	char *record;
-> +	unsigned long flags;
-> +	int len;
-> +
-> +	if (!trace)
-> +		return;
-> +
-> +#ifdef USE_GLOBAL_BUFFERS
-> +	spin_lock_irqsave(&trace_lock, flags);
-> +#endif
-> +	if (trace_running(trace)) {
-> +		va_start(ap, format);
-> +		va_copy(aq, ap);
-> +		len = vsnprintf(NULL, 0, format, aq);
-> +		va_end(aq);
-> +		record = relay_reserve(trace->rchan, ++len);
-> +		if (record)
-> +			vsnprintf(record, len, format, ap);
-> +		va_end(ap);
-> +	}
-> +#ifdef USE_GLOBAL_BUFFERS
-> +	spin_unlock_irqrestore(&trace_lock, flags);
-> +#endif
-> +}
-> +
-> +static int handler_pre(struct kprobe *p, struct pt_regs *regs)
-> +{
-> +	rcu_read_lock();
-> +	trace_printf(kprobes_trace, "%d\n", current->pid);
-> +	rcu_read_unlock();
-> +	return 0;
-> +}
-> +
-> +int init_module(void)
-> +{
-> +	int ret;
-> +	u32 flags = 0;
-> +
-> +#ifdef USE_GLOBAL_BUFFERS
-> +	flags |= TRACE_GLOBAL_CHANNEL;
-> +#endif
-> +
-> +#ifdef USE_FLIGHT
-> +	flags |= TRACE_FLIGHT_CHANNEL;
-> +#endif
-> +
-> +	/* setup the trace */
-> +	kprobes_trace = trace_setup("trace_example", PROBE_POINT,
-> +				     1024, 8, flags);
-> +	if (IS_ERR(kprobes_trace))
-> +		return PTR_ERR(kprobes_trace);
-> +
-> +	trace_start(kprobes_trace);
-> +
-> +	/* setup the kprobe */
-> +	kp.pre_handler = handler_pre;
-> +	kp.post_handler = NULL;
-> +	kp.fault_handler = NULL;
-> +	kp.symbol_name = PROBE_POINT;
-> +	ret = register_kprobe(&kp);
-> +	if (ret) {
-> +		printk(KERN_ERR "fork_trace: register_kprobe failed\n");
-> +		return ret;
-> +	}
-> +	return 0;
-> +}
-> +
-> +void cleanup_module(void)
-> +{
-> +	unregister_kprobe(&kp);
-> +	trace_stop(kprobes_trace);
-> +	trace_cleanup(kprobes_trace);
-> +}
-> +MODULE_LICENSE("GPL");
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
-
----
-~Randy
-Phaedrus says that Quality is about caring.
+Greetings,
+Rafael
