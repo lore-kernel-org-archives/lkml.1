@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbXIYTiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755107AbXIYTir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757445AbXIYTiZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 15:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbXIYTiH
+	id S1755107AbXIYTir (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 15:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbXIYTii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 15:38:07 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45526 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753188AbXIYTiG (ORCPT
+	Tue, 25 Sep 2007 15:38:38 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33537 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754107AbXIYTih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 15:38:06 -0400
-Date: Tue, 25 Sep 2007 21:38:02 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Greg KH <gregkh@suse.de>
-cc: Oliver Pinter <oliver.pntr@gmail.com>,
+	Tue, 25 Sep 2007 15:38:37 -0400
+Date: Tue, 25 Sep 2007 12:38:12 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.22.8, pata_ali issue
-In-Reply-To: <20070925173525.GA32185@suse.de>
-Message-ID: <Pine.LNX.4.64.0709252116180.945@fbirervta.pbzchgretzou.qr>
-References: <20070925062115.GA18444@kroah.com>
- <6101e8c40709250909x53b44274i17694e64dccae427@mail.gmail.com>
- <20070925161430.GA14212@suse.de> <Pine.LNX.4.64.0709251858520.945@fbirervta.pbzchgretzou.qr>
- <20070925173525.GA32185@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       rdunlap@xenotime.net, swhiteho@redhat.com
+Subject: Re: [patch 1/2] menuconfig: transform NLS and DLM menus
+Message-Id: <20070925123812.cb557b58.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0709250128510.23305@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0709250128510.23305@fbirervta.pbzchgretzou.qr>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 25 Sep 2007 10:10:14 +0200 (CEST) Jan Engelhardt wrote:
 
-On Sep 25 2007 10:35, Greg KH wrote:
->On Tue, Sep 25, 2007 at 07:03:24PM +0200, Jan Engelhardt wrote:
+> 
+> Changes NLS and DLM menus into a 'menuconfig' object
+> so that it can be disabled at once without having to enter
+> the menu first to disable the config option.
+> 
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
->> So, here is something that I think should go into the next 2.6.22.
->> A proper fix is already in 2.6.23-git-du-jour.
->
->Feel free to send the patch, with the git commit id of the upstream
->commit to the stable@kernel.org address and we will be glad to review it
->that way.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-'right, it is already in the mainline kernel.
-So it's again the suse kernel src rpm that has it screwed up...
-another story. Here's your culprit:
+> ---
+>  fs/dlm/Kconfig |    8 ++------
+>  fs/nls/Kconfig |   50 +++++---------------------------------------------
+>  2 files changed, 7 insertions(+), 51 deletions(-)
 
-libata-update-libata-to-libata-dev-upstream-5ddf.patch
-* Replaces ali_init_chipset() with some new bits, essentially
-  it removes the call to pci_read_config_byte() since the
-  revision is now found in struct pci_dev->revision
-  Basically 2.6.23 stuff.
-
-libata-fix-up-build-after-upstream-update.patch
-* changes it back to the 2.6.22 api, so that it compiles again.
-  But only that.
-  It FORGETS to add pci_read_config_byte() back.
-
-=== libata-fix-up-build-after-upstream-update.patch
->From 54ee7cd26c5e438dc15d13b60c9f8a54ca05e3fb Mon Sep 17 00:00:00 2001          
-From: Tejun Heo <htejun@gmail.com>                                              
-Date: Fri, 3 Aug 2007 02:21:51 +0900                                            
-Subject: [PATCH] libata: fix up build after upstream update                     
-References: 288078                                                              
-                                                                                
-Signed-off-by: Tejun Heo <htejun@gmail.com>                                     
-===
-
-The bug is still present in current suse kotd. >:-(
-
-Please fix it there. A cc will go to opensuse-kernel@,
-but other than that, I am in the wrong mood right now to do anything.
+---
+~Randy
+Phaedrus says that Quality is about caring.
