@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760357AbXIYILi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759742AbXIYIOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760357AbXIYILi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760423AbXIYILI
+	id S1759742AbXIYIOI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXIYINx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:11:08 -0400
-Received: from web52009.mail.re2.yahoo.com ([206.190.48.58]:36986 "HELO
-	web52009.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760385AbXIYILH convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:11:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Wqyr0FEtTCJEU8emPjHYzzZhWHUSSk42GGsbAmrhftTlr0z1jUwoZKkeUYgNP2Rvu/BEwPy5VOfCpuHK+siCvoVaKa5frwMgVbRsFO4QvoAR9iVm2IdWv4UHG8hqfha3HB/76EwbgAVNupY5Zt4RBLUgL+RaGUTQR+QbVK9THoY=;
-X-YMail-OSG: BjIqQisVM1m.uL_Wu8bxVzo1RPdb9I0e.R0j0ZMGQq89y46rnoXi7hqLmS0.qCjLqA--
-X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
-Date: Tue, 25 Sep 2007 01:11:05 -0700 (PDT)
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: [PATCH] include/linux/mutex.h: unclear reference to convention
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Tue, 25 Sep 2007 04:13:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55698 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750814AbXIYINv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 04:13:51 -0400
+Message-ID: <46F8C33A.3060601@garzik.org>
+Date: Tue, 25 Sep 2007 04:13:46 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <713129.73007.qm@web52009.mail.re2.yahoo.com>
+To: Peer Chen <peerchen@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
+References: <200709251323031982245@gmail.com>, <46F8B3F8.1050909@garzik.org> <200709251552483357334@gmail.com>
+In-Reply-To: <200709251552483357334@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you want to maintain the convention of documenting the interface only in .c files, 
-you should write the convention in so many places in .h files that no one could overlook it.
-But I think the convention is bad and it would be better to document the interface also in
-.h files where it is defined. The convention is bad because it requires people to jump to
-other files to understand .h files.
+Peer Chen wrote:
+> We have three mode for one controller - IDE/RAID/AHCI, we want sata_nv being load when user select the IDE mode in BIOS, load ahci driver if RAID/AHCI being selected, which will verify if our legacy mode work well and have additional option if there is any
+> bug for the ahci mode.
+
+I understand that logic, but look at what happens in practice:
+
+1) User installs new OS in AHCI mode.  Distro updates initramfs (loaded 
+at kernel boot time, with boot drivers) to include ahci driver.
+2) User reboots into BIOS setup, and switches from AHCI mode to IDE mode.
+3) BIOS setup reboots computer.
+4) OS kernel and initramfs image are loaded.  ahci driver load fails.
+5) User is left without a bootable system.
+
+The same situation happens in reverse, if you install in IDE mode 
+(sata_nv in initramfs), and then switch to AHCI/RAID mode.
+
+Additionally, AHCI provides better performance and more direct exposure 
+to the SATA frames.  This is key for supporting many modern SATA 
+features that cannot be accessed via IDE legacy mode.  AHCI lacks 
+in-silicon simulation of an IDE interface, which time has shown is a 
+less stable, edge-case-prone approach to SATA.
+
+I do not find the "verify nvidia's legacy mode works" argument 
+compelling; that is not the kernel's job, nor the user's.  And if there 
+is an AHCI silicon bug, let us deal with that when such a bug appears.
+
+Overall, AFAICS this patch -introduces- new ways for the user to easily 
+render their systems unbootable.
+
+	Jeff
 
 
-
-      __________________________________  
-Alles was der Gesundheit und Entspannung dient. BE A BETTER MEDIZINMANN! www.yahoo.de/clever
