@@ -1,208 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbXIYVOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbXIYVRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbXIYVOu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 17:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXIYVOn
+	id S1757547AbXIYVRN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 17:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbXIYVQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 17:14:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36413 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbXIYVOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 17:14:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents
-Date: Tue, 25 Sep 2007 23:28:54 +0200
-User-Agent: KMail/1.9.5
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <200709231257.12213.rjw@sisk.pl> <200709252207.02532.rjw@sisk.pl> <1190753192.17409.62.camel@chaos>
-In-Reply-To: <1190753192.17409.62.camel@chaos>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_W2X+GZZobfxA2MI"
-Message-Id: <200709252328.54843.rjw@sisk.pl>
+	Tue, 25 Sep 2007 17:16:59 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:31449 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752944AbXIYVQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 17:16:58 -0400
+Date: Tue, 25 Sep 2007 14:16:19 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "David J. Wilder" <dwilder@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, ananth@in.ibm.com
+Subject: Re: [RFC Patch] Trace - Samples
+Message-Id: <20070925141619.22db8bce.randy.dunlap@oracle.com>
+In-Reply-To: <1190752548.30301.8.camel@lc4eb748232119.ibm.com>
+References: <1190752548.30301.8.camel@lc4eb748232119.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_W2X+GZZobfxA2MI
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 25 Sep 2007 13:35:47 -0700 David J. Wilder wrote:
 
-Thomas,
-
-On Tuesday, 25 September 2007 22:46, Thomas Gleixner wrote:
-> Rafael,
+> This patch Moves the trace example into the new samples/ infrastructure
 > 
-> On Tue, 2007-09-25 at 22:07 +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, 25 September 2007 15:17, Thomas Gleixner wrote:
-> > > On Tue, 2007-09-25 at 15:16 +0200, Rafael J. Wysocki wrote:
-> > [--snip--]
-> > > 
-> > > I start to get desperate. Below is a patch, which moves the apic timer
-> > > disable check after the calibration routine. Can you please apply on top
-> > > of -hrt and add "noapictimer" to the command line ? Does it boot ?
-> >
-> > 2.6.23-rc7 with patch-2.6.23-rc7-hrt1.patch and the patch below applied boots
-> > with noapictimer and doesn't boot without it.
+> Requires: [patch 3/5] Add samples subdir  (http://lkml.org/lkml/2007/9/25/157)
+> and create samples/Makefile or apply: 
+> [patch 4/5] Linux Kernel Markers - Samples (http://lkml.org/lkml/2007/9/25/166) 
 > 
-> That was expected. I explicitly asked to add "noapictimer" to the kernel
-> command line.
+> Signed-off-by: David Wilder <dwilder@us.ibm.com>
+
+Looks good.  Thanks.
+
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+Andrew, Mathieu is making changes to patch 3/5 referenced above.
+When that is done, do you need a resend of all of these samples/
+patches or do you have them straight?
+
+Basically we have:
+a.  add samples/ infrastructure  (new coming from Mathieu)
+b.  add markers to samples/  (Mathieu)
+c.  add trace/ to samples/  (this patch from David)
+d.  add kprobes/ to samples  (move some from Documentation)
+
+
+> ---
+>  samples/Kbuild             |    2 -
+>  samples/Kconfig            |    5 ++
+>  samples/Makefile           |    3 +
+>  samples/trace/Makefile     |    4 +
+>  samples/trace/fork_trace.c |  132 ++++++++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 144 insertions(+), 2 deletions(-)
 > 
-> Ok, so we ruled out the apic timer calibration routine. I did not expect
-> that this would be the culprit, but with "dark screen" as the only debug
-> info, I need to resort to small steps.
+> diff --git a/samples/Kbuild b/samples/Kbuild
+> deleted file mode 100644
+> index 8af00e9..0000000
+> --- a/samples/Kbuild
+> +++ /dev/null
+> @@ -1,2 +0,0 @@
+> -# Makefile for Linux samples code
+> -
+> diff --git a/samples/Kconfig b/samples/Kconfig
+> index b46b4cf..e5c6963 100644
+> --- a/samples/Kconfig
+> +++ b/samples/Kconfig
+> @@ -7,5 +7,10 @@ menuconfig SAMPLES
+>  
+>  if SAMPLES
+>  
+> +config SAMPLE_TRACE
+> +	tristate "Build trace example -- loadable modules only"
+> +	depends on TRACE && m
+> +	help
+> +	  This builds a trace example module.
+>  
+>  endif # SAMPLES
+> diff --git a/samples/Makefile b/samples/Makefile
+> new file mode 100644
+> index 0000000..07a32e6
+> --- /dev/null
+> +++ b/samples/Makefile
+> @@ -0,0 +1,3 @@
+> +# Makefile for Linux samples code
+> +
+> +obj-$(CONFIG_SAMPLES) += trace/
+> diff --git a/samples/trace/Makefile b/samples/trace/Makefile
+> new file mode 100644
+> index 0000000..a2da8af
+> --- /dev/null
+> +++ b/samples/trace/Makefile
+> @@ -0,0 +1,4 @@
+> +# builds the trace example kernel modules;
+> +# then to use (as root):  insmod <fork_trace.ko>
+> +
+> +obj-$(CONFIG_SAMPLE_TRACE) := fork_trace.o
+> diff --git a/samples/trace/fork_trace.c b/samples/trace/fork_trace.c
+> new file mode 100644
+> index 0000000..71c04c7
+> --- /dev/null
+> +++ b/samples/trace/fork_trace.c
+> @@ -0,0 +1,132 @@
+> +/*
+> + * An example of using trace in a kprobes module
+> + *
+> + * Copyright (C) 2007 IBM Inc.
+> + *
+> + * David Wilder <dwilder@us.ibm.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+> + *
+> + * -------
+> + * This module creates a trace channel and places a kprobe
+> + * on the function do_fork(). The value of current->pid is written to
+> + * the trace channel each time the kprobe is hit..
+> + *
+> + * How to run the example:
+> + * $ mount -t debugfs /debug
+> + * $ insmod fork_trace.ko
+> + *
+> + * To view the data produced by the module:
+> + * $ cat /debug/trace_example/do_fork/trace0
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/kprobes.h>
+> +#include <linux/trace.h>
+> +
+> +#define USE_GLOBAL_BUFFERS 1
+> +#define USE_FLIGHT 1
+> +
+> +#define PROBE_POINT "do_fork"
+> +
+> +static struct kprobe kp;
+> +static struct trace_info *kprobes_trace;
+> +
+> +#ifdef USE_GLOBAL_BUFFERS
+> +static DEFINE_SPINLOCK(trace_lock);
+> +#endif
+> +
+> +/*
+> + * Send formatted trace data to trace channel.
+> + * @note Preemption must be disabled to use this.
+> + */
+> +static void trace_printf(struct trace_info *trace, const char *format, ...)
+> +{
+> +	va_list ap, aq;
+> +	char *record;
+> +	unsigned long flags;
+> +	int len;
+> +
+> +	if (!trace)
+> +		return;
+> +
+> +#ifdef USE_GLOBAL_BUFFERS
+> +	spin_lock_irqsave(&trace_lock, flags);
+> +#endif
+> +	if (trace_running(trace)) {
+> +		va_start(ap, format);
+> +		va_copy(aq, ap);
+> +		len = vsnprintf(NULL, 0, format, aq);
+> +		va_end(aq);
+> +		record = relay_reserve(trace->rchan, ++len);
+> +		if (record)
+> +			vsnprintf(record, len, format, ap);
+> +		va_end(ap);
+> +	}
+> +#ifdef USE_GLOBAL_BUFFERS
+> +	spin_unlock_irqrestore(&trace_lock, flags);
+> +#endif
+> +}
+> +
+> +static int handler_pre(struct kprobe *p, struct pt_regs *regs)
+> +{
+> +	rcu_read_lock();
+> +	trace_printf(kprobes_trace, "%d\n", current->pid);
+> +	rcu_read_unlock();
+> +	return 0;
+> +}
+> +
+> +int init_module(void)
+> +{
+> +	int ret;
+> +	u32 flags = 0;
+> +
+> +#ifdef USE_GLOBAL_BUFFERS
+> +	flags |= TRACE_GLOBAL_CHANNEL;
+> +#endif
+> +
+> +#ifdef USE_FLIGHT
+> +	flags |= TRACE_FLIGHT_CHANNEL;
+> +#endif
+> +
+> +	/* setup the trace */
+> +	kprobes_trace = trace_setup("trace_example", PROBE_POINT,
+> +				     1024, 8, flags);
+> +	if (IS_ERR(kprobes_trace))
+> +		return PTR_ERR(kprobes_trace);
+> +
+> +	trace_start(kprobes_trace);
+> +
+> +	/* setup the kprobe */
+> +	kp.pre_handler = handler_pre;
+> +	kp.post_handler = NULL;
+> +	kp.fault_handler = NULL;
+> +	kp.symbol_name = PROBE_POINT;
+> +	ret = register_kprobe(&kp);
+> +	if (ret) {
+> +		printk(KERN_ERR "fork_trace: register_kprobe failed\n");
+> +		return ret;
+> +	}
+> +	return 0;
+> +}
+> +
+> +void cleanup_module(void)
+> +{
+> +	unregister_kprobe(&kp);
+> +	trace_stop(kprobes_trace);
+> +	trace_cleanup(kprobes_trace);
+> +}
+> +MODULE_LICENSE("GPL");
 > 
-> Can you please send me the output of /proc/timer_list of 2.6.23-rc7-hrt1
-> after booting with "noapictimer" ?
-
-Sure, attached.  [Note: the kernel has been compiled with both NO_HZ and
-HIGH_RES_TIMERS unset.]
-
-> I'm a bit confused by your earlier confirmation, that mainline w/o the
-> -hrt patches boots fine, when you add "apicmaintimer" to the kernel
-> command line. "apicmaintimer" stops the PIT like we do in -hrt and we
-> just use the local APIC timer for everything. Can you please retest and
-> confirm that this is correct ?
-
-No, it's not.  The mainline _usually_ doesn't boot with "apicmaintimer".
-
-It seems to me that _sometimes_ the CPU just doesn't enter this C1E state
-and then everything goes fine ...
-
-> Is the 32 bit kernel working on that box ?
-
-Can't tell, I have only 64-bit userland here.
-
-> Thanks for your patience.
-
-Well, I'm only making sure that future kernels will run on my box. ;-)
-
-> 	tglx
 > 
-> PS: I just sent out the "disable APIC timer for AMD C1E boxen" patch.
-
-Yes, I've already tested it and sent a reply.  It works. :-)
-
-> We debugged this half a year ago on a nx6325, but I completely forgot about
-> that. The explanation from AMD was sensible, but your "apicmaintimer"
-> works statement is contradictory.
-
-Well, it was wrong.
-
-I have some problems with resuming from suspend to RAM using 2.6.23-rc8-mm1
-with this patch applied, but I think they are related to something else.  I'll
-wait for the next -mm with debugging that.
-
-For now, I'm going to build 2.6.23-rc8 with my collection of suspend patches
-plus patch-2.6.23-rc7-hrt1.patch and the "disable APIC timer for AMD C1E boxes"
-patch applied.  I'll play with that a bit and let you know how it's behaving.
-
-Greetings,
-Rafael
-
---Boundary-00=_W2X+GZZobfxA2MI
-Content-Type: text/plain;
-  charset="iso-8859-15";
-  name="timer_list.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="timer_list.txt"
-
-Timer List Version: v0.3
-HRTIMER_MAX_CLOCK_BASES: 2
-now at 279792107058 nsecs
-
-cpu: 0
- clock 0:
-  .index:      0
-  .resolution: 4000250 nsecs
-  .get_time:   ktime_get_real
-active timers:
- clock 1:
-  .index:      1
-  .resolution: 4000250 nsecs
-  .get_time:   ktime_get
-active timers:
- #0: <ffff81004f98bda8>, hrtimer_wakeup, S:01, do_nanosleep, kwrapper/4664
- # expires at 280207419178 nsecs [in 415312120 nsecs]
- #1: <ffff81004f98bda8>, hrtimer_wakeup, S:01, futex_wait, nscd/4080
- # expires at 282678021548 nsecs [in 2885914490 nsecs]
- #2: <ffff81004f98bda8>, hrtimer_wakeup, S:01, futex_wait, nscd/4082
- # expires at 282678129670 nsecs [in 2886022612 nsecs]
- #3: <ffff81004f98bda8>, it_real_fn, S:01, do_setitimer, qmgr/4239
- # expires at 378654389676 nsecs [in 98862282618 nsecs]
- #4: <ffff81004f98bda8>, it_real_fn, S:01, do_setitimer, pickup/4238
- # expires at 557809025993 nsecs [in 278016918935 nsecs]
- #5: <ffff81004f98bda8>, it_real_fn, S:01, do_setitimer, master/4216
- # expires at 557809137746 nsecs [in 278017030688 nsecs]
-
-cpu: 1
- clock 0:
-  .index:      0
-  .resolution: 4000250 nsecs
-  .get_time:   ktime_get_real
-active timers:
- clock 1:
-  .index:      1
-  .resolution: 4000250 nsecs
-  .get_time:   ktime_get
-active timers:
- #0: <ffff81004f98bda8>, it_real_fn, S:01, do_setitimer, Xorg/4355
- # expires at 279804542721 nsecs [in 12435663 nsecs]
- #1: <ffff81004f98bda8>, it_real_fn, S:01, do_setitimer, ssh-agent/4611
- # expires at 279962268496 nsecs [in 170161438 nsecs]
- #2: <ffff81004f98bda8>, hrtimer_wakeup, S:01, do_nanosleep, hald-addon-stor/4148
- # expires at 280071774352 nsecs [in 279667294 nsecs]
- #3: <ffff81004f98bda8>, hrtimer_wakeup, S:01, futex_wait, nscd/4081
- # expires at 282678034680 nsecs [in 2885927622 nsecs]
- #4: <ffff81004f98bda8>, hrtimer_wakeup, S:01, do_nanosleep, cron/4241
- # expires at 335311096287 nsecs [in 55518989229 nsecs]
- #5: <ffff81004f98bda8>, it_real_fn, S:01, do_setitimer, dhcpcd/5128
- # expires at 604918992928181 nsecs [in 604639200821123 nsecs]
- #6: <ffff81004f98bda8>, hrtimer_wakeup, S:01, do_nanosleep, dhcpcd/5128
- # expires at 604918992950531 nsecs [in 604639200843473 nsecs]
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
 
-Tick Device: mode:     0
-Clock Event Device: pit
- max_delta_ns:   27461866
- min_delta_ns:   12571
- mult:           5124677
- shift:          32
- mode:           2
- next_event:     9223372036854775807 nsecs
- set_next_event: pit_next_event
- set_mode:       init_pit_timer
- event_handler:  tick_handle_periodic_broadcast
-tick_broadcast_mask: 00000003
-
-
-Tick Device: mode:     0
-Clock Event Device: lapic
- max_delta_ns:   0
- min_delta_ns:   0
- mult:           0
- shift:          32
- mode:           1
- next_event:     0 nsecs
- set_next_event: lapic_next_event
- set_mode:       lapic_timer_setup
- event_handler:  tick_handle_periodic
-
-Tick Device: mode:     0
-Clock Event Device: lapic
- max_delta_ns:   0
- min_delta_ns:   0
- mult:           0
- shift:          32
- mode:           1
- next_event:     0 nsecs
- set_next_event: lapic_next_event
- set_mode:       lapic_timer_setup
- event_handler:  tick_handle_periodic
-
-
---Boundary-00=_W2X+GZZobfxA2MI--
+---
+~Randy
+Phaedrus says that Quality is about caring.
