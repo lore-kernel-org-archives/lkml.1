@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbXIYJa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbXIYJe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752901AbXIYJa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 05:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXIYJaV
+	id S1751917AbXIYJe3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 05:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXIYJeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 05:30:21 -0400
-Received: from www.osadl.org ([213.239.205.134]:35462 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751414AbXIYJaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 05:30:21 -0400
-Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325,
-	related to clockevents
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J.Wysocki" <rjw@sisk.pl>,
-       Dave Jones <davej@redhat.com>, Chuck Ebbert <cebbert@redhat.com>
-In-Reply-To: <1190707673.4035.275.camel@chaos>
-References: <20070925101418.68d30a72@localhost>
-	 <1190707673.4035.275.camel@chaos>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 11:30:18 +0200
-Message-Id: <1190712618.4035.286.camel@chaos>
+	Tue, 25 Sep 2007 05:34:21 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60731 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbXIYJeU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 05:34:20 -0400
+Date: Tue, 25 Sep 2007 15:14:40 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git] CFS-devel, latest code
+Message-ID: <20070925094440.GK26289@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070924214537.GA18980@elte.hu> <1190700652.6482.7.camel@Homer.simpson.net> <1190705759.11910.10.camel@Homer.simpson.net> <1190709207.11226.6.camel@Homer.simpson.net> <20070925091331.GA22905@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070925091331.GA22905@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
-
-On Tue, 2007-09-25 at 10:07 +0200, Thomas Gleixner wrote:
-> On Tue, 2007-09-25 at 10:14 +0400, Mikhail Kshevetskiy wrote:
-> > Hello Thomas, Rafael
-> > 
-> > > We know, that
-> > > - disabling local apic timers work
-> > 
-> > As i can see from the log, you are booting on computer with dualcore AMD
-> > processor. Do you have C1E feature enabled? 
-> > 
-> > i386 kernel disable lapic on dualcore AMD with C1E support (see 
-> > http://lkml.org/lkml/2007/3/29/199). x86_64 kernel do not have this
-> > patch still (it's required for tickless kernel only).
+On Tue, Sep 25, 2007 at 11:13:31AM +0200, Ingo Molnar wrote:
+> ok, i'm too seeing some sort of latency weirdness with 
+> CONFIG_FAIR_GROUP_SCHED enabled, _if_ there's Xorg involved which runs 
+> under root uid on my box - and hence gets 50% of all CPU time.
 > 
-> Well it is required for non tickless mode as well.
-> 
-> >  As result, if
-> > you run x86_64 kernel with hrt patch on such computer, the system
-> > will stall during boot on lapic timer calibration.
-> 
-> Thanks for the reminder. I have a look into this.
+> Srivatsa, any ideas? It could either be an accounting buglet (less 
+> likely, seems like the group scheduling bits stick to the 50% splitup 
+> nicely), or a preemption buglet. One potential preemption buglet would 
+> be for the group scheduler to not properly preempt a running task when a 
+> task from another uid is woken?
 
-Can you please boot mainline and provide the output of:
+Yep, I noticed that too.
 
-# cat /proc/interrupts; sleep 10; cat /proc/interrupts
+check_preempt_wakeup()
+{
+	...
 
-Thanks,
+	if (is_same_group(curr, p)) {
+	    ^^^^^^^^^^^^^
 
-	tglx
+		resched_task();
+	}
 
+}
 
+Will try a fix to check for preemption at higher levels ..
+
+-- 
+Regards,
+vatsa
