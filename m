@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbXIYJYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbXIYJ2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752658AbXIYJYq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 05:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXIYJYf
+	id S1752176AbXIYJ2K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 05:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbXIYJ15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 05:24:35 -0400
-Received: from gate.crashing.org ([63.228.1.57]:52005 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751135AbXIYJYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 05:24:34 -0400
-Subject: Re: IDE broken on Pegasos PPC platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matt Sealey <matt@genesi-usa.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <46F82BCF.1020702@genesi-usa.com>
-References: <46F80BB1.7050902@redhat.com>  <46F82BCF.1020702@genesi-usa.com>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 19:24:25 +1000
-Message-Id: <1190712265.31978.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 05:27:57 -0400
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2213 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751405AbXIYJ14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 05:27:56 -0400
+X-Greylist: delayed 9406 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Sep 2007 05:27:56 EDT
+Date: Tue, 25 Sep 2007 11:27:55 +0200
+From: Damien Wyart <damien.wyart@free.fr>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-acpi@vger.kernel.org
+Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
+Message-ID: <20070925092755.GA4553@localhost.localdomain>
+References: <20070925065109.GA3080@localhost.localdomain> <20070925003340.5d6dd7f4.akpm@linux-foundation.org> <46F8C880.1010006@suse.de> <64bb37e0709250208gcbdeb6do6026e138e746bde2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <64bb37e0709250208gcbdeb6do6026e138e746bde2@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Mon, 2007-09-24 at 22:27 +0100, Matt Sealey wrote:
-> Yeah I'll ack it if it matters, although I'd make a nit about the
-> fixing of device tree entries in prom_init and have it moved to
-> nvramrc or a Forth script or boot loader..
-> 
-> Pegasos IDE quirks have been "fixed" so many times now in Linux,
-> this code's going to get reshuffled again in other changes, I
-> think the device tree should be fixed at the firmware level and
-> not in the kernel.
+> On 9/25/07, Alexey Starikovskiy <astarikovskiy@suse.de> wrote:
+> > Do you have CONFIG_ACPI_SLEEP enabled in your .config?
 
-In that case though, OF contains correct values for the interrupts, it's
-more of an issue related to the device being in legacy mode and the
-pci_dev only carrying one interrupt anyway.
+* Torsten Kaiser <just.for.lkml@googlemail.com> [2007-09-25 11:08]:
+> I'm answering that too, because I suspect that my "2.6.23-rc7-mm1 does
+> not power off"-error might have the same cause.
 
-Ben.
+> No, I do not have CONFIG_ACPI_SLEEP set,
+> because I do not have CONFIG_PM_SLEEP set,
+> because I do not want SUSPEND and/or HIBERNATION.
 
+Same answer from my side: I do not have CONFIG_ACPI_SLEEP for the same
+reason (and this worked fine without them in rc7). I do not think these
+settings should have changed between rc7 and rc8.
 
+-- 
+Damien Wyart
