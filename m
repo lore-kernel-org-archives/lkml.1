@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbXIYPw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbXIYPxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbXIYPw5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 11:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbXIYPwt
+	id S1759715AbXIYPxp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 11:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756278AbXIYPxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 11:52:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51824 "EHLO
+	Tue, 25 Sep 2007 11:53:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55030 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755636AbXIYPwt (ORCPT
+	by vger.kernel.org with ESMTP id S1756150AbXIYPxg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 11:52:49 -0400
-Date: Tue, 25 Sep 2007 08:46:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.23-rc8-mm1
-Message-Id: <20070925084657.8be44dc1.akpm@linux-foundation.org>
-In-Reply-To: <46F8E563.8030105@linux.vnet.ibm.com>
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-	<46F8E563.8030105@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 11:53:36 -0400
+Date: Tue, 25 Sep 2007 08:53:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dmitry Torokhov <dtor@insightbb.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] Input updates for 2.6.23-rc8
+In-Reply-To: <200709250144.57533.dtor@insightbb.com>
+Message-ID: <alpine.LFD.0.999.0709250853000.3579@woody.linux-foundation.org>
+References: <200709250144.57533.dtor@insightbb.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Sep 2007 16:09:31 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-> Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm1/
+
+On Tue, 25 Sep 2007, Dmitry Torokhov wrote:
 > 
-> Hi Andrew,
+> Please pull from:
 > 
-> The build error reported at http://lkml.org/lkml/2007/9/20/210 for the
-> drivers/ata/pata_scc.c is seen in both 2.6.23-rc7-mm1 and 2.6.23-rc8-mm1.
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+> or
+> 	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+> 
+> to receive updates for the input subsystem. There is only one patch
+> that fixes regression in appletouch driver introduced in previous
+> release.
 
-The followup to that report wasn't clear to me and I was hoping that Alan
-could help find the final fix.
+Nope, there is nothing at all there. Forgot to push?
 
-> The patch proposed for this build error at http://lkml.org/lkml/2007/9/21/557
-> is not seen in the latest 2.6.23-rc8-mm1 patch's.
-
-Alan didn't comment on that one.  afacit it is needed in Jeff's
-git-libata-all tree.  I'll merge it and see what happens.
-
+		Linus
