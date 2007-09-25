@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbXIYLoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbXIYLo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753777AbXIYLoV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 07:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbXIYLoN
+	id S1753889AbXIYLo6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbXIYLov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 07:44:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34027 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752210AbXIYLoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 07:44:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Damien Wyart <damien.wyart@free.fr>
-Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
-Date: Tue, 25 Sep 2007 13:45:10 +0200
-User-Agent: KMail/1.9.5
-Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       Frans Pop <elendil@planet.nl>, linux-acpi@vger.kernel.org
-References: <20070925065109.GA3080@localhost.localdomain> <20070925092755.GA4553@localhost.localdomain> <20070925095855.GA4982@localhost.localdomain>
-In-Reply-To: <20070925095855.GA4982@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 07:44:51 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:37510 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752221AbXIYLot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 07:44:49 -0400
+Date: Tue, 25 Sep 2007 13:47:05 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-ID: <20070925114705.GA3148@ff.dom.local>
+References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local> <46F7885F.4080906@bull.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709251345.11370.rjw@sisk.pl>
+In-Reply-To: <46F7885F.4080906@bull.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 25 September 2007 11:58, Damien Wyart wrote:
-> > > No, I do not have CONFIG_ACPI_SLEEP set,
-> > > because I do not have CONFIG_PM_SLEEP set,
-> > > because I do not want SUSPEND and/or HIBERNATION.
+On Mon, Sep 24, 2007 at 11:50:23AM +0200, Nadia Derbey wrote:
+> Jarek Poplawski wrote:
+...
+> >2. I'm not sure this refcounting with ipc_rcu_getref/putref is SMP
+> >safe (memory barriers): it's not atomic, so locking is needed, but
+> >e.g. in do_msgsnd() kern_ipc_perm lock is used for this, while
+> >freeque() calls ipc_rcu_putref() with ipc_ids mutex only.
+> >
+> >3. Probably similar problem is possible with msr_d.r_msg which is
+> >read in do_msgrcv() under rcu_read_lock() only.
+> >
 > 
-> > Same answer from my side: I do not have CONFIG_ACPI_SLEEP for the same
-> > reason (and this worked fine without them in rc7). I do not think
-> > these settings should have changed between rc7 and rc8.
+> In think here they have avoided refcoutning by using r_msg:
+> r_msg is initialzed to -EAGAIN before releasing the msq lock. if 
+> freequeue() is called it sets r_msg to EIDRM (see expunge_all(-EIDRM)).
+> Setting r_msg is always done under the msq lock (expunge_all() / 
+> pipelined_Sned()).
+>  Since rcu_read_lock is called right after schedule, they are sure the 
+> msq pointer is still valid when they re-lock it once a msg is present in 
+> the receive queue.
+> 
+> Please tell me if I'm not clear ;-)
 
-Well, we haven't changed much.
+All clear!
 
-> Also, another test I just did: on another computer, rc8 is fine
-> regarding ACPI power off, even if CONFIG_ACPI_SLEEP is not set. I can
-> provide config if needed.
+Except... this r_msg is still unclear to me. Since it's read without
+msq lock I doubt this first check after schedule() is of any value. A
+comment: "Lockless receive, part 2" tells about some safety against a
+race with pipeline_send() and expunge_all() when in wake_up_process(),
+but how can we be sure this r_msg is not just to be changed and this
+wake_up_process() is running while "while" check still sees
+ERR_PTR(-EAGAIN) instead of NULL?
 
-On the box that fails to power off, can you please test -rc8 with these two
-commits reverted:
-
-commit 5a50fe709d527f31169263e36601dd83446d5744
-ACPI: suspend: consolidate handling of Sx states addendum
-
-commit f216cc3748a3a22c2b99390fddcdafa0583791a2
-ACPI: suspend: consolidate handling of Sx states.
-
-and see if it works?
-
-Greetings,
-Rafael
+Thanks & sorry for delay,
+Jarek P.
