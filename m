@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbXIYUqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbXIYUr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928AbXIYUqo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 16:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbXIYUqg
+	id S1758748AbXIYUr5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 16:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXIYUru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 16:46:36 -0400
-Received: from www.osadl.org ([213.239.205.134]:54672 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750851AbXIYUqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 16:46:36 -0400
-Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325,
-	related to clockevents
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200709252207.02532.rjw@sisk.pl>
-References: <200709231257.12213.rjw@sisk.pl>
-	 <200709251516.58405.rjw@sisk.pl> <1190726273.4035.331.camel@chaos>
-	 <200709252207.02532.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 22:46:32 +0200
-Message-Id: <1190753192.17409.62.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+	Tue, 25 Sep 2007 16:47:50 -0400
+Received: from smtpoutm.mac.com ([17.148.16.77]:55993 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753456AbXIYUrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 16:47:49 -0400
+In-Reply-To: <200709252116.22541.ioe-lkml@rameria.de>
+References: <20070925144443.GA17858@elte.hu> <20070925162502.GA3231@linux.vnet.ibm.com> <20070925162807.GB3231@linux.vnet.ibm.com> <200709252116.22541.ioe-lkml@rameria.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5E8967F2-474C-4019-AA9D-9C3601376DBD@mac.com>
+Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, randy.dunlap@oracle.com
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH 1/3] Fix coding style
+Date: Tue, 25 Sep 2007 16:47:19 -0400
+To: Ingo Oeser <ioe-lkml@rameria.de>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
-
-On Tue, 2007-09-25 at 22:07 +0200, Rafael J. Wysocki wrote:
-> On Tuesday, 25 September 2007 15:17, Thomas Gleixner wrote:
-> > On Tue, 2007-09-25 at 15:16 +0200, Rafael J. Wysocki wrote:
-> [--snip--]
-> > 
-> > I start to get desperate. Below is a patch, which moves the apic timer
-> > disable check after the calibration routine. Can you please apply on top
-> > of -hrt and add "noapictimer" to the command line ? Does it boot ?
+On Sep 25, 2007, at 15:16:20, Ingo Oeser wrote:
+> On Tuesday 25 September 2007, Srivatsa Vaddagiri wrote:
+>> @@ -297,7 +293,7 @@ static int __init init_sched_debug_procf
+>>  	pe->proc_fops = &sched_debug_fops;
+>>
+>>  #ifdef CONFIG_FAIR_USER_SCHED
+>> -	pe = create_proc_entry("root_user_share", 0644, NULL);
+>> +	pe = create_proc_entry("root_user_cpu_share", 0644, NULL);
+>>  	if (!pe)
+>>  		return -ENOMEM;
 >
-> 2.6.23-rc7 with patch-2.6.23-rc7-hrt1.patch and the patch below applied boots
-> with noapictimer and doesn't boot without it.
+> What about moving this debug stuff under debugfs?  Please consider  
+> using the functions in <linux/debugfs.h>.  They compile into  
+> nothing, if DEBUGFS is not compiled in and have already useful  
+> functions for reading/writing integers and booleans.
 
-That was expected. I explicitly asked to add "noapictimer" to the kernel
-command line.
+Umm, that's not a debugging thing.  It appears to be a tunable  
+allowing you to configure what percentage of the total CPU that UID 0  
+gets which is likely to be useful to configure on production systems;  
+at least until better group-scheduling tools are produced.
 
-Ok, so we ruled out the apic timer calibration routine. I did not expect
-that this would be the culprit, but with "dark screen" as the only debug
-info, I need to resort to small steps.
-
-Can you please send me the output of /proc/timer_list of 2.6.23-rc7-hrt1
-after booting with "noapictimer" ?
-
-I'm a bit confused by your earlier confirmation, that mainline w/o the
--hrt patches boots fine, when you add "apicmaintimer" to the kernel
-command line. "apicmaintimer" stops the PIT like we do in -hrt and we
-just use the local APIC timer for everything. Can you please retest and
-confirm that this is correct ?
-
-Is the 32 bit kernel working on that box ?
-
-Thanks for your patience.
-
-	tglx
-
-PS: I just sent out the "disable APIC timer for AMD C1E boxen" patch. We
-debugged this half a year ago on a nx6325, but I completely forgot about
-that. The explanation from AMD was sensible, but your "apicmaintimer"
-works statement is contradictory.
-
+Cheers,
+Kyle Moffett
 
