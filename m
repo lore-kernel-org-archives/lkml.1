@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbXIYVA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbXIYVMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760087AbXIYVA2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 17:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXIYVAU
+	id S1755955AbXIYVMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 17:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXIYVMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 17:00:20 -0400
-Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:45291
-	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751913AbXIYVAT (ORCPT
+	Tue, 25 Sep 2007 17:12:35 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:41370 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753072AbXIYVMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 17:00:19 -0400
-In-Reply-To: <d120d5000709251341s222c8560wdf46c5a3c9b36ada@mail.gmail.com>
-References: <6D36DFB9-B26D-4CEA-B7AD-0216F7124FC5@it-loops.com> <d120d5000709251051n45e415e6gbdd87a98f0b8cdd4@mail.gmail.com> <B5B5C841-6068-413B-A765-73A34E988FAA@it-loops.com> <d120d5000709251341s222c8560wdf46c5a3c9b36ada@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <48F42D3E-BD7C-4F59-8384-3429D0F4CF4D@it-loops.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Michael Guntsche <mike@it-loops.com>
-Subject: Re: 2.6.23 /proc/bus/input/devices content question
-Date: Tue, 25 Sep 2007 23:00:02 +0200
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-X-Mailer: Apple Mail (2.752.3)
+	Tue, 25 Sep 2007 17:12:34 -0400
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [patch 3/5] Add samples subdir
+In-Reply-To: <20070925190036.GA14579@uranus.ravnborg.org>
+References: <20070925121145.262664884@polymtl.ca> <20070925121251.954162366@polymtl.ca> <20070925190036.GA14579@uranus.ravnborg.org>
+User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+Date: Tue, 25 Sep 2007 23:28:18 +0200
+Message-Id: <E1IaHx4-0001Kt-JT@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sep 25, 2007, at 22:41, Dmitry Torokhov wrote:
-
+* Tue, 25 Sep 2007 21:00:36 +0200
 >
-> Ok, this is expected. Input devices were converted form class devices
-> into standard devices. Unless SYSFS_DEPRECTAED is set to Y sysfs
-> changes are expected.
+> Hi Mathieu & Randy.
 >
+> On Tue, Sep 25, 2007 at 08:11:48AM -0400, Mathieu Desnoyers wrote:
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>> 
+>> Begin infrastructure for kernel code samples in the samples/ directory.
+>> Add its Kconfig and Kbuild files.
+>> Source its Kconfig file in all arch/ Kconfigs.
+>
+> Sorry for not commenting on this before...
+> The samples directory contains sample code so it is wrong to actually
+> include it as part of the kernel IMHO.
 
-Ah ok, so this is a known change. I thought about enabling it for  
-testing but did not do it because I did not do it with 2.6.22 either.
-Thanks for the clarification Dmitry.
+Count my HO too.
 
-Kind regards,
-Michael
+Kernel isn't school desk at first place. It's already bloated as with
+various 2+y obsolete changelogs (that have content, that even older),
+with unsorted documentation (hypertext and http are better on this).
+
+Up to date test cases and example code must be on developer's site,
+not as burden in the sources. Yea, linux tar ball is a popular one.
+But sorry, it already has too much unneeded stuff for most of the
+freelance users and testers. This tarball must have good end result
+with propper changelogs and pointers to *fresh* information.
+--
+-o--=O`C
+ #oo'L O
+<___=E M
