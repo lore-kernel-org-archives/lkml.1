@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbXIYHBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbXIYHCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbXIYHBT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 03:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXIYHBI
+	id S1756723AbXIYHCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 03:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXIYHCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 03:01:08 -0400
-Received: from tag.witbe.net ([81.88.96.48]:42152 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752329AbXIYHBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 03:01:07 -0400
-Date: Tue, 25 Sep 2007 09:00:57 +0200
-From: Paul Rolland <rol@as2917.net>
-To: David Newall <david@davidnewall.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>, rol@witbe.net
-Subject: Re: 2.6.23-rc7 - _random_ IRQ23 : nobody cared
-Message-ID: <20070925090057.5778aa2a@tux.DEF.witbe.net>
-In-Reply-To: <46F7C933.4080003@davidnewall.com>
-References: <20070924083336.7a08fd61@tux.DEF.witbe.net>
-	<46F7C933.4080003@davidnewall.com>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Sep 2007 03:02:44 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:7870 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752719AbXIYHCn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 03:02:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=kvWpkksHG6wVYkAfSBXm6nYzItcRdJskrHaDxkCY6n4+nHnrQ0kzVruL9G+6+AUTYclViRjd8qNTNDuCecaf7DcDxS3TSfyxD+T0BjjFAnuC+xIjEoOdSWwPwZV/a6bL0mt7MGnA3fS6Izb7WpAOXIWsvXeF4JgwC3yO2iM0N9g=
+Message-ID: <661de9470709250002u73c1089dx94870586ce23b5b5@mail.gmail.com>
+Date: Tue, 25 Sep 2007 12:32:42 +0530
+From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-rc7-mm1: panic in scheduler
+Cc: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@redhat.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <46F82C88.1080907@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1190668373.5030.10.camel@localhost>
+	 <46F82C88.1080907@linux.vnet.ibm.com>
+X-Google-Sender-Auth: bc91c80bede0f873
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On 9/25/07, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> Exactly same call trace is produced over IA64 Madison (up to 9M cache) with 8 cpu's.
+> --
 
-On Mon, 24 Sep 2007 23:56:59 +0930
-David Newall <david@davidnewall.com> wrote:
+Hi, Kamalesh,
 
-> Paul Rolland "(???????) wrote:
-> > Hell, IRQ 23 is shared between libata and my modem !!!
-> >   
-> 
-> Tried using the modem?
+Could you please reproduce the problem or share the steps to reproduce
+the problem?
 
-When no problem is reported, both the libata part and the modem are OK.
-When the problem is reported, at that time, only libata is handling IRQ23
-(the modem is a WinModem, and the driver is an out-kernel module), this 
-is still kernel boot time, and the disabling of the IRQ makes my machine
-unable to complete the boot process (too many disk timeout).
-
-It could be good to be able to delay the disabling of an IRQ something long
-enough to allow all the modules to be loaded...
-
-Paul
-
+Thanks,
+Balbir
