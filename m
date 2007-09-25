@@ -1,114 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbXIYTy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbXIYTzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbXIYTy0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 15:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbXIYTyS
+	id S1758688AbXIYTzZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 15:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbXIYTzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 15:54:18 -0400
-Received: from www.osadl.org ([213.239.205.134]:50992 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754911AbXIYTyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 15:54:17 -0400
-Subject: Re: [PATCH] UML - time build fix
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-In-Reply-To: <20070925173713.GA8262@c2.user-mode-linux.org>
-References: <20070925173713.GA8262@c2.user-mode-linux.org>
+	Tue, 25 Sep 2007 15:55:13 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:10705 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755095AbXIYTzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 15:55:11 -0400
+X-IronPort-AV: E=Sophos;i="4.20,297,1186383600"; 
+   d="scan'208";a="107787355"
+Subject: NLM: Fix a circular lock dependency in lockd
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>, stable@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
 Content-Type: text/plain
-Date: Tue, 25 Sep 2007 21:54:15 +0200
-Message-Id: <1190750055.17409.38.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Tue, 25 Sep 2007 15:55:03 -0400
+Message-Id: <1190750103.7330.32.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 25 Sep 2007 19:55:05.0070 (UTC) FILETIME=[F788A0E0:01C7FFAD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The problem is that the garbage collector for the 'host' structures
+nlm_gc_hosts(), holds nlm_host_mutex while calling down to
+nlmsvc_mark_resources, which, eventually takes the file->f_mutex.
 
-On Tue, 2007-09-25 at 13:37 -0400, Jeff Dike wrote:
-> Put back an implementation of timeval_to_ns in
-> arch/um/os-Linux/time.c.  tglx pointed out in his review of tickless
-> support that there was a perfectly good implementation of it in
-> linux/time.h.  The problem is that this is userspace code which can't
-> pull in kernel headers and there doesn't seem to be a libc version.
+We cannot therefore call nlmsvc_lookup_host() from within
+nlmsvc_create_block, since the caller will already hold file->f_mutex, so
+the attempt to grab nlm_host_mutex may deadlock.
 
-Oops. Did not notice. Can't we move it into some header file which is
-accessible from everywhere ?
+Fix the problem by calling nlmsvc_lookup_host() outside the file->f_mutex.
 
-	tglx
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-> So, I'm copying the version from linux/time.h rather than resurrecting
-> my version.  This causes some declaration changes as it now returns a
-> signed value rather than an unsigned value.
-> 
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> ---
->  arch/um/include/os.h    |    4 ++--
->  arch/um/os-Linux/time.c |   22 +++++++++++++++++++---
->  2 files changed, 21 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6.22/arch/um/include/os.h
-> ===================================================================
-> --- linux-2.6.22.orig/arch/um/include/os.h	2007-09-25 09:26:42.000000000 -0400
-> +++ linux-2.6.22/arch/um/include/os.h	2007-09-25 09:28:42.000000000 -0400
-> @@ -252,9 +252,9 @@ extern void os_dump_core(void);
->  extern void idle_sleep(unsigned long long nsecs);
->  extern int set_interval(void);
->  extern int timer_one_shot(int ticks);
-> -extern unsigned long long disable_timer(void);
-> +extern long long disable_timer(void);
->  extern void uml_idle_timer(void);
-> -extern unsigned long long os_nsecs(void);
-> +extern long long os_nsecs(void);
->  
->  /* skas/mem.c */
->  extern long run_syscall_stub(struct mm_id * mm_idp,
-> Index: linux-2.6.22/arch/um/os-Linux/time.c
-> ===================================================================
-> --- linux-2.6.22.orig/arch/um/os-Linux/time.c	2007-09-25 09:26:42.000000000 -0400
-> +++ linux-2.6.22/arch/um/os-Linux/time.c	2007-09-25 09:28:42.000000000 -0400
-> @@ -39,7 +39,23 @@ int timer_one_shot(int ticks)
->  	return 0;
->  }
->  
-> -unsigned long long disable_timer(void)
-> +/**
-> + * timeval_to_ns - Convert timeval to nanoseconds
-> + * @ts:		pointer to the timeval variable to be converted
-> + *
-> + * Returns the scalar nanosecond representation of the timeval
-> + * parameter.
-> + *
-> + * Ripped from linux/time.h because it's a kernel header, and thus
-> + * unusable from here.
-> + */
-> +static inline long long timeval_to_ns(const struct timeval *tv)
-> +{
-> +	return ((long long) tv->tv_sec * UM_NSEC_PER_SEC) +
-> +		tv->tv_usec * UM_NSEC_PER_USEC;
-> +}
-> +
-> +long long disable_timer(void)
->  {
->  	struct itimerval time = ((struct itimerval) { { 0, 0 }, { 0, 0 } });
->  
-> @@ -47,10 +63,10 @@ unsigned long long disable_timer(void)
->  		printk(UM_KERN_ERR "disable_timer - setitimer failed, "
->  		       "errno = %d\n", errno);
->  
-> -	return tv_to_nsec(&time.it_value);
-> +	return timeval_to_ns(&time.it_value);
->  }
->  
-> -unsigned long long os_nsecs(void)
-> +long long os_nsecs(void)
->  {
->  	struct timeval tv;
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+ fs/lockd/svclock.c |   29 ++++++++++++++++++-----------
+ 1 files changed, 18 insertions(+), 11 deletions(-)
 
+diff --git a/fs/lockd/svclock.c b/fs/lockd/svclock.c
+index a21e4bc..d098c7a 100644
+--- a/fs/lockd/svclock.c
++++ b/fs/lockd/svclock.c
+@@ -171,19 +171,14 @@ found:
+  * GRANTED_RES message by cookie, without having to rely on the client's IP
+  * address. --okir
+  */
+-static inline struct nlm_block *
+-nlmsvc_create_block(struct svc_rqst *rqstp, struct nlm_file *file,
+-		struct nlm_lock *lock, struct nlm_cookie *cookie)
++static struct nlm_block *
++nlmsvc_create_block(struct svc_rqst *rqstp, struct nlm_host *host,
++		    struct nlm_file *file, struct nlm_lock *lock,
++		    struct nlm_cookie *cookie)
+ {
+ 	struct nlm_block	*block;
+-	struct nlm_host		*host;
+ 	struct nlm_rqst		*call = NULL;
+ 
+-	/* Create host handle for callback */
+-	host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
+-	if (host == NULL)
+-		return NULL;
+-
+ 	call = nlm_alloc_call(host);
+ 	if (call == NULL)
+ 		return NULL;
+@@ -366,6 +361,7 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
+ 			struct nlm_lock *lock, int wait, struct nlm_cookie *cookie)
+ {
+ 	struct nlm_block	*block = NULL;
++	struct nlm_host		*host;
+ 	int			error;
+ 	__be32			ret;
+ 
+@@ -377,6 +373,10 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
+ 				(long long)lock->fl.fl_end,
+ 				wait);
+ 
++	/* Create host handle for callback */
++	host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
++	if (host == NULL)
++		return nlm_lck_denied_nolocks;
+ 
+ 	/* Lock file against concurrent access */
+ 	mutex_lock(&file->f_mutex);
+@@ -385,7 +385,8 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
+ 	 */
+ 	block = nlmsvc_lookup_block(file, lock);
+ 	if (block == NULL) {
+-		block = nlmsvc_create_block(rqstp, file, lock, cookie);
++		block = nlmsvc_create_block(rqstp, nlm_get_host(host), file,
++				lock, cookie);
+ 		ret = nlm_lck_denied_nolocks;
+ 		if (block == NULL)
+ 			goto out;
+@@ -449,6 +450,7 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
+ out:
+ 	mutex_unlock(&file->f_mutex);
+ 	nlmsvc_release_block(block);
++	nlm_release_host(host);
+ 	dprintk("lockd: nlmsvc_lock returned %u\n", ret);
+ 	return ret;
+ }
+@@ -477,10 +479,15 @@ nlmsvc_testlock(struct svc_rqst *rqstp, struct nlm_file *file,
+ 
+ 	if (block == NULL) {
+ 		struct file_lock *conf = kzalloc(sizeof(*conf), GFP_KERNEL);
++		struct nlm_host	*host;
+ 
+ 		if (conf == NULL)
+ 			return nlm_granted;
+-		block = nlmsvc_create_block(rqstp, file, lock, cookie);
++		/* Create host handle for callback */
++		host = nlmsvc_lookup_host(rqstp, lock->caller, lock->len);
++		if (host == NULL)
++			return nlm_lck_denied_nolocks;
++		block = nlmsvc_create_block(rqstp, host, file, lock, cookie);
+ 		if (block == NULL) {
+ 			kfree(conf);
+ 			return nlm_granted;
