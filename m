@@ -1,234 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbXIYOg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbXIYOgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbXIYOg2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 10:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbXIYOgL
+	id S1754033AbXIYOgn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 10:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756112AbXIYOgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 10:36:11 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58722 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754003AbXIYOgJ (ORCPT
+	Tue, 25 Sep 2007 10:36:25 -0400
+Received: from stinky.trash.net ([213.144.137.162]:36337 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756065AbXIYOgX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 10:36:09 -0400
-Date: Tue, 25 Sep 2007 16:36:08 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Jose R. Santos" <jrs@us.ibm.com>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       richard kennedy <richard@rsk.demon.co.uk>, sct@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: jbd : config_jbd_debug cannot create /proc entry
-Message-ID: <20070925143608.GB18758@atrey.karlin.mff.cuni.cz>
-References: <1190713240.3154.20.camel@castor.rsk.org> <20070925105112.GB8126@atrey.karlin.mff.cuni.cz> <46F8EB26.2090104@linux.vnet.ibm.com> <20070925115046.GA15394@atrey.karlin.mff.cuni.cz> <20070925074938.2321bc15@gara> <20070925084153.36ab65a5@gara>
+	Tue, 25 Sep 2007 10:36:23 -0400
+Message-ID: <46F91AAD.9090801@trash.net>
+Date: Tue, 25 Sep 2007 16:26:53 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070925084153.36ab65a5@gara>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] Remove broken netfilter binary sysctls from bridging
+ code
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>	<20070921020554.GE31759@nineveh.local>	<m1fy18k5ru.fsf@ebiederm.dsl.xmission.com>	<46F7EC0A.9030506@trash.net> <m1641ydeqr.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1641ydeqr.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 25 Sep 2007 07:49:38 -0500
-> "Jose R. Santos" <jrs@us.ibm.com> wrote:
+Eric W. Biederman wrote:
+> Patrick McHardy <kaber@trash.net> writes:
 > 
-> > On Tue, 25 Sep 2007 13:50:46 +0200
-> > Jan Kara <jack@ucw.cz> wrote:
-> > > > Jan Kara wrote:
-> > > > >>
-> > > > >-#define create_jbd_proc_entry() do {} while (0)
-> > > > >-#define remove_jbd_proc_entry() do {} while (0)
-> > > > >+static ctl_table fs_table[] = {
-> > > > >+	{
-> > > > >+                .ctl_name       = -1,	/* Don't want it */
-> > > > 
-> > > > 
-> > > > 
-> > > > shouldn't this be CTL_UNNUMBERED ?
-> > >   Oh, it should be. I didn't notice we have this :) Thanks for notifying
-> > > me. Attached is a fixed version.
-> > 
-> > This was fixed in JBD2 by moving the jbd-debug file to debugfs:
-> > http://lkml.org/lkml/2007/7/11/334
-> > 
-> > Since this code is already in the kernel, we should keep it consistent. 
-> > 
+>>I seem to be missing something, the entire brnf_sysctl_call_tables
+>>thing looks purely cosmetic to me, wouldn't it be better to simply
+>>remove it?
 > 
-> OK.  Here's a quick patch to fix this.  Adapted from the JBD2 patch.
-> Let me know what you think.
-  Looks fine - exactly what I've just done here :).
+> 
+> Well it is cosmetic in a user space visible way.  Which means I don't
+> have a clue which if any user space programs or scripts care if we change
+> the behavior. 
+>
+> I just looked in the git history and brnf_sysctl_call_tables has been
+> that way since sysctl support was added to the bridge netfilter code.
+> 
+> The only comment I can found about the addition is:
+> 
+>     2003/12/24 19:32:34-08:00 bdschuym
+>     [BRIDGE]: Add 4 sysctl entries for bridge netfilter behavioral control:
+>     bridge-nf-call-arptables - pass or don't pass bridged ARP traffic to
+>     arptables' FORWARD chain.
+>     bridge-nf-call-iptables - pass or don't pass bridged IPv4 traffic to
+>     iptables' chains.
+>     bridge-nf-filter-vlan-tagged - pass or don't pass bridged vlan-tagged
+>     ARP/IP traffic to arptables/iptables.
+> 
+> So since forcing the values to 0 or 1 doesn't seem hard to maintain
+> I am uncomfortable with removing that check.
 
-									Honza
 
-> commit 6cbd2ce05b7504514707ce825170a5d77abf6a6e
-> Author: root <root@toolssf2.ltc.austin.ibm.com>
-> Date:   Thu Jun 14 09:40:09 2007 -0500
-> 
->     The jbd-debug file used to be located in /proc/sys/fs/jbd-debug, but
->     create_proc_entry() does not do lookups on file names that are more that one
->     directory deep.  This causes the entry creation to fail and hence, no proc
->     file is created.
->     
->     Instead of fixing this on procfs might as well move the jbd2-debug file to
->     debugfs which would be the preferred location for this kind of tunable.  The
->     new location is now /sys/kernel/debug/jbd/jbd-debug.
->     
->     
->     Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
-  You can add Signed-off-by: Jan Kara <jack@suse.cz>
-
-> 
-> diff --git a/fs/Kconfig b/fs/Kconfig
-> index 58a0650..a8937a6 100644
-> --- a/fs/Kconfig
-> +++ b/fs/Kconfig
-> @@ -219,7 +219,7 @@ config JBD
->  
->  config JBD_DEBUG
->  	bool "JBD (ext3) debugging support"
-> -	depends on JBD
-> +	depends on JBD && DEBUG_FS
->  	help
->  	  If you are using the ext3 journaled file system (or potentially any
->  	  other file system/device using JBD), this option allows you to
-> @@ -228,10 +228,10 @@ config JBD_DEBUG
->  	  debugging output will be turned off.
->  
->  	  If you select Y here, then you will be able to turn on debugging
-> -	  with "echo N > /proc/sys/fs/jbd-debug", where N is a number between
-> -	  1 and 5, the higher the number, the more debugging output is
-> -	  generated.  To turn debugging off again, do
-> -	  "echo 0 > /proc/sys/fs/jbd-debug".
-> +	  with "echo N > /sys/kernel/debug/jbd/jbd-debug", where N is a 
-> +	  number between 1 and 5, the higher the number, the more debugging 
-> +	  output is generated.  To turn debugging off again, do
-> +	  "echo 0 > /sys/kernel/debug/jbd/jbd-debug".
->  
->  config JBD2
->  	tristate
-> diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-> index 06ab3c1..3cad624 100644
-> --- a/fs/jbd/journal.c
-> +++ b/fs/jbd/journal.c
-> @@ -35,6 +35,7 @@
->  #include <linux/kthread.h>
->  #include <linux/poison.h>
->  #include <linux/proc_fs.h>
-> +#include <linux/debugfs.h>
->  
->  #include <asm/uaccess.h>
->  #include <asm/page.h>
-> @@ -1939,63 +1940,38 @@ void journal_put_journal_head(struct journal_head *jh)
->  }
->  
->  /*
-> - * /proc tunables
-> + * debugfs tunables
->   */
->  #if defined(CONFIG_JBD_DEBUG)
-> -int journal_enable_debug;
-> +u8 journal_enable_debug;
->  EXPORT_SYMBOL(journal_enable_debug);
->  #endif
->  
-> -#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_PROC_FS)
-> +#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_DEBUG_FS)
->  
-> -static struct proc_dir_entry *proc_jbd_debug;
-> +struct dentry  *jbd_debugfs_dir, *jbd_debug;
->  
-> -static int read_jbd_debug(char *page, char **start, off_t off,
-> -			  int count, int *eof, void *data)
-> +static void __init create_jbd_debugfs_entry(void)
->  {
-> -	int ret;
-> -
-> -	ret = sprintf(page + off, "%d\n", journal_enable_debug);
-> -	*eof = 1;
-> -	return ret;
-> -}
-> -
-> -static int write_jbd_debug(struct file *file, const char __user *buffer,
-> -			   unsigned long count, void *data)
-> -{
-> -	char buf[32];
-> -
-> -	if (count > ARRAY_SIZE(buf) - 1)
-> -		count = ARRAY_SIZE(buf) - 1;
-> -	if (copy_from_user(buf, buffer, count))
-> -		return -EFAULT;
-> -	buf[ARRAY_SIZE(buf) - 1] = '\0';
-> -	journal_enable_debug = simple_strtoul(buf, NULL, 10);
-> -	return count;
-> -}
-> -
-> -#define JBD_PROC_NAME "sys/fs/jbd-debug"
-> -
-> -static void __init create_jbd_proc_entry(void)
-> -{
-> -	proc_jbd_debug = create_proc_entry(JBD_PROC_NAME, 0644, NULL);
-> -	if (proc_jbd_debug) {
-> -		/* Why is this so hard? */
-> -		proc_jbd_debug->read_proc = read_jbd_debug;
-> -		proc_jbd_debug->write_proc = write_jbd_debug;
-> -	}
-> +	jbd_debugfs_dir = debugfs_create_dir("jbd", NULL);
-> +	if (jbd_debugfs_dir)
-> +		jbd_debug = debugfs_create_u8("jbd-debug", S_IRUGO,
-> +					       jbd_debugfs_dir,
-> +					       &journal_enable_debug);
->  }
->  
-> -static void __exit remove_jbd_proc_entry(void)
-> +static void __exit remove_jbd_debugfs_entry(void)
->  {
-> -	if (proc_jbd_debug)
-> -		remove_proc_entry(JBD_PROC_NAME, NULL);
-> +	if (jbd_debug)
-> +		debugfs_remove(jbd_debug);
-> +	if (jbd_debugfs_dir)
-> +		debugfs_remove(jbd_debugfs_dir);
->  }
->  
->  #else
->  
-> -#define create_jbd_proc_entry() do {} while (0)
-> -#define remove_jbd_proc_entry() do {} while (0)
-> +#define create_jbd_debugfs_entry() do {} while (0)
-> +#define remove_jbd_debugfs_entry() do {} while (0)
->  
->  #endif
->  
-> @@ -2054,7 +2030,7 @@ static int __init journal_init(void)
->  	ret = journal_init_caches();
->  	if (ret != 0)
->  		journal_destroy_caches();
-> -	create_jbd_proc_entry();
-> +	create_jbd_debugfs_entry();
->  	return ret;
->  }
->  
-> @@ -2065,7 +2041,7 @@ static void __exit journal_exit(void)
->  	if (n)
->  		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
->  #endif
-> -	remove_jbd_proc_entry();
-> +	remove_jbd_debugfs_entry();
->  	journal_destroy_caches();
->  }
->  
-> diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-> index 4527375..526548d 100644
-> --- a/include/linux/jbd.h
-> +++ b/include/linux/jbd.h
-> @@ -57,7 +57,7 @@
->   * CONFIG_JBD_DEBUG is on.
->   */
->  #define JBD_EXPENSIVE_CHECKING
-> -extern int journal_enable_debug;
-> +extern u8 journal_enable_debug;
->  
->  #define jbd_debug(n, f, a...)						\
->  	do {								\
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+OK lets keep it then. Fixing the race seems overkill to me though.
