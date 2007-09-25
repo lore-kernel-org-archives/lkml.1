@@ -1,54 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbXIYNlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbXIYNmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbXIYNlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 09:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXIYNlA
+	id S1754835AbXIYNmN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 09:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbXIYNl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 09:41:00 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2918 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751164AbXIYNk7 (ORCPT
+	Tue, 25 Sep 2007 09:41:58 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:36406 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751956AbXIYNl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 09:40:59 -0400
-Date: Tue, 25 Sep 2007 14:40:50 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.23-rc6-mm1 -- powerpc link failure
-Message-ID: <20070925134050.GA8447@shadowen.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <20070919092848.GG973@shadowen.org> <20070919174403.GC3115@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070919174403.GC3115@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+	Tue, 25 Sep 2007 09:41:56 -0400
+Date: Tue, 25 Sep 2007 08:41:53 -0500
+From: "Jose R. Santos" <jrs@us.ibm.com>
+To: Jan Kara <jack@ucw.cz>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       richard kennedy <richard@rsk.demon.co.uk>, sct@redhat.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: jbd : config_jbd_debug cannot create /proc entry
+Message-ID: <20070925084153.36ab65a5@gara>
+In-Reply-To: <20070925074938.2321bc15@gara>
+References: <1190713240.3154.20.camel@castor.rsk.org>
+	<20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
+	<46F8EB26.2090104@linux.vnet.ibm.com>
+	<20070925115046.GA15394@atrey.karlin.mff.cuni.cz>
+	<20070925074938.2321bc15@gara>
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 07:44:03PM +0200, Sam Ravnborg wrote:
-> On Wed, Sep 19, 2007 at 10:28:48AM +0100, Andy Whitcroft wrote:
-> > I am seeing this strange link error from a PowerMac G5 (powerpc):
-> > 
-> >   [...]
-> >     KSYM    .tmp_kallsyms2.S
-> >     AS      .tmp_kallsyms2.o
-> >     LD      vmlinux.o
-> >   ld: dynreloc miscount for fs/built-in.o, section .opd
-> >   ld: can not edit opd Bad value
-> >   make: *** [vmlinux.o] Error 1
-> 
-> We have had this issue before.
-> Try to see:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=045e72acf16054c4ed2760e9a8edb19a08053af1
-> 
-> Here it was caused by a weak declaration that was superflous.
-> 
-> I expect the workaround to be equally simple this time - or I hope so.
+On Tue, 25 Sep 2007 07:49:38 -0500
+"Jose R. Santos" <jrs@us.ibm.com> wrote:
 
-Yep, will investigate this as suggested.  As this problem seems to
-persist thru 2.6.23-rc8-mm1 I will report it again there and my
-findings.
+> On Tue, 25 Sep 2007 13:50:46 +0200
+> Jan Kara <jack@ucw.cz> wrote:
+> > > Jan Kara wrote:
+> > > >>
+> > > >-#define create_jbd_proc_entry() do {} while (0)
+> > > >-#define remove_jbd_proc_entry() do {} while (0)
+> > > >+static ctl_table fs_table[] = {
+> > > >+	{
+> > > >+                .ctl_name       = -1,	/* Don't want it */
+> > > 
+> > > 
+> > > 
+> > > shouldn't this be CTL_UNNUMBERED ?
+> >   Oh, it should be. I didn't notice we have this :) Thanks for notifying
+> > me. Attached is a fixed version.
+> 
+> This was fixed in JBD2 by moving the jbd-debug file to debugfs:
+> http://lkml.org/lkml/2007/7/11/334
+> 
+> Since this code is already in the kernel, we should keep it consistent. 
+> 
 
--apw
+OK.  Here's a quick patch to fix this.  Adapted from the JBD2 patch.
+Let me know what you think.
+
+-JRS
+
+commit 6cbd2ce05b7504514707ce825170a5d77abf6a6e
+Author: root <root@toolssf2.ltc.austin.ibm.com>
+Date:   Thu Jun 14 09:40:09 2007 -0500
+
+    The jbd-debug file used to be located in /proc/sys/fs/jbd-debug, but
+    create_proc_entry() does not do lookups on file names that are more that one
+    directory deep.  This causes the entry creation to fail and hence, no proc
+    file is created.
+    
+    Instead of fixing this on procfs might as well move the jbd2-debug file to
+    debugfs which would be the preferred location for this kind of tunable.  The
+    new location is now /sys/kernel/debug/jbd/jbd-debug.
+    
+    
+    Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 58a0650..a8937a6 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -219,7 +219,7 @@ config JBD
+ 
+ config JBD_DEBUG
+ 	bool "JBD (ext3) debugging support"
+-	depends on JBD
++	depends on JBD && DEBUG_FS
+ 	help
+ 	  If you are using the ext3 journaled file system (or potentially any
+ 	  other file system/device using JBD), this option allows you to
+@@ -228,10 +228,10 @@ config JBD_DEBUG
+ 	  debugging output will be turned off.
+ 
+ 	  If you select Y here, then you will be able to turn on debugging
+-	  with "echo N > /proc/sys/fs/jbd-debug", where N is a number between
+-	  1 and 5, the higher the number, the more debugging output is
+-	  generated.  To turn debugging off again, do
+-	  "echo 0 > /proc/sys/fs/jbd-debug".
++	  with "echo N > /sys/kernel/debug/jbd/jbd-debug", where N is a 
++	  number between 1 and 5, the higher the number, the more debugging 
++	  output is generated.  To turn debugging off again, do
++	  "echo 0 > /sys/kernel/debug/jbd/jbd-debug".
+ 
+ config JBD2
+ 	tristate
+diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
+index 06ab3c1..3cad624 100644
+--- a/fs/jbd/journal.c
++++ b/fs/jbd/journal.c
+@@ -35,6 +35,7 @@
+ #include <linux/kthread.h>
+ #include <linux/poison.h>
+ #include <linux/proc_fs.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+@@ -1939,63 +1940,38 @@ void journal_put_journal_head(struct journal_head *jh)
+ }
+ 
+ /*
+- * /proc tunables
++ * debugfs tunables
+  */
+ #if defined(CONFIG_JBD_DEBUG)
+-int journal_enable_debug;
++u8 journal_enable_debug;
+ EXPORT_SYMBOL(journal_enable_debug);
+ #endif
+ 
+-#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_PROC_FS)
++#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_DEBUG_FS)
+ 
+-static struct proc_dir_entry *proc_jbd_debug;
++struct dentry  *jbd_debugfs_dir, *jbd_debug;
+ 
+-static int read_jbd_debug(char *page, char **start, off_t off,
+-			  int count, int *eof, void *data)
++static void __init create_jbd_debugfs_entry(void)
+ {
+-	int ret;
+-
+-	ret = sprintf(page + off, "%d\n", journal_enable_debug);
+-	*eof = 1;
+-	return ret;
+-}
+-
+-static int write_jbd_debug(struct file *file, const char __user *buffer,
+-			   unsigned long count, void *data)
+-{
+-	char buf[32];
+-
+-	if (count > ARRAY_SIZE(buf) - 1)
+-		count = ARRAY_SIZE(buf) - 1;
+-	if (copy_from_user(buf, buffer, count))
+-		return -EFAULT;
+-	buf[ARRAY_SIZE(buf) - 1] = '\0';
+-	journal_enable_debug = simple_strtoul(buf, NULL, 10);
+-	return count;
+-}
+-
+-#define JBD_PROC_NAME "sys/fs/jbd-debug"
+-
+-static void __init create_jbd_proc_entry(void)
+-{
+-	proc_jbd_debug = create_proc_entry(JBD_PROC_NAME, 0644, NULL);
+-	if (proc_jbd_debug) {
+-		/* Why is this so hard? */
+-		proc_jbd_debug->read_proc = read_jbd_debug;
+-		proc_jbd_debug->write_proc = write_jbd_debug;
+-	}
++	jbd_debugfs_dir = debugfs_create_dir("jbd", NULL);
++	if (jbd_debugfs_dir)
++		jbd_debug = debugfs_create_u8("jbd-debug", S_IRUGO,
++					       jbd_debugfs_dir,
++					       &journal_enable_debug);
+ }
+ 
+-static void __exit remove_jbd_proc_entry(void)
++static void __exit remove_jbd_debugfs_entry(void)
+ {
+-	if (proc_jbd_debug)
+-		remove_proc_entry(JBD_PROC_NAME, NULL);
++	if (jbd_debug)
++		debugfs_remove(jbd_debug);
++	if (jbd_debugfs_dir)
++		debugfs_remove(jbd_debugfs_dir);
+ }
+ 
+ #else
+ 
+-#define create_jbd_proc_entry() do {} while (0)
+-#define remove_jbd_proc_entry() do {} while (0)
++#define create_jbd_debugfs_entry() do {} while (0)
++#define remove_jbd_debugfs_entry() do {} while (0)
+ 
+ #endif
+ 
+@@ -2054,7 +2030,7 @@ static int __init journal_init(void)
+ 	ret = journal_init_caches();
+ 	if (ret != 0)
+ 		journal_destroy_caches();
+-	create_jbd_proc_entry();
++	create_jbd_debugfs_entry();
+ 	return ret;
+ }
+ 
+@@ -2065,7 +2041,7 @@ static void __exit journal_exit(void)
+ 	if (n)
+ 		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
+ #endif
+-	remove_jbd_proc_entry();
++	remove_jbd_debugfs_entry();
+ 	journal_destroy_caches();
+ }
+ 
+diff --git a/include/linux/jbd.h b/include/linux/jbd.h
+index 4527375..526548d 100644
+--- a/include/linux/jbd.h
++++ b/include/linux/jbd.h
+@@ -57,7 +57,7 @@
+  * CONFIG_JBD_DEBUG is on.
+  */
+ #define JBD_EXPENSIVE_CHECKING
+-extern int journal_enable_debug;
++extern u8 journal_enable_debug;
+ 
+ #define jbd_debug(n, f, a...)						\
+ 	do {								\
