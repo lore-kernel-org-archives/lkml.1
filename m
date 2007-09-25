@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbXIYPxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbXIYPyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759715AbXIYPxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 11:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756278AbXIYPxh
+	id S1757349AbXIYPyE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 11:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759808AbXIYPxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 11:53:37 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55030 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756150AbXIYPxg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 11:53:36 -0400
-Date: Tue, 25 Sep 2007 08:53:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dmitry Torokhov <dtor@insightbb.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] Input updates for 2.6.23-rc8
-In-Reply-To: <200709250144.57533.dtor@insightbb.com>
-Message-ID: <alpine.LFD.0.999.0709250853000.3579@woody.linux-foundation.org>
-References: <200709250144.57533.dtor@insightbb.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 25 Sep 2007 11:53:52 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40210 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757639AbXIYPxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 11:53:51 -0400
+Date: Tue, 25 Sep 2007 21:34:20 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git] CFS-devel, latest code
+Message-ID: <20070925160420.GQ26289@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070925144443.GA17858@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070925144443.GA17858@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 25 Sep 2007, Dmitry Torokhov wrote:
+On Tue, Sep 25, 2007 at 04:44:43PM +0200, Ingo Molnar wrote:
 > 
-> Please pull from:
+> The latest sched-devel.git tree can be pulled from:
+>   
+>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
 > 
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-> or
-> 	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
-> 
-> to receive updates for the input subsystem. There is only one patch
-> that fixes regression in appletouch driver introduced in previous
-> release.
 
-Nope, there is nothing at all there. Forgot to push?
+This is required for it to compile.
 
-		Linus
+---
+ include/linux/sched.h |    1 +
+ 1 files changed, 1 insertion(+)
+
+Index: current/include/linux/sched.h
+===================================================================
+--- current.orig/include/linux/sched.h
++++ current/include/linux/sched.h
+@@ -1404,6 +1404,7 @@ extern unsigned int sysctl_sched_wakeup_
+ extern unsigned int sysctl_sched_batch_wakeup_granularity;
+ extern unsigned int sysctl_sched_child_runs_first;
+ extern unsigned int sysctl_sched_features;
++extern unsigned int sysctl_sched_nr_latency;
+ #endif
+ 
+ extern unsigned int sysctl_sched_compat_yield;
+
+-- 
+Regards,
+vatsa
