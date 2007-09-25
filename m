@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760175AbXIYE0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbXIYE2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760175AbXIYE0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 00:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXIYE0H
+	id S1760455AbXIYE2W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 00:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbXIYE2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 00:26:07 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35091 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751567AbXIYE0F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 00:26:05 -0400
-Date: Tue, 25 Sep 2007 06:26:23 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Andi Kleen <ak@muc.de>, Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH 1/3] Virtualization config cleanup: Select
-	CONFIG_PARAVIRT when required
-Message-ID: <20070925042623.GM6800@stusta.de>
-References: <1190692688.27805.276.camel@localhost.localdomain> <20070925040537.GL6800@stusta.de> <1190694003.27805.291.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1190694003.27805.291.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 25 Sep 2007 00:28:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:50102 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752754AbXIYE2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 00:28:14 -0400
+Subject: Re: [PATCH] Delay creation of khcvd thread
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Anton Blanchard <anton@au1.ibm.com>, paulus <paulus@au1.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Ryan S. Arnold" <rsa@us.ibm.com>, Dave Jones <davej@codemonkey.org.uk>
+In-Reply-To: <20070925140454.566803e5.sfr@canb.auug.org.au>
+References: <1190691984.27805.270.camel@localhost.localdomain>
+	 <20070925140454.566803e5.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 14:27:41 +1000
+Message-Id: <1190694461.27805.295.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 25, 2007 at 02:20:03PM +1000, Rusty Russell wrote:
-> On Tue, 2007-09-25 at 06:05 +0200, Adrian Bunk wrote:
-> > depends on !(X86_VISWS || X86_VOYAGER)
+On Tue, 2007-09-25 at 14:04 +1000, Stephen Rothwell wrote:
+> On Tue, 25 Sep 2007 13:46:24 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> >
+> > hvc_console used to only be for Power aka pSeries: now lguest and Xen
 > 
-> Hmm, if A selects B and B depends on C, does A not depend on C?
+> Also legacy iSeries :-)
 
-No.
+OK, how's this:
+---
+HVC console is also used by iSeries, so add that to HVC_DRIVER help.
 
-> If not, I'll patch this...
-> 
-> Thanks,
-> Rusty.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-cu
-Adrian
+diff -r 85d39cbbd21c drivers/char/Kconfig
+--- a/drivers/char/Kconfig	Tue Sep 25 14:23:07 2007 +1000
++++ b/drivers/char/Kconfig	Tue Sep 25 14:26:01 2007 +1000
+@@ -569,7 +569,7 @@ config HVC_DRIVER
+ 	bool
+ 	help
+ 	  Generic "hypervisor virtual console" infrastructure for various
+-	  hypervisors (pSeries, Xen, lguest).
++	  hypervisors (pSeries, iSeries, Xen, lguest).
+ 	  It will automatically be selected if one of the back-end console drivers
+ 	  is selected.
+ 
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
