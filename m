@@ -1,57 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760436AbXIYGTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbXIYGTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760436AbXIYGTP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 02:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbXIYGTA
+	id S1754914AbXIYGTa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 02:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbXIYGTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 02:19:00 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:42150 "EHLO
+	Tue, 25 Sep 2007 02:19:05 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42152 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbXIYGTA (ORCPT
+	with ESMTP id S1754914AbXIYGTC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 02:19:00 -0400
-Date: Mon, 24 Sep 2007 23:21:15 -0700
+	Tue, 25 Sep 2007 02:19:02 -0400
+Date: Mon, 24 Sep 2007 23:22:48 -0700
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.22.8
-Message-ID: <20070925062115.GA18444@kroah.com>
+Subject: Re: Linux 2.6.22.8
+Message-ID: <20070925062248.GB18444@kroah.com>
+References: <20070925062115.GA18444@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070925062115.GA18444@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.22.8 kernel.
-It contains a single security bugfix for the the sound subsystem.  There
-is potential for local privilege escalation, so all users are certainly
-encouraged to upgrade.
-
-I'll also be replying to this message with a copy of the patch between
-2.6.22.7 and 2.6.22.8
-
-The updated 2.6.22.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.22.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=summary
-
-thanks,
-
-greg k-h
-
---------
-
- Makefile              |    2 -
- sound/core/memalloc.c |   68 ++++++++++++++++++++++++++++----------------------
- 2 files changed, 40 insertions(+), 30 deletions(-)
-
-Summary of changes from v2.6.22.7 to v2.6.22.8
-==============================================
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.22.8
-
-Takashi Iwai (1):
-      Convert snd-page-alloc proc file to use seq_file (CVE-2007-4571)
-
+diff --git a/Makefile b/Makefile
+index 12edea0..dc7a45d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 22
+-EXTRAVERSION = .7
++EXTRAVERSION = .8
+ NAME = Holy Dancing Manatees, Batman!
+ 
+ # *DOCUMENTATION*
+diff --git a/sound/core/memalloc.c b/sound/core/memalloc.c
+index f057430..9b5656d 100644
+--- a/sound/core/memalloc.c
++++ b/sound/core/memalloc.c
+@@ -27,6 +27,7 @@
+ #include <linux/pci.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
++#include <linux/seq_file.h>
+ #include <asm/uaccess.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/moduleparam.h>
+@@ -481,53 +482,54 @@ static void free_all_reserved_pages(void)
+ #define SND_MEM_PROC_FILE	"driver/snd-page-alloc"
+ static struct proc_dir_entry *snd_mem_proc;
+ 
+-static int snd_mem_proc_read(char *page, char **start, off_t off,
+-			     int count, int *eof, void *data)
++static int snd_mem_proc_read(struct seq_file *seq, void *offset)
+ {
+-	int len = 0;
+ 	long pages = snd_allocated_pages >> (PAGE_SHIFT-12);
+ 	struct snd_mem_list *mem;
+ 	int devno;
+ 	static char *types[] = { "UNKNOWN", "CONT", "DEV", "DEV-SG", "SBUS" };
+ 
+ 	mutex_lock(&list_mutex);
+-	len += snprintf(page + len, count - len,
+-			"pages  : %li bytes (%li pages per %likB)\n",
+-			pages * PAGE_SIZE, pages, PAGE_SIZE / 1024);
++	seq_printf(seq, "pages  : %li bytes (%li pages per %likB)\n",
++		   pages * PAGE_SIZE, pages, PAGE_SIZE / 1024);
+ 	devno = 0;
+ 	list_for_each_entry(mem, &mem_list_head, list) {
+ 		devno++;
+-		len += snprintf(page + len, count - len,
+-				"buffer %d : ID %08x : type %s\n",
+-				devno, mem->id, types[mem->buffer.dev.type]);
+-		len += snprintf(page + len, count - len,
+-				"  addr = 0x%lx, size = %d bytes\n",
+-				(unsigned long)mem->buffer.addr, (int)mem->buffer.bytes);
++		seq_printf(seq, "buffer %d : ID %08x : type %s\n",
++			   devno, mem->id, types[mem->buffer.dev.type]);
++		seq_printf(seq, "  addr = 0x%lx, size = %d bytes\n",
++			   (unsigned long)mem->buffer.addr,
++			   (int)mem->buffer.bytes);
+ 	}
+ 	mutex_unlock(&list_mutex);
+-	return len;
++	return 0;
++}
++
++static int snd_mem_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, snd_mem_proc_read, NULL);
+ }
+ 
+ /* FIXME: for pci only - other bus? */
+ #ifdef CONFIG_PCI
+ #define gettoken(bufp) strsep(bufp, " \t\n")
+ 
+-static int snd_mem_proc_write(struct file *file, const char __user *buffer,
+-			      unsigned long count, void *data)
++static ssize_t snd_mem_proc_write(struct file *file, const char __user * buffer,
++				  size_t count, loff_t * ppos)
+ {
+ 	char buf[128];
+ 	char *token, *p;
+ 
+-	if (count > ARRAY_SIZE(buf) - 1)
+-		count = ARRAY_SIZE(buf) - 1;
++	if (count > sizeof(buf) - 1)
++		return -EINVAL;
+ 	if (copy_from_user(buf, buffer, count))
+ 		return -EFAULT;
+-	buf[ARRAY_SIZE(buf) - 1] = '\0';
++	buf[count] = '\0';
+ 
+ 	p = buf;
+ 	token = gettoken(&p);
+ 	if (! token || *token == '#')
+-		return (int)count;
++		return count;
+ 	if (strcmp(token, "add") == 0) {
+ 		char *endp;
+ 		int vendor, device, size, buffers;
+@@ -548,7 +550,7 @@ static int snd_mem_proc_write(struct file *file, const char __user *buffer,
+ 		    (buffers = simple_strtol(token, NULL, 0)) <= 0 ||
+ 		    buffers > 4) {
+ 			printk(KERN_ERR "snd-page-alloc: invalid proc write format\n");
+-			return (int)count;
++			return count;
+ 		}
+ 		vendor &= 0xffff;
+ 		device &= 0xffff;
+@@ -560,7 +562,7 @@ static int snd_mem_proc_write(struct file *file, const char __user *buffer,
+ 				if (pci_set_dma_mask(pci, mask) < 0 ||
+ 				    pci_set_consistent_dma_mask(pci, mask) < 0) {
+ 					printk(KERN_ERR "snd-page-alloc: cannot set DMA mask %lx for pci %04x:%04x\n", mask, vendor, device);
+-					return (int)count;
++					return count;
+ 				}
+ 			}
+ 			for (i = 0; i < buffers; i++) {
+@@ -570,7 +572,7 @@ static int snd_mem_proc_write(struct file *file, const char __user *buffer,
+ 							size, &dmab) < 0) {
+ 					printk(KERN_ERR "snd-page-alloc: cannot allocate buffer pages (size = %d)\n", size);
+ 					pci_dev_put(pci);
+-					return (int)count;
++					return count;
+ 				}
+ 				snd_dma_reserve_buf(&dmab, snd_dma_pci_buf_id(pci));
+ 			}
+@@ -596,9 +598,21 @@ static int snd_mem_proc_write(struct file *file, const char __user *buffer,
+ 		free_all_reserved_pages();
+ 	else
+ 		printk(KERN_ERR "snd-page-alloc: invalid proc cmd\n");
+-	return (int)count;
++	return count;
+ }
+ #endif /* CONFIG_PCI */
++
++static const struct file_operations snd_mem_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= snd_mem_proc_open,
++	.read		= seq_read,
++#ifdef CONFIG_PCI
++	.write		= snd_mem_proc_write,
++#endif
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ #endif /* CONFIG_PROC_FS */
+ 
+ /*
+@@ -609,12 +623,8 @@ static int __init snd_mem_init(void)
+ {
+ #ifdef CONFIG_PROC_FS
+ 	snd_mem_proc = create_proc_entry(SND_MEM_PROC_FILE, 0644, NULL);
+-	if (snd_mem_proc) {
+-		snd_mem_proc->read_proc = snd_mem_proc_read;
+-#ifdef CONFIG_PCI
+-		snd_mem_proc->write_proc = snd_mem_proc_write;
+-#endif
+-	}
++	if (snd_mem_proc)
++		snd_mem_proc->proc_fops = &snd_mem_proc_fops;
+ #endif
+ 	return 0;
+ }
