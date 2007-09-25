@@ -1,203 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbXIYThl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbXIYTiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757276AbXIYThl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 15:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbXIYThZ
+	id S1757445AbXIYTiZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 15:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbXIYTiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 15:37:25 -0400
-Received: from xenotime.net ([66.160.160.81]:42501 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755429AbXIYThW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 15:37:22 -0400
-Date: Tue, 25 Sep 2007 12:37:18 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: menuconfig idea: lift fs menu
-Message-Id: <20070925123718.c98fd8c9.rdunlap@xenotime.net>
-In-Reply-To: <Pine.LNX.4.64.0709250134010.23305@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0709250128510.23305@fbirervta.pbzchgretzou.qr>
-	<Pine.LNX.4.64.0709250132300.23305@fbirervta.pbzchgretzou.qr>
-	<Pine.LNX.4.64.0709250134010.23305@fbirervta.pbzchgretzou.qr>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 15:38:07 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45526 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753188AbXIYTiG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 15:38:06 -0400
+Date: Tue, 25 Sep 2007 21:38:02 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Greg KH <gregkh@suse.de>
+cc: Oliver Pinter <oliver.pntr@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.22.8, pata_ali issue
+In-Reply-To: <20070925173525.GA32185@suse.de>
+Message-ID: <Pine.LNX.4.64.0709252116180.945@fbirervta.pbzchgretzou.qr>
+References: <20070925062115.GA18444@kroah.com>
+ <6101e8c40709250909x53b44274i17694e64dccae427@mail.gmail.com>
+ <20070925161430.GA14212@suse.de> <Pine.LNX.4.64.0709251858520.945@fbirervta.pbzchgretzou.qr>
+ <20070925173525.GA32185@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Sep 2007 10:10:26 +0200 (CEST) Jan Engelhardt wrote:
 
-> 
-> Lift the FS menu a bit by moving filesystem-specific
-> parts into their own menu.
-> 
-> This is an idea I had. Comments please, if any.
-> 
-> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+On Sep 25 2007 10:35, Greg KH wrote:
+>On Tue, Sep 25, 2007 at 07:03:24PM +0200, Jan Engelhardt wrote:
 
-Hi Jan,
+>> So, here is something that I think should go into the next 2.6.22.
+>> A proper fix is already in 2.6.23-git-du-jour.
+>
+>Feel free to send the patch, with the git commit id of the upstream
+>commit to the stable@kernel.org address and we will be glad to review it
+>that way.
 
-The current fs menu is too long IMO, so this helps.
+'right, it is already in the mainline kernel.
+So it's again the suse kernel src rpm that has it screwed up...
+another story. Here's your culprit:
 
-This leaves minixfs and romfs in the main fs menu (where they were,
-i.e., no change).  I would move them to the Miscellaneous fs menu...
-and then move Quota support to after Dnotify so that Inotify & Dnotify
-are next to each other.  Yes, I realize that they were already
-separated by Quota and that this patch did not cause that.
+libata-update-libata-to-libata-dev-upstream-5ddf.patch
+* Replaces ali_init_chipset() with some new bits, essentially
+  it removes the call to pci_read_config_byte() since the
+  revision is now found in struct pci_dev->revision
+  Basically 2.6.23 stuff.
 
+libata-fix-up-build-after-upstream-update.patch
+* changes it back to the 2.6.22 api, so that it compiles again.
+  But only that.
+  It FORGETS to add pci_read_config_byte() back.
 
-> ---
->  fs/Kconfig      |   19 ++++++++++++++++---
->  fs/gfs2/Kconfig |    9 ++++++---
->  fs/xfs/Kconfig  |   10 +++++-----
->  3 files changed, 27 insertions(+), 11 deletions(-)
-> 
-> Index: linux-2.6.23/fs/Kconfig
-> ===================================================================
-> --- linux-2.6.23.orig/fs/Kconfig
-> +++ linux-2.6.23/fs/Kconfig
-> @@ -6,6 +6,17 @@ menu "File systems"
->  
->  if BLOCK
->  
-> +menuconfig EXT_FS
-> +	bool "Extended filesystem family"
-> +	default y
-> +	---help---
-> +	  Say Y here to get to see options for the 'ext' filesystems.
-> +	  This option alone does not add any kernel code.
-> +
-> +	  If you say N, all options in this submenu will be skipped and disabled.
-> +
-> +if EXT_FS
-> +
->  config EXT2_FS
->  	tristate "Second extended fs support"
->  	help
-> @@ -272,7 +283,9 @@ config FS_MBCACHE
->  	default y if EXT2_FS=y || EXT3_FS=y || EXT4DEV_FS=y
->  	default m if EXT2_FS=m || EXT3_FS=m || EXT4DEV_FS=m
->  
-> -config REISERFS_FS
-> +endif # EXT_FS
-> +
-> +menuconfig REISERFS_FS
->  	tristate "Reiserfs support"
->  	help
->  	  Stores not just filenames but the files themselves in a balanced
-> @@ -358,7 +371,7 @@ config REISERFS_FS_SECURITY
->  	  If you are not using a security module that requires using
->  	  extended attributes for file security labels, say N.
->  
-> -config JFS_FS
-> +menuconfig JFS_FS
->  	tristate "JFS filesystem support"
->  	select NLS
->  	help
-> @@ -420,7 +433,7 @@ config FS_POSIX_ACL
->  source "fs/xfs/Kconfig"
->  source "fs/gfs2/Kconfig"
->  
-> -config OCFS2_FS
-> +menuconfig OCFS2_FS
->  	tristate "OCFS2 file system support"
->  	depends on NET && SYSFS
->  	select CONFIGFS_FS
-> Index: linux-2.6.23/fs/gfs2/Kconfig
-> ===================================================================
-> --- linux-2.6.23.orig/fs/gfs2/Kconfig
-> +++ linux-2.6.23/fs/gfs2/Kconfig
-> @@ -1,4 +1,4 @@
-> -config GFS2_FS
-> +menuconfig GFS2_FS
->  	tristate "GFS2 file system support"
->  	depends on EXPERIMENTAL
->  	select FS_POSIX_ACL
-> @@ -18,9 +18,10 @@ config GFS2_FS
->  	  the below locking modules. Documentation and utilities for GFS2 can
->  	  be found here: http://sources.redhat.com/cluster
->  
-> +if GFS2_FS
-> +
->  config GFS2_FS_LOCKING_NOLOCK
->  	tristate "GFS2 \"nolock\" locking module"
-> -	depends on GFS2_FS
->  	help
->  	  Single node locking module for GFS2.
->  
-> @@ -34,7 +35,7 @@ config GFS2_FS_LOCKING_NOLOCK
->  
->  config GFS2_FS_LOCKING_DLM
->  	tristate "GFS2 DLM locking module"
-> -	depends on GFS2_FS && SYSFS && NET && INET && (IPV6 || IPV6=n)
-> +	depends on SYSFS && NET && INET && (IPV6 || IPV6=n)
->  	select IP_SCTP if DLM_SCTP
->  	select CONFIGFS_FS
->  	select DLM
-> @@ -44,3 +45,5 @@ config GFS2_FS_LOCKING_DLM
->  	  Most users of GFS2 will require this module. It provides the locking
->  	  interface between GFS2 and the DLM, which is required to use GFS2
->  	  in a cluster environment.
-> +
-> +endif # GFS2_FS
-> Index: linux-2.6.23/fs/xfs/Kconfig
-> ===================================================================
-> --- linux-2.6.23.orig/fs/xfs/Kconfig
-> +++ linux-2.6.23/fs/xfs/Kconfig
-> @@ -1,4 +1,4 @@
-> -config XFS_FS
-> +menuconfig XFS_FS
->  	tristate "XFS filesystem support"
->  	depends on BLOCK
->  	help
-> @@ -18,9 +18,10 @@ config XFS_FS
->  	  system of your root partition is compiled as a module, you'll need
->  	  to use an initial ramdisk (initrd) to boot.
->  
-> +if XFS_FS
-> +
->  config XFS_QUOTA
->  	bool "XFS Quota support"
-> -	depends on XFS_FS
->  	help
->  	  If you say Y here, you will be able to set limits for disk usage on
->  	  a per user and/or a per group basis under XFS.  XFS considers quota
-> @@ -37,7 +38,6 @@ config XFS_QUOTA
->  
->  config XFS_SECURITY
->  	bool "XFS Security Label support"
-> -	depends on XFS_FS
->  	help
->  	  Security labels support alternative access control models
->  	  implemented by security modules like SELinux.  This option
-> @@ -49,7 +49,6 @@ config XFS_SECURITY
->  
->  config XFS_POSIX_ACL
->  	bool "XFS POSIX ACL support"
-> -	depends on XFS_FS
->  	help
->  	  POSIX Access Control Lists (ACLs) support permissions for users and
->  	  groups beyond the owner/group/world scheme.
-> @@ -61,7 +60,6 @@ config XFS_POSIX_ACL
->  
->  config XFS_RT
->  	bool "XFS Realtime subvolume support"
-> -	depends on XFS_FS
->  	help
->  	  If you say Y here you will be able to mount and use XFS filesystems
->  	  which contain a realtime subvolume.  The realtime subvolume is a
-> @@ -76,3 +74,5 @@ config XFS_RT
->  	  See the xfs man page in section 5 for additional information.
->  
->  	  If unsure, say N.
-> +
-> +endif # XFS_FS
-> 
+=== libata-fix-up-build-after-upstream-update.patch
+>From 54ee7cd26c5e438dc15d13b60c9f8a54ca05e3fb Mon Sep 17 00:00:00 2001          
+From: Tejun Heo <htejun@gmail.com>                                              
+Date: Fri, 3 Aug 2007 02:21:51 +0900                                            
+Subject: [PATCH] libata: fix up build after upstream update                     
+References: 288078                                                              
+                                                                                
+Signed-off-by: Tejun Heo <htejun@gmail.com>                                     
+===
 
+The bug is still present in current suse kotd. >:-(
 
----
-~Randy
-Phaedrus says that Quality is about caring.
+Please fix it there. A cc will go to opensuse-kernel@,
+but other than that, I am in the wrong mood right now to do anything.
