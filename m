@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbXIYMzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbXIYM5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbXIYMzb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 08:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbXIYMzA
+	id S1754355AbXIYM5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 08:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbXIYM5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 08:55:00 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:34476 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbXIYMy7 (ORCPT
+	Tue, 25 Sep 2007 08:57:42 -0400
+Received: from el-out-1112.google.com ([209.85.162.177]:19863 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750721AbXIYM5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 08:54:59 -0400
-Message-ID: <46F904E6.40601@linux.vnet.ibm.com>
-Date: Tue, 25 Sep 2007 18:23:58 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
+	Tue, 25 Sep 2007 08:57:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=lmrGn73J53aaikBeT8Dt22wjlgGql78eW2k/FBJZOK8wr8oPPSyxlM30zgT3GCYoeX8eY3bTHWn/i7MHRGhgdPSKZfWatBhV6M8Pts9z4L2iK+hLsTNMmb5Xb+pqZ9bLNmPu6rYwyKtT09BJBotC1Aoj5oWKGYdfAy8PVISN/Mo=
+Date: Tue, 25 Sep 2007 20:52:53 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, eugene.surovegin@zultys.com
-Subject: Re: 2.6.23-rc8-mm1 - drivers/net/ibm_newemac/mal - broken
+Cc: linux-kernel@vger.kernel.org, thomas@winischhofer.net
+Subject: [-mm Patch] drivers/usb/misc/sisusbvga/sisusb.c: kill two unused
+	variables
+Message-ID: <20070925125253.GG4945@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
 References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-The drivers/net/ibm_newemac/mal seems to be broken, which stop with
-build error
+Kill two unused variables in drivers/usb/misc/sisusbvga/sisusb.c.
 
-CC      drivers/net/ibm_newemac/mal.o
-drivers/net/ibm_newemac/mal.c: In function ‘mal_schedule_poll’:
-drivers/net/ibm_newemac/mal.c:238: error: too few arguments to function ‘netif_rx_schedule_prep’
-drivers/net/ibm_newemac/mal.c:238: error: too few arguments to function ‘netif_rx_schedule_prep’
-drivers/net/ibm_newemac/mal.c:238: error: too few arguments to function ‘netif_rx_schedule_prep’
-drivers/net/ibm_newemac/mal.c:241: error: too few arguments to function ‘__netif_rx_schedule’
-drivers/net/ibm_newemac/mal.c: In function ‘mal_poll_disable’:
-drivers/net/ibm_newemac/mal.c:321: error: ‘__LINK_STATE_RX_SCHED’ undeclared (first use in this function)
-drivers/net/ibm_newemac/mal.c:321: error: (Each undeclared identifier is reported only once
-drivers/net/ibm_newemac/mal.c:321: error: for each function it appears in.)
-drivers/net/ibm_newemac/mal.c: In function ‘mal_poll’:
-drivers/net/ibm_newemac/mal.c:337: error: ‘struct net_device’ has no member named ‘quota’
-drivers/net/ibm_newemac/mal.c:337: warning: type defaults to ‘int’ in declaration of ‘_x’
-drivers/net/ibm_newemac/mal.c:337: error: ‘struct net_device’ has no member named ‘quota’
-drivers/net/ibm_newemac/mal.c:375: error: too few arguments to function ‘__netif_rx_complete’
-drivers/net/ibm_newemac/mal.c:390: warning: passing argument 2 of ‘netif_rx_reschedule’ makes pointer from integer without a cast
-drivers/net/ibm_newemac/mal.c:404: error: ‘struct net_device’ has no member named ‘quota’
-drivers/net/ibm_newemac/mal.c: In function ‘mal_probe’:
-drivers/net/ibm_newemac/mal.c:542: error: ‘struct net_device’ has no member named ‘weight’
-drivers/net/ibm_newemac/mal.c:543: error: ‘struct net_device’ has no member named ‘poll’
-drivers/net/ibm_newemac/mal.c: In function ‘mal_remove’:
-drivers/net/ibm_newemac/mal.c:660: error: implicit declaration of function ‘netif_poll_disable’
-make[3]: *** [drivers/net/ibm_newemac/mal.o] Error 1
-make[2]: *** [drivers/net/ibm_newemac] Error 2
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+---
+ drivers/usb/misc/sisusbvga/sisusb.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+Index: linux-2.6.23-rc8-mm1/drivers/usb/misc/sisusbvga/sisusb.c
+===================================================================
+--- linux-2.6.23-rc8-mm1.orig/drivers/usb/misc/sisusbvga/sisusb.c
++++ linux-2.6.23-rc8-mm1/drivers/usb/misc/sisusbvga/sisusb.c
+@@ -3316,8 +3316,6 @@ static struct usb_driver sisusb_driver =
+ 
+ static int __init usb_sisusb_init(void)
+ {
+-	int retval;
+-	struct sisusb_usb_data *sisusb;
+ 
+ #ifdef INCL_SISUSB_CON
+ 	sisusb_init_concode();
