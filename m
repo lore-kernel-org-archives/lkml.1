@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbXIYPXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbXIYP0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756179AbXIYPXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 11:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXIYPXF
+	id S1756418AbXIYP0x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 11:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbXIYP0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 11:23:05 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:22555 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752667AbXIYPXE (ORCPT
+	Tue, 25 Sep 2007 11:26:46 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37677 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753241AbXIYP0p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 11:23:04 -0400
-Subject: Re: [git] CFS-devel, latest code
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070925064522.GA1568@elte.hu>
-References: <20070924214537.GA18980@elte.hu>
-	 <1190678882.2634.1.camel@imap.mvista.com>  <20070925064522.GA1568@elte.hu>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 08:17:53 -0700
-Message-Id: <1190733473.2634.11.camel@imap.mvista.com>
+	Tue, 25 Sep 2007 11:26:45 -0400
+Date: Tue, 25 Sep 2007 16:30:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <david@davidnewall.com>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
+       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
+       majkls <majkls@prepere.com>, bunk@fs.tum.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Chroot bug (was: sys_chroot+sys_fchdir Fix)
+Message-ID: <20070925163040.12a3c2f8@the-village.bc.nu>
+In-Reply-To: <46F924E3.50205@davidnewall.com>
+References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>
+	<46F29A9A.4070806@davidnewall.com>
+	<200709201817.17282@x5>
+	<46F2B59F.8090709@davidnewall.com>
+	<46F2DDD0.3030500@tmr.com>
+	<46F380E4.4040606@davidnewall.com>
+	<20070924213215.GA32716@vino.hallyn.com>
+	<46F83474.5040503@davidnewall.com>
+	<20070924230008.GA3160@vino.hallyn.com>
+	<46F8BC8A.7080006@davidnewall.com>
+	<20070925114947.GA9721@vino.hallyn.com>
+	<46F91417.9050600@davidnewall.com>
+	<46F924E3.50205@davidnewall.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-25 at 08:45 +0200, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > On Mon, 2007-09-24 at 23:45 +0200, Ingo Molnar wrote:
-> > > Lots of scheduler updates in the past few days, done by many people. 
-> > > Most importantly, the SMP latency problems reported and debugged by
-> > > Mike 
-> > > Galbraith should be fixed for good now. 
-> > 
-> > Does this have anything to do with idle balancing ? I noticed some 
-> > fairly large latencies in that code in 2.6.23-rc's ..
-> 
-> any measurements?
+> Marek's loading dynamic libraries, it seems clear that the prime purpose 
+> of chroot is to aid security.  Being able to cd your way out is handy 
 
-Yes, I made this a while ago,
+Does it - I can't find any evidence for that. I think you are confusing
+containers and chroot. They are quite different things. A root user can
+get out of a chroot a million different ways
 
-ftp://source.mvista.com/pub/dwalker/misc/long-cfs-load-balance-trace.txt
-
-This was with PREEMPT_RT on btw, so it's not the most recent kernel. I
-was able to reproduce it in all the -rc's I tried.
-
-Daniel
-
+Alan
