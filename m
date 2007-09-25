@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbXIYRzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbXIYR7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759303AbXIYRzg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 13:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbXIYRz1
+	id S1754835AbXIYR7m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 13:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXIYR7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 13:55:27 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:34973 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751507AbXIYRz1 (ORCPT
+	Tue, 25 Sep 2007 13:59:36 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:35040 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753206AbXIYR7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 13:55:27 -0400
-Subject: [GIT PATCH] SCSI bug fix for 2.6.23-rc8
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	Tue, 25 Sep 2007 13:59:35 -0400
+Subject: Linux Foundation Technical Advisory Board Election Results
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: ksummit-2007-discuss@thunk.org,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>
+In-Reply-To: <1187796179.3410.32.camel@localhost.localdomain>
+References: <1187796179.3410.32.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 25 Sep 2007 12:55:24 -0500
-Message-Id: <1190742924.3345.42.camel@localhost.localdomain>
+Date: Tue, 25 Sep 2007 12:59:30 -0500
+Message-Id: <1190743170.3345.44.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is, unfortunately, not a recent regression but it's only been
-recently diagnosed.  Apparently the SCSI Parallel transport class domain
-validation cable width detection wasn't working, leading to cases where
-controllers with damaged cables would end up hanging the system (the
-reported one was an aic79xx controller, but the potential is there for
-all SPI based systems).  This bug would *only* affect systems whose
-cable integrity or connectors were compromised, so it isn't life
-threatening to every SCSI Parallel installation, but the consequence of
-running into it is a system hang.
+Sorry this has taken so long to get out ... I just, er, forgot.
 
-The fix is available here:
+Summary of the TAB election results at the kernel Summit on Wednesday 5
+September.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+At the meeting, we had eight candidates:
 
-The short changelog is:
+Arjan van de Ven
+Greg Kroah Hartman
+Christoph Lameter
+Jon Corbett
+James Morris
+Christoph Hellwig
+David Woodhouse
+Olaf Kirch
 
-James Bottomley (1):
-      scsi_transport_spi: fix domain validation failure from incorrect
-width setting
+Every candidate gave a nomination statement before the voting (with the
+three persons not present:  James Morris, Christoph Hellwig and David
+Woodhouse having their statements read to the meeting).  We did single
+polling per position and had two rounds for a tie on the last candidate.
+Those elected to the TAB were:
 
-And the diffstat:
-
- scsi_transport_spi.c |   28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
+Arjan van de Ven
+Greg Kroah Hartman
+Christoph Lameter
+Jon Corbett
+Olaf Kirch
 
 James
-
 
 
