@@ -1,43 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbXIYKki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbXIYKvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbXIYKki (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 06:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXIYKka
+	id S1752843AbXIYKvX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 06:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXIYKvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 06:40:30 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:58472 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbXIYKk3 (ORCPT
+	Tue, 25 Sep 2007 06:51:15 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52201 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbXIYKvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 06:40:29 -0400
-Message-ID: <46F8E563.8030105@linux.vnet.ibm.com>
-Date: Tue, 25 Sep 2007 16:09:31 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Tue, 25 Sep 2007 06:51:14 -0400
+Date: Tue, 25 Sep 2007 12:51:12 +0200
+From: Jan Kara <jack@suse.cz>
+To: richard kennedy <richard@rsk.demon.co.uk>
+Cc: sct@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: jbd : config_jbd_debug cannot create /proc entry
+Message-ID: <20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
+References: <1190713240.3154.20.camel@castor.rsk.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc8-mm1
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-In-Reply-To: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190713240.3154.20.camel@castor.rsk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm1/
+> I enabled config_jbd_debug in the hope that it may help track down the
+> lockup I'm seeing, but unfortunately the /proc entry does not get
+> created.
+> 
+> any ideas how to fix this ?
+  Attached is a patch that should fix it. Andrew, would you queue it up?
 
-Hi Andrew,
+									Honza
 
-The build error reported at http://lkml.org/lkml/2007/9/20/210 for the
-drivers/ata/pata_scc.c is seen in both 2.6.23-rc7-mm1 and 2.6.23-rc8-mm1.
+JBD debug code used old way of creating proc entries for jbd-debug file.
+Change it to use sysctl instead.
 
-The patch proposed for this build error at http://lkml.org/lkml/2007/9/21/557
-is not seen in the latest 2.6.23-rc8-mm1 patch's.
+Signed-off-by: Jan Kara <jack@suse.cz>
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc6/fs/jbd/journal.c linux-2.6.23-rc6-1-jbddebug_fix/fs/jbd/journal.c
+--- linux-2.6.23-rc6/fs/jbd/journal.c	2007-09-25 12:39:53.000000000 +0200
++++ linux-2.6.23-rc6-1-jbddebug_fix/fs/jbd/journal.c	2007-09-25 13:05:05.000000000 +0200
+@@ -1944,58 +1944,29 @@ void journal_put_journal_head(struct jou
+ #if defined(CONFIG_JBD_DEBUG)
+ int journal_enable_debug;
+ EXPORT_SYMBOL(journal_enable_debug);
+-#endif
+-
+-#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_PROC_FS)
+-
+-static struct proc_dir_entry *proc_jbd_debug;
+-
+-static int read_jbd_debug(char *page, char **start, off_t off,
+-			  int count, int *eof, void *data)
+-{
+-	int ret;
+-
+-	ret = sprintf(page + off, "%d\n", journal_enable_debug);
+-	*eof = 1;
+-	return ret;
+-}
+-
+-static int write_jbd_debug(struct file *file, const char __user *buffer,
+-			   unsigned long count, void *data)
+-{
+-	char buf[32];
+-
+-	if (count > ARRAY_SIZE(buf) - 1)
+-		count = ARRAY_SIZE(buf) - 1;
+-	if (copy_from_user(buf, buffer, count))
+-		return -EFAULT;
+-	buf[ARRAY_SIZE(buf) - 1] = '\0';
+-	journal_enable_debug = simple_strtoul(buf, NULL, 10);
+-	return count;
+-}
++static struct ctl_table_header *jbd_debug_table;
+ 
+-#define JBD_PROC_NAME "sys/fs/jbd-debug"
+-
+-static void __init create_jbd_proc_entry(void)
+-{
+-	proc_jbd_debug = create_proc_entry(JBD_PROC_NAME, 0644, NULL);
+-	if (proc_jbd_debug) {
+-		/* Why is this so hard? */
+-		proc_jbd_debug->read_proc = read_jbd_debug;
+-		proc_jbd_debug->write_proc = write_jbd_debug;
+-	}
+-}
+-
+-static void __exit remove_jbd_proc_entry(void)
+-{
+-	if (proc_jbd_debug)
+-		remove_proc_entry(JBD_PROC_NAME, NULL);
+-}
+-
+-#else
+-
+-#define create_jbd_proc_entry() do {} while (0)
+-#define remove_jbd_proc_entry() do {} while (0)
++static ctl_table fs_table[] = {
++	{
++                .ctl_name       = -1,	/* Don't want it */
++                .procname       = "jbd-debug",
++                .data           = &journal_enable_debug,
++                .maxlen         = sizeof(int),
++                .mode           = 0644,
++                .proc_handler   = &proc_dointvec,
++        },
++        { .ctl_name = 0 },
++};
++
++static ctl_table sys_table[] = {
++        {
++                .ctl_name       = CTL_FS,
++                .procname       = "fs",
++                .mode           = 0555,
++                .child          = fs_table,
++        },
++        { .ctl_name = 0 },
++};
+ 
+ #endif
+ 
+@@ -2054,7 +2025,10 @@ static int __init journal_init(void)
+ 	ret = journal_init_caches();
+ 	if (ret != 0)
+ 		journal_destroy_caches();
+-	create_jbd_proc_entry();
++
++#ifdef CONFIG_JBD_DEBUG
++	jbd_debug_table = register_sysctl_table(sys_table);
++#endif
+ 	return ret;
+ }
+ 
+@@ -2064,8 +2038,8 @@ static void __exit journal_exit(void)
+ 	int n = atomic_read(&nr_journal_heads);
+ 	if (n)
+ 		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
++	unregister_sysctl_table(jbd_debug_table);
+ #endif
+-	remove_jbd_proc_entry();
+ 	journal_destroy_caches();
+ }
+ 
