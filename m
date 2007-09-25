@@ -1,59 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbXIYLF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbXIYLPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbXIYLF5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 07:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXIYLFt
+	id S1752938AbXIYLPd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXIYLPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 07:05:49 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:53612 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751861AbXIYLFs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 07:05:48 -0400
-Date: Tue, 25 Sep 2007 13:05:44 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Tue, 25 Sep 2007 07:15:24 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:54576 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751895AbXIYLPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 07:15:23 -0400
+Date: Tue, 25 Sep 2007 12:15:20 +0100
+To: Jens Axboe <jens.axboe@oracle.com>
 Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       neilb@suse.de, Geert.Uytterhoeven@sonycom.com,
+       geoffrey.levand@am.sony.com
 Subject: Re: 2.6.23-rc7-mm1
-Message-ID: <20070925130544.3d74d04d@twins>
-In-Reply-To: <20070924212058.76017e47@lappy>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-	<46F7B7FD.1000905@linux.vnet.ibm.com>
-	<20070924094448.d08cf3a6.akpm@linux-foundation.org>
-	<20070924185737.717b2650@twins>
-	<46F7EEF3.7080902@linux.vnet.ibm.com>
-	<20070924212058.76017e47@lappy>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070925111520.GC8076@skynet.ie>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org> <46F812DF.4010909@linux.vnet.ibm.com> <20070925102356.GB8076@skynet.ie> <20070925103119.GX2367@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070925103119.GX2367@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007 21:20:58 +0200 Peter Zijlstra
-<a.p.zijlstra@chello.nl> wrote:
-
-> > > Nope, and the stacktrace is utterly puzzling.
-> > > 
-> > > /me goes read the lkml.org link
-> > > 
-> > > Kamalesh Babulal: do you still get:
-> > >   BUG: spinlock bad magic on
-> > > 
-> > > msgs?
-> > > 
-> > > Because those I could reproduce using fsx, and I fixed all that.
-> > Hi Peter,
+On (25/09/07 12:31), Jens Axboe didst pronounce:
+> On Tue, Sep 25 2007, Mel Gorman wrote:
+> > On (25/09/07 01:11), Kamalesh Babulal didst pronounce:
 > > 
-> > I do not get BUG: spinlock bad magic messages any more, but the softlock message is
-> > thrown more than 30 time, while running the ltp runall.
+> > Hi Kamalesh,
+> > 
+> > > The build fails with following error
+> > > 
+> > > CC drivers/block/ps3disk.o
+> > > drivers/block/ps3disk.c: In function ???ps3disk_scatter_gather???:
+> > > drivers/block/ps3disk.c:115: error: ???bio??? undeclared (first use in this
+> > > function)
+> > > drivers/block/ps3disk.c:115: error: (Each undeclared identifier is
+> > > reported only once
+> > > drivers/block/ps3disk.c:115: error: for each function it appears in.)
+> > > drivers/block/ps3disk.c:115: error: ???j??? undeclared (first use in this
+> > > function)
+> > > drivers/block/ps3disk.c:116: error: implicit declaration of function
+> > > ???bio_kunmap_bvec???
+> > > make[2]: *** [drivers/block/ps3disk.o] Error 1
+> > > make[1]: *** [drivers/block] Error 2
+> > > make: *** [drivers] Error 2
+> > > 
+> > > The function bio_kunmap_bvec is missing.I tried checking the git-block.patch
+> > > as well as the linux/kernel/git/axboe/linux-2.6-block.git and did not
+> > > find this function.
+> > > 
+> > > Previously this function was replaced by __bio_kunmap_atomic();
+> > > This patch does not solves the implicit "declaration of function
+> > > ???bio_kunmap_bvec???"
+> > > 
+> > > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com
+> > > <mailto:kamalesh@linux.vnet.ibm.com>>
+> > 
+> > Your mailer appears to have mangled both your signoff and the whitespace in
+> > the patch and it does not apply. However, fixing it does not solve the problem
+> > because of this mysterious bio_kunmap_bvec() that is only referenced by this
+> > driver. Was it accidently added during the addition of sg chaining support?
 > 
-> It would be good to know what function on_each_cpu is executing, could
-> you try something like:
+> This should fix things up.
+> 
 
-I've just completed 2 full ltp runs on a dual-core opteron machine but
-could not reproduce this problem.
+This builds although I lack the hardware to really test it. However, in
+2.6.23-rc8-mm1 it collides with git-block-ps3disk-fix.patch. This is a
+version on top of that stack but I guess the best thing to do is replace
+git-block-ps3disk-fix.patch with Jens patch once it is signed off.
 
-Kamalesh, would it be possible for you to reproduce with that patch, so
-we can see what function is holding up the cpu?
+Not signing off because this is just a rebase. Assuming the other one
+gets signed off, consider it;
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+--- 
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc8-mm1-clean/drivers/block/ps3disk.c linux-2.6.23-rc8-mm1-fix-ps3disk/drivers/block/ps3disk.c
+--- linux-2.6.23-rc8-mm1-clean/drivers/block/ps3disk.c	2007-09-25 12:05:40.000000000 +0100
++++ linux-2.6.23-rc8-mm1-fix-ps3disk/drivers/block/ps3disk.c	2007-09-25 12:09:19.000000000 +0100
+@@ -106,14 +106,14 @@ static void ps3disk_scatter_gather(struc
+ 			(unsigned long)iter.bio->bi_sector);
+ 
+ 		size = bvec->bv_len;
+-		buf = bvec_kmap_irq(bvec, flags);
++		buf = bvec_kmap_irq(bvec, &flags);
+ 		if (gather)
+ 			memcpy(dev->bounce_buf+offset, buf, size);
+ 		else
+ 			memcpy(buf, dev->bounce_buf+offset, size);
+ 		offset += size;
+-		flush_kernel_dcache_page(bio_iovec_idx(iter.bio, iter.i)->bv_page);
+-		bio_kunmap_bvec(bvec, flags);
++		flush_kernel_dcache_page(bvec->bv_page);
++		bvec_kunmap_irq(buf, &flags);
+ 		i++;
+ 	}
+ }
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
