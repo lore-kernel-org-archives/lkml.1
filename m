@@ -1,147 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbXIYUiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbXIYUkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755765AbXIYUiG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 16:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXIYUhy
+	id S1756129AbXIYUkl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 16:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXIYUke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 16:37:54 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:41086 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbXIYUhx (ORCPT
+	Tue, 25 Sep 2007 16:40:34 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:61215 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751750AbXIYUkd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 16:37:53 -0400
-To: Bernhard Walle <bwalle@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       kexec@lists.infradead.org, akpm@linux-foundation.org
-Subject: Re: [patch 1/7] Extended crashkernel command line
-In-Reply-To: <20070925182258.175348676@strauss.suse.de>
-References: <20070925182257.900701776@strauss.suse.de> <20070925182258.175348676@strauss.suse.de>
-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-Date: Tue, 25 Sep 2007 22:53:36 +0200
-Message-Id: <E1IaHPU-00089b-Bc@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Tue, 25 Sep 2007 16:40:33 -0400
+Date: Tue, 25 Sep 2007 16:40:28 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 3/5] Add samples subdir
+Message-ID: <20070925204028.GA16652@Krystal>
+References: <20070925121145.262664884@polymtl.ca> <20070925121251.954162366@polymtl.ca> <20070925190036.GA14579@uranus.ravnborg.org> <20070925133234.cdd9edf1.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070925133234.cdd9edf1.randy.dunlap@oracle.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:40:15 up 57 days, 20:59,  5 users,  load average: 0.29, 0.30, 0.24
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tue, 25 Sep 2007 20:22:58 +0200
->
-> This is the generic part of the patch. It adds a parse_crashkernel() function
-> in kernel/kexec.c that is called by the architecture specific code that
-> actually reserves the memory. That function takes the whole command line and
-> looks itself for "crashkernel=" in it.
-[]
-> +++ b/include/linux/kexec.h
-> @@ -187,6 +187,8 @@ extern u32 vmcoreinfo_note[VMCOREINFO_NO
->  extern size_t vmcoreinfo_size;
->  extern size_t vmcoreinfo_max_size;
->  
-> +int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
-> +		unsigned long long *crash_size, unsigned long long *crash_base);
+* Randy Dunlap (randy.dunlap@oracle.com) wrote:
+> On Tue, 25 Sep 2007 21:00:36 +0200 Sam Ravnborg wrote:
+> 
+> Hi Sam,
+> 
+> Thanks for looking.  I was hoping that you would find time to
+> look/comment on it.
+> 
+> > Hi Mathieu & Randy.
+> > 
+> > On Tue, Sep 25, 2007 at 08:11:48AM -0400, Mathieu Desnoyers wrote:
+> > > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > > 
+> > > Begin infrastructure for kernel code samples in the samples/ directory.
+> > > Add its Kconfig and Kbuild files.
+> > > Source its Kconfig file in all arch/ Kconfigs.
+> > 
+> > Sorry for not commenting on this before...
+> > The samples directory contains sample code so it is wrong to actually
+> > include it as part of the kernel IMHO.
+> > We only want to keep the samples buildable and to do so
+> > we can make a much simpler hack in the top-level Makefile.
+> > Consider following patch:
+> > 
+> > @@ -760,6 +760,9 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) $(kallsyms.o) vmlinux.o
+> >  ifdef CONFIG_HEADERS_CHECK
+> >         $(Q)$(MAKE) -f $(srctree)/Makefile headers_check
+> >  endif
+> > +ifdef CONFIG_SAMPLES
+> > +       $(Q)$(MAKE) $(build)=samples
+> > +endif
+> >         $(call vmlinux-modpost)
+> >         $(call if_changed_rule,vmlinux__)
+> >         $(Q)rm -f .old_version
+> > 
+> > 
+> > With this we build the samples when CONFIG_SAMPLES are selected and
+> > when the kernel is about to be linked.
+> > 
+> > 
+> > As for the Kconfig file I am in favour of it but think a much more
+> > natural place is to source it in lib/Kconfig.debug.
+> > Then it will appear in "Kernel hacking" and the smaples
+> > are used for kernel hacking and not for regular people
+> > building their own kernel.
+> > 
+> > Sourcing samples/Kconfig from lib/Kconfig.debug will then
+> > take effect for all archs so the result is a much simpler
+> > Kconfig patch too.
+> 
+> These changes all sound good to me.
+> 
+> Mathieu, can you find time to do this or should I do it?
+> 
 
-I still want to point out my consernes about `unsigned long long long'
-bloat.
+I'll take care of it.
 
->  #else /* !CONFIG_KEXEC */
->  struct pt_regs;
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-[]
-> +/*
-> + * This function parses command lines in the format
-> + *
-> + *   crashkernel=<ramsize-range>:<size>[,...][@<base>]
+> ---
+> ~Randy
+> Phaedrus says that Quality is about caring.
 
-#v+
-olecom@flower:/tmp$ grep '@offset' <extended-crashkernel-cmdline.mbox
-    crashkernel=<range1>:<size1>[,<range2>:<size2>,...][@offset]
--       /* crashkernel=size@offset specifies the size to reserve for a crash
-+While the "crashkernel=size[@offset]" syntax is sufficient for most
-+    crashkernel=<range1>:<size1>[,<range2>:<size2>,...][@offset]
-+       crashkernel=range1:size1[,range2:size2,...][@offset]
-olecom@flower:/tmp$ grep '@base' <extended-crashkernel-cmdline.mbox
-+ *     crashkernel=size[@base]
-olecom@flower:/tmp$ grep '@<base' <extended-crashkernel-cmdline.mbox
-+ *   crashkernel=<ramsize-range>:<size>[,...][@<base>]
-olecom@flower:/tmp$ grep '@<offset' <extended-crashkernel-cmdline.mbox
-olecom@flower:/tmp$
-#v-
-
-> + *
-> + * The function returns 0 on success and -EINVAL on failure.
-> + */
-> +static int __init parse_crashkernel_mem(char 			*cmdline,
-> +					unsigned long long	system_ram,
-> +					unsigned long long	*crash_size,
-> +					unsigned long long	*crash_base)
-> +{
-> +	char *cur = cmdline;
-> +
-> +	/* for each entry of the comma-separated list */
-> +	do {
-> +		unsigned long long start = 0, end = ULLONG_MAX;
-> +		unsigned long long size = -1;
-
-memparse(), as a wrapper for somple_strtoll(), always have a return value
-(zero by default).
-<http://article.gmane.org/gmane.linux.kernel/583426>
-
-Consider coded error path now, please.
-
-And why not to make overall result reliable? This is kernel after all.
-
-I.e. if there's valid `crashkernel=' option, but some parsing errors, why
-not to apply some heuristics with warning in syslog, if user have some
-conf, bootloader (random) errors, but feature still works?
-
-> +
-> +		/* get the start of the range */
-> +		start = memparse(cur, &cur);
-> +		if (*cur != '-') {
-> +			printk(KERN_WARNING "crashkernel: '-' expected\n");
-> +			return -EINVAL;
-> +		}
-> +		cur++;
-> +
-> +		/* if no ':' is here, than we read the end */
-> +		if (*cur != ':') {
-> +			end = memparse(cur, &cur);
-> +			if (end <= start) {
-> +				printk(KERN_WARNING "crashkernel: end <= start\n");
-> +				return -EINVAL;
-> +			}
-> +		}
-> +
-> +		if (*cur != ':') {
-> +			printk(KERN_WARNING "crashkernel: ':' expected\n");
-> +			return -EINVAL;
-> +		}
-> +		cur++;
-> +
-> +		size = memparse(cur, &cur);
-> +		if (size < 0) {
-> +			printk(KERN_WARNING "crashkernel: invalid size\n");
-> +			return -EINVAL;
-> +		}
-> +
-> +		/* match ? */
-> +		if (system_ram >= start  && system_ram <= end) {
-> +			*crash_size = size;
-> +			break;
-> +		}
-> +	} while (*cur++ == ',');
-> +
-> +	if (*crash_size > 0) {
-> +		while (*cur != ' ' && *cur != '@')
-> +			cur++;
-> +		if (*cur == '@')
-> +			*crash_base = memparse(cur+1, &cur);
-> +	}
-> +
-> +	return 0;
-> +}
---
--o--=O`C
- #oo'L O
-<___=E M
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
