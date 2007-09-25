@@ -1,63 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbXIYOg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXIYOhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbXIYOg7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 10:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbXIYOgd
+	id S1756686AbXIYOhg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 10:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbXIYOhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 10:36:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:56155 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756235AbXIYOgc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 10:36:32 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/5] PowerPC: Move of_device allocation into of_device.[ch]
-Date: Tue, 25 Sep 2007 16:27:57 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200709251410.29780.fenkes@de.ibm.com> <200709251411.27755.fenkes@de.ibm.com>
-In-Reply-To: <200709251411.27755.fenkes@de.ibm.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Tue, 25 Sep 2007 10:37:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49318 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751992AbXIYOhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 10:37:24 -0400
+Date: Tue, 25 Sep 2007 10:36:51 -0400
+From: Dave Jones <davej@redhat.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Greg.Chandler@wellsfargo.com, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org, dan.j.williams@intel.com,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more}
+	ARM/StrongARM
+Message-ID: <20070925143651.GA2769@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	Greg.Chandler@wellsfargo.com, cpufreq@lists.linux.org.uk,
+	linux-kernel@vger.kernel.org, dan.j.williams@intel.com,
+	Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+References: <1E7A4807A136DF45AD33DB341D93C3BD1F0C19@msgswbmnmsp46.wellsfargo.com> <20070925073132.GA29127@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709251627.59040.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19ZoisxodqeX61wBDm2MrIdBvsYuUY15clQfEX
- hrvyLKpAL16bXOtFeV/LNF7Rsx0aWOqrQ6YBN+ImEeBZIHclRP
- ufQwL5zBWZe72jpA65Nqg==
+In-Reply-To: <20070925073132.GA29127@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 25 September 2007, Joachim Fenkes wrote:
-> Extract generic of_device allocation code from of_platform_device_create()
-> and move it into of_device.[ch], called of_device_alloc(). Also, there's now
-> of_device_free() which puts the device node.
-> 
-> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
-> ---
->  include/asm-powerpc/of_device.h   |    4 ++
->  include/linux/of_device.h         |    5 ++
->  arch/powerpc/kernel/of_device.c   |   80 +++++++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/of_platform.c |   70 +-------------------------------
->  4 files changed, 91 insertions(+), 68 deletions(-)
-> 
+On Tue, Sep 25, 2007 at 08:31:32AM +0100, Russell King wrote:
+ > On Mon, Sep 24, 2007 at 05:53:57PM -0500, Greg.Chandler@wellsfargo.com wrote:
+ > > I was building a kernel for an iPaq {SA1110} and ran into this.
+ > > 
+ > > linux-2.6.22.7/arch/arm/mach-sa1100/generic.c:
+ > > Has a: #include <linux/cpufreq.h>
+ > > Then afterwards there is a: #if defined(CONFIG_CPU_FREQ_SA1100) ||
+ > > defined(CONFIG_CPU_FREQ_SA1110)
+ > > who's else section redefines the cpufreq_get function inhereited from
+ > > the header....
+ > > 
+ > > I'm guessing no one ever ended up in the "else" section until now, and
+ > > that the header was added some time ago and no one caught this.
+ > > This patch worked for me to get rid of the compile time problems.  I'm
+ > > having issues with the kernel, but as far as I can tell they are form
+ > > the Frame buffer and not because of this.  If this assessment is correct
+ > > {the not needing this code anymore} then please pass this along so it
+ > > makes it into an upcoming release.
+ > > 
+ > > --- linux-2.6.22.7/arch/arm/mach-sa1100/generic.c.orig  2007-09-24
+ > > 17:36:21.000000000 -0500
+ > > +++ linux-2.6.22.7/arch/arm/mach-sa1100/generic.c       2007-09-24
+ > > 17:40:02.000000000 -0500
+ > > @@ -107,15 +107,6 @@ unsigned int sa11x0_getspeed(unsigned in
+ > >         return cclk_frequency_100khz[PPCR & 0xf] * 100;
+ > >  }
+ > > 
+ > > -#else
+ > > -/*
+ > > - * We still need to provide this so building without cpufreq works.
+ > > - */
+ > > -unsigned int cpufreq_get(unsigned int cpu)
+ > > -{
+ > > -       return cclk_frequency_100khz[PPCR & 0xf] * 100;
+ > > -}
+ > > -EXPORT_SYMBOL(cpufreq_get);
+ > >  #endif
+ > > 
+ > >  /*
+ > 
+ > No.  That code is required - the StrongARM 1100 framebuffer driver
+ > *needs* to know what the CPU frequency is so it can set the pixel
+ > clock divisor.
+ > 
+ > The real problem is the silly people who added this to cpufreq.h:
+ > 
+ > #ifdef CONFIG_CPU_FREQ
+ > unsigned int cpufreq_quick_get(unsigned int cpu);
+ > unsigned int cpufreq_get(unsigned int cpu);
+ > #else
+ > static inline unsigned int cpufreq_quick_get(unsigned int cpu)
+ > {
+ >         return 0;
+ > }
+ > static inline unsigned int cpufreq_get(unsigned int cpu)
+ > {
+ >         return 0;
+ > }
+ > #endif
+ > 
+ > which utterly bogus.
 
-Sorry I didn't review the patches earlier when you sent them in private.
-The patch looks good to me, especially since you did exactly what I
-suggested ;-)
+Which came from ...
 
-Maybe the description should have another sentence in it about what
-the change is good for. You have that in the 0/5 mail, but that does
-not go into the changelog, so the information gets lost in the process.
+commit 184c44d2049c4db7ef6ec65794546954da2c6a0e
+Author: Andrew Morton <akpm@linux-foundation.org>
+Date:   Wed May 2 19:27:08 2007 +0200
 
-	Arnd <><
+    [PATCH] x86-64: fix x86_64-mm-sched-clock-share
+    
+    Fix for the following patch. Provide dummy cpufreq functions when
+    CPUFREQ is not compiled in.
+    
+    Cc: Andi Kleen <ak@suse.de>
+    Cc: Dave Jones <davej@codemonkey.org.uk>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Andi Kleen <ak@suse.de>
+
+I don't remember seeing any problem here, so I'm not entirely sure what
+this was supposed to be fixing.  Perhaps the -mm-esque patch name
+will provide Andrew/Andi clues. It lacks sufficient information for
+my brain to guess what the problem was.
+
+"Fix for the following patch" is also something that really should
+never be added to a git changelog too, because 'next' means absolutely
+nothing to me, nor I expect 99% of changelog readers.
+
+
+Cc's added.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
