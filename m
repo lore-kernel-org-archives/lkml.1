@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbXIYS7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbXIYTON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbXIYS7X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 14:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbXIYS7Q
+	id S1755425AbXIYTON (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 15:14:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbXIYTN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 14:59:16 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:32805 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889AbXIYS7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 14:59:16 -0400
-Date: Tue, 25 Sep 2007 21:00:36 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [patch 3/5] Add samples subdir
-Message-ID: <20070925190036.GA14579@uranus.ravnborg.org>
-References: <20070925121145.262664884@polymtl.ca> <20070925121251.954162366@polymtl.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 25 Sep 2007 15:13:59 -0400
+Received: from smtprelay12.ispgateway.de ([80.67.29.29]:36229 "EHLO
+	smtprelay12.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbXIYTN6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 15:13:58 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/3] Fix coding style
+Date: Tue, 25 Sep 2007 21:16:20 +0200
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, randy.dunlap@oracle.com
+References: <20070925144443.GA17858@elte.hu> <20070925162502.GA3231@linux.vnet.ibm.com> <20070925162807.GB3231@linux.vnet.ibm.com>
+In-Reply-To: <20070925162807.GB3231@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070925121251.954162366@polymtl.ca>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200709252116.22541.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu & Randy.
+On Tuesday 25 September 2007, Srivatsa Vaddagiri wrote:
+> Index: current/kernel/sched_debug.c
+> ===================================================================
+> --- current.orig/kernel/sched_debug.c
+> +++ current/kernel/sched_debug.c
+> @@ -239,11 +239,7 @@ static int
+>  root_user_share_read_proc(char *page, char **start, off_t off, int count,
+>  				 int *eof, void *data)
+>  {
+> -	int len;
+> -
+> -	len = sprintf(page, "%d\n", init_task_grp_load);
+> -
+> -	return len;
+> +	return sprintf(page, "%d\n", init_task_grp_load);
+>  }
+>  
+>  static int
+> @@ -297,7 +293,7 @@ static int __init init_sched_debug_procf
+>  	pe->proc_fops = &sched_debug_fops;
+>  
+>  #ifdef CONFIG_FAIR_USER_SCHED
+> -	pe = create_proc_entry("root_user_share", 0644, NULL);
+> +	pe = create_proc_entry("root_user_cpu_share", 0644, NULL);
+>  	if (!pe)
+>  		return -ENOMEM;
 
-On Tue, Sep 25, 2007 at 08:11:48AM -0400, Mathieu Desnoyers wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Begin infrastructure for kernel code samples in the samples/ directory.
-> Add its Kconfig and Kbuild files.
-> Source its Kconfig file in all arch/ Kconfigs.
+What about moving this debug stuff under debugfs?
+Please consider using the functions in <linux/debugfs.h> .
+They compile into nothing, if DEBUGFS is not compiled in
+and have already useful functions for reading/writing integers
+and booleans.
 
-Sorry for not commenting on this before...
-The samples directory contains sample code so it is wrong to actually
-include it as part of the kernel IMHO.
-We only want to keep the samples buildable and to do so
-we can make a much simpler hack in the top-level Makefile.
-Consider following patch:
+Best Regards
 
-@@ -760,6 +760,9 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) $(kallsyms.o) vmlinux.o
- ifdef CONFIG_HEADERS_CHECK
-        $(Q)$(MAKE) -f $(srctree)/Makefile headers_check
- endif
-+ifdef CONFIG_SAMPLES
-+       $(Q)$(MAKE) $(build)=samples
-+endif
-        $(call vmlinux-modpost)
-        $(call if_changed_rule,vmlinux__)
-        $(Q)rm -f .old_version
-
-
-With this we build the samples when CONFIG_SAMPLES are selected and
-when the kernel is about to be linked.
-
-
-As for the Kconfig file I am in favour of it but think a much more
-natural place is to source it in lib/Kconfig.debug.
-Then it will appear in "Kernel hacking" and the smaples
-are used for kernel hacking and not for regular people
-building their own kernel.
-
-Sourcing samples/Kconfig from lib/Kconfig.debug will then
-take effect for all archs so the result is a much simpler
-Kconfig patch too.
-
-	Sam
+Ingo Oeser
