@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbXIYP0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757694AbXIYP1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756418AbXIYP0x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 11:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbXIYP0q
+	id S1757694AbXIYP1U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 11:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbXIYP1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 11:26:46 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37677 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753241AbXIYP0p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 11:26:45 -0400
-Date: Tue, 25 Sep 2007 16:30:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <david@davidnewall.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
-       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
-       majkls <majkls@prepere.com>, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Chroot bug (was: sys_chroot+sys_fchdir Fix)
-Message-ID: <20070925163040.12a3c2f8@the-village.bc.nu>
-In-Reply-To: <46F924E3.50205@davidnewall.com>
-References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>
-	<46F29A9A.4070806@davidnewall.com>
-	<200709201817.17282@x5>
-	<46F2B59F.8090709@davidnewall.com>
-	<46F2DDD0.3030500@tmr.com>
-	<46F380E4.4040606@davidnewall.com>
-	<20070924213215.GA32716@vino.hallyn.com>
-	<46F83474.5040503@davidnewall.com>
-	<20070924230008.GA3160@vino.hallyn.com>
-	<46F8BC8A.7080006@davidnewall.com>
-	<20070925114947.GA9721@vino.hallyn.com>
-	<46F91417.9050600@davidnewall.com>
-	<46F924E3.50205@davidnewall.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 11:27:05 -0400
+Received: from styx.suse.cz ([82.119.242.94]:56980 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756839AbXIYP1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 11:27:03 -0400
+Date: Tue, 25 Sep 2007 17:23:02 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Franck Bui-Huu <vagabon.xyz@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc8-mm1 -- powerpc link failure
+In-Reply-To: <20070925134653.GB8447@shadowen.org>
+Message-ID: <Pine.LNX.4.64.0709251715530.7567@jikos.suse.cz>
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+ <20070925134653.GB8447@shadowen.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Marek's loading dynamic libraries, it seems clear that the prime purpose 
-> of chroot is to aid security.  Being able to cd your way out is handy 
+On Tue, 25 Sep 2007, Andy Whitcroft wrote:
 
-Does it - I can't find any evidence for that. I think you are confusing
-containers and chroot. They are quite different things. A root user can
-get out of a chroot a million different ways
+> As suggested elsewhere I have had a go at tracking this down.  Previous 
+> problems of this kind were introduced as a result of using 'weak' 
+> declarations to provide default implementations.  This investigation led 
+> me to the following commit:
+>   commit c60473b5d32ea6cf4561232bc852bacd3a513528
+>   Author: Jiri Kosina <jkosina@suse.cz>
+>   Date:   Sat Sep 15 01:49:49 2007 +0000
+>     i386-and-x86_64-randomize-brk
+> Backing this change out seems to get us past this problem.  If we are to 
+> support compilers of this age, and I believe we currently do, then we 
+> probabally need to avoid the weak declarations and use the Kconfig 
+> system to provide the alternatives here.
+> Jiri?
 
-Alan
+Hi,
+
+actually, my first patch wasn't using weak symbols, but I have been 
+convinced that it's the way to go(tm). Please see 
+http://lkml.org/lkml/2007/9/1/131 and the ongoing thread.
+
+I am fine with replacing the brk randomization patch with the one that 
+wasn't using weak symbols (posted in the mentioned thread too), I have no 
+strong opinion either way.
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
