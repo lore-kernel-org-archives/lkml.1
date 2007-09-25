@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbXIYA6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbXIYA77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbXIYA6s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 20:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXIYA6k
+	id S1757010AbXIYA77 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 20:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXIYA7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 20:58:40 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:36924 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753462AbXIYA6j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 20:58:39 -0400
-Message-ID: <46F85D3F.5010400@lwfinger.net>
-Date: Mon, 24 Sep 2007 19:58:39 -0500
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 24 Sep 2007 20:59:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59418 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752528AbXIYA7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 20:59:50 -0400
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: John Pierce <john.j35@gmail.com>,
-       Broadcom Linux <bcm43xx-dev@lists.berlios.de>
-Subject: Missing PCIe interface in lspci
-References: <aa73b9a0709211952n284fa902oa7fe84174f2b53b7@mail.gmail.com>	 <46F489AF.2020101@lwfinger.net>	 <aa73b9a0709212105u524736e7ja9b860a4f2b1b5ab@mail.gmail.com>	 <46F49A5F.8020300@lwfinger.net>	 <aa73b9a0709212134k5458b799p146c0bd740fe70a4@mail.gmail.com>	 <aa73b9a0709231756y38a364c2jcaf8135663f0de8c@mail.gmail.com>	 <46F713B8.5030806@lwfinger.net> <aa73b9a0709231906s3bd7a2a0h3fbf5a751b531488@mail.gmail.com>
-In-Reply-To: <aa73b9a0709231906s3bd7a2a0h3fbf5a751b531488@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+X-Fcc: ~/Mail/linus
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       David Woodhouse <dwmw2@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] powerpc: ptrace CHECK_FULL_REGS
+In-Reply-To: Benjamin Herrenschmidt's message of  Tuesday, 25 September 2007 10:33:26 +1000 <1190680406.12382.9.camel@localhost.localdomain>
+References: <20070924235052.5AFC24D04B7@magilla.localdomain>
+	<1190680406.12382.9.camel@localhost.localdomain>
+X-Windows: never had it, never will.
+Message-Id: <20070925005945.02E924D04B7@magilla.localdomain>
+Date: Mon, 24 Sep 2007 17:59:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the process of advising a user on getting a BCM4311 wireless device to work with bcm43xx rather
-than ndiswrapper, the device stopped appearing in an lspci output. The 'lspci -vn' output
-for this device before this failure was:
+> Yup, I think I ditched most of them.. for some reason I decided it
+> couldn't happen, but maybe I'm wrong ?
 
-03:00.0 0280: 14e4:4311 (rev 01)
-        Subsystem: 103c:1363
-        Flags: fast devsel, IRQ 21
-        Memory at b8000000 (32-bit, non-prefetchable) [size=16K]
-        Capabilities: [40] Power Management version 2
-        Capabilities: [58] Message Signalled Interrupts: Mask- 64bit-
-Queue=0/0 Enable-
-        Capabilities: [d0] Express Legacy Endpoint IRQ 0
+Well, it's a BUG_ON.  It's supposed to be for something that "can't happen".
+That's why it's a sanity check, not a wild assertion. ;-)
 
-Fortunately, the "customer" has two identical machines. Swapping the wireless cards showed that both
-BCM4311s work in the other computer, but neither works in the problem machine. Kernel Version
-2.6.22.4-65.fc7 is used on both.
-
-Doing a line-by-line comparison of the dmesg outputs, the only thing that stands out is that the line
-
-Allocate Port Service[0000:00:03.0:pcie03]
-
-is missing on the faulty computer. This is the bridge that should connect to the device in question.
-
-The BIOS has been reset and reflashed without helping the problem.
-
-Is there anything other than some failure on the motherboard that would lead to this situation? Is
-there anything that we can try? The BIOS in this machine doesn't have many options.
+The 2/2 patch is an example of a bug that CHECK_FULL_REGS catches.
+In the status quo, using PTRACE_PEEKUSR in a bug case crashes while using
+PTRACE_GETREGS in the same place might get bogus data.  (In the actual bug
+thus found, the data is not bogus and only the bit that FULL_REGS checks is.)
 
 
 Thanks,
-
-Larry
+Roland
