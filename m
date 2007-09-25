@@ -1,104 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbXIYWFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbXIYWHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755178AbXIYWFV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 18:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbXIYWFI
+	id S1755299AbXIYWHo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 18:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXIYWHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 18:05:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47058 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751200AbXIYWFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 18:05:07 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Torvalds, Linus" <torvalds@linux-foundation.org>
-Subject: [GIT PATCH] ACPI patches for 2.6.23-rc8
-Date: Tue, 25 Sep 2007 18:04:23 -0400
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Tue, 25 Sep 2007 18:07:35 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:6648 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbXIYWHe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 18:07:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PWT3GzEQVNJtvMkd57e9mHjrKa7/GVpUcncOz7Ck6BpybBFQe+4P/H1xOnev29a1PAt8bO7CLp3lGHycs6Xfn/rf4k+j72WXAOGKRqaWxI6QbqLO0f0K2IEC7Y4/ePiDup6/H1VVtr+DsQsuOSyywFsDT/RAZIro5BGbYEr+zl8=
+Message-ID: <46F9869D.60401@gmail.com>
+Date: Tue, 25 Sep 2007 16:07:25 -0600
+From: "Berck E. Nash" <flyboy@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Jeff Garzik <jeff@garzik.org>
+CC: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
+References: <46F7FBCB.4030803@gmail.com> <46F8665A.4000206@garzik.org> <46F9617F.1010508@gmail.com> <46F97257.3020502@garzik.org>
+In-Reply-To: <46F97257.3020502@garzik.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709251804.23357.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Jeff Garzik wrote:
+> Can you tell me something about this device?
+> 
+> [   49.045635] ata2.00: ATA-6: Config  Disk, RGL10364, max UDMA/133
+> [   49.051677] ata2.00: 640 sectors, multi 1: LBA
+> [   49.056321] ata2.00: configured for UDMA/133
+> 
+> It seems like it does not support the 'check power mode' command.
+> 
+> Can you post a text file attachment, containing the output of 'hdparm
+> --Istdout' ?
 
-please pull from: 
+No problem.  The device in question is a Western Digital Raptor WD360GD
+36.7GB 10,000 RPM Serial ATA150 Hard Drive.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+hdparm output attached.
 
-This will update the files shown below.
-
-thanks!
-
--Len
-
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.23/acpi-release-20070126-2.6.23-rc8.diff.gz
-
- drivers/acpi/sleep/Makefile |    2 -
- drivers/acpi/sleep/main.c   |   46 +++++++++++++++++---------------
- drivers/char/hpet.c         |    6 ++--
- include/acpi/acpi_drivers.h |    4 --
- 4 files changed, 29 insertions(+), 29 deletions(-)
-
-through these commits:
-
-Alexey Starikovskiy (2):
-      ACPI: suspend: build-fix for CONFIG_SUSPEND=n and CONFIG_HIBERNATION=y
-      ACPI: CONFIG_ACPI_SLEEP=n power off regression in 2.6.23-rc8 (NOT in rc7)
-
-Zhao Yakui (1):
-      ACPI: hpet: ACPI Error (utglobal-0126): Unknown exception code: 0xFFFFFFF0
-
-with this log:
-
-commit 78e1ca49c7ead5cd00882ed0c776260857613122
-Author: Zhao Yakui <yakui.zhao@intel.com>
-Date:   Thu Sep 20 21:23:13 2007 -0400
-
-    ACPI: hpet: ACPI Error (utglobal-0126): Unknown exception code: 0xFFFFFFF0
-    
-    If hpet has been initialized before registering hpet driver, the callback
-    function of hpet_resources will return the status code of -EBUSY, which is
-    not defined in the ACPI exception table.  So when ACPI checks the status
-    code of callback function, it will report the unknown exception code.
-    
-    So the status code in ACPI is used instead of the generic error code in the
-    ACPI callback function of hpet_resources.
-    For example: -EBUSY is replaced by AE_ALREADY_EXISTS
-    	     -EINVAL is replaced by AE_NO_MEMORY
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=8630
-    
-    Signed-off-by: Zhao Yakui  <yakui.zhao@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 853298bc03ef65e3eb392f5d61265605214ee8fb
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Tue Sep 25 18:45:15 2007 +0400
-
-    ACPI: CONFIG_ACPI_SLEEP=n power off regression in 2.6.23-rc8 (NOT in rc7)
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 2f3f22269bdf702311342c5d106dfdd7347d1c3e
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Mon Sep 24 14:33:21 2007 +0200
-
-    ACPI: suspend: build-fix for CONFIG_SUSPEND=n and CONFIG_HIBERNATION=y
-    
-    This fixes compilation with CONFIG_SUSPEND unset and CONFIG_HIBERNATION set
-    (raf. http://marc.info/?l=linux-acpi&m=119055289723895&w=4).
-    
-    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Berck
