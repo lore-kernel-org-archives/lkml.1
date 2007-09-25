@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbXIYLna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbXIYLoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbXIYLna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 07:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXIYLnW
+	id S1753777AbXIYLoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbXIYLoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 07:43:22 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:38132 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751917AbXIYLnV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 07:43:21 -0400
-Date: Tue, 25 Sep 2007 13:43:17 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Joe Perches <joe@perches.com>
-cc: Rob Landley <rob@landley.net>,
-       Michael Opdenacker <michael@free-electrons.com>, linux-tiny@selenic.com,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Celinux-dev] Re: [Announce] Linux-tiny project revival
-In-Reply-To: <1190319360.26101.154.camel@localhost>
-Message-ID: <Pine.LNX.4.62.0709251340310.14632@pademelon.sonytel.be>
-References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net>
- <1190319360.26101.154.camel@localhost>
+	Tue, 25 Sep 2007 07:44:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34027 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752210AbXIYLoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 07:44:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Damien Wyart <damien.wyart@free.fr>
+Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
+Date: Tue, 25 Sep 2007 13:45:10 +0200
+User-Agent: KMail/1.9.5
+Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Frans Pop <elendil@planet.nl>, linux-acpi@vger.kernel.org
+References: <20070925065109.GA3080@localhost.localdomain> <20070925092755.GA4553@localhost.localdomain> <20070925095855.GA4982@localhost.localdomain>
+In-Reply-To: <20070925095855.GA4982@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-461112960-1190720597=:14632"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709251345.11370.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584337861-461112960-1190720597=:14632
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 20 Sep 2007, Joe Perches wrote:
-> On Thu, 2007-09-20 at 15:38 -0500, Rob Landley wrote:
-> > And so far no behavior has changed.  But now the _fun_ part is, you can add a 
-> > config symbol for "what is the minimum loglevel I care about?"  Set that as a 
-> > number from 0-9.  And then you can define the printk to do:
-> > 
-> > #define printk(level, str, ...) \
-> >   do { \
-> >     if (level < CONFIG_PRINTK_DOICARE) \
-> >       actual_printk("<" #level ">" str, __VA_ARGS__); \
-> >   } while(0);
-> > 
-> > And viola (however you spell that, I think I'm using the stringed instrument 
+On Tuesday, 25 September 2007 11:58, Damien Wyart wrote:
+> > > No, I do not have CONFIG_ACPI_SLEEP set,
+> > > because I do not have CONFIG_PM_SLEEP set,
+> > > because I do not want SUSPEND and/or HIBERNATION.
 > 
-> > But this doesn't _completely_ eliminate 
-> > printks, so you can still get the panic() calls and such.  You tweak precisly 
-> > how much bloat you want, using the granularity information that's already 
-> > there in the source code...
-> > Opinions?
-> 
-> I'd rather take the opportunity to convert all the printks to
-> use pr_<level>.  That way, you can pick'n'choose if you want
-> arbitrary combinations of KERN_<level> compiled in or not.
+> > Same answer from my side: I do not have CONFIG_ACPI_SLEEP for the same
+> > reason (and this worked fine without them in rc7). I do not think
+> > these settings should have changed between rc7 and rc8.
 
-Or:
+Well, we haven't changed much.
 
-    if ((1 << level) & CONFIG_PRINTK_MASK)
-	actual_printk("<" #level ">" str, __VA_ARGS__);
+> Also, another test I just did: on another computer, rc8 is fine
+> regarding ACPI power off, even if CONFIG_ACPI_SLEEP is not set. I can
+> provide config if needed.
 
-But it would indeed be nice to have all of pr_<level> (and not only pr_info()
-and pr_debug()) anyway.
+On the box that fails to power off, can you please test -rc8 with these two
+commits reverted:
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+commit 5a50fe709d527f31169263e36601dd83446d5744
+ACPI: suspend: consolidate handling of Sx states addendum
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-461112960-1190720597=:14632--
+commit f216cc3748a3a22c2b99390fddcdafa0583791a2
+ACPI: suspend: consolidate handling of Sx states.
+
+and see if it works?
+
+Greetings,
+Rafael
