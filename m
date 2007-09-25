@@ -1,41 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759051AbXIYVVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759808AbXIYVXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759051AbXIYVVl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 17:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXIYVVd
+	id S1759808AbXIYVXn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 17:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXIYVXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 17:21:33 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44612 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752944AbXIYVVd (ORCPT
+	Tue, 25 Sep 2007 17:23:36 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:23975 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753862AbXIYVXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 17:21:33 -0400
-Date: Tue, 25 Sep 2007 14:21:29 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Valdis.Kletnieks@vt.edu
-cc: Kyle Moffett <mrmacman_g4@mac.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Uninline kcalloc()
-In-Reply-To: <5202.1190639853@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.64.0709251421001.4917@schroedinger.engr.sgi.com>
-References: <20070922200349.GA2119@martell.zuzino.mipt.ru>
- <25045.1190612108@turing-police.cc.vt.edu>           
- <902BC866-59A0-4E50-8299-64D38D9E93B1@mac.com> <5202.1190639853@turing-police.cc.vt.edu>
+	Tue, 25 Sep 2007 17:23:35 -0400
+Message-ID: <46F97BE1.4010508@oracle.com>
+Date: Tue, 25 Sep 2007 14:21:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 3/5] Add samples subdir (updated)
+References: <20070925121145.262664884@polymtl.ca> <20070925121251.954162366@polymtl.ca> <20070925190036.GA14579@uranus.ravnborg.org> <20070925133234.cdd9edf1.randy.dunlap@oracle.com> <20070925205021.GB16652@Krystal>
+In-Reply-To: <20070925205021.GB16652@Krystal>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007, Valdis.Kletnieks@vt.edu wrote:
+Mathieu Desnoyers wrote:
+> Randy, since I did big changes to the patch, I removed your
+> Signed-off-by. Tell me if you want me to add it back... (Is the From:
+> still valid ?)
+> 
+> Mathieu
 
-> I think I looked at that, and it wasn't as easy as it looked, because there
-> were ugly corner cases for what __builtin_return_address() returned depending
-> on exactly what did or didn't get inlined. Basically, it's ugly stuff - if you
-> try to use __builtin_retur_address inside kcalloc to pass to __kmalloc, and
-> then kcalloc gets inlined, you end up passing not the routine you wanted (the
-> caller of kcalloc), but the *parent* of that...
+How about from: you and add
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Note that this can be done in a clean way in SLUB using slab_alloc() which 
-takes a address parameter as obtained from __builtin_return_address().
+Thanks.
 
+> Add samples subdir (updated)
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Begin infrastructure for kernel code samples in the samples/ directory.
+> Add its Kconfig and Kbuild files.
+> 
+> Changelog:
+> - Move menu to Kernel Hacking
+> - Don't build with the kernel image
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> ---
+>  Makefile          |    3 +++
+>  lib/Kconfig.debug |    2 ++
+>  samples/Kconfig   |   11 +++++++++++
+>  3 files changed, 16 insertions(+)
+> 
+> Index: linux-2.6-lttng/Makefile
+> ===================================================================
+> --- linux-2.6-lttng.orig/Makefile	2007-09-25 16:44:44.000000000 -0400
+> +++ linux-2.6-lttng/Makefile	2007-09-25 16:45:13.000000000 -0400
+> @@ -770,6 +770,9 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) 
+>  ifdef CONFIG_HEADERS_CHECK
+>  	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
+>  endif
+> +ifdef CONFIG_SAMPLES
+> +	$(Q)$(MAKE) $(build)=samples
+> +endif
+>  	$(call vmlinux-modpost)
+>  	$(call if_changed_rule,vmlinux__)
+>  	$(Q)rm -f .old_version
+> Index: linux-2.6-lttng/samples/Kconfig
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-lttng/samples/Kconfig	2007-09-25 16:45:13.000000000 -0400
+> @@ -0,0 +1,11 @@
+> +# samples/Kconfig
+> +
+> +menuconfig SAMPLES
+> +	bool "Sample kernel code"
+> +	help
+> +	  You can build and test sample kernel code here.
+> +
+> +if SAMPLES
+> +
+> +
+> +endif # SAMPLES
+> Index: linux-2.6-lttng/lib/Kconfig.debug
+> ===================================================================
+> --- linux-2.6-lttng.orig/lib/Kconfig.debug	2007-09-25 16:44:44.000000000 -0400
+> +++ linux-2.6-lttng/lib/Kconfig.debug	2007-09-25 16:45:13.000000000 -0400
+> @@ -558,3 +558,5 @@ config FAULT_INJECTION_STACKTRACE_FILTER
+>  	  Provide stacktrace filter for fault-injection capabilities
+>  
+>  source "lib/Kconfig.kgdb"
+> +
+> +source "samples/Kconfig"
+> 
+
+
+-- 
+~Randy
+Phaedrus says that Quality is about caring.
