@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbXIYHp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbXIYHvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbXIYHp3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 03:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXIYHpV
+	id S1756628AbXIYHvE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 03:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbXIYHuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 03:45:21 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:34203 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033AbXIYHpT (ORCPT
+	Tue, 25 Sep 2007 03:50:55 -0400
+Received: from science.horizon.com ([192.35.100.1]:19673 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751567AbXIYHuy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 03:45:19 -0400
-Message-ID: <46F8BC8A.7080006@davidnewall.com>
-Date: Tue, 25 Sep 2007 17:15:14 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serge@hallyn.com>
-CC: Bill Davidsen <davidsen@tmr.com>, Philipp Marek <philipp@marek.priv.at>,
-       7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       majkls <majkls@prepere.com>, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-References: <952DN-83o-31@gated-at.bofh.it> <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com> <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com> <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com>
-In-Reply-To: <20070924230008.GA3160@vino.hallyn.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Sep 2007 03:50:54 -0400
+Date: 25 Sep 2007 03:50:27 -0400
+Message-ID: <20070925075027.5791.qmail@science.horizon.com>
+From: linux@horizon.com
+To: joe@perches.com, linux@horizon.com
+Subject: Re: [RFC] New kernel-message logging API
+Cc: linux-kernel@vger.kernel.org, vegard.nossum@horizon.com
+In-Reply-To: <1190703254.3964.11.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting David Newall (david@davidnewall.com):
->   
->> It might be tidy if pivot_root could be used (instead of a hack based on a 
->> chroot bug), but it'd still be unportable.
->>     
->
-> It can.
->
-> Please re-read my previous msg.
+>> Even the "kp_" prefix is actually pretty unnecessary.  It's "info"
+>> and a human-readable string that make it recognizable as a log message.
 
-I read it.  Currently pivot_root can't be used to affect a single 
-process.  It can be modified; obviously.  Maybe it should be, too, but 
-is there a need for that?
+> While I agree a prefix isn't necessary, info, warn, err
+> are already frequently #define'd and used.
+>
+> kp_<level> isn't currently in use.
+> 
+> $ egrep -r -l --include=*.[ch] "^[[:space:]]*#[[:space:]]*define[[:space:]]+(info|err|warn)\b" * | wc -l
+> 29
+
+Sorry for being unclear.  I wasn't seriously recommending no prefix,
+due to name collisions (exactly your point), but rather saying that no
+prefix is necessary for human understanding.
+
+Something to avoid the ambiguity is still useful.  I was just saying
+that it can be pretty much anything withouyt confusing the casual
+reader.
+
+We're in violent agreement, I just didn't say it very well the first
+time.
