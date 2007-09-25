@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbXIYUlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbXIYUln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbXIYUlU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 16:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbXIYUlH
+	id S1758622AbXIYUln (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 16:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXIYUld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 16:41:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35792 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752533AbXIYUlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 16:41:05 -0400
-Message-ID: <46F97257.3020502@garzik.org>
-Date: Tue, 25 Sep 2007 16:40:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Tue, 25 Sep 2007 16:41:33 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:7474 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbXIYUlb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 16:41:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hot/fWDKJ3IHeL+hxQWnuy/dlFq6h2B9VJx2Aer7pq+duFrwtWjEMftRIc5jP8odISdx2s+EreASTe3nAVz3qH8KSOEhYhE3OrGHdhihDcd0U8eNZNmxRIWhcvb3IdAaUfYa1N+2U9UWVWpwN8cVoP6KbFvMF1dvoAD0BjvRb9I=
+Message-ID: <d120d5000709251341s222c8560wdf46c5a3c9b36ada@mail.gmail.com>
+Date: Tue, 25 Sep 2007 16:41:30 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Michael Guntsche" <mike@it-loops.com>
+Subject: Re: 2.6.23 /proc/bus/input/devices content question
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <B5B5C841-6068-413B-A765-73A34E988FAA@it-loops.com>
 MIME-Version: 1.0
-To: "Berck E. Nash" <flyboy@gmail.com>
-CC: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
-References: <46F7FBCB.4030803@gmail.com> <46F8665A.4000206@garzik.org> <46F9617F.1010508@gmail.com>
-In-Reply-To: <46F9617F.1010508@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <6D36DFB9-B26D-4CEA-B7AD-0216F7124FC5@it-loops.com>
+	 <d120d5000709251051n45e415e6gbdd87a98f0b8cdd4@mail.gmail.com>
+	 <B5B5C841-6068-413B-A765-73A34E988FAA@it-loops.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Berck E. Nash wrote:
-> Jeff Garzik wrote:
->> Once the blame has been squared fixed upon me :) you can use git-bisect
->> to locate the precise change that broke your setup.
-> 
-> Okay, here's the problem:
-> 
-> 268fe6f9f15551be9abedd44a237392675d529d5 is first bad commit
-> commit 268fe6f9f15551be9abedd44a237392675d529d5
-> Author: Jeff Garzik <jeff@garzik.org>
-> Date:   Fri Sep 21 07:09:36 2007 -0400
-> 
->     [libata] SCSI: simple TEST UNIT READY simulation
-> 
->     It's trivial to ping the device, and that's a much more sane behavior
->     than no-op.
-> 
->     Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> 
-> :040000 040000 44d34cdad073bd623545b8239aca9a113652c6d0
-> df6d21f7ce56a4e796f8f856c1f647b0395ab4df M      drivers
+On 9/25/07, Michael Guntsche <mike@it-loops.com> wrote:
+>
+> On Sep 25, 2007, at 19:51, Dmitry Torokhov wrote:
+>
+> > Hi Michael,
+> >
+> >> ...
+> >> I this a "wanted" change or should I still see the same with 2.6.23?
+> >>
+> >
+> > Is this with CONFIG_SYSFS_DEPRECATED=y?
+>
+> No, CONFIG_SYSFS_DEPRECATED is not set with both kernels.
 
-Thanks for debugging!
+Ok, this is expected. Input devices were converted form class devices
+into standard devices. Unless SYSFS_DEPRECTAED is set to Y sysfs
+changes are expected.
 
-Can you tell me something about this device?
-
-[   49.045635] ata2.00: ATA-6: Config  Disk, RGL10364, max UDMA/133
-[   49.051677] ata2.00: 640 sectors, multi 1: LBA
-[   49.056321] ata2.00: configured for UDMA/133
-
-It seems like it does not support the 'check power mode' command.
-
-Can you post a text file attachment, containing the output of 'hdparm 
---Istdout' ?
-
-	Jeff
-
-
-
+-- 
+Dmitry
