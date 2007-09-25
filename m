@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbXIYIHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759789AbXIYIIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759247AbXIYIHP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbXIYIGo
+	id S1759789AbXIYIIG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbXIYIHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:06:44 -0400
-Received: from p-mail2.rd.francetelecom.com ([195.101.245.16]:1502 "EHLO
-	p-mail2.rd.francetelecom.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754901AbXIYIGk (ORCPT
+	Tue, 25 Sep 2007 04:07:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36395 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754923AbXIYIHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:06:40 -0400
-Message-ID: <46F8C164.4080604@Free.fr>
-Date: Tue, 25 Sep 2007 10:05:56 +0200
-From: Eric Valette <Eric.Valette@Free.fr>
-Reply-To: Eric.Valette@Free.fr
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
-MIME-Version: 1.0
-To: Rob Hussey <robjhussey@gmail.com>
-CC: =?UTF-8?B?44Od44O844Or44O744Ot44Op44OzIFBhdWwgUm9sbGFuZA==?= 
-	<rol@witbe.net>,
-       flamingice@sourmilk.net, andreamrl@tiscali.it,
-       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
-       torvalds@osdl.org
-Subject: Re: rtl8187 driver in 2.6.23-rc6-git5: kernel panic if not used as
- a module. Works as a module.
-References: <46EBE70C.2040201@free.fr> <46EBEBD2.7060502@free.fr>	 <6b8cef970709150928h25a7093md5f86d2bdcf677cc@mail.gmail.com>	 <46EC24B6.2030709@free.fr> <20070915185153.08490a9b@tux.DEF.witbe.net> <6b8cef970709151419r7561e950jcc35f4a50661273f@mail.gmail.com>
-In-Reply-To: <6b8cef970709151419r7561e950jcc35f4a50661273f@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 25 Sep 2007 08:06:32.0003 (UTC) FILETIME=[FBC56930:01C7FF4A]
+	Tue, 25 Sep 2007 04:07:48 -0400
+Date: Tue, 25 Sep 2007 01:07:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fix messed hunks in generic_setlease
+Message-Id: <20070925010728.b65e5b27.akpm@linux-foundation.org>
+In-Reply-To: <46F8BF79.40405@openvz.org>
+References: <46F8BF79.40405@openvz.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Hussey wrote:
-> On 9/15/07, ポール・ロラン Paul Rolland <rol@witbe.net> wrote:
->   
->> Hi Eric,
->>
->> On Sat, 15 Sep 2007 20:30:14 +0200
->> Eric Valette <eric.valette@free.fr> wrote:
->>
->>     
->>> Rob Hussey wrote:
->>>       
->>>> On 9/15/07, Eric Valette <eric.valette@free.fr> wrote:
->>>>         
->>>>> Eric Valette wrote:
->>>>>
->>>>>           
->>> Thanks for your help: it does indeed fix the problem.
->>>       
->> Nice it works for you too !
->>
->>     
->>> Now I have two side questions:
->>>       - the code is no more symetric "subsys_initcall" -> "module_exit".
->>> Do not know if it is "normal" but I love symmetry in code :-). Did not test
->>> it still works as a module...
->>>       
->> Symmetry is not broken, as we have :
->> #define subsys_initcall(fn)             module_init(fn)
->> in include/linux/init.h where compiling as a module, and when not compiling
->> as a module, I doubt the exit function is called unless you are shuting
->> down your machine...
->>
->>     
->>>       - Who takes the responsability to push a patch to Linus? I guess it
->>> is urgent unless he plans a rc7
->>>       
->> Good point ! I expect the patches to be already in some queue waiting to be
->> pulled !
->>     
->
-> The patches are on their way to making it into 2.6.23:
-> http://marc.info/?l=linux-netdev&m=118986368303529&w=2
->
-> Regards,
-> Rob
->   
-I'm a little bit worried as rc8 is out and ots still not in git.
+On Tue, 25 Sep 2007 11:57:45 +0400 Pavel Emelyanov <xemul@openvz.org> wrote:
 
--- eric
+> I have noticed, that one hunk was lost and one duplicated 
+> during merging the fix-potential-oops-in-generic_setlease(-xxx) 
+> patches. One of the fixes is already in the hot-fixes, but the
+> second one is still lost.
+> 
+> The returned pointer was not the one allocated, but some temporary
+> used to scan through the inode's locks list. This caused and OOPS 
+> during Kamalesh's testing.
+> 
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> ---
+> 
+> diff --git a/fs/locks.c b/fs/locks.c
+> index c0fe71a..c1198e3 100644
+> --- a/fs/locks.c
+> +++ b/fs/locks.c
+> @@ -1423,7 +1418,7 @@ int generic_setlease(struct file *filp, 
+>  	locks_copy_lock(new_fl, lease);
+>  	locks_insert_lock(before, new_fl);
+>  
+> -	*flp = fl;
+> +	*flp = new_fl;
+>  	return 0;
+>  
+>  out:
 
+argh, what a mess - there are way too many trees playing with fs/locks.c.
+
+umm, I think this is not a mismerge and that the original patch
+(http://lkml.org/lkml/2007/9/20/141) had this bug in it.
+
+And I've just sent that buggy patch to Linus.  Do you agree?
