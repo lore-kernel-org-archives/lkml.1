@@ -1,97 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761609AbXIYAYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbXIYA0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761609AbXIYAYV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 20:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756990AbXIYAYN
+	id S1761970AbXIYA0K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 20:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbXIYAZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 20:24:13 -0400
-Received: from pc175e.fzu.cz ([147.231.127.175]:35274 "EHLO postak-1.fzu.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755947AbXIYAYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 20:24:12 -0400
-X-Greylist: delayed 602 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Sep 2007 20:24:12 EDT
-Message-ID: <46F852B6.7030207@gentoo.org>
-Date: Tue, 25 Sep 2007 02:13:42 +0200
-From: =?ISO-8859-1?Q?Jan_Kundr=E1t?= <jkt@gentoo.org>
-Organization: Gentoo
-User-Agent: Thunderbird 2.0.0.6 (X11/20070812)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: kswapd high CPU usage with no swap
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6A9918657A1D35A9C4E8F513"
+	Mon, 24 Sep 2007 20:25:56 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:55392 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757156AbXIYAZz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Sep 2007 20:25:55 -0400
+Subject: Re: 2.6.23-rc6: hanging ext3 dbench tests
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, sct@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, adilger@clusterfs.com,
+       ext4 <linux-ext4@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       mel@csn.ul.ie
+In-Reply-To: <alpine.LFD.0.999.0709241243530.3579@woody.linux-foundation.org>
+References: <20070911124202.GI9556@shadowen.org>
+	 <alpine.LFD.0.999.0709110949250.16478@woody.linux-foundation.org>
+	 <20070911173049.GA10499@shadowen.org> <20070914094905.GA32670@shadowen.org>
+	 <20070919181546.GA4343@shadowen.org>
+	 <1190656918.13955.7.camel@dyn9047017100.beaverton.ibm.com>
+	 <alpine.LFD.0.999.0709241243530.3579@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 24 Sep 2007 17:28:46 -0700
+Message-Id: <1190680126.13955.17.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6A9918657A1D35A9C4E8F513
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2007-09-24 at 13:04 -0700, Linus Torvalds wrote:
+> 
+> On Mon, 24 Sep 2007, Badari Pulavarty wrote:
+> > 
+> > Whats happening on my machine is ..
+> > 
+> > dbench forks of 4 children and sends them a signal to start the work.
+> > 3 out of 4 children gets the signal and does the work. One of the child
+> > never gets the signal so, it waits forever in pause(). So, parent waits
+> > for a longtime to kill it.
+> 
+> Since this *seems* to have nothing to do with the filesystem, and since it 
+> *seems* to have been introduced between -rc3 and -rc4, I did
+> 
+> 	gitk v2.6.23-rc3..v2.6.23-rc4 -- kernel/
+> 
+> to see what has changed. One of the commits was signal-related, and that 
+> one doesn't look like it could possibly matter.
+> 
+> The rest were scheduler-related, which doesn't surprise me. In fact, even 
+> before I looked, my reaction to your bug report was "That sounds like an 
+> application race condition".
+> 
+> Applications shouldn't use "pause()" for waiting for a signal. It's a 
+> fundamentally racy interface - the signal could have happened just 
+> *before* calling pause. So it's almost always a bug to use pause(), and 
+> any users should be fixed to use "sigsuspend()" instead, which can 
+> atomically (and correctly) pause for a signal while the process has masked 
+> it outside of the system call.
+> 
+> Now, I took a look at the dbench sources, and I have to say that the race 
+> looks *very* unlikely (there's quite a small window in which it does
+> 
+> 	children[i].status = getpid();
+> 	** race window here **
+> 	pause();
+> 
+> and it would require *just* the right timing so that the parent doesn't 
+> end up doing the "sleep(1)" (which would make the window even less likely 
+> to be hit), but there does seem to be a race condition there. And it 
+> *could* be that you just happen to hit it on your hw setup.
+> 
+> So before you do anything else, does this patch (TOTALLY UNTESTED! DONE 
+> ENTIRELY LOOKING AT THE SOURCE! IT MAY RAPE ALL YOUR PETS, AND CALL YOU 
+> BAD NAMES!) make any difference?
+> 
+> (patch against unmodified dbench-2.0)
+> 
+> 		Linus
+> 
+> ---
+> diff --git a/dbench.c b/dbench.c
+> index ccf5624..4be5712 100644
+> --- a/dbench.c
+> +++ b/dbench.c
+> @@ -91,10 +91,15 @@ static double create_procs(int nprocs, void (*fn)(struct child_struct * ))
+>  
+>  	for (i=0;i<nprocs;i++) {
+>  		if (fork() == 0) {
+> +			sigset_t old, blocked;
+> +
+> +			sigemptyset(&blocked);
+> +			sigaddset(&blocked, SIGCONT);
+> +			sigprocmask(SIG_BLOCK, &blocked, &old);
+>  			setbuffer(stdout, NULL, 0);
+>  			nb_setup(&children[i]);
+>  			children[i].status = getpid();
+> -			pause();
+> +			sigsuspend(&old);
+>  			fn(&children[i]);
+>  			_exit(0);
+>  		}
 
-Hi folks,
-I use a 2.6.22-gentoo-r2 SMP kernel with fglrx 8.40.4 [1], tp_smapi-0.32
-and ipw3945-1.2.0 on a Thinkpad T60 with dual core Intel Core CPU. My
-root filesystem is XFS stored on an internal SATA disk, and I have 1GB
-of RAM and no swap.
+With the modified dbench, I couldn't reproduce the problem so far.
+I will let it run through the night (just to be sure). 
 
-After several suspend to RAM/resume cycles, the X interface got pretty
-slow today. Looking at the top output, I see that one core was
-completely busy in the "wa" state and according to `ps auxww`, the
-kswapd0 process was in uninterruptable deep sleep.
+For now, we can treat it as a tool/App issue :)
 
-I don't use any swap because my applications rarely need more memory
-than I have in my system and using 1GB of swap yielded poor performance
-when it was actually accessed. I know I can tweak VM's preferences, but
-I simply don't feel the need to use swap when I have "plenty" of memory.
+Thanks,
+Badari
 
-That said, I've googled a thread [2] which recommends using at least a
-small swap because VM somehow performs better with it.
-
-So I created a small (12MB) swap on a physical partition on the same
-SATA disk and swapon-ed it. The swap got full immediately but the load
-didn't get lower. After that, I've turned it off again, adjusted its
-size to be about 1GB and enabled it again. Several tens of seconds
-later, swap usage was at approximately 350MB and RAM usage at about
-60MB. There was no unusual activity at the background (no intensive
-cronned jobs, no locate, nothing, just an idle KDE session with bunch of
-idling applications). Touching the swappiness value (0, 10, 40, 60 and
-100) didn't change anything on the fact that switching from one
-application to another was slow, and even moving a mouse cursor
-(USB-attached mouse) in X was delayed and not smooth.
-
-Could you please provide a hint about what might cause such problems,
-what am I doing wrong and how can I avoid it? If there are any details
-like kernel config that are relevant here, I'll happily provide them.
-I'd also appreciate if you keep me on the CC as I'm not subscribed to
-this list. If this is not an appropriate place to ask, please accept my
-apologies.
-
-[1] I'm aware of the fact that fglrx is a binary closed source and that
-the kernel is tainted by its usage. Unfortunately no other driver
-besides VESA supports my VGA card.
-[2] http://www.redhat.com/archives/nahant-list/2006-March/msg00033.html
-
-Cheers,
--jkt
-
---=20
-cd /local/pub && more beer > /dev/mouth
-
-
---------------enig6A9918657A1D35A9C4E8F513
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFG+FK5amXfqERyJRcRAqbkAJ9UBfocfirQ3zPiax+lWpDMRa+AvACfcgzR
-2FwxoF3jdo+Y3k6d3ksVkfg=
-=twzQ
------END PGP SIGNATURE-----
-
---------------enig6A9918657A1D35A9C4E8F513--
