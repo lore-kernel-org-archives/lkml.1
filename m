@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbXIYXrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbXIYXsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbXIYXrz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 19:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbXIYXnV
+	id S1758041AbXIYXsS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 19:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbXIYXn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 19:43:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36410 "EHLO
+	Tue, 25 Sep 2007 19:43:27 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57663 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752867AbXIYXmw (ORCPT
+	with ESMTP id S1752736AbXIYXmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 25 Sep 2007 19:42:52 -0400
-Message-Id: <20070925234251.981728700@sgi.com>
+Message-Id: <20070925234251.272511860@sgi.com>
 References: <20070925234204.546836393@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 25 Sep 2007 16:42:16 -0700
+Date: Tue, 25 Sep 2007 16:42:13 -0700
 From: Christoph Lameter <clameter@sgi.com>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [12/17] Virtual Compound page allocation from interrupt context.
-Content-Disposition: inline; filename=vcompound_interrupt_alloc
+Subject: [09/17] VFALLBACK: Debugging aid
+Content-Disposition: inline; filename=vcompound_debugging_aid
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In an interrupt context we cannot wait for the vmlist_lock in
-__get_vm_area_node(). So use a trylock instead. If the trylock fails
-then the atomic allocation will fail and subsequently be retried.
-
-This only works because the flush_cache_vunmap in use for
-allocation is never performing any IPIs in contrast to flush_tlb_...
-in use for freeing.  flush_cache_vunmap is only used on architectures
-with a virtually mapped cache (xtensa, pa-risc).
-
-[Note: Nick Piggin is working on a scheme to make this simpler by
-no longer requiring flushes]
+Virtual fallbacks are rare and thus subtle bugs may creep in if we do not
+test the fallbacks. CONFIG_VFALLBACK_ALWAYS makes all GFP_VFALLBACK
+allocations fall back to virtual mapping.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- mm/vmalloc.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ lib/Kconfig.debug |   11 +++++++++++
+ mm/page_alloc.c   |    6 ++++++
+ 2 files changed, 17 insertions(+)
 
-Index: linux-2.6/mm/vmalloc.c
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/mm/vmalloc.c	2007-09-24 16:03:49.000000000 -0700
-+++ linux-2.6/mm/vmalloc.c	2007-09-24 16:04:32.000000000 -0700
-@@ -289,7 +289,6 @@ static struct vm_struct *__get_vm_area_n
- 	unsigned long align = 1;
- 	unsigned long addr;
+--- linux-2.6.orig/mm/page_alloc.c	2007-09-24 18:48:03.000000000 -0700
++++ linux-2.6/mm/page_alloc.c	2007-09-24 18:58:52.000000000 -0700
+@@ -1208,6 +1208,12 @@ zonelist_scan:
+ 			}
+ 		}
  
--	BUG_ON(in_interrupt());
- 	if (flags & VM_IOREMAP) {
- 		int bit = fls(size);
++#ifdef CONFIG_VFALLBACK_ALWAYS
++		if ((gfp_mask & __GFP_VFALLBACK) &&
++				system_state == SYSTEM_RUNNING)
++			return vcompound_alloc(gfp_mask, order,
++					zonelist, alloc_flags);
++#endif
+ 		page = buffered_rmqueue(zonelist, zone, order, gfp_mask);
+ 		if (page)
+ 			break;
+Index: linux-2.6/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.orig/lib/Kconfig.debug	2007-09-24 18:30:45.000000000 -0700
++++ linux-2.6/lib/Kconfig.debug	2007-09-24 18:48:06.000000000 -0700
+@@ -105,6 +105,17 @@ config DETECT_SOFTLOCKUP
+ 	   can be detected via the NMI-watchdog, on platforms that
+ 	   support it.)
  
-@@ -314,7 +313,14 @@ static struct vm_struct *__get_vm_area_n
- 	 */
- 	size += PAGE_SIZE;
- 
--	write_lock(&vmlist_lock);
-+	if (gfp_mask & __GFP_WAIT)
-+		write_lock(&vmlist_lock);
-+	else {
-+		if (!write_trylock(&vmlist_lock)) {
-+			kfree(area);
-+			return NULL;
-+		}
-+	}
- 	for (p = &vmlist; (tmp = *p) != NULL ;p = &tmp->next) {
- 		if ((unsigned long)tmp->addr < addr) {
- 			if((unsigned long)tmp->addr + tmp->size >= addr)
++config VFALLBACK_ALWAYS
++	bool "Always fall back to Virtual Compound pages"
++	default y
++	help
++	  Virtual compound pages are only allocated if there is no linear
++	  memory available. They are a fallback and errors created by the
++	  use of virtual mappings instead of linear ones may not surface
++	  because of their infrequent use. This option makes every
++	  allocation that allows a fallback to a virtual mapping use
++	  the virtual mapping. May have a significant performance impact.
++
+ config SCHED_DEBUG
+ 	bool "Collect scheduler debugging info"
+ 	depends on DEBUG_KERNEL && PROC_FS
 
 -- 
