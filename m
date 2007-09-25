@@ -1,107 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXIYQSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbXIYQTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbXIYQSP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 12:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbXIYQSA
+	id S1759706AbXIYQTV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 12:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXIYQTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 12:18:00 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35761 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755272AbXIYQR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 12:17:59 -0400
-Date: Tue, 25 Sep 2007 21:58:07 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, randy.dunlap@oracle.com
-Subject: [PATCH 1/3] Fix coding style
-Message-ID: <20070925162807.GB3231@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070925144443.GA17858@elte.hu> <20070925162502.GA3231@linux.vnet.ibm.com>
+	Tue, 25 Sep 2007 12:19:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46570 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752830AbXIYQTF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 12:19:05 -0400
+Date: Tue, 25 Sep 2007 09:18:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sb1250-mac: Driver model & phylib update
+Message-Id: <20070925091824.ffbd0386.akpm@linux-foundation.org>
+In-Reply-To: <20070925131817.GA28402@linux-mips.org>
+References: <Pine.LNX.4.64N.0709191811040.24627@blysk.ds.pg.gda.pl>
+	<20070921124409.7f3d122b.akpm@linux-foundation.org>
+	<20070925131817.GA28402@linux-mips.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070925162502.GA3231@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix coding style issues reported by Randy Dunlap and others
+On Tue, 25 Sep 2007 14:18:17 +0100 Ralf Baechle <ralf@linux-mips.org> wrote:
 
-Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> On Fri, Sep 21, 2007 at 12:44:09PM -0700, Andrew Morton wrote:
+> 
+> > >  A driver model and phylib update.
+> > 
+> > akpm:/usr/src/25> diffstat patches/git-net.patch | tail -n 1
+> >  1013 files changed, 187667 insertions(+), 23587 deletions(-)
+> > 
+> > Sorry, but raising networking patches against Linus's crufty
+> > old mainline tree just isn't viable at present.
+> 
+> Out of curiosity:
+> 
+> [ralf@denk linux-queue]$ git diff $(git merge-base master v2.6.23-rc8-mm1)..v2.6.23-rc8-mm1 | wc -cl
+> 1046669 31900996
+> [ralf@denk linux-queue]$ git diff $(git merge-base master v2.6.23-rc8-mm1)..v2.6.23-rc8-mm1 | diffstat | tail -1
+>  6049 files changed, 573635 insertions(+), 207630 deletions(-)
 
----
- init/Kconfig         |   14 +++++++-------
- kernel/sched_debug.c |    8 ++------
- 2 files changed, 9 insertions(+), 13 deletions(-)
+A few years ago I thought it might slow down soon.
 
-Index: current/init/Kconfig
-===================================================================
---- current.orig/init/Kconfig
-+++ current/init/Kconfig
-@@ -282,11 +282,11 @@ config CPUSETS
- 	  Say N if unsure.
- 
- config FAIR_GROUP_SCHED
--	bool "Fair group cpu scheduler"
-+	bool "Fair group CPU scheduler"
- 	default y
- 	depends on EXPERIMENTAL
- 	help
--	  This feature lets cpu scheduler recognize task groups and control cpu
-+	  This feature lets CPU scheduler recognize task groups and control CPU
- 	  bandwidth allocation to such task groups.
- 
- choice
-@@ -294,11 +294,11 @@ choice
- 	prompt "Basis for grouping tasks"
- 	default FAIR_USER_SCHED
- 
--	config FAIR_USER_SCHED
--		bool "user id"
--		help
--		  This option will choose userid as the basis for grouping
--		  tasks, thus providing equal cpu bandwidth to each user.
-+config FAIR_USER_SCHED
-+	bool "user id"
-+	help
-+	  This option will choose userid as the basis for grouping
-+	  tasks, thus providing equal CPU bandwidth to each user.
- 
- endchoice
- 
-Index: current/kernel/sched_debug.c
-===================================================================
---- current.orig/kernel/sched_debug.c
-+++ current/kernel/sched_debug.c
-@@ -239,11 +239,7 @@ static int
- root_user_share_read_proc(char *page, char **start, off_t off, int count,
- 				 int *eof, void *data)
- {
--	int len;
--
--	len = sprintf(page, "%d\n", init_task_grp_load);
--
--	return len;
-+	return sprintf(page, "%d\n", init_task_grp_load);
- }
- 
- static int
-@@ -297,7 +293,7 @@ static int __init init_sched_debug_procf
- 	pe->proc_fops = &sched_debug_fops;
- 
- #ifdef CONFIG_FAIR_USER_SCHED
--	pe = create_proc_entry("root_user_share", 0644, NULL);
-+	pe = create_proc_entry("root_user_cpu_share", 0644, NULL);
- 	if (!pe)
- 		return -ENOMEM;
- 
+> [ralf@denk linux-queue]$ 
+> 
+> We're all a little too productive ;-)
 
-
--- 
-Regards,
-vatsa
+s/prod/destr/
