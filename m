@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761890AbXIYANT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXIYAUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761890AbXIYANT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Sep 2007 20:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbXIYANK
+	id S1760787AbXIYAUZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Sep 2007 20:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbXIYAUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Sep 2007 20:13:10 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:14085 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755382AbXIYANJ (ORCPT
+	Mon, 24 Sep 2007 20:20:13 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:38716 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755689AbXIYAUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Sep 2007 20:13:09 -0400
-Subject: Re: [git] CFS-devel, latest code
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070924214537.GA18980@elte.hu>
-References: <20070924214537.GA18980@elte.hu>
-Content-Type: text/plain
-Date: Mon, 24 Sep 2007 17:08:02 -0700
-Message-Id: <1190678882.2634.1.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Mon, 24 Sep 2007 20:20:11 -0400
+Message-ID: <46F85431.1020306@tiscali.nl>
+Date: Tue, 25 Sep 2007 02:20:01 +0200
+From: roel <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>, roel <12o3l@tiscali.nl>, travis@sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] x86: Convert cpuinfo_x86 array to a per_cpu array
+ v3
+References: <20070924210853.256462000@sgi.com> <20070924210853.516791000@sgi.com> <46F833D4.8050507@tiscali.nl> <20070924232423.GJ8127@redhat.com>
+In-Reply-To: <20070924232423.GJ8127@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-24 at 23:45 +0200, Ingo Molnar wrote:
-> Lots of scheduler updates in the past few days, done by many people. 
-> Most importantly, the SMP latency problems reported and debugged by
-> Mike 
-> Galbraith should be fixed for good now. 
+Dave Jones wrote:
+> <excessive quoting trimmed, please don't quote 40K of text
+>  to add a single line reply>
 
-Does this have anything to do with idle balancing ? I noticed some
-fairly large latencies in that code in 2.6.23-rc's ..
+Ok, sorry, I don't know these rules
 
-Daniel
+> On Tue, Sep 25, 2007 at 12:01:56AM +0200, roel wrote:
+> 
+>  > > --- a/arch/i386/kernel/cpu/cpufreq/powernow-k6.c
+>  > > +++ b/arch/i386/kernel/cpu/cpufreq/powernow-k6.c
+>  > > @@ -215,7 +215,7 @@ static struct cpufreq_driver powernow_k6
+>  > >   */
+>  > >  static int __init powernow_k6_init(void)
+>  > >  {
+>  > > -	struct cpuinfo_x86      *c = cpu_data;
+>  > > +	struct cpuinfo_x86 *c = &cpu_data(0);
+>  > >  
+>  > >  	if ((c->x86_vendor != X86_VENDOR_AMD) || (c->x86 != 5) ||
+>  > >  		((c->x86_model != 12) && (c->x86_model != 13)))
+>  > 
+>  > while we're at it, we could change this to
+>  > 
+>  >   	if (!(c->x86_vendor == X86_VENDOR_AMD && c->x86 == 5 &&
+>  >   		(c->x86_model == 12 || c->x86_model == 13)))
+> 
+> For what purpose?  There's nothing wrong with the code as it stands,
+> and inverting the tests means we'd have to move a bunch of
+> code inside the if arm instead of just returning -ENODEV.
+
+It's not inverting the test, so you don't need to move code. It evaluates 
+the same, only the combined negation is moved to the front. I suggested it
+to increase clarity, it results in the same assembly language.
+
+Roel
 
