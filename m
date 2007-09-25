@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbXIYJlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752383AbXIYJpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752604AbXIYJlj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 05:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbXIYJl3
+	id S1752383AbXIYJpG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 05:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXIYJoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 05:41:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36360 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751132AbXIYJl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 05:41:28 -0400
-Date: Tue, 25 Sep 2007 11:40:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git] CFS-devel, latest code
-Message-ID: <20070925094040.GA28391@elte.hu>
-References: <20070924214537.GA18980@elte.hu> <1190700652.6482.7.camel@Homer.simpson.net> <1190705759.11910.10.camel@Homer.simpson.net> <1190709207.11226.6.camel@Homer.simpson.net> <20070925091331.GA22905@elte.hu> <20070925094440.GK26289@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070925094440.GK26289@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 25 Sep 2007 05:44:55 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51232 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751071AbXIYJoy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 05:44:54 -0400
+Date: Tue, 25 Sep 2007 10:50:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       roel <12o3l@tiscali.nl>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch 1/2] Enable link power management for ata drivers
+Message-ID: <20070925105025.0cb9cc37@the-village.bc.nu>
+In-Reply-To: <46F84F45.6000807@pobox.com>
+References: <20070924215140.966161778@intel.com>
+	<20070924151320.67f0c332.kristen.c.accardi@intel.com>
+	<46F84460.5090703@tiscali.nl>
+	<20070924164118.803cfb22.kristen.c.accardi@intel.com>
+	<46F84F45.6000807@pobox.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> It converts several macros to inline functions (encouraged), and also 
+> illustrates a nice, clean way of testing an ID word's validity. 
+> [obviously the final implementation varies, depending on that ID word's 
+> history]
 
-* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+Its in -mm and I thought you put a copy in your tree after I said it
+hadn't upset anything in -mm ?
 
-> On Tue, Sep 25, 2007 at 11:13:31AM +0200, Ingo Molnar wrote:
-> > ok, i'm too seeing some sort of latency weirdness with 
-> > CONFIG_FAIR_GROUP_SCHED enabled, _if_ there's Xorg involved which runs 
-> > under root uid on my box - and hence gets 50% of all CPU time.
-> > 
-> > Srivatsa, any ideas? It could either be an accounting buglet (less 
-> > likely, seems like the group scheduling bits stick to the 50% splitup 
-> > nicely), or a preemption buglet. One potential preemption buglet would 
-> > be for the group scheduler to not properly preempt a running task when a 
-> > task from another uid is woken?
-> 
-> Yep, I noticed that too.
-> 
-> check_preempt_wakeup()
-> {
-> 	...
-> 
-> 	if (is_same_group(curr, p)) {
-> 	    ^^^^^^^^^^^^^
-> 
-> 		resched_task();
-> 	}
-> 
-> }
-> 
-> Will try a fix to check for preemption at higher levels ..
-
-i bet fixing this will increase precision of group scheduling as well. 
-Those long latencies can be thought of as noise as well, and the 
-fair-scheduling "engine" might not be capable to offset all sources of 
-noise. So generally, while we allow a certain amount of lag in 
-preemption decisions (wakeup-granularity, etc.), with which the fairness 
-engine will cope just fine, we do not want to allow unlimited lag.
-
-	Ingo
+Alan
