@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbXIYIdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbXIYIdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbXIYIdS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXIYIdH
+	id S1759304AbXIYIdl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbXIYIdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:33:07 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:37073 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753567AbXIYIdE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:33:04 -0400
-Date: Tue, 25 Sep 2007 14:13:27 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+	Tue, 25 Sep 2007 04:33:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59317 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755610AbXIYIdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 04:33:31 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+hwHV6TNChnBGpFBwBA2z/C53MhK/DQdUALqRz0y
+	l31Hb9xyKp+LGZ
 Subject: Re: [git] CFS-devel, latest code
-Message-ID: <20070925084327.GI26289@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070924214537.GA18980@elte.hu> <20070925004120.3650c9c1.akpm@linux-foundation.org>
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1190705759.11910.10.camel@Homer.simpson.net>
+References: <20070924214537.GA18980@elte.hu>
+	 <1190700652.6482.7.camel@Homer.simpson.net>
+	 <1190705759.11910.10.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 10:33:27 +0200
+Message-Id: <1190709207.11226.6.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070925004120.3650c9c1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 25, 2007 at 12:41:20AM -0700, Andrew Morton wrote:
-> This doornails the Vaio.  After grub handover the screen remains black
-> and the fan goes whir.
+On Tue, 2007-09-25 at 09:35 +0200, Mike Galbraith wrote:
+
+> Darn, have news: latency thing isn't dead.  Two busy loops, one at nice
+> 0 pinned to CPU0, and one at nice 19 pinned to CPU1 produced the
+> latencies below for nice -5 Xorg.  Didn't kill the box though.
 > 
-> http://userweb.kernel.org/~akpm/config-sony.txt
+> se.wait_max              :            10.068169
+> se.wait_max              :             7.465334
+> se.wait_max              :           135.501816
+> se.wait_max              :             0.884483
+> se.wait_max              :           144.218955
+> se.wait_max              :           128.578376
+> se.wait_max              :            93.975768
+> se.wait_max              :             4.965965
+> se.wait_max              :           113.655533
+> se.wait_max              :             4.301075
+> 
+> sched_debug (attached) is.. strange.
 
-This seems to be UP regression. Sorry abt that. I could recreate 
-the problem very easily with CONFIG_SMP turned off.
+Disabling CONFIG_FAIR_GROUP_SCHED fixed both.  Latencies of up to 336ms
+hit me during the recompile (make -j3), with nothing else running.
+Since reboot, latencies are, so far, very very nice.  I'm leaving it
+disabled for now.
 
-Can you check if this patch works? Works for me here.
+	-Mike 
 
---
-
-Fix UP breakage.
-
-Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-
-
----
- kernel/sched.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: current/kernel/sched.c
-===================================================================
---- current.orig/kernel/sched.c
-+++ current/kernel/sched.c
-@@ -1029,8 +1029,8 @@ static inline void __set_task_cpu(struct
- {
- #ifdef CONFIG_SMP
- 	task_thread_info(p)->cpu = cpu;
--	set_task_cfs_rq(p);
- #endif
-+	set_task_cfs_rq(p);
- }
- 
- #ifdef CONFIG_SMP
-
--- 
-Regards,
-vatsa
