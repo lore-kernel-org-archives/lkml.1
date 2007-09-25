@@ -1,133 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752192AbXIYKLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbXIYKOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752192AbXIYKLF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 06:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXIYKKz
+	id S1752532AbXIYKOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 06:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbXIYKOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 06:10:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36623 "EHLO mx3.mail.elte.hu"
+	Tue, 25 Sep 2007 06:14:08 -0400
+Received: from pc175e.fzu.cz ([147.231.127.175]:42306 "EHLO postak-1.fzu.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbXIYKKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 06:10:54 -0400
-Date: Tue, 25 Sep 2007 12:10:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git] CFS-devel, latest code
-Message-ID: <20070925101044.GA923@elte.hu>
-References: <20070924214537.GA18980@elte.hu> <1190700652.6482.7.camel@Homer.simpson.net> <1190705759.11910.10.camel@Homer.simpson.net> <1190709207.11226.6.camel@Homer.simpson.net> <20070925091331.GA22905@elte.hu> <20070925094440.GK26289@linux.vnet.ibm.com> <20070925094040.GA28391@elte.hu>
+	id S1751541AbXIYKOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 06:14:07 -0400
+Message-ID: <46F8DF55.2030905@gentoo.org>
+Date: Tue, 25 Sep 2007 12:13:41 +0200
+From: =?UTF-8?B?SmFuIEt1bmRyw6F0?= <jkt@gentoo.org>
+Organization: Gentoo
+User-Agent: Thunderbird 2.0.0.6 (X11/20070812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070925094040.GA28391@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Rik van Riel <riel@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: kswapd high CPU usage with no swap
+References: <46F852B6.7030207@gentoo.org> <20070924223444.62f0622d@bree.surriel.com>
+In-Reply-To: <20070924223444.62f0622d@bree.surriel.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig7D9DD5916D1830FD264DDEE6"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig7D9DD5916D1830FD264DDEE6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Rik van Riel wrote:
+> How much memory did you have in "cached" when you looked
+> with top (and no swap enabled) ?
 
-> 
-> * Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> 
-> > On Tue, Sep 25, 2007 at 11:13:31AM +0200, Ingo Molnar wrote:
-> > > ok, i'm too seeing some sort of latency weirdness with 
-> > > CONFIG_FAIR_GROUP_SCHED enabled, _if_ there's Xorg involved which runs 
-> > > under root uid on my box - and hence gets 50% of all CPU time.
-> > > 
-> > > Srivatsa, any ideas? It could either be an accounting buglet (less 
-> > > likely, seems like the group scheduling bits stick to the 50% splitup 
-> > > nicely), or a preemption buglet. One potential preemption buglet would 
-> > > be for the group scheduler to not properly preempt a running task when a 
-> > > task from another uid is woken?
-> > 
-> > Yep, I noticed that too.
-> > 
-> > check_preempt_wakeup()
-> > {
-> > 	...
-> > 
-> > 	if (is_same_group(curr, p)) {
-> > 	    ^^^^^^^^^^^^^
-> > 
-> > 		resched_task();
-> > 	}
-> > 
-> > }
-> > 
-> > Will try a fix to check for preemption at higher levels ..
-> 
-> i bet fixing this will increase precision of group scheduling as well. 
-> Those long latencies can be thought of as noise as well, and the 
-> fair-scheduling "engine" might not be capable to offset all sources of 
-> noise. So generally, while we allow a certain amount of lag in 
-> preemption decisions (wakeup-granularity, etc.), with which the 
-> fairness engine will cope just fine, we do not want to allow unlimited 
-> lag.
+Hi Rik,
+it was pretty low number (several thousands, or maybe tens of thousands).=
 
-hm, i tried the naive patch. In theory the vruntime of all scheduling 
-entities should be 'compatible' and comparable (that's the point behind 
-using vruntime - the fairness engine drives each vruntime forward and 
-tries to balance them).
 
-So the patch below just removes the is_same_group() condition. But i can 
-still see bad (and obvious) latencies with Mike's 2-hogs test:
+In the meanwhile, I've come across your patch [1] ("prevent kswapd from
+freeing excessive amounts of lowmem") and applied it locally. I'll see
+if it fixes my problem, but at a first glance, it seems that it might
+actually slow other things down -- when I switch windows, konqueror's
+screen redrawing seems to be pretty slow and I can see it progressing
+from top to bottom...
 
- taskset 01 perl -e 'while (1) {}' &
- nice -19 taskset 02 perl -e 'while (1) {}' &
+[1] http://lkml.org/lkml/2007/9/5/289
 
-So something's amiss.
+Cheers,
+-jkt
 
-	Ingo
+--=20
+cd /local/pub && more beer > /dev/mouth
 
-------------------->
-Subject: sched: group scheduler wakeup latency fix
-From: Ingo Molnar <mingo@elte.hu>
 
-group scheduler wakeup latency fix.
+--------------enig7D9DD5916D1830FD264DDEE6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_fair.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -785,6 +785,7 @@ static void check_preempt_wakeup(struct 
- {
- 	struct task_struct *curr = rq->curr;
- 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
-+	s64 delta;
- 
- 	if (unlikely(rt_prio(p->prio))) {
- 		update_rq_clock(rq);
-@@ -792,12 +793,10 @@ static void check_preempt_wakeup(struct 
- 		resched_task(curr);
- 		return;
- 	}
--	if (is_same_group(curr, p)) {
--		s64 delta = curr->se.vruntime - p->se.vruntime;
-+	delta = curr->se.vruntime - p->se.vruntime;
- 
--		if (delta > (s64)sysctl_sched_wakeup_granularity)
--			resched_task(curr);
--	}
-+	if (delta > (s64)sysctl_sched_wakeup_granularity)
-+		resched_task(curr);
- }
- 
- static struct task_struct *pick_next_task_fair(struct rq *rq)
+iD8DBQFG+N9bamXfqERyJRcRAgOdAJ9Yqmx80/ebQA3rsuJ56syEWBcp7wCfVLS5
+TiP890hUwzhNyJzCM6Q++KE=
+=XW4h
+-----END PGP SIGNATURE-----
+
+--------------enig7D9DD5916D1830FD264DDEE6--
