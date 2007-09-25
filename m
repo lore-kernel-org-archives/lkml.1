@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbXIYMGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbXIYMJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754347AbXIYMGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 08:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbXIYMGr
+	id S1754140AbXIYMJk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 08:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbXIYMJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 08:06:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34171 "EHLO ogre.sisk.pl"
+	Tue, 25 Sep 2007 08:09:33 -0400
+Received: from mail0.scram.de ([78.47.204.202]:42099 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752506AbXIYMGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 08:06:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents
-Date: Tue, 25 Sep 2007 14:20:43 +0200
-User-Agent: KMail/1.9.5
-Cc: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       Chuck Ebbert <cebbert@redhat.com>
-References: <20070925101418.68d30a72@localhost> <1190707673.4035.275.camel@chaos> <1190712618.4035.286.camel@chaos>
-In-Reply-To: <1190712618.4035.286.camel@chaos>
+	id S1752513AbXIYMJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 08:09:32 -0400
+X-Spam-Score: -3.868
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.5 AWL AWL: From: address is in the auto white-list
+Message-ID: <46F8FA5F.3050907@scram.de>
+Date: Tue, 25 Sep 2007 14:09:03 +0200
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Scott Wood <scottwood@freescale.com>
+CC: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH4/4] [POWERPC] Fix cpm_uart driver
+References: <46F6C9DC.90008@scram.de> <46F7DE85.7000401@freescale.com> <46F7EE95.1040509@scram.de> <46F80049.2030509@freescale.com>
+In-Reply-To: <46F80049.2030509@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709251420.44345.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+Hi Scott,
+> Yikes.  Please don't change cpm_uart_cpm1.h, as it's correct for 
+> arch/powerpc, and there are numerous other places that assume cpmp is 
+> virtual (including in the very same function that assigns it a 
+> physical address).
 
-On Tuesday, 25 September 2007 11:30, Thomas Gleixner wrote:
-> Rafael,
-> 
-> On Tue, 2007-09-25 at 10:07 +0200, Thomas Gleixner wrote:
-> > On Tue, 2007-09-25 at 10:14 +0400, Mikhail Kshevetskiy wrote:
-> > > Hello Thomas, Rafael
-> > > 
-> > > > We know, that
-> > > > - disabling local apic timers work
-> > > 
-> > > As i can see from the log, you are booting on computer with dualcore AMD
-> > > processor. Do you have C1E feature enabled? 
+I'm still not convinced cpm_uart_cpm1.h is correct:
 
-That's possible, how to check?
+pinfo->rx_bd_base and pinfo->tx_bd_base are both initialized with an 
+address obtained by cpm_dpram_addr(). In both ppc and powerpc, this is 
+an address relative to dpram_vbase in commproc.c
 
-> > > i386 kernel disable lapic on dualcore AMD with C1E support (see 
-> > > http://lkml.org/lkml/2007/3/29/199). x86_64 kernel do not have this
-> > > patch still (it's required for tickless kernel only).
-> > 
-> > Well it is required for non tickless mode as well.
-> > 
-> > >  As result, if
-> > > you run x86_64 kernel with hrt patch on such computer, the system
-> > > will stall during boot on lapic timer calibration.
-> > 
-> > Thanks for the reminder. I have a look into this.
-> 
-> Can you please boot mainline and provide the output of:
-> 
-> # cat /proc/interrupts; sleep 10; cat /proc/interrupts
+In cpm_uart_core.c, the operation "pinfo->rx_bd_base - DPRAM_BASE" is 
+used to calculate the DPRAM offset. So DPRAM_BASE must be relative to 
+dpram_vbase in commproc.c as well. However, cpm_uart_cpm1.h uses cpmp in 
+commproc.c to initialize DPRAM_BASE.
 
-albercik:~ # cat /proc/interrupts; sleep 10; cat /proc/interrupts
-           CPU0       CPU1
-  0:    1159492          0  local-APIC-edge      timer
-  1:       6892       1692   IO-APIC-edge      i8042
-  8:          0          0   IO-APIC-edge      rtc
- 12:        156        110   IO-APIC-edge      i8042
- 14:      29613      11409   IO-APIC-edge      ide0
- 16:      23365      21934   IO-APIC-fasteoi   sata_sil, HDA Intel
- 18:        196      88386   IO-APIC-fasteoi   bcm43xx
- 19:     744874     279433   IO-APIC-fasteoi   ohci_hcd:usb1, ohci_hcd:usb2, ehci_hcd:usb3
- 20:          2          4   IO-APIC-fasteoi   ohci1394, yenta, tifm_7xx1, sdhci:slot0
- 21:       1408        592   IO-APIC-fasteoi   acpi
-NMI:          0          0   Non-maskable interrupts
-LOC:          0    1158220   Local interrupts
-RES:     260520     295387   Rescheduling interrupts
-CAL:        419        652   function call interrupts
-TLB:        864        541   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-THR:          0          0   Threshold APIC interrupts
-SPU:          0          0   Spurious interrupts
-ERR:         13
-           CPU0       CPU1
-  0:    1161996          0  local-APIC-edge      timer
-  1:       6893       1692   IO-APIC-edge      i8042
-  8:          0          0   IO-APIC-edge      rtc
- 12:        156        110   IO-APIC-edge      i8042
- 14:      29703      11409   IO-APIC-edge      ide0
- 16:      23393      21934   IO-APIC-fasteoi   sata_sil, HDA Intel
- 18:        196      88490   IO-APIC-fasteoi   bcm43xx
- 19:     747268     279433   IO-APIC-fasteoi   ohci_hcd:usb1, ohci_hcd:usb2, ehci_hcd:usb3
- 20:          2          4   IO-APIC-fasteoi   ohci1394, yenta, tifm_7xx1, sdhci:slot0
- 21:       1412        592   IO-APIC-fasteoi   acpi
-NMI:          0          0   Non-maskable interrupts
-LOC:          0    1160723   Local interrupts
-RES:     260567     295433   Rescheduling interrupts
-CAL:        419        652   function call interrupts
-TLB:        866        543   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-THR:          0          0   Threshold APIC interrupts
-SPU:          0          0   Spurious interrupts
-ERR:         13
-albercik:~ #
+On ARCH=ppc, cpmp is a physical address with 1:1 virtual mapping ("well 
+known address"). On ARC=powerpc, this is an address obtained by 
+ioremap(), however it's a different ioremap() call than dpram_vbase is 
+obtained from, so noone can guarantee
+cpmp is always the same as dpram_vbase even on ARCH=powerpc.
+
+To me, it looks like setting DPRAM_BASE to cpm_dpram_addr(0) is the fix 
+as it makes the DPRAM offset a defined result.
+
+Thanks,
+Jochen
+
