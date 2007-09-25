@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbXIYJNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752325AbXIYJPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752497AbXIYJNt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 05:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbXIYJNl
+	id S1752325AbXIYJPa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 05:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXIYJPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 05:13:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55777 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751082AbXIYJNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 05:13:40 -0400
-Date: Tue, 25 Sep 2007 11:13:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+	Tue, 25 Sep 2007 05:15:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53385 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750721AbXIYJPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 05:15:22 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/vZSl8p8Pv7VD671Gb/LBOFhKJfK9K6DGJf1sqWD
+	onhYaAPhS35zV2
+Subject: Re: [git] CFS-devel, latest code
+From: Mike Galbraith <efault@gmx.de>
+To: vatsa@linux.vnet.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git] CFS-devel, latest code
-Message-ID: <20070925091331.GA22905@elte.hu>
-References: <20070924214537.GA18980@elte.hu> <1190700652.6482.7.camel@Homer.simpson.net> <1190705759.11910.10.camel@Homer.simpson.net> <1190709207.11226.6.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190709207.11226.6.camel@Homer.simpson.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070925091105.GA1674@linux.vnet.ibm.com>
+References: <20070924214537.GA18980@elte.hu>
+	 <1190700652.6482.7.camel@Homer.simpson.net>
+	 <1190705759.11910.10.camel@Homer.simpson.net>
+	 <1190709207.11226.6.camel@Homer.simpson.net>
+	 <20070925085329.GJ26289@linux.vnet.ibm.com>
+	 <20070925091105.GA1674@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 11:15:18 +0200
+Message-Id: <1190711718.13861.7.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> > sched_debug (attached) is.. strange.
+On Tue, 2007-09-25 at 14:41 +0530, Srivatsa Vaddagiri wrote:
+> On Tue, Sep 25, 2007 at 02:23:29PM +0530, Srivatsa Vaddagiri wrote:
+> > On Tue, Sep 25, 2007 at 10:33:27AM +0200, Mike Galbraith wrote:
+> > > > Darn, have news: latency thing isn't dead.  Two busy loops, one at nice
+> > > > 0 pinned to CPU0, and one at nice 19 pinned to CPU1 produced the
+> > > > latencies below for nice -5 Xorg.  Didn't kill the box though.
 > 
-> Disabling CONFIG_FAIR_GROUP_SCHED fixed both.  [...]
+> These busy loops - are they spawned by the same user? Is it the root
+> user? Also is this seen in UP mode also?
+> 
+> Can you also pls check if tuning root user's cpu share helps? Basically,
+> 
+> 	# echo 4096 > /proc/root_user_share
+> 
+> [or any other higher value]
 
-heh. Evil plan to enable the group scheduler by default worked out as 
-planned! ;-) [guess how many container users would do ... interactivity 
-tests like you do??]
+I'll try these after I beat on the box some more.
 
-> [...] Latencies of up to 336ms hit me during the recompile (make -j3), 
-> with nothing else running. Since reboot, latencies are, so far, very 
-> very nice. [...]
+	-Mike
 
-'very very nice' == 'best ever' ? :-)
-
-> [...] I'm leaving it disabled for now.
-
-ok, i'm too seeing some sort of latency weirdness with 
-CONFIG_FAIR_GROUP_SCHED enabled, _if_ there's Xorg involved which runs 
-under root uid on my box - and hence gets 50% of all CPU time.
-
-Srivatsa, any ideas? It could either be an accounting buglet (less 
-likely, seems like the group scheduling bits stick to the 50% splitup 
-nicely), or a preemption buglet. One potential preemption buglet would 
-be for the group scheduler to not properly preempt a running task when a 
-task from another uid is woken?
-
-	Ingo
