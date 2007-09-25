@@ -1,130 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbXIYK5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbXIYLAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752506AbXIYK5c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 06:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXIYK5Y
+	id S1752934AbXIYLAX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbXIYLAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 06:57:24 -0400
-Received: from sacred.ru ([62.205.161.221]:39752 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750913AbXIYK5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 06:57:24 -0400
-Message-ID: <46F8E8C5.2050502@openvz.org>
-Date: Tue, 25 Sep 2007 14:53:57 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [PATCH] Uninline the task_xid_nr_ns() calls
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 25 Sep 2007 07:00:11 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:58018 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750913AbXIYLAJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 07:00:09 -0400
+Date: Tue, 25 Sep 2007 07:00:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
+       akpm@linux-foundation.org, "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [patch 6/7] Linux Kernel Markers - Documentation
+Message-ID: <20070925110007.GA14289@Krystal>
+References: <46F800A7.7090005@oracle.com> <20070924183042.GA4418@infradead.org> <46F806AB.1050509@oracle.com> <20070924185431.GA5618@infradead.org> <46F80863.2090102@oracle.com> <20070924133730.c9b7c0e6.randy.dunlap@oracle.com> <20070924210830.GA8554@Krystal> <20070924141258.d413abdd.randy.dunlap@oracle.com> <20070925041003.GA28937@Krystal> <46F89D25.2090301@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 25 Sep 2007 14:56:23 +0400 (MSD)
+Content-Disposition: inline
+In-Reply-To: <46F89D25.2090301@oracle.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 06:59:51 up 57 days, 11:18,  2 users,  load average: 1.58, 1.36, 0.95
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since these are expanded into call to pid_nr_ns() anyway, it's
-OK to move the whole routine out-of-line. This is a cheap way 
-to save ~100 bytes from vmlinux. Together with the previous two
-patches, it saves half-a-kilo from the vmlinux.
+* Randy Dunlap (randy.dunlap@oracle.com) wrote:
+> Mathieu Desnoyers wrote:
+> >* Randy Dunlap (randy.dunlap@oracle.com) wrote:
+> >>On Mon, 24 Sep 2007 17:08:30 -0400 Mathieu Desnoyers wrote:
+> >>
+> >>>* Randy Dunlap (randy.dunlap@oracle.com) wrote:
+> >>>>On Mon, 24 Sep 2007 11:56:35 -0700 Randy Dunlap wrote:
+> >>>>
+> >>>>>Christoph Hellwig wrote:
+> >>>>>>On Mon, Sep 24, 2007 at 11:49:15AM -0700, Randy Dunlap wrote:
+> >>>>>>>I think that samples are perfectly fine for documentation and
+> >>>>>>>that the trace example is a good example.  I think that most people
+> >>>>>>>who need something like that would need to customize it for their
+> >>>>>>>specific needs anyway.
+> >>>>>>>
+> >>>>>>>We don't seem to be making progress...
+> >>>>>>Time to bring in a Tie-Breaker :)
+> >>>>>Yes.  Is anyone else interested?   :(
+> >>>>
+> >>>>I guess that's everyone (except those who are sleeping).
+> >>>>
+> >>>>Let's not hold up progress.  Just use samples/ for code.
+> >>>Would you already have the 
+> >>>
+> >>>Makefile
+> >>>samples/Kconfig
+> >>>samples/Makefile
+> >>>
+> >>>core code handy per chance ? (and probably Kconfig sourcing in every
+> >>>arch ?)
+> >>Yes.  Here it is.  I'm working on add kprobes to it, but you
+> >>can go ahead with markers also.
+> >>
+> >>
+> >
+> >Hi Randy,
+> >
+> >I got everything working and I'm thinking about posting all this stuff
+> >soon. Do you think your patch (having renamed Kbuild to Makefile) is
+> >ready to post ?
+> 
+> Yes, AFAIK it is.  Do you want me to resend it or do you want to
+> make it patch M/N in your patches?
+> 
 
-Un-inline other (currently inlined) functions must be done with
-additional performance testing.
+I'll include it with my patches. Thanks!
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index fe238fb..4108cce 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1228,11 +1228,7 @@ static inline pid_t task_pid_nr(struct t
- 	return tsk->pid;
- }
- 
--static inline pid_t task_pid_nr_ns(struct task_struct *tsk,
--		struct pid_namespace *ns)
--{
--	return pid_nr_ns(task_pid(tsk), ns);
--}
-+pid_t task_pid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns);
- 
- static inline pid_t task_pid_vnr(struct task_struct *tsk)
- {
-@@ -1245,11 +1241,7 @@ static inline pid_t task_tgid_nr(struct 
- 	return tsk->tgid;
- }
- 
--static inline pid_t task_tgid_nr_ns(struct task_struct *tsk,
--		struct pid_namespace *ns)
--{
--	return pid_nr_ns(task_tgid(tsk), ns);
--}
-+pid_t task_tgid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns);
- 
- static inline pid_t task_tgid_vnr(struct task_struct *tsk)
- {
-@@ -1262,11 +1254,7 @@ static inline pid_t task_pgrp_nr(struct 
- 	return tsk->signal->__pgrp;
- }
- 
--static inline pid_t task_pgrp_nr_ns(struct task_struct *tsk,
--		struct pid_namespace *ns)
--{
--	return pid_nr_ns(task_pgrp(tsk), ns);
--}
-+pid_t task_pgrp_nr_ns(struct task_struct *tsk, struct pid_namespace *ns);
- 
- static inline pid_t task_pgrp_vnr(struct task_struct *tsk)
- {
-@@ -1279,11 +1267,7 @@ static inline pid_t task_session_nr(stru
- 	return tsk->signal->__session;
- }
- 
--static inline pid_t task_session_nr_ns(struct task_struct *tsk,
--		struct pid_namespace *ns)
--{
--	return pid_nr_ns(task_session(tsk), ns);
--}
-+pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns);
- 
- static inline pid_t task_session_vnr(struct task_struct *tsk)
- {
-diff --git a/kernel/pid.c b/kernel/pid.c
-index e2e060e..0032a88 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -412,6 +412,30 @@ pid_t pid_nr_ns(struct pid *pid, struct 
- 	return nr;
- }
- 
-+pid_t task_pid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
-+{
-+	return pid_nr_ns(task_pid(tsk), ns);
-+}
-+EXPORT_SYMBOL(task_pid_nr_ns);
-+
-+pid_t task_tgid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
-+{
-+	return pid_nr_ns(task_tgid(tsk), ns);
-+}
-+EXPORT_SYMBOL(task_tgid_nr_ns);
-+
-+pid_t task_pgrp_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
-+{
-+	return pid_nr_ns(task_pgrp(tsk), ns);
-+}
-+EXPORT_SYMBOL(task_pgrp_nr_ns);
-+
-+pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
-+{
-+	return pid_nr_ns(task_session(tsk), ns);
-+}
-+EXPORT_SYMBOL(task_session_nr_ns);
-+
- /*
-  * Used by proc to find the first pid that is greater then or equal to nr.
-  *
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
