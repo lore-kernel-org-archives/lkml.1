@@ -1,58 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbXIYOia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbXIYOpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbXIYOia (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 10:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbXIYOiU
+	id S1756009AbXIYOpO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 10:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbXIYOpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 10:38:20 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:63221 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756302AbXIYOiT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 10:38:19 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/5] ibmebus: Remove bus match/probe/remove functions
-Date: Tue, 25 Sep 2007 16:29:51 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200709251410.29780.fenkes@de.ibm.com> <200709251411.54465.fenkes@de.ibm.com>
-In-Reply-To: <200709251411.54465.fenkes@de.ibm.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Tue, 25 Sep 2007 10:45:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41890 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751439AbXIYOo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 10:44:59 -0400
+Date: Tue, 25 Sep 2007 16:44:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git] CFS-devel, latest code
+Message-ID: <20070925144443.GA17858@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709251629.52376.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+E6nTSfsgwLeufR6EjfadQVzW6wni/OeLYwAd
- f9MSTcCXTA7W4LBzDr7oyGr67mrNIg2z4SovK00zVW2B125UTX
- VUFpaPUIA7DwPJVQXoZ7w==
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 25 September 2007, Joachim Fenkes wrote:
-> ibmebus_{,un}register_driver() are replaced by dummy functions because
-> ibmebus is temporarily unusable in this transitional state.
-> 
-> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
-> ---
->  arch/powerpc/kernel/ibmebus.c |  199 ++---------------------------------------
->  1 files changed, 6 insertions(+), 193 deletions(-)
-> 
 
-Great diffstat!
+The latest sched-devel.git tree can be pulled from:
+  
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+ 
+This is a quick iteration after yesterday's: a couple of group 
+scheduling bugs were found/debugged and fixed by Srivatsa Vaddagiri and 
+Mike Galbraith. There's also a yield fix from Dmitry Adamushko, a build 
+fix from S.Ceglar Onur and Andrew Morton, a cleanup from Hiroshi 
+Shimamoto and the usual stream of goodies from Peter Zijlstra. Rebased 
+it to -rc8 as well.
 
-The description makes it sound like a git-bisect would get broken
-by this patch, which should never happen. If the patch indeed
-ends up with a broken kernel, it would be better to merge it with
-the later patch that fixes the code again.
+there are no known regressions at the moment in the sched-devel.git 
+codebase. (yay :)
 
-	Arnd <><
+	Ingo
+
+----------------------------------------->
+the shortlog relative to 2.6.23-rc8:
+ 
+Dmitry Adamushko (9):
+      sched: clean up struct load_stat
+      sched: clean up schedstat block in dequeue_entity()
+      sched: sched_setscheduler() fix
+      sched: add set_curr_task() calls
+      sched: do not keep current in the tree and get rid of sched_entity::fair_key
+      sched: optimize task_new_fair()
+      sched: simplify sched_class::yield_task()
+      sched: rework enqueue/dequeue_entity() to get rid of set_curr_task()
+      sched: yield fix
+
+Hiroshi Shimamoto (1):
+      sched: clean up sched_fork()
+
+Ingo Molnar (44):
+      sched: fix new-task method
+      sched: resched task in task_new_fair()
+      sched: small sched_debug cleanup
+      sched: debug: track maximum 'slice'
+      sched: uniform tunings
+      sched: use constants if !CONFIG_SCHED_DEBUG
+      sched: remove stat_gran
+      sched: remove precise CPU load
+      sched: remove precise CPU load calculations #2
+      sched: track cfs_rq->curr on !group-scheduling too
+      sched: cleanup: simplify cfs_rq_curr() methods
+      sched: uninline __enqueue_entity()/__dequeue_entity()
+      sched: speed up update_load_add/_sub()
+      sched: clean up calc_weighted()
+      sched: introduce se->vruntime
+      sched: move sched_feat() definitions
+      sched: optimize vruntime based scheduling
+      sched: simplify check_preempt() methods
+      sched: wakeup granularity fix
+      sched: add se->vruntime debugging
+      sched: add more vruntime statistics
+      sched: debug: update exec_clock only when SCHED_DEBUG
+      sched: remove wait_runtime limit
+      sched: remove wait_runtime fields and features
+      sched: x86: allow single-depth wchan output
+      sched: fix delay accounting performance regression
+      sched: prettify /proc/sched_debug output
+      sched: enhance debug output
+      sched: kernel/sched_fair.c whitespace cleanups
+      sched: fair-group sched, cleanups
+      sched: enable CONFIG_FAIR_GROUP_SCHED=y by default
+      sched debug: BKL usage statistics
+      sched: remove unneeded tunables
+      sched debug: print settings
+      sched debug: more width for parameter printouts
+      sched: entity_key() fix
+      sched: remove condition from set_task_cpu()
+      sched: remove last_min_vruntime effect
+      sched: undo some of the recent changes
+      sched: fix place_entity()
+      sched: fix sched_fork()
+      sched: remove set_leftmost()
+      sched: clean up schedstats, cnt -> count
+      sched: cleanup, remove stale comment
+
+Matthias Kaehlcke (1):
+      sched: use list_for_each_entry_safe() in __wake_up_common()
+
+Mike Galbraith (2):
+      sched: fix SMP migration latencies
+      sched: fix formatting of /proc/sched_debug
+
+Peter Zijlstra (12):
+      sched: simplify SCHED_FEAT_* code
+      sched: new task placement for vruntime
+      sched: simplify adaptive latency
+      sched: clean up new task placement
+      sched: add tree based averages
+      sched: handle vruntime overflow
+      sched: better min_vruntime tracking
+      sched: add vslice
+      sched debug: check spread
+      sched: max_vruntime() simplification
+      sched: clean up min_vruntime use
+      sched: speed up and simplify vslice calculations
+
+S.Ceglar Onur (1):
+      sched debug: BKL usage statistics, fix
+
+Srivatsa Vaddagiri (9):
+      sched: group-scheduler core
+      sched: revert recent removal of set_curr_task()
+      sched: fix minor bug in yield
+      sched: print nr_running and load in /proc/sched_debug
+      sched: print &rq->cfs stats
+      sched: clean up code under CONFIG_FAIR_GROUP_SCHED
+      sched: add fair-user scheduler
+      sched: group scheduler wakeup latency fix
+      sched: group scheduler SMP migration fix
+
+ arch/i386/Kconfig       |   11 
+ fs/proc/base.c          |    2 
+ include/linux/sched.h   |   55 ++-
+ init/Kconfig            |   21 +
+ kernel/delayacct.c      |    2 
+ kernel/sched.c          |  577 +++++++++++++++++++++++++-------------
+ kernel/sched_debug.c    |  250 +++++++++++-----
+ kernel/sched_fair.c     |  718 +++++++++++++++++-------------------------------
+ kernel/sched_idletask.c |    5 
+ kernel/sched_rt.c       |   12 
+ kernel/sched_stats.h    |   28 -
+ kernel/sysctl.c         |   31 --
+ kernel/user.c           |   43 ++
+ 13 files changed, 954 insertions(+), 801 deletions(-)
