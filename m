@@ -1,119 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbXIYWES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbXIYWFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbXIYWES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 18:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbXIYWEF
+	id S1755178AbXIYWFV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 18:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbXIYWFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 18:04:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36530 "EHLO ogre.sisk.pl"
+	Tue, 25 Sep 2007 18:05:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47058 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbXIYWEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 18:04:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: ACPI suspend/hibernate tests (was: ACPI power off regression in 2.6.23-rc8)
-Date: Wed, 26 Sep 2007 00:18:00 +0200
+	id S1751200AbXIYWFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 18:05:07 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Torvalds, Linus" <torvalds@linux-foundation.org>
+Subject: [GIT PATCH] ACPI patches for 2.6.23-rc8
+Date: Tue, 25 Sep 2007 18:04:23 -0400
 User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Damien Wyart <damien.wyart@free.fr>, Len Brown <len.brown@intel.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>, linux-acpi@vger.kernel.org
-References: <20070925065109.GA3080@localhost.localdomain> <200709251800.13272.rjw@sisk.pl> <200709252344.02894.elendil@planet.nl>
-In-Reply-To: <200709252344.02894.elendil@planet.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709260018.01441.rjw@sisk.pl>
+Message-Id: <200709251804.23357.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 25 September 2007 23:44, Frans Pop wrote:
-> On Tuesday 25 September 2007, Rafael J. Wysocki wrote:
-> > On Tuesday, 25 September 2007 17:40, Linus Torvalds wrote:
-> > > Len - why are you guys moving stuff into CONFIG_PM_SLEEP? I know you
-> > > seem to think that absolutely *everybody* should always support suspend
-> > > and hibernation, but the fact is, not everybody does. And it's a
-> > > totally separate thing for normal ACPI CPU runstate support that people
-> > > have used to manage a *running* CPU (and shutting it down).
-> >
-> > This was a mistake and fixes have already been posted:
-> >
-> > http://marc.info/?l=linux-acpi&m=119052970904643&w=4
-> > http://marc.info/?l=linux-acpi&m=119073173625910&w=4
-> 
-> As this whole "separate suspend and hibernate" change seems to have been 
-> trickier than expected, I have done some additional testing using 
-> 2.6.23-rc8 plus both patches referred to above.
-> 
-> I compiled kernels (i386) for my laptop (Toshiba Satellite A40) with:
-> A) PM + SUSPEND + HIBERNATION + ACPI
-> B) PM + SUSPEND + ACPI
-> C) PM + HIBERNATION + ACPI
-> D) PM + ACPI
-> E) PM + SUSPEND + HIBERNATION but _without_ ACPI
-> F) without PM
+Hi Linus,
 
-Thanks a lot for testing this!
- 
-> In all cases CONFIG_APM was not set; all compiled without errors.
-> 
-> With all I have have booted, tried to suspend (close lid, which runs sleep 
-> script, which does 'echo mem >/sys/power/state'), tried to hibernate ('echo 
-> disk >/sys/power/state') and powered off (all from KDE sessions).
-> 
-> RESULTS
-> 	boot	s2ram	s2disk	off
-> A)	OK	OK	OK	OK
-> B)	OK	OK	N/A	OK
-> C)	OK	OK 1)	OK	OK
-> D)	OK 2)	OK 1)	N/A	OK
-> E)	OK 3)	N/A 4)	??? 5)	Only halted 6)
-> F)	OK	N/A	N/A	Only halted 6)
-> 
-> Comments:
-> 1) sleep script ran, but laptop stayed on
-> 2) dmesg lists S0,S5 supported
->    /proc/acpi/{sleep,wakeup} do not exist (is that correct?)
-> 3) /proc/acpi/{sleep,wakeup} do not exist; /sys/power/state only has 'mem'
+please pull from: 
 
-Hm, this should be 'disk' ...
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
 
->    so SUSPEND seems missing even though compiled in
+This will update the files shown below.
 
-... but it so follows from this comment.  Can you clarify, please?
+thanks!
 
-> 4) sleep script did not even run (as expected)
-> 5) System did suspend, but power stayed on with on console:
->      Shutdown: hda \ Power down. \ Shutdown: hda \ hda: lost interrupt (2x)
->      \ psmouse.c: Failed to deactivate mouse on isa0060/serio1
->    System powered off manually and resumed correctly after that
-> 6) System halted correctly, but did not power off automatically
-> 
-> The results for E and F are possibly correct as basically the config 
-> (without ACPI) was broken for this laptop. In fact, I was somewhat 
-> surprised how well it behaved without ACPI.
-> 
-> I suspect that whether a system powers off without ACPI or not can depend on 
-> the system?
-> 
-> I have dmesg after boot and some other info available for all kernels if 
-> anybody is interested. If any additional tests are wanted, please ask.
+-Len
 
-I think that your results reflect the code pretty well, ie. no big surprises.
+ps. individual patches are available on linux-acpi@vger.kernel.org
+and a consolidated plain patch is available here:
+ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.23/acpi-release-20070126-2.6.23-rc8.diff.gz
 
-On ACPI machines suspend doesn't actually work without ACPI and that's why
-'mem' is missing from kernel/power/state with E).  Hibernation theoretically
-works without ACPI, but the box cannot be powered off due to the lack of
-support for that.
+ drivers/acpi/sleep/Makefile |    2 -
+ drivers/acpi/sleep/main.c   |   46 +++++++++++++++++---------------
+ drivers/char/hpet.c         |    6 ++--
+ include/acpi/acpi_drivers.h |    4 --
+ 4 files changed, 29 insertions(+), 29 deletions(-)
 
-For the same reason, the system doesn't power off with E), F).
+through these commits:
 
-The errors from device drivers in the last phase of hibernation with E) may be
-related to some confusion cause by the lack of ACPI methods expected to be
-present.
+Alexey Starikovskiy (2):
+      ACPI: suspend: build-fix for CONFIG_SUSPEND=n and CONFIG_HIBERNATION=y
+      ACPI: CONFIG_ACPI_SLEEP=n power off regression in 2.6.23-rc8 (NOT in rc7)
 
-Greetings,
-Rafael
+Zhao Yakui (1):
+      ACPI: hpet: ACPI Error (utglobal-0126): Unknown exception code: 0xFFFFFFF0
+
+with this log:
+
+commit 78e1ca49c7ead5cd00882ed0c776260857613122
+Author: Zhao Yakui <yakui.zhao@intel.com>
+Date:   Thu Sep 20 21:23:13 2007 -0400
+
+    ACPI: hpet: ACPI Error (utglobal-0126): Unknown exception code: 0xFFFFFFF0
+    
+    If hpet has been initialized before registering hpet driver, the callback
+    function of hpet_resources will return the status code of -EBUSY, which is
+    not defined in the ACPI exception table.  So when ACPI checks the status
+    code of callback function, it will report the unknown exception code.
+    
+    So the status code in ACPI is used instead of the generic error code in the
+    ACPI callback function of hpet_resources.
+    For example: -EBUSY is replaced by AE_ALREADY_EXISTS
+    	     -EINVAL is replaced by AE_NO_MEMORY
+    
+    http://bugzilla.kernel.org/show_bug.cgi?id=8630
+    
+    Signed-off-by: Zhao Yakui  <yakui.zhao@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 853298bc03ef65e3eb392f5d61265605214ee8fb
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Tue Sep 25 18:45:15 2007 +0400
+
+    ACPI: CONFIG_ACPI_SLEEP=n power off regression in 2.6.23-rc8 (NOT in rc7)
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 2f3f22269bdf702311342c5d106dfdd7347d1c3e
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Mon Sep 24 14:33:21 2007 +0200
+
+    ACPI: suspend: build-fix for CONFIG_SUSPEND=n and CONFIG_HIBERNATION=y
+    
+    This fixes compilation with CONFIG_SUSPEND unset and CONFIG_HIBERNATION set
+    (raf. http://marc.info/?l=linux-acpi&m=119055289723895&w=4).
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+    Signed-off-by: Len Brown <len.brown@intel.com>
