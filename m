@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbXIYKOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbXIYKSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbXIYKOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 06:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbXIYKOI
+	id S1752601AbXIYKSn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 06:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXIYKSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 06:14:08 -0400
-Received: from pc175e.fzu.cz ([147.231.127.175]:42306 "EHLO postak-1.fzu.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751541AbXIYKOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 06:14:07 -0400
-Message-ID: <46F8DF55.2030905@gentoo.org>
-Date: Tue, 25 Sep 2007 12:13:41 +0200
-From: =?UTF-8?B?SmFuIEt1bmRyw6F0?= <jkt@gentoo.org>
-Organization: Gentoo
-User-Agent: Thunderbird 2.0.0.6 (X11/20070812)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: kswapd high CPU usage with no swap
-References: <46F852B6.7030207@gentoo.org> <20070924223444.62f0622d@bree.surriel.com>
-In-Reply-To: <20070924223444.62f0622d@bree.surriel.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig7D9DD5916D1830FD264DDEE6"
+	Tue, 25 Sep 2007 06:18:36 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:53278 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751385AbXIYKSf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 06:18:35 -0400
+Date: Tue, 25 Sep 2007 15:58:55 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git] CFS-devel, latest code
+Message-ID: <20070925102855.GL26289@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070924214537.GA18980@elte.hu> <1190700652.6482.7.camel@Homer.simpson.net> <1190705759.11910.10.camel@Homer.simpson.net> <1190709207.11226.6.camel@Homer.simpson.net> <20070925091331.GA22905@elte.hu> <20070925094440.GK26289@linux.vnet.ibm.com> <20070925094040.GA28391@elte.hu> <20070925101044.GA923@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070925101044.GA923@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig7D9DD5916D1830FD264DDEE6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, Sep 25, 2007 at 12:10:44PM +0200, Ingo Molnar wrote:
+> So the patch below just removes the is_same_group() condition. But i can 
+> still see bad (and obvious) latencies with Mike's 2-hogs test:
+> 
+>  taskset 01 perl -e 'while (1) {}' &
+>  nice -19 taskset 02 perl -e 'while (1) {}' &
+> 
+> So something's amiss.
 
-Rik van Riel wrote:
-> How much memory did you have in "cached" when you looked
-> with top (and no swap enabled) ?
+While I try recreating this myself, I wonder if this patch helps?
 
-Hi Rik,
-it was pretty low number (several thousands, or maybe tens of thousands).=
+---
+ kernel/sched_fair.c |   19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
+Index: current/kernel/sched_fair.c
+===================================================================
+--- current.orig/kernel/sched_fair.c
++++ current/kernel/sched_fair.c
+@@ -794,7 +794,8 @@ static void yield_task_fair(struct rq *r
+ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
+ {
+ 	struct task_struct *curr = rq->curr;
+-	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
++	struct cfs_rq *cfs_rq = task_cfs_rq(curr), *pcfs_rq;
++	struct sched_entity *se = &curr->se, *pse = &p->se;
+ 
+ 	if (unlikely(rt_prio(p->prio))) {
+ 		update_rq_clock(rq);
+@@ -802,11 +803,19 @@ static void check_preempt_wakeup(struct 
+ 		resched_task(curr);
+ 		return;
+ 	}
+-	if (is_same_group(curr, p)) {
+-		s64 delta = curr->se.vruntime - p->se.vruntime;
+ 
+-		if (delta > (s64)sysctl_sched_wakeup_granularity)
+-			resched_task(curr);
++	for_each_sched_entity(se) {
++		cfs_rq = cfs_rq_of(se);
++		pcfs_rq = cfs_rq_of(pse);
++
++		if (cfs_rq == pcfs_rq) {
++			s64 delta = se->vruntime - pse->vruntime;
++
++			if (delta > (s64)sysctl_sched_wakeup_granularity)
++				resched_task(curr);
++			break;
++		}
++		pse = pse->parent;
+ 	}
+ }
+ 
 
-In the meanwhile, I've come across your patch [1] ("prevent kswapd from
-freeing excessive amounts of lowmem") and applied it locally. I'll see
-if it fixes my problem, but at a first glance, it seems that it might
-actually slow other things down -- when I switch windows, konqueror's
-screen redrawing seems to be pretty slow and I can see it progressing
-from top to bottom...
-
-[1] http://lkml.org/lkml/2007/9/5/289
-
-Cheers,
--jkt
-
---=20
-cd /local/pub && more beer > /dev/mouth
-
-
---------------enig7D9DD5916D1830FD264DDEE6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFG+N9bamXfqERyJRcRAgOdAJ9Yqmx80/ebQA3rsuJ56syEWBcp7wCfVLS5
-TiP890hUwzhNyJzCM6Q++KE=
-=XW4h
------END PGP SIGNATURE-----
-
---------------enig7D9DD5916D1830FD264DDEE6--
+-- 
+Regards,
+vatsa
