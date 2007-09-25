@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbXIYPUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbXIYPXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757265AbXIYPUe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 11:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXIYPU1
+	id S1756179AbXIYPXR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 11:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXIYPXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 11:20:27 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:54774 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751367AbXIYPU0 (ORCPT
+	Tue, 25 Sep 2007 11:23:05 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:22555 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752667AbXIYPXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 11:20:26 -0400
-Date: Tue, 25 Sep 2007 17:20:25 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: David Newall <david@davidnewall.com>
-cc: "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
-       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, majkls <majkls@prepere.com>,
-       bunk@fs.tum.de, linux-kernel@vger.kernel.org
-Subject: Re: Chroot bug (was: sys_chroot+sys_fchdir Fix)
-In-Reply-To: <46F924E3.50205@davidnewall.com>
-Message-ID: <Pine.LNX.4.64.0709251715390.945@fbirervta.pbzchgretzou.qr>
-References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>
- <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5>
- <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com>
- <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com>
- <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com>
- <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com>
- <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 25 Sep 2007 11:23:04 -0400
+Subject: Re: [git] CFS-devel, latest code
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070925064522.GA1568@elte.hu>
+References: <20070924214537.GA18980@elte.hu>
+	 <1190678882.2634.1.camel@imap.mvista.com>  <20070925064522.GA1568@elte.hu>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 08:17:53 -0700
+Message-Id: <1190733473.2634.11.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-09-25 at 08:45 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > On Mon, 2007-09-24 at 23:45 +0200, Ingo Molnar wrote:
+> > > Lots of scheduler updates in the past few days, done by many people. 
+> > > Most importantly, the SMP latency problems reported and debugged by
+> > > Mike 
+> > > Galbraith should be fixed for good now. 
+> > 
+> > Does this have anything to do with idle balancing ? I noticed some 
+> > fairly large latencies in that code in 2.6.23-rc's ..
+> 
+> any measurements?
 
-On Sep 26 2007 00:40, David Newall wrote:
->
-> Miloslav Semler pointed out that a root process can chdir("..") out of its
-> chroot.  Although this is documented in the man page, it conflicts with the
-> essential function, which is to change the root directory of the process.  In
-> addition to any creative uses, for example Philipp Marek's loading dynamic
-> libraries, it seems clear that the prime purpose of chroot is to aid security.
-> Being able to cd your way out is handy for the bad guys, but the good guys
-> don't need it; there are a thousand better, safer solutions.
+Yes, I made this a while ago,
 
-So what? Just do this: chdir into the root after chroot.
+ftp://source.mvista.com/pub/dwalker/misc/long-cfs-load-balance-trace.txt
 
-It won't conform to SVR4/4.4BSD anymore, but hey, let Linux set some
-sane standard ain't bad either. I doubt anyone really relies on the
-fact that after chroot, your cwd might be outside the root.
+This was with PREEMPT_RT on btw, so it's not the most recent kernel. I
+was able to reproduce it in all the -rc's I tried.
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+Daniel
 
----
- fs/open.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6.23/fs/open.c
-===================================================================
---- linux-2.6.23.orig/fs/open.c
-+++ linux-2.6.23/fs/open.c
-@@ -547,6 +547,7 @@ asmlinkage long sys_chroot(const char __
- 
- 	set_fs_root(current->fs, nd.mnt, nd.dentry);
- 	set_fs_altroot();
-+	set_fs_pwd(current->fs, nd.mnt, nd.dentry);
- 	error = 0;
- dput_and_out:
- 	path_release(&nd);
