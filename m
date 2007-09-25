@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbXIYIDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbXIYIES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759084AbXIYIDr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbXIYIDc
+	id S1759305AbXIYIES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbXIYIEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:03:32 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:5211 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754739AbXIYIDa (ORCPT
+	Tue, 25 Sep 2007 04:04:01 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:48715 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759209AbXIYID6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:03:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=hbWzC72Ju50H9VxXGl2oDSnA/ENNK6jjH6IYV6By/RnEqsiQXCFMl90EH+Wmr+/9wQnX5UTP4lCSiLdWBN1z8rAoYzGGED/DoBofbPGpsHjpXuGmWnxKInCY/3i4ytH/9/qkBeQy6WJmloYEmVWuM+7mvwKMoh9b0VTzg5MyM98=
-Message-ID: <20f65d530709250103s556231a5vbb3741e11197df6c@mail.gmail.com>
-Date: Tue, 25 Sep 2007 20:03:27 +1200
-From: "Keith Chew" <keith.chew@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: oom on wireless network saturation
+	Tue, 25 Sep 2007 04:03:58 -0400
+Message-ID: <46F8C09F.4050707@linux.vnet.ibm.com>
+Date: Tue, 25 Sep 2007 13:32:39 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.23-rc7-mm1: panic in scheduler
+References: <1190668373.5030.10.camel@localhost> <46F82C88.1080907@linux.vnet.ibm.com> <661de9470709250002u73c1089dx94870586ce23b5b5@mail.gmail.com>
+In-Reply-To: <661de9470709250002u73c1089dx94870586ce23b5b5@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Balbir Singh wrote:
+> On 9/25/07, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>> Exactly same call trace is produced over IA64 Madison (up to 9M cache) with 8 cpu's.
+>> --
+> 
+> Hi, Kamalesh,
+> 
+> Could you please reproduce the problem or share the steps to reproduce
+> the problem?
+> 
+> Thanks,
+> Balbir
+> -
 
-We are stress testing the wireless network driver on our linux system.
-We use ping flood to saturate the network, and within 24 hours, we
-managed to crash the driver.
+Hi Balbir,
 
-This was a good test, as it hightlighted a timer problem in the
-driver. After fixing that, we are now getting out of memory errors.
-The OOM killer starts to kick in and the system freezes.
+Yes, i am able to reproduce the problem. The problem can be reproduced
+using the ltprunall.
 
-Can someone advise at a high level, what should the network driver do
-in such a scenario? Essentially, the wireless packets get queued up in
-the driver and eventually it just breaks. What is the correct way to
-handle this gracefully?
-
-Regards
-Keith
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
