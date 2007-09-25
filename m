@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbXIYR7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbXIYSNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbXIYR7m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 13:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbXIYR7g
+	id S1754513AbXIYSNR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 14:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXIYSNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 13:59:36 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:35040 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753206AbXIYR7f (ORCPT
+	Tue, 25 Sep 2007 14:13:09 -0400
+Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:33853
+	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750758AbXIYSNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 13:59:35 -0400
-Subject: Linux Foundation Technical Advisory Board Election Results
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: ksummit-2007-discuss@thunk.org,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>
-In-Reply-To: <1187796179.3410.32.camel@localhost.localdomain>
-References: <1187796179.3410.32.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 12:59:30 -0500
-Message-Id: <1190743170.3345.44.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+	Tue, 25 Sep 2007 14:13:08 -0400
+In-Reply-To: <d120d5000709251051n45e415e6gbdd87a98f0b8cdd4@mail.gmail.com>
+References: <6D36DFB9-B26D-4CEA-B7AD-0216F7124FC5@it-loops.com> <d120d5000709251051n45e415e6gbdd87a98f0b8cdd4@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B5B5C841-6068-413B-A765-73A34E988FAA@it-loops.com>
+Cc: linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Michael Guntsche <mike@it-loops.com>
+Subject: Re: 2.6.23 /proc/bus/input/devices content question
+Date: Tue, 25 Sep 2007 20:13:02 +0200
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry this has taken so long to get out ... I just, er, forgot.
 
-Summary of the TAB election results at the kernel Summit on Wednesday 5
-September.
+On Sep 25, 2007, at 19:51, Dmitry Torokhov wrote:
 
-At the meeting, we had eight candidates:
+> Hi Michael,
+>
+>> ...
+>> I this a "wanted" change or should I still see the same with 2.6.23?
+>>
+>
+> Is this with CONFIG_SYSFS_DEPRECATED=y?
 
-Arjan van de Ven
-Greg Kroah Hartman
-Christoph Lameter
-Jon Corbett
-James Morris
-Christoph Hellwig
-David Woodhouse
-Olaf Kirch
+No, CONFIG_SYSFS_DEPRECATED is not set with both kernels. I had a  
+closer look and noticed that I for some reason usbhid AND usbkbd were  
+loaded.
+I removed them both and loaded usbhid again. Now I had two entries  
+for my keyboard.
 
-Every candidate gave a nomination statement before the voting (with the
-three persons not present:  James Morris, Christoph Hellwig and David
-Woodhouse having their statements read to the meeting).  We did single
-polling per position and had two rounds for a tie on the last candidate.
-Those elected to the TAB were:
+I: Bus=0003 Vendor=08d4 Product=0006 Version=0110
+N: Name="Fujitsu Siemens Computers Fujitsu Siemens Computers GmbH USB/ 
+PS2 Keyboard v1.1"
+P: Phys=usb-0000:00:1d.0-2/input0
+S: Sysfs=/class/input/input4
+U: Uniq=
+H: Handlers=kbd event0
+B: EV=120003
+B: KEY=e080ffdf 1cfffff ffffffff fffffffe
+B: LED=1f
 
-Arjan van de Ven
-Greg Kroah Hartman
-Christoph Lameter
-Jon Corbett
-Olaf Kirch
+I: Bus=0003 Vendor=08d4 Product=0006 Version=0110
+N: Name="Fujitsu Siemens Computers Fujitsu Siemens Computers GmbH USB/ 
+PS2 Keyboard v1.1"
+P: Phys=usb-0000:00:1d.0-2/input1
+S: Sysfs=/class/input/input5
+U: Uniq=
+H: Handlers=kbd event1
+B: EV=3
+B: KEY=1078 800c000 1e0000 0 0 0
 
-James
+Notice that Sysfs still shows /class/input...
 
+With 2.6.23-rc7 ONLY usbhid got loaded and I got
+
+I: Bus=0003 Vendor=08d4 Product=0006 Version=0110
+N: Name="Fujitsu Siemens Computers Fujitsu Siemens Computers GmbH USB/ 
+PS2 Keyboard v1.1"
+P: Phys=usb-0000:00:1d.0-2/input0
+S: Sysfs=/devices/pci0000:00/0000:00:1d.0/usb1/1-2/1-2:1.0/input/input4
+U: Uniq=
+H: Handlers=kbd event2
+B: EV=120003
+B: KEY=e080ffdf 1cfffff ffffffff fffffffe
+B: LED=1f
+
+I: Bus=0003 Vendor=08d4 Product=0006 Version=0110
+N: Name="Fujitsu Siemens Computers Fujitsu Siemens Computers GmbH USB/ 
+PS2 Keyboard v1.1"
+P: Phys=usb-0000:00:1d.0-2/input1
+S: Sysfs=/devices/pci0000:00/0000:00:1d.0/usb1/1-2/1-2:1.1/input/input5
+U: Uniq=
+H: Handlers=kbd event3
+B: EV=3
+B: KEY=1078 800c000 1e0000 0 0 0
+
+So actually Phys is the same, just Sysfs got changed.
+
+
+Hope that helps,
+Michael
 
