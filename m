@@ -1,132 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXIYMkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbXIYMlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbXIYMkj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 08:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXIYMkX
+	id S1754731AbXIYMlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 08:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXIYMlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 08:40:23 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:34398 "EHLO smtp.polymtl.ca"
+	Tue, 25 Sep 2007 08:41:01 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47907 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753473AbXIYMkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 08:40:22 -0400
-Message-Id: <20070925121252.555122610@polymtl.ca>
-References: <20070925121145.262664884@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 25 Sep 2007 08:11:50 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: [patch 5/5] Linux Kernel Markers - Documentation
-Content-Disposition: inline; filename=linux-kernel-markers-documentation.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 25 Sep 2007 12:39:45 +0000
+	id S1751164AbXIYMk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 08:40:59 -0400
+Date: Tue, 25 Sep 2007 18:21:29 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git] CFS-devel, latest code
+Message-ID: <20070925125129.GA26310@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070924214537.GA18980@elte.hu> <1190700652.6482.7.camel@Homer.simpson.net> <1190705759.11910.10.camel@Homer.simpson.net> <1190709207.11226.6.camel@Homer.simpson.net> <20070925091331.GA22905@elte.hu> <20070925094440.GK26289@linux.vnet.ibm.com> <20070925094040.GA28391@elte.hu> <20070925101044.GA923@elte.hu> <20070925102855.GL26289@linux.vnet.ibm.com> <20070925103617.GA3426@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070925103617.GA3426@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is some documentation explaining what is/how to use the Linux
-Kernel Markers.
+On Tue, Sep 25, 2007 at 12:36:17PM +0200, Ingo Molnar wrote:
+> hm. perhaps this fixup in kernel/sched.c:set_task_cpu():
+> 
+>         p->se.vruntime -= old_rq->cfs.min_vruntime - new_rq->cfs.min_vruntime;
 
-Changelog:
-- Move the examples to a separate "samples" patch.
+This definitely does need some fixup, even though I am not sure yet if
+it will solve completely the latency issue.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Christoph Hellwig <hch@infradead.org>
----
+I tried the following patch. I *think* I see some improvement, wrt
+latency seen when I type on the shell. Before this patch, I noticed
+oddities like "kill -9 chew-max-pid" wont kill chew-max (it is queued in
+runqueue waiting for a looong time to run before it can acknowledge
+signal and exit). With this patch, I don't see such oddities ..So I am hoping 
+it fixes the latency problem you are seeing as well.
 
- Documentation/markers.txt |   81 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 81 insertions(+)
 
-Index: linux-2.6-lttng/Documentation/markers.txt
+
+Index: current/kernel/sched.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/Documentation/markers.txt	2007-09-24 17:44:56.000000000 -0400
-@@ -0,0 +1,81 @@
-+ 	             Using the Linux Kernel Markers
-+
-+			    Mathieu Desnoyers
-+
-+
-+This document introduces Linux Kernel Markers and their use. It provides
-+examples of how to insert markers in the kernel and connect probe functions to
-+them and provides some examples of probe functions.
-+
-+
-+* Purpose of markers
-+
-+A marker placed in code provides a hook to call a function (probe) that you can
-+provide at runtime. A marker can be "on" (a probe is connected to it) or "off"
-+(no probe is attached). When a marker is "off" it has no effect, except for
-+adding a tiny time penalty (checking a condition for a branch) and space
-+penalty (adding a few bytes for the function call at the end of the
-+instrumented function and adds a data structure in a separate section).  When a
-+marker is "on", the function you provide is called each time the marker is
-+executed, in the execution context of the caller. When the function provided
-+ends its execution, it returns to the caller (continuing from the marker site).
-+
-+You can put markers at important locations in the code. Markers are
-+lightweight hooks that can pass an arbitrary number of parameters,
-+described in a printk-like format string, to the attached probe function.
-+
-+They can be used for tracing and performance accounting.
-+
-+
-+* Usage
-+
-+In order to use the macro trace_mark, you should include linux/marker.h.
-+
-+#include <linux/marker.h>
-+
-+And,
-+
-+trace_mark(subsystem_event, "%d %s", someint, somestring);
-+Where :
-+- subsystem_event is an identifier unique to your event
-+    - subsystem is the name of your subsystem.
-+    - event is the name of the event to mark.
-+- "%d %s" is the formatted string for the serializer.
-+- someint is an integer.
-+- somestring is a char pointer.
-+
-+Connecting a function (probe) to a marker is done by providing a probe (function
-+to call) for the specific marker through marker_probe_register() and can be
-+activated by calling marker_arm(). Marker deactivation can be done by calling
-+marker_disarm() as many times as marker_arm() has been called. Removing a probe
-+is done through marker_probe_unregister(); it will disarm the probe and make
-+sure there is no caller left using the probe when it returns. Probe removal is
-+preempt-safe because preemption is disabled around the probe call. See the
-+"Probe example" section below for a sample probe module.
-+
-+The marker mechanism supports inserting multiple instances of the same marker.
-+Markers can be put in inline functions, inlined static functions, and
-+unrolled loops as well as regular functions.
-+
-+The naming scheme "subsystem_event" is suggested here as a convention intended
-+to limit collisions. Marker names are global to the kernel: they are considered
-+as being the same whether they are in the core kernel image or in modules.
-+Conflicting format strings for markers with the same name will cause the markers
-+to be detected to have a different format string not to be armed and will output
-+a printk warning which identifies the inconsistency:
-+
-+"Format mismatch for probe probe_name (format), marker (format)"
-+
-+
-+* Probe / marker example
-+
-+See the example provided in samples/markers/src
-+
-+Compile them with your kernel.
-+
-+Run, as root :
-+modprobe marker-example (insmod order is not important)
-+modprobe probe-example
-+cat /proc/marker-example (returns an expected error)
-+rmmod marker-example probe-example
-+dmesg
+--- current.orig/kernel/sched.c
++++ current/kernel/sched.c
+@@ -1039,6 +1039,8 @@ void set_task_cpu(struct task_struct *p,
+ {
+ 	int old_cpu = task_cpu(p);
+ 	struct rq *old_rq = cpu_rq(old_cpu), *new_rq = cpu_rq(new_cpu);
++	struct cfs_rq *old_cfsrq = task_cfs_rq(p),
++		      *new_cfsrq = cpu_cfs_rq(old_cfsrq, new_cpu);
+ 	u64 clock_offset;
+ 
+ 	clock_offset = old_rq->clock - new_rq->clock;
+@@ -1051,7 +1053,8 @@ void set_task_cpu(struct task_struct *p,
+ 	if (p->se.block_start)
+ 		p->se.block_start -= clock_offset;
+ #endif
+-	p->se.vruntime -= old_rq->cfs.min_vruntime - new_rq->cfs.min_vruntime;
++	p->se.vruntime -= old_cfsrq->min_vruntime -
++					 new_cfsrq->min_vruntime;
+ 
+ 	__set_task_cpu(p, new_cpu);
+ }
+ 
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--
+Regards,
+vatsa
