@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbXIYRJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbXIYRLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757144AbXIYRJw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 13:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXIYRJl
+	id S1758082AbXIYRLj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 13:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbXIYRLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 13:09:41 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39123 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756616AbXIYRJk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 13:09:40 -0400
-Date: Tue, 25 Sep 2007 18:09:33 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Miloslav Semler <majkls@prepere.com>, serge@hallyn.com, davidsen@tmr.com,
-       philipp@marek.priv.at, 7eggert@gmx.de, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: Chroot bug
-Message-ID: <20070925170933.GJ8181@ftp.linux.org.uk>
-References: <20070925114947.GA9721@vino.hallyn.com> <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com> <Pine.LNX.4.64.0709251715390.945@fbirervta.pbzchgretzou.qr> <46F92C17.3060405@davidnewall.com> <Pine.LNX.4.64.0709251748240.945@fbirervta.pbzchgretzou.qr> <46F9351D.8020906@prepere.com> <Pine.LNX.4.64.0709251847570.945@fbirervta.pbzchgretzou.qr> <46F93EAF.20706@prepere.com> <Pine.LNX.4.64.0709251903480.945@fbirervta.pbzchgretzou.qr>
+	Tue, 25 Sep 2007 13:11:32 -0400
+Received: from mga03.intel.com ([143.182.124.21]:64453 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751913AbXIYRLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 13:11:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,296,1186383600"; 
+   d="scan'208";a="286495713"
+Date: Tue, 25 Sep 2007 10:07:12 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>, akpm@osdl.org,
+       Greg KH <greg@kroah.com>, muli@il.ibm.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       kristen.c.accardi@intel.com
+Subject: Re: [patch][Intel-IOMMU] Fix for IOMMU early crash
+Message-ID: <20070925170712.GA18806@askeshav-devel.jf.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070908200523.GA16204@askeshav-devel.jf.intel.com> <18148.12140.21118.252581@cargo.ozlabs.ibm.com> <20070911174231.GC24627@askeshav-devel.jf.intel.com> <20070912192854.GA32610@askeshav-devel.jf.intel.com> <18150.61732.490669.269794@cargo.ozlabs.ibm.com> <20070913012952.GA958@askeshav-devel.jf.intel.com> <18154.46896.578938.642491@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709251903480.945@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <18154.46896.578938.642491@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 25, 2007 at 07:05:06PM +0200, Jan Engelhardt wrote:
+On Sat, Sep 15, 2007 at 02:30:40AM +1000, Paul Mackerras wrote:
+> Keshavamurthy, Anil S writes:
+> 
+> > Can I expect the ppc64 code changes from you? 
+> > Once I get your, I will merge with mine and post it again.
+> 
+> Sure, but it will be next week, since I am travelling this week.
+Any progress?
 
-> Perhaps that was formulated a bit sloppy. It of course means
-> "On chroot(2), implicitly close all FDs that point outside."
-
-Bollocks.  Pack 'em into SCM_RIGHTS datagram, send to yourself,
-do chroot, recvmsg() and move on, cheerfully spitting at the
-YAidiotic "hardening".
+-Anil
