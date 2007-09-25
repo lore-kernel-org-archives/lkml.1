@@ -1,52 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbXIYLuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbXIYLu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753915AbXIYLuA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 07:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXIYLtx
+	id S1754109AbXIYLu4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXIYLus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 07:49:53 -0400
-Received: from smtp112.sbc.mail.re2.yahoo.com ([68.142.229.93]:40831 "HELO
-	smtp112.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752141AbXIYLtw (ORCPT
+	Tue, 25 Sep 2007 07:50:48 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:57343 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbXIYLur (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 07:49:52 -0400
-X-YMail-OSG: DXfjL_4VM1npZV8M4OEmUoK6TwoFE8OqCk31v7xy4PMcPcqEdU1du3URupgqCjS_cGCAikBkNQ--
-Date: Tue, 25 Sep 2007 06:49:47 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: David Newall <david@davidnewall.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
-       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, majkls <majkls@prepere.com>,
-       bunk@fs.tum.de, linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-Message-ID: <20070925114947.GA9721@vino.hallyn.com>
-References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com> <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com> <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com> <46F8BC8A.7080006@davidnewall.com>
+	Tue, 25 Sep 2007 07:50:47 -0400
+Date: Tue, 25 Sep 2007 13:50:46 +0200
+From: Jan Kara <jack@ucw.cz>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: richard kennedy <richard@rsk.demon.co.uk>, sct@redhat.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: jbd : config_jbd_debug cannot create /proc entry
+Message-ID: <20070925115046.GA15394@atrey.karlin.mff.cuni.cz>
+References: <1190713240.3154.20.camel@castor.rsk.org> <20070925105112.GB8126@atrey.karlin.mff.cuni.cz> <46F8EB26.2090104@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46F8BC8A.7080006@davidnewall.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <46F8EB26.2090104@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Newall (david@davidnewall.com):
-> Serge E. Hallyn wrote:
->> Quoting David Newall (david@davidnewall.com):
->>   
->>> It might be tidy if pivot_root could be used (instead of a hack based on 
->>> a chroot bug), but it'd still be unportable.
->>>     
->>
->> It can.
->>
->> Please re-read my previous msg.
->
-> I read it.  Currently pivot_root can't be used to affect a single process.  
+> 
+> 
+> Jan Kara wrote:
+> >>
+> >-#define create_jbd_proc_entry() do {} while (0)
+> >-#define remove_jbd_proc_entry() do {} while (0)
+> >+static ctl_table fs_table[] = {
+> >+	{
+> >+                .ctl_name       = -1,	/* Don't want it */
+> 
+> 
+> 
+> shouldn't this be CTL_UNNUMBERED ?
+  Oh, it should be. I didn't notice we have this :) Thanks for notifying
+me. Attached is a fixed version.
 
-No.  If you unshare your mounts namespace immediately before pivot_root,
-then pivot_root will only affect that single process.
+> 
+> >+                .procname       = "jbd-debug",
+> >+                .data           = &journal_enable_debug,
+> >+                .maxlen         = sizeof(int),
+> >+                .mode           = 0644,
+> >+                .proc_handler   = &proc_dointvec,
+> >+        },
+> >+        { .ctl_name = 0 },
+> >+};
+> >
 
-> It can be modified; obviously.  Maybe it should be, too, but is there a 
-> need for that?
+--------
 
--serge
+JBD debug code used old way of creating proc entries for jbd-debug file.
+Change it to use sysctl instead.
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+
+diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc6/fs/jbd/journal.c linux-2.6.23-rc6-1-jbddebug_fix/fs/jbd/journal.c
+--- linux-2.6.23-rc6/fs/jbd/journal.c	2007-09-25 12:39:53.000000000 +0200
++++ linux-2.6.23-rc6-1-jbddebug_fix/fs/jbd/journal.c	2007-09-25 14:09:11.000000000 +0200
+@@ -1944,58 +1944,29 @@ void journal_put_journal_head(struct jou
+ #if defined(CONFIG_JBD_DEBUG)
+ int journal_enable_debug;
+ EXPORT_SYMBOL(journal_enable_debug);
+-#endif
+-
+-#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_PROC_FS)
+-
+-static struct proc_dir_entry *proc_jbd_debug;
+-
+-static int read_jbd_debug(char *page, char **start, off_t off,
+-			  int count, int *eof, void *data)
+-{
+-	int ret;
+-
+-	ret = sprintf(page + off, "%d\n", journal_enable_debug);
+-	*eof = 1;
+-	return ret;
+-}
+-
+-static int write_jbd_debug(struct file *file, const char __user *buffer,
+-			   unsigned long count, void *data)
+-{
+-	char buf[32];
+-
+-	if (count > ARRAY_SIZE(buf) - 1)
+-		count = ARRAY_SIZE(buf) - 1;
+-	if (copy_from_user(buf, buffer, count))
+-		return -EFAULT;
+-	buf[ARRAY_SIZE(buf) - 1] = '\0';
+-	journal_enable_debug = simple_strtoul(buf, NULL, 10);
+-	return count;
+-}
++static struct ctl_table_header *jbd_debug_table;
+ 
+-#define JBD_PROC_NAME "sys/fs/jbd-debug"
+-
+-static void __init create_jbd_proc_entry(void)
+-{
+-	proc_jbd_debug = create_proc_entry(JBD_PROC_NAME, 0644, NULL);
+-	if (proc_jbd_debug) {
+-		/* Why is this so hard? */
+-		proc_jbd_debug->read_proc = read_jbd_debug;
+-		proc_jbd_debug->write_proc = write_jbd_debug;
+-	}
+-}
+-
+-static void __exit remove_jbd_proc_entry(void)
+-{
+-	if (proc_jbd_debug)
+-		remove_proc_entry(JBD_PROC_NAME, NULL);
+-}
+-
+-#else
+-
+-#define create_jbd_proc_entry() do {} while (0)
+-#define remove_jbd_proc_entry() do {} while (0)
++static ctl_table fs_table[] = {
++	{
++                .ctl_name       = CTL_UNNUMBERED,
++                .procname       = "jbd-debug",
++                .data           = &journal_enable_debug,
++                .maxlen         = sizeof(int),
++                .mode           = 0644,
++                .proc_handler   = &proc_dointvec,
++        },
++        { .ctl_name = 0 },
++};
++
++static ctl_table sys_table[] = {
++        {
++                .ctl_name       = CTL_FS,
++                .procname       = "fs",
++                .mode           = 0555,
++                .child          = fs_table,
++        },
++        { .ctl_name = 0 },
++};
+ 
+ #endif
+ 
+@@ -2054,7 +2025,10 @@ static int __init journal_init(void)
+ 	ret = journal_init_caches();
+ 	if (ret != 0)
+ 		journal_destroy_caches();
+-	create_jbd_proc_entry();
++
++#ifdef CONFIG_JBD_DEBUG
++	jbd_debug_table = register_sysctl_table(sys_table);
++#endif
+ 	return ret;
+ }
+ 
+@@ -2064,8 +2038,8 @@ static void __exit journal_exit(void)
+ 	int n = atomic_read(&nr_journal_heads);
+ 	if (n)
+ 		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
++	unregister_sysctl_table(jbd_debug_table);
+ #endif
+-	remove_jbd_proc_entry();
+ 	journal_destroy_caches();
+ }
+ 
