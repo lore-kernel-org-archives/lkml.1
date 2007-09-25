@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbXIYHvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbXIYHxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbXIYHvE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 03:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbXIYHuz
+	id S1757439AbXIYHxP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 03:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbXIYHxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 03:50:55 -0400
-Received: from science.horizon.com ([192.35.100.1]:19673 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751567AbXIYHuy (ORCPT
+	Tue, 25 Sep 2007 03:53:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:12942 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753359AbXIYHxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 03:50:54 -0400
-Date: 25 Sep 2007 03:50:27 -0400
-Message-ID: <20070925075027.5791.qmail@science.horizon.com>
-From: linux@horizon.com
-To: joe@perches.com, linux@horizon.com
-Subject: Re: [RFC] New kernel-message logging API
-Cc: linux-kernel@vger.kernel.org, vegard.nossum@horizon.com
-In-Reply-To: <1190703254.3964.11.camel@localhost>
+	Tue, 25 Sep 2007 03:53:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:references:subject:message-id:x-mailer;
+        b=eP3tNpAKKd6YWm5YFSJO4c3IZxxCWyfQYLxJY5xlZOAFu8EH8fQv1v+ZKZF5qsdBHVHix81AKyk9AEyNwnZjLXUO6gWjInw1JONWMkPgZ0+bT4TRDLa6vfA+H8tXsrItyjbtJazU9pUreMIPge23BiXQz9KJ7CK/6zQVdx9xQgs=
+Date: Tue, 25 Sep 2007 15:52:52 +0800
+From: "Peer Chen" <peerchen@gmail.com>
+To: "jeff" <jeff@garzik.org>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ide" <linux-ide@vger.kernel.org>,
+       "akpm" <akpm@linux-foundation.org>
+References: <200709251323031982245@gmail.com>,
+ <46F8B3F8.1050909@garzik.org>
+Subject: Re: Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
+Message-ID: <200709251552483357334@gmail.com>
+X-mailer: Foxmail 6, 6, 105, 21 [cn]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Even the "kp_" prefix is actually pretty unnecessary.  It's "info"
->> and a human-readable string that make it recognizable as a log message.
+We have three mode for one controller - IDE/RAID/AHCI, we want sata_nv being load when user select the IDE mode in BIOS, load ahci driver if RAID/AHCI being selected, which will verify if our legacy mode work well and have additional option if there is any
+bug for the ahci mode.
 
-> While I agree a prefix isn't necessary, info, warn, err
-> are already frequently #define'd and used.
->
-> kp_<level> isn't currently in use.
+----------------				 
+Peer Chen
+2007-09-25
+
+-------------------------------------------------------------
+发件人：Jeff Garzik
+发送日期：2007-09-25 15:08:45
+收件人：Peer Chen
+抄送：linux-kernel; linux-ide; akpm
+主题：Re: [PATCH] sata_nv,ahci: add the ahci legacy mode support to sata_nv
+
+Peer Chen wrote:
+> Add the ahci controller legacy mode support to sata_nv.
+> Move the DIDs of legacy mode from ahci.c to sata_nv.c
 > 
-> $ egrep -r -l --include=*.[ch] "^[[:space:]]*#[[:space:]]*define[[:space:]]+(info|err|warn)\b" * | wc -l
-> 29
+> The patch base on kernel 2.6.23-rc8
+> 
+> Signed-off-by: Peer Chen <peerchen@gmail.com>
 
-Sorry for being unclear.  I wasn't seriously recommending no prefix,
-due to name collisions (exactly your point), but rather saying that no
-prefix is necessary for human understanding.
+I don't understand why these are being moved?
 
-Something to avoid the ambiguity is still useful.  I was just saying
-that it can be pretty much anything withouyt confusing the casual
-reader.
+If an interface can be driven via the AHCI driver, that is greatly 
+preferred over the sata_nv driver.
 
-We're in violent agreement, I just didn't say it very well the first
-time.
+	Jeff
+
+
+
+
