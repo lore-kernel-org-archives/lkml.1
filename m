@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbXIYFpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbXIYFxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759248AbXIYFpL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 01:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXIYFo7
+	id S1756231AbXIYFxO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 01:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXIYFw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 01:44:59 -0400
-Received: from mxsf05.insightbb.com ([74.128.0.75]:44963 "EHLO
-	mxsf05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751996AbXIYFo6 (ORCPT
+	Tue, 25 Sep 2007 01:52:56 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:17867 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbXIYFwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 01:44:58 -0400
-X-IronPort-AV: E=Sophos;i="4.20,294,1186372800"; 
-   d="scan'208";a="48205606"
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAMI8+EZKjlCP/2dsb2JhbACBWA
-X-IronPort-AV: E=Sophos;i="4.20,294,1186372800"; 
-   d="scan'208";a="119240772"
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Input updates for 2.6.23-rc8
-Date: Tue, 25 Sep 2007 01:44:57 -0400
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Tue, 25 Sep 2007 01:52:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RppyTvAkM3nqsEbxO8DCaca4EbuGW6hQH1e0udCUgTteTa1AwV6NacQ8jp4sDWByrjvW+yaj2x1HwEjpMpyWssA3ixz4TsoH6Gi+WSkHpEbXtEhkK28qQxbh505gORbLSjneORq+lppFc5ceRU32LkQZnXOseBYdc/OMCeZpy48=
+Message-ID: <64bb37e0709242252l48d54d16w5f645d324914fd16@mail.gmail.com>
+Date: Tue, 25 Sep 2007 07:52:53 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "FUJITA Tomonori" <tomof@acm.org>
+Subject: Re: What's in linux-2.6-block.git for 2.6.24
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+In-Reply-To: <64bb37e0709241148r58a99403k5f51f364de64eeb5@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709250144.57533.dtor@insightbb.com>
+References: <20070921085711.GG2367@kernel.dk>
+	 <64bb37e0709230619v196cf34ev29f0c844e2a79ec9@mail.gmail.com>
+	 <20070923225320I.tomof@acm.org>
+	 <64bb37e0709230831t16eaa86dub5abcb97fdce12eb@mail.gmail.com>
+	 <64bb37e0709241148r58a99403k5f51f364de64eeb5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 9/24/07, Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> I will keep on using 2.6.23-rc7-mm1 and post again, if the error shows up again.
 
-Please pull from:
+On the next boot it did show up again, so 2.6.23-rc7-mm1 still has the bug.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+[   33.810000] md1: bitmap initialized from disk: read 10/10 pages, set 0 bits
+[   33.810000] created bitmap (145 pages) for device md1
+[   63.910000] ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x6 frozen
+[   63.910000] ata1.00: cmd 61/08:00:09:d6:42/00:00:25:00:00/40 tag 0
+cdb 0x0 data 4096 out
+[   63.910000]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
+0x4 (timeout)
+[   63.910000] ata1.00: status: {DRDY }
+[   63.910000] ata1: hard resetting link
+[   66.210000] ata1: softreset failed (port not ready)
+[   66.210000] ata1: reset failed (errno=-5), retrying in 8 secs
+[   73.910000] ata1: hard resetting link
+[   76.210000] ata1: softreset failed (port not ready)
+[   76.210000] ata1: reset failed (errno=-5), retrying in 8 secs
+[   83.910000] ata1: hard resetting link
+[   86.210000] ata1: softreset failed (port not ready)
+[   86.210000] ata1: reset failed (errno=-5), retrying in 33 secs
+[  118.910000] ata1: limiting SATA link speed to 1.5 Gbps
+[  118.910000] ata1: hard resetting link
+[  121.210000] ata1: softreset failed (port not ready)
+[  121.210000] ata1: reset failed, giving up
+[  121.210000] ata1.00: disabled
+[  121.210000] ata1: EH complete
+[  121.210000] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
+driverbyte=DRIVER_OK,SUGGEST_OK
+[  121.210000] end_request: I/O error, dev sda, sector 625137161
+[  121.210000] md: super_written gets error=-5, uptodate=0
+[  121.210000] raid5: Disk failure on sda2, disabling device.
+Operation continuing on 2 devices
 
-to receive updates for the input subsystem. There is only one patch
-that fixes regression in appletouch driver introduced in previous
-release.
+After that there are many more error like this in the log:
+[  135.760000] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
+driverbyte=DRIVER_OK,SUGGEST_OK
+[  135.760000] end_request: I/O error, dev sda, sector 19551113
+[  135.760000] Buffer I/O error on device sda2, logical block 1
+or:
+[  135.760000] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
+driverbyte=DRIVER_OK,SUGGEST_OK
+[  135.760000] end_request: I/O error, dev sda, sector 19551105
 
-Thomas Rohwer (1):
-      Input: appletouch - fix idle reset logic
-
- drivers/input/mouse/appletouch.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
--- 
-Dmitry
+Torsten
