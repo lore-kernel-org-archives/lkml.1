@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbXIYUvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbXIYUxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759022AbXIYUvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 16:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXIYUvL
+	id S1759198AbXIYUxd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 16:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbXIYUx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 16:51:11 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:34284 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753740AbXIYUvK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 16:51:10 -0400
-Message-ID: <46F974B8.3040705@davidnewall.com>
-Date: Wed, 26 Sep 2007 06:21:04 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Tue, 25 Sep 2007 16:53:26 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:9900 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751821AbXIYUxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 16:53:25 -0400
+Message-ID: <46F9752C.5080807@cfl.rr.com>
+Date: Tue, 25 Sep 2007 16:53:00 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
-       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, majkls <majkls@prepere.com>,
-       bunk@fs.tum.de, linux-kernel@vger.kernel.org
-Subject: Re: Chroot bug
-References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com> <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com> <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com> <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com> <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com> <Pine.LNX.4.64.0709251715390.945@fbirervta.pbzchgretzou.qr> <46F92C17.3060405@davidnewall.com> <Pine.LNX.4.64.0709251748240.945@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0709251748240.945@fbirervta.pbzchgretzou.qr>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: David Newall <david@davidnewall.com>, Bill Davidsen <davidsen@tmr.com>,
+       majkls <majkls@prepere.com>, bunk@fs.tum.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: sys_chroot+sys_fchdir Fix
+References: <46F0CD96.9030807@prepere.com>	<20070919104018.3a6bcfb1@the-village.bc.nu>	<46F16A0A.3070402@tmr.com>	<20070919194559.36015307@the-village.bc.nu>	<46F1A196.8060108@davidnewall.com>	<46F401D6.6060609@cfl.rr.com> <20070921191012.15a0b51b@the-village.bc.nu>
+In-Reply-To: <20070921191012.15a0b51b@the-village.bc.nu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Sep 2007 20:53:23.0162 (UTC) FILETIME=[1C8F1BA0:01C7FFB6]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15446.001
+X-TM-AS-Result: No--12.530400-5.000000-2
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Sep 26 2007 01:11, David Newall wrote:
->   
->> Jan Engelhardt wrote:
->>     
->>> On Sep 26 2007 00:40, David Newall wrote:
->>>   
->>>       
->>>> Miloslav Semler pointed out that a root process can chdir("..") out of its
->>>> chroot.
->>>>         
->>> So what? Just do this: chdir into the root after chroot.
->>>       
->> I don't think so.  His exploit just got me all the way out of a chroot within a
->> chroot within a chroot, inclusive of lots of chdirs.
->>     
->
-> Close all fds that point to directories outside the root ;-)
->   
+Alan Cox wrote:
+> On Fri, 21 Sep 2007 13:39:34 -0400
+> Phillip Susi <psusi@cfl.rr.com> wrote:
+> 
+>> David Newall wrote:
+>>> * In particular, the superuser can escape from a =91chroot jail=92 by d=
+>>> oing=20
+>>> =91mkdir foo; chroot foo; cd ..=92.
+>> No, he can not.
+> 
+> The superuser can escape that way - its expected and fine behaviour
 
-Nope, still gets out.
+Does not work for me, and that would be the EXACT thing chroot is 
+supposed to prevent.  Maybe you guys are thinking of a program that 
+calls chroot() but leaves cwd outside the chroot still being able to 
+navigate outside of it?
+
+
