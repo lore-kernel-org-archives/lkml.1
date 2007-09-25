@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbXIYPqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbXIYPqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbXIYPqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 11:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbXIYPqE
+	id S1759272AbXIYPqb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 11:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbXIYPqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 11:46:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35190 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755845AbXIYPqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 11:46:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
-Date: Tue, 25 Sep 2007 18:00:12 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Damien Wyart <damien.wyart@free.fr>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       Frans Pop <elendil@planet.nl>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>, linux-acpi@vger.kernel.org
-References: <20070925065109.GA3080@localhost.localdomain> <20070925003340.5d6dd7f4.akpm@linux-foundation.org> <alpine.LFD.0.999.0709250830420.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709250830420.3579@woody.linux-foundation.org>
+	Tue, 25 Sep 2007 11:46:12 -0400
+Received: from h90-m1.hosting90.cz ([81.0.225.70]:37023 "EHLO
+	h90-m1.hosting90.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756258AbXIYPqK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 11:46:10 -0400
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Sep 2007 11:46:10 EDT
+Message-ID: <46F92BA7.8030304@prepere.com>
+Date: Tue, 25 Sep 2007 17:39:19 +0200
+From: Miloslav Semler <majkls@prepere.com>
+User-Agent: IceDove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: serge@hallyn.com, davidsen@tmr.com, philipp@marek.priv.at, 7eggert@gmx.de,
+       alan@lxorguk.ukuu.org.uk, bunk@fs.tum.de, linux-kernel@vger.kernel.org
+Subject: Re: Chroot bug
+References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com> <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com> <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com> <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com> <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com> <Pine.LNX.4.64.0709251715390.945@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0709251715390.945@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709251800.13272.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 25 September 2007 17:40, Linus Torvalds wrote:
-> 
-> On Tue, 25 Sep 2007 08:51:09 +0200 Damien Wyart <damien.wyart@free.fr> wrote:
-> > 
-> > Hello,
-> > 
-> > After testing rc8, I noticed that I couldn't power off the computer
-> > directly, it only got halted and I had to press the power button
-> > manually. Just before displaying "System halted", the following message
-> > is displayed:
-> > 
-> >   ACPI : PCI interrupt for device 0000:02:08.0 disabled
-> > 
-> > I had to first revert 5a50fe709d527f31169263e36601dd83446d5744 then
-> > f216cc3748a3a22c2b99390fddcdafa0583791a2 (handling of Sx states) to
-> > recover previous behaviour.
-> 
-> Hmm. Those things *do* seem to be suspicious.
-> 
-> For example, those commits seem to move code that used to be inside 
-> CONFIG_PM (which pretty much *everybody* has) to be inside 
-> CONFIG_ACPI_SLEEP (which is a totally different thing, and depends on 
-> whether the user asked for suspend support or not!
-> 
-> Damien - does it work if you ask for SUSPEND or HIBERNATION support?
-> 
-> Len - why are you guys moving stuff into CONFIG_PM_SLEEP? I know you seem 
-> to think that absolutely *everybody* should always support suspend and 
-> hibernation, but the fact is, not everybody does. And it's a totally 
-> separate thing for normal ACPI CPU runstate support that people have used 
-> to manage a *running* CPU (and shutting it down).
 
-This was a mistake and fixes have already been posted:
+> On Sep 26 2007 00:40, David Newall wrote:
+>   
+>> Miloslav Semler pointed out that a root process can chdir("..") out of its
+>> chroot.  Although this is documented in the man page, it conflicts with the
+>> essential function, which is to change the root directory of the process.  In
+>> addition to any creative uses, for example Philipp Marek's loading dynamic
+>> libraries, it seems clear that the prime purpose of chroot is to aid security.
+>> Being able to cd your way out is handy for the bad guys, but the good guys
+>> don't need it; there are a thousand better, safer solutions.
+>>     
+>
+> So what? Just do this: chdir into the root after chroot.
+>
+> It won't conform to SVR4/4.4BSD anymore, but hey, let Linux set some
+> sane standard ain't bad either. I doubt anyone really relies on the
+> fact that after chroot, your cwd might be outside the root.
+>   
+so then you corrupt pwd. I think that working directory should be set 
+only if it is necessary. Fn directory_is_out is not big performace loss. 
+And also you can break this fix with fchdir.
 
-http://marc.info/?l=linux-acpi&m=119052970904643&w=4
-http://marc.info/?l=linux-acpi&m=119073173625910&w=4
-
-Greetings,
-Rafael
+Miloslav
