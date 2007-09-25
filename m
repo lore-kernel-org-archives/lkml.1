@@ -1,42 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbXIYTUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbXIYTWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbXIYTUl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 15:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbXIYTUX
+	id S1756159AbXIYTWA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 15:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbXIYTVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 15:20:23 -0400
-Received: from vena.lwn.net ([206.168.112.25]:35739 "EHLO vena.lwn.net"
+	Tue, 25 Sep 2007 15:21:53 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:49988 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbXIYTUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 15:20:22 -0400
-To: David Howells <dhowells@redhat.com>
-Cc: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
-       sds@tycho.nsa.gov, casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 04/22] CRED: Request a credential record for a kernel service 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Fri, 21 Sep 2007 15:47:24 BST."
-Date: Tue, 25 Sep 2007 13:20:21 -0600
-Message-ID: <19445.1190748021@lwn.net>
+	id S1752728AbXIYTVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 15:21:52 -0400
+Date: Tue, 25 Sep 2007 21:22:50 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Henry Nestler <Henry.Ne@Arcor.de>
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+Subject: Re: kbuild: LDFLAGS_MODULE unusable for external module builds (2.6.23-rc2)
+Message-ID: <20070925192250.GA14689@uranus.ravnborg.org>
+References: <46F8D9B8.3090806@Arcor.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F8D9B8.3090806@Arcor.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, David,
+Hi Henry.
 
-One little thing I noticed:
+On Tue, Sep 25, 2007 at 11:49:44AM +0200, Henry Nestler wrote:
+> In reference of git 114f51577724b782a30f4f5ceaee9880de93d776:
+> >    kbuild: use LDFLAGS_MODULE only for .ko links
+> >    
+> >    Sam Ravnborg pointed out that Documentation/kbuild/makefiles.txt 
+> >    already
+> >    says this is what it's for.  This patch makes the reality live up to 
+> >    the
+> >    documentation.  This fixes the problem of LDFLAGS_BUILD_ID getting 
+> >    into too
+> >    many places.
+> 
+> LDFLAGS_MODULE is not usable in module build out of kernel tree since
+> 2.6.23-rc2. LDFLAGS_$@ should use, but does never work. - Not for
+> external module builds with the option "M=..."
 
-> + * @cred_kernel_act_as:
-> + *	Set the credentials for a kernel service to act as (subjective context).
-> + *	@cred points to the credentials structure to be filled in.
-> + *	@service names the service making the request.
-> + *	@daemon: A userspace daemon to be used as a base for the context.
-> + *	@dentry: A file or dir to be used as a base for the file creation
-> + *	  context.
-> + *	Return 0 if successful.
+LDFLAGS_MODULE are reserved for architectures and modules be external
+or not should never ude LDFLAGS_MODULE.
+And LDFALGS_$@ have never been documented to work for modules - dunno
+where you have that from.
+IIRC we only use LDFALGS_$@ in the ld macro to be used by bootloaders.
 
-The comment describes a "dentry" argument, but the actual function does
-not have that argument.
+> 
+> What macro should set for linker parameters of foo.o ? I'm not shure.
+Have you read:
+Documentation/kbuild/makfilefiles.txt?
+Here it is documented how to use the relevant variables.
 
-jon
+> Currently found, that only LDFLAGS is usable. But, found LDFLAGS in
+> modpost calls, there also exist a --start-group/--end-group. Is it right
+> to use it for external module?
+LDFLAGS are a kernel wide variable. Modules shall not fiddle with it!
 
-Jonathan Corbet / LWN.net / corbet@lwn.net
+
+>From your description you want to add a specific set of options to
+the linker in a specific Kbuild file.
+This is what EXTRA_LDFLAGS are present to help you with.
+
+As for the:
+> # Deal with recursive depens of libraries
+I am not sure what you mean (despite yout comprehensive description).
+Please try if EXTRA_LDFLAGS := --start-group lib.a --end-group
+will solve your need.
+
+I'm afraid not due to the placement of the --start-group --end-group.
+If this does not help you please give me specific examples of how
+the ld command-line should be then I can see how we tweak kbuild
+to help you.
+
+	Sam
