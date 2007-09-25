@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbXIYMJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbXIYMLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbXIYMJk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 08:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbXIYMJd
+	id S1754513AbXIYMLR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 08:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbXIYMLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 08:09:33 -0400
-Received: from mail0.scram.de ([78.47.204.202]:42099 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752513AbXIYMJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 08:09:32 -0400
-X-Spam-Score: -3.868
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.5 AWL AWL: From: address is in the auto white-list
-Message-ID: <46F8FA5F.3050907@scram.de>
-Date: Tue, 25 Sep 2007 14:09:03 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+	Tue, 25 Sep 2007 08:11:06 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:10502 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752621AbXIYMLE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 08:11:04 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: Paul Mackerras <paulus@samba.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/5] PowerPC: ibmebus refactoring and fixes
+Date: Tue, 25 Sep 2007 14:10:29 +0200
+User-Agent: KMail/1.8.2
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+       Paul Mackerras <pmac@au1.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-CC: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH4/4] [POWERPC] Fix cpm_uart driver
-References: <46F6C9DC.90008@scram.de> <46F7DE85.7000401@freescale.com> <46F7EE95.1040509@scram.de> <46F80049.2030509@freescale.com>
-In-Reply-To: <46F80049.2030509@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709251410.29780.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Scott,
-> Yikes.  Please don't change cpm_uart_cpm1.h, as it's correct for 
-> arch/powerpc, and there are numerous other places that assume cpmp is 
-> virtual (including in the very same function that assigns it a 
-> physical address).
+This patchset will merge the ibmebus and of_platform bus drivers by basing a
+lot of ibmebus functionality on of_platform code and adding the features
+specific to ibmebus on top of that.
 
-I'm still not convinced cpm_uart_cpm1.h is correct:
+I split the actual ibmebus rework into three patches (2/5-4/5) for easier
+readability. The kernel will compile during the intermediate states, and
+ibmebus will not crash, but not work either.
 
-pinfo->rx_bd_base and pinfo->tx_bd_base are both initialized with an 
-address obtained by cpm_dpram_addr(). In both ppc and powerpc, this is 
-an address relative to dpram_vbase in commproc.c
+As a side-effect of patch 3/5, a problem with bus_id collisions in case of
+two devices sharing the same location code is resolved -- the bus_id is now
+determined differently.
 
-In cpm_uart_core.c, the operation "pinfo->rx_bd_base - DPRAM_BASE" is 
-used to calculate the DPRAM offset. So DPRAM_BASE must be relative to 
-dpram_vbase in commproc.c as well. However, cpm_uart_cpm1.h uses cpmp in 
-commproc.c to initialize DPRAM_BASE.
+[1/5] moves of_device allocation into of_device.[ch]
+[2/5] removes the old bus match/probe/remove functions
+[3/5] adds device creation and bus probing based on of_device
+[4/5] finally moves to of_device and of_platform_driver by changing
+      ibmebus.h and matching the eHCA and eHEA drivers
+[5/5] just changes a nit in ibmebus_store_probe()
 
-On ARCH=ppc, cpmp is a physical address with 1:1 virtual mapping ("well 
-known address"). On ARC=powerpc, this is an address obtained by 
-ioremap(), however it's a different ioremap() call than dpram_vbase is 
-obtained from, so noone can guarantee
-cpmp is always the same as dpram_vbase even on ARCH=powerpc.
+These patches should apply cleanly, in order, against 2.6.23-rc5 and against
+Linus' git. Please review and comment them, and queue them up for 2.6.24 if
+you think they're okay.
 
-To me, it looks like setting DPRAM_BASE to cpm_dpram_addr(0) is the fix 
-as it makes the DPRAM offset a defined result.
+Thanks and regards,
+  Joachim
 
-Thanks,
-Jochen
+ arch/powerpc/kernel/ibmebus.c             |  263 ++++++++---------------------
+ arch/powerpc/kernel/of_device.c           |   80 +++++++++
+ arch/powerpc/kernel/of_platform.c         |   70 +--------
+ drivers/infiniband/hw/ehca/ehca_classes.h |    2 +-
+ drivers/infiniband/hw/ehca/ehca_eq.c      |    6 +-
+ drivers/infiniband/hw/ehca/ehca_main.c    |   32 ++--
+ drivers/net/ehea/ehea.h                   |    2 +-
+ drivers/net/ehea/ehea_main.c              |   72 ++++----
+ include/asm-powerpc/ibmebus.h             |   38 +----
+ include/asm-powerpc/of_device.h           |    4 +
+ include/linux/of_device.h                 |    5 +
+ 11 files changed, 226 insertions(+), 348 deletions(-)
+
+-- 
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com
 
