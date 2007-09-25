@@ -1,181 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbXIYILT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760357AbXIYILi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760598AbXIYILT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758849AbXIYIKa
+	id S1760357AbXIYILi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760423AbXIYILI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:10:30 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:36019 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758134AbXIYIK1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:10:27 -0400
-Date: Tue, 25 Sep 2007 10:10:26 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: menuconfig idea: lift fs menu
-In-Reply-To: <Pine.LNX.4.64.0709250132300.23305@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0709250134010.23305@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0709250128510.23305@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0709250132300.23305@fbirervta.pbzchgretzou.qr>
+	Tue, 25 Sep 2007 04:11:08 -0400
+Received: from web52009.mail.re2.yahoo.com ([206.190.48.58]:36986 "HELO
+	web52009.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760385AbXIYILH convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 04:11:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Wqyr0FEtTCJEU8emPjHYzzZhWHUSSk42GGsbAmrhftTlr0z1jUwoZKkeUYgNP2Rvu/BEwPy5VOfCpuHK+siCvoVaKa5frwMgVbRsFO4QvoAR9iVm2IdWv4UHG8hqfha3HB/76EwbgAVNupY5Zt4RBLUgL+RaGUTQR+QbVK9THoY=;
+X-YMail-OSG: BjIqQisVM1m.uL_Wu8bxVzo1RPdb9I0e.R0j0ZMGQq89y46rnoXi7hqLmS0.qCjLqA--
+X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
+Date: Tue, 25 Sep 2007 01:11:05 -0700 (PDT)
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: [PATCH] include/linux/mutex.h: unclear reference to convention
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <713129.73007.qm@web52009.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If you want to maintain the convention of documenting the interface only in .c files, 
+you should write the convention in so many places in .h files that no one could overlook it.
+But I think the convention is bad and it would be better to document the interface also in
+.h files where it is defined. The convention is bad because it requires people to jump to
+other files to understand .h files.
 
-Lift the FS menu a bit by moving filesystem-specific
-parts into their own menu.
 
-This is an idea I had. Comments please, if any.
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-
----
- fs/Kconfig      |   19 ++++++++++++++++---
- fs/gfs2/Kconfig |    9 ++++++---
- fs/xfs/Kconfig  |   10 +++++-----
- 3 files changed, 27 insertions(+), 11 deletions(-)
-
-Index: linux-2.6.23/fs/Kconfig
-===================================================================
---- linux-2.6.23.orig/fs/Kconfig
-+++ linux-2.6.23/fs/Kconfig
-@@ -6,6 +6,17 @@ menu "File systems"
- 
- if BLOCK
- 
-+menuconfig EXT_FS
-+	bool "Extended filesystem family"
-+	default y
-+	---help---
-+	  Say Y here to get to see options for the 'ext' filesystems.
-+	  This option alone does not add any kernel code.
-+
-+	  If you say N, all options in this submenu will be skipped and disabled.
-+
-+if EXT_FS
-+
- config EXT2_FS
- 	tristate "Second extended fs support"
- 	help
-@@ -272,7 +283,9 @@ config FS_MBCACHE
- 	default y if EXT2_FS=y || EXT3_FS=y || EXT4DEV_FS=y
- 	default m if EXT2_FS=m || EXT3_FS=m || EXT4DEV_FS=m
- 
--config REISERFS_FS
-+endif # EXT_FS
-+
-+menuconfig REISERFS_FS
- 	tristate "Reiserfs support"
- 	help
- 	  Stores not just filenames but the files themselves in a balanced
-@@ -358,7 +371,7 @@ config REISERFS_FS_SECURITY
- 	  If you are not using a security module that requires using
- 	  extended attributes for file security labels, say N.
- 
--config JFS_FS
-+menuconfig JFS_FS
- 	tristate "JFS filesystem support"
- 	select NLS
- 	help
-@@ -420,7 +433,7 @@ config FS_POSIX_ACL
- source "fs/xfs/Kconfig"
- source "fs/gfs2/Kconfig"
- 
--config OCFS2_FS
-+menuconfig OCFS2_FS
- 	tristate "OCFS2 file system support"
- 	depends on NET && SYSFS
- 	select CONFIGFS_FS
-Index: linux-2.6.23/fs/gfs2/Kconfig
-===================================================================
---- linux-2.6.23.orig/fs/gfs2/Kconfig
-+++ linux-2.6.23/fs/gfs2/Kconfig
-@@ -1,4 +1,4 @@
--config GFS2_FS
-+menuconfig GFS2_FS
- 	tristate "GFS2 file system support"
- 	depends on EXPERIMENTAL
- 	select FS_POSIX_ACL
-@@ -18,9 +18,10 @@ config GFS2_FS
- 	  the below locking modules. Documentation and utilities for GFS2 can
- 	  be found here: http://sources.redhat.com/cluster
- 
-+if GFS2_FS
-+
- config GFS2_FS_LOCKING_NOLOCK
- 	tristate "GFS2 \"nolock\" locking module"
--	depends on GFS2_FS
- 	help
- 	  Single node locking module for GFS2.
- 
-@@ -34,7 +35,7 @@ config GFS2_FS_LOCKING_NOLOCK
- 
- config GFS2_FS_LOCKING_DLM
- 	tristate "GFS2 DLM locking module"
--	depends on GFS2_FS && SYSFS && NET && INET && (IPV6 || IPV6=n)
-+	depends on SYSFS && NET && INET && (IPV6 || IPV6=n)
- 	select IP_SCTP if DLM_SCTP
- 	select CONFIGFS_FS
- 	select DLM
-@@ -44,3 +45,5 @@ config GFS2_FS_LOCKING_DLM
- 	  Most users of GFS2 will require this module. It provides the locking
- 	  interface between GFS2 and the DLM, which is required to use GFS2
- 	  in a cluster environment.
-+
-+endif # GFS2_FS
-Index: linux-2.6.23/fs/xfs/Kconfig
-===================================================================
---- linux-2.6.23.orig/fs/xfs/Kconfig
-+++ linux-2.6.23/fs/xfs/Kconfig
-@@ -1,4 +1,4 @@
--config XFS_FS
-+menuconfig XFS_FS
- 	tristate "XFS filesystem support"
- 	depends on BLOCK
- 	help
-@@ -18,9 +18,10 @@ config XFS_FS
- 	  system of your root partition is compiled as a module, you'll need
- 	  to use an initial ramdisk (initrd) to boot.
- 
-+if XFS_FS
-+
- config XFS_QUOTA
- 	bool "XFS Quota support"
--	depends on XFS_FS
- 	help
- 	  If you say Y here, you will be able to set limits for disk usage on
- 	  a per user and/or a per group basis under XFS.  XFS considers quota
-@@ -37,7 +38,6 @@ config XFS_QUOTA
- 
- config XFS_SECURITY
- 	bool "XFS Security Label support"
--	depends on XFS_FS
- 	help
- 	  Security labels support alternative access control models
- 	  implemented by security modules like SELinux.  This option
-@@ -49,7 +49,6 @@ config XFS_SECURITY
- 
- config XFS_POSIX_ACL
- 	bool "XFS POSIX ACL support"
--	depends on XFS_FS
- 	help
- 	  POSIX Access Control Lists (ACLs) support permissions for users and
- 	  groups beyond the owner/group/world scheme.
-@@ -61,7 +60,6 @@ config XFS_POSIX_ACL
- 
- config XFS_RT
- 	bool "XFS Realtime subvolume support"
--	depends on XFS_FS
- 	help
- 	  If you say Y here you will be able to mount and use XFS filesystems
- 	  which contain a realtime subvolume.  The realtime subvolume is a
-@@ -76,3 +74,5 @@ config XFS_RT
- 	  See the xfs man page in section 5 for additional information.
- 
- 	  If unsure, say N.
-+
-+endif # XFS_FS
+      __________________________________  
+Alles was der Gesundheit und Entspannung dient. BE A BETTER MEDIZINMANN! www.yahoo.de/clever
