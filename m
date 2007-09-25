@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757675AbXIYPKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbXIYPKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757675AbXIYPKI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 11:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbXIYPJz
+	id S1757914AbXIYPKm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 11:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbXIYPKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 11:09:55 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:8469 "EHLO
-	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753359AbXIYPJy (ORCPT
+	Tue, 25 Sep 2007 11:10:33 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:34251 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754835AbXIYPKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 11:09:54 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Date: Tue, 25 Sep 2007 09:04:52 -0600
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "Joerg Pommnitz" <pommnitz@yahoo.com>
-cc: cebbert@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Problems with 2.6.23-rc6 on AMD Geode LX800
-Message-ID: <20070925150452.GA15162@cosmic.amd.com>
-References: <267869.77756.qm@web51407.mail.re2.yahoo.com>
+	Tue, 25 Sep 2007 11:10:32 -0400
+Message-ID: <46F924E3.50205@davidnewall.com>
+Date: Wed, 26 Sep 2007 00:40:27 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-In-Reply-To: <267869.77756.qm@web51407.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 25 Sep 2007 15:04:45.0613 (UTC)
- FILETIME=[68BA6DD0:01C7FF85]
-X-WSS-ID: 6AE7FC4213S245181-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+To: "Serge E. Hallyn" <serge@hallyn.com>
+CC: Bill Davidsen <davidsen@tmr.com>, Philipp Marek <philipp@marek.priv.at>,
+       7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       majkls <majkls@prepere.com>, bunk@fs.tum.de,
+       linux-kernel@vger.kernel.org
+Subject: Chroot bug (was: sys_chroot+sys_fchdir Fix)
+References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com> <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com> <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com> <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com> <46F91417.9050600@davidnewall.com>
+In-Reply-To: <46F91417.9050600@davidnewall.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/09/07 01:38 -0700, Joerg Pommnitz wrote:
-> Chuck, Jordan,
-> thanks for taking an interest in this problem. As suggested by Jordan I tried a new
-> BIOS revision from
-> http://www.digitallogic.ch/index.php?id=256&dir=/MSEP800%20-%20SM800PCX%20%20-%20MPC20%20-%20MPC21&mountpoint=23
-> 
-> Unfortunately the kernel still fails to boot in the same way.
+Miloslav Semler pointed out that a root process can chdir("..") out of 
+its chroot.  Although this is documented in the man page, it conflicts 
+with the essential function, which is to change the root directory of 
+the process.  In addition to any creative uses, for example Philipp 
+Marek's loading dynamic libraries, it seems clear that the prime purpose 
+of chroot is to aid security.  Being able to cd your way out is handy 
+for the bad guys, but the good guys don't need it; there are a thousand 
+better, safer solutions.
 
-You'll have to contact Digital Logic and have them check with the BIOS vendor
-to see if the fix was made in that version or not.  I don't have that
-particular board, so I can't try out the fixes here.
+If there truly is a need to be able to pop in and out of a chroot, then 
+the solution should be obvious, such as with real versus effective user 
+and group ids.  An important quality of a solution would be a way to fix 
+that essential function: to set the root in such a way that you can no 
+longer pop out.  But that is a separate question.
 
-I'm still trying to track down the particulars of the fix from the BIOS 
-vendor.  I'll let you know.
+The question: is chroot buggy?  I'm pleased to turn to SCO for an 
+independent definition for chroot, from which I get the following:
 
-> Do you still need the disassembled reserve_bootmem_core? 
+http://osr600doc.sco.com/en/man/html.S/chroot.S.html:
+>
+> The *..* entry in the root directory is interpreted to mean the root 
+> directory itself. Thus, *..* cannot be used to access files outside 
+> the subtree rooted at the root directory.
+>
 
-Sure - you might as well - just to make sure its the same problem.
-
-Jordan
-
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
-
+I argue chroot is buggy.  Miloslav's patch might not be the right 
+solution, but he has the right idea (i.e. fix it.)
