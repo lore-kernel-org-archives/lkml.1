@@ -1,169 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbXIYLu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbXIYLvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbXIYLu4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 07:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXIYLus
+	id S1754451AbXIYLvY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXIYLvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 07:50:48 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:57343 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbXIYLur (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 07:50:47 -0400
-Date: Tue, 25 Sep 2007 13:50:46 +0200
-From: Jan Kara <jack@ucw.cz>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: richard kennedy <richard@rsk.demon.co.uk>, sct@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: jbd : config_jbd_debug cannot create /proc entry
-Message-ID: <20070925115046.GA15394@atrey.karlin.mff.cuni.cz>
-References: <1190713240.3154.20.camel@castor.rsk.org> <20070925105112.GB8126@atrey.karlin.mff.cuni.cz> <46F8EB26.2090104@linux.vnet.ibm.com>
+	Tue, 25 Sep 2007 07:51:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34099 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752185AbXIYLvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 07:51:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Damien Wyart <damien.wyart@free.fr>
+Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
+Date: Tue, 25 Sep 2007 14:05:25 +0200
+User-Agent: KMail/1.9.5
+Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Frans Pop <elendil@planet.nl>, linux-acpi@vger.kernel.org
+References: <20070925065109.GA3080@localhost.localdomain> <20070925095855.GA4982@localhost.localdomain> <200709251345.11370.rjw@sisk.pl>
+In-Reply-To: <200709251345.11370.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46F8EB26.2090104@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200709251405.26861.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, 25 September 2007 13:45, Rafael J. Wysocki wrote:
+> On Tuesday, 25 September 2007 11:58, Damien Wyart wrote:
+> > > > No, I do not have CONFIG_ACPI_SLEEP set,
+> > > > because I do not have CONFIG_PM_SLEEP set,
+> > > > because I do not want SUSPEND and/or HIBERNATION.
+> > 
+> > > Same answer from my side: I do not have CONFIG_ACPI_SLEEP for the same
+> > > reason (and this worked fine without them in rc7). I do not think
+> > > these settings should have changed between rc7 and rc8.
 > 
+> Well, we haven't changed much.
 > 
-> Jan Kara wrote:
-> >>
-> >-#define create_jbd_proc_entry() do {} while (0)
-> >-#define remove_jbd_proc_entry() do {} while (0)
-> >+static ctl_table fs_table[] = {
-> >+	{
-> >+                .ctl_name       = -1,	/* Don't want it */
+> > Also, another test I just did: on another computer, rc8 is fine
+> > regarding ACPI power off, even if CONFIG_ACPI_SLEEP is not set. I can
+> > provide config if needed.
 > 
+> On the box that fails to power off, can you please test -rc8 with these two
+> commits reverted:
 > 
+> commit 5a50fe709d527f31169263e36601dd83446d5744
+> ACPI: suspend: consolidate handling of Sx states addendum
 > 
-> shouldn't this be CTL_UNNUMBERED ?
-  Oh, it should be. I didn't notice we have this :) Thanks for notifying
-me. Attached is a fixed version.
+> commit f216cc3748a3a22c2b99390fddcdafa0583791a2
+> ACPI: suspend: consolidate handling of Sx states.
+> 
+> and see if it works?
 
-> 
-> >+                .procname       = "jbd-debug",
-> >+                .data           = &journal_enable_debug,
-> >+                .maxlen         = sizeof(int),
-> >+                .mode           = 0644,
-> >+                .proc_handler   = &proc_dointvec,
-> >+        },
-> >+        { .ctl_name = 0 },
-> >+};
-> >
+If it does, please test the patch from this message
 
---------
+http://marc.info/?l=linux-kernel&m=119052978117735&w=4
 
-JBD debug code used old way of creating proc entries for jbd-debug file.
-Change it to use sysctl instead.
+on top of vanilla 2.6.23-rc8.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc6/fs/jbd/journal.c linux-2.6.23-rc6-1-jbddebug_fix/fs/jbd/journal.c
---- linux-2.6.23-rc6/fs/jbd/journal.c	2007-09-25 12:39:53.000000000 +0200
-+++ linux-2.6.23-rc6-1-jbddebug_fix/fs/jbd/journal.c	2007-09-25 14:09:11.000000000 +0200
-@@ -1944,58 +1944,29 @@ void journal_put_journal_head(struct jou
- #if defined(CONFIG_JBD_DEBUG)
- int journal_enable_debug;
- EXPORT_SYMBOL(journal_enable_debug);
--#endif
--
--#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_PROC_FS)
--
--static struct proc_dir_entry *proc_jbd_debug;
--
--static int read_jbd_debug(char *page, char **start, off_t off,
--			  int count, int *eof, void *data)
--{
--	int ret;
--
--	ret = sprintf(page + off, "%d\n", journal_enable_debug);
--	*eof = 1;
--	return ret;
--}
--
--static int write_jbd_debug(struct file *file, const char __user *buffer,
--			   unsigned long count, void *data)
--{
--	char buf[32];
--
--	if (count > ARRAY_SIZE(buf) - 1)
--		count = ARRAY_SIZE(buf) - 1;
--	if (copy_from_user(buf, buffer, count))
--		return -EFAULT;
--	buf[ARRAY_SIZE(buf) - 1] = '\0';
--	journal_enable_debug = simple_strtoul(buf, NULL, 10);
--	return count;
--}
-+static struct ctl_table_header *jbd_debug_table;
- 
--#define JBD_PROC_NAME "sys/fs/jbd-debug"
--
--static void __init create_jbd_proc_entry(void)
--{
--	proc_jbd_debug = create_proc_entry(JBD_PROC_NAME, 0644, NULL);
--	if (proc_jbd_debug) {
--		/* Why is this so hard? */
--		proc_jbd_debug->read_proc = read_jbd_debug;
--		proc_jbd_debug->write_proc = write_jbd_debug;
--	}
--}
--
--static void __exit remove_jbd_proc_entry(void)
--{
--	if (proc_jbd_debug)
--		remove_proc_entry(JBD_PROC_NAME, NULL);
--}
--
--#else
--
--#define create_jbd_proc_entry() do {} while (0)
--#define remove_jbd_proc_entry() do {} while (0)
-+static ctl_table fs_table[] = {
-+	{
-+                .ctl_name       = CTL_UNNUMBERED,
-+                .procname       = "jbd-debug",
-+                .data           = &journal_enable_debug,
-+                .maxlen         = sizeof(int),
-+                .mode           = 0644,
-+                .proc_handler   = &proc_dointvec,
-+        },
-+        { .ctl_name = 0 },
-+};
-+
-+static ctl_table sys_table[] = {
-+        {
-+                .ctl_name       = CTL_FS,
-+                .procname       = "fs",
-+                .mode           = 0555,
-+                .child          = fs_table,
-+        },
-+        { .ctl_name = 0 },
-+};
- 
- #endif
- 
-@@ -2054,7 +2025,10 @@ static int __init journal_init(void)
- 	ret = journal_init_caches();
- 	if (ret != 0)
- 		journal_destroy_caches();
--	create_jbd_proc_entry();
-+
-+#ifdef CONFIG_JBD_DEBUG
-+	jbd_debug_table = register_sysctl_table(sys_table);
-+#endif
- 	return ret;
- }
- 
-@@ -2064,8 +2038,8 @@ static void __exit journal_exit(void)
- 	int n = atomic_read(&nr_journal_heads);
- 	if (n)
- 		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
-+	unregister_sysctl_table(jbd_debug_table);
- #endif
--	remove_jbd_proc_entry();
- 	journal_destroy_caches();
- }
- 
+Greetings,
+Rafael
