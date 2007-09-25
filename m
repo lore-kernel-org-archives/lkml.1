@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759809AbXIYFgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbXIYFpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759809AbXIYFgr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 01:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXIYFgk
+	id S1759248AbXIYFpL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 01:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXIYFo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 01:36:40 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:35341 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754408AbXIYFgj (ORCPT
+	Tue, 25 Sep 2007 01:44:59 -0400
+Received: from mxsf05.insightbb.com ([74.128.0.75]:44963 "EHLO
+	mxsf05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbXIYFo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 01:36:39 -0400
-Date: Mon, 24 Sep 2007 22:35:47 -0700
-From: Greg KH <greg@kroah.com>
-To: Satyam Sharma <satyam@infradead.org>
+	Tue, 25 Sep 2007 01:44:58 -0400
+X-IronPort-AV: E=Sophos;i="4.20,294,1186372800"; 
+   d="scan'208";a="48205606"
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAMI8+EZKjlCP/2dsb2JhbACBWA
+X-IronPort-AV: E=Sophos;i="4.20,294,1186372800"; 
+   d="scan'208";a="119240772"
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] Input updates for 2.6.23-rc8
+Date: Tue, 25 Sep 2007 01:44:57 -0400
+User-Agent: KMail/1.9.7
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1
-Message-ID: <20070925053547.GA6211@kroah.com>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org> <46EF96CC.1080807@linux.vnet.ibm.com> <20070918022739.f25c2846.akpm@linux-foundation.org> <alpine.LFD.0.999.0709181504030.21091@enigma.security.iitk.ac.in> <20070918191740.GC11083@kroah.com> <alpine.LFD.0.999.0709221433160.28693@enigma.security.iitk.ac.in>
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709221433160.28693@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200709250144.57533.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 22, 2007 at 02:51:54PM +0530, Satyam Sharma wrote:
-> Hi Greg,
-> 
-> 
-> On Tue, 18 Sep 2007, Greg KH wrote:
-> > 
-> > On Tue, Sep 18, 2007 at 03:04:48PM +0530, Satyam Sharma wrote:
-> > > 
-> > > But wait ... isn't that a statically-allocated kobject, which were
-> > > supposed to be "naughty" in the first place?
-> > 
-> > Yes it is, if you want to dynamically create it, please do.
-> 
-> Sorry for being late to reply, but do you still want such a patch (i.e.
-> convert static to dynamic allocation)?
+Hi Linus,
 
-Yes, I'll gladly take such patches.
+Please pull from:
 
-> I read elsewhere on this thread that you'd merge Kamalesh's patch and
-> fix it up to also use kobject_name() yourself. But it's a small/trivial
-> driver, so I think just converting it to dynamic allocation right now
-> itself (when we've noticed it already) is probably better (?)
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-Sure that would be great to have.
+to receive updates for the input subsystem. There is only one patch
+that fixes regression in appletouch driver introduced in previous
+release.
 
-> [ BTW I don't see the fix in your git trees or quilt queue. So I'll
->   make a patch on top of 2.6.23-rc6-mm1 itself. ]
+Thomas Rohwer (1):
+      Input: appletouch - fix idle reset logic
 
-I'm behind in updating my patch queue, sorry, other things came up :(
+ drivers/input/mouse/appletouch.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-thanks,
-
-greg k-h
+-- 
+Dmitry
