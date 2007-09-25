@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbXIYHos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbXIYHp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbXIYHos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 03:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbXIYHol
+	id S1758273AbXIYHp3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 03:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXIYHpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 03:44:41 -0400
-Received: from www.osadl.org ([213.239.205.134]:53017 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751135AbXIYHol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 03:44:41 -0400
-Subject: Re: 2.6.23-rc7-mm1
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-In-Reply-To: <64bb37e0709250032j4d2e23c3iccc48fe2e647cbd4@mail.gmail.com>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-	 <64bb37e0709241207q1c188b35ua485a06776ed4bf2@mail.gmail.com>
-	 <20070924123450.f9e54d3d.akpm@linux-foundation.org>
-	 <1190665512.4035.247.camel@chaos>
-	 <64bb37e0709250032j4d2e23c3iccc48fe2e647cbd4@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 09:44:38 +0200
-Message-Id: <1190706278.4035.261.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+	Tue, 25 Sep 2007 03:45:21 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:34203 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753033AbXIYHpT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 03:45:19 -0400
+Message-ID: <46F8BC8A.7080006@davidnewall.com>
+Date: Tue, 25 Sep 2007 17:15:14 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serge@hallyn.com>
+CC: Bill Davidsen <davidsen@tmr.com>, Philipp Marek <philipp@marek.priv.at>,
+       7eggert@gmx.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       majkls <majkls@prepere.com>, bunk@fs.tum.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: sys_chroot+sys_fchdir Fix
+References: <952DN-83o-31@gated-at.bofh.it> <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at> <46F29A9A.4070806@davidnewall.com> <200709201817.17282@x5> <46F2B59F.8090709@davidnewall.com> <46F2DDD0.3030500@tmr.com> <46F380E4.4040606@davidnewall.com> <20070924213215.GA32716@vino.hallyn.com> <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com>
+In-Reply-To: <20070924230008.GA3160@vino.hallyn.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Serge E. Hallyn wrote:
+> Quoting David Newall (david@davidnewall.com):
+>   
+>> It might be tidy if pivot_root could be used (instead of a hack based on a 
+>> chroot bug), but it'd still be unportable.
+>>     
+>
+> It can.
+>
+> Please re-read my previous msg.
 
-On Tue, 2007-09-25 at 09:32 +0200, Torsten Kaiser wrote:
-> On 9/24/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > Can your check whether 2.6.23-rc7 +
-> > http://tglx.de/projects/hrtimers/2.6.23-rc7/patch-2.6.23-rc7-hrt1.patch
-> >
-> > works for you ?
-> 
-> Yes, powers off normally.
-
-Ok, so it's probably some merge artifact in -mm. We'll get this sorted
-out once Len has his new tree available.
-
-	tglx
-
-
+I read it.  Currently pivot_root can't be used to affect a single 
+process.  It can be modified; obviously.  Maybe it should be, too, but 
+is there a need for that?
