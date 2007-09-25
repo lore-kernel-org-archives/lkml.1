@@ -1,50 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbXIYSUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757642AbXIYSXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbXIYSUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 14:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbXIYSUE
+	id S1757642AbXIYSXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 14:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbXIYSXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 14:20:04 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:25079 "EHLO kernel.dk"
+	Tue, 25 Sep 2007 14:23:01 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53024 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbXIYSUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 14:20:01 -0400
-Date: Tue, 25 Sep 2007 20:21:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Berck E. Nash" <flyboy@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
-Message-ID: <20070925182123.GC2367@kernel.dk>
-References: <46F7FBCB.4030803@gmail.com> <46F8665A.4000206@garzik.org> <46F94FF3.1000400@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F94FF3.1000400@gmail.com>
+	id S1750887AbXIYSW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 14:22:59 -0400
+Message-Id: <20070925182258.175348676@strauss.suse.de>
+References: <20070925182257.900701776@strauss.suse.de>
+User-Agent: quilt/0.46-58
+Date: Tue, 25 Sep 2007 20:22:58 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: kexec@lists.infradead.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: [patch 1/7] Extended crashkernel command line
+Content-Disposition: inline; filename=crashkernel-generic
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 25 2007, Berck E. Nash wrote:
-> Jeff Garzik wrote:
-> 
-> > The first step would be to clone the "upstream" branch of
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
-> > 
-> > and see if the problem is reproducible there.  If yes, then you have
-> > narrowed down the problem to something my ATA devel tree has introduced
-> > into -mm.
-> 
-> Nope, you're off the hook.  The libata tree works great, so it must be
-> something else in -mm conflicting.
+This is the generic part of the patch. It adds a parse_crashkernel() function
+in kernel/kexec.c that is called by the architecture specific code that
+actually reserves the memory. That function takes the whole command line and
+looks itself for "crashkernel=" in it.
 
-Can you try 2.6.23-rc8 plus this patch:
+If there are multiple occurrences, then the last one is taken.  The advantage
+is that if you have a bootloader like lilo or elilo which allows you to append
+a command line parameter but not to remove one (like in GRUB), then you can add
+another crashkernel value for testing at the boot command line and this one
+overwrites the command line in the configuration then.
 
-http://brick.kernel.dk/git-block.patch.bz2
 
-and see if that works?
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+
+---
+ include/linux/kexec.h |    2 
+ kernel/kexec.c        |  142 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 144 insertions(+)
+
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -187,6 +187,8 @@ extern u32 vmcoreinfo_note[VMCOREINFO_NO
+ extern size_t vmcoreinfo_size;
+ extern size_t vmcoreinfo_max_size;
+ 
++int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
++		unsigned long long *crash_size, unsigned long long *crash_base);
+ 
+ #else /* !CONFIG_KEXEC */
+ struct pt_regs;
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1146,6 +1146,148 @@ static int __init crash_notes_memory_ini
+ }
+ module_init(crash_notes_memory_init)
+ 
++
++/*
++ * parsing the "crashkernel" commandline
++ *
++ * this code is intended to be called from architecture specific code
++ */
++
++
++/*
++ * This function parses command lines in the format
++ *
++ *   crashkernel=<ramsize-range>:<size>[,...][@<base>]
++ *
++ * The function returns 0 on success and -EINVAL on failure.
++ */
++static int __init parse_crashkernel_mem(char 			*cmdline,
++					unsigned long long	system_ram,
++					unsigned long long	*crash_size,
++					unsigned long long	*crash_base)
++{
++	char *cur = cmdline;
++
++	/* for each entry of the comma-separated list */
++	do {
++		unsigned long long start = 0, end = ULLONG_MAX;
++		unsigned long long size = -1;
++
++		/* get the start of the range */
++		start = memparse(cur, &cur);
++		if (*cur != '-') {
++			printk(KERN_WARNING "crashkernel: '-' expected\n");
++			return -EINVAL;
++		}
++		cur++;
++
++		/* if no ':' is here, than we read the end */
++		if (*cur != ':') {
++			end = memparse(cur, &cur);
++			if (end <= start) {
++				printk(KERN_WARNING "crashkernel: end <= start\n");
++				return -EINVAL;
++			}
++		}
++
++		if (*cur != ':') {
++			printk(KERN_WARNING "crashkernel: ':' expected\n");
++			return -EINVAL;
++		}
++		cur++;
++
++		size = memparse(cur, &cur);
++		if (size < 0) {
++			printk(KERN_WARNING "crashkernel: invalid size\n");
++			return -EINVAL;
++		}
++
++		/* match ? */
++		if (system_ram >= start  && system_ram <= end) {
++			*crash_size = size;
++			break;
++		}
++	} while (*cur++ == ',');
++
++	if (*crash_size > 0) {
++		while (*cur != ' ' && *cur != '@')
++			cur++;
++		if (*cur == '@')
++			*crash_base = memparse(cur+1, &cur);
++	}
++
++	return 0;
++}
++
++/*
++ * That function parses "simple" (old) crashkernel command lines like
++ *
++ * 	crashkernel=size[@base]
++ *
++ * It returns 0 on success and -EINVAL on failure.
++ */
++static int __init parse_crashkernel_simple(char 		*cmdline,
++					   unsigned long long 	*crash_size,
++					   unsigned long long 	*crash_base)
++{
++	char *cur = cmdline;
++
++	*crash_size = memparse(cmdline, &cur);
++	if (cmdline == cur)
++		return -EINVAL;
++
++	if (*cur == '@')
++		*crash_base = memparse(cur+1, &cur);
++
++	return 0;
++}
++
++/*
++ * That function is the entry point for command line parsing and should be
++ * called from the arch-specific code.
++ */
++int __init parse_crashkernel(char 		 *cmdline,
++			     unsigned long long system_ram,
++			     unsigned long long *crash_size,
++			     unsigned long long *crash_base)
++{
++	char 	*p = cmdline, *ck_cmdline = NULL;
++	char	*first_colon, *first_space;
++
++	BUG_ON(!crash_size || !crash_base);
++	*crash_size = 0;
++	*crash_base = 0;
++
++	/* find crashkernel and use the last one if there are more */
++	p = strstr(p, "crashkernel=");
++	while (p) {
++		ck_cmdline = p;
++		p = strstr(p+1, "crashkernel=");
++	}
++
++	if (!ck_cmdline)
++		return -EINVAL;
++
++	ck_cmdline += 12; /* strlen("crashkernel=") */
++
++	/*
++	 * if the commandline contains a ':', then that's the extended
++	 * syntax -- if not, it must be the classic syntax
++	 */
++	first_colon = strchr(ck_cmdline, ':');
++	first_space = strchr(ck_cmdline, ' ');
++	if (first_colon && (!first_space || first_colon < first_space))
++		return parse_crashkernel_mem(ck_cmdline, system_ram,
++				crash_size, crash_base);
++	else
++		return parse_crashkernel_simple(ck_cmdline, crash_size,
++				crash_base);
++
++	return 0;
++}
++
++
++
+ void crash_save_vmcoreinfo(void)
+ {
+ 	u32 *buf;
 
 -- 
-Jens Axboe
-
