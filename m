@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbXIYLEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbXIYLF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbXIYLEn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 07:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbXIYLEe
+	id S1753567AbXIYLF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 07:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXIYLFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 07:04:34 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:42059 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbXIYLEd (ORCPT
+	Tue, 25 Sep 2007 07:05:49 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:53612 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751861AbXIYLFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 07:04:33 -0400
-Message-ID: <46F8EB26.2090104@linux.vnet.ibm.com>
-Date: Tue, 25 Sep 2007 16:34:06 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: richard kennedy <richard@rsk.demon.co.uk>, sct@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: jbd : config_jbd_debug cannot create /proc entry
-References: <1190713240.3154.20.camel@castor.rsk.org> <20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 25 Sep 2007 07:05:48 -0400
+Date: Tue, 25 Sep 2007 13:05:44 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc7-mm1
+Message-ID: <20070925130544.3d74d04d@twins>
+In-Reply-To: <20070924212058.76017e47@lappy>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+	<46F7B7FD.1000905@linux.vnet.ibm.com>
+	<20070924094448.d08cf3a6.akpm@linux-foundation.org>
+	<20070924185737.717b2650@twins>
+	<46F7EEF3.7080902@linux.vnet.ibm.com>
+	<20070924212058.76017e47@lappy>
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 24 Sep 2007 21:20:58 +0200 Peter Zijlstra
+<a.p.zijlstra@chello.nl> wrote:
 
+> > > Nope, and the stacktrace is utterly puzzling.
+> > > 
+> > > /me goes read the lkml.org link
+> > > 
+> > > Kamalesh Babulal: do you still get:
+> > >   BUG: spinlock bad magic on
+> > > 
+> > > msgs?
+> > > 
+> > > Because those I could reproduce using fsx, and I fixed all that.
+> > Hi Peter,
+> > 
+> > I do not get BUG: spinlock bad magic messages any more, but the softlock message is
+> > thrown more than 30 time, while running the ltp runall.
+> 
+> It would be good to know what function on_each_cpu is executing, could
+> you try something like:
 
-Jan Kara wrote:
->> 
-> -#define create_jbd_proc_entry() do {} while (0)
-> -#define remove_jbd_proc_entry() do {} while (0)
-> +static ctl_table fs_table[] = {
-> +	{
-> +                .ctl_name       = -1,	/* Don't want it */
+I've just completed 2 full ltp runs on a dual-core opteron machine but
+could not reproduce this problem.
 
-
-
-shouldn't this be CTL_UNNUMBERED ?
-
-
-> +                .procname       = "jbd-debug",
-> +                .data           = &journal_enable_debug,
-> +                .maxlen         = sizeof(int),
-> +                .mode           = 0644,
-> +                .proc_handler   = &proc_dointvec,
-> +        },
-> +        { .ctl_name = 0 },
-> +};
->
-
--aneesh
+Kamalesh, would it be possible for you to reproduce with that patch, so
+we can see what function is holding up the cpu?
