@@ -1,189 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbXIYHeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXIYHgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756677AbXIYHeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 03:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbXIYHeP
+	id S1757283AbXIYHgS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 03:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbXIYHgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 03:34:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48498 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753386AbXIYHeN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 03:34:13 -0400
-Date: Tue, 25 Sep 2007 00:33:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Damien Wyart <damien.wyart@free.fr>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       Frans Pop <elendil@planet.nl>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org
-Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
-Message-Id: <20070925003340.5d6dd7f4.akpm@linux-foundation.org>
-In-Reply-To: <20070925065109.GA3080@localhost.localdomain>
-References: <20070925065109.GA3080@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 25 Sep 2007 03:36:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44071 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753938AbXIYHgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 03:36:07 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+ZD9gnKeeZf09oXsjzf0PXl936kMjvlh5q1mOSMI
+	+m4BVvY6ZHuw9/
+Subject: Re: [git] CFS-devel, latest code
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1190700652.6482.7.camel@Homer.simpson.net>
+References: <20070924214537.GA18980@elte.hu>
+	 <1190700652.6482.7.camel@Homer.simpson.net>
+Content-Type: multipart/mixed; boundary="=-99vegu7EaA/xGKoliGJQ"
+Date: Tue, 25 Sep 2007 09:35:59 +0200
+Message-Id: <1190705759.11910.10.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.8.2 
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Sep 2007 08:51:09 +0200 Damien Wyart <damien.wyart@free.fr> wrote:
 
-> Hello,
-> 
-> After testing rc8, I noticed that I couldn't power off the computer
-> directly, it only got halted and I had to press the power button
-> manually. Just before displaying "System halted", the following message
-> is displayed:
-> 
->   ACPI : PCI interrupt for device 0000:02:08.0 disabled
-> 
-> I had to first revert 5a50fe709d527f31169263e36601dd83446d5744 then
-> f216cc3748a3a22c2b99390fddcdafa0583791a2 (handling of Sx states) to
-> recover previous behaviour.
+--=-99vegu7EaA/xGKoliGJQ
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Let's add some cc's.
+On Tue, 2007-09-25 at 08:10 +0200, Mike Galbraith wrote:
+>  no news is good news.
 
-> Attached are the dmesg for rc7, rc8 and rc8 with the two patches
-> reverted.
+Darn, have news: latency thing isn't dead.  Two busy loops, one at nice
+0 pinned to CPU0, and one at nice 19 pinned to CPU1 produced the
+latencies below for nice -5 Xorg.  Didn't kill the box though.
 
-"diff -u dmesg.rc8_revert dmesg.rc8" says:
+se.wait_max              :            10.068169
+se.wait_max              :             7.465334
+se.wait_max              :           135.501816
+se.wait_max              :             0.884483
+se.wait_max              :           144.218955
+se.wait_max              :           128.578376
+se.wait_max              :            93.975768
+se.wait_max              :             4.965965
+se.wait_max              :           113.655533
+se.wait_max              :             4.301075
 
---- dmesg.rc8_revert	2007-09-25 00:31:33.000000000 -0700
-+++ dmesg.rc8	2007-09-25 00:31:30.000000000 -0700
-@@ -1,4 +1,4 @@
--Linux version 2.6.23-rc8-25092007dw (root@brouette) (gcc version 4.2.1 (Debian 4.2.1-5)) #2 SMP Tue Sep 25 08:31:09 CEST 2007
-+Linux version 2.6.23-rc8-25092007dw (root@brouette) (gcc version 4.2.1 (Debian 4.2.1-5)) #1 SMP Tue Sep 25 07:27:10 CEST 2007
- BIOS-provided physical RAM map:
-  BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
-  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
-@@ -72,18 +72,18 @@
- console [tty0] enabled
- Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
- Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
--Memory: 2074780k/2096592k available (2175k kernel code, 20712k reserved, 815k data, 192k init, 1179088k highmem)
-+Memory: 2074780k/2096592k available (2175k kernel code, 20712k reserved, 816k data, 192k init, 1179088k highmem)
- virtual kernel memory layout:
-     fixmap  : 0xfff9b000 - 0xfffff000   ( 400 kB)
-     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
-     vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
-     lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-       .init : 0xc03f0000 - 0xc0420000   ( 192 kB)
--      .data : 0xc031fd5c - 0xc03ebd04   ( 815 kB)
--      .text : 0xc0100000 - 0xc031fd5c   (2175 kB)
-+      .data : 0xc031fcd4 - 0xc03ebd04   ( 816 kB)
-+      .text : 0xc0100000 - 0xc031fcd4   (2175 kB)
- Checking if this processor honours the WP bit even in supervisor mode... Ok.
- SLUB: Genslabs=22, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
--Calibrating delay using timer specific routine.. 5987.66 BogoMIPS (lpj=2993833)
-+Calibrating delay using timer specific routine.. 5987.60 BogoMIPS (lpj=2993802)
- Mount-cache hash table entries: 512
- CPU: After generic identify, caps: bfebfbff 00000000 00000000 00000000 0000041d 00000000 00000000 00000000
- monitor/mwait feature present.
-@@ -104,7 +104,7 @@
- Booting processor 1/1 eip 2000
- CPU 1 irqstacks, hard=c0426000 soft=c0424000
- Initializing CPU#1
--Calibrating delay using timer specific routine.. 5984.18 BogoMIPS (lpj=2992093)
-+Calibrating delay using timer specific routine.. 5984.16 BogoMIPS (lpj=2992084)
- CPU: After generic identify, caps: bfebfbff 00000000 00000000 00000000 0000041d 00000000 00000000 00000000
- monitor/mwait feature present.
- CPU: Trace cache: 12K uops, L1 D cache: 16K
-@@ -116,7 +116,7 @@
- CPU1: Intel P4/Xeon Extended MCE MSRs (12) available
- CPU1: Thermal monitoring enabled
- CPU1: Intel(R) Pentium(R) 4 CPU 3.00GHz stepping 03
--Total of 2 processors activated (11971.85 BogoMIPS).
-+Total of 2 processors activated (11971.77 BogoMIPS).
- ENABLING IO-APIC IRQs
- ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
- checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-@@ -279,6 +279,7 @@
- EXT3-fs: mounted filesystem with ordered data mode.
- VFS: Mounted root (ext3 filesystem) readonly.
- Freeing unused kernel memory: 192k freed
-+input: PC Speaker as /devices/platform/pcspkr/input/input4
- sr0: scsi3-mmc drive: 1x/48x cd/rw xa/form2 cdda tray
- Uniform CD-ROM driver Revision: 3.20
- sr 1:0:0:0: Attached scsi CD-ROM sr0
-@@ -287,7 +288,6 @@
- usbcore: registered new interface driver usbfs
- usbcore: registered new interface driver hub
- usbcore: registered new device driver usb
--input: PC Speaker as /devices/platform/pcspkr/input/input4
- parport_pc 00:0a: reported by Plug and Play ACPI
- parport0: PC-style at 0x378 (0x778), irq 7, using FIFO [PCSPP,TRISTATE,COMPAT,ECP]
- USB Universal Host Controller Interface driver v3.0
-@@ -299,46 +299,42 @@
- usb usb1: configuration #1 chosen from 1 choice
- hub 1-0:1.0: USB hub found
- hub 1-0:1.0: 2 ports detected
--ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 20
--PCI: Setting latency timer of device 0000:00:1d.1 to 64
--uhci_hcd 0000:00:1d.1: UHCI Host Controller
--uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 2
--uhci_hcd 0000:00:1d.1: irq 20, io base 0x0000ff60
-+ACPI: PCI Interrupt 0000:00:1d.7[D] -> GSI 23 (level, low) -> IRQ 20
-+PCI: Setting latency timer of device 0000:00:1d.7 to 64
-+ehci_hcd 0000:00:1d.7: EHCI Host Controller
-+ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 2
-+ehci_hcd 0000:00:1d.7: debug port 1
-+PCI: cache line size of 128 is not supported by device 0000:00:1d.7
-+ehci_hcd 0000:00:1d.7: irq 20, io mem 0xffa80800
-+ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
- usb usb2: configuration #1 chosen from 1 choice
- hub 2-0:1.0: USB hub found
--hub 2-0:1.0: 2 ports detected
-+hub 2-0:1.0: 8 ports detected
-+ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 21
-+PCI: Setting latency timer of device 0000:00:1d.1 to 64
-+uhci_hcd 0000:00:1d.1: UHCI Host Controller
-+uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 3
-+uhci_hcd 0000:00:1d.1: irq 21, io base 0x0000ff60
-+usb usb3: configuration #1 chosen from 1 choice
-+hub 3-0:1.0: USB hub found
-+hub 3-0:1.0: 2 ports detected
- ACPI: PCI Interrupt 0000:00:1d.2[C] -> GSI 18 (level, low) -> IRQ 17
- PCI: Setting latency timer of device 0000:00:1d.2 to 64
- uhci_hcd 0000:00:1d.2: UHCI Host Controller
--uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 3
-+uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 4
- uhci_hcd 0000:00:1d.2: irq 17, io base 0x0000ff40
--usb usb3: configuration #1 chosen from 1 choice
--hub 3-0:1.0: USB hub found
--hub 3-0:1.0: 2 ports detected
--usb 1-1: new full speed USB device using uhci_hcd and address 2
-+usb usb4: configuration #1 chosen from 1 choice
-+hub 4-0:1.0: USB hub found
-+hub 4-0:1.0: 2 ports detected
- ACPI: PCI Interrupt 0000:00:1d.3[A] -> GSI 16 (level, low) -> IRQ 19
- PCI: Setting latency timer of device 0000:00:1d.3 to 64
- uhci_hcd 0000:00:1d.3: UHCI Host Controller
--uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 4
-+uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 5
- uhci_hcd 0000:00:1d.3: irq 19, io base 0x0000ff20
--usb usb4: configuration #1 chosen from 1 choice
--hub 4-0:1.0: USB hub found
--hub 4-0:1.0: 2 ports detected
--ACPI: PCI Interrupt 0000:00:1d.7[D] -> GSI 23 (level, low) -> IRQ 21
--PCI: Setting latency timer of device 0000:00:1d.7 to 64
--ehci_hcd 0000:00:1d.7: EHCI Host Controller
--ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
--ehci_hcd 0000:00:1d.7: debug port 1
--PCI: cache line size of 128 is not supported by device 0000:00:1d.7
--ehci_hcd 0000:00:1d.7: irq 21, io mem 0xffa80800
--ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
--usb 1-1: configuration #1 chosen from 1 choice
--usb 1-1: can't set config #1, error -71
- usb usb5: configuration #1 chosen from 1 choice
- hub 5-0:1.0: USB hub found
--hub 5-0:1.0: 8 ports detected
--usb 1-1: USB disconnect, address 2
--usb 1-1: new full speed USB device using uhci_hcd and address 3
-+hub 5-0:1.0: 2 ports detected
-+usb 1-1: new full speed USB device using uhci_hcd and address 2
- usb 1-1: configuration #1 chosen from 1 choice
- Adding 1212896k swap on /dev/sdb7.  Priority:-1 extents:1 across:1212896k
- EXT3 FS on sdb2, internal journal
+sched_debug (attached) is.. strange.
+
+	-Mike
+
+--=-99vegu7EaA/xGKoliGJQ
+Content-Disposition: attachment; filename=sched_debug.gz
+Content-Type: application/x-gzip; name=sched_debug.gz
+Content-Transfer-Encoding: base64
+
+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
+bcqgbQOGMmgCyw+mRPzf/wE3b8xraNoCAB==
+
+
+--=-99vegu7EaA/xGKoliGJQ--
 
