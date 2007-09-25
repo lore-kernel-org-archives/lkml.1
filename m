@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbXIYKjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbXIYKki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753373AbXIYKjh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 06:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXIYKj2
+	id S1753325AbXIYKki (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 06:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXIYKka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 06:39:28 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:53506 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753243AbXIYKj1 (ORCPT
+	Tue, 25 Sep 2007 06:40:30 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:58472 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751907AbXIYKk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 06:39:27 -0400
-Message-ID: <46F8E52A.2090209@linux.vnet.ibm.com>
-Date: Tue, 25 Sep 2007 16:08:34 +0530
+	Tue, 25 Sep 2007 06:40:29 -0400
+Message-ID: <46F8E563.8030105@linux.vnet.ibm.com>
+Date: Tue, 25 Sep 2007 16:09:31 +0530
 From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix messed hunks in generic_setlease
-References: <46F8BF79.40405@openvz.org>
-In-Reply-To: <46F8BF79.40405@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc8-mm1
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+In-Reply-To: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov wrote:
-> I have noticed, that one hunk was lost and one duplicated 
-> during merging the fix-potential-oops-in-generic_setlease(-xxx) 
-> patches. One of the fixes is already in the hot-fixes, but the
-> second one is still lost.
-> 
-> The returned pointer was not the one allocated, but some temporary
-> used to scan through the inode's locks list. This caused and OOPS 
-> during Kamalesh's testing.
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> ---
-> 
-> diff --git a/fs/locks.c b/fs/locks.c
-> index c0fe71a..c1198e3 100644
-> --- a/fs/locks.c
-> +++ b/fs/locks.c
-> @@ -1423,7 +1418,7 @@ int generic_setlease(struct file *filp, 
->  	locks_copy_lock(new_fl, lease);
->  	locks_insert_lock(before, new_fl);
-> 
-> -	*flp = fl;
-> +	*flp = new_fl;
->  	return 0;
-> 
->  out:
-> 
+Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm1/
 
-Hi Pavel,
+Hi Andrew,
 
-I tested your patch and NULL pointer dereference is not triggered.
+The build error reported at http://lkml.org/lkml/2007/9/20/210 for the
+drivers/ata/pata_scc.c is seen in both 2.6.23-rc7-mm1 and 2.6.23-rc8-mm1.
+
+The patch proposed for this build error at http://lkml.org/lkml/2007/9/21/557
+is not seen in the latest 2.6.23-rc8-mm1 patch's.
 
 -- 
 Thanks & Regards,
