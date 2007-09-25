@@ -1,83 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbXIYWlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753057AbXIYWrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbXIYWlB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 18:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXIYWkw
+	id S1753057AbXIYWrQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 18:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXIYWrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 18:40:52 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:44486 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750976AbXIYWkv (ORCPT
+	Tue, 25 Sep 2007 18:47:00 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:64881 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbXIYWq7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 18:40:51 -0400
-Date: Tue, 25 Sep 2007 16:39:05 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
-In-reply-to: <fa.Q/HeymU0u7VpG+dN5Lc1DraTos0@ifi.uio.no>
+	Tue, 25 Sep 2007 18:46:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=Tp6S3m496GyPceKi1cv8SF5Fj702JjdX/NCzPkn78bk23SpTDKmyTi+gEbzNDc4S4LOhZN+/qGOOfffmLl/SRbxBxc1CEWTg/DPXdRMyQXwcRRTlXd1nTi7RrESHvvABr0qu0S/kZ2QdAcBgv3/dOGl9Iuxda5PAal16WO41pqM=
+Message-ID: <46F98FDC.8030508@gmail.com>
+Date: Tue, 25 Sep 2007 16:46:52 -0600
+From: "Berck E. Nash" <flyboy@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+MIME-Version: 1.0
 To: Jeff Garzik <jeff@garzik.org>
-Cc: "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+CC: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Message-id: <46F98E09.70805@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.7B5oGGPZtkIAG9trDHdybt+z9Qg@ifi.uio.no>
- <fa.lh2GEsFivC+TeMBqgRXU+5p7ySM@ifi.uio.no>
- <fa.tqIC/0YXN2BDEJQ7WBFuJ0EEUrI@ifi.uio.no>
- <fa.Q/HeymU0u7VpG+dN5Lc1DraTos0@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
+References: <46F7FBCB.4030803@gmail.com> <46F8665A.4000206@garzik.org> <46F9617F.1010508@gmail.com> <46F97257.3020502@garzik.org> <46F9869D.60401@gmail.com>
+In-Reply-To: <46F9869D.60401@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------090508090309000304080309"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Berck E. Nash wrote:
->> Jeff Garzik wrote:
->>> Once the blame has been squared fixed upon me :) you can use git-bisect
->>> to locate the precise change that broke your setup.
->>
->> Okay, here's the problem:
->>
->> 268fe6f9f15551be9abedd44a237392675d529d5 is first bad commit
->> commit 268fe6f9f15551be9abedd44a237392675d529d5
->> Author: Jeff Garzik <jeff@garzik.org>
->> Date:   Fri Sep 21 07:09:36 2007 -0400
->>
->>     [libata] SCSI: simple TEST UNIT READY simulation
->>
->>     It's trivial to ping the device, and that's a much more sane behavior
->>     than no-op.
->>
->>     Signed-off-by: Jeff Garzik <jeff@garzik.org>
->>
->> :040000 040000 44d34cdad073bd623545b8239aca9a113652c6d0
->> df6d21f7ce56a4e796f8f856c1f647b0395ab4df M      drivers
-> 
-> Thanks for debugging!
-> 
-> Can you tell me something about this device?
-> 
-> [   49.045635] ata2.00: ATA-6: Config  Disk, RGL10364, max UDMA/133
-> [   49.051677] ata2.00: 640 sectors, multi 1: LBA
-> [   49.056321] ata2.00: configured for UDMA/133
-> 
-> It seems like it does not support the 'check power mode' command.
-> 
-> Can you post a text file attachment, containing the output of 'hdparm 
-> --Istdout' ?
+This is a multi-part message in MIME format.
+--------------090508090309000304080309
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-ATA spec says "The device shall return command aborted if the device 
-does not support the Power Management feature set." Whereas TEST UNIT 
-READY is required for SCSI. It seems the SAT authors didn't consider 
-this case.
+Berck E. Nash wrote:
+> hdparm output attached.
 
-I assume we can tell from the identify data that the device doesn't 
-support power management and just fake success for TEST UNIT READY in 
-this case?
+Whoops, it really is this time.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
 
+--------------090508090309000304080309
+Content-Type: text/plain;
+ name="hdparm"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="hdparm"
+
+
+/dev/sde:
+427a 3fff 0000 0010 e100 0258 003f 0000
+0000 000e 5744 2d57 4d41 4b48 3131 3235
+3131 3700 0000 0000 0003 4000 004a 3331
+2e30 3846 3331 5744 4320 5744 3336 3047
+442d 3030 464c 4132 2020 2020 2020 2020
+2020 2020 2020 2020 2020 2020 2020 8010
+0000 2f00 4001 0280 0000 0007 3fff 0010
+003f fc10 00fb 0110 44e0 044f 0000 0007
+0003 0078 0078 0078 0078 0000 0000 0000
+0000 0000 0000 001f 0202 0000 0000 0000
+007e 0000 74eb 7f63 4003 74e9 3e43 4003
+407f 0000 0000 0000 0000 0000 80fe 0000
+0000 0000 0000 0000 44e0 044f 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0001 0141 0000 0000 0000 0746 0000 0000
+0000 0000 0000 0000 0000 0000 0002 0001
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 001f
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 001f 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 8da5
+
+--------------090508090309000304080309--
