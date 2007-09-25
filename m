@@ -1,108 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759808AbXIYVXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXIYVZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759808AbXIYVXn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 17:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXIYVXg
+	id S1760187AbXIYVZF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 17:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbXIYVYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 17:23:36 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:23975 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753862AbXIYVXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 17:23:35 -0400
-Message-ID: <46F97BE1.4010508@oracle.com>
-Date: Tue, 25 Sep 2007 14:21:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Sam Ravnborg <sam@ravnborg.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 3/5] Add samples subdir (updated)
-References: <20070925121145.262664884@polymtl.ca> <20070925121251.954162366@polymtl.ca> <20070925190036.GA14579@uranus.ravnborg.org> <20070925133234.cdd9edf1.randy.dunlap@oracle.com> <20070925205021.GB16652@Krystal>
-In-Reply-To: <20070925205021.GB16652@Krystal>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 25 Sep 2007 17:24:55 -0400
+Received: from www.osadl.org ([213.239.205.134]:43875 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753970AbXIYVYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 17:24:55 -0400
+Subject: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325,
+	related to clockevents
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200709252328.54843.rjw@sisk.pl>
+References: <200709231257.12213.rjw@sisk.pl>
+	 <200709252207.02532.rjw@sisk.pl> <1190753192.17409.62.camel@chaos>
+	 <200709252328.54843.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 23:24:53 +0200
+Message-Id: <1190755493.17409.72.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Randy, since I did big changes to the patch, I removed your
-> Signed-off-by. Tell me if you want me to add it back... (Is the From:
-> still valid ?)
-> 
-> Mathieu
+Rafael,
 
-How about from: you and add
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue, 2007-09-25 at 23:28 +0200, Rafael J. Wysocki wrote:
+> > I'm a bit confused by your earlier confirmation, that mainline w/o the
+> > -hrt patches boots fine, when you add "apicmaintimer" to the kernel
+> > command line. "apicmaintimer" stops the PIT like we do in -hrt and we
+> > just use the local APIC timer for everything. Can you please retest and
+> > confirm that this is correct ?
+> 
+> No, it's not.  The mainline _usually_ doesn't boot with "apicmaintimer".
+> 
+> It seems to me that _sometimes_ the CPU just doesn't enter this C1E state
+> and then everything goes fine ...
 
-Thanks.
+I'm relieved. I really started to go nuts on this contradicting
+patterns.
 
-> Add samples subdir (updated)
+Your box seems to be worse than the VAIO, it has some random surprise
+generator built in :)
+
+> > Is the 32 bit kernel working on that box ?
 > 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+> Can't tell, I have only 64-bit userland here.
+
+Should be fine. The check is there since late 2.6.21-rc. I really could
+kick my own ass that I did not remember the nx6325 wreckage in the
+2.6.21-rc time frame. Sigh, way too much broken hardware out there to
+keep track of it.
+
+> > Thanks for your patience.
 > 
-> Begin infrastructure for kernel code samples in the samples/ directory.
-> Add its Kconfig and Kbuild files.
-> 
-> Changelog:
-> - Move menu to Kernel Hacking
-> - Don't build with the kernel image
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> ---
->  Makefile          |    3 +++
->  lib/Kconfig.debug |    2 ++
->  samples/Kconfig   |   11 +++++++++++
->  3 files changed, 16 insertions(+)
-> 
-> Index: linux-2.6-lttng/Makefile
-> ===================================================================
-> --- linux-2.6-lttng.orig/Makefile	2007-09-25 16:44:44.000000000 -0400
-> +++ linux-2.6-lttng/Makefile	2007-09-25 16:45:13.000000000 -0400
-> @@ -770,6 +770,9 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) 
->  ifdef CONFIG_HEADERS_CHECK
->  	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
->  endif
-> +ifdef CONFIG_SAMPLES
-> +	$(Q)$(MAKE) $(build)=samples
-> +endif
->  	$(call vmlinux-modpost)
->  	$(call if_changed_rule,vmlinux__)
->  	$(Q)rm -f .old_version
-> Index: linux-2.6-lttng/samples/Kconfig
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6-lttng/samples/Kconfig	2007-09-25 16:45:13.000000000 -0400
-> @@ -0,0 +1,11 @@
-> +# samples/Kconfig
-> +
-> +menuconfig SAMPLES
-> +	bool "Sample kernel code"
-> +	help
-> +	  You can build and test sample kernel code here.
-> +
-> +if SAMPLES
-> +
-> +
-> +endif # SAMPLES
-> Index: linux-2.6-lttng/lib/Kconfig.debug
-> ===================================================================
-> --- linux-2.6-lttng.orig/lib/Kconfig.debug	2007-09-25 16:44:44.000000000 -0400
-> +++ linux-2.6-lttng/lib/Kconfig.debug	2007-09-25 16:45:13.000000000 -0400
-> @@ -558,3 +558,5 @@ config FAULT_INJECTION_STACKTRACE_FILTER
->  	  Provide stacktrace filter for fault-injection capabilities
->  
->  source "lib/Kconfig.kgdb"
-> +
-> +source "samples/Kconfig"
-> 
+> Well, I'm only making sure that future kernels will run on my box. ;-)
+
+Nothing wrong with that. Thanks again for your help,
+
+	tglx
 
 
--- 
-~Randy
-Phaedrus says that Quality is about caring.
