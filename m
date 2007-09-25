@@ -1,193 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbXIYOpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbXIYOra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756617AbXIYOpi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 10:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbXIYOpZ
+	id S1756253AbXIYOra (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 10:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXIYOrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 10:45:25 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:44406 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751554AbXIYOpW (ORCPT
+	Tue, 25 Sep 2007 10:47:22 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:64677 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbXIYOrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 10:45:22 -0400
-Message-ID: <46F91EFB.2050802@suse.de>
-Date: Tue, 25 Sep 2007 18:45:15 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 25 Sep 2007 10:47:21 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/5] ibmebus: Add device creation and bus probing based on of_device
+Date: Tue, 25 Sep 2007 16:39:05 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+References: <200709251410.29780.fenkes@de.ibm.com> <200709251412.27896.fenkes@de.ibm.com>
+In-Reply-To: <200709251412.27896.fenkes@de.ibm.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Alexey Starikovskiy <aystarik@gmail.com>,
-       Damien Wyart <damien.wyart@free.fr>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       Frans Pop <elendil@planet.nl>, linux-acpi@vger.kernel.org
-Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
-References: <20070925065109.GA3080@localhost.localdomain> <200709251618.06064.rjw@sisk.pl> <46F918F8.1080808@suse.de> <200709251652.05589.rjw@sisk.pl>
-In-Reply-To: <200709251652.05589.rjw@sisk.pl>
-Content-Type: multipart/mixed;
- boundary="------------010405040701090104030505"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709251639.06414.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/o0JKS+BMQcQQPEM9A2RJg+qoK6ozeE4RG0LO
+ 2Sz1OGE9ChO8whI4BvaE8umh7aURMSBkbezY3aFxrmv3uphK4W
+ zTmGM5DX48uMeCSHTcU3g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010405040701090104030505
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Rafael J. Wysocki wrote:
-> On Tuesday, 25 September 2007 16:19, Alexey Starikovskiy wrote:
->> Rafael J. Wysocki wrote:
->>> On Tuesday, 25 September 2007 15:15, Alexey Starikovskiy wrote:
->>>> Rafael J. Wysocki wrote:
->>>>> On Tuesday, 25 September 2007 14:53, Alexey Starikovskiy wrote:
->>>>>> Rafael J. Wysocki wrote:
->>>>>>> On Tuesday, 25 September 2007 14:05, Alexey Starikovskiy wrote:
->>>>>>>> Rafael J. Wysocki wrote:
->>>>>>>>> On Tuesday, 25 September 2007 13:45, Rafael J. Wysocki wrote:
->>>>>>>>>> On Tuesday, 25 September 2007 11:58, Damien Wyart wrote:
->>>>>>>>>>>>> No, I do not have CONFIG_ACPI_SLEEP set,
->>>>>>>>>>>>> because I do not have CONFIG_PM_SLEEP set,
->>>>>>>>>>>>> because I do not want SUSPEND and/or HIBERNATION.
->>>>>>>>>>>> Same answer from my side: I do not have CONFIG_ACPI_SLEEP for the same
->>>>>>>>>>>> reason (and this worked fine without them in rc7). I do not think
->>>>>>>>>>>> these settings should have changed between rc7 and rc8.
->>>>>>>>>> Well, we haven't changed much.
->>>>>>>>>>
->>>>>>>>>>> Also, another test I just did: on another computer, rc8 is fine
->>>>>>>>>>> regarding ACPI power off, even if CONFIG_ACPI_SLEEP is not set. I can
->>>>>>>>>>> provide config if needed.
->>>>>>>>>> On the box that fails to power off, can you please test -rc8 with these two
->>>>>>>>>> commits reverted:
->>>>>>>>>>
->>>>>>>>>> commit 5a50fe709d527f31169263e36601dd83446d5744
->>>>>>>>>> ACPI: suspend: consolidate handling of Sx states addendum
->>>>>>>>>>
->>>>>>>>>> commit f216cc3748a3a22c2b99390fddcdafa0583791a2
->>>>>>>>>> ACPI: suspend: consolidate handling of Sx states.
->>>>>>>>>>
->>>>>>>>>> and see if it works?
->>>>>>>>> If it does, please test the patch from this message
->>>>>>>>>
->>>>>>>>> http://marc.info/?l=linux-kernel&m=119052978117735&w=4
->>>>>>>>>
->>>>>>>>> on top of vanilla 2.6.23-rc8.
->>>>>>>> You will need one more patch on top of just mentioned one.
->>>>>>> Hm, why did you put acpi_target_sleep_state under CONFIG_SUSPEND?
->>>>>>>
->>>>>>> CONFIG_HIBERNATION needs acpi_target_sleep_state  too.
->>>>>> Agree, attaching updated patch.
->>>>> Well, please use "ifdef CONFIG_PM_SLEEP" instead of
->>>>> "if defined(CONFIG_SUSPEND)||defined(CONFIG_HIBERNATION)",
->>>>> as you did with the second block.
->>>> I was thinking about that, but it seem to be less clear... 
->>>> We need this variable only for suspend or hibernation, nothing else.
->>>> with pm_sleep it is not visible at all.
->>>>
->>>> Thoughts?
->>> Well, PM_SLEEP is defined as (SUSPEND || HIBERNATION), please have a look
->>> at kernel/power/Kconfig, and it was introduced exactly for the conditions like
->>> this.
->> I've seen this then I wrote the patch :) See my point, it is not clear, 
->> that PM_SLEEP is equivalent to SUSPEND || HIBERNATION, one needs to 
->> grep Kconfig files to find that -- it means that code becomes less readable, 
->> and I would like to avoid that.
+On Tuesday 25 September 2007, Joachim Fenkes wrote:
+> The devtree root is now searched for devices matching a built-in whitelist
+> during boot, so these devices appear on the bus from the beginning. It is
+> still possible to manually add/remove devices to/from the bus by using the
+> probe/remove sysfs interface. Also, when a device driver registers itself,
+> the devtree is matched against its matchlist.
 > 
-> I see your point.  Still, you are using PM_SLEEP in the same file, so someone
-> reading the code for the first time will have to find out what it is anyway.
-In the second place it depends on header file using PM_SLEEP, so it makes sense.
+> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> ---
+>  arch/powerpc/kernel/ibmebus.c |   97 ++++++++++++++++++++++++++++++++++-------
+>  1 files changed, 81 insertions(+), 16 deletions(-)
 > 
-> OTOH, the only function of PM_SLEEP is to be a replacement for
-> (SUSPEND || HIBERNATION).  It has no other meaning whatsoever.
-> 
-> [Well, sorry, I couldn't invent a better name.]
+> diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+> index cc80f84..c506e0d 100644
+> --- a/arch/powerpc/kernel/ibmebus.c
+> +++ b/arch/powerpc/kernel/ibmebus.c
+> @@ -51,6 +51,15 @@ static struct device ibmebus_bus_device = { /* fake "parent" device */
 >  
->>> IOW, if we want something to be used for anything else than suspend or
->>> hibernation, it shouldn't be defined under PM_SLEEP.
->> Agree, but we should distinguish there it is better to use PM_SLEEP, 
->> and there it is better to use (SUSPEND || HIBERNATION) just to be more expressive...
-> 
-> Well, since PM_SLEEP is used as (SUSPEND || HIBERNATION) everywhere else,
-> I think that it would actually be confusing not to use it here. :-)
-Ok, patch is here.
+>  struct bus_type ibmebus_bus_type;
+>  
+> +/* These devices will automatically be added to the bus during init */
+> +static struct of_device_id builtin_matches[] = {
+> +	{ .name = "lhca" },
+> +	{ .compatible = "IBM,lhca" },
+> +	{ .name = "lhea" },
+> +	{ .compatible = "IBM,lhea" },
+> +	{},
+> +};
+> +
 
-Regards,
-Alex.
+Hmm, do you have devices that only have the matching name property
+but not the compatible property? If not, I'd suggest only looking
+for compatible, so you have less chance of false positives.
 
---------------010405040701090104030505
-Content-Type: text/x-patch;
- name="fix-ACPI_SLEEP_states.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix-ACPI_SLEEP_states.patch"
+> +static int ibmebus_create_device(struct device_node *dn)
+> +{
+> +	struct of_device *dev;
+> +	int ret;
+> +
+> +	dev = of_device_alloc(dn, NULL, &ibmebus_bus_device);
+> +	if (!dev)
+> +		return -ENOMEM;
+> +
+> +	dev->dev.bus = &ibmebus_bus_type;
+> +	dev->dev.archdata.dma_ops = &ibmebus_dma_ops;
+> +
+> +	ret = of_device_register(dev);
+> +	if (ret) {
+> +		of_device_free(dev);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
 
-ACPI: suspend: fix ACPI_SLEEP states
+nice!
 
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
+> @@ -219,9 +276,9 @@ static ssize_t ibmebus_store_probe(struct bus_type *bus,
+>  	}
+>  
+>  	if ((dn = of_find_node_by_path(path))) {
+> -/*		dev = ibmebus_register_device_node(dn); */
+> +		rc = ibmebus_create_device(dn);
+>  		of_node_put(dn);
+> -		rc = IS_ERR(dev) ? PTR_ERR(dev) : count;
+> +		rc = rc ? rc : count;
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
----
+the last line looks a bit silly. Maybe instead do
 
- drivers/acpi/sleep/Makefile |    2 +-
- drivers/acpi/sleep/main.c   |    4 ++++
- include/acpi/acpi_drivers.h |    4 ----
- 3 files changed, 5 insertions(+), 5 deletions(-)
+		rc = ibmebus_create_device(dn);
+  		of_node_put(dn);
+	}
 
-diff --git a/drivers/acpi/sleep/Makefile b/drivers/acpi/sleep/Makefile
-index ba9bd40..f1fb888 100644
---- a/drivers/acpi/sleep/Makefile
-+++ b/drivers/acpi/sleep/Makefile
-@@ -1,5 +1,5 @@
- obj-y					:= wakeup.o
--obj-$(CONFIG_ACPI_SLEEP)		+= main.o
-+obj-y					+= main.o
- obj-$(CONFIG_ACPI_SLEEP)		+= proc.o
- 
- EXTRA_CFLAGS += $(ACPI_CFLAGS)
-diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
-index c79edcb..2cbb9aa 100644
---- a/drivers/acpi/sleep/main.c
-+++ b/drivers/acpi/sleep/main.c
-@@ -24,7 +24,9 @@
- 
- u8 sleep_states[ACPI_S_STATE_COUNT];
- 
-+#ifdef CONFIG_PM_SLEEP
- static u32 acpi_target_sleep_state = ACPI_STATE_S0;
-+#endif
- 
- int acpi_sleep_prepare(u32 acpi_state)
- {
-@@ -299,6 +301,7 @@ int acpi_suspend(u32 acpi_state)
- 	return -EINVAL;
- }
- 
-+#ifdef CONFIG_PM_SLEEP
- /**
-  *	acpi_pm_device_sleep_state - return preferred power state of ACPI device
-  *		in the system sleep state given by %acpi_target_sleep_state
-@@ -373,6 +376,7 @@ int acpi_pm_device_sleep_state(struct device *dev, int wake, int *d_min_p)
- 		*d_min_p = d_min;
- 	return d_max;
- }
-+#endif
- 
- static void acpi_power_off_prepare(void)
- {
-diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-index 202acb9..f85f77a 100644
---- a/include/acpi/acpi_drivers.h
-+++ b/include/acpi/acpi_drivers.h
-@@ -147,10 +147,6 @@ static inline void unregister_hotplug_dock_device(acpi_handle handle)
- /*--------------------------------------------------------------------------
-                                   Suspend/Resume
-   -------------------------------------------------------------------------- */
--#ifdef CONFIG_ACPI_SLEEP
- extern int acpi_sleep_init(void);
--#else
--static inline int acpi_sleep_init(void) { return 0; }
--#endif
- 
- #endif /*__ACPI_DRIVERS_H__*/
-
---------------010405040701090104030505--
+	kfree(path);
+	if (rc)
+		return rc;
+	return count;
+}
