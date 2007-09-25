@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbXIYIdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbXIYIew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759304AbXIYIdl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 04:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbXIYIdc
+	id S1759082AbXIYIew (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 04:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbXIYIep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 04:33:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59317 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755610AbXIYIdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 04:33:31 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+hwHV6TNChnBGpFBwBA2z/C53MhK/DQdUALqRz0y
-	l31Hb9xyKp+LGZ
-Subject: Re: [git] CFS-devel, latest code
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1190705759.11910.10.camel@Homer.simpson.net>
-References: <20070924214537.GA18980@elte.hu>
-	 <1190700652.6482.7.camel@Homer.simpson.net>
-	 <1190705759.11910.10.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 10:33:27 +0200
-Message-Id: <1190709207.11226.6.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Tue, 25 Sep 2007 04:34:45 -0400
+Received: from sacred.ru ([62.205.161.221]:50554 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754330AbXIYIeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 04:34:44 -0400
+Message-ID: <46F8C740.6040003@openvz.org>
+Date: Tue, 25 Sep 2007 12:30:56 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fix messed hunks in generic_setlease
+References: <46F8BF79.40405@openvz.org> <20070925010728.b65e5b27.akpm@linux-foundation.org>
+In-Reply-To: <20070925010728.b65e5b27.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 25 Sep 2007 12:33:22 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-25 at 09:35 +0200, Mike Galbraith wrote:
-
-> Darn, have news: latency thing isn't dead.  Two busy loops, one at nice
-> 0 pinned to CPU0, and one at nice 19 pinned to CPU1 produced the
-> latencies below for nice -5 Xorg.  Didn't kill the box though.
+Andrew Morton wrote:
+> On Tue, 25 Sep 2007 11:57:45 +0400 Pavel Emelyanov <xemul@openvz.org> wrote:
 > 
-> se.wait_max              :            10.068169
-> se.wait_max              :             7.465334
-> se.wait_max              :           135.501816
-> se.wait_max              :             0.884483
-> se.wait_max              :           144.218955
-> se.wait_max              :           128.578376
-> se.wait_max              :            93.975768
-> se.wait_max              :             4.965965
-> se.wait_max              :           113.655533
-> se.wait_max              :             4.301075
+>> I have noticed, that one hunk was lost and one duplicated 
+>> during merging the fix-potential-oops-in-generic_setlease(-xxx) 
+>> patches. One of the fixes is already in the hot-fixes, but the
+>> second one is still lost.
+>>
+>> The returned pointer was not the one allocated, but some temporary
+>> used to scan through the inode's locks list. This caused and OOPS 
+>> during Kamalesh's testing.
+>>
+>> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+>>
+>> ---
+>>
+>> diff --git a/fs/locks.c b/fs/locks.c
+>> index c0fe71a..c1198e3 100644
+>> --- a/fs/locks.c
+>> +++ b/fs/locks.c
+>> @@ -1423,7 +1418,7 @@ int generic_setlease(struct file *filp, 
+>>  	locks_copy_lock(new_fl, lease);
+>>  	locks_insert_lock(before, new_fl);
+>>  
+>> -	*flp = fl;
+>> +	*flp = new_fl;
+>>  	return 0;
+>>  
+>>  out:
 > 
-> sched_debug (attached) is.. strange.
+> argh, what a mess - there are way too many trees playing with fs/locks.c.
+> 
+> umm, I think this is not a mismerge and that the original patch
+> (http://lkml.org/lkml/2007/9/20/141) had this bug in it.
 
-Disabling CONFIG_FAIR_GROUP_SCHED fixed both.  Latencies of up to 336ms
-hit me during the recompile (make -j3), with nothing else running.
-Since reboot, latencies are, so far, very very nice.  I'm leaving it
-disabled for now.
+Indeed... :(
 
-	-Mike 
+> And I've just sent that buggy patch to Linus.  Do you agree?
 
+Shame on me... Sorry :(
+
+(going to the blackboard to write "I will check my patches twice before
+ sending them to Andrew" for 100 times)
