@@ -1,79 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbXIYQQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXIYQSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757650AbXIYQQw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 12:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbXIYQQn
+	id S1759473AbXIYQSP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 12:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbXIYQSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 12:16:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56956 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755286AbXIYQQm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 12:16:42 -0400
-Date: Tue, 25 Sep 2007 09:16:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, eugene.surovegin@zultys.com,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc8-mm1 - drivers/net/ibm_newemac/mal - broken
-Message-Id: <20070925091613.44042909.akpm@linux-foundation.org>
-In-Reply-To: <46F904E6.40601@linux.vnet.ibm.com>
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-	<46F904E6.40601@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 25 Sep 2007 12:18:00 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35761 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755272AbXIYQR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 12:17:59 -0400
+Date: Tue, 25 Sep 2007 21:58:07 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, randy.dunlap@oracle.com
+Subject: [PATCH 1/3] Fix coding style
+Message-ID: <20070925162807.GB3231@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070925144443.GA17858@elte.hu> <20070925162502.GA3231@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070925162502.GA3231@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Sep 2007 18:23:58 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Fix coding style issues reported by Randy Dunlap and others
 
-> Hi Andrew,
-> 
-> The drivers/net/ibm_newemac/mal seems to be broken, which stop with
-> build error
+Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 
-(please cc netdev@vger.kernel.org on networking things)
+---
+ init/Kconfig         |   14 +++++++-------
+ kernel/sched_debug.c |    8 ++------
+ 2 files changed, 9 insertions(+), 13 deletions(-)
 
-> CC      drivers/net/ibm_newemac/mal.o
-> drivers/net/ibm_newemac/mal.c: In function ‘mal_schedule_poll’:
-> drivers/net/ibm_newemac/mal.c:238: error: too few arguments to function ‘netif_rx_schedule_prep’
-> drivers/net/ibm_newemac/mal.c:238: error: too few arguments to function ‘netif_rx_schedule_prep’
-> drivers/net/ibm_newemac/mal.c:238: error: too few arguments to function ‘netif_rx_schedule_prep’
-> drivers/net/ibm_newemac/mal.c:241: error: too few arguments to function ‘__netif_rx_schedule’
-> drivers/net/ibm_newemac/mal.c: In function ‘mal_poll_disable’:
-> drivers/net/ibm_newemac/mal.c:321: error: ‘__LINK_STATE_RX_SCHED’ undeclared (first use in this function)
-> drivers/net/ibm_newemac/mal.c:321: error: (Each undeclared identifier is reported only once
-> drivers/net/ibm_newemac/mal.c:321: error: for each function it appears in.)
-> drivers/net/ibm_newemac/mal.c: In function ‘mal_poll’:
-> drivers/net/ibm_newemac/mal.c:337: error: ‘struct net_device’ has no member named ‘quota’
-> drivers/net/ibm_newemac/mal.c:337: warning: type defaults to ‘int’ in declaration of ‘_x’
-> drivers/net/ibm_newemac/mal.c:337: error: ‘struct net_device’ has no member named ‘quota’
-> drivers/net/ibm_newemac/mal.c:375: error: too few arguments to function ‘__netif_rx_complete’
-> drivers/net/ibm_newemac/mal.c:390: warning: passing argument 2 of ‘netif_rx_reschedule’ makes pointer from integer without a cast
-> drivers/net/ibm_newemac/mal.c:404: error: ‘struct net_device’ has no member named ‘quota’
-> drivers/net/ibm_newemac/mal.c: In function ‘mal_probe’:
-> drivers/net/ibm_newemac/mal.c:542: error: ‘struct net_device’ has no member named ‘weight’
-> drivers/net/ibm_newemac/mal.c:543: error: ‘struct net_device’ has no member named ‘poll’
-> drivers/net/ibm_newemac/mal.c: In function ‘mal_remove’:
-> drivers/net/ibm_newemac/mal.c:660: error: implicit declaration of function ‘netif_poll_disable’
-> make[3]: *** [drivers/net/ibm_newemac/mal.o] Error 1
-> make[2]: *** [drivers/net/ibm_newemac] Error 2
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
+Index: current/init/Kconfig
+===================================================================
+--- current.orig/init/Kconfig
++++ current/init/Kconfig
+@@ -282,11 +282,11 @@ config CPUSETS
+ 	  Say N if unsure.
+ 
+ config FAIR_GROUP_SCHED
+-	bool "Fair group cpu scheduler"
++	bool "Fair group CPU scheduler"
+ 	default y
+ 	depends on EXPERIMENTAL
+ 	help
+-	  This feature lets cpu scheduler recognize task groups and control cpu
++	  This feature lets CPU scheduler recognize task groups and control CPU
+ 	  bandwidth allocation to such task groups.
+ 
+ choice
+@@ -294,11 +294,11 @@ choice
+ 	prompt "Basis for grouping tasks"
+ 	default FAIR_USER_SCHED
+ 
+-	config FAIR_USER_SCHED
+-		bool "user id"
+-		help
+-		  This option will choose userid as the basis for grouping
+-		  tasks, thus providing equal cpu bandwidth to each user.
++config FAIR_USER_SCHED
++	bool "user id"
++	help
++	  This option will choose userid as the basis for grouping
++	  tasks, thus providing equal CPU bandwidth to each user.
+ 
+ endchoice
+ 
+Index: current/kernel/sched_debug.c
+===================================================================
+--- current.orig/kernel/sched_debug.c
++++ current/kernel/sched_debug.c
+@@ -239,11 +239,7 @@ static int
+ root_user_share_read_proc(char *page, char **start, off_t off, int count,
+ 				 int *eof, void *data)
+ {
+-	int len;
+-
+-	len = sprintf(page, "%d\n", init_task_grp_load);
+-
+-	return len;
++	return sprintf(page, "%d\n", init_task_grp_load);
+ }
+ 
+ static int
+@@ -297,7 +293,7 @@ static int __init init_sched_debug_procf
+ 	pe->proc_fops = &sched_debug_fops;
+ 
+ #ifdef CONFIG_FAIR_USER_SCHED
+-	pe = create_proc_entry("root_user_share", 0644, NULL);
++	pe = create_proc_entry("root_user_cpu_share", 0644, NULL);
+ 	if (!pe)
+ 		return -ENOMEM;
+ 
 
-Yes, there's been a lot of breakage in netdev land:
 
-git-net-fix-macec.patch
-git-net-sky2-fixups.patch
-git-net-fix-wireless-kconfig.patch
-git-net-fix-spidernet-build.patch
-git-net-sctp-build-fix.patch
-spider_net_ethtool-keep-up-with-recent-netdev-stats-changes.patch
-pasemi_mac-build-fix-after-recent-netdev-stats.patch
-git-net-fix-pasemi_mac.patch
-make-mv643xx_ethc-build-again.patch
-
-but we're getting there.  It looks like ibmn_newemac is more busted than
-most...
+-- 
+Regards,
+vatsa
