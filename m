@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbXIYVpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbXIYV53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbXIYVpd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 17:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbXIYVpY
+	id S1753435AbXIYV53 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 17:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXIYV5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 17:45:24 -0400
-Received: from www.osadl.org ([213.239.205.134]:52851 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751817AbXIYVpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 17:45:23 -0400
-Subject: Re: 2.6.23-rc8-mm1: somewhat broken forced HPET on ICH5
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: venkatesh.pallipadi@intel.com, akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070925205006.GA1766@martell.zuzino.mipt.ru>
-References: <20070925205006.GA1766@martell.zuzino.mipt.ru>
-Content-Type: text/plain
-Date: Tue, 25 Sep 2007 23:45:17 +0200
-Message-Id: <1190756717.17409.80.camel@chaos>
+	Tue, 25 Sep 2007 17:57:22 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:55134 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751190AbXIYV5W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 17:57:22 -0400
+Date: Tue, 25 Sep 2007 17:56:29 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] UML - time build fix
+Message-ID: <20070925215629.GA10926@c2.user-mode-linux.org>
+References: <20070925173713.GA8262@c2.user-mode-linux.org> <1190750055.17409.38.camel@chaos>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190750055.17409.38.camel@chaos>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey,
-
-On Wed, 2007-09-26 at 00:50 +0400, Alexey Dobriyan wrote:
-> ich-force-hpet-ich5-quirk-to-force-detect-enable.patch
-> is causing the following on Etch boot:
+On Tue, Sep 25, 2007 at 09:54:15PM +0200, Thomas Gleixner wrote:
+> On Tue, 2007-09-25 at 13:37 -0400, Jeff Dike wrote:
+> > Put back an implementation of timeval_to_ns in
+> > arch/um/os-Linux/time.c.  tglx pointed out in his review of tickless
+> > support that there was a perfectly good implementation of it in
+> > linux/time.h.  The problem is that this is userspace code which can't
+> > pull in kernel headers and there doesn't seem to be a libc version.
 > 
-> 	[initscripts as usual]
-> 	Setting system clock:
-> 	[nothing happens for several seconds]
-> 	select to /dev/rtc to wait for clock tick timed out
-> 	[initscripts as usual]
-> 
-> Then clock is skewed for 3 hours (GMT/MSK difference).
+> Oops. Did not notice. 
 
-Can you please check, whether 
+It's a UML peculiarity...
 
-http://tglx.de/projects/hrtimers/2.6.23-rc7/patch-2.6.23-rc7-hrt1.patch
+> Can't we move it into some header file which is accessible from everywhere ?
 
-has the same problem ? It contains the hpet force enable patches as
-well, but lacks the other crap^Wfeatures of -mm :)
+Not in the generic kernel.  UML has some generally includable headers
+of its own, but that doesn't really help.
 
-Thanks,
+The one thing that would help is a libc timeval_to_ns.
 
-	tglx
+				Jeff
 
-
+-- 
+Work email - jdike at linux dot intel dot com
