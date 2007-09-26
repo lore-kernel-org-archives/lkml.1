@@ -1,163 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762604AbXIZU6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762451AbXIZVAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762604AbXIZU6f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 16:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbXIZU61
+	id S1762451AbXIZVAT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759412AbXIZVAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 16:58:27 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:48415 "EHLO
-	outbound7-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759962AbXIZU6Z (ORCPT
+	Wed, 26 Sep 2007 17:00:06 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:31558 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbXIZVAC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 16:58:25 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-Date: Wed, 26 Sep 2007 14:58:25 -0600
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: "Joerg Pommnitz" <pommnitz@yahoo.com>, cebbert@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on
- AMD Geode LX800
-Message-ID: <20070926205825.GA14877@cosmic.amd.com>
-References: <637040.99806.qm@web51411.mail.re2.yahoo.com>
- <46FA6858.5060908@zytor.com> <20070926154106.GG7582@cosmic.amd.com>
- <46FAAFA7.50106@zytor.com>
+	Wed, 26 Sep 2007 17:00:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=HKhd588FQuVloL7TNudo3JMCh+ZPQNUTGEvPJYJthRh6QwdY79SqAy6RF0CsuRGImsWtBJecFhkBC7qoShaegkHcruzlBYKnS9XJj1fr7peimvIJMYaCkY2/ohH5nM1pokFUDQ1q0Le3p0NnhwR+zoxbXHzlZp7mN3OkWyrOfUk=
+Message-ID: <2c0942db0709261400l10ef6c3ft2d73d8b2ada4a04@mail.gmail.com>
+Date: Wed, 26 Sep 2007 14:00:00 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Brett Warden" <brett.warden@gmail.com>
+Subject: Re: [PATCH] bw-qcam: use data_reverse instead of manually poking the control register
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+In-Reply-To: <a372714f0709261306q714100e3t643b31d8f194de2e@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <46FAAFA7.50106@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 26 Sep 2007 20:58:05.0615 (UTC)
- FILETIME=[EF53C3F0:01C8007F]
-X-WSS-ID: 6AE418541DW327462-01-01
-Content-Type: multipart/mixed;
- boundary="HcAYCG3uE/tztfnV"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <a372714f0709261212hec0c61ofc5dd6d127352402@mail.gmail.com>
+	 <2c0942db0709261243h1267140br70796c7fcfb165e3@mail.gmail.com>
+	 <a372714f0709261306q714100e3t643b31d8f194de2e@mail.gmail.com>
+X-Google-Sender-Auth: f763ae135f1cffcf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---HcAYCG3uE/tztfnV
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-On 26/09/07 12:14 -0700, H. Peter Anvin wrote:
-> Please try the following debug patch to let us know what is going on.
-> 
-> 	-hpa
-
-> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-> index 1a2e62d..a0ccf29 100644
-> --- a/arch/i386/boot/memory.c
-> +++ b/arch/i386/boot/memory.c
-> @@ -33,6 +33,12 @@ static int detect_memory_e820(void)
->  		      "=m" (*desc)
->  		    : "D" (desc), "a" (0xe820));
->  
-> +		printf("e820: err %d id 0x%08x next %u %08x:%08x %u\n",
-> +		       err, id, next,
-> +		       (unsigned int)desc->addr,
-> +		       (unsigned int)desc->size,
-> +		       desc->type);
+On 9/26/07, Brett Warden <brett.warden@gmail.com> wrote:
+> On 9/26/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+>
+> > Just as an aside, if you've tested this and it works, then there's no
+> > point to keep the write_lpcontrol even as a comment. Kill those four
+> > lines, and if someone's interested in what happened they'll just look
+> > at the file history.
+>
+> Point taken, thanks for the feedback.
+>
+> ---
+>
+> diff --git a/drivers/media/video/bw-qcam.c b/drivers/media/video/bw-qcam.c
+> index 7d47cbe..0ba92e3 100644
+> --- a/drivers/media/video/bw-qcam.c
+> +++ b/drivers/media/video/bw-qcam.c
+> @@ -107,6 +107,11 @@ static inline void write_lpcontrol(struct
+> qcam_device *q, int d)
+>         parport_write_control(q->pport, d);
+>  }
+>
+> +static inline void reverse_port(struct qcam_device *q)
+> +{
+> +       parport_data_reverse(q->pport);
+> +}
 > +
->  		if (err || id != SMAP)
->  			break;
+>  static int qc_waithand(struct qcam_device *q, int val);
+>  static int qc_command(struct qcam_device *q, int command);
+>  static int qc_readparam(struct qcam_device *q);
+> @@ -369,7 +374,7 @@ static void qc_reset(struct qcam_device *q)
+>                         break;
+>
+>                 case QC_ANY:
+> -                       write_lpcontrol(q, 0x20);
+> +                       reverse_port(q);
+>                         write_lpdata(q, 0x75);
+>
+>                         if (read_lpdata(q) != 0x75) {
+> @@ -512,10 +517,12 @@ static inline int qc_readbytes(struct
+> qcam_device *q, char buffer[])
+>         switch (q->port_mode & QC_MODE_MASK)
+>         {
+>                 case QC_BIDIR:          /* Bi-directional Port */
+> -                       write_lpcontrol(q, 0x26);
+> +                       reverse_port(q);
+> +                       write_lpcontrol(q, 0x6);
+>                         lo = (qc_waithand2(q, 1) >> 1);
+>                         hi = (read_lpstatus(q) >> 3) & 0x1f;
+> -                       write_lpcontrol(q, 0x2e);
+> +                       reverse_port(q);
+> +                       write_lpcontrol(q, 0xe);
+>                         lo2 = (qc_waithand2(q, 0) >> 1);
+>                         hi2 = (read_lpstatus(q) >> 3) & 0x1f;
+>                         switch (q->bpp)
+> @@ -613,10 +620,13 @@ static long qc_capture(struct qcam_device * q,
+> char __user *buf, unsigned long l
+>
+>         if ((q->port_mode & QC_MODE_MASK) == QC_BIDIR)
+>         {
+> -               write_lpcontrol(q, 0x2e);       /* turn port around */
+> -               write_lpcontrol(q, 0x26);
+> +               reverse_port(q);                        /* turn port around */
+> +               write_lpcontrol(q, 0xe);
+> +               reverse_port(q);
+> +               write_lpcontrol(q, 0x6);
+>                 (void) qc_waithand(q, 1);
+> -               write_lpcontrol(q, 0x2e);
+> +               reverse_port(q);
+> +               write_lpcontrol(q, 0xe);
+>                 (void) qc_waithand(q, 0);
+>         }
 
-Okay, we have clarity.   Here is the output
+Better, and do you have time for two (possibly stupid) questions? In
+each of the last cases it looks like the transformation is from a
+write_lpcontrol -> reverse_port and a write_lpcontrol (old address -
+0x20). Except the first one, which merely has the reverse_port. One
+would think that there should be a write_lpcontrol(q, 0x0); after that
+one.
 
-e820: err 0 id 0x534d4150 next 15476 00000000:0009fc00 1
-e820: err 0 id 0x534d4150 next 15496 0009fc00:00000400 2
-e820: err 0 id 0x534d4150 next 15516 000e0000:00020000 2
-e820: err 0 id 0x0e7b0000 next 11536 00100000:0e6b0000 1
+Also, is the reverse port sticky, or does it only apply to the next
+write? If it's only the next, then maybe a different name would be
+better. If it's sticky, then I think the code is wrong...
 
-In the last entry,  id is obviously wrong (it should be 'SMAP' or
-0x534d4150).  This is the BIOS bug.
-
-Here's the reason why this bothers us now.  In the old assembly code,
-if the returned ID wasn't equal to 'SMAP', we jumped straight to the e801
-code.  In the new code in memory.c, if id != SMAP, we break out of the
-int15 loop, and return boot_params.e820_entries, which in our case is
-3.  detect_memory() considers this to be successful, and no attempt to
-parse e801 is made.
-
-So thats where the problem is - in the old code with the buggy BIOS, we
-punted to reading the e801 information, and that was enough to keep us 
-going.   In the new code, we allow a partial table to be used, and we
-blow up.
-
-Attached is a patch to fix this - it returns -1 on error, and only sets
-boot_params.e820_entries to be non-zero if we have something useful
-in it.  This punts the detection to the e801 code, which then is
-then successful.
-
-This fixes the problem with the DB800, and so it probably should
-with the other Geode platforms affected by this.
-
-Many thanks to hpa for the guiding hand.
-
-Jordan
-
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
---HcAYCG3uE/tztfnV
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline;
- filename=memory-bail-on-error.patch
-Content-Transfer-Encoding: 7bit
-
-[i386]: Return an error if the e820 detection goes bad
-
-From: Jordan Crouse <jordan.crouse@amd.com>
-
-Change the e820 code to always return an error if something
-bad happens while reading the e820 map.  This matches the
-old code behavior, and allows brain-dead e820 implementations
-to still work.
-
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
----
-
- arch/i386/boot/memory.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-index 1a2e62d..4c7f0f6 100644
---- a/arch/i386/boot/memory.c
-+++ b/arch/i386/boot/memory.c
-@@ -22,7 +22,7 @@ static int detect_memory_e820(void)
- {
- 	u32 next = 0;
- 	u32 size, id;
--	u8 err;
-+	u8 err, count = 0;
- 	struct e820entry *desc = boot_params.e820_map;
- 
- 	do {
-@@ -34,13 +34,14 @@ static int detect_memory_e820(void)
- 		    : "D" (desc), "a" (0xe820));
- 
- 		if (err || id != SMAP)
--			break;
-+			return -1;
- 
--		boot_params.e820_entries++;
-+		count++;
- 		desc++;
- 	} while (next && boot_params.e820_entries < E820MAX);
- 
--	return boot_params.e820_entries;
-+	boot_params.e820_entries = count;
-+	return count;
- }
- 
- static int detect_memory_e801(void)
-
---HcAYCG3uE/tztfnV--
-
-
+Ray
