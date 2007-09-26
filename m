@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbXIZDil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbXIZDjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760738AbXIZDil (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 23:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbXIZDia
+	id S1760969AbXIZDjM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 23:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756923AbXIZDix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 23:38:30 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:42012 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755462AbXIZDi3 (ORCPT
+	Tue, 25 Sep 2007 23:38:53 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:46120 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756019AbXIZDiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 23:38:29 -0400
-Date: Tue, 25 Sep 2007 21:38:27 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: FUJITA Tomonori <tomof@acm.org>, James.Bottomley@SteelEye.com,
-       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+	Tue, 25 Sep 2007 23:38:51 -0400
+X-Greylist: delayed 2807 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Sep 2007 23:38:51 EDT
+To: jeff@garzik.org
+Cc: tomof@acm.org, James.Bottomley@SteelEye.com, akpm@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
 Subject: Re: queued patches for SCSI for 2.6.24
-Message-ID: <20070926033827.GB3899@parisc-linux.org>
-References: <1190768402.8707.20.camel@localhost.localdomain> <20070925065233Q.tomof@acm.org> <1190770955.8707.23.camel@localhost.localdomain> <20070925073735U.tomof@acm.org> <46F9C5ED.6050505@garzik.org> <20070926025608.GA3899@parisc-linux.org> <46F9D328.4030801@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F9D328.4030801@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <46F9C5ED.6050505@garzik.org>
+References: <1190770955.8707.23.camel@localhost.localdomain>
+	<20070925073735U.tomof@acm.org>
+	<46F9C5ED.6050505@garzik.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070926115207B.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 26 Sep 2007 11:52:07 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 25, 2007 at 11:34:00PM -0400, Jeff Garzik wrote:
-> Well, sure, the driver is the owner of that memory.
-> 
-> We're talking about common code.
-> 
-> If everybody agrees SHT is R/W in the core, Fujita-san's patch is fine.
+On Tue, 25 Sep 2007 22:37:33 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-Oh ... harder to find, but scsi_module.c does that, as does
-scsi_register/scsi_unregister.  OK, those are legacy, but they still
-exist today.
+> FUJITA Tomonori wrote:
+> > diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+> > index adc9559..694015d 100644
+> > --- a/drivers/scsi/hosts.c
+> > +++ b/drivers/scsi/hosts.c
+> > @@ -342,6 +342,10 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
+> >  	shost->unchecked_isa_dma = sht->unchecked_isa_dma;
+> >  	shost->use_clustering = sht->use_clustering;
+> >  	shost->ordered_tag = sht->ordered_tag;
+> > +
+> > +	if (!sht->supported_mode)
+> > +		sht->supported_mode = MODE_INITIATOR;
+> > +
+> >  	shost->active_mode = sht->supported_mode;
+> 
+> 
+> I almost hesitate to speak up, after making the original suggestion, but:
+> 
+> Are there any const-ness worries for scsi_host_template, or plans for 
+> the future?  I do not see any other examples of the host template 
+> members getting modified.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Yeah, that's why I said it's hacky in the previous
+discussion. Changing scsi_host_template behind llds is not nice, I
+think.
+
+
+> Perhaps this value should instead be mirrored in scsi_host, like
+> many others?
+
+supported_mode should be static like 'name'. I'm not sure about having
+supported_mode in scsi_host. All the scsi_hosts of one driver always
+use the same supported_mode value unlike active_mode.
