@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbXIZH2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXIZHcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbXIZH2A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 03:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbXIZH1w
+	id S1755836AbXIZHcB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 03:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXIZHbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 03:27:52 -0400
-Received: from pc175e.fzu.cz ([147.231.127.175]:59526 "EHLO postak-1.fzu.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbXIZH1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 03:27:52 -0400
-Message-ID: <46FA09E8.7010101@gentoo.org>
-Date: Wed, 26 Sep 2007 09:27:36 +0200
-From: =?ISO-8859-1?Q?Jan_Kundr=E1t?= <jkt@gentoo.org>
-Organization: Gentoo
-User-Agent: Thunderbird 2.0.0.6 (X11/20070812)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: kswapd high CPU usage with no swap
-References: <46F852B6.7030207@gentoo.org>	<20070924223444.62f0622d@bree.surriel.com>	<46F8DF55.2030905@gentoo.org> <20070925213156.68fceea2@bree.surriel.com>
-In-Reply-To: <20070925213156.68fceea2@bree.surriel.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig364893E516F946DE84C94F2B"
+	Wed, 26 Sep 2007 03:31:53 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:4586
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751293AbXIZHbx convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 03:31:53 -0400
+Message-Id: <46FA274B.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 26 Sep 2007 08:32:59 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Andi Kleen" <ak@suse.de>, "Takashi Iwai" <tiwai@suse.de>,
+       "LKML" <linux-kernel@vger.kernel.org>, <discuss@x86-64.org>
+Subject: Re: [discuss] 2.6.23-rc8-mm1, -rc7-mm1 kill audio on HP nx6325
+References: <200709251353.52723.rjw@sisk.pl>
+ <20070925090819.a7c6c3f3.akpm@linux-foundation.org>
+In-Reply-To: <20070925090819.a7c6c3f3.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig364893E516F946DE84C94F2B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+>>> Andrew Morton <akpm@linux-foundation.org> 25.09.07 18:08 >>>
+>On Tue, 25 Sep 2007 13:53:51 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>
+>> Hi,
+>> 
+>> This patch from Andi:
+>> 
+>> x86_64-mm-cpa-einval.patch
+>> 
+>> makes the hda_intel audio driver stop working on my HP nx6325.
+>> 
+>> The following line appears in dmesg (from 2.6.23-rc7-mm1:
+>> 
+>> ALSA /home/rafael/src/mm/linux-2.6.23-rc7-mm1/sound/pci/hda/hda_intel.c:1755: hd
+>> a-intel: ioremap error
+>> 
+>> and the driver doesn't work afterwards.
+>> 
+>> Still, I'm not sure if the patch above is wrong or rather it exposes a problem
+>> in the driver.
+>> 
+>
+>Mysterious.
+>
+>ioremap_nocache() does __ioremap(..., _PAGE_PCD);, then __ioremap() does
+>ioremap_page_range(..., _PAGE_PCD | other_stuff) That's one.
+>
+>__ioremap() then does ioremap_change_attr(..., _PAGE_PCD);.  That's two.
+>
+>So I _think_ we're setting _PAGE_PCD twice on those pte's?  Unclear.  The
+>implementation is rather different from i386, too.
+>
+>I dunno why __change_page_attr() failed though.  Perhaps this, in
+>change_page_attr_addr():
+>
+>		if (!kernel_map || pte_present(pfn_pte(0, prot))) {
+>
+>should be &&
 
-Rik van Riel wrote:
-> Could you try out the attached patch, too?
+Definitely not, and this code has been that way for a while.
 
-Sorry, I wasn't able to apply it against 2.6.22-gentoo-r3 and vanilla
-2.6.22.7; I don't have the "order" member in the "struct scan_control"
-and also the bit about "if (sync_writeback =3D=3D PAGEOUT_IO_SYNC &&
-may_enter_fs)" was missing so there was no "else" branch to add (and it
-seemd pretty significant to me). What version should I patch against?
+I rather suspect this change
 
-When this is sorted out, should I keep the previous patch [1] applied as
-well?
+-	if (!kpte) return 0;
++	if (!kpte)
++		return -EINVAL;
 
-[1] http://www.redhat.com/archives/nahant-list/2006-March/msg00033.html
+to be the reason for the failure (and I had already sent a comment to this
+respect to Andi upon his review request).
 
-Cheers,
--jkt
+Jan
 
---=20
-cd /local/pub && more beer > /dev/mouth
-
-
---------------enig364893E516F946DE84C94F2B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFG+gnoamXfqERyJRcRAm2rAJ0ZFKJfoP0diEtfuts3Coz14hF6ggCfRONP
-WnHjP3hj8CaCnsjPYq1Ds9w=
-=pmqu
------END PGP SIGNATURE-----
-
---------------enig364893E516F946DE84C94F2B--
