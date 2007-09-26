@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXIZS3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbXIZSej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760187AbXIZS3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbXIZS3o
+	id S1759066AbXIZSej (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbXIZSea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:29:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49402 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbXIZS3o (ORCPT
+	Wed, 26 Sep 2007 14:34:30 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39956 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753359AbXIZSe3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:29:44 -0400
-Message-ID: <46FAA373.9010607@zytor.com>
-Date: Wed, 26 Sep 2007 11:22:43 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 26 Sep 2007 14:34:29 -0400
+Date: Wed, 26 Sep 2007 20:34:49 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org
+Subject: Re: [PATCH 10/25] Unionfs: add un/likely conditionals on copyup ops
+Message-ID: <20070926183449.GT6800@stusta.de>
+References: <46F9E0EC.3010105@intel.com> <200709261340.l8QDeKie025351@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Andreas Schwab <schwab@suse.de>, Maxim Uvarov <muvarov@ru.mvista.com>,
-       LKML <linux-kernel@vger.kernel.org>, balbir@in.ibm.com,
-       jlan@engr.sgi.com
-Subject: Re: [PATCH] Since we have counters in __u64 format we have to print
- them with %llu macros.
-References: <20070926143918.6749.53939.stgit@localhost.localdomain> <je641x64rw.fsf@sykes.suse.de> <46FA46F6.6000707@linux.vnet.ibm.com>
-In-Reply-To: <46FA46F6.6000707@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200709261340.l8QDeKie025351@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Andreas Schwab wrote:
->> Maxim Uvarov <muvarov@ru.mvista.com> writes:
->>
->>> diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
->>> index cbee3a2..73924df 100644
->>> --- a/Documentation/accounting/getdelays.c
->>> +++ b/Documentation/accounting/getdelays.c
->>> @@ -208,7 +208,7 @@ void print_delayacct(struct taskstats *t)
->>>  void task_context_switch_counts(struct taskstats *t)
->>>  {
->>>  	printf("\n\nTask   %15s%15s\n"
->>> -	       "       %15lu%15lu\n",
->>> +	       "       %15llu%15llu\n",
->>>  	       "voluntary", "nonvoluntary",
->>>  	       t->nvcsw, t->nivcsw);
->> __u64 is not always long long.
+On Wed, Sep 26, 2007 at 09:40:20AM -0400, Erez Zadok wrote:
+>...
+> Also, Auke, if indeed compilers are [sic] likely to do better than
+> programmers adding un/likely wrappers, then why do we still support that in
+> the kernel?  (Working for a company tat produces high-quality compilers, you
+> may know the answer better.)
 > 
-> What is the maximum size of long long across all architectures?
-> How does one format __u64 for printing?
-> 
+> Personally I'm not too fond of what those wrappers do the code: they make it
+> a bit harder to read the code (yet another extra set of parentheses); and
+> they cause the code to be indented further to the right, which you sometimes
+> have to split to multiple lines to avoid going over 80 chars.
 
-In user space, use the macro PRIu64 (or PRIx64 etc) from <inttypes.h>.
+There are some places in generic code where it makes sense, e.g.:
+  #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
 
-	-hpa
+If you run into a BUG() it's anyway game over.
+
+And there are some rare hotpaths in the kernel where it might make 
+sense, and many other places where the likely/unlikely usage that might 
+be present doesn't make sense.
+
+Unless you know you need it you simply shouldn't use likely/unlikely.
+
+> Cheers,
+> Erez.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
