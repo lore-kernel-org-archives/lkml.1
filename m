@@ -1,84 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbXIZQem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbXIZQhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756666AbXIZQem (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 12:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXIZQef
+	id S1757124AbXIZQhz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 12:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbXIZQhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 12:34:35 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:34161 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbXIZQee (ORCPT
+	Wed, 26 Sep 2007 12:37:47 -0400
+Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:25456 "EHLO
+	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752323AbXIZQhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 12:34:34 -0400
-Date: Wed, 26 Sep 2007 11:34:32 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
+	Wed, 26 Sep 2007 12:37:46 -0400
+X-Greylist: delayed 584 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 12:37:45 EDT
+X-IronPort-AV: E=Sophos;i="4.20,302,1186351200"; 
+   d="scan'208";a="1526374"
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: [PATCH 2/8] taskstats: split the basic accounting fields
+To: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/5] The config option itself
-Message-ID: <20070926163432.GA23435@sergelap.austin.ibm.com>
-References: <46FA7D4D.8040808@openvz.org> <46FA7E20.80207@openvz.org>
+Cc: Guillaume Chazarain <guichaz@yahoo.fr>
+Date: Wed, 26 Sep 2007 18:28:05 +0200
+Message-ID: <20070926162805.29434.9637.stgit@cheypa.inria.fr>
+In-Reply-To: <20070926162800.29434.67786.stgit@cheypa.inria.fr>
+References: <20070926162800.29434.67786.stgit@cheypa.inria.fr>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46FA7E20.80207@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Emelyanov (xemul@openvz.org):
-> The option is called NAMESPACES. It can be selectable only
-> if EMBEDDED is chosen (this was Eric's requisition). When
-> the EMBEDDED is off namespaces will be on automatically.
-> 
-> One more option (NAMESPACES_EXPERIMENTAL) was added by 
-> Serge's request to move there all the namespaces that are 
-> not finished yet. Currently only the user and the network
-> namespaces are such.
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> ---
-> 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 684ccfb..05a71d7 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -369,6 +360,23 @@ config RELAY
-> 
->  	  If unsure, say N.
-> 
-> +config NAMESPACES
-> +	bool "The namespaces support" if EMBEDDED
-> +	default !EMBEDDED
-> +	help
-> +	  Provides the way to make tasks work with different objects using
-> +	  the same id. For example same IPC id may refer to different objects
-> +	  or same user id or pid may refer to different tasks when used in
-> +	  different namespaces.
-> +
-> +config NAMESPACES_EXPERIMENTAL
-> +	bool "Add the experimantal namespaces support" if EMBEDDED
+Split the basic accounting taskstats fields into the threadgroup specific ones
+and the thread specific ones. This should have no effect on the execution.
 
-Hi Pavel,
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: Balbir Singh <balbir@in.ibm.com>
+Cc: Jay Lan <jlan@engr.sgi.com>
+Cc: Jonathan Lim <jlim@sgi.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+---
 
-Overall this patchset looks good.
+ kernel/tsacct.c |   53 +++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 37 insertions(+), 16 deletions(-)
 
-However the NAMESPACES_EXPERIMENTAL option should not have the
-'if EMBEDDED', right?  This is about EXPERIMENTAL, not about
-EMBEDDED, unlike the plain NAMESPACES option.
-
--serge
-
-> +	depends on NAMESPACES && EXPERIMENTAL
-> +	default !EMBEDDED
-> +	help
-> +	  Also include the support for the namespaces that are not fnished
-> +	  or well developed yet
-> +
->  config BLK_DEV_INITRD
->  	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
->  	depends on BROKEN || !FRV
+diff --git a/kernel/tsacct.c b/kernel/tsacct.c
+index 4ab1b58..d32378f 100644
+--- a/kernel/tsacct.c
++++ b/kernel/tsacct.c
+@@ -25,13 +25,11 @@
+ /*
+  * fill in basic accounting fields
+  */
+-void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
++static void fill_wall_times(struct taskstats *stats, struct task_struct *tsk)
+ {
+ 	struct timespec uptime, ts;
+ 	s64 ac_etime;
+ 
+-	BUILD_BUG_ON(TS_COMM_LEN < TASK_COMM_LEN);
+-
+ 	/* calculate task elapsed time in timespec */
+ 	do_posix_clock_monotonic_gettime(&uptime);
+ 	ts = timespec_sub(uptime, tsk->start_time);
+@@ -40,17 +38,47 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
+ 	do_div(ac_etime, NSEC_PER_USEC);
+ 	stats->ac_etime = ac_etime;
+ 	stats->ac_btime = get_seconds() - ts.tv_sec;
+-	if (thread_group_leader(tsk)) {
+-		stats->ac_exitcode = tsk->exit_code;
+-		if (tsk->flags & PF_FORKNOEXEC)
+-			stats->ac_flag |= AFORK;
+-	}
++}
++
++/*
++ * Later on, XXX_add_tsk() will need to be called after XXX_fill_threadgroup(),
++ * so put the functions in this order
++ */
++static void bacct_fill_threadgroup(struct taskstats *stats,
++				   struct task_struct *tsk);
++
++void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
++{
+ 	if (tsk->flags & PF_SUPERPRIV)
+ 		stats->ac_flag |= ASU;
+ 	if (tsk->flags & PF_DUMPCORE)
+ 		stats->ac_flag |= ACORE;
+ 	if (tsk->flags & PF_SIGNALED)
+ 		stats->ac_flag |= AXSIG;
++
++	stats->ac_utime	+= cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
++	stats->ac_stime += cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
++	stats->ac_utimescaled	+=
++		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
++	stats->ac_stimescaled	+=
++		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
++	stats->ac_minflt	+= tsk->min_flt;
++	stats->ac_majflt	+= tsk->maj_flt;
++
++	bacct_fill_threadgroup(stats, tsk);
++}
++
++static void bacct_fill_threadgroup(struct taskstats *stats,
++				   struct task_struct *tsk)
++{
++	fill_wall_times(stats, tsk);
++
++	if (thread_group_leader(tsk)) {
++		stats->ac_exitcode = tsk->exit_code;
++		if (tsk->flags & PF_FORKNOEXEC)
++			stats->ac_flag |= AFORK;
++	}
++
+ 	stats->ac_nice	 = task_nice(tsk);
+ 	stats->ac_sched	 = tsk->policy;
+ 	stats->ac_uid	 = tsk->uid;
+@@ -60,15 +88,8 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
+ 	stats->ac_ppid	 = pid_alive(tsk) ?
+ 				rcu_dereference(tsk->real_parent)->tgid : 0;
+ 	rcu_read_unlock();
+-	stats->ac_utime	 = cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
+-	stats->ac_stime	 = cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
+-	stats->ac_utimescaled =
+-		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
+-	stats->ac_stimescaled =
+-		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
+-	stats->ac_minflt = tsk->min_flt;
+-	stats->ac_majflt = tsk->maj_flt;
+ 
++	BUILD_BUG_ON(TS_COMM_LEN < TASK_COMM_LEN);
+ 	strncpy(stats->ac_comm, tsk->comm, sizeof(stats->ac_comm));
+ }
+ 
