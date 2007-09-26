@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761864AbXIZVzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762452AbXIZV5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761864AbXIZVzQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbXIZVzE
+	id S1762452AbXIZV5P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbXIZV5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:55:04 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42812 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752352AbXIZVzD (ORCPT
+	Wed, 26 Sep 2007 17:57:00 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57531 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752037AbXIZV47 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:55:03 -0400
-Date: Wed, 26 Sep 2007 23:55:21 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: David Newall <david@davidnewall.com>
-Cc: Christer Weinigel <christer@weinigel.se>, Al Viro <viro@ftp.linux.org.uk>,
-       Phillip Susi <psusi@cfl.rr.com>, Bill Davidsen <davidsen@tmr.com>,
-       majkls <majkls@prepere.com>, linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-Message-ID: <20070926215521.GU6800@stusta.de>
-References: <46F16A0A.3070402@tmr.com> <20070919194559.36015307@the-village.bc.nu> <46F1A196.8060108@davidnewall.com> <46F401D6.6060609@cfl.rr.com> <20070921191012.15a0b51b@the-village.bc.nu> <46F9752C.5080807@cfl.rr.com> <20070926002340.GL8181@ftp.linux.org.uk> <46FA35A6.1070400@davidnewall.com> <20070926212408.6662231a@zoo.weinigel.se> <46FACCE0.2070005@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46FACCE0.2070005@davidnewall.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 26 Sep 2007 17:56:59 -0400
+Date: Wed, 26 Sep 2007 23:02:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: [PATCH] pata_atiixp: Audit notes on locking
+Message-ID: <20070926230252.45fb49d5@the-village.bc.nu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 06:49:28AM +0930, David Newall wrote:
->...
-> Look, when chroot was being designed, I think they intended that even root 
-> should be unable to get out. They went so far as to say that dot-dot 
-> wouldn't let you out; and it doesn't.
->...
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-You are claiming "They went so far as to say that dot-dot wouldn't let 
-you out"?
-
-Who are the "they" people you are referring to?
-
-And where did "they" explicitely state what you claim they did say?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.23rc8-mm1/drivers/ata/pata_atiixp.c linux-2.6.23rc8-mm1/drivers/ata/pata_atiixp.c
+--- linux.vanilla-2.6.23rc8-mm1/drivers/ata/pata_atiixp.c	2007-09-26 16:46:48.000000000 +0100
++++ linux-2.6.23rc8-mm1/drivers/ata/pata_atiixp.c	2007-09-25 23:59:17.000000000 +0100
+@@ -173,6 +173,9 @@
+  *
+  *	When DMA begins we need to ensure that the UDMA control
+  *	register for the channel is correctly set.
++ *
++ *	Note: The host lock held by the libata layer protects
++ *	us from two channels both trying to set DMA bits at once
+  */
+ 
+ static void atiixp_bmdma_start(struct ata_queued_cmd *qc)
+@@ -199,6 +202,9 @@
+  *
+  *	DMA has completed. Clear the UDMA flag as the next operations will
+  *	be PIO ones not UDMA data transfer.
++ *
++ *	Note: The host lock held by the libata layer protects
++ *	us from two channels both trying to set DMA bits at once
+  */
+ 
+ static void atiixp_bmdma_stop(struct ata_queued_cmd *qc)
