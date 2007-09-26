@@ -1,267 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbXIZNJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbXIZNLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbXIZNJB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 09:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXIZNIw
+	id S1754893AbXIZNLm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 09:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbXIZNLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 09:08:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49144 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751840AbXIZNIv (ORCPT
+	Wed, 26 Sep 2007 09:11:35 -0400
+Received: from h90-m1.hosting90.cz ([81.0.225.70]:60106 "EHLO
+	h90-m1.hosting90.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbXIZNLe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 09:08:51 -0400
-Subject: Re: Oops in pwc v4l driver
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alex Smith <lkml@alex-smith.me.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <200709021502.17458.oliver@neukum.org>
-References: <a0738740709020457n3490ee52l49d29712f3ddbb75@mail.gmail.com>
-	 <200709021502.17458.oliver@neukum.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 26 Sep 2007 10:07:21 -0300
-Message-Id: <1190812041.5076.7.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92-2mdv2008.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 26 Sep 2007 09:11:34 -0400
+Message-ID: <46FA5A85.20407@prepere.com>
+Date: Wed, 26 Sep 2007 15:11:33 +0200
+From: Miloslav Semler <majkls@prepere.com>
+User-Agent: IceDove 1.5.0.12 (X11/20070607)
+MIME-Version: 1.0
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: David Newall <david@davidnewall.com>, Adrian Bunk <bunk@kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
+       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de, bunk@fs.tum.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Chroot bug
+References: <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com> <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com> <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com> <20070925163040.12a3c2f8@the-village.bc.nu> <46F92AAB.1060903@davidnewall.com> <20070925164806.4cadc6a5@the-village.bc.nu> <46F99EDE.70905@davidnewall.com> <20070926005551.GS6800@stusta.de> <F23AFB4D-E989-4F06-A256-4D12D852DFA2@mac.com> <46FA341A.80706@davidnewall.com> <6BA6E9EE-B67B-4334-AC83-9B8E30527832@mac.com>
+In-Reply-To: <6BA6E9EE-B67B-4334-AC83-9B8E30527832@mac.com>
+Content-Type: multipart/mixed;
+ boundary="------------040704080203060907030703"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oliver,
+This is a multi-part message in MIME format.
+--------------040704080203060907030703
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-May you send your Signed-off-by for the patch?
+Kyle Moffett napsal(a):
+> On Sep 26, 2007, at 06:27:38, David Newall wrote:
+>> Kyle Moffett wrote:
+>>> David, please do tell myself and Adrian how "locking down" chroot() 
+>>> the way you want will avoid letting root break out through any of 
+>>> the above ways?
+>>
+>> As has been said, there are thousands of ways to break out of a 
+>> chroot.  It's just that one of them should not be that chroot lets 
+>> you walk out.  I can't explain it clearer than that.  If you don't 
+>> see it now you probably never will.
+>
+> Let me put it this way:  You *CANNOT* enforce chroot() the way you 
+> want to without a completely unacceptable performance penalty.  Let's 
+> start with the simplest example of:
+>
+> fd = open("/", O_DIRECTORY);
+> chroot("/foo");
+> fchdir(fd);
+> chroot(".");
+>
+> If you had ever actually looked at the Linux VFS, it is completely 
+> *impossible* to tell whether "fd" at the time of the chroot is inside 
+> or outside of "/foo" without tracking an enormous amount of extra state.
+so there *is* solution. It is possible. I solved it. I have patch and it 
+is working. So if you find some way how to break it I woud glad if you 
+tell me it.
+> Even then, any such determination may not be valid since an FD may be 
+> opened to an inode which is hardlinked at multiple locations in the 
+> directory tree.  It could also be bind-mounted at multiple locations, 
+> or it may not even be mounted at all in this namespace (CDROM that was 
+> lazy-unmounted).  That FD may be later passed over an open UNIX-domain 
+> socket from another process.  Moreover, arbitrarily closing FDs would 
+> break a huge number of programs.  Furthermore, since you can't fix the 
+> "trivial" case of 'fchdir()', then there's no point in even 
+> *attempting* to fix the "cwd is outside of chroot" problem, although 
+> that is basically equivalent in difficulty to fixing the "dir-fd is 
+> outside of chroot" problem.
+>
+> As for the nested-chroot() bit, the root user inside of a chroot is 
+> always allowed to chroot().  This is necessary for test-suites for 
+> various distro installers, chroot once to enter the installer playpen, 
+> installer chroots again to configure the test-installed-system.  Once 
+> you allow a second chroot, you're back at the "can't reliably and 
+> efficiently track directory sub-tree members" problem.
+>
+> So if you think it can and should be fixed, then PROVIDE THE CODE.
+Miloslav Semler
 
-Cheers,
-Mauro.
+--------------040704080203060907030703
+Content-Type: text/x-diff;
+ name="sys_chroot+sys_fchdir.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sys_chroot+sys_fchdir.patch"
 
-Em Dom, 2007-09-02 às 15:02 +0200, Oliver Neukum escreveu:
-> Am Sonntag 02 September 2007 schrieb Alex Smith:
-> > Hi,
-> > 
-> > I found an old Philips Askey VC010 webcam and attempted to get it
-> > working on Linux (latest git, x86_64). It worked fine, I could view
-> > the camera in mplayer. But, however, when I went to move the camera, I
-> > unplugged it and forgot to close mplayer. I didn't notice, moved it,
-> 
-> Yes,
-> 
-> this is a known issue. This patch should fix it. Does it work for you?
-> 
-> 	Regards
-> 		Oliver
-> ---
-> 
-> --- a/drivers/media/video/pwc/pwc-if.c	2007-08-24 10:16:38.000000000 +0200
-> +++ b/drivers/media/video/pwc/pwc-if.c	2007-08-24 11:01:26.000000000 +0200
-> @@ -908,31 +908,49 @@ int pwc_isoc_init(struct pwc_device *pde
->  	return 0;
->  }
->  
-> -void pwc_isoc_cleanup(struct pwc_device *pdev)
-> +static void pwc_iso_stop(struct pwc_device *pdev)
->  {
->  	int i;
->  
-> -	PWC_DEBUG_OPEN(">> pwc_isoc_cleanup()\n");
-> -	if (pdev == NULL)
-> -		return;
-> -	if (pdev->iso_init == 0)
-> -		return;
-> -
->  	/* Unlinking ISOC buffers one by one */
->  	for (i = 0; i < MAX_ISO_BUFS; i++) {
->  		struct urb *urb;
->  
->  		urb = pdev->sbuf[i].urb;
->  		if (urb != 0) {
-> -			if (pdev->iso_init) {
-> -				PWC_DEBUG_MEMORY("Unlinking URB %p\n", urb);
-> -				usb_kill_urb(urb);
-> -			}
-> +			PWC_DEBUG_MEMORY("Unlinking URB %p\n", urb);
-> +			usb_kill_urb(urb);
-> +		}
-> +	}
-> +}
-> +
-> +static void pwc_iso_free(struct pwc_device *pdev)
-> +{
-> +	int i;
-> +
-> +	/* Freeing ISOC buffers one by one */
-> +	for (i = 0; i < MAX_ISO_BUFS; i++) {
-> +		struct urb *urb;
-> +
-> +		urb = pdev->sbuf[i].urb;
-> +		if (urb != 0) {
->  			PWC_DEBUG_MEMORY("Freeing URB\n");
->  			usb_free_urb(urb);
->  			pdev->sbuf[i].urb = NULL;
->  		}
->  	}
-> +}
-> +
-> +void pwc_isoc_cleanup(struct pwc_device *pdev)
-> +{
-> +	PWC_DEBUG_OPEN(">> pwc_isoc_cleanup()\n");
-> +	if (pdev == NULL)
-> +		return;
-> +	if (pdev->iso_init == 0)
-> +		return;
-> +
-> +	pwc_iso_stop(pdev);
-> +	pwc_iso_free(pdev);
->  
->  	/* Stop camera, but only if we are sure the camera is still there (unplug
->  	   is signalled by EPIPE)
-> @@ -1212,6 +1230,7 @@ static int pwc_video_close(struct inode 
->  
->  	PWC_DEBUG_OPEN(">> video_close called(vdev = 0x%p).\n", vdev);
->  
-> +	lock_kernel();
->  	pdev = (struct pwc_device *)vdev->priv;
->  	if (pdev->vopen == 0)
->  		PWC_DEBUG_MODULE("video_close() called on closed device?\n");
-> @@ -1231,7 +1250,6 @@ static int pwc_video_close(struct inode 
->  	pwc_isoc_cleanup(pdev);
->  	pwc_free_buffers(pdev);
->  
-> -	lock_kernel();
->  	/* Turn off LEDS and power down camera, but only when not unplugged */
->  	if (!pdev->unplugged) {
->  		/* Turn LEDs off */
-> @@ -1277,7 +1295,7 @@ static ssize_t pwc_video_read(struct fil
->  	struct pwc_device *pdev;
->  	int noblock = file->f_flags & O_NONBLOCK;
->  	DECLARE_WAITQUEUE(wait, current);
-> -	int bytes_to_read;
-> +	int bytes_to_read, rv = 0;
->  	void *image_buffer_addr;
->  
->  	PWC_DEBUG_READ("pwc_video_read(vdev=0x%p, buf=%p, count=%zd) called.\n",
-> @@ -1287,8 +1305,12 @@ static ssize_t pwc_video_read(struct fil
->  	pdev = vdev->priv;
->  	if (pdev == NULL)
->  		return -EFAULT;
-> -	if (pdev->error_status)
-> -		return -pdev->error_status; /* Something happened, report what. */
-> +
-> +	mutex_lock(&pdev->modlock);
-> +	if (pdev->error_status) {
-> +		rv = -pdev->error_status; /* Something happened, report what. */
-> +		goto err_out;
-> +	}
->  
->  	/* In case we're doing partial reads, we don't have to wait for a frame */
->  	if (pdev->image_read_pos == 0) {
-> @@ -1299,17 +1321,20 @@ static ssize_t pwc_video_read(struct fil
->  			if (pdev->error_status) {
->  				remove_wait_queue(&pdev->frameq, &wait);
->  				set_current_state(TASK_RUNNING);
-> -				return -pdev->error_status ;
-> +				rv = -pdev->error_status ;
-> +				goto err_out;
->  			}
->  			if (noblock) {
->  				remove_wait_queue(&pdev->frameq, &wait);
->  				set_current_state(TASK_RUNNING);
-> -				return -EWOULDBLOCK;
-> +				rv = -EWOULDBLOCK;
-> +				goto err_out;
->  			}
->  			if (signal_pending(current)) {
->  				remove_wait_queue(&pdev->frameq, &wait);
->  				set_current_state(TASK_RUNNING);
-> -				return -ERESTARTSYS;
-> +				rv = -ERESTARTSYS;
-> +				goto err_out;
->  			}
->  			schedule();
->  			set_current_state(TASK_INTERRUPTIBLE);
-> @@ -1318,8 +1343,10 @@ static ssize_t pwc_video_read(struct fil
->  		set_current_state(TASK_RUNNING);
->  
->  		/* Decompress and release frame */
-> -		if (pwc_handle_frame(pdev))
-> -			return -EFAULT;
-> +		if (pwc_handle_frame(pdev)) {
-> +			rv = -EFAULT;
-> +			goto err_out;
-> +		}
->  	}
->  
->  	PWC_DEBUG_READ("Copying data to user space.\n");
-> @@ -1334,14 +1361,20 @@ static ssize_t pwc_video_read(struct fil
->  	image_buffer_addr = pdev->image_data;
->  	image_buffer_addr += pdev->images[pdev->fill_image].offset;
->  	image_buffer_addr += pdev->image_read_pos;
-> -	if (copy_to_user(buf, image_buffer_addr, count))
-> -		return -EFAULT;
-> +	if (copy_to_user(buf, image_buffer_addr, count)) {
-> +		rv = -EFAULT;
-> +		goto err_out;
-> +	}
->  	pdev->image_read_pos += count;
->  	if (pdev->image_read_pos >= bytes_to_read) { /* All data has been read */
->  		pdev->image_read_pos = 0;
->  		pwc_next_image(pdev);
->  	}
-> +	mutex_unlock(&pdev->modlock);
->  	return count;
-> +err_out:
-> +	mutex_unlock(&pdev->modlock);
-> +	return rv;
->  }
->  
->  static unsigned int pwc_video_poll(struct file *file, poll_table *wait)
-> @@ -1367,7 +1400,20 @@ static unsigned int pwc_video_poll(struc
->  static int pwc_video_ioctl(struct inode *inode, struct file *file,
->  			   unsigned int cmd, unsigned long arg)
->  {
-> -	return video_usercopy(inode, file, cmd, arg, pwc_video_do_ioctl);
-> +	struct video_device *vdev = file->private_data;
-> +	struct pwc_device *pdev; 
-> +	int r = -ENODEV;
-> +
-> +	if (!vdev)
-> +		goto out;
-> +	pdev = vdev->priv;
-> +
-> +	mutex_lock(&pdev->modlock);
-> +	if (!pdev->unplugged)
-> +		r = video_usercopy(inode, file, cmd, arg, pwc_video_do_ioctl);
-> +	mutex_unlock(&pdev->modlock);
-> +out:
-> +	return r;
->  }
->  
->  static int pwc_video_mmap(struct file *file, struct vm_area_struct *vma)
-> @@ -1810,7 +1856,10 @@ static void usb_pwc_disconnect(struct us
->  	wake_up_interruptible(&pdev->frameq);
->  	/* Wait until device is closed */
->  	if(pdev->vopen) {
-> +		mutex_lock(&pdev->modlock);
->  		pdev->unplugged = 1;
-> +		mutex_unlock(&pdev->modlock);
-> +		pwc_iso_stop(pdev);
->  	} else {
->  		/* Device is closed, so we can safely unregister it */
->  		PWC_DEBUG_PROBE("Unregistering video device in disconnect().\n");
-> @@ -1828,7 +1877,6 @@ disconnect_out:
->  	unlock_kernel();
->  }
->  
-> -
->  /* *grunt* We have to do atoi ourselves :-( */
->  static int pwc_atoi(const char *s)
->  {
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-Cheers,
-Mauro
+diff -Nrp linux-2.6.16.53/fs/namei.c linux-2.6.16.53-new/fs/namei.c
+*** linux-2.6.16.53/fs/namei.c	2007-07-25 23:05:45.000000000 +0200
+--- linux-2.6.16.53-new/fs/namei.c	2007-09-15 16:13:50.000000000 +0200
+*************** static __always_inline void follow_dotdo
+*** 728,733 ****
+--- 728,772 ----
+  	}
+  	follow_mount(&nd->mnt, &nd->dentry);
+  }
++ long directory_is_out(struct vfsmount *wdmnt, struct dentry *wdentry,
++ 		struct vfsmount *rootmnt, struct dentry *root)
++ {
++ 	struct nameidata oldentry, newentry;
++ 	long ret = 1;
++ 	
++         read_lock(&current->fs->lock);
++ 	oldentry.dentry = dget(wdentry);
++ 	oldentry.mnt = mntget(wdmnt);
++         read_unlock(&current->fs->lock);
++ 	newentry.dentry = oldentry.dentry;
++ 	newentry.mnt = oldentry.mnt;
++ 	
++ 	follow_dotdot(&newentry);
++ 	/* check it */
++ 	if(newentry.dentry == root && 
++ 		newentry.mnt == rootmnt){
++ 		ret = 0;
++ 		goto out;
++ 	}
++ 	
++ 	while(oldentry.mnt != newentry.mnt ||
++ 		oldentry.dentry != newentry.dentry){
++ 		
++ 		memcpy(&oldentry, &newentry, sizeof(struct nameidata));
++ 		follow_dotdot(&newentry);
++ 		
++ 		/* check it */
++ 		if(newentry.dentry == root && 
++ 			newentry.mnt == rootmnt){
++ 			ret = 0;
++ 			goto out;
++ 		}
++ 	}
++ out:
++ 	dput(newentry.dentry);
++ 	mntput(newentry.mnt);
++ 	return ret;
++ }
+  
+  /*
+   *  It's more convoluted than I'd like it to be, but... it's still fairly
+diff -Nrp linux-2.6.16.53/fs/open.c linux-2.6.16.53-new/fs/open.c
+*** linux-2.6.16.53/fs/open.c	2007-07-25 23:05:45.000000000 +0200
+--- linux-2.6.16.53-new/fs/open.c	2007-09-15 16:14:52.000000000 +0200
+*************** dput_and_out:
+*** 560,565 ****
+--- 560,567 ----
+  out:
+  	return error;
+  }
++ long directory_is_out(struct vfsmount *, struct dentry*, 
++ 		struct vfsmount *, struct dentry *);
+  
+  asmlinkage long sys_fchdir(unsigned int fd)
+  {
+*************** asmlinkage long sys_fchdir(unsigned int 
+*** 581,586 ****
+--- 583,591 ----
+  	error = -ENOTDIR;
+  	if (!S_ISDIR(inode->i_mode))
+  		goto out_putf;
++ 	if (directory_is_out(mnt, dentry, current->fs->rootmnt, 
++ 				current->fs->root))
++ 		goto out_putf;
+  
+  	error = file_permission(file, MAY_EXEC);
+  	if (!error)
+*************** out:
+*** 594,600 ****
+  asmlinkage long sys_chroot(const char __user * filename)
+  {
+  	struct nameidata nd;
+! 	int error;
+  
+  	error = __user_walk(filename, LOOKUP_FOLLOW | LOOKUP_DIRECTORY | LOOKUP_NOALT, &nd);
+  	if (error)
+--- 599,605 ----
+  asmlinkage long sys_chroot(const char __user * filename)
+  {
+  	struct nameidata nd;
+! 	int error, set_wd = 0;
+  
+  	error = __user_walk(filename, LOOKUP_FOLLOW | LOOKUP_DIRECTORY | LOOKUP_NOALT, &nd);
+  	if (error)
+*************** asmlinkage long sys_chroot(const char __
+*** 607,615 ****
+--- 612,631 ----
+  	error = -EPERM;
+  	if (!capable(CAP_SYS_CHROOT))
+  		goto dput_and_out;
++ 	error = -ENOTDIR;
++ 	/*
++ 	if (directory_is_out(nd.mnt, nd.dentry, current->fs->rootmnt,
++ 				current->fs->root))
++ 		goto dput_and_out;
++ 		*/
++ 	set_wd = directory_is_out(current->fs->pwdmnt, current->fs->pwd, 
++ 				nd.mnt, nd.dentry);
+  
+  	set_fs_root(current->fs, nd.mnt, nd.dentry);
+  	set_fs_altroot();
++ 	/* if wd is out, reset it to . */
++ 	if(set_wd)
++ 		set_fs_pwd(current->fs, nd.mnt, nd.dentry);
+  	error = 0;
+  dput_and_out:
+  	path_release(&nd);
 
+--------------040704080203060907030703--
