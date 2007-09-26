@@ -1,72 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759946AbXIZQOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbXIZQQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759946AbXIZQOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 12:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbXIZQOj
+	id S1760170AbXIZQQS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 12:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbXIZQQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 12:14:39 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:41908 "EHLO e1.ny.us.ibm.com"
+	Wed, 26 Sep 2007 12:16:07 -0400
+Received: from mx1.suse.de ([195.135.220.2]:39010 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbXIZQOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 12:14:38 -0400
-Subject: Re: missing mnt_drop_write() on open error
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <E1IaSPW-0005M4-00@dorka.pomaz.szeredi.hu>
-References: <E1IaJc0-000541-00@dorka.pomaz.szeredi.hu>
-	 <1190769669.26982.325.camel@localhost>
-	 <E1IaSPW-0005M4-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Wed, 26 Sep 2007 09:14:32 -0700
-Message-Id: <1190823272.30530.16.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1753516AbXIZQQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 12:16:06 -0400
+Date: Wed, 26 Sep 2007 18:16:02 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       kexec@lists.infradead.org, akpm@linux-foundation.org
+Subject: Re: [patch 1/7] Extended crashkernel command line
+Message-ID: <20070926161602.GA26909@suse.de>
+Mail-Followup-To: Oleg Verych <olecom@flower.upol.cz>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	kexec@lists.infradead.org, akpm@linux-foundation.org
+References: <20070925182257.900701776@strauss.suse.de> <20070925182258.175348676@strauss.suse.de> <E1IaHPU-00089b-Bc@flower>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1IaHPU-00089b-Bc@flower>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-26 at 10:38 +0200, Miklos Szeredi wrote: 
-> > On Wed, 2007-09-26 at 01:14 +0200, Miklos Szeredi wrote:
-> > > I get this at umount, if there was a failed open():
-> > > 
-> > > WARNING: at fs/namespace.c:586 __mntput()
-> > > 
-> > > I think the problem is that may_open() calls mnt_want_write(), but if
-> > > open doesn't succeed, mnt_drop_write() will not be called.
-> > 
-> > Does this help?
+* Oleg Verych <olecom@flower.upol.cz> [2007-09-25 22:53]:
 > 
-> It didn't fix it for me, but the patch looks OK.
+> > + *
+> > + * The function returns 0 on success and -EINVAL on failure.
+> > + */
+> > +static int __init parse_crashkernel_mem(char 			*cmdline,
+> > +					unsigned long long	system_ram,
+> > +					unsigned long long	*crash_size,
+> > +					unsigned long long	*crash_base)
+> > +{
+> > +	char *cur = cmdline;
+> > +
+> > +	/* for each entry of the comma-separated list */
+> > +	do {
+> > +		unsigned long long start = 0, end = ULLONG_MAX;
+> > +		unsigned long long size = -1;
 > 
-> In __dentry_open() there's still a few places where fput() won't be
-> called, notably when ->open fails, which is what I'm triggering I
-> think.
->
-> Also even more horrible things can happen because of the
-> nd->intent.open.file thing.  For example if the lookup routine calls
-> lookup_instantiate_filp(), and after this, but before may_open() some
-> error happens, then release_open_intent() will call fput() on the
-> file, which will cause mnt_drop_write() to be called, even though a
-> matching mnt_want_write() hasn't yet been called.  Ugly, eh?
+> memparse(), as a wrapper for somple_strtoll(), always have a return value
+> (zero by default).
+> <http://article.gmane.org/gmane.linux.kernel/583426>
 
-I used to have a patch that didn't completely trust that all files with
-FMODE_WRITE set to have taken a write on the mnt.  I think I used a flag
-to indicate whether or not a particular file had a mnt_want_write() done
-on its behalf.  It somewhat artificially keeps the mnt write count
-balanced, but I think it will let us detect when things like this go on.
+Ok, that's fixed now, see patch below.
 
-> > I'm also thinking that we should change the open_namei*
-> > functions to simply return 'struct file *'.  Those are the only users
-> > other than NFS, and forcing the return of a file like that will force
-> > users to do the fput() on it if they don't want it any more.  We'd just
-> > need to make sure no new may_open() users pop up.  Any thoughts on that?
+> And why not to make overall result reliable? This is kernel after all.
 > 
-> Yeah, something needs to be done with open, because currently it's way
-> too convoluted.
+> I.e. if there's valid `crashkernel=' option, but some parsing errors, why
+> not to apply some heuristics with warning in syslog, if user have some
+> conf, bootloader (random) errors, but feature still works?
 
-Sounds like Christoph has some ideas...
+I'm against guessing. The user has to specify a parameter which is
+right according to syntax.
 
--- Dave
+However, I plan to make a patch that the kernel can detect a sensible
+offset automatically for i386 and x86_64 as it's done in ia64. Since
+both architectures have a relocatable kernel now, that makes perfectly
+sense. But that's another patch.
 
+---
+
+This patches improves error handling in parse_crashkernel_mem() by comparing
+the return pointer of memparse() with the input pointer and also replaces
+all printk(KERN_WARNING msg) with pr_warning(msg).
+
+
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+
+---
+ kernel/kexec.c |   31 ++++++++++++++++++++++++-------
+ 1 file changed, 24 insertions(+), 7 deletions(-)
+
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1172,33 +1172,50 @@ static int __init parse_crashkernel_mem(
+ 	do {
+ 		unsigned long long start = 0, end = ULLONG_MAX;
+ 		unsigned long long size = -1;
++		char *tmp;
+ 
+ 		/* get the start of the range */
+-		start = memparse(cur, &cur);
++		start = memparse(cur, &tmp);
++		if (cur == tmp) {
++			pr_warning("crashkernel: Memory value expected\n");
++			return -EINVAL;
++		}
++		cur = tmp;
+ 		if (*cur != '-') {
+-			printk(KERN_WARNING "crashkernel: '-' expected\n");
++			pr_warning("crashkernel: '-' expected\n");
+ 			return -EINVAL;
+ 		}
+ 		cur++;
+ 
+ 		/* if no ':' is here, than we read the end */
+ 		if (*cur != ':') {
+-			end = memparse(cur, &cur);
++			end = memparse(cur, &tmp);
++			if (cur == tmp) {
++				pr_warning("crashkernel: Memory "
++						"value expected\n");
++				return -EINVAL;
++			}
++			cur = tmp;
+ 			if (end <= start) {
+-				printk(KERN_WARNING "crashkernel: end <= start\n");
++				pr_warning("crashkernel: end <= start\n");
+ 				return -EINVAL;
+ 			}
+ 		}
+ 
+ 		if (*cur != ':') {
+-			printk(KERN_WARNING "crashkernel: ':' expected\n");
++			pr_warning("crashkernel: ':' expected\n");
+ 			return -EINVAL;
+ 		}
+ 		cur++;
+ 
+-		size = memparse(cur, &cur);
++		size = memparse(cur, &tmp);
++		if (cur == tmp) {
++			pr_warning("Memory value expected\n");
++			return -EINVAL;
++		}
++		cur = tmp;
+ 		if (size < 0) {
+-			printk(KERN_WARNING "crashkernel: invalid size\n");
++			pr_warning("crashkernel: invalid size\n");
+ 			return -EINVAL;
+ 		}
+ 
