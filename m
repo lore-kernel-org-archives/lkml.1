@@ -1,95 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbXIZVEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762295AbXIZVFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761665AbXIZVEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbXIZVEl
+	id S1762295AbXIZVFa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbXIZVFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:04:41 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37011 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbXIZVEk (ORCPT
+	Wed, 26 Sep 2007 17:05:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56803 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754736AbXIZVFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:04:40 -0400
-Message-ID: <46FAC958.9000501@zytor.com>
-Date: Wed, 26 Sep 2007 14:04:24 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 26 Sep 2007 17:05:16 -0400
+Date: Wed, 26 Sep 2007 13:59:22 -0700
+From: Greg KH <gregkh@suse.de>
+To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: State of the Linux Driver Core Subsystem for 2.6.23-rc8
+Message-ID: <20070926205922.GA1734@kroah.com>
 MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: Joerg Pommnitz <pommnitz@yahoo.com>, cebbert@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on AMD
- Geode LX800
-References: <637040.99806.qm@web51411.mail.re2.yahoo.com> <46FA6858.5060908@zytor.com> <20070926154106.GG7582@cosmic.amd.com> <46FAAFA7.50106@zytor.com> <20070926205825.GA14877@cosmic.amd.com>
-In-Reply-To: <20070926205825.GA14877@cosmic.amd.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jordan Crouse wrote:
-> On 26/09/07 12:14 -0700, H. Peter Anvin wrote:
->> Please try the following debug patch to let us know what is going on.
->>
->> 	-hpa
-> 
->> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
->> index 1a2e62d..a0ccf29 100644
->> --- a/arch/i386/boot/memory.c
->> +++ b/arch/i386/boot/memory.c
->> @@ -33,6 +33,12 @@ static int detect_memory_e820(void)
->>  		      "=m" (*desc)
->>  		    : "D" (desc), "a" (0xe820));
->>  
->> +		printf("e820: err %d id 0x%08x next %u %08x:%08x %u\n",
->> +		       err, id, next,
->> +		       (unsigned int)desc->addr,
->> +		       (unsigned int)desc->size,
->> +		       desc->type);
->> +
->>  		if (err || id != SMAP)
->>  			break;
-> 
-> Okay, we have clarity.   Here is the output
-> 
-> e820: err 0 id 0x534d4150 next 15476 00000000:0009fc00 1
-> e820: err 0 id 0x534d4150 next 15496 0009fc00:00000400 2
-> e820: err 0 id 0x534d4150 next 15516 000e0000:00020000 2
-> e820: err 0 id 0x0e7b0000 next 11536 00100000:0e6b0000 1
-> 
-> In the last entry,  id is obviously wrong (it should be 'SMAP' or
-> 0x534d4150).  This is the BIOS bug.
-> 
-> Here's the reason why this bothers us now.  In the old assembly code,
-> if the returned ID wasn't equal to 'SMAP', we jumped straight to the e801
-> code.  In the new code in memory.c, if id != SMAP, we break out of the
-> int15 loop, and return boot_params.e820_entries, which in our case is
-> 3.  detect_memory() considers this to be successful, and no attempt to
-> parse e801 is made.
-> 
-> So thats where the problem is - in the old code with the buggy BIOS, we
-> punted to reading the e801 information, and that was enough to keep us 
-> going.   In the new code, we allow a partial table to be used, and we
-> blow up.
-> 
-> Attached is a patch to fix this - it returns -1 on error, and only sets
-> boot_params.e820_entries to be non-zero if we have something useful
-> in it.  This punts the detection to the e801 code, which then is
-> then successful.
-> 
-> This fixes the problem with the DB800, and so it probably should
-> with the other Geode platforms affected by this.
-> 
-> Many thanks to hpa for the guiding hand.
-> 
+Here's a summary of the current state of the Linux Driver core
+subsystem, as of 2.6.23-rc8.
 
-This patch is obviously wrong.  There are a lot of e820 BIOSen out there
-that terminate with CF=1, and that is a legitimate termination condition
-for e820.  Now, as far as what to do when id != SMAP, it probably is
-still the right thing to do; since the BOS vendor couldn't get something
-that elementary correct, we shouldn't trust the data.
+If the information in here is incorrect, or anyone knows of any
+outstanding issues not listed here, please let me know.
 
-I'll write up a corrected patch.
+List of outstanding regressions from 2.6.22:
+	- none known.
 
-	-hpa
+List of outstanding regressions from older kernel versions:
+	- none known.
+
+
+There are no currently open Driver core or sysfs bugs in bugzilla.
+
+
+Future patches that are currently in my quilt tree (as found at
+	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+) for the Driver core subsystem are as follows.  All of these will be
+submitted for inclusion into 2.6.24, except as noted.  The diffstat of
+these patches is included at the bottom of this message for those that
+are interested.
+
+	- HOWTO ja_JP updates
+	- metric boatload of changes and tweaks to sysfs from Tejun.
+	  These clean up the internal usage and implementation of sysfs,
+	  and split sysfs from the kobject model a lot, fixing a lot of
+	  problems along the way.  I can't thank him enough for this
+	  work.
+	- cleaned up the usage of struct subsystem some more by removing
+	  some functions that are not needed, or only used by the driver
+	  core.  Details on the api changes are below
+	- cleaned up the usage of the kobject->name field and removed it
+	  entirely.  This saves us some size on every kobject which
+	  really adds up on those s390 31 bit boxes with 20,000
+	  different block devices.
+	- uevent environment variable handling has been made simpler,
+	  and now hopefully, almost impossible to get wrong.  Previously
+	  we were forcing every subsystem to open-code a lot of this
+	  logic.  Thanks to Kay for this work.
+	- global list of sysdev_drivers is removed, as no one was using
+	  it at all.
+	- the number of legacy ptys can now be dynamically specified on
+	  the kernel command line, allowing people who refuse to fix
+	  their old applications to be able to still run on newer
+	  distros that want to limit this number at build time.
+	- dmi sysfs code cleanups and fixes
+	- block devices are moved from /sys/block to /sys/class/block.
+	  This patch has been hanging around for almost a year now, and
+	  hopefully we have worked out all of the kinks and userspace
+	  boot breakages.  If anyone has any problems with this, please
+	  let me and Kay know about it.  I'm hesitant to include it in
+	  2.6.24 as it has recently changed and needs more testing.
+	  Maybe it will go into 2.6.25.  Oh, udev has been able to
+	  handle this for over a year, so there should not be any
+	  problems with distros that are still supported.  It can also
+	  be turned off with the CONFIG_SYSFS_DEPRECATED build option
+	  for older distros.
+	- new debugfs functions for people who like hex numbers
+	- platform devices now have the "platform:" alias added to their
+	  modalias to fix the recursive modprobe loops that Red Hat,
+	  OLPC, SuSE, and Debian have reported in the current code.
+	- some struct class_device to struct device conversions were
+	  done for video and some various char drivers.  More of these
+	  are on the way.
+	- cdev kobject name cleanups.  The kobject name of a cdev does
+	  not do anything, so it should not be set.
+	- firmware collision fix between i2c and i2c-dev.
+	- uevent files for bus and driver have been added.  SuSE has
+	  shipped this for quite some time now.
+	- if CONFIG_HOTPLUG is not enabled, some more space is saved in
+	  the uevent code.
+	- the path to the uevent helper program (traditionally
+	  /sbin/hotplug) can be specified in the kernel config.  This
+	  keeps the kernel from having to call a program that is not
+	  present 300+ times before init starts up, speeding up boot
+	  time in theory.
+
+New driver core api changes for 2.6.24:
+	- debugfs_create_x8(), debugfs_create_x16(), and
+	  debugfs_create_x32() have been added
+	- struct kobject.name field has been removed.  Use
+	  kobject_set_name() and kobject_name() to set and get the name.
+	- uevent callbacks in the driver core and for kobjects have been
+	  changed from:
+	    int (*uevent)(struct device *dev, char **envp, int num_envp, char *buffer, int buffer_size);
+	  to:
+	    int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
+	  and struct kobj_uevent_env has been created to make it simpler
+	  to create environment variables for uevents.
+	- struct platform_device.id has changed from an u32 to an int.
+	- the following functions have been removed either entirely or
+	  from the global namespace:
+		get_bus()
+		put_bus()
+		kset_set_kset_s()
+		subsys_get()
+		subsys_put()
+		subsys_set_kset()
+		subsystem_init()
+	  All documentation and in-kernel users have been cleaned up.
+	  There really wasn't many, if any users of these calls.
+
+No known at this time, changes to the sysfs userspace visable structure
+will happen in 2.6.24.
+
+thanks,
+
+greg k-h
+
+----------------------------
+
+Diffstat of the current driver-2.6 quilt queue:
+
+
+ Documentation/ja_JP/HOWTO                   |   84 -
+ Documentation/kernel-parameters.txt         |    4 
+ Documentation/kobject.txt                   |   21 
+ arch/i386/kernel/traps.c                    |    1 
+ arch/ia64/sn/kernel/tiocx.c                 |    3 
+ arch/powerpc/kernel/of_device.c             |   37 
+ arch/powerpc/kernel/vio.c                   |   16 
+ arch/powerpc/platforms/ps3/system-bus.c     |    9 
+ arch/x86_64/kernel/traps.c                  |    1 
+ block/bsg.c                                 |    5 
+ block/elevator.c                            |    2 
+ block/genhd.c                               |  446 ++---
+ block/ll_rw_blk.c                           |    6 
+ drivers/acpi/bus.c                          |    2 
+ drivers/acpi/scan.c                         |   16 
+ drivers/acpi/video.c                        |    4 
+ drivers/amba/bus.c                          |    9 
+ drivers/base/Kconfig                        |    8 
+ drivers/base/base.h                         |    2 
+ drivers/base/bus.c                          |  116 -
+ drivers/base/class.c                        |   52 
+ drivers/base/core.c                         |  124 -
+ drivers/base/firmware_class.c               |   14 
+ drivers/base/memory.c                       |    3 
+ drivers/base/platform.c                     |   28 
+ drivers/base/power/power.h                  |    6 
+ drivers/base/power/resume.c                 |    2 
+ drivers/base/power/suspend.c                |    2 
+ drivers/base/sys.c                          |   73 
+ drivers/block/aoe/aoeblk.c                  |   51 
+ drivers/block/nbd.c                         |   15 
+ drivers/char/Kconfig                        |   10 
+ drivers/char/Makefile                       |    1 
+ drivers/char/dsp56k.c                       |    4 
+ drivers/char/ip2/ip2main.c                  |   12 
+ drivers/char/ipmi/ipmi_devintf.c            |    6 
+ drivers/char/istallion.c                    |    8 
+ drivers/char/lp.c                           |    5 
+ drivers/char/nozomi.c                       | 2348 ++++++++++++++++++++++++++++
+ drivers/char/pcmcia/cm4000_cs.c             |    5 
+ drivers/char/pcmcia/cm4040_cs.c             |    5 
+ drivers/char/pty.c                          |    9 
+ drivers/char/raw.c                          |    5 
+ drivers/char/snsc.c                         |    3 
+ drivers/char/stallion.c                     |    7 
+ drivers/char/tipar.c                        |    6 
+ drivers/char/viotape.c                      |   10 
+ drivers/cpufreq/cpufreq.c                   |    2 
+ drivers/edac/edac_mc_sysfs.c                |    3 
+ drivers/eisa/eisa-bus.c                     |    9 
+ drivers/firewire/fw-device.c                |   11 
+ drivers/firmware/dmi-id.c                   |   60 
+ drivers/i2c/i2c-core.c                      |    8 
+ drivers/ide/ide-probe.c                     |    2 
+ drivers/ide/ide.c                           |   15 
+ drivers/ieee1394/nodemgr.c                  |   17 
+ drivers/infiniband/core/sysfs.c             |    9 
+ drivers/input/input.c                       |   62 
+ drivers/input/misc/pcspkr.c                 |    1 
+ drivers/input/serio/serio.c                 |   11 
+ drivers/md/dm.c                             |    2 
+ drivers/md/md.c                             |   11 
+ drivers/media/dvb/dvb-core/dvbdev.c         |    5 
+ drivers/media/video/pvrusb2/pvrusb2-sysfs.c |    4 
+ drivers/misc/tifm_core.c                    |    9 
+ drivers/mmc/core/bus.c                      |   11 
+ drivers/net/ibmveth.c                       |    2 
+ drivers/pci/hotplug.c                       |   28 
+ drivers/pci/hotplug/pci_hotplug_core.c      |   60 
+ drivers/pci/hotplug/rpadlpar_sysfs.c        |    6 
+ drivers/pci/pci-driver.c                    |    3 
+ drivers/pci/pci.h                           |    3 
+ drivers/pci/setup-irq.c                     |    2 
+ drivers/pcmcia/cs.c                         |   10 
+ drivers/pcmcia/ds.c                         |   26 
+ drivers/pcmcia/pxa2xx_mainstone.c           |    2 
+ drivers/pcmcia/pxa2xx_sharpsl.c             |    2 
+ drivers/power/power_supply.h                |    3 
+ drivers/power/power_supply_sysfs.c          |   17 
+ drivers/s390/cio/ccwgroup.c                 |    3 
+ drivers/s390/cio/device.c                   |   25 
+ drivers/s390/crypto/ap_bus.c                |   14 
+ drivers/scsi/scsi_sysfs.c                   |    9 
+ drivers/spi/spi.c                           |    7 
+ drivers/usb/core/devio.c                    |    6 
+ drivers/usb/core/driver.c                   |   29 
+ drivers/usb/core/message.c                  |   28 
+ drivers/video/output.c                      |   29 
+ drivers/w1/w1.c                             |   18 
+ fs/block_dev.c                              |    8 
+ fs/debugfs/file.c                           |   36 
+ fs/dlm/lockspace.c                          |    2 
+ fs/gfs2/locking/dlm/sysfs.c                 |    2 
+ fs/gfs2/sys.c                               |    2 
+ fs/ocfs2/cluster/masklog.c                  |    3 
+ fs/partitions/check.c                       |  328 +--
+ fs/sysfs/bin.c                              |   30 
+ fs/sysfs/dir.c                              |  806 ++-------
+ fs/sysfs/file.c                             |  262 ++-
+ fs/sysfs/group.c                            |    2 
+ fs/sysfs/inode.c                            |  109 -
+ fs/sysfs/mount.c                            |   18 
+ fs/sysfs/symlink.c                          |   26 
+ fs/sysfs/sysfs.h                            |  191 +-
+ include/asm-powerpc/of_device.h             |    2 
+ include/linux/debugfs.h                     |   27 
+ include/linux/device.h                      |   17 
+ include/linux/genhd.h                       |   29 
+ include/linux/init.h                        |    1 
+ include/linux/kobject.h                     |   86 -
+ include/linux/platform_device.h             |    7 
+ include/linux/sysfs.h                       |  168 --
+ include/linux/tty.h                         |    1 
+ include/linux/video_output.h                |    4 
+ init/do_mounts.c                            |  108 -
+ init/main.c                                 |    9 
+ lib/Makefile                                |    3 
+ lib/kobject.c                               |  195 +-
+ lib/kobject_uevent.c                        |  216 +-
+ net/atm/atm_sysfs.c                         |    7 
+ net/bridge/br_sysfs_br.c                    |    2 
+ net/core/net-sysfs.c                        |   14 
+ net/wireless/sysfs.c                        |    3 
+ sound/aoa/soundbus/core.c                   |   33 
+ 124 files changed, 4226 insertions(+), 2721 deletions(-)
