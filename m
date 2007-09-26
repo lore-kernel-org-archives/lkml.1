@@ -1,183 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbXIZNc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbXIZNf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759817AbXIZNc1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 09:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbXIZNcN
+	id S1759146AbXIZNf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 09:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbXIZNfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 09:32:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42531 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756162AbXIZNcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 09:32:11 -0400
-Date: Wed, 26 Sep 2007 15:31:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Schwartz <davids@webmaster.com>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Michlmayr <tbm@cyrius.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20070926133138.GA23187@elte.hu>
-References: <20070926112919.GN3337@deprecation.cyrius.com> <MDEHLPKNGKAHNMBLJOLKCEPKHAAC.davids@webmaster.com>
+	Wed, 26 Sep 2007 09:35:16 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:38251 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753361AbXIZNfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 09:35:14 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch/backport] CFS scheduler, -v22, for v2.6.23-rc8, v2.6.22.8, v2.6.21.7, v2.6.20.20
+Date: Wed, 26 Sep 2007 16:33:22 +0300
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <20070926111357.GA10655@elte.hu>
+In-Reply-To: <20070926111357.GA10655@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEPKHAAC.davids@webmaster.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200709261633.24283.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+26 Eyl 2007 Çar tarihinde, Ingo Molnar şunları yazmıştı: 
+> By popular demand, here is release -v22 of the CFS scheduler. It is a
+> full backport of the latest & greatest sched-devel.git code to
+> v2.6.23-rc8, v2.6.22.8, v2.6.21.7 and v2.6.20.20. The patches can be
+> downloaded from the usual place:
+>
+>     http://people.redhat.com/mingo/cfs-scheduler/
+>
+> This is the first time the development version of the scheduler has been
+> fed back into the stable backport series, so there's many changes since
+> v20.5:
 
-* David Schwartz <davids@webmaster.com> wrote:
+Compilation [against 2.6.20.20] fails with
 
-> > > I think the real fix would be for iperf to use blocking network IO 
-> > > though, or maybe to use a POSIX mutex or POSIX semaphores.
-> >
-> > So it's definitely not a bug in the kernel, only in iperf?
-> 
-> Martin:
-> 
-> Actually, in this case I think iperf is doing the right thing (though not
-> the best thing) and the kernel is doing the wrong thing. [...]
+buildfarm linux-2.6.20 # make
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CHK     include/linux/compile.h
+  CC      kernel/sched.o
+In file included from kernel/sched.c:850:
+kernel/sched_fair.c:49: error: sysctl_sched_nr_latency causes a section type 
+conflict
+make[1]: *** [kernel/sched.o] Error 1
+make: *** [kernel] Error 2
 
-it's not doing the right thing at all. I had a quick look at the source 
-code, and the reason for that weird yield usage was that there's a 
-locking bug in iperf's "Reporter thread" abstraction and apparently 
-instead of fixing the bug it was worked around via a horrible yield() 
-based user-space lock.
+@kernel/sched_fair.c
+-const_debug unsigned int sysctl_sched_nr_latency __read_mostly = 20;
++const_debug unsigned int sysctl_sched_nr_latency = 20;
 
-the (small) patch below fixes the iperf locking bug and removes the 
-yield() use. There are numerous immediate benefits of this patch:
+seems solve that issue but i'm not sure this is the right thing to do or 
+not :)
 
- - iperf uses _much_ less CPU time. On my Core2Duo test system, before 
-   the patch it used up 100% CPU time to saturate 1 gigabit of network 
-   traffic to another box. With the patch applied it now uses 9% of 
-   CPU time.
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
- - sys_sched_yield() is removed altogether
-
- - i was able to measure much higher bandwidth over localhost for 
-   example. This is the case for over-the-network measurements as well.
-
- - the results are also more consistent and more deterministic, hence 
-   more reliable as a benchmarking tool. (the reason for that is that
-   more CPU time is spent on actually delivering packets, instead of
-   mindlessly polling on the user-space "lock", so we actually max out
-   the CPU, instead of relying on the random proportion the workload was
-   able to make progress versus wasting CPU time on polling.)
-
-sched_yield() is almost always the symptom of broken locking or other 
-bug. In that sense CFS does the right thing by exposing such bugs =B-)
- 
-	Ingo
-
-------------------------->
-Subject: iperf: fix locking
-From: Ingo Molnar <mingo@elte.hu>
-
-fix iperf locking - it was burning CPU time while polling
-unnecessarily, instead of using the proper wait primitives.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- compat/Thread.c |    3 ---
- src/Reporter.c  |   13 +++++++++----
- src/main.cpp    |    2 ++
- 3 files changed, 11 insertions(+), 7 deletions(-)
-
-Index: iperf-2.0.2/compat/Thread.c
-===================================================================
---- iperf-2.0.2.orig/compat/Thread.c
-+++ iperf-2.0.2/compat/Thread.c
-@@ -405,9 +405,6 @@ int thread_numuserthreads( void ) {
- void thread_rest ( void ) {
- #if defined( HAVE_THREAD )
- #if defined( HAVE_POSIX_THREAD )
--    // TODO add checks for sched_yield or pthread_yield and call that
--    // if available
--    usleep( 0 );
- #else // Win32
-     SwitchToThread( );
- #endif
-Index: iperf-2.0.2/src/Reporter.c
-===================================================================
---- iperf-2.0.2.orig/src/Reporter.c
-+++ iperf-2.0.2/src/Reporter.c
-@@ -111,6 +111,7 @@ report_statistics multiple_reports[kRepo
- char buffer[64]; // Buffer for printing
- ReportHeader *ReportRoot = NULL;
- extern Condition ReportCond;
-+extern Condition ReportDoneCond;
- int reporter_process_report ( ReportHeader *report );
- void process_report ( ReportHeader *report );
- int reporter_handle_packet( ReportHeader *report );
-@@ -338,7 +339,7 @@ void ReportPacket( ReportHeader* agent, 
-             // item
-             while ( index == 0 ) {
-                 Condition_Signal( &ReportCond );
--                thread_rest();
-+                Condition_Wait( &ReportDoneCond );
-                 index = agent->reporterindex;
-             }
-             agent->agentindex = 0;
-@@ -346,7 +347,7 @@ void ReportPacket( ReportHeader* agent, 
-         // Need to make sure that reporter is not about to be "lapped"
-         while ( index - 1 == agent->agentindex ) {
-             Condition_Signal( &ReportCond );
--            thread_rest();
-+            Condition_Wait( &ReportDoneCond );
-             index = agent->reporterindex;
-         }
-         
-@@ -553,6 +554,7 @@ void reporter_spawn( thread_Settings *th
-         }
-         Condition_Unlock ( ReportCond );
- 
-+again:
-         if ( ReportRoot != NULL ) {
-             ReportHeader *temp = ReportRoot;
-             //Condition_Unlock ( ReportCond );
-@@ -575,9 +577,12 @@ void reporter_spawn( thread_Settings *th
-                 // finished with report so free it
-                 free( temp );
-                 Condition_Unlock ( ReportCond );
-+            	Condition_Signal( &ReportDoneCond );
-+		if (ReportRoot)
-+			goto again;
-             }
--            // yield control of CPU is another thread is waiting
--            thread_rest();
-+            Condition_Signal( &ReportDoneCond );
-+            usleep(10000);
-         } else {
-             //Condition_Unlock ( ReportCond );
-         }
-Index: iperf-2.0.2/src/main.cpp
-===================================================================
---- iperf-2.0.2.orig/src/main.cpp
-+++ iperf-2.0.2/src/main.cpp
-@@ -96,6 +96,7 @@ extern "C" {
-     // records being accessed in a report and also to
-     // serialize modification of the report list
-     Condition ReportCond;
-+    Condition ReportDoneCond;
- }
- 
- // global variables only accessed within this file
-@@ -141,6 +142,7 @@ int main( int argc, char **argv ) {
- 
-     // Initialize global mutexes and conditions
-     Condition_Initialize ( &ReportCond );
-+    Condition_Initialize ( &ReportDoneCond );
-     Mutex_Initialize( &groupCond );
-     Mutex_Initialize( &clients_mutex );
- 
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
