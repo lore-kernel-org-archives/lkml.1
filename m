@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbXIZNaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbXIZNbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152AbXIZNaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 09:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbXIZNaH
+	id S1758858AbXIZNbc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 09:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbXIZNbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 09:30:07 -0400
-Received: from sacred.ru ([62.205.161.221]:48499 "EHLO sacred.ru"
+	Wed, 26 Sep 2007 09:31:24 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:49526 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753104AbXIZNaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 09:30:06 -0400
-Message-ID: <46FA5D0F.2090604@openvz.org>
-Date: Wed, 26 Sep 2007 17:22:23 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1753440AbXIZNbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 09:31:23 -0400
+Message-ID: <46FA5F26.2030100@fr.ibm.com>
+Date: Wed, 26 Sep 2007 15:31:18 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Serge Hallyn <serue@us.ibm.com>,
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: Andrew Morton <akpm@osdl.org>,
        Linux Containers <containers@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Use KMEM_CACHE macro to create the nsproxy cache
+Subject: Re: [PATCH] Remove unused member from nsproxy
+References: <46FA5B39.1010204@openvz.org>
+In-Reply-To: <46FA5B39.1010204@openvz.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 26 Sep 2007 17:24:45 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The blessed way for standard caches is to use it.
-Besides, this may give this cache a better alignment.
+Pavel Emelyanov wrote:
+> The nslock spinlock is not used in the kernel at all. 
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+it's also useless now that you have put some RCU rules around it.
+right ? 
 
----
+C.
 
-diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-index ee68964..31351cc 100644
---- a/kernel/nsproxy.c
-+++ b/kernel/nsproxy.c
-@@ -222,8 +222,7 @@ void exit_task_namespaces(struct task_st
- 
- static int __init nsproxy_cache_init(void)
- {
--	nsproxy_cachep = kmem_cache_create("nsproxy", sizeof(struct nsproxy),
--					   0, SLAB_PANIC, NULL);
-+	nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC);
- 	return 0;
- }
- 
+> Remove it.
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> ---
+> 
+> diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+> index a3f2541..cae35b6 100644
+> --- a/include/linux/init_task.h
+> +++ b/include/linux/init_task.h
+> @@ -73,7 +73,6 @@ extern struct nsproxy init_nsproxy;
+>  #define INIT_NSPROXY(nsproxy) {						\
+>  	.pid_ns		= &init_pid_ns,					\
+>  	.count		= ATOMIC_INIT(1),				\
+> -	.nslock		= __SPIN_LOCK_UNLOCKED(nsproxy.nslock),		\
+>  	.uts_ns		= &init_uts_ns,					\
+>  	.mnt_ns		= NULL,						\
+>  	INIT_NET_NS(net_ns)                                             \
+> diff --git a/include/linux/nsproxy.h b/include/linux/nsproxy.h
+> index 4d564d8..0e66b57 100644
+> --- a/include/linux/nsproxy.h
+> +++ b/include/linux/nsproxy.h
+> @@ -23,7 +23,6 @@ struct pid_namespace;
+>   */
+>  struct nsproxy {
+>  	atomic_t count;
+> -	spinlock_t nslock;
+>  	struct uts_namespace *uts_ns;
+>  	struct ipc_namespace *ipc_ns;
+>  	struct mnt_namespace *mnt_ns;
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+> 
+
