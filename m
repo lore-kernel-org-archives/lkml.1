@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbXIZDcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbXIZDdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759494AbXIZDcy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 23:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758478AbXIZDbh
+	id S1759412AbXIZDdZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 23:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbXIZDbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 23:31:37 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35319 "EHLO
+	Tue, 25 Sep 2007 23:31:51 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35341 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757495AbXIZDbf (ORCPT
+	with ESMTP id S1759126AbXIZDbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 23:31:35 -0400
+	Tue, 25 Sep 2007 23:31:49 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 13/25] Unionfs: add un/likely conditionals on dir ops
-Date: Tue, 25 Sep 2007 23:09:52 -0400
-Message-Id: <11907762104036-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 12/25] Unionfs: add un/likely conditionals on dentry ops
+Date: Tue, 25 Sep 2007 23:09:51 -0400
+Message-Id: <1190776210952-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11907762042481-git-send-email-ezk@cs.sunysb.edu>
@@ -27,229 +27,251 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/dirfops.c   |   22 +++++++++++-----------
- fs/unionfs/dirhelper.c |   30 +++++++++++++++---------------
- 2 files changed, 26 insertions(+), 26 deletions(-)
+ fs/unionfs/dentry.c |   68 ++++++++++++++++++++++++++------------------------
+ 1 files changed, 35 insertions(+), 33 deletions(-)
 
-diff --git a/fs/unionfs/dirfops.c b/fs/unionfs/dirfops.c
-index c923e58..fa2df88 100644
---- a/fs/unionfs/dirfops.c
-+++ b/fs/unionfs/dirfops.c
-@@ -63,7 +63,7 @@ static int unionfs_filldir(void *dirent, const char *name, int namelen,
- 		off_t pos = rdstate2offset(buf->rdstate);
- 		u64 unionfs_ino = ino;
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index 52bcb18..3f3a18d 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -45,7 +45,7 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 	verify_locked(dentry);
  
--		if (!err) {
-+		if (likely(!err)) {
- 			err = buf->filldir(buf->dirent, name, namelen, pos,
- 					   unionfs_ino, d_type);
- 			buf->rdstate->offset++;
-@@ -74,7 +74,7 @@ static int unionfs_filldir(void *dirent, const char *name, int namelen,
- 	 * If we did fill it, stuff it in our hash, otherwise return an
- 	 * error.
- 	 */
--	if (err) {
-+	if (unlikely(err)) {
- 		buf->filldir_error = err;
- 		goto out;
+ 	/* if the dentry is unhashed, do NOT revalidate */
+-	if (d_deleted(dentry)) {
++	if (unlikely(d_deleted(dentry))) {
+ 		dprintk(KERN_DEBUG "unionfs: unhashed dentry being "
+ 			"revalidated: %*s\n",
+ 			dentry->d_name.len, dentry->d_name.name);
+@@ -53,7 +53,7 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
  	}
-@@ -99,7 +99,7 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
  
- 	unionfs_read_lock(file->f_path.dentry->d_sb);
+ 	BUG_ON(dbstart(dentry) == -1);
+-	if (dentry->d_inode)
++	if (likely(dentry->d_inode))
+ 		positive = 1;
+ 	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
+ 	sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
+@@ -62,7 +62,7 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 	 * revalidation to be done, because this file does not exist within
+ 	 * the namespace, and Unionfs operates on the namespace, not data.
+ 	 */
+-	if (sbgen != dgen) {
++	if (unlikely(sbgen != dgen)) {
+ 		struct dentry *result;
+ 		int pdgen;
  
--	if ((err = unionfs_file_revalidate(file, false)))
-+	if (unlikely((err = unionfs_file_revalidate(file, false))))
- 		goto out;
+@@ -76,7 +76,7 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 		/* Free the pointers for our inodes and this dentry. */
+ 		bstart = dbstart(dentry);
+ 		bend = dbend(dentry);
+-		if (bstart >= 0) {
++		if (likely(bstart >= 0)) {
+ 			struct dentry *lower_dentry;
+ 			for (bindex = bstart; bindex <= bend; bindex++) {
+ 				lower_dentry =
+@@ -89,7 +89,7 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 		set_dbend(dentry, -1);
  
- 	inode = file->f_path.dentry->d_inode;
-@@ -110,7 +110,7 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 			goto out;
- 		} else if (file->f_pos > 0) {
- 			uds = find_rdstate(inode, file->f_pos);
--			if (!uds) {
-+			if (unlikely(!uds)) {
- 				err = -ESTALE;
+ 		interpose_flag = INTERPOSE_REVAL_NEG;
+-		if (positive) {
++		if (likely(positive)) {
+ 			interpose_flag = INTERPOSE_REVAL;
+ 			/*
+ 			 * During BRM, the VFS could already hold a lock on
+@@ -97,14 +97,14 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 			 * (deadlock), but if you lock it in this function,
+ 			 * then release it here too.
+ 			 */
+-			if (!mutex_is_locked(&dentry->d_inode->i_mutex)) {
++			if (unlikely(!mutex_is_locked(&dentry->d_inode->i_mutex))) {
+ 				mutex_lock(&dentry->d_inode->i_mutex);
+ 				locked = 1;
+ 			}
+ 
+ 			bstart = ibstart(dentry->d_inode);
+ 			bend = ibend(dentry->d_inode);
+-			if (bstart >= 0) {
++			if (likely(bstart >= 0)) {
+ 				struct inode *lower_inode;
+ 				for (bindex = bstart; bindex <= bend;
+ 				     bindex++) {
+@@ -119,14 +119,14 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 			UNIONFS_I(dentry->d_inode)->lower_inodes = NULL;
+ 			ibstart(dentry->d_inode) = -1;
+ 			ibend(dentry->d_inode) = -1;
+-			if (locked)
++			if (unlikely(locked))
+ 				mutex_unlock(&dentry->d_inode->i_mutex);
+ 		}
+ 
+ 		result = unionfs_lookup_backend(dentry, &lowernd,
+ 						interpose_flag);
+-		if (result) {
+-			if (IS_ERR(result)) {
++		if (likely(result)) {
++			if (unlikely(IS_ERR(result))) {
+ 				valid = false;
  				goto out;
  			}
-@@ -124,7 +124,7 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
+@@ -138,7 +138,7 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 			dentry = result;
+ 		}
  
- 	while (uds->bindex <= bend) {
- 		lower_file = unionfs_lower_file_idx(file, uds->bindex);
--		if (!lower_file) {
-+		if (unlikely(!lower_file)) {
- 			uds->bindex++;
- 			uds->dirpos = 0;
+-		if (positive && UNIONFS_I(dentry->d_inode)->stale) {
++		if (unlikely(positive && UNIONFS_I(dentry->d_inode)->stale)) {
+ 			make_bad_inode(dentry->d_inode);
+ 			d_drop(dentry);
+ 			valid = false;
+@@ -153,8 +153,8 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 	BUG_ON(bstart == -1);
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+ 		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
+-		if (!lower_dentry || !lower_dentry->d_op
+-		    || !lower_dentry->d_op->d_revalidate)
++		if (unlikely(!lower_dentry || !lower_dentry->d_op
++			     || !lower_dentry->d_op->d_revalidate))
  			continue;
-@@ -141,7 +141,7 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 
- 		/* Read starting from where we last left off. */
- 		offset = vfs_llseek(lower_file, uds->dirpos, SEEK_SET);
--		if (offset < 0) {
-+		if (unlikely(offset < 0)) {
- 			err = offset;
- 			goto out;
- 		}
-@@ -149,7 +149,7 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 
- 		/* Save the position for when we continue. */
- 		offset = vfs_llseek(lower_file, 0, SEEK_CUR);
--		if (offset < 0) {
-+		if (unlikely(offset < 0)) {
- 			err = offset;
- 			goto out;
- 		}
-@@ -158,10 +158,10 @@ static int unionfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 		/* Copy the atime. */
- 		fsstack_copy_attr_atime(inode, lower_file->f_path.dentry->d_inode);
- 
--		if (err < 0)
-+		if (unlikely(err < 0))
- 			goto out;
- 
--		if (buf.filldir_error)
-+		if (unlikely(buf.filldir_error))
- 			break;
- 
- 		if (!buf.entries_written) {
-@@ -201,7 +201,7 @@ static loff_t unionfs_dir_llseek(struct file *file, loff_t offset, int origin)
- 
- 	unionfs_read_lock(file->f_path.dentry->d_sb);
- 
--	if ((err = unionfs_file_revalidate(file, false)))
-+	if (unlikely((err = unionfs_file_revalidate(file, false))))
- 		goto out;
- 
- 	rdstate = UNIONFS_F(file)->rdstate;
-@@ -241,7 +241,7 @@ static loff_t unionfs_dir_llseek(struct file *file, loff_t offset, int origin)
- 			} else {
- 				rdstate = find_rdstate(file->f_path.dentry->d_inode,
- 						       offset);
--				if (rdstate) {
-+				if (likely(rdstate)) {
- 					UNIONFS_F(file)->rdstate = rdstate;
- 					err = rdstate->offset;
- 				} else
-diff --git a/fs/unionfs/dirhelper.c b/fs/unionfs/dirhelper.c
-index a72f711..d481ba4 100644
---- a/fs/unionfs/dirhelper.c
-+++ b/fs/unionfs/dirhelper.c
-@@ -43,7 +43,7 @@ int do_delete_whiteouts(struct dentry *dentry, int bindex,
- 
- 	err = -ENOMEM;
- 	name = __getname();
--	if (!name)
-+	if (unlikely(!name))
- 		goto out;
- 	strcpy(name, UNIONFS_WHPFX);
- 	p = name + UNIONFS_WHLEN;
-@@ -65,14 +65,14 @@ int do_delete_whiteouts(struct dentry *dentry, int bindex,
- 				lookup_one_len(name, lower_dir_dentry,
- 					       cursor->namelen +
- 					       UNIONFS_WHLEN);
--			if (IS_ERR(lower_dentry)) {
-+			if (unlikely(IS_ERR(lower_dentry))) {
- 				err = PTR_ERR(lower_dentry);
- 				break;
- 			}
--			if (lower_dentry->d_inode)
-+			if (likely(lower_dentry->d_inode))
- 				err = vfs_unlink(lower_dir, lower_dentry);
- 			dput(lower_dentry);
--			if (err)
-+			if (unlikely(err))
- 				break;
- 		}
+ 		/*
+ 		 * Don't pass nameidata to lower file system, because we
+@@ -164,14 +164,15 @@ static bool __unionfs_d_revalidate_one(struct dentry *dentry,
+ 		 * invariants).  We will open lower files as and when needed
+ 		 * later on.
+ 		 */
+-		if (!lower_dentry->d_op->d_revalidate(lower_dentry, NULL))
++		if (unlikely(!lower_dentry->d_op->d_revalidate(lower_dentry,
++							       NULL)))
+ 			valid = false;
  	}
-@@ -102,7 +102,7 @@ int delete_whiteouts(struct dentry *dentry, int bindex,
- 	BUG_ON(bindex < dbstart(dentry));
- 	BUG_ON(bindex > dbend(dentry));
- 	err = is_robranch_super(sb, bindex);
--	if (err)
-+	if (unlikely(err))
- 		goto out;
  
- 	lower_dir_dentry = unionfs_lower_dentry_idx(dentry, bindex);
-@@ -160,7 +160,7 @@ static int readdir_util_callback(void *dirent, const char *name, int namelen,
+-	if (!dentry->d_inode)
++	if (unlikely(!dentry->d_inode))
+ 		valid = false;
  
- 	found = find_filldir_node(buf->rdstate, name, namelen);
- 	/* If it was found in the table there was a previous whiteout. */
--	if (found)
-+	if (likely(found))
- 		goto out;
+-	if (valid) {
++	if (likely(valid)) {
+ 		/*
+ 		 * If we get here, and we copy the meta-data from the lower
+ 		 * inode to our inode, then it is vital that we have already
+@@ -200,32 +201,32 @@ bool is_newer_lower(const struct dentry *dentry)
+ 	struct inode *lower_inode;
  
- 	/*
-@@ -168,7 +168,7 @@ static int readdir_util_callback(void *dirent, const char *name, int namelen,
- 	 * empty.
+ 	/* ignore if we're called on semi-initialized dentries/inodes */
+-	if (!dentry || !UNIONFS_D(dentry))
++	if (likely(!dentry || !UNIONFS_D(dentry)))
+ 		return false;
+ 	inode = dentry->d_inode;
+-	if (!inode || !UNIONFS_I(inode) ||
+-	    ibstart(inode) < 0 || ibend(inode) < 0)
++	if (unlikely(!inode || !UNIONFS_I(inode) ||
++		     ibstart(inode) < 0 || ibend(inode) < 0))
+ 		return false;
+ 
+ 	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
+ 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+-		if (!lower_inode)
++		if (unlikely(!lower_inode))
+ 			continue;
+ 		/*
+ 		 * We may want to apply other tests to determine if the
+ 		 * lower inode's data has changed, but checking for changed
+ 		 * ctime and mtime on the lower inode should be enough.
+ 		 */
+-		if (timespec_compare(&inode->i_mtime,
+-				     &lower_inode->i_mtime) < 0) {
++		if (unlikely(timespec_compare(&inode->i_mtime,
++					      &lower_inode->i_mtime) < 0)) {
+ 			printk("unionfs: new lower inode mtime "
+ 			       "(bindex=%d, name=%s)\n", bindex,
+ 			       dentry->d_name.name);
+ 			show_dinode_times(dentry);
+ 			return true; /* mtime changed! */
+ 		}
+-		if (timespec_compare(&inode->i_ctime,
+-				     &lower_inode->i_ctime) < 0) {
++		if (unlikely(timespec_compare(&inode->i_ctime,
++					      &lower_inode->i_ctime) < 0)) {
+ 			printk("unionfs: new lower inode ctime "
+ 			       "(bindex=%d, name=%s)\n", bindex,
+ 			       dentry->d_name.name);
+@@ -293,7 +294,7 @@ bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
+ 	dtmp = dentry->d_parent;
+ 	dgen = atomic_read(&UNIONFS_D(dtmp)->generation);
+ 	/* XXX: should we check if is_newer_lower all the way up? */
+-	if (is_newer_lower(dtmp)) {
++	if (unlikely(is_newer_lower(dtmp))) {
+ 		/*
+ 		 * Special case: the root dentry's generation number must
+ 		 * always be valid, but its lower inode times don't have to
+@@ -327,7 +328,7 @@ bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
+ 	 * and short lived, so locality will be better.
  	 */
- 	err = -ENOTEMPTY;
--	if ((buf->mode == RD_CHECK_EMPTY) && !whiteout)
-+	if (unlikely((buf->mode == RD_CHECK_EMPTY) && !whiteout))
- 		goto out;
- 
- 	err = add_filldir_node(buf->rdstate, name, namelen,
-@@ -194,7 +194,7 @@ int check_empty(struct dentry *dentry, struct unionfs_dir_state **namelist)
- 
- 	BUG_ON(!S_ISDIR(dentry->d_inode->i_mode));
- 
--	if ((err = unionfs_partial_lookup(dentry)))
-+	if (unlikely((err = unionfs_partial_lookup(dentry))))
- 		goto out;
- 
- 	bstart = dbstart(dentry);
-@@ -204,14 +204,14 @@ int check_empty(struct dentry *dentry, struct unionfs_dir_state **namelist)
- 		bend = bopaque;
- 
- 	buf = kmalloc(sizeof(struct unionfs_rdutil_callback), GFP_KERNEL);
--	if (!buf) {
-+	if (unlikely(!buf)) {
- 		err = -ENOMEM;
+ 	chain = kzalloc(chain_len * sizeof(struct dentry *), GFP_KERNEL);
+-	if (!chain) {
++	if (unlikely(!chain)) {
+ 		printk("unionfs: no more memory in %s\n", __FUNCTION__);
  		goto out;
  	}
- 	buf->err = 0;
- 	buf->mode = RD_CHECK_EMPTY;
- 	buf->rdstate = alloc_rdstate(dentry->d_inode, bstart);
--	if (!buf->rdstate) {
-+	if (unlikely(!buf->rdstate)) {
- 		err = -ENOMEM;
+@@ -364,7 +365,7 @@ bool __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd,
+ 		}
+ 		unionfs_unlock_dentry(chain[i]);
+ 
+-		if (!valid)
++		if (unlikely(!valid))
+ 			goto out_free;
+ 	}
+ 
+@@ -373,7 +374,7 @@ out_this:
+ 	/* finally, lock this dentry and revalidate it */
+ 	verify_locked(dentry);
+ 	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
+-	if (is_newer_lower(dentry)) {
++	if (unlikely(is_newer_lower(dentry))) {
+ 		/* root dentry special case as aforementioned */
+ 		if (IS_ROOT(dentry))
+ 			unionfs_copy_attr_times(dentry->d_inode);
+@@ -399,7 +400,7 @@ out_this:
+ 	 * which __unionfs_d_revalidate_one has incremented.  Note: the "if"
+ 	 * test below does not depend on whether chain_len was 0 or greater.
+ 	 */
+-	if (valid && sbgen != dgen)
++	if (unlikely(valid && sbgen != dgen))
+ 		for (bindex = dbstart(dentry);
+ 		     bindex <= dbend(dentry);
+ 		     bindex++)
+@@ -425,7 +426,7 @@ static int unionfs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
+ 	unionfs_lock_dentry(dentry);
+ 	err = __unionfs_d_revalidate_chain(dentry, nd, false);
+ 	unionfs_unlock_dentry(dentry);
+-	if (err > 0) { /* true==1: dentry is valid */
++	if (likely(err > 0)) { /* true==1: dentry is valid */
+ 		unionfs_check_dentry(dentry);
+ 		unionfs_check_nd(nd);
+ 	}
+@@ -447,11 +448,11 @@ static void unionfs_d_release(struct dentry *dentry)
+ 
+ 	unionfs_check_dentry(dentry);
+ 	/* this could be a negative dentry, so check first */
+-	if (!UNIONFS_D(dentry)) {
++	if (unlikely(!UNIONFS_D(dentry))) {
+ 		printk(KERN_DEBUG "unionfs: dentry without private data: %.*s\n",
+ 		       dentry->d_name.len, dentry->d_name.name);
  		goto out;
- 	}
-@@ -233,7 +233,7 @@ int check_empty(struct dentry *dentry, struct unionfs_dir_state **namelist)
- 			dentry_open(lower_dentry,
- 				    unionfs_lower_mnt_idx(dentry, bindex),
- 				    O_RDONLY);
--		if (IS_ERR(lower_file)) {
-+		if (unlikely(IS_ERR(lower_file))) {
- 			err = PTR_ERR(lower_file);
- 			dput(lower_dentry);
- 			branchput(sb, bindex);
-@@ -245,7 +245,7 @@ int check_empty(struct dentry *dentry, struct unionfs_dir_state **namelist)
- 			buf->rdstate->bindex = bindex;
- 			err = vfs_readdir(lower_file,
- 					  readdir_util_callback, buf);
--			if (buf->err)
-+			if (unlikely(buf->err))
- 				err = buf->err;
- 		} while ((err >= 0) && buf->filldir_called);
- 
-@@ -253,15 +253,15 @@ int check_empty(struct dentry *dentry, struct unionfs_dir_state **namelist)
- 		fput(lower_file);
- 		branchput(sb, bindex);
- 
--		if (err < 0)
-+		if (unlikely(err < 0))
- 			goto out;
- 	}
- 
- out:
--	if (buf) {
-+	if (likely(buf)) {
- 		if (namelist && !err)
- 			*namelist = buf->rdstate;
--		else if (buf->rdstate)
-+		else if (likely(buf->rdstate))
- 			free_rdstate(buf->rdstate);
- 		kfree(buf);
- 	}
+-	} else if (dbstart(dentry) < 0) {
++	} else if (unlikely(dbstart(dentry) < 0)) {
+ 		/* this is due to a failed lookup */
+ 		printk(KERN_DEBUG "unionfs: dentry without lower "
+ 		       "dentries: %.*s\n",
+@@ -466,7 +467,8 @@ static void unionfs_d_release(struct dentry *dentry)
+ 		dput(unionfs_lower_dentry_idx(dentry, bindex));
+ 		unionfs_set_lower_dentry_idx(dentry, bindex, NULL);
+ 		/* NULL lower mnt is ok if this is a negative dentry */
+-		if (!dentry->d_inode && !unionfs_lower_mnt_idx(dentry,bindex))
++		if (unlikely(!dentry->d_inode &&
++			     !unionfs_lower_mnt_idx(dentry,bindex)))
+ 			continue;
+ 		unionfs_mntput(dentry, bindex);
+ 		unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
 -- 
 1.5.2.2
 
