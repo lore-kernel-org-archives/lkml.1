@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbXIZJf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbXIZJni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755275AbXIZJf0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 05:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXIZJfS
+	id S1755494AbXIZJni (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 05:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbXIZJn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 05:35:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35081 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752767AbXIZJfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 05:35:16 -0400
-Date: Wed, 26 Sep 2007 11:34:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20070926093445.GA24768@elte.hu>
-References: <20070926085202.GE3337@deprecation.cyrius.com>
+	Wed, 26 Sep 2007 05:43:29 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:17313 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752865AbXIZJn2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 05:43:28 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: Paul Mackerras <paulus@samba.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 0/5] [REPOST] PowerPC: ibmebus refactoring and fixes
+User-Agent: KMail/1.8.2
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, Paul Mackerras <pmac@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070926085202.GE3337@deprecation.cyrius.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Length: 2967
+Date: Wed, 26 Sep 2007 11:43:24 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200709261143.24735.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patchset will merge the ibmebus and of_platform bus drivers by basing a
+lot of ibmebus functionality on of_platform code and adding the features
+specific to ibmebus on top of that.
 
-* Martin Michlmayr <tbm@cyrius.com> wrote:
+This is a repost of my previous patchset incorporating Arnd's comments.
 
-> I noticed that my network performance has gone down from 2.6.22
-> from   [  3]  0.0-10.0 sec    113 MBytes  95.0 Mbits/sec
-> to     [  3]  0.0-10.0 sec   75.7 MBytes  63.3 Mbits/sec
-> with 2.6.23-rc1 (and 2.6.23-rc8), as measured with iperf.
-> 
-> I did a git bisect today and tracked it back to the commit where CFS
-> was enabled ("sched: cfs core code; apply the CFS core code",
-> commit dd41f596cda0d7d6e4a8b139ffdfabcefdd46528).  I also compiled a
-> kernel from
-> git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
-> but things don't improve.
-> 
-> This is on a Thecus N2100, an ARM (Intel IOP32x) based storage device 
-> with a r8169 card, SATA disks and 512 MB RAM.  My config is attached.
-> 
-> What kind of information can I supply so you can track this down?
+I split the actual ibmebus rework into three patches (2/5-4/5) for easier
+readability. The kernel will compile during the intermediate states, and
+ibmebus will not crash, but not work either.
 
-as a starter, could you boot the sched-devel.git kernel, with 
-CONFIG_SCHED_DEBUG=y and CONFIG_SCHEDSTATS=y enabled and could you run 
-this script while the iperf test is in the middle of its testrun:
+As a side-effect of patch 3/5, a problem with bus_id collisions in case of
+two devices sharing the same location code is resolved -- the bus_id is now
+determined differently.
 
-  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+[1/5] moves of_device allocation into of_device.[ch]
+[2/5] removes the old bus match/probe/remove functions
+[3/5] adds device creation and bus probing based on of_device
+[4/5] finally moves to of_device and of_platform_driver by changing
+      ibmebus.h and matching the eHCA and eHEA drivers
+[5/5] just changes a nit in ibmebus_store_probe()
 
-this will gather a good deal of info about the workload in question. 
-Please send me the resulting debug file.
+These patches should apply cleanly, in order, against 2.6.23-rc5 and against
+Linus' git. Please review and comment them, and queue them up for 2.6.24 if
+you think they're okay.
 
-	Ingo
+Thanks and regards,
+  Joachim
+
+
+ arch/powerpc/kernel/ibmebus.c             |  267 ++++++++---------------------
+ arch/powerpc/kernel/of_device.c           |   80 +++++++++
+ arch/powerpc/kernel/of_platform.c         |   70 +--------
+ drivers/infiniband/hw/ehca/ehca_classes.h |    2 +-
+ drivers/infiniband/hw/ehca/ehca_eq.c      |    6 +-
+ drivers/infiniband/hw/ehca/ehca_main.c    |   32 ++--
+ drivers/net/ehea/ehea.h                   |    2 +-
+ drivers/net/ehea/ehea_main.c              |   72 ++++----
+ include/asm-powerpc/ibmebus.h             |   38 +----
+ include/asm-powerpc/of_device.h           |    4 +
+ include/linux/of_device.h                 |    5 +
+ 11 files changed, 228 insertions(+), 350 deletions(-)
+
+-- 
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com
+
+
