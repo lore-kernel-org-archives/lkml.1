@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbXIZBsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbXIZB5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755921AbXIZBsK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 21:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbXIZBr5
+	id S1755100AbXIZB5U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 21:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXIZB5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 21:47:57 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37721 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753072AbXIZBr4 (ORCPT
+	Tue, 25 Sep 2007 21:57:06 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:55706 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752942AbXIZB5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 21:47:56 -0400
-Date: Wed, 26 Sep 2007 10:48:54 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Badari Pulavarty <pbadari@gmail.com>
-Subject: Re: 2.6.23-rc8-mm1 - powerpc memory hotplug link failure
-Message-Id: <20070926104854.7cc09d13.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070926103205.c72a8e8a.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-	<46F968C2.7080900@linux.vnet.ibm.com>
-	<20070926103205.c72a8e8a.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Tue, 25 Sep 2007 21:57:04 -0400
+Subject: Re: [GIT PATCH] SCSI bug fix for 2.6.23-rc8
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1190742924.3345.42.camel@localhost.localdomain>
+References: <1190742924.3345.42.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 20:57:01 -0500
+Message-Id: <1190771821.8707.25.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 10:32:05 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Maybe my patch is the problem. could you give me your .config ?
+On Tue, 2007-09-25 at 12:55 -0500, James Bottomley wrote:
+> This is, unfortunately, not a recent regression but it's only been
+> recently diagnosed.  Apparently the SCSI Parallel transport class domain
+> validation cable width detection wasn't working, leading to cases where
+> controllers with damaged cables would end up hanging the system (the
+> reported one was an aic79xx controller, but the potential is there for
+> all SPI based systems).  This bug would *only* affect systems whose
+> cable integrity or connectors were compromised, so it isn't life
+> threatening to every SCSI Parallel installation, but the consequence of
+> running into it is a system hang.
 > 
-Ah, memory hot remove is selectable even if the arch doesn't support it....sorry.
+> The fix is available here:
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> 
+> The short changelog is:
+> 
+> James Bottomley (1):
+>       scsi_transport_spi: fix domain validation failure from incorrect
+> width setting
+> 
+> And the diffstat:
+> 
+>  scsi_transport_spi.c |   28 ++++++++++++++++++++++------
+>  1 file changed, 22 insertions(+), 6 deletions(-)
 
-ok, this is fix.
+We've had another late arriving bug fix:
 
-Thanks,
--Kame
-==
-MEMORY_HOTREMOVE config option is selectable even it arch doesn't support it.
-This fix it.
+commit ff4abd6cfacf0bb23a077f615d3a5cd17359db1b
+Author: David Miller <davem@davemloft.net>
+Date:   Fri Aug 24 22:25:58 2007 -0700
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+    [SCSI] esp: fix instance numbering.
+    
+    Because the ->unique_id is set too late, the ESP scsi host
+    instance numbers in the kernel log during probing are
+    wrong.
+    
+    Bug reported by Meelis Roos.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+    Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
+Which I've added.  The diffstat is now:
 
-Index: linux-2.6.23-rc8-mm1/arch/ia64/Kconfig
-===================================================================
---- linux-2.6.23-rc8-mm1.orig/arch/ia64/Kconfig
-+++ linux-2.6.23-rc8-mm1/arch/ia64/Kconfig
-@@ -305,6 +305,9 @@ config HOTPLUG_CPU
- config ARCH_ENABLE_MEMORY_HOTPLUG
- 	def_bool y
- 
-+config ARCH_ENABLE_MEMORY_HOTREMOVE
-+	def_bool y
-+
- config SCHED_SMT
- 	bool "SMT scheduler support"
- 	depends on SMP
-Index: linux-2.6.23-rc8-mm1/mm/Kconfig
-===================================================================
---- linux-2.6.23-rc8-mm1.orig/mm/Kconfig
-+++ linux-2.6.23-rc8-mm1/mm/Kconfig
-@@ -141,7 +141,7 @@ config MEMORY_HOTPLUG_SPARSE
- 
- config MEMORY_HOTREMOVE
- 	bool "Allow for memory hot remove"
--	depends on MEMORY_HOTPLUG
-+	depends on MEMORY_HOTPLUG && ARCH_ENABLE_MEMORY_HOTREMOVE
- 	depends on MIGRATION
- 
- # Heavily threaded applications may benefit from splitting the mm-wide
+ esp_scsi.c           |    3 ++-
+ scsi_transport_spi.c |   28 ++++++++++++++++++++++------
+ 2 files changed, 24 insertions(+), 7 deletions(-)
+
+James
+
 
