@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760774AbXIZDgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXIZDhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760774AbXIZDgq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 23:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759474AbXIZDdw
+	id S1759429AbXIZDhE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 23:37:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759646AbXIZDeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 23:33:52 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35491 "EHLO
+	Tue, 25 Sep 2007 23:34:06 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35507 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759310AbXIZDdv (ORCPT
+	with ESMTP id S1759910AbXIZDeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 23:33:51 -0400
+	Tue, 25 Sep 2007 23:34:03 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>,
-       Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 01/25] Unionfs: Simplify unionfs_get_nlinks
-Date: Tue, 25 Sep 2007 23:09:40 -0400
-Message-Id: <1190776205713-git-send-email-ezk@cs.sunysb.edu>
+       Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 25/25] Unionfs: use poison.h for safe poison pointers
+Date: Tue, 25 Sep 2007 23:10:04 -0400
+Message-Id: <11907762153804-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11907762042481-git-send-email-ezk@cs.sunysb.edu>
@@ -26,80 +26,92 @@ References: <11907762042481-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
-
-Since we set the right value for d_type in readdir, there's really no point
-in having to calculate the number of directory links.  Some on-disk
-filesystems don't even store the number of links for directories.
+This also fixes a compile warning on 64-bit systems.
 
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/subr.c |   41 +++++++----------------------------------
- 1 files changed, 7 insertions(+), 34 deletions(-)
+ fs/unionfs/debug.c |   16 ++++++----------
+ fs/unionfs/union.h |    1 +
+ 2 files changed, 7 insertions(+), 10 deletions(-)
 
-diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
-index b7e7904..6b93b64 100644
---- a/fs/unionfs/subr.c
-+++ b/fs/unionfs/subr.c
-@@ -188,16 +188,10 @@ out:
- }
+diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
+index 09b52ce..b103eb9 100644
+--- a/fs/unionfs/debug.c
++++ b/fs/unionfs/debug.c
+@@ -25,14 +25,6 @@
+ 		}							\
+ 	} while (0)
  
+-#if BITS_PER_LONG == 32
+-#define POISONED_PTR		((void*) 0x5a5a5a5a)
+-#elif BITS_PER_LONG == 64
+-#define POISONED_PTR		((void*) 0x5a5a5a5a5a5a5a5a)
+-#else
+-#error Unknown BITS_PER_LONG value
+-#endif /* BITS_PER_LONG != known */
+-
  /*
-- * returns the sum of the n_link values of all the underlying inodes of the
-- * passed inode
-+ * returns the right n_link value based on the inode type
-  */
- int unionfs_get_nlinks(const struct inode *inode)
- {
--	int sum_nlinks = 0;
--	int dirs = 0;
--	int bindex;
--	struct inode *lower_inode;
--
- 	/* don't bother to do all the work since we're unlinked */
- 	if (inode->i_nlink == 0)
- 		return 0;
-@@ -205,33 +199,12 @@ int unionfs_get_nlinks(const struct inode *inode)
- 	if (!S_ISDIR(inode->i_mode))
- 		return unionfs_lower_inode(inode)->i_nlink;
+  * __unionfs_check_{inode,dentry,file} perform exhaustive sanity checking on
+  * the fan-out of various Unionfs objects.  We check that no lower objects
+@@ -50,6 +42,7 @@ void __unionfs_check_inode(const struct inode *inode,
+ 	struct inode *lower_inode;
+ 	struct super_block *sb;
+ 	int printed_caller = 0;
++	void *poison_ptr;
  
--	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
--		lower_inode = unionfs_lower_inode_idx(inode, bindex);
--
--		/* ignore files */
--		if (!lower_inode || !S_ISDIR(lower_inode->i_mode))
--			continue;
--
--		BUG_ON(lower_inode->i_nlink < 0);
--
--		/* A deleted directory. */
--		if (lower_inode->i_nlink == 0)
--			continue;
--		dirs++;
--
--		/*
--		 * A broken directory...
--		 *
--		 * Some filesystems don't properly set the number of links
--		 * on empty directories
--		 */
--		if (lower_inode->i_nlink == 1)
--			sum_nlinks += 2;
--		else
--			sum_nlinks += (lower_inode->i_nlink - 2);
--	}
--
--	return (!dirs ? 0 : sum_nlinks + 2);
-+	/*
-+	 * For directories, we return 1. The only place that could cares
-+	 * about links is readdir, and there's d_type there so even that
-+	 * doesn't matter.
-+	 */
-+	return 1;
- }
+ 	/* for inodes now */
+ 	BUG_ON(!inode);
+@@ -88,12 +81,13 @@ void __unionfs_check_inode(const struct inode *inode,
+ 		}
+ 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+ 		if (lower_inode) {
++			memset(&poison_ptr, POISON_INUSE, sizeof(void *));
+ 			if (unlikely(bindex < istart || bindex > iend)) {
+ 				PRINT_CALLER(fname, fxn, line);
+ 				printk(" Ci5: inode/linode=%p:%p bindex=%d "
+ 				       "istart/end=%d:%d\n", inode,
+ 				       lower_inode, bindex, istart, iend);
+-			} else if (unlikely(lower_inode == POISONED_PTR)) {
++			} else if (unlikely(lower_inode == poison_ptr)) {
+ 				/* freed inode! */
+ 				PRINT_CALLER(fname, fxn, line);
+ 				printk(" Ci6: inode/linode=%p:%p bindex=%d "
+@@ -131,6 +125,7 @@ void __unionfs_check_dentry(const struct dentry *dentry,
+ 	struct super_block *sb;
+ 	struct vfsmount *lower_mnt;
+ 	int printed_caller = 0;
++	void *poison_ptr;
  
- /* construct whiteout filename */
+ 	BUG_ON(!dentry);
+ 	sb = dentry->d_sb;
+@@ -257,12 +252,13 @@ void __unionfs_check_dentry(const struct dentry *dentry,
+ 	for (bindex = sbstart(sb); bindex < sbmax(sb); bindex++) {
+ 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+ 		if (lower_inode) {
++			memset(&poison_ptr, POISON_INUSE, sizeof(void *));
+ 			if (unlikely(bindex < istart || bindex > iend)) {
+ 				PRINT_CALLER(fname, fxn, line);
+ 				printk(" CI5: dentry/linode=%p:%p bindex=%d "
+ 				       "istart/end=%d:%d\n", dentry,
+ 				       lower_inode, bindex, istart, iend);
+-			} else if (unlikely(lower_inode == POISONED_PTR)) {
++			} else if (unlikely(lower_inode == poison_ptr)) {
+ 				/* freed inode! */
+ 				PRINT_CALLER(fname, fxn, line);
+ 				printk(" CI6: dentry/linode=%p:%p bindex=%d "
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index 8df44a9..510267f 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -43,6 +43,7 @@
+ #include <linux/fs_stack.h>
+ #include <linux/magic.h>
+ #include <linux/log2.h>
++#include <linux/poison.h>
+ 
+ #include <asm/mman.h>
+ #include <asm/system.h>
 -- 
 1.5.2.2
 
