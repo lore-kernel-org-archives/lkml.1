@@ -1,47 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbXIZKJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbXIZKST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbXIZKJV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 06:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbXIZKJO
+	id S1756562AbXIZKST (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 06:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbXIZKSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 06:09:14 -0400
-Received: from sorrow.cyrius.com ([65.19.161.204]:1327 "EHLO sorrow.cyrius.com"
+	Wed, 26 Sep 2007 06:18:09 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:36142 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753920AbXIZKJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 06:09:14 -0400
-Date: Wed, 26 Sep 2007 12:08:59 +0200
-From: Martin Michlmayr <tbm@cyrius.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20070926100859.GJ3337@deprecation.cyrius.com>
-References: <20070926085202.GE3337@deprecation.cyrius.com> <20070926093445.GA24768@elte.hu> <20070926094726.GA27006@elte.hu>
+	id S1753678AbXIZKSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 06:18:08 -0400
+Message-ID: <1190801885.46fa31dde3af8@imp.free.fr>
+Date: Wed, 26 Sep 2007 12:18:05 +0200
+From: buffalo.phil@free.fr
+To: Debian Bug Tracking System <438663@bugs.debian.org>
+Cc: Carl-Daniel Hailfinger <c-d.hailfinger.kernel.2004@gmx.net>,
+       Manfred Spraul <manfred@colorfullife.com>,
+       Andrew de Quincey <adq_dvb@lidskialf.net>, linux-kernel@vger.kernel.org,
+       Ed W <lists@wildgooses.com>
+Subject: linux-image-2.6.23-rc5-amd64: Ethernet not functioning on Nvidia MCP51
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070926094726.GA27006@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 212.27.60.48
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2007-09-26 11:47]:
-> > this will gather a good deal of info about the workload in question. 
-> > Please send me the resulting debug file.
-> Another thing: please also do the same with the vanilla v2.6.22 kernel, 
-> and send me that file too. (so that the two cases can be compared)
-
-I put the log files here:
-http://www.cyrius.com/tmp/2.6.22
-http://www.cyrius.com/tmp/2.6.23-rc8-sched-devel
-
-I increased the time ipfer ran to 30 secs since your script runs for
-over 15 secs.  I got:
-
-[  3]  0.0-30.0 sec    331 MBytes  92.6 Mbits/sec   2.6.22
-vs
-[  3]  0.0-30.0 sec    222 MBytes  62.1 Mbits/sec   2.6.23-rc8-sched-devel
-
+see: http://bugzilla.kernel.org/show_bug.cgi?id=9073
 -- 
-Martin Michlmayr
-http://www.cyrius.com/
+Philippe Bourcier            http://bourcier.philippe.online.fr/
+
