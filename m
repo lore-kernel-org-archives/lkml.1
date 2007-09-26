@@ -1,65 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762227AbXIZUw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbXIZUx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762227AbXIZUw7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 16:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762087AbXIZUwv
+	id S1757995AbXIZUx0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 16:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762101AbXIZUxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 16:52:51 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:49110 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbXIZUwt (ORCPT
+	Wed, 26 Sep 2007 16:53:06 -0400
+Received: from home.nigel.suspend2.net ([203.171.70.205]:59416 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758716AbXIZUxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 16:52:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=pydJblzEP19dQIw9GUDwaZcJCqGp0hBf/t62jZWersUOgOCG1aIdeZHMrreBXixH1YhPw+XNU5n5g0pjBcAZQesqNpXJwZlEvbF7cE8jjs0/f7UF2GDEfHlfIuurCVh0Rl1mBRDkLz7RY1hNiAqfnYyzdOyKim0oWj15kIHa73o=
-Date: Wed, 26 Sep 2007 16:52:30 -0400
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Huang, Ying" <ying.huang@intel.com>,
+	Wed, 26 Sep 2007 16:53:04 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: Joseph Fannin <jfannin@gmail.com>
+Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Date: Thu, 27 Sep 2007 06:52:57 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Pavel Machek <pavel@ucw.cz>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       nigel@suspend2.net, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
        linux-pm@lists.linux-foundation.org,
-       huang ying <huang.ying.caritas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
-Message-ID: <20070926205229.GG31759@nineveh.local>
-Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Kyle Moffett <mrmacman_g4@mac.com>,
-	Jeremy Maitin-Shepard <jbms@cmu.edu>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
-	Kexec Mailing List <kexec@lists.infradead.org>,
-	linux-kernel@vger.kernel.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"Huang, Ying" <ying.huang@intel.com>,
-	linux-pm@lists.linux-foundation.org,
-	huang ying <huang.ying.caritas@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org> <200709221234.18426.rjw@sisk.pl> <3BCF760C-D77D-417A-809A-B20D04DD01D3@mac.com> <200709222351.32137.rjw@sisk.pl>
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1190266447.21818.17.camel@caritas-dev.intel.com> <20070921094512.GA20149@elf.ucw.cz> <20070926203036.GF31759@nineveh.local>
+In-Reply-To: <20070926203036.GF31759@nineveh.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200709222351.32137.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: jfannin@gmail.com (Joseph Fannin)
+Message-Id: <200709270652.58205.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    FWIW, on all the hardware I have, Windows is able to deal with:
+Hi.
 
-    (1) hibernate Windows
-    (2) run $(OTHER_OS)
-    (3) resume Windows
+On Thursday 27 September 2007 06:30:36 Joseph Fannin wrote:
+> On Fri, Sep 21, 2007 at 11:45:12AM +0200, Pavel Machek wrote:
+> > Hi!
+> > > >
+> > > > Sounds doable, as long as you can cope with long command lines (which
+> > > > shouldn't be a biggie). (If you've got a swapfile or parts of a swap
+> > > > partition already in use, it can be quite fragmented).
+> > >
+> > > Hmm.  This is an interesting problem.  Sharing a swap file or a swap
+> > > partition with the actual swap of user space pages does seem to be
+> > > a limitation of this approach.
+> > >
+> > > Although the fact that it is simple to write to a separate file may
+> > > be a reasonable compensation.
+> >
+> > I'm not sure how you'd write it to a separate file. Notice that kjump
+> > kernel may not mount journalling filesystems, not even
+> > read-only. (Ext3 replays journal in that case). You could pass block
+> > numbers from the original kernel...
+> 
+>     The ext3 thing is a bug, the case for which I don't think has been
+> adequately explained to the ext[34] folks.  There should be at least a
+> no_replay mount flag available, or something.  It has ramifications
+> for more than just hibernation.
+> 
+>     And yeah, I'm gonna bring up the swap files thing again.  If you
+> can hibernate to a swap file, you can hibernate to a dedicated
+> hibernation file, and vice versa.
+> 
+>     If you can't hibernate to a swap file, then swap files are
+> effectively unsupported for any system you might want to hibernate.
+> <handwave> I wonder what embedded folks would think about that
+> </handwave>.
+> 
+>     But, in my ignorance, I'm not sure even fixing the ext3 bug will
+> guarantee you consistent metadata so that you can handle a
+> swap/hibernate file.  You can do a sync(), but how do you make that
+> not race against running processes without the freezer, or blkdev
+> snapshots?
+> 
+>     I guess uswsusp and the-patch-previously-known-as-suspend2 handle
+> this somehow, though.
+> 
+>    (It's that same ignorance that has me waiting for someone with
+> established credit with kernel people to make that argument for the
+> ext3 bug, so I can hang my own reasons for thinking that it's bad off
+> of theirs).
 
-... which seems to me to say that Linux is doing it wrong if it can't
-handle other ACPI users between hibernate and resume.  But maybe
-that's just my hardware.
+I haven't looked at swsusp support, but TuxOnIce handles all storage (swap 
+partitions, swap files and ordinary files) by first allocating swap (if we're 
+using swap), then bmapping the storage we're going to use. After that, we can 
+freeze filesystems and processes with impunity. The allocated storage is then 
+viewed as just a collection of bdevs, each with an ordered chain of extents 
+defining which blocks we're going to read/write - a series of tapes if you 
+like. In the image header, we store dev_ts and the block chains, together 
+with the configuration information. As long as the same bdevs are configured 
+at boot time prior to the echo > /sys/power/resume, we're in business. 
+Filesystems don't need to be mounted because we don't use filesystem code 
+anyway. (LVM etc does though in so far as it's needed to make the dev_t match 
+the device again).
 
---
-Joseph Fannin
-jfannin@gmail.com
+This matches with what you said above about hibernating to swap files and 
+dedicated hibernation files - TuxOnIce uses exactly the same code to do the 
+i/o to both; the variation is in the code to recognise the image header and 
+allocate/free/bmap storage.
+
+<not a filesystem expert> Personally, I don't think ext[34] is broken. If 
+there's data being left in the journal that will need replaying, then 
+mounting without replaying the journal sounds wrong. Perhaps you should 
+instead be arguing that nothing should be left in the journal after a 
+filesystem freeze. But, of course, current code isn't doing a filesystem 
+freeze (just a process freeze) and the kexec guys want to take even that 
+away. </not a filesystem expert>
+
+In short, I agree. AFAICS, you need both the process freezer and filesystem 
+freezing to make this thing fly properly.
+
+Nigel
+-- 
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
