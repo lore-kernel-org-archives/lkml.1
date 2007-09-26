@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761641AbXIZUwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762227AbXIZUw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761641AbXIZUwn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 16:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757840AbXIZUwf
+	id S1762227AbXIZUw7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 16:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762087AbXIZUwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 16:52:35 -0400
-Received: from xenotime.net ([66.160.160.81]:52107 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757639AbXIZUwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 16:52:35 -0400
-Date: Wed, 26 Sep 2007 13:52:29 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "samson yeung" <fragmede@onepatchdown.net>
-Cc: linux-kernel@vger.kernel.org, rdunlap@xenotime.net,
-       alan@lxorguk.ukuu.org.uk, AndrewL733@aol.com, bbermack@alum.mit.edu,
-       "Justin Mazzola Paluska" <jmp@mit.edu>
-Subject: Re: [Re: NMI error and Intel S5000PSL Motherboards]
-Message-Id: <20070926135229.67edd4eb.rdunlap@xenotime.net>
-In-Reply-To: <c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com>
-References: <c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Sep 2007 16:52:51 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:49110 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbXIZUwt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 16:52:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=pydJblzEP19dQIw9GUDwaZcJCqGp0hBf/t62jZWersUOgOCG1aIdeZHMrreBXixH1YhPw+XNU5n5g0pjBcAZQesqNpXJwZlEvbF7cE8jjs0/f7UF2GDEfHlfIuurCVh0Rl1mBRDkLz7RY1hNiAqfnYyzdOyKim0oWj15kIHa73o=
+Date: Wed, 26 Sep 2007 16:52:30 -0400
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       linux-pm@lists.linux-foundation.org,
+       huang ying <huang.ying.caritas@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] Re: [RFC][PATCH 1/2 -mm] kexec based hibernation -v3: kexec jump
+Message-ID: <20070926205229.GG31759@nineveh.local>
+Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Kyle Moffett <mrmacman_g4@mac.com>,
+	Jeremy Maitin-Shepard <jbms@cmu.edu>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Nigel Cunningham <nigel@nigel.suspend2.net>, nigel@suspend2.net,
+	Kexec Mailing List <kexec@lists.infradead.org>,
+	linux-kernel@vger.kernel.org,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"Huang, Ying" <ying.huang@intel.com>,
+	linux-pm@lists.linux-foundation.org,
+	huang ying <huang.ying.caritas@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0709211540100.5816-100000@iolanthe.rowland.org> <200709221234.18426.rjw@sisk.pl> <3BCF760C-D77D-417A-809A-B20D04DD01D3@mac.com> <200709222351.32137.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709222351.32137.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: jfannin@gmail.com (Joseph Fannin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 15:07:14 -0400 samson yeung wrote:
+    FWIW, on all the hardware I have, Windows is able to deal with:
 
-> Hello,
-> 
-> I'm working with AndrewL733 on this issue. I'm doing the git bisect right now.
-> 
-> scanpci -f -1 causes the problem, scanpci -f -2 and scanpci -O do not.
+    (1) hibernate Windows
+    (2) run $(OTHER_OS)
+    (3) resume Windows
 
-Does the problem always happen when scanpci is making an ioperm
-syscall (as in the strace output below)?
+... which seems to me to say that Linux is doing it wrong if it can't
+handle other ACPI users between hibernate and resume.  But maybe
+that's just my hardware.
 
-
-> The driver does not even need to be loaded to have the problem
-> (e1000). I have not tried the 2.6.18 driver with 2.6.20, but I have
-> tried both the in-kernel driver as well as the newer driver from Intel
-> with the same result.
-> 
-> The drive is a Seagate Barracuda 7200.9 80 Gbytes with fimware 3.AAE
-> I can include hdparm -i output if it will help.
-> 
-> The problem is only happening on 64-bit. As noted above, I'm running
-> git-bisect to test a stock kernel.org kernel. 32-bit Ubuntu does not
-> exhibit the problem, I have not tested a kernel.org 32-bit kernel.
-> 
------------------------------------------------------------------------------------------
-> strace: I don't know what syscall_273 does. I trimmed the output to
-> include syscall 273 and the lines surrounding it. I can include the
-> entirety of the strace if it will help.
-
-Does this include trace info all the way to the end of the trace
-output file?  If not, please send that part also.
-
-
-> arch_prctl(ARCH_SET_FS, 0x2aca24060f50) = 0
-> mprotect(0x2aca23e3b000, 12288, PROT_READ) = 0
-> munmap(0x2aca238e2000, 36649)           = 0
-> set_tid_address(0x2aca24060fe0)         = 10319
-> syscall_273(0x2aca24060ff0, 0x18, 0x7fff87790188, 0x2aca233193c0,
-> 0x2aca24060f50, 0x2aca233352b8, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1,
-> 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1,
-> 0x1, 0x1, 0x1, 0x1, 0x1) = 0
-> rt_sigaction(SIGRTMIN, {0x2aca23e4a3a0, [], SA_RESTORER|SA_SIGINFO,
-> 0x2aca23e53200}, NULL, 8) = 0
-> rt_sigaction(SIGRT_1, {0x2aca23e4a2f0, [],
-> SA_RESTORER|SA_RESTART|SA_SIGINFO, 0x2aca23e53200}, NULL, 8) = 0
-> rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
-> ioperm(0, 0x400, 0x1)                   = 0
-
-
----
-~Randy
-Phaedrus says that Quality is about caring.
+--
+Joseph Fannin
+jfannin@gmail.com
