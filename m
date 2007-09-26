@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbXIZMBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758334AbXIZMBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755583AbXIZMBQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 08:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbXIZMBD
+	id S1758334AbXIZMBt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 08:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbXIZMBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 08:01:03 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1709 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbXIZMBB (ORCPT
+	Wed, 26 Sep 2007 08:01:41 -0400
+Received: from mexforward.lss.emc.com ([128.222.32.20]:12153 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbXIZMBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 08:01:01 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Network slowdown due to CFS
-Date: Wed, 26 Sep 2007 05:00:31 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEPKHAAC.davids@webmaster.com>
+	Wed, 26 Sep 2007 08:01:40 -0400
+Message-ID: <46FA4916.10103@emc.com>
+Date: Wed, 26 Sep 2007 07:57:10 -0400
+From: Ric Wheeler <ric@emc.com>
+Reply-To: ric@emc.com
+User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Chris Mason <chris.mason@oracle.com>, Mark Lord <mlord@pobox.com>,
+       Valerie Henson <val.henson@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>
+CC: Bob Bell <b_lkml@thebellsplace.com>, Matthew Wilcox <matthew@wil.cx>,
+       trond@netapp.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TASK_KILLABLE version 2
+References: <20070924201648.GA6850@newbie.thebellsplace.net>
+In-Reply-To: <20070924201648.GA6850@newbie.thebellsplace.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070926112919.GN3337@deprecation.cyrius.com>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 26 Sep 2007 05:00:51 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 26 Sep 2007 05:00:53 -0700
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.8.30.51425
+X-PerlMx-Spam: Gauge=, SPAM=1%, Reason='EMC_FROM_0+ -3, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __FRAUD_419_BADTHINGS 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bob Bell wrote:
+> On Sat, Sep 01, 2007 at 08:43:49PM -0600, Matthew Wilcox wrote:
+>> Here's the second version of TASK_KILLABLE.  A few changes since 
+>> version 1:
+> <snip>
+>> I obviously haven't covered every place that can result in a process
+>> sleeping uninterruptibly while attempting an operation.  But sync_page
+>> (patch 4/5) covers about 90% of the times I've attempted to kill cat,
+>> and I hope that by providing the two examples, I can help other people
+>> to fix the cases that they find interesting.
+> 
+> I've been testing this patch on my systems.  It's working for me when
+> I read() a file.  Asynchronous write()s seem okay, too.  However,
+> synchronous writes (caused by either calling fsync() or fcntl() to
+> release a lock) prevent the process from being killed when the NFS
+> server goes down.
 
-> > I think the real fix would be for iperf to use blocking network IO
-> > though, or maybe to use a POSIX mutex or POSIX semaphores.
->
-> So it's definitely not a bug in the kernel, only in iperf?
+After hearing again last month about how few people actually read every 
+lkml thread, I  wanted to point you all at this thread explicitly since 
+it seems that we are getting somewhat close to having a forced unmount 
+that actually is usable by real applications, something that we seem to 
+have been talking about for many years ;-)
 
-Martin:
+With Matthew's original TASK_KILLABLE patch, we have a solution for a 
+task read, but still have some holes (fsync & fcntl, others?) that need 
+fixed as well for NFS clients.
 
-Actually, in this case I think iperf is doing the right thing (though not
-the best thing) and the kernel is doing the wrong thing. It's calling
-'sched_yield' to ensure that every other thread gets a chance to run before
-the current thread runs again. CFS is not doing that, allowing the yielding
-thread to hog the CPU to the exclusion of the other threads. (It can allow
-the yielding thread to hog the CPU, of course, just not to the exclusion of
-other threads.)
+Is this patch going in the right direction?
 
-It's still better to use some kind of rational synchronization primitive
-(like mutex/sempahore) so that the other threads can tell you when there's
-something for you to do. It's still better to use blocking network IO, so
-the kernel will let you know exactly when to try I/O and your dynamic
-priority can rise.
+ric
 
-Ingo:
-
-Can you clarify what CFS' current default sched_yield implementation is and
-what setting sched_compat_yield to 1 does? Which way do we get the right
-semantics (all threads of equal static priority are scheduled, with some
-possible SMP fuzziness, before this thread is scheduled again)?
-
-DS
 
 
