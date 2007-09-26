@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbXIZT3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761198AbXIZTbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760230AbXIZT3Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 15:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbXIZT3R
+	id S1761198AbXIZTbs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 15:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbXIZTbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 15:29:17 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:61244 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754784AbXIZT3P (ORCPT
+	Wed, 26 Sep 2007 15:31:41 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:21902 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755186AbXIZTbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 15:29:15 -0400
-X-IronPort-AV: E=Sophos;i="4.21,198,1188802800"; 
-   d="scan'208";a="402059027"
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: akepner@sgi.com, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jes Sorensen <jes@sgi.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>
-Subject: Re: [PATCH 0/4] allow drivers to flush in-flight DMA
-X-Message-Flag: Warning: May contain useful information
-References: <20070925235843.GK30013@sgi.com>
-	<20070926064950.GB30430@colo.lackof.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 26 Sep 2007 12:29:12 -0700
-In-Reply-To: <20070926064950.GB30430@colo.lackof.org> (Grant Grundler's message of "Wed, 26 Sep 2007 00:49:50 -0600")
-Message-ID: <adabqbpted3.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Wed, 26 Sep 2007 15:31:40 -0400
+Date: Wed, 26 Sep 2007 20:31:02 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       ricknu-0@student.ltu.se, magnus.damm@gmail.com
+Subject: Re: [RFC][PATCH] page->mapping clarification [1/3] base functions
+In-Reply-To: <20070922034234.bdb947e4.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0709262015030.7064@blonde.wat.veritas.com>
+References: <20070919164308.281f9960.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0709201120510.8801@schroedinger.engr.sgi.com>
+ <20070921095054.6386bae1.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0709211716220.20783@blonde.wat.veritas.com>
+ <20070922034234.bdb947e4.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 26 Sep 2007 19:29:12.0977 (UTC) FILETIME=[84D3C810:01C80073]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Can we define this API to provide the same semantics as the memory
- > that dma_alloc_coherent() returns?
+On Sat, 22 Sep 2007, KAMEZAWA Hiroyuki wrote:
+> On Fri, 21 Sep 2007 18:02:47 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> 
+> > Or should I now leave PG_swapcache as is,
+> > given your designs on page->mapping?
+> > 
+>  will conflict with my idea ?
+> ==
+> http://marc.info/?l=linux-mm&m=118956492926821&w=2
+> ==
 
-No, definitely not.  The property of the mapping here is all about
-ordering with respect to other DMAs (from the same device) and nothing
-to do with coherency between the CPU's and device's view of the memory.
+I asked because I had thought it would be a serious conflict: obviously
+the patches as such would conflict quite a bit, but that's not serious,
+one or the other just gets fixed up.
 
- > Sorry - this feels like a "color of the shed" argument, but isn't
- > this about DMA ordering attribute?
- > "dmaflush" is an action and not an attribute to me.
+But now I don't see it - we both want to grab a further bit from the
+low bits of the page->mapping pointer, you PAGE_MAPPING_INFO and me
+PAGE_MAPPING_SWAP; but that's okay, so long as whoever is left using
+bit (1<<2) is careful about the 32-bit case and remembers to put
+__attribute__((aligned(sizeof(long long))))
+on the declarations of struct address_space and struct anon_vma
+and your struct page_mapping_info.
 
-I guess I don't love the "dmaflush" name, but the property of these
-mappings is exactly that DMA into one of these mappings also performs
-the action of flushing other in-flight DMAs.  However I guess your
-point is a good one: the effect really desired is that DMAs to these
-mappings become visible strictly after earlier DMAs, and we don't care
-exactly how the effect is obtained.
+Would that waste a little memory?  I think not with SLUB,
+but perhaps with SLOB, which packs a little tighter.
 
-No good idea of a better name though.
-
- - R.
+Hugh
