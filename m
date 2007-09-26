@@ -1,209 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbXIZSXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761678AbXIZSX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761514AbXIZSXm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760288AbXIZSWu
+	id S1761678AbXIZSX5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759030AbXIZSX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:22:50 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:60566 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759967AbXIZSWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:22:48 -0400
-Subject: [patch 3/3]  Trace sample
-From: "David J. Wilder" <dwilder@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, randy.dunlap@oracle.com, hch@infradead.org,
-       mathieu.desnoyers@polymtl.ca
-Content-Type: text/plain
-Date: Wed, 26 Sep 2007 11:22:43 -0700
-Message-Id: <1190830963.1232.14.camel@lc4eb748232119.ibm.com>
+	Wed, 26 Sep 2007 14:23:28 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:9516 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758546AbXIZSX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 14:23:27 -0400
+X-Greylist: delayed 1205 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 14:23:27 EDT
+Message-Id: <46FA4A800200006C000192FE@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Wed, 26 Sep 2007 12:03:12 -0600
+From: "David Bahi" <dbahi@novell.com>
+To: <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Cc: <tglx@linutronix.de>, "Gregory Haskins" <GHaskins@novell.com>
+Subject: nmi_watchdog fix for x86_64 to be more like i386
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="=__PartBA9D0BF0.1__="
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trace example - Adds the trace example to samples/
+--=__PartBA9D0BF0.1__=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
+Thanks to tglx and ghaskins for all the help in tracking down a very
+early nmi_watchdog crash on certain x86_64 machines.
+
+
+--=__PartBA9D0BF0.1__=
+Content-Type: text/plain; name="watchdog_use_timer_and_hpet_on_x86_64.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename="watchdog_use_timer_and_hpet_on_x86_64.patch"
+
+This modifies nmi_watchdog_tick behavior for=20
+x86_64 arch to consider both timer and hpet IRQs
+just as the i386 arch does.
+
+Signed-off-by: David Bahi <dbahi@novell.com>
+
 ---
- samples/Kconfig            |    6 ++
- samples/Makefile           |    1 +
- samples/trace/Makefile     |    4 +
- samples/trace/fork_trace.c |  132 ++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 143 insertions(+), 0 deletions(-)
+ arch/x86_64/kernel/nmi.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/samples/Kconfig b/samples/Kconfig
-index 57bb223..e11c806 100644
---- a/samples/Kconfig
-+++ b/samples/Kconfig
-@@ -13,4 +13,10 @@ config SAMPLE_MARKERS
- 	help
- 	  This build markers example modules.
- 
-+config SAMPLE_TRACE
-+	tristate "Build trace example -- loadable modules only"
-+	depends on TRACE && m
-+	help
-+	  This builds a trace example module.
+Index: linux-2.6.22.8-rt9_1267/arch/x86_64/kernel/nmi.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.22.8-rt9_1267.orig/arch/x86_64/kernel/nmi.c
++++ linux-2.6.22.8-rt9_1267/arch/x86_64/kernel/nmi.c
+@@ -369,8 +369,6 @@ int notrace __kprobes nmi_watchdog_tick(
+ 		touched =3D 1;
+ 	}
+=20
+-	sum =3D read_pda(apic_timer_irqs);
+-
+ 	if (__get_cpu_var(nmi_touch)) {
+ 		__get_cpu_var(nmi_touch) =3D 0;
+ 		touched =3D 1;
+@@ -386,6 +384,12 @@ int notrace __kprobes nmi_watchdog_tick(
+ 		cpu_clear(cpu, backtrace_mask);
+ 	}
+=20
++	/*
++	 * Take the local apic timer and PIT/HPET into account. We don't
++	 * know which one is active, when we have highres/dyntick on
++	 */
++	sum =3D read_pda(apic_timer_irqs) + kstat_cpu(cpu).irqs[0];
 +
- endif # SAMPLES
-diff --git a/samples/Makefile b/samples/Makefile
-index 5a4f0b6..8f6d05b 100644
---- a/samples/Makefile
-+++ b/samples/Makefile
-@@ -1,3 +1,4 @@
- # Makefile for Linux samples code
- 
- obj-$(CONFIG_SAMPLES)	+= markers/
-+obj-$(CONFIG_SAMPLES)	+= trace/
-diff --git a/samples/trace/Makefile b/samples/trace/Makefile
-new file mode 100644
-index 0000000..a2da8af
---- /dev/null
-+++ b/samples/trace/Makefile
-@@ -0,0 +1,4 @@
-+# builds the trace example kernel modules;
-+# then to use (as root):  insmod <fork_trace.ko>
-+
-+obj-$(CONFIG_SAMPLE_TRACE) := fork_trace.o
-diff --git a/samples/trace/fork_trace.c b/samples/trace/fork_trace.c
-new file mode 100644
-index 0000000..71c04c7
---- /dev/null
-+++ b/samples/trace/fork_trace.c
-@@ -0,0 +1,132 @@
-+/*
-+ * An example of using trace in a kprobes module
-+ *
-+ * Copyright (C) 2007 IBM Inc.
-+ *
-+ * David Wilder <dwilder@us.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
-+ * -------
-+ * This module creates a trace channel and places a kprobe
-+ * on the function do_fork(). The value of current->pid is written to
-+ * the trace channel each time the kprobe is hit..
-+ *
-+ * How to run the example:
-+ * $ mount -t debugfs /debug
-+ * $ insmod fork_trace.ko
-+ *
-+ * To view the data produced by the module:
-+ * $ cat /debug/trace_example/do_fork/trace0
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/kprobes.h>
-+#include <linux/trace.h>
-+
-+#define USE_GLOBAL_BUFFERS 1
-+#define USE_FLIGHT 1
-+
-+#define PROBE_POINT "do_fork"
-+
-+static struct kprobe kp;
-+static struct trace_info *kprobes_trace;
-+
-+#ifdef USE_GLOBAL_BUFFERS
-+static DEFINE_SPINLOCK(trace_lock);
-+#endif
-+
-+/*
-+ * Send formatted trace data to trace channel.
-+ * @note Preemption must be disabled to use this.
-+ */
-+static void trace_printf(struct trace_info *trace, const char *format, ...)
-+{
-+	va_list ap, aq;
-+	char *record;
-+	unsigned long flags;
-+	int len;
-+
-+	if (!trace)
-+		return;
-+
-+#ifdef USE_GLOBAL_BUFFERS
-+	spin_lock_irqsave(&trace_lock, flags);
-+#endif
-+	if (trace_running(trace)) {
-+		va_start(ap, format);
-+		va_copy(aq, ap);
-+		len = vsnprintf(NULL, 0, format, aq);
-+		va_end(aq);
-+		record = relay_reserve(trace->rchan, ++len);
-+		if (record)
-+			vsnprintf(record, len, format, ap);
-+		va_end(ap);
-+	}
-+#ifdef USE_GLOBAL_BUFFERS
-+	spin_unlock_irqrestore(&trace_lock, flags);
-+#endif
-+}
-+
-+static int handler_pre(struct kprobe *p, struct pt_regs *regs)
-+{
-+	rcu_read_lock();
-+	trace_printf(kprobes_trace, "%d\n", current->pid);
-+	rcu_read_unlock();
-+	return 0;
-+}
-+
-+int init_module(void)
-+{
-+	int ret;
-+	u32 flags = 0;
-+
-+#ifdef USE_GLOBAL_BUFFERS
-+	flags |= TRACE_GLOBAL_CHANNEL;
-+#endif
-+
-+#ifdef USE_FLIGHT
-+	flags |= TRACE_FLIGHT_CHANNEL;
-+#endif
-+
-+	/* setup the trace */
-+	kprobes_trace = trace_setup("trace_example", PROBE_POINT,
-+				     1024, 8, flags);
-+	if (IS_ERR(kprobes_trace))
-+		return PTR_ERR(kprobes_trace);
-+
-+	trace_start(kprobes_trace);
-+
-+	/* setup the kprobe */
-+	kp.pre_handler = handler_pre;
-+	kp.post_handler = NULL;
-+	kp.fault_handler = NULL;
-+	kp.symbol_name = PROBE_POINT;
-+	ret = register_kprobe(&kp);
-+	if (ret) {
-+		printk(KERN_ERR "fork_trace: register_kprobe failed\n");
-+		return ret;
-+	}
-+	return 0;
-+}
-+
-+void cleanup_module(void)
-+{
-+	unregister_kprobe(&kp);
-+	trace_stop(kprobes_trace);
-+	trace_cleanup(kprobes_trace);
-+}
-+MODULE_LICENSE("GPL");
+ #ifdef CONFIG_X86_MCE
+ 	/* Could check oops_in_progress here too, but it's safer
+ 	   not too */
 
+--=__PartBA9D0BF0.1__=
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="signature.asc"
 
+LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0KVmVyc2lvbjogR251UEcgdjEuNC4yIChHTlUv
+TGludXgpCgppRDhEQlFCRytwMzFIMjhKSFlhekxhUVJBZ1FYQUo0eitpbXBpNDg2M25kaUh4RnhS
+UDVyeGVUN1FBQ2d3dmpICjdpck12eWZZcGc3ajh4a0M4WmNQdVd3PQo9YlpDeAotLS0tLUVORCBQ
+R1AgU0lHTkFUVVJFLS0tLS0KCg==
+
+--=__PartBA9D0BF0.1__=--
