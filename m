@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbXIZPRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbXIZPYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbXIZPRk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 11:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXIZPRc
+	id S1758164AbXIZPYW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 11:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbXIZPYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 11:17:32 -0400
-Received: from outbound-mail-43.bluehost.com ([69.89.18.12]:36438 "HELO
-	outbound-mail-43.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751790AbXIZPRb (ORCPT
+	Wed, 26 Sep 2007 11:24:11 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53680 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbXIZPYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 11:17:31 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: [PATCH 0/4] allow drivers to flush in-flight DMA
-Date: Wed, 26 Sep 2007 08:17:14 -0700
-User-Agent: KMail/1.9.7
-Cc: akepner@sgi.com, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       David Miller <davem@davemloft.net>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>
-References: <20070925235843.GK30013@sgi.com> <20070926064950.GB30430@colo.lackof.org>
-In-Reply-To: <20070926064950.GB30430@colo.lackof.org>
+	Wed, 26 Sep 2007 11:24:10 -0400
+Date: Wed, 26 Sep 2007 17:24:08 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk, hch@infradead.org
+Subject: Re: [PATCH 03/25] Unionfs: display informational messages only if
+ debug is on 
+In-Reply-To: <200709261401.l8QE1B3P025688@agora.fsl.cs.sunysb.edu>
+Message-ID: <Pine.LNX.4.64.0709261720330.7066@fbirervta.pbzchgretzou.qr>
+References: <200709261401.l8QE1B3P025688@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709260817.14872.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, September 25, 2007 11:49:50 pm Grant Grundler wrote:
-> Upon reading the "2) Platforms that permit DMA reordering", I think I
-> have been confusing coherency with ordering. I think I have because DMA
-> is leaving the "PCI domain", crossing an "unordered domain" (NUMA,
-> interconnect), and then finally hitting the cache coherency "domain"
-> when it reaches a "far away" memory controller. That's why I've
-> been thinking of this as a coherency problem.
->
-> The description and API uses the word "flush" (which is ok I guess) instead
-> of describing this in terms of enforcing DMA ordering.  Any DMA write to
-> the "strongly ordered" region will cause _all_ inflight DMA to be visible
-> to cache coherency, thus preserving the illusion of strong DMA ordering.
->
-> Does that sound right/better to you too?
-> I don't have chipset docs and some of this is just trying to rephrase
-> what I've heard before from former SGI employees.
 
-I definitely wouldn't describe this as a coherency issue--the lines involved 
-in the DMA writes are fully coherent.  It's really an ordering problem, and 
-the new API is setting a "barrier" bit in the DMA address that indicates to 
-the bridge that any outstanding DMA should be written before the barriered 
-data.  So calling it set_flush or set_barrier is fine with me...
+On Sep 26 2007 10:01, Erez Zadok wrote:
+>> 
+>> On Sep 25 2007 23:09, Erez Zadok wrote:
+>> >--- a/fs/unionfs/commonfops.c
+>> >+++ b/fs/unionfs/commonfops.c
+>> >@@ -394,8 +394,8 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
+>> > 	if (willwrite && IS_WRITE_FLAG(file->f_flags) &&
+>> > 	    !IS_WRITE_FLAG(unionfs_lower_file(file)->f_flags) &&
+>> > 	    is_robranch(dentry)) {
+>> >-		printk(KERN_DEBUG "unionfs: do delay copyup of \"%s\"\n",
+>> >-		       dentry->d_name.name);
+>> >+		dprintk(KERN_DEBUG "unionfs: do delay copyup of \"%s\"\n",
+>> >+			dentry->d_name.name);
+>> 
+>> Don't we have pr_debug() for that?
+>
+>Jan, what's the policy on people writing their own debugging printk systems.
 
-Jesse
+Generally, the rule is "don't (re)invent another debug system"
+
+>I've looked at what other file systems do, and found out that it varies a lot:
+
+Oh that's either old code or code that has not been reviewed properly.
+Fact is that I have been made aware of pr_debug() "often enough"
+on netfilter-devel, and it looks like a good idea.
+
+>I wanted something simple to allow me to not printk something that's just
+>for informational/debugging purposes, but w/o having to #ifdef the printk in
+>question, or define a complex debugging-level printk system.
+
+Surprise, pr_debug() is just that all nicely wrapped up.
+Want debug? Do it like this.
+
+#ifdef CONFIG_UNIONFS_DEBUG
+#	define DEBUG 1
+#endif
+
+and pr_debug() works magic.
+
+>Now, looking at pr_debug (in linux/kernel.h), and indeed some filesystems
+>(e.g., affs and configfs) use it.  But pr_debug is only active when #define
+>DEBUG is on (not CONFIG_DEBUG).  I didn't see a config option that enable
+>DEBUG: is there one?
+
+No I do not think so. But when you grep for dprintk, you should also
+grep for DEBUG, to be fair :p
+
