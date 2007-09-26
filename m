@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbXIZGuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbXIZGvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483AbXIZGuY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 02:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbXIZGuM
+	id S1754870AbXIZGvJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 02:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXIZGu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 02:50:12 -0400
-Received: from colo.lackof.org ([198.49.126.79]:45268 "EHLO colo.lackof.org"
+	Wed, 26 Sep 2007 02:50:56 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:52005 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbXIZGuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 02:50:10 -0400
-Date: Wed, 26 Sep 2007 00:49:50 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: akepner@sgi.com
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       David Miller <davem@davemloft.net>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>
-Subject: Re: [PATCH 0/4] allow drivers to flush in-flight DMA
-Message-ID: <20070926064950.GB30430@colo.lackof.org>
-References: <20070925235843.GK30013@sgi.com>
-MIME-Version: 1.0
+	id S1749667AbXIZGuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 02:50:55 -0400
+Date: Tue, 25 Sep 2007 23:50:47 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: linux-kernel@vger.kernel.org, perfmon@napali.hpl.hp.com
+Subject: Re: /proc/kallsyms and symbol size
+Message-ID: <20070926065047.GE1993@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070924205506.GC31899@frankl.hpl.hp.com> <46F93572.6070105@grupopie.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070925235843.GK30013@sgi.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <46F93572.6070105@grupopie.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[+jejb to cc]
+Paulo,
 
-On Tue, Sep 25, 2007 at 04:58:43PM -0700, akepner@sgi.com wrote:
-> This is a followup to http://lkml.org/lkml/2007/8/24/280
+On Tue, Sep 25, 2007 at 05:21:06PM +0100, Paulo Marques wrote:
+> Stephane Eranian wrote:
+> >Hello,
 > 
-> Despite Grant's desire for a more elegant solution, there's 
-> not much new here. I moved the API change from pci.h to 
-> dma-mapping.h and removed the pci_ prefix from the name. 
-
-Thanks - but I don't have a better idea either.
-I think you are right to just move forward with this until
-someone provides a better API.
-
-> Problem Description
-> -------------------
-> On Altix, DMA may be reordered within the NUMA interconnect.
-> This can be a problem with Infiniband, where DMA to Completion Queues 
-> allocated in user-space can race with data DMA. This patchset allows 
-> a driver to associate a user-space memory region with a "dmaflush" 
-> attribute, so that writes to the memory region flush in-flight DMA, 
-> preventing the CQ/data race.
-
-Can we define this API to provide the same semantics as the memory
-that dma_alloc_coherent() returns?
-Did I summarize this correctly?
-
-Defining it terms of completion queues won't mean much to most folks.
-Better to add a description of completion queues to the DMA-API.txt if
-necessary.  dma_alloc_coherent() API is pretty well understood.
-
-> There are four patches in this set:
+> Hi, Stephane
 > 
->   [1/4] dma: add dma_flags_set_dmaflush() to dma interface
+> >Many monitoring tools use /proc/kallsyms to build a symbol table for the 
+> >kernel.
+> >This technique has the advantage that it does not require root privileges, 
+> >nor
+> >an up-to-date /boot/System.map, nor a decompressed kernel in /boot.
+> >
+> >The problem is that /proc/kallsyms does not report the size of the symbols.
+> >Yet, the information is available in the kernel as it is used by functions 
+> >such as __print_symbol(). Having the size is useful to correlate the address 
+> >obtained
+> >is a sample with a symbol name. Most tools use an approximation which 
+> >assumes
+> >symbols are contiguous to estimate the size.
+> 
+> That is actually what the kernel does internally, too. It does not keep 
+> the size of the symbol, but tries to guess it from the address of the 
+> next non-aliased symbol.
+> 
+> Since the addresses are sorted, this works fine most of the time. This 
+> is done to reduce the size used by the symbol table in the running kernel.
+> 
+> Just take a look at "get_symbol_pos" in kernel/kallsyms.c and 
+> "get_ksymbol" in kernel/module.c to see exactly how this is done
+> 
+Ok. Then we cannot really do better. 
 
-Sorry - this feels like a "color of the shed" argument, but isn't
-this about DMA ordering attribute?
-"dmaflush" is an action and not an attribute to me.
-Is dma_flags_set_coherent() better since it's doing the same thing
-as dma_alloc_coherent()?
+Also thank you for alerting me on the aliased symbols. I have modified
+my user code to only keep the first symbol.
 
->   [2/4] dma: redefine dma_flags_set_dmaflush() for sn-ia64
->   [3/4] dma: document dma_flags_set_dmaflush()
+Thanks for you help.
 
-This patch updates Documentation/DMA-mapping.txt. But it's a change to
-the generic (not PCI specific) API described in DMA-API.txt.
-Can you update that as well please?
+-- 
 
-Upon reading the "2) Platforms that permit DMA reordering", I think I
-have been confusing coherency with ordering. I think I have because DMA
-is leaving the "PCI domain", crossing an "unordered domain" (NUMA,
-interconnect), and then finally hitting the cache coherency "domain"
-when it reaches a "far away" memory controller. That's why I've
-been thinking of this as a coherency problem.
-
-The description and API uses the word "flush" (which is ok I guess) instead
-of describing this in terms of enforcing DMA ordering.  Any DMA write to the
-"strongly ordered" region will cause _all_ inflight DMA to be visible
-to cache coherency, thus preserving the illusion of strong DMA ordering.
-
-Does that sound right/better to you too?
-I don't have chipset docs and some of this is just trying to rephrase
-what I've heard before from former SGI employees.
-
->   [4/4] mthca: allow setting "dmaflush" attribute on user-allocated memory
-
-Besides calling the parameter "dmaflush", it looks fine to me.
-(It's either a DMA ordering or coherency attribute depending on how
-you want to look at it.)
-
-thanks,
-grant
-
+-Stephane
