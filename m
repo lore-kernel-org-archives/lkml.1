@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbXIZHcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbXIZHv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbXIZHcB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 03:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXIZHbx
+	id S1753613AbXIZHv1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 03:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXIZHvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 03:31:53 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:4586
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751293AbXIZHbx convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 03:31:53 -0400
-Message-Id: <46FA274B.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 26 Sep 2007 08:32:59 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Andi Kleen" <ak@suse.de>, "Takashi Iwai" <tiwai@suse.de>,
-       "LKML" <linux-kernel@vger.kernel.org>, <discuss@x86-64.org>
-Subject: Re: [discuss] 2.6.23-rc8-mm1, -rc7-mm1 kill audio on HP nx6325
-References: <200709251353.52723.rjw@sisk.pl>
- <20070925090819.a7c6c3f3.akpm@linux-foundation.org>
-In-Reply-To: <20070925090819.a7c6c3f3.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 26 Sep 2007 03:51:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:21183 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbXIZHvT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 03:51:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=mQspTDhcy7+RL/UZGilODXDJM0MLIh53JcVwCjGOzIL+UQw9JHfjGVktUZOsf+XBQwdNygQdf0j7CjqgepvdcIKHXYYgeQtRvNYTq8F/r61O18nYWgZpfjDLS3HfUs9oDI/KcAC1fxJgs/24rTk5ZMEaVkM4rWLjSoemXPcrAEk=
+Message-ID: <46FA0F71.3040800@gmail.com>
+Date: Wed, 26 Sep 2007 09:51:13 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Dave Airlie <airlied@gmail.com>
+Subject: black screen after kill X [Was: 2.6.23-rc8-mm1]
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+In-Reply-To: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Andrew Morton <akpm@linux-foundation.org> 25.09.07 18:08 >>>
->On Tue, 25 Sep 2007 13:53:51 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->
->> Hi,
->> 
->> This patch from Andi:
->> 
->> x86_64-mm-cpa-einval.patch
->> 
->> makes the hda_intel audio driver stop working on my HP nx6325.
->> 
->> The following line appears in dmesg (from 2.6.23-rc7-mm1:
->> 
->> ALSA /home/rafael/src/mm/linux-2.6.23-rc7-mm1/sound/pci/hda/hda_intel.c:1755: hd
->> a-intel: ioremap error
->> 
->> and the driver doesn't work afterwards.
->> 
->> Still, I'm not sure if the patch above is wrong or rather it exposes a problem
->> in the driver.
->> 
->
->Mysterious.
->
->ioremap_nocache() does __ioremap(..., _PAGE_PCD);, then __ioremap() does
->ioremap_page_range(..., _PAGE_PCD | other_stuff) That's one.
->
->__ioremap() then does ioremap_change_attr(..., _PAGE_PCD);.  That's two.
->
->So I _think_ we're setting _PAGE_PCD twice on those pte's?  Unclear.  The
->implementation is rather different from i386, too.
->
->I dunno why __change_page_attr() failed though.  Perhaps this, in
->change_page_attr_addr():
->
->		if (!kernel_map || pte_present(pfn_pte(0, prot))) {
->
->should be &&
+On 09/25/2007 10:46 AM, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm1/
 
-Definitely not, and this code has been that way for a while.
+I don't know if this is a regression, I hadn't suspend working before rc7-mm1
+(rc7-mm1 is the same), but
+X -> kill X -> console (OK)
+X -> suspend (2ram) -> resume -> kill X -> black screen (no signal), reboot
+stucks at some point after some services are shutted down
 
-I rather suspect this change
+X driver: intel (compiled from git)
+agp dmesg part:
+Linux agpgart interface v0.102
+agpgart: suspend/resume problematic: resume with 3D/DRI active may lockup X.Org
+on some chipset/BIOS combos (see DEBUG_AGP_PM in intel-agp.c)
 
--	if (!kpte) return 0;
-+	if (!kpte)
-+		return -EINVAL;
+Is this what should I try?
 
-to be the reason for the failure (and I had already sent a comment to this
-respect to Andi upon his review request).
+agpgart: Detected an Intel G33 Chipset.
+agpgart: Detected 8192K stolen memory.
+agpgart: AGP aperture is 256M @ 0xd0000000
+[drm] Initialized drm 1.1.0 20060810
+ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+[drm] Initialized i915 1.6.0 20060119 on minor 0
 
-Jan
-
+thanks,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
