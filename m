@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbXIZLAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbXIZLDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbXIZLAS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 07:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbXIZLAF
+	id S1756776AbXIZLDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 07:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXIZLDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 07:00:05 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58572 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753846AbXIZLAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 07:00:04 -0400
-Date: Wed, 26 Sep 2007 13:01:30 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Henry Nestler <Henry.Ne@Arcor.de>
-Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
-Subject: Re: kbuild: LDFLAGS_MODULE unusable for external module builds (2.6.23-rc2)
-Message-ID: <20070926110130.GA20950@uranus.ravnborg.org>
-References: <46F8D9B8.3090806@Arcor.de> <20070925192250.GA14689@uranus.ravnborg.org> <46FA2CC0.2000204@Arcor.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46FA2CC0.2000204@Arcor.de>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 26 Sep 2007 07:03:09 -0400
+Received: from web51411.mail.re2.yahoo.com ([206.190.39.152]:27014 "HELO
+	web51411.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753861AbXIZLDI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 07:03:08 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 07:03:08 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=DNwIO0KpHOQJaF68+FDh/Ejzha/wwz511cuTdOMNvha300yHdUMYqOFXM19zjKwtXBOomWm2H4FiyzLKzz1eZQZo+Ka+Qjl4lSR/rEhAt2+9cu9OztVAmCswSVordkcTD+l9ZbuNVR8IU9xKXkvCuYMFIhBa9U8pTDoOWKmiwvA=;
+X-YMail-OSG: Zzid_L0VM1nKiutIWCdzzyVBRqxdFJTZ9lSinPt8vzuITa_hDrseBXxQF0k6euIJSg--
+X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
+Date: Wed, 26 Sep 2007 03:56:26 -0700 (PDT)
+From: Joerg Pommnitz <pommnitz@yahoo.com>
+Subject: Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on AMD Geode LX800
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: cebbert@redhat.com, linux-kernel@vger.kernel.org, hpa@zytor.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <637040.99806.qm@web51411.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>What macro should set for linker parameters of foo.o ? I'm not shure.
-> >Have you read:
-> >Documentation/kbuild/makfilefiles.txt?
+Hello all,
+this is what git bisect told me about the problem:
+
+jpo@jpo-laptop:~/linux-2.6$ git bisect good
+4fd06960f120e02e9abc802a09f9511c400042a5 is first bad commit
+commit 4fd06960f120e02e9abc802a09f9511c400042a5
+Author: H. Peter Anvin <hpa@zytor.com>
+Date:   Wed Jul 11 12:18:56 2007 -0700
+
+    Use the new x86 setup code for i386
+
+    This patch hooks the new x86 setup code into the Makefile machinery.  It
+    also adapts boot/tools/build.c to a two-file (as opposed to three-file)
+    universe, and simplifies it substantially.
+
+    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+:040000 040000 6560eb5b7e40d93813276544bced8c478f9067f5 fe5f90d9ca08e526559815789175602ba2c51743 M      arch
+
+ 
+--  
+Regards
+ 
+       Joerg
+ 
+
+
+----- Ursprüngliche Mail ----
+Von: Jordan Crouse <jordan.crouse@amd.com>
+An: Joerg Pommnitz <pommnitz@yahoo.com>
+CC: cebbert@redhat.com; linux-kernel@vger.kernel.org
+Gesendet: Dienstag, den 25. September 2007, 17:04:52 Uhr
+Betreff: Re: Problems with 2.6.23-rc6 on AMD Geode LX800
+
+On 25/09/07 01:38 -0700, Joerg Pommnitz wrote:
+> Chuck, Jordan,
+> thanks for taking an interest in this problem. As suggested by Jordan I tried a new
+> BIOS revision from
+> http://www.digitallogic.ch/index.php?id=256&dir=/MSEP800%20-%20SM800PCX%20%20-%20MPC20%20-%20MPC21&mountpoint=23
 > 
-> Yes. This was a *very* helpfull. And many examples spokes about 
-> LDFLAGS_$@ there. Not directly described for modules.
+> Unfortunately the kernel still fails to boot in the same way.
 
-Took a deeper look.
-I saw one reference to LDFLAGS_$@ that is wrong:
-    LDFLAGS             Generic $(LD) options
+You'll have to contact Digital Logic and have them check with the BIOS vendor
+to see if the fix was made in that version or not.  I don't have that
+particular board, so I can't try out the fixes here.
 
-        Flags used for all invocations of the linker.
-        Often specifying the emulation is sufficient.
+I'm still trying to track down the particulars of the fix from the BIOS 
+vendor.  I'll let you know.
 
-        Example:
-                #arch/s390/Makefile
-                LDFLAGS         := -m elf_s390
-        Note: EXTRA_LDFLAGS and LDFLAGS_$@ can be used to further customise
-        the flags used. See chapter 7.
+> Do you still need the disassembled reserve_bootmem_core? 
 
-The chapter reference is also bad...
-The other references to the LDFLAGS_$@ are in other situations - it is
-used in several places.
+Sure - you might as well - just to make sure its the same problem.
 
-If your example requires the LDFALGS_$@ I wil introduce it - for now
-it has not been required (except for vdso support where it was hacked).
+Jordan
 
-	Sam
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
+
+
+
+
+
+
+
+      __________________________________  
+Yahoo! Clever: Sie haben Fragen? Yahoo! Nutzer antworten Ihnen. www.yahoo.de/clever
+
