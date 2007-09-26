@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbXIZONH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXIZOTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759404AbXIZONH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 10:13:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXIZOMz
+	id S1758157AbXIZOTb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 10:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbXIZOTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 10:12:55 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:59800 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755406AbXIZOMy (ORCPT
+	Wed, 26 Sep 2007 10:19:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:10431 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753847AbXIZOTU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 10:12:54 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: fix pci domain detection
-Date: Wed, 26 Sep 2007 16:02:05 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
+	Wed, 26 Sep 2007 10:19:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=dgeZzI3oizrBZj1dpBinmu37VJ82DoN+eyszDwi26KWjgxcqvDmD+9c74uasV5OAdFG9p+ZBOXIyxChmxeI5C9a5t4PLfN5D7o1roaIJZn8gCerWqIrqW3XoZbzPt4nqfuD/VVt1IeWN6UQqvbPkFysT8tTW0OCM2Qf6WCftYgo=
+Message-ID: <46FA6A60.2000700@gmail.com>
+Date: Wed, 26 Sep 2007 08:19:12 -0600
+From: "Berck E. Nash" <flyboy@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709261602.06214.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/jmqCFtY4wHMCUl1oiYDofBu7Hk5MxtOxc7Ab
- SHm18MxmIa3P//wh0r9HjGZj5sc/LKGN6XC8mSII5+9Hq+DmcQ
- xdMW+PCAUMbdHKiB+iwyw==
+To: Jeff Garzik <jeff@garzik.org>
+CC: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
+References: <46F7FBCB.4030803@gmail.com> <46F9E2CB.9000002@garzik.org>
+In-Reply-To: <46F9E2CB.9000002@garzik.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------060406000509040009080407"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The /proc/bus/pci/* files list PCI domain numbers only for
-devices that claim to be on a multi-domain system. The check
-for this is broken on powerpc, because the buid value is
-truncated to 32 bits.
+This is a multi-part message in MIME format.
+--------------060406000509040009080407
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-There is at least one machine (IBM QS21) that only uses
-the high-order bits of the buid, so the return value
-of pci_proc_domain() ends up being always zero, which
-makes /proc/bus/pci useless.
+Jeff Garzik wrote:
+> Would it also be possible for you to send along 'hdparm --Istdout'
+> output for your config disk thingy, /dev/sdd ?
 
-Change the logic to always return '1' for a nonzero
-buid value.
+Sure, just don't ask me what it is!  (I've generally assumed that
+writing to it would be a bad idea.)
 
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Berck
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 291ffbc..9f63bdc 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -588,7 +588,7 @@ int pci_proc_domain(struct pci_bus *bus)
- 		return 0;
- 	else {
- 		struct pci_controller *hose = pci_bus_to_host(bus);
--		return hose->buid;
-+		return hose->buid != 0;
- 	}
- }
- 
+--------------060406000509040009080407
+Content-Type: text/plain;
+ name="hdparmthingy"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="hdparmthingy"
+
+
+/dev/sdd:
+0040 3fff c837 0010 0000 0000 003f 0000
+0000 0000 3030 3030 3030 315f 5f5f 5f5f
+5f5f 5f5f 5f30 5f45 0003 3e00 0004 5247
+4c31 3033 3634 436f 6e66 6967 2020 4469
+736b 2020 2020 2020 2020 2020 2020 2020
+2020 2020 2020 2020 2020 2020 2020 8001
+0000 2f00 4000 0200 0000 0007 3fff 0010
+003f fc10 00fb 0101 0280 0000 0000 0407
+0003 0078 0078 0078 0078 0000 0000 0000
+0000 0000 0000 0000 0201 0000 0000 0000
+007e 001b 0068 5060 4000 0000 1000 4000
+407f 0000 0000 0000 fffe 0000 c0fe 0000
+0000 0000 0000 0000 0002 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0001 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0017 2040
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 b4a5
+
+--------------060406000509040009080407--
