@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbXIZSTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbXIZSU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759323AbXIZSTI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbXIZSSy
+	id S1760008AbXIZSU2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbXIZSUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:18:54 -0400
-Received: from ns.suse.de ([195.135.220.2]:48975 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753483AbXIZSSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:18:53 -0400
-Date: Wed, 26 Sep 2007 20:18:51 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: "Bernhard Walle (in kexec list)" <kexec@lists.infradead.org>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [patch 1/7] Extended crashkernel command line
-Message-ID: <20070926181851.GA29815@suse.de>
-Mail-Followup-To: Oleg Verych <olecom@flower.upol.cz>,
-	"Bernhard Walle (in kexec list)" <kexec@lists.infradead.org>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org
-References: <20070925182257.900701776@strauss.suse.de> <20070925182258.175348676@strauss.suse.de> <E1IaHPU-00089b-Bc@flower> <20070926161602.GA26909@suse.de> <20070926181843.GB24301@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070926181843.GB24301@flower.upol.cz>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 26 Sep 2007 14:20:20 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:58849 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754619AbXIZSUS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 14:20:18 -0400
+Subject: [PATCH] just rename call_rcu_bh instead of making it a macro
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: RT <linux-rt-users@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
+Date: Wed, 26 Sep 2007 14:17:47 -0400
+Message-Id: <1190830667.20235.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Oleg Verych <olecom@flower.upol.cz> [2007-09-26 20:18]:
-> 
-> I was thinking about errors in YaST or typos in bootloader config, that
-> may appear sometimes. And kernel must tolerate this kind of userspace
-> input to be more reliable. But you know better, i just am waving hands.
+Seems that I found a box that has a config that passes call_rcu_bh as a
+function pointer (see net/sctp/sm_make_chunk.c), so declaring the
+call_rcu_bh has a macro function isn't good enough.
 
-Of course the kernel must be able to handle them -- outputting an
-error message that can be read by the user and not crashing. But I
-don't expect that the kernel then reservate crash memory by guessing
-of values.
+This patch makes it just another name of call_rcu for rcupreempt.
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+Index: linux-2.6.23-rc8-rt1/include/linux/rcupreempt.h
+===================================================================
+--- linux-2.6.23-rc8-rt1.orig/include/linux/rcupreempt.h
++++ linux-2.6.23-rc8-rt1/include/linux/rcupreempt.h
+@@ -42,9 +42,14 @@
+ #include <linux/cpumask.h>
+ #include <linux/seqlock.h>
+ 
+-#define rcu_qsctr_inc(cpu)
+-#define rcu_bh_qsctr_inc(cpu)
+-#define call_rcu_bh(head, rcu) call_rcu(head, rcu)
++#define rcu_qsctr_inc(cpu)	do { } while (0)
++#define rcu_bh_qsctr_inc(cpu)	do { } while (0)
++/*
++ * Someone might want to pass call_rcu_bh as a function pointer.
++ * So this needs to just be a rename and not a macro function.
++ *  (no parentheses)
++ */
++#define call_rcu_bh		 call_rcu
+ 
+ extern void __rcu_read_lock(void);
+ extern void __rcu_read_unlock(void);
 
 
-
-Thanks,
-   Bernhard
