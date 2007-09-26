@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbXIZM3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbXIZMnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756451AbXIZM3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 08:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXIZM3H
+	id S1753965AbXIZMnn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 08:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbXIZMnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 08:29:07 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4444 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbXIZM3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 08:29:06 -0400
-Date: Wed, 26 Sep 2007 13:28:56 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Badari Pulavarty <pbadari@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc8-mm1
-Message-ID: <20070926122856.GA10088@shadowen.org>
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org> <1190757954.13955.44.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190757954.13955.44.camel@dyn9047017100.beaverton.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+	Wed, 26 Sep 2007 08:43:35 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:46116 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751008AbXIZMne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 08:43:34 -0400
+Date: Wed, 26 Sep 2007 14:36:57 +0200 (MEST)
+Message-Id: <200709261236.l8QCavNM001097@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: balbir@linux.vnet.ibm.com, schwab@suse.de
+Subject: Re: [PATCH] Since we have counters in __u64 format we have to print them with %llu macros.
+Cc: balbir@in.ibm.com, jlan@engr.sgi.com, linux-kernel@vger.kernel.org,
+       muvarov@ru.mvista.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 25, 2007 at 03:05:53PM -0700, Badari Pulavarty wrote:
-> Hi Andy,
+On Wed, 26 Sep 2007 17:18:06 +0530, Balbir Singh wrote:
+> Andreas Schwab wrote:
+> > Maxim Uvarov <muvarov@ru.mvista.com> writes:
+> > 
+> >> diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+> >> index cbee3a2..73924df 100644
+> >> --- a/Documentation/accounting/getdelays.c
+> >> +++ b/Documentation/accounting/getdelays.c
+> >> @@ -208,7 +208,7 @@ void print_delayacct(struct taskstats *t)
+> >>  void task_context_switch_counts(struct taskstats *t)
+> >>  {
+> >>  	printf("\n\nTask   %15s%15s\n"
+> >> -	       "       %15lu%15lu\n",
+> >> +	       "       %15llu%15llu\n",
+> >>  	       "voluntary", "nonvoluntary",
+> >>  	       t->nvcsw, t->nivcsw);
+> > 
+> > __u64 is not always long long.
 > 
-> One the patch you created in -mm is causing compile warning.
-> Here is the fix. Please verify.
-> 
-> Thanks,
-> Badari
-> 
-> arch/powerpc/mm/init_64.c: In function `vmemmap_populated':
-> arch/powerpc/mm/init_64.c:211: warning: passing arg 1 of `vmemmap_section_start' makes pointer from integer without a cast
-> 
-> vmemmap_section_start() gets called with an argument which is unsigned long.
-> 
-> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> What is the maximum size of long long across all architectures?
+> How does one format __u64 for printing?
 
-Clearly correct.  
+With %lu you get warnings when u64 is long long (32-bit).
+With %llu you get warnings when u64 is plain long (most 64-bit).
 
-Acked-by: Andy Whitcroft <apw@shadowen.org>
+Hence %llu + long long cast, i.e.:
+printf("%llu", (unsigned long long)value);
 
-> Index: linux-2.6.23-rc8/arch/powerpc/mm/init_64.c
-> ===================================================================
-> --- linux-2.6.23-rc8.orig/arch/powerpc/mm/init_64.c	2007-09-25 09:18:13.000000000 -0700
-> +++ linux-2.6.23-rc8/arch/powerpc/mm/init_64.c	2007-09-25 14:50:44.000000000 -0700
-> @@ -189,10 +189,9 @@ void pgtable_cache_init(void)
->   * do this by hand as the proffered address may not be correctly aligned.
->   * Subtraction of non-aligned pointers produces undefined results.
->   */
-> -unsigned long __meminit vmemmap_section_start(struct page *page)
-> +unsigned long __meminit vmemmap_section_start(unsigned long page)
->  {
-> -	unsigned long offset = ((unsigned long)page) -
-> -						((unsigned long)(vmemmap));
-> +	unsigned long offset = page - ((unsigned long)(vmemmap));
->  
->  	/* Return the pfn of the start of the section. */
->  	return (offset / sizeof(struct page)) & PAGE_SECTION_MASK;
+This is ugly but luckily imposes no runtime overheads on
+current 32- or 64-bit machines.
 
--apw
+This could be done more cleanly if the u64 typedef also
+#define:d a corresponding FMT_U64 format string.
