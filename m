@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbXIZF3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbXIZF6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbXIZF3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 01:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbXIZF3j
+	id S1755004AbXIZF6F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 01:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbXIZF5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 01:29:39 -0400
-Received: from 1wt.eu ([62.212.114.60]:2701 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751368AbXIZF3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 01:29:38 -0400
-Date: Wed, 26 Sep 2007 07:25:53 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Adrian Bunk <bunk@kernel.org>, David Newall <david@davidnewall.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
-       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
-       majkls <majkls@prepere.com>, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Chroot bug
-Message-ID: <20070926052553.GK10199@1wt.eu>
-References: <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com> <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com> <20070925163040.12a3c2f8@the-village.bc.nu> <46F92AAB.1060903@davidnewall.com> <20070925164806.4cadc6a5@the-village.bc.nu> <46F99EDE.70905@davidnewall.com> <20070926005551.GS6800@stusta.de> <F23AFB4D-E989-4F06-A256-4D12D852DFA2@mac.com>
+	Wed, 26 Sep 2007 01:57:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38868
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752745AbXIZF5y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 01:57:54 -0400
+Date: Tue, 25 Sep 2007 22:57:54 -0700 (PDT)
+Message-Id: <20070925.225754.119290298.davem@davemloft.net>
+To: marcel@holtmann.org
+Cc: xiyou.wangcong@gmail.com, akpm@linux-foundation.org, 12o3l@tiscali.nl,
+       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net,
+       maxk@qualcomm.com
+Subject: Re: [-mm Patch] net/bluetooth/hidp/core.c: Make hidp_setup_input()
+ return int
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1190672287.5133.138.camel@aeonflux.holtmann.net>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+	<20070924113035.GE2442@hacking>
+	<1190672287.5133.138.camel@aeonflux.holtmann.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <F23AFB4D-E989-4F06-A256-4D12D852DFA2@mac.com>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 26, 2007 at 01:21:08AM -0400, Kyle Moffett wrote:
-(...)
-> Now, like magic, the entire system is once more accessible.
+From: Marcel Holtmann <marcel@holtmann.org>
+Date: Tue, 25 Sep 2007 00:18:07 +0200
+
+> Hi Wang,
 > 
-> Alternatively you could:
->   mount -t proc proc /proc
->   cat /proc/1/mounts
->   mount -t $ROOTFS_FROM_PROC $ROOTDEV_FROM_PROC /
+> > This patch:
+> > - makes hidp_setup_input() return int to indicate errors;
+> > - checks its return value to handle errors.
+> > 
+> > And this time it is against -rc7-mm1 tree.
+> > 
+> > Thanks to roel and Marcel Holtmann for comments.
+> > 
+> > Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> 
+> Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
 
-Since 2.6.20, it was even simpler :
-   mount -t proc proc /proc
-   cd /proc/1/cwd
-
-Cheers,
-Willy
-
+Applied, thanks.
