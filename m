@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759846AbXIZQTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbXIZQVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759846AbXIZQTT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 12:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbXIZQTL
+	id S1760640AbXIZQVF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 12:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXIZQUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 12:19:11 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:33754 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753361AbXIZQTK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 12:19:10 -0400
-Subject: Re: missing mnt_drop_write() on open error
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       hch <hch@infradead.org>
-In-Reply-To: <E1IaSPW-0005M4-00@dorka.pomaz.szeredi.hu>
-References: <E1IaJc0-000541-00@dorka.pomaz.szeredi.hu>
-	 <1190769669.26982.325.camel@localhost>
-	 <E1IaSPW-0005M4-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Wed, 26 Sep 2007 09:19:05 -0700
-Message-Id: <1190823545.30530.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 26 Sep 2007 12:20:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41349 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753491AbXIZQUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 12:20:52 -0400
+Message-ID: <46FA86DE.70204@garzik.org>
+Date: Wed, 26 Sep 2007 12:20:46 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Peer Chen <peerchen@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH] ahci: enable GHC.AE bit before set GHC.HR
+References: <200709211327569648280@gmail.com>	<46F9DA07.4080201@garzik.org>	<20070926122332.39351382@the-village.bc.nu>	<46FA4587.4070105@garzik.org>	<20070926153028.6fc5b2ce@the-village.bc.nu>	<46FA6DB8.70508@garzik.org> <20070926171030.6b07fa42@the-village.bc.nu>
+In-Reply-To: <20070926171030.6b07fa42@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-26 at 10:38 +0200, Miklos Szeredi wrote:
-> In __dentry_open() there's still a few places where fput() won't be
-> called, notably when ->open fails, which is what I'm triggering I
-> think.
+Alan Cox wrote:
+> On Wed, 26 Sep 2007 10:33:28 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> Also even more horrible things can happen because of the
-> nd->intent.open.file thing.  For example if the lookup routine calls
-> lookup_instantiate_filp(), and after this, but before may_open() some
-> error happens, then release_open_intent() will call fput() on the
-> file, which will cause mnt_drop_write() to be called, even though a
-> matching mnt_want_write() hasn't yet been called.  Ugly, eh? 
+>> Alan Cox wrote:
+>>>>> NAK - mmio is an iomap so writel and readl are the wrong things to use
+>>>> The patch is consistent with the rest of the driver.
+>>>> You are welcome to submit a patch to convert ahci to using ioremap.
+>>> You could just flip the relevant function to use ioread while you are
+>>> tidying it up, instead of spreading new bugs into the code.
+>> No, as I just noted above, the proper fix for this driver is to use 
+>> ioremap rather than pci_iomap.
+>>
+>> Adding support to ahci for legacy PIO is completely pointless.
+> 
+> iomap isn't just for legacy PIO. It allows us to handle future weird
+> mappings in ways ioremap cannot.
 
-I'm not sure it is _that_ horrible. ;)
+Well, when needs dictate, we can re-evaluate.
 
-Do you see any reason we can't just shadow the
-get/put_write_access(inode) calls with mnt_want/drop_write() calls?  I
-think they're always matched.
+Until some future date arrives where it matters for all these MMIO-only 
+drivers and hardware, it's just a bunch of pointless overhead for ahci 
+and many other drivers.  It's also just not the Linux way to punish 
+everybody for some edge case that so far only exists in email conversations.
 
--- Dave
+The beauty of libata is that you don't have to enforce such a pogrom 
+across all libata drivers.  The libata high level API is completely free 
+from ioread/iowrite junk, leaving each driver to make its own decision.
+
+	Jeff
+
+
 
