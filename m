@@ -1,164 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760686AbXIZVGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762911AbXIZVGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760686AbXIZVGX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762603AbXIZVFh
+	id S1762911AbXIZVGi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762724AbXIZVF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:05:37 -0400
-Received: from mx2.suse.de ([195.135.220.15]:55291 "EHLO mx2.suse.de"
+	Wed, 26 Sep 2007 17:05:56 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:33781 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762497AbXIZVFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:05:35 -0400
-Date: Wed, 26 Sep 2007 23:05:33 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: "Bernhard Walle (in kexec list)" <kexec@lists.infradead.org>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [patch 1/7] Extended crashkernel command line
-Message-ID: <20070926210533.GA1299@suse.de>
-Mail-Followup-To: Oleg Verych <olecom@flower.upol.cz>,
-	"Bernhard Walle (in kexec list)" <kexec@lists.infradead.org>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org
-References: <20070925182257.900701776@strauss.suse.de> <20070925182258.175348676@strauss.suse.de> <E1IaHPU-00089b-Bc@flower> <20070926161602.GA26909@suse.de> <20070926181843.GB24301@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070926181843.GB24301@flower.upol.cz>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1762768AbXIZVFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 17:05:54 -0400
+Subject: Re: [PATCH] JBD/ext34 cleanups: convert to kzalloc
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070926125440.36c3cb5b.akpm@linux-foundation.org>
+References: <1189796027.3841.6.camel@localhost.localdomain>
+	 <1190057391.3845.22.camel@localhost.localdomain>
+	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
+	 <1190069851.6725.6.camel@localhost.localdomain>
+	 <20070918090407.GA671@infradead.org>
+	 <1190133347.3819.6.camel@localhost.localdomain>
+	 <1190138690.6528.23.camel@norville.austin.ibm.com>
+	 <1190163601.3819.15.camel@localhost.localdomain>
+	 <20070918191920.a2130a3c.akpm@linux-foundation.org>
+	 <1190229352.4318.12.camel@localhost.localdomain>
+	 <20070919194813.GT32520@schatzie.adilger.int>
+	 <1190239431.4318.34.camel@localhost.localdomain>
+	 <1190416436.11349.13.camel@localhost.localdomain>
+	 <20070926125440.36c3cb5b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 26 Sep 2007 14:05:51 -0700
+Message-Id: <1190840751.4517.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Oleg Verych <olecom@flower.upol.cz> [2007-09-26 20:18]:
-> > 
-> > --- a/kernel/kexec.c
-> > +++ b/kernel/kexec.c
-> > @@ -1172,33 +1172,50 @@ static int __init parse_crashkernel_mem(
-> >  	do {
-> >  		unsigned long long start = 0, end = ULLONG_MAX;
-> >  		unsigned long long size = -1;
+On Wed, 2007-09-26 at 12:54 -0700, Andrew Morton wrote:
+> On Fri, 21 Sep 2007 16:13:56 -0700
+> Mingming Cao <cmm@us.ibm.com> wrote:
 > 
-> no need in assigning values here, unless you plan to use them in case
-> of `return -EINVAL', but i can not see that,
+> > Convert kmalloc to kzalloc() and get rid of the memset().
+> 
+> I split this into separate ext3/jbd and ext4/jbd2 patches.  It's generally
+> better to raise separate patches, please - the ext3 patches I'll merge
+> directly but the ext4 patches should go through (and be against) the ext4
+> devel tree.
+> 
+Sure. The patches(including ext3/jbd and ext4/jbd2) were merged into
+ext4 devel tree already, I will remove the ext3/jbd part out of the ext4
+devel tree.
 
-What about this (and yes, I tested with some wrong strings with Qemu):
+> I fixed lots of rejects against the already-pending changes to these
+> filesystems.
+> 
+> You forgot to remove the memsets in both start_this_handle()s.
+> 
+Thanks for catching this.
 
-----
+Mingming
 
-This patch improves error handling in parse_crashkernel_mem() by comparing
-the return pointer of memparse() with the input pointer and also replaces
-all printk(KERN_WARNING msg) with pr_warning(msg).
-
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- kernel/kexec.c |   54 +++++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 39 insertions(+), 15 deletions(-)
-
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -1167,44 +1167,59 @@ static int __init parse_crashkernel_mem(
- 					unsigned long long	*crash_size,
- 					unsigned long long	*crash_base)
- {
--	char *cur = cmdline;
-+	char *cur = cmdline, *tmp;
- 
- 	/* for each entry of the comma-separated list */
- 	do {
--		unsigned long long start = 0, end = ULLONG_MAX;
--		unsigned long long size = -1;
-+		unsigned long long start, end = ULLONG_MAX, size;
- 
- 		/* get the start of the range */
--		start = memparse(cur, &cur);
-+		start = memparse(cur, &tmp);
-+		if (cur == tmp) {
-+			pr_warning("crashkernel: Memory value expected\n");
-+			return -EINVAL;
-+		}
-+		cur = tmp;
- 		if (*cur != '-') {
--			printk(KERN_WARNING "crashkernel: '-' expected\n");
-+			pr_warning("crashkernel: '-' expected\n");
- 			return -EINVAL;
- 		}
- 		cur++;
- 
- 		/* if no ':' is here, than we read the end */
- 		if (*cur != ':') {
--			end = memparse(cur, &cur);
-+			end = memparse(cur, &tmp);
-+			if (cur == tmp) {
-+				pr_warning("crashkernel: Memory "
-+						"value expected\n");
-+				return -EINVAL;
-+			}
-+			cur = tmp;
- 			if (end <= start) {
--				printk(KERN_WARNING "crashkernel: end <= start\n");
-+				pr_warning("crashkernel: end <= start\n");
- 				return -EINVAL;
- 			}
- 		}
- 
- 		if (*cur != ':') {
--			printk(KERN_WARNING "crashkernel: ':' expected\n");
-+			pr_warning("crashkernel: ':' expected\n");
- 			return -EINVAL;
- 		}
- 		cur++;
- 
--		size = memparse(cur, &cur);
--		if (size < 0) {
--			printk(KERN_WARNING "crashkernel: invalid size\n");
-+		size = memparse(cur, &tmp);
-+		if (cur == tmp) {
-+			pr_warning("Memory value expected\n");
-+			return -EINVAL;
-+		}
-+		cur = tmp;
-+		if (size >= system_ram) {
-+			pr_warning("crashkernel: invalid size\n");
- 			return -EINVAL;
- 		}
- 
- 		/* match ? */
--		if (system_ram >= start  && system_ram <= end) {
-+		if (system_ram >= start && system_ram <= end) {
- 			*crash_size = size;
- 			break;
- 		}
-@@ -1213,8 +1228,15 @@ static int __init parse_crashkernel_mem(
- 	if (*crash_size > 0) {
- 		while (*cur != ' ' && *cur != '@')
- 			cur++;
--		if (*cur == '@')
--			*crash_base = memparse(cur+1, &cur);
-+		if (*cur == '@') {
-+			cur++;
-+			*crash_base = memparse(cur, &tmp);
-+			if (cur == tmp) {
-+				pr_warning("Memory value expected "
-+						"after '@'\n");
-+				return -EINVAL;
-+			}
-+		}
- 	}
- 
- 	return 0;
-@@ -1234,8 +1256,10 @@ static int __init parse_crashkernel_simp
- 	char *cur = cmdline;
- 
- 	*crash_size = memparse(cmdline, &cur);
--	if (cmdline == cur)
-+	if (cmdline == cur) {
-+		pr_warning("crashkernel: memory value expected\n");
- 		return -EINVAL;
-+	}
- 
- 	if (*cur == '@')
- 		*crash_base = memparse(cur+1, &cur);
