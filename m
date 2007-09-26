@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbXIZTyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbXIZUBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759451AbXIZTyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 15:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXIZTyp
+	id S1758399AbXIZUBy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 16:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXIZUBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 15:54:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38896 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752131AbXIZTyn (ORCPT
+	Wed, 26 Sep 2007 16:01:47 -0400
+Received: from n2a.bullet.in.yahoo.com ([202.43.219.19]:40942 "HELO
+	n2a.bullet.in.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751285AbXIZUBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 15:54:43 -0400
-Date: Wed, 26 Sep 2007 12:54:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: cmm@us.ibm.com
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] JBD/ext34 cleanups: convert to kzalloc
-Message-Id: <20070926125440.36c3cb5b.akpm@linux-foundation.org>
-In-Reply-To: <1190416436.11349.13.camel@localhost.localdomain>
-References: <1189796027.3841.6.camel@localhost.localdomain>
-	<1190057391.3845.22.camel@localhost.localdomain>
-	<1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
-	<1190069851.6725.6.camel@localhost.localdomain>
-	<20070918090407.GA671@infradead.org>
-	<1190133347.3819.6.camel@localhost.localdomain>
-	<1190138690.6528.23.camel@norville.austin.ibm.com>
-	<1190163601.3819.15.camel@localhost.localdomain>
-	<20070918191920.a2130a3c.akpm@linux-foundation.org>
-	<1190229352.4318.12.camel@localhost.localdomain>
-	<20070919194813.GT32520@schatzie.adilger.int>
-	<1190239431.4318.34.camel@localhost.localdomain>
-	<1190416436.11349.13.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Wed, 26 Sep 2007 16:01:46 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 623004.51400.bm@omp103.mail.in2.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.in;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=BoggbdXEBgnWEnwroWC9AndEhaM4DEgPtp1U1snUq1wNVAHnVarn2qu0ntUiorKebycJQcOl0zqCWCKH8zjs5tf/wd9OB6RAzN9XxH9Acu/gzI5P4YglGx9ddBdz1QYVe6WlNt8cSb6MqNFKap18FcPOk1CXvffPlOio8cCNYl4=;
+X-YMail-OSG: POHxISkVM1lxfjscgyI6jomR1yi7u5jqru5z4.1aQT6JAGV75pAQzcZpnnN6KGIXCw--
+Date: Wed, 26 Sep 2007 11:29:33 +0100 (BST)
+From: mahamuni ashish <ash_lkp@yahoo.co.in>
+Subject: No linux/module.h 
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <120377.13385.qm@web7807.mail.in.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Sep 2007 16:13:56 -0700
-Mingming Cao <cmm@us.ibm.com> wrote:
+I am writing simple kernel module.
+I have included linux/module.h
+compiler gives me error that no such file, I also
+searched it on my machine.
+It really doesn't exist. I am using fedora 6.
+How do I install required libraries.
 
-> Convert kmalloc to kzalloc() and get rid of the memset().
 
-I split this into separate ext3/jbd and ext4/jbd2 patches.  It's generally
-better to raise separate patches, please - the ext3 patches I'll merge
-directly but the ext4 patches should go through (and be against) the ext4
-devel tree.
-
-I fixed lots of rejects against the already-pending changes to these
-filesystems.
-
-You forgot to remove the memsets in both start_this_handle()s.
+      Did you know? You can CHAT without downloading messenger. Go to http://in.messenger.yahoo.com/webmessengerpromo.php/ 
 
