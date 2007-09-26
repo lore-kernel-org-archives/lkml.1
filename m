@@ -1,154 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbXIZWLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761857AbXIZWRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbXIZWLZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 18:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbXIZWLQ
+	id S1761857AbXIZWRo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 18:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXIZWRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 18:11:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42325 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753509AbXIZWLP (ORCPT
+	Wed, 26 Sep 2007 18:17:36 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:49981 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753868AbXIZWRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 18:11:15 -0400
-Date: Wed, 26 Sep 2007 15:10:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
-       caker@linode.com
-Subject: Re: [PATCH 3/3] UML - Correctly handle skb allocation failures
-Message-Id: <20070926151051.802008d5.akpm@linux-foundation.org>
-In-Reply-To: <20070926214613.GA11547@c2.user-mode-linux.org>
-References: <20070926214613.GA11547@c2.user-mode-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 26 Sep 2007 18:17:35 -0400
+Subject: Re: [Bluez-devel] Warnings and Oops on 2.6.23-rc6 while activily
+	using rfcomm links (mm/slab.c)
+From: Marcel Holtmann <marcel@holtmann.org>
+To: BlueZ development <bluez-devel@lists.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46F92364.3080603@idlum.be>
+References: <46F92364.3080603@idlum.be>
+Content-Type: text/plain
+Date: Thu, 27 Sep 2007 00:16:22 +0200
+Message-Id: <1190844983.6484.39.camel@aeonflux.holtmann.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 17:46:13 -0400
-Jeff Dike <jdike@addtoit.com> wrote:
+Hi Pierre-Yves,
 
-> Handle memory allocation failures when reading packets.
-> 
-> We have to read something from the host, even if we can't allocate any
-> memory.  If we don't, the host side of the device may fill up and stop
-> delivering interrupts because no new packets can be queued.
-> 
-> A single sk_buff is allocated whenever an MTU is seen which is larger
-> than any seen earlier.  This is used to read packets if there is a
-> memory allocation failure.
-> 
-> The large MTU check is done from eth_configure, which is called when a
-> interface is added to the system, and from uml_net_change_mtu, which
-> is called when an existing interface has its MTU changed.
-> 
-> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> ---
->  arch/um/drivers/net_kern.c |   60 +++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 60 insertions(+)
-> 
-> Index: linux-2.6.20/arch/um/drivers/net_kern.c
-> ===================================================================
-> --- linux-2.6.20.orig/arch/um/drivers/net_kern.c	2007-09-26 16:48:21.000000000 -0400
-> +++ linux-2.6.20/arch/um/drivers/net_kern.c	2007-09-26 16:56:16.000000000 -0400
-> @@ -34,6 +34,48 @@ static inline void set_ether_mac(struct 
->  static DEFINE_SPINLOCK(opened_lock);
->  static LIST_HEAD(opened);
->  
-> +/*
-> + * The throwaway skb is used when we can't allocate an skb.  The
-> + * packet is read into throwaway in order to get the data off the
-> + * connection to the host.
-> + * It is reallocated whenever an MTU is seen which is larger than
-> + * anything seen before.  update_throwaway_skb is called from
-> + * eth_configure for new interfaces and from uml_net_change_mtu for
-> + * MTU changes on existing interfaces.
-> + */
-> +static DEFINE_SPINLOCK(throwaway_lock);
-> +static struct sk_buff *throwaway;
-> +static int throwaway_max;
-> +
-> +static int update_throwaway_skb(int max)
-> +{
-> +	struct sk_buff *new;
-> +	int err = 0;
-> +
-> +	spin_lock(&throwaway_lock);
-> +
-> +	if (max <= throwaway_max)
-> +		goto out;
-> +
-> +	err = -ENOMEM;
-> +	new = dev_alloc_skb(max);
-> +	if (new == NULL)
-> +		goto out;
-> +
-> +	skb_put(new, max);
-> +
-> +	kfree_skb(throwaway);
-> +	throwaway = new;
-> +	throwaway_max = max;
-> +	err = 0;
-> +out:
-> +	spin_unlock(&throwaway_lock);
-> +
-> +	return err;
-> +}
-> +
-> +int npackets = 0;
+> Putting the bluetooth system under load (opening and closing several 
+> rfcomm links off several USB adapters, and transmitting data over
+> them), 
+> I got the Oops below. The computer hung completely, as you can see.
+> Just 
+> before, I also got those warnings.
 
-Unneeded initialisation?
+I got another one that also seems to involve device_move() in some way.
+No idea on how I really got there. One time after resume it was there
+and I was simply using my UMTS mobile phone for Internet connection.
 
-Maybe not a good name for a global symbol ;)
+Regards
 
-I worry that the memory at "throwaway" can get thrown away...
-
->  static int uml_net_rx(struct net_device *dev)
->  {
->  	struct uml_net_private *lp = dev->priv;
-> @@ -42,7 +84,14 @@ static int uml_net_rx(struct net_device 
->  
->  	/* If we can't allocate memory, try again next round. */
->  	skb = dev_alloc_skb(lp->max_packet);
-> +	if ((++npackets % 100) == 0){
-> +		kfree_skb(skb);
-> +		skb = NULL;
-> +	}
-> +
->  	if (skb == NULL) {
-> +		throwaway->dev = dev;
-> +		(*lp->read)(lp->fd, throwaway, lp);
-
-...  while other code is still using it.  Are you sure we don't need
-throwaway_lock here?
+Marcel
 
 
->  		lp->stats.rx_dropped++;
->  		return 0;
->  	}
-> @@ -240,6 +289,13 @@ static int uml_net_set_mac(struct net_de
->  
->  static int uml_net_change_mtu(struct net_device *dev, int new_mtu)
->  {
-> +	struct uml_net_private *lp = dev->priv;
-> +	int err;
-> +
-> +	err = update_throwaway_skb(lp->max_packet);
-> +	if (err)
-> +		return err;
-> +
->  	dev->mtu = new_mtu;
->  
->  	return 0;
-> @@ -447,6 +503,10 @@ static void eth_configure(int n, void *i
->  	dev->watchdog_timeo = (HZ >> 1);
->  	dev->irq = UM_ETH_IRQ;
->  
-> +	err = update_throwaway_skb(lp->max_packet);
-> +	if (err)
-> +		goto out_undo_user_init;
-> +
->  	rtnl_lock();
->  	err = register_netdevice(dev);
->  	rtnl_unlock();
+general protection fault: 0000 [#2]
+Modules linked in: battery ac thermal fan button ipw2200 ieee80211 ieee80211_cry
+pt tg3 btusb ppp_deflate zlib_deflate bsd_comp ppp_async crc_ccitt ppp_generic s
+lhc option usbserial ohci_hcd bnep bridge llc rfcomm l2cap bluetooth binfmt_misc
+ nfsd exportfs lockd sunrpc uinput parport_pc ppdev parport i915 drm ipv6 acpi_c
+pufreq cpufreq_stats cpufreq_powersave cpufreq_performance cpufreq_ondemand freq
+_table cpufreq_conservative sbs container bay dock fuse snd_intel8x0 snd_ac97_co
+dec ac97_bus pcmcia snd_pcm_oss snd_pcm snd_mixer_oss snd_seq_oss snd_seq_midi s
+nd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device sdhci firmware_cl
+ass evdev sg mmc_core yenta_socket rsrc_nonstatic pcmcia_core snd ehci_hcd uhci_
+hcd 8250_pci 8250 serial_core thinkpad_acpi hwmon video output soundcore snd_pag
+e_alloc backlight nvram usbcore processor unix
+CPU:    0
+EIP:    0060:[<c017135d>]    Tainted: G      D VLI
+EFLAGS: 00010282   (2.6.23-rc7 #41)
+EIP is at dput+0xf/0xf4
+eax: fffffffe   ebx: fffffffe   ecx: 00000000   edx: f70f6d04
+esi: fffffffe   edi: f76e14b0   ebp: d16b5de0   esp: d16b5dd8
+ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Process wvdial (pid: 5229, ti=d16b5000 task=c46a6cb0 task.ti=d16b5000)
+Stack: f1d8b0a8 fffffffe d16b5e18 c019539c ffffffff fffffffe ffffffff 00000000 
+       f77c8ac8 f1d8b0a8 00000000 fffffffe 00000000 f1d8b0a8 f72f9dc0 f72f9f40 
+       d16b5e48 c01d8fea c5d8bec0 c0359476 f72f9f40 fffffff4 c5d8bec0 c5d8bec0 
+Call Trace:
+ [<c0106d8a>] show_trace_log_lvl+0x1a/0x2f
+ [<c0106e3c>] show_stack_log_lvl+0x9d/0xa5
+ [<c0106ff9>] show_registers+0x1b5/0x287
+ [<c01071bc>] die+0xf1/0x225
+ [<c02cd537>] do_general_protection+0x1b8/0x1c0
+ [<c02ccf1a>] error_code+0x6a/0x70
+ [<c019539c>] sysfs_move_dir+0x1a0/0x1b2
+ [<c01d8fea>] kobject_move+0xab/0xf6
+ [<c023c9d9>] device_move+0x52/0xed
+ [<f8e36dbf>] rfcomm_tty_open+0x1b9/0x1c4 [rfcomm]
+ [<c0222fa6>] tty_open+0x170/0x2b1
+ [<c0164662>] chrdev_open+0xf1/0x137
+ [<c0160d99>] __dentry_open+0xb8/0x169
+ [<c0160ecb>] nameidata_to_filp+0x27/0x37
+ [<c0160f0e>] do_filp_open+0x33/0x3b
+ [<c0160f5b>] do_sys_open+0x45/0xc4
+ [<c0161012>] sys_open+0x1c/0x1e
+ [<c0105d4e>] sysenter_past_esp+0x6b/0xa1
+ =======================
+Code: 49 43 83 f9 ff 75 e5 89 75 e8 8d 55 e8 89 f8 e8 f0 fd ff ff 83 c4 0c 5b 5e
+ 5f 5d c3 55 89 e5 56 53 89 c3 85 c0 0f 84 e1 00 00 00 <83> 38 01 75 05 e8 17 a0
+ 15 00 ba 40 8b 39 c0 89 d8 e8 cd 6a 06 
+EIP: [<c017135d>] dput+0xf/0xf4 SS:ESP 0068:d16b5dd8
+
+
