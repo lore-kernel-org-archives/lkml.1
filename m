@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbXIZQwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760492AbXIZQwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759454AbXIZQwD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 12:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbXIZQvx
+	id S1760492AbXIZQwW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 12:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759721AbXIZQwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 12:51:53 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37211 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbXIZQvw (ORCPT
+	Wed, 26 Sep 2007 12:52:08 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:48997 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759532AbXIZQwF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 12:51:52 -0400
-Date: Wed, 26 Sep 2007 12:51:05 -0400
-Message-Id: <200709261651.l8QGp5bA031636@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Kyle Moffett <mrmacman_g4@mac.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org
-Subject: Re: [PATCH 10/25] Unionfs: add un/likely conditionals on copyup ops 
-In-reply-to: Your message of "Wed, 26 Sep 2007 18:47:56 +0200."
-             <Pine.LNX.4.64.0709261845110.7066@fbirervta.pbzchgretzou.qr> 
-X-MailKey: Erez_Zadok
+	Wed, 26 Sep 2007 12:52:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=a04ufx0+PS7Qk86BChpWS+R+tUfEy0r60NPfuGGVlUUgF1EHrXwasdOgypjRY0puPwp4n8K/cHlODjJ6mCF6WgvFyIIthQFHMF3zzZI9UZtNWzbvMP5PO2EJ17aPEWVx1H8OX/5z0GIf5VccqU7uPPhxWUY1aanWG/IUABTXKy4=
+Message-ID: <863e9df20709260952p3cc99b02n15e411a9b29b9fd4@mail.gmail.com>
+Date: Wed, 26 Sep 2007 22:22:04 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: ananth@in.ibm.com
+Subject: Re: KPROBES: Instrumenting a function's call site
+Cc: "Avishay Traeger" <atraeger@cs.sunysb.edu>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070926043933.GA6460@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1190758358.30061.13.camel@rockstar.fsl.cs.sunysb.edu>
+	 <20070926043933.GA6460@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <Pine.LNX.4.64.0709261845110.7066@fbirervta.pbzchgretzou.qr>, Jan Engelhardt writes:
-> 
-> On Sep 26 2007 11:43, Erez Zadok wrote:
-> >
-> >*That's* the information I was looking for, Kyle: what's the estimated
-> >probability I should be using as my guideline.  I used 95% (20/1 ratio), and
-> 
-> ;-)
-> 
-> 19:1 <=> 95:5 <=> 95% <=> ratio=0.95  != 20.0 (=20/1)
-> 
-> >you're telling me I should use 99% (100/1 ratio).  The difference between
-> 
-> 99:1 <=> 99% <=> ratio=0.99  != 100.0 (=100/1)
-> 
-> >the number of cycles saved/added is very compelling.  Given that I certainly
-> >agree with you that I'm using un/likely too much.  I'll re-evaluate and
-> >update my patch series then.
+On 9/26/07, Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
 
-Yeah, close enough. :-)
+> PS: There was a thought of providing a facility to run a handler at
+> function entry even when just a kretprobe is used. Maybe we need to
+> relook at that; it'd have been useful in this case.
 
-The important issue is that I'm probably using about five times too many
-un/likely wrappers.
+That would be really useful. I was writing a tool to dump some
+function profiling info through /proc. This would help save an extra
+probe on each function's entry.
 
-Erez.
+-
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
