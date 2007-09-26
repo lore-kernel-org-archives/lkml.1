@@ -1,47 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760676AbXIZTMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761026AbXIZTNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760676AbXIZTMS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 15:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757163AbXIZTMK
+	id S1761026AbXIZTNB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 15:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbXIZTMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 15:12:10 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:51397 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756425AbXIZTMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 15:12:09 -0400
+	Wed, 26 Sep 2007 15:12:54 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:21721 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755038AbXIZTMx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 15:12:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=DKQmIdCMJFhfj9BNfW0HgXDUvKKQ0rkrOdwnxqZdP3LFQMk3AI9E0/dzXjNa6WQnnPmlJjxdib1n3kFb4waHVVUVvWMMkQuucrIQcCmiSEQbnVrjbQzfW7XCgs+OvvOTkgMzNOGdLIwtDSwdsDAYOAEuW9RpkrJiF9GYEvp0w1M=
+Message-ID: <a372714f0709261212hec0c61ofc5dd6d127352402@mail.gmail.com>
+Date: Wed, 26 Sep 2007 12:12:50 -0700
+From: "Brett Warden" <brett.warden@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] bw-qcam: use data_reverse instead of manually poking the control register
+Cc: trivial@kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18170.44782.134750.907938@alkaid.it.uu.se>
-Date: Wed, 26 Sep 2007 21:11:42 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "Ulrich Drepper" <drepper@gmail.com>
-Cc: "John Z. Bohach" <jzb2@aexorsyst.com>, linux-kernel@vger.kernel.org
-Subject: Re: __kernel_vsyscall () hangs in SIGCHLD handler
-In-Reply-To: <a36005b50709261003j923835fu621882c54706d476@mail.gmail.com>
-References: <200709260757.20478.jzb2@aexorsyst.com>
-	<a36005b50709261003j923835fu621882c54706d476@mail.gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper writes:
- > On 9/26/07, John Z. Bohach <jzb2@aexorsyst.com> wrote:
- > > Is there some reason that syslog() sleeps in __kernel_vsyscall() when
- > > invoked from a signal handler?
- > 
- > Only very few functions are allowed to be called from signal handlers.
- >  This is clearly spelled out in the POSIX spec.  Section XSH 2.4.3
- > lists the allowed functions.  syslog of course is not on it.
+Appeases the warning "parport0 (bw-qcam): use data_reverse for this!"
 
-The Linux kernel itself imposes no restrictions on what you can
-do in user-space signal handlers.
+Signed-off-by: Brett T. Warden <brett.warden@gmail.com>
 
-However, user-space is a different story. The interrupted thread
-may have held a lock, in which case calling code from the signal
-handler that tries to take the same lock may result in a deadlock.
-Or the thread may be been in the process of updating some private
-data, in which case calling code from the signal handler that tries
-to access that data may result in data corruption. And then there's
-libc which may wrap your signal handler with code doing unspecified
-libc magic. And so on, the possibilities for failure are endless :-)
+---
+
+It seems to work fine with my Quickcam under 2.6.22.
+
+diff --git a/drivers/media/video/bw-qcam.c b/drivers/media/video/bw-qcam.c
+index 7d47cbe..01e47ed 100644
+--- a/drivers/media/video/bw-qcam.c
++++ b/drivers/media/video/bw-qcam.c
+@@ -107,6 +107,11 @@ static inline void write_lpcontrol(struct
+qcam_device *q, int d)
+        parport_write_control(q->pport, d);
+ }
+
++static inline void reverse_port(struct qcam_device *q)
++{
++       parport_data_reverse(q->pport);
++}
++
+ static int qc_waithand(struct qcam_device *q, int val);
+ static int qc_command(struct qcam_device *q, int command);
+ static int qc_readparam(struct qcam_device *q);
+@@ -369,7 +374,11 @@ static void qc_reset(struct qcam_device *q)
+                        break;
+
+                case QC_ANY:
+-                       write_lpcontrol(q, 0x20);
++                       /*
++                        * Replaced with reverse_port
++                        * write_lpcontrol(q, 0x20);
++                        */
++                       reverse_port(q);
+                        write_lpdata(q, 0x75);
+
+                        if (read_lpdata(q) != 0x75) {
+@@ -512,10 +521,12 @@ static inline int qc_readbytes(struct
+qcam_device *q, char buffer[])
+        switch (q->port_mode & QC_MODE_MASK)
+        {
+                case QC_BIDIR:          /* Bi-directional Port */
+-                       write_lpcontrol(q, 0x26);
++                       reverse_port(q);
++                       write_lpcontrol(q, 0x6);
+                        lo = (qc_waithand2(q, 1) >> 1);
+                        hi = (read_lpstatus(q) >> 3) & 0x1f;
+-                       write_lpcontrol(q, 0x2e);
++                       reverse_port(q);
++                       write_lpcontrol(q, 0xe);
+                        lo2 = (qc_waithand2(q, 0) >> 1);
+                        hi2 = (read_lpstatus(q) >> 3) & 0x1f;
+                        switch (q->bpp)
+@@ -613,10 +624,13 @@ static long qc_capture(struct qcam_device * q,
+char __user *buf, unsigned long l
+
+        if ((q->port_mode & QC_MODE_MASK) == QC_BIDIR)
+        {
+-               write_lpcontrol(q, 0x2e);       /* turn port around */
+-               write_lpcontrol(q, 0x26);
++               reverse_port(q);                        /* turn port around */
++               write_lpcontrol(q, 0xe);
++               reverse_port(q);
++               write_lpcontrol(q, 0x6);
+                (void) qc_waithand(q, 1);
+-               write_lpcontrol(q, 0x2e);
++               reverse_port(q);
++               write_lpcontrol(q, 0xe);
+                (void) qc_waithand(q, 0);
+        }
+
+
+
+-- 
+Brett Warden
