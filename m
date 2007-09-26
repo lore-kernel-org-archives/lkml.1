@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXIZXRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbXIZXV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbXIZXRg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 19:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXIZXR2
+	id S1754045AbXIZXV7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 19:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXIZXVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 19:17:28 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:49526 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751845AbXIZXR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 19:17:26 -0400
-Date: Wed, 26 Sep 2007 16:17:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] just rename call_rcu_bh instead of making it a macro
-Message-ID: <20070926231724.GE10544@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1190830667.20235.5.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190830667.20235.5.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 26 Sep 2007 19:21:52 -0400
+Received: from www.osadl.org ([213.239.205.134]:50303 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750777AbXIZXVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 19:21:51 -0400
+Subject: Re: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and
+	-rc6-mm1: boot failure on HP nx6325, related to clockevents)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200709270130.51870.rjw@sisk.pl>
+References: <200709231257.12213.rjw@sisk.pl>
+	 <200709262300.28336.rjw@sisk.pl> <1190842476.23376.57.camel@chaos>
+	 <200709270130.51870.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 27 Sep 2007 01:21:49 +0200
+Message-Id: <1190848909.23376.78.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 26, 2007 at 02:17:47PM -0400, Steven Rostedt wrote:
-> Seems that I found a box that has a config that passes call_rcu_bh as a
-> function pointer (see net/sctp/sm_make_chunk.c), so declaring the
-> call_rcu_bh has a macro function isn't good enough.
+On Thu, 2007-09-27 at 01:30 +0200, Rafael J. Wysocki wrote:
+> > > Tested for a couple of times with each kernel, the results seem to be
+> > > reproducible 100% of the time.
+> > 
+> > Thanks for going through this debug marathon.
 > 
-> This patch makes it just another name of call_rcu for rcupreempt.
+> No big deal.  I'm glad that you've found what's up.
+> 
+> Well, we still have the "CPU hotplug during suspend w/ the hrt patch" problem
+> to debug ... ;-)
 
-Looks good!
+Yeah. Knowing the actual line of code where it breaks might be helpful.
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+	tglx
 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> Index: linux-2.6.23-rc8-rt1/include/linux/rcupreempt.h
-> ===================================================================
-> --- linux-2.6.23-rc8-rt1.orig/include/linux/rcupreempt.h
-> +++ linux-2.6.23-rc8-rt1/include/linux/rcupreempt.h
-> @@ -42,9 +42,14 @@
->  #include <linux/cpumask.h>
->  #include <linux/seqlock.h>
-> 
-> -#define rcu_qsctr_inc(cpu)
-> -#define rcu_bh_qsctr_inc(cpu)
-> -#define call_rcu_bh(head, rcu) call_rcu(head, rcu)
-> +#define rcu_qsctr_inc(cpu)	do { } while (0)
-> +#define rcu_bh_qsctr_inc(cpu)	do { } while (0)
-> +/*
-> + * Someone might want to pass call_rcu_bh as a function pointer.
-> + * So this needs to just be a rename and not a macro function.
-> + *  (no parentheses)
-> + */
-> +#define call_rcu_bh		 call_rcu
-> 
->  extern void __rcu_read_lock(void);
->  extern void __rcu_read_unlock(void);
-> 
-> 
+
