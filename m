@@ -1,52 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761908AbXIZSYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbXIZSZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761908AbXIZSYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761366AbXIZSXf
+	id S1761010AbXIZSZu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbXIZSZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:23:35 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:57609 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761338AbXIZSXd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:23:33 -0400
-Date: Wed, 26 Sep 2007 19:23:22 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: David Howells <dhowells@redhat.com>, hch@infradead.org,
-       Trond.Myklebust@netapp.com, sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 3/3] CRED: Move the effective capabilities into the cred struct
-Message-ID: <20070926182322.GQ8181@ftp.linux.org.uk>
-References: <20070919161749.8334.26064.stgit@warthog.procyon.org.uk> <20070919161805.8334.96808.stgit@warthog.procyon.org.uk> <46F1F2EE.1010904@kernel.org>
+	Wed, 26 Sep 2007 14:25:40 -0400
+Received: from earth.ketl.com ([64.94.143.172]:1442 "HELO ketl.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752585AbXIZSZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 14:25:40 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 14:25:40 EDT
+Message-ID: <20070926174818.7769.qmail@ketl.com>
+From: "Chris David" <cd@chrisdavid.com>
+To: linux-kernel@vger.kernel.org
+Subject: Proposed 2.6 Patch for AMD MIPS Alchemy au1550 I2C interface I2C
+  interface
+Date: Wed, 26 Sep 2007 10:48:18 -0700
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46F1F2EE.1010904@kernel.org>
-User-Agent: Mutt/1.4.1i
+Content-Type: multipart/mixed; boundary="=_0_7530_1190828898"; charset="utf-8"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 19, 2007 at 09:11:26PM -0700, Andrew Morgan wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> David Howells wrote:
-> > Move the effective capabilities mask from the task struct into the credentials
-> > record.
-> > 
-> > Note that the effective capabilities mask in the cred struct shadows that in
-> > the task_struct because a thread can have its capabilities masks changed by
-> > another thread.  The shadowing is performed by update_current_cred() which is
-> > invoked on entry to any system call that might need it.
-> 
-> OOC If we were to simply drop support for one process changing the
-> capabilities of another, would we need this patch?
+This is a MIME-formatted message.  If you see this text it means that your
+mail software cannot handle MIME-formatted messages.
 
-Umm...  It would become simpler (which is a damn good thing - less PITA
-with update_current_cred), but it would be still needed.
+--=_0_7530_1190828898
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 
-FWIW, dropping that support would be a Good Thing(tm), as far as I'm
-concerned.  _Why_ do we want that, anyway, and how much userland code
-is able to cope with that in sane way?
+Hello, 
+
+Please CC me on replies. 
+
+I have made a trivial patch to fix a problem on the AMD MIPS Alchemy au1550
+I2C interface.  The PSC (programmable serial controller) seem to 'hang' when 
+I sent only an 'address' byte on the I2C bus.  The patch essentially uses  
+the PSC_SMBSTAT register's TE (transmit FIFO empty) bit to check when the 
+transmit FIFO is empty, instead of using the PSC_SMBEVNT register's TU  
+(transmit underflow) bit.  Using the TE bit fixed the hang problem. 
+
+I tested this on kernel 2.6.16, and confirmed the patch updates the 2.6.22
+kernel correctly.  If someone else can test this, that would be great. 
+
+Dan Malek is the author of the file in question.  I would be more than happy 
+to provide any additional information about this patch to Dan or anyone 
+else.  Please email me privately. 
+
+I am a newbie, but I did read part of the FAQ, and used my best judgement.  
+Kindly let me know if my communication could be improved.  And please CC me 
+on replies. 
+
+Thank you, 
+
+ -Chris David 
+
+
+
+--=_0_7530_1190828898
+Content-Disposition: inline;
+  filename="119_au1550_PSC_SMB_I2C_useTransmitEmpty.patch"
+Content-Type: text/plain; charset="utf-8";
+  name="119_au1550_PSC_SMB_I2C_useTransmitEmpty.patch"
+Content-Transfer-Encoding: 7bit
+
+diff -Naur linux-2.6.16-orig/drivers/i2c/busses/i2c-au1550.c linux-2.6.16/drivers/i2c/busses/i2c-au1550.c
+--- linux-2.6.16-orig/drivers/i2c/busses/i2c-au1550.c	2007-09-26 08:38:45.000000000 -0700
++++ linux-2.6.16/drivers/i2c/busses/i2c-au1550.c	2007-09-26 08:43:43.000000000 -0700
+@@ -61,17 +61,14 @@
+ 
+ 	sp = (volatile psc_smb_t *)(adap->psc_base);
+ 
+-	/* Wait for Tx FIFO Underflow.
++	/* Wait for Tx Buffer Empty
+ 	*/
+ 	for (i = 0; i < adap->xfer_timeout; i++) {
+-		stat = sp->psc_smbevnt;
++		stat = sp->psc_smbstat;
+ 		au_sync();
+-		if ((stat & PSC_SMBEVNT_TU) != 0) {
+-			/* Clear it.  */
+-			sp->psc_smbevnt = PSC_SMBEVNT_TU;
+-			au_sync();
++		if ((stat & PSC_SMBSTAT_TE) != 0)
+ 			return 0;
+-		}
++
+ 		udelay(1);
+ 	}
+ 
+
+--=_0_7530_1190828898--
