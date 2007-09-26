@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761486AbXIZQjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761620AbXIZQj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761486AbXIZQjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 12:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbXIZQiN
+	id S1761620AbXIZQj5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 12:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbXIZQiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 12:38:13 -0400
+	Wed, 26 Sep 2007 12:38:15 -0400
 Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:60420 "EHLO
 	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758731AbXIZQiL (ORCPT
+	by vger.kernel.org with ESMTP id S1753869AbXIZQiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 12:38:11 -0400
+	Wed, 26 Sep 2007 12:38:14 -0400
 X-IronPort-AV: E=Sophos;i="4.20,302,1186351200"; 
-   d="scan'208";a="1526364"
+   d="scan'208";a="1526402"
 From: Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: [PATCH 1/8] taskstats: fix indentation of long argument lists
+Subject: [PATCH 7/8] taskstats: fix stats->ac_exitcode to work on threads and
+	use group_exit_code
 To: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Guillaume Chazarain <guichaz@yahoo.fr>
-Date: Wed, 26 Sep 2007 18:28:00 +0200
-Message-ID: <20070926162800.29434.67786.stgit@cheypa.inria.fr>
+Date: Wed, 26 Sep 2007 18:28:31 +0200
+Message-ID: <20070926162831.29434.29622.stgit@cheypa.inria.fr>
+In-Reply-To: <20070926162800.29434.67786.stgit@cheypa.inria.fr>
+References: <20070926162800.29434.67786.stgit@cheypa.inria.fr>
 User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,15 +29,15 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Align with the opening parenthesis.
+Threads also have an exit code on their own, so report it in
+TASKSTATS_CMD_ATTR_PID.
 
-Changelog since V1 (http://lkml.org/lkml/2007/9/21/527):
-- renamed fill_threadgroup() and add_tsk() to respectively
-fill_threadgroup_stats() and add_tsk_stats() as suggested by Balbir Singh.
-- added braces around do/while.
-- added patch to unbreak binary compatibility between taskstats v5/v6.
-- split further by preparing the bacct/xacct before the main patch.
-- some indentation fixes.
+For TASKSTATS_CMD_ATTR_TGID, instead of relying only on the exit code of the
+leader, we use task->signal->group_exit_code if not null as suggested by
+Oleg Nesterov.
+
+Also, document that as of this patch, fill_threadgroup_stats() must be called
+after add_tsk_stats() as it may overwrite some stats.
 
 Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
 Cc: Balbir Singh <balbir@in.ibm.com>
@@ -43,47 +46,45 @@ Cc: Jonathan Lim <jlim@sgi.com>
 Cc: Oleg Nesterov <oleg@tv-sign.ru>
 ---
 
- kernel/taskstats.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ kernel/taskstats.c |    2 ++
+ kernel/tsacct.c    |   12 +++++++-----
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
 diff --git a/kernel/taskstats.c b/kernel/taskstats.c
-index 059431e..a42b6c0 100644
+index 59fe1d8..938c0b0 100644
 --- a/kernel/taskstats.c
 +++ b/kernel/taskstats.c
-@@ -69,7 +69,7 @@ enum actions {
- };
- 
- static int prepare_reply(struct genl_info *info, u8 cmd, struct sk_buff **skbp,
--				size_t size)
-+			 size_t size)
- {
- 	struct sk_buff *skb;
- 	void *reply;
-@@ -119,7 +119,7 @@ static int send_reply(struct sk_buff *skb, pid_t pid)
-  * Send taskstats data in @skb to listeners registered for @cpu's exit data
+@@ -208,6 +208,8 @@ static void add_tsk_stats(struct taskstats *stats, struct task_struct *task)
+  *
+  * Will be called on the thread group leader if requesting stats for the whole
+  * thread group.
++ * fill_threadgroup_stats() may overwrite stats from add_tsk_stats(), so it
++ * must be called after add_tsk_stats().
   */
- static void send_cpu_listeners(struct sk_buff *skb,
--					struct listener_list *listeners)
-+			       struct listener_list *listeners)
+ static void fill_threadgroup_stats(struct taskstats *stats,
+ 				   struct task_struct *task, bool tg_stats)
+diff --git a/kernel/tsacct.c b/kernel/tsacct.c
+index 8c2f470..e83f53b 100644
+--- a/kernel/tsacct.c
++++ b/kernel/tsacct.c
+@@ -65,13 +65,15 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
+ void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *tsk,
+ 			    bool tg_stats)
  {
- 	struct genlmsghdr *genlhdr = nlmsg_data(nlmsg_hdr(skb));
- 	struct listener *s, *tmp;
-@@ -168,8 +168,7 @@ static void send_cpu_listeners(struct sk_buff *skb,
- 	up_write(&listeners->sem);
- }
++	int group_exit_code;
++
+ 	fill_wall_times(stats, tsk);
  
--static int fill_pid(pid_t pid, struct task_struct *tsk,
--		struct taskstats *stats)
-+static int fill_pid(pid_t pid, struct task_struct *tsk, struct taskstats *stats)
- {
- 	int rc = 0;
+-	if (thread_group_leader(tsk)) {
+-		stats->ac_exitcode = tsk->exit_code;
+-		if (tsk->flags & PF_FORKNOEXEC)
+-			stats->ac_flag |= AFORK;
+-	}
++	if (thread_group_leader(tsk) && ((tsk->flags & PF_FORKNOEXEC)))
++		stats->ac_flag |= AFORK;
++
++	group_exit_code = tg_stats ? tsk->signal->group_exit_code : 0;
++	stats->ac_exitcode = group_exit_code ? : tsk->exit_code;
  
-@@ -210,7 +209,7 @@ static int fill_pid(pid_t pid, struct task_struct *tsk,
- }
- 
- static int fill_tgid(pid_t tgid, struct task_struct *first,
--		struct taskstats *stats)
-+		     struct taskstats *stats)
- {
- 	struct task_struct *tsk;
- 	unsigned long flags;
+ 	stats->ac_nice	 = task_nice(tsk);
+ 	stats->ac_sched	 = tsk->policy;
