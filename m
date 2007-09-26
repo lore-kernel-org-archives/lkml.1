@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbXIZKjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbXIZKns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbXIZKjR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 06:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXIZKjG
+	id S1757285AbXIZKns (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 06:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbXIZKnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 06:39:06 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:25530 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754467AbXIZKjF (ORCPT
+	Wed, 26 Sep 2007 06:43:41 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54616 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750864AbXIZKnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 06:39:05 -0400
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: balbir@in.ibm.com
-Cc: jlan@engr.sgi.com
-From: Maxim Uvarov <muvarov@ru.mvista.com>
-Subject: [PATCH] Since we have counters in __u64 format we have to print them
-	with %llu macros.
-Date: Wed, 26 Sep 2007 14:39:18 +0000
-Message-ID: <20070926143918.6749.53939.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 26 Sep 2007 06:43:40 -0400
+Date: Wed, 26 Sep 2007 11:47:29 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <david@davidnewall.com>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
+       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
+       majkls <majkls@prepere.com>, bunk@fs.tum.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Chroot bug
+Message-ID: <20070926114729.3b9d1fb4@the-village.bc.nu>
+In-Reply-To: <46FA334F.7030802@davidnewall.com>
+References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>
+	<46F29A9A.4070806@davidnewall.com>
+	<200709201817.17282@x5>
+	<46F2B59F.8090709@davidnewall.com>
+	<46F2DDD0.3030500@tmr.com>
+	<46F380E4.4040606@davidnewall.com>
+	<20070924213215.GA32716@vino.hallyn.com>
+	<46F83474.5040503@davidnewall.com>
+	<20070924230008.GA3160@vino.hallyn.com>
+	<46F8BC8A.7080006@davidnewall.com>
+	<20070925114947.GA9721@vino.hallyn.com>
+	<46F91417.9050600@davidnewall.com>
+	<46F924E3.50205@davidnewall.com>
+	<20070925163040.12a3c2f8@the-village.bc.nu>
+	<46F92AAB.1060903@davidnewall.com>
+	<20070925164806.4cadc6a5@the-village.bc.nu>
+	<46F99EDE.70905@davidnewall.com>
+	<20070926011847.49bbb9a2@the-village.bc.nu>
+	<46FA334F.7030802@davidnewall.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > The dot-dot entry in the root directory is interpreted to mean the 
+> > root directory itself. Thus, dot-dot cannot be used to access files 
+> > outside the subtree rooted at the root directory.
 
-Small fix for documentation.
+Which is behaviour chroot preserves properly.
+
+The specification says explicitly
+
+	"The process working directory is unaffected by chroot()."
 
 
-                                                      
----
+chroot is not and never has been a security tool. People have built
+things based upon the properties of chroot but extended (BSD jails, Linux
+vserver) but they are quite different.
 
- Documentation/accounting/getdelays.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+You could probably write yourself an LSM module to do this too
 
-diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
-index cbee3a2..73924df 100644
---- a/Documentation/accounting/getdelays.c
-+++ b/Documentation/accounting/getdelays.c
-@@ -208,7 +208,7 @@ void print_delayacct(struct taskstats *t)
- void task_context_switch_counts(struct taskstats *t)
- {
- 	printf("\n\nTask   %15s%15s\n"
--	       "       %15lu%15lu\n",
-+	       "       %15llu%15llu\n",
- 	       "voluntary", "nonvoluntary",
- 	       t->nvcsw, t->nivcsw);
- }
-
+Alan
