@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbXIZXcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbXIZXfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbXIZXcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 19:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXIZXcK
+	id S1754129AbXIZXfq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 19:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbXIZXfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 19:32:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42197 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752172AbXIZXcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 19:32:08 -0400
-Message-ID: <46FAEBAC.1010603@redhat.com>
-Date: Wed, 26 Sep 2007 19:30:52 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 26 Sep 2007 19:35:39 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:34454 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbXIZXfi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 19:35:38 -0400
+Message-ID: <46FAECC5.8040103@davidnewall.com>
+Date: Thu, 27 Sep 2007 09:05:33 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [REGRESSION from 2.6.23-rc8]
-References: <200709231257.12213.rjw@sisk.pl>	 <1190832665.23376.38.camel@chaos> <200709262149.54732.rjw@sisk.pl>	 <200709262300.28336.rjw@sisk.pl> <1190842476.23376.57.camel@chaos>	 <alpine.LFD.0.999.0709261521440.3579@woody.linux-foundation.org> <1190846101.23376.64.camel@chaos>
-In-Reply-To: <1190846101.23376.64.camel@chaos>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Adrian Bunk <bunk@kernel.org>
+CC: Christer Weinigel <christer@weinigel.se>, Al Viro <viro@ftp.linux.org.uk>,
+       Phillip Susi <psusi@cfl.rr.com>, Bill Davidsen <davidsen@tmr.com>,
+       majkls <majkls@prepere.com>, linux-kernel@vger.kernel.org
+Subject: Re: sys_chroot+sys_fchdir Fix
+References: <46F16A0A.3070402@tmr.com> <20070919194559.36015307@the-village.bc.nu> <46F1A196.8060108@davidnewall.com> <46F401D6.6060609@cfl.rr.com> <20070921191012.15a0b51b@the-village.bc.nu> <46F9752C.5080807@cfl.rr.com> <20070926002340.GL8181@ftp.linux.org.uk> <46FA35A6.1070400@davidnewall.com> <20070926212408.6662231a@zoo.weinigel.se> <46FACCE0.2070005@davidnewall.com> <20070926215521.GU6800@stusta.de>
+In-Reply-To: <20070926215521.GU6800@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/26/2007 06:35 PM, Thomas Gleixner wrote:
-> 
-> It's even worse than I thought on the first check:
-> 
-> "noapictimer" on the command line of an SMP box prevents _ONLY_ the boot
-> CPU apic timer from being used. But the secondary CPU is still
-> unconditionally setting up the APIC timer and uses the non calibrated
-> variable calibration_result, which is of course 0, to setup the APIC
-> timer. Wreckage guaranteed.
-> 
+Adrian Bunk wrote:
+> You are claiming "They went so far as to say that dot-dot wouldn't let 
+> you out"?
+>   
 
-Well, that would explain a lot of the things I've been seeing...
+I phrased it in a somewhat conversational way.  The promise, which I've 
+now quoted from multiple sources, is expressed variously, including:
+> The dot-dot entry in the root directory is interpreted to mean the root directory itself. Thus, dot-dot cannot be used to access files outside the subtree rooted at the root directory.
+>   
