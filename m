@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762911AbXIZVGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762981AbXIZVGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762911AbXIZVGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762724AbXIZVF4
+	id S1762981AbXIZVGx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbXIZVGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:05:56 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33781 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762768AbXIZVFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:05:54 -0400
-Subject: Re: [PATCH] JBD/ext34 cleanups: convert to kzalloc
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070926125440.36c3cb5b.akpm@linux-foundation.org>
-References: <1189796027.3841.6.camel@localhost.localdomain>
-	 <1190057391.3845.22.camel@localhost.localdomain>
-	 <1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
-	 <1190069851.6725.6.camel@localhost.localdomain>
-	 <20070918090407.GA671@infradead.org>
-	 <1190133347.3819.6.camel@localhost.localdomain>
-	 <1190138690.6528.23.camel@norville.austin.ibm.com>
-	 <1190163601.3819.15.camel@localhost.localdomain>
-	 <20070918191920.a2130a3c.akpm@linux-foundation.org>
-	 <1190229352.4318.12.camel@localhost.localdomain>
-	 <20070919194813.GT32520@schatzie.adilger.int>
-	 <1190239431.4318.34.camel@localhost.localdomain>
-	 <1190416436.11349.13.camel@localhost.localdomain>
-	 <20070926125440.36c3cb5b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 26 Sep 2007 14:05:51 -0700
-Message-Id: <1190840751.4517.14.camel@localhost.localdomain>
+	Wed, 26 Sep 2007 17:06:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58750 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762844AbXIZVGV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 17:06:21 -0400
+Date: Wed, 26 Sep 2007 14:06:08 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: "Jan Beulich" <jbeulich@novell.com>, <bridge@lists.linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: why network devices don't do reference counting? (Re: [PATCH]
+ Module use count must be updated as bridges are created/destroyed)
+Message-ID: <20070926140608.6e6d3d0c@freepuppy.rosehill>
+In-Reply-To: <E1Iae5t-0007Sk-Vu@flower>
+References: <46FA2C17.76E4.0078.0@novell.com>
+	<20070926083705.6bc65ea5@fujitsu-loaner>
+	<E1Iae5t-0007Sk-Vu@flower>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-26 at 12:54 -0700, Andrew Morton wrote:
-> On Fri, 21 Sep 2007 16:13:56 -0700
-> Mingming Cao <cmm@us.ibm.com> wrote:
-> 
-> > Convert kmalloc to kzalloc() and get rid of the memset().
-> 
-> I split this into separate ext3/jbd and ext4/jbd2 patches.  It's generally
-> better to raise separate patches, please - the ext3 patches I'll merge
-> directly but the ext4 patches should go through (and be against) the ext4
-> devel tree.
-> 
-Sure. The patches(including ext3/jbd and ext4/jbd2) were merged into
-ext4 devel tree already, I will remove the ext3/jbd part out of the ext4
-devel tree.
+On Wed, 26 Sep 2007 23:06:53 +0200
+Oleg Verych <olecom@flower.upol.cz> wrote:
 
-> I fixed lots of rejects against the already-pending changes to these
-> filesystems.
+> * Wed, 26 Sep 2007 08:37:05 -0700
+> * Organization: Linux Foundation
+> >
+> > On Wed, 26 Sep 2007 08:53:27 +0100
+> > "Jan Beulich" <jbeulich@novell.com> wrote:
+> >
+> >> Otherwise 'modprobe -r' on a module having a dependency on bridge will
+> >> implicitly unload bridge, bringing down all connectivity that was
+> >> using bridges.
+> >> 
+> >> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> >>
+> >
+> > No, network devices don't do reference counting.
 > 
-> You forgot to remove the memsets in both start_this_handle()s.
+> Could you explain why, please?
 > 
-Thanks for catching this.
+> After `udevd` on boot loads lots of unused crap, i surrendered, and use
+> $(rmmod `lsmod | just first column`). Networing bravely wipes away. OK,
+> there are lots of configs: udev, hotplug, modprobe, that somebody might
+> like to fix. But it came to the end with me. I just don't care. So,
+> please answer :)
+> ____
 
-Mingming
+For hotplug and other reasons, the network developers decided that being
+able to remove a network module at any time was a good thing. It works.
 
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
