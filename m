@@ -1,101 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbXIZN6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbXIZOBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757312AbXIZN6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 09:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXIZN6D
+	id S1758079AbXIZOBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 10:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbXIZOBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 09:58:03 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:56871 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751948AbXIZN6B (ORCPT
+	Wed, 26 Sep 2007 10:01:32 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57713 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbXIZOBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 09:58:01 -0400
-Date: Wed, 26 Sep 2007 16:47:44 +0530
-To: Jaswinder Singh <jaswinderlinux@gmail.com>
-Cc: hufey <hufeyy@gmail.com>, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl,
-       randy.dunlap@oracle.com, efault@gmx.de, akpm@linux-foundation.org,
-       vatsa@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
-Subject: Re: realtime preemption performance difference
-Message-ID: <20070926111744.GA18438@in.ibm.com>
-Reply-To: Ankita Garg <ankita@in.ibm.com>
-References: <3f9a31f40709240448h4a9e8337t437328b5c675ecd5@mail.gmail.com> <88dfed9d0709241427v329aeed9jfbc298666ac483c8@mail.gmail.com> <3f9a31f40709260011i1416d287h5d0da001dd77fbfb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3f9a31f40709260011i1416d287h5d0da001dd77fbfb@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: ankita@in.ibm.com (Ankita Garg)
+	Wed, 26 Sep 2007 10:01:30 -0400
+Date: Wed, 26 Sep 2007 10:01:11 -0400
+Message-Id: <200709261401.l8QE1B3P025688@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org
+Subject: Re: [PATCH 03/25] Unionfs: display informational messages only if debug is on 
+In-reply-to: Your message of "Wed, 26 Sep 2007 10:36:27 +0200."
+             <Pine.LNX.4.64.0709261036140.3121@fbirervta.pbzchgretzou.qr> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jaswinder,
+In message <Pine.LNX.4.64.0709261036140.3121@fbirervta.pbzchgretzou.qr>, Jan Engelhardt writes:
+> 
+> On Sep 25 2007 23:09, Erez Zadok wrote:
+> >--- a/fs/unionfs/commonfops.c
+> >+++ b/fs/unionfs/commonfops.c
+> >@@ -394,8 +394,8 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
+> > 	if (willwrite && IS_WRITE_FLAG(file->f_flags) &&
+> > 	    !IS_WRITE_FLAG(unionfs_lower_file(file)->f_flags) &&
+> > 	    is_robranch(dentry)) {
+> >-		printk(KERN_DEBUG "unionfs: do delay copyup of \"%s\"\n",
+> >-		       dentry->d_name.name);
+> >+		dprintk(KERN_DEBUG "unionfs: do delay copyup of \"%s\"\n",
+> >+			dentry->d_name.name);
+> 
+> Don't we have pr_debug() for that?
 
-On Wed, Sep 26, 2007 at 12:41:57PM +0530, Jaswinder Singh wrote:
-> hello hufey,
-> 
-> I am not using montavista kernel, I am using standard linux kernel.
-> 
-> Realtime is known by worst case latencies. Ingo and team are claiming
-> for realtime support so their should be some samples and performance
-> numbers,
-> 
+Jan, what's the policy on people writing their own debugging printk systems.
+I've looked at what other file systems do, and found out that it varies a
+lot: some use a simple mapping wrapper from printk->dprintk, while others
+define complex ways to have debugging levels/bitmaps where users can
+selectively decide (say, by a mount option), what debugging output they'd
+like to see or not.  Here's a small sampling of what some file systems use:
 
-You can obtain several -rt testcases from the RT wiki:
-http://rt.wiki.kernel.org/index.php/Main_Page Here we have testcases/benchmarks 
-for measuring scheduling latencies, priority preemption, signaling latencies, etc 
-and other important information on the patchset.
+9p/fid.c:		P9_DPRINTK(P9_DEBUG_VFS, "fid %d dentry %s\n",
+autofs/inode.c:		DPRINTK(("autofs: shutting down\n"));
+lockd/svcproc.c:	dprintk("lockd: GRANTED_RES   called\n");
+ncpfs/dir.c:		DDPRINTK("ncp_lookup_validate: result=%d\n", val);
+nfs/client.c:		dprintk("<-- nfs_free_client()\n");
+nfsd/export.c:		dprintk("found domain %s\n", buf);
+partitions/efi.c:	Dprintk("GPT my_lba incorrect: %lld != %lld\n",
 
-Hope this helps!
+Not much standardization there :-) but "dprintk" does appear to be the more
+common use.
 
-> Can someone please share their samples and/or numbers.
-> 
-> Thank you,
-> 
-> Jaswinder Singh.
-> 
-> On 9/25/07, hufey <hufeyy@gmail.com> wrote:
-> > On 9/24/07, Jaswinder Singh <jaswinderlinux@gmail.com> wrote:
-> > > Hi all,
-> > >
-> > > I want to check performance difference by using realtime preemption patch :
-> > >
-> > > http://www.kernel.org/pub/linux/kernel/projects/rt/
-> > >
-> > > Please let me know from where I can download samples to test realtime
-> > > preemption performance difference.
-> > >
-> >
-> > As far as I know, some embedded linux vendors such as MontaVista
-> > provide kernel patch to export some interfaces to measure realtime
-> > performance.
-> >
-> > > Can someone please share performance numbers for your hardware:-
-> > >
-> > > 1. Interrupt latency
-> > > 2. Task switching time
-> > > 3. hard-realtime scheduling latency
-> > >
-> > > Thank you,
-> > >
-> > > Jaswinder Singh.
-> > > -
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> > >
-> >
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+I wanted something simple to allow me to not printk something that's just
+for informational/debugging purposes, but w/o having to #ifdef the printk in
+question, or define a complex debugging-level printk system.
 
--- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs, 
-Bangalore, India   
+Now, looking at pr_debug (in linux/kernel.h), and indeed some filesystems
+(e.g., affs and configfs) use it.  But pr_debug is only active when #define
+DEBUG is on (not CONFIG_DEBUG).  I didn't see a config option that enable
+DEBUG: is there one?
+
+>From other file systems, it appears that the more common convention is for
+filesystem XYZ to offer a config option CONFIG_DEBUG_XYZ, which makes its
+debugging more self-contained and keeps the config option closer to where
+the f/s itself is enabled.
+
+Thanks,
+Erez.
