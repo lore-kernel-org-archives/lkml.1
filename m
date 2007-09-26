@@ -1,47 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbXIZPoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761322AbXIZPq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761308AbXIZPoW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 11:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbXIZPoI
+	id S1761322AbXIZPq2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 11:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbXIZPqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 11:44:08 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33889 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756853AbXIZPoB (ORCPT
+	Wed, 26 Sep 2007 11:46:20 -0400
+Received: from hu-out-0506.google.com ([72.14.214.227]:36310 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbXIZPqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 11:44:01 -0400
-Date: Wed, 26 Sep 2007 11:43:21 -0400
-Message-Id: <200709261543.l8QFhLC0028883@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk, hch@infradead.org
-Subject: Re: [PATCH 10/25] Unionfs: add un/likely conditionals on copyup ops 
-In-reply-to: Your message of "Wed, 26 Sep 2007 11:23:19 EDT."
-             <2DDDD55D-4445-4565-9384-4E4BE7B41D7D@mac.com> 
-X-MailKey: Erez_Zadok
+	Wed, 26 Sep 2007 11:46:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:message-id;
+        b=aN5x8O3h6kpqjjevElQljBp7m/QF2fM8yb8mjo/7ijh/XorRMf16hfEfkJPqxnX8CB2bvbeyf+18iesw1tJddZgnL+5yKX2Cytuz0FrbL10gwHAw6rgc9lteMGOMG1PvqgoQFrdSGyGlldZZT7rGw5cjTDYmBa4OFNLjR6c6kZA=
+From: Paolo Giarrusso <p.giarrusso@gmail.com>
+To: user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH] UML - time build fix
+Date: Wed, 26 Sep 2007 17:46:13 +0200
+User-Agent: KMail/1.9.7
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jeff Dike <jdike@addtoit.com>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+References: <20070925173713.GA8262@c2.user-mode-linux.org> <20070925215629.GA10926@c2.user-mode-linux.org> <1190758127.17409.81.camel@chaos>
+In-Reply-To: <1190758127.17409.81.camel@chaos>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart5079317.PVAtiMum5I";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709261746.14632.p.giarrusso@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <2DDDD55D-4445-4565-9384-4E4BE7B41D7D@mac.com>, Kyle Moffett writes:
-> On Sep 26, 2007, at 09:40:20, Erez Zadok wrote:
-[...]
-> > Recently we've done a full audit of the entire code, and added un/ 
-> > likely where we felt that the chance of succeeding is 95% or better  
-> > (e.g., error conditions that should rarely happen, and such).
-> 
-> Actually due to the performance penalty on some systems I think you  
-> only want to use it if the chance of succeeding is 99% or better, as  
-> the benefit if predicted is a cycle or two and the harm if  
-> mispredicted can be more than 50 cycles, depending on the CPU.
+--nextPart5079317.PVAtiMum5I
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-*That's* the information I was looking for, Kyle: what's the estimated
-probability I should be using as my guideline.  I used 95% (20/1 ratio), and
-you're telling me I should use 99% (100/1 ratio).  The difference between
-the number of cycles saved/added is very compelling.  Given that I certainly
-agree with you that I'm using un/likely too much.  I'll re-evaluate and
-update my patch series then.
+On mercoled=EC 26 settembre 2007, Thomas Gleixner wrote:
+> Jeff,
+>
+> On Tue, 2007-09-25 at 17:56 -0400, Jeff Dike wrote:
+> > On Tue, Sep 25, 2007 at 09:54:15PM +0200, Thomas Gleixner wrote:
+> > > On Tue, 2007-09-25 at 13:37 -0400, Jeff Dike wrote:
+> > > > Put back an implementation of timeval_to_ns in
+> > > > arch/um/os-Linux/time.c.  tglx pointed out in his review of tickless
+> > > > support that there was a perfectly good implementation of it in
+> > > > linux/time.h.  The problem is that this is userspace code which can=
+'t
+> > > > pull in kernel headers and there doesn't seem to be a libc version.
+> > >
+> > > Oops. Did not notice.
+> >
+> > It's a UML peculiarity...
+> >
+> > > Can't we move it into some header file which is accessible from
+> > > everywhere ?
+There is a way to do this without code duplication, but it is creating a=20
+non-inline function which calls the inline and calling the non-inline from=
+=20
+userspace. It's done for a variety of other functions.
 
-Thanks,
-Erez.
+There is a tradeoff of speed vs code duplication - and if this function is =
+not=20
+supposed to change and to need to be kept in sync, it could be copied. I=20
+conceptually hate this solution, but it can make some sense.
+
+=2D-=20
+"Doh!" (cit.), I've made another mistake!
+Paolo Giarrusso, aka Blaisorblade
+
+--nextPart5079317.PVAtiMum5I
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG+n7GqH9OHC+5NscRAuEIAJ4+ESGAjbQtA06T6LHFoSxAN9OwdQCdFw3L
+gHzDTRs767+EEGAiwVhhoGo=
+=mww4
+-----END PGP SIGNATURE-----
+
+--nextPart5079317.PVAtiMum5I--
