@@ -1,103 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbXIZBVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752370AbXIZBVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753912AbXIZBVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 21:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXIZBVH
+	id S1752370AbXIZBVe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 21:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXIZBVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 21:21:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45148 "EHLO mail.dvmed.net"
+	Tue, 25 Sep 2007 21:21:14 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:41252 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751482AbXIZBVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 21:21:05 -0400
-Message-ID: <46F9B3FE.1060905@garzik.org>
-Date: Tue, 25 Sep 2007 21:21:02 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: "Berck E. Nash" <flyboy@gmail.com>
-CC: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
-References: <46F7FBCB.4030803@gmail.com> <46F8665A.4000206@garzik.org> <46F9617F.1010508@gmail.com>
-In-Reply-To: <46F9617F.1010508@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------090505030804070906090101"
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1752426AbXIZBVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 21:21:12 -0400
+Subject: Re: missing mnt_drop_write() on open error
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <E1IaJc0-000541-00@dorka.pomaz.szeredi.hu>
+References: <E1IaJc0-000541-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 18:21:09 -0700
+Message-Id: <1190769669.26982.325.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090505030804070906090101
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Berck E. Nash wrote:
-> Jeff Garzik wrote:
->> Once the blame has been squared fixed upon me :) you can use git-bisect
->> to locate the precise change that broke your setup.
+On Wed, 2007-09-26 at 01:14 +0200, Miklos Szeredi wrote:
+> I get this at umount, if there was a failed open():
 > 
-> Okay, here's the problem:
+> WARNING: at fs/namespace.c:586 __mntput()
 > 
-> 268fe6f9f15551be9abedd44a237392675d529d5 is first bad commit
-> commit 268fe6f9f15551be9abedd44a237392675d529d5
-> Author: Jeff Garzik <jeff@garzik.org>
-> Date:   Fri Sep 21 07:09:36 2007 -0400
-> 
->     [libata] SCSI: simple TEST UNIT READY simulation
-> 
->     It's trivial to ping the device, and that's a much more sane behavior
->     than no-op.
-> 
->     Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> 
-> :040000 040000 44d34cdad073bd623545b8239aca9a113652c6d0
-> df6d21f7ce56a4e796f8f856c1f647b0395ab4df M      drivers
+> I think the problem is that may_open() calls mnt_want_write(), but if
+> open doesn't succeed, mnt_drop_write() will not be called.
 
-Does the attached patch change behavior at all?  You should be able to 
-apply it on top of libata-dev.git#upstream or -mm.
+Does this help?  I'm also thinking that we should change the open_namei*
+functions to simply return 'struct file *'.  Those are the only users
+other than NFS, and forcing the return of a file like that will force
+users to do the fput() on it if they don't want it any more.  We'd just
+need to make sure no new may_open() users pop up.  Any thoughts on that?
 
-If there are still problems, an updated dmesg (w/ the attached patch) 
-and output from enabling ATA_DEBUG (include/linux/libata.h) would be 
-very helpful.
+--
 
-Thanks!
+The r/o bind mount patches have an error in them:
+they unconditionally take a mnt_want_write() on
+all may_open() requests for writeable files.  They
+mistakenly do not mnt_drop_write() if may_open()
+encounters an error.
 
-	Jeff
+---
 
+ lxc-dave/fs/namei.c |   39 ++++++++++++++++++++++++++++++---------
+ 1 file changed, 30 insertions(+), 9 deletions(-)
 
-
---------------090505030804070906090101
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch"
-
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index 3882c72..c9838f1 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -2800,7 +2800,9 @@ static inline ata_xlat_func_t ata_get_xlat_func(struct ata_device *dev, u8 cmd)
- 		return ata_scsi_start_stop_xlat;
+diff -puN fs/namei.c~drop-write-if-may_open-fails fs/namei.c
+--- lxc/fs/namei.c~drop-write-if-may_open-fails	2007-09-25 18:16:59.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-09-25 18:16:59.000000000 -0700
+@@ -1594,11 +1594,23 @@ int vfs_create(struct inode *dir, struct
+ 	return error;
+ }
  
- 	case TEST_UNIT_READY:
--		return ata_scsi_tur_xlat;
-+		if (ata_id_has_pm(dev->id))
-+			return ata_scsi_tur_xlat;
-+		return NULL;
++/*
++ * If you call this with FMODE_WRITE set in flag,
++ * and get a successful return, you will have
++ * acquired a write on nd->mnt.
++ *
++ * Basically, if you use this function, you either
++ * need to fix up that write count manually, or just
++ * return a 'struct file' from your function.  When
++ * you __fput() that 'struct file' it will get fixed
++ * up automatically.
++ */
+ int may_open(struct nameidata *nd, int acc_mode, int flag)
+ {
+ 	struct dentry *dentry = nd->dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
++	int took_mnt_write = 0;
+ 
+ 	if (!inode)
+ 		return -ENOENT;
+@@ -1624,42 +1636,48 @@ int may_open(struct nameidata *nd, int a
+ 	} else if (flag & FMODE_WRITE) {
+ 		/*
+ 		 * effectively: !special_file()
+-		 * balanced by __fput()
++		 * Balanced by __fput() and
++		 * released on error at the end
++		 * of this function.
+ 		 */
+ 		error = mnt_want_write(nd->mnt);
+ 		if (error)
+ 			return error;
++		took_mnt_write = 1;
  	}
  
- 	return NULL;
-@@ -3021,6 +3023,7 @@ void ata_scsi_simulate(struct ata_device *dev, struct scsi_cmnd *cmd,
- 		case REZERO_UNIT:
- 		case SEEK_6:
- 		case SEEK_10:
-+		case TEST_UNIT_READY:		/* only for !PM devices */
- 			ata_scsi_rbuf_fill(&args, ata_scsiop_noop);
- 			break;
+ 	error = vfs_permission(nd, acc_mode);
+ 	if (error)
+-		return error;
++		goto out_err;
+ 	/*
+ 	 * An append-only file must be opened in append mode for writing.
+ 	 */
+ 	if (IS_APPEND(inode)) {
++		error = -EPERM;
+ 		if  ((flag & FMODE_WRITE) && !(flag & O_APPEND))
+-			return -EPERM;
++			goto out_err;
++		error = -EPERM;
+ 		if (flag & O_TRUNC)
+-			return -EPERM;
++			goto out_err;
+ 	}
  
+ 	/* O_NOATIME can only be set by the owner or superuser */
++	error = -EPERM;
+ 	if (flag & O_NOATIME)
+ 		if (!is_owner_or_cap(inode))
+-			return -EPERM;
++			goto out_err;
+ 
+ 	/*
+ 	 * Ensure there are no outstanding leases on the file.
+ 	 */
+ 	error = break_lease(inode, flag);
+ 	if (error)
+-		return error;
++		goto out_err;
+ 
+ 	if (flag & O_TRUNC) {
+ 		error = get_write_access(inode);
+ 		if (error)
+-			return error;
++			goto out_err;
+ 
+ 		/*
+ 		 * Refuse to truncate files with mandatory locks held on them.
+@@ -1672,12 +1690,15 @@ int may_open(struct nameidata *nd, int a
+ 		}
+ 		put_write_access(inode);
+ 		if (error)
+-			return error;
++			goto out_err;
+ 	} else
+ 		if (flag & FMODE_WRITE)
+ 			DQUOT_INIT(inode);
+ 
+-	return 0;
++out_err:
++	if (error && took_mnt_write)
++		mnt_drop_write(nd->mnt);
++	return error;
+ }
+ 
+ static int open_namei_create(struct nameidata *nd, struct path *path,
 
---------------090505030804070906090101--
+-- Dave
+
