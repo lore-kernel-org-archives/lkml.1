@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761438AbXIZRKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761984AbXIZRLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761438AbXIZRKu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 13:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761535AbXIZRI5
+	id S1761984AbXIZRLO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 13:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761256AbXIZRKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 13:08:57 -0400
-Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:38597
-	"EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760377AbXIZRI4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 13:08:56 -0400
-X-IronPort-AV: E=Sophos;i="4.21,198,1188770400"; 
-   d="scan'208";a="3292263"
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: [PATCH 8/8] taskstats: avoid breaking binary compatibility between
-	taskstats v6 and before
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Guillaume Chazarain <guichaz@yahoo.fr>,
-       Michael Neuling <mikey@neuling.org>, Balbir Singh <balbir@in.ibm.com>,
-       Jay Lan <jlan@engr.sgi.com>, Jonathan Lim <jlim@sgi.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Date: Wed, 26 Sep 2007 19:08:54 +0200
-Message-ID: <20070926170854.31221.57986.stgit@cheypa.inria.fr>
-In-Reply-To: <20070926170818.31221.33994.stgit@cheypa.inria.fr>
-References: <20070926170818.31221.33994.stgit@cheypa.inria.fr>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Sep 2007 13:10:20 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:57511 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760170AbXIZRKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 13:10:18 -0400
+Date: Wed, 26 Sep 2007 19:07:18 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Timo Jantunen <jeti@welho.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: commit 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2 kills r8169 send performance
+Message-ID: <20070926170718.GA4870@electric-eye.fr.zoreil.com>
+References: <Pine.LNX.4.64.0709261853110.5869@limbo>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709261853110.5869@limbo>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Place fields added in v6 at the end of the struct.
+Timo Jantunen <jeti@welho.com> :
+[...]
+> Git bisect gave commit 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2 as the 
+> culprit, and reverting it from the 2.6.23-rc8 increases send speed back to 
+> .22 level. (It didn't revert cleanly and the file needed some cleaning up 
+> by hand.)
 
-Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: Balbir Singh <balbir@in.ibm.com>
-Cc: Jay Lan <jlan@engr.sgi.com>
-Cc: Jonathan Lim <jlim@sgi.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>
----
+You are welcome but you are late.
 
- include/linux/taskstats.h |   18 +++++++++++-------
- 1 files changed, 11 insertions(+), 7 deletions(-)
+The patch below is scheduled for inclusion before 2.6.23. Please try it and
+see if it makes a difference on top of 2.6.23-rc8 (full dmesg will be welcome
+too).
 
-
-diff --git a/include/linux/taskstats.h b/include/linux/taskstats.h
-index 92bfd1c..dc6850c 100644
---- a/include/linux/taskstats.h
-+++ b/include/linux/taskstats.h
-@@ -85,12 +85,9 @@ struct taskstats {
- 	 * On some architectures, value will adjust for cpu time stolen
- 	 * from the kernel in involuntary waits due to virtualization.
- 	 * Value is cumulative, in nanoseconds, without a corresponding count
--	 * and wraps around to zero silently on overflow.  The
--	 * _scaled_ version accounts for cpus which can scale the
--	 * number of instructions executed each cycle.
-+	 * and wraps around to zero silently on overflow.
- 	 */
- 	__u64	cpu_run_real_total;
--	__u64	cpu_scaled_run_real_total;
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index b85ab4a..c921ec3 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -1228,7 +1228,10 @@ static void rtl8169_hw_phy_config(struct net_device *dev)
+ 		return;
+ 	}
  
- 	/* cpu "virtual" running time
- 	 * Uses time intervals seen by the kernel i.e. no adjustment
-@@ -146,9 +143,6 @@ struct taskstats {
- 	__u64	read_syscalls;		/* read syscalls */
- 	__u64	write_syscalls;		/* write syscalls */
- 
--	/* time accounting for SMT machines */
--	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
--	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
- 	/* Extended accounting fields end */
- 
- #define TASKSTATS_HAS_IO_ACCOUNTING
-@@ -159,6 +153,16 @@ struct taskstats {
- 
- 	__u64  nvcsw;			/* voluntary_ctxt_switches */
- 	__u64  nivcsw;			/* nonvoluntary_ctxt_switches */
+-	/* phy config for RTL8169s mac_version C chip */
++	if ((tp->mac_version != RTL_GIGA_MAC_VER_02) &&
++	    (tp->mac_version != RTL_GIGA_MAC_VER_03))
++		return;
 +
-+	/*
-+	 * Same as cpu_run_real_total but accounts for cpus which can scale the
-+	 * number of instructions executed each cycle.
-+	 */
-+	__u64	cpu_scaled_run_real_total;
-+
-+	/* time accounting for SMT machines */
-+	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
-+	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
- };
+ 	mdio_write(ioaddr, 31, 0x0001);			//w 31 2 0 1
+ 	mdio_write(ioaddr, 21, 0x1000);			//w 21 15 0 1000
+ 	mdio_write(ioaddr, 24, 0x65c7);			//w 24 15 0 65c7
+@@ -2567,6 +2570,15 @@ static void rtl8169_tx_interrupt(struct net_device *dev,
+ 		    (TX_BUFFS_AVAIL(tp) >= MAX_SKB_FRAGS)) {
+ 			netif_wake_queue(dev);
+ 		}
++		/*
++		 * 8168 hack: TxPoll requests are lost when the Tx packets are
++		 * too close. Let's kick an extra TxPoll request when a burst
++		 * of start_xmit activity is detected (if it is not detected,
++		 * it is slow enough). -- FR
++		 */
++		smp_rmb();
++		if (tp->cur_tx != dirty_tx)
++			RTL_W8(TxPoll, NPQ);
+ 	}
+ }
  
- 
+-- 
+Ueimor
