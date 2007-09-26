@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761586AbXIZUsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXIZUs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761586AbXIZUsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 16:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756364AbXIZUsG
+	id S1762011AbXIZUs5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 16:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXIZUsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 16:48:06 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:44642 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756223AbXIZUsF (ORCPT
+	Wed, 26 Sep 2007 16:48:47 -0400
+Received: from smtp.innovsys.com ([66.115.232.196]:11140 "EHLO
+	mail.innovsys.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757312AbXIZUsq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 16:48:05 -0400
-Message-ID: <46FAC57A.3090309@tiscali.nl>
-Date: Wed, 26 Sep 2007 22:47:54 +0200
-From: roel <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 26 Sep 2007 16:48:46 -0400
+X-Greylist: delayed 974 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 16:48:46 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/8] taskstats: fix stats->ac_exitcode to work on threads
- and	use group_exit_code
-References: <20070926162800.29434.67786.stgit@cheypa.inria.fr> <20070926162831.29434.29622.stgit@cheypa.inria.fr>
-In-Reply-To: <20070926162831.29434.29622.stgit@cheypa.inria.fr>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH4/4] [POWERPC] Fix cpm_uart driver
+Date: Wed, 26 Sep 2007 15:32:29 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0368C44B@ismail.innsys.innovsys.com>
+In-Reply-To: <46F8101E.1050000@freescale.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH4/4] [POWERPC] Fix cpm_uart driver
+thread-index: Acf+4W7/x3/f0LryRDKaPTVPI/Sd5ABmm39g
+References: <46F6C9DC.90008@scram.de> <46F7DE85.7000401@freescale.com><46F7EE95.1040509@scram.de> <46F80049.2030509@freescale.com><FF1A2486-BE77-49F8-99F3-B09B4EEAF50D@embeddedalley.com> <46F8101E.1050000@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>,
+       "Dan Malek" <dan@embeddedalley.com>
+Cc: <linuxppc-embedded@ozlabs.org>, <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guillaume Chazarain wrote:
+> From: Scott Wood
+> Maybe that's how it was, but the current code initializes it (more or
+> less) directly with IMAP_ADDR, which also gets fed into ioremap.
+> 
+> One of the two has got to be wrong.
 
-[...]
+arch/ppc maps the immr area 1:1 into kernel memory, so ioremap and
+physical are the same.
+See arch/ppc/syslib/m8260_setup.c, line 208 (function m8260_map_io)
 
-> @@ -65,13 +65,15 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
->  void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *tsk,
->  			    bool tg_stats)
->  {
-> +	int group_exit_code;
-> +
->  	fill_wall_times(stats, tsk);
->  
-> -	if (thread_group_leader(tsk)) {
-> -		stats->ac_exitcode = tsk->exit_code;
-> -		if (tsk->flags & PF_FORKNOEXEC)
-> -			stats->ac_flag |= AFORK;
-> -	}
-> +	if (thread_group_leader(tsk) && ((tsk->flags & PF_FORKNOEXEC)))
-
-	if (thread_group_leader(tsk) && (tsk->flags & PF_FORKNOEXEC))
-
-> +		stats->ac_flag |= AFORK;
-> +
-> +	group_exit_code = tg_stats ? tsk->signal->group_exit_code : 0;
-> +	stats->ac_exitcode = group_exit_code ? : tsk->exit_code;
-
-Isn't this just confusing? why not
-
-	if (tg_stats) {
-		group_exit_code = tsk->signal->group_exit_code;
-		stats->ac_exitcode = group_exit_code;
-		
-	} else {
-		group_exit_code = 0;
-		stats->ac_exitcode = tsk->exit_code;
-	}
+Here quoted:
+arch/ppc/syslib/m8260_setup.c
+196 /* Map the IMMR, plus anything else we can cover
+197  * in that upper space according to the memory controller
+198  * chip select mapping.  Grab another bunch of space
+199  * below that for stuff we can't cover in the upper.
+200  */
+201 static void __init
+202 m8260_map_io(void)
+203 {
+204         uint addr;
+205
+206         /* Map IMMR region to a 256MB BAT */
+207         addr = (cpm2_immr != NULL) ? (uint)cpm2_immr : CPM_MAP_ADDR;
+208         io_block_mapping(addr, addr, 0x10000000, _PAGE_IO);
+209
+210         /* Map I/O region to a 256MB BAT */
+211         io_block_mapping(IO_VIRT_ADDR, IO_PHYS_ADDR, 0x10000000,
+_PAGE_IO);
+212 }
