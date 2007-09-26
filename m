@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbXIZPnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbXIZPnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761261AbXIZPnA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 11:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbXIZPmv
+	id S1754972AbXIZPnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 11:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760278AbXIZPm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 11:42:51 -0400
-Received: from hu-out-0506.google.com ([72.14.214.238]:34886 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbXIZPmt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 11:42:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:message-id;
-        b=gUgpzgupofCYR/ZvIEcDbZyVt5H0M3/acyN+0GU48t8sbY+252gnPxPN/AmtYrhvlm0TslHi4ipD5+f6KSSfGzx0XDG+xQv7m4lcg0bg6pbPxtQ5qDxGVXFZp1sxVmT16Mm89ww9cldMslGoBLo8B+LX+RBYoHimbMYshotLzxo=
-From: Paolo Giarrusso <p.giarrusso@gmail.com>
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH] UML - Fix irqstack crash
-Date: Wed, 26 Sep 2007 17:42:32 +0200
-User-Agent: KMail/1.9.7
-Cc: Jeff Dike <jdike@addtoit.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20070918233336.GA9746@c2.user-mode-linux.org> <200709201757.56298.p.giarrusso@gmail.com> <20070924200127.GB25202@c2.user-mode-linux.org>
-In-Reply-To: <20070924200127.GB25202@c2.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1380752.XAKfpcfMdN";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Wed, 26 Sep 2007 11:42:56 -0400
+Received: from s1.host3270.com ([216.146.143.173]:55706 "EHLO s1.host3270.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757768AbXIZPmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 11:42:54 -0400
+X-Greylist: delayed 2559 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 11:42:54 EDT
+Subject: Re: ACPI power off regression in 2.6.23-rc8 (NOT in rc7)
+From: Tim Post <echo@echoreply.us>
+Reply-To: echo@echoreply.us
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Damien Wyart <damien.wyart@free.fr>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Frans Pop <elendil@planet.nl>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org
+In-Reply-To: <alpine.LFD.0.999.0709250830420.3579@woody.linux-foundation.org>
+References: <20070925065109.GA3080@localhost.localdomain>
+	 <20070925003340.5d6dd7f4.akpm@linux-foundation.org>
+	 <alpine.LFD.0.999.0709250830420.3579@woody.linux-foundation.org>
+Content-Type: text/plain
+Organization: echoreply
+Date: Wed, 26 Sep 2007 22:59:56 +0800
+Message-Id: <1190818796.6259.58.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200709261742.44100.p.giarrusso@gmail.com>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - s1.host3270.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - echoreply.us
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1380752.XAKfpcfMdN
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Bah, its too damn stable. Break it and do it again.
 
-On luned=EC 24 settembre 2007, Jeff Dike wrote:
-> On Thu, Sep 20, 2007 at 05:57:49PM +0200, Paolo Giarrusso wrote:
-> > Yes, indeed - or sign extension on 64bit machines would set to 1 the
-> > whole high-word.
-> >
-> > But using long for that mask makes no difference; either int or long
-> > long (or  better, either u32 or u64) should be used, given that the
-> > used signal range  is the same on 32 and 64bit machines, it should
-> > be u32 for normal signals or u64 if RT-signals are also allowed.
->
-> We don't use RT signals for anything, so we could use u32.
-I wasn't sure of that.
-> I don't=20
-> see it making much difference though.
-Agreed - the only difference is for cleanliness and easy verification.
-=2D-=20
-"Doh!" (cit.), I've made another mistake!
-Paolo Giarrusso, aka Blaisorblade
+>From 2.6.20.3 :
 
---nextPart1380752.XAKfpcfMdN
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Boot time cut in half.
+My PC no longer 'wakes up' angrily. My wife does that, I'm going to
+start sleeping with the P4, its more agreeable now.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+P4 HT with generic Intel chipset.
 
-iD8DBQBG+n30qH9OHC+5NscRAryQAJ9qwNwlriYOppUxyYGtZM+mXSppawCcCtQT
-FbuRtB9QDFCUmLsAVMOVOT8=
-=EPXm
------END PGP SIGNATURE-----
+What fun is this when nothing breaks?
 
---nextPart1380752.XAKfpcfMdN--
+Thank you all :)
+
+On Tue, 2007-09-25 at 08:40 -0700, Linus Torvalds wrote:
+> 
+> On Tue, 25 Sep 2007 08:51:09 +0200 Damien Wyart <damien.wyart@free.fr> wrote:
+> > 
+> > Hello,
+> > 
+> > After testing rc8, I noticed that I couldn't power off the computer
+> > directly, it only got halted and I had to press the power button
+> > manually. Just before displaying "System halted", the following message
+> > is displayed:
+> > 
+> >   ACPI : PCI interrupt for device 0000:02:08.0 disabled
+> > 
+> > I had to first revert 5a50fe709d527f31169263e36601dd83446d5744 then
+> > f216cc3748a3a22c2b99390fddcdafa0583791a2 (handling of Sx states) to
+> > recover previous behaviour.
+> 
+> Hmm. Those things *do* seem to be suspicious.
+> 
+> For example, those commits seem to move code that used to be inside 
+> CONFIG_PM (which pretty much *everybody* has) to be inside 
+> CONFIG_ACPI_SLEEP (which is a totally different thing, and depends on 
+> whether the user asked for suspend support or not!
+> 
+> Damien - does it work if you ask for SUSPEND or HIBERNATION support?
+> 
+> Len - why are you guys moving stuff into CONFIG_PM_SLEEP? I know you seem 
+> to think that absolutely *everybody* should always support suspend and 
+> hibernation, but the fact is, not everybody does. And it's a totally 
+> separate thing for normal ACPI CPU runstate support that people have used 
+> to manage a *running* CPU (and shutting it down).
+> 
+> 		Linus
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
