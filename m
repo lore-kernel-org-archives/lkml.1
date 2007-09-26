@@ -1,56 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbXI1UKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbXI1UKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754947AbXI1UKE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:10:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbXI1UJx
+	id S1756034AbXI1UKk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbXI1UK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:09:53 -0400
-Received: from outbound-mail-49.bluehost.com ([69.89.18.18]:49627 "HELO
-	outbound-mail-49.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750933AbXI1UJw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:09:52 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] i915: make vbl interrupts work properly on i965g/gm
-Date: Fri, 28 Sep 2007 13:07:55 -0700
-User-Agent: KMail/1.9.7
-Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0709280248480.10526@skynet.skynet.ie> <200709271909.23040.jbarnes@virtuousgeek.org> <adave9umudh.fsf@cisco.com>
-In-Reply-To: <adave9umudh.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 28 Sep 2007 16:10:29 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:51257 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752518AbXI1UK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:10:27 -0400
+Subject: [PATCH 3/8] scsi: megaraid_sas - add module param max_sectors,
+	cmd_per_lun
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Bo.yang@lsi.com, Sumant.patro@lsi.com
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709281307.56037.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+Date: Wed, 26 Sep 2007 11:27:50 -0400
+Message-Id: <1190820470.5955.12.camel@dhcp-75-534.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 28 Sep 2007 20:10:16.0095 (UTC) FILETIME=[95C942F0:01C8020B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, September 28, 2007 1:02 pm Roland Dreier wrote:
-> Sorry to hijack this thread, but I have a question about i915
-> interrupts (945GM specifically) that I haven't gotten an answer to
-> yet, and this thread reminded me of it so I thought I'd ask again:
-> I hacked the kernel drm stuff on my laptop with 945GM graphics to do
-> pci_enable_msi() on the graphics device, and I don't see any
-> interrupts occur.
->
-> So can someone with access to details of the 945GM tell me if MSI
-> interrupts should work, and if so if there's some internal registers
-> that need to be poked to enable it (beyond what pci_enable_msi()
-> does).
->
-> It's not super-urgent-- I just like using shiny things like MSI, and
-> I already have ahci, iwl3945 and e1000 working with MSI on my laptop,
-> so the graphics are the only thing left with an MSI capability that's
-> not working.
+Adding module parameters to configure max sectors per request & # of cmds per lun.
 
-I don't have a 945 to test with, but Dave might...
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-Jesse
+---
+ drivers/scsi/megaraid/megaraid_sas.c |   94 ++++++++++++++++++++++++-
+ drivers/scsi/megaraid/megaraid_sas.h |    2
+ 2 files changed, 94 insertions(+), 2 deletions(-)
+
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 13:30:36.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 20:37:11.000000000 -0700
+@@ -62,6 +62,23 @@ MODULE_PARM_DESC(fast_load,
+ 	"megasas: Faster loading of the driver, skips physical devices! \
+ 	 (default = 0)");
+ 
++/*
++ * Number of sectors per IO command will be set in megasas_init_mfi
++ * if user does not provide
++ */
++static unsigned int max_sectors;
++module_param_named(max_sectors, max_sectors, int, 0);
++MODULE_PARM_DESC(max_sectors,
++	"Maximum number of sectors per IO command");
++
++/*
++ * Number of cmds per logical unit
++ */
++static unsigned int cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
++module_param_named(cmd_per_lun, cmd_per_lun, int, 0);
++MODULE_PARM_DESC(cmd_per_lun,
++	"Maximum number of commands per logical unit (default=128)");
++
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(MEGASAS_VERSION);
+ MODULE_AUTHOR("megaraidlinux@lsi.com");
+@@ -2301,6 +2318,31 @@ static int megasas_start_aen(struct mega
+ 				    class_locale.word);
+ }
+ 
++static ssize_t
++sysfs_max_sectors_read(struct kobject *kobj,
++			struct bin_attribute *bin_attr,
++			char *buf, loff_t off, size_t count)
++{
++	struct Scsi_Host *host = class_to_shost(container_of(kobj,
++					struct class_device, kobj));
++	struct megasas_instance *instance =
++				(struct megasas_instance *)host->hostdata;
++
++	count = sprintf(buf, "%u\n", instance->max_sectors_per_req);
++
++	return count+1;
++}
++
++static struct bin_attribute sysfs_max_sectors_attr = {
++	.attr = {
++		.name = "max_sectors",
++		.mode = S_IRUSR|S_IRGRP|S_IROTH,
++		.owner = THIS_MODULE,
++	},
++	.size = 7,
++	.read = sysfs_max_sectors_read,
++};
++
+ /**
+  * megasas_io_attach -	Attaches this driver to SCSI mid-layer
+  * @instance:		Adapter soft state
+@@ -2308,17 +2350,48 @@ static int megasas_start_aen(struct mega
+ static int megasas_io_attach(struct megasas_instance *instance)
+ {
+ 	struct Scsi_Host *host = instance->host;
++	int error;
+ 
+ 	/*
+-	 * Export parameters required by SCSI mid-layer
++	 * Export host parameters required by SCSI
++	 * mid-layer
+ 	 */
+ 	host->irq = instance->pdev->irq;
+ 	host->unique_id = instance->unique_id;
+ 	host->can_queue = instance->max_fw_cmds - MEGASAS_INT_CMDS;
+ 	host->this_id = instance->init_id;
+ 	host->sg_tablesize = instance->max_num_sge;
++
++	/*
++	 * Check if the module parameter value for max_sectors can be used
++	 */
++	if (max_sectors && max_sectors <= instance->max_sectors_per_req)
++		instance->max_sectors_per_req = max_sectors;
++	else {
++		if (max_sectors)
++			printk(KERN_INFO
++				"megasas: max_sectors should be > 0 and"
++				"<= %d\n",
++				instance->max_sectors_per_req);
++	}
++
+ 	host->max_sectors = instance->max_sectors_per_req;
+-	host->cmd_per_lun = 128;
++
++	/*
++	 * Check if the module parameter value for cmd_per_lun can be used
++	 */
++	instance->cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
++	if (cmd_per_lun && cmd_per_lun <= MEGASAS_DEFAULT_CMD_PER_LUN)
++		instance->cmd_per_lun = cmd_per_lun;
++	else
++		printk(KERN_INFO "megasas: cmd_per_lun should be > 0 and"
++			"<= %d\n", MEGASAS_DEFAULT_CMD_PER_LUN);
++
++	host->cmd_per_lun = instance->cmd_per_lun;
++
++	printk(KERN_DEBUG "megasas: max_sectors : 0x%x, cmd_per_lun : 0x%x\n",
++			instance->max_sectors_per_req, instance->cmd_per_lun);
++
+ 	host->max_channel = MEGASAS_MAX_CHANNELS - 1;
+ 	host->max_id = MEGASAS_MAX_DEV_PER_CHANNEL;
+ 	host->max_lun = MEGASAS_MAX_LUN;
+@@ -2333,10 +2406,25 @@ static int megasas_io_attach(struct mega
+ 	}
+ 
+ 	/*
++	 * Create sysfs entries for module paramaters
++	 */
++	error = sysfs_create_bin_file(&instance->host->shost_classdev.kobj,
++			&sysfs_max_sectors_attr);
++	if (error) {
++		printk(KERN_INFO "megasas: Error in creating the sysfs entry"
++				" max_sectors.\n");
++		goto out_remove_host;
++	}
++
++	/*
+ 	 * Trigger SCSI to scan our drives
+ 	 */
+ 	scsi_scan_host(host);
+ 	return 0;
++
++out_remove_host:
++	scsi_remove_host(host);
++	return error;
+ }
+ 
+ static int
+@@ -2750,6 +2838,8 @@ static void megasas_detach_one(struct pc
+ 	instance = pci_get_drvdata(pdev);
+ 	host = instance->host;
+ 
++	sysfs_remove_bin_file(&host->shost_classdev.kobj,
++				&sysfs_max_sectors_attr);
+ 	scsi_remove_host(instance->host);
+ 	megasas_flush_cache(instance);
+ 	megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 13:27:59.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 13:27:31.000000000 -0700
+@@ -537,6 +537,7 @@ struct megasas_ctrl_info {
+ #define MEGASAS_DEFAULT_INIT_ID			-1
+ #define MEGASAS_MAX_LUN				8
+ #define MEGASAS_MAX_LD				64
++#define MEGASAS_DEFAULT_CMD_PER_LUN		128
+ 
+ #define MEGASAS_DBG_LVL				1
+ 
+@@ -1080,6 +1081,7 @@ struct megasas_instance {
+ 	u16 max_num_sge;
+ 	u16 max_fw_cmds;
+ 	u32 max_sectors_per_req;
++	u32 cmd_per_lun;
+ 
+ 	struct megasas_cmd **cmd_list;
+ 	struct list_head cmd_pool;
+
+
