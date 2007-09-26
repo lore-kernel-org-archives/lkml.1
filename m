@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbXI1UMC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbXI1USZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbXI1UMC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:12:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbXI1ULy
+	id S1755145AbXI1USZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbXI1USP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:11:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36160 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751120AbXI1ULx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:11:53 -0400
-Date: Fri, 28 Sep 2007 13:10:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: chakriin5@gmail.com, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
-       a.p.zijlstra@chello.nl
-Subject: Re: A unresponsive file system can hang all I/O in the system on
- linux-2.6.23-rc6 (dirty_thresh problem?)
-Message-Id: <20070928131012.4a03c53e.akpm@linux-foundation.org>
-In-Reply-To: <1191009148.6702.46.camel@heimdal.trondhjem.org>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	<20070927235034.ae7bd73d.akpm@linux-foundation.org>
-	<1190998853.6702.17.camel@heimdal.trondhjem.org>
-	<20070928114930.2c201324.akpm@linux-foundation.org>
-	<1191006971.6702.25.camel@heimdal.trondhjem.org>
-	<20070928122628.965137f2.akpm@linux-foundation.org>
-	<1191009148.6702.46.camel@heimdal.trondhjem.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 28 Sep 2007 16:18:15 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:51734 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751647AbXI1USO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:18:14 -0400
+Subject: [PATCH 4/8] scsi: megaraid_sas - check max_sgl reported by FW for
+	setting max_sectors_per_req
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       Bo.yang@lsi.com, Sumant.patro@lsi.com
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Sep 2007 11:35:36 -0400
+Message-Id: <1190820936.5955.17.camel@dhcp-75-534.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 28 Sep 2007 20:18:02.0023 (UTC) FILETIME=[AB803B70:01C8020C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007 15:52:28 -0400
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+1. Setting the max_sectors_per_req based on max SGL supported by the FW. Prior versions calculated  
+        this value from controller info's max_sectors_1, max_sectors_2. For certain controllers/FW, 
+        this was resulting in a value greater than max SGL supported by the FW. Now we take the min  
+        of max sgl from FW and max_sectors calculation.
 
-> On Fri, 2007-09-28 at 12:26 -0700, Andrew Morton wrote:
-> > On Fri, 28 Sep 2007 15:16:11 -0400 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > Looking back, they were getting caught up in
-> > > balance_dirty_pages_ratelimited() and friends. See the attached
-> > > example...
-> > 
-> > that one is nfs-on-loopback, which is a special case, isn't it?
-> 
-> I'm not sure that the hang that is illustrated here is so special. It is
-> an example of a bog-standard ext3 write, that ends up calling the NFS
-> client, which is hanging. The fact that it happens to be hanging on the
-> nfsd process is more or less irrelevant here: the same thing could
-> happen to any other process in the case where we have an NFS server that
-> is down.
+2. Increased MFI_POLL_TIMEOUT_SECS to 60 seconds from 10. FW may take a max of 60 seconds to  
+        respond to the INIT cmd.
 
-hm, so ext3 got stuck in nfs via __alloc_pages direct reclaim?
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-We should be able to fix that by marking the backing device as
-write-congested.  That'll have small race windows, but it should be a 99.9%
-fix?
+---
+ drivers/scsi/megaraid/megaraid_sas.c |   13 +++++++++----
+ drivers/scsi/megaraid/megaraid_sas.h |    2 +-
+ 2 files changed, 10 insertions(+), 5 deletions(-)
+
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 20:40:14.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 04:39:44.000000000 -0700
+@@ -1960,6 +1960,7 @@ static int megasas_init_mfi(struct megas
+ 	u32 reply_q_sz;
+ 	u32 max_sectors_1;
+ 	u32 max_sectors_2;
++	u32 tmp_sectors;
+ 	struct megasas_register_set __iomem *reg_set;
+ 	struct megasas_ctrl_info *ctrl_info;
+ 	/*
+@@ -2052,17 +2053,21 @@ static int megasas_init_mfi(struct megas
+ 	 * Note that older firmwares ( < FW ver 30) didn't report information
+ 	 * to calculate max_sectors_1. So the number ended up as zero always.
+ 	 */
++	tmp_sectors = 0;
+ 	if (ctrl_info && !megasas_get_ctrl_info(instance, ctrl_info)) {
+ 
+ 		max_sectors_1 = (1 << ctrl_info->stripe_sz_ops.min) *
+ 		    ctrl_info->max_strips_per_io;
+ 		max_sectors_2 = ctrl_info->max_request_size;
+ 
+-		instance->max_sectors_per_req = (max_sectors_1 < max_sectors_2)
++		tmp_sectors = (max_sectors_1 < max_sectors_2)
+ 		    ? max_sectors_1 : max_sectors_2;
+-	} else
+-		instance->max_sectors_per_req = instance->max_num_sge *
+-		    PAGE_SIZE / 512;
++	}
++
++	instance->max_sectors_per_req = instance->max_num_sge *
++						PAGE_SIZE / 512;
++	if (tmp_sectors && (instance->max_sectors_per_req > tmp_sectors))
++		instance->max_sectors_per_req = tmp_sectors;
+ 
+ 	kfree(ctrl_info);
+ 
+diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 13:40:36.000000000 -0700
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 14:10:59.000000000 -0700
+@@ -572,7 +572,7 @@ struct megasas_ctrl_info {
+ #define IS_DMA64				(sizeof(dma_addr_t) == 8)
+ 
+ #define MFI_OB_INTR_STATUS_MASK			0x00000002
+-#define MFI_POLL_TIMEOUT_SECS			10
++#define MFI_POLL_TIMEOUT_SECS			60
+ 
+ #define MFI_REPLY_1078_MESSAGE_INTERRUPT	0x80000000
+ 
 
