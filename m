@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbXIZAP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbXIZAYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbXIZAP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 20:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbXIZAPO
+	id S1753107AbXIZAYJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 20:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXIZAX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 20:15:14 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46542 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751065AbXIZAPM (ORCPT
+	Tue, 25 Sep 2007 20:23:57 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52571 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbXIZAX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 20:15:12 -0400
-Date: Wed, 26 Sep 2007 01:18:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <david@davidnewall.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
-       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
-       majkls <majkls@prepere.com>, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Chroot bug
-Message-ID: <20070926011847.49bbb9a2@the-village.bc.nu>
-In-Reply-To: <46F99EDE.70905@davidnewall.com>
-References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>
-	<46F29A9A.4070806@davidnewall.com>
-	<200709201817.17282@x5>
-	<46F2B59F.8090709@davidnewall.com>
-	<46F2DDD0.3030500@tmr.com>
-	<46F380E4.4040606@davidnewall.com>
-	<20070924213215.GA32716@vino.hallyn.com>
-	<46F83474.5040503@davidnewall.com>
-	<20070924230008.GA3160@vino.hallyn.com>
-	<46F8BC8A.7080006@davidnewall.com>
-	<20070925114947.GA9721@vino.hallyn.com>
-	<46F91417.9050600@davidnewall.com>
-	<46F924E3.50205@davidnewall.com>
-	<20070925163040.12a3c2f8@the-village.bc.nu>
-	<46F92AAB.1060903@davidnewall.com>
-	<20070925164806.4cadc6a5@the-village.bc.nu>
-	<46F99EDE.70905@davidnewall.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 25 Sep 2007 20:23:56 -0400
+Date: Wed, 26 Sep 2007 01:23:40 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Phillip Susi <psusi@cfl.rr.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Newall <david@davidnewall.com>,
+       Bill Davidsen <davidsen@tmr.com>, majkls <majkls@prepere.com>,
+       bunk@fs.tum.de, linux-kernel@vger.kernel.org
+Subject: Re: sys_chroot+sys_fchdir Fix
+Message-ID: <20070926002340.GL8181@ftp.linux.org.uk>
+References: <46F0CD96.9030807@prepere.com> <20070919104018.3a6bcfb1@the-village.bc.nu> <46F16A0A.3070402@tmr.com> <20070919194559.36015307@the-village.bc.nu> <46F1A196.8060108@davidnewall.com> <46F401D6.6060609@cfl.rr.com> <20070921191012.15a0b51b@the-village.bc.nu> <46F9752C.5080807@cfl.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46F9752C.5080807@cfl.rr.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Good call.  Though I suppose, since it's used 24x7 to aid security on 
-> countless production servers, that security dwarfs testing.  Still, 
-> debugging, yes that's valid.
+On Tue, Sep 25, 2007 at 04:53:00PM -0400, Phillip Susi wrote:
+> Alan Cox wrote:
+> >On Fri, 21 Sep 2007 13:39:34 -0400
+> >Phillip Susi <psusi@cfl.rr.com> wrote:
+> >
+> >>David Newall wrote:
+> >>>* In particular, the superuser can escape from a =91chroot jail=92 by d=
+> >>>oing=20
+> >>>=91mkdir foo; chroot foo; cd ..=92.
+> >>No, he can not.
+> >
+> >The superuser can escape that way - its expected and fine behaviour
 > 
-> I don't suppose it makes and difference; whatever the purpose, a chroot 
-> that doesn't change the root is buggy.
+> Does not work for me, and that would be the EXACT thing chroot is 
+> supposed to prevent.  Maybe you guys are thinking of a program that 
+> calls chroot() but leaves cwd outside the chroot still being able to 
+> navigate outside of it?
 
-It does change the root, it just doesn't guarantee you can't change it
-back - which is correct POSIX, Unix, SuS behaviour. So either everyone
-else is wrong or you are.. I know who I am betting on
+Oh, for fsck sake...  Folks, it's standard-required behaviour.  Ability
+to chroot() implies the ability to break out of it.  Could we please
+add that (along with reference to SuS) to l-k FAQ and be done with that
+nonsense?
+
+If you are within chroot jail and capable of chroot(), you can chdir to
+its root, then chroot() to subdirectory and you've got cwd outside of
+your new root.  After that you can chdir all way out to original root.
+
+Again, this is standard behaviour.  Changing it will not yield any
+security improvements, so kindly give that a rest.
