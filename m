@@ -1,52 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbXI1UCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbXI1UE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903AbXI1UCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbXI1UCG
+	id S1755384AbXI1UE5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbXI1UEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:02:06 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:60173 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbXI1UCE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:02:04 -0400
-X-IronPort-AV: E=Sophos;i="4.21,210,1188802800"; 
-   d="scan'208";a="529439665"
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i915: make vbl interrupts work properly on i965g/gm
-X-Message-Flag: Warning: May contain useful information
-References: <Pine.LNX.4.64.0709280248480.10526@skynet.skynet.ie>
-	<200709271909.23040.jbarnes@virtuousgeek.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 28 Sep 2007 13:02:02 -0700
-In-Reply-To: <200709271909.23040.jbarnes@virtuousgeek.org> (Jesse Barnes's message of "Thu, 27 Sep 2007 19:09:22 -0700")
-Message-ID: <adave9umudh.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Sep 2007 20:02:02.0532 (UTC) FILETIME=[6F998640:01C8020A]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Fri, 28 Sep 2007 16:04:49 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:50919 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753005AbXI1UEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:04:47 -0400
+Subject: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
+From: bo yang <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       bo.yang@lsi.com, Sumant.patro@lsi.com
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Sep 2007 11:22:10 -0400
+Message-Id: <1190820130.5955.7.camel@dhcp-75-534.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 28 Sep 2007 20:04:36.0398 (UTC) FILETIME=[CB4F9CE0:01C8020A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry to hijack this thread, but I have a question about i915
-interrupts (945GM specifically) that I haven't gotten an answer to
-yet, and this thread reminded me of it so I thought I'd ask again:
-I hacked the kernel drm stuff on my laptop with 945GM graphics to do
-pci_enable_msi() on the graphics device, and I don't see any
-interrupts occur.
+Driver will skip physical devices scan for the first time if the fast_load is set. This is to reduce time for loading driver.
 
-So can someone with access to details of the 945GM tell me if MSI
-interrupts should work, and if so if there's some internal registers
-that need to be poked to enable it (beyond what pci_enable_msi()
-does).
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
 
-It's not super-urgent-- I just like using shiny things like MSI, and I
-already have ahci, iwl3945 and e1000 working with MSI on my laptop, so
-the graphics are the only thing left with an MSI capability that's not
-working.
+---
+ drivers/scsi/megaraid/megaraid_sas.c |   69 +++++++++++++++++++------
+ 1 files changed, 55 insertions(+), 14 deletions(-)
 
-Thanks!
-  Roland
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 16:19:18.321402040 -0400
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 16:20:52.915021624 -0400
+@@ -46,6 +46,22 @@
+ #include <scsi/scsi_host.h>
+ #include "megaraid_sas.h"
+ 
++/*
++ * Module parameters
++ */
++
++/*
++ * Fast driver load option, skip scanning for physical devices during
++ * load.  This would result in physical devices being skipped during
++ * driver load time. These can be later added though,
++ * using /proc/scsi/scsi
++ */
++static unsigned int fast_load;
++module_param_named(fast_load, fast_load, int, 0);
++MODULE_PARM_DESC(fast_load,
++	"megasas: Faster loading of the driver, skips physical devices! \
++	 (default = 0)");
++
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(MEGASAS_VERSION);
+ MODULE_AUTHOR("megaraidlinux@lsi.com");
+@@ -1094,6 +1110,44 @@ megasas_service_aen(struct megasas_insta
+ 	megasas_return_cmd(instance, cmd);
+ }
+ 
++static struct megasas_instance *megasas_lookup_instance(u16 host_no)
++{
++	int i;
++
++	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
++		if ((megasas_mgmt_info.instance[i]) &&
++			(megasas_mgmt_info.instance[i]->host->host_no
++			== host_no))
++			return megasas_mgmt_info.instance[i];
++	}
++
++	return NULL;
++}
++
++static int megasas_slave_alloc(struct scsi_device *sdev)
++{
++	struct megasas_instance *instance;
++	int tmp_fastload = fast_load;
++
++	instance = megasas_lookup_instance(sdev->host->host_no);
++
++	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
++		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
++			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1)) {
++
++		/*
++		 * If fast load option was set and scan for last device is
++		 * over, reset the fast_load flag so that during a possible
++		 * next scan, devices can be made available
++		 */
++			fast_load = 0;
++		}
++		return -ENXIO;
++	}
++
++	return 0;
++}
++
+ /*
+  * Scsi host template for megaraid_sas driver
+  */
+@@ -1103,6 +1157,7 @@ static struct scsi_host_template megasas
+ 	.name = "LSI Logic SAS based MegaRAID driver",
+ 	.proc_name = "megaraid_sas",
+ 	.slave_configure = megasas_slave_configure,
++	.slave_alloc = megasas_slave_alloc,
+ 	.queuecommand = megasas_queue_command,
+ 	.eh_device_reset_handler = megasas_reset_device,
+ 	.eh_bus_reset_handler = megasas_reset_bus_host,
+@@ -2961,20 +3016,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 	return error;
+ }
+ 
+-static struct megasas_instance *megasas_lookup_instance(u16 host_no)
+-{
+-	int i;
+-
+-	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
+-
+-		if ((megasas_mgmt_info.instance[i]) &&
+-		    (megasas_mgmt_info.instance[i]->host->host_no == host_no))
+-			return megasas_mgmt_info.instance[i];
+-	}
+-
+-	return NULL;
+-}
+-
+ static int megasas_mgmt_ioctl_fw(struct file *file, unsigned long arg)
+ {
+ 	struct megasas_iocpacket __user *user_ioc =
+
