@@ -1,103 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbXIZRhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbXIZRxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761286AbXIZRhi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 13:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbXIZRhb
+	id S1759038AbXIZRxR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 13:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbXIZRxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 13:37:31 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:39138 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754974AbXIZRha (ORCPT
+	Wed, 26 Sep 2007 13:53:04 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:48108 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755406AbXIZRxB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 13:37:30 -0400
-Subject: Re: KPROBES: Instrumenting a function's call site
-From: Avishay Traeger <atraeger@cs.sunysb.edu>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>, prasanna@in.ibm.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20070926172856.GA22038@askeshav-devel.jf.intel.com>
-References: <1190758358.30061.13.camel@rockstar.fsl.cs.sunysb.edu>
-	 <20070926043933.GA6460@in.ibm.com>
-	 <20070926172856.GA22038@askeshav-devel.jf.intel.com>
-Content-Type: text/plain
-Date: Wed, 26 Sep 2007 13:37:08 -0400
-Message-Id: <1190828228.16768.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Sep 2007 13:53:01 -0400
+To: haveblue@us.ibm.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org
+In-reply-to: <1190823545.30530.19.camel@localhost> (message from Dave Hansen
+	on Wed, 26 Sep 2007 09:19:05 -0700)
+Subject: Re: missing mnt_drop_write() on open error
+References: <E1IaJc0-000541-00@dorka.pomaz.szeredi.hu>
+	 <1190769669.26982.325.camel@localhost>
+	 <E1IaSPW-0005M4-00@dorka.pomaz.szeredi.hu> <1190823545.30530.19.camel@localhost>
+Message-Id: <E1Iab1W-0005Ye-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 26 Sep 2007 19:50:10 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-26 at 10:28 -0700, Keshavamurthy, Anil S wrote:
-> On Wed, Sep 26, 2007 at 10:09:33AM +0530, Ananth N Mavinakayanahalli wrote:
-> > On Tue, Sep 25, 2007 at 06:12:38PM -0400, Avishay Traeger wrote:
-> > > Hello,
-> > > I am trying to use kprobes to measure the latency of a function by
-> > > instrumenting its call site.  Basically, I find the call instruction,
-> > > and insert a kprobe with a pre-handler and post-handler at that point.
-> > > The pre-handler measures the latency (reads the TSC counter).  The
-> > > post-handler measures the latency again, and subtracts the value that
-> > > was read in the pre-handler to compute the total latency of the called
-> > > function.
+> On Wed, 2007-09-26 at 10:38 +0200, Miklos Szeredi wrote:
+> > In __dentry_open() there's still a few places where fput() won't be
+> > called, notably when ->open fails, which is what I'm triggering I
+> > think.
 > > 
-> > This sounds ok...
+> > Also even more horrible things can happen because of the
+> > nd->intent.open.file thing.  For example if the lookup routine calls
+> > lookup_instantiate_filp(), and after this, but before may_open() some
+> > error happens, then release_open_intent() will call fput() on the
+> > file, which will cause mnt_drop_write() to be called, even though a
+> > matching mnt_want_write() hasn't yet been called.  Ugly, eh? 
 > 
-> So what you are really measuring is the latency of just that single 
-> instruction where you have inserted the probe i.e. because your
-> pre-handler is called just before the probed instruction is executed and
-> your post-handler is called right after you probed instruction is single-stepped.
-
-Exactly - I want to profile that single instance of the call.
-
-> > 
-> > > So to measure the latency of foo(), I basically want kprobes to do this:
-> > > pre_handler();
-> > > foo();
-> When you insert a probe, you are inserting  probe on an instruction boundary
-> and not at function level.
-> > > post_handler();
+> I'm not sure it is _that_ horrible. ;)
 > 
-> Hence the above looks like
-> 
-> pre-handler()
-> Probed-instruction; // most likely the first instruction in the foo();
-> post-hanlder()
-> rest-of-foo()
+> Do you see any reason we can't just shadow the
+> get/put_write_access(inode) calls with mnt_want/drop_write() calls?  I
+> think they're always matched.
 
-I see.
+Maybe.  Can we do the mnt_want_write() from __dentry_open(), instead
+of may_open()?  That would be a lot cleaner.
 
-> > > 
-> > > The problem is that the latencies that I am getting are consistently low
-> > > (~10,000 cycles).  When I manually instrument the functions, the latency
-> > > is about 20,000,000 cycles.  Clearly something is not right here.
-> As I mentioned above what you are seeing is the latency of just the
-> probed instruction and hence it is very very low compared to
-> the latency of the function foo().
-> 
-> > You could try a a couple of approaches for starters.
-> I agree with Ananth, you can try the below approaches
-> for your measurements.
-> 
-> > 
-> > a. As you mention above, a kprobe on the function invocation and the
-> > other on the instruction following the call; both need just pre_handlers. 
-> > 
-> > b.
-> > - Insert a kprobe and a kretprobe on foo()
-> > - The kprobe needs to have only a pre_handler that'll measure the latency
-> > - A similar handler for the kretprobe handler can measure the latency
-> > again and their difference will give you foo()'s latency.
-> > 
-> > <b> though will require you to do some housekeeping in case foo() is
-> > reentrant to track which return instance corresponds to which call.
-> > 
-> > Ananth
-> > 
-> > PS: There was a thought of providing a facility to run a handler at
-> > function entry even when just a kretprobe is used. Maybe we need to
-> > relook at that; it'd have been useful in this case.
+Btw, may_open() doesn't do mnt_want_write() around the truncation if
+file is opened with O_TRUNC | O_RDONLY.
 
-Thanks for the clarifications!
-
-Avishay
-
+Miklos
