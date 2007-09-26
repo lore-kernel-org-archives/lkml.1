@@ -1,911 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbXIZSXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbXIZSX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758015AbXIZSXK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbXIZSWp
+	id S1760690AbXIZSX2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758874AbXIZSWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:22:45 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:60393 "EHLO e3.ny.us.ibm.com"
+	Wed, 26 Sep 2007 14:22:47 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:44443 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757134AbXIZSWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:22:42 -0400
-Subject: [patch 1/3]  Trace code and documentation
+	id S1758546AbXIZSWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 14:22:45 -0400
+Subject: [patch 2/3]  Relay Reset Consumed
 From: "David J. Wilder" <dwilder@us.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, randy.dunlap@oracle.com, hch@infradead.org,
        mathieu.desnoyers@polymtl.ca
 Content-Type: text/plain
-Date: Wed, 26 Sep 2007 11:22:35 -0700
-Message-Id: <1190830956.1232.12.camel@lc4eb748232119.ibm.com>
+Date: Wed, 26 Sep 2007 11:22:40 -0700
+Message-Id: <1190830960.1232.13.camel@lc4eb748232119.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trace - Provides tracing primitives
+This patch allows relay channels to be reset i.e. unconsumed.
+Basically allows a 'rewind' function for flight-recorder tracing.
 
 Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
-Signed-off-by: Martin Hunt <hunt@redhat.com>
 Signed-off-by: David Wilder <dwilder@us.ibm.com>
 ---
- Documentation/trace.txt |  160 ++++++++++++++
- include/linux/trace.h   |   99 +++++++++
- lib/Kconfig             |    9 +
- lib/Makefile            |    2 +
- lib/trace.c             |  563 +++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 833 insertions(+), 0 deletions(-)
+ Documentation/filesystems/relay.txt |   11 ++++++
+ include/linux/relay.h               |    1 +
+ kernel/relay.c                      |   58 ++++++++++++++++++++++++++++++++---
+ 3 files changed, 65 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/trace.txt b/Documentation/trace.txt
-new file mode 100644
-index 0000000..0e42fb8
---- /dev/null
-+++ b/Documentation/trace.txt
-@@ -0,0 +1,160 @@
-+Trace Setup and Control
-+=======================
-+In the kernel, the trace interface provides a simple mechanism for
-+starting and managing data channels (traces) to user space.  The
-+trace interface builds on the relay interface.  For a complete
-+description of the relay interface, please see:
-+Documentation/filesystems/relay.txt.
-+
-+The trace interface provides a single layer in a complete tracing
-+application.  Trace provides a kernel API that can be used for the setup
-+and control of tracing channels.  User of trace must provide a data layer
-+responsible for formatting and writing data into the trace channels.
-+
-+A layered approach to tracing
-+=============================
-+A complete kernel tracing application consists of a data provider and
-+a data consumer.  Both provider and consumer contain three layers; each
-+layer works in tandem with the corresponding layer in the opposite side.
-+The layers are represented in the following diagram.
-+
-+Provider Data layer
-+	Formats raw trace data and provides data-related service.
-+	For example, adding timestamps used by consumer to sort data.
-+
-+Provider Control layer
-+	Provided by the trace interface, this layer creates trace channels
-+	and informs the data layer and consumer of the current state
-+	of the trace channels.
-+
-+Provider Buffering layer
-+	Provided by relay. This layer buffers data in the
-+	kernel for consumption by the consumer's buffer
-+	layer.
-+
-+Provider (in-kernel facility)
-+-----------------------------------------------------------------------------
-+Consumer (user application)
-+
-+
-+Consumer Buffer layer
-+	Reads/consumes data from the provider's data buffers.
-+
-+Consumer Control layer
-+	Communicates to the provider's control layer to control the state
-+	of the trace channels.
-+
-+Consumer Data layer
-+	Sorts and formats data as provided by the provider's data layer.
-+
-+The provider is coded as a kernel facility.  The consumer is coded as
-+a user application.
-+
-+
-+Trace - Features
-+================
-+Trace exploits services and features provided by relay.  These features
-+are:
-+- The creation and destruction of relay channels.
-+- Buffer management.  Overwrite or non-overwrite modes can be selected
-+  as well as global or per-CPU buffering.
-+
-+Overwrite mode can be called "flight recorder mode".  Flight recorder
-+mode is selected by setting the TRACE_FLIGHT_CHANNEL flag when
-+creating trace channels.  In flight mode when a tracing buffer is
-+full, the oldest records in the buffer will be discarded to make room
-+as new records arrive. In the default non-overwrite mode, new records
-+may be written only if the buffer has room.  In either case, to
-+prevent data loss, a user space reader must keep the buffers
-+drained. Trace provides a means to detect the number of records that
-+have been dropped due to a buffer-full condition (non-overwrite mode
-+only).
-+
-+When per-CPU buffers are used, relay creates one debugfs file for each
-+running CPU.  The user-space consumer of the data is responsible for
-+reading the per-CPU buffers and collating the records presumably using
-+a time stamp or sequence number included in the trace records.  The
-+use of global buffers eliminates this extra work of sequencing
-+records; however the provider's data layer must hold a lock when
-+writing records.  The lock prevents writers running on different CPUs
-+from overwriting each other's data.  However, buffering may be slower
-+because writes to the buffer are serialized. Global buffering is
-+selected by setting the TRACE_GLOBAL_CHANNEL flag when creating trace
-+channels.
-+
-+Trace User Interface
-+===================
-+When a trace channel is created and started, the following
-+directories and files are created in the root of the mounted debugfs.
-+
-+/debug (root of the debugfs)
-+	/<trace-root-dir>
-+		/<trace-name>
-+			trace0...traceN-1  Per-CPU trace data, one
-+					   file per CPU.
-+
-+			state		   Start or stop tracing by
-+					   by writing the strings
-+					   "start" or "stop" to this
-+					   file. Read the file to get the
-+					   current state.
-+
-+			dropped		   The number of records dropped
-+					   due to a full-buffer condition,
-+					   for non-TRACE_FLIGHT_CHANNELs
-+					   only.
-+
-+			rewind		   Trigger a rewind by writing
-+					   to this file.  i.e. start
-+					   next read at the beginning
-+					   again. Only available for
-+					   TRACE_FLIGHT_CHANNELS.
-+
-+
-+			nr_sub		   Number of sub-buffers
-+					   in the channel.
-+
-+			sub_size	   Size of sub-buffers in
-+					   the channnel.
-+
-+Trace data is gathered from the trace[0...N] files using one of the
-+available interfaces provided by relay.
-+
-+When using the read(2) interface, as data is read it is marked as
-+consumed by the relay subsystem.  Therefore, subsequent reads will
-+only return unconsumed data.
-+
-+Trace Kernel API
-+===============
-+An overview of the trace Kernel API is now given. More details of the
-+API can be found in linux/trace.h.
-+
-+The steps a kernel data provider takes to utilize the trace interface are:
-+1) Set up a trace channel - trace_setup()
-+2) Start the trace channel - trace_start()
-+3) Write one or more trace records into the channel (using the relay API).
-+
-+   Important: When writing a trace record the provider must insure that
-+   preemption is disabled and that trace state is  set to "running". A
-+   typical function used to write records into a trace channel should
-+   follow the following semantics:
-+
-+	rcu_read_lock();	    // disables preemption
-+	if (trace_running(trace)){
-+		relay_write(....); // use any available relay data
-+				   // function
-+	}
-+	rcu_read_unlock();	   // enables preemption
-+
-+4) Stop and start tracing as desired - trace_start()/trace_stop()
-+5) Destroy the trace channel and underlying relay channel -
-+   trace_cleanup().
-+
-+Credits
-+=======
-+Trace is adapted from blktrace authored by Jens Axboe (axboe@kernel.dk).
-+
-+Major contributions were made by:
-+Tom Zanussi <zanussi@us.ibm.com>
-+Martin Hunt <hunt@redhat.com>
-+David Wilder <dwilder@us.ibm.com>
-diff --git a/include/linux/trace.h b/include/linux/trace.h
-new file mode 100644
-index 0000000..a3a10c9
---- /dev/null
-+++ b/include/linux/trace.h
-@@ -0,0 +1,99 @@
-+/*
-+ * TRACE defines and function prototypes
-+ *
-+ * Copyright (C) 2007 IBM Inc.
-+ *
-+ *	Tom Zanussi <zanussi@us.ibm.com>
-+ *	Martin Hunt <hunt@redhat.com>
-+ *	David Wilder <dwilder@us.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
-+ */
-+#ifndef _LINUX_TRACE_H
-+#define _LINUX_TRACE_H
-+
-+#include <linux/relay.h>
-+
-+/*
-+ * TRACE channel flags
-+ */
-+#define TRACE_GLOBAL_CHANNEL	0x01
-+#define TRACE_FLIGHT_CHANNEL	0x02
-+#define TRACE_DISABLE_STATE	0x04
-+
-+enum trace_state {
-+	TRACE_SETUP,
-+	TRACE_RUNNING,
-+	TRACE_STOPPED,
-+};
-+
-+#define TRACE_ROOT_NAME_SIZE	64	/* Max root dir identifier */
-+#define TRACE_NAME_SIZE		64	/* Max trace identifier */
-+
-+/*
-+ * Global root user information
-+ */
-+struct trace_root {
-+	struct list_head list;
-+	char name[TRACE_ROOT_NAME_SIZE];
-+	struct dentry *root;
-+	unsigned int users;
-+};
-+
-+/*
-+ * Client information
-+ */
-+struct trace_info {
-+	struct mutex state_mutex; /* Used to protect state changes */
-+	enum trace_state state;
-+	struct dentry *state_file;
-+	struct rchan *rchan;
-+	struct dentry *dir;
-+	struct dentry *dropped_file;
-+	struct dentry *reset_consumed_file;
-+	struct dentry *nr_sub_file;
-+	struct dentry *sub_size_file;
-+	atomic_t dropped;
-+	struct trace_root *root;
-+	void *private_data;
-+	unsigned int flags;
-+	unsigned int buf_size;
-+	unsigned int buf_nr;
-+};
-+
-+#ifdef CONFIG_TRACE
-+static inline int trace_running(struct trace_info *trace)
-+{
-+	return trace->state == TRACE_RUNNING;
-+}
-+struct trace_info *trace_setup(const char *root, const char *name,
-+			       u32 buf_size, u32 buf_nr, u32 flags);
-+int trace_start(struct trace_info *trace);
-+int trace_stop(struct trace_info *trace);
-+void trace_cleanup(struct trace_info *trace);
-+#else
-+static inline struct trace_info *trace_setup(const char *root,
-+					     const char *name, u32 buf_size,
-+					     u32 buf_nr, u32 flags)
-+{
-+	return NULL;
-+}
-+static inline int trace_start(struct trace_info *trace) { return -EINVAL; }
-+static inline int trace_stop(struct trace_info *trace) { return -EINVAL; }
-+static inline int trace_running(struct trace_info *trace) { return 0; }
-+static inline void trace_cleanup(struct trace_info *trace) {}
-+#endif
-+
-+#endif
-diff --git a/lib/Kconfig b/lib/Kconfig
-index ba3d104..ad19f87 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -141,4 +141,13 @@ config HAS_DMA
- config CHECK_SIGNATURE
- 	bool
+diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
+index 18d23f9..d31113a 100644
+--- a/Documentation/filesystems/relay.txt
++++ b/Documentation/filesystems/relay.txt
+@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
+     relay_close(chan)
+     relay_flush(chan)
+     relay_reset(chan)
++    relay_reset_consumed(chan)
  
-+config TRACE
-+	bool "Trace setup and control"
-+	depends on RELAY && DEBUG_FS
-+	help
-+	  This option provides support for the setup, teardown and control
-+	  of tracing channels from kernel code.  It also provides trace
-+	  information and control to userspace via a set of debugfs control
-+	  files.  If unsure, say N.
-+
- endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index 76d6619..fa00ea1 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -70,6 +70,8 @@ lib-$(CONFIG_GENERIC_BUG) += bug.o
+   channel management typically called on instigation of userspace:
  
- obj-$(CONFIG_PROFILE_LIKELY) += likely_prof.o
+@@ -452,6 +453,16 @@ state without reallocating channel buffer memory or destroying
+ existing mappings.  It should however only be called when it's safe to
+ do so, i.e. when the channel isn't currently being written to.
  
-+obj-$(CONFIG_TRACE) += trace.o
++The read(2) implementation always 'consumes' the bytes read,
++i.e. those bytes won't be available again to subsequent reads.
++Certain applications may nonetheless wish to allow the 'consumed' data
++to be re-read; relay_reset_consumed() is provided for that purpose -
++it resets the internal consumed counters for all buffers in the
++channel.  For example, if a first set of reads 'drains' the channel,
++and then relay_reset_consumed() is called, a second set of reads will
++get the exact same data (assuming no new data was written between the
++first set of reads and the second).
 +
- hostprogs-y	:= gen_crc32table
- clean-files	:= crc32table.h
+ Finally, there are a couple of utility callbacks that can be used for
+ different purposes.  buf_mapped() is called whenever a channel buffer
+ is mmapped from user space and buf_unmapped() is called when it's
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index 6cd8c44..aca45fa 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -175,6 +175,7 @@ extern void relay_subbufs_consumed(struct rchan *chan,
+ 				   unsigned int cpu,
+ 				   size_t consumed);
+ extern void relay_reset(struct rchan *chan);
++extern void relay_reset_consumed(struct rchan *chan);
+ extern int relay_buf_full(struct rchan_buf *buf);
  
-diff --git a/lib/trace.c b/lib/trace.c
-new file mode 100644
-index 0000000..a760597
---- /dev/null
-+++ b/lib/trace.c
-@@ -0,0 +1,563 @@
-+/*
-+ * Based on blktrace code, Copyright (C) 2006 Jens Axboe <axboe@kernel.dk>
-+ * Moved to utt.c by Tom Zanussi <zanussi@us.ibm.com>, 2006
-+ * Additional contributions by:
-+ * Martin Hunt <hunt@redhat.com>, 2007
-+ * David Wilder <dwilder@us.ibm.com>, 2007
-+ * Renamed to trace <dwilder.ibm.com>, 2007
+ extern size_t relay_switch_subbuf(struct rchan_buf *buf,
+diff --git a/kernel/relay.c b/kernel/relay.c
+index 61134eb..6b55eaa 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -383,6 +383,57 @@ void relay_reset(struct rchan *chan)
+ }
+ EXPORT_SYMBOL_GPL(relay_reset);
+ 
++/**
++ *	__relay_reset_consumed - reset a channel buffer's consumed count
++ *	@buf: the channel buffer
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
++ *	See relay_reset_consumed for description of effect.
 + */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/mutex.h>
-+#include <linux/debugfs.h>
-+#include <linux/trace.h>
-+
-+static LIST_HEAD(trace_roots);
-+static DEFINE_MUTEX(trace_mutex);
-+
-+static int state_open(struct inode *inode, struct file *filp)
++static inline void __relay_reset_consumed(struct rchan_buf *buf)
 +{
-+	filp->private_data = inode->i_private;
-+	return 0;
-+}
++	size_t n_subbufs = buf->chan->n_subbufs;
++	size_t produced = buf->subbufs_produced;
++	size_t consumed = buf->subbufs_consumed;
 +
-+static ssize_t state_read(struct file *filp, char __user *buffer,
-+			  size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char *buf = "trace not started\n";
-+
-+	if (trace->state == TRACE_STOPPED)
-+		buf = "stopped\n";
-+	else if (trace->state == TRACE_RUNNING)
-+		buf = "running\n";
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static ssize_t state_write(struct file *filp, const char __user *buffer,
-+			   size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[16];
-+	int ret;
-+
-+	if (trace->flags & TRACE_DISABLE_STATE)
-+		return -EINVAL;
-+
-+	if (count > sizeof(buf) - 1)
-+		return -EINVAL;
-+
-+	if (copy_from_user(buf, buffer, count))
-+		return -EFAULT;
-+
-+	buf[count] = '\0';
-+
-+	if (strncmp(buf, "start", strlen("start")) == 0) {
-+		ret = trace_start(trace);
-+		if (ret)
-+			return ret;
-+	} else if (strncmp(buf, "stop", strlen("stop")) == 0)
-+		trace_stop(trace);
-+	else
-+		return -EINVAL;
-+
-+	return count;
-+}
-+
-+static struct file_operations state_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= state_open,
-+	.read	= state_read,
-+	.write	= state_write,
-+};
-+
-+static void remove_root(struct trace_info *trace)
-+{
-+	if (trace->root->root && simple_empty(trace->root->root)) {
-+		debugfs_remove(trace->root->root);
-+		list_del(&trace->root->list);
-+		kfree(trace->root);
-+		trace->root = NULL;
++	if (produced < n_subbufs)
++		buf->subbufs_consumed = 0;
++	else {
++		consumed = produced - n_subbufs;
++		if (buf->offset)
++			consumed++;
++		buf->subbufs_consumed = consumed;
 +	}
-+}
-+
-+static void remove_tree(struct trace_info *trace)
-+{
-+	mutex_lock(&trace_mutex);
-+	debugfs_remove(trace->dir);
-+
-+	if (trace->root) {
-+		if (--trace->root->users == 0)
-+			remove_root(trace);
-+	}
-+
-+	mutex_unlock(&trace_mutex);
-+}
-+
-+/*
-+ * Creates the trace_root if it's not found.
-+ */
-+static struct trace_root *lookup_root(const char *root)
-+{
-+	struct list_head *pos;
-+	struct trace_root *r;
-+
-+	list_for_each(pos, &trace_roots) {
-+		r = list_entry(pos, struct trace_root, list);
-+		if (!strcmp(r->name, root))
-+			return r;
-+	}
-+
-+	r = kzalloc(sizeof(struct trace_root), GFP_KERNEL);
-+	if (!r)
-+		return ERR_PTR(-ENOMEM);
-+
-+	strlcpy(r->name, root, sizeof(r->name));
-+
-+	r->root = debugfs_create_dir(root, NULL);
-+	if (IS_ERR(r->root))
-+		r->root = NULL;
-+	else
-+		list_add(&r->list, &trace_roots);
-+
-+	return r;
-+}
-+
-+static struct dentry *create_tree(struct trace_info *trace, const char *root,
-+				  const char *name)
-+{
-+	struct dentry *dir = NULL;
-+
-+	if (root == NULL || name == NULL)
-+		return ERR_PTR(-EINVAL);
-+
-+	mutex_lock(&trace_mutex);
-+
-+	trace->root = lookup_root(root);
-+	if (IS_ERR(trace->root)) {
-+		trace->root = NULL;
-+		goto err;
-+	}
-+
-+	dir = debugfs_create_dir(name, trace->root->root);
-+	if (IS_ERR(dir))
-+		remove_root(trace);
-+	else
-+		trace->root->users++;
-+
-+err:
-+	mutex_unlock(&trace_mutex);
-+	return dir;
-+}
-+
-+static int dropped_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t dropped_read(struct file *filp, char __user *buffer,
-+			    size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[16];
-+
-+	snprintf(buf, sizeof(buf), "%u\n", atomic_read(&trace->dropped));
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static struct file_operations dropped_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= dropped_open,
-+	.read	= dropped_read,
-+};
-+
-+static int reset_consumed_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t reset_consumed_write(struct file *filp,
-+				    const char __user *buffer,
-+				    size_t count, loff_t *ppos)
-+{
-+	int ret = count;
-+	struct trace_info *trace = filp->private_data;
-+
-+	mutex_lock(&trace->state_mutex);
-+	switch (trace->state) {
-+	case TRACE_RUNNING:
-+		trace->state = TRACE_STOPPED;
-+		synchronize_rcu();
-+		relay_flush(trace->rchan);
-+		relay_reset_consumed(trace->rchan);
-+		trace->state = TRACE_RUNNING;
-+		break;
-+	case TRACE_STOPPED:
-+		relay_reset_consumed(trace->rchan);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+	mutex_unlock(&trace->state_mutex);
-+	return ret;
-+}
-+
-+static struct file_operations reset_consumed_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= reset_consumed_open,
-+	.write	= reset_consumed_write
-+};
-+
-+static int sub_size_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+
-+	return 0;
-+}
-+
-+static ssize_t sub_size_read(struct file *filp, char __user *buffer,
-+			     size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[32];
-+
-+	snprintf(buf, sizeof(buf), "%zu\n", trace->rchan->subbuf_size);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static struct file_operations sub_size_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= sub_size_open,
-+	.read	= sub_size_read,
-+};
-+
-+static int nr_sub_open(struct inode *inode, struct file *filp)
-+{
-+	filp->private_data = inode->i_private;
-+	return 0;
-+}
-+
-+static ssize_t nr_sub_read(struct file *filp, char __user *buffer,
-+			   size_t count, loff_t *ppos)
-+{
-+	struct trace_info *trace = filp->private_data;
-+	char buf[32];
-+
-+	snprintf(buf, sizeof(buf), "%zu\n", trace->rchan->n_subbufs);
-+
-+	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
-+}
-+
-+static struct file_operations nr_sub_fops = {
-+	.owner	= THIS_MODULE,
-+	.open	= nr_sub_open,
-+	.read	= nr_sub_read,
-+};
-+
-+/*
-+ * Keep track of how many times we encountered a full subbuffer, to aid
-+ * the user space app in telling how many lost events there were.
-+ */
-+static int subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
-+				 void *prev_subbuf, size_t prev_padding)
-+{
-+	struct trace_info *trace = buf->chan->private_data;
-+
-+	if (trace->flags & TRACE_FLIGHT_CHANNEL)
-+		return 1;
-+
-+	if (!relay_buf_full(buf))
-+		return 1;
-+
-+	atomic_inc(&trace->dropped);
-+
-+	return 0;
-+}
-+
-+static int remove_buf_file_callback(struct dentry *dentry)
-+{
-+	debugfs_remove(dentry);
-+
-+	return 0;
-+}
-+
-+static struct dentry *create_buf_file_callback(const char *filename,
-+					       struct dentry *parent, int mode,
-+					       struct rchan_buf *buf,
-+					       int *is_global)
-+{
-+	return debugfs_create_file(filename, mode, parent, buf,
-+				   &relay_file_operations);
-+}
-+
-+static struct dentry *create_global_buf_file_callback(const char *filename,
-+						      struct dentry *parent,
-+						      int mode,
-+						      struct rchan_buf *buf,
-+						      int *is_global)
-+{
-+	*is_global = 1;
-+
-+	return debugfs_create_file(filename, mode, parent, buf,
-+				   &relay_file_operations);
-+}
-+
-+static struct rchan_callbacks relay_callbacks = {
-+	.subbuf_start		= subbuf_start_callback,
-+	.create_buf_file	= create_buf_file_callback,
-+	.remove_buf_file	= remove_buf_file_callback,
-+};
-+static struct rchan_callbacks relay_callbacks_global = {
-+	.subbuf_start		= subbuf_start_callback,
-+	.create_buf_file	= create_global_buf_file_callback,
-+	.remove_buf_file	= remove_buf_file_callback,
-+};
-+
-+static void remove_controls(struct trace_info *trace)
-+{
-+	debugfs_remove(trace->state_file);
-+	debugfs_remove(trace->dropped_file);
-+	debugfs_remove(trace->reset_consumed_file);
-+	debugfs_remove(trace->nr_sub_file);
-+	debugfs_remove(trace->sub_size_file);
-+	remove_tree(trace);
-+}
-+
-+/*
-+ * Setup controls for tracing.
-+ */
-+static struct trace_info *setup_controls(const char *root,
-+					 const char *name, u32 flags)
-+{
-+	struct trace_info *trace;
-+	long ret;
-+
-+	trace = kzalloc(sizeof(*trace), GFP_KERNEL);
-+	if (!trace) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	trace->dir = create_tree(trace, root, name);
-+	if (IS_ERR(trace->dir)) {
-+		ret = PTR_ERR(trace->dir);
-+		trace->dir = NULL;
-+		goto err;
-+	}
-+
-+	trace->state_file = debugfs_create_file("state", 0444, trace->dir,
-+						 trace, &state_fops);
-+	if (IS_ERR(trace->state_file)) {
-+		ret = PTR_ERR(trace->state_file);
-+		trace->state_file = NULL;
-+		goto err;
-+	}
-+
-+	if (!flags & TRACE_FLIGHT_CHANNEL) {
-+		trace->dropped_file = debugfs_create_file("dropped", 0444,
-+							  trace->dir, trace,
-+							  &dropped_fops);
-+		if (IS_ERR(trace->dropped_file)) {
-+			ret = PTR_ERR(trace->dropped_file);
-+			trace->dropped_file = NULL;
-+			goto err;
-+		}
-+	}
-+
-+	if (flags & TRACE_FLIGHT_CHANNEL) {
-+		trace->reset_consumed_file = debugfs_create_file("rewind", 0444,
-+							trace->dir, trace,
-+							&reset_consumed_fops);
-+		if (IS_ERR(trace->reset_consumed_file)) {
-+			ret = PTR_ERR(trace->reset_consumed_file);
-+			trace->reset_consumed_file = NULL;
-+			goto err;
-+		}
-+	}
-+
-+	trace->nr_sub_file = debugfs_create_file("nr_sub", 0444,
-+						 trace->dir, trace,
-+						 &nr_sub_fops);
-+	if (IS_ERR(trace->nr_sub_file)) {
-+		ret = PTR_ERR(trace->nr_sub_file);
-+		trace->nr_sub_file = NULL;
-+		goto err;
-+	}
-+
-+	trace->sub_size_file = debugfs_create_file("sub_size", 0444,
-+						   trace->dir, trace,
-+						   &sub_size_fops);
-+	if (IS_ERR(trace->sub_size_file)) {
-+		ret = PTR_ERR(trace->sub_size_file);
-+		trace->sub_size_file = NULL;
-+		goto err;
-+	}
-+
-+	return trace;
-+err:
-+	if (trace) {
-+		remove_controls(trace);
-+		kfree(trace);
-+	}
-+
-+	return ERR_PTR(ret);
-+}
-+
-+static int trace_setup_channel(struct trace_info *trace, u32 buf_size,
-+				u32 buf_nr, u32 flags)
-+{
-+	if (!buf_size || !buf_nr)
-+		return -EINVAL;
-+
-+	if (flags & TRACE_GLOBAL_CHANNEL)
-+		trace->rchan = relay_open("trace", trace->dir, buf_size,
-+					  buf_nr, &relay_callbacks_global,
-+					  trace);
-+	else
-+		trace->rchan = relay_open("trace", trace->dir, buf_size,
-+					  buf_nr, &relay_callbacks, trace);
-+
-+	if (!trace->rchan)
-+		return -ENOMEM;
-+
-+	trace->flags = flags;
-+	trace->state = TRACE_SETUP;
-+
-+	return 0;
++	buf->bytes_consumed = 0;
 +}
 +
 +/**
-+ *	trace_setup - create a new trace trace handle
-+ *	@root: The root directory name to place trace directories.
-+ *	@name: Trace directory name, created in @root
-+ *	@buf_size: size of the relay sub-buffers
-+ *	@buf_nr: number of relay sub-buffers
-+ *	@flags: Option selection (see trace channel flags definitions)
++ *	relay_reset_consumed - reset the channel's consumed counts
++ *	@chan: the channel
 + *
-+ *	returns a trace_info handle or NULL, if setup failed.
++ *	This has the effect of making all data previously read (and
++ *	not overwritten by subsequent writes) from a channel available
++ *	for reading again.
 + *
-+ *	The @root is created (if needed) in the root of the debugfs.
-+ *	The default values when flags=0 are: use per-CPU buffering,
-+ *	use non-overwrite mode. See Documentation/trace.txt for details.
++ *	NOTE: Care should be taken that the channel isn't actually
++ *	being used by anything when this call is made.
 + */
-+struct trace_info *trace_setup(const char *root, const char *name,
-+			       u32 buf_size, u32 buf_nr, u32 flags)
++void relay_reset_consumed(struct rchan *chan)
 +{
-+	struct trace_info *trace;
++	unsigned int i;
++	struct rchan_buf *prev = NULL;
 +
-+	trace = setup_controls(root, name, flags);
-+	if (IS_ERR(trace))
-+		return trace;
++	if (!chan)
++		return;
 +
-+	trace->buf_size = buf_size;
-+	trace->buf_nr = buf_nr;
-+	trace->flags = flags;
-+	mutex_init(&trace->state_mutex);
-+	trace->state = TRACE_SETUP;
-+
-+	return trace;
-+}
-+EXPORT_SYMBOL_GPL(trace_setup);
-+
-+/**
-+ *	trace_start - start tracing
-+ *	@trace: trace handle to start.
-+ *
-+ *	returns 0 if successful.
-+ */
-+int trace_start(struct trace_info *trace)
-+{
-+	/*
-+	 * For starting a trace, we can transition from a setup or stopped
-+	 * trace.
-+	 */
-+	if (trace->state == TRACE_RUNNING)
-+		return -EINVAL;
-+
-+	mutex_lock(&trace->state_mutex);
-+	if (trace->state == TRACE_SETUP) {
-+		int ret;
-+
-+		ret = trace_setup_channel(trace, trace->buf_size,
-+					  trace->buf_nr, trace->flags);
-+		if (ret) {
-+			mutex_unlock(&trace->state_mutex);
-+			return ret;
-+		}
++	for (i = 0; i < NR_CPUS; i++) {
++		if (!chan->buf[i] || chan->buf[i] == prev)
++			break;
++		__relay_reset_consumed(chan->buf[i]);
++		prev = chan->buf[i];
 +	}
-+
-+	trace->state = TRACE_RUNNING;
-+	mutex_unlock(&trace->state_mutex);
-+
-+	return 0;
 +}
-+EXPORT_SYMBOL_GPL(trace_start);
++EXPORT_SYMBOL_GPL(relay_reset_consumed);
 +
-+/**
-+ *	trace_stop - stop tracing
-+ *	@trace: trace handle to stop.
-+ *
-+ */
-+int trace_stop(struct trace_info *trace)
-+{
-+	int ret = -EINVAL;
-+
-+	/*
-+	 * For stopping a trace, the state must be running
-+	 */
-+	mutex_lock(&trace->state_mutex);
-+	if (trace->state == TRACE_RUNNING) {
-+		trace->state = TRACE_STOPPED;
-+		/*
-+		 * wait for all cpus to see the change in
-+		 * state before continuing
-+		 */
-+		synchronize_sched();
-+		relay_flush(trace->rchan);
-+		ret = 0;
-+	}
-+	mutex_unlock(&trace->state_mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(trace_stop);
-+
-+static void trace_cleanup_channel(struct trace_info *trace)
-+{
-+	trace_stop(trace);
-+	relay_close(trace->rchan);
-+	trace->rchan = NULL;
-+}
-+
-+/**
-+ *	trace_cleanup - destroys the trace channel, control files and dir
-+ *	@trace: trace handle to cleanup
-+ */
-+void trace_cleanup(struct trace_info *trace)
-+{
-+	trace_cleanup_channel(trace);
-+	remove_controls(trace);
-+	kfree(trace);
-+}
-+EXPORT_SYMBOL_GPL(trace_cleanup);
+ /*
+  *	relay_open_buf - create a new relay channel buffer
+  *
+@@ -845,11 +896,8 @@ static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
+ 		return 1;
+ 	}
+ 
+-	if (unlikely(produced - consumed >= n_subbufs)) {
+-		consumed = produced - n_subbufs + 1;
+-		buf->subbufs_consumed = consumed;
+-		buf->bytes_consumed = 0;
+-	}
++	if (unlikely(produced - consumed >= n_subbufs))
++		__relay_reset_consumed(buf);
+ 
+ 	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
+ 	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+old mode 100644
+new mode 100755
 
 
