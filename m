@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbXIZOvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759372AbXIZOwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbXIZOvV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 10:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbXIZOvN
+	id S1759372AbXIZOwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 10:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXIZOwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 10:51:13 -0400
-Received: from h90-m1.hosting90.cz ([81.0.225.70]:46068 "EHLO
-	h90-m1.hosting90.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753144AbXIZOvM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 10:51:12 -0400
-Message-ID: <46FA71E0.8080406@prepere.com>
-Date: Wed, 26 Sep 2007 16:51:12 +0200
-From: Miloslav Semler <majkls@prepere.com>
-User-Agent: IceDove 1.5.0.12 (X11/20070607)
+	Wed, 26 Sep 2007 10:52:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39308 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752604AbXIZOwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 10:52:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86-64: Disable local APIC timer use on AMD systems with C1E
+Date: Wed, 26 Sep 2007 17:06:51 +0200
+User-Agent: KMail/1.9.5
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andi Kleen <ak@suse.de>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, Len Brown <lenb@kernel.org>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>
+References: <1190749021.17409.35.camel@chaos> <200709252332.41710.rjw@sisk.pl> <20070926083107.GB10713@elte.hu>
+In-Reply-To: <20070926083107.GB10713@elte.hu>
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Kyle Moffett <mrmacman_g4@mac.com>, David Newall <david@davidnewall.com>,
-       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
-       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Chroot bug
-References: <46F924E3.50205@davidnewall.com> <20070925163040.12a3c2f8@the-village.bc.nu> <46F92AAB.1060903@davidnewall.com> <20070925164806.4cadc6a5@the-village.bc.nu> <46F99EDE.70905@davidnewall.com> <20070926005551.GS6800@stusta.de> <F23AFB4D-E989-4F06-A256-4D12D852DFA2@mac.com> <46FA341A.80706@davidnewall.com> <6BA6E9EE-B67B-4334-AC83-9B8E30527832@mac.com> <46FA5A85.20407@prepere.com> <20070926134223.GO8181@ftp.linux.org.uk>
-In-Reply-To: <20070926134223.GO8181@ftp.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709261706.52761.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro napsal(a):
-> On Wed, Sep 26, 2007 at 03:11:33PM +0200, Miloslav Semler wrote:
->   
->>> As for the nested-chroot() bit, the root user inside of a chroot is 
->>> always allowed to chroot().  This is necessary for test-suites for 
->>> various distro installers, chroot once to enter the installer playpen, 
->>> installer chroots again to configure the test-installed-system.  Once 
->>> you allow a second chroot, you're back at the "can't reliably and 
->>> efficiently track directory sub-tree members" problem.
->>>
->>> So if you think it can and should be fixed, then PROVIDE THE CODE.
->>>       
->> Miloslav Semler
->>     
->
-> man openat
->
-> This is really pointless, anyway - any code that expects chroot to be
-> root-proof is terminally broken.
->   
-So thanks for information. I did't know anything about *at functions. So 
-it seems to be more complicated. But maybe it will be good write to 
-manpage "other systems implement it by other way, so this feature is 
-unportable".
+On Wednesday, 26 September 2007 10:31, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > On Tuesday, 25 September 2007 22:55, Thomas Gleixner wrote:
+> > > On Tue, 2007-09-25 at 22:55 +0200, Rafael J. Wysocki wrote:
+> > > > I have reworked the patch a bit so that it applies on top of 2.6.23-rc8-mm1
+> > > > and compiles (my version is attached).
+> > > > 
+> > > > With this patch applied, the kernel boots correctly on the nx6325.
+> > > 
+> > > I know. It's basically enforced "noapictimer". 
+> > > 
+> > > But this still does not explain why your nasty box booted current
+> > > mainline with "apicmaintimer" on the kernel command line.
+> > 
+> > Now it doesn't do that any more.
+> > 
+> > As I wrote in the other thread, I think that _sometimes_ the CPU 
+> > doesn't enter the C1E state (or how it's called) and then the box 
+> > boots and works.
+> 
+> Can you see any correlation between being on AC or on battery and this 
+> bug occuring?
+
+No.  All tests were done with the AC power supply plugged in.
+
+> Sometimes the BIOS might even do C states depending on  
+> whether the box was booted up on AC or on battery. (and sometimes the 
+> kernel calibrates things differently when booting up on battery [lower 
+> speed] - so this can have an effect too.)
+
+On my box there are hidden history effects related to other things too (eg.
+sometimes after a fresh boot the processor generates lots of ACPI events
+such that it takes 25% of CPU power to handle them alone).
+
+Greetings,
+Rafael
