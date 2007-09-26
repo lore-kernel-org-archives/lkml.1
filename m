@@ -1,243 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbXIZNSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbXIZNTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbXIZNSR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 09:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbXIZNSE
+	id S1758383AbXIZNTH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 09:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbXIZNS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 09:18:04 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:46559 "EHLO
-	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbXIZNSD (ORCPT
+	Wed, 26 Sep 2007 09:18:56 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:2205 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbXIZNSz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 09:18:03 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: Oops in pwc v4l driver
-User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
-Cc: linux-kernel@vger.kernel.org
-References: <a0738740709020457n3490ee52l49d29712f3ddbb75@mail.gmail.com>
-In-Reply-To: <a0738740709020457n3490ee52l49d29712f3ddbb75@mail.gmail.com>
+	Wed, 26 Sep 2007 09:18:55 -0400
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Wed, 26 Sep 2007 15:19:01 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709261519.02048.oliver@neukum.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 26 Sep 2007 13:17:19.0969 (UTC) FILETIME=[913CF510:01C8003F]
+Content-class: urn:content-classes:message
+Subject: Re: Chroot bug
+Date: Wed, 26 Sep 2007 09:18:04 -0400
+Message-ID: <Pine.LNX.4.61.0709260906080.31286@chaos.analogic.com>
+In-Reply-To: <46FA3EE8.4080707@davidnewall.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Chroot bug
+Thread-Index: AcgAP5FGJCIZ0PkrQQCq+4rL0WCYvQ==
+References: <20070925114947.GA9721@vino.hallyn.com> <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com> <20070925163040.12a3c2f8@the-village.bc.nu> <46F92AAB.1060903@davidnewall.com> <20070925164806.4cadc6a5@the-village.bc.nu> <46F99EDE.70905@davidnewall.com> <20070926005551.GS6800@stusta.de> <F23AFB4D-E989-4F06-A256-4D12D852DFA2@mac.com> <46FA341A.80706@davidnewall.com> <20070926104500.GA4354@dspnet.fr.eu.org> <46FA3EE8.4080707@davidnewall.com>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "David Newall" <david@davidnewall.com>
+Cc: "Olivier Galibert" <galibert@pobox.com>,
+       "Kyle Moffett" <mrmacman_g4@mac.com>, "Adrian Bunk" <bunk@kernel.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Serge E. Hallyn" <serge@hallyn.com>,
+       "Bill Davidsen" <davidsen@tmr.com>,
+       "Philipp Marek" <philipp@marek.priv.at>, <7eggert@gmx.de>,
+       "majkls" <majkls@prepere.com>, <bunk@fs.tum.de>,
+       <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The pwc driver is defficient in locking, which can trigger an oops
-when disconnecting.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
+On Wed, 26 Sep 2007, David Newall wrote:
 
-	Regards
-		Oliver
----
+> Olivier Galibert wrote:
+>> chroot does not allow you to walk out if you're in.
+>
+> You're mistaken.  Or more properly, further use of chroot lets you walk
+> out.  This really has been said before, and before, and before.
+>
+>    chroot("subtree");   // enter chroot
+>    chdir("/");    // now at subtree
+>    chroot("/tmp");   // now outside of chroot
+>
+>
+> BSD redefined chroot so that the working directory is set to the new
+> root on subsequent uses of chroot; that's how they solved the bug.
 
---- a/drivers/media/video/pwc/pwc-if.c	2007-08-24 10:16:38.000000000 +0200
-+++ b/drivers/media/video/pwc/pwc-if.c	2007-08-24 11:01:26.000000000 +0200
-@@ -908,31 +908,49 @@ int pwc_isoc_init(struct pwc_device *pde
- 	return 0;
- }
- 
--void pwc_isoc_cleanup(struct pwc_device *pdev)
-+static void pwc_iso_stop(struct pwc_device *pdev)
- {
- 	int i;
- 
--	PWC_DEBUG_OPEN(">> pwc_isoc_cleanup()\n");
--	if (pdev == NULL)
--		return;
--	if (pdev->iso_init == 0)
--		return;
--
- 	/* Unlinking ISOC buffers one by one */
- 	for (i = 0; i < MAX_ISO_BUFS; i++) {
- 		struct urb *urb;
- 
- 		urb = pdev->sbuf[i].urb;
- 		if (urb != 0) {
--			if (pdev->iso_init) {
--				PWC_DEBUG_MEMORY("Unlinking URB %p\n", urb);
--				usb_kill_urb(urb);
--			}
-+			PWC_DEBUG_MEMORY("Unlinking URB %p\n", urb);
-+			usb_kill_urb(urb);
-+		}
-+	}
-+}
-+
-+static void pwc_iso_free(struct pwc_device *pdev)
-+{
-+	int i;
-+
-+	/* Freeing ISOC buffers one by one */
-+	for (i = 0; i < MAX_ISO_BUFS; i++) {
-+		struct urb *urb;
-+
-+		urb = pdev->sbuf[i].urb;
-+		if (urb != 0) {
- 			PWC_DEBUG_MEMORY("Freeing URB\n");
- 			usb_free_urb(urb);
- 			pdev->sbuf[i].urb = NULL;
- 		}
- 	}
-+}
-+
-+void pwc_isoc_cleanup(struct pwc_device *pdev)
-+{
-+	PWC_DEBUG_OPEN(">> pwc_isoc_cleanup()\n");
-+	if (pdev == NULL)
-+		return;
-+	if (pdev->iso_init == 0)
-+		return;
-+
-+	pwc_iso_stop(pdev);
-+	pwc_iso_free(pdev);
- 
- 	/* Stop camera, but only if we are sure the camera is still there (unplug
- 	   is signalled by EPIPE)
-@@ -1212,6 +1230,7 @@ static int pwc_video_close(struct inode 
- 
- 	PWC_DEBUG_OPEN(">> video_close called(vdev = 0x%p).\n", vdev);
- 
-+	lock_kernel();
- 	pdev = (struct pwc_device *)vdev->priv;
- 	if (pdev->vopen == 0)
- 		PWC_DEBUG_MODULE("video_close() called on closed device?\n");
-@@ -1231,7 +1250,6 @@ static int pwc_video_close(struct inode 
- 	pwc_isoc_cleanup(pdev);
- 	pwc_free_buffers(pdev);
- 
--	lock_kernel();
- 	/* Turn off LEDS and power down camera, but only when not unplugged */
- 	if (!pdev->unplugged) {
- 		/* Turn LEDs off */
-@@ -1277,7 +1295,7 @@ static ssize_t pwc_video_read(struct fil
- 	struct pwc_device *pdev;
- 	int noblock = file->f_flags & O_NONBLOCK;
- 	DECLARE_WAITQUEUE(wait, current);
--	int bytes_to_read;
-+	int bytes_to_read, rv = 0;
- 	void *image_buffer_addr;
- 
- 	PWC_DEBUG_READ("pwc_video_read(vdev=0x%p, buf=%p, count=%zd) called.\n",
-@@ -1287,8 +1305,12 @@ static ssize_t pwc_video_read(struct fil
- 	pdev = vdev->priv;
- 	if (pdev == NULL)
- 		return -EFAULT;
--	if (pdev->error_status)
--		return -pdev->error_status; /* Something happened, report what. */
-+
-+	mutex_lock(&pdev->modlock);
-+	if (pdev->error_status) {
-+		rv = -pdev->error_status; /* Something happened, report what. */
-+		goto err_out;
-+	}
- 
- 	/* In case we're doing partial reads, we don't have to wait for a frame */
- 	if (pdev->image_read_pos == 0) {
-@@ -1299,17 +1321,20 @@ static ssize_t pwc_video_read(struct fil
- 			if (pdev->error_status) {
- 				remove_wait_queue(&pdev->frameq, &wait);
- 				set_current_state(TASK_RUNNING);
--				return -pdev->error_status ;
-+				rv = -pdev->error_status ;
-+				goto err_out;
- 			}
- 			if (noblock) {
- 				remove_wait_queue(&pdev->frameq, &wait);
- 				set_current_state(TASK_RUNNING);
--				return -EWOULDBLOCK;
-+				rv = -EWOULDBLOCK;
-+				goto err_out;
- 			}
- 			if (signal_pending(current)) {
- 				remove_wait_queue(&pdev->frameq, &wait);
- 				set_current_state(TASK_RUNNING);
--				return -ERESTARTSYS;
-+				rv = -ERESTARTSYS;
-+				goto err_out;
- 			}
- 			schedule();
- 			set_current_state(TASK_INTERRUPTIBLE);
-@@ -1318,8 +1343,10 @@ static ssize_t pwc_video_read(struct fil
- 		set_current_state(TASK_RUNNING);
- 
- 		/* Decompress and release frame */
--		if (pwc_handle_frame(pdev))
--			return -EFAULT;
-+		if (pwc_handle_frame(pdev)) {
-+			rv = -EFAULT;
-+			goto err_out;
-+		}
- 	}
- 
- 	PWC_DEBUG_READ("Copying data to user space.\n");
-@@ -1334,14 +1361,20 @@ static ssize_t pwc_video_read(struct fil
- 	image_buffer_addr = pdev->image_data;
- 	image_buffer_addr += pdev->images[pdev->fill_image].offset;
- 	image_buffer_addr += pdev->image_read_pos;
--	if (copy_to_user(buf, image_buffer_addr, count))
--		return -EFAULT;
-+	if (copy_to_user(buf, image_buffer_addr, count)) {
-+		rv = -EFAULT;
-+		goto err_out;
-+	}
- 	pdev->image_read_pos += count;
- 	if (pdev->image_read_pos >= bytes_to_read) { /* All data has been read */
- 		pdev->image_read_pos = 0;
- 		pwc_next_image(pdev);
- 	}
-+	mutex_unlock(&pdev->modlock);
- 	return count;
-+err_out:
-+	mutex_unlock(&pdev->modlock);
-+	return rv;
- }
- 
- static unsigned int pwc_video_poll(struct file *file, poll_table *wait)
-@@ -1367,7 +1400,20 @@ static unsigned int pwc_video_poll(struc
- static int pwc_video_ioctl(struct inode *inode, struct file *file,
- 			   unsigned int cmd, unsigned long arg)
- {
--	return video_usercopy(inode, file, cmd, arg, pwc_video_do_ioctl);
-+	struct video_device *vdev = file->private_data;
-+	struct pwc_device *pdev; 
-+	int r = -ENODEV;
-+
-+	if (!vdev)
-+		goto out;
-+	pdev = vdev->priv;
-+
-+	mutex_lock(&pdev->modlock);
-+	if (!pdev->unplugged)
-+		r = video_usercopy(inode, file, cmd, arg, pwc_video_do_ioctl);
-+	mutex_unlock(&pdev->modlock);
-+out:
-+	return r;
- }
- 
- static int pwc_video_mmap(struct file *file, struct vm_area_struct *vma)
-@@ -1810,7 +1856,10 @@ static void usb_pwc_disconnect(struct us
- 	wake_up_interruptible(&pdev->frameq);
- 	/* Wait until device is closed */
- 	if(pdev->vopen) {
-+		mutex_lock(&pdev->modlock);
- 		pdev->unplugged = 1;
-+		mutex_unlock(&pdev->modlock);
-+		pwc_iso_stop(pdev);
- 	} else {
- 		/* Device is closed, so we can safely unregister it */
- 		PWC_DEBUG_PROBE("Unregistering video device in disconnect().\n");
-@@ -1828,7 +1877,6 @@ disconnect_out:
- 	unlock_kernel();
- }
- 
--
- /* *grunt* We have to do atoi ourselves :-( */
- static int pwc_atoi(const char *s)
- {
+I don't know that the so-called requirements are, but if you
+have a distribution tree mounted on /mnt and you perform the
+following operations:
 
+cd /mnt
+chroot . bin/bash
+
+That shell, will not leave the new root until it exits or
+executes `chroot`. I've tried the "tricks" about mounting
+/proc and changing to 'cwd' of init, etc. However, your
+new root needs to NOT have the chroot utility available
+and/or the system call needs to be removed or trapped
+in the runtime library of the new root, because, quite
+obviously, a root process can do anything it wants.
+That's how Unix was designed. So, if you don't want
+somebody to get out of your 'jail' don't provide
+the keys. It's clearly not a kernel issue.
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
