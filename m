@@ -1,118 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762200AbXIZW14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbXIZW3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762200AbXIZW14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 18:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXIZW1t
+	id S1762792AbXIZW3Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 18:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759006AbXIZW3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 18:27:49 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44902 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751888AbXIZW1s (ORCPT
+	Wed, 26 Sep 2007 18:29:17 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57543 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756560AbXIZW3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 18:27:48 -0400
-Date: Wed, 26 Sep 2007 15:27:20 -0700
-Message-Id: <200709262227.l8QMRKFE000784@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jordan Crouse <jordan.crouse@amd.com>,
-       Joerg Pommnitz <pommnitz@yahoo.com>
-Subject: [GIT PULL] Workaround for broken Geode E820 BIOS
+	Wed, 26 Sep 2007 18:29:16 -0400
+Date: Wed, 26 Sep 2007 23:35:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] mm  ecryptfs warning spew on 64bit
+Message-ID: <20070926233520.5db0e8c0@the-village.bc.nu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Its a size_t to use %Zd
 
-Please pull:
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
-
-H. Peter Anvin (1):
-      [x86 setup] Handle case of improperly terminated E820 chain
-
- arch/i386/boot/memory.c |   30 +++++++++++++++++++++++-------
- 1 files changed, 23 insertions(+), 7 deletions(-)
-
-[Log messages and full diffs follow]
-
-commit 2efa33f81ef56e7700c09a3d8a881c96692149e5
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Wed Sep 26 14:11:43 2007 -0700
-
-    [x86 setup] Handle case of improperly terminated E820 chain
-    
-    At least one system (a Geode system with a Digital Logic BIOS) has
-    been found which suddenly stops reporting the SMAP signature when
-    reading the E820 memory chain.  We can't know what, exactly, broke in
-    the BIOS, so if we detect this situation, declare the E820 data
-    unusable and fall back to E801.
-    
-    Also, revert to original behavior of always probing all memory
-    methods; that way all the memory information is available to the
-    kernel.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-    Cc: Jordan Crouse <jordan.crouse@amd.com>
-    Cc: Joerg Pommnitz <pommnitz@yahoo.com>
-
-diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-index 1a2e62d..bccaa1c 100644
---- a/arch/i386/boot/memory.c
-+++ b/arch/i386/boot/memory.c
-@@ -20,6 +20,7 @@
- 
- static int detect_memory_e820(void)
- {
-+	int count = 0;
- 	u32 next = 0;
- 	u32 size, id;
- 	u8 err;
-@@ -33,14 +34,24 @@ static int detect_memory_e820(void)
- 		      "=m" (*desc)
- 		    : "D" (desc), "a" (0xe820));
- 
--		if (err || id != SMAP)
-+		/* Some BIOSes stop returning SMAP in the middle of
-+		   the search loop.  We don't know exactly how the BIOS
-+		   screwed up the map at that point, we might have a
-+		   partial map, the full map, or complete garbage, so
-+		   just return failure. */
-+		if (id != SMAP) {
-+			count = 0;
- 			break;
-+		}
- 
--		boot_params.e820_entries++;
-+		if (err)
-+			break;
-+
-+		count++;
- 		desc++;
--	} while (next && boot_params.e820_entries < E820MAX);
-+	} while (next && count < E820MAX);
- 
--	return boot_params.e820_entries;
-+	return boot_params.e820_entries = count;
- }
- 
- static int detect_memory_e801(void)
-@@ -89,11 +100,16 @@ static int detect_memory_88(void)
- 
- int detect_memory(void)
- {
-+	int err = -1;
-+
- 	if (detect_memory_e820() > 0)
--		return 0;
-+		err = 0;
- 
- 	if (!detect_memory_e801())
--		return 0;
-+		err = 0;
-+
-+	if (!detect_memory_88())
-+		err = 0;
- 
--	return detect_memory_88();
-+	return err;
- }
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.23rc8-mm1/fs/ecryptfs/crypto.c linux-2.6.23rc8-mm1/fs/ecryptfs/crypto.c
+--- linux.vanilla-2.6.23rc8-mm1/fs/ecryptfs/crypto.c	2007-09-26 16:46:54.000000000 +0100
++++ linux-2.6.23rc8-mm1/fs/ecryptfs/crypto.c	2007-09-26 17:31:47.000000000 +0100
+@@ -1439,7 +1439,7 @@
+ 		 * crypt_stat->num_header_extents_at_front)
+ 		< ECRYPTFS_MINIMUM_HEADER_EXTENT_SIZE)) {
+ 		rc = -EINVAL;
+-		printk(KERN_WARNING "Invalid number of header extents: [%d]\n",
++		printk(KERN_WARNING "Invalid number of header extents: [%Zd]\n",
+ 		       crypt_stat->num_header_extents_at_front);
+ 	}
+ 	return rc;
