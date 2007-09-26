@@ -1,103 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761893AbXIZVF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760686AbXIZVGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761893AbXIZVF7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761835AbXIZVF0
+	id S1760686AbXIZVGX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762603AbXIZVFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:05:26 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56812 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762070AbXIZVFY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:05:24 -0400
-Date: Wed, 26 Sep 2007 14:00:10 -0700
-From: Greg KH <gregkh@suse.de>
-To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: State of the Linux PCI Subsystem for 2.6.23-rc8
-Message-ID: <20070926210010.GC1734@kroah.com>
+	Wed, 26 Sep 2007 17:05:37 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55291 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762497AbXIZVFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 17:05:35 -0400
+Date: Wed, 26 Sep 2007 23:05:33 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: "Bernhard Walle (in kexec list)" <kexec@lists.infradead.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch 1/7] Extended crashkernel command line
+Message-ID: <20070926210533.GA1299@suse.de>
+Mail-Followup-To: Oleg Verych <olecom@flower.upol.cz>,
+	"Bernhard Walle (in kexec list)" <kexec@lists.infradead.org>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org
+References: <20070925182257.900701776@strauss.suse.de> <20070925182258.175348676@strauss.suse.de> <E1IaHPU-00089b-Bc@flower> <20070926161602.GA26909@suse.de> <20070926181843.GB24301@flower.upol.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070926181843.GB24301@flower.upol.cz>
+Organization: SUSE LINUX Products GmbH
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a summary of the current state of the Linux PCI subsystem, as of
-2.6.23-rc8.
+* Oleg Verych <olecom@flower.upol.cz> [2007-09-26 20:18]:
+> > 
+> > --- a/kernel/kexec.c
+> > +++ b/kernel/kexec.c
+> > @@ -1172,33 +1172,50 @@ static int __init parse_crashkernel_mem(
+> >  	do {
+> >  		unsigned long long start = 0, end = ULLONG_MAX;
+> >  		unsigned long long size = -1;
+> 
+> no need in assigning values here, unless you plan to use them in case
+> of `return -EINVAL', but i can not see that,
 
-If the information in here is incorrect, or anyone knows of any
-outstanding issues not listed here, please let me know.
+What about this (and yes, I tested with some wrong strings with Qemu):
 
-List of outstanding regressions from 2.6.22:
-	- none known.
+----
 
-List of outstanding regressions from older kernel versions:
-	- none known.
-
-
-If interested, the list of all currently open PCI bugs can be seen at:
-    http://bugzilla.kernel.org/showdependencytree.cgi?id=5829&hide_resolved=1
-
-
-Future patches that are currently in my quilt tree (as found at
-	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-) for the PCI subsystem are as follows.  All of these will be submitted
-for inclusion into 2.6.24, except as noted.  The diffstat of these
-patches is included at the bottom of this message for those that are
-interested.
-
-	- various pci quirks for different devices
-	- pci hotplug driver kthread conversion
-	- pci hotplug bugfixes
-	- pci express hotplug tweaks and fixes
-	- minor bugfixes and cleanups
-	- MSI documentation update
-
-	- pci bridge device rework.  Note, this was reported to break
-	  Andrew's x86-64 box, but he lost the picture he took of the
-	  oops.  Others reported that it worked just fine on their
-	  boxes.  I'm still a little hesitant of sending this to 2.6.24
-	  until I can track down what happened here.
-
-There are no PCI api changes scheduled for 2.6.24.
+This patch improves error handling in parse_crashkernel_mem() by comparing
+the return pointer of memparse() with the input pointer and also replaces
+all printk(KERN_WARNING msg) with pr_warning(msg).
 
 
-thanks,
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
-greg k-h
+---
+ kernel/kexec.c |   54 +++++++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 39 insertions(+), 15 deletions(-)
 
-----------------------------
-
-Diffstat of the current pci-2.6 quilt queue:
-
- Documentation/DMA-API.txt         |    3 
- Documentation/MSI-HOWTO.txt       |   69 ------------
- arch/i386/kernel/pci-dma.c        |    3 
- arch/i386/kernel/reboot_fixups.c  |    6 +
- arch/i386/pci/common.c            |   10 +
- arch/i386/pci/fixup.c             |   47 ++++++++
- arch/i386/pci/irq.c               |   39 +++++++
- arch/x86_64/kernel/pci-dma.c      |    1 
- drivers/pci/bus.c                 |   17 ++-
- drivers/pci/hotplug/cpqphp_core.c |    2 
- drivers/pci/hotplug/cpqphp_ctrl.c |   74 ++++---------
- drivers/pci/hotplug/ibmphp_hpc.c  |   57 ++--------
- drivers/pci/hotplug/pciehp_core.c |   24 +---
- drivers/pci/hotplug/pciehp_ctrl.c |   20 +--
- drivers/pci/hotplug/pciehp_hpc.c  |  209 ++++++++++----------------------------
- drivers/pci/hotplug/pciehp_pci.c  |   24 ++--
- drivers/pci/pci-driver.c          |    3 
- drivers/pci/pci.c                 |    5 
- drivers/pci/pci.h                 |    2 
- drivers/pci/pcie/Kconfig          |    9 -
- drivers/pci/probe.c               |   82 +++++++-------
- drivers/pci/quirks.c              |   43 -------
- drivers/pci/remove.c              |    6 -
- include/linux/pci.h               |    4 
- include/linux/pci_ids.h           |    3 
- include/linux/pci_regs.h          |    6 -
- lib/swiotlb.c                     |    1 
- 27 files changed, 316 insertions(+), 453 deletions(-)
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1167,44 +1167,59 @@ static int __init parse_crashkernel_mem(
+ 					unsigned long long	*crash_size,
+ 					unsigned long long	*crash_base)
+ {
+-	char *cur = cmdline;
++	char *cur = cmdline, *tmp;
+ 
+ 	/* for each entry of the comma-separated list */
+ 	do {
+-		unsigned long long start = 0, end = ULLONG_MAX;
+-		unsigned long long size = -1;
++		unsigned long long start, end = ULLONG_MAX, size;
+ 
+ 		/* get the start of the range */
+-		start = memparse(cur, &cur);
++		start = memparse(cur, &tmp);
++		if (cur == tmp) {
++			pr_warning("crashkernel: Memory value expected\n");
++			return -EINVAL;
++		}
++		cur = tmp;
+ 		if (*cur != '-') {
+-			printk(KERN_WARNING "crashkernel: '-' expected\n");
++			pr_warning("crashkernel: '-' expected\n");
+ 			return -EINVAL;
+ 		}
+ 		cur++;
+ 
+ 		/* if no ':' is here, than we read the end */
+ 		if (*cur != ':') {
+-			end = memparse(cur, &cur);
++			end = memparse(cur, &tmp);
++			if (cur == tmp) {
++				pr_warning("crashkernel: Memory "
++						"value expected\n");
++				return -EINVAL;
++			}
++			cur = tmp;
+ 			if (end <= start) {
+-				printk(KERN_WARNING "crashkernel: end <= start\n");
++				pr_warning("crashkernel: end <= start\n");
+ 				return -EINVAL;
+ 			}
+ 		}
+ 
+ 		if (*cur != ':') {
+-			printk(KERN_WARNING "crashkernel: ':' expected\n");
++			pr_warning("crashkernel: ':' expected\n");
+ 			return -EINVAL;
+ 		}
+ 		cur++;
+ 
+-		size = memparse(cur, &cur);
+-		if (size < 0) {
+-			printk(KERN_WARNING "crashkernel: invalid size\n");
++		size = memparse(cur, &tmp);
++		if (cur == tmp) {
++			pr_warning("Memory value expected\n");
++			return -EINVAL;
++		}
++		cur = tmp;
++		if (size >= system_ram) {
++			pr_warning("crashkernel: invalid size\n");
+ 			return -EINVAL;
+ 		}
+ 
+ 		/* match ? */
+-		if (system_ram >= start  && system_ram <= end) {
++		if (system_ram >= start && system_ram <= end) {
+ 			*crash_size = size;
+ 			break;
+ 		}
+@@ -1213,8 +1228,15 @@ static int __init parse_crashkernel_mem(
+ 	if (*crash_size > 0) {
+ 		while (*cur != ' ' && *cur != '@')
+ 			cur++;
+-		if (*cur == '@')
+-			*crash_base = memparse(cur+1, &cur);
++		if (*cur == '@') {
++			cur++;
++			*crash_base = memparse(cur, &tmp);
++			if (cur == tmp) {
++				pr_warning("Memory value expected "
++						"after '@'\n");
++				return -EINVAL;
++			}
++		}
+ 	}
+ 
+ 	return 0;
+@@ -1234,8 +1256,10 @@ static int __init parse_crashkernel_simp
+ 	char *cur = cmdline;
+ 
+ 	*crash_size = memparse(cmdline, &cur);
+-	if (cmdline == cur)
++	if (cmdline == cur) {
++		pr_warning("crashkernel: memory value expected\n");
+ 		return -EINVAL;
++	}
+ 
+ 	if (*cur == '@')
+ 		*crash_base = memparse(cur+1, &cur);
