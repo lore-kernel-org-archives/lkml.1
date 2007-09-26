@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbXIZSU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760339AbXIZSWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760008AbXIZSU2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbXIZSUU
+	id S1760339AbXIZSWv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbXIZSWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:20:20 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:58849 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754619AbXIZSUS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:20:18 -0400
-Subject: [PATCH] just rename call_rcu_bh instead of making it a macro
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: RT <linux-rt-users@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+	Wed, 26 Sep 2007 14:22:39 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:60319 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756015AbXIZSWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 14:22:39 -0400
+Subject: [PATCH 0/3] A kernel tracing interface - (updated)
+From: "David J. Wilder" <dwilder@us.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, randy.dunlap@oracle.com, hch@infradead.org,
+       mathieu.desnoyers@polymtl.ca
 Content-Type: text/plain
-Date: Wed, 26 Sep 2007 14:17:47 -0400
-Message-Id: <1190830667.20235.5.camel@localhost.localdomain>
+Date: Wed, 26 Sep 2007 11:22:29 -0700
+Message-Id: <1190830949.1232.11.camel@lc4eb748232119.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems that I found a box that has a config that passes call_rcu_bh as a
-function pointer (see net/sctp/sm_make_chunk.c), so declaring the
-call_rcu_bh has a macro function isn't good enough.
+These patches provide a kernel tracing interface called "trace".
 
-This patch makes it just another name of call_rcu for rcupreempt.
+(update) Moved the sample code to the new samples\ subdir
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+The motivation for "trace" is to:
+- Provide a simple set of tracing primitives that will utilize the high-
+  performance and low-overhead of relayfs for passing traces data from
+  kernel to user space.
+- Provide a common user interface for managing kernel traces.
+- Allow for binary as well as ascii trace data.
+- Incorporate features from the systemtap runtime that are
+  useful to others.
 
-Index: linux-2.6.23-rc8-rt1/include/linux/rcupreempt.h
-===================================================================
---- linux-2.6.23-rc8-rt1.orig/include/linux/rcupreempt.h
-+++ linux-2.6.23-rc8-rt1/include/linux/rcupreempt.h
-@@ -42,9 +42,14 @@
- #include <linux/cpumask.h>
- #include <linux/seqlock.h>
- 
--#define rcu_qsctr_inc(cpu)
--#define rcu_bh_qsctr_inc(cpu)
--#define call_rcu_bh(head, rcu) call_rcu(head, rcu)
-+#define rcu_qsctr_inc(cpu)	do { } while (0)
-+#define rcu_bh_qsctr_inc(cpu)	do { } while (0)
-+/*
-+ * Someone might want to pass call_rcu_bh as a function pointer.
-+ * So this needs to just be a rename and not a macro function.
-+ *  (no parentheses)
-+ */
-+#define call_rcu_bh		 call_rcu
- 
- extern void __rcu_read_lock(void);
- extern void __rcu_read_unlock(void);
+Patches are against 2.6.23-rc6-mm1
+
+Summary of patches:
+[patch 1/3]  Trace code and documentation
+[patch 2/3]  Relay Reset Consumed
+[patch 3/3]  Trace sample
+
+Note: Patches 1/3 and 2/3 must be applied together.
+
+Note: The following patches must be applied with 3/3.
+[patch 3/5] Add samples subdir
+	http://lkml.org/lkml/2007/9/25/157
+[patch 4/5] Linux Kernel Markers - Samples
+	http://lkml.org/lkml/2007/9/25/166
+
+Signed-off-by: David Wilder <dwilder@us.ibm.com>
 
 
