@@ -1,133 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbXIZQhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759012AbXIZQiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757124AbXIZQhz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 12:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbXIZQhr
+	id S1759012AbXIZQiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 12:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbXIZQhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 12:37:47 -0400
-Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:25456 "EHLO
-	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752323AbXIZQhq (ORCPT
+	Wed, 26 Sep 2007 12:37:53 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:24202 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755175AbXIZQhv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 12:37:46 -0400
-X-Greylist: delayed 584 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 12:37:45 EDT
-X-IronPort-AV: E=Sophos;i="4.20,302,1186351200"; 
-   d="scan'208";a="1526374"
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: [PATCH 2/8] taskstats: split the basic accounting fields
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Guillaume Chazarain <guichaz@yahoo.fr>
-Date: Wed, 26 Sep 2007 18:28:05 +0200
-Message-ID: <20070926162805.29434.9637.stgit@cheypa.inria.fr>
-In-Reply-To: <20070926162800.29434.67786.stgit@cheypa.inria.fr>
-References: <20070926162800.29434.67786.stgit@cheypa.inria.fr>
-User-Agent: StGIT/0.12.1
+	Wed, 26 Sep 2007 12:37:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ETwQh4m10SUH5PmXP72optI0A3F/WXStmEmd4MbEXnIV5iVM9aVJ4hyFvtz+nSOHrnQDAeJ+o5eE0sosAqlFmCaIHWBtDSPRYPcz4+lStTRT8Z5eHZl77cRJ2XA83mu+JzDPku0O5mo/fsXR7dey5p4UC765wbAeug/SH6yneoI=
+Message-ID: <863e9df20709260937v79d555ffn49f3b8ff7aba42cb@mail.gmail.com>
+Date: Wed, 26 Sep 2007 22:07:50 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Avishay Traeger" <atraeger@cs.sunysb.edu>
+Subject: Re: KPROBES: Instrumenting a function's call site
+Cc: prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1190758358.30061.13.camel@rockstar.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1190758358.30061.13.camel@rockstar.fsl.cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Split the basic accounting taskstats fields into the threadgroup specific ones
-and the thread specific ones. This should have no effect on the execution.
+On 9/26/07, Avishay Traeger <atraeger@cs.sunysb.edu> wrote:
+> So to measure the latency of foo(), I basically want kprobes to do this:
+> pre_handler();
+> foo();
+> post_handler();
+>
+> The problem is that the latencies that I am getting are consistently low
+> (~10,000 cycles).  When I manually instrument the functions, the latency
+> is about 20,000,000 cycles.  Clearly something is not right here.
 
-Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
-Cc: Balbir Singh <balbir@in.ibm.com>
-Cc: Jay Lan <jlan@engr.sgi.com>
-Cc: Jonathan Lim <jlim@sgi.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>
----
+Single-stepping is done with preemption (and on some archs like ARM,
+interrupts) disabled. May be that is contributing to such a skew.
 
- kernel/tsacct.c |   53 +++++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 37 insertions(+), 16 deletions(-)
+> Is this a known issue?  Instead of using the post-handler, I can try to
+> add a kprobe to the following instruction with a pre-handler.  I was
+> just curious if there was something fundamentally wrong with the
+> approach I took, or maybe a bug that you should be made aware of.
+>
+> Please CC me on any replies (not subscribed to LKML).
+>
+> Thanks,
+> Avishay
+>
+--
+Regards
+Abhishek Sagar
 
-diff --git a/kernel/tsacct.c b/kernel/tsacct.c
-index 4ab1b58..d32378f 100644
---- a/kernel/tsacct.c
-+++ b/kernel/tsacct.c
-@@ -25,13 +25,11 @@
- /*
-  * fill in basic accounting fields
-  */
--void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
-+static void fill_wall_times(struct taskstats *stats, struct task_struct *tsk)
- {
- 	struct timespec uptime, ts;
- 	s64 ac_etime;
- 
--	BUILD_BUG_ON(TS_COMM_LEN < TASK_COMM_LEN);
 -
- 	/* calculate task elapsed time in timespec */
- 	do_posix_clock_monotonic_gettime(&uptime);
- 	ts = timespec_sub(uptime, tsk->start_time);
-@@ -40,17 +38,47 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
- 	do_div(ac_etime, NSEC_PER_USEC);
- 	stats->ac_etime = ac_etime;
- 	stats->ac_btime = get_seconds() - ts.tv_sec;
--	if (thread_group_leader(tsk)) {
--		stats->ac_exitcode = tsk->exit_code;
--		if (tsk->flags & PF_FORKNOEXEC)
--			stats->ac_flag |= AFORK;
--	}
-+}
-+
-+/*
-+ * Later on, XXX_add_tsk() will need to be called after XXX_fill_threadgroup(),
-+ * so put the functions in this order
-+ */
-+static void bacct_fill_threadgroup(struct taskstats *stats,
-+				   struct task_struct *tsk);
-+
-+void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
-+{
- 	if (tsk->flags & PF_SUPERPRIV)
- 		stats->ac_flag |= ASU;
- 	if (tsk->flags & PF_DUMPCORE)
- 		stats->ac_flag |= ACORE;
- 	if (tsk->flags & PF_SIGNALED)
- 		stats->ac_flag |= AXSIG;
-+
-+	stats->ac_utime	+= cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
-+	stats->ac_stime += cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
-+	stats->ac_utimescaled	+=
-+		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
-+	stats->ac_stimescaled	+=
-+		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
-+	stats->ac_minflt	+= tsk->min_flt;
-+	stats->ac_majflt	+= tsk->maj_flt;
-+
-+	bacct_fill_threadgroup(stats, tsk);
-+}
-+
-+static void bacct_fill_threadgroup(struct taskstats *stats,
-+				   struct task_struct *tsk)
-+{
-+	fill_wall_times(stats, tsk);
-+
-+	if (thread_group_leader(tsk)) {
-+		stats->ac_exitcode = tsk->exit_code;
-+		if (tsk->flags & PF_FORKNOEXEC)
-+			stats->ac_flag |= AFORK;
-+	}
-+
- 	stats->ac_nice	 = task_nice(tsk);
- 	stats->ac_sched	 = tsk->policy;
- 	stats->ac_uid	 = tsk->uid;
-@@ -60,15 +88,8 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
- 	stats->ac_ppid	 = pid_alive(tsk) ?
- 				rcu_dereference(tsk->real_parent)->tgid : 0;
- 	rcu_read_unlock();
--	stats->ac_utime	 = cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
--	stats->ac_stime	 = cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
--	stats->ac_utimescaled =
--		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
--	stats->ac_stimescaled =
--		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
--	stats->ac_minflt = tsk->min_flt;
--	stats->ac_majflt = tsk->maj_flt;
- 
-+	BUILD_BUG_ON(TS_COMM_LEN < TASK_COMM_LEN);
- 	strncpy(stats->ac_comm, tsk->comm, sizeof(stats->ac_comm));
- }
- 
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
