@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761783AbXIZSpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759260AbXIZSu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761783AbXIZSpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbXIZSp1
+	id S1759260AbXIZSu6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbXIZSuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:45:27 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:10178 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753359AbXIZSp0 (ORCPT
+	Wed, 26 Sep 2007 14:50:50 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:21302 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755001AbXIZSuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:45:26 -0400
-Message-Id: <46FA545D0200006C0001930D@sinclair.provo.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 26 Sep 2007 12:45:17 -0600
-From: "David Bahi" <dbahi@novell.com>
-To: <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Cc: <rostedt@goodmis.org>, <tglx@linutronix.de>,
-       "Gregory Haskins" <GHaskins@novell.com>
-Subject: [PATCH 1/1] nmi_watchdog: x86_64 count timer and hpet like
-	i386
-References: <46FA4AE7020000FC00012412@sinclair.provo.novell.com>
- <46FA545D0200006C0001930D@sinclair.provo.novell.com>
-In-Reply-To: <46FA545D0200006C0001930D@sinclair.provo.novell.com>
+	Wed, 26 Sep 2007 14:50:50 -0400
+Date: Wed, 26 Sep 2007 11:41:08 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "David J. Wilder" <dwilder@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, hch@infradead.org,
+       mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH 0/3] A kernel tracing interface - (updated)
+Message-Id: <20070926114108.6ac77ce5.randy.dunlap@oracle.com>
+In-Reply-To: <1190830949.1232.11.camel@lc4eb748232119.ibm.com>
+References: <1190830949.1232.11.camel@lc4eb748232119.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=__PartD1F660AD.2__="
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=__PartD1F660AD.2__=
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, 26 Sep 2007 11:22:29 -0700 David J. Wilder wrote:
 
-This modifies nmi_watchdog_tick behavior for x86_64 arch to=20
-consider both timer and pit/hpet IRQs just as the i386 arch does.
+> These patches provide a kernel tracing interface called "trace".
+> 
+> (update) Moved the sample code to the new samples\ subdir
+> 
+> The motivation for "trace" is to:
+> - Provide a simple set of tracing primitives that will utilize the high-
+>   performance and low-overhead of relayfs for passing traces data from
+>   kernel to user space.
+> - Provide a common user interface for managing kernel traces.
+> - Allow for binary as well as ascii trace data.
+> - Incorporate features from the systemtap runtime that are
+>   useful to others.
+> 
+> Patches are against 2.6.23-rc6-mm1
+> 
+> Summary of patches:
+> [patch 1/3]  Trace code and documentation
+> [patch 2/3]  Relay Reset Consumed
+> [patch 3/3]  Trace sample
+> 
+> Note: Patches 1/3 and 2/3 must be applied together.
 
-Without this fix a kernel crash occurs very early in the boot=20
-process if nmi_watchdog is on.
+Patch 2 provides an interface that patch 1 needs, correct?
+So yes, patches 1 & 2 need to be applied together (merged),
+or their order could be reversed, yes?  Can't the Relay patch
+be merged standalone without breaking anything?
 
-Signed-off-by: David Bahi <dbahi@novell.com>
+
+> Note: The following patches must be applied with 3/3.
+> [patch 3/5] Add samples subdir
+> 	http://lkml.org/lkml/2007/9/25/157
+> [patch 4/5] Linux Kernel Markers - Samples
+> 	http://lkml.org/lkml/2007/9/25/166
+
 
 ---
- arch/x86_64/kernel/nmi.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.22.8-rt9_1267/arch/x86_64/kernel/nmi.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.22.8-rt9_1267.orig/arch/x86_64/kernel/nmi.c
-+++ linux-2.6.22.8-rt9_1267/arch/x86_64/kernel/nmi.c
-@@ -369,8 +369,6 @@ int notrace __kprobes nmi_watchdog_tick(
-                touched =3D 1;
-        }
-=20
--       sum =3D read_pda(apic_timer_irqs);
--
-        if (__get_cpu_var(nmi_touch)) {
-                __get_cpu_var(nmi_touch) =3D 0;
-                touched =3D 1;
-@@ -386,6 +384,12 @@ int notrace __kprobes nmi_watchdog_tick(
-                cpu_clear(cpu, backtrace_mask);
-        }
-=20
-+       /*
-+        * Take the local apic timer and PIT/HPET into account. We don't
-+        * know which one is active, when we have highres/dyntick on
-+        */
-+       sum =3D read_pda(apic_timer_irqs) + kstat_cpu(cpu).irqs[0];
-+
- #ifdef CONFIG_X86_MCE
-        /* Could check oops_in_progress here too, but it's safer
-           not too */
-
-
-
---=__PartD1F660AD.2__=
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="signature.asc"
-
-LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0KVmVyc2lvbjogR251UEcgdjEuNC4yIChHTlUv
-TGludXgpCgppRDhEQlFCRytxaTJIMjhKSFlhekxhUVJBbEJyQUtDSWxLOTczRVNJNmdFbWk1enVl
-OUJoeXkzMlV3Q2ZTQzhBCldHbUNpTEVwMkRDa2Q3T242Umk1d0NNPQo9NUhTVgotLS0tLUVORCBQ
-R1AgU0lHTkFUVVJFLS0tLS0KCg==
-
---=__PartD1F660AD.2__=--
+~Randy
+Phaedrus says that Quality is about caring.
