@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761713AbXIZPsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761304AbXIZPtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761713AbXIZPsU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 11:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584AbXIZPsL
+	id S1761304AbXIZPtv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 11:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXIZPto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 11:48:11 -0400
-Received: from sacred.ru ([62.205.161.221]:46256 "EHLO sacred.ru"
+	Wed, 26 Sep 2007 11:49:44 -0400
+Received: from sacred.ru ([62.205.161.221]:46403 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbXIZPsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 11:48:10 -0400
-Message-ID: <46FA7D4D.8040808@openvz.org>
-Date: Wed, 26 Sep 2007 19:39:57 +0400
+	id S1755299AbXIZPtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 11:49:43 -0400
+Message-ID: <46FA7EC8.3020800@openvz.org>
+Date: Wed, 26 Sep 2007 19:46:16 +0400
 From: Pavel Emelyanov <xemul@openvz.org>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
@@ -19,78 +19,92 @@ CC: Serge Hallyn <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Linux Containers <containers@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/5] A config option to compile out some namespaces code
+Subject: [PATCH 2/5] Move the UST namespace under the option
+References: <46FA7D4D.8040808@openvz.org>
+In-Reply-To: <46FA7D4D.8040808@openvz.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 26 Sep 2007 19:42:22 +0400 (MSD)
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 26 Sep 2007 19:48:38 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There were some questions like "do I need this on my cellphone"
-in reply to different namespaces patches. Indeed, the namespaces
-are not useful for most of the embedded systems, but the code
-creating and releasing them weights a lot.
+Currently all the namespace management code is in the
+kernel/utsname.c file, so just compile it out and make
+stub in .h file.
 
-So I propose to add a config option which will help embedded
-people to reduce the vmlinux size. This option simply compiles
-out the namespaces cloning and releasing code *only*, but keeps
-all the other logic untouched (e.g. the notion of init_ns).
-
-When someone tries to clone some namespace with their support
-turned off, he will receive an EINVAL error.
-
-This patchset can save more than 2KB from the vmlinux when
-turning the config option "NAMESPACES" to "n":
-
-$ scripts/bloat-o-meter vmlinux-no-ns vmlinux-with-ns 
-add/remove: 27/0 grow/shrink: 11/7 up/down: 2477/-340 (2137)
-function                                     old     new   delta
-copy_pid_ns                                    -     537    +537
-copy_user_ns                                   -     181    +181
-copy_ipcs                                      -     149    +149
-zap_pid_ns_processes                           -     130    +130
-copy_utsname                                   -     120    +120
-shm_exit_ns                                    -     106    +106
-sem_exit_ns                                    -     106    +106
-msg_exit_ns                                    -     106    +106
-freeary                                        -     100    +100
-release_uids                                   -      95     +95
-freeque                                        -      92     +92
-free_nsproxy                                  48     123     +75
-create_new_namespaces                        300     358     +58
-free_pid_ns                                    -      56     +56
-pid_namespaces_init                            -      48     +48
-__sem_init_ns                                  -      45     +45
-shm_init_ns                                    -      42     +42
-sem_init_ns                                    -      42     +42
-msg_init_ns                                    -      42     +42
-__shm_init_ns                                  -      38     +38
-__msg_init_ns                                  -      31     +31
-sysvipc_proc_release                           5      35     +30
-proc_kill_sb                                   5      35     +30
-free_ipc_ns                                    -      30     +30
-do_shm_rmid                                    -      29     +29
-proc_set_super                                13      38     +25
-shm_release                                   18      39     +21
-put_pid                                       75      95     +20
-alloc_pid                                    687     706     +19
-pid_caches_mutex                               -      16     +16
-free_user_ns                                   -      16     +16
-sysvipc_proc_open                            100     111     +11
-do_shmat                                     778     787      +9
-pid_caches_lh                                  -       8      +8
-free_uts_ns                                    -       5      +5
-pid_ns_cachep                                  -       4      +4
-__initcall_pid_namespaces_init6                -       4      +4
-do_exit                                     1855    1856      +1
-show_stat                                   1665    1661      -4
-sys_shmctl                                  1934    1907     -27
-msg_init                                      82      47     -35
-shm_init                                      92      47     -45
-sem_init                                      99      44     -55
-sys_msgctl                                  1394    1311     -83
-sys_semctl                                  2123    2032     -91
-
-This set was reviewed and approved by Serge, Cedric and Eric.
+The init namespace itself is in init/version.c and is
+left in the kernel.
 
 Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+
+---
+
+diff --git a/include/linux/utsname.h b/include/linux/utsname.h
+index 923db99..52b9116 100644
+--- a/include/linux/utsname.h
++++ b/include/linux/utsname.h
+@@ -35,6 +35,7 @@ struct new_utsname {
+ #include <linux/sched.h>
+ #include <linux/kref.h>
+ #include <linux/nsproxy.h>
++#include <linux/err.h>
+ #include <asm/atomic.h>
+ 
+ struct uts_namespace {
+@@ -43,6 +44,7 @@ struct uts_namespace {
+ };
+ extern struct uts_namespace init_uts_ns;
+ 
++#ifdef CONFIG_NAMESPACES
+ static inline void get_uts_ns(struct uts_namespace *ns)
+ {
+ 	kref_get(&ns->kref);
+@@ -56,6 +58,25 @@ static inline void put_uts_ns(struct uts
+ {
+ 	kref_put(&ns->kref, free_uts_ns);
+ }
++#else
++static inline void get_uts_ns(struct uts_namespace *ns)
++{
++}
++
++static inline void put_uts_ns(struct uts_namespace *ns)
++{
++}
++
++static inline struct uts_namespace *copy_utsname(unsigned long flags,
++					struct uts_namespace *ns)
++{
++	if (flags & CLONE_NEWUTS)
++		return ERR_PTR(-EINVAL);
++
++	return ns;
++}
++#endif
++
+ static inline struct new_utsname *utsname(void)
+ {
+ 	return &current->nsproxy->uts_ns->name;
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 76f782f..5817bfe 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -4,8 +4,7 @@
+ 	    signal.o sys.o kmod.o workqueue.o pid.o \
+ 	    rcupdate.o extable.o params.o posix-timers.o \
+ 	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+-	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o \
+-	    utsname.o notifier.o sysctl.o
++	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o notifier.o sysctl.o
+ 
+ obj-$(CONFIG_SYSCTL) += sysctl_check.o
+ obj-$(CONFIG_STACKTRACE) += stacktrace.o
+@@ -50,6 +49,7 @@ obj-$(CONFIG_AUDITSYSCALL) += auditsc.o
+ obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
+ obj-$(CONFIG_KPROBES) += kprobes.o
+ obj-$(CONFIG_KGDB) += kgdb.o
++obj-$(CONFIG_NAMESPACES) += utsname.o
+ obj-$(CONFIG_SYSFS) += ksysfs.o
+ obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
+ obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
+
