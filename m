@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760372AbXIZOWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbXIZOWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760372AbXIZOWb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 10:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759516AbXIZOVh
+	id S1760136AbXIZOWy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 10:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759949AbXIZOVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 10:21:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58868 "EHLO mx1.redhat.com"
+	Wed, 26 Sep 2007 10:21:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58915 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758980AbXIZOVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 10:21:31 -0400
+	id S1759604AbXIZOVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 10:21:39 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 02/24] CRED: Split the task security data and move part of it
-	into struct cred
+Subject: [PATCH 04/24] CRED: Move the effective capabilities into the cred
+	struct
 To: viro@ftp.linux.org.uk, hch@infradead.org, Trond.Myklebust@netapp.com,
        sds@tycho.nsa.gov, casey@schaufler-ca.com
 Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 26 Sep 2007 15:21:10 +0100
-Message-ID: <20070926142110.2656.78572.stgit@warthog.procyon.org.uk>
+Date: Wed, 26 Sep 2007 15:21:20 +0100
+Message-ID: <20070926142120.2656.73358.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20070926142059.2656.27100.stgit@warthog.procyon.org.uk>
 References: <20070926142059.2656.27100.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.13
@@ -31,1666 +31,1224 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move into the cred struct the part of the task security data that defines how a
-task acts upon an object.  The part that defines how something acts upon a task
-remains attached to the task.
+Move the effective capabilities mask from the task struct into the credentials
+record.
 
-For SELinux this requires some of task_security_struct to be split off into
-cred_security_struct which is then attached to struct cred.  Note that the
-contents of cred_security_struct may not be changed without the generation of a
-new struct cred.
-
-The split is as follows:
-
- (*) create_sid, keycreate_sid and sockcreate_sid just move across.
-
- (*) sid is split into victim_sid - which remains - and action_sid - which
-     migrates.
-
- (*) osid, exec_sid and ptrace_sid remain.
-
-victim_sid is the SID used to govern actions upon the task.  action_sid is used
-to govern actions made by the task.
-
-When accessing the cred_security_struct of another process, RCU read procedures
-must be observed.
+Note that the effective capabilities mask in the cred struct shadows that in
+the task_struct because a thread can have its capabilities masks changed by
+another thread.  The shadowing is performed by update_current_cred() which is
+invoked on entry to any system call that might need it.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/cred.h              |    1 
- include/linux/security.h          |   33 ++
- kernel/cred.c                     |    7 +
- security/dummy.c                  |   11 +
- security/selinux/exports.c        |    6 
- security/selinux/hooks.c          |  497 +++++++++++++++++++++++--------------
- security/selinux/include/objsec.h |   16 +
- security/selinux/selinuxfs.c      |    8 -
- security/selinux/xfrm.c           |    6 
- 9 files changed, 379 insertions(+), 206 deletions(-)
+ fs/buffer.c               |    3 +++
+ fs/ioprio.c               |    3 +++
+ fs/open.c                 |   27 +++++++++------------------
+ fs/proc/array.c           |    2 +-
+ fs/readdir.c              |    3 +++
+ include/linux/cred.h      |    2 ++
+ include/linux/init_task.h |    2 +-
+ include/linux/sched.h     |    2 +-
+ ipc/msg.c                 |    3 +++
+ ipc/sem.c                 |    3 +++
+ ipc/shm.c                 |    3 +++
+ kernel/acct.c             |    3 +++
+ kernel/capability.c       |    3 +++
+ kernel/compat.c           |    3 +++
+ kernel/cred.c             |   36 +++++++++++++++++++++++++++++-------
+ kernel/exit.c             |    2 ++
+ kernel/fork.c             |    6 +++++-
+ kernel/futex.c            |    3 +++
+ kernel/futex_compat.c     |    3 +++
+ kernel/kexec.c            |    3 +++
+ kernel/module.c           |    6 ++++++
+ kernel/ptrace.c           |    3 +++
+ kernel/sched.c            |    9 +++++++++
+ kernel/signal.c           |    6 ++++++
+ kernel/sys.c              |   39 +++++++++++++++++++++++++++++++++++++++
+ kernel/sysctl.c           |    3 +++
+ kernel/time.c             |    9 +++++++++
+ kernel/uid16.c            |    3 +++
+ mm/mempolicy.c            |    6 ++++++
+ mm/migrate.c              |    3 +++
+ mm/mlock.c                |    4 ++++
+ mm/mmap.c                 |    3 +++
+ mm/mremap.c               |    3 +++
+ mm/oom_kill.c             |    9 +++++++--
+ mm/swapfile.c             |    6 ++++++
+ net/compat.c              |    6 ++++++
+ net/socket.c              |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ security/commoncap.c      |   32 +++++++++++++++++---------------
+ security/dummy.c          |   22 ++++++++++++++++++----
+ 39 files changed, 282 insertions(+), 50 deletions(-)
 
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 0e5ec37..9aabf79 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -2909,6 +2909,9 @@ asmlinkage long sys_bdflush(int func, long data)
+ {
+ 	static int msg_count;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+diff --git a/fs/ioprio.c b/fs/ioprio.c
+index 10d2c21..d32b7b7 100644
+--- a/fs/ioprio.c
++++ b/fs/ioprio.c
+@@ -63,6 +63,9 @@ asmlinkage long sys_ioprio_set(int which, int who, int ioprio)
+ 	struct pid *pgrp;
+ 	int ret;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	switch (class) {
+ 		case IOPRIO_CLASS_RT:
+ 			if (!capable(CAP_SYS_ADMIN))
+diff --git a/fs/open.c b/fs/open.c
+index 0c05863..f765ec5 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -450,7 +450,7 @@ out:
+ asmlinkage long sys_faccessat(int dfd, const char __user *filename, int mode)
+ {
+ 	struct nameidata nd;
+-	kernel_cap_t old_cap;
++	kernel_cap_t old_cap, want_cap = CAP_EMPTY_SET;
+ 	struct cred *cred;
+ 	int res;
+ 
+@@ -461,33 +461,26 @@ asmlinkage long sys_faccessat(int dfd, const char __user *filename, int mode)
+ 	if (res < 0)
+ 		return res;
+ 
+-	old_cap = current->cap_effective;
++	/* Clear the capabilities if we switch to a non-root user */
++	if (!current->uid)
++		want_cap = current->cap_permitted;
++
++	old_cap = current->cred->cap_effective;
+ 
+ 	if (current->cred->uid != current->uid ||
+-	    current->cred->gid != current->gid) {
++	    current->cred->gid != current->gid ||
++	    current->cred->cap_effective != want_cap) {
+ 		cred = dup_cred(current->cred);
+ 		if (!cred)
+ 			return -ENOMEM;
+ 
+ 		change_fsuid(cred, current->uid);
+ 		change_fsgid(cred, current->gid);
++		change_cap(cred, want_cap);
+ 	} else {
+ 		cred = get_current_cred();
+ 	}
+ 
+-	/*
+-	 * Clear the capabilities if we switch to a non-root user
+-	 *
+-	 * FIXME: There is a race here against sys_capset.  The
+-	 * capabilities can change yet we will restore the old
+-	 * value below.  We should hold task_capabilities_lock,
+-	 * but we cannot because user_path_walk can sleep.
+-	 */
+-	if (current->uid)
+-		cap_clear(current->cap_effective);
+-	else
+-		current->cap_effective = current->cap_permitted;
+-
+ 	cred = __set_current_cred(cred);
+ 	res = __user_walk_fd(dfd, filename, LOOKUP_FOLLOW|LOOKUP_ACCESS, &nd);
+ 	if (res)
+@@ -506,8 +499,6 @@ out_path_release:
+ 	path_release(&nd);
+ out:
+ 	set_current_cred(cred);
+-	current->cap_effective = old_cap;
+-
+ 	return res;
+ }
+ 
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index dc2f83a..1a406c7 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -286,7 +286,7 @@ static inline char *task_cap(struct task_struct *p, char *buffer)
+ 			    "CapEff:\t%016x\n",
+ 			    cap_t(p->cap_inheritable),
+ 			    cap_t(p->cap_permitted),
+-			    cap_t(p->cap_effective));
++			    cap_t(p->_cap_effective));
+ }
+ 
+ static inline char *task_context_switch_counts(struct task_struct *p,
+diff --git a/fs/readdir.c b/fs/readdir.c
+index 57e6aa9..33c69ac 100644
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -103,6 +103,9 @@ asmlinkage long old_readdir(unsigned int fd, struct old_linux_dirent __user * di
+ 	struct file * file;
+ 	struct readdir_callback buf;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	error = -EBADF;
+ 	file = fget(fd);
+ 	if (!file)
 diff --git a/include/linux/cred.h b/include/linux/cred.h
-index 0cc4400..7e35b2f 100644
+index 7e35b2f..78924d5 100644
 --- a/include/linux/cred.h
 +++ b/include/linux/cred.h
-@@ -26,6 +26,7 @@ struct cred {
+@@ -24,6 +24,7 @@ struct cred {
+ 	atomic_t		usage;
+ 	uid_t			uid;		/* fsuid as was */
  	gid_t			gid;		/* fsgid as was */
++	kernel_cap_t		cap_effective;
  	struct rcu_head		exterminate;	/* cred destroyer */
  	struct group_info	*group_info;
-+	void			*security;
+ 	void			*security;
+@@ -48,6 +49,7 @@ extern void put_cred(struct cred *);
+ extern void change_fsuid(struct cred *, uid_t);
+ extern void change_fsgid(struct cred *, gid_t);
+ extern void change_groups(struct cred *, struct group_info *);
++extern void change_cap(struct cred *, kernel_cap_t);
+ extern struct cred *dup_cred(const struct cred *);
  
- 	/* caches for references to the three task keyrings
- 	 * - note that key_ref_t isn't typedef'd at this point, hence the odd
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 1a15526..74cc204 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -504,6 +504,17 @@ struct request_sock;
-  *	@file contains the file structure being received.
-  *	Return 0 if permission is granted.
-  *
-+ * Security hooks for credential structure operations.
-+ *
-+ * @cred_dup:
-+ *	Duplicate the credentials onto a duplicated cred structure.
-+ *	@cred points to the credentials structure.  cred->security points to the
-+ *	security struct that was attached to the original cred struct, but it
-+ *	lacks a reference for the duplication if reference counting is needed.
-+ * @cred_destroy:
-+ *	Destroy the credentials attached to a cred structure.
-+ *	@cred points to the credentials structure that is to be destroyed.
-+ *
-  * Security hooks for task operations.
-  *
-  * @task_create:
-@@ -1257,6 +1268,9 @@ struct security_operations {
- 				    struct fown_struct * fown, int sig);
- 	int (*file_receive) (struct file * file);
+ /**
+diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+index 5cb7931..56d4be3 100644
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -141,7 +141,7 @@ extern struct nsproxy init_nsproxy;
+ 	.sibling	= LIST_HEAD_INIT(tsk.sibling),			\
+ 	.group_leader	= &tsk,						\
+ 	.cred		= &init_cred,					\
+-	.cap_effective	= CAP_INIT_EFF_SET,				\
++	._cap_effective	= CAP_INIT_EFF_SET,				\
+ 	.cap_inheritable = CAP_INIT_INH_SET,				\
+ 	.cap_permitted	= CAP_FULL_SET,					\
+ 	.keep_capabilities = 0,						\
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ca0d553..52f2b64 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1037,7 +1037,7 @@ struct task_struct {
+ 	struct cred *cred;
+ 	uid_t uid,euid,suid;
+ 	gid_t gid,egid,sgid;
+-	kernel_cap_t   cap_effective, cap_inheritable, cap_permitted;
++	kernel_cap_t _cap_effective, cap_inheritable, cap_permitted;
+ 	unsigned keep_capabilities:1;
+ 	struct user_struct *user;
+ #ifdef CONFIG_KEYS
+diff --git a/ipc/msg.c b/ipc/msg.c
+index a03fcb5..a351c89 100644
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -393,6 +393,9 @@ asmlinkage long sys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
+ 	if (msqid < 0 || cmd < 0)
+ 		return -EINVAL;
  
-+	int (*cred_dup)(struct cred *cred);
-+	void (*cred_destroy)(struct cred *cred);
++	if (update_current_cred() < 0)
++		return -ENOMEM;
 +
- 	int (*task_create) (unsigned long clone_flags);
- 	int (*task_alloc_security) (struct task_struct * p);
- 	void (*task_free_security) (struct task_struct * p);
-@@ -1864,6 +1878,16 @@ static inline int security_file_receive (struct file *file)
- 	return security_ops->file_receive (file);
- }
+ 	version = ipc_parse_version(&cmd);
+ 	ns = current->nsproxy->ipc_ns;
  
-+static inline int security_cred_dup(struct cred *cred)
-+{
-+	return security_ops->cred_dup(cred);
-+}
+diff --git a/ipc/sem.c b/ipc/sem.c
+index b676fef..9691b40 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -927,6 +927,9 @@ asmlinkage long sys_semctl (int semid, int semnum, int cmd, union semun arg)
+ 	if (semid < 0)
+ 		return -EINVAL;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
 +
-+static inline void security_cred_destroy(struct cred *cred)
-+{
-+	return security_ops->cred_destroy(cred);
-+}
+ 	version = ipc_parse_version(&cmd);
+ 	ns = current->nsproxy->ipc_ns;
+ 
+diff --git a/ipc/shm.c b/ipc/shm.c
+index a86a3a5..709a4fe 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -589,6 +589,9 @@ asmlinkage long sys_shmctl (int shmid, int cmd, struct shmid_ds __user *buf)
+ 		goto out;
+ 	}
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
 +
- static inline int security_task_create (unsigned long clone_flags)
+ 	version = ipc_parse_version(&cmd);
+ 	ns = current->nsproxy->ipc_ns;
+ 
+diff --git a/kernel/acct.c b/kernel/acct.c
+index 24f0f8b..01961a5 100644
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -253,6 +253,9 @@ asmlinkage long sys_acct(const char __user *name)
  {
- 	return security_ops->task_create (clone_flags);
-@@ -2546,6 +2570,15 @@ static inline int security_file_receive (struct file *file)
- 	return 0;
- }
+ 	int error;
  
-+static inline int security_cred_dup(struct cred *cred)
-+{
-+	return 0;
-+}
++	if (update_current_cred() < 0)
++		return -ENOMEM;
 +
-+static inline void security_cred_destroy(struct cred *cred)
-+{
-+}
+ 	if (!capable(CAP_SYS_PACCT))
+ 		return -EPERM;
+ 
+diff --git a/kernel/capability.c b/kernel/capability.c
+index c8d3c77..3ae73f9 100644
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -178,6 +178,9 @@ asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)
+      int ret;
+      pid_t pid;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
 +
- static inline int security_task_create (unsigned long clone_flags)
- {
- 	return 0;
+      if (get_user(version, &header->version))
+ 	     return -EFAULT; 
+ 
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 3bae374..04be932 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -909,6 +909,9 @@ asmlinkage long compat_sys_adjtimex(struct compat_timex __user *utp)
+ 	struct timex txc;
+ 	int ret;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	memset(&txc, 0, sizeof(struct timex));
+ 
+ 	if (!access_ok(VERIFY_READ, utp, sizeof(struct compat_timex)) ||
 diff --git a/kernel/cred.c b/kernel/cred.c
-index 5b56b2b..9868eef 100644
+index 9868eef..f545634 100644
 --- a/kernel/cred.c
 +++ b/kernel/cred.c
-@@ -94,6 +94,12 @@ struct cred *dup_cred(const struct cred *pcred)
- 	if (likely(cred)) {
- 		*cred = *pcred;
- 		atomic_set(&cred->usage, 1);
-+
-+		if (security_cred_dup(cred) < 0) {
-+			kfree(cred);
-+			return NULL;
-+		}
-+
- 		get_group_info(cred->group_info);
- #ifdef CONFIG_KEYS
- 		key_get(key_ref_to_ptr(cred->session_keyring));
-@@ -113,6 +119,7 @@ static void put_cred_rcu(struct rcu_head *rcu)
+@@ -21,16 +21,19 @@
+  */
+ struct cred init_cred = {
+ 	.usage		= ATOMIC_INIT(2),
++	.cap_effective	= CAP_INIT_EFF_SET,
+ 	.group_info	= &init_groups,
+ };
+ 
+ /**
+  * update_current_cred - Bring the current task's creds up to date
+  *
+- * Bring the current task's credentials up to date with respect to the keyrings
+- * they shadow.  The process and session level keyrings may get changed by
+- * sibling threads with the same process, but the change can't be applied back
+- * to this thread's cred struct except by this thread itself.
++ * Bring the current task's credential record up to date with respect to the
++ * effective capability mask and keyrings it shadows.  The capabilities mask
++ * may get changed by other processes, and process and session level keyrings
++ * may get changed by sibling threads with the same process, but the change
++ * can't be applied back to this thread's cred struct except by this thread
++ * itself.
+  */
+ int update_current_cred(void)
  {
- 	struct cred *cred = container_of(rcu, struct cred, exterminate);
- 
-+	security_cred_destroy(cred);
- 	put_group_info(cred->group_info);
- 	key_ref_put(cred->session_keyring);
- 	key_ref_put(cred->process_keyring);
-diff --git a/security/dummy.c b/security/dummy.c
-index 62de89c..f535cc6 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -468,6 +468,15 @@ static int dummy_file_receive (struct file *file)
- 	return 0;
- }
- 
-+static int dummy_cred_dup(struct cred *cred)
-+{
-+	return 0;
-+}
-+
-+static void dummy_cred_destroy(struct cred *cred)
-+{
-+}
-+
- static int dummy_task_create (unsigned long clone_flags)
- {
- 	return 0;
-@@ -1038,6 +1047,8 @@ void security_fixup_ops (struct security_operations *ops)
- 	set_to_dummy_if_null(ops, file_set_fowner);
- 	set_to_dummy_if_null(ops, file_send_sigiotask);
- 	set_to_dummy_if_null(ops, file_receive);
-+	set_to_dummy_if_null(ops, cred_dup);
-+	set_to_dummy_if_null(ops, cred_destroy);
- 	set_to_dummy_if_null(ops, task_create);
- 	set_to_dummy_if_null(ops, task_alloc_security);
- 	set_to_dummy_if_null(ops, task_free_security);
-diff --git a/security/selinux/exports.c b/security/selinux/exports.c
-index b6f9694..29cb87a 100644
---- a/security/selinux/exports.c
-+++ b/security/selinux/exports.c
-@@ -57,7 +57,7 @@ void selinux_get_task_sid(struct task_struct *tsk, u32 *sid)
- {
- 	if (selinux_enabled) {
- 		struct task_security_struct *tsec = tsk->security;
--		*sid = tsec->sid;
-+		*sid = tsec->victim_sid;
- 		return;
- 	}
- 	*sid = 0;
-@@ -77,9 +77,9 @@ EXPORT_SYMBOL_GPL(selinux_string_to_sid);
- int selinux_relabel_packet_permission(u32 sid)
- {
- 	if (selinux_enabled) {
--		struct task_security_struct *tsec = current->security;
-+		struct cred_security_struct *csec = current->cred->security;
- 
--		return avc_has_perm(tsec->sid, sid, SECCLASS_PACKET,
-+		return avc_has_perm(csec->action_sid, sid, SECCLASS_PACKET,
- 				    PACKET__RELABELTO, NULL);
- 	}
- 	return 0;
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 0753b20..4e72dbb 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -162,7 +162,8 @@ static int task_alloc_security(struct task_struct *task)
- 		return -ENOMEM;
- 
- 	tsec->task = task;
--	tsec->osid = tsec->sid = tsec->ptrace_sid = SECINITSID_UNLABELED;
-+	tsec->osid = tsec->victim_sid = tsec->ptrace_sid =
-+		SECINITSID_UNLABELED;
- 	task->security = tsec;
- 
- 	return 0;
-@@ -177,7 +178,7 @@ static void task_free_security(struct task_struct *task)
- 
- static int inode_alloc_security(struct inode *inode)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct cred_security_struct *csec = current->cred->security;
- 	struct inode_security_struct *isec;
- 
- 	isec = kmem_cache_zalloc(sel_inode_cache, GFP_KERNEL);
-@@ -189,7 +190,7 @@ static int inode_alloc_security(struct inode *inode)
- 	isec->inode = inode;
- 	isec->sid = SECINITSID_UNLABELED;
- 	isec->sclass = SECCLASS_FILE;
--	isec->task_sid = tsec->sid;
-+	isec->task_sid = csec->action_sid;
- 	inode->i_security = isec;
- 
- 	return 0;
-@@ -211,7 +212,7 @@ static void inode_free_security(struct inode *inode)
- 
- static int file_alloc_security(struct file *file)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct cred_security_struct *csec = current->cred->security;
- 	struct file_security_struct *fsec;
- 
- 	fsec = kzalloc(sizeof(struct file_security_struct), GFP_KERNEL);
-@@ -219,8 +220,8 @@ static int file_alloc_security(struct file *file)
- 		return -ENOMEM;
- 
- 	fsec->file = file;
--	fsec->sid = tsec->sid;
--	fsec->fown_sid = tsec->sid;
-+	fsec->sid = csec->action_sid;
-+	fsec->fown_sid = csec->action_sid;
- 	file->f_security = fsec;
- 
- 	return 0;
-@@ -335,26 +336,26 @@ static match_table_t tokens = {
- 
- static int may_context_mount_sb_relabel(u32 sid,
- 			struct superblock_security_struct *sbsec,
--			struct task_security_struct *tsec)
-+			struct cred_security_struct *csec)
- {
- 	int rc;
- 
--	rc = avc_has_perm(tsec->sid, sbsec->sid, SECCLASS_FILESYSTEM,
-+	rc = avc_has_perm(csec->action_sid, sbsec->sid, SECCLASS_FILESYSTEM,
- 			  FILESYSTEM__RELABELFROM, NULL);
- 	if (rc)
- 		return rc;
- 
--	rc = avc_has_perm(tsec->sid, sid, SECCLASS_FILESYSTEM,
-+	rc = avc_has_perm(csec->action_sid, sid, SECCLASS_FILESYSTEM,
- 			  FILESYSTEM__RELABELTO, NULL);
- 	return rc;
- }
- 
- static int may_context_mount_inode_relabel(u32 sid,
- 			struct superblock_security_struct *sbsec,
--			struct task_security_struct *tsec)
-+			struct cred_security_struct *csec)
- {
- 	int rc;
--	rc = avc_has_perm(tsec->sid, sbsec->sid, SECCLASS_FILESYSTEM,
-+	rc = avc_has_perm(csec->action_sid, sbsec->sid, SECCLASS_FILESYSTEM,
- 			  FILESYSTEM__RELABELFROM, NULL);
- 	if (rc)
- 		return rc;
-@@ -371,7 +372,7 @@ static int try_context_mount(struct super_block *sb, void *data)
- 	const char *name;
- 	u32 sid;
- 	int alloc = 0, rc = 0, seen = 0;
--	struct task_security_struct *tsec = current->security;
-+	struct cred_security_struct *csec = current->cred->security;
- 	struct superblock_security_struct *sbsec = sb->s_security;
- 
- 	if (!data)
-@@ -503,7 +504,7 @@ static int try_context_mount(struct super_block *sb, void *data)
- 			goto out_free;
- 		}
- 
--		rc = may_context_mount_sb_relabel(sid, sbsec, tsec);
-+		rc = may_context_mount_sb_relabel(sid, sbsec, csec);
- 		if (rc)
- 			goto out_free;
- 
-@@ -525,12 +526,12 @@ static int try_context_mount(struct super_block *sb, void *data)
- 		}
- 
- 		if (!fscontext) {
--			rc = may_context_mount_sb_relabel(sid, sbsec, tsec);
-+			rc = may_context_mount_sb_relabel(sid, sbsec, csec);
- 			if (rc)
- 				goto out_free;
- 			sbsec->sid = sid;
- 		} else {
--			rc = may_context_mount_inode_relabel(sid, sbsec, tsec);
-+			rc = may_context_mount_inode_relabel(sid, sbsec, csec);
- 			if (rc)
- 				goto out_free;
- 		}
-@@ -550,7 +551,7 @@ static int try_context_mount(struct super_block *sb, void *data)
- 			goto out_free;
- 		}
- 
--		rc = may_context_mount_inode_relabel(sid, sbsec, tsec);
-+		rc = may_context_mount_inode_relabel(sid, sbsec, csec);
- 		if (rc)
- 			goto out_free;
- 
-@@ -570,7 +571,7 @@ static int try_context_mount(struct super_block *sb, void *data)
- 		if (sid == sbsec->def_sid)
- 			goto out_free;
- 
--		rc = may_context_mount_inode_relabel(sid, sbsec, tsec);
-+		rc = may_context_mount_inode_relabel(sid, sbsec, csec);
- 		if (rc)
- 			goto out_free;
- 
-@@ -1025,15 +1026,22 @@ static inline u32 signal_to_av(int sig)
- 
- /* Check permission betweeen a pair of tasks, e.g. signal checks,
-    fork check, ptrace check, etc. */
--static int task_has_perm(struct task_struct *tsk1,
--			 struct task_struct *tsk2,
-+static int task_has_perm(struct task_struct *actor,
-+			 struct task_struct *victim,
- 			 u32 perms)
- {
--	struct task_security_struct *tsec1, *tsec2;
-+	struct cred_security_struct *csec;
-+	struct task_security_struct *tsec;
-+	u32 action_sid;
-+
-+	/* the actor may not be the current task */
-+	rcu_read_lock();
-+	csec = task_cred(actor)->security;
-+	action_sid = csec->action_sid;
-+	rcu_read_unlock();
- 
--	tsec1 = tsk1->security;
--	tsec2 = tsk2->security;
--	return avc_has_perm(tsec1->sid, tsec2->sid,
-+	tsec = victim->security;
-+	return avc_has_perm(action_sid, tsec->victim_sid,
- 			    SECCLASS_PROCESS, perms, NULL);
- }
- 
-@@ -1041,16 +1049,16 @@ static int task_has_perm(struct task_struct *tsk1,
- static int task_has_capability(struct task_struct *tsk,
- 			       int cap)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct avc_audit_data ad;
- 
--	tsec = tsk->security;
-+	csec = tsk->cred->security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad,CAP);
- 	ad.tsk = tsk;
- 	ad.u.cap = cap;
- 
--	return avc_has_perm(tsec->sid, tsec->sid,
-+	return avc_has_perm(csec->action_sid, csec->action_sid,
- 			    SECCLASS_CAPABILITY, CAP_TO_MASK(cap), &ad);
- }
- 
-@@ -1058,11 +1066,11 @@ static int task_has_capability(struct task_struct *tsk,
- static int task_has_system(struct task_struct *tsk,
- 			   u32 perms)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 
--	tsec = tsk->security;
-+	csec = tsk->cred->security;
- 
--	return avc_has_perm(tsec->sid, SECINITSID_KERNEL,
-+	return avc_has_perm(csec->action_sid, SECINITSID_KERNEL,
- 			    SECCLASS_SYSTEM, perms, NULL);
- }
- 
-@@ -1074,14 +1082,14 @@ static int inode_has_perm(struct task_struct *tsk,
- 			  u32 perms,
- 			  struct avc_audit_data *adp)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct inode_security_struct *isec;
- 	struct avc_audit_data ad;
- 
- 	if (unlikely (IS_PRIVATE (inode)))
+@@ -46,16 +49,21 @@ int update_current_cred(void)
+ 		key_ref_to_ptr(cred->process_keyring) == sig->process_keyring &&
+ 		key_ref_to_ptr(cred->thread_keyring) == current->thread_keyring &&
+ #endif
+-		true)
++		cred->cap_effective != current->_cap_effective)
  		return 0;
  
--	tsec = tsk->security;
-+	csec = tsk->cred->security;
- 	isec = inode->i_security;
+-	cred = kmalloc(sizeof(struct cred), GFP_KERNEL);
++	cred = kmemdup(current->cred, sizeof(struct cred), GFP_KERNEL);
+ 	if (!cred)
+ 		return -ENOMEM;
  
- 	if (!adp) {
-@@ -1090,7 +1098,8 @@ static int inode_has_perm(struct task_struct *tsk,
- 		ad.u.fs.inode = inode;
- 	}
- 
--	return avc_has_perm(tsec->sid, isec->sid, isec->sclass, perms, adp);
-+	return avc_has_perm(csec->action_sid, isec->sid, isec->sclass, perms,
-+			    adp);
- }
- 
- /* Same as inode_has_perm, but pass explicit audit data containing
-@@ -1121,7 +1130,7 @@ static int file_has_perm(struct task_struct *tsk,
- 				struct file *file,
- 				u32 av)
- {
--	struct task_security_struct *tsec = tsk->security;
-+	struct cred_security_struct *csec = tsk->cred->security;
- 	struct file_security_struct *fsec = file->f_security;
- 	struct vfsmount *mnt = file->f_path.mnt;
- 	struct dentry *dentry = file->f_path.dentry;
-@@ -1133,8 +1142,8 @@ static int file_has_perm(struct task_struct *tsk,
- 	ad.u.fs.mnt = mnt;
- 	ad.u.fs.dentry = dentry;
- 
--	if (tsec->sid != fsec->sid) {
--		rc = avc_has_perm(tsec->sid, fsec->sid,
-+	if (csec->action_sid != fsec->sid) {
-+		rc = avc_has_perm(csec->action_sid, fsec->sid,
- 				  SECCLASS_FD,
- 				  FD__USE,
- 				  &ad);
-@@ -1154,36 +1163,36 @@ static int may_create(struct inode *dir,
- 		      struct dentry *dentry,
- 		      u16 tclass)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct inode_security_struct *dsec;
- 	struct superblock_security_struct *sbsec;
- 	u32 newsid;
- 	struct avc_audit_data ad;
- 	int rc;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	dsec = dir->i_security;
- 	sbsec = dir->i_sb->s_security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
- 	ad.u.fs.dentry = dentry;
- 
--	rc = avc_has_perm(tsec->sid, dsec->sid, SECCLASS_DIR,
-+	rc = avc_has_perm(csec->action_sid, dsec->sid, SECCLASS_DIR,
- 			  DIR__ADD_NAME | DIR__SEARCH,
- 			  &ad);
- 	if (rc)
- 		return rc;
- 
--	if (tsec->create_sid && sbsec->behavior != SECURITY_FS_USE_MNTPOINT) {
--		newsid = tsec->create_sid;
-+	if (csec->create_sid && sbsec->behavior != SECURITY_FS_USE_MNTPOINT) {
-+		newsid = csec->create_sid;
- 	} else {
--		rc = security_transition_sid(tsec->sid, dsec->sid, tclass,
--					     &newsid);
-+		rc = security_transition_sid(csec->action_sid, dsec->sid,
-+					     tclass, &newsid);
- 		if (rc)
- 			return rc;
- 	}
- 
--	rc = avc_has_perm(tsec->sid, newsid, tclass, FILE__CREATE, &ad);
-+	rc = avc_has_perm(csec->action_sid, newsid, tclass, FILE__CREATE, &ad);
- 	if (rc)
- 		return rc;
- 
-@@ -1196,11 +1205,12 @@ static int may_create(struct inode *dir,
- static int may_create_key(u32 ksid,
- 			  struct task_struct *ctx)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 
--	tsec = ctx->security;
-+	csec = ctx->cred->security;
- 
--	return avc_has_perm(tsec->sid, ksid, SECCLASS_KEY, KEY__CREATE, NULL);
-+	return avc_has_perm(csec->action_sid, ksid, SECCLASS_KEY, KEY__CREATE,
-+			    NULL);
- }
- 
- #define MAY_LINK   0
-@@ -1213,13 +1223,13 @@ static int may_link(struct inode *dir,
- 		    int kind)
- 
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct inode_security_struct *dsec, *isec;
- 	struct avc_audit_data ad;
- 	u32 av;
- 	int rc;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	dsec = dir->i_security;
- 	isec = dentry->d_inode->i_security;
- 
-@@ -1228,7 +1238,7 @@ static int may_link(struct inode *dir,
- 
- 	av = DIR__SEARCH;
- 	av |= (kind ? DIR__REMOVE_NAME : DIR__ADD_NAME);
--	rc = avc_has_perm(tsec->sid, dsec->sid, SECCLASS_DIR, av, &ad);
-+	rc = avc_has_perm(csec->action_sid, dsec->sid, SECCLASS_DIR, av, &ad);
- 	if (rc)
- 		return rc;
- 
-@@ -1247,7 +1257,7 @@ static int may_link(struct inode *dir,
- 		return 0;
- 	}
- 
--	rc = avc_has_perm(tsec->sid, isec->sid, isec->sclass, av, &ad);
-+	rc = avc_has_perm(csec->action_sid, isec->sid, isec->sclass, av, &ad);
- 	return rc;
- }
- 
-@@ -1256,14 +1266,14 @@ static inline int may_rename(struct inode *old_dir,
- 			     struct inode *new_dir,
- 			     struct dentry *new_dentry)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct inode_security_struct *old_dsec, *new_dsec, *old_isec, *new_isec;
- 	struct avc_audit_data ad;
- 	u32 av;
- 	int old_is_dir, new_is_dir;
- 	int rc;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	old_dsec = old_dir->i_security;
- 	old_isec = old_dentry->d_inode->i_security;
- 	old_is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
-@@ -1272,16 +1282,16 @@ static inline int may_rename(struct inode *old_dir,
- 	AVC_AUDIT_DATA_INIT(&ad, FS);
- 
- 	ad.u.fs.dentry = old_dentry;
--	rc = avc_has_perm(tsec->sid, old_dsec->sid, SECCLASS_DIR,
-+	rc = avc_has_perm(csec->action_sid, old_dsec->sid, SECCLASS_DIR,
- 			  DIR__REMOVE_NAME | DIR__SEARCH, &ad);
- 	if (rc)
- 		return rc;
--	rc = avc_has_perm(tsec->sid, old_isec->sid,
-+	rc = avc_has_perm(csec->action_sid, old_isec->sid,
- 			  old_isec->sclass, FILE__RENAME, &ad);
- 	if (rc)
- 		return rc;
- 	if (old_is_dir && new_dir != old_dir) {
--		rc = avc_has_perm(tsec->sid, old_isec->sid,
-+		rc = avc_has_perm(csec->action_sid, old_isec->sid,
- 				  old_isec->sclass, DIR__REPARENT, &ad);
- 		if (rc)
- 			return rc;
-@@ -1291,15 +1301,17 @@ static inline int may_rename(struct inode *old_dir,
- 	av = DIR__ADD_NAME | DIR__SEARCH;
- 	if (new_dentry->d_inode)
- 		av |= DIR__REMOVE_NAME;
--	rc = avc_has_perm(tsec->sid, new_dsec->sid, SECCLASS_DIR, av, &ad);
-+	rc = avc_has_perm(csec->action_sid, new_dsec->sid, SECCLASS_DIR, av,
-+			  &ad);
- 	if (rc)
- 		return rc;
- 	if (new_dentry->d_inode) {
- 		new_isec = new_dentry->d_inode->i_security;
- 		new_is_dir = S_ISDIR(new_dentry->d_inode->i_mode);
--		rc = avc_has_perm(tsec->sid, new_isec->sid,
-+		rc = avc_has_perm(csec->action_sid, new_isec->sid,
- 				  new_isec->sclass,
--				  (new_is_dir ? DIR__RMDIR : FILE__UNLINK), &ad);
-+				  (new_is_dir ? DIR__RMDIR : FILE__UNLINK),
-+				  &ad);
- 		if (rc)
- 			return rc;
- 	}
-@@ -1313,12 +1325,12 @@ static int superblock_has_perm(struct task_struct *tsk,
- 			       u32 perms,
- 			       struct avc_audit_data *ad)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct superblock_security_struct *sbsec;
- 
--	tsec = tsk->security;
-+	csec = tsk->cred->security;
- 	sbsec = sb->s_security;
--	return avc_has_perm(tsec->sid, sbsec->sid, SECCLASS_FILESYSTEM,
-+	return avc_has_perm(csec->action_sid, sbsec->sid, SECCLASS_FILESYSTEM,
- 			    perms, ad);
- }
- 
-@@ -1371,7 +1383,7 @@ static inline u32 file_to_av(struct file *file)
- 
- static int selinux_ptrace(struct task_struct *parent, struct task_struct *child)
- {
--	struct task_security_struct *psec = parent->security;
-+	struct cred_security_struct *psec;
- 	struct task_security_struct *csec = child->security;
- 	int rc;
- 
-@@ -1381,8 +1393,12 @@ static int selinux_ptrace(struct task_struct *parent, struct task_struct *child)
- 
- 	rc = task_has_perm(parent, child, PROCESS__PTRACE);
- 	/* Save the SID of the tracing process for later use in apply_creds. */
--	if (!(child->ptrace & PT_PTRACED) && !rc)
--		csec->ptrace_sid = psec->sid;
-+	if (!(child->ptrace & PT_PTRACED) && !rc) {
-+		rcu_read_lock();
-+		psec = task_cred(parent)->security;
-+		csec->ptrace_sid = psec->action_sid;
-+		rcu_read_unlock();
+-	*cred = *current->cred;
++	if (security_cred_dup(cred) < 0) {
++		kfree(cred);
++		return -ENOMEM;
 +	}
- 	return rc;
- }
- 
-@@ -1472,7 +1488,7 @@ static int selinux_sysctl(ctl_table *table, int op)
- {
- 	int error = 0;
- 	u32 av;
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	u32 tsid;
- 	int rc;
- 
-@@ -1480,7 +1496,7 @@ static int selinux_sysctl(ctl_table *table, int op)
- 	if (rc)
- 		return rc;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 
- 	rc = selinux_sysctl_get_sid(table, (op == 0001) ?
- 				    SECCLASS_DIR : SECCLASS_FILE, &tsid);
-@@ -1492,7 +1508,7 @@ static int selinux_sysctl(ctl_table *table, int op)
- 	/* The op values are "defined" in sysctl.c, thereby creating
- 	 * a bad coupling between this module and sysctl.c */
- 	if(op == 001) {
--		error = avc_has_perm(tsec->sid, tsid,
-+		error = avc_has_perm(csec->action_sid, tsid,
- 				     SECCLASS_DIR, DIR__SEARCH, NULL);
- 	} else {
- 		av = 0;
-@@ -1501,7 +1517,7 @@ static int selinux_sysctl(ctl_table *table, int op)
- 		if (op & 002)
- 			av |= FILE__WRITE;
- 		if (av)
--			error = avc_has_perm(tsec->sid, tsid,
-+			error = avc_has_perm(csec->action_sid, tsid,
- 					     SECCLASS_FILE, av, NULL);
-         }
- 
-@@ -1589,11 +1605,11 @@ static int selinux_syslog(int type)
- static int selinux_vm_enough_memory(struct mm_struct *mm, long pages)
- {
- 	int rc, cap_sys_admin = 0;
--	struct task_security_struct *tsec = current->security;
-+	struct cred_security_struct *csec = current->cred->security;
- 
- 	rc = secondary_ops->capable(current, CAP_SYS_ADMIN);
- 	if (rc == 0)
--		rc = avc_has_perm_noaudit(tsec->sid, tsec->sid,
-+		rc = avc_has_perm_noaudit(csec->action_sid, csec->action_sid,
- 					  SECCLASS_CAPABILITY,
- 					  CAP_TO_MASK(CAP_SYS_ADMIN),
- 					  0,
-@@ -1626,6 +1642,7 @@ static int selinux_bprm_alloc_security(struct linux_binprm *bprm)
- static int selinux_bprm_set_security(struct linux_binprm *bprm)
- {
- 	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct inode *inode = bprm->file->f_path.dentry->d_inode;
- 	struct inode_security_struct *isec;
- 	struct bprm_security_struct *bsec;
-@@ -1643,15 +1660,16 @@ static int selinux_bprm_set_security(struct linux_binprm *bprm)
- 		return 0;
- 
- 	tsec = current->security;
-+	csec = bprm->cred->security;
- 	isec = inode->i_security;
- 
- 	/* Default to the current task SID. */
--	bsec->sid = tsec->sid;
-+	bsec->sid = csec->action_sid;
- 
- 	/* Reset fs, key, and sock SIDs on execve. */
--	tsec->create_sid = 0;
--	tsec->keycreate_sid = 0;
--	tsec->sockcreate_sid = 0;
-+	csec->create_sid = 0;
-+	csec->keycreate_sid = 0;
-+	csec->sockcreate_sid = 0;
- 
- 	if (tsec->exec_sid) {
- 		newsid = tsec->exec_sid;
-@@ -1659,7 +1677,7 @@ static int selinux_bprm_set_security(struct linux_binprm *bprm)
- 		tsec->exec_sid = 0;
- 	} else {
- 		/* Check for a default transition on this program. */
--		rc = security_transition_sid(tsec->sid, isec->sid,
-+		rc = security_transition_sid(csec->action_sid, isec->sid,
- 		                             SECCLASS_PROCESS, &newsid);
- 		if (rc)
- 			return rc;
-@@ -1670,16 +1688,16 @@ static int selinux_bprm_set_security(struct linux_binprm *bprm)
- 	ad.u.fs.dentry = bprm->file->f_path.dentry;
- 
- 	if (bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)
--		newsid = tsec->sid;
-+		newsid = csec->action_sid;
- 
--        if (tsec->sid == newsid) {
--		rc = avc_has_perm(tsec->sid, isec->sid,
-+        if (csec->action_sid == newsid) {
-+		rc = avc_has_perm(csec->action_sid, isec->sid,
- 				  SECCLASS_FILE, FILE__EXECUTE_NO_TRANS, &ad);
- 		if (rc)
- 			return rc;
- 	} else {
- 		/* Check permissions for the transition. */
--		rc = avc_has_perm(tsec->sid, newsid,
-+		rc = avc_has_perm(csec->action_sid, newsid,
- 				  SECCLASS_PROCESS, PROCESS__TRANSITION, &ad);
- 		if (rc)
- 			return rc;
-@@ -1711,11 +1729,11 @@ static int selinux_bprm_secureexec (struct linux_binprm *bprm)
- 	struct task_security_struct *tsec = current->security;
- 	int atsecure = 0;
- 
--	if (tsec->osid != tsec->sid) {
-+	if (tsec->osid != tsec->victim_sid) {
- 		/* Enable secure mode for SIDs transitions unless
- 		   the noatsecure permission is granted between
- 		   the two SIDs, i.e. ahp returns 0. */
--		atsecure = avc_has_perm(tsec->osid, tsec->sid,
-+		atsecure = avc_has_perm(tsec->osid, tsec->victim_sid,
- 					 SECCLASS_PROCESS,
- 					 PROCESS__NOATSECURE, NULL);
- 	}
-@@ -1825,6 +1843,7 @@ static inline void flush_unauthorized_files(struct files_struct * files)
- static void selinux_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
- {
- 	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct bprm_security_struct *bsec;
- 	u32 sid;
- 	int rc;
-@@ -1832,17 +1851,17 @@ static void selinux_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
- 	secondary_ops->bprm_apply_creds(bprm, unsafe);
- 
- 	tsec = current->security;
--
-+	csec = bprm->cred->security;
- 	bsec = bprm->security;
- 	sid = bsec->sid;
- 
--	tsec->osid = tsec->sid;
-+	tsec->osid = tsec->victim_sid;
- 	bsec->unsafe = 0;
--	if (tsec->sid != sid) {
-+	if (tsec->victim_sid != sid) {
- 		/* Check for shared state.  If not ok, leave SID
- 		   unchanged and kill. */
- 		if (unsafe & LSM_UNSAFE_SHARE) {
--			rc = avc_has_perm(tsec->sid, sid, SECCLASS_PROCESS,
-+			rc = avc_has_perm(tsec->victim_sid, sid, SECCLASS_PROCESS,
- 					PROCESS__SHARE, NULL);
- 			if (rc) {
- 				bsec->unsafe = 1;
-@@ -1861,7 +1880,9 @@ static void selinux_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
- 				return;
- 			}
- 		}
--		tsec->sid = sid;
-+		if (csec->action_sid == tsec->victim_sid)
-+			csec->action_sid = sid;
-+		tsec->victim_sid = sid;
- 	}
- }
- 
-@@ -1883,7 +1904,7 @@ static void selinux_bprm_post_apply_creds(struct linux_binprm *bprm)
- 		force_sig_specific(SIGKILL, current);
- 		return;
- 	}
--	if (tsec->osid == tsec->sid)
-+	if (tsec->osid == tsec->victim_sid)
- 		return;
- 
- 	/* Close files for which the new task SID is not authorized. */
-@@ -1895,7 +1916,7 @@ static void selinux_bprm_post_apply_creds(struct linux_binprm *bprm)
- 	   signals. This must occur _after_ the task SID has
- 	  been updated so that any kill done after the flush
- 	  will be checked against the new SID. */
--	rc = avc_has_perm(tsec->osid, tsec->sid, SECCLASS_PROCESS,
-+	rc = avc_has_perm(tsec->osid, tsec->victim_sid, SECCLASS_PROCESS,
- 			  PROCESS__SIGINH, NULL);
- 	if (rc) {
- 		memset(&itimer, 0, sizeof itimer);
-@@ -1922,7 +1943,7 @@ static void selinux_bprm_post_apply_creds(struct linux_binprm *bprm)
- 	   than the default soft limit for cases where the default
- 	   is lower than the hard limit, e.g. RLIMIT_CORE or
- 	   RLIMIT_STACK.*/
--	rc = avc_has_perm(tsec->osid, tsec->sid, SECCLASS_PROCESS,
-+	rc = avc_has_perm(tsec->osid, tsec->victim_sid, SECCLASS_PROCESS,
- 			  PROCESS__RLIMITINH, NULL);
- 	if (rc) {
- 		for (i = 0; i < RLIM_NLIMITS; i++) {
-@@ -2124,21 +2145,21 @@ static int selinux_inode_init_security(struct inode *inode, struct inode *dir,
- 				       char **name, void **value,
- 				       size_t *len)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct inode_security_struct *dsec;
- 	struct superblock_security_struct *sbsec;
- 	u32 newsid, clen;
- 	int rc;
- 	char *namep = NULL, *context;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	dsec = dir->i_security;
- 	sbsec = dir->i_sb->s_security;
- 
--	if (tsec->create_sid && sbsec->behavior != SECURITY_FS_USE_MNTPOINT) {
--		newsid = tsec->create_sid;
-+	if (csec->create_sid && sbsec->behavior != SECURITY_FS_USE_MNTPOINT) {
-+		newsid = csec->create_sid;
- 	} else {
--		rc = security_transition_sid(tsec->sid, dsec->sid,
-+		rc = security_transition_sid(csec->action_sid, dsec->sid,
- 					     inode_mode_to_security_class(inode->i_mode),
- 					     &newsid);
- 		if (rc) {
-@@ -2297,7 +2318,7 @@ static int selinux_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
- 
- static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value, size_t size, int flags)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct cred_security_struct *csec = current->cred->security;
- 	struct inode *inode = dentry->d_inode;
- 	struct inode_security_struct *isec = inode->i_security;
- 	struct superblock_security_struct *sbsec;
-@@ -2329,7 +2350,7 @@ static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value
- 	AVC_AUDIT_DATA_INIT(&ad,FS);
- 	ad.u.fs.dentry = dentry;
- 
--	rc = avc_has_perm(tsec->sid, isec->sid, isec->sclass,
-+	rc = avc_has_perm(csec->action_sid, isec->sid, isec->sclass,
- 			  FILE__RELABELFROM, &ad);
- 	if (rc)
- 		return rc;
-@@ -2338,12 +2359,12 @@ static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value
- 	if (rc)
- 		return rc;
- 
--	rc = avc_has_perm(tsec->sid, newsid, isec->sclass,
-+	rc = avc_has_perm(csec->action_sid, newsid, isec->sclass,
- 			  FILE__RELABELTO, &ad);
- 	if (rc)
- 		return rc;
- 
--	rc = security_validate_transition(isec->sid, newsid, tsec->sid,
-+	rc = security_validate_transition(isec->sid, newsid, csec->action_sid,
- 	                                  isec->sclass);
- 	if (rc)
- 		return rc;
-@@ -2577,8 +2598,9 @@ static int selinux_file_mmap(struct file *file, unsigned long reqprot,
- 			     unsigned long prot, unsigned long flags,
- 			     unsigned long addr, unsigned long addr_only)
- {
-+	struct cred_security_struct *csec = current->cred->security;
- 	int rc = 0;
--	u32 sid = ((struct task_security_struct*)(current->security))->sid;
-+	u32 sid = csec->action_sid;
- 
- 	if (addr < mmap_min_addr)
- 		rc = avc_has_perm(sid, sid, SECCLASS_MEMPROTECT,
-@@ -2692,7 +2714,7 @@ static int selinux_file_set_fowner(struct file *file)
- 
- 	tsec = current->security;
- 	fsec = file->f_security;
--	fsec->fown_sid = tsec->sid;
-+	fsec->fown_sid = tsec->victim_sid;
- 
- 	return 0;
- }
-@@ -2716,7 +2738,7 @@ static int selinux_file_send_sigiotask(struct task_struct *tsk,
- 	else
- 		perm = signal_to_av(signum);
- 
--	return avc_has_perm(fsec->fown_sid, tsec->sid,
-+	return avc_has_perm(fsec->fown_sid, tsec->victim_sid,
- 			    SECCLASS_PROCESS, perm, NULL);
- }
- 
-@@ -2725,6 +2747,31 @@ static int selinux_file_receive(struct file *file)
- 	return file_has_perm(current, file, file_to_av(file));
- }
- 
-+/* credential security operations */
 +
-+/*
-+ * duplicate the security information attached to a credentials record that is
-+ * itself undergoing duplication
+ 	atomic_set(&cred->usage, 1);
+ 	get_group_info(cred->group_info);
++	cred->cap_effective = current->_cap_effective;
+ 
+ #ifdef CONFIG_KEYS
+ 	rcu_read_lock();
+@@ -188,3 +196,17 @@ void change_groups(struct cred *cred, struct group_info *group_info)
+ }
+ 
+ EXPORT_SYMBOL(change_groups);
++
++/**
++ * change_cap - Change the supplementary groups in a new credential record
++ * @cred: The credential record to alter
++ * @cap: The capabilities to set
++ *
++ * Change the effective capabilities in a new credential record.
 + */
-+static int selinux_cred_dup(struct cred *cred)
++void change_cap(struct cred *cred, kernel_cap_t cap)
 +{
-+	cred->security = kmemdup(cred->security,
-+				 sizeof(struct cred_security_struct),
-+				 GFP_KERNEL);
-+	return cred->security ? 0 : -ENOMEM;
++	cred->cap_effective = cap;
 +}
 +
-+/*
-+ * destroy the security information attached to a credentials record
-+ * - this is done under RCU, and may not be associated with the task that set it
-+ *   up
-+ */
-+static void selinux_cred_destroy(struct cred *cred)
-+{
-+	kfree(cred->security);
-+}
++EXPORT_SYMBOL(change_cap);
+diff --git a/kernel/exit.c b/kernel/exit.c
+index c366ae7..a9916e5 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -888,6 +888,8 @@ fastcall NORET_TYPE void do_exit(long code)
+ 	struct task_struct *tsk = current;
+ 	int group_dead;
+ 
++	update_current_cred();
 +
+ 	profile_task_exit(tsk);
+ 
+ 	WARN_ON(atomic_read(&tsk->fs_excl));
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 677c353..e2948ed 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1422,9 +1422,13 @@ long do_fork(unsigned long clone_flags,
+ {
+ 	struct task_struct *p;
+ 	int trace = 0;
+-	struct pid *pid = alloc_pid();
++	struct pid *pid;
+ 	long nr;
+ 
++	if (update_current_cred())
++		return -ENOMEM;
 +
- /* task security operations */
++	pid = alloc_pid();
+ 	if (!pid)
+ 		return -EAGAIN;
+ 	nr = pid->nr;
+diff --git a/kernel/futex.c b/kernel/futex.c
+index e8935b1..40070fe 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1846,6 +1846,9 @@ sys_get_robust_list(int pid, struct robust_list_head __user * __user *head_ptr,
+ 	struct robust_list_head __user *head;
+ 	unsigned long ret;
  
- static int selinux_task_create(unsigned long clone_flags)
-@@ -2751,13 +2798,10 @@ static int selinux_task_alloc_security(struct task_struct *tsk)
- 	tsec2 = tsk->security;
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!pid)
+ 		head = current->robust_list;
+ 	else {
+diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
+index 7e52eb0..a872029 100644
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -109,6 +109,9 @@ compat_sys_get_robust_list(int pid, compat_uptr_t __user *head_ptr,
+ 	struct compat_robust_list_head __user *head;
+ 	unsigned long ret;
  
- 	tsec2->osid = tsec1->osid;
--	tsec2->sid = tsec1->sid;
-+	tsec2->victim_sid = tsec1->victim_sid;
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!pid)
+ 		head = current->compat_robust_list;
+ 	else {
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index 25db14b..e1feb2f 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -921,6 +921,9 @@ asmlinkage long sys_kexec_load(unsigned long entry, unsigned long nr_segments,
+ 	int locked;
+ 	int result;
  
--	/* Retain the exec, fs, key, and sock SIDs across fork */
-+	/* Retain the exec SID across fork */
- 	tsec2->exec_sid = tsec1->exec_sid;
--	tsec2->create_sid = tsec1->create_sid;
--	tsec2->keycreate_sid = tsec1->keycreate_sid;
--	tsec2->sockcreate_sid = tsec1->sockcreate_sid;
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	/* We only trust the superuser with rebooting the system. */
+ 	if (!capable(CAP_SYS_BOOT))
+ 		return -EPERM;
+diff --git a/kernel/module.c b/kernel/module.c
+index db0ead0..32893a5 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -660,6 +660,9 @@ sys_delete_module(const char __user *name_user, unsigned int flags)
+ 	char name[MODULE_NAME_LEN];
+ 	int ret, forced = 0;
  
- 	/* Retain ptracer SID across fork, if any.
- 	   This will be reset by the ptrace hook upon any
-@@ -2895,7 +2939,8 @@ static int selinux_task_kill(struct task_struct *p, struct siginfo *info,
- 		perm = signal_to_av(sig);
- 	tsec = p->security;
- 	if (secid)
--		rc = avc_has_perm(secid, tsec->sid, SECCLASS_PROCESS, perm, NULL);
-+		rc = avc_has_perm(secid, tsec->victim_sid,
-+				  SECCLASS_PROCESS, perm, NULL);
- 	else
- 		rc = task_has_perm(current, p, perm);
- 	return rc;
-@@ -2929,8 +2974,8 @@ static void selinux_task_reparent_to_init(struct task_struct *p)
- 	secondary_ops->task_reparent_to_init(p);
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!capable(CAP_SYS_MODULE))
+ 		return -EPERM;
  
- 	tsec = p->security;
--	tsec->osid = tsec->sid;
--	tsec->sid = SECINITSID_KERNEL;
-+	tsec->osid = tsec->victim_sid;
-+	tsec->victim_sid = SECINITSID_KERNEL;
- 	return;
- }
+@@ -1978,6 +1981,9 @@ sys_init_module(void __user *umod,
+ 	struct module *mod;
+ 	int ret = 0;
  
-@@ -2940,7 +2985,7 @@ static void selinux_task_to_inode(struct task_struct *p,
- 	struct task_security_struct *tsec = p->security;
- 	struct inode_security_struct *isec = inode->i_security;
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	/* Must have permission */
+ 	if (!capable(CAP_SYS_MODULE))
+ 		return -EPERM;
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 3eca7a5..15fb1ff 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -456,6 +456,9 @@ asmlinkage long sys_ptrace(long request, long pid, long addr, long data)
+ 	struct task_struct *child;
+ 	long ret;
  
--	isec->sid = tsec->sid;
-+	isec->sid = tsec->victim_sid;
- 	isec->initialized = 1;
- 	return;
- }
-@@ -3165,11 +3210,11 @@ static int socket_has_perm(struct task_struct *task, struct socket *sock,
- 			   u32 perms)
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	/*
+ 	 * This lock_kernel fixes a subtle race with suid exec
+ 	 */
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6107a0c..602f526 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4063,6 +4063,9 @@ asmlinkage long sys_nice(int increment)
  {
- 	struct inode_security_struct *isec;
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct avc_audit_data ad;
- 	int err = 0;
+ 	long nice, retval;
  
--	tsec = task->security;
-+	csec = task->cred->security;
- 	isec = SOCK_INODE(sock)->i_security;
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	/*
+ 	 * Setpriority might change our priority at the same moment.
+ 	 * We don't have to worry. Conceptually one call occurs first
+@@ -4295,6 +4298,9 @@ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
+ 	struct task_struct *p;
+ 	int retval;
  
- 	if (isec->sid == SECINITSID_KERNEL)
-@@ -3177,7 +3222,8 @@ static int socket_has_perm(struct task_struct *task, struct socket *sock,
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!param || pid < 0)
+ 		return -EINVAL;
+ 	if (copy_from_user(&lparam, param, sizeof(struct sched_param)))
+@@ -4468,6 +4474,9 @@ asmlinkage long sys_sched_setaffinity(pid_t pid, unsigned int len,
+ 	cpumask_t new_mask;
+ 	int retval;
  
- 	AVC_AUDIT_DATA_INIT(&ad,NET);
- 	ad.u.net.sk = sock->sk;
--	err = avc_has_perm(tsec->sid, isec->sid, isec->sclass, perms, &ad);
-+	err = avc_has_perm(csec->action_sid, isec->sid, isec->sclass, perms,
-+			   &ad);
- 
- out:
- 	return err;
-@@ -3187,15 +3233,15 @@ static int selinux_socket_create(int family, int type,
- 				 int protocol, int kern)
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	retval = get_user_cpu_mask(user_mask_ptr, len, &new_mask);
+ 	if (retval)
+ 		return retval;
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 9fb91a3..0a3358f 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2197,6 +2197,9 @@ sys_kill(int pid, int sig)
  {
- 	int err = 0;
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	u32 newsid;
+ 	struct siginfo info;
  
- 	if (kern)
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	info.si_signo = sig;
+ 	info.si_errno = 0;
+ 	info.si_code = SI_USER;
+@@ -2212,6 +2215,9 @@ static int do_tkill(int tgid, int pid, int sig)
+ 	struct siginfo info;
+ 	struct task_struct *p;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	error = -ESRCH;
+ 	info.si_signo = sig;
+ 	info.si_errno = 0;
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 9bb591f..ff34679 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -670,6 +670,9 @@ asmlinkage long sys_setpriority(int which, int who, int niceval)
+ 	int error = -EINVAL;
+ 	struct pid *pgrp;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (which > PRIO_USER || which < PRIO_PROCESS)
  		goto out;
  
--	tsec = current->security;
--	newsid = tsec->sockcreate_sid ? : tsec->sid;
--	err = avc_has_perm(tsec->sid, newsid,
-+	csec = current->cred->security;
-+	newsid = csec->sockcreate_sid ? : csec->action_sid;
-+	err = avc_has_perm(csec->action_sid, newsid,
- 			   socket_type_to_security_class(family, type,
- 			   protocol), SOCKET__CREATE, NULL);
- 
-@@ -3208,14 +3254,14 @@ static int selinux_socket_post_create(struct socket *sock, int family,
+@@ -896,6 +899,9 @@ asmlinkage long sys_reboot(int magic1, int magic2, unsigned int cmd, void __user
  {
- 	int err = 0;
- 	struct inode_security_struct *isec;
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct sk_security_struct *sksec;
- 	u32 newsid;
+ 	char buffer[256];
  
- 	isec = SOCK_INODE(sock)->i_security;
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	/* We only trust the superuser with rebooting the system. */
+ 	if (!capable(CAP_SYS_BOOT))
+ 		return -EPERM;
+@@ -1019,6 +1025,9 @@ asmlinkage long sys_setregid(gid_t rgid, gid_t egid)
+ 	int new_egid = old_egid;
+ 	int retval;
  
--	tsec = current->security;
--	newsid = tsec->sockcreate_sid ? : tsec->sid;
-+	csec = current->cred->security;
-+	newsid = csec->sockcreate_sid ? : csec->action_sid;
- 	isec->sclass = socket_type_to_security_class(family, type, protocol);
- 	isec->sid = kern ? SECINITSID_KERNEL : newsid;
- 	isec->initialized = 1;
-@@ -4029,7 +4075,7 @@ static int ipc_alloc_security(struct task_struct *task,
- 			      struct kern_ipc_perm *perm,
- 			      u16 sclass)
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	retval = security_task_setgid(rgid, egid, (gid_t)-1, LSM_SETID_RE);
+ 	if (retval)
+ 		return retval;
+@@ -1072,6 +1081,9 @@ asmlinkage long sys_setgid(gid_t gid)
+ 	int old_egid = current->egid;
+ 	int retval;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	retval = security_task_setgid(gid, (gid_t)-1, (gid_t)-1, LSM_SETID_ID);
+ 	if (retval)
+ 		return retval;
+@@ -1150,6 +1162,9 @@ asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)
+ 	int old_ruid, old_euid, old_suid, new_ruid, new_euid;
+ 	int retval;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	retval = security_task_setuid(ruid, euid, (uid_t)-1, LSM_SETID_RE);
+ 	if (retval)
+ 		return retval;
+@@ -1221,6 +1236,9 @@ asmlinkage long sys_setuid(uid_t uid)
+ 	int old_ruid, old_suid, new_suid;
+ 	int retval;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	retval = security_task_setuid(uid, (uid_t)-1, (uid_t)-1, LSM_SETID_ID);
+ 	if (retval)
+ 		return retval;
+@@ -1271,6 +1289,9 @@ asmlinkage long sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)
+ 	int old_suid = current->suid;
+ 	int retval;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	retval = security_task_setuid(ruid, euid, suid, LSM_SETID_RES);
+ 	if (retval)
+ 		return retval;
+@@ -1333,6 +1354,9 @@ asmlinkage long sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
+ 	struct cred *cred;
+ 	int retval;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	retval = security_task_setgid(rgid, egid, sgid, LSM_SETID_RES);
+ 	if (retval)
+ 		return retval;
+@@ -1876,6 +1900,9 @@ asmlinkage long sys_setgroups(int gidsetsize, gid_t __user *grouplist)
+ 	struct group_info *group_info;
+ 	int retval;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!capable(CAP_SETGID))
+ 		return -EPERM;
+ 	if ((unsigned)gidsetsize > NGROUPS_MAX)
+@@ -1941,6 +1968,9 @@ asmlinkage long sys_sethostname(char __user *name, int len)
+ 	int errno;
+ 	char tmp[__NEW_UTS_LEN];
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 	if (len < 0 || len > __NEW_UTS_LEN)
+@@ -1986,6 +2016,9 @@ asmlinkage long sys_setdomainname(char __user *name, int len)
+ 	int errno;
+ 	char tmp[__NEW_UTS_LEN];
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 	if (len < 0 || len > __NEW_UTS_LEN)
+@@ -2045,6 +2078,9 @@ asmlinkage long sys_setrlimit(unsigned int resource, struct rlimit __user *rlim)
+ 	unsigned long it_prof_secs;
+ 	int retval;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (resource >= RLIM_NLIMITS)
+ 		return -EINVAL;
+ 	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
+@@ -2226,6 +2262,9 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
  {
--	struct task_security_struct *tsec = task->security;
-+	struct cred_security_struct *csec = task->cred->security;
- 	struct ipc_security_struct *isec;
+ 	long error;
  
- 	isec = kzalloc(sizeof(struct ipc_security_struct), GFP_KERNEL);
-@@ -4038,7 +4084,7 @@ static int ipc_alloc_security(struct task_struct *task,
- 
- 	isec->sclass = sclass;
- 	isec->ipc_perm = perm;
--	isec->sid = tsec->sid;
-+	isec->sid = csec->action_sid;
- 	perm->security = isec;
- 
- 	return 0;
-@@ -4077,17 +4123,18 @@ static void msg_msg_free_security(struct msg_msg *msg)
- static int ipc_has_perm(struct kern_ipc_perm *ipc_perms,
- 			u32 perms)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	isec = ipc_perms->security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
- 	ad.u.ipc_id = ipc_perms->key;
- 
--	return avc_has_perm(tsec->sid, isec->sid, isec->sclass, perms, &ad);
-+	return avc_has_perm(csec->action_sid, isec->sid, isec->sclass, perms,
-+			    &ad);
- }
- 
- static int selinux_msg_msg_alloc_security(struct msg_msg *msg)
-@@ -4103,7 +4150,7 @@ static void selinux_msg_msg_free_security(struct msg_msg *msg)
- /* message queue security operations */
- static int selinux_msg_queue_alloc_security(struct msg_queue *msq)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 	int rc;
-@@ -4112,13 +4159,13 @@ static int selinux_msg_queue_alloc_security(struct msg_queue *msq)
- 	if (rc)
- 		return rc;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	isec = msq->q_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-  	ad.u.ipc_id = msq->q_perm.key;
- 
--	rc = avc_has_perm(tsec->sid, isec->sid, SECCLASS_MSGQ,
-+	rc = avc_has_perm(csec->action_sid, isec->sid, SECCLASS_MSGQ,
- 			  MSGQ__CREATE, &ad);
- 	if (rc) {
- 		ipc_free_security(&msq->q_perm);
-@@ -4134,17 +4181,17 @@ static void selinux_msg_queue_free_security(struct msg_queue *msq)
- 
- static int selinux_msg_queue_associate(struct msg_queue *msq, int msqflg)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	isec = msq->q_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
- 	ad.u.ipc_id = msq->q_perm.key;
- 
--	return avc_has_perm(tsec->sid, isec->sid, SECCLASS_MSGQ,
-+	return avc_has_perm(csec->action_sid, isec->sid, SECCLASS_MSGQ,
- 			    MSGQ__ASSOCIATE, &ad);
- }
- 
-@@ -4178,13 +4225,13 @@ static int selinux_msg_queue_msgctl(struct msg_queue *msq, int cmd)
- 
- static int selinux_msg_queue_msgsnd(struct msg_queue *msq, struct msg_msg *msg, int msqflg)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct ipc_security_struct *isec;
- 	struct msg_security_struct *msec;
- 	struct avc_audit_data ad;
- 	int rc;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	isec = msq->q_perm.security;
- 	msec = msg->security;
- 
-@@ -4196,7 +4243,7 @@ static int selinux_msg_queue_msgsnd(struct msg_queue *msq, struct msg_msg *msg,
- 		 * Compute new sid based on current process and
- 		 * message queue this message will be stored in
- 		 */
--		rc = security_transition_sid(tsec->sid,
-+		rc = security_transition_sid(csec->action_sid,
- 					     isec->sid,
- 					     SECCLASS_MSG,
- 					     &msec->sid);
-@@ -4208,11 +4255,11 @@ static int selinux_msg_queue_msgsnd(struct msg_queue *msq, struct msg_msg *msg,
- 	ad.u.ipc_id = msq->q_perm.key;
- 
- 	/* Can this process write to the queue? */
--	rc = avc_has_perm(tsec->sid, isec->sid, SECCLASS_MSGQ,
-+	rc = avc_has_perm(csec->action_sid, isec->sid, SECCLASS_MSGQ,
- 			  MSGQ__WRITE, &ad);
- 	if (!rc)
- 		/* Can this process send the message */
--		rc = avc_has_perm(tsec->sid, msec->sid,
-+		rc = avc_has_perm(csec->action_sid, msec->sid,
- 				  SECCLASS_MSG, MSG__SEND, &ad);
- 	if (!rc)
- 		/* Can the message be put in the queue? */
-@@ -4239,10 +4286,10 @@ static int selinux_msg_queue_msgrcv(struct msg_queue *msq, struct msg_msg *msg,
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-  	ad.u.ipc_id = msq->q_perm.key;
- 
--	rc = avc_has_perm(tsec->sid, isec->sid,
-+	rc = avc_has_perm(tsec->victim_sid, isec->sid,
- 			  SECCLASS_MSGQ, MSGQ__READ, &ad);
- 	if (!rc)
--		rc = avc_has_perm(tsec->sid, msec->sid,
-+		rc = avc_has_perm(tsec->victim_sid, msec->sid,
- 				  SECCLASS_MSG, MSG__RECEIVE, &ad);
- 	return rc;
- }
-@@ -4250,7 +4297,7 @@ static int selinux_msg_queue_msgrcv(struct msg_queue *msq, struct msg_msg *msg,
- /* Shared Memory security operations */
- static int selinux_shm_alloc_security(struct shmid_kernel *shp)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 	int rc;
-@@ -4259,13 +4306,13 @@ static int selinux_shm_alloc_security(struct shmid_kernel *shp)
- 	if (rc)
- 		return rc;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	isec = shp->shm_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-  	ad.u.ipc_id = shp->shm_perm.key;
- 
--	rc = avc_has_perm(tsec->sid, isec->sid, SECCLASS_SHM,
-+	rc = avc_has_perm(csec->action_sid, isec->sid, SECCLASS_SHM,
- 			  SHM__CREATE, &ad);
- 	if (rc) {
- 		ipc_free_security(&shp->shm_perm);
-@@ -4281,17 +4328,17 @@ static void selinux_shm_free_security(struct shmid_kernel *shp)
- 
- static int selinux_shm_associate(struct shmid_kernel *shp, int shmflg)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	isec = shp->shm_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
- 	ad.u.ipc_id = shp->shm_perm.key;
- 
--	return avc_has_perm(tsec->sid, isec->sid, SECCLASS_SHM,
-+	return avc_has_perm(csec->action_sid, isec->sid, SECCLASS_SHM,
- 			    SHM__ASSOCIATE, &ad);
- }
- 
-@@ -4349,7 +4396,7 @@ static int selinux_shm_shmat(struct shmid_kernel *shp,
- /* Semaphore security operations */
- static int selinux_sem_alloc_security(struct sem_array *sma)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 	int rc;
-@@ -4358,13 +4405,13 @@ static int selinux_sem_alloc_security(struct sem_array *sma)
- 	if (rc)
- 		return rc;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	isec = sma->sem_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-  	ad.u.ipc_id = sma->sem_perm.key;
- 
--	rc = avc_has_perm(tsec->sid, isec->sid, SECCLASS_SEM,
-+	rc = avc_has_perm(csec->action_sid, isec->sid, SECCLASS_SEM,
- 			  SEM__CREATE, &ad);
- 	if (rc) {
- 		ipc_free_security(&sma->sem_perm);
-@@ -4380,17 +4427,17 @@ static void selinux_sem_free_security(struct sem_array *sma)
- 
- static int selinux_sem_associate(struct sem_array *sma, int semflg)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 
--	tsec = current->security;
-+	csec = current->cred->security;
- 	isec = sma->sem_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
- 	ad.u.ipc_id = sma->sem_perm.key;
- 
--	return avc_has_perm(tsec->sid, isec->sid, SECCLASS_SEM,
-+	return avc_has_perm(csec->action_sid, isec->sid, SECCLASS_SEM,
- 			    SEM__ASSOCIATE, &ad);
- }
- 
-@@ -4506,6 +4553,7 @@ static int selinux_getprocattr(struct task_struct *p,
- 			       char *name, char **value)
- {
- 	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	u32 sid;
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	error = security_task_prctl(option, arg2, arg3, arg4, arg5);
+ 	if (error)
+ 		return error;
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 53a456e..9447293 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1347,6 +1347,9 @@ asmlinkage long sys_sysctl(struct __sysctl_args __user *args)
+ 	struct __sysctl_args tmp;
  	int error;
- 	unsigned len;
-@@ -4517,22 +4565,25 @@ static int selinux_getprocattr(struct task_struct *p,
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (copy_from_user(&tmp, args, sizeof(tmp)))
+ 		return -EFAULT;
+ 
+diff --git a/kernel/time.c b/kernel/time.c
+index 2289a8d..975f47d 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -82,6 +82,9 @@ asmlinkage long sys_stime(time_t __user *tptr)
+ 	struct timespec tv;
+ 	int err;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (get_user(tv.tv_sec, tptr))
+ 		return -EFAULT;
+ 
+@@ -186,6 +189,9 @@ asmlinkage long sys_settimeofday(struct timeval __user *tv,
+ 	struct timespec	new_ts;
+ 	struct timezone new_tz;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (tv) {
+ 		if (copy_from_user(&user_tv, tv, sizeof(*tv)))
+ 			return -EFAULT;
+@@ -205,6 +211,9 @@ asmlinkage long sys_adjtimex(struct timex __user *txc_p)
+ 	struct timex txc;		/* Local copy of parameter */
+ 	int ret;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	/* Copy the user data space into the kernel copy
+ 	 * structure. But bear in mind that the structures
+ 	 * may change
+diff --git a/kernel/uid16.c b/kernel/uid16.c
+index 5a8b95e..5238a96 100644
+--- a/kernel/uid16.c
++++ b/kernel/uid16.c
+@@ -187,6 +187,9 @@ asmlinkage long sys_setgroups16(int gidsetsize, old_gid_t __user *grouplist)
+ 	struct group_info *group_info;
+ 	int retval;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!capable(CAP_SETGID))
+ 		return -EPERM;
+ 	if ((unsigned)gidsetsize > NGROUPS_MAX)
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 3d6ac95..64cfcf2 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -878,6 +878,9 @@ asmlinkage long sys_mbind(unsigned long start, unsigned long len,
+ 	nodemask_t nodes;
+ 	int err;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	err = get_nodes(&nodes, nmask, maxnode);
+ 	if (err)
+ 		return err;
+@@ -914,6 +917,9 @@ asmlinkage long sys_migrate_pages(pid_t pid, unsigned long maxnode,
+ 	nodemask_t task_nodes;
+ 	int err;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	err = get_nodes(&old, old_nodes, maxnode);
+ 	if (err)
+ 		return err;
+diff --git a/mm/migrate.c b/mm/migrate.c
+index e2fdbce..79a1909 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -915,6 +915,9 @@ asmlinkage long sys_move_pages(pid_t pid, unsigned long nr_pages,
+ 	struct mm_struct *mm;
+ 	struct page_to_node *pm = NULL;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	/* Check flags */
+ 	if (flags & ~(MPOL_MF_MOVE|MPOL_MF_MOVE_ALL))
+ 		return -EINVAL;
+diff --git a/mm/mlock.c b/mm/mlock.c
+index 7b26560..67985f4 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -138,6 +138,8 @@ asmlinkage long sys_mlock(unsigned long start, size_t len)
+ 	unsigned long lock_limit;
+ 	int error = -ENOMEM;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
+ 	if (!can_do_mlock())
+ 		return -EPERM;
+ 
+@@ -203,6 +205,8 @@ asmlinkage long sys_mlockall(int flags)
+ 	if (!flags || (flags & ~(MCL_CURRENT | MCL_FUTURE)))
+ 		goto out;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
+ 	ret = -EPERM;
+ 	if (!can_do_mlock())
+ 		goto out;
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 0d40e66..1b7b0ff 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -240,6 +240,9 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
+ 	unsigned long newbrk, oldbrk;
+ 	struct mm_struct *mm = current->mm;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	down_write(&mm->mmap_sem);
+ 
+ 	if (brk < mm->end_code)
+diff --git a/mm/mremap.c b/mm/mremap.c
+index 8ea5c24..0d49048 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -418,6 +418,9 @@ asmlinkage unsigned long sys_mremap(unsigned long addr,
+ {
+ 	unsigned long ret;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	down_write(&current->mm->mmap_sem);
+ 	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
+ 	up_write(&current->mm->mmap_sem);
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index f9b82ad..df5edda 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -53,6 +53,7 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+ 	unsigned long points, cpu_time, run_time, s;
+ 	struct mm_struct *mm;
+ 	struct task_struct *child;
++	kernel_cap_t cap_effective;
+ 
+ 	task_lock(p);
+ 	mm = p->mm;
+@@ -123,7 +124,11 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+ 	 * Superuser processes are usually more important, so we make it
+ 	 * less likely that we kill those.
+ 	 */
+-	if (cap_t(p->cap_effective) & CAP_TO_MASK(CAP_SYS_ADMIN) ||
++	rcu_read_lock();
++	cap_effective = task_cred(p)->cap_effective;
++	rcu_read_unlock();
++
++	if (cap_t(cap_effective) & CAP_TO_MASK(CAP_SYS_ADMIN) ||
+ 				p->uid == 0 || p->euid == 0)
+ 		points /= 4;
+ 
+@@ -133,7 +138,7 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+ 	 * tend to only have this flag set on applications they think
+ 	 * of as important.
+ 	 */
+-	if (cap_t(p->cap_effective) & CAP_TO_MASK(CAP_SYS_RAWIO))
++	if (cap_t(cap_effective) & CAP_TO_MASK(CAP_SYS_RAWIO))
+ 		points /= 4;
+ 
+ 	/*
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index f071648..9539da4 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -1183,6 +1183,9 @@ asmlinkage long sys_swapoff(const char __user * specialfile)
+ 	int i, type, prev;
+ 	int err;
+ 	
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+@@ -1433,6 +1436,9 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
+ 	struct inode *inode = NULL;
+ 	int did_down = 0;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 	spin_lock(&swap_lock);
+diff --git a/net/compat.c b/net/compat.c
+index d74d821..c20f404 100644
+--- a/net/compat.c
++++ b/net/compat.c
+@@ -483,6 +483,9 @@ asmlinkage long compat_sys_setsockopt(int fd, int level, int optname,
+ 	int err;
+ 	struct socket *sock;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (level == SOL_IPV6 && optname == IPT_SO_SET_REPLACE)
+ 		return do_netfilter_replace(fd, level, optname,
+ 					    optval, optlen);
+@@ -603,6 +606,9 @@ asmlinkage long compat_sys_getsockopt(int fd, int level, int optname,
+ 	int err;
+ 	struct socket *sock;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if ((sock = sockfd_lookup(fd, &err))!=NULL)
+ 	{
+ 		err = security_socket_getsockopt(sock, level,
+diff --git a/net/socket.c b/net/socket.c
+index 50bfeef..034d221 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1200,6 +1200,9 @@ asmlinkage long sys_socket(int family, int type, int protocol)
+ 	int retval;
+ 	struct socket *sock;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	retval = sock_create(family, type, protocol, &sock);
+ 	if (retval < 0)
+ 		goto out;
+@@ -1228,6 +1231,9 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
+ 	int fd1, fd2, err;
+ 	struct file *newfile1, *newfile2;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	/*
+ 	 * Obtain the first socket and check if the underlying protocol
+ 	 * supports the socketpair call.
+@@ -1323,6 +1329,9 @@ asmlinkage long sys_bind(int fd, struct sockaddr __user *umyaddr, int addrlen)
+ 	char address[MAX_SOCK_ADDR];
+ 	int err, fput_needed;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (sock) {
+ 		err = move_addr_to_kernel(umyaddr, addrlen, address);
+@@ -1353,6 +1362,9 @@ asmlinkage long sys_listen(int fd, int backlog)
+ 	struct socket *sock;
+ 	int err, fput_needed;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (sock) {
+ 		if ((unsigned)backlog > sysctl_somaxconn)
+@@ -1387,6 +1399,9 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+ 	int err, len, newfd, fput_needed;
+ 	char address[MAX_SOCK_ADDR];
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (!sock)
+ 		goto out;
+@@ -1476,6 +1491,9 @@ asmlinkage long sys_connect(int fd, struct sockaddr __user *uservaddr,
+ 	char address[MAX_SOCK_ADDR];
+ 	int err, fput_needed;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (!sock)
+ 		goto out;
+@@ -1508,6 +1526,9 @@ asmlinkage long sys_getsockname(int fd, struct sockaddr __user *usockaddr,
+ 	char address[MAX_SOCK_ADDR];
+ 	int len, err, fput_needed;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (!sock)
+ 		goto out;
+@@ -1539,6 +1560,9 @@ asmlinkage long sys_getpeername(int fd, struct sockaddr __user *usockaddr,
+ 	char address[MAX_SOCK_ADDR];
+ 	int len, err, fput_needed;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (sock != NULL) {
+ 		err = security_socket_getpeername(sock);
+@@ -1576,6 +1600,9 @@ asmlinkage long sys_sendto(int fd, void __user *buff, size_t len,
+ 	int fput_needed;
+ 	struct file *sock_file;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock_file = fget_light(fd, &fput_needed);
+ 	err = -EBADF;
+ 	if (!sock_file)
+@@ -1637,6 +1664,9 @@ asmlinkage long sys_recvfrom(int fd, void __user *ubuf, size_t size,
+ 	struct file *sock_file;
+ 	int fput_needed;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock_file = fget_light(fd, &fput_needed);
+ 	err = -EBADF;
+ 	if (!sock_file)
+@@ -1693,6 +1723,9 @@ asmlinkage long sys_setsockopt(int fd, int level, int optname,
+ 	if (optlen < 0)
+ 		return -EINVAL;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (sock != NULL) {
+ 		err = security_socket_setsockopt(sock, level, optname);
+@@ -1724,6 +1757,9 @@ asmlinkage long sys_getsockopt(int fd, int level, int optname,
+ 	int err, fput_needed;
+ 	struct socket *sock;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (sock != NULL) {
+ 		err = security_socket_getsockopt(sock, level, optname);
+@@ -1753,6 +1789,9 @@ asmlinkage long sys_shutdown(int fd, int how)
+ 	int err, fput_needed;
+ 	struct socket *sock;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
+ 	if (sock != NULL) {
+ 		err = security_socket_shutdown(sock, how);
+@@ -1789,6 +1828,9 @@ asmlinkage long sys_sendmsg(int fd, struct msghdr __user *msg, unsigned flags)
+ 	int err, ctl_len, iov_size, total_len;
+ 	int fput_needed;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	err = -EFAULT;
+ 	if (MSG_CMSG_COMPAT & flags) {
+ 		if (get_compat_msghdr(&msg_sys, msg_compat))
+@@ -1896,6 +1938,9 @@ asmlinkage long sys_recvmsg(int fd, struct msghdr __user *msg,
+ 	struct sockaddr __user *uaddr;
+ 	int __user *uaddr_len;
+ 
++	if (update_current_cred() < 0)
++		return -ENOMEM;
++
+ 	if (MSG_CMSG_COMPAT & flags) {
+ 		if (get_compat_msghdr(&msg_sys, msg_compat))
+ 			return -EFAULT;
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 7520361..6a56164 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -25,7 +25,7 @@
+ 
+ int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
+ {
+-	NETLINK_CB(skb).eff_cap = current->cap_effective;
++	NETLINK_CB(skb).eff_cap = current->cred->cap_effective;
+ 	return 0;
+ }
+ 
+@@ -43,7 +43,7 @@ EXPORT_SYMBOL(cap_netlink_recv);
+ int cap_capable (struct task_struct *tsk, int cap)
+ {
+ 	/* Derived from include/linux/sched.h:capable. */
+-	if (cap_raised(tsk->cap_effective, cap))
++	if (cap_raised(tsk->cred->cap_effective, cap))
+ 		return 0;
+ 	return -EPERM;
+ }
+@@ -68,7 +68,9 @@ int cap_capget (struct task_struct *target, kernel_cap_t *effective,
+ 		kernel_cap_t *inheritable, kernel_cap_t *permitted)
+ {
+ 	/* Derived from kernel/capability.c:sys_capget. */
+-	*effective = cap_t (target->cap_effective);
++	rcu_read_lock();
++	*effective = cap_t (task_cred(target)->cap_effective);
++	rcu_read_unlock();
+ 	*inheritable = cap_t (target->cap_inheritable);
+ 	*permitted = cap_t (target->cap_permitted);
+ 	return 0;
+@@ -103,7 +105,7 @@ int cap_capset_check (struct task_struct *target, kernel_cap_t *effective,
+ void cap_capset_set (struct task_struct *target, kernel_cap_t *effective,
+ 		     kernel_cap_t *inheritable, kernel_cap_t *permitted)
+ {
+-	target->cap_effective = *effective;
++	target->_cap_effective = *effective;
+ 	target->cap_inheritable = *inheritable;
+ 	target->cap_permitted = *permitted;
+ }
+@@ -162,15 +164,15 @@ void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+ 		}
  	}
  
- 	tsec = p->security;
+-	current->suid = current->euid = current->fsuid = bprm->e_uid;
+-	current->sgid = current->egid = current->fsgid = bprm->e_gid;
++	current->suid = current->euid = current->cred->uid = bprm->e_uid;
++	current->sgid = current->egid = current->cred->gid = bprm->e_gid;
+ 
+ 	/* For init, we want to retain the capabilities set
+ 	 * in the init_task struct. Thus we skip the usual
+ 	 * capability rules */
+ 	if (!is_init(current)) {
+ 		current->cap_permitted = new_permitted;
+-		current->cap_effective =
++		current->_cap_effective =
+ 		    cap_intersect (new_permitted, bprm->cap_effective);
+ 	}
+ 
+@@ -246,13 +248,13 @@ static inline void cap_emulate_setxuid (int old_ruid, int old_euid,
+ 	    (current->uid != 0 && current->euid != 0 && current->suid != 0) &&
+ 	    !current->keep_capabilities) {
+ 		cap_clear (current->cap_permitted);
+-		cap_clear (current->cap_effective);
++		cap_clear (current->_cap_effective);
+ 	}
+ 	if (old_euid == 0 && current->euid != 0) {
+-		cap_clear (current->cap_effective);
++		cap_clear (current->_cap_effective);
+ 	}
+ 	if (old_euid != 0 && current->euid == 0) {
+-		current->cap_effective = current->cap_permitted;
++		current->_cap_effective = current->cap_permitted;
+ 	}
+ }
+ 
+@@ -280,12 +282,12 @@ int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid,
+ 			 */
+ 
+ 			if (!issecure (SECURE_NO_SETUID_FIXUP)) {
+-				if (old_fsuid == 0 && current->fsuid != 0) {
+-					cap_t (current->cap_effective) &=
++				if (old_fsuid == 0 && current->cred->uid != 0) {
++					cap_t (current->_cap_effective) &=
+ 					    ~CAP_FS_MASK;
+ 				}
+-				if (old_fsuid != 0 && current->fsuid == 0) {
+-					cap_t (current->cap_effective) |=
++				if (old_fsuid != 0 && current->cred->uid == 0) {
++					cap_t (current->_cap_effective) |=
+ 					    (cap_t (current->cap_permitted) &
+ 					     CAP_FS_MASK);
+ 				}
+@@ -301,7 +303,7 @@ int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid,
+ 
+ void cap_task_reparent_to_init (struct task_struct *p)
+ {
+-	p->cap_effective = CAP_INIT_EFF_SET;
++	p->_cap_effective = CAP_INIT_EFF_SET;
+ 	p->cap_inheritable = CAP_INIT_INH_SET;
+ 	p->cap_permitted = CAP_FULL_SET;
+ 	p->keep_capabilities = 0;
+diff --git a/security/dummy.c b/security/dummy.c
+index 187fc4b..7e52156 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -76,7 +76,13 @@ static int dummy_acct (struct file *file)
+ 
+ static int dummy_capable (struct task_struct *tsk, int cap)
+ {
+-	if (cap_raised (tsk->cap_effective, cap))
++	kernel_cap_t cap_effective;
++
 +	rcu_read_lock();
-+	csec = task_cred(p)->security;
- 
- 	if (!strcmp(name, "current"))
--		sid = tsec->sid;
-+		sid = tsec->victim_sid;
- 	else if (!strcmp(name, "prev"))
- 		sid = tsec->osid;
- 	else if (!strcmp(name, "exec"))
- 		sid = tsec->exec_sid;
- 	else if (!strcmp(name, "fscreate"))
--		sid = tsec->create_sid;
-+		sid = csec->create_sid;
- 	else if (!strcmp(name, "keycreate"))
--		sid = tsec->keycreate_sid;
-+		sid = csec->keycreate_sid;
- 	else if (!strcmp(name, "sockcreate"))
--		sid = tsec->sockcreate_sid;
-+		sid = csec->sockcreate_sid;
- 	else
--		return -EINVAL;
-+		goto invalid;
- 
++	cap_effective = task_cred(tsk)->cap_effective;
 +	rcu_read_unlock();
- 	if (!sid)
++
++	if (cap_raised (cap_effective, cap))
  		return 0;
+ 	return -EPERM;
+ }
+@@ -146,7 +152,12 @@ static void dummy_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+ 	change_fsuid(bprm->cred, bprm->e_uid);
+ 	change_fsgid(bprm->cred, bprm->e_gid);
  
-@@ -4540,13 +4591,20 @@ static int selinux_getprocattr(struct task_struct *p,
- 	if (error)
- 		return error;
- 	return len;
+-	dummy_capget(current, &current->cap_effective, &current->cap_inheritable, &current->cap_permitted);
++	dummy_capget(current,
++		     &current->_cap_effective,
++		     &current->cap_inheritable,
++		     &current->cap_permitted);
 +
-+invalid:
-+	rcu_read_unlock();
-+	return -EINVAL;
++	change_cap(bprm->cred, current->_cap_effective);
  }
  
- static int selinux_setprocattr(struct task_struct *p,
- 			       char *name, void *value, size_t size)
+ static void dummy_bprm_post_apply_creds (struct linux_binprm *bprm)
+@@ -499,7 +510,10 @@ static int dummy_task_setuid (uid_t id0, uid_t id1, uid_t id2, int flags)
+ 
+ static int dummy_task_post_setuid (uid_t id0, uid_t id1, uid_t id2, int flags)
  {
- 	struct task_security_struct *tsec;
--	u32 sid = 0;
-+	struct cred_security_struct *csec;
-+	struct av_decision avd;
-+	struct cred *cred;
-+	u32 sid = 0, perm;
- 	int error;
- 	char *str = value;
- 
-@@ -4562,17 +4620,19 @@ static int selinux_setprocattr(struct task_struct *p,
- 	 * above restriction is ever removed.
- 	 */
- 	if (!strcmp(name, "exec"))
--		error = task_has_perm(current, p, PROCESS__SETEXEC);
-+		perm = PROCESS__SETEXEC;
- 	else if (!strcmp(name, "fscreate"))
--		error = task_has_perm(current, p, PROCESS__SETFSCREATE);
-+		perm = PROCESS__SETFSCREATE;
- 	else if (!strcmp(name, "keycreate"))
--		error = task_has_perm(current, p, PROCESS__SETKEYCREATE);
-+		perm = PROCESS__SETKEYCREATE;
- 	else if (!strcmp(name, "sockcreate"))
--		error = task_has_perm(current, p, PROCESS__SETSOCKCREATE);
-+		perm = PROCESS__SETSOCKCREATE;
- 	else if (!strcmp(name, "current"))
--		error = task_has_perm(current, p, PROCESS__SETCURRENT);
-+		perm = PROCESS__SETCURRENT;
- 	else
--		error = -EINVAL;
-+		return -EINVAL;
-+
-+	error = task_has_perm(current, p, perm);
- 	if (error)
- 		return error;
- 
-@@ -4594,20 +4654,37 @@ static int selinux_setprocattr(struct task_struct *p,
- 	   checks and may_create for the file creation checks. The
- 	   operation will then fail if the context is not permitted. */
- 	tsec = p->security;
--	if (!strcmp(name, "exec"))
-+	csec = p->cred->security;
-+	switch (perm) {
-+	case PROCESS__SETEXEC:
- 		tsec->exec_sid = sid;
--	else if (!strcmp(name, "fscreate"))
--		tsec->create_sid = sid;
--	else if (!strcmp(name, "keycreate")) {
-+		break;
-+
-+	case PROCESS__SETKEYCREATE:
- 		error = may_create_key(sid, p);
- 		if (error)
- 			return error;
--		tsec->keycreate_sid = sid;
--	} else if (!strcmp(name, "sockcreate"))
--		tsec->sockcreate_sid = sid;
--	else if (!strcmp(name, "current")) {
--		struct av_decision avd;
-+	case PROCESS__SETFSCREATE:
-+	case PROCESS__SETSOCKCREATE:
-+		cred = dup_cred(current->cred);
-+		if (!cred)
-+			return -ENOMEM;
-+		csec = cred->security;
-+		switch (perm) {
-+		case PROCESS__SETKEYCREATE:
-+			csec->keycreate_sid = sid;
-+			break;
-+		case PROCESS__SETFSCREATE:
-+			csec->create_sid = sid;
-+			break;
-+		case PROCESS__SETSOCKCREATE:
-+			csec->sockcreate_sid = sid;
-+			break;
-+		}
-+		set_current_cred(cred);
-+		break;
- 
-+	case PROCESS__SETCURRENT:
- 		if (sid == 0)
- 			return -EINVAL;
- 
-@@ -4626,11 +4703,16 @@ static int selinux_setprocattr(struct task_struct *p,
-                 }
- 
- 		/* Check permissions for the transition. */
--		error = avc_has_perm(tsec->sid, sid, SECCLASS_PROCESS,
-+		error = avc_has_perm(csec->action_sid, sid, SECCLASS_PROCESS,
- 		                     PROCESS__DYNTRANSITION, NULL);
- 		if (error)
- 			return error;
- 
-+		cred = dup_cred(current->cred);
-+		if (!cred)
-+			return -ENOMEM;
-+		csec = cred->security;
-+
- 		/* Check for ptracing, and update the task SID if ok.
- 		   Otherwise, leave SID unchanged and fail. */
- 		task_lock(p);
-@@ -4638,20 +4720,25 @@ static int selinux_setprocattr(struct task_struct *p,
- 			error = avc_has_perm_noaudit(tsec->ptrace_sid, sid,
- 						     SECCLASS_PROCESS,
- 						     PROCESS__PTRACE, 0, &avd);
--			if (!error)
--				tsec->sid = sid;
-+			if (!error) {
-+				csec->action_sid = tsec->victim_sid = sid;
-+			}
- 			task_unlock(p);
- 			avc_audit(tsec->ptrace_sid, sid, SECCLASS_PROCESS,
- 				  PROCESS__PTRACE, &avd, error, NULL);
--			if (error)
-+			if (error) {
-+				put_cred(cred);
- 				return error;
-+			}
- 		} else {
--			tsec->sid = sid;
-+			csec->action_sid = tsec->victim_sid = sid;
- 			task_unlock(p);
- 		}
--	}
--	else
-+		set_current_cred(cred);
-+		break;
-+	default:
- 		return -EINVAL;
-+	}
- 
- 	return size;
- }
-@@ -4671,18 +4758,21 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
- static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
- 			     unsigned long flags)
- {
--	struct task_security_struct *tsec = tsk->security;
-+	struct cred_security_struct *csec;
- 	struct key_security_struct *ksec;
- 
- 	ksec = kzalloc(sizeof(struct key_security_struct), GFP_KERNEL);
- 	if (!ksec)
- 		return -ENOMEM;
- 
-+	rcu_read_lock();
-+	csec = task_cred(tsk)->security;
- 	ksec->obj = k;
--	if (tsec->keycreate_sid)
--		ksec->sid = tsec->keycreate_sid;
-+	if (csec->keycreate_sid)
-+		ksec->sid = csec->keycreate_sid;
- 	else
--		ksec->sid = tsec->sid;
-+		ksec->sid = csec->action_sid;
-+	rcu_read_unlock();
- 	k->security = ksec;
- 
+-	dummy_capget(current, &current->cap_effective, &current->cap_inheritable, &current->cap_permitted);
++	dummy_capget(current,
++		     &current->_cap_effective,
++		     &current->cap_inheritable,
++		     &current->cap_permitted);
  	return 0;
-@@ -4697,17 +4787,13 @@ static void selinux_key_free(struct key *k)
  }
  
- static int selinux_key_permission(key_ref_t key_ref,
--			    struct task_struct *ctx,
--			    key_perm_t perm)
-+				  struct task_struct *ctx,
-+				  key_perm_t perm)
+@@ -697,7 +711,7 @@ static int dummy_sem_semop (struct sem_array *sma,
+ 
+ static int dummy_netlink_send (struct sock *sk, struct sk_buff *skb)
  {
- 	struct key *key;
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 	struct key_security_struct *ksec;
--
--	key = key_ref_to_ptr(key_ref);
--
--	tsec = ctx->security;
--	ksec = key->security;
-+	u32 action_sid;
- 
- 	/* if no specific permissions are requested, we skip the
- 	   permission check. No serious, additional covert channels
-@@ -4715,7 +4801,16 @@ static int selinux_key_permission(key_ref_t key_ref,
- 	if (perm == 0)
- 		return 0;
- 
--	return avc_has_perm(tsec->sid, ksec->sid,
-+	key = key_ref_to_ptr(key_ref);
-+
-+	rcu_read_lock();
-+	csec = task_cred(ctx)->security;
-+	action_sid = csec->action_sid;
-+	rcu_read_unlock();
-+
-+	ksec = key->security;
-+
-+	return avc_has_perm(action_sid, ksec->sid,
- 			    SECCLASS_KEY, perm, NULL);
+-	NETLINK_CB(skb).eff_cap = current->cap_effective;
++	NETLINK_CB(skb).eff_cap = current->cred->cap_effective;
+ 	return 0;
  }
- 
-@@ -4790,6 +4885,9 @@ static struct security_operations selinux_ops = {
- 	.file_send_sigiotask =		selinux_file_send_sigiotask,
- 	.file_receive =			selinux_file_receive,
- 
-+	.cred_dup =			selinux_cred_dup,
-+	.cred_destroy =			selinux_cred_destroy,
-+
- 	.task_create =			selinux_task_create,
- 	.task_alloc_security =		selinux_task_alloc_security,
- 	.task_free_security =		selinux_task_free_security,
-@@ -4898,6 +4996,17 @@ static struct security_operations selinux_ops = {
- #endif
- };
- 
-+/*
-+ * initial security credentials
-+ * - attached to init_cred which is never released
-+ */
-+static struct cred_security_struct init_cred_sec = {
-+	.action_sid	= SECINITSID_KERNEL,
-+	.create_sid	= SECINITSID_UNLABELED,
-+	.keycreate_sid	= SECINITSID_UNLABELED,
-+	.sockcreate_sid	= SECINITSID_UNLABELED,
-+};
-+
- static __init int selinux_init(void)
- {
- 	struct task_security_struct *tsec;
-@@ -4909,11 +5018,15 @@ static __init int selinux_init(void)
- 
- 	printk(KERN_INFO "SELinux:  Initializing.\n");
- 
-+	/* Set the security state for the initial credentials */
-+	init_cred.security = &init_cred_sec;
-+	BUG_ON(current->cred != &init_cred);
-+
- 	/* Set the security state for the initial task. */
- 	if (task_alloc_security(current))
- 		panic("SELinux:  Failed to initialize initial task.\n");
- 	tsec = current->security;
--	tsec->osid = tsec->sid = SECINITSID_KERNEL;
-+	tsec->osid = tsec->victim_sid = SECINITSID_KERNEL;
- 
- 	sel_inode_cache = kmem_cache_create("selinux_inode_security",
- 					    sizeof(struct inode_security_struct),
-diff --git a/security/selinux/include/objsec.h b/security/selinux/include/objsec.h
-index 91b88f0..a1dbc1c 100644
---- a/security/selinux/include/objsec.h
-+++ b/security/selinux/include/objsec.h
-@@ -27,14 +27,22 @@
- #include "flask.h"
- #include "avc.h"
- 
-+/*
-+ * the security parameters associated with the credentials record structure
-+ * (struct cred::security)
-+ */
-+struct cred_security_struct {
-+	u32	action_sid;	/* perform action as SID */
-+	u32	create_sid;	/* filesystem object creation as SID */
-+	u32	keycreate_sid;	/* key creation as SID */
-+	u32	sockcreate_sid;	/* socket creation as SID */
-+};
-+
- struct task_security_struct {
- 	struct task_struct *task;      /* back pointer to task object */
- 	u32 osid;            /* SID prior to last execve */
--	u32 sid;             /* current SID */
-+	u32 victim_sid;	     /* current SID affecting victimisation of this task */
- 	u32 exec_sid;        /* exec SID */
--	u32 create_sid;      /* fscreate SID */
--	u32 keycreate_sid;   /* keycreate SID */
--	u32 sockcreate_sid;  /* fscreate SID */
- 	u32 ptrace_sid;      /* SID of ptrace parent */
- };
- 
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index c9e92da..9c6737f 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -77,13 +77,13 @@ extern void selnl_notify_setenforce(int val);
- static int task_has_security(struct task_struct *tsk,
- 			     u32 perms)
- {
--	struct task_security_struct *tsec;
-+	struct cred_security_struct *csec;
- 
--	tsec = tsk->security;
--	if (!tsec)
-+	csec = tsk->cred->security;
-+	if (!csec)
- 		return -EACCES;
- 
--	return avc_has_perm(tsec->sid, SECINITSID_SECURITY,
-+	return avc_has_perm(csec->action_sid, SECINITSID_SECURITY,
- 			    SECCLASS_SECURITY, perms, NULL);
- }
- 
-diff --git a/security/selinux/xfrm.c b/security/selinux/xfrm.c
-index ba715f4..902d302 100644
---- a/security/selinux/xfrm.c
-+++ b/security/selinux/xfrm.c
-@@ -240,7 +240,7 @@ static int selinux_xfrm_sec_ctx_alloc(struct xfrm_sec_ctx **ctxp,
- 	/*
- 	 * Does the subject have permission to set security context?
- 	 */
--	rc = avc_has_perm(tsec->sid, ctx->ctx_sid,
-+	rc = avc_has_perm(tsec->action_sid, ctx->ctx_sid,
- 			  SECCLASS_ASSOCIATION,
- 			  ASSOCIATION__SETCONTEXT, NULL);
- 	if (rc)
-@@ -341,7 +341,7 @@ int selinux_xfrm_policy_delete(struct xfrm_policy *xp)
- 	int rc = 0;
- 
- 	if (ctx)
--		rc = avc_has_perm(tsec->sid, ctx->ctx_sid,
-+		rc = avc_has_perm(tsec->action_sid, ctx->ctx_sid,
- 				  SECCLASS_ASSOCIATION,
- 				  ASSOCIATION__SETCONTEXT, NULL);
- 
-@@ -383,7 +383,7 @@ int selinux_xfrm_state_delete(struct xfrm_state *x)
- 	int rc = 0;
- 
- 	if (ctx)
--		rc = avc_has_perm(tsec->sid, ctx->ctx_sid,
-+		rc = avc_has_perm(tsec->action_sid, ctx->ctx_sid,
- 				  SECCLASS_ASSOCIATION,
- 				  ASSOCIATION__SETCONTEXT, NULL);
  
 
