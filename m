@@ -1,34 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbXIZD46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbXIZECM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759494AbXIZD46 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 23:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757941AbXIZD4t
+	id S1754483AbXIZECM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 00:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbXIZEB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 23:56:49 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:48794 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756336AbXIZD4t (ORCPT
+	Wed, 26 Sep 2007 00:01:57 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:47074 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1749667AbXIZEB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 23:56:49 -0400
-Date: Wed, 26 Sep 2007 04:56:41 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] put_user() on struct is not nice
-Message-ID: <20070926035641.GN8181@ftp.linux.org.uk>
-References: <E1IaLAA-000853-8q@ZenIV.linux.org.uk> <1190772346.2227.56.camel@localhost.localdomain>
+	Wed, 26 Sep 2007 00:01:56 -0400
+Subject: Re: queued patches for SCSI for 2.6.24
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: jeff@garzik.org, matthew@wil.cx, akpm@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+In-Reply-To: <20070925092106U.tomof@acm.org>
+References: <20070926025608.GA3899@parisc-linux.org>
+	 <46F9D328.4030801@garzik.org>
+	 <1190778353.8707.29.camel@localhost.localdomain>
+	 <20070925092106U.tomof@acm.org>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 23:01:53 -0500
+Message-Id: <1190779313.8707.42.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190772346.2227.56.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 26, 2007 at 12:05:46PM +1000, Rusty Russell wrote:
-> On Wed, 2007-09-26 at 01:54 +0100, Al Viro wrote:
-> > use copy_to_user() instead...
+On Wed, 2007-09-26 at 12:55 +0900, FUJITA Tomonori wrote:
+> On Tue, 25 Sep 2007 22:45:53 -0500
+> James Bottomley <James.Bottomley@SteelEye.com> wrote:
 > 
-> Thanks Al, Jes sent me the same fix which I have queued for for 2.6.24:
+> > On Tue, 2007-09-25 at 23:34 -0400, Jeff Garzik wrote:
+> > > Matthew Wilcox wrote:
+> > > > On Tue, Sep 25, 2007 at 10:37:33PM -0400, Jeff Garzik wrote:
+> > > >> Are there any const-ness worries for scsi_host_template, or plans for 
+> > > >> the future?  I do not see any other examples of the host template 
+> > > >> members getting modified.
+> > > > 
+> > > > Goodness, Jeff, you haven't looked too hard.  There's dozens of examples
+> > > > I've come across trawling the horrible unmaintained drivers.  I'd love
+> > > > to see scsi_host_template become const, but it's not happening any time
+> > > > soon, and we can address this little piece when the time comes.
+> > > 
+> > > Well, sure, the driver is the owner of that memory.
+> > > 
+> > > We're talking about common code.
+> > > 
+> > > If everybody agrees SHT is R/W in the core, Fujita-san's patch is fine.
+> > 
+> > Well, I don't like mucking with the template either.
+> > 
+> > This whole mess is generated basically because the zero default of the
+> > template should be treated as initiator.  How about this, which makes
+> > that manifest?
+> 
+> But how can we handle dual-mode drivers?
+> 
+> luce:/sys/class/scsi_host/host0$ cat supported_mode
+> Initiator, Target
+> 
+> 
+> The values are not enumerated. They are like FC_PORT_ROLE.
 
-OK, decision on urgency is up to you - post .23 is fine by me...
+Any driver that does other than the default INITIATOR has to set it in
+the template.  The code only defaults zero (which is what the templates
+get if its unset) to MODE_INITIATOR.
+
+James
+
+
