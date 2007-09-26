@@ -1,41 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761015AbXIZRH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbXIZRIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761015AbXIZRH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 13:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbXIZRHQ
+	id S1759984AbXIZRIb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 13:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbXIZRIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 13:07:16 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46810 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751423AbXIZRHP (ORCPT
+	Wed, 26 Sep 2007 13:08:23 -0400
+Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:38597
+	"EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752432AbXIZRIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 13:07:15 -0400
-Date: Wed, 26 Sep 2007 18:13:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Fedin <sonic_amiga@rambler.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: NinjaSCSI PCMCIA card
-Message-ID: <20070926181301.0a3b3437@the-village.bc.nu>
-In-Reply-To: <4010187171.20070926113912@rambler.ru>
-References: <4010187171.20070926113912@rambler.ru>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Sep 2007 13:08:22 -0400
+X-IronPort-AV: E=Sophos;i="4.21,198,1188770400"; 
+   d="scan'208";a="3292241"
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: [PATCH 1/8] taskstats: fix indentation of long argument lists
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Guillaume Chazarain <guichaz@yahoo.fr>, Balbir Singh <balbir@in.ibm.com>,
+       Jay Lan <jlan@engr.sgi.com>, Jonathan Lim <jlim@sgi.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Date: Wed, 26 Sep 2007 19:08:18 +0200
+Message-ID: <20070926170818.31221.33994.stgit@cheypa.inria.fr>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 11:39:12 +0400
-Pavel Fedin <sonic_amiga@rambler.ru> wrote:
+Align with the opening parenthesis.
 
->  Hello!
-> 
->  Can i get this card working? Hotplug doesn't recognise it, however i
-> know that Linux supports it. 
+Changelog since V1 (http://lkml.org/lkml/2007/9/21/527):
+- renamed fill_threadgroup() and add_tsk() to respectively
+fill_threadgroup_stats() and add_tsk_stats() as suggested by Balbir Singh.
+- added braces around do/while.
+- added patch to unbreak binary compatibility between taskstats v5/v6.
+- split further by preparing the bacct/xacct before the main patch.
+- some indentation fixes.
 
-The kernel supports the NinjaSCSI-3 and UltraNinja-16 (you couldn't make
-these names up could you) but not afaik the card you have a dump of there
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: Balbir Singh <balbir@in.ibm.com>
+Cc: Jay Lan <jlan@engr.sgi.com>
+Cc: Jonathan Lim <jlim@sgi.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+---
 
+ kernel/taskstats.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+
+diff --git a/kernel/taskstats.c b/kernel/taskstats.c
+index 059431e..a42b6c0 100644
+--- a/kernel/taskstats.c
++++ b/kernel/taskstats.c
+@@ -69,7 +69,7 @@ enum actions {
+ };
+ 
+ static int prepare_reply(struct genl_info *info, u8 cmd, struct sk_buff **skbp,
+-				size_t size)
++			 size_t size)
+ {
+ 	struct sk_buff *skb;
+ 	void *reply;
+@@ -119,7 +119,7 @@ static int send_reply(struct sk_buff *skb, pid_t pid)
+  * Send taskstats data in @skb to listeners registered for @cpu's exit data
+  */
+ static void send_cpu_listeners(struct sk_buff *skb,
+-					struct listener_list *listeners)
++			       struct listener_list *listeners)
+ {
+ 	struct genlmsghdr *genlhdr = nlmsg_data(nlmsg_hdr(skb));
+ 	struct listener *s, *tmp;
+@@ -168,8 +168,7 @@ static void send_cpu_listeners(struct sk_buff *skb,
+ 	up_write(&listeners->sem);
+ }
+ 
+-static int fill_pid(pid_t pid, struct task_struct *tsk,
+-		struct taskstats *stats)
++static int fill_pid(pid_t pid, struct task_struct *tsk, struct taskstats *stats)
+ {
+ 	int rc = 0;
+ 
+@@ -210,7 +209,7 @@ static int fill_pid(pid_t pid, struct task_struct *tsk,
+ }
+ 
+ static int fill_tgid(pid_t tgid, struct task_struct *first,
+-		struct taskstats *stats)
++		     struct taskstats *stats)
+ {
+ 	struct task_struct *tsk;
+ 	unsigned long flags;
