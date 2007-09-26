@@ -1,108 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbXIZUHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbXIZUHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759238AbXIZUHT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 16:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbXIZUHG
+	id S1755132AbXIZUHh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 16:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760295AbXIZUHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 16:07:06 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:34075 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753734AbXIZUHE (ORCPT
+	Wed, 26 Sep 2007 16:07:15 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:36977 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758577AbXIZUHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 16:07:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V1kVmT0FmN8jgfFLySlrWTdwPTfvsCfD/iFfw/X4NLP7z5Vsn0N49pb2O0AWshohmaO5tvuu/Mvr6cRqwHSFjqRxL5Xd/gfs5mKZyuuhw0sCvD7oiJkLRCM9CLdBFmMyLaeBCzDcVu0TkaWp7ADm9Lk2WcMMtN1O9gb3/CEvSdM=
-Message-ID: <a372714f0709261306q714100e3t643b31d8f194de2e@mail.gmail.com>
-Date: Wed, 26 Sep 2007 13:06:59 -0700
-From: "Brett Warden" <brett.warden@gmail.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [PATCH] bw-qcam: use data_reverse instead of manually poking the control register
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-In-Reply-To: <2c0942db0709261243h1267140br70796c7fcfb165e3@mail.gmail.com>
+	Wed, 26 Sep 2007 16:07:14 -0400
+Message-ID: <46FABBEF.5000301@tiscali.nl>
+Date: Wed, 26 Sep 2007 22:07:11 +0200
+From: roel <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
+To: Matthew Wilcox <willy@linux.intel.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] Change dmapool free block management
+References: <20070926185757.GM3899@parisc-linux.org> <1190833279354-git-send-email-willy@linux.intel.com>
+In-Reply-To: <1190833279354-git-send-email-willy@linux.intel.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a372714f0709261212hec0c61ofc5dd6d127352402@mail.gmail.com>
-	 <2c0942db0709261243h1267140br70796c7fcfb165e3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/26/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+Matthew Wilcox wrote:
 
-> Just as an aside, if you've tested this and it works, then there's no
-> point to keep the write_lpcontrol even as a comment. Kill those four
-> lines, and if someone's interested in what happened they'll just look
-> at the file history.
+[...]
 
-Point taken, thanks for the feedback.
+> @@ -113,9 +133,12 @@ struct dma_pool *dma_pool_create(const char *name, struct device *dev,
+>  		return NULL;
+>  	}
+>  
+> -	if (size == 0)
+> +	if (size == 0) {
+>  		return NULL;
+> -
+> +	} else if (size < 4) {
+> +		size = 4;
+> +	}
 
----
+you could do without brackets
 
-diff --git a/drivers/media/video/bw-qcam.c b/drivers/media/video/bw-qcam.c
-index 7d47cbe..0ba92e3 100644
---- a/drivers/media/video/bw-qcam.c
-+++ b/drivers/media/video/bw-qcam.c
-@@ -107,6 +107,11 @@ static inline void write_lpcontrol(struct
-qcam_device *q, int d)
-        parport_write_control(q->pport, d);
- }
+[...]
 
-+static inline void reverse_port(struct qcam_device *q)
-+{
-+       parport_data_reverse(q->pport);
-+}
-+
- static int qc_waithand(struct qcam_device *q, int val);
- static int qc_command(struct qcam_device *q, int command);
- static int qc_readparam(struct qcam_device *q);
-@@ -369,7 +374,7 @@ static void qc_reset(struct qcam_device *q)
-                        break;
+> @@ -263,34 +288,21 @@ void dma_pool_destroy(struct dma_pool *pool)
+>   *
+>   * This returns the kernel virtual address of a currently unused block,
+>   * and reports its dma address through the handle.
+> - * If such a memory block can't be allocated, null is returned.
+> + * If such a memory block can't be allocated, %NULL is returned.
+>   */
+>  void *dma_pool_alloc(struct dma_pool *pool, gfp_t mem_flags,
+>  		     dma_addr_t * handle)
+>  {
+>  	unsigned long flags;
+>  	struct dma_page *page;
+> -	int map, block;
+>  	size_t offset;
+>  	void *retval;
+>  
+>  	spin_lock_irqsave(&pool->lock, flags);
+>   restart:
+>  	list_for_each_entry(page, &pool->page_list, page_list) {
+> -		int i;
+> -		/* only cachable accesses here ... */
+> -		for (map = 0, i = 0;
+> -		     i < pool->blocks_per_page; i += BITS_PER_LONG, map++) {
+> -			if (page->bitmap[map] == 0)
+> -				continue;
+> -			block = ffz(~page->bitmap[map]);
+> -			if ((i + block) < pool->blocks_per_page) {
+> -				clear_bit(block, &page->bitmap[map]);
+> -				offset = (BITS_PER_LONG * map) + block;
+> -				offset *= pool->size;
+> -				goto ready;
+> -			}
+> -		}
+> +		if (page->offset < pool->allocation)
+> +			goto ready;
+>  	}
+>  	if (!(page = pool_alloc_page(pool, GFP_ATOMIC))) {
 
-                case QC_ANY:
--                       write_lpcontrol(q, 0x20);
-+                       reverse_port(q);
-                        write_lpdata(q, 0x75);
+	page = pool_alloc_page(pool, GFP_ATOMIC);
+	if(!page) {
 
-                        if (read_lpdata(q) != 0x75) {
-@@ -512,10 +517,12 @@ static inline int qc_readbytes(struct
-qcam_device *q, char buffer[])
-        switch (q->port_mode & QC_MODE_MASK)
-        {
-                case QC_BIDIR:          /* Bi-directional Port */
--                       write_lpcontrol(q, 0x26);
-+                       reverse_port(q);
-+                       write_lpcontrol(q, 0x6);
-                        lo = (qc_waithand2(q, 1) >> 1);
-                        hi = (read_lpstatus(q) >> 3) & 0x1f;
--                       write_lpcontrol(q, 0x2e);
-+                       reverse_port(q);
-+                       write_lpcontrol(q, 0xe);
-                        lo2 = (qc_waithand2(q, 0) >> 1);
-                        hi2 = (read_lpstatus(q) >> 3) & 0x1f;
-                        switch (q->bpp)
-@@ -613,10 +620,13 @@ static long qc_capture(struct qcam_device * q,
-char __user *buf, unsigned long l
+[...]
 
-        if ((q->port_mode & QC_MODE_MASK) == QC_BIDIR)
-        {
--               write_lpcontrol(q, 0x2e);       /* turn port around */
--               write_lpcontrol(q, 0x26);
-+               reverse_port(q);                        /* turn port around */
-+               write_lpcontrol(q, 0xe);
-+               reverse_port(q);
-+               write_lpcontrol(q, 0x6);
-                (void) qc_waithand(q, 1);
--               write_lpcontrol(q, 0x2e);
-+               reverse_port(q);
-+               write_lpcontrol(q, 0xe);
-                (void) qc_waithand(q, 0);
-        }
+> @@ -355,7 +366,7 @@ void dma_pool_free(struct dma_pool *pool, void *vaddr, dma_addr_t dma)
+>  {
+>  	struct dma_page *page;
+>  	unsigned long flags;
+> -	int map, block;
+> +	unsigned int offset;
+>  
+>  	if ((page = pool_find_page(pool, dma)) == 0) {
 
+	page = pool_find_page(pool, dma);
+	if (page == 0) {
 
+>  		if (pool->dev)
+> @@ -368,13 +379,9 @@ void dma_pool_free(struct dma_pool *pool, void *vaddr, dma_addr_t dma)
+>  		return;
+>  	}
+>  
+> -	block = dma - page->dma;
+> -	block /= pool->size;
+> -	map = block / BITS_PER_LONG;
+> -	block %= BITS_PER_LONG;
+> -
+> +	offset = vaddr - page->vaddr;
+>  #ifdef	CONFIG_DEBUG_SLAB
+> -	if (((dma - page->dma) + (void *)page->vaddr) != vaddr) {
+> +	if ((dma - page->dma) != offset) {
 
-
--- 
-Brett Warden
+	if (dma - page->dma != offset) {
+[...]
