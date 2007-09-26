@@ -1,95 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbXIZDnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760571AbXIZDoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbXIZDnw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 23:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXIZDnn
+	id S1760571AbXIZDoM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 23:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbXIZDnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 23:43:43 -0400
+	Tue, 25 Sep 2007 23:43:47 -0400
 Received: from nwd2mail10.analog.com ([137.71.25.55]:24470 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbXIZDnl (ORCPT
+	with ESMTP id S1756284AbXIZDno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 23:43:41 -0400
+	Tue, 25 Sep 2007 23:43:44 -0400
 X-IronPort-AV: i="4.20,298,1186372800"; 
-   d="scan'208"; a="52382507:sNHT37589888"
-Subject: [PATCH 1/2] [INPUT] Blackfin BF54x Input Keypad controller driver
+   d="scan'208"; a="52382512:sNHT46861045"
+Subject: [PATCH 2/2] [VIDEO FRAMEBUFFER] Blackfin BF54x framebuffer device
+	driver for a SHARP LQ043T1DG01 TFT LCD
 From: Bryan Wu <bryan.wu@analog.com>
 Reply-To: bryan.wu@analog.com
-To: dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
        Michael Hennerich <michael.hennerich@analog.com>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
        uclinux-dist-devel@blackfin.uclinux.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Organization: Analog Devices, Ltd.
-Date: Wed, 26 Sep 2007 11:43:34 +0800
-Message-Id: <1190778214.18676.12.camel@roc-laptop>
+Date: Wed, 26 Sep 2007 11:43:39 +0800
+Message-Id: <1190778219.18676.13.camel@roc-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 26 Sep 2007 03:43:39.0599 (UTC) FILETIME=[6D194DF0:01C7FFEF]
+X-OriginalArrivalTime: 26 Sep 2007 03:43:42.0896 (UTC) FILETIME=[6F106300:01C7FFEF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Michael Hennerich <michael.hennerich@analog.com>
-Date: Sun, 5 Aug 2007 18:45:26 +0800
-Subject: [PATCH 1/2] [INPUT] Blackfin BF54x Input Keypad controller driver
+Date: Wed, 26 Sep 2007 11:33:01 +0800
+Subject: [PATCH 2/2] [VIDEO FRAMEBUFFER] Blackfin BF54x framebuffer device driver for a SHARP LQ043T1DG01 TFT LCD
 
 Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- drivers/input/keyboard/Kconfig               |    9 +
- drivers/input/keyboard/Makefile              |    2 +-
- drivers/input/keyboard/bf54x-keys.c          |  376 ++++++++++++++++++++++++++
- include/asm-blackfin/mach-bf548/bf54x_keys.h |   18 ++
- 4 files changed, 404 insertions(+), 1 deletions(-)
- create mode 100644 drivers/input/keyboard/bf54x-keys.c
- create mode 100644 include/asm-blackfin/mach-bf548/bf54x_keys.h
+ drivers/video/Kconfig                         |    9 +
+ drivers/video/Makefile                        |    1 +
+ drivers/video/bf54x-lq043.c                   |  786 +++++++++++++++++++++++++
+ include/asm-blackfin/mach-bf548/bf54x-lq043.h |   30 +
+ 4 files changed, 826 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/bf54x-lq043.c
+ create mode 100644 include/asm-blackfin/mach-bf548/bf54x-lq043.h
 
-diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
-index c97d5eb..2136a9e 100644
---- a/drivers/input/keyboard/Kconfig
-+++ b/drivers/input/keyboard/Kconfig
-@@ -253,4 +253,13 @@ config KEYBOARD_GPIO
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 5216c11..41fae00 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -535,6 +535,15 @@ config FB_VGA16
  	  To compile this driver as a module, choose M here: the
- 	  module will be called gpio-keys.
+ 	  module will be called vga16fb.
  
-+config KEYBOARD_BFIN
-+	tristate "Blackfin BF54x keypad support"
-+	depends on (BF54x)
++config FB_BF54X_LQ043
++	tristate "SHARP LQ043 TFT LCD (BF548 EZKIT)"
++	depends on FB && (BF54x)
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
 +	help
-+	  Say Y here if you want to use the BF54x keypad.
++	 This is the framebuffer device driver for a SHARP LQ043T1DG01 TFT LCD
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called bf54x-keypad.
-+	  
- endif
-diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
-index 28d211b..3123277 100644
---- a/drivers/input/keyboard/Makefile
-+++ b/drivers/input/keyboard/Makefile
-@@ -21,4 +21,4 @@ obj-$(CONFIG_KEYBOARD_OMAP)		+= omap-keypad.o
- obj-$(CONFIG_KEYBOARD_PXA27x)		+= pxa27x_keyboard.o
- obj-$(CONFIG_KEYBOARD_AAED2000)		+= aaed2000_kbd.o
- obj-$(CONFIG_KEYBOARD_GPIO)		+= gpio_keys.o
--
-+obj-$(CONFIG_KEYBOARD_BFIN)		+= bf54x-keys.o
-diff --git a/drivers/input/keyboard/bf54x-keys.c b/drivers/input/keyboard/bf54x-keys.c
+ config FB_STI
+ 	tristate "HP STI frame buffer device support"
+ 	depends on FB && PARISC
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 06eec7b..359e560 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -122,6 +122,7 @@ obj-$(CONFIG_FB_OF)               += offb.o
+ 
+ # the test framebuffer is last
+ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
++obj-$(CONFIG_FB_BF54X_LQ043)	  += bf54x-lq043.o
+ 
+ #video output switch sysfs driver
+ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
+diff --git a/drivers/video/bf54x-lq043.c b/drivers/video/bf54x-lq043.c
 new file mode 100644
-index 0000000..31bb026
+index 0000000..74d11c3
 --- /dev/null
-+++ b/drivers/input/keyboard/bf54x-keys.c
-@@ -0,0 +1,376 @@
++++ b/drivers/video/bf54x-lq043.c
+@@ -0,0 +1,786 @@
 +/*
-+ * File:         drivers/input/keyboard/bf54x-keys.c
++ * File:         drivers/video/bf54x-lq043.c
 + * Based on:
 + * Author:       Michael Hennerich <hennerich@blackfin.uclinux.org>
 + *
 + * Created:
-+ * Description:  keypad driver for Analog Devices Blackfin BF54x Processors
++ * Description:  ADSP-BF54x Framebufer driver
 + *
 + *
 + * Modified:
-+ *               Copyright 2007 Analog Devices Inc.
++ *               Copyright 2004-2007 Analog Devices Inc.
 + *
 + * Bugs:         Enter bugs at http://blackfin.uclinux.org/
 + *
@@ -110,375 +115,797 @@ index 0000000..31bb026
 + */
 +
 +#include <linux/module.h>
-+#include <linux/version.h>
-+
-+#include <linux/init.h>
-+#include <linux/fs.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/sched.h>
-+#include <linux/pm.h>
-+#include <linux/sysctl.h>
-+#include <linux/proc_fs.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/tty.h>
++#include <linux/slab.h>
 +#include <linux/delay.h>
++#include <linux/fb.h>
++#include <linux/ioport.h>
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/interrupt.h>
++#include <linux/sched.h>
++#include <linux/timer.h>
++#include <linux/device.h>
++#include <linux/backlight.h>
++#include <linux/lcd.h>
++#include <linux/spinlock.h>
++#include <linux/dma-mapping.h>
 +#include <linux/platform_device.h>
-+#include <linux/input.h>
-+#include <linux/irq.h>
 +
++#include <asm/blackfin.h>
++#include <asm/irq.h>
++#include <asm/dpmc.h>
++#include <asm/dma-mapping.h>
++#include <asm/dma.h>
++#include <asm/gpio.h>
 +#include <asm/portmux.h>
-+#include <asm/mach/bf54x_keys.h>
 +
-+#define DRV_NAME 	"bf54x-keys"
-+#define TIME_SCALE	100	/* 100 ns */
-+#define	MAX_MULT	(0xFF * TIME_SCALE)
-+#define MAX_RC		8	/* Max Row/Col */
++#include <asm/mach/bf54x-lq043.h>
 +
-+static u16 per_rows[] = {
-+	P_KEY_ROW7,
-+	P_KEY_ROW6,
-+	P_KEY_ROW5,
-+	P_KEY_ROW4,
-+	P_KEY_ROW3,
-+	P_KEY_ROW2,
-+	P_KEY_ROW1,
-+	P_KEY_ROW0,
-+	0
-+};
++#define NO_BL_SUPPORT
 +
-+static u16 per_cols[] = {
-+	P_KEY_COL7,
-+	P_KEY_COL6,
-+	P_KEY_COL5,
-+	P_KEY_COL4,
-+	P_KEY_COL3,
-+	P_KEY_COL2,
-+	P_KEY_COL1,
-+	P_KEY_COL0,
-+	0
-+};
++#define DRIVER_NAME "bf54x-lq043"
++static char driver_name[] = DRIVER_NAME;
 +
-+struct bf54x_kpad {
-+	struct input_dev *input;
++#define BFIN_LCD_NBR_PALETTE_ENTRIES	256
++
++#define EPPI0_18 {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2, P_PPI0_D0, P_PPI0_D1, P_PPI0_D2, P_PPI0_D3, \
++ P_PPI0_D4, P_PPI0_D5, P_PPI0_D6, P_PPI0_D7, P_PPI0_D8, P_PPI0_D9, P_PPI0_D10, \
++ P_PPI0_D11, P_PPI0_D12, P_PPI0_D13, P_PPI0_D14, P_PPI0_D15, P_PPI0_D16, P_PPI0_D17, 0}
++
++#define EPPI0_24 {P_PPI0_D18, P_PPI0_D19, P_PPI0_D20, P_PPI0_D21, P_PPI0_D22, P_PPI0_D23, 0}
++
++struct bfin_bf54xfb_info {
++	struct fb_info *fb;
++	struct device *dev;
++
++	struct bfin_bf54xfb_mach_info *mach_info;
++
++	unsigned char *fb_buffer;	/* RGB Buffer */
++
++	dma_addr_t dma_handle;
++	int lq043_mmap;
++	int lq043_open_cnt;
 +	int irq;
-+	int lastkey;
-+	struct timer_list timer;
-+	unsigned int keyup_test_jiffies;
++	spinlock_t lock;	/* lock */
 +};
 +
-+static inline int bfin_kpad_find_key(struct bfin_kpad_platform_data *pdata, u16 keyident)
-+{
-+	u16 i;
++static int nocursor;
++module_param(nocursor, int, 0644);
++MODULE_PARM_DESC(nocursor, "cursor enable/disable");
 +
-+	for (i = 0; i < pdata->keymapsize; i++)
-+		if ((pdata->keymap[i] >> 16) == keyident)
-+			return pdata->keymap[i] & 0xffff;
-+	return -1;
-+}
++static int outp_rgb666;
++module_param(outp_rgb666, int, 0);
++MODULE_PARM_DESC(outp_rgb666, "Output 18-bit RGB666");
 +
++#define LCD_X_RES		480	/*Horizontal Resolution */
++#define LCD_Y_RES		272	/* Vertical Resolution */
 +
-+static inline u16 bfin_kpad_get_prescale(u32 timescale)
++#define LCD_BPP			24	/* Bit Per Pixel */
++#define	DMA_BUS_SIZE		32
++
++/* 	-- Horizontal synchronizing --
++ *
++ * Timing characteristics taken from the SHARP LQ043T1DG01 datasheet
++ * (LCY-W-06602A Page 9 of 22)
++ *
++ * Clock Frequency 	1/Tc Min 7.83 Typ 9.00 Max 9.26 MHz
++ *
++ * Period 		TH - 525 - Clock
++ * Pulse width 		THp - 41 - Clock
++ * Horizontal period 	THd - 480 - Clock
++ * Back porch 		THb - 2 - Clock
++ * Front porch 		THf - 2 - Clock
++ *
++ * -- Vertical synchronizing --
++ * Period 		TV - 286 - Line
++ * Pulse width 		TVp - 10 - Line
++ * Vertical period 	TVd - 272 - Line
++ * Back porch 		TVb - 2 - Line
++ * Front porch 		TVf - 2 - Line
++ */
++
++#define	LCD_CLK         	(8*1000*1000)	/* 8MHz */
++
++/* # active data to transfer after Horizontal Delay clock */
++#define EPPI_HCOUNT		LCD_X_RES
++
++/* # active lines to transfer after Vertical Delay clock */
++#define EPPI_VCOUNT		LCD_Y_RES
++
++/* Samples per Line = 480 (active data) + 45 (padding) */
++#define EPPI_LINE		525
++
++/* Lines per Frame = 272 (active data) + 14 (padding) */
++#define EPPI_FRAME		286
++
++/* FS1 (Hsync) Width (Typical)*/
++#define EPPI_FS1W_HBL		41
++
++/* FS1 (Hsync) Period (Typical) */
++#define EPPI_FS1P_AVPL		EPPI_LINE
++
++/* Horizontal Delay clock after assertion of Hsync (Typical) */
++#define EPPI_HDELAY		43
++
++/* FS2 (Vsync) Width    = FS1 (Hsync) Period * 10 */
++#define EPPI_FS2W_LVB		(EPPI_LINE * 10)
++
++ /* FS2 (Vsync) Period   = FS1 (Hsync) Period * Lines per Frame */
++#define EPPI_FS2P_LAVF		(EPPI_LINE * EPPI_FRAME)
++
++/* Vertical Delay after assertion of Vsync (2 Lines) */
++#define EPPI_VDELAY		12
++
++#define EPPI_CLIP		0xFF00FF00
++
++/* EPPI Control register configuration value for RGB out
++ * - EPPI as Output
++ * GP 2 frame sync mode,
++ * Internal Clock generation disabled, Internal FS generation enabled,
++ * Receives samples on EPPI_CLK raising edge, Transmits samples on EPPI_CLK falling edge,
++ * FS1 & FS2 are active high,
++ * DLEN = 6 (24 bits for RGB888 out) or 5 (18 bits for RGB666 out)
++ * DMA Unpacking disabled when RGB Formating is enabled, otherwise DMA unpacking enabled
++ * Swapping Enabled,
++ * One (DMA) Channel Mode,
++ * RGB Formatting Enabled for RGB666 output, disabled for RGB888 output
++ * Regular watermark - when FIFO is 100% full,
++ * Urgent watermark - when FIFO is 75% full
++ */
++
++#define EPPI_CONTROL		(0x20136E2E | SWAPEN)
++
++static inline u16 get_eppi_clkdiv(u32 target_ppi_clk)
 +{
 +	u32 sclk = get_sclk();
 +
-+	return ((((sclk / 1000) * timescale) / 1024) - 1);
++	/* EPPI_CLK = (SCLK) / (2 * (EPPI_CLKDIV[15:0] + 1)) */
++
++	return (((sclk / target_ppi_clk) / 2) - 1);
 +}
 +
-+static inline u16 bfin_kpad_get_keypressed(struct bf54x_kpad *bf54x_kpad)
++static void config_ppi(struct bfin_bf54xfb_info *fbi)
 +{
-+	return (bfin_read_KPAD_STAT() & KPAD_PRESSED);
++
++	u16 eppi_clkdiv = get_eppi_clkdiv(LCD_CLK);
++
++	bfin_write_EPPI0_FS1W_HBL(EPPI_FS1W_HBL);
++	bfin_write_EPPI0_FS1P_AVPL(EPPI_FS1P_AVPL);
++	bfin_write_EPPI0_FS2W_LVB(EPPI_FS2W_LVB);
++	bfin_write_EPPI0_FS2P_LAVF(EPPI_FS2P_LAVF);
++	bfin_write_EPPI0_CLIP(EPPI_CLIP);
++
++	bfin_write_EPPI0_FRAME(EPPI_FRAME);
++	bfin_write_EPPI0_LINE(EPPI_LINE);
++
++	bfin_write_EPPI0_HCOUNT(EPPI_HCOUNT);
++	bfin_write_EPPI0_HDELAY(EPPI_HDELAY);
++	bfin_write_EPPI0_VCOUNT(EPPI_VCOUNT);
++	bfin_write_EPPI0_VDELAY(EPPI_VDELAY);
++
++	bfin_write_EPPI0_CLKDIV(eppi_clkdiv);
++
++/*
++ * DLEN = 6 (24 bits for RGB888 out) or 5 (18 bits for RGB666 out)
++ * RGB Formatting Enabled for RGB666 output, disabled for RGB888 output
++ */
++	if (outp_rgb666)
++		bfin_write_EPPI0_CONTROL((EPPI_CONTROL & ~DLENGTH) | DLEN_18 |
++					 RGB_FMT_EN);
++	else
++		bfin_write_EPPI0_CONTROL(((EPPI_CONTROL & ~DLENGTH) | DLEN_24) &
++					 ~RGB_FMT_EN);
++
++
 +}
 +
-+static inline void bfin_kpad_clear_irq(void)
++static int config_dma(struct bfin_bf54xfb_info *fbi)
 +{
-+	bfin_write_KPAD_STAT(0xFFFF);
-+	bfin_write_KPAD_ROWCOL(0xFFFF);
++
++	set_dma_config(CH_EPPI0,
++		       set_bfin_dma_config(DIR_READ, DMA_FLOW_AUTO,
++					   INTR_DISABLE, DIMENSION_2D,
++					   DATA_SIZE_32));
++	set_dma_x_count(CH_EPPI0, (LCD_X_RES * LCD_BPP) / DMA_BUS_SIZE);
++	set_dma_x_modify(CH_EPPI0, DMA_BUS_SIZE / 8);
++	set_dma_y_count(CH_EPPI0, LCD_Y_RES);
++	set_dma_y_modify(CH_EPPI0, DMA_BUS_SIZE / 8);
++	set_dma_start_addr(CH_EPPI0, (unsigned long)fbi->fb_buffer);
++
++	return 0;
 +}
 +
-+static void bfin_kpad_timer(unsigned long data)
++static int request_ports(struct bfin_bf54xfb_info *fbi)
 +{
-+	struct platform_device *pdev =  (struct platform_device *) data;
-+	struct bf54x_kpad *bf54x_kpad = platform_get_drvdata(pdev);
 +
-+	if (bfin_kpad_get_keypressed(bf54x_kpad)) {
-+		/* Try again later */
-+		mod_timer(&bf54x_kpad->timer, jiffies
-+				+ bf54x_kpad->keyup_test_jiffies);
-+		return;
++	u16 eppi_req_18[] = EPPI0_18;
++	u16 disp = fbi->mach_info->disp;
++
++	if (gpio_request(disp, NULL)) {
++		printk(KERN_ERR "Requesting GPIO %d faild\n", disp);
++		return -EFAULT;
 +	}
 +
-+	input_report_key(bf54x_kpad->input, bf54x_kpad->lastkey, 0);
-+	input_sync(bf54x_kpad->input);
-+
-+	/* Clear IRQ Status */
-+
-+	bfin_kpad_clear_irq();
-+	enable_irq(bf54x_kpad->irq);
-+}
-+
-+static irqreturn_t bfin_kpad_isr(int irq, void *dev_id)
-+{
-+	struct platform_device *pdev = dev_id;
-+	struct bfin_kpad_platform_data *pdata = pdev->dev.platform_data;
-+	struct bf54x_kpad *bf54x_kpad = platform_get_drvdata(pdev);
-+	int key;
-+	u16 rowcol = bfin_read_KPAD_ROWCOL();
-+
-+	key = bfin_kpad_find_key(pdata, rowcol);
-+
-+	input_report_key(bf54x_kpad->input, key, 1);
-+	input_sync(bf54x_kpad->input);
-+
-+	if (bfin_kpad_get_keypressed(bf54x_kpad)) {
-+		disable_irq(bf54x_kpad->irq);
-+		bf54x_kpad->lastkey = key;
-+		bf54x_kpad->timer.expires = jiffies
-+					+ bf54x_kpad->keyup_test_jiffies;
-+		add_timer(&bf54x_kpad->timer);
-+
-+		return IRQ_HANDLED;
++	if (peripheral_request_list(eppi_req_18, DRIVER_NAME)) {
++		printk(KERN_ERR "Requesting Peripherals faild\n");
++		gpio_free(disp);
++		return -EFAULT;
 +	}
 +
-+	input_report_key(bf54x_kpad->input, key, 0);
-+	input_sync(bf54x_kpad->input);
++	if (!outp_rgb666) {
 +
-+	bfin_kpad_clear_irq();
++		u16 eppi_req_24[] = EPPI0_24;
++
++		if (peripheral_request_list(eppi_req_24, DRIVER_NAME)) {
++			printk(KERN_ERR "Requesting Peripherals faild\n");
++			peripheral_free_list(eppi_req_18);
++			gpio_free(disp);
++			return -EFAULT;
++		}
++	}
++
++	gpio_direction_output(disp);
++	gpio_set_value(disp, 1);
++
++	return 0;
++}
++
++static void free_ports(struct bfin_bf54xfb_info *fbi)
++{
++
++	u16 eppi_req_18[] = EPPI0_18;
++
++	gpio_free(fbi->mach_info->disp);
++
++	peripheral_free_list(eppi_req_18);
++
++	if (!outp_rgb666) {
++		u16 eppi_req_24[] = EPPI0_24;
++		peripheral_free_list(eppi_req_24);
++	}
++}
++
++static int bfin_bf54x_fb_open(struct fb_info *info, int user)
++{
++	struct bfin_bf54xfb_info *fbi = info->par;
++
++	spin_lock(&fbi->lock);
++	fbi->lq043_open_cnt++;
++
++	if (fbi->lq043_open_cnt <= 1) {
++
++		bfin_write_EPPI0_CONTROL(0);
++		SSYNC();
++
++		config_dma(fbi);
++		config_ppi(fbi);
++
++		/* start dma */
++		enable_dma(CH_EPPI0);
++		bfin_write_EPPI0_CONTROL(bfin_read_EPPI0_CONTROL() | EPPI_EN);
++	}
++
++	spin_unlock(&fbi->lock);
++
++	return 0;
++}
++
++static int bfin_bf54x_fb_release(struct fb_info *info, int user)
++{
++	struct bfin_bf54xfb_info *fbi = info->par;
++
++	spin_lock(&fbi->lock);
++
++	fbi->lq043_open_cnt--;
++	fbi->lq043_mmap = 0;
++
++	if (fbi->lq043_open_cnt <= 0) {
++
++		bfin_write_EPPI0_CONTROL(0);
++		SSYNC();
++		disable_dma(CH_EPPI0);
++		memset(fbi->fb_buffer, 0, info->fix.smem_len);
++	}
++
++	spin_unlock(&fbi->lock);
++
++	return 0;
++}
++
++static int bfin_bf54x_fb_check_var(struct fb_var_screeninfo *var,
++				   struct fb_info *info)
++{
++
++	if (var->bits_per_pixel != LCD_BPP) {
++		pr_debug("%s: depth not supported: %u BPP\n", __FUNCTION__,
++			 var->bits_per_pixel);
++		return -EINVAL;
++	}
++
++	if (info->var.xres != var->xres || info->var.yres != var->yres ||
++	    info->var.xres_virtual != var->xres_virtual ||
++	    info->var.yres_virtual != var->yres_virtual) {
++		pr_debug("%s: Resolution not supported: X%u x Y%u \n",
++			 __FUNCTION__, var->xres, var->yres);
++		return -EINVAL;
++	}
++
++	/*
++	 *  Memory limit
++	 */
++
++	if ((info->fix.line_length * var->yres_virtual) > info->fix.smem_len) {
++		pr_debug("%s: Memory Limit requested yres_virtual = %u\n",
++			 __FUNCTION__, var->yres_virtual);
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++
++static int bfin_bf54x_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++
++	struct bfin_bf54xfb_info *fbi = info->par;
++
++	if (fbi->lq043_mmap)
++		return -1;
++
++	spin_lock(&fbi->lock);
++	fbi->lq043_mmap = 1;
++	spin_unlock(&fbi->lock);
++
++	vma->vm_start = (unsigned long)(fbi->fb_buffer);
++
++	vma->vm_end = vma->vm_start + info->fix.smem_len;
++	/* For those who don't understand how mmap works, go read
++	 *   Documentation/nommu-mmap.txt.
++	 * For those that do, you will know that the VM_MAYSHARE flag
++	 * must be set in the vma->vm_flags structure on noMMU
++	 *   Other flags can be set, and are documented in
++	 *   include/linux/mm.h
++	 */
++	vma->vm_flags |= VM_MAYSHARE;
++
++	return 0;
++}
++
++int bfin_bf54x_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++{
++	if (nocursor)
++		return 0;
++	else
++		return -EINVAL;	/* just to force soft_cursor() call */
++}
++
++static int bfin_bf54x_fb_setcolreg(u_int regno, u_int red, u_int green,
++				   u_int blue, u_int transp,
++				   struct fb_info *info)
++{
++	if (regno >= BFIN_LCD_NBR_PALETTE_ENTRIES)
++		return -EINVAL;
++
++	if (info->var.grayscale) {
++		/* grayscale = 0.30*R + 0.59*G + 0.11*B */
++		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
++	}
++
++	if (info->fix.visual == FB_VISUAL_TRUECOLOR) {
++
++		u32 value;
++		/* Place color in the pseudopalette */
++		if (regno > 16)
++			return -EINVAL;
++
++		red >>= (16 - info->var.red.length);
++		green >>= (16 - info->var.green.length);
++		blue >>= (16 - info->var.blue.length);
++
++		value = (red << info->var.red.offset) |
++		    (green << info->var.green.offset) |
++		    (blue << info->var.blue.offset);
++		value &= 0xFFFFFF;
++
++		((u32 *) (info->pseudo_palette))[regno] = value;
++
++	}
++
++	return 0;
++}
++
++static struct fb_ops bfin_bf54x_fb_ops = {
++	.owner = THIS_MODULE,
++	.fb_open = bfin_bf54x_fb_open,
++	.fb_release = bfin_bf54x_fb_release,
++	.fb_check_var = bfin_bf54x_fb_check_var,
++	.fb_fillrect = cfb_fillrect,
++	.fb_copyarea = cfb_copyarea,
++	.fb_imageblit = cfb_imageblit,
++	.fb_mmap = bfin_bf54x_fb_mmap,
++	.fb_cursor = bfin_bf54x_fb_cursor,
++	.fb_setcolreg = bfin_bf54x_fb_setcolreg,
++};
++
++#ifndef NO_BL_SUPPORT
++static int bl_get_brightness(struct backlight_device *bd)
++{
++	return 0;
++}
++
++static struct backlight_ops bfin_lq043fb_bl_ops = {
++	.get_brightness = bl_get_brightness,
++};
++
++static struct backlight_device *bl_dev;
++
++static int bfin_lcd_get_power(struct lcd_device *dev)
++{
++	return 0;
++}
++
++static int bfin_lcd_set_power(struct lcd_device *dev, int power)
++{
++	return 0;
++}
++
++static int bfin_lcd_get_contrast(struct lcd_device *dev)
++{
++	return 0;
++}
++
++static int bfin_lcd_set_contrast(struct lcd_device *dev, int contrast)
++{
++
++	return 0;
++}
++
++static int bfin_lcd_check_fb(struct fb_info *fi)
++{
++	if (!fi || (fi == &bfin_bf54x_fb))
++		return 1;
++	return 0;
++}
++
++static struct lcd_ops bfin_lcd_ops = {
++	.get_power = bfin_lcd_get_power,
++	.set_power = bfin_lcd_set_power,
++	.get_contrast = bfin_lcd_get_contrast,
++	.set_contrast = bfin_lcd_set_contrast,
++	.check_fb = bfin_lcd_check_fb,
++};
++
++static struct lcd_device *lcd_dev;
++#endif
++
++static irqreturn_t bfin_bf54x_irq_error(int irq, void *dev_id)
++{
++
++	/*struct bfin_bf54xfb_info *info = (struct bfin_bf54xfb_info *)dev_id;*/
++
++	u16 status = bfin_read_EPPI0_STATUS();
++
++	bfin_write_EPPI0_STATUS(0xFFFF);
++
++	if (status) {
++		bfin_write_EPPI0_CONTROL(bfin_read_EPPI0_CONTROL() & ~EPPI_EN);
++		disable_dma(CH_EPPI0);
++
++		/* start dma */
++		enable_dma(CH_EPPI0);
++		bfin_write_EPPI0_CONTROL(bfin_read_EPPI0_CONTROL() | EPPI_EN);
++		bfin_write_EPPI0_STATUS(0xFFFF);
++	}
 +
 +	return IRQ_HANDLED;
 +}
 +
-+static int __devinit bfin_kpad_probe(struct platform_device *pdev)
++static int __init bfin_bf54x_probe(struct platform_device *pdev)
 +{
-+	struct bf54x_kpad *bf54x_kpad;
-+	struct bfin_kpad_platform_data *pdata = pdev->dev.platform_data;
-+	int i, error;
++	struct bfin_bf54xfb_info *info;
++	struct fb_info *fbinfo;
++	int ret;
 +
++	printk(KERN_INFO DRIVER_NAME ": FrameBuffer initializing...\n");
 +
-+	if (!pdata->rows || !pdata->cols || !pdata->keymap) {
-+		printk(KERN_ERR DRV_NAME"No rows, cols or keymap from pdata\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!pdata->keymapsize || pdata->keymapsize > (pdata->rows * pdata->cols)) {
-+		printk(KERN_ERR DRV_NAME"Invalid keymapsize\n");
-+		return -EINVAL;
-+	}
-+
-+	bf54x_kpad = kzalloc(sizeof(struct bf54x_kpad), GFP_KERNEL);
-+
-+	if (!bf54x_kpad) {
-+		return -ENOMEM;
-+	}
-+
-+	platform_set_drvdata(pdev, bf54x_kpad);
-+
-+
-+	if (!pdata->debounce_time || !pdata->debounce_time > MAX_MULT ||
-+		!pdata->coldrive_time || !pdata->coldrive_time > MAX_MULT) {
-+		printk(KERN_ERR DRV_NAME
-+			"Invalid Debounce/Columdrive Time from pdata\n");
-+		bfin_write_KPAD_MSEL(0xFF0);	/* Default MSEL	*/
-+	} else {
-+		bfin_write_KPAD_MSEL(((pdata->debounce_time / TIME_SCALE)
-+			 & DBON_SCALE) | (((pdata->coldrive_time / TIME_SCALE) << 8)
-+			  & COLDRV_SCALE));
-+
-+	}
-+
-+	if (!pdata->keyup_test_interval) {
-+		bf54x_kpad->keyup_test_jiffies = msecs_to_jiffies(50);
-+	} else {
-+		bf54x_kpad->keyup_test_jiffies =
-+			msecs_to_jiffies(pdata->keyup_test_interval);
-+	}
-+
-+	if (peripheral_request_list(&per_rows[MAX_RC - pdata->rows], DRV_NAME)) {
-+		printk(KERN_ERR DRV_NAME
-+		": Requesting Peripherals failed\n");
-+		error = -EFAULT;
-+		goto out;
-+	}
-+
-+	if (peripheral_request_list(&per_cols[MAX_RC - pdata->cols], DRV_NAME)) {
-+		printk(KERN_ERR DRV_NAME
-+		": Requesting Peripherals failed\n");
-+		error = -EFAULT;
++	if (request_dma(CH_EPPI0, "CH_EPPI0") < 0) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": couldn't request CH_EPPI0 DMA\n");
++		ret = -EFAULT;
 +		goto out1;
 +	}
 +
-+	bf54x_kpad->irq = platform_get_irq(pdev, 0);
-+
-+	if (bf54x_kpad->irq < 0) {
-+		error = -ENODEV;
++	fbinfo =
++	    framebuffer_alloc(sizeof(struct bfin_bf54xfb_info), &pdev->dev);
++	if (!fbinfo) {
++		ret = -ENOMEM;
 +		goto out2;
 +	}
 +
-+	error = request_irq(bf54x_kpad->irq, bfin_kpad_isr,
-+				 IRQF_SAMPLE_RANDOM, DRV_NAME, pdev);
++	info = fbinfo->par;
++	info->fb = fbinfo;
++	info->dev = &pdev->dev;
 +
-+	if (error) {
-+		printk(KERN_ERR DRV_NAME
-+			": unable to claim irq %d; error %d\n",
-+			bf54x_kpad->irq, error);
-+		error = -EBUSY;
-+		goto out2;
-+	}
++	platform_set_drvdata(pdev, fbinfo);
 +
++	strcpy(fbinfo->fix.id, driver_name);
 +
-+	bf54x_kpad->input = input_allocate_device();
++	info->mach_info = pdev->dev.platform_data;
 +
-+	if (!bf54x_kpad->input) {
-+		error = -ENOMEM;
++	if (info->mach_info == NULL) {
++		dev_err(&pdev->dev,
++			"no platform data for lcd, cannot attach\n");
++		ret = -EINVAL;
 +		goto out3;
 +	}
 +
-+	bf54x_kpad->input->name = pdev->name;
-+	bf54x_kpad->input->phys = "bf54x-keys/input0";
-+	bf54x_kpad->input->cdev.dev = &pdev->dev;
-+	bf54x_kpad->input->private = bf54x_kpad;
++	fbinfo->fix.type = FB_TYPE_PACKED_PIXELS;
++	fbinfo->fix.type_aux = 0;
++	fbinfo->fix.xpanstep = 0;
++	fbinfo->fix.ypanstep = 0;
++	fbinfo->fix.ywrapstep = 0;
++	fbinfo->fix.accel = FB_ACCEL_NONE;
++	fbinfo->fix.visual = FB_VISUAL_TRUECOLOR;
 +
-+	bf54x_kpad->input->id.bustype = BUS_HOST;
-+	bf54x_kpad->input->id.vendor = 0x0001;
-+	bf54x_kpad->input->id.product = 0x0001;
-+	bf54x_kpad->input->id.version = 0x0100;
++	fbinfo->var.nonstd = 0;
++	fbinfo->var.activate = FB_ACTIVATE_NOW;
++	fbinfo->var.height = info->mach_info->height;
++	fbinfo->var.width = info->mach_info->width;
++	fbinfo->var.accel_flags = 0;
++	fbinfo->var.vmode = FB_VMODE_NONINTERLACED;
 +
-+	bf54x_kpad->input->keycode = pdata->keymap;
-+	bf54x_kpad->input->keycodesize = sizeof(unsigned int);
-+	bf54x_kpad->input->keycodemax = pdata->keymapsize;
++	fbinfo->fbops = &bfin_bf54x_fb_ops;
++	fbinfo->flags = FBINFO_FLAG_DEFAULT;
 +
-+	/* setup input device */
-+	set_bit(EV_KEY, bf54x_kpad->input->evbit);
++	fbinfo->var.xres = info->mach_info->xres.defval;
++	fbinfo->var.xres_virtual = info->mach_info->xres.defval;
++	fbinfo->var.yres = info->mach_info->yres.defval;
++	fbinfo->var.yres_virtual = info->mach_info->yres.defval;
++	fbinfo->var.bits_per_pixel = info->mach_info->bpp.defval;
 +
-+	for (i = 0; i < pdata->keymapsize; i++)
-+		set_bit(pdata->keymap[i] & KEY_MAX, bf54x_kpad->input->keybit);
++	fbinfo->var.upper_margin = 0;
++	fbinfo->var.lower_margin = 0;
++	fbinfo->var.vsync_len = 0;
 +
-+	error = input_register_device(bf54x_kpad->input);
++	fbinfo->var.left_margin = 0;
++	fbinfo->var.right_margin = 0;
++	fbinfo->var.hsync_len = 0;
 +
-+	if (error) {
-+		printk(KERN_ERR DRV_NAME": Unable to register input device\n");
++	fbinfo->var.red.offset = 16;
++	fbinfo->var.green.offset = 8;
++	fbinfo->var.blue.offset = 0;
++	fbinfo->var.transp.offset = 0;
++	fbinfo->var.red.length = 8;
++	fbinfo->var.green.length = 8;
++	fbinfo->var.blue.length = 8;
++	fbinfo->var.transp.length = 0;
++	fbinfo->fix.smem_len = info->mach_info->xres.max *
++	    info->mach_info->yres.max * info->mach_info->bpp.max / 8;
++
++	fbinfo->fix.line_length = fbinfo->var.xres_virtual *
++	    fbinfo->var.bits_per_pixel / 8;
++
++	info->fb_buffer =
++	    dma_alloc_coherent(NULL, fbinfo->fix.smem_len, &info->dma_handle,
++			       GFP_KERNEL);
++
++	if (NULL == info->fb_buffer) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": couldn't allocate dma buffer.\n");
++		ret = -ENOMEM;
++		goto out3;
++	}
++
++	memset(info->fb_buffer, 0, fbinfo->fix.smem_len);
++
++	fbinfo->screen_base = (void *)info->fb_buffer;
++	fbinfo->fix.smem_start = (int)info->fb_buffer;
++
++	fbinfo->fbops = &bfin_bf54x_fb_ops;
++
++	fbinfo->pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
++	if (!fbinfo->pseudo_palette) {
++		printk(KERN_ERR DRIVER_NAME
++		       "Fail to allocate pseudo_palette\n");
++
++		ret = -ENOMEM;
 +		goto out4;
 +	}
 +
-+	/* Init Keypad Key Up/Release test timer */
++	memset(fbinfo->pseudo_palette, 0, sizeof(u32) * 16);
 +
-+	init_timer(&bf54x_kpad->timer);
-+	bf54x_kpad->timer.function = bfin_kpad_timer;
-+	bf54x_kpad->timer.data = (unsigned long) pdev;
++	if (fb_alloc_cmap(&fbinfo->cmap, BFIN_LCD_NBR_PALETTE_ENTRIES, 0)
++	    < 0) {
++		printk(KERN_ERR DRIVER_NAME
++		       "Fail to allocate colormap (%d entries)\n",
++		       BFIN_LCD_NBR_PALETTE_ENTRIES);
++		ret = -EFAULT;
++		goto out5;
++	}
 +
++	if (request_ports(info)) {
++		printk(KERN_ERR DRIVER_NAME ": couldn't request gpio port.\n");
++		ret = -EFAULT;
++		goto out6;
++	}
 +
-+	bfin_write_KPAD_PRESCALE(bfin_kpad_get_prescale(TIME_SCALE));
++	info->irq = platform_get_irq(pdev, 0);
++	if (info->irq < 0) {
++		ret = -EINVAL;
++		goto out7;
++	}
 +
-+	bfin_write_KPAD_CTL((((pdata->cols - 1) << 13) & KPAD_COLEN) |
-+				(((pdata->rows - 1) << 10) & KPAD_ROWEN) |
-+				(2 & KPAD_IRQMODE));
++	if (request_irq(info->irq, (void *)bfin_bf54x_irq_error, IRQF_DISABLED,
++			"PPI ERROR", info) < 0) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": unable to request PPI ERROR IRQ\n");
++		ret = -EFAULT;
++		goto out7;
++	}
 +
++	if (register_framebuffer(fbinfo) < 0) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": unable to register framebuffer.\n");
++		ret = -EINVAL;
++		goto out8;
++	}
++#ifndef NO_BL_SUPPORT
++	bl_dev =
++	    backlight_device_register("bf54x-bl", NULL, NULL,
++				      &bfin_lq043fb_bl_ops);
++	bl_dev->props.max_brightness = 255;
 +
-+	bfin_write_KPAD_CTL(bfin_read_KPAD_CTL() | KPAD_EN);
-+
-+	printk(KERN_ERR DRV_NAME
-+		": Blackfin BF54x Keypad registered IRQ %d\n", bf54x_kpad->irq);
++	lcd_dev = lcd_device_register(DRIVER_NAME, NULL, &bfin_lcd_ops);
++	lcd_dev->props.max_contrast = 255, printk(KERN_INFO "Done.\n");
++#endif
 +
 +	return 0;
 +
-+
++out8:
++	free_irq(info->irq, info);
++out7:
++	free_ports(info);
++out6:
++	fb_dealloc_cmap(&fbinfo->cmap);
++out5:
++	kfree(fbinfo->pseudo_palette);
 +out4:
-+	input_free_device(bf54x_kpad->input);
++	dma_free_coherent(NULL, fbinfo->fix.smem_len, info->fb_buffer,
++			  info->dma_handle);
 +out3:
-+	free_irq(bf54x_kpad->irq, pdev);
++	framebuffer_release(fbinfo);
 +out2:
-+	peripheral_free_list(&per_cols[MAX_RC - pdata->cols]);
++	free_dma(CH_EPPI0);
 +out1:
-+	peripheral_free_list(&per_rows[MAX_RC - pdata->rows]);
-+out:
-+	kfree(bf54x_kpad);
++	platform_set_drvdata(pdev, NULL);
 +
-+	return error;
++	return ret;
 +}
 +
-+static int __devexit bfin_kpad_remove(struct platform_device *pdev)
++static int bfin_bf54x_remove(struct platform_device *pdev)
 +{
-+	struct bfin_kpad_platform_data *pdata = pdev->dev.platform_data;
-+	struct bf54x_kpad *bf54x_kpad = platform_get_drvdata(pdev);
 +
++	struct fb_info *fbinfo = platform_get_drvdata(pdev);
++	struct bfin_bf54xfb_info *info = fbinfo->par;
 +
-+	del_timer_sync(&bf54x_kpad->timer);
-+	free_irq(bf54x_kpad->irq, pdev);
++	free_dma(CH_EPPI0);
++	free_irq(info->irq, info);
 +
-+	peripheral_free_list(&per_rows[MAX_RC - pdata->rows]);
-+	peripheral_free_list(&per_cols[MAX_RC - pdata->cols]);
++	if (info->fb_buffer != NULL)
++		dma_free_coherent(NULL, fbinfo->fix.smem_len, info->fb_buffer,
++				  info->dma_handle);
 +
-+	input_unregister_device(bf54x_kpad->input);
++	kfree(fbinfo->pseudo_palette);
++	fb_dealloc_cmap(&fbinfo->cmap);
 +
-+	kfree(bf54x_kpad);
++#ifndef NO_BL_SUPPORT
++	lcd_device_unregister(lcd_dev);
++	backlight_device_unregister(bl_dev);
++#endif
++
++	unregister_framebuffer(fbinfo);
++
++	free_ports(info);
++
++	printk(KERN_INFO DRIVER_NAME ": Unregister LCD driver.\n");
 +
 +	return 0;
 +}
 +
 +#ifdef CONFIG_PM
-+static int bfin_kpad_suspend(struct platform_device *pdev, pm_message_t state)
++static int bfin_bf54x_suspend(struct platform_device *pdev, pm_message_t state)
 +{
++	struct fb_info *fbinfo = platform_get_drvdata(pdev);
++	struct bfin_bf54xfb_info *info = fbinfo->par;
++
++	bfin_write_EPPI0_CONTROL(bfin_read_EPPI0_CONTROL() & ~EPPI_EN);
++	disable_dma(CH_EPPI0);
++	bfin_write_EPPI0_STATUS(0xFFFF);
++
 +	return 0;
 +}
 +
-+static int bfin_kpad_resume(struct platform_device *pdev)
++static int bfin_bf54x_resume(struct platform_device *pdev)
 +{
++	struct fb_info *fbinfo = platform_get_drvdata(pdev);
++	struct bfin_bf54xfb_info *info = fbinfo->par;
++
++	enable_dma(CH_EPPI0);
++	bfin_write_EPPI0_CONTROL(bfin_read_EPPI0_CONTROL() | EPPI_EN);
 +
 +	return 0;
 +}
 +#else
-+#define bfin_kpad_suspend	NULL
-+#define bfin_kpad_resume	NULL
++#define bfin_bf54x_suspend	NULL
++#define bfin_bf54x_resume	NULL
 +#endif
 +
-+struct platform_driver bfin_kpad_device_driver = {
-+	.probe		= bfin_kpad_probe,
-+	.remove		= __devexit_p(bfin_kpad_remove),
-+	.suspend	= bfin_kpad_suspend,
-+	.resume		= bfin_kpad_resume,
-+	.driver		= {
-+		.name	= DRV_NAME,
-+	}
++static struct platform_driver bfin_bf54x_driver = {
++	.probe = bfin_bf54x_probe,
++	.remove = bfin_bf54x_remove,
++	.suspend = bfin_bf54x_suspend,
++	.resume = bfin_bf54x_resume,
++	.driver = {
++		   .name = DRIVER_NAME,
++		   .owner = THIS_MODULE,
++		   },
 +};
 +
-+static int __init bfin_kpad_init(void)
++static int __devinit bfin_bf54x_driver_init(void)
 +{
-+	return platform_driver_register(&bfin_kpad_device_driver);
++	return platform_driver_register(&bfin_bf54x_driver);
 +}
 +
-+static void __exit bfin_kpad_exit(void)
++static void __exit bfin_bf54x_driver_cleanup(void)
 +{
-+	platform_driver_unregister(&bfin_kpad_device_driver);
++	platform_driver_unregister(&bfin_bf54x_driver);
 +}
 +
-+module_init(bfin_kpad_init);
-+module_exit(bfin_kpad_exit);
-+
++MODULE_DESCRIPTION("Blackfin BF54x TFT LCD Driver");
 +MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
-+MODULE_DESCRIPTION("Keypad driver for BF54x Processors");
-diff --git a/include/asm-blackfin/mach-bf548/bf54x_keys.h b/include/asm-blackfin/mach-bf548/bf54x_keys.h
++
++module_init(bfin_bf54x_driver_init);
++module_exit(bfin_bf54x_driver_cleanup);
+diff --git a/include/asm-blackfin/mach-bf548/bf54x-lq043.h b/include/asm-blackfin/mach-bf548/bf54x-lq043.h
 new file mode 100644
-index 0000000..e7e1352
+index 0000000..9c7ca62
 --- /dev/null
-+++ b/include/asm-blackfin/mach-bf548/bf54x_keys.h
-@@ -0,0 +1,18 @@
-+#ifndef _BFIN_KPAD_H
-+#define _BFIN_KPAD_H
++++ b/include/asm-blackfin/mach-bf548/bf54x-lq043.h
+@@ -0,0 +1,30 @@
++#ifndef BF54X_LQ043_H
++#define BF54X_LQ043_H
 +
-+#include <linux/input.h>
-+
-+struct bfin_kpad_platform_data {
-+	int rows;
-+	int cols;
-+	int *keymap;
-+	unsigned int keymapsize;
-+	u32 debounce_time;	/* in ns */
-+	u32 coldrive_time;	/* in ns */
-+	u32 keyup_test_interval; /* in ms */
++struct bfin_bf54xfb_val {
++	unsigned int	defval;
++	unsigned int	min;
++	unsigned int	max;
 +};
 +
-+#define KEYVAL(col, row, val) (((1 << col) << 24) | ((1 << row) << 16) | (val))
++struct bfin_bf54xfb_mach_info {
++	unsigned char	fixed_syncs;	/* do not update sync/border */
 +
-+#endif
++	/* LCD types */
++	int		type;
++
++	/* Screen size */
++	int		width;
++	int		height;
++
++	/* Screen info */
++	struct bfin_bf54xfb_val xres;
++	struct bfin_bf54xfb_val yres;
++	struct bfin_bf54xfb_val bpp;
++
++	/* GPIOs */
++	unsigned short 		disp;
++
++};
++
++#endif /* BF54X_LQ043_H */
 -- 
 1.5.2
 
