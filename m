@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXIZOK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbXIZONH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbXIZOK4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 10:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbXIZOKs
+	id S1759404AbXIZONH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 10:13:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXIZOMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 10:10:48 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51843 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754349AbXIZOKr (ORCPT
+	Wed, 26 Sep 2007 10:12:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:59800 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755406AbXIZOMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 10:10:47 -0400
-Message-ID: <46FA6858.5060908@zytor.com>
-Date: Wed, 26 Sep 2007 07:10:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 26 Sep 2007 10:12:54 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: fix pci domain detection
+Date: Wed, 26 Sep 2007 16:02:05 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
 MIME-Version: 1.0
-To: Joerg Pommnitz <pommnitz@yahoo.com>
-CC: Jordan Crouse <jordan.crouse@amd.com>, cebbert@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on AMD
- Geode LX800
-References: <637040.99806.qm@web51411.mail.re2.yahoo.com>
-In-Reply-To: <637040.99806.qm@web51411.mail.re2.yahoo.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709261602.06214.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/jmqCFtY4wHMCUl1oiYDofBu7Hk5MxtOxc7Ab
+ SHm18MxmIa3P//wh0r9HjGZj5sc/LKGN6XC8mSII5+9Hq+DmcQ
+ xdMW+PCAUMbdHKiB+iwyw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Pommnitz wrote:
-> Hello all,
-> this is what git bisect told me about the problem:
-> 
-> jpo@jpo-laptop:~/linux-2.6$ git bisect good
-> 4fd06960f120e02e9abc802a09f9511c400042a5 is first bad commit
-> commit 4fd06960f120e02e9abc802a09f9511c400042a5
-> Author: H. Peter Anvin <hpa@zytor.com>
-> Date:   Wed Jul 11 12:18:56 2007 -0700
-> 
->     Use the new x86 setup code for i386
-> 
->     This patch hooks the new x86 setup code into the Makefile machinery.  It
->     also adapts boot/tools/build.c to a two-file (as opposed to three-file)
->     universe, and simplifies it substantially.
-> 
->     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> :040000 040000 6560eb5b7e40d93813276544bced8c478f9067f5 fe5f90d9ca08e526559815789175602ba2c51743 M      arch
-> 
+The /proc/bus/pci/* files list PCI domain numbers only for
+devices that claim to be on a multi-domain system. The check
+for this is broken on powerpc, because the buid value is
+truncated to 32 bits.
 
-There is something very fishy.
+There is at least one machine (IBM QS21) that only uses
+the high-order bits of the buid, so the return value
+of pci_proc_domain() ends up being always zero, which
+makes /proc/bus/pci useless.
 
-The only documentation you've given us so far is a screen shot which
-contained a message ("BIOS data check successful") which doesn't occur
-in the kernel.
+Change the logic to always return '1' for a nonzero
+buid value.
 
-The loader string doesn't look all that familiar either; it looks like
-an extremely old version of SYSLINUX, but that doesn't contain that
-message either.
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-INT 6 is #UD, the undefined instruction exception.  This is consistent with:
-
-> Its hitting a bug - specifically (from bootmem.c:125):
-> BUG_ON(PFN_DOWN(addr) >= bdata->node_low_pfn);
-
-However, all that tells us is that reserve_bootmem_core() was either
-called with a bad address or bdata->node_low_pfn is garbage.  In
-particular, without knowing how it got there it's hard to know for sure.
-
-Could you send me the boot messages from a working kernel boot?
-
-	-hpa
-
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 291ffbc..9f63bdc 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -588,7 +588,7 @@ int pci_proc_domain(struct pci_bus *bus)
+ 		return 0;
+ 	else {
+ 		struct pci_controller *hose = pci_bus_to_host(bus);
+-		return hose->buid;
++		return hose->buid != 0;
+ 	}
+ }
+ 
