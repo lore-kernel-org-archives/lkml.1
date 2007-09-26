@@ -1,97 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763428AbXIZWgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761565AbXIZWg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763428AbXIZWgm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 18:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761026AbXIZWgd
+	id S1761565AbXIZWg5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 18:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763443AbXIZWgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 18:36:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:58891 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756858AbXIZWgc (ORCPT
+	Wed, 26 Sep 2007 18:36:43 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:15400 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763415AbXIZWgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 18:36:32 -0400
-Date: Wed, 26 Sep 2007 15:35:51 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: thomas@m3y3r.de, linux-kernel@vger.kernel.org
-Subject: Re: xpad_probe: undefined reference to `led_classdev_register'
-Message-Id: <20070926153551.31941bea.randy.dunlap@oracle.com>
-In-Reply-To: <200709261833.22226.dmitry.torokhov@gmail.com>
-References: <1190841933.46face4d4ae55@secure.konsole-h.de>
-	<20070926145531.d1e0819c.randy.dunlap@oracle.com>
-	<200709261833.22226.dmitry.torokhov@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 26 Sep 2007 18:36:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=kdc8+oKO4Ql/QP/FmjvBU1fnnGcytvPgnjllkUxaOE5WJhsndeMPZT2mxjURV3sJmSQQ6WHShcSlQbrJZ2DlTbsQ5lZRdPf1enqrvhZtuaDTw/ardDjPVhOLzGH4zgGiGeua4ylqQd22Pws7Mxmuu0bHKIMEWx8cTgptT5RYC48=
+Date: Thu, 27 Sep 2007 01:36:23 +0300
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, matthew@wil.cx, linux-scsi@vger.kernel.org
+Subject: [PATCH 3/3] NCR53C8XX: Remove deprecated IRQ flags (SA_*)
+Message-ID: <20070926223623.GC25905@Ahmed>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070926223343.GA25905@Ahmed>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 18:33:22 -0400 Dmitry Torokhov wrote:
+Hi Matthew,
 
-> Hi,
-> 
-> On Wednesday 26 September 2007, Randy Dunlap wrote:
-> > On Wed, 26 Sep 2007 23:25:33 +0200 thomas@m3y3r.de wrote:
-> > 
-> > > Hi.
-> > > 
-> > > Current linus' git tree:
-> > > 
-> > > x86_64-unknown-linux-gnu-ld: BFD 2.15 assertion fail
-> > > /home/thomas/source/crosstool-0.43/build/x86_64-unknown-linux-gnu/gcc-3.4.5-glibc-2.3.6/binutils-2.15/bfd/linker.c:619
-> > > drivers/built-in.o(.text+0x20749d): In function `xpad_probe':
-> > > : undefined reference to `led_classdev_register'
-> > > drivers/built-in.o(.text+0x20756c): In function `xpad_disconnect':
-> > > : undefined reference to `led_classdev_unregister'
-> > > make: *** [.tmp_vmlinux1] Fehler 1
-> > > 
-> > > any ideas?
-> > 
-> > Please send .config file.
-> > 
-> > Ix xpad driver built-in (yes, it is) and led driver is modular?
-> > We can fix that...
-> >
-> 
-> I have the patch below in mytree. I guess I need to forward it to Linus
-> insterad of waiting for 2.6.24 as too many people hit this.
-> 
-> -- 
-> Dmitry
->  
-> Input: xpad - fix dependancy on LEDS class
-> 
-> The driver can not be built-in when LEDS class is a module.
-> 
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+A patch to stop using deprecated IRQ flags in ncr53c8xx documentaion. The new
+IRQF_* macros are used instead.
 
-Yes, looks good.  Thanks.
-
-> ---
->  drivers/input/joystick/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: work/drivers/input/joystick/Kconfig
-> ===================================================================
-> --- work.orig/drivers/input/joystick/Kconfig
-> +++ work/drivers/input/joystick/Kconfig
-> @@ -277,7 +277,7 @@ config JOYSTICK_XPAD_FF
->  
->  config JOYSTICK_XPAD_LEDS
->  	bool "LED Support for Xbox360 controller 'BigX' LED"
-> -	depends on LEDS_CLASS && JOYSTICK_XPAD
-> +	depends on JOYSTICK_XPAD && (LEDS_CLASS=y || LEDS_CLASS=JOYSTICK_XPAD)
->  	---help---
->  	  This option enables support for the LED which surrounds the Big X on
->  	  XBox 360 controller.
-> -
-
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
-~Randy
-Phaedrus says that Quality is about caring.
+
+diff --git a/Documentation/scsi/ChangeLog.ncr53c8xx b/Documentation/scsi/ChangeLog.ncr53c8xx
+index 7d03e9d..a9f721a 100644
+--- a/Documentation/scsi/ChangeLog.ncr53c8xx
++++ b/Documentation/scsi/ChangeLog.ncr53c8xx
+@@ -195,9 +195,9 @@ Sun Feb  14:00 1999 Gerard Roudier (groudier@club-internet.fr)
+ 	  Pointed out by Leonard Zubkoff.
+ 	- Allow to tune request_irq() flags from the boot command line using 
+ 	  ncr53c8xx=irqm:??, as follows:
+-	  a) If bit 0x10 is set in irqm, SA_SHIRQ flag is not used.
+-	  b) If bit 0x20 is set in irqm, SA_INTERRUPT flag is not used.
+-	  By default the driver uses both SA_SHIRQ and SA_INTERRUPT.
++	  a) If bit 0x10 is set in irqm, IRQF_SHARED flag is not used.
++	  b) If bit 0x20 is set in irqm, IRQF_DISABLED flag is not used.
++	  By default the driver uses both IRQF_SHARED and IRQF_DISABLED.
+ 	  Option 'ncr53c8xx=irqm:0x20' may be used when an IRQ is shared by 
+ 	  a 53C8XX adapter and a network board.
+ 	- Tiny mispelling fixed (ABORT instead of ABRT). Was fortunately 
+diff --git a/Documentation/scsi/ncr53c8xx.txt b/Documentation/scsi/ncr53c8xx.txt
+index 39d409a..a65cea9 100644
+--- a/Documentation/scsi/ncr53c8xx.txt
++++ b/Documentation/scsi/ncr53c8xx.txt
+@@ -785,8 +785,8 @@ port address 0x1400.
+         irqm:0     always open drain
+         irqm:1     same as initial settings (assumed BIOS settings)
+         irqm:2     always totem pole
+-        irqm:0x10  driver will not use SA_SHIRQ flag when requesting irq
+-        irqm:0x20  driver will not use SA_INTERRUPT flag when requesting irq
++        irqm:0x10  driver will not use IRQF_SHARED flag when requesting irq
++        irqm:0x20  driver will not use IRQF_DISABLED flag when requesting irq
+ 
+     (Bits 0x10 and 0x20 can be combined with hardware irq mode option)
+ 
+@@ -1236,15 +1236,15 @@ when the SCSI DATA IN phase is reentered after a phase mismatch.
+ When an IRQ is shared by devices that are handled by different drivers, it 
+ may happen that one driver complains about the request of the IRQ having 
+ failed. Inder Linux-2.0, this may be due to one driver having requested the 
+-IRQ using the SA_INTERRUPT flag but some other having requested the same IRQ 
++IRQ using the IRQF_DISABLED flag but some other having requested the same IRQ 
+ without this flag. Under both Linux-2.0 and linux-2.2, this may be caused by 
+-one driver not having requested the IRQ with the SA_SHIRQ flag.
++one driver not having requested the IRQ with the IRQF_SHARED flag.
+ 
+ By default, the ncr53c8xx and sym53c8xx drivers request IRQs with both the 
+-SA_INTERRUPT and the SA_SHIRQ flag under Linux-2.0 and with only the SA_SHIRQ 
++IRQF_DISABLED and the IRQF_SHARED flag under Linux-2.0 and with only the IRQF_SHARED 
+ flag under Linux-2.2.
+ 
+-Under Linux-2.0, you can disable use of SA_INTERRUPT flag from the boot 
++Under Linux-2.0, you can disable use of IRQF_DISABLED flag from the boot 
+ command line by using the following option:
+ 
+      ncr53c8xx=irqm:0x20   (for the generic ncr53c8xx driver)
+@@ -1252,7 +1252,7 @@ command line by using the following option:
+ 
+ If this does not fix the problem, then you may want to check how all other 
+ drivers are requesting the IRQ and report the problem. Note that if at least 
+-a single driver does not request the IRQ with the SA_SHIRQ flag (share IRQ), 
++a single driver does not request the IRQ with the IRQF_SHARED flag (share IRQ), 
+ then the request of the IRQ obviously will not succeed for all the drivers.
+ 
+ 15. SCSI problem troubleshooting
+
+-- 
+Ahmed S. Darwish
+HomePage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
