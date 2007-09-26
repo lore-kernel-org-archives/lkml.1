@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbXIZRJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761946AbXIZRKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762009AbXIZRJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 13:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761439AbXIZRIr
+	id S1761946AbXIZRKf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 13:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761483AbXIZRIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 13:08:47 -0400
+	Wed, 26 Sep 2007 13:08:52 -0400
 Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:38597
 	"EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761403AbXIZRIp (ORCPT
+	by vger.kernel.org with ESMTP id S1761448AbXIZRIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 13:08:45 -0400
+	Wed, 26 Sep 2007 13:08:51 -0400
 X-IronPort-AV: E=Sophos;i="4.21,198,1188770400"; 
-   d="scan'208";a="3292255"
+   d="scan'208";a="3292260"
 From: Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: [PATCH 6/8] taskstats: tell fill_threadgroup_stats() if it replies
-	with PID or TGID stats
+Subject: [PATCH 7/8] taskstats: fix stats->ac_exitcode to work on threads and
+	use group_exit_code
 To: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Guillaume Chazarain <guichaz@yahoo.fr>, Balbir Singh <balbir@in.ibm.com>,
        Jay Lan <jlan@engr.sgi.com>, Jonathan Lim <jlim@sgi.com>,
        Oleg Nesterov <oleg@tv-sign.ru>
-Date: Wed, 26 Sep 2007 19:08:44 +0200
-Message-ID: <20070926170844.31221.95802.stgit@cheypa.inria.fr>
+Date: Wed, 26 Sep 2007 19:08:49 +0200
+Message-ID: <20070926170849.31221.92539.stgit@cheypa.inria.fr>
 In-Reply-To: <20070926170818.31221.33994.stgit@cheypa.inria.fr>
 References: <20070926170818.31221.33994.stgit@cheypa.inria.fr>
 User-Agent: StGIT/0.13
@@ -31,9 +31,15 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fill_threadgroup_stats() may want to know if it is filling
-TASKSTATS_CMD_ATTR_TGID or TASKSTATS_CMD_ATTR_PID stats, so give it this
-information in the tg_stats boolean.
+Threads also have an exit code on their own, so report it in
+TASKSTATS_CMD_ATTR_PID.
+
+For TASKSTATS_CMD_ATTR_TGID, instead of relying only on the exit code of the
+leader, we use task->signal->group_exit_code if not null as suggested by
+Oleg Nesterov.
+
+Also, document that as of this patch, fill_threadgroup_stats() must be called
+after add_tsk_stats() as it may overwrite some stats.
 
 Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
 Cc: Balbir Singh <balbir@in.ibm.com>
@@ -42,96 +48,46 @@ Cc: Jonathan Lim <jlim@sgi.com>
 Cc: Oleg Nesterov <oleg@tv-sign.ru>
 ---
 
- include/linux/tsacct_kern.h |    4 ++--
- kernel/taskstats.c          |   11 ++++++-----
- kernel/tsacct.c             |    3 ++-
- 3 files changed, 10 insertions(+), 8 deletions(-)
+ kernel/taskstats.c |    2 ++
+ kernel/tsacct.c    |   12 +++++++-----
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
 
-diff --git a/include/linux/tsacct_kern.h b/include/linux/tsacct_kern.h
-index 1568a3d..e8d1ad6 100644
---- a/include/linux/tsacct_kern.h
-+++ b/include/linux/tsacct_kern.h
-@@ -11,11 +11,11 @@
- 
- #ifdef CONFIG_TASKSTATS
- void bacct_add_tsk(struct taskstats *stats, struct task_struct *task);
--void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task);
-+void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task, bool tg_stats);
- #else
- static inline void bacct_add_tsk(struct taskstats *stats, struct task_struct *task)
- {}
--static inline void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task)
-+static inline void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *task, bool tg_stats)
- {}
- #endif /* CONFIG_TASKSTATS */
- 
 diff --git a/kernel/taskstats.c b/kernel/taskstats.c
-index f25bf03..59fe1d8 100644
+index 59fe1d8..938c0b0 100644
 --- a/kernel/taskstats.c
 +++ b/kernel/taskstats.c
-@@ -204,12 +204,13 @@ static void add_tsk_stats(struct taskstats *stats, struct task_struct *task)
-  * fill_threadgroup_stats - initialize some common stats for the thread group
-  * @stats: the taskstats to write into
-  * @task: the thread representing the whole group
-+ * @tg_stats: whether in the end thread group stats are requested
+@@ -208,6 +208,8 @@ static void add_tsk_stats(struct taskstats *stats, struct task_struct *task)
   *
   * Will be called on the thread group leader if requesting stats for the whole
   * thread group.
++ * fill_threadgroup_stats() may overwrite stats from add_tsk_stats(), so it
++ * must be called after add_tsk_stats().
   */
  static void fill_threadgroup_stats(struct taskstats *stats,
--				   struct task_struct *task)
-+				   struct task_struct *task, bool tg_stats)
- {
- 	/*
- 	 * Each accounting subsystem adds calls to its functions to initialize
-@@ -221,7 +222,7 @@ static void fill_threadgroup_stats(struct taskstats *stats,
- 	stats->version = TASKSTATS_VERSION;
- 
- 	/* fill in basic acct fields */
--	bacct_fill_threadgroup(stats, task);
-+	bacct_fill_threadgroup(stats, task, tg_stats);
- 
- 	/* fill in extended acct fields */
- 	xacct_fill_threadgroup(stats, task);
-@@ -244,7 +245,7 @@ static int fill_pid(pid_t pid, struct task_struct *tsk, struct taskstats *stats)
- 
- 	memset(stats, 0, sizeof(*stats));
- 	add_tsk_stats(stats, tsk);
--	fill_threadgroup_stats(stats, tsk);
-+	fill_threadgroup_stats(stats, tsk, false);
- 
- 	/* Define err: label here if needed */
- 	put_task_struct(tsk);
-@@ -285,7 +286,7 @@ static int fill_tgid(pid_t tgid, struct task_struct *first,
- 			add_tsk_stats(stats, tsk);
- 	} while_each_thread(first, tsk);
- 
--	fill_threadgroup_stats(stats, first->group_leader);
-+	fill_threadgroup_stats(stats, first->group_leader, true);
- 	unlock_task_sighand(first, &flags);
- 	rc = 0;
- out:
-@@ -541,7 +542,7 @@ void taskstats_exit(struct task_struct *tsk, int group_dead)
- 	 */
- 
- 	memcpy(stats, tsk->signal->stats, sizeof(*stats));
--	fill_threadgroup_stats(stats, tsk->group_leader);
-+	fill_threadgroup_stats(stats, tsk->group_leader, true);
- 
- send:
- 	send_cpu_listeners(rep_skb, listeners);
+ 				   struct task_struct *task, bool tg_stats)
 diff --git a/kernel/tsacct.c b/kernel/tsacct.c
-index 73b4c69..8c2f470 100644
+index 8c2f470..e83f53b 100644
 --- a/kernel/tsacct.c
 +++ b/kernel/tsacct.c
-@@ -62,7 +62,8 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
- 	stats->nivcsw		+= tsk->nivcsw;
- }
- 
--void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *tsk)
-+void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *tsk,
-+			    bool tg_stats)
+@@ -65,13 +65,15 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
+ void bacct_fill_threadgroup(struct taskstats *stats, struct task_struct *tsk,
+ 			    bool tg_stats)
  {
++	int group_exit_code;
++
  	fill_wall_times(stats, tsk);
  
+-	if (thread_group_leader(tsk)) {
+-		stats->ac_exitcode = tsk->exit_code;
+-		if (tsk->flags & PF_FORKNOEXEC)
+-			stats->ac_flag |= AFORK;
+-	}
++	if (thread_group_leader(tsk) && ((tsk->flags & PF_FORKNOEXEC)))
++		stats->ac_flag |= AFORK;
++
++	group_exit_code = tg_stats ? tsk->signal->group_exit_code : 0;
++	stats->ac_exitcode = group_exit_code ? : tsk->exit_code;
+ 
+ 	stats->ac_nice	 = task_nice(tsk);
+ 	stats->ac_sched	 = tsk->policy;
