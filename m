@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760480AbXIZS6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761198AbXIZS72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760480AbXIZS6M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbXIZS56
+	id S1761198AbXIZS72 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbXIZS7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:57:58 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:55987 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756629AbXIZS56 (ORCPT
+	Wed, 26 Sep 2007 14:59:21 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:36685 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754810AbXIZS7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:57:58 -0400
-Date: Wed, 26 Sep 2007 12:57:57 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: linux-kernel@vger.kernel.org
-Cc: Matthew Wilcox <matthew@wil.cx>
-Subject: dmapool
-Message-ID: <20070926185757.GM3899@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 26 Sep 2007 14:59:21 -0400
+To: haveblue@us.ibm.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org
+In-reply-to: <1190830135.30530.32.camel@localhost> (message from Dave Hansen
+	on Wed, 26 Sep 2007 11:08:55 -0700)
+Subject: Re: missing mnt_drop_write() on open error
+References: <E1IaJc0-000541-00@dorka.pomaz.szeredi.hu>
+	 <1190769669.26982.325.camel@localhost>
+	 <E1IaSPW-0005M4-00@dorka.pomaz.szeredi.hu>
+	 <1190823545.30530.19.camel@localhost>
+	 <E1Iab1W-0005Ye-00@dorka.pomaz.szeredi.hu> <1190830135.30530.32.camel@localhost>
+Message-Id: <E1Iac1o-0005bH-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 26 Sep 2007 20:54:32 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > Btw, may_open() doesn't do mnt_want_write() around the truncation if
+> > file is opened with O_TRUNC | O_RDONLY.
+> 
+> What's the path to may_open() in that case?  open_namei() should wrap
+> all callers other than nfs, and it does:
+> 
+> 	/* O_TRUNC implies we need access checks for write permissions */
+>         if (flag & O_TRUNC)
+>                 acc_mode |= MAY_WRITE;
+> 
+> Which should trigger the may_open() code.  
 
-I have a series of patches to dmapool that I'd like opinions on.  I
-don't have any performance numbers yet, but some of the patches are a
-good idea, with or without performance numbers.
+Ah, I missed that.
 
-One of the problems with dmapool is that it doesn't have a maintainer
-listed.  I've spent enough time looking at it over the past couple of
-weeks that I think I'd be comfortable in that role, so unless someone
-objects, I'll submit a patch to MAINTAINERS to add myself.
-
-I shan't post the first two patches.  The first simply Lindents the code
-and the second moves it to mm/ (a better fit than drivers/base, IMO).
-
-Four patches to follow.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Thanks,
+Miklos
