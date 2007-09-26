@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXIZJSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbXIZJf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755579AbXIZJSy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 05:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbXIZJSq
+	id S1755275AbXIZJf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 05:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXIZJfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 05:18:46 -0400
-Received: from il.qumranet.com ([82.166.9.18]:59610 "EHLO il.qumranet.com"
+	Wed, 26 Sep 2007 05:35:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35081 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753518AbXIZJSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 05:18:45 -0400
-Message-ID: <46FA23DF.9000409@qumranet.com>
-Date: Wed, 26 Sep 2007 11:18:23 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1752767AbXIZJfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 05:35:16 -0400
+Date: Wed, 26 Sep 2007 11:34:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Network slowdown due to CFS
+Message-ID: <20070926093445.GA24768@elte.hu>
+References: <20070926085202.GE3337@deprecation.cyrius.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] 2.6.23-rc8-mm1: drivers/kvm/ioapic.o build failure
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org>	<200709252256.23478.m.kozlowski@tuxland.pl>	<46FA1F99.8080701@qumranet.com> <20070926021424.37e34b4c.akpm@linux-foundation.org>
-In-Reply-To: <20070926021424.37e34b4c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070926085202.GE3337@deprecation.cyrius.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 26 Sep 2007 11:00:09 +0200 Avi Kivity <avi@qumranet.com> wrote:
->
->   
->> Mariusz Kozlowski wrote:
->>     
->>> Hello,
->>>
->>> 	Similar (the same?) as in 2.6.23-rc6-mm1?
->>>
->>> http://www.mail-archive.com/linux-kernel%40vger.kernel.org/msg208812.html
->>> 	
->>>   CC [M]  drivers/kvm/ioapic.o
->>> drivers/kvm/ioapic.c: In function 'ioapic_deliver':
->>> drivers/kvm/ioapic.c:208: error: 'dest_LowestPrio' undeclared (first use in this function)
->>> drivers/kvm/ioapic.c:208: error: (Each undeclared identifier is reported only once
->>> drivers/kvm/ioapic.c:208: error: for each function it appears in.)
->>> drivers/kvm/ioapic.c:219: error: 'dest_Fixed' undeclared (first use in this function)
->>> make[2]: *** [drivers/kvm/ioapic.o] Error 1
->>> make[1]: *** [drivers/kvm] Error 2
->>> make: *** [drivers] Error 2
->>>
->>>   
->>>       
->> We now include asm/io_apic.h like we should.  Has that file changed in -mm?
->>
->>     
->
-> CONFIG_X86_IO_APIC isn't set.
->   
 
-Why should that matter?  we're just pulling that file for the definitions.
+* Martin Michlmayr <tbm@cyrius.com> wrote:
 
+> I noticed that my network performance has gone down from 2.6.22
+> from   [  3]  0.0-10.0 sec    113 MBytes  95.0 Mbits/sec
+> to     [  3]  0.0-10.0 sec   75.7 MBytes  63.3 Mbits/sec
+> with 2.6.23-rc1 (and 2.6.23-rc8), as measured with iperf.
+> 
+> I did a git bisect today and tracked it back to the commit where CFS
+> was enabled ("sched: cfs core code; apply the CFS core code",
+> commit dd41f596cda0d7d6e4a8b139ffdfabcefdd46528).  I also compiled a
+> kernel from
+> git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+> but things don't improve.
+> 
+> This is on a Thecus N2100, an ARM (Intel IOP32x) based storage device 
+> with a r8169 card, SATA disks and 512 MB RAM.  My config is attached.
+> 
+> What kind of information can I supply so you can track this down?
 
-I'll try to compile without it here and see how it breaks.
+as a starter, could you boot the sched-devel.git kernel, with 
+CONFIG_SCHED_DEBUG=y and CONFIG_SCHEDSTATS=y enabled and could you run 
+this script while the iperf test is in the middle of its testrun:
 
--- 
-error compiling committee.c: too many arguments to function
+  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
 
+this will gather a good deal of info about the workload in question. 
+Please send me the resulting debug file.
+
+	Ingo
