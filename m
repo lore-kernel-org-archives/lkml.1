@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763157AbXIZVYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763410AbXIZVZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763157AbXIZVYv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760987AbXIZVYn
+	id S1763410AbXIZVZn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760914AbXIZVZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:24:43 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:31631 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761355AbXIZVYm (ORCPT
+	Wed, 26 Sep 2007 17:25:35 -0400
+Received: from konsoleh1.your-server.de ([213.133.104.191]:55104 "EHLO
+	konsoleh1.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761355AbXIZVZf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:24:42 -0400
-Date: Wed, 26 Sep 2007 14:13:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Konrad Rzeszutek <konrad@darnok.org>
-Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
-       konradr@linux.vnet.ibm.com
-Subject: Re: [PATCH] Add iSCSI iBFT support.
-Message-Id: <20070926141335.8faa5cb9.randy.dunlap@oracle.com>
-In-Reply-To: <20070926184652.GA16369@andromeda.dapyr.net>
-References: <20070926184652.GA16369@andromeda.dapyr.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Wed, 26 Sep 2007 17:25:35 -0400
+Message-ID: <1190841933.46face4d4ae55@secure.konsole-h.de>
+Date: Wed, 26 Sep 2007 23:25:33 +0200
+From: thomas@m3y3r.de
+To: linux-kernel@vger.kernel.org
+Subject: xpad_probe: undefined reference to `led_classdev_register'
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 14:46:52 -0400 Konrad Rzeszutek wrote:
+Hi.
 
-> This patch adds a /sysfs/firmware/ibft/table binary blob which exports
-> the iSCSI Boot Firmware Table (iBFT) structure. 
-> 
-> What is iSCSI Boot Firmware Table?
+Current linus' git tree:
 
-i.e., what is this binary blob  (?)
+x86_64-unknown-linux-gnu-ld: BFD 2.15 assertion fail
+/home/thomas/source/crosstool-0.43/build/x86_64-unknown-linux-gnu/gcc-3.4.5-glibc-2.3.6/binutils-2.15/bfd/linker.c:619
+drivers/built-in.o(.text+0x20749d): In function `xpad_probe':
+: undefined reference to `led_classdev_register'
+drivers/built-in.o(.text+0x20756c): In function `xpad_disconnect':
+: undefined reference to `led_classdev_unregister'
+make: *** [.tmp_vmlinux1] Fehler 1
 
-I don't see a binary blob in this patch (as stated in the first
-sentence).  I'd say that this patch adds methods for exporting
-(or exposing) the ibft thru sysfs.
+any ideas?
 
-Is there some good reason that the iSCSI connection information
-shouldn't be exposed in real sysfs attribute files instead of just
-in a binary file?
+mfg
+thomas
 
-
-> It is a mechanism for the iSCSI
-> tools to extract from the machine NICs the iSCSI connection information
-> so that they can automagically mount the iSCSI share/target. Currently
-> the iSCSI information is hard-coded in the initrd.
-> 
-> The full details of the structure are located at:
-> ftp://ftp.software.ibm.com/systems/support/system_x_pdf/ibm_iscsi_boot_firmware_table_v1.02.pdf
-
-
----
-~Randy
-Phaedrus says that Quality is about caring.
