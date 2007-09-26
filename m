@@ -1,50 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbXIZWX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762200AbXIZW14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762596AbXIZWX5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 18:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759006AbXIZWXt
+	id S1762200AbXIZW14 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 18:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXIZW1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 18:23:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56632 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758498AbXIZWXs (ORCPT
+	Wed, 26 Sep 2007 18:27:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44902 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751888AbXIZW1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 18:23:48 -0400
-Date: Wed, 26 Sep 2007 15:22:43 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and
- -rc6-mm1: boot failure on HP nx6325, related to clockevents)
-In-Reply-To: <1190842476.23376.57.camel@chaos>
-Message-ID: <alpine.LFD.0.999.0709261521440.3579@woody.linux-foundation.org>
-References: <200709231257.12213.rjw@sisk.pl>  <1190832665.23376.38.camel@chaos>
- <200709262149.54732.rjw@sisk.pl>  <200709262300.28336.rjw@sisk.pl>
- <1190842476.23376.57.camel@chaos>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 26 Sep 2007 18:27:48 -0400
+Date: Wed, 26 Sep 2007 15:27:20 -0700
+Message-Id: <200709262227.l8QMRKFE000784@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Joerg Pommnitz <pommnitz@yahoo.com>
+Subject: [GIT PULL] Workaround for broken Geode E820 BIOS
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
+Please pull:
 
-On Wed, 26 Sep 2007, Thomas Gleixner wrote:
-> > 
-> > 1) current Linus' tree doesn't boot with any command line (regression)
-> > 
-> > [  Linus, please revert commit e66485d747505e9d960b864fc6c37f8b2afafaf0
+  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
 
-Reverted.
+H. Peter Anvin (1):
+      [x86 setup] Handle case of improperly terminated E820 chain
 
-> OK, this explains 2) and 3). I just looked into the code and the logic
-> vs. noapictimer on SMP is completely broken.
+ arch/i386/boot/memory.c |   30 +++++++++++++++++++++++-------
+ 1 files changed, 23 insertions(+), 7 deletions(-)
 
-..and thanks for the explanation.
+[Log messages and full diffs follow]
 
-Thanks for finding it so quickly guys. Sounds like this will be fixed 
-properly in 2.6.24 with the x86 merge (which hopefully brings in the hrt 
-patch too)
+commit 2efa33f81ef56e7700c09a3d8a881c96692149e5
+Author: H. Peter Anvin <hpa@zytor.com>
+Date:   Wed Sep 26 14:11:43 2007 -0700
 
-		Linus
+    [x86 setup] Handle case of improperly terminated E820 chain
+    
+    At least one system (a Geode system with a Digital Logic BIOS) has
+    been found which suddenly stops reporting the SMAP signature when
+    reading the E820 memory chain.  We can't know what, exactly, broke in
+    the BIOS, so if we detect this situation, declare the E820 data
+    unusable and fall back to E801.
+    
+    Also, revert to original behavior of always probing all memory
+    methods; that way all the memory information is available to the
+    kernel.
+    
+    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+    Cc: Jordan Crouse <jordan.crouse@amd.com>
+    Cc: Joerg Pommnitz <pommnitz@yahoo.com>
+
+diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
+index 1a2e62d..bccaa1c 100644
+--- a/arch/i386/boot/memory.c
++++ b/arch/i386/boot/memory.c
+@@ -20,6 +20,7 @@
+ 
+ static int detect_memory_e820(void)
+ {
++	int count = 0;
+ 	u32 next = 0;
+ 	u32 size, id;
+ 	u8 err;
+@@ -33,14 +34,24 @@ static int detect_memory_e820(void)
+ 		      "=m" (*desc)
+ 		    : "D" (desc), "a" (0xe820));
+ 
+-		if (err || id != SMAP)
++		/* Some BIOSes stop returning SMAP in the middle of
++		   the search loop.  We don't know exactly how the BIOS
++		   screwed up the map at that point, we might have a
++		   partial map, the full map, or complete garbage, so
++		   just return failure. */
++		if (id != SMAP) {
++			count = 0;
+ 			break;
++		}
+ 
+-		boot_params.e820_entries++;
++		if (err)
++			break;
++
++		count++;
+ 		desc++;
+-	} while (next && boot_params.e820_entries < E820MAX);
++	} while (next && count < E820MAX);
+ 
+-	return boot_params.e820_entries;
++	return boot_params.e820_entries = count;
+ }
+ 
+ static int detect_memory_e801(void)
+@@ -89,11 +100,16 @@ static int detect_memory_88(void)
+ 
+ int detect_memory(void)
+ {
++	int err = -1;
++
+ 	if (detect_memory_e820() > 0)
+-		return 0;
++		err = 0;
+ 
+ 	if (!detect_memory_e801())
+-		return 0;
++		err = 0;
++
++	if (!detect_memory_88())
++		err = 0;
+ 
+-	return detect_memory_88();
++	return err;
+ }
