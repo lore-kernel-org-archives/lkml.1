@@ -1,113 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763203AbXIZVe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbXIZVhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763203AbXIZVe6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760843AbXIZVek
+	id S1762014AbXIZVhW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXIZVhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:34:40 -0400
-Received: from www.osadl.org ([213.239.205.134]:56257 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758818AbXIZVej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:34:39 -0400
-Subject: Re: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and
-	-rc6-mm1: boot failure on HP nx6325, related to clockevents)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200709262300.28336.rjw@sisk.pl>
-References: <200709231257.12213.rjw@sisk.pl>
-	 <1190832665.23376.38.camel@chaos> <200709262149.54732.rjw@sisk.pl>
-	 <200709262300.28336.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 26 Sep 2007 23:34:36 +0200
-Message-Id: <1190842476.23376.57.camel@chaos>
+	Wed, 26 Sep 2007 17:37:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58282 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754106AbXIZVhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 17:37:04 -0400
+Date: Wed, 26 Sep 2007 14:35:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: jrs@us.ibm.com, aneesh.kumar@linux.vnet.ibm.com, richard@rsk.demon.co.uk,
+       sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: jbd : config_jbd_debug cannot create /proc entry
+Message-Id: <20070926143539.b01bc0bc.akpm@linux-foundation.org>
+In-Reply-To: <20070925143608.GB18758@atrey.karlin.mff.cuni.cz>
+References: <1190713240.3154.20.camel@castor.rsk.org>
+	<20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
+	<46F8EB26.2090104@linux.vnet.ibm.com>
+	<20070925115046.GA15394@atrey.karlin.mff.cuni.cz>
+	<20070925074938.2321bc15@gara>
+	<20070925084153.36ab65a5@gara>
+	<20070925143608.GB18758@atrey.karlin.mff.cuni.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael,
+On Tue, 25 Sep 2007 16:36:08 +0200
+Jan Kara <jack@suse.cz> wrote:
 
-On Wed, 2007-09-26 at 23:00 +0200, Rafael J. Wysocki wrote:
-> > > > First, with the "x86-64: Disable local APIC timer use on AMD systems with C1E"
-> > > > patch and my collection of suspend patches applied, the box doesn't boot
-> > > > (the suspend patches don't even thouch the boot code, so they should be
-> > > > irrelevant here).  However, it boots if patch-2.6.23-rc7-hrt1.patch (adjusted
-> > > > for 2.6.23-rc8) is applied in addition.  Is this expected?
-> > > 
-> > > No. That's odd. It is nothing else than adding "noapictimer" to the
-> > > kernel command line.
+> > On Tue, 25 Sep 2007 07:49:38 -0500
+> > "Jose R. Santos" <jrs@us.ibm.com> wrote:
 > > 
-> > Seems to be reproducible, though.  I'll investigate further.
-> 
-> So far, the results are the following:
-> 
-> 1) current Linus' tree doesn't boot with any command line (regression)
-> 
-> [  Linus, please revert commit e66485d747505e9d960b864fc6c37f8b2afafaf0
-> 
->    x86-64: Disable local APIC timer use on AMD systems with C1E
-> 
->    It's not necessary for 2.6.23 and actually kills the box that it's supposed to fix. ]
-> 
-> 2) 2.6.23-rc8 w/ the "x86-64: Disable local APIC timer use on AMD systems with C1E"
->    patch applied behaves like the current -git
-> 
-> 3) 2.6.23-rc8 w/o this patch doesn't boot with either "noapictimer" _or_
+> > > On Tue, 25 Sep 2007 13:50:46 +0200
+> > > Jan Kara <jack@ucw.cz> wrote:
+> > > > > Jan Kara wrote:
+> > > > > >>
+> > > > > >-#define create_jbd_proc_entry() do {} while (0)
+> > > > > >-#define remove_jbd_proc_entry() do {} while (0)
+> > > > > >+static ctl_table fs_table[] = {
+> > > > > >+	{
+> > > > > >+                .ctl_name       = -1,	/* Don't want it */
+> > > > > 
+> > > > > 
+> > > > > 
+> > > > > shouldn't this be CTL_UNNUMBERED ?
+> > > >   Oh, it should be. I didn't notice we have this :) Thanks for notifying
+> > > > me. Attached is a fixed version.
+> > > 
+> > > This was fixed in JBD2 by moving the jbd-debug file to debugfs:
+> > > http://lkml.org/lkml/2007/7/11/334
+> > > 
+> > > Since this code is already in the kernel, we should keep it consistent. 
+> > > 
+> > 
+> > OK.  Here's a quick patch to fix this.  Adapted from the JBD2 patch.
+> > Let me know what you think.
+>   Looks fine - exactly what I've just done here :).
 
-OK, this explains 2) and 3). I just looked into the code and the logic
-vs. noapictimer on SMP is completely broken.
+hm.  I found rather a lot of issues.  If this patch is derived from the
+JBD2 patch then perhaps the JBD2 patch needs some looking at.
 
-On i386 the noapictimer option not only disables the local APIC timer,
-it also registers the CPUs for broadcasting via IPI on SMP systems. 
+> >     Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+>   You can add Signed-off-by: Jan Kara <jack@suse.cz>
 
-The x8664 code uses the broadcast only when the local apic timer is
-active, i.e. "noapictimer" is not on the command line. This defeats the
-whole purpose of "noapictimer". It should be there to make boxen work,
-where the local APIC timer actually has a hardware problem, e.g. the
-nx6325.
+I suspect you might be getting your signed-off-bys and acked-bys mixed up. 
+(If not this patch, then the previous one).  Please see
+Documentation/SubmittingPatches section 13 for the difference.
 
-The current implementation of x86_64 only fixes the ACPI c-states
-related problem where the APIC timer stops in C3(2), nothing else.
+Jose, please review and if possible runtime test these proposed changes?
 
-On nx6325 and other AMD X2 equipped systems which have the C1E enabled
-we run into the following:
 
-PIT keeps jiffies (and the system) running, but the local APIC timer
-interrupts can get out of sync due to this C1E effect. 
 
-I don't think this is a critical problem, but it is wrong nevertheless.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-I think it's safe to revert the C1E patch and postpone the fix to the
-clock events conversion.
+- use `#ifdef foo' instead of `#if defined(foo)'
 
->   "apicmaintimer"
+- CONFIG_JBD_DEBUG depends on CONFIG_DEBUG_FS so we don't need to duplicate
+  that logic in the .c file ifdefs
 
-on your box is not going to work. See the C1E patch. "apicmaintimer"
-switches off PIT and then waits for ever for the local APIC timer
-interrupts.
+- Make journal_enable_debug __read_mostly just for the heck of it
 
-> 4) 2.6.22 behaves like 2.6.23-rc8
+- Make jbd_debugfs_dir and jbd_debug static
 
-No surprise
+- debugfs_remove(NULL) is legal: remove unneeded tests
 
-> 5) 2.6.23-rc8 with (adjusted) patch-2.6.23-rc7-hrt1.patch boots only with
->    "noapictimer"
-> 
-> 6) 2.6.23-rc8 with (adjusted) patch-2.6.23-rc7-hrt1.patch and with the
->    "x86-64: Disable local APIC timer use on AMD systems with C1E" patch boots
->    without any extra command line options
+- jbd_create_debugfs_entry is a better name than create_jbd_debugfs_entry
 
-That's consistent behaviour.
+- ditto remove_jbd_debugfs_entry
 
-> Tested for a couple of times with each kernel, the results seem to be
-> reproducible 100% of the time.
+- C functions are preferred over macros
 
-Thanks for going through this debug marathon.
+Cc: "Jose R. Santos" <jrs@us.ibm.com>
+Cc: <linux-ext4@vger.kernel.org>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Jose R. Santos <jrs@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-	tglx
 
+diff -puN fs/jbd/journal.c~jbd-config_jbd_debug-cannot-create-proc-entry-fix fs/jbd/journal.c
+--- a/fs/jbd/journal.c~jbd-config_jbd_debug-cannot-create-proc-entry-fix
++++ a/fs/jbd/journal.c
+@@ -1853,16 +1853,15 @@ void journal_put_journal_head(struct jou
+ /*
+  * debugfs tunables
+  */
+-#if defined(CONFIG_JBD_DEBUG)
+-u8 journal_enable_debug;
+-EXPORT_SYMBOL(journal_enable_debug);
+-#endif
++#ifdef CONFIG_JBD_DEBUG
+ 
+-#if defined(CONFIG_JBD_DEBUG) && defined(CONFIG_DEBUG_FS)
++u8 journal_enable_debug __read_mostly;
++EXPORT_SYMBOL(journal_enable_debug);
+ 
+-struct dentry  *jbd_debugfs_dir, *jbd_debug;
++static struct dentry *jbd_debugfs_dir;
++static struct dentry *jbd_debug;
+ 
+-static void __init create_jbd_debugfs_entry(void)
++static void __init jbd_create_debugfs_entry(void)
+ {
+ 	jbd_debugfs_dir = debugfs_create_dir("jbd", NULL);
+ 	if (jbd_debugfs_dir)
+@@ -1871,18 +1870,21 @@ static void __init create_jbd_debugfs_en
+ 					       &journal_enable_debug);
+ }
+ 
+-static void __exit remove_jbd_debugfs_entry(void)
++static void __exit jbd_remove_debugfs_entry(void)
+ {
+-	if (jbd_debug)
+-		debugfs_remove(jbd_debug);
+-	if (jbd_debugfs_dir)
+-		debugfs_remove(jbd_debugfs_dir);
++	debugfs_remove(jbd_debug);
++	debugfs_remove(jbd_debugfs_dir);
+ }
+ 
+ #else
+ 
+-#define create_jbd_debugfs_entry() do {} while (0)
+-#define remove_jbd_debugfs_entry() do {} while (0)
++static inline void jbd_create_debugfs_entry(void)
++{
++}
++
++static inline void jbd_remove_debugfs_entry(void)
++{
++}
+ 
+ #endif
+ 
+@@ -1940,7 +1942,7 @@ static int __init journal_init(void)
+ 	ret = journal_init_caches();
+ 	if (ret != 0)
+ 		journal_destroy_caches();
+-	create_jbd_debugfs_entry();
++	jbd_create_debugfs_entry();
+ 	return ret;
+ }
+ 
+@@ -1951,7 +1953,7 @@ static void __exit journal_exit(void)
+ 	if (n)
+ 		printk(KERN_EMERG "JBD: leaked %d journal_heads!\n", n);
+ #endif
+-	remove_jbd_debugfs_entry();
++	jbd_remove_debugfs_entry();
+ 	journal_destroy_caches();
+ }
+ 
+_
 
