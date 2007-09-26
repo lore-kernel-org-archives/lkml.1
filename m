@@ -1,43 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbXIZSfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbXIZSgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761010AbXIZSfQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXIZSfA
+	id S1761433AbXIZSgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbXIZSgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:35:00 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34360 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754319AbXIZSe7 (ORCPT
+	Wed, 26 Sep 2007 14:36:03 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:60586 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756598AbXIZSgB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:34:59 -0400
-Date: Wed, 26 Sep 2007 19:34:29 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] LBS: fix uninitialized swapper_space
-In-Reply-To: <Pine.LNX.4.64.0709241414270.30982@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0709261926060.8443@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0709212141220.6532@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0709212144210.13529@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0709241414270.30982@schroedinger.engr.sgi.com>
+	Wed, 26 Sep 2007 14:36:01 -0400
+Message-ID: <46FAA68E.1020306@tiscali.nl>
+Date: Wed, 26 Sep 2007 20:35:58 +0200
+From: roel <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: forcedeth question
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Sep 2007, Christoph Lameter wrote:
-> On Fri, 21 Sep 2007, Hugh Dickins wrote:
-> 
-> > Swapping crashed immediately: must initialize new fields of swapper_space.
-> 
-> Thanks for finding that. It may be better though to use the new
-> mapping_setup() function instead? That way there is no #ifdef.
+in file ./drivers/net/forcedeth.c
+line 2142 of current git I have a
+for (i=0;i<=np->register_size;i+= 32) {
+           ^
+shouldn't this be a '<'
 
-Probably better, yes.  In -mm Peter is doing an #ifdef CONFIG_SWAP
-bdi_init() on swapper_space.  Would make sense to do both together,
-perhaps move them to a swapper_space_init() in swap_state.c, saving
-his #ifdef too.  I suggest leave such cleanups until one or the
-other is mainlined.
+In the same file on line 4015:
+for (i = 0;i <= np->register_size/sizeof(u32); i++)
 
-Hugh
+shouldn't the "<=" be a '<'?
+
+Roel
