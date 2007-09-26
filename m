@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbXIZGDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbXIZGLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755674AbXIZGDM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 02:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbXIZGC6
+	id S1755887AbXIZGLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 02:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXIZGKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 02:02:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47489
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750969AbXIZGC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 02:02:58 -0400
-Date: Tue, 25 Sep 2007 23:02:51 -0700 (PDT)
-Message-Id: <20070925.230251.120461813.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: kamalesh@linux.vnet.ibm.com
-Subject: Re: + git-net-fix-pasemi_mac.patch added to -mm tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200709242233.l8OMXsL5021125@imap1.linux-foundation.org>
-References: <200709242233.l8OMXsL5021125@imap1.linux-foundation.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 26 Sep 2007 02:10:52 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:53894 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750826AbXIZGKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 02:10:52 -0400
+Date: Wed, 26 Sep 2007 08:13:10 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
+Message-ID: <20070926061310.GA1865@ff.dom.local>
+References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local> <46F7885F.4080906@bull.net> <20070925114705.GA3148@ff.dom.local>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-2022-jp-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070925114705.GA3148@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: akpm@linux-foundation.org
-Date: Mon, 24 Sep 2007 15:33:54 -0700
+On Tue, Sep 25, 2007 at 01:47:05PM +0200, Jarek Poplawski wrote:
+> On Mon, Sep 24, 2007 at 11:50:23AM +0200, Nadia Derbey wrote:
+> > Jarek Poplawski wrote:
+> ...
+> > >2. I'm not sure this refcounting with ipc_rcu_getref/putref is SMP
+> > >safe (memory barriers): it's not atomic, so locking is needed, but
+> > >e.g. in do_msgsnd() kern_ipc_perm lock is used for this, while
+> > >freeque() calls ipc_rcu_putref() with ipc_ids mutex only.
+> > >
+> > >3. Probably similar problem is possible with msr_d.r_msg which is
+> > >read in do_msgrcv() under rcu_read_lock() only.
+> > >
+> > 
+> > In think here they have avoided refcoutning by using r_msg:
+> > r_msg is initialzed to -EAGAIN before releasing the msq lock. if 
+> > freequeue() is called it sets r_msg to EIDRM (see expunge_all(-EIDRM)).
+> > Setting r_msg is always done under the msq lock (expunge_all() / 
+> > pipelined_Sned()).
+> >  Since rcu_read_lock is called right after schedule, they are sure the 
+> > msq pointer is still valid when they re-lock it once a msg is present in 
+> > the receive queue.
+> > 
+> > Please tell me if I'm not clear ;-)
+> 
+> All clear!
+> 
+> Except... this r_msg is still unclear to me. Since it's read without
+> msq lock I doubt this first check after schedule() is of any value. A
+> comment: "Lockless receive, part 2" tells about some safety against a
+> race with pipeline_send() and expunge_all() when in wake_up_process(),
+> but how can we be sure this r_msg is not just to be changed and this
+> wake_up_process() is running while "while" check still sees
+> ERR_PTR(-EAGAIN) instead of NULL?
 
-> Subject: git-net: fix pasemi_mac
-> From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> 
-> drivers/net/pasemi_mac.c: In function $,1rx(Bpasemi_mac_probe$,1ry(B:
-> drivers/net/pasemi_mac.c:1153: error: conflicting types for $,1rx(Bmac$,1ry(B
-> drivers/net/pasemi_mac.c:1151: error: previous declaration of $,1rx(Bmac$,1ry(B was here
-> drivers/net/pasemi_mac.c:1170: error: incompatible types in assignment
-> drivers/net/pasemi_mac.c:1172: error: request for member $,1rx(Bpdev$,1ry(B in
-> something not a structure or union
-> 
-> In the function
-> static int __devinit
-> pasemi_mac_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-> {
-> <snip>
-> struct pasemi_mac *mac;
-> int err;
-> DECLARE_MAC_BUF(mac);
-> 
-> introduction of mac as var [18] triggers the build failure, so in the below
-> patch renaming mac as mac_buf is done, because it is used to print the mac
-> address using the newly introduced print_mac function.
-> 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+OOPS!
 
-Applied to net-2.6.24, thanks!
+At last I've found enough time to look at this more exactly plus the
+right comment in sem.c, and it looks like it's all right and really
+thought up, with all variants foreseen. So, I withdraw this problem
+nr 3 too.
+
+Best regards,
+Jarek P.
