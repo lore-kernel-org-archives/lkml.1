@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbXIZKUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbXIZKXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757667AbXIZKUo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 06:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXIZKUh
+	id S1756808AbXIZKXj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 06:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXIZKXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 06:20:37 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44274 "HELO mail.gmx.net"
+	Wed, 26 Sep 2007 06:23:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38048 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754349AbXIZKUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 06:20:36 -0400
+	id S1754561AbXIZKXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 06:23:31 -0400
 X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+f3CsheYqfNIKrfapXTWpgtZrXKjyPoOaUgthIdw
-	28ve1wDFMA/IdC
+X-Provags-ID: V01U2FsdGVkX18RB4sm6UYRi1KFx1Ua4PhlpW7CwceTxkEzoE48tl
+	LjVltowafzwNdz
 Subject: Re: Network slowdown due to CFS
 From: Mike Galbraith <efault@gmx.de>
 To: Martin Michlmayr <tbm@cyrius.com>
@@ -20,8 +20,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
 In-Reply-To: <20070926085202.GE3337@deprecation.cyrius.com>
 References: <20070926085202.GE3337@deprecation.cyrius.com>
 Content-Type: text/plain
-Date: Wed, 26 Sep 2007 12:20:32 +0200
-Message-Id: <1190802032.7318.1.camel@Homer.simpson.net>
+Date: Wed, 26 Sep 2007 12:23:28 +0200
+Message-Id: <1190802208.7318.5.camel@Homer.simpson.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
@@ -34,54 +34,25 @@ On Wed, 2007-09-26 at 10:52 +0200, Martin Michlmayr wrote:
 > >from   [  3]  0.0-10.0 sec    113 MBytes  95.0 Mbits/sec
 > to     [  3]  0.0-10.0 sec   75.7 MBytes  63.3 Mbits/sec
 > with 2.6.23-rc1 (and 2.6.23-rc8), as measured with iperf.
+> 
+> I did a git bisect today and tracked it back to the commit where CFS
+> was enabled ("sched: cfs core code; apply the CFS core code",
+> commit dd41f596cda0d7d6e4a8b139ffdfabcefdd46528).  I also compiled a
+> kernel from
+> git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
+> but things don't improve.
+> 
+> This is on a Thecus N2100, an ARM (Intel IOP32x) based storage device
+> with a r8169 card, SATA disks and 512 MB RAM.  My config is attached.
+> 
+> What kind of information can I supply so you can track this down?
 
-FWIW, on my box blasting localhost, I see the opposite, repeatably.
+I noticed on the iperf website a patch which contains sched_yield().
 
-root@Homer: iperf -v
-iperf version 2.0.2 (03 May 2005) pthreads
+http://dast.nlanr.net/Projects/Iperf2.0/patch-iperf-linux-2.6.21.txt
 
-2.6.22.1-smp
-for i in `seq 1 3`; do iperf -c localhost; done >> /xx
+Do you have that patch applied by any chance?  If so, it might be a
+worth while to try it without it.
 
-------------------------------------------------------------
-Client connecting to localhost, TCP port 5001
-TCP window size: 49.2 KByte (default)
-------------------------------------------------------------
-[  3] local 127.0.0.1 port 21383 connected with 127.0.0.1 port 5001
-[  3]  0.0-10.1 sec    518 MBytes    432 Mbits/sec
-------------------------------------------------------------
-Client connecting to localhost, TCP port 5001
-TCP window size: 49.2 KByte (default)
-------------------------------------------------------------
-[  3] local 127.0.0.1 port 21384 connected with 127.0.0.1 port 5001
-[  3]  0.0-10.0 sec    325 MBytes    273 Mbits/sec
-------------------------------------------------------------
-Client connecting to localhost, TCP port 5001
-TCP window size: 49.2 KByte (default)
-------------------------------------------------------------
-[  3] local 127.0.0.1 port 21385 connected with 127.0.0.1 port 5001
-[  3]  0.0-10.0 sec    434 MBytes    363 Mbits/sec
-
-2.6.23-rc8-smp-d
-for i in `seq 1 3`; do iperf -c localhost; done >> /xx
-
-------------------------------------------------------------
-Client connecting to localhost, TCP port 5001
-TCP window size: 49.2 KByte (default)
-------------------------------------------------------------
-[  3] local 127.0.0.1 port 11650 connected with 127.0.0.1 port 5001
-[  3]  0.0-10.0 sec  2.01 GBytes  1.72 Gbits/sec
-------------------------------------------------------------
-Client connecting to localhost, TCP port 5001
-TCP window size: 49.2 KByte (default)
-------------------------------------------------------------
-[  3] local 127.0.0.1 port 11651 connected with 127.0.0.1 port 5001
-[  3]  0.0-10.0 sec  2.02 GBytes  1.74 Gbits/sec
-------------------------------------------------------------
-Client connecting to localhost, TCP port 5001
-TCP window size: 49.2 KByte (default)
-------------------------------------------------------------
-[  3] local 127.0.0.1 port 11652 connected with 127.0.0.1 port 5001
-[  3]  0.0-10.0 sec  2.10 GBytes  1.81 Gbits/sec
-
+	-Mike
 
