@@ -1,148 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763303AbXIZVVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762740AbXIZVXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763303AbXIZVVS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbXIZVVF
+	id S1762740AbXIZVXn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbXIZVXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:21:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58658 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752092AbXIZVVB (ORCPT
+	Wed, 26 Sep 2007 17:23:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48372 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbXIZVXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:21:01 -0400
-Message-ID: <46FACD33.1050503@zytor.com>
-Date: Wed, 26 Sep 2007 14:20:51 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 26 Sep 2007 17:23:35 -0400
+Date: Wed, 26 Sep 2007 14:18:16 -0700
+From: Greg KH <greg@kroah.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Robert Hancock <hancockr@shaw.ca>,
+       Jesse Barnes <jesse.barnes@intel.com>
+Subject: Re: PCI: Fix boot-time hang on G31/G33 PC
+Message-ID: <20070926211816.GA9916@kroah.com>
+References: <20070826015556.GC14130@parisc-linux.org>
 MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: Joerg Pommnitz <pommnitz@yahoo.com>, cebbert@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on AMD
- Geode LX800
-References: <637040.99806.qm@web51411.mail.re2.yahoo.com> <46FA6858.5060908@zytor.com> <20070926154106.GG7582@cosmic.amd.com> <46FAAFA7.50106@zytor.com> <20070926205825.GA14877@cosmic.amd.com> <46FAC958.9000501@zytor.com> <20070926211558.GB14877@cosmic.amd.com>
-In-Reply-To: <20070926211558.GB14877@cosmic.amd.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------050302030300010407030402"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070826015556.GC14130@parisc-linux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050302030300010407030402
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Due to the issues surrounding this patch, I'm dropping it from my repo.
 
-Jordan Crouse wrote:
+thanks,
+
+greg k-h
+
+
+On Sat, Aug 25, 2007 at 07:55:56PM -0600, Matthew Wilcox wrote:
 > 
-> Hmm - the old code seems to fail to e801 when CF was set too:
 > 
-> 	int     $0x15                           # make the call
-> 	jc      bail820                         # fall to e801 if it fails
+> This patch, loosely based on a patch from Robert Hancock, which was in
+> turn based on a patch from Jesse Barnes, fixes a boot-time hang on my
+> shiny new PC.  The 'conflict' mentioned in the patch in my case happens
+> to be between mmconfig and the graphics card, but it could easily be
+> between any pair of devices if they are left enabled by the BIOS and
+> mappen in the wrong place.
 > 
-> 	cmpl    $SMAP, %eax                     # check the return is `SMAP'
-> 	jne     bail820                         # fall to e801 if it fails
+> Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+> Acked-by: Robert Hancock <hancockr@shaw.ca>
+> Acked-by: Jesse Barnes <jesse.barnes@intel.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> Thats not to say that the old code was correct, mind you.  Failing on a
-> bad ID and returning without error on a set CF seems to be good to me.
+> ---
+>  drivers/pci/probe.c |   18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
 > 
-
-Testing this patch now:
-
-
---------------050302030300010407030402
-Content-Type: text/x-patch;
- name="0001-x86-setup-Handle-case-of-improperly-terminated-E82.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-x86-setup-Handle-case-of-improperly-terminated-E82.patc";
- filename*1="h"
-
->From 2efa33f81ef56e7700c09a3d8a881c96692149e5 Mon Sep 17 00:00:00 2001
-From: H. Peter Anvin <hpa@zytor.com>
-Date: Wed, 26 Sep 2007 14:11:43 -0700
-Subject: [PATCH] [x86 setup] Handle case of improperly terminated E820 chain
-
-At least one system (a Geode system with a Digital Logic BIOS) has
-been found which suddenly stops reporting the SMAP signature when
-reading the E820 memory chain.  We can't know what, exactly, broke in
-the BIOS, so if we detect this situation, declare the E820 data
-unusable and fall back to E801.
-
-Also, revert to original behavior of always probing all memory
-methods; that way all the memory information is available to the
-kernel.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Jordan Crouse <jordan.crouse@amd.com>
-Cc: Joerg Pommnitz <pommnitz@yahoo.com>
----
- arch/i386/boot/memory.c |   30 +++++++++++++++++++++++-------
- 1 files changed, 23 insertions(+), 7 deletions(-)
-
-diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-index 1a2e62d..bccaa1c 100644
---- a/arch/i386/boot/memory.c
-+++ b/arch/i386/boot/memory.c
-@@ -20,6 +20,7 @@
- 
- static int detect_memory_e820(void)
- {
-+	int count = 0;
- 	u32 next = 0;
- 	u32 size, id;
- 	u8 err;
-@@ -33,14 +34,24 @@ static int detect_memory_e820(void)
- 		      "=m" (*desc)
- 		    : "D" (desc), "a" (0xe820));
- 
--		if (err || id != SMAP)
-+		/* Some BIOSes stop returning SMAP in the middle of
-+		   the search loop.  We don't know exactly how the BIOS
-+		   screwed up the map at that point, we might have a
-+		   partial map, the full map, or complete garbage, so
-+		   just return failure. */
-+		if (id != SMAP) {
-+			count = 0;
- 			break;
-+		}
- 
--		boot_params.e820_entries++;
-+		if (err)
-+			break;
-+
-+		count++;
- 		desc++;
--	} while (next && boot_params.e820_entries < E820MAX);
-+	} while (next && count < E820MAX);
- 
--	return boot_params.e820_entries;
-+	return boot_params.e820_entries = count;
- }
- 
- static int detect_memory_e801(void)
-@@ -89,11 +100,16 @@ static int detect_memory_88(void)
- 
- int detect_memory(void)
- {
-+	int err = -1;
-+
- 	if (detect_memory_e820() > 0)
--		return 0;
-+		err = 0;
- 
- 	if (!detect_memory_e801())
--		return 0;
-+		err = 0;
-+
-+	if (!detect_memory_88())
-+		err = 0;
- 
--	return detect_memory_88();
-+	return err;
- }
--- 
-1.5.3.1
-
-
---------------050302030300010407030402--
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -180,11 +180,26 @@ static inline int is_64bit_memory(u32 ma
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Sizing PCI BARs requires us to disable decoding, otherwise we may run
+> + * into conflicts with other devices while trying to size the BAR.  Normally
+> + * this isn't a problem, but it happens on some machines normally, and can
+> + * happen on others during PCI device hotplug.  Don't disable BARs for host
+> + * bridges, though.  Some of them do silly things like disable accesses to
+> + * RAM from the CPU
+> + */
+>  static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
+>  {
+>  	unsigned int pos, reg, next;
+>  	u32 l, sz;
+>  	struct resource *res;
+> +	u16 orig_cmd;
+> +
+> +	if ((dev->class >> 8) != PCI_CLASS_BRIDGE_HOST) {
+> +		pci_read_config_word(dev, PCI_COMMAND, &orig_cmd);
+> +		pci_write_config_word(dev, PCI_COMMAND,
+> +			orig_cmd & ~(PCI_COMMAND_MEMORY | PCI_COMMAND_IO));
+> +	}
+>  
+>  	for(pos=0; pos<howmany; pos = next) {
+>  		u64 l64;
+> @@ -283,6 +298,9 @@ static void pci_read_bases(struct pci_de
+>  			}
+>  		}
+>  	}
+> +
+> +	if ((dev->class >> 8) != PCI_CLASS_BRIDGE_HOST)
+> +		pci_write_config_word(dev, PCI_COMMAND, orig_cmd);
+>  }
+>  
+>  void pci_read_bridge_bases(struct pci_bus *child)
