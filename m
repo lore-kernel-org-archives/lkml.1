@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbXIZGLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbXIZGSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887AbXIZGLA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 02:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXIZGKw
+	id S1753559AbXIZGSO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 02:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbXIZGR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 02:10:52 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:53894 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750826AbXIZGKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 02:10:52 -0400
-Date: Wed, 26 Sep 2007 08:13:10 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc6-mm1: IPC: sleeping function called ...
-Message-ID: <20070926061310.GA1865@ff.dom.local>
-References: <20070919140726.GA4603@ff.dom.local> <46F2123A.9070201@bull.net> <20070920072821.GA2065@ff.dom.local> <46F234DB.7030403@bull.net> <46F270DA.5030101@bull.net> <20070921084453.GA1758@ff.dom.local> <46F7885F.4080906@bull.net> <20070925114705.GA3148@ff.dom.local>
-Mime-Version: 1.0
+	Wed, 26 Sep 2007 02:17:59 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:11875 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750787AbXIZGR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 02:17:59 -0400
+Date: Wed, 26 Sep 2007 08:19:26 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cdrom_open() forgets to unlock on -EROFS failure exits
+Message-ID: <20070926061926.GF2367@kernel.dk>
+References: <E1IaLAU-00085M-9P@ZenIV.linux.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070925114705.GA3148@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <E1IaLAU-00085M-9P@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 25, 2007 at 01:47:05PM +0200, Jarek Poplawski wrote:
-> On Mon, Sep 24, 2007 at 11:50:23AM +0200, Nadia Derbey wrote:
-> > Jarek Poplawski wrote:
-> ...
-> > >2. I'm not sure this refcounting with ipc_rcu_getref/putref is SMP
-> > >safe (memory barriers): it's not atomic, so locking is needed, but
-> > >e.g. in do_msgsnd() kern_ipc_perm lock is used for this, while
-> > >freeque() calls ipc_rcu_putref() with ipc_ids mutex only.
-> > >
-> > >3. Probably similar problem is possible with msr_d.r_msg which is
-> > >read in do_msgrcv() under rcu_read_lock() only.
-> > >
-> > 
-> > In think here they have avoided refcoutning by using r_msg:
-> > r_msg is initialzed to -EAGAIN before releasing the msq lock. if 
-> > freequeue() is called it sets r_msg to EIDRM (see expunge_all(-EIDRM)).
-> > Setting r_msg is always done under the msq lock (expunge_all() / 
-> > pipelined_Sned()).
-> >  Since rcu_read_lock is called right after schedule, they are sure the 
-> > msq pointer is still valid when they re-lock it once a msg is present in 
-> > the receive queue.
-> > 
-> > Please tell me if I'm not clear ;-)
+On Wed, Sep 26 2007, Al Viro wrote:
 > 
-> All clear!
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+>  drivers/cdrom/cdrom.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 > 
-> Except... this r_msg is still unclear to me. Since it's read without
-> msq lock I doubt this first check after schedule() is of any value. A
-> comment: "Lockless receive, part 2" tells about some safety against a
-> race with pipeline_send() and expunge_all() when in wake_up_process(),
-> but how can we be sure this r_msg is not just to be changed and this
-> wake_up_process() is running while "while" check still sees
-> ERR_PTR(-EAGAIN) instead of NULL?
+> diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
+> index 67ee3d4..7924571 100644
+> --- a/drivers/cdrom/cdrom.c
+> +++ b/drivers/cdrom/cdrom.c
+> @@ -1032,6 +1032,10 @@ int cdrom_open(struct cdrom_device_info *cdi, struct inode *ip, struct file *fp)
+>  	check_disk_change(ip->i_bdev);
+>  	return 0;
+>  err_release:
+> +	if (CDROM_CAN(CDC_LOCK) && cdi->options & CDO_LOCK) {
+> +		cdi->ops->lock_door(cdi, 0);
+> +		cdinfo(CD_OPEN, "door unlocked.\n");
+> +	}
+>  	cdi->ops->release(cdi);
+>  err:
+>  	cdi->use_count--;
+> -- 
+> 1.5.3.GIT
 
-OOPS!
+Looks good Al, applied.
 
-At last I've found enough time to look at this more exactly plus the
-right comment in sem.c, and it looks like it's all right and really
-thought up, with all variants foreseen. So, I withdraw this problem
-nr 3 too.
+-- 
+Jens Axboe
 
-Best regards,
-Jarek P.
