@@ -1,76 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761034AbXIZUqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761988AbXIZUqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761034AbXIZUqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 16:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbXIZUqK
+	id S1761988AbXIZUqe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 16:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbXIZUqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 16:46:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40344 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752605AbXIZUqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 16:46:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents)
-Date: Wed, 26 Sep 2007 23:00:27 +0200
-User-Agent: KMail/1.9.5
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <200709231257.12213.rjw@sisk.pl> <1190832665.23376.38.camel@chaos> <200709262149.54732.rjw@sisk.pl>
-In-Reply-To: <200709262149.54732.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 26 Sep 2007 16:46:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35229 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757163AbXIZUqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 16:46:13 -0400
+Subject: Re: [PATCH 09/12] mm: remove throttle_vm_writeback
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com
+In-Reply-To: <20070405154440.0f42fa9f.akpm@linux-foundation.org>
+References: <20070405174209.498059336@programming.kicks-ass.net>
+	 <20070405174319.860268120@programming.kicks-ass.net>
+	 <20070405154440.0f42fa9f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 26 Sep 2007 22:42:30 +0200
+Message-Id: <1190839350.18147.28.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709262300.28336.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 26 September 2007 21:49, Rafael J. Wysocki wrote:
-> On Wednesday, 26 September 2007 20:51, Thomas Gleixner wrote:
-> > On Wed, 2007-09-26 at 17:25 +0200, Rafael J. Wysocki wrote:
-> > > There still are some oddities.
-> > > 
-> > > First, with the "x86-64: Disable local APIC timer use on AMD systems with C1E"
-> > > patch and my collection of suspend patches applied, the box doesn't boot
-> > > (the suspend patches don't even thouch the boot code, so they should be
-> > > irrelevant here).  However, it boots if patch-2.6.23-rc7-hrt1.patch (adjusted
-> > > for 2.6.23-rc8) is applied in addition.  Is this expected?
-> > 
-> > No. That's odd. It is nothing else than adding "noapictimer" to the
-> > kernel command line.
+
+On Thu, 2007-04-05 at 15:44 -0700, Andrew Morton wrote:
+> On Thu, 05 Apr 2007 19:42:18 +0200
+> root@programming.kicks-ass.net wrote:
 > 
-> Seems to be reproducible, though.  I'll investigate further.
+> > rely on accurate dirty page accounting to provide enough push back
+> 
+> I think we'd like to see a bit more justification than that, please.
 
-So far, the results are the following:
+it should read like this:
 
-1) current Linus' tree doesn't boot with any command line (regression)
+        for ( ; ; ) {
+		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
 
-[  Linus, please revert commit e66485d747505e9d960b864fc6c37f8b2afafaf0
+                /*
+                 * Boost the allowable dirty threshold a bit for page
+                 * allocators so they don't get DoS'ed by heavy writers
+                 */
+                dirty_thresh += dirty_thresh / 10;      /* wheeee... */
 
-   x86-64: Disable local APIC timer use on AMD systems with C1E
+                if (global_page_state(NR_FILE_DIRTY) + 
+		    global_page_state(NR_UNSTABLE_NFS) +
+		    global_page_state(NR_WRITEBACK) <= dirty_thresh)
+                        	break;
 
-   It's not necessary for 2.6.23 and actually kills the box that it's supposed to fix. ]
+                congestion_wait(WRITE, HZ/10);
+        }
 
-2) 2.6.23-rc8 w/ the "x86-64: Disable local APIC timer use on AMD systems with C1E"
-   patch applied behaves like the current -git
+[ note the extra NR_FILE_DIRTY ]
 
-3) 2.6.23-rc8 w/o this patch doesn't boot with either "noapictimer" _or_
-   "apicmaintimer"
+now, balance_dirty_pages() is there to ensure:
 
-4) 2.6.22 behaves like 2.6.23-rc8
+  nr_dirty + nr_unstable + nr_writeback < dirty_thresh      (1)
 
-5) 2.6.23-rc8 with (adjusted) patch-2.6.23-rc7-hrt1.patch boots only with
-   "noapictimer"
+reclaim will (with the introduction of dirty page tracking) never
+generate dirty pages, so the only disturbance of that equation is an
+increase in nr_writeback.
 
-6) 2.6.23-rc8 with (adjusted) patch-2.6.23-rc7-hrt1.patch and with the
-   "x86-64: Disable local APIC timer use on AMD systems with C1E" patch boots
-   without any extra command line options
+[ pageout() sets wbc.for_reclaim=1, so NFS traffic will not generate
+  unstable pages ]
 
-Tested for a couple of times with each kernel, the results seem to be
-reproducible 100% of the time.
+So, what throttle_vm_writeout() does is limit the number of added
+writeback pages to 10% of the total limit.
 
-Greetings,
-Rafael
+pageout() seems to avoid stuffing pages down a congested bdi 
+(TODO: has details), along with the much smaller io-queues, the initial
+purpose of this function - which was to avoid all memory getting stuck
+in io-queues - seems to be handled.
+
+Now the problems...
+
+Trouble is that it currently does not take nr_dirty into account which
+in the worst case limits it to 110% of the limit.
+
+Also, I'm seeing (2.6.23-rc8-mm1) live-locks in throttle_vm_writeback()
+where nr_dirty + nr_unstable > thresh - which according to (1) should
+not happen, and will not change without explicit action.
+
+Hmm maybe the 10% is < nr_cpus * ratelimit_pages.
+
+2 cpus, mem=128M -> ratelimit_pages ~ 512
+threshold ~ 1500
+
+so indeed: 150 < 1024.
+
+Still not conclusive but at least getting somewhere.
+
