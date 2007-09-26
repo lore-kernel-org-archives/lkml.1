@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbXIZLmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbXIZLtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbXIZLmU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 07:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbXIZLmH
+	id S1755845AbXIZLtG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 07:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbXIZLsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 07:42:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44967 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbXIZLmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 07:42:06 -0400
-Message-ID: <46FA4587.4070105@garzik.org>
-Date: Wed, 26 Sep 2007 07:41:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Wed, 26 Sep 2007 07:48:55 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:55433 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751262AbXIZLsz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 07:48:55 -0400
+Message-ID: <46FA46F6.6000707@linux.vnet.ibm.com>
+Date: Wed, 26 Sep 2007 17:18:06 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Peer Chen <peerchen@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] ahci: enable GHC.AE bit before set GHC.HR
-References: <200709211327569648280@gmail.com>	<46F9DA07.4080201@garzik.org> <20070926122332.39351382@the-village.bc.nu>
-In-Reply-To: <20070926122332.39351382@the-village.bc.nu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+To: Andreas Schwab <schwab@suse.de>
+CC: Maxim Uvarov <muvarov@ru.mvista.com>, LKML <linux-kernel@vger.kernel.org>,
+       balbir@in.ibm.com, jlan@engr.sgi.com
+Subject: Re: [PATCH] Since we have counters in __u64 format we have to print
+ them with %llu macros.
+References: <20070926143918.6749.53939.stgit@localhost.localdomain> <je641x64rw.fsf@sykes.suse.de>
+In-Reply-To: <je641x64rw.fsf@sykes.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Wed, 26 Sep 2007 00:03:19 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
+Andreas Schwab wrote:
+> Maxim Uvarov <muvarov@ru.mvista.com> writes:
 > 
->> Peer Chen wrote:
->>> According to the description of section 5.2.2.1 and 10.1.2 of AHCI specification rev1_1/rev1_2, GHC.HR shall only be set to ¡®1¡¯
->>> by software when GHC.AE is set to ¡®1¡¯.
->>>
->>> Signed-off-by: Peer Chen <peerchen@gmail.com>
->>> ---
->>> --- linux-2.6.23-rc7/drivers/ata/ahci.c.orig	2007-09-20 11:01:55.000000000 -0400
->>> +++ linux-2.6.23-rc7/drivers/ata/ahci.c	2007-09-20 11:07:31.000000000 -0400
->>> @@ -834,6 +834,10 @@ static int ahci_reset_controller(struct 
->>>  	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
->>>  	u32 tmp;
->>>  
->>> +        /* turn on AHCI mode before controller reset*/
->>> +        writel(HOST_AHCI_EN, mmio + HOST_CTL);
->>> +        (void) readl(mmio + HOST_CTL);  /* flush */
->> applied the attached patch, inspired by yours.
+>> diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+>> index cbee3a2..73924df 100644
+>> --- a/Documentation/accounting/getdelays.c
+>> +++ b/Documentation/accounting/getdelays.c
+>> @@ -208,7 +208,7 @@ void print_delayacct(struct taskstats *t)
+>>  void task_context_switch_counts(struct taskstats *t)
+>>  {
+>>  	printf("\n\nTask   %15s%15s\n"
+>> -	       "       %15lu%15lu\n",
+>> +	       "       %15llu%15llu\n",
+>>  	       "voluntary", "nonvoluntary",
+>>  	       t->nvcsw, t->nivcsw);
 > 
-> 
-> NAK - mmio is an iomap so writel and readl are the wrong things to use
+> __u64 is not always long long.
 
-The patch is consistent with the rest of the driver.
+What is the maximum size of long long across all architectures?
+How does one format __u64 for printing?
 
-You are welcome to submit a patch to convert ahci to using ioremap.
-
-	Jeff
-
-
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
