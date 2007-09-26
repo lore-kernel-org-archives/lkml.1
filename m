@@ -1,70 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbXIZXF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbXIZXNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbXIZXF2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 19:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXIZXFS
+	id S1753296AbXIZXNz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 19:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXIZXNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 19:05:18 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:53568 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbXIZXFQ (ORCPT
+	Wed, 26 Sep 2007 19:13:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40833 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbXIZXNq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 19:05:16 -0400
-Date: Wed, 26 Sep 2007 17:04:37 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PCI: Fix boot-time hang on G31/G33 PC
-In-reply-to: <200709261520.40859.jesse.barnes@intel.com>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Message-id: <46FAE585.5030306@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20070826015556.GC14130@parisc-linux.org>
- <200709261455.56165.jesse.barnes@intel.com> <20070926215648.GA24505@kroah.com>
- <200709261520.40859.jesse.barnes@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 26 Sep 2007 19:13:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.23-rc8: Known regressions from 2.6.22
+Date: Thu, 27 Sep 2007 01:27:39 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709270127.40471.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Wednesday, September 26, 2007 2:56 pm Greg KH wrote:
->> On Wed, Sep 26, 2007 at 02:55:55PM -0700, Jesse Barnes wrote:
->>> On Wednesday, September 26, 2007 2:18 pm Greg KH wrote:
->>>> Due to the issues surrounding this patch, I'm dropping it from my
->>>> repo.
->>> What issues?  Is it causing problems for people?
->> I thought this was the patch that Ivan objected to.
-> 
-> Yeah, Ivan objected to this, but incorrectly I think.
-> 
-> Ivan, your concern is about disabling things like interrupt controllers 
-> and power management chips during probe right?  You're right that doing 
-> that could cause problems if we get and interrupt or PMU event at just 
-> the wrong time, but that could just as easily happen if decode was 
-> still enabled but the BAR had a bogus address programmed (as it would 
-> during probing).
-> 
-> Ultimately, I don't care much one way or another as long as we can get 
-> the desktop platforms fixed somehow.  I think disabling decode is the 
-> most correct way of doing this, but I'm open to other solutions (this 
-> is the only patch I've seen though that's been tested to solve the 
-> problem).
+Hi,
 
-I agree, I've yet to see a single report of an actual problem that 
-disabling the decode causes, nor even a theoretical problem which 
-couldn't already happen due to the possibility of the device being 
-accessed during BAR sizing, which just shouldn't be allowed since it 
-can't work with or without this patch.
+This message lists some known regressions from 2.6.22 for which there are
+no fixes in the mainline that I know of.  If any of them have been fixed
+already, please let me know.
 
-Until and unless we have something better that fixes the real and 
-serious boot-time problems that we need this patch to fix, I would say 
-it should stay in.
+If you know of any other unresolved regressions from 2.6.22, please let me know
+either and I'll add them to the list.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Subject:	zd1211 device is no longer configured
+Submitter:	Oliver Neukum <oliver@neukum.org>
+References:	http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
+		http://bugzilla.kernel.org/show_bug.cgi?id=8972
+Caused-By:	Daniel Drake <dsd@gentoo.org>
+		commit 74553aedd46b3a2cae986f909cf2a3f99369decc
 
+Subject:	Oops while modprobing phy fixed module
+Submitter:	Gabriel C <nix.or.die@googlemail.com>
+References:	http://lkml.org/lkml/2007/7/14/63
+		http://bugzilla.kernel.org/show_bug.cgi?id=9060
+Handled-By:	Satyam Sharma <satyam.sharma@gmail.com>
+		Vitaly Bordug <vitb@kernel.crashing.org>
+		Tejun Heo <htejun@gmail.com>
+Patch:		http://lkml.org/lkml/2007/7/18/506
+
+Subject:	ACPI problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+Submitter:	Danny ter Haar <dth@dth.net>
+References:	http://lkml.org/lkml/2007/7/27/298
+		http://lkml.org/lkml/2007/7/29/371
+		http://bugzilla.kernel.org/show_bug.cgi?id=9061
+Handled-By:	Len Brown <lenb@kernel.org>
+
+Subject:	empty suspend stopped working around 2.6.23-rc4
+Submitter:	Pavel Machek <pavel@ucw.cz>
+References:	http://lkml.org/lkml/2007/9/11/326
+		http://bugzilla.kernel.org/show_bug.cgi?id=9075
+
+Subject:	umount triggers a warning in jfs and takes almost a minute
+Submitter:	Oliver Neukum <oliver@neukum.org>
+References:	http://lkml.org/lkml/2007/9/4/73
+		http://bugzilla.kernel.org/show_bug.cgi?id=9076
+
+Subject:	build #301 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/net/wireless/libertas/
+Submitter:	Toralf Förster <toralf.foerster@gmx.de>
+References:	http://lkml.org/lkml/2007/9/11/150
+		http://bugzilla.kernel.org/show_bug.cgi?id=9077
+
+Subject:	NETDEV WATCHDOG: eth0: transmit timed out
+Submitter:	Karl Meyer <adhocrocker@gmail.com>
+References:	http://lkml.org/lkml/2007/8/13/737
+		http://bugzilla.kernel.org/show_bug.cgi?id=9079
+Handled-By:	Francois Romieu <romieu@fr.zoreil.com>
+
+Subject:	Weird network problems with 2.6.23-rc2
+Submitter:	Shish <shish@shishnet.org>
+References:	http://lkml.org/lkml/2007/8/11/40
+		http://bugzilla.kernel.org/show_bug.cgi?id=9080
+
+Subject:	powersaving degradation, (time spend in C0 goes up after a while)
+Submitter:	Christian Leber <christian@leber.de>
+References:	http://lkml.org/lkml/2007/9/2/142
+		http://bugzilla.kernel.org/show_bug.cgi?id=9081
+
+Subject:	Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on AMD Geode LX800
+Submitter:	Joerg Pommnitz <pommnitz@yahoo.com>
+References:	http://lkml.org/lkml/2007/9/26/91
+		http://bugzilla.kernel.org/show_bug.cgi?id=9086
+Caused-By:	H. Peter Anvin <hpa@zytor.com>
+		commit 4fd06960f120e02e9abc802a09f9511c400042a5
+		Use the new x86 setup code for i386
+Handled-By:	H. Peter Anvin <hpa@zytor.com>
+Patch:		http://lkml.org/lkml/2007/9/26/374
+
+For details, please follow the links given in references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+I'm the owner of some of these entries, so if you want me to reassign them to
+someone else, please let me know.
+
+There also is a Bugzilla entry used for tracking the regressions from 2.6.22,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=9056
+
+Please let me know if there are any Bugzilla entries that I should add to the
+list in there.
+
+Greetings,
+Rafael
