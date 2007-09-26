@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbXIZB2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbXIZBbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbXIZB2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 21:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXIZB2P
+	id S1754803AbXIZBbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 21:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbXIZBbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 21:28:15 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:50988 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750961AbXIZB2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 21:28:14 -0400
-Date: Wed, 26 Sep 2007 10:28:00 +0900
-To: James.Bottomley@SteelEye.com
-Cc: akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: Re: queued patches for SCSI for 2.6.24
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <1190768402.8707.20.camel@localhost.localdomain>
-References: <1190768402.8707.20.camel@localhost.localdomain>
+	Tue, 25 Sep 2007 21:31:44 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45036 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbXIZBbn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 21:31:43 -0400
+Date: Wed, 26 Sep 2007 10:32:05 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-rc8-mm1 - powerpc memory hotplug link failure
+Message-Id: <20070926103205.c72a8e8a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <46F968C2.7080900@linux.vnet.ibm.com>
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+	<46F968C2.7080900@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070925065233Q.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Sep 2007 20:00:02 -0500
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
+On Wed, 26 Sep 2007 01:30:02 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-> Andrew asked that I provide a status report of pending updates.  The
-> list is attached below.  It's pretty much driver updates and minor bug
-> fixes.  The main functionality changes are Kay's sysfs updates and the
-> shift of the ULD attachement towards the block prep function.
+> Hi Andrew,
+> 
+> The 2.6.23-rc8-mm1 kernel linking fails on the powerpc (P5+) box
+> 
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `memory_block_action':
+> /root/scrap/linux-2.6.23-rc8/drivers/base/memory.c:188: undefined reference to `.remove_memory'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+Maybe my patch is the problem. could you give me your .config ?
 
-Can we make new 'supporrted_mode' and 'active_mode' attributes look
-better?
+Thanks,
+-Kame
 
-http://marc.info/?l=linux-scsi&m=118991196128245&w=2
