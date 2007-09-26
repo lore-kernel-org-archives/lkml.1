@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbXIZVFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761893AbXIZVF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760824AbXIZVFo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 17:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761010AbXIZVFX
+	id S1761893AbXIZVF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 17:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761835AbXIZVF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 17:05:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56807 "EHLO
+	Wed, 26 Sep 2007 17:05:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56812 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759707AbXIZVFW (ORCPT
+	with ESMTP id S1762070AbXIZVFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 17:05:22 -0400
-Date: Wed, 26 Sep 2007 13:59:32 -0700
+	Wed, 26 Sep 2007 17:05:24 -0400
+Date: Wed, 26 Sep 2007 14:00:10 -0700
 From: Greg KH <gregkh@suse.de>
-To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: State of the Linux USB Subsystem for 2.6.23-rc8
-Message-ID: <20070926205932.GB1734@kroah.com>
+To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: State of the Linux PCI Subsystem for 2.6.23-rc8
+Message-ID: <20070926210010.GC1734@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,8 +25,8 @@ User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a summary of the current state of the Linux USB subsystem, as of
-2.6.23-rc8
+Here's a summary of the current state of the Linux PCI subsystem, as of
+2.6.23-rc8.
 
 If the information in here is incorrect, or anyone knows of any
 outstanding issues not listed here, please let me know.
@@ -35,56 +37,33 @@ List of outstanding regressions from 2.6.22:
 List of outstanding regressions from older kernel versions:
 	- none known.
 
-If interested, the list of all currently open USB bugs can be seen at:
-    http://bugzilla.kernel.org/showdependencytree.cgi?id=5089&hide_resolved=1
 
-Yeah, there are way too many there, I've been really slack in trying to
-work through them.  If anyone wants to help out, feel free :)
+If interested, the list of all currently open PCI bugs can be seen at:
+    http://bugzilla.kernel.org/showdependencytree.cgi?id=5829&hide_resolved=1
 
 
 Future patches that are currently in my quilt tree (as found at
 	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-) for the USB subsystem are as follows.  All of these will be submitted
+) for the PCI subsystem are as follows.  All of these will be submitted
 for inclusion into 2.6.24, except as noted.  The diffstat of these
 patches is included at the bottom of this message for those that are
 interested.
-	- usbmon fixups and cleanups and documentation update
-	- usblp cleanups and tweaks
-	- sisusb2vga lindenting and other janitorial cleanups
-	- urb->status reworks in the host controller drivers to make the
-	  removal of that field in the future much easier.
-	- usb gadget driver cleanups
-	- new drivers/usb/serial/ch341.c driver
-	- kobil_sct driver reworking
-	- ueagle driver updates
-	- new device ids added
-	- new unusual devs storage quirks added
-	- removal of all of the USB_QUIRK_NO_AUTOSUSPEND entries as they
-	  no longer make any sense.
-	- USB authorization changes which allow userspace to disable a
-	  USB device from being able to be used by the kernel, if it so
-	  desires.  This is part of the slow merge of the USB Wireless
-	  work.
-	- lots of small tweaks and bugfixes and reworks in the
-	  usb-serial drivers due to some tty reworks and auditing.
-	- the usbserial port is now shown in sysfs for the individual
-	  usb-serial bus devices.a
-	- lots of rework of the internal apis for the USB host
-	  controllers to make things simpler and easier (hopefully.)
-	- suspend tweaks and reworks to make USB devices behave better
-	- other minor fixes in the USB core and drivers.
 
+	- various pci quirks for different devices
+	- pci hotplug driver kthread conversion
+	- pci hotplug bugfixes
+	- pci express hotplug tweaks and fixes
+	- minor bugfixes and cleanups
+	- MSI documentation update
 
-New USB driver api changes for 2.6.24:
-	usb_urb_dir_in() and usb_urb_dir_out() have been added to test
-	the direction of an urb.
+	- pci bridge device rework.  Note, this was reported to break
+	  Andrew's x86-64 box, but he lost the picture he took of the
+	  oops.  Others reported that it worked just fine on their
+	  boxes.  I'm still a little hesitant of sending this to 2.6.24
+	  until I can track down what happened here.
 
-Note, there are over 100 patches in the USB queue, so I might have
-missed a few things in reviewing them by hand right now.  If I failed to
-describe your patch that is already in the queue, and you feel it is
-important for everyone to know about, please feel free to add to the
-above list.  I did not purposefully mean to exclude anything, merely try
-to summarize things.
+There are no PCI api changes scheduled for 2.6.24.
+
 
 thanks,
 
@@ -92,96 +71,33 @@ greg k-h
 
 ----------------------------
 
-Diffstat of the current usb-2.6 quilt queue:
+Diffstat of the current pci-2.6 quilt queue:
 
- Documentation/usb/authorization.txt        |   92 +
- Documentation/usb/usb-serial.txt           |   11 
- Documentation/usb/usbmon.txt               |    9 
- drivers/usb/Makefile                       |   24 
- drivers/usb/atm/cxacru.c                   |   43 
- drivers/usb/atm/speedtch.c                 |    3 
- drivers/usb/atm/ueagle-atm.c               | 1398 +++++++++++++++++++++++------
- drivers/usb/class/usblp.c                  |  120 +-
- drivers/usb/core/config.c                  |   24 
- drivers/usb/core/devio.c                   |   77 -
- drivers/usb/core/driver.c                  |   31 
- drivers/usb/core/endpoint.c                |    1 
- drivers/usb/core/generic.c                 |   30 
- drivers/usb/core/hcd.c                     |  908 ++++++++++--------
- drivers/usb/core/hcd.h                     |   38 
- drivers/usb/core/hub.c                     |  273 ++++-
- drivers/usb/core/message.c                 |   52 -
- drivers/usb/core/quirks.c                  |   81 -
- drivers/usb/core/sysfs.c                   |   39 
- drivers/usb/core/urb.c                     |  114 +-
- drivers/usb/core/usb.c                     |   40 
- drivers/usb/core/usb.h                     |    7 
- drivers/usb/gadget/amd5536udc.c            |    7 
- drivers/usb/gadget/dummy_hcd.c             |   97 --
- drivers/usb/gadget/ether.c                 |  147 +--
- drivers/usb/gadget/file_storage.c          |  249 ++---
- drivers/usb/gadget/fsl_usb2_udc.c          |    9 
- drivers/usb/gadget/gmidi.c                 |   80 -
- drivers/usb/gadget/inode.c                 |   44 
- drivers/usb/gadget/omap_udc.c              |   10 
- drivers/usb/gadget/serial.c                |  166 +--
- drivers/usb/gadget/zero.c                  |  239 ++--
- drivers/usb/host/ehci-hcd.c                |   14 
- drivers/usb/host/ehci-pci.c                |    5 
- drivers/usb/host/ehci-ps3.c                |    2 
- drivers/usb/host/ehci-q.c                  |  115 +-
- drivers/usb/host/ehci-sched.c              |   47 
- drivers/usb/host/isp116x-hcd.c             |   65 -
- drivers/usb/host/ohci-dbg.c                |    8 
- drivers/usb/host/ohci-hcd.c                |  213 +++-
- drivers/usb/host/ohci-mem.c                |    1 
- drivers/usb/host/ohci-pci.c                |   22 
- drivers/usb/host/ohci-q.c                  |  195 +---
- drivers/usb/host/ohci.h                    |   26 
- drivers/usb/host/r8a66597-hcd.c            |  177 +--
- drivers/usb/host/sl811-hcd.c               |   90 -
- drivers/usb/host/u132-hcd.c                |  370 ++++---
- drivers/usb/host/uhci-debug.c              |    4 
- drivers/usb/host/uhci-hcd.h                |   16 
- drivers/usb/host/uhci-q.c                  |   72 -
- drivers/usb/misc/Kconfig                   |    9 
- drivers/usb/misc/Makefile                  |    1 
- drivers/usb/misc/adutux.c                  |    3 
- drivers/usb/misc/berry_charge.c            |    7 
- drivers/usb/misc/ftdi-elan.c               |    8 
- drivers/usb/misc/gotemp.c                  |  292 ++++++
- drivers/usb/misc/sisusbvga/sisusb.c        |  198 ----
- drivers/usb/misc/sisusbvga/sisusb.h        |  130 +-
- drivers/usb/misc/sisusbvga/sisusb_con.c    |   60 -
- drivers/usb/misc/sisusbvga/sisusb_init.c   |  354 ++-----
- drivers/usb/misc/sisusbvga/sisusb_init.h   | 1363 ++++++++++++++--------------
- drivers/usb/misc/sisusbvga/sisusb_struct.h |  164 +--
- drivers/usb/mon/mon_bin.c                  |  102 +-
- drivers/usb/mon/mon_main.c                 |   31 
- drivers/usb/mon/mon_text.c                 |   80 -
- drivers/usb/mon/usb_mon.h                  |    2 
- drivers/usb/serial/Kconfig                 |   10 
- drivers/usb/serial/Makefile                |    1 
- drivers/usb/serial/ark3116.c               |    5 
- drivers/usb/serial/bus.c                   |   16 
- drivers/usb/serial/ch341.c                 |  362 +++++++
- drivers/usb/serial/cp2101.c                |    3 
- drivers/usb/serial/ftdi_sio.c              |    5 
- drivers/usb/serial/ipaq.c                  |    2 
- drivers/usb/serial/kl5kusb105.c            |   28 
- drivers/usb/serial/kobil_sct.c             |  146 +--
- drivers/usb/serial/mct_u232.c              |   28 
- drivers/usb/serial/oti6858.c               |    2 
- drivers/usb/serial/pl2303.c                |    1 
- drivers/usb/serial/pl2303.h                |    1 
- drivers/usb/serial/safe_serial.c           |   11 
- drivers/usb/serial/usb-serial.c            |   11 
- drivers/usb/storage/initializers.c         |   14 
- drivers/usb/storage/initializers.h         |    3 
- drivers/usb/storage/shuttle_usbat.c        |    3 
- drivers/usb/storage/unusual_devs.h         |   20 
- drivers/usb/usb-skeleton.c                 |    1 
- include/linux/usb.h                        |   79 +
- include/linux/usb/quirks.h                 |    7 
- include/linux/usb_gadget.h                 |   95 +
- 90 files changed, 5685 insertions(+), 3878 deletions(-)
+ Documentation/DMA-API.txt         |    3 
+ Documentation/MSI-HOWTO.txt       |   69 ------------
+ arch/i386/kernel/pci-dma.c        |    3 
+ arch/i386/kernel/reboot_fixups.c  |    6 +
+ arch/i386/pci/common.c            |   10 +
+ arch/i386/pci/fixup.c             |   47 ++++++++
+ arch/i386/pci/irq.c               |   39 +++++++
+ arch/x86_64/kernel/pci-dma.c      |    1 
+ drivers/pci/bus.c                 |   17 ++-
+ drivers/pci/hotplug/cpqphp_core.c |    2 
+ drivers/pci/hotplug/cpqphp_ctrl.c |   74 ++++---------
+ drivers/pci/hotplug/ibmphp_hpc.c  |   57 ++--------
+ drivers/pci/hotplug/pciehp_core.c |   24 +---
+ drivers/pci/hotplug/pciehp_ctrl.c |   20 +--
+ drivers/pci/hotplug/pciehp_hpc.c  |  209 ++++++++++----------------------------
+ drivers/pci/hotplug/pciehp_pci.c  |   24 ++--
+ drivers/pci/pci-driver.c          |    3 
+ drivers/pci/pci.c                 |    5 
+ drivers/pci/pci.h                 |    2 
+ drivers/pci/pcie/Kconfig          |    9 -
+ drivers/pci/probe.c               |   82 +++++++-------
+ drivers/pci/quirks.c              |   43 -------
+ drivers/pci/remove.c              |    6 -
+ include/linux/pci.h               |    4 
+ include/linux/pci_ids.h           |    3 
+ include/linux/pci_regs.h          |    6 -
+ lib/swiotlb.c                     |    1 
+ 27 files changed, 316 insertions(+), 453 deletions(-)
