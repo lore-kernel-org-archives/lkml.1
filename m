@@ -1,64 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbXIZQVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbXIZQcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760640AbXIZQVF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 12:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXIZQUx
+	id S1756490AbXIZQcS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 12:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXIZQcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 12:20:53 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41349 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753491AbXIZQUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 12:20:52 -0400
-Message-ID: <46FA86DE.70204@garzik.org>
-Date: Wed, 26 Sep 2007 12:20:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Peer Chen <peerchen@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] ahci: enable GHC.AE bit before set GHC.HR
-References: <200709211327569648280@gmail.com>	<46F9DA07.4080201@garzik.org>	<20070926122332.39351382@the-village.bc.nu>	<46FA4587.4070105@garzik.org>	<20070926153028.6fc5b2ce@the-village.bc.nu>	<46FA6DB8.70508@garzik.org> <20070926171030.6b07fa42@the-village.bc.nu>
-In-Reply-To: <20070926171030.6b07fa42@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 26 Sep 2007 12:32:01 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:10326 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751665AbXIZQcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 12:32:00 -0400
+Date: Wed, 26 Sep 2007 09:30:28 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>, Serge Hallyn <serue@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/5] The config option itself
+Message-Id: <20070926093028.c3a57137.randy.dunlap@oracle.com>
+In-Reply-To: <46FA7E20.80207@openvz.org>
+References: <46FA7D4D.8040808@openvz.org>
+	<46FA7E20.80207@openvz.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Wed, 26 Sep 2007 10:33:28 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
+On Wed, 26 Sep 2007 19:43:28 +0400 Pavel Emelyanov wrote:
+
+> The option is called NAMESPACES. It can be selectable only
+> if EMBEDDED is chosen (this was Eric's requisition). When
+> the EMBEDDED is off namespaces will be on automatically.
+
+and when EMBEDDED is on, namespaces will be off automatically,
+until it is enabled?  Is that what you want?  (It's OK by me.)
+
+Same way for NAMESPACES_EXPERIMENTAL.
+
+> One more option (NAMESPACES_EXPERIMENTAL) was added by 
+> Serge's request to move there all the namespaces that are 
+> not finished yet. Currently only the user and the network
+> namespaces are such.
 > 
->> Alan Cox wrote:
->>>>> NAK - mmio is an iomap so writel and readl are the wrong things to use
->>>> The patch is consistent with the rest of the driver.
->>>> You are welcome to submit a patch to convert ahci to using ioremap.
->>> You could just flip the relevant function to use ioread while you are
->>> tidying it up, instead of spreading new bugs into the code.
->> No, as I just noted above, the proper fix for this driver is to use 
->> ioremap rather than pci_iomap.
->>
->> Adding support to ahci for legacy PIO is completely pointless.
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 > 
-> iomap isn't just for legacy PIO. It allows us to handle future weird
-> mappings in ways ioremap cannot.
+> ---
+> 
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 684ccfb..05a71d7 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -369,6 +360,23 @@ config RELAY
+>  
+>  	  If unsure, say N.
+>  
+> +config NAMESPACES
+> +	bool "The namespaces support" if EMBEDDED
 
-Well, when needs dictate, we can re-evaluate.
+	bool "Namespaces support" if EMBEDDED
 
-Until some future date arrives where it matters for all these MMIO-only 
-drivers and hardware, it's just a bunch of pointless overhead for ahci 
-and many other drivers.  It's also just not the Linux way to punish 
-everybody for some edge case that so far only exists in email conversations.
+> +	default !EMBEDDED
+> +	help
+> +	  Provides the way to make tasks work with different objects using
+> +	  the same id. For example same IPC id may refer to different objects
+> +	  or same user id or pid may refer to different tasks when used in
+> +	  different namespaces.
+> +
+> +config NAMESPACES_EXPERIMENTAL
+> +	bool "Add the experimantal namespaces support" if EMBEDDED
 
-The beauty of libata is that you don't have to enforce such a pogrom 
-across all libata drivers.  The libata high level API is completely free 
-from ioread/iowrite junk, leaving each driver to make its own decision.
+	              experimental
 
-	Jeff
+> +	depends on NAMESPACES && EXPERIMENTAL
+> +	default !EMBEDDED
+> +	help
+> +	  Also include the support for the namespaces that are not fnished
+> +	  or well developed yet
+> +
+>  config BLK_DEV_INITRD
+>  	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+>  	depends on BROKEN || !FRV
+> -
 
 
-
+---
+~Randy
+Phaedrus says that Quality is about caring.
