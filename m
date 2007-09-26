@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbXIZUiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbXIZUmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759063AbXIZUiw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 16:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXIZUio
+	id S1759962AbXIZUmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 16:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXIZUmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 16:38:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49098 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbXIZUin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 16:38:43 -0400
-Date: Wed, 26 Sep 2007 22:38:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, xemul@openvz.org, ebiederm@xmission.com,
-       menage@google.com, oleg@tv-sign.ru, sukadev@us.ibm.com
-Subject: Re: + uninline-find_task_by_xxx-set-of-functions.patch added to
-	-mm tree
-Message-ID: <20070926203808.GB4241@elte.hu>
-References: <200709262035.l8QKZARn002608@imap1.linux-foundation.org>
+	Wed, 26 Sep 2007 16:42:43 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:64742 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753033AbXIZUmm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 16:42:42 -0400
+Date: Wed, 26 Sep 2007 15:41:56 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Rune Torgersen <runet@innovsys.com>
+Cc: Dan Malek <dan@embeddedalley.com>, linuxppc-embedded@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH4/4] [POWERPC] Fix cpm_uart driver
+Message-ID: <20070926204156.GA15217@loki.buserror.net>
+References: <46F6C9DC.90008@scram.de> <46F8101E.1050000@freescale.com> <DCEAAC0833DD314AB0B58112AD99B93B0368C44B@ismail.innsys.innovsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200709262035.l8QKZARn002608@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B0368C44B@ismail.innsys.innovsys.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-
-> ------------------------------------------------------
-> Subject: Uninline find_task_by_xxx set of functions
-> From: Pavel Emelyanov <xemul@openvz.org>
+On Wed, Sep 26, 2007 at 03:32:29PM -0500, Rune Torgersen wrote:
+> > From: Scott Wood
+> > Maybe that's how it was, but the current code initializes it (more or
+> > less) directly with IMAP_ADDR, which also gets fed into ioremap.
+> > 
+> > One of the two has got to be wrong.
 > 
-> The find_task_by_something is a set of macros are used to find task by pid
-> depending on what kind of pid is proposed - global or virtual one.  All of
-> them are wrappers above the most generic one - find_task_by_pid_type_ns() -
-> and just substitute some args for it.
-> 
-> It turned out, that dereferencing the current->nsproxy->pid_ns construction
-> and pushing one more argument on the stack inline cause kernel text size to
-> grow.
-> 
-> This patch moves all this stuff out-of-line into kernel/pid.c.  Together
-> with the next patch it saves a bit less than 400 bytes from the .text
-> section.
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-> Cc: Oleg Nesterov <oleg@tv-sign.ru>
-> Cc: Paul Menage <menage@google.com>
-> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> arch/ppc maps the immr area 1:1 into kernel memory, so ioremap and
+> physical are the same.
+> See arch/ppc/syslib/m8260_setup.c, line 208 (function m8260_map_io)
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+We were talking about 8xx, not 82xx -- is it always identity mapped there?
 
-	Ingo
+If so, then why bother with the ioremap in immr_map_size() in
+arch/ppc/8xx_io/commproc.c?  And why compare the result from ioremap() with
+a raw identity-mapped address?
+
+-Scott
