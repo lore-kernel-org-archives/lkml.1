@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbXIZDdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759943AbXIZDeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbXIZDdq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 23:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758401AbXIZDcD
+	id S1759943AbXIZDeN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 23:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759264AbXIZDcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 23:32:03 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35370 "EHLO
+	Tue, 25 Sep 2007 23:32:17 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35393 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759213AbXIZDcA (ORCPT
+	with ESMTP id S1759242AbXIZDcO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 23:32:00 -0400
+	Tue, 25 Sep 2007 23:32:14 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 20/25] Unionfs: add un/likely conditionals on rename ops
-Date: Tue, 25 Sep 2007 23:09:59 -0400
-Message-Id: <11907762133982-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 09/25] Unionfs: add un/likely conditionals on common fileops
+Date: Tue, 25 Sep 2007 23:09:48 -0400
+Message-Id: <11907762084130-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11907762042481-git-send-email-ezk@cs.sunysb.edu>
@@ -27,351 +27,378 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/rename.c |   96 +++++++++++++++++++++++++-------------------------
- 1 files changed, 48 insertions(+), 48 deletions(-)
+ fs/unionfs/commonfops.c |   94 +++++++++++++++++++++++-----------------------
+ 1 files changed, 47 insertions(+), 47 deletions(-)
 
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index 7b8fe39..92c4515 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -39,7 +39,7 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 			create_parents(new_dentry->d_parent->d_inode,
- 				       new_dentry, new_dentry->d_name.name,
- 				       bindex);
--		if (IS_ERR(lower_new_dentry)) {
-+		if (unlikely(IS_ERR(lower_new_dentry))) {
- 			printk(KERN_DEBUG "unionfs: error creating directory "
- 			       "tree for rename, bindex = %d, err = %ld\n",
- 			       bindex, PTR_ERR(lower_new_dentry));
-@@ -50,7 +50,7 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index e69ccf6..db8f064 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -64,7 +64,7 @@ retry:
  
- 	wh_name = alloc_whname(new_dentry->d_name.name,
- 			       new_dentry->d_name.len);
--	if (IS_ERR(wh_name)) {
-+	if (unlikely(IS_ERR(wh_name))) {
- 		err = PTR_ERR(wh_name);
- 		goto out;
- 	}
-@@ -58,14 +58,14 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	lower_wh_dentry = lookup_one_len(wh_name, lower_new_dentry->d_parent,
- 					 new_dentry->d_name.len +
- 					 UNIONFS_WHLEN);
--	if (IS_ERR(lower_wh_dentry)) {
-+	if (unlikely(IS_ERR(lower_wh_dentry))) {
- 		err = PTR_ERR(lower_wh_dentry);
- 		goto out;
- 	}
- 
- 	if (lower_wh_dentry->d_inode) {
- 		/* get rid of the whiteout that is existing */
--		if (lower_new_dentry->d_inode) {
-+		if (unlikely(lower_new_dentry->d_inode)) {
- 			printk(KERN_WARNING "unionfs: both a whiteout and a "
- 			       "dentry exist when doing a rename!\n");
- 			err = -EIO;
-@@ -81,7 +81,7 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 
- 		dput(lower_wh_dentry);
- 		unlock_dir(lower_wh_dir_dentry);
--		if (err)
-+		if (unlikely(err))
+ 		tmp_dentry = lookup_one_len(name, lower_dentry->d_parent,
+ 					    nlen);
+-		if (IS_ERR(tmp_dentry)) {
++		if (unlikely(IS_ERR(tmp_dentry))) {
+ 			err = PTR_ERR(tmp_dentry);
  			goto out;
- 	} else
- 		dput(lower_wh_dentry);
-@@ -93,7 +93,7 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
- 
- 	err = is_robranch_super(old_dentry->d_sb, bindex);
--	if (err)
-+	if (unlikely(err))
- 		goto out_unlock;
- 
- 	/*
-@@ -105,14 +105,14 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		whname = alloc_whname(old_dentry->d_name.name,
- 				      old_dentry->d_name.len);
- 		err = PTR_ERR(whname);
--		if (IS_ERR(whname))
-+		if (unlikely(IS_ERR(whname)))
- 			goto out_unlock;
- 		*wh_old = lookup_one_len(whname, lower_old_dir_dentry,
- 					 old_dentry->d_name.len +
- 					 UNIONFS_WHLEN);
- 		kfree(whname);
- 		err = PTR_ERR(*wh_old);
--		if (IS_ERR(*wh_old)) {
-+		if (unlikely(IS_ERR(*wh_old))) {
- 			*wh_old = NULL;
- 			goto out_unlock;
  		}
-@@ -129,7 +129,7 @@ out_unlock:
- 	dput(lower_old_dentry);
+@@ -73,8 +73,8 @@ retry:
+ 
+ 	err = copyup_named_file(dentry->d_parent->d_inode, file, name, bstart,
+ 				bindex, file->f_path.dentry->d_inode->i_size);
+-	if (err) {
+-		if (err == -EEXIST)
++	if (unlikely(err)) {
++		if (unlikely(err == -EEXIST))
+ 			goto retry;
+ 		goto out;
+ 	}
+@@ -91,7 +91,7 @@ retry:
+ 	unlock_dir(lower_dir_dentry);
  
  out:
--	if (!err) {
-+	if (likely(!err)) {
- 		/* Fixup the new_dentry. */
- 		if (bindex < dbstart(new_dentry))
- 			set_dbstart(new_dentry, bindex);
-@@ -174,8 +174,8 @@ static int do_unionfs_rename(struct inode *old_dir,
- 	/* Rename source to destination. */
- 	err = __unionfs_rename(old_dir, old_dentry, new_dir, new_dentry,
- 			       old_bstart, &wh_old);
--	if (err) {
--		if (!IS_COPYUP_ERR(err))
-+	if (unlikely(err)) {
-+		if (unlikely(!IS_COPYUP_ERR(err)))
- 			goto out;
- 		do_copyup = old_bstart - 1;
- 	} else
-@@ -190,7 +190,7 @@ static int do_unionfs_rename(struct inode *old_dir,
- 		struct dentry *unlink_dir_dentry;
- 
- 		unlink_dentry = unionfs_lower_dentry_idx(new_dentry, bindex);
--		if (!unlink_dentry)
-+		if (unlikely(!unlink_dentry))
- 			continue;
- 
- 		unlink_dir_dentry = lock_parent(unlink_dentry);
-@@ -205,15 +205,15 @@ static int do_unionfs_rename(struct inode *old_dir,
- 			unionfs_get_nlinks(new_dentry->d_parent->d_inode);
- 
- 		unlock_dir(unlink_dir_dentry);
--		if (!err) {
-+		if (likely(!err)) {
- 			if (bindex != new_bstart) {
- 				dput(unlink_dentry);
- 				unionfs_set_lower_dentry_idx(new_dentry,
- 							     bindex, NULL);
- 			}
--		} else if (IS_COPYUP_ERR(err)) {
-+		} else if (unlikely(IS_COPYUP_ERR(err))) {
- 			do_copyup = bindex - 1;
--		} else if (revert) {
-+		} else if (unlikely(revert)) {
- 			dput(wh_old);
- 			goto revert;
- 		}
-@@ -231,7 +231,7 @@ static int do_unionfs_rename(struct inode *old_dir,
- 					    old_dentry->d_name.len,
- 					    NULL, old_dentry->d_inode->i_size);
- 			/* if copyup failed, try next branch to the left */
--			if (err)
-+			if (unlikely(err))
- 				continue;
- 			dput(wh_old);
- 			bwh_old = bindex;
-@@ -245,7 +245,7 @@ static int do_unionfs_rename(struct inode *old_dir,
- 	/* make it opaque */
- 	if (S_ISDIR(old_dentry->d_inode->i_mode)) {
- 		err = make_dir_opaque(old_dentry, dbstart(old_dentry));
--		if (err)
-+		if (unlikely(err))
- 			goto revert;
- 	}
- 
-@@ -254,10 +254,10 @@ static int do_unionfs_rename(struct inode *old_dir,
- 	 * (1) There is more than one underlying instance of source.
- 	 * (2) We did a copy_up
- 	 */
--	if ((old_bstart != old_bend) || (do_copyup != -1)) {
-+	if (unlikely((old_bstart != old_bend) || (do_copyup != -1))) {
- 		struct dentry *lower_parent;
- 		struct nameidata nd;
--		if (!wh_old || wh_old->d_inode || bwh_old < 0) {
-+		if (unlikely(!wh_old || wh_old->d_inode || bwh_old < 0)) {
- 			printk(KERN_ERR "unionfs: rename error "
- 			       "(wh_old=%p/%p bwh_old=%d)\n", wh_old,
- 			       (wh_old ? wh_old->d_inode : NULL), bwh_old);
-@@ -265,13 +265,13 @@ static int do_unionfs_rename(struct inode *old_dir,
- 			goto out;
- 		}
- 		err = init_lower_nd(&nd, LOOKUP_CREATE);
--		if (err < 0)
-+		if (unlikely(err < 0))
- 			goto out;
- 		lower_parent = lock_parent(wh_old);
- 		local_err = vfs_create(lower_parent->d_inode, wh_old, S_IRUGO,
- 				       &nd);
- 		unlock_dir(lower_parent);
--		if (!local_err)
-+		if (likely(!local_err))
- 			set_dbopaque(old_dentry, bwh_old);
- 		else {
- 			/*
-@@ -292,30 +292,30 @@ out:
- revert:
- 	/* Do revert here. */
- 	local_err = unionfs_refresh_lower_dentry(new_dentry, old_bstart);
--	if (local_err) {
-+	if (unlikely(local_err)) {
- 		printk(KERN_WARNING "unionfs: revert failed in rename: "
- 		       "the new refresh failed.\n");
- 		eio = -EIO;
- 	}
- 
- 	local_err = unionfs_refresh_lower_dentry(old_dentry, old_bstart);
--	if (local_err) {
-+	if (unlikely(local_err)) {
- 		printk(KERN_WARNING "unionfs: revert failed in rename: "
- 		       "the old refresh failed.\n");
- 		eio = -EIO;
- 		goto revert_out;
- 	}
- 
--	if (!unionfs_lower_dentry_idx(new_dentry, bindex) ||
--	    !unionfs_lower_dentry_idx(new_dentry, bindex)->d_inode) {
-+	if (unlikely(!unionfs_lower_dentry_idx(new_dentry, bindex) ||
-+		     !unionfs_lower_dentry_idx(new_dentry, bindex)->d_inode)) {
- 		printk(KERN_WARNING "unionfs: revert failed in rename: "
- 		       "the object disappeared from under us!\n");
- 		eio = -EIO;
- 		goto revert_out;
- 	}
- 
--	if (unionfs_lower_dentry_idx(old_dentry, bindex) &&
--	    unionfs_lower_dentry_idx(old_dentry, bindex)->d_inode) {
-+	if (unlikely(unionfs_lower_dentry_idx(old_dentry, bindex) &&
-+		     unionfs_lower_dentry_idx(old_dentry, bindex)->d_inode)) {
- 		printk(KERN_WARNING "unionfs: revert failed in rename: "
- 		       "the object was created underneath us!\n");
- 		eio = -EIO;
-@@ -326,16 +326,16 @@ revert:
- 				     old_dir, old_dentry, old_bstart, NULL);
- 
- 	/* If we can't fix it, then we cop-out with -EIO. */
--	if (local_err) {
-+	if (unlikely(local_err)) {
- 		printk(KERN_WARNING "unionfs: revert failed in rename!\n");
- 		eio = -EIO;
- 	}
- 
- 	local_err = unionfs_refresh_lower_dentry(new_dentry, bindex);
--	if (local_err)
-+	if (unlikely(local_err))
- 		eio = -EIO;
- 	local_err = unionfs_refresh_lower_dentry(old_dentry, bindex);
--	if (local_err)
-+	if (unlikely(local_err))
- 		eio = -EIO;
- 
- revert_out:
-@@ -351,7 +351,7 @@ static struct dentry *lookup_whiteout(struct dentry *dentry)
- 	struct dentry *parent, *lower_parent, *wh_dentry;
- 
- 	whname = alloc_whname(dentry->d_name.name, dentry->d_name.len);
--	if (IS_ERR(whname))
-+	if (unlikely(IS_ERR(whname)))
- 		return (void *)whname;
- 
- 	parent = dget_parent(dentry);
-@@ -361,11 +361,11 @@ static struct dentry *lookup_whiteout(struct dentry *dentry)
- 	wh_dentry = ERR_PTR(-ENOENT);
- 	for (bindex = bstart; bindex <= bend; bindex++) {
- 		lower_parent = unionfs_lower_dentry_idx(parent, bindex);
--		if (!lower_parent)
-+		if (unlikely(!lower_parent))
- 			continue;
- 		wh_dentry = lookup_one_len(whname, lower_parent,
- 					   dentry->d_name.len + UNIONFS_WHLEN);
--		if (IS_ERR(wh_dentry))
-+		if (unlikely(IS_ERR(wh_dentry)))
- 			continue;
- 		if (wh_dentry->d_inode)
- 			break;
-@@ -389,10 +389,10 @@ static int may_rename_dir(struct dentry *dentry)
- 	int err, bstart;
- 
- 	err = check_empty(dentry, NULL);
--	if (err == -ENOTEMPTY) {
--		if (is_robranch(dentry))
-+	if (unlikely(err == -ENOTEMPTY)) {
-+		if (unlikely(is_robranch(dentry)))
- 			return -EXDEV;
--	} else if (err)
-+	} else if (likely(err))
- 		return err;
- 
- 	bstart = dbstart(dentry);
-@@ -402,7 +402,7 @@ static int may_rename_dir(struct dentry *dentry)
- 	set_dbstart(dentry, bstart + 1);
- 	err = check_empty(dentry, NULL);
- 	set_dbstart(dentry, bstart);
--	if (err == -ENOTEMPTY)
-+	if (unlikely(err == -ENOTEMPTY))
- 		err = -EXDEV;
+-	if (!err)
++	if (likely(!err))
+ 		unionfs_check_dentry(dentry);
  	return err;
  }
-@@ -416,12 +416,12 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	unionfs_read_lock(old_dentry->d_sb);
- 	unionfs_double_lock_dentry(old_dentry, new_dentry);
- 
--	if (!__unionfs_d_revalidate_chain(old_dentry, NULL, false)) {
-+	if (unlikely(!__unionfs_d_revalidate_chain(old_dentry, NULL, false))) {
- 		err = -ESTALE;
- 		goto out;
- 	}
--	if (!d_deleted(new_dentry) && new_dentry->d_inode &&
--	    !__unionfs_d_revalidate_chain(new_dentry, NULL, false)) {
-+	if (unlikely(!d_deleted(new_dentry) && new_dentry->d_inode &&
-+		     !__unionfs_d_revalidate_chain(new_dentry, NULL, false))) {
- 		err = -ESTALE;
- 		goto out;
- 	}
-@@ -431,11 +431,11 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	else
- 		err = may_rename_dir(old_dentry);
- 
--	if (err)
-+	if (unlikely(err))
- 		goto out;
- 
- 	err = unionfs_partial_lookup(new_dentry);
--	if (err)
-+	if (unlikely(err))
- 		goto out;
- 
- 	/*
-@@ -443,11 +443,11 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	 * simply override it even if the whited-out dir is not empty.
- 	 */
- 	wh_dentry = lookup_whiteout(new_dentry);
--	if (!IS_ERR(wh_dentry))
-+	if (likely(!IS_ERR(wh_dentry)))
- 		dput(wh_dentry);
- 	else if (new_dentry->d_inode) {
--		if (S_ISDIR(old_dentry->d_inode->i_mode) !=
--		    S_ISDIR(new_dentry->d_inode->i_mode)) {
-+		if (unlikely(S_ISDIR(old_dentry->d_inode->i_mode) !=
-+			     S_ISDIR(new_dentry->d_inode->i_mode))) {
- 			err = S_ISDIR(old_dentry->d_inode->i_mode) ?
- 				-ENOTDIR : -EISDIR;
+@@ -126,7 +126,7 @@ static void cleanup_file(struct file *file)
+ 		 */
+ 		old_bid = UNIONFS_F(file)->saved_branch_ids[bindex];
+ 		i = branch_id_to_idx(sb, old_bid);
+-		if (i < 0) {
++		if (unlikely(i < 0)) {
+ 			printk(KERN_ERR "unionfs: no superblock for "
+ 			       "file %p\n", file);
+ 			continue;
+@@ -179,7 +179,7 @@ static int open_all_files(struct file *file)
+ 			dentry_open(lower_dentry,
+ 				    unionfs_lower_mnt_idx(dentry, bindex),
+ 				    file->f_flags);
+-		if (IS_ERR(lower_file)) {
++		if (unlikely(IS_ERR(lower_file))) {
+ 			err = PTR_ERR(lower_file);
  			goto out;
-@@ -457,7 +457,7 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 			struct unionfs_dir_state *namelist;
- 			/* check if this unionfs directory is empty or not */
- 			err = check_empty(new_dentry, &namelist);
--			if (err)
-+			if (unlikely(err))
- 				goto out;
- 
- 			if (!is_robranch(new_dentry))
-@@ -467,13 +467,13 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 
- 			free_rdstate(namelist);
- 
--			if (err)
-+			if (unlikely(err))
- 				goto out;
+ 		} else
+@@ -208,7 +208,7 @@ static int open_highest_file(struct file *file, bool willwrite)
+ 		for (bindex = bstart - 1; bindex >= 0; bindex--) {
+ 			err = copyup_file(parent_inode, file, bstart, bindex,
+ 					  inode_size);
+-			if (!err)
++			if (likely(!err))
+ 				break;
  		}
+ 		atomic_set(&UNIONFS_F(file)->generation,
+@@ -222,7 +222,7 @@ static int open_highest_file(struct file *file, bool willwrite)
+ 	lower_file = dentry_open(lower_dentry,
+ 				 unionfs_lower_mnt_idx(dentry, bstart),
+ 				 file->f_flags);
+-	if (IS_ERR(lower_file)) {
++	if (unlikely(IS_ERR(lower_file))) {
+ 		err = PTR_ERR(lower_file);
+ 		goto out;
  	}
- 	err = do_unionfs_rename(old_dir, old_dentry, new_dir, new_dentry);
+@@ -252,17 +252,17 @@ static int do_delayed_copyup(struct file *file)
+ 	unionfs_check_file(file);
+ 	unionfs_check_dentry(dentry);
+ 	for (bindex = bstart - 1; bindex >= 0; bindex--) {
+-		if (!d_deleted(dentry))
++		if (likely(!d_deleted(dentry)))
+ 			err = copyup_file(parent_inode, file, bstart,
+ 					  bindex, inode_size);
+ 		else
+ 			err = copyup_deleted_file(file, dentry, bstart,
+ 						  bindex);
+ 
+-		if (!err)
++		if (likely(!err))
+ 			break;
+ 	}
+-	if (err || (bstart <= fbstart(file)))
++	if (unlikely(err || (bstart <= fbstart(file))))
+ 		goto out;
+ 	bend = fbend(file);
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+@@ -317,8 +317,8 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
+ 	 * First revalidate the dentry inside struct file,
+ 	 * but not unhashed dentries.
+ 	 */
+-	if (!d_deleted(dentry) &&
+-	    !__unionfs_d_revalidate_chain(dentry, NULL, willwrite)) {
++	if (unlikely(!d_deleted(dentry) &&
++		     !__unionfs_d_revalidate_chain(dentry, NULL, willwrite))) {
+ 		err = -ESTALE;
+ 		goto out_nofree;
+ 	}
+@@ -335,8 +335,8 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
+ 	 * someone has copied up this file from underneath us, we also need
+ 	 * to refresh things.
+ 	 */
+-	if (!d_deleted(dentry) &&
+-	    (sbgen > fgen || dbstart(dentry) != fbstart(file))) {
++	if (unlikely(!d_deleted(dentry) &&
++		     (sbgen > fgen || dbstart(dentry) != fbstart(file)))) {
+ 		/* save orig branch ID */
+ 		int orig_brid =	UNIONFS_F(file)->saved_branch_ids[fbstart(file)];
+ 
+@@ -349,13 +349,13 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
+ 
+ 		size = sizeof(struct file *) * sbmax(sb);
+ 		UNIONFS_F(file)->lower_files = kzalloc(size, GFP_KERNEL);
+-		if (!UNIONFS_F(file)->lower_files) {
++		if (unlikely(!UNIONFS_F(file)->lower_files)) {
+ 			err = -ENOMEM;
+ 			goto out;
+ 		}
+ 		size = sizeof(int) * sbmax(sb);
+ 		UNIONFS_F(file)->saved_branch_ids = kzalloc(size, GFP_KERNEL);
+-		if (!UNIONFS_F(file)->saved_branch_ids) {
++		if (unlikely(!UNIONFS_F(file)->saved_branch_ids)) {
+ 			err = -ENOMEM;
+ 			goto out;
+ 		}
+@@ -363,17 +363,17 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
+ 		if (S_ISDIR(dentry->d_inode->i_mode)) {
+ 			/* We need to open all the files. */
+ 			err = open_all_files(file);
+-			if (err)
++			if (unlikely(err))
+ 				goto out;
+ 		} else {
+ 			int new_brid;
+ 			/* We only open the highest priority branch. */
+ 			err = open_highest_file(file, willwrite);
+-			if (err)
++			if (unlikely(err))
+ 				goto out;
+ 			new_brid = UNIONFS_F(file)->
+ 			  saved_branch_ids[fbstart(file)];
+-			if (new_brid != orig_brid && sbgen > fgen) {
++			if (unlikely(new_brid != orig_brid && sbgen > fgen)) {
+ 				/*
+ 				 * If we re-opened the file on a different
+ 				 * branch than the original one, and this
+@@ -400,12 +400,12 @@ int unionfs_file_revalidate(struct file *file, bool willwrite)
+ 	}
+ 
  out:
+-	if (err) {
++	if (unlikely(err)) {
+ 		kfree(UNIONFS_F(file)->lower_files);
+ 		kfree(UNIONFS_F(file)->saved_branch_ids);
+ 	}
+ out_nofree:
+-	if (!err)
++	if (unlikely(!err))
+ 		unionfs_check_file(file);
+ 	unionfs_unlock_dentry(dentry);
+ 	return err;
+@@ -424,7 +424,7 @@ static int __open_dir(struct inode *inode, struct file *file)
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+ 		lower_dentry =
+ 			unionfs_lower_dentry_idx(file->f_path.dentry, bindex);
+-		if (!lower_dentry)
++		if (unlikely(!lower_dentry))
+ 			continue;
+ 
+ 		dget(lower_dentry);
+@@ -433,7 +433,7 @@ static int __open_dir(struct inode *inode, struct file *file)
+ 					 unionfs_lower_mnt_idx(file->f_path.dentry,
+ 							       bindex),
+ 					 file->f_flags);
+-		if (IS_ERR(lower_file))
++		if (unlikely(IS_ERR(lower_file)))
+ 			return PTR_ERR(lower_file);
+ 
+ 		unionfs_set_lower_file_idx(file, bindex, lower_file);
+@@ -480,7 +480,7 @@ static int __open_file(struct inode *inode, struct file *file)
+ 				err = copyup_file(
+ 					file->f_path.dentry->d_parent->d_inode,
+ 					file, bstart, bindex, size);
+-				if (!err)
++				if (likely(!err))
+ 					break;
+ 			}
+ 			return err;
+@@ -499,7 +499,7 @@ static int __open_file(struct inode *inode, struct file *file)
+ 		dentry_open(lower_dentry,
+ 			    unionfs_lower_mnt_idx(file->f_path.dentry, bstart),
+ 			    lower_flags);
+-	if (IS_ERR(lower_file))
++	if (unlikely(IS_ERR(lower_file)))
+ 		return PTR_ERR(lower_file);
+ 
+ 	unionfs_set_lower_file(file, lower_file);
+@@ -520,7 +520,7 @@ int unionfs_open(struct inode *inode, struct file *file)
+ 
+ 	file->private_data =
+ 		kzalloc(sizeof(struct unionfs_file_info), GFP_KERNEL);
+-	if (!UNIONFS_F(file)) {
++	if (unlikely(!UNIONFS_F(file))) {
+ 		err = -ENOMEM;
+ 		goto out_nofree;
+ 	}
+@@ -531,13 +531,13 @@ int unionfs_open(struct inode *inode, struct file *file)
+ 
+ 	size = sizeof(struct file *) * sbmax(inode->i_sb);
+ 	UNIONFS_F(file)->lower_files = kzalloc(size, GFP_KERNEL);
+-	if (!UNIONFS_F(file)->lower_files) {
++	if (unlikely(!UNIONFS_F(file)->lower_files)) {
+ 		err = -ENOMEM;
+ 		goto out;
+ 	}
+ 	size = sizeof(int) * sbmax(inode->i_sb);
+ 	UNIONFS_F(file)->saved_branch_ids = kzalloc(size, GFP_KERNEL);
+-	if (!UNIONFS_F(file)->saved_branch_ids) {
++	if (unlikely(!UNIONFS_F(file)->saved_branch_ids)) {
+ 		err = -ENOMEM;
+ 		goto out;
+ 	}
+@@ -561,11 +561,11 @@ int unionfs_open(struct inode *inode, struct file *file)
+ 		err = __open_file(inode, file);	/* open a file */
+ 
+ 	/* freeing the allocated resources, and fput the opened files */
+-	if (err) {
++	if (unlikely(err)) {
+ 		atomic_dec(&UNIONFS_I(dentry->d_inode)->totalopens);
+ 		for (bindex = bstart; bindex <= bend; bindex++) {
+ 			lower_file = unionfs_lower_file_idx(file, bindex);
+-			if (!lower_file)
++			if (unlikely(!lower_file))
+ 				continue;
+ 
+ 			branchput(file->f_path.dentry->d_sb, bindex);
+@@ -577,7 +577,7 @@ int unionfs_open(struct inode *inode, struct file *file)
+ 	unionfs_unlock_dentry(dentry);
+ 
+ out:
+-	if (err) {
++	if (unlikely(err)) {
+ 		kfree(UNIONFS_F(file)->lower_files);
+ 		kfree(UNIONFS_F(file)->saved_branch_ids);
+ 		kfree(UNIONFS_F(file));
+@@ -585,7 +585,7 @@ out:
+ out_nofree:
+ 	unionfs_read_unlock(inode->i_sb);
+ 	unionfs_check_inode(inode);
+-	if (!err) {
++	if (likely(!err)) {
+ 		unionfs_check_file(file);
+ 		unionfs_check_dentry(file->f_path.dentry->d_parent);
+ 	}
+@@ -612,7 +612,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 	 * This is important for open-but-unlinked files, as well as mmap
+ 	 * support.
+ 	 */
+-	if ((err = unionfs_file_revalidate(file, true)))
++	if (unlikely((err = unionfs_file_revalidate(file, true))))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 	fileinfo = UNIONFS_F(file);
+@@ -627,7 +627,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+ 		lower_file = unionfs_lower_file_idx(file, bindex);
+ 
+-		if (lower_file) {
++		if (likely(lower_file)) {
+ 			fput(lower_file);
+ 			branchput(sb, bindex);
+ 		}
+@@ -635,7 +635,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 	kfree(fileinfo->lower_files);
+ 	kfree(fileinfo->saved_branch_ids);
+ 
+-	if (fileinfo->rdstate) {
++	if (unlikely(fileinfo->rdstate)) {
+ 		fileinfo->rdstate->access = jiffies;
+ 		printk(KERN_DEBUG "unionfs: saving rdstate with cookie "
+ 		       "%u [%d.%lld]\n",
+@@ -666,15 +666,15 @@ static long do_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 	lower_file = unionfs_lower_file(file);
+ 
+ 	err = security_file_ioctl(lower_file, cmd, arg);
 -	if (err)
 +	if (unlikely(err))
- 		/* clear the new_dentry stuff created */
- 		d_drop(new_dentry);
- 	else {
+ 		goto out;
+ 
+ 	err = -ENOTTY;
+-	if (!lower_file || !lower_file->f_op)
++	if (unlikely(!lower_file || !lower_file->f_op))
+ 		goto out;
+ 	if (lower_file->f_op->unlocked_ioctl) {
+ 		err = lower_file->f_op->unlocked_ioctl(lower_file, cmd, arg);
+-	} else if (lower_file->f_op->ioctl) {
++	} else if (likely(lower_file->f_op->ioctl)) {
+ 		lock_kernel();
+ 		err = lower_file->f_op->ioctl(lower_file->f_path.dentry->d_inode,
+ 					      lower_file, cmd, arg);
+@@ -705,7 +705,7 @@ static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
+ 	unionfs_lock_dentry(dentry);
+ 	orig_bstart = dbstart(dentry);
+ 	orig_bend = dbend(dentry);
+-	if ((err = unionfs_partial_lookup(dentry)))
++	if (unlikely((err = unionfs_partial_lookup(dentry))))
+ 		goto out;
+ 	bstart = dbstart(dentry);
+ 	bend = dbend(dentry);
+@@ -714,9 +714,9 @@ static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
+ 
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+ 		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
+-		if (!lower_dentry)
++		if (unlikely(!lower_dentry))
+ 			continue;
+-		if (lower_dentry->d_inode)
++		if (likely(lower_dentry->d_inode))
+ 			FD_SET(bindex, &branchlist);
+ 		/* purge any lower objects after partial_lookup */
+ 		if (bindex < orig_bstart || bindex > orig_bend) {
+@@ -726,7 +726,7 @@ static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
+ 			unionfs_set_lower_inode_idx(dentry->d_inode, bindex,
+ 						    NULL);
+ 			mnt = unionfs_lower_mnt_idx(dentry, bindex);
+-			if (!mnt)
++			if (unlikely(!mnt))
+ 				continue;
+ 			unionfs_mntput(dentry, bindex);
+ 			unionfs_set_lower_mnt_idx(dentry, bindex, NULL);
+@@ -739,7 +739,7 @@ static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
+ 	ibend(dentry->d_inode) = orig_bend;
+ 
+ 	err = copy_to_user((void __user *)arg, &branchlist, sizeof(fd_set));
+-	if (err)
++	if (unlikely(err))
+ 		err = -EFAULT;
+ 
+ out:
+@@ -753,7 +753,7 @@ long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb);
+ 
+-	if ((err = unionfs_file_revalidate(file, true)))
++	if (unlikely((err = unionfs_file_revalidate(file, true))))
+ 		goto out;
+ 
+ 	/* check if asked for local commands */
+@@ -791,7 +791,7 @@ int unionfs_flush(struct file *file, fl_owner_t id)
+ 
+ 	unionfs_read_lock(dentry->d_sb);
+ 
+-	if ((err = unionfs_file_revalidate(file, true)))
++	if (unlikely((err = unionfs_file_revalidate(file, true))))
+ 		goto out;
+ 	unionfs_check_file(file);
+ 
+@@ -808,7 +808,7 @@ int unionfs_flush(struct file *file, fl_owner_t id)
+ 		if (lower_file && lower_file->f_op &&
+ 		    lower_file->f_op->flush) {
+ 			err = lower_file->f_op->flush(lower_file, id);
+-			if (err)
++			if (unlikely(err))
+ 				goto out_lock;
+ 
+ 			/* if there are no more refs to the dentry, dput it */
 -- 
 1.5.2.2
 
