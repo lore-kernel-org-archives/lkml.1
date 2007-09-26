@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762226AbXIZOdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbXIZOjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762226AbXIZOdp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 10:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXIZOdf
+	id S1759913AbXIZOjU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 10:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXIZOjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 10:33:35 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50886 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753359AbXIZOde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 10:33:34 -0400
-Message-ID: <46FA6DB8.70508@garzik.org>
-Date: Wed, 26 Sep 2007 10:33:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Wed, 26 Sep 2007 10:39:12 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:32893 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753491AbXIZOjL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 10:39:11 -0400
+Date: Wed, 26 Sep 2007 10:39:06 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <htejun@gmail.com>
+cc: Jonathan Corbet <corbet@lwn.net>, <ebiederm@xmission.com>,
+       <cornelia.huck@de.ibm.com>, <greg@kroah.com>, <kay.sievers@vrfy.org>,
+       <linux-kernel@vger.kernel.org>, <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/4] module: implement module_inhibit_unload()
+In-Reply-To: <46F996AD.2070107@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0709261037390.4267-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Peer Chen <peerchen@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] ahci: enable GHC.AE bit before set GHC.HR
-References: <200709211327569648280@gmail.com>	<46F9DA07.4080201@garzik.org>	<20070926122332.39351382@the-village.bc.nu>	<46FA4587.4070105@garzik.org> <20070926153028.6fc5b2ce@the-village.bc.nu>
-In-Reply-To: <20070926153028.6fc5b2ce@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>> NAK - mmio is an iomap so writel and readl are the wrong things to use
->> The patch is consistent with the rest of the driver.
->> You are welcome to submit a patch to convert ahci to using ioremap.
+On Wed, 26 Sep 2007, Tejun Heo wrote:
+
+> >> Hmmm... I might be missing something here.  Who else can wake up a
+> >> thread in uninterruptible sleep?
+> > 
+> > In principle, anything can.  There has never been any guarantee in the 
+> > kernel that a task sleeping on a waitqueue will remain asleep until 
+> > the waitqueue is signalled.  That's part of the reason why things like 
+> > __wait_event() are coded as loops.
 > 
-> You could just flip the relevant function to use ioread while you are
-> tidying it up, instead of spreading new bugs into the code.
+> Hmmm... I always thought the queue was because the condition can change
+> inbetween waking up and actually running.  For example, if the condition
+> is !(queue empty), another task can enter the critical section and
+> consume the element which triggered wake up before the woken up task do.
 
-No, as I just noted above, the proper fix for this driver is to use 
-ioremap rather than pci_iomap.
+That's the other part of the reason for using a loop.  :-)
 
-Adding support to ahci for legacy PIO is completely pointless.
-
-	Jeff
-
-
+Alan Stern
 
