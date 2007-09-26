@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbXIZJAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbXIZJER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755930AbXIZJAi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 05:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753777AbXIZJAb
+	id S1755654AbXIZJER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 05:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbXIZJED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 05:00:31 -0400
-Received: from il.qumranet.com ([82.166.9.18]:43685 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753724AbXIZJAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 05:00:30 -0400
-Message-ID: <46FA1F99.8080701@qumranet.com>
-Date: Wed, 26 Sep 2007 11:00:09 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-CC: Andrew Morton <akpm@linux-foundation.org>, kvm-devel@lists.sourceforge.net,
+	Wed, 26 Sep 2007 05:04:03 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56036 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbXIZJEA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 05:04:00 -0400
+Date: Wed, 26 Sep 2007 14:33:57 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Avishay Traeger <atraeger@cs.sunysb.edu>
+Cc: prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net,
        linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] 2.6.23-rc8-mm1: drivers/kvm/ioapic.o build failure
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org> <200709252256.23478.m.kozlowski@tuxland.pl>
-In-Reply-To: <200709252256.23478.m.kozlowski@tuxland.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: KPROBES: Instrumenting a function's call site
+Message-ID: <20070926090357.GA7651@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <1190758358.30061.13.camel@rockstar.fsl.cs.sunysb.edu> <20070926043933.GA6460@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070926043933.GA6460@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mariusz Kozlowski wrote:
-> Hello,
->
-> 	Similar (the same?) as in 2.6.23-rc6-mm1?
->
-> http://www.mail-archive.com/linux-kernel%40vger.kernel.org/msg208812.html
-> 	
->   CC [M]  drivers/kvm/ioapic.o
-> drivers/kvm/ioapic.c: In function 'ioapic_deliver':
-> drivers/kvm/ioapic.c:208: error: 'dest_LowestPrio' undeclared (first use in this function)
-> drivers/kvm/ioapic.c:208: error: (Each undeclared identifier is reported only once
-> drivers/kvm/ioapic.c:208: error: for each function it appears in.)
-> drivers/kvm/ioapic.c:219: error: 'dest_Fixed' undeclared (first use in this function)
-> make[2]: *** [drivers/kvm/ioapic.o] Error 1
-> make[1]: *** [drivers/kvm] Error 2
-> make: *** [drivers] Error 2
->
->   
+On Wed, Sep 26, 2007 at 10:09:33AM +0530, Ananth N Mavinakayanahalli wrote:
+> On Tue, Sep 25, 2007 at 06:12:38PM -0400, Avishay Traeger wrote:
+> > Hello,
+> > I am trying to use kprobes to measure the latency of a function by
+> > instrumenting its call site.  Basically, I find the call instruction,
+> > and insert a kprobe with a pre-handler and post-handler at that point.
+> > The pre-handler measures the latency (reads the TSC counter).  The
+> > post-handler measures the latency again, and subtracts the value that
+> > was read in the pre-handler to compute the total latency of the called
+> > function.
+> 
+> This sounds ok...
 
-We now include asm/io_apic.h like we should.  Has that file changed in -mm?
+Thinking further, its not ok :(
 
--- 
-error compiling committee.c: too many arguments to function
+> > So to measure the latency of foo(), I basically want kprobes to do this:
+> > pre_handler();
+> > foo();
+> > post_handler();
+> > 
+> > The problem is that the latencies that I am getting are consistently low
+> > (~10,000 cycles).  When I manually instrument the functions, the latency
+> > is about 20,000,000 cycles.  Clearly something is not right here.
 
+What happens when the "call" is singlestepped is that the instruction
+pointer is moved to the call target. That explains the lower latency you
+are seeing. You'll need to do something along the lines I suggested in
+the earlier mail.
+
+Ananth
