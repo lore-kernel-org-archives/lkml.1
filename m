@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbXIZLFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757798AbXIZLHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbXIZLFO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 07:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbXIZLFA
+	id S1757798AbXIZLHH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 07:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbXIZLG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 07:05:00 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:58390 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbXIZLE7 (ORCPT
+	Wed, 26 Sep 2007 07:06:56 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:34350 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbXIZLG4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 07:04:59 -0400
-Date: Wed, 26 Sep 2007 13:04:24 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: ebiederm@xmission.com, greg@kroah.com, stern@rowland.harvard.edu,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET 1/4] sysfs: misc updates
-Message-ID: <20070926130424.4579e70e@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <11902719091692-git-send-email-htejun@gmail.com>
-References: <11902719091692-git-send-email-htejun@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Sep 2007 07:06:56 -0400
+Message-ID: <46FA3D4B.20805@davidnewall.com>
+Date: Wed, 26 Sep 2007 20:36:51 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
+       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de,
+       majkls <majkls@prepere.com>, bunk@fs.tum.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Chroot bug
+References: <56705.193.171.152.61.1190289559.squirrel@webmail.marek.priv.at>	<46F29A9A.4070806@davidnewall.com>	<200709201817.17282@x5>	<46F2B59F.8090709@davidnewall.com>	<46F2DDD0.3030500@tmr.com>	<46F380E4.4040606@davidnewall.com>	<20070924213215.GA32716@vino.hallyn.com>	<46F83474.5040503@davidnewall.com>	<20070924230008.GA3160@vino.hallyn.com>	<46F8BC8A.7080006@davidnewall.com>	<20070925114947.GA9721@vino.hallyn.com>	<46F91417.9050600@davidnewall.com>	<46F924E3.50205@davidnewall.com>	<20070925163040.12a3c2f8@the-village.bc.nu>	<46F92AAB.1060903@davidnewall.com>	<20070925164806.4cadc6a5@the-village.bc.nu>	<46F99EDE.70905@davidnewall.com>	<20070926011847.49bbb9a2@the-village.bc.nu>	<46FA334F.7030802@davidnewall.com> <20070926114729.3b9d1fb4@the-village.bc.nu>
+In-Reply-To: <20070926114729.3b9d1fb4@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Sep 2007 16:05:09 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+Alan Cox wrote:
+>>> The dot-dot entry in the root directory is interpreted to mean the 
+>>> root directory itself. Thus, dot-dot cannot be used to access files 
+>>> outside the subtree rooted at the root directory.
+>>>       
+>
+> Which is behaviour chroot preserves properly.
+>   
 
->  0001-sysfs-kill-SYSFS_FLAG_REMOVED.patch
->  0002-sysfs-fix-comments-of-sysfs_add-remove_one.patch
->  0003-sysfs-fix-sysfs_chmod_file-such-that-it-updates-s.patch
->  0004-sysfs-clean-up-header-files.patch
->  0005-sysfs-kill-sysfs_update_file.patch
->  0006-sysfs-reposition-sysfs_dirent-s_mode.patch
->  0007-sysfs-kill-unnecessary-sysfs_get-in-open-paths.patch
->  0008-sysfs-kill-unnecessary-NULL-pointer-check-in-sysfs_.patch
->  0009-sysfs-make-bin-attr-open-get-active-reference-of-pa.patch
->  0010-sysfs-make-s_elem-an-anonymous-union.patch
->  0011-sysfs-open-code-sysfs_attach_dentry.patch
->  0012-sysfs-make-sysfs_root-a-regular-directory-dirent.patch
->  0013-sysfs-move-sysfs_dirent-s_children-into-sysfs_dire.patch
->  0014-sysfs-implement-sysfs_open_dirent.patch
->  0015-sysfs-move-sysfs-file-poll-implementation-to-sysfs_.patch
+And yet it is the dot-dot entry which is used to access files outside 
+the root.
 
-OK, I finally found some time for these patches.
+> The specification says explicitly
+>
+> 	"The process working directory is unaffected by chroot()."
+>   
 
-I did my usual attach/detach etc. testing on s390 and didn't run into
-problems. The patches look sane to me as well, so feel free to add
-
-Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-
-(or Reviewed-by:, if that's the line-du-jour) to the patches from this
-set.
+Do you believe that when those words were first written, the hidden 
+conflict, namely that it permits dot-dot to access files outside the 
+subtree, was understood?  They would have said so if that were the case.
