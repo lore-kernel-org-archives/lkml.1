@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757626AbXIZTyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbXIZTyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757626AbXIZTyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 15:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbXIZTyP
+	id S1759451AbXIZTyy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 15:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXIZTyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 15:54:15 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:43218 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbXIZTyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 15:54:15 -0400
-Message-ID: <46FAB8E4.5070809@us.ibm.com>
-Date: Wed, 26 Sep 2007 12:54:12 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, hch@infradead.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH 0/3] A kernel tracing interface - (updated)
-References: <1190830949.1232.11.camel@lc4eb748232119.ibm.com> <20070926114108.6ac77ce5.randy.dunlap@oracle.com>
-In-Reply-To: <20070926114108.6ac77ce5.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Wed, 26 Sep 2007 15:54:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38896 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752131AbXIZTyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 15:54:43 -0400
+Date: Wed, 26 Sep 2007 12:54:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cmm@us.ibm.com
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] JBD/ext34 cleanups: convert to kzalloc
+Message-Id: <20070926125440.36c3cb5b.akpm@linux-foundation.org>
+In-Reply-To: <1190416436.11349.13.camel@localhost.localdomain>
+References: <1189796027.3841.6.camel@localhost.localdomain>
+	<1190057391.3845.22.camel@localhost.localdomain>
+	<1190066466.31220.5.camel@dyn9047017100.beaverton.ibm.com>
+	<1190069851.6725.6.camel@localhost.localdomain>
+	<20070918090407.GA671@infradead.org>
+	<1190133347.3819.6.camel@localhost.localdomain>
+	<1190138690.6528.23.camel@norville.austin.ibm.com>
+	<1190163601.3819.15.camel@localhost.localdomain>
+	<20070918191920.a2130a3c.akpm@linux-foundation.org>
+	<1190229352.4318.12.camel@localhost.localdomain>
+	<20070919194813.GT32520@schatzie.adilger.int>
+	<1190239431.4318.34.camel@localhost.localdomain>
+	<1190416436.11349.13.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Wed, 26 Sep 2007 11:22:29 -0700 David J. Wilder wrote:
-> 
->> These patches provide a kernel tracing interface called "trace".
->>
->> (update) Moved the sample code to the new samples\ subdir
->>
->> The motivation for "trace" is to:
->> - Provide a simple set of tracing primitives that will utilize the high-
->>   performance and low-overhead of relayfs for passing traces data from
->>   kernel to user space.
->> - Provide a common user interface for managing kernel traces.
->> - Allow for binary as well as ascii trace data.
->> - Incorporate features from the systemtap runtime that are
->>   useful to others.
->>
->> Patches are against 2.6.23-rc6-mm1
->>
->> Summary of patches:
->> [patch 1/3]  Trace code and documentation
->> [patch 2/3]  Relay Reset Consumed
->> [patch 3/3]  Trace sample
->>
->> Note: Patches 1/3 and 2/3 must be applied together.
-> 
-> Patch 2 provides an interface that patch 1 needs, correct?
-Yes.
-> So yes, patches 1 & 2 need to be applied together (merged),
-> or their order could be reversed, yes?  
-2/3 should be applied at the same time as 1/3,  or 2/3 can be applied 
-standalone.  The order they are applied makes no difference.  But trace 
-will not build if the relay patch is not applied.
+On Fri, 21 Sep 2007 16:13:56 -0700
+Mingming Cao <cmm@us.ibm.com> wrote:
 
-Can't the Relay patch
-> be merged standalone without breaking anything?
+> Convert kmalloc to kzalloc() and get rid of the memset().
 
-Yes the relay patch can be applied standalone.
+I split this into separate ext3/jbd and ext4/jbd2 patches.  It's generally
+better to raise separate patches, please - the ext3 patches I'll merge
+directly but the ext4 patches should go through (and be against) the ext4
+devel tree.
 
+I fixed lots of rejects against the already-pending changes to these
+filesystems.
 
-
-> 
-> 
->> Note: The following patches must be applied with 3/3.
->> [patch 3/5] Add samples subdir
->> 	http://lkml.org/lkml/2007/9/25/157
->> [patch 4/5] Linux Kernel Markers - Samples
->> 	http://lkml.org/lkml/2007/9/25/166
-> 
-> 
-> ---
-> ~Randy
-> Phaedrus says that Quality is about caring.
-> 
+You forgot to remove the memsets in both start_this_handle()s.
 
