@@ -1,139 +1,549 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbXIZSDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbXIZSHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756254AbXIZSDR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 14:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbXIZSDB
+	id S1756795AbXIZSHS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 14:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXIZSHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 14:03:01 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:36274 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752997AbXIZSC7 (ORCPT
+	Wed, 26 Sep 2007 14:07:06 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:37564 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753187AbXIZSHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 14:02:59 -0400
-Date: Wed, 26 Sep 2007 20:18:43 +0200
-To: "Bernhard Walle (in kexec list)" <kexec@lists.infradead.org>,
-       akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [patch 1/7] Extended crashkernel command line
-Message-ID: <20070926181843.GB24301@flower.upol.cz>
-References: <20070925182257.900701776@strauss.suse.de> <20070925182258.175348676@strauss.suse.de> <E1IaHPU-00089b-Bc@flower> <20070926161602.GA26909@suse.de>
+	Wed, 26 Sep 2007 14:07:04 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 26 Sep 2007 11:06:59 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+cc: lkml <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       =?X-UNKNOWN?Q?David_H=E4rdeman?= <david@hardeman.nu>,
+       Thomas Gleixner <tglx@linutronix.de>, geoff@gclare.org.uk,
+       Christoph Hellwig <hch@lst.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: Man page for revised timerfd API
+In-Reply-To: <46FA0657.20700@gmx.net>
+Message-ID: <Pine.LNX.4.64.0709261038550.25778@alien.or.mcafeemobile.com>
+References: <46FA0657.20700@gmx.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070926161602.GA26909@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wed, Sep 26, 2007 at 06:16:02PM +0200, Bernhard Walle (part two, see bottom):
-> > memparse(), as a wrapper for somple_strtoll(), always have a return value
-> > (zero by default).
-> > <http://article.gmane.org/gmane.linux.kernel/583426>
 
-Sorry for my typos, i should write `simple_strtoull()'. This function
-(ULL from str) have always return value grater or equal to zero.
+Michael, SCB ...
 
-Thus,
 
+On Wed, 26 Sep 2007, Michael Kerrisk wrote:
+
+> .TH TIMERFD_CREATE 2 2007-09-26 Linux "Linux Programmer's Manual"
+> .SH NAME
+> timerfd_create, timerfd_settime, timer_gettime \-
+> timers that notify via file descriptors
+> .SH SYNOPSIS
+> .\" FIXME . This header file may well change
+> .\" FIXME . Probably _GNU_SOURCE will be required
+> .\" FIXME . May require: Link with \fI\-lrt\f
+> .nf
+> .B #include <sys/timerfd.h>
+> .sp
+> .BI "int timerfd_create(int " clockid );
+> .sp
+> .BI "int timerfd_settime(int " fd ", int " flags ,
+> .BI "                    const struct itimerspec *" new_value ,
+> .BI "                    struct itimerspec *" curr_value );
+> .sp
+> .BI "int timerfd_gettime(int " fd ", struct itimerspec *" curr_value );
+> .fi
+> .SH DESCRIPTION
+> These system calls create and operate on a timer
+> that delivers timer expiration notifications via a file descriptor.
+> They provide an alternative to the use of
+> .BR setitimer (2)
+> or
+> .BR timer_create (3),
+> with the advantage that the file descriptor may be monitored by
+> .BR poll (2)
+> and
+> .BR select (2).
+
+epoll, no?
+
+
+
+
+> The use of these three system calls is analogous to the use of
+> .BR timer_create (2),
+> .BR timer_settime (2),
+> and
+> .BR timer_gettime (2).
+> .\"
+> .SS timerfd_create()
+> .BR timerfd_create ()
+> creates a new timer object,
+> and returns a file descriptor that refers to that timer.
+> The
+> .I clockid
+> argument specifies the clock that is used to mark the progress
+> of the timer, and must be either
+> .B CLOCK_REALTIME
+> or
+> .BR CLOCK_MONOTONIC .
+> .B CLOCK_REALTIME
+> is a settable system-wide clock.
+> .B CLOCK_MONOTONIC
+> is a non-settable clock that is not affected
+> by discontinuous changes in the system clock
+> (e.g., manual changes to system time).
+> The current value of each of these clocks can be retrieved using
+> .BR clock_gettime (3).
+> .\"
+> .SS timerfd_settime()
+> .BR timerfd_settime ()
+> arms (starts) or disarms (stops)
+> the timer referred to by the file descriptor
+> .IR fd .
 > 
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> The
+> .I new_value
+> argument specifies the initial expiration and interval for the timer.
+> The
+> .I itimer
+> structure used for this argument contains two fields,
+> each of which is in turn a structure of type
+> .IR timespec :
+> .in +0.25i
+> .nf
 > 
-> ---
->  kernel/kexec.c |   31 ++++++++++++++++++++++++-------
->  1 file changed, 24 insertions(+), 7 deletions(-)
+> struct timespec {
+>     time_t tv_sec;                /* Seconds */
+>     long   tv_nsec;               /* Nanoseconds */
+> };
 > 
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -1172,33 +1172,50 @@ static int __init parse_crashkernel_mem(
->  	do {
->  		unsigned long long start = 0, end = ULLONG_MAX;
->  		unsigned long long size = -1;
-
-no need in assigning values here, unless you plan to use them in case
-of `return -EINVAL', but i can not see that,
-
-> +		char *tmp;
->  
->  		/* get the start of the range */
-> -		start = memparse(cur, &cur);
-> +		start = memparse(cur, &tmp);
-> +		if (cur == tmp) {
-> +			pr_warning("crashkernel: Memory value expected\n");
-> +			return -EINVAL;
-> +		}
-> +		cur = tmp;
->  		if (*cur != '-') {
-> -			printk(KERN_WARNING "crashkernel: '-' expected\n");
-> +			pr_warning("crashkernel: '-' expected\n");
->  			return -EINVAL;
->  		}
->  		cur++;
->  
->  		/* if no ':' is here, than we read the end */
->  		if (*cur != ':') {
-> -			end = memparse(cur, &cur);
-> +			end = memparse(cur, &tmp);
-> +			if (cur == tmp) {
-> +				pr_warning("crashkernel: Memory "
-> +						"value expected\n");
-> +				return -EINVAL;
-> +			}
-> +			cur = tmp;
->  			if (end <= start) {
-> -				printk(KERN_WARNING "crashkernel: end <= start\n");
-> +				pr_warning("crashkernel: end <= start\n");
->  				return -EINVAL;
->  			}
->  		}
->  
->  		if (*cur != ':') {
-> -			printk(KERN_WARNING "crashkernel: ':' expected\n");
-> +			pr_warning("crashkernel: ':' expected\n");
->  			return -EINVAL;
->  		}
->  		cur++;
->  
-> -		size = memparse(cur, &cur);
-> +		size = memparse(cur, &tmp);
-> +		if (cur == tmp) {
-> +			pr_warning("Memory value expected\n");
-> +			return -EINVAL;
-> +		}
-> +		cur = tmp;
->  		if (size < 0) {
-
-`size' cannot be less that zero here (wonder, if it matters to have
-userspace model of this parser and actually feed it with garbage input).
-
-> -			printk(KERN_WARNING "crashkernel: invalid size\n");
-> +			pr_warning("crashkernel: invalid size\n");
->  			return -EINVAL;
->  		}
->  
-
-
-Wed, Sep 26, 2007 at 06:16:02PM +0200, Bernhard Walle (part one):
-> Ok, that's fixed now, see patch below.
+> struct itimerspec {
+>     struct timespec it_interval;  /* Interval for periodic timer */
+>     struct timespec it_value;     /* Initial expiration */
+> };
+> .fi
+> .in
+> .PP
+> .I new_value.it_value
+> specifies the initial expiration of the timer,
+> in seconds and nanoseconds.
+> Setting either field of
+> .I new_value.it_value
+> to a non-zero value arms the timer.
+> Setting both fields of
+> .I new_value.it_value
+> to zero disarms the timer.
 > 
-> > And why not to make overall result reliable? This is kernel after all.
-> > 
-> > I.e. if there's valid `crashkernel=' option, but some parsing errors, why
-> > not to apply some heuristics with warning in syslog, if user have some
-> > conf, bootloader (random) errors, but feature still works?
+> Setting one or both fields of
+> .I new_value.it_interval
+> to non-zero values specifies the period, in seconds and nanoseconds,
+> for repeated timer expirations after the initial expiration.
+> If both fields of
+> .I new_value.it_interval
+> are zero, the timer expires just once, at the time specified by
+> .IR new_value.it_value .
 > 
-> I'm against guessing. The user has to specify a parameter which is
-> right according to syntax.
+> The
+> .I flags
+> argument is either 0, to start a relative timer
+> .RI ( new_value.it_interval
+> specifies a time relative to the current value of the clock specified by
+> .IR clockid ),
+> or
+> .BR TFD_TIMER_ABSTIME ,
+> to start an absolute timer
+> .RI ( new_value.it_interval
+> specifies an absolute time for the clock specified by
+> .IR clockid ;
+> that is, the timer will expire when the value of that
+> clock reaches the value specified in
+> .IR new_value.it_interval ).
 > 
-> However, I plan to make a patch that the kernel can detect a sensible
-> offset automatically for i386 and x86_64 as it's done in ia64. Since
-> both architectures have a relocatable kernel now, that makes perfectly
-> sense. But that's another patch.
+> The
+> .I curr_value
+> argument returns a structure containing the setting of the timer that
+> was current at the time of the call; see the description of
+> .BR timerfd_gettime ()
+> following.
+> .\"
+> .SS timerfd_gettime()
+> .BR timerfd_gettime ()
+> returns, in
+> .IR curr_value ,
+> an
+> .IR itimerspec
+> that contains the current setting of the timer
+> referred to by the file descriptor
+> .IR fd .
+> 
+> The
+> .I it_value
+> field returns the amount of time
+> until the timer will next expire.
+> If both fields of this structure are zero,
+> then the timer is currently disarmed.
+> This field always contains a relative value, regardless of whether the
+> .BR TFD_TIMER_ABSTIME
+> flag was specified when setting the timer.
+> 
+> The
+> .I it_interval
+> field returns the interval of the timer.
+> If both fields of this structure are zero,
+> then the timer is set to expire just once, at the time specified by
+> .IR curr_value.it_value .
+> .SS Operating on a timer file descriptor
+> The file descriptor returned by
+> .BR timerfd_create (2)
+> supports the following operations:
+> .TP
+> .BR read (2)
+> If the timer has already expired one or more times since it was created,
+> or since the last
+> .BR read (2),
+> then the buffer given to
+> .BR read (2)
+> returns an unsigned 8-byte integer
+> .RI ( uint64_t )
+> containing the number of expirations that have occurred.
+> .IP
+> If no timer expirations have occurred at the time of the
+> .BR read (2),
+> then the call either blocks until the next timer expiration,
+> or fails with the error
+> .B EAGAIN
+> if the file descriptor has been made non-blocking
+> (via the use of the
+> .BR fcntl (2)
+> .B F_SETFL
+> operation to set the
+> .B O_NONBLOCK
+> flag).
+> .IP
+> A
+> .BR read (2)
+> will fail with the error
+> .B EINVAL
+> if the size of the supplied buffer is less than 8 bytes.
+> .TP
+> .BR poll "(2), " select "(2) (and similar)"
+> The file descriptor is readable
+> (the
+> .BR select (2)
+> .I readfds
+> argument; the
+> .BR poll (2)
+> .B POLLIN
+> flag)
+> if one or more timer expirations have occurred.
+> .IP
+> The file descriptor also supports the other file-descriptor
+> multiplexing APIs:
+> .BR pselect (2),
+> .BR ppoll (2),
+> and
+> .BR epoll (7).
+> .TP
+> .BR close (2)
+> When the file descriptor is no longer required it should be closed.
+> When all file descriptors associated with the same timer object
+> have been closed,
+> the timer is disarmed and its resources are freed by the kernel.
+> .\"
+> .SS fork(2) semantics
+> .\" FIXME Davide, is the following correct?
 
-I was thinking about errors in YaST or typos in bootloader config, that
-may appear sometimes. And kernel must tolerate this kind of userspace
-input to be more reliable. But you know better, i just am waving hands.
-____
-("Mail-Followup-To:" respected)
+Yes.
+
+
+
+> After a
+> .BR fork (2),
+> the child inherits a copy of the file descriptor created by
+> .BR timerfd_create ().
+> The file descriptor refers to the same underlying
+> timer object as the corresponding file descriptor in the parent,
+> and
+> .BR read (2)s
+> in the child will return information about
+> expirations of the timer.
+> .\"
+> .SS execve(2) semantics
+> .\" FIXME Davide, is the following correct?
+
+Yes.
+
+
+
+> A file descriptor created by
+> .BR timerfd_create ()
+> is preserved across
+> .BR execve (2),
+> and continues to generate timer expirations if the timer was armed.
+> .SH "RETURN VALUE"
+> On success,
+> .BR timerfd_create ()
+> returns a new file descriptor.
+> On error, \-1 is returned and
+> .I errno
+> is set to indicate the error.
+> 
+> .BR timer_settime ()
+> and
+> .BR timer_gettime ()
+> return 0 on success;
+> on error they return \-1, and set
+> .I errno
+> to indicate the error.
+> .SH ERRORS
+> .\" FIXME -- there need to be errors for all syscalls here
+> .BR tinerfd_create ()
+> can fail with the following errors:
+> .\" FIXME Davide, are there any other errors for timerfd_create()?
+
+They seem all to me.
+
+
+
+> .TP
+> .B EINVAL
+> The
+> .I clockid
+> argument is neither
+> .B CLOCK_MONOTONIC
+> nor
+> .BR CLOCK_REALTIME .
+> .TP
+> .B EMFILE
+> The per-process limit of open file descriptors has been reached.
+> .TP
+> .B ENFILE
+> The system-wide limit on the total number of open files has been
+> reached.
+> .TP
+> .B ENODEV
+> Could not mount (internal) anonymous i-node device.
+> .TP
+> .B ENOMEM
+> There was insufficient kernel memory to create the timer.
+> .PP
+> .BR timer_settime ()
+> and
+> .BR timer_gettime ()
+> can fail with the following errors:
+> .\" FIXME Davide, are there any other errors for timerfd_[gs]ettime()?
+> .TP
+> .B EBADF
+> .I fd
+> is not a valid file descriptor.
+> .TP
+> .B EINVAL
+> .I fd
+> is not a valid timerfd file descriptor.
+> .I new_value
+> is not properly initialized (one of the
+> .I tv_nsec
+> falls outside the range zero to 999,999,999).
+> .SH VERSIONS
+> These system calls are available on Linux since kernel 2.6.23.
+> .\" FIXME . check later to see when glibc support is provided
+> As at September 2007 (glibc 2.6), the details of the glibc interface
+> have not been finalized, so that, for example,
+> the eventual header file may be different from that shown on this page.
+> .SH CONFORMING TO
+> These system calls are Linux specific.
+> .SH EXAMPLE
+> The following program creates a timer and then monitors its progress.
+> The program accepts up to three command-line arguments.
+> The first argument specifies the number of seconds for
+> the initial expiration of the timer.
+> The second argument specifies the interval for the timer, in seconds.
+> The third argument specifies the number of times the program should
+> allow the timer to expire before terminating.
+> The second and third command-line arguments are optional.
+> 
+> The following shell session demonstrates the use of the program:
+> .in +0.5i
+> .nf
+> 
+> $ a.out 3 1 100
+> 0.000: timer started
+> 3.000: read: 1; total=1
+> 4.000: read: 1; total=2
+> [type control-Z to suspend the program]
+> [1]+  Stopped                 ./timerfd3_demo 3 1 100
+> $ fg                # Resume execution after a few seconds
+> a.out 3 1 100
+> 9.660: read: 5; total=7
+> 10.000: read: 1; total=8
+> 11.000: read: 1; total=9
+> [type control-C to terminate the program]
+> .fi
+> .in
+> .nf
+> 
+> .\" FIXME . Check later what header file glibc uses for timerfd
+> .\" FIXME . Probably glibc will require _GNU_SOURCE to be set
+> .\"
+> .\" The commented out code here is what we currently need until
+> .\" the required stuff is in glibc
+> .\"
+> .\"
+> .\"/* Link with -lrt */
+> .\"#define _GNU_SOURCE
+> .\"#include <sys/syscall.h>
+> .\"#include <unistd.h>
+> .\"#include <time.h>
+> .\"#if defined(__i386__)
+> .\"#define __NR_timerfd_create 322
+> .\"#define __NR_timerfd_settime 325
+> .\"#define __NR_timerfd_gettime 326
+> .\"#endif
+> .\"
+> .\"static int
+> .\"timerfd_create(int clockid)
+> .\"{
+> .\"    return syscall(__NR_timerfd_create, clockid);
+> .\"}
+> .\"
+> .\"static int
+> .\"timerfd_settime(int fd, int flags, struct itimerspec *new_value,
+> .\"        struct itimerspec *curr_value)
+> .\"{
+> .\"    return syscall(__NR_timerfd_settime, fd, flags, new_value,
+> .\"                   curr_value);
+> .\"}
+> .\"
+> .\"static int
+> .\"timerfd_gettime(int fd, struct itimerspec *curr_value)
+> .\"{
+> .\"    return syscall(__NR_timerfd_gettime, fd, curr_value);
+> .\"}
+> .\"
+> .\"#define TFD_TIMER_ABSTIME (1 << 0)
+> .\"
+> .\"////////////////////////////////////////////////////////////
+> #include <sys/timerfd.h>   /* May eventually be different in glibc */
+> #include <time.h>
+> #include <unistd.h>
+> #include <stdlib.h>
+> #include <stdio.h>
+> #include <stdint.h>        /* Definition of uint64_t */
+> 
+> #define die(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
+> 
+> static void
+> print_elapsed_time(void)
+> {
+>     static struct timespec start;
+>     struct timespec curr;
+>     static int first_call = 1;
+>     int secs, nsecs;
+> 
+>     if (first_call) {
+>         first_call = 0;
+>         if (clock_gettime(CLOCK_MONOTONIC, &start) == \-1)
+>             die("clock_gettime");
+>     }
+> 
+>     if (clock_gettime(CLOCK_MONOTONIC, &curr) == \-1)
+>         die("clock_gettime");
+> 
+>     secs = curr.tv_sec \- start.tv_sec;
+>     nsecs = curr.tv_nsec \- start.tv_nsec;
+>     if (nsecs < 0) {
+>         secs\-\-;
+>         nsecs += 1000000000;
+>     }
+>     printf("%d.%03d: ", secs, (nsecs + 500000) / 1000000);
+> }
+> 
+> int
+> main(int argc, char *argv[])
+> {
+>     struct itimerspec new_value;
+>     int max_exp, tot_exp, fd;
+>     struct timespec now;
+>     uint64_t exp;
+>     ssize_t s;
+> 
+>     if ((argc != 2) && (argc != 4)) {
+>         fprintf(stderr, "%s init\-secs [interval\-secs max\-exp]\\n",
+>                 argv[0]);
+>         exit(EXIT_FAILURE);
+>     }
+> 
+>     if (clock_gettime(CLOCK_REALTIME, &now) == \-1)
+>         die("clock_gettime");
+> 
+>     /* Create a CLOCK_REALTIME absolute timer with initial
+>        expiration and interval as specified in command line */
+> 
+>     new_value.it_value.tv_sec = now.tv_sec + atoi(argv[1]);
+>     new_value.it_value.tv_nsec = now.tv_nsec;
+>     if (argc == 2) {
+>         new_value.it_interval.tv_sec = 0;
+>         max_exp = 1;
+>     } else {
+>         new_value.it_interval.tv_sec = atoi(argv[2]);
+>         max_exp = atoi(argv[3]);
+>     }
+>     new_value.it_interval.tv_nsec = 0;
+> 
+>     fd = timerfd_create(CLOCK_REALTIME);
+>     if (fd == \-1)
+>         die("timerfd_create");
+> 
+>     s = timerfd_settime(fd, TFD_TIMER_ABSTIME, &new_value, NULL);
+>     if (s == \-1)
+>         die("timerfd_settime");
+> 
+>     print_elapsed_time();
+>     printf("timer started\\n");
+> 
+>     for (tot_exp = 0; tot_exp < max_exp;) {
+>         s = read(fd, &exp, sizeof(uint64_t));
+>         if (s != sizeof(uint64_t))
+>             die("read");
+> 
+>         tot_exp += exp;
+>         print_elapsed_time();
+>         printf("read: %llu; total=%d\\n", exp, tot_exp);
+>     }
+> 
+>     exit(EXIT_SUCCESS);
+> }
+> .fi
+> .SH "SEE ALSO"
+> .BR eventfd (2),
+> .BR poll (2),
+> .BR read (2),
+> .BR select (2),
+> .BR setitimer (2),
+> .BR signalfd (2),
+> .BR timer_create (3),
+> .BR timer_gettime (3),
+> .BR timer_settime (3),
+> .BR epoll (7),
+> .BR time (7)
+> .\" FIXME Create links for timerfd_settime.2 and timerfd_gettime.2.
+> .\" FIXME have SEE ALSO in setitimer.2 refer to this page.
+> .\" FIXME have SEE ALSO in time.7 refer to this page.
+
+
+BTW: We need to re-look over the signalfd man page, since Linus, in an 
+unexpected move, merged the simplification patch :)
+
+
+
+
+- Davide
+
+
