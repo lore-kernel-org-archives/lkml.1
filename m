@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbXIZLRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbXIZLWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbXIZLRy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 07:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbXIZLRm
+	id S1758606AbXIZLWA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 07:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbXIZLVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 07:17:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40544 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758758AbXIZLRl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 07:17:41 -0400
-Date: Wed, 26 Sep 2007 12:23:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Peer Chen <peerchen@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] ahci: enable GHC.AE bit before set GHC.HR
-Message-ID: <20070926122332.39351382@the-village.bc.nu>
-In-Reply-To: <46F9DA07.4080201@garzik.org>
-References: <200709211327569648280@gmail.com>
-	<46F9DA07.4080201@garzik.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 26 Sep 2007 07:21:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44889 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751418AbXIZLVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 07:21:51 -0400
+Date: Wed, 26 Sep 2007 13:21:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: Mike Galbraith <efault@gmx.de>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Network slowdown due to CFS
+Message-ID: <20070926112137.GA13876@elte.hu>
+References: <20070926085202.GE3337@deprecation.cyrius.com> <1190802208.7318.5.camel@Homer.simpson.net> <20070926104814.GM3337@deprecation.cyrius.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070926104814.GM3337@deprecation.cyrius.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 00:03:19 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
 
-> Peer Chen wrote:
-> > According to the description of section 5.2.2.1 and 10.1.2 of AHCI specification rev1_1/rev1_2, GHC.HR shall only be set to ¡®1¡¯
-> > by software when GHC.AE is set to ¡®1¡¯.
+* Martin Michlmayr <tbm@cyrius.com> wrote:
+
+> * Mike Galbraith <efault@gmx.de> [2007-09-26 12:23]:
+> > I noticed on the iperf website a patch which contains sched_yield().
+> > http://dast.nlanr.net/Projects/Iperf2.0/patch-iperf-linux-2.6.21.txt
 > > 
-> > Signed-off-by: Peer Chen <peerchen@gmail.com>
-> > ---
-> > --- linux-2.6.23-rc7/drivers/ata/ahci.c.orig	2007-09-20 11:01:55.000000000 -0400
-> > +++ linux-2.6.23-rc7/drivers/ata/ahci.c	2007-09-20 11:07:31.000000000 -0400
-> > @@ -834,6 +834,10 @@ static int ahci_reset_controller(struct 
-> >  	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-> >  	u32 tmp;
-> >  
-> > +        /* turn on AHCI mode before controller reset*/
-> > +        writel(HOST_AHCI_EN, mmio + HOST_CTL);
-> > +        (void) readl(mmio + HOST_CTL);  /* flush */
+> > Do you have that patch applied by any chance?  If so, it might be a
+> > worth while to try it without it.
 > 
-> applied the attached patch, inspired by yours.
+> Yes, this patch was applied.  When I revert it, I get the same (high) 
+> performance with both kernels.
 
+great! Could you try this too:
 
-NAK - mmio is an iomap so writel and readl are the wrong things to use
+   echo 1 > /proc/sys/kernel/sched_compat_yield
 
+does it fix iperf performance too (with the yield patch applied to 
+iperf)?
+
+I think the real fix would be for iperf to use blocking network IO 
+though, or maybe to use a POSIX mutex or POSIX semaphores.
+
+	Ingo
