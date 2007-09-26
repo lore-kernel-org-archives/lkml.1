@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbXIZLWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758983AbXIZLWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758606AbXIZLWA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 07:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbXIZLVw
+	id S1758983AbXIZLWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 07:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbXIZLWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 07:21:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44889 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751418AbXIZLVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 07:21:51 -0400
-Date: Wed, 26 Sep 2007 13:21:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: Mike Galbraith <efault@gmx.de>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20070926112137.GA13876@elte.hu>
-References: <20070926085202.GE3337@deprecation.cyrius.com> <1190802208.7318.5.camel@Homer.simpson.net> <20070926104814.GM3337@deprecation.cyrius.com>
+	Wed, 26 Sep 2007 07:22:35 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:34375 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753038AbXIZLWe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 07:22:34 -0400
+Message-ID: <46FA40F3.8010306@davidnewall.com>
+Date: Wed, 26 Sep 2007 20:52:27 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070926104814.GM3337@deprecation.cyrius.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Al Viro <viro@ftp.linux.org.uk>, Phillip Susi <psusi@cfl.rr.com>,
+       Bill Davidsen <davidsen@tmr.com>, majkls <majkls@prepere.com>,
+       bunk@fs.tum.de, linux-kernel@vger.kernel.org
+Subject: Re: sys_chroot+sys_fchdir Fix
+References: <46F0CD96.9030807@prepere.com>	<20070919104018.3a6bcfb1@the-village.bc.nu>	<46F16A0A.3070402@tmr.com>	<20070919194559.36015307@the-village.bc.nu>	<46F1A196.8060108@davidnewall.com>	<46F401D6.6060609@cfl.rr.com>	<20070921191012.15a0b51b@the-village.bc.nu>	<46F9752C.5080807@cfl.rr.com>	<20070926002340.GL8181@ftp.linux.org.uk>	<46FA35A6.1070400@davidnewall.com> <20070926122127.74cdd000@the-village.bc.nu>
+In-Reply-To: <20070926122127.74cdd000@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+> On Wed, 26 Sep 2007 20:04:14 +0930
+> David Newall <david@davidnewall.com> wrote:
+>   
+>> Al Viro wrote:
+>>     
+>>> Oh, for fsck sake...  Folks, it's standard-required behaviour.  Ability
+>>> to chroot() implies the ability to break out of it.  Could we please
+>>> add that (along with reference to SuS) to l-k FAQ and be done with that
+>>> nonsense?
+>>>       
+>> I'm pretty confident that it's only standard behavior for Linux.  Every 
+>> other unix says it's not allowed.
+>>     
+>
+> Go try them, then come back and admit your error
+>   
 
-* Martin Michlmayr <tbm@cyrius.com> wrote:
+I've made no error.  The documentation says what it says, and what it 
+doesn't say, other than for Linux, is that there is an unspecified way 
+of breaking out.
 
-> * Mike Galbraith <efault@gmx.de> [2007-09-26 12:23]:
-> > I noticed on the iperf website a patch which contains sched_yield().
-> > http://dast.nlanr.net/Projects/Iperf2.0/patch-iperf-linux-2.6.21.txt
-> > 
-> > Do you have that patch applied by any chance?  If so, it might be a
-> > worth while to try it without it.
-> 
-> Yes, this patch was applied.  When I revert it, I get the same (high) 
-> performance with both kernels.
-
-great! Could you try this too:
-
-   echo 1 > /proc/sys/kernel/sched_compat_yield
-
-does it fix iperf performance too (with the yield patch applied to 
-iperf)?
-
-I think the real fix would be for iperf to use blocking network IO 
-though, or maybe to use a POSIX mutex or POSIX semaphores.
-
-	Ingo
+If you're so keen on trying things, then I challenge you to try it on, 
+oh, say, BSD, and then admit your error.  (Such hostile words.)
