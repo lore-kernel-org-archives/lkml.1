@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbXIZPPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbXIZPRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761261AbXIZPPd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 11:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbXIZPPO
+	id S1753506AbXIZPRk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 11:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXIZPRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 11:15:14 -0400
-Received: from bee.hiwaay.net ([216.180.54.11]:18163 "EHLO bee.hiwaay.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761025AbXIZPPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 11:15:12 -0400
-X-Greylist: delayed 699 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 11:15:12 EDT
-Date: Wed, 26 Sep 2007 10:03:29 -0500
-From: Chris Adams <cmadams@hiwaay.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-Message-ID: <20070926150329.GA1563518@hiwaay.net>
-References: <fa.1U6+49SWHSlhuK5/3PBckFWAbXU@ifi.uio.no> <fa.WASh5K8oOF4DAq3sSYtIlWNCdWQ@ifi.uio.no> <fa.X6MeYG+PmN8/e5zfGij80quLaws@ifi.uio.no> <fa./eIdqiAY0Mx9xHl6ESobHaLKJBM@ifi.uio.no> <fa.z0K2lB1PTgYQg4l+8PssE1hFZY8@ifi.uio.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 26 Sep 2007 11:17:32 -0400
+Received: from outbound-mail-43.bluehost.com ([69.89.18.12]:36438 "HELO
+	outbound-mail-43.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751790AbXIZPRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 11:17:31 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: [PATCH 0/4] allow drivers to flush in-flight DMA
+Date: Wed, 26 Sep 2007 08:17:14 -0700
+User-Agent: KMail/1.9.7
+Cc: akepner@sgi.com, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       David Miller <davem@davemloft.net>, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org,
+       James Bottomley <James.Bottomley@steeleye.com>
+References: <20070925235843.GK30013@sgi.com> <20070926064950.GB30430@colo.lackof.org>
+In-Reply-To: <20070926064950.GB30430@colo.lackof.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070926151040.2d922706@the-village.bc.nu>
-User-Agent: Mutt/1.4i
-Original-References: <20070926151040.2d922706@the-village.bc.nu> <46F0CD96.9030807@prepere.com> <20070919104018.3a6bcfb1@the-village.bc.nu> <46F16A0A.3070402@tmr.com> <20070919194559.36015307@the-village.bc.nu> <46F1A196.8060108@davidnewall.com> <46F401D6.6060609@cfl.rr.com> <20070921191012.15a0b51b@the-village.bc.nu> <46F9752C.5080807@cfl.rr.com> <20070926002340.GL8181@ftp.linux.org.uk> <46FA35A6.1070400@davidnewall.com> <20070926122127.74cdd000@the-village.bc.nu> <46FA40F3.8010306@davidnewall.com> <20070926123833.2ed598af@the-village.bc.nu> <46FA48FC.4030602@davidnewall.com>
+Message-Id: <200709260817.14872.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Once upon a time, Alan Cox  <alan@lxorguk.ukuu.org.uk> said:
->Well if citing standards documents at people is rudeness so be it.
+On Tuesday, September 25, 2007 11:49:50 pm Grant Grundler wrote:
+> Upon reading the "2) Platforms that permit DMA reordering", I think I
+> have been confusing coherency with ordering. I think I have because DMA
+> is leaving the "PCI domain", crossing an "unordered domain" (NUMA,
+> interconnect), and then finally hitting the cache coherency "domain"
+> when it reaches a "far away" memory controller. That's why I've
+> been thinking of this as a coherency problem.
+>
+> The description and API uses the word "flush" (which is ok I guess) instead
+> of describing this in terms of enforcing DMA ordering.  Any DMA write to
+> the "strongly ordered" region will cause _all_ inflight DMA to be visible
+> to cache coherency, thus preserving the illusion of strong DMA ordering.
+>
+> Does that sound right/better to you too?
+> I don't have chipset docs and some of this is just trying to rephrase
+> what I've heard before from former SGI employees.
 
-I hate to get involved in this, but actually chroot() is no longer part
-of SuS as of version 3.
+I definitely wouldn't describe this as a coherency issue--the lines involved 
+in the DMA writes are fully coherent.  It's really an ordering problem, and 
+the new API is setting a "barrier" bit in the DMA address that indicates to 
+the bridge that any outstanding DMA should be written before the barriered 
+data.  So calling it set_flush or set_barrier is fine with me...
 
-For other Unix versions, both Tru64 (5.1B) and Solaris (9) chroot(2) man
-pages also say the working directory is unaffected by chroot().  The
-Solaris man page explicitly mentions using fchdir() to reset the root to
-a previously opened directory however.
-
-On Tru64 and Solaris, the chroot command does call chdir() after
-chroot(), but that is a userspace thing.
+Jesse
