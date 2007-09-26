@@ -1,52 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759033AbXIZOHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbXIZOHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759033AbXIZOHB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 10:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbXIZOGx
+	id S1759757AbXIZOHv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 10:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbXIZOHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 10:06:53 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58716 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752886AbXIZOGw (ORCPT
+	Wed, 26 Sep 2007 10:07:42 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:39969 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754534AbXIZOHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 10:06:52 -0400
-Date: Wed, 26 Sep 2007 15:10:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <david@davidnewall.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Phillip Susi <psusi@cfl.rr.com>,
-       Bill Davidsen <davidsen@tmr.com>, majkls <majkls@prepere.com>,
-       bunk@fs.tum.de, linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-Message-ID: <20070926151040.2d922706@the-village.bc.nu>
-In-Reply-To: <46FA48FC.4030602@davidnewall.com>
-References: <46F0CD96.9030807@prepere.com>
-	<20070919104018.3a6bcfb1@the-village.bc.nu>
-	<46F16A0A.3070402@tmr.com>
-	<20070919194559.36015307@the-village.bc.nu>
-	<46F1A196.8060108@davidnewall.com>
-	<46F401D6.6060609@cfl.rr.com>
-	<20070921191012.15a0b51b@the-village.bc.nu>
-	<46F9752C.5080807@cfl.rr.com>
-	<20070926002340.GL8181@ftp.linux.org.uk>
-	<46FA35A6.1070400@davidnewall.com>
-	<20070926122127.74cdd000@the-village.bc.nu>
-	<46FA40F3.8010306@davidnewall.com>
-	<20070926123833.2ed598af@the-village.bc.nu>
-	<46FA48FC.4030602@davidnewall.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 26 Sep 2007 10:07:40 -0400
+Subject: Re: queued patches for SCSI for 2.6.24
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: FUJITA Tomonori <tomof@acm.org>
+Cc: jeff@garzik.org, matthew@wil.cx, akpm@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+In-Reply-To: <20070925102150V.tomof@acm.org>
+References: <20070926025608.GA3899@parisc-linux.org>
+	 <46F9D328.4030801@garzik.org>
+	 <1190778353.8707.29.camel@localhost.localdomain>
+	 <20070925102150V.tomof@acm.org>
+Content-Type: text/plain
+Date: Wed, 26 Sep 2007 09:07:37 -0500
+Message-Id: <1190815658.3359.11.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> therefore it must be right.  You present no reasoning to explain why the 
-> behavior is correct; instead you use insults.  I've exhausted my 
-> tolerance for rudeness.
+On Wed, 2007-09-26 at 13:56 +0900, FUJITA Tomonori wrote:
+> On Tue, 25 Sep 2007 22:45:53 -0500
+> James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> 
+> > On Tue, 2007-09-25 at 23:34 -0400, Jeff Garzik wrote:
+> > > Matthew Wilcox wrote:
+> > > > On Tue, Sep 25, 2007 at 10:37:33PM -0400, Jeff Garzik wrote:
+> > > >> Are there any const-ness worries for scsi_host_template, or plans for 
+> > > >> the future?  I do not see any other examples of the host template 
+> > > >> members getting modified.
+> > > > 
+> > > > Goodness, Jeff, you haven't looked too hard.  There's dozens of examples
+> > > > I've come across trawling the horrible unmaintained drivers.  I'd love
+> > > > to see scsi_host_template become const, but it's not happening any time
+> > > > soon, and we can address this little piece when the time comes.
+> > > 
+> > > Well, sure, the driver is the owner of that memory.
+> > > 
+> > > We're talking about common code.
+> > > 
+> > > If everybody agrees SHT is R/W in the core, Fujita-san's patch is fine.
+> > 
+> > Well, I don't like mucking with the template either.
+> > 
+> > This whole mess is generated basically because the zero default of the
+> > template should be treated as initiator.  How about this, which makes
+> > that manifest?
+> > 
+> > James
+> > 
+> > diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+> > index adc9559..7e26440 100644
+> > --- a/drivers/scsi/hosts.c
+> > +++ b/drivers/scsi/hosts.c
+> > @@ -342,7 +342,11 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
+> >  	shost->unchecked_isa_dma = sht->unchecked_isa_dma;
+> >  	shost->use_clustering = sht->use_clustering;
+> >  	shost->ordered_tag = sht->ordered_tag;
+> > -	shost->active_mode = sht->supported_mode;
+> > +	if (sht->supported_mode == MODE_UNKNOWN)
+> > +		/* means we didn't set it ... default to INITIATOR */
+> > +		shost->active_mode = MODE_INITIATOR;
+> > +	else
+> > +		shost->active_mode = sht->supported_mode;
+> >  
+> >  	if (sht->max_host_blocked)
+> >  		shost->max_host_blocked = sht->max_host_blocked;
+> > diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+> > index 0088c4d..4965e9e 100644
+> > --- a/drivers/scsi/scsi_sysfs.c
+> > +++ b/drivers/scsi/scsi_sysfs.c
+> > @@ -209,11 +209,13 @@ show_shost_mode(unsigned int mode, char *buf)
+> >  static ssize_t show_shost_supported_mode(struct class_device *class_dev, char *buf)
+> >  {
+> >  	struct Scsi_Host *shost = class_to_shost(class_dev);
+> > +	unsigned int supported_mode = shost->hostt->supported_mode;
+> >  
+> > -	if (shost->hostt->supported_mode == MODE_UNKNOWN)
+> > -		return snprintf(buf, 20, "unknown\n");
+> > -	else
+> > -		return show_shost_mode(shost->hostt->supported_mode, buf);
+> > +	if (supported_mode == MODE_UNKNOWN)
+> > +		/* by default this should be initiator */
+> > +		supported_mode = MODE_INITIATOR;
+> > +
+> > +	return show_shost_mode(shost->hostt->supported_mode, buf);
+> 
+> should be:
+> 
+> return show_shost_mode(supported_mode, buf);
 
-Well if citing standards documents at people is rudeness so be it.
+Yes, sorry ... code in haste etc.
 
-Alan
+James
+
+
