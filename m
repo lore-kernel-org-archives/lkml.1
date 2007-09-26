@@ -1,85 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760456AbXIZPl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbXIZPmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760456AbXIZPl2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 11:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXIZPlV
+	id S1757111AbXIZPmJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 11:42:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXIZPl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 11:41:21 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41802 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750950AbXIZPlU (ORCPT
+	Wed, 26 Sep 2007 11:41:56 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:12144 "EHLO
+	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754743AbXIZPlz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 11:41:20 -0400
-Date: Wed, 26 Sep 2007 08:40:35 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Schwartz <davids@webmaster.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Michlmayr <tbm@cyrius.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20070926084035.0bda3eed@fujitsu-loaner>
-In-Reply-To: <20070926133138.GA23187@elte.hu>
-References: <20070926112919.GN3337@deprecation.cyrius.com>
-	<MDEHLPKNGKAHNMBLJOLKCEPKHAAC.davids@webmaster.com>
-	<20070926133138.GA23187@elte.hu>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Sep 2007 11:41:55 -0400
+X-BigFish: VP
+X-FB-SS: 0,
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Wed, 26 Sep 2007 09:41:06 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: "Joerg Pommnitz" <pommnitz@yahoo.com>, cebbert@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on
+ AMD Geode LX800
+Message-ID: <20070926154106.GG7582@cosmic.amd.com>
+References: <637040.99806.qm@web51411.mail.re2.yahoo.com>
+ <46FA6858.5060908@zytor.com>
+MIME-Version: 1.0
+In-Reply-To: <46FA6858.5060908@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 26 Sep 2007 15:40:48.0969 (UTC)
+ FILETIME=[9C9A1B90:01C80053]
+X-WSS-ID: 6AE4A20B2ZC352695-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 15:31:38 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * David Schwartz <davids@webmaster.com> wrote:
-> 
-> > > > I think the real fix would be for iperf to use blocking network
-> > > > IO though, or maybe to use a POSIX mutex or POSIX semaphores.
-> > >
-> > > So it's definitely not a bug in the kernel, only in iperf?
+On 26/09/07 07:10 -0700, H. Peter Anvin wrote:
+> Joerg Pommnitz wrote:
+> > Hello all,
+> > this is what git bisect told me about the problem:
 > > 
-> > Martin:
+> > jpo@jpo-laptop:~/linux-2.6$ git bisect good
+> > 4fd06960f120e02e9abc802a09f9511c400042a5 is first bad commit
+> > commit 4fd06960f120e02e9abc802a09f9511c400042a5
+> > Author: H. Peter Anvin <hpa@zytor.com>
+> > Date:   Wed Jul 11 12:18:56 2007 -0700
 > > 
-> > Actually, in this case I think iperf is doing the right thing
-> > (though not the best thing) and the kernel is doing the wrong
-> > thing. [...]
+> >     Use the new x86 setup code for i386
+> > 
+> >     This patch hooks the new x86 setup code into the Makefile machinery.  It
+> >     also adapts boot/tools/build.c to a two-file (as opposed to three-file)
+> >     universe, and simplifies it substantially.
+> > 
+> >     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > 
+> > :040000 040000 6560eb5b7e40d93813276544bced8c478f9067f5 fe5f90d9ca08e526559815789175602ba2c51743 M      arch
+> > 
 > 
-> it's not doing the right thing at all. I had a quick look at the
-> source code, and the reason for that weird yield usage was that
-> there's a locking bug in iperf's "Reporter thread" abstraction and
-> apparently instead of fixing the bug it was worked around via a
-> horrible yield() based user-space lock.
+> There is something very fishy.
 > 
-> the (small) patch below fixes the iperf locking bug and removes the 
-> yield() use. There are numerous immediate benefits of this patch:
+> The only documentation you've given us so far is a screen shot which
+> contained a message ("BIOS data check successful") which doesn't occur
+> in the kernel.
 > 
->  - iperf uses _much_ less CPU time. On my Core2Duo test system,
-> before the patch it used up 100% CPU time to saturate 1 gigabit of
-> network traffic to another box. With the patch applied it now uses 9%
-> of CPU time.
+> The loader string doesn't look all that familiar either; it looks like
+> an extremely old version of SYSLINUX, but that doesn't contain that
+> message either.
 > 
->  - sys_sched_yield() is removed altogether
+> INT 6 is #UD, the undefined instruction exception.  This is consistent with:
 > 
->  - i was able to measure much higher bandwidth over localhost for 
->    example. This is the case for over-the-network measurements as
-> well.
+> > Its hitting a bug - specifically (from bootmem.c:125):
+> > BUG_ON(PFN_DOWN(addr) >= bdata->node_low_pfn);
 > 
->  - the results are also more consistent and more deterministic, hence 
->    more reliable as a benchmarking tool. (the reason for that is that
->    more CPU time is spent on actually delivering packets, instead of
->    mindlessly polling on the user-space "lock", so we actually max out
->    the CPU, instead of relying on the random proportion the workload
-> was able to make progress versus wasting CPU time on polling.)
-> 
-> sched_yield() is almost always the symptom of broken locking or other 
-> bug. In that sense CFS does the right thing by exposing such bugs =B-)
->  
-> 	Ingo
+> However, all that tells us is that reserve_bootmem_core() was either
+> called with a bad address or bdata->node_low_pfn is garbage.  In
+> particular, without knowing how it got there it's hard to know for sure.
 
-A similar patch has already been submitted, since BSD wouldn't work
-without it.
+/me swings a +5 JTAG debugger
+
+Its the latter - max_pfn as read by find_max_pfn() in arch/i386/e820.c
+is being set to 9F (640k) in the broken case, this due to the
+the e820 map looking something like this:
+
+Address   Size      Type
+00000000  0009FC00  1
+0009FC00  00000400  2
+000E0000  00002000  2
+
+(Yep, thats it - thats the list.  e820.nr_map is indeed 3). 
+
+Long story short, bdata->node_low_pfn gets set to 9F, and When we 
+try to allocate the bootmem bitmap (at _pa_symbol(_text), which is 
+page 0x100), then the system gets appropriately angry.
+
+As background, I'm using syslinux 3.36 as my loader here - I've used this
+exact same version for a very long time, so I don't blame it in the least.
+Something is getting confused in the early kernel, and whatever that
+something is, a still unknown change in a newer version of the BIOS
+fixed it.  The search goes on.
+
+Jordan
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
+
