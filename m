@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbXIZHQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbXIZHWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbXIZHQv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 03:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbXIZHQo
+	id S1754845AbXIZHWl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 03:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbXIZHWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 03:16:44 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46908 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750773AbXIZHQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 03:16:43 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX18jJu8EgXIjCgGEAuYo1834uP0Cs8DGWWjGsaI73Y
-	KSxefkOKE/5Dgp
-Message-ID: <46FA06C6.5090703@gmx.net>
-Date: Wed, 26 Sep 2007 09:14:14 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Jonathan Corbet <corbet@lwn.net>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/4] new timerfd API v2 - new timerfd API
-References: <12492.1190738426@lwn.net> <Pine.LNX.4.64.0709251035330.9111@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0709251035330.9111@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 26 Sep 2007 03:22:33 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:64427 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751076AbXIZHWc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 03:22:32 -0400
+Date: Wed, 26 Sep 2007 09:21:56 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: subsystem_unregister() breakage in -mm
+Message-ID: <20070926092156.2f281eea@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070926024121.GA28124@kroah.com>
+References: <E1IaIs6-00051t-00@dorka.pomaz.szeredi.hu>
+	<20070925225330.GA26235@kroah.com>
+	<E1IaJQL-00053O-00@dorka.pomaz.szeredi.hu>
+	<20070926024121.GA28124@kroah.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 25 Sep 2007 19:41:21 -0700,
+Greg KH <greg@kroah.com> wrote:
 
+> Ok, here's a patch that fixes this for me.  It should go on top of the
+> -mm tree.  Let me know of this works or not.
 
-Davide Libenzi wrote:
-> On Tue, 25 Sep 2007, Jonathan Corbet wrote:
+Looks sane to me.
+
+> In the end, we need to dynamically allocate these subsystems to properly
+> fix this.  In looking through the tree, there really isn't that many of
+> them, so I'll try to knock that out later this week.
+
+What they need at least is a dynamically allocated k_name. Same goes
+for all those objects that use set_kset_name(), and there are quite a
+few of those...
+
 > 
->> One quick question:
->>
->>> Like the previous timerfd API implementation, read(2) and poll(2) are supported
->>> (with the same interface).
->> Looking at that interface, it appears that a process doing a read() on a
->> timerfd with no timer set will block for a very long time.  It's an
->> obvious "don't do that" situation, but perhaps we could help an
->> occasional developer get a clue by returning something like -EINVAL when
->> the timer has not been set?
 > 
-> That is the same as you try to read once more after an expired timer. You 
-> won't wake up until the next timer event will show up. That is, after at 
-> most TP time for periodic timers, or after the time  the next 
-> timerfd_settime() will setup.
-> I'd like to keep the "timerfd not set yet" and the "timerfd already 
-> expired and not re-armed" acting the same way. That is, wait till next 
-> event happen (unless O_NONBLOCK of course).
-
-Yes.  The timer_settime() and read() might for example be done in separate
-threads, and it would make sense for the read() to block until the timer
-has been armed.
-
-Cheers,
-
-Michael
-
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
+> thanks,
+> 
+> greg k-h
+> 
+> ---
+>  lib/kobject.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> --- a/lib/kobject.c
+> +++ b/lib/kobject.c
+> @@ -487,11 +487,11 @@ void kobject_cleanup(struct kobject * ko
+>  	struct kobject * parent = kobj->parent;
+> 
+>  	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
+> -	kfree(kobj->k_name);
+> -	kobj->k_name = NULL;
+> -	if (t && t->release)
+> +	if (t && t->release) {
+>  		t->release(kobj);
+> -	else
+> +		kfree(kobj->k_name);
+> +		kobj->k_name = NULL;
+> +	} else
+>  		pr_debug("kobject '%s' does not have a release() function, "
+>  			"if this is not a directory kobject, it is broken "
+>  			"and must be fixed.\n",
