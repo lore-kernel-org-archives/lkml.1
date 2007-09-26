@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbXIZHwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbXIZIEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbXIZHwZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 03:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbXIZHwR
+	id S1753567AbXIZIEu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 04:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbXIZIEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 03:52:17 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:5729
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750698AbXIZHwR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 03:52:17 -0400
-Message-Id: <46FA2C17.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Wed, 26 Sep 2007 08:53:27 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <shemminger@linux-foundation.org>
-Cc: <bridge@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Module use count must be updated as bridges are
-	created/destroyed
+	Wed, 26 Sep 2007 04:04:35 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44668 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750863AbXIZIEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 04:04:34 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/F4xpYrwfFi/2Wsak/+KmjflFNGtyVm5vOqzIMDj
+	1STGLNgkwwTAvP
+Subject: Re: [git] CFS-devel, latest code
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070925094712.GA29138@elte.hu>
+References: <20070924214537.GA18980@elte.hu>
+	 <1190700652.6482.7.camel@Homer.simpson.net>
+	 <1190705759.11910.10.camel@Homer.simpson.net>
+	 <1190709207.11226.6.camel@Homer.simpson.net>
+	 <20070925091331.GA22905@elte.hu>
+	 <1190711858.13861.10.camel@Homer.simpson.net>
+	 <20070925094712.GA29138@elte.hu>
+Content-Type: text/plain
+Date: Wed, 26 Sep 2007 10:04:29 +0200
+Message-Id: <1190793869.3240.14.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Otherwise 'modprobe -r' on a module having a dependency on bridge will
-implicitly unload bridge, bringing down all connectivity that was using
-bridges.
+On Tue, 2007-09-25 at 11:47 +0200, Ingo Molnar wrote:
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> Maybe there's more to come: if we can get CONFIG_FAIR_USER_SCHED to work 
+> properly then your Xorg will have a load-independent 50% of CPU time all 
+> to itself. (Group scheduling is quite impressive already: i can log in 
+> as root without feeling _any_ effect from a perpetual 'hackbench 100' 
+> running as uid mingo. Fork bombs no more.) Will the Amarok gforce plugin 
+> like that CPU time splitup? (or is most of the gforce overhead under 
+> your user uid?)
+> 
+> it could also work out negatively, _sometimes_ X does not like being too 
+> high prio. (weird as that might be.) So we'll see.
 
- net/bridge/br_if.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+I piddled around with fair users this morning, and it worked well.  With
+Xorg and Gforce as one user (X and Gforce are synchronous ATM), and a
+make -j30 as another, I could barely tell the make was running.
+Watching a dvd, I couldn't tell. Latencies were pretty darn good
+throughout three hours of testing this and that.
 
---- linux-2.6.23-rc8/net/bridge/br_if.c	2007-09-26 09:23:54.000000000 +0200
-+++ 2.6.23-rc8-bridge-module-get-put/net/bridge/br_if.c	2007-09-25 14:31:01.000000000 +0200
-@@ -276,6 +276,11 @@ int br_add_bridge(const char *name)
- 	if (!dev)
- 		return -ENOMEM;
- 
-+	if (!try_module_get(THIS_MODULE)) {
-+		free_netdev(dev);
-+		return -ENOENT;
-+	}
-+
- 	rtnl_lock();
- 	if (strchr(dev->name, '%')) {
- 		ret = dev_alloc_name(dev, dev->name);
-@@ -294,6 +299,8 @@ int br_add_bridge(const char *name)
- 		unregister_netdevice(dev);
-  out:
- 	rtnl_unlock();
-+	if (ret)
-+		module_put(THIS_MODULE);
- 	return ret;
- }
- 
-@@ -321,6 +328,8 @@ int br_del_bridge(const char *name)
- 		del_br(netdev_priv(dev));
- 
- 	rtnl_unlock();
-+	if (ret == 0)
-+		module_put(THIS_MODULE);
- 	return ret;
- }
- 
-
-
+	-Mike
 
