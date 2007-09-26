@@ -1,117 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXIZDhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760819AbXIZDhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759429AbXIZDhE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 23:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759646AbXIZDeG
+	id S1760819AbXIZDhp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 23:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759946AbXIZDeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 23:34:06 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35507 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759910AbXIZDeD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 23:34:03 -0400
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 25/25] Unionfs: use poison.h for safe poison pointers
-Date: Tue, 25 Sep 2007 23:10:04 -0400
-Message-Id: <11907762153804-git-send-email-ezk@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.2
-X-MailKey: Erez_Zadok
-In-Reply-To: <11907762042481-git-send-email-ezk@cs.sunysb.edu>
-References: <11907762042481-git-send-email-ezk@cs.sunysb.edu>
+	Tue, 25 Sep 2007 23:34:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58069 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759553AbXIZDeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 23:34:08 -0400
+Message-ID: <46F9D328.4030801@garzik.org>
+Date: Tue, 25 Sep 2007 23:34:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: FUJITA Tomonori <tomof@acm.org>, James.Bottomley@SteelEye.com,
+       akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: queued patches for SCSI for 2.6.24
+References: <1190768402.8707.20.camel@localhost.localdomain> <20070925065233Q.tomof@acm.org> <1190770955.8707.23.camel@localhost.localdomain> <20070925073735U.tomof@acm.org> <46F9C5ED.6050505@garzik.org> <20070926025608.GA3899@parisc-linux.org>
+In-Reply-To: <20070926025608.GA3899@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This also fixes a compile warning on 64-bit systems.
+Matthew Wilcox wrote:
+> On Tue, Sep 25, 2007 at 10:37:33PM -0400, Jeff Garzik wrote:
+>> Are there any const-ness worries for scsi_host_template, or plans for 
+>> the future?  I do not see any other examples of the host template 
+>> members getting modified.
+> 
+> Goodness, Jeff, you haven't looked too hard.  There's dozens of examples
+> I've come across trawling the horrible unmaintained drivers.  I'd love
+> to see scsi_host_template become const, but it's not happening any time
+> soon, and we can address this little piece when the time comes.
 
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
----
- fs/unionfs/debug.c |   16 ++++++----------
- fs/unionfs/union.h |    1 +
- 2 files changed, 7 insertions(+), 10 deletions(-)
+Well, sure, the driver is the owner of that memory.
 
-diff --git a/fs/unionfs/debug.c b/fs/unionfs/debug.c
-index 09b52ce..b103eb9 100644
---- a/fs/unionfs/debug.c
-+++ b/fs/unionfs/debug.c
-@@ -25,14 +25,6 @@
- 		}							\
- 	} while (0)
- 
--#if BITS_PER_LONG == 32
--#define POISONED_PTR		((void*) 0x5a5a5a5a)
--#elif BITS_PER_LONG == 64
--#define POISONED_PTR		((void*) 0x5a5a5a5a5a5a5a5a)
--#else
--#error Unknown BITS_PER_LONG value
--#endif /* BITS_PER_LONG != known */
--
- /*
-  * __unionfs_check_{inode,dentry,file} perform exhaustive sanity checking on
-  * the fan-out of various Unionfs objects.  We check that no lower objects
-@@ -50,6 +42,7 @@ void __unionfs_check_inode(const struct inode *inode,
- 	struct inode *lower_inode;
- 	struct super_block *sb;
- 	int printed_caller = 0;
-+	void *poison_ptr;
- 
- 	/* for inodes now */
- 	BUG_ON(!inode);
-@@ -88,12 +81,13 @@ void __unionfs_check_inode(const struct inode *inode,
- 		}
- 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
- 		if (lower_inode) {
-+			memset(&poison_ptr, POISON_INUSE, sizeof(void *));
- 			if (unlikely(bindex < istart || bindex > iend)) {
- 				PRINT_CALLER(fname, fxn, line);
- 				printk(" Ci5: inode/linode=%p:%p bindex=%d "
- 				       "istart/end=%d:%d\n", inode,
- 				       lower_inode, bindex, istart, iend);
--			} else if (unlikely(lower_inode == POISONED_PTR)) {
-+			} else if (unlikely(lower_inode == poison_ptr)) {
- 				/* freed inode! */
- 				PRINT_CALLER(fname, fxn, line);
- 				printk(" Ci6: inode/linode=%p:%p bindex=%d "
-@@ -131,6 +125,7 @@ void __unionfs_check_dentry(const struct dentry *dentry,
- 	struct super_block *sb;
- 	struct vfsmount *lower_mnt;
- 	int printed_caller = 0;
-+	void *poison_ptr;
- 
- 	BUG_ON(!dentry);
- 	sb = dentry->d_sb;
-@@ -257,12 +252,13 @@ void __unionfs_check_dentry(const struct dentry *dentry,
- 	for (bindex = sbstart(sb); bindex < sbmax(sb); bindex++) {
- 		lower_inode = unionfs_lower_inode_idx(inode, bindex);
- 		if (lower_inode) {
-+			memset(&poison_ptr, POISON_INUSE, sizeof(void *));
- 			if (unlikely(bindex < istart || bindex > iend)) {
- 				PRINT_CALLER(fname, fxn, line);
- 				printk(" CI5: dentry/linode=%p:%p bindex=%d "
- 				       "istart/end=%d:%d\n", dentry,
- 				       lower_inode, bindex, istart, iend);
--			} else if (unlikely(lower_inode == POISONED_PTR)) {
-+			} else if (unlikely(lower_inode == poison_ptr)) {
- 				/* freed inode! */
- 				PRINT_CALLER(fname, fxn, line);
- 				printk(" CI6: dentry/linode=%p:%p bindex=%d "
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index 8df44a9..510267f 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -43,6 +43,7 @@
- #include <linux/fs_stack.h>
- #include <linux/magic.h>
- #include <linux/log2.h>
-+#include <linux/poison.h>
- 
- #include <asm/mman.h>
- #include <asm/system.h>
--- 
-1.5.2.2
+We're talking about common code.
+
+If everybody agrees SHT is R/W in the core, Fujita-san's patch is fine.
+
+	Jeff
+
+
 
