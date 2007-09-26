@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762218AbXIZTnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbXIZTrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762218AbXIZTnq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 15:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbXIZTng
+	id S1761412AbXIZTrw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 15:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbXIZTrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 15:43:36 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48119 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758340AbXIZTnf convert rfc822-to-8bit (ORCPT
+	Wed, 26 Sep 2007 15:47:45 -0400
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:38344 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755847AbXIZTro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 15:43:35 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 26 Sep 2007 21:42:30 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: What's in linux1394-2.6.git
-To: linux-kernel@vger.kernel.org
-cc: linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.37c4d4be47f119fa@s5r6.in-berlin.de>
+	Wed, 26 Sep 2007 15:47:44 -0400
+Message-ID: <46FAB75D.9020800@tiscali.nl>
+Date: Wed, 26 Sep 2007 21:47:41 +0200
+From: roel <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: INLINE
+To: Matthew Wilcox <willy@linux.intel.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] dmapool: Validate parameters to dma_pool_create
+References: <20070926185757.GM3899@parisc-linux.org> <11908332793750-git-send-email-willy@linux.intel.com>
+In-Reply-To: <11908332793750-git-send-email-willy@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I heard that project tree maintainers are encouraged to post merge plans
-in time, so I'm going to do so now too.  Although this time there isn't
-much in store for drivers/{ieee1394,firewire} for the merge window
-because we all got sidetracked lately...  It's basically bugfixes which
-I felt were too late for 2.6.23.
+Matthew Wilcox wrote:
+> Check that 'align' is a power of two, like the API specifies.
+> Align 'size' to 'align' correctly -- the current code has an off-by-one.
+> The ALIGN macro in kernel.h doesn't.
+> 
+> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> ---
+>  mm/dmapool.c |   15 ++++++++-------
+>  1 files changed, 8 insertions(+), 7 deletions(-)
+> 
+> diff --git a/mm/dmapool.c b/mm/dmapool.c
+> index a359b5e..f5d12a7 100644
+> --- a/mm/dmapool.c
+> +++ b/mm/dmapool.c
+> @@ -107,17 +107,18 @@ struct dma_pool *dma_pool_create(const char *name, struct device *dev,
+>  {
+>  	struct dma_pool *retval;
+>  
+> -	if (align == 0)
+> +	if (align == 0) {
+>  		align = 1;
+> -	if (size == 0)
+> +	} else if (align & (align - 1)) {
+>  		return NULL;
+> -	else if (size < align)
+> -		size = align;
+> -	else if ((size % align) != 0) {
+> -		size += align + 1;
+> -		size &= ~(align - 1);
+>  	}
+>  
+> +	if (size == 0)
+> +		return NULL;
 
+The brackets in the first if/else are not required, and you could combine the two statements:
 
-To be merged:
-
-Jean Delvare (1):
-      ieee1394: pcilynx: I2C cleanups
-
-Satyam Sharma (1):
-      ieee1394: Fix kthread stopping in nodemgr_host_thread
-
-Stefan Richter (18):
-      ieee1394: eth1394: superfluous local variable
-      ieee1394: eth1394: fix lock imbalance
-      ieee1394: pcilynx: superfluous local variables
-      ieee1394: sbp2: fix unsafe iteration over list of devices
-      firewire: optimize fw_core_add_address_handler
-      firewire: fw-core: local variable shadows a global one
-      firewire: fw-sbp2: always enable IRQs before calling command ORB callback
-      firewire: fw-sbp2: add support for multiple logical units per target
-      firewire: fw-sbp2: expose module parameter for workarounds
-      firewire: fw-sbp2: use an own workqueue (fix system responsiveness)
-      firewire: fw-ohci: enforce read order for selfID generation
-      firewire: fw-ohci: fix includes
-      firewire: fw-ohci: reorder includes
-      firewire: fw-ohci: log posted write errors
-      firewire: fw-ohci: missing dma_unmap_single
-      firewire: fw-ohci: check for misconfigured bus (phyID == 63)
-      ieee1394: nodemgr: fix leak of struct csr1212_keyval
-      ieee1394: csr1212: proper refcounting
-
-
-On hold for debugging:
-
-Kristian Høgsberg (1):
-      firewire: Fix pci resume to not pass in a __be32 config rom.
-
--- 
-Stefan Richter
--=====-=-=== =--= ==-=-
-http://arcgraph.de/sr/
+	if (align == 0)
+		align = 1;
+	else if (align & (align - 1) || size == 0)
+		return NULL;
+> +
+> +	if ((size % align) != 0)
+> +		size = ALIGN(size, align);
+> +
+>  	if (allocation == 0) {
+>  		if (PAGE_SIZE < size)
+>  			allocation = size;
 
