@@ -1,85 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbXIZFOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbXIZFOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756282AbXIZFOT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 01:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbXIZFOI
+	id S1753523AbXIZFOd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 01:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbXIZFOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 01:14:08 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:10230 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752761AbXIZFOH (ORCPT
+	Wed, 26 Sep 2007 01:14:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:28894 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756598AbXIZFOU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 01:14:07 -0400
-Date: Tue, 25 Sep 2007 22:13:33 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: akepner@sgi.com
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       David Miller <davem@davemloft.net>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org, jejb <james.bottomley@steeleye.com>
-Subject: Re: [PATCH 1/4] dma: add dma_flags_set_dmaflush() to dma interface
-Message-Id: <20070925221333.bb722dc4.randy.dunlap@oracle.com>
-In-Reply-To: <20070926000057.GL30013@sgi.com>
-References: <20070926000057.GL30013@sgi.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 26 Sep 2007 01:14:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=k4dG8uvvLMtf6QTJfSCGpssbvr4BAa99j/mQTpKI3xXX0aU4POCMlblLVgDgo1wUFwxhH6SasCtimE4BDsrHcSWDRPMZVMOeVDUOZtaF8HJJX2OqP8vg8dBtqTuv7O2AvqOwSjJVm90Zs9CEW1wtsNg9NxG0DPbDD8noUE70wo8=
+Date: Wed, 26 Sep 2007 13:14:12 +0400
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: venkatesh.pallipadi@intel.com, akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc8-mm1: somewhat broken forced HPET on ICH5
+Message-ID: <20070926091412.GA1752@martell.zuzino.mipt.ru>
+References: <20070925205006.GA1766@martell.zuzino.mipt.ru> <1190756717.17409.80.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190756717.17409.80.camel@chaos>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Sep 2007 17:00:57 -0700 akepner@sgi.com wrote:
-
-[adding James Bottomley to cc: since I think he's interested in
-all of these patches]
-
-
-> Introduce the dma_flags_set_dmaflush() interface and give it
-> a default no-op implementation.
+On Tue, Sep 25, 2007 at 11:45:17PM +0200, Thomas Gleixner wrote:
+> On Wed, 2007-09-26 at 00:50 +0400, Alexey Dobriyan wrote:
+> > ich-force-hpet-ich5-quirk-to-force-detect-enable.patch
+> > is causing the following on Etch boot:
+> > 
+> > 	[initscripts as usual]
+> > 	Setting system clock:
+> > 	[nothing happens for several seconds]
+> > 	select to /dev/rtc to wait for clock tick timed out
+> > 	[initscripts as usual]
+> > 
+> > Then clock is skewed for 3 hours (GMT/MSK difference).
 > 
-> Signed-off-by: Arthur Kepner <akepner@sgi.com>
-> -- 
+> Can you please check, whether 
 > 
->  dma-mapping.h |    7 +++++++
->  1 file changed, 7 insertions(+)
+> http://tglx.de/projects/hrtimers/2.6.23-rc7/patch-2.6.23-rc7-hrt1.patch
 > 
-> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-> index 2dc21cb..a0f27b9 100644
-> --- a/include/linux/dma-mapping.h
-> +++ b/include/linux/dma-mapping.h
-> @@ -99,4 +99,11 @@ static inline void dmam_release_declared_memory(struct device *dev)
->  }
->  #endif /* ARCH_HAS_DMA_DECLARE_COHERENT_MEMORY */
->  
-> +#ifndef ARCH_CAN_REORDER_DMA
-> +static inline int
-> +dma_flags_set_dmaflush(int dir) {
-> +	return (dir);
-> +}
-> +#endif /* ARCH_CAN_REORDER_DMA */
-> +
->  #endif
+> has the same problem ? It contains the hpet force enable patches as
+> well, but lacks the other crap^Wfeatures of -mm :)
 
-
-1.  Function signature should be on one line if possible (and it is).
-Aw crud, I looked at dma-mapping.h and it uses this format sometimes.
-Well, it's undesirable, so please don't propagate it.
-
-2.  No parens on return: it's not a function.
-
-static inline int dma_flags_set_dmaflush(int dir)
-{
-	return dir;
-}
-
-
-Similar comments for patch 2/4: sn-ia64.
-
----
-~Randy
-Phaedrus says that Quality is about caring.
+Yes, exactly same delay and clock skew.
