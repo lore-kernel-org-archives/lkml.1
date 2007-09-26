@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbXIZCGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbXIZCNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbXIZCGq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 22:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbXIZCGh
+	id S1755328AbXIZCNK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 22:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbXIZCMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 22:06:37 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:60895 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753433AbXIZCGg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 22:06:36 -0400
-Date: Wed, 26 Sep 2007 07:33:07 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, randy.dunlap@oracle.com
-Subject: Re: [PATCH 1/3] Fix coding style
-Message-ID: <20070926020307.GA14473@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20070925144443.GA17858@elte.hu> <20070925162502.GA3231@linux.vnet.ibm.com> <20070925162807.GB3231@linux.vnet.ibm.com> <200709252116.22541.ioe-lkml@rameria.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709252116.22541.ioe-lkml@rameria.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Tue, 25 Sep 2007 22:12:55 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:55361 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752949AbXIZCMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Sep 2007 22:12:54 -0400
+Date: Wed, 26 Sep 2007 11:12:42 +0900
+To: James.Bottomley@SteelEye.com
+Cc: tomof@acm.org, akpm@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: queued patches for SCSI for 2.6.24
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <1190770955.8707.23.camel@localhost.localdomain>
+References: <1190768402.8707.20.camel@localhost.localdomain>
+	<20070925065233Q.tomof@acm.org>
+	<1190770955.8707.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070925073735U.tomof@acm.org>
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 25, 2007 at 09:16:20PM +0200, Ingo Oeser wrote:
-> On Tuesday 25 September 2007, Srivatsa Vaddagiri wrote:
-> > Index: current/kernel/sched_debug.c
-> > ===================================================================
-> > --- current.orig/kernel/sched_debug.c
-> > +++ current/kernel/sched_debug.c
-> > @@ -239,11 +239,7 @@ static int
-> >  root_user_share_read_proc(char *page, char **start, off_t off, int count,
-> >  				 int *eof, void *data)
-> >  {
-> > -	int len;
-> > -
-> > -	len = sprintf(page, "%d\n", init_task_grp_load);
-> > -
-> > -	return len;
-> > +	return sprintf(page, "%d\n", init_task_grp_load);
-> >  }
-> >  
-> >  static int
-> > @@ -297,7 +293,7 @@ static int __init init_sched_debug_procf
-> >  	pe->proc_fops = &sched_debug_fops;
-> >  
-> >  #ifdef CONFIG_FAIR_USER_SCHED
-> > -	pe = create_proc_entry("root_user_share", 0644, NULL);
-> > +	pe = create_proc_entry("root_user_cpu_share", 0644, NULL);
-> >  	if (!pe)
-> >  		return -ENOMEM;
-> 
-> What about moving this debug stuff under debugfs?
-> Please consider using the functions in <linux/debugfs.h> .
-> They compile into nothing, if DEBUGFS is not compiled in
-> and have already useful functions for reading/writing integers
-> and booleans.
-> 
-Hi Ingo,
+On Tue, 25 Sep 2007 20:42:35 -0500
+James Bottomley <James.Bottomley@SteelEye.com> wrote:
 
-This is not debug stuff. It is a tunable to give the root user more
-weight with respect to the other users.
+> On Wed, 2007-09-26 at 10:28 +0900, FUJITA Tomonori wrote:
+> > On Tue, 25 Sep 2007 20:00:02 -0500
+> > James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> > 
+> > > Andrew asked that I provide a status report of pending updates.  The
+> > > list is attached below.  It's pretty much driver updates and minor bug
+> > > fixes.  The main functionality changes are Kay's sysfs updates and the
+> > > shift of the ULD attachement towards the block prep function.
+> > 
+> > Can we make new 'supporrted_mode' and 'active_mode' attributes look
+> > better?
+> > 
+> > http://marc.info/?l=linux-scsi&m=118991196128245&w=2
+> 
+> Sure, but Jeff's suggestion was a good one to avoid me having to change
+> hundreds of files.  Could you roll it up and resubmit?
 
+This can be cleanly applied to scsi-misc.
+
+-
+From: FUJITA Tomonori <tomof@acm.org>
+Subject: [PATCH] set supported_mode to MODE_INITIATOR by default
+
+This sets supported_mode to MODE_INITIATOR if a lld doesn't specify
+supported_mode in scsi_host_template.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ drivers/scsi/hosts.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+index adc9559..694015d 100644
+--- a/drivers/scsi/hosts.c
++++ b/drivers/scsi/hosts.c
+@@ -342,6 +342,10 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
+ 	shost->unchecked_isa_dma = sht->unchecked_isa_dma;
+ 	shost->use_clustering = sht->use_clustering;
+ 	shost->ordered_tag = sht->ordered_tag;
++
++	if (!sht->supported_mode)
++		sht->supported_mode = MODE_INITIATOR;
++
+ 	shost->active_mode = sht->supported_mode;
+ 
+ 	if (sht->max_host_blocked)
 -- 
-regards,
-Dhaval
+1.5.2.4
+
