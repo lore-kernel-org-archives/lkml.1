@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXIZKsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbXIZLAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbXIZKsl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 06:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbXIZKsd
+	id S1756684AbXIZLAS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 07:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbXIZLAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 06:48:33 -0400
-Received: from sorrow.cyrius.com ([65.19.161.204]:1876 "EHLO sorrow.cyrius.com"
+	Wed, 26 Sep 2007 07:00:05 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:58572 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753829AbXIZKsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 06:48:32 -0400
-Date: Wed, 26 Sep 2007 12:48:14 +0200
-From: Martin Michlmayr <tbm@cyrius.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20070926104814.GM3337@deprecation.cyrius.com>
-References: <20070926085202.GE3337@deprecation.cyrius.com> <1190802208.7318.5.camel@Homer.simpson.net>
-MIME-Version: 1.0
+	id S1753846AbXIZLAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 07:00:04 -0400
+Date: Wed, 26 Sep 2007 13:01:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Henry Nestler <Henry.Ne@Arcor.de>
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+Subject: Re: kbuild: LDFLAGS_MODULE unusable for external module builds (2.6.23-rc2)
+Message-ID: <20070926110130.GA20950@uranus.ravnborg.org>
+References: <46F8D9B8.3090806@Arcor.de> <20070925192250.GA14689@uranus.ravnborg.org> <46FA2CC0.2000204@Arcor.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1190802208.7318.5.camel@Homer.simpson.net>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <46FA2CC0.2000204@Arcor.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mike Galbraith <efault@gmx.de> [2007-09-26 12:23]:
-> I noticed on the iperf website a patch which contains sched_yield().
-> http://dast.nlanr.net/Projects/Iperf2.0/patch-iperf-linux-2.6.21.txt
+> >>What macro should set for linker parameters of foo.o ? I'm not shure.
+> >Have you read:
+> >Documentation/kbuild/makfilefiles.txt?
 > 
-> Do you have that patch applied by any chance?  If so, it might be a
-> worth while to try it without it.
+> Yes. This was a *very* helpfull. And many examples spokes about 
+> LDFLAGS_$@ there. Not directly described for modules.
 
-Yes, this patch was applied.  When I revert it, I get the same (high)
-performance with both kernels.
--- 
-Martin Michlmayr
-http://www.cyrius.com/
+Took a deeper look.
+I saw one reference to LDFLAGS_$@ that is wrong:
+    LDFLAGS             Generic $(LD) options
+
+        Flags used for all invocations of the linker.
+        Often specifying the emulation is sufficient.
+
+        Example:
+                #arch/s390/Makefile
+                LDFLAGS         := -m elf_s390
+        Note: EXTRA_LDFLAGS and LDFLAGS_$@ can be used to further customise
+        the flags used. See chapter 7.
+
+The chapter reference is also bad...
+The other references to the LDFLAGS_$@ are in other situations - it is
+used in several places.
+
+If your example requires the LDFALGS_$@ I wil introduce it - for now
+it has not been required (except for vdso support where it was hacked).
+
+	Sam
