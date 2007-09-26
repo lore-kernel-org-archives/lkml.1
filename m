@@ -1,96 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbXIZXWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbXIZXaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbXIZXWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 19:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbXIZXWr
+	id S1753638AbXIZXaI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 19:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXIZX34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 19:22:47 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:16637 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbXIZXWq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 19:22:46 -0400
-Date: Wed, 26 Sep 2007 16:20:59 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jonathan Campbell <jon@nerdgrounds.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Patches for tiny 386 kernels, again. Linux kernel
- 2.6.22.7
-Message-Id: <20070926162059.e6eb5e93.randy.dunlap@oracle.com>
-In-Reply-To: <46FAA808.90004@nerdgrounds.com>
-References: <46F77A85.6020202@nerdgrounds.com>
-	<20070924104940.50a52cf3.randy.dunlap@oracle.com>
-	<46FAA808.90004@nerdgrounds.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 26 Sep 2007 19:29:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41924 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752008AbXIZX34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 19:29:56 -0400
+Message-ID: <46FAEB5B.3000001@redhat.com>
+Date: Wed, 26 Sep 2007 19:29:31 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.23-rc8: Known regressions from 2.6.22
+References: <200709270127.40471.rjw@sisk.pl>
+In-Reply-To: <200709270127.40471.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 11:42:16 -0700 Jonathan Campbell wrote:
+On 09/26/2007 07:27 PM, Rafael J. Wysocki wrote:
+> 
+> Subject:	Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on AMD Geode LX800
+> Submitter:	Joerg Pommnitz <pommnitz@yahoo.com>
+> References:	http://lkml.org/lkml/2007/9/26/91
+> 		http://bugzilla.kernel.org/show_bug.cgi?id=9086
+> Caused-By:	H. Peter Anvin <hpa@zytor.com>
+> 		commit 4fd06960f120e02e9abc802a09f9511c400042a5
+> 		Use the new x86 setup code for i386
+> Handled-By:	H. Peter Anvin <hpa@zytor.com>
+> Patch:		http://lkml.org/lkml/2007/9/26/374
+> 
 
-> Here is the DMI patch again, written against linux-2.6.23-rc8,
-> with some of the #ifdef CONFIG_DMI's removed and moved
-> to include/linux/dmi.h. Putting them there in the way I've done
-> ensures that you don't have to put #ifdef CONFIG_DMI
-> around each dmi_check_machine() and that you don't
-> have to apply little patches to so many device drivers.
-
-Damaged as the patch is, I was able to apply it by using
-'patch -l' (ignore whitespace) + some fuzz.  Not something that
-Linus or Andrew would or should do.
-
-I built and booted the kernel, it's running fine (x86_32 notebook).
-
-
-
-> diff -u -r linux-2.6.23-rc8-old/init/Kconfig linux-2.6.23-rc8/init/Kconfig
-> --- linux-2.6.23-rc8-old/init/Kconfig    2007-09-21 22:38:23.000000000 +0000
-> +++ linux-2.6.23-rc8/init/Kconfig    2007-09-26 00:03:05.000000000 +0000
-> @@ -542,6 +542,18 @@
->        on EMBEDDED systems.  /proc/vmstat will only show page counts
->        if VM event counters are disabled.
->  
-> +config DMI
-> +    default y
-> +    bool "Enable DMI support" if EMBEDDED
-> +    depends on X86
-> +    help
-> +      This enables support for processing the Desktop Management
-> +      Interface structures present in most modern BIOSes. If you are
-> +      building a kernel for an older Pentium, 486, or 386 system and
-> +      memory is tight, you can disable this to help reduce the size
-> +      of your kernel by about 6K.
-> +      If unsure, say Y.
-> +
-
-This is in the General setup menu.  How about putting it into the
-EMBEDDED menu instead?  [Configure standard kernel features (for
-small systems)]
-
->  config SLUB_DEBUG
->      default y
->      bool "Enable SLUB debugging support" if EMBEDDED
-
-
-There are still several build warnings that need attention:
-
-drivers/acpi/sleep/main.c:223: warning: 'acpisleep_dmi_table' defined but not used
-drivers/pnp/pnpbios/core.c:509: warning: 'pnpbios_dmi_table' defined but not used
-arch/i386/pci/irq.c:1035: warning: 'pciirq_dmi_table' defined but not used
-arch/i386/pci/common.c:148: warning: 'pciprobe_dmi_table' defined but not used
-
-
-+#endif // CONFIG_DMI
-
-Use /* ... */ style comments instead of // comments.
-
----
-~Randy
-Phaedrus says that Quality is about caring.
+Patch was just merged.
