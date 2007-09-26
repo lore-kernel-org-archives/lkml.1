@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759934AbXIZWe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763076AbXIZWfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759934AbXIZWe2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 18:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760313AbXIZWeD
+	id S1763076AbXIZWfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 18:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbXIZWfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 18:34:03 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:35880 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757995AbXIZWeB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 18:34:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=NKuhzTTkkwT9YYHKGoTcJFrtgAbtWcyuxkKr/GQ6MbxGbxNZCp/qjVe1bbqjWUnSzBqa/GvmRz+ogQG/vcGzA/ZoD8e7wNxKSGJ71ee7VK+SFFanz+ixNMLW3bL+fiE8GzLCZSRw5ye1P4rSB4ikMEQlTojRHFa+145ihT/DfR8=
-Date: Thu, 27 Sep 2007 01:33:44 +0300
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [PATCH 1/3] Completely remove deprecated IRQ flags (SA_*)
-Message-ID: <20070926223343.GA25905@Ahmed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Wed, 26 Sep 2007 18:35:06 -0400
+Received: from www.osadl.org ([213.239.205.134]:34279 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751025AbXIZWfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 18:35:04 -0400
+Subject: Re: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and
+	-rc6-mm1: boot failure on HP nx6325, related to clockevents)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.0.999.0709261521440.3579@woody.linux-foundation.org>
+References: <200709231257.12213.rjw@sisk.pl>
+	 <1190832665.23376.38.camel@chaos> <200709262149.54732.rjw@sisk.pl>
+	 <200709262300.28336.rjw@sisk.pl> <1190842476.23376.57.camel@chaos>
+	 <alpine.LFD.0.999.0709261521440.3579@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 27 Sep 2007 00:35:01 +0200
+Message-Id: <1190846101.23376.64.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 2007-09-26 at 15:22 -0700, Linus Torvalds wrote:
+> 
+> On Wed, 26 Sep 2007, Thomas Gleixner wrote:
+> > > 
+> > > 1) current Linus' tree doesn't boot with any command line (regression)
+> > > 
+> > > [  Linus, please revert commit e66485d747505e9d960b864fc6c37f8b2afafaf0
+> 
+> Reverted.
+> 
+> > OK, this explains 2) and 3). I just looked into the code and the logic
+> > vs. noapictimer on SMP is completely broken.
+> 
+> ..and thanks for the explanation.
+> 
+> Thanks for finding it so quickly guys. Sounds like this will be fixed 
+> properly in 2.6.24 with the x86 merge (which hopefully brings in the hrt 
+> patch too)
 
-Only very little files use the deprecated SA_* IRQ flags in latest pull. This
-minimal patch series removes such macros from the tree and transfrom old code
-to the new IRQF_* flags.
+It's even worse than I thought on the first check:
 
-Andrew, I've grepped the whole tree to make sure that no more files than the
-patched ones use such deprecated macros. I hope this series won't introduce 
-build errors.
+"noapictimer" on the command line of an SMP box prevents _ONLY_ the boot
+CPU apic timer from being used. But the secondary CPU is still
+unconditionally setting up the APIC timer and uses the non calibrated
+variable calibration_result, which is of course 0, to setup the APIC
+timer. Wreckage guaranteed.
 
-Patches can be applied cleanly on v2.6.23-rc8.
-
-==>
-
-Get rid of the deprecated SA_* IRQ flags.
-
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 5523f19..00bdebb 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -55,28 +55,6 @@
- #define IRQF_NOBALANCING	0x00000800
- #define IRQF_IRQPOLL		0x00001000
- 
--/*
-- * Migration helpers. Scheduled for removal in 9/2007
-- * Do not use for new code !
-- */
--static inline
--unsigned long __deprecated deprecated_irq_flag(unsigned long flag)
--{
--	return flag;
--}
--
--#define SA_INTERRUPT		deprecated_irq_flag(IRQF_DISABLED)
--#define SA_SAMPLE_RANDOM	deprecated_irq_flag(IRQF_SAMPLE_RANDOM)
--#define SA_SHIRQ		deprecated_irq_flag(IRQF_SHARED)
--#define SA_PROBEIRQ		deprecated_irq_flag(IRQF_PROBE_SHARED)
--#define SA_PERCPU		deprecated_irq_flag(IRQF_PERCPU)
--
--#define SA_TRIGGER_LOW		deprecated_irq_flag(IRQF_TRIGGER_LOW)
--#define SA_TRIGGER_HIGH		deprecated_irq_flag(IRQF_TRIGGER_HIGH)
--#define SA_TRIGGER_FALLING	deprecated_irq_flag(IRQF_TRIGGER_FALLING)
--#define SA_TRIGGER_RISING	deprecated_irq_flag(IRQF_TRIGGER_RISING)
--#define SA_TRIGGER_MASK		deprecated_irq_flag(IRQF_TRIGGER_MASK)
--
- typedef irqreturn_t (*irq_handler_t)(int, void *);
- 
- struct irqaction {
+	tglx
 
 
-Regards,
-
--- 
-Ahmed S. Darwish
-HomePage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
