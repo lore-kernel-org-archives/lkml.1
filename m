@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbXIZD2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbXIZD2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbXIZD2T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Sep 2007 23:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXIZD2E
+	id S1757233AbXIZD2d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Sep 2007 23:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbXIZD2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Sep 2007 23:28:04 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34566 "EHLO
+	Tue, 25 Sep 2007 23:28:21 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34665 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754621AbXIZD2B (ORCPT
+	with ESMTP id S1756788AbXIZD2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Sep 2007 23:28:01 -0400
+	Tue, 25 Sep 2007 23:28:19 -0400
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 05/25] Unionfs: cast page->index loff_t before shifting
-Date: Tue, 25 Sep 2007 23:09:44 -0400
-Message-Id: <1190776207595-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 24/25] Unionfs: add un/likely conditionals on xattr ops
+Date: Tue, 25 Sep 2007 23:10:03 -0400
+Message-Id: <11907762142249-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <11907762042481-git-send-email-ezk@cs.sunysb.edu>
@@ -25,38 +25,68 @@ References: <11907762042481-git-send-email-ezk@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes bugs in number promotion/demotion computation, as per
-<http://lkml.org/lkml/2007/9/20/17>
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
-Acked-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/mmap.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ fs/unionfs/xattr.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
-index 88ef6a6..37af979 100644
---- a/fs/unionfs/mmap.c
-+++ b/fs/unionfs/mmap.c
-@@ -179,7 +179,8 @@ static int unionfs_do_readpage(struct file *file, struct page *page)
- 	 * may be a little slower, but a lot safer, as the VFS does a lot of
- 	 * the necessary magic for us.
- 	 */
--	offset = lower_file->f_pos = (page->index << PAGE_CACHE_SHIFT);
-+	offset = lower_file->f_pos =
-+		((loff_t) page->index << PAGE_CACHE_SHIFT);
- 	old_fs = get_fs();
- 	set_fs(KERNEL_DS);
- 	err = vfs_read(lower_file, page_data, PAGE_CACHE_SIZE,
-@@ -289,7 +290,7 @@ static int unionfs_commit_write(struct file *file, struct page *page,
- 	BUG_ON(lower_file == NULL);
+diff --git a/fs/unionfs/xattr.c b/fs/unionfs/xattr.c
+index 7f77d7d..bd2de06 100644
+--- a/fs/unionfs/xattr.c
++++ b/fs/unionfs/xattr.c
+@@ -23,14 +23,14 @@ void *unionfs_xattr_alloc(size_t size, size_t limit)
+ {
+ 	void *ptr;
  
- 	page_data = (char *)kmap(page);
--	lower_file->f_pos = (page->index << PAGE_CACHE_SHIFT) + from;
-+	lower_file->f_pos = ((loff_t) page->index << PAGE_CACHE_SHIFT) + from;
+-	if (size > limit)
++	if (unlikely(size > limit))
+ 		return ERR_PTR(-E2BIG);
  
- 	/*
- 	 * SP: I use vfs_write instead of copying page data and the
+ 	if (!size)		/* size request, no buffer is needed */
+ 		return NULL;
+ 
+ 	ptr = kmalloc(size, GFP_KERNEL);
+-	if (!ptr)
++	if (unlikely(!ptr))
+ 		return ERR_PTR(-ENOMEM);
+ 	return ptr;
+ }
+@@ -48,7 +48,7 @@ ssize_t unionfs_getxattr(struct dentry *dentry, const char *name, void *value,
+ 	unionfs_read_lock(dentry->d_sb);
+ 	unionfs_lock_dentry(dentry);
+ 
+-	if (!__unionfs_d_revalidate_chain(dentry, NULL, false)) {
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
+ 		err = -ESTALE;
+ 		goto out;
+ 	}
+@@ -77,7 +77,7 @@ int unionfs_setxattr(struct dentry *dentry, const char *name,
+ 	unionfs_read_lock(dentry->d_sb);
+ 	unionfs_lock_dentry(dentry);
+ 
+-	if (!__unionfs_d_revalidate_chain(dentry, NULL, false)) {
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
+ 		err = -ESTALE;
+ 		goto out;
+ 	}
+@@ -106,7 +106,7 @@ int unionfs_removexattr(struct dentry *dentry, const char *name)
+ 	unionfs_read_lock(dentry->d_sb);
+ 	unionfs_lock_dentry(dentry);
+ 
+-	if (!__unionfs_d_revalidate_chain(dentry, NULL, false)) {
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
+ 		err = -ESTALE;
+ 		goto out;
+ 	}
+@@ -135,7 +135,7 @@ ssize_t unionfs_listxattr(struct dentry *dentry, char *list, size_t size)
+ 	unionfs_read_lock(dentry->d_sb);
+ 	unionfs_lock_dentry(dentry);
+ 
+-	if (!__unionfs_d_revalidate_chain(dentry, NULL, false)) {
++	if (unlikely(!__unionfs_d_revalidate_chain(dentry, NULL, false))) {
+ 		err = -ESTALE;
+ 		goto out;
+ 	}
 -- 
 1.5.2.2
 
