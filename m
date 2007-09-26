@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbXIZQ6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760402AbXIZRDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbXIZQ6c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 12:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759257AbXIZQ6T
+	id S1760402AbXIZRDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 13:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbXIZRDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 12:58:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39515 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758512AbXIZQ6R (ORCPT
+	Wed, 26 Sep 2007 13:03:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:47907 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbXIZRDf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 12:58:17 -0400
-Message-ID: <46FA8F96.9060208@zytor.com>
-Date: Wed, 26 Sep 2007 09:57:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 26 Sep 2007 13:03:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GI0QdYS1sBicXwPf6B39o45PwoFsvR/SbuqWV5yEmSeXm9jcjKh979ivZhRBSpSJ1eFW16Dlc6Pp/27g4HZnW4oUrMxXK4RQps57+XbjljPIN4nUNUY/Aob7l0XXSTyL2sxwBxUeI/HiNmyEvvUHwBRuj7gv7xJxVcdO2XFB0MI=
+Message-ID: <a36005b50709261003j923835fu621882c54706d476@mail.gmail.com>
+Date: Wed, 26 Sep 2007 10:03:33 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "John Z. Bohach" <jzb2@aexorsyst.com>
+Subject: Re: __kernel_vsyscall () hangs in SIGCHLD handler
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200709260757.20478.jzb2@aexorsyst.com>
 MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: Joerg Pommnitz <pommnitz@yahoo.com>, cebbert@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.23-pre Was: Problems with 2.6.23-rc6 on AMD
- Geode LX800
-References: <637040.99806.qm@web51411.mail.re2.yahoo.com> <46FA6858.5060908@zytor.com> <20070926154106.GG7582@cosmic.amd.com>
-In-Reply-To: <20070926154106.GG7582@cosmic.amd.com>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200709260757.20478.jzb2@aexorsyst.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jordan Crouse wrote:
-> 
-> As background, I'm using syslinux 3.36 as my loader here - I've used this
-> exact same version for a very long time, so I don't blame it in the least.
-> Something is getting confused in the early kernel, and whatever that
-> something is, a still unknown change in a newer version of the BIOS
-> fixed it.  The search goes on.
-> 
+On 9/26/07, John Z. Bohach <jzb2@aexorsyst.com> wrote:
+> Is there some reason that syslog() sleeps in __kernel_vsyscall() when
+> invoked from a signal handler?
 
-OK, we should put printf's in arch/i386/boot/memory.c and see what
-actually gets read out from the BIOS.  This could either be a BIOS
-problem or a bug in memory.c (or a bug elsewhere in the code that the
-change in memory.c triggers, but that seems less likely.)
-
-	-hpa
-
-P.S. Are you guys in the Bay Area by any chance?
+Only very few functions are allowed to be called from signal handlers.
+ This is clearly spelled out in the POSIX spec.  Section XSH 2.4.3
+lists the allowed functions.  syslog of course is not on it.
