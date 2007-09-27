@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbXI0VBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbXI0VEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759262AbXI0VBm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 17:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbXI0VB0
+	id S1758788AbXI0VEi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 17:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbXI0VE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 17:01:26 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49739 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756464AbXI0VBZ (ORCPT
+	Thu, 27 Sep 2007 17:04:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44912 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbXI0VE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 17:01:25 -0400
-Date: Thu, 27 Sep 2007 23:01:23 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-cc: mahamuni ashish <ash_lkp@yahoo.co.in>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Floating Point Issue
-In-Reply-To: <Pine.LNX.4.61.0709271645590.5183@chaos.analogic.com>
-Message-ID: <Pine.LNX.4.64.0709272300250.25099@fbirervta.pbzchgretzou.qr>
-References: <109515.18343.qm@web7805.mail.in.yahoo.com>
- <Pine.LNX.4.61.0709271645590.5183@chaos.analogic.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Sep 2007 17:04:28 -0400
+Date: Thu, 27 Sep 2007 22:04:23 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
+Subject: Re: [RFC][PATCH] make reiserfs stop using 'struct file' for internal xattr operations
+Message-ID: <20070927210423.GA6117@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Dave Hansen <haveblue@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Laurent Riffard <laurent.riffard@free.fr>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	reiserfs-devel@vger.kernel.org
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <46FC021F.8060109@free.fr> <20070927124833.d2691813.akpm@linux-foundation.org> <20070927202607.GA3812@infradead.org> <1190926419.7344.27.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190926419.7344.27.camel@localhost>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 27, 2007 at 01:53:39PM -0700, Dave Hansen wrote:
+> -int reiserfs_commit_write(struct file *f, struct page *page,
+> -			  unsigned from, unsigned to);
+> -int reiserfs_prepare_write(struct file *f, struct page *page,
+> -			   unsigned from, unsigned to);
+> +int reiserfs_commit_write(struct page *page, unsigned from, unsigned to);
+> +int reiserfs_prepare_write(struct page *page, unsigned from, unsigned to);
 
-On Sep 27 2007 16:53, linux-os (Dick Johnson) wrote:
->
->If Windows lets you get away with this, then Windows is broken.
->memset(ch,'\0',strlen(ch) );
-
-No, probably just the chance that the memory to which ch points
-had a nul in it or in the near bytes.
-
-Use valgrind, move along.
-
->On Thu, 27 Sep 2007, mahamuni ashish wrote:
->
->> I have small code....
->>
->> #include <stdio.h>
->> #include <string.h>
->>
->> int main()
->> {
->> float f= 1256.35;
->> char ch[4];
->>
->> printf("\n1. f : %f",f);
->> memset(ch,'\0',strlen(ch) );
->> printf("\n2. f : %f",f);
->> return 0;
->> }
->>
->> Expected output is
->> 1. f : 1256.35
->> 2. f : 1256.35
->>
->> But I am getting the output
->> (on windows)
->> 1. f : 1256.35
->> 2. f : 0.000000
->>
->> (on Linux)
->> 1. f : 1256.35
->> segmentation fault
->>
->> why?
->>
->>
->>      Forgot the famous last words? Access your message archive online at http://in.messenger.yahoo.com/webmessengerpromo.php
->>
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
->Cheers,
->Dick Johnson
->Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
->My book : http://www.AbominableFirebug.com/
->_
->
->
->****************************************************************
->The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
->
->Thank you.
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
+I doubt this will work.  These are also used for the ->prepare_write
+and ->commit_write aops, and the method signature definitively wants
+a file there, even if it's zero..
 
