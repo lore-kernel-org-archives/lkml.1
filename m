@@ -1,61 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbXI0E7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbXI0FXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbXI0E7d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 00:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXI0E7Z
+	id S1753544AbXI0FXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 01:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXI0FXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 00:59:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:29693 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbXI0E7Y (ORCPT
+	Thu, 27 Sep 2007 01:23:05 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49262 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752553AbXI0FXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 00:59:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=iHCiiqDkiW8a30IYb0vG8bVjLXHPl3JO6FcqZXMEMThBzMB3rwH6dCVcrFMs9Hahyz6EuWGYsGRJbNAy5dWPxlaZqvLZPZQnbQ8T1HYElaVxcqMawvsijKZ/lA14O079FKnQIeMQJIB1Ot4G6iasdf9L19h0kirWTcWQQhSrBo8=
-Message-ID: <46FB3843.2030708@gmail.com>
-Date: Thu, 27 Sep 2007 13:57:39 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
-References: <64bb37e0709261326h4890a07fx60c7d6772e4e63c4@mail.gmail.com> <46FB3793.9060607@gmail.com>
-In-Reply-To: <46FB3793.9060607@gmail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 27 Sep 2007 01:23:04 -0400
+Date: Thu, 27 Sep 2007 00:23:11 -0500
+From: "Jose R. Santos" <jrs@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, aneesh.kumar@linux.vnet.ibm.com,
+       richard@rsk.demon.co.uk, sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: jbd : config_jbd_debug cannot create /proc entry
+Message-ID: <20070927002311.46e50dfb@gara>
+In-Reply-To: <20070926143539.b01bc0bc.akpm@linux-foundation.org>
+References: <1190713240.3154.20.camel@castor.rsk.org>
+	<20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
+	<46F8EB26.2090104@linux.vnet.ibm.com>
+	<20070925115046.GA15394@atrey.karlin.mff.cuni.cz>
+	<20070925074938.2321bc15@gara>
+	<20070925084153.36ab65a5@gara>
+	<20070925143608.GB18758@atrey.karlin.mff.cuni.cz>
+	<20070926143539.b01bc0bc.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Torsten Kaiser wrote:
->> Comparing the driver/ata directory from rc3-mm1 and rc4-mm1 the
->> following change looked the most suspicions to me:
->> http://git.kernel.org/?p=linux/kernel/git/jgarzik/libata-dev.git;a=blobdiff;f=drivers/ata/sata_sil24.c;h=3dcb223117be9739ee04d70b6bfc776a4b839a3f;hp=e0cd31aa8002350add53ba6ff07493e503275244;hb=020bc1bd8d369a77bd9379cd9763ac0057651753;hpb=8d4bdf8087e682df98bdb856f6ad451bf6d597e7
->>
->> That after rc4-mm1 the sata_sil24.c did not change anymore also
->> matches the occurrence of the error.
->>
->> To confirm my theorie I exchanged the sata_sil24.c from rc8-mm1 with
->> the version from rc3-mm1.
->> I was able to boot the resulting kernel successfully 5 times, without
->> the error happening again.
+On Wed, 26 Sep 2007 14:35:39 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 25 Sep 2007 16:36:08 +0200
+> Jan Kara <jack@suse.cz> wrote:
 > 
-> Thanks a lot for chasing down the problem.  The changed code is address
-> initialization path and it's weird that it causes intermittent failures,
-> not a consistent one.
+> > > On Tue, 25 Sep 2007 07:49:38 -0500
+> > > "Jose R. Santos" <jrs@us.ibm.com> wrote:
+> > > 
+> > > > On Tue, 25 Sep 2007 13:50:46 +0200
+> > > > Jan Kara <jack@ucw.cz> wrote:
+> > > > > > Jan Kara wrote:
+> > > > > > >>
+> > > > > > >-#define create_jbd_proc_entry() do {} while (0)
+> > > > > > >-#define remove_jbd_proc_entry() do {} while (0)
+> > > > > > >+static ctl_table fs_table[] = {
+> > > > > > >+	{
+> > > > > > >+                .ctl_name       = -1,	/* Don't want it */
+> > > > > > 
+> > > > > > 
+> > > > > > 
+> > > > > > shouldn't this be CTL_UNNUMBERED ?
+> > > > >   Oh, it should be. I didn't notice we have this :) Thanks for notifying
+> > > > > me. Attached is a fixed version.
+> > > > 
+> > > > This was fixed in JBD2 by moving the jbd-debug file to debugfs:
+> > > > http://lkml.org/lkml/2007/7/11/334
+> > > > 
+> > > > Since this code is already in the kernel, we should keep it consistent. 
+> > > > 
+> > > 
+> > > OK.  Here's a quick patch to fix this.  Adapted from the JBD2 patch.
+> > > Let me know what you think.
+> >   Looks fine - exactly what I've just done here :).
 > 
-> Anyways, does the attached patch fix the problem?
+> hm.  I found rather a lot of issues.  If this patch is derived from the
+> JBD2 patch then perhaps the JBD2 patch needs some looking at.
 
-If not, can you add printk of iomap[SIL24_PORT_BAR], offset, initialized
-cmd_addr and scr_addr in the loop and see whether anything is different
-between when the driver works and fails.
+Some of the changes do apply to the JBD2 patch.  I'll send a cleanup patch.
 
-Thanks.
+> 
+> > >     Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+> >   You can add Signed-off-by: Jan Kara <jack@suse.cz>
+> 
+> I suspect you might be getting your signed-off-bys and acked-bys mixed up. 
+> (If not this patch, then the previous one).  Please see
+> Documentation/SubmittingPatches section 13 for the difference.
+> 
+> Jose, please review and if possible runtime test these proposed changes?
 
--- 
-tejun
+Agree with all the changes and they worked as expected on my system. 
+
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> - use `#ifdef foo' instead of `#if defined(foo)'
+> 
+> - CONFIG_JBD_DEBUG depends on CONFIG_DEBUG_FS so we don't need to duplicate
+>   that logic in the .c file ifdefs
+> 
+> - Make journal_enable_debug __read_mostly just for the heck of it
+> 
+> - Make jbd_debugfs_dir and jbd_debug static
+> 
+> - debugfs_remove(NULL) is legal: remove unneeded tests
+> 
+> - jbd_create_debugfs_entry is a better name than create_jbd_debugfs_entry
+> 
+> - ditto remove_jbd_debugfs_entry
+> 
+> - C functions are preferred over macros
+> 
+> Cc: "Jose R. Santos" <jrs@us.ibm.com>
+> Cc: <linux-ext4@vger.kernel.org>
+> Cc: Jan Kara <jack@suse.cz>
+> Cc: Jose R. Santos <jrs@us.ibm.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Acked-by: Jose R. Santos <jrs@us.ibm.com>
+
+-JRS
