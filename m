@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbXI0UKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbXI0UPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbXI0UKX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 16:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXI0UKI
+	id S1756277AbXI0UPT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 16:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXI0UPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 16:10:08 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:59390 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753129AbXI0UKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 16:10:06 -0400
-Subject: Re: 2.6.23-rc8-mm2: BUG near reiserfs_xattr_set
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
-In-Reply-To: <20070927124833.d2691813.akpm@linux-foundation.org>
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
-	 <46FC021F.8060109@free.fr>
-	 <20070927124833.d2691813.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 27 Sep 2007 13:05:13 -0700
-Message-Id: <1190923513.7344.14.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 27 Sep 2007 16:15:04 -0400
+Received: from mga02.intel.com ([134.134.136.20]:22300 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753771AbXI0UPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 16:15:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,204,1188802800"; 
+   d="scan'208";a="234378703"
+From: "Sean Hefty" <sean.hefty@intel.com>
+To: "'Steve Wise'" <swise@opengridcomputing.com>,
+       "Sean Hefty" <mshefty@ichips.intel.com>
+Cc: <rdreier@cisco.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <general@lists.openfabrics.org>
+References: <20070923203649.8324.64524.stgit@dell3.ogc.int> <46FBF8AF.9040700@ichips.intel.com> <46FC03B8.1030106@opengridcomputing.com>
+Subject: RE: [ofa-general] [PATCH v3] iw_cxgb3: Support "iwarp-only" interfaces to avoid 4-tuple conflicts.
+Date: Thu, 27 Sep 2007 13:14:59 -0700
+Message-ID: <000001c80143$15019140$82c8180a@amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+In-Reply-To: <46FC03B8.1030106@opengridcomputing.com>
+Thread-Index: AcgBPDzt7iwZ8h2/SKSSl98ygzOOjQABm+BQ
+X-OriginalArrivalTime: 27 Sep 2007 20:15:00.0608 (UTC) FILETIME=[14F4C000:01C80143]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-27 at 12:48 -0700, Andrew Morton wrote:
-> 
-> Hi, Dave!
-> 
-> > It's fully reproducible.
-> > 
-> > /home is mounted with the following options:
-> >    /dev/mapper/vglinux1-lvhome on /home type reiserfs
-> (rw,noatime,nodiratime,user_xattr)
-> > 
-> > This BUG happened with rc8-mm1 too.
-> > rc6-mm1 works fine.
-> > I didn't try rc7-mm1. 
+>It is ok to block while holding a mutex, yes?
 
-Got it.  I'll try to reproduce.  
+It's okay, I just didn't try to trace through the code to see if it ever tries
+to acquire the same mutex in the thread that needs to signal the event.
 
--- Dave
-
+- Sean
