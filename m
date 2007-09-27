@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXI0UwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbXI0UxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757594AbXI0UwO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 16:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbXI0UwA
+	id S1758874AbXI0UxV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 16:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbXI0UxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 16:52:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54529 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754250AbXI0Uv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 16:51:59 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Peter Jones <pjones@redhat.com>
-Subject: Re: [PATCH] Add iSCSI iBFT support.
-Date: Thu, 27 Sep 2007 16:50:42 -0400
-User-Agent: KMail/1.9.5
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Konrad Rzeszutek <konrad@darnok.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Konrad Rzeszutek <konradr@redhat.com>, konradr@linux.vnet.ibm.com
-References: <20070926184652.GA16369@andromeda.dapyr.net> <46FBE5D2.6090306@zytor.com> <46FBED88.8060200@redhat.com>
-In-Reply-To: <46FBED88.8060200@redhat.com>
+	Thu, 27 Sep 2007 16:53:14 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:4911 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753469AbXI0UxN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 16:53:13 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709271650.43087.lenb@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 27 Sep 2007 20:53:10.0379 (UTC) FILETIME=[69C413B0:01C80148]
+Content-class: urn:content-classes:message
+Subject: Re: Floating Point Issue
+Date: Thu, 27 Sep 2007 16:53:04 -0400
+Message-ID: <Pine.LNX.4.61.0709271645590.5183@chaos.analogic.com>
+In-Reply-To: <109515.18343.qm@web7805.mail.in.yahoo.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Floating Point Issue
+Thread-Index: AcgBSGnN7zRmtBFSQUeX/j1jvDc91Q==
+References: <109515.18343.qm@web7805.mail.in.yahoo.com>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "mahamuni ashish" <ash_lkp@yahoo.co.in>
+Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 September 2007 13:51, Peter Jones wrote:
-> H. Peter Anvin wrote:
-> > Peter Jones wrote:
-> >>> It should, presumably, depend on ACPI, rather than on X86...?
-> >> Actually no.  That /should/ be the correct answer, but none of the
-> >> hardware vendors actually provide the table via ACPI yet.  Also, if they
-> >> did, the support for /sys/firmware/acpi/tables/* would be sufficient
-> >> instead of having this code *at all*.
-> >>
-> > 
-> > Is there anything other than the discovery which is braindead about
-> > iBFT?  If so, can the tables code be taught to look for this additional
-> > table instead of having all its own mechanism?
-> 
-> Well, the code for the the generic ACPI table sysfs functionality is 
-> expecting to find the tables indexed in the RSDT.  This is essentially 
-> what the iBFT spec's authors seem to have planned, but it's simply never 
-> been implemented in the firmware.
-> 
-> AFAICS, it's technically feasible to remove the sysfs parts of this code 
-> entirely, make the probe code build a fake ACPI table header, and then 
-> add it explicitly if present at the end of acpi_system_sysfs_init() .
-> 
-> I don't know how the ACPI guys would feel about that.  Len, thoughts?
 
-Technically, ACPI knows only about devices that are soldered onto
-the motherboard when the BIOS is flashed.
-So ACPI wouldn't be able to help you find this table
-when you put in an iSCSI card -- unless there were some arrangement
-between the motherboard BIOS and the add-in card BIOS extension,
-say, to have a dummy table that gets filled in or something.
 
-Yes, OpenFirmware is extensible via add-in cards -- assuming
-they support OpenFirmware -- so in theory they could do this right
-even in the add-in case.
+If Windows lets you get away with this, then Windows is broken.
+memset(ch,'\0',strlen(ch) );
 
-I wouldn't object to a platform hook to make the IBFT appear as just another
-ACPI table available in /sys/firmware/acpi.  But that woudln't help
-a system that has IBFT but doesn't have ACPI, so it doesn't
-really solve the general problem.
+'ch' is uninitialized local data. Nobody knows what evil lurks...
 
-For tables such as this,
-ACPI is just the messenger anyway, we don't know anything about
-the content of the table, just about the envelope around it
-and how to find the envelope.  In this case, we don't even
-know how to find the envelope, so ACPI doesn't add much
-value to the IBFT.
 
-In summary, I think IBFT should depend on iSCSI alone,
-and not involve ACPI at all.
- 
--Len
+Thay said, the kernel will make sure that any data that gets
+put into your address-space doesn't contain anybody else's
+information --that's all. The junk on your stack was created
+by your task.
 
+
+On Thu, 27 Sep 2007, mahamuni ashish wrote:
+
+> I have small code....
+>
+> #include <stdio.h>
+> #include <string.h>
+>
+> int main()
+> {
+> float f= 1256.35;
+> char ch[4];
+>
+> printf("\n1. f : %f",f);
+> memset(ch,'\0',strlen(ch) );
+> printf("\n2. f : %f",f);
+> return 0;
+> }
+>
+> Expected output is
+> 1. f : 1256.35
+> 2. f : 1256.35
+>
+> But I am getting the output
+> (on windows)
+> 1. f : 1256.35
+> 2. f : 0.000000
+>
+> (on Linux)
+> 1. f : 1256.35
+> segmentation fault
+>
+> why?
+>
+>
+>      Forgot the famous last words? Access your message archive online at http://in.messenger.yahoo.com/webmessengerpromo.php
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
