@@ -1,47 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbXI0NvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbXI0Nv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbXI0NvQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 09:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXI0NvD
+	id S1755746AbXI0Nv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 09:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbXI0NvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 09:51:03 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:36459 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755254AbXI0NvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 09:51:01 -0400
-Date: Thu, 27 Sep 2007 15:49:05 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Miloslav Semler <majkls@prepere.com>
-cc: Kyle Moffett <mrmacman_g4@mac.com>, David Newall <david@davidnewall.com>,
-       Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Serge E. Hallyn" <serge@hallyn.com>, Bill Davidsen <davidsen@tmr.com>,
-       Philipp Marek <philipp@marek.priv.at>, 7eggert@gmx.de, bunk@fs.tum.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Chroot bug
-In-Reply-To: <46FA7450.5020707@prepere.com>
-Message-ID: <Pine.LNX.4.64.0709271548020.22331@twin.jikos.cz>
-References: <46F83474.5040503@davidnewall.com> <20070924230008.GA3160@vino.hallyn.com>
- <46F8BC8A.7080006@davidnewall.com> <20070925114947.GA9721@vino.hallyn.com>
- <46F91417.9050600@davidnewall.com> <46F924E3.50205@davidnewall.com>
- <20070925163040.12a3c2f8@the-village.bc.nu> <46F92AAB.1060903@davidnewall.com>
- <20070925164806.4cadc6a5@the-village.bc.nu> <46F99EDE.70905@davidnewall.com>
- <20070926005551.GS6800@stusta.de> <F23AFB4D-E989-4F06-A256-4D12D852DFA2@mac.com>
- <46FA341A.80706@davidnewall.com> <6BA6E9EE-B67B-4334-AC83-9B8E30527832@mac.com>
- <46FA5A85.20407@prepere.com> <73A0FA2C-7202-4E5C-9521-C2BC7026DE3B@mac.com>
- <46FA7450.5020707@prepere.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Sep 2007 09:51:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52111 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbXI0NvS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 09:51:18 -0400
+Subject: Re: lockdep wierdness...
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20070925021359.GB11809@goodmis.org>
+References: <1190671658.6700.31.camel@heimdal.trondhjem.org>
+	 <20070925021359.GB11809@goodmis.org>
+Content-Type: text/plain
+Date: Thu, 27 Sep 2007 15:51:07 +0200
+Message-Id: <1190901067.31636.6.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007, Miloslav Semler wrote:
+On Mon, 2007-09-24 at 22:13 -0400, Steven Rostedt wrote:
+> On Mon, Sep 24, 2007 at 06:07:38PM -0400, Trond Myklebust wrote:
+> > I'm seeing lockdep warning about a potential lock inversion between
+> > &mm->mmap_sem and &inode->i_mutex in NFS (see attachment).
+> > 
+> > Unfortunately the basis for the warning appears to be the behaviour in
+> > ext3(???). AFAICS there is no way for NFS to share an inode->i_mutex
+> > with ext3. What to do?
+> 
+> Actually this can probably happen just on NFS alone.
+> 
+> > 
+> > Trond
+> 
+> > =======================================================
+> > [ INFO: possible circular locking dependency detected ]
+> > 2.6.23-rc7-g8809e921 #1
+> > -------------------------------------------------------
+> > beagle-build-in/24375 is trying to acquire lock:
+> >  (&mm->mmap_sem){----}, at: [<c05a2887>] do_page_fault+0x17d/0x591
+> > 
+> > but task is already holding lock:
+> >  (&inode->i_mutex){--..}, at: [<c059f9e3>] mutex_lock+0x1c/0x1f
+> > 
+> > which lock already depends on the new lock.
+> > 
+> > 
+> > the existing dependency chain (in reverse order) is:
+> > 
+> > -> #1 (&inode->i_mutex){--..}:
+> >        [<c043d4da>] __lock_acquire+0x9f3/0xba6
+> >        [<c043da62>] lock_acquire+0x5f/0x78
+> >        [<c059f832>] __mutex_lock_slowpath+0xe5/0x27a
+> >        [<c059f9e3>] mutex_lock+0x1c/0x1f
+> >        [<f8c92495>] nfs_revalidate_mapping+0x64/0x9c [nfs]
+> >        [<f8c8ff2a>] nfs_file_mmap+0x46/0x75 [nfs]
+> >        [<c046097c>] mmap_region+0x1ea/0x3b8
+> >        [<c0460e9b>] do_mmap_pgoff+0x27b/0x2da
+> >        [<c0407d77>] sys_mmap2+0x9b/0xb5
+> >        [<c040405e>] sysenter_past_esp+0x5f/0x99
+> >        [<ffffffff>] 0xffffffff
+> > 
+> > -> #0 (&mm->mmap_sem){----}:
+> >        [<c043d3c6>] __lock_acquire+0x8df/0xba6
+> >        [<c043da62>] lock_acquire+0x5f/0x78
+> >        [<c04360db>] down_read+0x3a/0x4c
+> >        [<c05a2887>] do_page_fault+0x17d/0x591
+> >        [<c05a1382>] error_code+0x72/0x78
+> >        [<f88acaac>] call_filldir+0xac/0xc3 [ext3]
+> >        [<f88acdb2>] ext3_readdir+0x217/0x5e5 [ext3]
+> >        [<c04798a1>] vfs_readdir+0x67/0x93
+> >        [<c0479af6>] sys_getdents+0x5f/0x9d
+> >        [<c040405e>] sysenter_past_esp+0x5f/0x99
+> >        [<ffffffff>] 0xffffffff
+> 
+> The circular lock seems to be this:
+> 
+> #1:
+> 
+>   sys_mmap2:              down_write(&mm->mmap_sem);
+>   nfs_revalidate_mapping: mutex_lock(&inode->i_mutex);
+> 
+> 
+> #0:
+> 
+>   vfs_readdir:     mutex_lock(&inode->i_mutex);
+>    - during the readdir (filldir64), we take a user fault (missing page?)
+>     and call do_page_fault -
+>   do_page_fault:   down_read(&mm->mmap_sem);
+> 
+> 
+> So it does indeed look like a circular locking. Now the question is, "is
+> this a bug?".  Looking like the inode of #1 must be a file or something
+> else that you can mmap and the inode of #0 seems it must be a directory.
+> I would say "no".
+> 
+> Now if you can readdir on a file or mmap a directory, then this could be
+> an issue.
+> 
+> Otherwise, I'd love to see someone teach lockdep about this issue! ;-)
 
-> so there is no discussion about mount & others. I think, if you have 
-> CAP_SYS_MOUNT/CAP_SYS_ADMIN, you need not solve chroot() and how to 
-> break it.
+Christoph,
 
-CAP_SYS_PTRACE allows you to break out of chroot in a pretty trivial way 
-too.
+does Steve's story make sense? 
 
--- 
-Jiri Kosina
+If so, do we know at alloc_inode() time what type of inode we're
+requesting; file or dir. Again, if so, the lockdep annotation should be
+trivial in the light of the recently merged patch:
+
+ + lockdep-give-each-filesystem-its-own-inode-lock-class.patch
+
+All that would need to be done is add an extra lock_class_key to
+file_system_type for i_mutex_dir_key, and extend alloc_inode to say
+something like:
+
+  if (dir)
+    lockdep_set_class(&inode->i_mutex, &sb->s_type->i_mutex_dir_key);
+  else
+    lockdep_set_class(&inode->i_mutex, &sb->s_type->i_mutex_key);
+
+
