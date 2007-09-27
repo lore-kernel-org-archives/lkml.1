@@ -1,158 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbXI0Sxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbXI0Sxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759401AbXI0Sxa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 14:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757401AbXI0SwX
+	id S1759519AbXI0Sxo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 14:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbXI0Sw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 14:52:23 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:36170 "EHLO e3.ny.us.ibm.com"
+	Thu, 27 Sep 2007 14:52:26 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:36195 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757168AbXI0SwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 14:52:22 -0400
-Subject: [RFC][PATCH 4/5] do namei_flags calculation inside open_namei()
+	id S1757699AbXI0SwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 14:52:24 -0400
+Subject: [RFC][PATCH 3/5] move mnt_want_write() out of may_open()
 To: linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, hch@infradead.org, Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 27 Sep 2007 11:52:14 -0700
+Date: Thu, 27 Sep 2007 11:52:12 -0700
 References: <20070927185210.FD980C90@kernel>
 In-Reply-To: <20070927185210.FD980C90@kernel>
-Message-Id: <20070927185214.466F6DB9@kernel>
+Message-Id: <20070927185212.B9CD77E6@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-My end goal here is to make sure all users of may_open()
-return filps.  This will ensure that we properly release
-mount write counts which were taken for the filp in
-may_open().
+may_open() can fail in a lot of ways.  It is also named
+such that it doesn't appear to be _taking_ action, just
+checking a bunch of conditions.
 
-This patch moves the sys_open flags to namei flags
-calculation into fs/namei.c.  We'll shortly be moving
-the nameidata_to_filp() calls into namei.c, and this
-gets the sys_open flags to a place where we can get
-at them when we need them.
+So, it makes a poor place to take and release the mnt
+writer count.  This moves the burder of taking the
+mnt writer counts into the callers.  The callers have
+the advantage of much more visibility of the filp.
+Since we rely on the __fput(filp) to release the mnt
+writer count, this is a good thing.
 
 ---
 
- lxc-dave/fs/namei.c |   43 ++++++++++++++++++++++++++++++++++---------
- lxc-dave/fs/open.c  |   22 ++--------------------
- 2 files changed, 36 insertions(+), 29 deletions(-)
+ lxc-dave/fs/namei.c  |   41 +++++++++++++++++++++++------------------
+ lxc-dave/fs/nfsctl.c |   20 ++++++++++++++++++--
+ 2 files changed, 41 insertions(+), 20 deletions(-)
 
-diff -puN fs/namei.c~do-namei_flags-calculation-inside-open_namei fs/namei.c
---- lxc/fs/namei.c~do-namei_flags-calculation-inside-open_namei	2007-09-27 11:51:33.000000000 -0700
-+++ lxc-dave/fs/namei.c	2007-09-27 11:51:33.000000000 -0700
-@@ -1672,7 +1672,12 @@ int may_open(struct nameidata *nd, int a
- 	return 0;
+diff -puN fs/namei.c~move-mnt_want_write-out-of-may_open fs/namei.c
+--- lxc/fs/namei.c~move-mnt_want_write-out-of-may_open	2007-09-27 11:51:32.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-09-27 11:51:32.000000000 -0700
+@@ -1621,14 +1621,6 @@ int may_open(struct nameidata *nd, int a
+ 			return -EACCES;
+ 
+ 		flag &= ~O_TRUNC;
+-	} else if (flag & FMODE_WRITE) {
+-		/*
+-		 * effectively: !special_file()
+-		 * balanced by __fput()
+-		 */
+-		error = mnt_want_write(nd->mnt);
+-		if (error)
+-			return error;
+ 	}
+ 
+ 	error = vfs_permission(nd, acc_mode);
+@@ -1687,10 +1679,8 @@ static int open_namei_create(struct name
+ 	struct dentry *dir = nd->dentry;
+ 
+ 	/*
+-	 * This ensures that the mnt stays writable
+-	 * over the vfs_create() call to may_open(),
+-	 * which takes a more persistent
+-	 * mnt_want_write().
++	 * This mnt_want_write() is potentially persistent,
++	 * and balanced in __fput()
+ 	 */
+ 	error = mnt_want_write(nd->mnt);
+ 	if (error) {
+@@ -1710,14 +1700,18 @@ static int open_namei_create(struct name
+ 	/* Don't check for write permission, don't truncate */
+ 	error = may_open(nd, 0, flag & ~O_TRUNC);
+ out:
+-	/*
+-	 * if needed, may_open() has taken a write
+-	 * on the mnt for us, so we can release ours.
+-	 */
+-	mnt_drop_write(nd->mnt);
++	if (error)
++		mnt_drop_write(nd->mnt);
+ 	return error;
  }
  
--static int open_namei_create(struct nameidata *nd, struct path *path,
-+/*
-+ * Be careful about ever adding any more callers of this
-+ * function.  Its flags must be in the namei format, not
-+ * what get passed to sys_open().
-+ */
-+static int __open_namei_create(struct nameidata *nd, struct path *path,
- 				int flag, int mode)
- {
- 	int error;
-@@ -1713,26 +1718,46 @@ static inline int write_may_occur_to_fil
- }
- 
- /*
-+ * Note that while the flag value (low two bits) for sys_open means:
-+ *	00 - read-only
-+ *	01 - write-only
-+ *	10 - read-write
-+ *	11 - special
-+ * it is changed into
-+ *	00 - no permissions needed
-+ *	01 - read-permission
-+ *	10 - write-permission
-+ *	11 - read-write
-+ * for the internal routines (ie open_namei()/follow_link() etc)
-+ * This is more logical, and also allows the 00 "no perm needed"
-+ * to be used for symlinks (where the permissions are checked
-+ * later).
-+ *
-+*/
-+static inline int sys_open_flags_to_namei_flags(int flag)
++static inline int write_may_occur_to_file(struct inode *inode, int acc_mode)
 +{
-+	if ((flag+1) & O_ACCMODE)
-+		flag++;
-+	return flag;
++	if (special_file(inode->i_mode))
++		return 0;
++	return (acc_mode & FMODE_WRITE);
 +}
 +
-+/*
+ /*
   *	open_namei()
   *
-  * namei for open - this is in fact almost the whole open-routine.
-  *
-  * Note that the low bits of "flag" aren't the same as in the open
-- * system call - they are 00 - no permissions needed
-- *			  01 - read permission needed
-- *			  10 - write permission needed
-- *			  11 - read/write permissions needed
-- * which is a lot more logical, and also allows the "no perm" needed
-- * for symlinks (where the permissions are checked later).
-+ * system call.  See sys_open_flags_to_namei_flags().
-  * SMP-safe
-  */
--int open_namei(int dfd, const char *pathname, int flag,
-+int open_namei(int dfd, const char *pathname, int sys_open_flag,
- 		int mode, struct nameidata *nd)
+@@ -1831,9 +1825,20 @@ do_last:
+ 	if (path.dentry->d_inode && S_ISDIR(path.dentry->d_inode->i_mode))
+ 		goto exit;
+ ok:
+-	error = may_open(nd, acc_mode, flag);
++	/*
++	 * This mnt_want_write() is potentially persistent,
++	 * and balanced in __fput()
++	 */
++	if (write_may_occur_to_file(nd->dentry->d_inode, acc_mode))
++		error = mnt_want_write(nd->mnt);
+ 	if (error)
+ 		goto exit;
++	error = may_open(nd, acc_mode, flag);
++	if (error) {
++		if (write_may_occur_to_file(nd->dentry->d_inode, acc_mode))
++			mnt_drop_write(nd->mnt);
++		goto exit;
++	}
+ 	return 0;
+ 
+ exit_mutex_unlock:
+diff -puN fs/nfsctl.c~move-mnt_want_write-out-of-may_open fs/nfsctl.c
+--- lxc/fs/nfsctl.c~move-mnt_want_write-out-of-may_open	2007-09-27 11:51:32.000000000 -0700
++++ lxc-dave/fs/nfsctl.c	2007-09-27 11:51:32.000000000 -0700
+@@ -22,6 +22,7 @@
+ 
+ static struct file *do_open(char *name, int flags)
  {
- 	int acc_mode, error;
- 	struct path path;
- 	struct dentry *dir;
- 	int count = 0;
-+	int flag = sys_open_flags_to_namei_flags(sys_open_flag);
++	struct file *filp;
+ 	struct nameidata nd;
+ 	struct vfsmount *mnt;
+ 	int error;
+@@ -35,14 +36,29 @@ static struct file *do_open(char *name, 
+ 	if (error)
+ 		return ERR_PTR(error);
  
- 	acc_mode = ACC_MODE(flag);
++	/*
++	 * This is balanced when you __fput() the 'struct file'
++	 * returned by dentry_open() below.  If the may_open()
++	 * ever stops containing FMODE_WRITE, this needs to
++	 * be changed.
++	 */
++	error = mnt_want_write(mnt);
++	if (error)
++		return ERR_PTR(error);
+ 	if (flags == O_RDWR)
+ 		error = may_open(&nd,MAY_READ|MAY_WRITE,FMODE_READ|FMODE_WRITE);
+ 	else
+ 		error = may_open(&nd, MAY_WRITE, FMODE_WRITE);
  
-@@ -1792,7 +1817,7 @@ do_last:
+-	if (!error)
+-		return dentry_open(nd.dentry, nd.mnt, flags);
++	if (error)
++		goto out;
  
- 	/* Negative dentry, just create the file */
- 	if (!path.dentry->d_inode) {
--		error = open_namei_create(nd, &path, flag, mode);
-+		error = __open_namei_create(nd, &path, flag, mode);
- 		if (error)
- 			goto exit;
- 		return 0;
-diff -puN fs/open.c~do-namei_flags-calculation-inside-open_namei fs/open.c
---- lxc/fs/open.c~do-namei_flags-calculation-inside-open_namei	2007-09-27 11:51:33.000000000 -0700
-+++ lxc-dave/fs/open.c	2007-09-27 11:51:33.000000000 -0700
-@@ -840,31 +840,13 @@ cleanup_file:
++	filp = dentry_open(nd.dentry, nd.mnt, flags);
++	if (!IS_ERR(filp))
++		return filp;
++	error = PTR_ERR(error);
++out:
++	mnt_drop_write(mnt);
+ 	path_release(&nd);
  	return ERR_PTR(error);
  }
- 
--/*
-- * Note that while the flag value (low two bits) for sys_open means:
-- *	00 - read-only
-- *	01 - write-only
-- *	10 - read-write
-- *	11 - special
-- * it is changed into
-- *	00 - no permissions needed
-- *	01 - read-permission
-- *	10 - write-permission
-- *	11 - read-write
-- * for the internal routines (ie open_namei()/follow_link() etc). 00 is
-- * used by symlinks.
-- */
- static struct file *do_filp_open(int dfd, const char *filename, int flags,
- 				 int mode)
- {
--	int namei_flags, error;
-+	int error;
- 	struct nameidata nd;
- 
--	namei_flags = flags;
--	if ((namei_flags+1) & O_ACCMODE)
--		namei_flags++;
--
--	error = open_namei(dfd, filename, namei_flags, mode, &nd);
-+	error = open_namei(dfd, filename, flags, mode, &nd);
- 	if (!error)
- 		return nameidata_to_filp(&nd, flags);
- 
 _
