@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbXI0Sgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbXI0SiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757352AbXI0Sgw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 14:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXI0Sgo
+	id S1757757AbXI0SiQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 14:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbXI0Sh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 14:36:44 -0400
-Received: from mga02.intel.com ([134.134.136.20]:55075 "EHLO mga02.intel.com"
+	Thu, 27 Sep 2007 14:37:59 -0400
+Received: from THUNK.ORG ([69.25.196.29]:55967 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754612AbXI0Sgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 14:36:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,204,1188802800"; 
-   d="scan'208";a="234313222"
-Message-ID: <46FBF830.9000704@intel.com>
-Date: Thu, 27 Sep 2007 11:36:32 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	id S1752165AbXI0Sh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 14:37:58 -0400
+Date: Thu, 27 Sep 2007 14:37:42 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file without options
+Message-ID: <20070927183742.GA23734@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Arjan van de Ven <arjan@infradead.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070927142919.10b62f9b@the-village.bc.nu> <20070927070118.2bd4792e@laptopd505.fenrus.org> <20070927151921.29b19abb@the-village.bc.nu> <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu> <20070927155902.GA6450@thunk.org> <20070927102343.1a113ccc.akpm@linux-foundation.org> <20070927175917.GB8339@kroah.com>
 MIME-Version: 1.0
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-CC: Jesse Barnes <jesse.barnes@intel.com>, Greg KH <greg@kroah.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>,
-       Matthew Wilcox <matthew@wil.cx>, "Li, Shaohua" <shaohua.li@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PCI: Fix boot-time hang on G31/G33 PC
-References: <20070826015556.GC14130@parisc-linux.org> <200709261455.56165.jesse.barnes@intel.com> <20070926215648.GA24505@kroah.com> <200709261520.40859.jesse.barnes@intel.com> <20070927183129.A17565@jurassic.park.msu.ru>
-In-Reply-To: <20070927183129.A17565@jurassic.park.msu.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Sep 2007 18:36:42.0679 (UTC) FILETIME=[59843470:01C80135]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927175917.GB8339@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Kokshaysky wrote:
-> On Wed, Sep 26, 2007 at 03:20:40PM -0700, Jesse Barnes wrote:
->> Ivan, your concern is about disabling things like interrupt controllers 
->> and power management chips during probe right?  You're right that doing 
->> that could cause problems if we get and interrupt or PMU event at just 
->> the wrong time, but that could just as easily happen if decode was 
->> still enabled but the BAR had a bogus address programmed (as it would 
->> during probing).
-> 
-> Yes, nobody is arguing that moving the BAR around is unsafe, but generally
-> it's the less of two evils.
-> 
-> The major problem here is that with IO and MEM bits cleared in the command
-> register you disable *all* address decoders on the device, not just ranges
-> that have respective BARs. At least this behaviour is required by PCI spec.
-> Examples:
-> - legacy VGA IO and memory (no corresponding BARs);
-> - base/limit registers of P2P bridge;
-> - PMU and SMBus registers (sort of normal BARs, but hidden elsewhere
->   in the config space);
-> - IDE legacy mode registers;
-> - IO-APIC registers (typically sort of read-only BAR).
-> 
-> For all of these address ranges our current BAR probe is effectively
-> a no-op, but disable/re-enable clearly isn't.
-> 
->> Ultimately, I don't care much one way or another as long as we can get 
->> the desktop platforms fixed somehow.  I think disabling decode is the 
->> most correct way of doing this, but I'm open to other solutions (this 
->> is the only patch I've seen though that's been tested to solve the 
->> problem).
-> 
-> There are two other solutions: one is to disable decode selectively,
-> only on devices or systems where it's necessary and known to be safe.
-> I've posted a patch which introduces "disable_while_probe" pci_dev field
-> for that purpose.
-> Another one is to delay mmconfig probe until after the PCI probe is done,
-> as Matthew suggested, and Robert confirmed that it's feasible.
+On Thu, Sep 27, 2007 at 10:59:17AM -0700, Greg KH wrote:
+> Come on now, I'm _very_ tired of this kind of discussion.  Please go
+> read the documentation on how to _use_ sysfs from userspace in such a
+> way that you can properly access these data structures so that no
+> breakage occurs.
 
+I've read it; the question is whether every single application
+programmer or system shell script programmer who writes code my system
+depends upon has read it this document buried in the kernel sources,
+or whether things will break spectacularly --- one of those things
+that leaves me in suspense each time I update the kernel.
 
-for everyone who's using this quirk or has the same boot issue: I just confirmed
-that the new dg33tl bios update v0287 (released 9/20) fixes the boot issue for my
-systems. I encourage everyone to update their BIOS image and see if this works.
+I'm reminded of Rusty's 2003 OLS Keynote, where he points out that
+what's important is not making an interface easy to use, but _hard_
+_to_ _misuse_.  That fact that sysfs is all laid out in a directory,
+but for which some directories/symlinks are OK to use, and some are
+NOT OK to use --- is why I call the sysfs interface "an open pit".
+Sure, if you have the map to the minefield, a minefield is perfectly
+safe when you know what to avoid.  But is that the best way to
+construct a path/interface for an application programmer to get from
+point A to point B?  Maybe, maybe not.
 
-Cheers,
-
-Auke
+					- Ted
