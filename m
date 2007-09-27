@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbXI0XWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760374AbXI0XZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760246AbXI0XWg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbXI0XW3
+	id S1760374AbXI0XZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 19:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbXI0XZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:22:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53847 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbXI0XW2 (ORCPT
+	Thu, 27 Sep 2007 19:25:15 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:51053 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754108AbXI0XZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:22:28 -0400
-Message-ID: <46FC3B27.5090001@zytor.com>
-Date: Thu, 27 Sep 2007 16:22:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 27 Sep 2007 19:25:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=sCseJfM0CxrItT0i5pKM2pRQWY/13ITIXfLvQzUkYWU99McOGXka9WB2pUoYnrRY7HZIi+LA8oeH1YZtw21VCdSTZC8HHbQ08H//HGGmld6dlR3wjsq9LwS5LvpwyZkF//xMTJ3rPK5njcsTeIuLSETbUqJFEKbkUTb9kzuiE5c=
+Message-ID: <46FC1104.8080105@gmail.com>
+Date: Thu, 27 Sep 2007 13:22:28 -0700
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: jkeating@redhat.com, Joerg Pommnitz <pommnitz@yahoo.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: More E820 brokenness
-References: <46FC2BFD.6070200@zytor.com> <20070927223336.GB4755@cosmic.amd.com> <46FC32FE.9070302@zytor.com> <20070927231552.GC4755@cosmic.amd.com>
-In-Reply-To: <20070927231552.GC4755@cosmic.amd.com>
-X-Enigmail-Version: 0.95.0
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
+References: <64bb37e0709261326h4890a07fx60c7d6772e4e63c4@mail.gmail.com>	 <46FB3793.9060607@gmail.com> <46FB3843.2030708@gmail.com>	 <64bb37e0709262314x1b0100d8lfe34327db6b9bec8@mail.gmail.com>	 <46FB4CB3.3090004@garzik.org> <64bb37e0709271034h72b5eb9fy3aa7980cbc483f4f@mail.gmail.com>
+In-Reply-To: <64bb37e0709271034h72b5eb9fy3aa7980cbc483f4f@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jordan Crouse wrote:
-> 
-> I copied in a 2.6.22 kernel to see that it really did work, and it did.
-> But here's the crazy part - I did a dmesg, and it looks like it
-> *is* using e820 data, and it looks complete (I see the entire map - 
-> including the ACPI and reserved blocks way up high).
-> 
-> So apparently it was the 2.6.22 code that was buggy, but reading it,
-> I don't immediately see how. 
-> 
+Torsten Kaiser wrote:
+> Known good is for me 2.6.23-rc3-mm1, the first known bad is 2.6.23-rc4-mm1.
+> I will try to look at the diff between these revisions some more, but
+> the change in sata_sil24.c looked like a perfect match for the
+> symptoms I was seeing.
 
-Was this a stock 2.6.22 kernel, or might it have been modified?
+I think the first thing to do here is to verify 2.6.23-rc3-mm1 still
+works fine and my previous debug patch is pretty much meaningless if
+address initialization failure isn't the cause.
 
-There is, of course, also the possibility that triggering the BIOS bug
-in your case depends on some delicate combination of input state.
+Thanks.
 
-	-hpa
+-- 
+tejun
+
