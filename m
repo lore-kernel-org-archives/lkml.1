@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbXI0WRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760268AbXI0WRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760037AbXI0WRT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 18:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbXI0WRI
+	id S1760268AbXI0WRf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 18:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbXI0WR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 18:17:08 -0400
-Received: from www.osadl.org ([213.239.205.134]:44905 "EHLO mail.tglx.de"
+	Thu, 27 Sep 2007 18:17:26 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35836 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754743AbXI0WRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 18:17:07 -0400
-Subject: [PATCH] clockevents: fix bogus next_event reset for oneshot
-	broadcast devices
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, Ralf Baechle <ralf@linux-mips.org>
-Content-Type: text/plain
-Date: Fri, 28 Sep 2007 00:17:04 +0200
-Message-Id: <1190931424.23376.154.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1757326AbXI0WRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 18:17:25 -0400
+Date: Fri, 28 Sep 2007 00:17:16 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: apw@shadowen.org, vagabon.xyz@gmail.com, linux-kernel@vger.kernel.org,
+       kamalesh@linux.vnet.ibm.com
+Subject: Re: 2.6.23-rc8-mm1 -- powerpc link failure
+In-Reply-To: <20070927151317.67cac358.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0709280015260.7567@jikos.suse.cz>
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+ <20070925134653.GB8447@shadowen.org> <Pine.LNX.4.64.0709251715530.7567@jikos.suse.cz>
+ <20070927120308.GJ2213@shadowen.org> <Pine.LNX.4.64.0709271408170.7567@jikos.suse.cz>
+ <20070927151317.67cac358.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In periodic broadcast mode the next_event member of the broadcast device
-structure is set to KTIME_MAX in the interrupt handler. This is wrong,
-as we calculate the next periodic interrupt with this variable.
+On Thu, 27 Sep 2007, Andrew Morton wrote:
 
-Remove it.
+> > +extern void arch_randomize_brk(void);
+> >  #include "../../../fs/binfmt_elf.c" 
+> Is this sinful extern-decl-in-C acually needed?
 
-Noticed by Ralf. MIPS is the first user of this mode, it does not affect
-existing users.
+Some time passed since I have written the patch, but I remember that this 
+was needed, otherwise under some circumstances the build failed, but I 
+don't remember details ... I will try to look at it more in a while.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-and-tested-by: Ralf Baechle <ralf@linux-mips.org>
----
+But it definitely was needed to work with that horrible 
+include-huge-c-file-from-another-one.
 
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index 0962e05..acf15b4 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -176,8 +176,6 @@ static void tick_do_periodic_broadcast(void)
-  */
- static void tick_handle_periodic_broadcast(struct clock_event_device *dev)
- {
--	dev->next_event.tv64 = KTIME_MAX;
--
- 	tick_do_periodic_broadcast();
- 
- 	/*
+Thanks,
 
-
+-- 
+Jiri Kosina
+SUSE Labs
