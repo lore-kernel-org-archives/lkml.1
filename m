@@ -1,388 +1,417 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbXI0MLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbXI0MNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbXI0MLY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 08:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbXI0MLQ
+	id S1755869AbXI0MNq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 08:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXI0MNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 08:11:16 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57928 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752051AbXI0MLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 08:11:14 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX187IcdnP0c7tQlEVCyvQYJ1HKxT0SOmAhPbyFD5c4
-	E+Snm9zW+OHkH0
-Message-ID: <46FB9D4B.4090909@gmx.net>
-Date: Thu, 27 Sep 2007 14:08:43 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Thu, 27 Sep 2007 08:13:38 -0400
+Received: from styx.suse.cz ([82.119.242.94]:34840 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750712AbXI0MNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 08:13:37 -0400
+Date: Thu, 27 Sep 2007 14:13:21 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Franck Bui-Huu <vagabon.xyz@gmail.com>, linux-kernel@vger.kernel.org,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-rc8-mm1 -- powerpc link failure
+In-Reply-To: <20070927120308.GJ2213@shadowen.org>
+Message-ID: <Pine.LNX.4.64.0709271408170.7567@jikos.suse.cz>
+References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
+ <20070925134653.GB8447@shadowen.org> <Pine.LNX.4.64.0709251715530.7567@jikos.suse.cz>
+ <20070927120308.GJ2213@shadowen.org>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>, geoff@gclare.org.uk
-Subject: eventfd.2 man page
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Davide,
+On Thu, 27 Sep 2007, Andy Whitcroft wrote:
 
-I've slightly tweaked the eventfd.2 man page in preparation for adding it
-to the man-pages set.  Could you please review the text below, and confirm
-that it correctly describes intended behavior.
+> Ok, this problem seems to still persist in 2.6.23-rc8-mm2.  It seems we 
+> have three options from here:
+> 1) update the compiler support list to exclude these compilers, or
+> 2) back this change out, or
+> 3) switch to the version not using __weak.
+> The latter seems to be the least intrusive change.  As no-one closer to 
+> the problem is stepping up to make the decision I will propose we go 
+> with the third option here.
 
-Thanks,
+Andrew,
 
-Michael
-
-
-.\" Copyright (C) 2007 Michael Kerrisk <mtk.manpages@gmail.com>
-.\" starting from a version by Davide Libenzi <davidel@xmailserver.org>
-.\"
-.\" This program is free software; you can redistribute it and/or modify
-.\" it under the terms of the GNU General Public License as published by
-.\" the Free Software Foundation; either version 2 of the License, or
-.\" (at your option) any later version.
-.\"
-.\" This program is distributed in the hope that it will be useful,
-.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
-.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-.\" GNU General Public License for more details.
-.\"
-.\" You should have received a copy of the GNU General Public License
-.\" along with this program; if not, write to the Free Software
-.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-.\" MA  02111-1307  USA
-.\"
-.TH EVENTFD 2 2007-09-27 Linux "Linux Programmer's Manual"
-.SH NAME
-eventfd \- create a file descriptor for event notification
-.SH SYNOPSIS
-.\" FIXME . This header file may well change
-.\" FIXME . Probably _GNU_SOURCE will be required
-.\" FIXME . May require: Link with \fI\-lrt\fP
-.B #include <sys/eventfd.h>
-.sp
-.BI "int eventfd(unsigned int " initval );
-.SH DESCRIPTION
-.BR eventfd ()
-creates an "eventfd object"
-that can be used as
-an event wait/notify mechanism by userspace applications,
-and by the kernel to notify userspace applications of events.
-The object contains an unsigned 64-bit integer
-.RI ( uint64_t )
-counter that is maintained by the kernel.
-This counter is initialized with the value specified in the argument
-.IR initval .
-
-As its return value,
-.BR eventfd ()
-returns a new file descriptor that can be used to refer to the
-eventfd object.
-The following operations can be performed on the file descriptor:
-.TP
-.BR read (2)
-If the eventfd counter has a non-zero value, then a
-.BR read (2)
-returns 8 bytes containing that value,
-and the counter's value is reset to zero.
-.IP
-If the counter is zero at the time of the
-.BR read (2),
-then the call either blocks until the counter becomes non-zero,
-or fails with the error
-.B EAGAIN
-if the file descriptor has been made non-blocking
-(via the use of the
-.BR fcntl (2)
-.B F_SETFL
-operation to set the
-.B O_NONBLOCK
-flag).
-.IP
-A
-.BR read (2)
-will fail with the error
-.B EINVAL
-if the size of the supplied buffer is less than 8 bytes.
-.TP
-.BR write (2)
-A
-.BR write (2)
-call adds the 8-byte integer value supplied in its
-buffer to the counter.
-The maximum value that may be stored in the counter is the largest
-unsigned 64-bit value minus 1 (i.e., 0xfffffffffffffffe).
-If the addition would cause the counter's value to exceed
-the maximum, then the
-.BR write (2)
-either blocks until a
-.BR read (2)
-is performed on the file descriptor,
-or fails with the error
-.B EAGAIN
-if the file descriptor has been made non-blocking.
-.IP
-A
-.BR write (2)
-will fail with the error
-.B EINVAL
-if the size of the supplied buffer is less than 8 bytes,
-or if an attempt is made to write the value 0xffffffffffffffff.
-.TP
-.BR poll "(2), " select "(2) (and similar)"
-The returned file descriptor supports
-.BR poll (2)
-(and anaologously
-.BR epoll (7))
-and
-.BR select (2),
-as follows:
-.RS
-.IP * 3
-The file descriptor is readable
-(the
-.BR select (2)
-.I readfds
-argument; the
-.BR poll (2)
-.B POLLIN
-flag)
-if the counter has a value greater than 0.
-.IP *
-The file descriptor is writable
-(the
-.BR select (2)
-.I writefds
-argument; the
-.BR poll (2)
-.B POLLOUT
-flag)
-if it is possible to write a value of at least "1" without blocking.
-.IP *
-The file descriptor indicates an exceptional condition
-(the
-.BR select (2)
-.I exceptfds
-argument; the
-.BR poll (2)
-.B POLLERR
-flag)
-if an overflow of the counter value was detected.
-As noted above,
-.BR write (2)
-can never overflow the counter.
-However an overflow can occur if 2^64
-eventfd "signal posts" were performed by the KAIO
-subsystem (theoretically possible, but practically unlikely).
-If an overflow has occurred, then
-.BR read (2)
-will return that maximum
-.I uint64_t
-value (i.e., 0xffffffffffffffff).
-.RE
-.IP
-The eventfd file descriptor also supports the other file-descriptor
-multiplexing APIs:
-.BR pselect (2),
-.BR ppoll (2),
-and
-.BR epoll (7).
-.TP
-.BR close (2)
-When the file descriptor is no longer required it should be closed.
-When all file descriptors associated with the same eventfd object
-have been closed, the resources for object are freed by the kernel.
-.PP
-A copy of the file descriptor created by
-.BR eventfd ()
-is inherited by the child produced by
-.BR fork (2).
-The duplicate file descriptor is associated with the same
-eventfd object.
-File descriptors created by
-.BR eventfd (2)
-are preserved across
-.BR execve (2).
-.SH "RETURN VALUE"
-On success,
-.BR eventfd ()
-returns a new eventfd file descriptor.
-On error, \-1 is returned and
-.I errno
-is set to indicate the error.
-.SH ERRORS
-.TP
-.B EMFILE
-The per-process limit on open file descriptors has been reached.
-.TP
-.B ENFILE
-The system-wide limit on the total number of open files has been
-reached.
-.TP
-.B ENODEV
-.\" Note from Davide:
-.\" The ENODEV error is basically never going to happen if
-.\" the kernel boots correctly. That error happen only if during
-.\" the kernel initialization, some error occur in the anonymous
-.\" inode source initialization.
-Could not mount (internal) anonymous i-node device.
-.TP
-.B ENOMEM
-There was insufficient memory to create a new
-eventfd file descriptor.
-.SH VERSIONS
-.BR eventfd (2)
-is available on Linux since kernel 2.6.22.
-.\" FIXME . check later to see when glibc support is provided
-As at September 2007 (glibc 2.6), the details of the glibc interface
-have not been finalized, so that, for example,
-the eventual header file may be different from that shown above.
-.SH CONFORMING TO
-.BR eventfd (2)
-is Linux specific.
-.SH NOTES
-Applications can use an eventfd file descriptor instead of a pipe (see
-.BR pipe (2))
-in all cases where a pipe is used simply to signal events.
-The kernel overhead of an eventfd file descriptor
-is much lower than that of a pipe,
-and only one file descriptor is
-required (versus the two required for a pipe).
-
-When used in the kernel, an eventfd
-file descriptor can provide a kernel-userspace bridge allowing,
-for example, functionalities like KAIO (kernel AIO)
-.\" or eventually syslets/threadlets
-to signal to a file descriptor that some operation is complete.
-
-A key point about an eventfd file descriptor is that it can be
-monitored just like any other file descriptor using
-.BR select (2),
-.BR poll (2),
-or
-.BR epoll (7).
-This means that an application can simultaneously monitor the
-readiness of "traditional" files and the readiness of other
-kernel mechanisms that support the eventfd interface.
-(Without the
-.BR eventfd ()
-interface, these mechanisms could not be multiplexed via
-.BR select (2),
-.BR poll (2),
-or
-.BR epoll (7).)
-.SH EXAMPLE
-.PP
-The following program creates an eventfd file descriptor
-and then forks to create a child process.
-While the parent briefly sleeps,
-the child writes each of the integers supplied in the program's
-command-line arguments to the eventfd file descriptor.
-When the parent has finished sleeping,
-it reads from the eventfd file descriptor.
-
-The following shell session shows a sample run of the program:
-.in +0.5i
-.nf
-
-$ ./a.out 1 2 4 7 14
-Child writing 1 to efd
-Child writing 2 to efd
-Child writing 4 to efd
-Child writing 7 to efd
-Child writing 14 to efd
-Child completed write loop
-Parent about to read
-Parent read 28 (0x1c) from efd
-.fi
-.in
-.nf
-
-.\" FIXME . Check later what header file glibc uses for eventfd
-.\" FIXME . Probably glibc will require _GNU_SOURCE to be set
-.\"
-.\" The commented out code here is what we currently need until
-.\" the required stuff is in glibc
-.\"
-.\" #define _GNU_SOURCE
-.\" #include <sys/syscall.h>
-.\" #include <unistd.h>
-.\" #include <time.h>
-.\" #if defined(__i386__)
-.\" #define __NR_timerfd 322
-.\" #endif
-.\"
-.\" static int
-.\" timerfd(int ufd, int clockid, int flags, struct itimerspec *utmr) {
-.\"     return syscall(__NR_timerfd, ufd, clockid, flags, utmr);
-.\" }
-.\"
-.\" #define TFD_TIMER_ABSTIME (1 << 0)
-.\"
-#include <sys/eventfd.h>        /* May yet change for glibc */
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>             /* Definition of uint64_t */
-
-#define die(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
-int
-main(int argc, char *argv[])
-{
-    int efd, j;
-    uint64_t u;
-    ssize_t s;
-
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <num>...\\n", argv[0]);
-        exit(EXIT_FAILURE);
-    }
-
-    efd = eventfd(0);
-    if (efd == \-1)
-        die("eventfd");
-
-    switch (fork()) {
-    case 0:
-        for (j = 1; j < argc; j++) {
-            printf("Child writing %s to efd\\n", argv[j]);
-            u = strtoull(argv[j], NULL, 0);
-                    /* strtoull() allows various bases */
-            s = write(efd, &u, sizeof(uint64_t));
-            if (s != sizeof(uint64_t))
-                die("write");
-        }
-        printf("Child completed write loop\\n");
-
-        exit(EXIT_SUCCESS);
-
-    default:
-        sleep(2);
-
-        printf("Parent about to read\\n");
-        s = read(efd, &u, sizeof(uint64_t));
-        if (s != sizeof(uint64_t))
-            die("read");
-        printf("Parent read %llu (0x%llx) from efd\\n", u, u);
-        exit(EXIT_SUCCESS);
-
-    case \-1:
-        die("fork");
-    }
-}
-.fi
-.SH "SEE ALSO"
-.BR poll (2),
-.BR read (2),
-.BR select (2),
-.BR signalfd (2),
-.BR timerfd (2),
-.BR write (2),
-.BR epoll (7)
+if you agree with Andy that we should support compilers that don't work 
+with __weak, please drop i386-and-x86_64-randomize-brk.patch and replace 
+it with the one below instead (this has been already posted at 
+http://lkml.org/lkml/2007/8/31/113). Thanks.
 
 
+From: Jiri Kosina <jkosina@suse.cz>
+
+i386 and x86_64: randomize brk()
+
+This patch randomizes the location of the heap (brk) for i386 and x86_64. 
+The range is randomized in the range starting at current brk location up 
+to 0x02000000 offset for both architectures. This, together with 
+pie-executable-randomization.patch and 
+pie-executable-randomization-fix.patch, should make the address space 
+randomization on i386 and x86_64 complete.
+
+The empty stubs are not added for architectures that don't support ELF 
+binaries, namely blackfin, h8300, m68knommu and v850.
+
+Arjan says:
+
+This is known to break older versions of some emacs variants, whose dumper 
+code assumed that the last variable declared in the program is equal to 
+the start of the dynamically allocated memory region.
+
+(The dumper is the code where emacs effectively dumps core at the end of 
+it's compilation stage; this coredump is then loaded as the main program 
+during normal use)
+
+iirc this was 5 years or so; we found this way back when I was at RH and 
+we first did the security stuff there (including this brk randomization).  
+It wasn't all variants of emacs, and it got fixed as a result (I vaguely 
+remember that emacs already had code to deal with it for other archs/oses, 
+just ifdeffed wrongly).
+
+It's a rare and wrong assumption as a general thing, just on x86 it mostly 
+happened to be true (but to be honest, it'll break too if gcc does 
+something fancy or if the linker does a non-standard order).  Still its 
+something we should at least document.
+
+Note 2: afaik it only broke the emacs *build*.  I'm not 100% sure about 
+that (it IS 5 years ago) though.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/arch/i386/kernel/process.c b/arch/i386/kernel/process.c
+index 8466471..ba8ad15 100644
+--- a/arch/i386/kernel/process.c
++++ b/arch/i386/kernel/process.c
+@@ -949,3 +949,17 @@ unsigned long arch_align_stack(unsigned long sp)
+ 		sp -= get_random_int() % 8192;
+ 	return sp & ~0xf;
+ }
++
++void arch_randomize_brk(void)
++{
++	unsigned long new_brk;
++	unsigned long range_start;
++	unsigned long range_end;
++
++	range_start = current->mm->brk;
++	range_end = range_start + 0x02000000;
++	new_brk = randomize_range(range_start, range_end, 0);
++	if (new_brk)
++		current->mm->brk = current->mm->start_brk = new_brk;
++}
++
+diff --git a/arch/x86_64/ia32/ia32_binfmt.c b/arch/x86_64/ia32/ia32_binfmt.c
+index dffd2ac..ccc4350 100644
+--- a/arch/x86_64/ia32/ia32_binfmt.c
++++ b/arch/x86_64/ia32/ia32_binfmt.c
+@@ -262,6 +262,7 @@ static void elf32_init(struct pt_regs *);
+ #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+ #define arch_setup_additional_pages syscall32_setup_pages
+ extern int syscall32_setup_pages(struct linux_binprm *, int exstack);
++extern void arch_randomize_brk(void);
+ 
+ #include "../../../fs/binfmt_elf.c" 
+ 
+diff --git a/arch/x86_64/kernel/process.c b/arch/x86_64/kernel/process.c
+index 2842f50..fe7203b 100644
+--- a/arch/x86_64/kernel/process.c
++++ b/arch/x86_64/kernel/process.c
+@@ -902,3 +902,17 @@ unsigned long arch_align_stack(unsigned long sp)
+ 		sp -= get_random_int() % 8192;
+ 	return sp & ~0xf;
+ }
++
++void arch_randomize_brk(void)
++{
++	unsigned long new_brk;
++	unsigned long range_start;
++	unsigned long range_end;
++
++	range_start = current->mm->brk;
++	range_end = range_start + 0x02000000;
++	new_brk = randomize_range(range_start, range_end, 0);
++	if (new_brk)
++		current->mm->brk = current->mm->start_brk = new_brk;
++}
++
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index d65f1d9..4c92461 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1073,6 +1073,9 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	current->mm->end_data = end_data;
+ 	current->mm->start_stack = bprm->p;
+ 
++	if (current->flags & PF_RANDOMIZE)
++		arch_randomize_brk();
++
+ 	if (current->personality & MMAP_PAGE_ZERO) {
+ 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
+ 		   and some applications "depend" upon this behavior.
+diff --git a/include/asm-alpha/elf.h b/include/asm-alpha/elf.h
+index 6c2d78f..18210cc 100644
+--- a/include/asm-alpha/elf.h
++++ b/include/asm-alpha/elf.h
+@@ -163,5 +163,9 @@ extern int alpha_l3_cacheshape;
+     NEW_AUX_ENT(AT_L3_CACHESHAPE, alpha_l3_cacheshape);		\
+   } while (0)
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_ALPHA_ELF_H */
+diff --git a/include/asm-arm/elf.h b/include/asm-arm/elf.h
+index ec1c685..eeeee3f 100644
+--- a/include/asm-arm/elf.h
++++ b/include/asm-arm/elf.h
+@@ -116,4 +116,8 @@ extern char elf_platform[];
+ 
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif
+diff --git a/include/asm-avr32/elf.h b/include/asm-avr32/elf.h
+index d334b49..61b7d81 100644
+--- a/include/asm-avr32/elf.h
++++ b/include/asm-avr32/elf.h
+@@ -107,4 +107,8 @@ typedef struct user_fpu_struct elf_fpregset_t;
+ #define SET_PERSONALITY(ex, ibcs2) set_personality(PER_LINUX_32BIT)
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* __ASM_AVR32_ELF_H */
+diff --git a/include/asm-cris/elf.h b/include/asm-cris/elf.h
+index 96a40c1..10607c7 100644
+--- a/include/asm-cris/elf.h
++++ b/include/asm-cris/elf.h
+@@ -93,4 +93,8 @@ typedef unsigned long elf_fpregset_t;
+ 
+ #endif /* __KERNEL__ */
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif
+diff --git a/include/asm-frv/elf.h b/include/asm-frv/elf.h
+index 7df58a3..07df9dd 100644
+--- a/include/asm-frv/elf.h
++++ b/include/asm-frv/elf.h
+@@ -141,4 +141,8 @@ do {											\
+ #define SET_PERSONALITY(ex, ibcs2) set_personality((ibcs2)?PER_SVR4:PER_LINUX)
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif
+diff --git a/include/asm-i386/elf.h b/include/asm-i386/elf.h
+index b32df3a..5935d4c 100644
+--- a/include/asm-i386/elf.h
++++ b/include/asm-i386/elf.h
+@@ -160,4 +160,6 @@ do if (vdso_enabled) {							\
+ 
+ #endif
+ 
++extern void arch_randomize_brk(void);
++
+ #endif
+diff --git a/include/asm-ia64/elf.h b/include/asm-ia64/elf.h
+index 25f9835..3b84b0d 100644
+--- a/include/asm-ia64/elf.h
++++ b/include/asm-ia64/elf.h
+@@ -249,4 +249,8 @@ do {									\
+ 
+ #endif /* __KERNEL__ */
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* _ASM_IA64_ELF_H */
+diff --git a/include/asm-m32r/elf.h b/include/asm-m32r/elf.h
+index bbee8b2..33a5244 100644
+--- a/include/asm-m32r/elf.h
++++ b/include/asm-m32r/elf.h
+@@ -133,4 +133,8 @@ typedef elf_fpreg_t elf_fpregset_t;
+ #define SET_PERSONALITY(ex, ibcs2) set_personality(PER_LINUX)
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif  /* _ASM_M32R__ELF_H */
+diff --git a/include/asm-m68k/elf.h b/include/asm-m68k/elf.h
+index eb63b85..f6ff4fe 100644
+--- a/include/asm-m68k/elf.h
++++ b/include/asm-m68k/elf.h
+@@ -118,4 +118,8 @@ typedef struct user_m68kfp_struct elf_fpregset_t;
+ #define SET_PERSONALITY(ex, ibcs2) set_personality((ibcs2)?PER_SVR4:PER_LINUX)
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif
+diff --git a/include/asm-mips/elf.h b/include/asm-mips/elf.h
+index e7d95d4..571cd80 100644
+--- a/include/asm-mips/elf.h
++++ b/include/asm-mips/elf.h
+@@ -372,4 +372,8 @@ extern int dump_task_fpu(struct task_struct *, elf_fpregset_t *);
+ #define ELF_ET_DYN_BASE         (TASK_SIZE / 3 * 2)
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* _ASM_ELF_H */
+diff --git a/include/asm-parisc/elf.h b/include/asm-parisc/elf.h
+index f628ac7..9807cae 100644
+--- a/include/asm-parisc/elf.h
++++ b/include/asm-parisc/elf.h
+@@ -344,4 +344,8 @@ struct pt_regs;	/* forward declaration... */
+ #define ELF_HWCAP	0
+ /* (boot_cpu_data.x86_capability) */
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif
+diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
+index de50799..af45d0e 100644
+--- a/include/asm-powerpc/elf.h
++++ b/include/asm-powerpc/elf.h
+@@ -422,4 +422,8 @@ extern void arch_write_notes(struct file *file);
+ #define ARCH_HAVE_EXTRA_ELF_NOTES
+ #endif /* CONFIG_PPC_CELL */
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* _ASM_POWERPC_ELF_H */
+diff --git a/include/asm-s390/elf.h b/include/asm-s390/elf.h
+index 91d0632..0a32ac3 100644
+--- a/include/asm-s390/elf.h
++++ b/include/asm-s390/elf.h
+@@ -216,4 +216,8 @@ do {							\
+ #endif /* __s390x__ */
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif
+diff --git a/include/asm-sh/elf.h b/include/asm-sh/elf.h
+index 43ca244..f055a68 100644
+--- a/include/asm-sh/elf.h
++++ b/include/asm-sh/elf.h
+@@ -140,4 +140,8 @@ do {								\
+ } while (0)
+ #endif /* CONFIG_VSYSCALL */
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* __ASM_SH_ELF_H */
+diff --git a/include/asm-sh64/elf.h b/include/asm-sh64/elf.h
+index f994286..5d6dd4b 100644
+--- a/include/asm-sh64/elf.h
++++ b/include/asm-sh64/elf.h
+@@ -104,4 +104,8 @@ typedef struct user_fpu_struct elf_fpregset_t;
+ #define SET_PERSONALITY(ex, ibcs2) set_personality(PER_LINUX_32BIT)
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* __ASM_SH64_ELF_H */
+diff --git a/include/asm-sparc/elf.h b/include/asm-sparc/elf.h
+index aaf6ef4..94b273d 100644
+--- a/include/asm-sparc/elf.h
++++ b/include/asm-sparc/elf.h
+@@ -168,4 +168,8 @@ do {	unsigned long *dest = &(__elf_regs[0]);		\
+ 
+ #endif /* __KERNEL__ */
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* !(__ASMSPARC_ELF_H) */
+diff --git a/include/asm-sparc64/elf.h b/include/asm-sparc64/elf.h
+index 303d85e..8afe25f 100644
+--- a/include/asm-sparc64/elf.h
++++ b/include/asm-sparc64/elf.h
+@@ -190,4 +190,8 @@ do {	unsigned long new_flags = current_thread_info()->flags; \
+ } while (0)
+ #endif
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif /* !(__ASM_SPARC64_ELF_H) */
+diff --git a/include/asm-um/elf-x86_64.h b/include/asm-um/elf-x86_64.h
+index 8a8246d..e1d664e 100644
+--- a/include/asm-um/elf-x86_64.h
++++ b/include/asm-um/elf-x86_64.h
+@@ -81,6 +81,10 @@ extern long elf_aux_hwcap;
+ 
+ #define SET_PERSONALITY(ex, ibcs2) do ; while(0)
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif
+ 
+ /*
+diff --git a/include/asm-x86_64/elf.h b/include/asm-x86_64/elf.h
+index b4fbe47..5a1adf9 100644
+--- a/include/asm-x86_64/elf.h
++++ b/include/asm-x86_64/elf.h
+@@ -177,4 +177,6 @@ do if (vdso_enabled) {						\
+ 
+ #endif
+ 
++extern void arch_randomize_brk(void);
++
+ #endif
+diff --git a/include/asm-xtensa/elf.h b/include/asm-xtensa/elf.h
+index 1569b53..10e60bf 100644
+--- a/include/asm-xtensa/elf.h
++++ b/include/asm-xtensa/elf.h
+@@ -222,5 +222,9 @@ extern void do_save_fpregs (elf_fpregset_t*, struct pt_regs*,
+ extern int do_restore_fpregs (elf_fpregset_t*, struct pt_regs*,
+ 			      struct task_struct*);
+ 
++static inline void arch_randomize_brk(void)
++{
++}
++
+ #endif	/* __KERNEL__ */
+ #endif	/* _XTENSA_ELF_H */
