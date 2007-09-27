@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbXIZX5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbXI0AB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbXIZX5V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 19:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbXIZX5N
+	id S1752910AbXI0AB0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 20:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXI0ABT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 19:57:13 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:41166 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbXIZX5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 19:57:12 -0400
-Message-ID: <46FAF1D5.6020502@us.ibm.com>
-Date: Wed, 26 Sep 2007 16:57:09 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Wed, 26 Sep 2007 20:01:19 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38952 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751295AbXI0ABS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 20:01:18 -0400
+Date: Thu, 27 Sep 2007 02:01:37 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: David Newall <david@davidnewall.com>
+Cc: Christer Weinigel <christer@weinigel.se>, Al Viro <viro@ftp.linux.org.uk>,
+       Phillip Susi <psusi@cfl.rr.com>, Bill Davidsen <davidsen@tmr.com>,
+       majkls <majkls@prepere.com>, linux-kernel@vger.kernel.org
+Subject: Re: sys_chroot+sys_fchdir Fix
+Message-ID: <20070927000137.GV6800@stusta.de>
+References: <46F1A196.8060108@davidnewall.com> <46F401D6.6060609@cfl.rr.com> <20070921191012.15a0b51b@the-village.bc.nu> <46F9752C.5080807@cfl.rr.com> <20070926002340.GL8181@ftp.linux.org.uk> <46FA35A6.1070400@davidnewall.com> <20070926212408.6662231a@zoo.weinigel.se> <46FACCE0.2070005@davidnewall.com> <20070926215521.GU6800@stusta.de> <46FAECC5.8040103@davidnewall.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       randy.dunlap@oracle.com, hch@infradead.org
-Subject: Re: [PATCH 0/3] A kernel tracing interface - (updated)
-References: <1190830949.1232.11.camel@lc4eb748232119.ibm.com> <20070926191721.GA6399@Krystal>
-In-Reply-To: <20070926191721.GA6399@Krystal>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46FAECC5.8040103@davidnewall.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * David J. Wilder (dwilder@us.ibm.com) wrote:
->> These patches provide a kernel tracing interface called "trace".
->>
->> (update) Moved the sample code to the new samples\ subdir
->>
->> The motivation for "trace" is to:
->> - Provide a simple set of tracing primitives that will utilize the high-
->>   performance and low-overhead of relayfs for passing traces data from
->>   kernel to user space.
->> - Provide a common user interface for managing kernel traces.
->> - Allow for binary as well as ascii trace data.
->> - Incorporate features from the systemtap runtime that are
->>   useful to others.
->>
->> Patches are against 2.6.23-rc6-mm1
->>
->> Summary of patches:
->> [patch 1/3]  Trace code and documentation
->> [patch 2/3]  Relay Reset Consumed
->> [patch 3/3]  Trace sample
->>
->> Note: Patches 1/3 and 2/3 must be applied together.
->>
->> Note: The following patches must be applied with 3/3.
->> [patch 3/5] Add samples subdir
->> 	http://lkml.org/lkml/2007/9/25/157
-> 
-> I guess you mean:
-> [patch 3/5] Add samples subdir (updated)
-> http://lkml.org/lkml/2007/9/25/366
-> 
-> (please try it with this new version, it should work as is..)
+On Thu, Sep 27, 2007 at 09:05:33AM +0930, David Newall wrote:
+> Adrian Bunk wrote:
+>> You are claiming "They went so far as to say that dot-dot wouldn't let you 
+>> out"?
+>>   
+>
+> I phrased it in a somewhat conversational way.  The promise, which I've now 
+> quoted from multiple sources, is expressed variously, including:
+>> The dot-dot entry in the root directory is interpreted to mean the root 
+>> directory itself. Thus, dot-dot cannot be used to access files outside the 
+>> subtree rooted at the root directory.
 
-yes it works fine with the new version of your patch,  I will update my 
-note for the next round of submissions.
-> 
-> Mathieu
-> 
->> [patch 4/5] Linux Kernel Markers - Samples
->> 	http://lkml.org/lkml/2007/9/25/166
->>
->> Signed-off-by: David Wilder <dwilder@us.ibm.com>
->>
->>
-> 
+You claimed:
+
+<--  snip  -->
+
+Look, when chroot was being designed, I think they intended that even root 
+should be unable to get out. They went so far as to say that dot-dot 
+wouldn't let you out; and it doesn't.
+
+<--  snip  -->
+
+You were clearly saying that whom you call "they" were the people who 
+designed chroot. And it was you who was claiming in this statement that
+"they" said it.
+
+The OpenBSD manpage you quoted in this thread states chroot() was added 
+in 4.2BSD, and 4.2BSD was released in 1983.
+
+You should therefore either bring a source where the people who designed 
+chroot() in 1983 or earlier are stating what you claim they said or 
+admit that you were talking utter bullshit.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
