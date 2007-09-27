@@ -1,72 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbXI0AB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbXI0ADn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752910AbXI0AB0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 20:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXI0ABT
+	id S1753188AbXI0ADn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 20:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbXI0ADf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 20:01:19 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:38952 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751295AbXI0ABS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 20:01:18 -0400
-Date: Thu, 27 Sep 2007 02:01:37 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: David Newall <david@davidnewall.com>
-Cc: Christer Weinigel <christer@weinigel.se>, Al Viro <viro@ftp.linux.org.uk>,
-       Phillip Susi <psusi@cfl.rr.com>, Bill Davidsen <davidsen@tmr.com>,
-       majkls <majkls@prepere.com>, linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-Message-ID: <20070927000137.GV6800@stusta.de>
-References: <46F1A196.8060108@davidnewall.com> <46F401D6.6060609@cfl.rr.com> <20070921191012.15a0b51b@the-village.bc.nu> <46F9752C.5080807@cfl.rr.com> <20070926002340.GL8181@ftp.linux.org.uk> <46FA35A6.1070400@davidnewall.com> <20070926212408.6662231a@zoo.weinigel.se> <46FACCE0.2070005@davidnewall.com> <20070926215521.GU6800@stusta.de> <46FAECC5.8040103@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46FAECC5.8040103@davidnewall.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 26 Sep 2007 20:03:35 -0400
+Received: from xenotime.net ([66.160.160.81]:34788 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751067AbXI0ADe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 20:03:34 -0400
+Date: Wed, 26 Sep 2007 17:03:30 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Jim Paris <jim@jtan.com>, linas@austin.ibm.com
+Cc: AndrewL733 <AndrewL733@aol.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       samson yeung <fragmede@onepatchdown.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, bbermack@alum.mit.edu,
+       Justin Mazzola Paluska <jmp@mit.edu>
+Subject: Re: NMI error and Intel S5000PSL Motherboards
+Message-Id: <20070926170330.ee8fb5b4.rdunlap@xenotime.net>
+In-Reply-To: <20070926234814.GA27743@jim.sh>
+References: <c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com>
+	<20070926135229.67edd4eb.rdunlap@xenotime.net>
+	<c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com>
+	<46FA3092.70108@aol.com>
+	<20070926121655.55334682@the-village.bc.nu>
+	<46FA3092.70108@aol.com>
+	<20070925215819.c993e2d8.rdunlap@xenotime.net>
+	<46FA3092.70108@aol.com>
+	<20070925195946.cef5ae9d.rdunlap@xenotime.net>
+	<46FA3092.70108@aol.com>
+	<20070926234814.GA27743@jim.sh>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 09:05:33AM +0930, David Newall wrote:
-> Adrian Bunk wrote:
->> You are claiming "They went so far as to say that dot-dot wouldn't let you 
->> out"?
->>   
->
-> I phrased it in a somewhat conversational way.  The promise, which I've now 
-> quoted from multiple sources, is expressed variously, including:
->> The dot-dot entry in the root directory is interpreted to mean the root 
->> directory itself. Thus, dot-dot cannot be used to access files outside the 
->> subtree rooted at the root directory.
+On Wed, 26 Sep 2007 19:48:14 -0400 Jim Paris wrote:
 
-You claimed:
+> Hello,
+> 
+> > We have about 100 servers based on Intel S5000PSL-SATA motherboards. 
+> > They have been running for anywhere between 1 and 10 months. For the 
+> > past few months, after updating them all to the 2.6.20.15 kernel 
+> > (because of a bug in the 2.6.18 kernel), we are seeing some strange NMI 
+> > errors. For example:
+> > 
+> > Aug 29 09:02:10 master kernel: Uhhuh. NMI received for unknown reason 30.
+> > Aug 29 09:02:10 master kernel: Do you have a strange power saving mode enabled?
+> > Aug 29 09:02:10 master kernel: Dazed and confused, but trying to continue
+> 
+> I'm also working with Andrew and Samson.  It seems that the cause of
+> the problem is CONFIG_PCIEAER, which was introduced after 2.6.18 and
+> defaults to y.
+> 
+> With CONFIG_PCIEAER=n, scanpci works fine with no errors.  This is the
+> workaround that they'll likely use for now.
 
-<--  snip  -->
+Glad that you found it.
 
-Look, when chroot was being designed, I think they intended that even root 
-should be unable to get out. They went so far as to say that dot-dot 
-wouldn't let you out; and it doesn't.
+> With CONFIG_PCIEAER=y, scanpci always triggers the NMI error.  The
+> option aerdriver.forceload=1 has no effect.
 
-<--  snip  -->
+The 'forceload' option only forces the driver to load even when the
+ACPI hardware initialization routine fails.
 
-You were clearly saying that whom you call "they" were the people who 
-designed chroot. And it was you who was claiming in this statement that
-"they" said it.
+It would be nice to be able to disable PCIEAER at boot time though.
+Shouldn't be difficult.
 
-The OpenBSD manpage you quoted in this thread states chroot() was added 
-in 4.2BSD, and 4.2BSD was released in 1983.
 
-You should therefore either bring a source where the people who designed 
-chroot() in 1983 or earlier are stating what you claim they said or 
-admit that you were talking utter bullshit.
+> The related dmesg output at boot is:
+> 
+>   Evaluate _OSC Set fails. Status = 0x0005
+>   Evaluate _OSC Set fails. Status = 0x0005
+>   aer_init: AER service init fails - Run ACPI _OSC fails
+>   aer: probe of 0000:00:02.0:pcie01 failed with error 2
+>   aer_init: AER service init fails - No ACPI _OSC support
+>   aer: probe of 0000:00:03.0:pcie01 failed with error 1
+>   Evaluate _OSC Set fails. Status = 0x0005
+>   Evaluate _OSC Set fails. Status = 0x0005
+>   aer_init: AER service init fails - Run ACPI _OSC fails
+>   aer: probe of 0000:00:04.0:pcie01 failed with error 2
+>   Evaluate _OSC Set fails. Status = 0x0005
+>   Evaluate _OSC Set fails. Status = 0x0005
+>   aer_init: AER service init fails - Run ACPI _OSC fails
+>   aer: probe of 0000:00:05.0:pcie01 failed with error 2
+>   Evaluate _OSC Set fails. Status = 0x0005
+>   Evaluate _OSC Set fails. Status = 0x0005
+>   aer_init: AER service init fails - Run ACPI _OSC fails
+>   aer: probe of 0000:00:06.0:pcie01 failed with error 2
+>   aer_init: AER service init fails - No ACPI _OSC support
+>   aer: probe of 0000:00:07.0:pcie01 failed with error 1
+> 
+> Full dmesg, lspci, and ACPI DSDT are available here:
+>   http://jim.sh/~jim/tmp/nmi/
+> 
+> -jim
 
-cu
-Adrian
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+---
+~Randy
+Phaedrus says that Quality is about caring.
