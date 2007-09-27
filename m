@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759615AbXI0WHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbXI0WKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759615AbXI0WHp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 18:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbXI0WHh
+	id S1759964AbXI0WKm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 18:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757993AbXI0WKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 18:07:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47563 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755296AbXI0WHf (ORCPT
+	Thu, 27 Sep 2007 18:10:34 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:41528 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757983AbXI0WKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 18:07:35 -0400
-Subject: Re: [RFC][PATCH] make reiserfs stop using 'struct file' for
-	internal xattr operations
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Hansen <haveblue@us.ibm.com>, hch@infradead.org,
-       laurent.riffard@free.fr, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
-In-Reply-To: <20070927145125.1346901f.akpm@linux-foundation.org>
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
-	 <46FC021F.8060109@free.fr>
-	 <20070927124833.d2691813.akpm@linux-foundation.org>
-	 <20070927202607.GA3812@infradead.org> <1190926419.7344.27.camel@localhost>
-	 <20070927210423.GA6117@infradead.org> <1190928434.7344.31.camel@localhost>
-	 <20070927145125.1346901f.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 28 Sep 2007 00:02:53 +0200
-Message-Id: <1190930574.18147.60.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Sep 2007 18:10:33 -0400
+Date: Thu, 27 Sep 2007 16:10:31 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linas Vepstas <linas@austin.ibm.com>
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
+Message-ID: <20070927221031.GY3899@parisc-linux.org>
+References: <20070420204114.GL31947@austin.ibm.com> <20070420204720.GM31947@austin.ibm.com> <20070926150216.GH3899@parisc-linux.org> <20070927220022.GC18686@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927220022.GC18686@austin.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 27, 2007 at 05:00:22PM -0500, Linas Vepstas wrote:
+> On Wed, Sep 26, 2007 at 09:02:16AM -0600, Matthew Wilcox wrote:
+> > I'm a little concerned by the mention of MMIO.  It's entirely possible
+> > for the sym2 driver to be using ioports to access the card rather than
+> > MMIO.  Is it simply that it can't on the platform you test on?
+> 
+> The comment is misleading. I've been in the bad habit of calling
+> it "mmio" whenever its not DMA.
 
-On Thu, 2007-09-27 at 14:51 -0700, Andrew Morton wrote:
+OK, cool, thanks.  I'll update the comment for you.
 
-> So your stuff becomes dependent on Nick's stuff, and Nick's stuff is still
-> failing on NFS, I think.
+One last thing (sorry, I only just noticed):
+In the error handler, we wait_for_completion(io_reset_wait).
+In sym2_io_error_detected, we init_completion(io_reset_wait).
+Isn't it possible that we hit the error handler before we hit the
+io_error_detected path, and thus the completion wait is lost?
+Since the completion is already initialised in sym_attach(), I don't
+think we need to initialise it in sym2_io_error_detected().
+Makes sense to just delete it?
 
-It worked today, it turned out to be a UML bug. Real hardware seemed to
-work properly, but will test a bit more tomorrow.
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
