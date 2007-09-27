@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbXI0J5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbXI0KDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbXI0J5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 05:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXI0J5D
+	id S1755249AbXI0KDQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 06:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbXI0KDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 05:57:03 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:5723 "EHLO relay.sw.ru"
+	Thu, 27 Sep 2007 06:03:03 -0400
+Received: from smtp20.orange.fr ([80.12.242.26]:18388 "EHLO smtp20.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751334AbXI0J5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 05:57:01 -0400
-Date: Thu, 27 Sep 2007 13:55:57 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: arjan@infradead.org, linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: [PATCH -mm] task_struct: move ->fpu_counter and ->oomkilladj
-Message-ID: <20070927095557.GA6758@localhost.sw.ru>
-Mime-Version: 1.0
+	id S1751935AbXI0KDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 06:03:01 -0400
+X-ME-UUID: 20070927100258390.0984D1C000AA@mwinf2001.orange.fr
+Date: Thu, 27 Sep 2007 12:02:58 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] VT ioctl race fix
+Message-ID: <20070927100257.GA1498@caravaggio>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is nice 2 byte hole after struct task_struct::ioprio field
-into which we can put two 1-byte fields: ->fpu_counter and ->oomkilladj.
+Hi,
 
-[cc'ing Arjan just in case ->fpu_counter placement wasn't completely random :^)]
+When calling the RELDISP VT ioctl, we are reading vt_newvt while the console
+workqueue could be messing with it (through change_console()).
+We fix this race by taking the console semaphore before reading vt_newvt.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+Andrew, would you please consider this patch for -mm inclusion ?
+
+Signed-off-by: Samuel Ortiz <sameo@openedhand.com>
+
 ---
+ drivers/char/vt_ioctl.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
- include/linux/sched.h |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
-
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -960,6 +960,16 @@ struct task_struct {
- #endif
+Index: linux-2.6.22/drivers/char/vt_ioctl.c
+===================================================================
+--- linux-2.6.22.orig/drivers/char/vt_ioctl.c	2007-07-09 01:32:17.000000000 +0200
++++ linux-2.6.22/drivers/char/vt_ioctl.c	2007-09-27 11:58:42.000000000 +0200
+@@ -770,6 +770,7 @@
+ 		/*
+ 		 * Switching-from response
+ 		 */
++		acquire_console_sem();
+ 		if (vc->vt_newvt >= 0) {
+ 			if (arg == 0)
+ 				/*
+@@ -784,7 +785,6 @@
+ 				 * complete the switch.
+ 				 */
+ 				int newvt;
+-				acquire_console_sem();
+ 				newvt = vc->vt_newvt;
+ 				vc->vt_newvt = -1;
+ 				i = vc_allocate(newvt);
+@@ -798,7 +798,6 @@
+ 				 * other console switches..
+ 				 */
+ 				complete_change_console(vc_cons[newvt].d);
+-				release_console_sem();
+ 			}
+ 		}
  
- 	unsigned short ioprio;
-+	/*
-+	 * fpu_counter contains the number of consecutive context switches
-+	 * that the FPU is used. If this is over a threshold, the lazy fpu
-+	 * saving becomes unlazy to save the trap. This is an unsigned char
-+	 * so that after 256 times the counter wraps and the behavior turns
-+	 * lazy again; this to deal with bursty apps that only use FPU for
-+	 * a short time
-+	 */
-+	unsigned char fpu_counter;
-+	s8 oomkilladj; /* OOM kill score adjustment (bit shift). */
- #ifdef CONFIG_BLK_DEV_IO_TRACE
- 	unsigned int btrace_seq;
- #endif
-@@ -1044,16 +1054,6 @@ struct task_struct {
- 	struct key *thread_keyring;	/* keyring private to this thread */
- 	unsigned char jit_keyring;	/* default keyring to attach requested keys to */
- #endif
--	/*
--	 * fpu_counter contains the number of consecutive context switches
--	 * that the FPU is used. If this is over a threshold, the lazy fpu
--	 * saving becomes unlazy to save the trap. This is an unsigned char
--	 * so that after 256 times the counter wraps and the behavior turns
--	 * lazy again; this to deal with bursty apps that only use FPU for
--	 * a short time
--	 */
--	unsigned char fpu_counter;
--	s8 oomkilladj; /* OOM kill score adjustment (bit shift). */
- 	char comm[TASK_COMM_LEN]; /* executable name excluding path
- 				     - access with [gs]et_task_comm (which lock
- 				       it with task_lock())
+@@ -810,9 +809,12 @@
+ 			/*
+ 			 * If it's just an ACK, ignore it
+ 			 */
+-			if (arg != VT_ACKACQ)
++			if (arg != VT_ACKACQ) {
++				release_console_sem();
+ 				return -EINVAL;
++			}
+ 		}
++		release_console_sem();
+ 
+ 		return 0;
+ 
 
