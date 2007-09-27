@@ -1,111 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbXI0TCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbXI0TIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbXI0TCz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 15:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbXI0TCs
+	id S1758590AbXI0TIy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 15:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467AbXI0TIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 15:02:48 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:58861 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753541AbXI0TCr (ORCPT
+	Thu, 27 Sep 2007 15:08:47 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:33669 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755194AbXI0TIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 15:02:47 -0400
-Date: Thu, 27 Sep 2007 12:00:33 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, dmitry.adamushko@gmail.com, efault@gmx.de,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [PATCH -mm] Hook up group scheduler with control groups
-Message-Id: <20070927120033.45915a61.randy.dunlap@oracle.com>
-In-Reply-To: <20070927180415.GC5715@linux.vnet.ibm.com>
-References: <20070927150624.GG4415@linux.vnet.ibm.com>
-	<20070927104005.2ed0b81d.randy.dunlap@oracle.com>
-	<20070927180415.GC5715@linux.vnet.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 27 Sep 2007 15:08:46 -0400
+Subject: [RFC][PATCH] kill do_filp_open()
+To: linux-kernel@vger.kernel.org
+Cc: miklos@szeredi.hu, hch@infradead.org, Dave Hansen <haveblue@us.ibm.com>
+From: Dave Hansen <haveblue@us.ibm.com>
+Date: Thu, 27 Sep 2007 12:08:23 -0700
+Message-Id: <20070927190823.A810E243@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 23:34:15 +0530 Dhaval Giani wrote:
 
-> > > +config RESOURCE_COUNTERS
-> > > +	bool "Resource counters"
-> > > +	help
-> > > +	  This option enables controller independent resource accounting
-> > > +          infrastructure that works with cgroups
-> > 
-> > Use tab + 2 spaces consistently for help text indentation.
-> > End that sentence with a ".".
-> > 
-> 
-> Hi,
-> 
-> hmmmm. So I looked into the sources with the patches applied, and they
-> don't have an indentation problem. It looks fine. I'm not sure why the
-> patch is getting generated like this though. Will fix up the '.' though.
-> 
-> Here it is,
-> 
-> Thanks,
-> --
-> 
-> Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> 
-> ---
->  include/linux/cgroup_subsys.h |    6 ++
->  init/Kconfig                  |   24 +++++---
->  kernel/sched.c                |  122 ++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 145 insertions(+), 7 deletions(-)
-> 
-> Index: current/include/linux/cgroup_subsys.h
-> ===================================================================
-> --- current.orig/include/linux/cgroup_subsys.h
-> +++ current/include/linux/cgroup_subsys.h
-> @@ -36,3 +36,9 @@ SUBSYS(mem_cgroup)
->  #endif
->  
->  /* */
-> +
-> +#ifdef CONFIG_FAIR_CGROUP_SCHED
-> +SUBSYS(cpu_cgroup)
-> +#endif
-> +
-> +/* */
-> Index: current/init/Kconfig
-> ===================================================================
-> --- current.orig/init/Kconfig
-> +++ current/init/Kconfig
-> @@ -319,6 +319,13 @@ config CPUSETS
->  
->  	  Say N if unsure.
->  
-> +config RESOURCE_COUNTERS
-> +	bool "Resource counters"
-> +	help
-> +	  This option enables controller independent resource accounting
-
-Above line is tab + 2 spaces (i.e., correct).
-
-> +          infrastructure that works with cgroups.
-
-Above line indent is 10 spaces (i.e., not correct).
-
-
-> +	depends on CGROUPS
-> +
->  config FAIR_GROUP_SCHED
->  	bool "Fair group CPU scheduler"
->  	default y
+This kills off the almost empty do_filp_open().  However,
+let's keep filp_open() around.  It does the nameidata allocation
+on the stack, and also adds the AT_FDCWD argument.  I think
+that's enough to keep it around.
 
 ---
-~Randy
-Phaedrus says that Quality is about caring.
+
+ lxc-dave/fs/open.c |   40 ++++++++++++++++++----------------------
+ 1 file changed, 18 insertions(+), 22 deletions(-)
+
+diff -puN fs/open.c~kill-do_filp_open fs/open.c
+--- lxc/fs/open.c~kill-do_filp_open	2007-09-27 12:03:24.000000000 -0700
++++ lxc-dave/fs/open.c	2007-09-27 12:05:31.000000000 -0700
+@@ -840,18 +840,10 @@ cleanup_file:
+ 	return ERR_PTR(error);
+ }
+ 
+-static struct file *do_filp_open(int dfd, const char *filename, int flags,
+-				 int mode)
+-{
+-	int error;
+-	struct nameidata nd;
+-
+-	return open_namei(dfd, filename, flags, mode, &nd);
+-}
+-
+ struct file *filp_open(const char *filename, int flags, int mode)
+ {
+-	return do_filp_open(AT_FDCWD, filename, flags, mode);
++	struct nameidata nd;
++	return open_namei(AT_FDCWD, filename, flags, mode, &nd);
+ }
+ EXPORT_SYMBOL(filp_open);
+ 
+@@ -1050,20 +1042,24 @@ long do_sys_open(int dfd, const char __u
+ 	char *tmp = getname(filename);
+ 	int fd = PTR_ERR(tmp);
+ 
+-	if (!IS_ERR(tmp)) {
+-		fd = get_unused_fd_flags(flags);
+-		if (fd >= 0) {
+-			struct file *f = do_filp_open(dfd, tmp, flags, mode);
+-			if (IS_ERR(f)) {
+-				put_unused_fd(fd);
+-				fd = PTR_ERR(f);
+-			} else {
+-				fsnotify_open(f->f_path.dentry);
+-				fd_install(fd, f);
+-			}
++	if (IS_ERR(tmp))
++		goto out;
++
++	fd = get_unused_fd_flags(flags);
++	if (fd >= 0) {
++		struct nameidata nd;
++		struct file *f = open_namei(dfd, tmp, flags, mode, &nd);
++
++		if (IS_ERR(f)) {
++			put_unused_fd(fd);
++			fd = PTR_ERR(f);
++		} else {
++			fsnotify_open(f->f_path.dentry);
++			fd_install(fd, f);
+ 		}
+-		putname(tmp);
+ 	}
++	putname(tmp);
++out:
+ 	return fd;
+ }
+ 
+_
