@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbXI0FuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969AbXI0GEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbXI0FuU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 01:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbXI0FuI
+	id S1753969AbXI0GEn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 02:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXI0GEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 01:50:08 -0400
-Received: from main.gmane.org ([80.91.229.2]:51417 "EHLO ciao.gmane.org"
+	Thu, 27 Sep 2007 02:04:34 -0400
+Received: from mga03.intel.com ([143.182.124.21]:6701 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752614AbXI0FuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 01:50:07 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Shreyansh Jain <shreyansh.jain@gmail.com>
-Subject: =?utf-8?b?dHJ5X21vZHVsZV9nZXQ=?= code understanding
-Date: Thu, 27 Sep 2007 05:19:06 +0000 (UTC)
-Message-ID: <loom.20070927T051622-501@post.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750863AbXI0GEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 02:04:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,201,1188802800"; 
+   d="scan'208";a="287603454"
+Subject: Re: [PATCH -mm -v3 1/2] i386/x86_64 boot: setup data
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46F14896.8080603@zytor.com>
+References: <1190192306.12429.76.camel@caritas-dev.intel.com>
+	 <46F14896.8080603@zytor.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 192.8.220.8 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.7) Gecko/20070914 Firefox/2.0.0.7)
+Date: Thu, 27 Sep 2007 14:06:40 +0800
+Message-Id: <1190873200.21818.292.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 27 Sep 2007 06:04:30.0220 (UTC) FILETIME=[44797CC0:01C800CC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear List,
+Hi, Peter,
 
-I agree that this issue certainly doesn't require to be in this list (rightful
-place being kernewbies) but I tried that and got no response - so trying my luck
-here.
+On Wed, 2007-09-19 at 09:04 -0700, H. Peter Anvin wrote:
+> Huang, Ying wrote:
+> > 
+> > Known Issues:
+> > 
+> > 1. Where is safe to place the linked list of setup_data?
+> > Because the length of the linked list of setup_data is variable, it
+> > can not be copied into BSS segment of kernel as that of "zero
+> > page". We must find a safe place for it, where it will not be
+> > overwritten by kernel during booting up. The i386 kernel will
+> > overwrite some pages after _end. The x86_64 kernel will overwrite some
+> > pages from 0x1000 on.
+> > 
+> 
+> The latter is definitely not safe, since the space below 640K is the
+> documented place to put the command line (and presumably where the
+> bootloader would put other auxilliary chunks.)
+> 
+> I'll try to do a full review of this later today.  Haven't had time yet
+> to look at this anything than but piecemeal.
 
-I was going through try_module_get function in include/linux/module.h file
-(2.6.22 stock kernel) - which is like:
+Do you think this patch and the 32-bit boot protocol patch are ready to
+merge for -mm? If not, I can revise them.
 
------
-static inline int try_module_get(struct module *module){
-  int ret = 1;   <--- error case when !module
-    if (module) {
-         unsigned int cpu = get_cpu();
-         if (likely(module_is_live(module)))
-                local_inc(&module->ref[cpu].count);
-         else
-                ret = 0;   <--- error case
-         put_cpu();
-  }
-  return ret;   <----
-}
-----
-
-What I understand about the code flow is:
--- module live would return the flag stating that this module can be reference
-and is NOT being removed currently.
-
-1. In case the module pointer passed is invalid (NULL) this function would
-return 1 (error case)
-2. In case the module pointer is OK, and module is currently not being removed,
-reference count would be incremented and 1 returned (non error case)
-3. In case the module pointer is OK, and module reference count can NOT be
-increased, 0 would be returned (error case).
-
-As you can observe from above points, 0 and 1 are returned for error cases. I am
-a little confused and wondering if there is something which I am missing in this
-code??.
-
-Can anyone help me out with this? Any help would be highly appreciated.
-
-Regards
-Shreyansh
-
+Best Regards,
+Huang Ying
