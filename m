@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbXI0DSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbXI0D7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbXI0DSt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 23:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbXI0DSl
+	id S1753131AbXI0D7D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 23:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbXI0D6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 23:18:41 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:57486 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751269AbXI0DSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 23:18:40 -0400
-Date: Thu, 27 Sep 2007 12:18:21 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: mgross@linux.intel.com, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] QoS params patch
-Message-ID: <20070927031821.GA26307@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>, Valdis.Kletnieks@vt.edu,
-	mgross@linux.intel.com, Randy Dunlap <randy.dunlap@oracle.com>,
-	linux-pm <linux-pm@lists.linux-foundation.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <20070926223712.GA22029@linux.intel.com> <20070926224026.GA23218@linux.intel.com> <20070926164159.3b43479b.randy.dunlap@oracle.com> <20070927004020.GB29906@linux.intel.com> <22087.1190861583@turing-police.cc.vt.edu>
+	Wed, 26 Sep 2007 23:58:50 -0400
+Received: from mail-gw17.credit-suisse.com ([198.240.130.182]:36732 "EHLO
+	nys17a-3002.corpny.csfb.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751657AbXI0D6t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 23:58:49 -0400
+X-Server-Uuid: 4EAC7D12-E00D-46D7-91F2-2C1B0FAC6618
+X-Server-Uuid: 08F52AA2-166F-476D-B0A0-AD41BF62CDCC
+Message-ID: <F444CAE5E62A714C9F45AA292785BED3223F7283@esng11p33001.sg.csfb.com>
+From: "Majumder, Rajib" <rajib.majumder@credit-suisse.com>
+To: "'netdev@vger.kernel.org'" <netdev@vger.kernel.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: TCP Spike
+Date: Thu, 27 Sep 2007 11:58:01 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <22087.1190861583@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Mailer: Internet Mail Service (5.5.2655.55)
+X-WSS-ID: 6AE5F5C52I01951142-01-01
+X-WSS-ID: 6AE5F5D43WO54487-01-05
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 26, 2007 at 10:53:03PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Wed, 26 Sep 2007 17:40:20 PDT, Mark Gross said:
-> > --- linux-2.6.23-rc8/kernel/Makefile	2007-09-26 13:54:54.000000000 -0700
-> > +++ linux-2.6.23-rc8-qos/kernel/Makefile	2007-09-26 14:06:38.000000000 -
-> 0700
-> > @@ -9,7 +9,7 @@
-> >  	    rcupdate.o extable.o params.o posix-timers.o \
-> >  	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
-> >  	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o \
-> > -	    utsname.o
-> > +	    utsname.o qos_params.o
-> 
-> So I don't get a choice in the matter if I will be dragging this thing
-> around in my kernel, even if I have no intention of using the functionality?
-> 
-You don't get that option with latency.c either at the moment, and it's
-arguable whether it's even worth it. The more curious thing is that while
-this qos params seems to be an evolution of Arjan's latency.c (and the
-drivers that are using it are updated in the rest of the patch set),
-latency.c itself is still compiled in. Is this an oversight, or was it
-intentional? One set of latency hinting APIs only, please :-)
+Hi,
+
+We have observed 40ms latency spikes in TCP connections in "burst" type of traffic. This affects regular TCP sockets. We observed this issue in kernels of 2.4.21 and kernel 2.6.5.  
+
+Aparently, this seems to be fixed in 2.6.19.  
+
+Can someone throw some light on this? 
+
+Is this a congestion control/avoidance issue? What congestion control algorithm is used before 2.6.8?   
+
+Thanks
+
+Rajib
+
+
+
+==============================================================================
+Please access the attached hyperlink for an important electronic communications disclaimer: 
+
+http://www.credit-suisse.com/legal/en/disclaimer_email_ib.html
+==============================================================================
+
