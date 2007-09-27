@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbXI0HMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbXI0HUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755157AbXI0HMi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 03:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbXI0HMa
+	id S1754668AbXI0HUX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 03:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbXI0HUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 03:12:30 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:63793 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbXI0HM3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 03:12:29 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Rob Landley <rob@landley.net>
-Subject: Re: [Announce] Linux-tiny project revival
-Date: Thu, 27 Sep 2007 09:00:36 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
-References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net>
-In-Reply-To: <200709201538.43093.rob@landley.net>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?iso-8859-1?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?iso-8859-1?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ?=
- =?iso-8859-1?q?=0A=098MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?iso-8859-1?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?iso-8859-1?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-Cc: linux-tiny@selenic.com, Tim Bird <tim.bird@am.sony.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       CE Linux Developers List <celinux-dev@tree.celinuxforum.org>,
-       Michael Opdenacker <michael@free-electrons.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200709270900.36602.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-Provags-ID: V01U2FsdGVkX194Qb6AJeBL++OEhgvmXju9jfRYttyXLfKj5QV
- Gn3UT2PAnh6sEiroXp6eZjf95xT1x98Fe5JHz1V3H/x3R7jP4W
- M3LoVG31uwTaSXncbH0MA==
+	Thu, 27 Sep 2007 03:20:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52453 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752780AbXI0HUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 03:20:08 -0400
+From: NeilBrown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Thu, 27 Sep 2007 17:20:01 +1000
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 000 of 4] Change prototype for bi_end_io
+Message-ID: <20070927171111.3251.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 September 2007, you wrote:
-> So instead of:
->   printk(KERN_NOTICE "Fruit=%d\n", banana);
-> It would now be:
->   printk(KERN_NOTICE, "Fruit=%d\n", banana);
-> 
-> Change the header from:
->   #define KERN_NOTICE "<5>"
-> to:
->   #define KERN_NOTICE 5
-> 
-> Then you can change the printk guts to do something vaguely like (untested):
-> #define printk(arg1, arg2, ...) actual_printk("<" #arg1 ">" arg2, __VA_ARGS__)
-> 
-> And so far no behavior has changed.  But now the _fun_ part is, you can add a 
-> config symbol for "what is the minimum loglevel I care about?"  Set that as a 
-> number from 0-9.  And then you can define the printk to do:
-> 
-> #define printk(level, str, ...) \
->   do { \
->     if (level < CONFIG_PRINTK_DOICARE) \
->       actual_printk("<" #level ">" str, __VA_ARGS__); \
->   } while(0);
-> 
+Hi Jens,
+ here are a few more patches from my set that makes various changes to bio
+ submission and handling.
 
-Assuming that we want to go down that road, I think you can do better with
-more evil macro magic, by using something along the lines of
+ These change the ->bi_end_io prototype so that
+   1/ no 'size' is passed
+   2/ there is no return value.
 
-#define KERN_NOTICE "<5>",
+ The 'size' is not really of interest to any bi_end_io handler in existance. 
+ It is really only an internal detail to the "request" handling in ll_rw_blk
+ and lower levels.
+ The return value is completely unused.
 
-#define PRINTK_CONTINUED "",
+ After these patches, ->bi_end_io is only ever called once per bio.
 
- #define printk(level, str, ...) \
-   do { \
-     if (sizeof(level) == 1) /* continued printk */\
-	actual_printk(str, __VA_ARGS__); \
-     else if ((level[1] - '0') < CONFIG_PRINTK_DOICARE) \
-       actual_printk(level str, __VA_ARGS__); \
-   } while(0);
+ Note that the last patch makes lots and lots of simple changes.  I
+ think I have found all the right places, but any recently added
+ device drivers might still be using the old bi_end_io prototype.
+ I'll grep again after these patches are in your tree.
 
-Then you don't have to change every single printk in the kernel, but
-only those that don't currently come with a log level. More importantly,
-you can do the conversion without a flag day, by spreading (an empty)
-PRINTK_CONTINUED in places that do need a printk without a log level.
+ That patches are against linux-block as of an hour ago.
 
-	Arnd <><
+Thanks,
+NeilBrown
+
+Net result of the 4 patches:
+
+ 46 files changed, 166 insertions(+), 385 deletions(-)
+
+
+ [PATCH 001 of 4] Remove flush_dry_bio_endio
+ [PATCH 002 of 4] Only call bi_end_io once for any bio.
+ [PATCH 003 of 4] Don't decrement bi_size in bio_endio.
+ [PATCH 004 of 4] Drop 'size' argument from bio_endio and bi_end_io.
