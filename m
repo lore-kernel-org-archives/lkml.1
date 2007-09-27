@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbXI0XmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760747AbXI0Xmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760265AbXI0XmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbXI0XmI
+	id S1760747AbXI0Xmr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 19:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbXI0Xmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:42:08 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:25048 "EHLO kernel.dk"
+	Thu, 27 Sep 2007 19:42:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59786 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756246AbXI0XmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:42:05 -0400
-Date: Fri, 28 Sep 2007 01:41:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file without options
-Message-ID: <20070927234158.GB10154@kernel.dk>
-References: <20070927142919.10b62f9b@the-village.bc.nu> <20070927070118.2bd4792e@laptopd505.fenrus.org> <20070927151921.29b19abb@the-village.bc.nu> <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu> <20070927155902.GA6450@thunk.org>
+	id S1759342AbXI0Xmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 19:42:36 -0400
+Message-ID: <46FC3FDD.5060201@pobox.com>
+Date: Thu, 27 Sep 2007 19:42:21 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070927155902.GA6450@thunk.org>
+To: Tejun Heo <htejun@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Stardom SATA HSM violation
+References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com>	<20070905095327.6277d054.akpm@linux-foundation.org>	<46DEE617.4050004@rtr.ca>	<46E0A253.7060803@gmail.com>	<46E154DE.2060602@rtr.ca>	<46FB563A.80108@gmail.com> <20070927193701.6230d77f@the-village.bc.nu> <46FC3D7D.90009@gmail.com>
+In-Reply-To: <46FC3D7D.90009@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27 2007, Theodore Tso wrote:
-> On Thu, Sep 27, 2007 at 04:19:12PM +0100, Alan Cox wrote:
-> > > Well it's not my call, just seems like a really bad idea to change the
-> > > error value. You can't claim full coverage for such testing anyway, it's
-> > > one of those things that people will complain about two releases later
-> > > saying it broke app foo.
-> > 
-> > Strange since we've spent years changing error values and getting them
-> > right in the past. 
+Tejun Heo wrote:
+> Alan Cox wrote:
+>>> I think there have been enough cases where this draining was necessary.
+>>>  IIRC, ata_piix was involved in those cases, right?  If so, can you
+>>> please submit a patch which applies this only to affected controllers?
+>>> I don't feel too confident about applying this to all SFF controllers.
+>> Old IDE does it on all controllers bar a couple. So we have a very good
+>> knowledge of what does/doesn't work. The one that needs care in old ide
+>> is an ordering issue where a state machine reset done first causes the
+>> drain of the I/O to hang.
 > 
-> I doubt there any apps which are going to specifically check for EFBIG
-> and do soemthing different if they get EOVERFLOW instead.  If it was
-> something like EAGAIN or EPERM, I'd be more concerned, but EFBIG
-> vs. EOVERFLOW?  C'mon!
+> Hmmm... So, do we apply draining to all PATA?  Or is ata_piix SATA
+> affected too?
 
-It's not checking EFBIG vs EOVERFLOW, it's checking one and not the
-other. But I digress, not trying to NAK the patch, just voicing my
-opinion on the matter. It's not something you can easily test and claim
-good app coverage, though.
+I would think all SFF controllers, since a lot of first gen SATA are 
+really bridged solutions.  If they are flagging DRQ, I say oblige them :)
 
--- 
-Jens Axboe
+	Jeff
+
+
 
