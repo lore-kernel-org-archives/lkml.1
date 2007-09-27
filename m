@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbXI0Qjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbXI0QnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758479AbXI0Qjp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 12:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbXI0Qjg
+	id S1758604AbXI0QnO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 12:43:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbXI0QnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 12:39:36 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:52295 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753753AbXI0Qjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 12:39:35 -0400
-Date: Fri, 28 Sep 2007 01:38:27 +0900
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH] x86-64: pci-gart iommu sg chaining zeroes wrong sg.
-From: FUJITA Tomonori <tomof@acm.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070928013550M.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
+	Thu, 27 Sep 2007 12:43:00 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51583 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753853AbXI0Qm7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 12:42:59 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 27 Sep 2007 09:42:56 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+cc: rdunlap@xenotime.net, Andrew Morton <akpm@linux-foundation.org>,
+       hch@lst.de, geoff@gclare.org.uk, tglx@linutronix.de, david@hardeman.nu,
+       Ulrich Drepper <drepper@redhat.com>, subrata@linux.vnet.ibm.com,
+       corbet@lwn.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tristan Wibberley <maihem-nn1@maihem.org>
+Subject: Re: Man page for revised timerfd API
+In-Reply-To: <20070927072726.50350@gmx.net>
+Message-ID: <Pine.LNX.4.64.0709270942150.763@alien.or.mcafeemobile.com>
+References: <20070927072726.50350@gmx.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is for Jens' block tree (sg chaining branch).
+On Thu, 27 Sep 2007, Michael Kerrisk wrote:
 
-I don't have the hardware but this looks like a bug.
+> Hi Davide,
+> 
+> A follow up to the man page text.  Does passing a timerfd file
+> descriptor via a Unix domain socket to another process do the
+> expected thing?  That is, the receiving process will be able to 
+> read from the file descriptor in order to obtain notification
+> of timer expirations that are occurring for the process
+> that sent the file descriptor, right?
 
----
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] x86-64: pci-gart iommu sg chaining zeroes a wrong sg's dma_length
+Yup.
 
-Needs to zero the end of the list.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86_64/kernel/pci-gart.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
-index 27b7db4..a4151a7 100644
---- a/arch/x86_64/kernel/pci-gart.c
-+++ b/arch/x86_64/kernel/pci-gart.c
-@@ -425,9 +425,10 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
- 	if (dma_map_cont(start_sg, i - start, sgmap, pages, need) < 0)
- 		goto error;
- 	out++;
-+	sgmap = sg_next(sgmap);
- 	flush_gart();
- 	if (out < nents)
--		ps->dma_length = 0;
-+		sgmap->dma_length = 0;
- 	return out;
- 
- error:
--- 
-1.5.2.4
+- Davide
+
 
