@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbXI0Eb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXI0E5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405AbXI0Eb1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 00:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXI0EbT
+	id S1752868AbXI0E5B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 00:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbXI0E4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 00:31:19 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:15167 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbXI0EbS (ORCPT
+	Thu, 27 Sep 2007 00:56:53 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:4612 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbXI0E4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 00:31:18 -0400
-Date: Wed, 26 Sep 2007 21:29:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Konrad Rzeszutek <konrad@darnok.org>
-Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
-       konradr@linux.vnet.ibm.com
-Subject: Re: [PATCH] Add iSCSI iBFT support.
-Message-Id: <20070926212921.33e2e58d.randy.dunlap@oracle.com>
-In-Reply-To: <200709262052.44845.konrad@darnok.org>
-References: <20070926184652.GA16369@andromeda.dapyr.net>
-	<20070926142950.46bbfcd2.randy.dunlap@oracle.com>
-	<200709262052.44845.konrad@darnok.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 27 Sep 2007 00:56:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=FHI+ulbdo7dImP3e5KOPMlWIsRkwtOgTalgLbthvJO5/6hFj1joBmkHY2JuAuV888JPaJPketYn0v+y5fEmrBJYdzUqefqJTGVlW+5OkikgdUE0p6ohd3ju/Jr+AEZSId5YKlNEK46oZtATQxYXt2OuGGsm4wZNSGjGniCG7r1o=
+Message-ID: <46FB3793.9060607@gmail.com>
+Date: Thu, 27 Sep 2007 13:54:43 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
+References: <64bb37e0709261326h4890a07fx60c7d6772e4e63c4@mail.gmail.com>
+In-Reply-To: <64bb37e0709261326h4890a07fx60c7d6772e4e63c4@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: multipart/mixed;
+ boundary="------------070705000905090309020408"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 20:52:43 -0400 Konrad Rzeszutek wrote:
+This is a multi-part message in MIME format.
+--------------070705000905090309020408
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> > > +config ISCSI_IBFT
-> > > +	tristate "iSCSI Boot Firmware Table Attributes"
-> > > +	depends on X86
-> >
-> > why only on X86?
+Torsten Kaiser wrote:
+> Comparing the driver/ata directory from rc3-mm1 and rc4-mm1 the
+> following change looked the most suspicions to me:
+> http://git.kernel.org/?p=linux/kernel/git/jgarzik/libata-dev.git;a=blobdiff;f=drivers/ata/sata_sil24.c;h=3dcb223117be9739ee04d70b6bfc776a4b839a3f;hp=e0cd31aa8002350add53ba6ff07493e503275244;hb=020bc1bd8d369a77bd9379cd9763ac0057651753;hpb=8d4bdf8087e682df98bdb856f6ad451bf6d597e7
 > 
-> PowerPC exports this data via the OpenFirmware so it already shows in 
-> the /sysfs entries. I was thinking to combine those sysfs entries under this 
-> code, but that is something in the future.
+> That after rc4-mm1 the sata_sil24.c did not change anymore also
+> matches the occurrence of the error.
 > 
-> In regards to all other platforms, I figured I would only make it supported 
-> under platforms that have been tested. Is there anything that stops this from 
-> working for example of IA64? Well no. The hardware that supports the iBFT is 
-> either in the BIOS or in NICs - so the SGI or HP boxes _should_ work, however 
-> I am not comfortable to make it supported unless I've tested it.
+> To confirm my theorie I exchanged the sata_sil24.c from rc8-mm1 with
+> the version from rc3-mm1.
+> I was able to boot the resulting kernel successfully 5 times, without
+> the error happening again.
 
-That's not how Linux development works.  You (we) have a huge
-test lab around the world.  You practice "release early, release
-often" and get testing/feedback on it.  Maybe even patches.  :)
+Thanks a lot for chasing down the problem.  The changed code is address
+initialization path and it's weird that it causes intermittent failures,
+not a consistent one.
 
+Anyways, does the attached patch fix the problem?
 
-> > Need blank line here... except why is this function in the header
-> 
-> Fixed blank line.
-> > file?  and why is it inline?
-> 
-> Q: "Why is this function in the header file"
-> If the find_ibft() was to be implemented in firmware/iscsi_ibft.c code the 
-> firmware-driver couldn't be compiled as a module (or rather it could, but 
-> when the vmlinuz was to be linked it would complain about missing symbol - 
-> find_ibft). I was thinking to let the user give the choice whether they want 
-> to load this firmware driver or have it built-in the kernel.
-> 
-> Q:"Why is it inline"
-> Uhh. It does not need to. I will remove the 'inline' part. 
+-- 
+tejun
 
-But we strongly prefer not to have non-inline C code in header files,
-[and the function does not need to be inline]
-so find_ibft() needs a home in some source file/code that won't be built
-as a loadable module, right?  And preferably not duplicated (i386 &
-x86_64 versions; but we should see a merged x86/ arch soon, so it
-sounds).  Would ia64 have its own version of find_ibft() or use this
-same code?
+--------------070705000905090309020408
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch"
 
-I think that for now you can put find_ibft() in both setup.c files
-and the merged x86/ arch tree can eliminate one of them.
+diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
+index 3831920..dc3ddcb 100644
+--- a/drivers/ata/sata_sil24.c
++++ b/drivers/ata/sata_sil24.c
+@@ -1117,6 +1117,7 @@ static int sil24_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 		host->ports[i]->ioaddr.cmd_addr = port;
+ 		host->ports[i]->ioaddr.scr_addr = port + PORT_SCONTROL;
++		ata_std_ports(&ap->ioaddr);
+ 
+ 		ata_port_pbar_desc(ap, SIL24_HOST_BAR, -1, "host");
+ 		ata_port_pbar_desc(ap, SIL24_PORT_BAR, offset, "port");
 
-On looking back at the patch, why aren't the ibft_phys and find_ibft()
-parts of both setup.c patches surrounded by #ifdef CONFIG_ISCSI_IBFT &
-#endif ?
-
-
----
-~Randy
-Phaedrus says that Quality is about caring.
+--------------070705000905090309020408--
