@@ -1,100 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbXI0Ur6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXI0UwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbXI0Ur6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 16:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbXI0Urt
+	id S1757594AbXI0UwO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 16:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbXI0UwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 16:47:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49179 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753477AbXI0Urs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 16:47:48 -0400
-Date: Thu, 27 Sep 2007 13:47:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: nickpiggin@yahoo.com.au, hirofumi@mail.parknet.co.jp,
-       galak@kernel.crashing.org, zaitcev@redhat.com, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] writeback: remove unnecessary wait in
- throttle_vm_writeout()
-Message-Id: <20070927134726.ac39b55f.akpm@linux-foundation.org>
-In-Reply-To: <390857819.00313@ustc.edu.cn>
-References: <390857819.00313@ustc.edu.cn>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Sep 2007 16:52:00 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54529 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754250AbXI0Uv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 16:51:59 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Peter Jones <pjones@redhat.com>
+Subject: Re: [PATCH] Add iSCSI iBFT support.
+Date: Thu, 27 Sep 2007 16:50:42 -0400
+User-Agent: KMail/1.9.5
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Konrad Rzeszutek <konrad@darnok.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Konrad Rzeszutek <konradr@redhat.com>, konradr@linux.vnet.ibm.com
+References: <20070926184652.GA16369@andromeda.dapyr.net> <46FBE5D2.6090306@zytor.com> <46FBED88.8060200@redhat.com>
+In-Reply-To: <46FBED88.8060200@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709271650.43087.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 09:50:16 +0800
-Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-
-> We don't want to introduce pointless delays in throttle_vm_writeout()
-> when the writeback limits are not yet exceeded, do we?
+On Thursday 27 September 2007 13:51, Peter Jones wrote:
+> H. Peter Anvin wrote:
+> > Peter Jones wrote:
+> >>> It should, presumably, depend on ACPI, rather than on X86...?
+> >> Actually no.  That /should/ be the correct answer, but none of the
+> >> hardware vendors actually provide the table via ACPI yet.  Also, if they
+> >> did, the support for /sys/firmware/acpi/tables/* would be sufficient
+> >> instead of having this code *at all*.
+> >>
+> > 
+> > Is there anything other than the discovery which is braindead about
+> > iBFT?  If so, can the tables code be taught to look for this additional
+> > table instead of having all its own mechanism?
 > 
-> Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-> Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Cc: Pete Zaitcev <zaitcev@redhat.com>
-> Cc: Greg KH <greg@kroah.com>
-> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> ---
->  mm/page-writeback.c |   18 ++++++++----------
->  1 file changed, 8 insertions(+), 10 deletions(-)
+> Well, the code for the the generic ACPI table sysfs functionality is 
+> expecting to find the tables indexed in the RSDT.  This is essentially 
+> what the iBFT spec's authors seem to have planned, but it's simply never 
+> been implemented in the firmware.
 > 
-> --- linux-2.6.23-rc8-mm1.orig/mm/page-writeback.c
-> +++ linux-2.6.23-rc8-mm1/mm/page-writeback.c
-> @@ -507,16 +507,6 @@ void throttle_vm_writeout(gfp_t gfp_mask
->  	long background_thresh;
->  	long dirty_thresh;
->  
-> -	if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
-> -		/*
-> -		 * The caller might hold locks which can prevent IO completion
-> -		 * or progress in the filesystem.  So we cannot just sit here
-> -		 * waiting for IO to complete.
-> -		 */
-> -		congestion_wait(WRITE, HZ/10);
-> -		return;
-> -	}
-> -
->          for ( ; ; ) {
->  		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
->  
-> @@ -530,6 +520,14 @@ void throttle_vm_writeout(gfp_t gfp_mask
->  			global_page_state(NR_WRITEBACK) <= dirty_thresh)
->                          	break;
->                  congestion_wait(WRITE, HZ/10);
-> +
-> +		/*
-> +		 * The caller might hold locks which can prevent IO completion
-> +		 * or progress in the filesystem.  So we cannot just sit here
-> +		 * waiting for IO to complete.
-> +		 */
-> +		if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO))
-> +			break;
->          }
->  }
->  
+> AFAICS, it's technically feasible to remove the sysfs parts of this code 
+> entirely, make the probe code build a fake ACPI table header, and then 
+> add it explicitly if present at the end of acpi_system_sysfs_init() .
+> 
+> I don't know how the ACPI guys would feel about that.  Len, thoughts?
 
-This is a pretty major bugfix.
+Technically, ACPI knows only about devices that are soldered onto
+the motherboard when the BIOS is flashed.
+So ACPI wouldn't be able to help you find this table
+when you put in an iSCSI card -- unless there were some arrangement
+between the motherboard BIOS and the add-in card BIOS extension,
+say, to have a dummy table that gets filled in or something.
 
-GFP_NOIO and GFP_NOFS callers should have been spending really large
-amounts of time stuck in that sleep.
+Yes, OpenFirmware is extensible via add-in cards -- assuming
+they support OpenFirmware -- so in theory they could do this right
+even in the add-in case.
 
-I wonder why nobody noticed this happening.  Either a) it turns out that
-kswapd is doing a good job and such callers don't do direct reclaim much or
-b) nobody is doing any in-depth kernel instrumentation.
+I wouldn't object to a platform hook to make the IBFT appear as just another
+ACPI table available in /sys/firmware/acpi.  But that woudln't help
+a system that has IBFT but doesn't have ACPI, so it doesn't
+really solve the general problem.
 
-Now, how _would_ one notice this problem?  We don't have very good tools,
-really.  Booting with "profile=sleep" and looking at the profile data would
-be one way.  Repeatedly doing sysrq-T is another.  Perhaps the new
-lockstat-via-lockdep code would allow this to be observed in some fashion,
-dunno.
+For tables such as this,
+ACPI is just the messenger anyway, we don't know anything about
+the content of the table, just about the envelope around it
+and how to find the envelope.  In this case, we don't even
+know how to find the envelope, so ACPI doesn't add much
+value to the IBFT.
 
-Anyway, this patch has the potential to significantly alter the dynamics of
-the VM behaviour under particular workloads.  It might turn up other
-stuff...
+In summary, I think IBFT should depend on iSCSI alone,
+and not involve ACPI at all.
+ 
+-Len
 
