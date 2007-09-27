@@ -1,42 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbXI0PVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbXI0PWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757604AbXI0PVX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXI0PVQ
+	id S1758343AbXI0PWJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbXI0PV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:21:16 -0400
-Received: from smtp19.orange.fr ([80.12.242.17]:1241 "EHLO smtp19.orange.fr"
+	Thu, 27 Sep 2007 11:21:56 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:50331 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753523AbXI0PVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:21:15 -0400
-X-ME-UUID: 20070927152113799.C30D61C000B5@mwinf1911.orange.fr
-Subject: Re: Floating Point Issue
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: mahamuni ashish <ash_lkp@yahoo.co.in>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <109515.18343.qm@web7805.mail.in.yahoo.com>
-References: <109515.18343.qm@web7805.mail.in.yahoo.com>
-Content-Type: text/plain
-Date: Thu, 27 Sep 2007 17:21:08 +0200
-Message-Id: <1190906468.24478.107.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+	id S1752790AbXI0PVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 11:21:55 -0400
+Date: Thu, 27 Sep 2007 18:21:52 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc8: Known regressions from 2.6.22
+In-Reply-To: <200709271408.06148.rjw@sisk.pl>
+Message-ID: <Pine.SOC.4.64.0709271821100.10218@math.ut.ee>
+References: <20070927061902.84E0013CFD@rhn.tartu-labor> <200709271408.06148.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-27 at 12:41 +0100, mahamuni ashish wrote:
-> int main()
-> {
-> float f= 1256.35;
-> char ch[4];
+> > http://lkml.org/lkml/2007/9/22/64
 > 
-> printf("\n1. f : %f",f);
-> memset(ch,'\0',strlen(ch) );
+> Created: http://bugzilla.kernel.org/show_bug.cgi?id=9087
+> 
+> Please add a summary of your observations to this bug entry.
 
-Can't work. ch[]'s content is undefined, so strlen(ch) may read anywhere
-in memory, and/or memset() write anywhere.
+Added; However, it's assigned to serial devices, while imput devices 
+should be more appropriate for PS2 mouse?
 
-	Xav
-
-
+-- 
+Meelis Roos (mroos@linux.ee)
