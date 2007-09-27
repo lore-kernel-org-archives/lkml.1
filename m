@@ -1,54 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbXI0ROE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbXI0RPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758479AbXI0ROE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 13:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757074AbXI0RNz
+	id S1758907AbXI0RPY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 13:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbXI0RPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 13:13:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54754 "EHLO mx1.redhat.com"
+	Thu, 27 Sep 2007 13:15:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54993 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756164AbXI0RNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 13:13:54 -0400
-Message-ID: <46FBE478.6040602@redhat.com>
-Date: Thu, 27 Sep 2007 13:12:24 -0400
-From: Peter Jones <pjones@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+	id S1756164AbXI0RPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 13:15:07 -0400
+Message-ID: <46FBE518.5080407@redhat.com>
+Date: Thu, 27 Sep 2007 12:15:04 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Konrad Rzeszutek <konrad@darnok.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       konradr@redhat.com, konradr@linux.vnet.ibm.com
-Subject: Re: [PATCH] Add iSCSI iBFT support.
-References: <20070926184652.GA16369@andromeda.dapyr.net> <20070926142950.46bbfcd2.randy.dunlap@oracle.com> <200709262052.44845.konrad@darnok.org> <46FBE30D.7010108@zytor.com>
-In-Reply-To: <46FBE30D.7010108@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: ext4 development <linux-ext4@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Theodore Tso <tytso@mit.edu>
+Subject: [PATCH] ext4: remove #ifdef CONFIG_EXT4_INDEX
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Konrad Rzeszutek wrote:
->>>> +config ISCSI_IBFT
->>>> +	tristate "iSCSI Boot Firmware Table Attributes"
->>>> +	depends on X86
->>> why only on X86?
->> PowerPC exports this data via the OpenFirmware so it already shows in 
->> the /sysfs entries. I was thinking to combine those sysfs entries under this 
->> code, but that is something in the future.
->>
->> In regards to all other platforms, I figured I would only make it supported 
->> under platforms that have been tested. Is there anything that stops this from 
->> working for example of IA64? Well no. The hardware that supports the iBFT is 
->> either in the BIOS or in NICs - so the SGI or HP boxes _should_ work, however 
->> I am not comfortable to make it supported unless I've tested it.
->>
-> 
-> It should, presumably, depend on ACPI, rather than on X86...?
+CONFIG_EXT4_INDEX is not an exposed config option in the kernel,
+and it is unconditionally defined in ext4_fs.h.  tune2fs is already
+able to turn off dir indexing, so at this point it's just cluttering
+up the code.  Remove it.
 
-Actually no.  That /should/ be the correct answer, but none of the 
-hardware vendors actually provide the table via ACPI yet.  Also, if they 
-did, the support for /sys/firmware/acpi/tables/* would be sufficient 
-instead of having this code *at all*.
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 
--- 
-   Peter
+ Index: ext4.git/fs/ext4/dir.c
+===================================================================
+--- ext4.git.orig/fs/ext4/dir.c
++++ ext4.git/fs/ext4/dir.c
+@@ -47,9 +47,7 @@ const struct file_operations ext4_dir_op
+ 	.compat_ioctl	= ext4_compat_ioctl,
+ #endif
+ 	.fsync		= ext4_sync_file,	/* BKL held */
+-#ifdef CONFIG_EXT4_INDEX
+ 	.release	= ext4_release_dir,
+-#endif
+ };
+ 
+ 
+@@ -107,7 +105,6 @@ static int ext4_readdir(struct file * fi
+ 
+ 	sb = inode->i_sb;
+ 
+-#ifdef CONFIG_EXT4_INDEX
+ 	if (EXT4_HAS_COMPAT_FEATURE(inode->i_sb,
+ 				    EXT4_FEATURE_COMPAT_DIR_INDEX) &&
+ 	    ((EXT4_I(inode)->i_flags & EXT4_INDEX_FL) ||
+@@ -123,7 +120,6 @@ static int ext4_readdir(struct file * fi
+ 		 */
+ 		EXT4_I(filp->f_path.dentry->d_inode)->i_flags &= ~EXT4_INDEX_FL;
+ 	}
+-#endif
+ 	stored = 0;
+ 	offset = filp->f_pos & (sb->s_blocksize - 1);
+ 
+@@ -232,7 +228,6 @@ out:
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_EXT4_INDEX
+ /*
+  * These functions convert from the major/minor hash to an f_pos
+  * value.
+@@ -518,5 +513,3 @@ static int ext4_release_dir (struct inod
+ 
+ 	return 0;
+ }
+-
+-#endif
+Index: ext4.git/fs/ext4/namei.c
+===================================================================
+--- ext4.git.orig/fs/ext4/namei.c
++++ ext4.git/fs/ext4/namei.c
+@@ -144,7 +144,6 @@ struct dx_map_entry
+ 	u16 size;
+ };
+ 
+-#ifdef CONFIG_EXT4_INDEX
+ static inline unsigned dx_get_block (struct dx_entry *entry);
+ static void dx_set_block (struct dx_entry *entry, unsigned value);
+ static inline unsigned dx_get_hash (struct dx_entry *entry);
+@@ -766,8 +765,6 @@ static void dx_insert_block(struct dx_fr
+ 	dx_set_block(new, block);
+ 	dx_set_count(entries, count + 1);
+ }
+-#endif
+-
+ 
+ static void ext4_update_dx_flag(struct inode *inode)
+ {
+@@ -869,7 +866,6 @@ static struct buffer_head * ext4_find_en
+ 	name = dentry->d_name.name;
+ 	if (namelen > EXT4_NAME_LEN)
+ 		return NULL;
+-#ifdef CONFIG_EXT4_INDEX
+ 	if (is_dx(dir)) {
+ 		bh = ext4_dx_find_entry(dentry, res_dir, &err);
+ 		/*
+@@ -881,7 +877,6 @@ static struct buffer_head * ext4_find_en
+ 			return bh;
+ 		dxtrace(printk("ext4_find_entry: dx failed, falling back\n"));
+ 	}
+-#endif
+ 	nblocks = dir->i_size >> EXT4_BLOCK_SIZE_BITS(sb);
+ 	start = EXT4_I(dir)->i_dir_start_lookup;
+ 	if (start >= nblocks)
+@@ -957,7 +952,6 @@ cleanup_and_exit:
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_EXT4_INDEX
+ static struct buffer_head * ext4_dx_find_entry(struct dentry *dentry,
+ 		       struct ext4_dir_entry_2 **res_dir, int *err)
+ {
+@@ -1025,7 +1019,6 @@ errout:
+ 	dx_release (frames);
+ 	return NULL;
+ }
+-#endif
+ 
+ static struct dentry *ext4_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
+ {
+@@ -1121,7 +1114,6 @@ static inline void ext4_set_de_type(stru
+ 		de->file_type = ext4_type_by_mode[(mode & S_IFMT)>>S_SHIFT];
+ }
+ 
+-#ifdef CONFIG_EXT4_INDEX
+ /*
+  * Move count entries from end of map between two memory locations.
+  * Returns pointer to last entry moved.
+@@ -1266,8 +1258,6 @@ errout:
+ 	*error = err;
+ 	return NULL;
+ }
+-#endif
+-
+ 
+ /*
+  * Add a new entry into a directory (leaf) block.  If de is non-NULL,
+@@ -1364,7 +1354,6 @@ static int add_dirent_to_buf(handle_t *h
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_EXT4_INDEX
+ /*
+  * This converts a one block unindexed directory to a 3 block indexed
+  * directory, and adds the dentry to the indexed directory.
+@@ -1443,7 +1432,6 @@ static int make_indexed_dir(handle_t *ha
+ 
+ 	return add_dirent_to_buf(handle, dentry, inode, de, bh);
+ }
+-#endif
+ 
+ /*
+  *	ext4_add_entry()
+@@ -1464,9 +1452,7 @@ static int ext4_add_entry (handle_t *han
+ 	struct ext4_dir_entry_2 *de;
+ 	struct super_block * sb;
+ 	int	retval;
+-#ifdef CONFIG_EXT4_INDEX
+ 	int	dx_fallback=0;
+-#endif
+ 	unsigned blocksize;
+ 	u32 block, blocks;
+ 
+@@ -1474,7 +1460,6 @@ static int ext4_add_entry (handle_t *han
+ 	blocksize = sb->s_blocksize;
+ 	if (!dentry->d_name.len)
+ 		return -EINVAL;
+-#ifdef CONFIG_EXT4_INDEX
+ 	if (is_dx(dir)) {
+ 		retval = ext4_dx_add_entry(handle, dentry, inode);
+ 		if (!retval || (retval != ERR_BAD_DX_DIR))
+@@ -1483,7 +1468,6 @@ static int ext4_add_entry (handle_t *han
+ 		dx_fallback++;
+ 		ext4_mark_inode_dirty(handle, dir);
+ 	}
+-#endif
+ 	blocks = dir->i_size >> sb->s_blocksize_bits;
+ 	for (block = 0, offset = 0; block < blocks; block++) {
+ 		bh = ext4_bread(handle, dir, block, 0, &retval);
+@@ -1493,11 +1477,9 @@ static int ext4_add_entry (handle_t *han
+ 		if (retval != -ENOSPC)
+ 			return retval;
+ 
+-#ifdef CONFIG_EXT4_INDEX
+ 		if (blocks == 1 && !dx_fallback &&
+ 		    EXT4_HAS_COMPAT_FEATURE(sb, EXT4_FEATURE_COMPAT_DIR_INDEX))
+ 			return make_indexed_dir(handle, dentry, inode, bh);
+-#endif
+ 		brelse(bh);
+ 	}
+ 	bh = ext4_append(handle, dir, &block, &retval);
+@@ -1509,7 +1491,6 @@ static int ext4_add_entry (handle_t *han
+ 	return add_dirent_to_buf(handle, dentry, inode, de, bh);
+ }
+ 
+-#ifdef CONFIG_EXT4_INDEX
+ /*
+  * Returns 0 for success, or a negative error value
+  */
+@@ -1644,7 +1625,6 @@ cleanup:
+ 	dx_release(frames);
+ 	return err;
+ }
+-#endif
+ 
+ /*
+  * ext4_delete_entry deletes a directory entry by merging it with the
+Index: ext4.git/include/linux/ext4_fs.h
+===================================================================
+--- ext4.git.orig/include/linux/ext4_fs.h
++++ ext4.git/include/linux/ext4_fs.h
+@@ -36,10 +36,6 @@
+ /*max window size: 1024(direct blocks) + 3([t,d]indirect blocks) */
+ #define EXT4_MAX_RESERVE_BLOCKS		1027
+ #define EXT4_RESERVE_WINDOW_NOT_ALLOCATED 0
+-/*
+- * Always enable hashed directories
+- */
+-#define CONFIG_EXT4_INDEX
+ 
+ /*
+  * Debug code
+@@ -789,17 +785,11 @@ struct ext4_dir_entry_2 {
+  * (c) Daniel Phillips, 2001
+  */
+ 
+-#ifdef CONFIG_EXT4_INDEX
+-  #define is_dx(dir) (EXT4_HAS_COMPAT_FEATURE(dir->i_sb, \
+-					      EXT4_FEATURE_COMPAT_DIR_INDEX) && \
++#define is_dx(dir) (EXT4_HAS_COMPAT_FEATURE(dir->i_sb, \
++				      EXT4_FEATURE_COMPAT_DIR_INDEX) && \
+ 		      (EXT4_I(dir)->i_flags & EXT4_INDEX_FL))
+ #define EXT4_DIR_LINK_MAX(dir) (!is_dx(dir) && (dir)->i_nlink >= EXT4_LINK_MAX)
+ #define EXT4_DIR_LINK_EMPTY(dir) ((dir)->i_nlink == 2 || (dir)->i_nlink == 1)
+-#else
+-  #define is_dx(dir) 0
+-#define EXT4_DIR_LINK_MAX(dir) ((dir)->i_nlink >= EXT4_LINK_MAX)
+-#define EXT4_DIR_LINK_EMPTY(dir) ((dir)->i_nlink == 2)
+-#endif
+ 
+ /* Legal values for the dx_root hash_version field: */
+ 
+
+
