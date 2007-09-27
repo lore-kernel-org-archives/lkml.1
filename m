@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760025AbXI0Wdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbXI0Wfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760025AbXI0Wdi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 18:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759023AbXI0Wda
+	id S1759917AbXI0Wfr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 18:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbXI0Wfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 18:33:30 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:43066 "EHLO
-	outbound1-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758762AbXI0Wd3 (ORCPT
+	Thu, 27 Sep 2007 18:35:39 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:61524 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756193AbXI0Wfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 18:33:29 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
-Date: Thu, 27 Sep 2007 16:33:36 -0600
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: jkeating@redhat.com, "Joerg Pommnitz" <pommnitz@yahoo.com>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <ak@suse.de>
-Subject: Re: More E820 brokenness
-Message-ID: <20070927223336.GB4755@cosmic.amd.com>
-References: <46FC2BFD.6070200@zytor.com>
+	Thu, 27 Sep 2007 18:35:38 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Indan Zupancic" <indan@nul.nu>
+Subject: Re: [Announce] Linux-tiny project revival
+Date: Fri, 28 Sep 2007 00:21:33 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
+References: <46F1645D.9050406@am.sony.com> <200709270900.36602.arnd@arndb.de> <39129.81.207.0.53.1190910941.squirrel@secure.samage.net>
+In-Reply-To: <39129.81.207.0.53.1190910941.squirrel@secure.samage.net>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+Cc: "Rob Landley" <rob@landley.net>,
+       "Michael Opdenacker" <michael@free-electrons.com>,
+       linux-tiny@selenic.com,
+       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <46FC2BFD.6070200@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 27 Sep 2007 22:33:07.0420 (UTC)
- FILETIME=[6047E9C0:01C80156]
-X-WSS-ID: 6AE2F0292ZC500270-01-01
 Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709280021.34783.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1930H47ouZOWyQB39NPMak9MtuutrgJVYlgTpS
+ fJDDMbrjKOjpvzNs6tIT6mQJM0pBqe++y4jVtE5lYZ1HP6zJCq
+ 7MsSwG1IPf0ddEv3IFPHw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27/09/07 15:17 -0700, H. Peter Anvin wrote:
-> As luck would have it, it's not just an obscure Geode system which has a
-> broken E820 implementation.  Today I received a bug report about a Dell
-> system (XPS M1330) with broken E820.
+On Thursday 27 September 2007, you wrote:
+> > Then you don't have to change every single printk in the kernel, but
+> > only those that don't currently come with a log level. More importantly,
+> > you can do the conversion without a flag day, by spreading (an empty)
+> > PRINTK_CONTINUED in places that do need a printk without a log level.
 > 
-> Unfortunately, the workaround for the Geode breaks this system, because
-> x86-64 doesn't fall back to the e801/88 information like the i386 kernel
-> does.
-> 
-> I wonder if the relevant people could test out this patch to see how it
-> works on their respective system.  This patch reverts to 2.6.23-rc8
-> behaviour of simply truncating the map, but still makes e801/88 info
-> available to the kernel; this hopefully should match 2.6.22 behaviour.
+> The problem is, how do you know whether to print a continued printk or not?
+> It depends on the loglevel of the first printk.
 
-Breaks on the Geode - original behavior.
+Those need to be looked at individually. You can normally see easily from
+the context whether the missing log level was an accident, or the author
+actually has multiple printk statements for a single line. In one case,
+you would add a log level, in the other case, you can add PRINTK_CONTINUED,
+or something similar. An alternative to PRINTK_CONTINUED might be a new
+function, e.g. printk_continued() or similar that does not expect a log
+level.
 
-I think that having boot_prams.e820_entries != 0 makes the kernel
-assume the e820 data is correct.
+> So besides compile-time parsing of the source code, replacing printk with
+> loglevel specific alternatives (one way or the other) seems the only option.
 
-> I want to emphasize that this is seriously broken.  Using a partial e820
-> map could have disastrous results, since the kernel will have partial
-> memory map information and not know about reserved areas, etc.  Part of
-> me feels that the right thing to do is what the current git kernel does
-> -- either fall back to e801, or stop and error.
+That would mean replacing all of them, not just those that currently lack
+a loglevel.
 
-I'm inclined to agree.  
-
-Jordan
-
-
+	Arnd <><
