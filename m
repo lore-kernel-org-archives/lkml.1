@@ -1,161 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbXI0Rs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbXI0RvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757531AbXI0Rs5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 13:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbXI0Rsu
+	id S1757978AbXI0RvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 13:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbXI0RvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 13:48:50 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:56087 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755960AbXI0Rst (ORCPT
+	Thu, 27 Sep 2007 13:51:06 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42135 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752992AbXI0RvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 13:48:49 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 27 Sep 2007 10:48:47 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: [patch] rename signalfd_siginfo fields
-Message-ID: <Pine.LNX.4.64.0709271046180.763@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 27 Sep 2007 13:51:05 -0400
+Date: Thu, 27 Sep 2007 10:46:04 -0700
+From: Greg KH <greg@kroah.com>
+To: jblunck@suse.de
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@lst.de,
+       agruen@suse.de, tiwai@suse.de
+Subject: Re: [patch 02/10] Dont touch fs_struct in usermodehelper
+Message-ID: <20070927174604.GA8339@kroah.com>
+References: <20070927141200.820970144@X40.localnet> <20070927141227.559764756@X40.localnet>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927141227.559764756@X40.localnet>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 27, 2007 at 04:12:02PM +0200, jblunck@suse.de wrote:
+> This test seems to be unnecessary since we always have rootfs mounted before
+> calling a usermodehelper.
 
-For Michael Kerrisk request, the following patch renames signalfd_siginfo 
-fields in order to keep them consistent with the siginfo_t ones.
+Are you sure this is true?  I thought we called the usermode helper for
+hotplug _very_ early in the boot sequence when the device tree starts to
+get populated.
 
+But things could have changed from the 2.5 days when this was first
+added, if so, nevermind me :)
 
+thanks,
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-
-
-- Davide
-
-
----
- fs/signalfd.c            |   44 ++++++++++++++++++++++----------------------
- include/linux/signalfd.h |   32 ++++++++++++++++----------------
- 2 files changed, 38 insertions(+), 38 deletions(-)
-
-Index: linux-2.6.mod/fs/signalfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/signalfd.c	2007-09-27 10:31:48.000000000 -0700
-+++ linux-2.6.mod/fs/signalfd.c	2007-09-27 10:33:45.000000000 -0700
-@@ -74,45 +74,45 @@
- 	 * If you change siginfo_t structure, please be sure
- 	 * this code is fixed accordingly.
- 	 */
--	err |= __put_user(kinfo->si_signo, &uinfo->signo);
--	err |= __put_user(kinfo->si_errno, &uinfo->err);
--	err |= __put_user((short)kinfo->si_code, &uinfo->code);
-+	err |= __put_user(kinfo->si_signo, &uinfo->ssi_signo);
-+	err |= __put_user(kinfo->si_errno, &uinfo->ssi_errno);
-+	err |= __put_user((short) kinfo->si_code, &uinfo->ssi_code);
- 	switch (kinfo->si_code & __SI_MASK) {
- 	case __SI_KILL:
--		err |= __put_user(kinfo->si_pid, &uinfo->pid);
--		err |= __put_user(kinfo->si_uid, &uinfo->uid);
-+		err |= __put_user(kinfo->si_pid, &uinfo->ssi_pid);
-+		err |= __put_user(kinfo->si_uid, &uinfo->ssi_uid);
- 		break;
- 	case __SI_TIMER:
--		 err |= __put_user(kinfo->si_tid, &uinfo->tid);
--		 err |= __put_user(kinfo->si_overrun, &uinfo->overrun);
--		 err |= __put_user((long)kinfo->si_ptr, &uinfo->svptr);
-+		 err |= __put_user(kinfo->si_tid, &uinfo->ssi_tid);
-+		 err |= __put_user(kinfo->si_overrun, &uinfo->ssi_overrun);
-+		 err |= __put_user((long) kinfo->si_ptr, &uinfo->ssi_ptr);
- 		break;
- 	case __SI_POLL:
--		err |= __put_user(kinfo->si_band, &uinfo->band);
--		err |= __put_user(kinfo->si_fd, &uinfo->fd);
-+		err |= __put_user(kinfo->si_band, &uinfo->ssi_band);
-+		err |= __put_user(kinfo->si_fd, &uinfo->ssi_fd);
- 		break;
- 	case __SI_FAULT:
--		err |= __put_user((long)kinfo->si_addr, &uinfo->addr);
-+		err |= __put_user((long) kinfo->si_addr, &uinfo->ssi_addr);
- #ifdef __ARCH_SI_TRAPNO
--		err |= __put_user(kinfo->si_trapno, &uinfo->trapno);
-+		err |= __put_user(kinfo->si_trapno, &uinfo->ssi_trapno);
- #endif
- 		break;
- 	case __SI_CHLD:
--		err |= __put_user(kinfo->si_pid, &uinfo->pid);
--		err |= __put_user(kinfo->si_uid, &uinfo->uid);
--		err |= __put_user(kinfo->si_status, &uinfo->status);
--		err |= __put_user(kinfo->si_utime, &uinfo->utime);
--		err |= __put_user(kinfo->si_stime, &uinfo->stime);
-+		err |= __put_user(kinfo->si_pid, &uinfo->ssi_pid);
-+		err |= __put_user(kinfo->si_uid, &uinfo->ssi_uid);
-+		err |= __put_user(kinfo->si_status, &uinfo->ssi_status);
-+		err |= __put_user(kinfo->si_utime, &uinfo->ssi_utime);
-+		err |= __put_user(kinfo->si_stime, &uinfo->ssi_stime);
- 		break;
- 	case __SI_RT: /* This is not generated by the kernel as of now. */
- 	case __SI_MESGQ: /* But this is */
--		err |= __put_user(kinfo->si_pid, &uinfo->pid);
--		err |= __put_user(kinfo->si_uid, &uinfo->uid);
--		err |= __put_user((long)kinfo->si_ptr, &uinfo->svptr);
-+		err |= __put_user(kinfo->si_pid, &uinfo->ssi_pid);
-+		err |= __put_user(kinfo->si_uid, &uinfo->ssi_uid);
-+		err |= __put_user((long) kinfo->si_ptr, &uinfo->ssi_ptr);
- 		break;
- 	default: /* this is just in case for now ... */
--		err |= __put_user(kinfo->si_pid, &uinfo->pid);
--		err |= __put_user(kinfo->si_uid, &uinfo->uid);
-+		err |= __put_user(kinfo->si_pid, &uinfo->ssi_pid);
-+		err |= __put_user(kinfo->si_uid, &uinfo->ssi_uid);
- 		break;
- 	}
- 
-Index: linux-2.6.mod/include/linux/signalfd.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/signalfd.h	2007-09-27 10:28:59.000000000 -0700
-+++ linux-2.6.mod/include/linux/signalfd.h	2007-09-27 10:31:31.000000000 -0700
-@@ -10,22 +10,22 @@
- 
- 
- struct signalfd_siginfo {
--	__u32 signo;
--	__s32 err;
--	__s32 code;
--	__u32 pid;
--	__u32 uid;
--	__s32 fd;
--	__u32 tid;
--	__u32 band;
--	__u32 overrun;
--	__u32 trapno;
--	__s32 status;
--	__s32 svint;
--	__u64 svptr;
--	__u64 utime;
--	__u64 stime;
--	__u64 addr;
-+	__u32 ssi_signo;
-+	__s32 ssi_errno;
-+	__s32 ssi_code;
-+	__u32 ssi_pid;
-+	__u32 ssi_uid;
-+	__s32 ssi_fd;
-+	__u32 ssi_tid;
-+	__u32 ssi_band;
-+	__u32 ssi_overrun;
-+	__u32 ssi_trapno;
-+	__s32 ssi_status;
-+	__s32 ssi_int;
-+	__u64 ssi_ptr;
-+	__u64 ssi_utime;
-+	__u64 ssi_stime;
-+	__u64 ssi_addr;
- 
- 	/*
- 	 * Pad strcture to 128 bytes. Remember to update the
+greg k-h
