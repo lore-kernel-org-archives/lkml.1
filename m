@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbXI0Oeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbXI0Ofc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbXI0Oeo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 10:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbXI0OeY
+	id S1758002AbXI0Ofc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 10:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbXI0OfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 10:34:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49706 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756623AbXI0OeW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 10:34:22 -0400
-Date: Thu, 27 Sep 2007 07:33:46 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: "Majumder, Rajib" <rajib.majumder@credit-suisse.com>
-Cc: "'netdev@vger.kernel.org'" <netdev@vger.kernel.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
-Subject: Re: TCP Spike
-Message-ID: <20070927073346.42d790dd@freepuppy.rosehill>
-In-Reply-To: <F444CAE5E62A714C9F45AA292785BED3223F7283@esng11p33001.sg.csfb.com>
-References: <F444CAE5E62A714C9F45AA292785BED3223F7283@esng11p33001.sg.csfb.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Sep 2007 10:35:22 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5155 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754763AbXI0OfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 10:35:21 -0400
+Date: Thu, 27 Sep 2007 16:36:54 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git patches] umem driver cleanups
+Message-ID: <20070927143654.GU5243@kernel.dk>
+References: <20070927121349.GA32622@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927121349.GA32622@havoc.gtf.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 11:58:01 +0800
-"Majumder, Rajib" <rajib.majumder@credit-suisse.com> wrote:
-
-> Hi,
+On Thu, Sep 27 2007, Jeff Garzik wrote:
 > 
-> We have observed 40ms latency spikes in TCP connections in "burst" type of traffic. This affects regular TCP sockets. We observed this issue in kernels of 2.4.21 and kernel 2.6.5.
+> Please pull from 'umem' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git umem
 
-Unfortunately, 2.6.5 is out of my short term memory at this point. I do remember that 2.6.5
-used BIC for congestion control, and there were some math errors in the congestion control
-logic that caused it to be way to aggressive.
-  
-> 
-> Aparently, this seems to be fixed in 2.6.19.  
-> 
-> Can someone throw some light on this? 
-
-My guess is that the addition of the SACK hinting might be the major win.  The code
-takes 3 passes over the SACK list, so with large outstanding data that was a major
-bottleneck, not sure if it was 4ms worth though.
-
-> 
-> Is this a congestion control/avoidance issue? What congestion control algorithm is used before 2.6.8?   
-
-Default congestion control in early 2.6 was BIC, then after CUBIC stabilized it was made the default in 2.6.19.
-
-Another thing that may cause changes in latency is Appropriate Byte Counting (ABC).
-It was added in 2.6.14, but then turned off by default in 2.6.18.  The problem is
-that ABC caused performance problems with some applications that sent messages
-as many small writes.
-
+I'd be happy to pull these in through the block tree, if Neil (and/or
+the other maintainers - seems one single person should agree to be
+listed...) is fine with it. Looks ok to me.
 
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Jens Axboe
+
