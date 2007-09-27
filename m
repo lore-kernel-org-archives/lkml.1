@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbXI0KJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbXI0Kfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbXI0KJB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 06:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbXI0KIv
+	id S1755176AbXI0Kfm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 06:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXI0Kfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 06:08:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:23271 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752909AbXI0KIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 06:08:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DLFYUfCGVU1N4RxI9li9jNX3f9JUaluyT2qQGZ9ufk/17ZvaodAbhhTBbO75+r6r3j26RVAbjcNSoHg7dt5xDIU/yH5SKYMdo11lgEJD4DBfmWJBPEpSScgacZg3hzZ3QQ/9xS2eATBS6F5qvGyCy/HxTdDZiWQHXtxwIXd3tnU=
-Message-ID: <b6fcc0a0709270308i5911f64fw5120b045b641d408@mail.gmail.com>
-Date: Thu, 27 Sep 2007 14:08:48 +0400
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: "Martin Michlmayr" <tbm@cyrius.com>
-Subject: Re: Updating include/asm symlink when $ARCH changes
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070927092521.GA27491@deprecation.cyrius.com>
+	Thu, 27 Sep 2007 06:35:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36573 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752191AbXI0Kfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 06:35:33 -0400
+Cc: rdunlap@xenotime.net, akpm@linux-foundation.org, hch@lst.de,
+       geoff@gclare.org.uk, tglx@linutronix.de, david@hardeman.nu,
+       drepper@redhat.com, subrata@linux.vnet.ibm.com, corbet@lwn.net,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 27 Sep 2007 12:35:31 +0200
+From: "Michael Kerrisk" <mtk-manpages@gmx.net>
+In-Reply-To: <Pine.LNX.4.64.0709261038550.25778@alien.or.mcafeemobile.com>
+Message-ID: <20070927103531.184550@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+References: <46FA0657.20700@gmx.net>
+ <Pine.LNX.4.64.0709261038550.25778@alien.or.mcafeemobile.com>
+Subject: Re: Man page for revised timerfd API
+To: Davide Libenzi <davidel@xmailserver.org>
+X-Authenticated: #24879014
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX196HfUkLmB6MTtleImH6GCbEzzNPdwa5DCWs2LnpT
+ BTLHQg7eTmMs44nmXhreuY0oBYCwr3rYTFKw== 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070927092521.GA27491@deprecation.cyrius.com>
+X-GMX-UID: JOKJZnMpeSEqQcf8EHUh8XV+IGRvb8BB
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/27/07, Martin Michlmayr <tbm@cyrius.com> wrote:
-> I cross compile arm and mips kernels from the same kernel tree.
+Davide,
 
-You can use O= feature and skip this issue completely.
+A further question: what is the expected behavior in the
+following scenario:
 
-   make ARCH=mips O=../build/mips ...
-   make ARCH=arm O=../build/arm ...
+1. Create a timerfd and arm it.
+2. Wait until M timer expirations have occurred
+3. Modify the settings of the timer
+4. Wait for N further timer expirations have occurred
+5. read() from the timerfd
 
-> When
-> I build a kernel the first time with a fresh kernel tree, the
-> include/asm symlink is set properly.  However, when I compile for a
-> different $ARCH, the include/asm is not changed and the build fails.
->
-> Would it be possible for the build system to update the include/asm
-> symlink when it doesn't correspond to the architecture you're
-> currently trying to build for?
+Does the buffer returned by the read() contain the value
+N or (M+N)?  In other words, should modifying the timer
+settings reset the expiration count to zero?
+
+Cheers,
+
+Michael
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+
+Want to help with man page maintenance?  
+Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages , 
+read the HOWTOHELP file and grep the source 
+files for 'FIXME'.
+
