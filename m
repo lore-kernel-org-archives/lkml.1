@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758811AbXI0PvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbXI0Pvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758811AbXI0PvW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbXI0PvK
+	id S1759175AbXI0Pvg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758547AbXI0PvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:51:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43567 "EHLO ogre.sisk.pl"
+	Thu, 27 Sep 2007 11:51:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37013 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756890AbXI0PvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:51:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Meelis Roos <mroos@linux.ee>
-Subject: Re: 2.6.23-rc8: Known regressions from 2.6.22
-Date: Thu, 27 Sep 2007 18:05:49 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20070927061902.84E0013CFD@rhn.tartu-labor> <200709271408.06148.rjw@sisk.pl> <Pine.SOC.4.64.0709271821100.10218@math.ut.ee>
-In-Reply-To: <Pine.SOC.4.64.0709271821100.10218@math.ut.ee>
+	id S1757232AbXI0PvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 11:51:11 -0400
+Date: Thu, 27 Sep 2007 11:51:09 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Add /dev/oldmem to devices.txt documenation.
+Message-ID: <20070927155109.GA21668@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709271805.49725.rjw@sisk.pl>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 September 2007 17:21, Meelis Roos wrote:
-> > > http://lkml.org/lkml/2007/9/22/64
-> > 
-> > Created: http://bugzilla.kernel.org/show_bug.cgi?id=9087
-> > 
-> > Please add a summary of your observations to this bug entry.
-> 
-> Added;
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-Thanks
-
-> However, it's assigned to serial devices, while imput devices should be more
-> appropriate for PS2 mouse? 
-
-Yes, my bad.  Reassigned.
-
-Greetings,
-Rafael
+diff --git a/Documentation/devices.txt b/Documentation/devices.txt
+index 8de132a..6c46730 100644
+--- a/Documentation/devices.txt
++++ b/Documentation/devices.txt
+@@ -94,6 +94,8 @@ Your cooperation is appreciated.
+ 		  9 = /dev/urandom	Faster, less secure random number gen.
+ 		 10 = /dev/aio		Asynchronous I/O notification interface
+ 		 11 = /dev/kmsg		Writes to this come out as printk's
++		 12 = /dev/oldmem	Used by crashdump kernels to access
++					the memory of the kernel that crashed.
+ 
+   1 block	RAM disk
+ 		  0 = /dev/ram0		First RAM disk
+-- 
+http://www.codemonkey.org.uk
