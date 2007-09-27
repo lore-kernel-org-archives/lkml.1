@@ -1,116 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbXI0FXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbXI0FuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbXI0FXT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 01:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXI0FXF
+	id S1753809AbXI0FuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 01:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbXI0FuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 01:23:05 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:49262 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbXI0FXE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 01:23:04 -0400
-Date: Thu, 27 Sep 2007 00:23:11 -0500
-From: "Jose R. Santos" <jrs@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, aneesh.kumar@linux.vnet.ibm.com,
-       richard@rsk.demon.co.uk, sct@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: jbd : config_jbd_debug cannot create /proc entry
-Message-ID: <20070927002311.46e50dfb@gara>
-In-Reply-To: <20070926143539.b01bc0bc.akpm@linux-foundation.org>
-References: <1190713240.3154.20.camel@castor.rsk.org>
-	<20070925105112.GB8126@atrey.karlin.mff.cuni.cz>
-	<46F8EB26.2090104@linux.vnet.ibm.com>
-	<20070925115046.GA15394@atrey.karlin.mff.cuni.cz>
-	<20070925074938.2321bc15@gara>
-	<20070925084153.36ab65a5@gara>
-	<20070925143608.GB18758@atrey.karlin.mff.cuni.cz>
-	<20070926143539.b01bc0bc.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Thu, 27 Sep 2007 01:50:08 -0400
+Received: from main.gmane.org ([80.91.229.2]:51417 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752614AbXI0FuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 01:50:07 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Shreyansh Jain <shreyansh.jain@gmail.com>
+Subject: =?utf-8?b?dHJ5X21vZHVsZV9nZXQ=?= code understanding
+Date: Thu, 27 Sep 2007 05:19:06 +0000 (UTC)
+Message-ID: <loom.20070927T051622-501@post.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 192.8.220.8 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.7) Gecko/20070914 Firefox/2.0.0.7)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 14:35:39 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Dear List,
 
-> On Tue, 25 Sep 2007 16:36:08 +0200
-> Jan Kara <jack@suse.cz> wrote:
-> 
-> > > On Tue, 25 Sep 2007 07:49:38 -0500
-> > > "Jose R. Santos" <jrs@us.ibm.com> wrote:
-> > > 
-> > > > On Tue, 25 Sep 2007 13:50:46 +0200
-> > > > Jan Kara <jack@ucw.cz> wrote:
-> > > > > > Jan Kara wrote:
-> > > > > > >>
-> > > > > > >-#define create_jbd_proc_entry() do {} while (0)
-> > > > > > >-#define remove_jbd_proc_entry() do {} while (0)
-> > > > > > >+static ctl_table fs_table[] = {
-> > > > > > >+	{
-> > > > > > >+                .ctl_name       = -1,	/* Don't want it */
-> > > > > > 
-> > > > > > 
-> > > > > > 
-> > > > > > shouldn't this be CTL_UNNUMBERED ?
-> > > > >   Oh, it should be. I didn't notice we have this :) Thanks for notifying
-> > > > > me. Attached is a fixed version.
-> > > > 
-> > > > This was fixed in JBD2 by moving the jbd-debug file to debugfs:
-> > > > http://lkml.org/lkml/2007/7/11/334
-> > > > 
-> > > > Since this code is already in the kernel, we should keep it consistent. 
-> > > > 
-> > > 
-> > > OK.  Here's a quick patch to fix this.  Adapted from the JBD2 patch.
-> > > Let me know what you think.
-> >   Looks fine - exactly what I've just done here :).
-> 
-> hm.  I found rather a lot of issues.  If this patch is derived from the
-> JBD2 patch then perhaps the JBD2 patch needs some looking at.
+I agree that this issue certainly doesn't require to be in this list (rightful
+place being kernewbies) but I tried that and got no response - so trying my luck
+here.
 
-Some of the changes do apply to the JBD2 patch.  I'll send a cleanup patch.
+I was going through try_module_get function in include/linux/module.h file
+(2.6.22 stock kernel) - which is like:
 
-> 
-> > >     Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
-> >   You can add Signed-off-by: Jan Kara <jack@suse.cz>
-> 
-> I suspect you might be getting your signed-off-bys and acked-bys mixed up. 
-> (If not this patch, then the previous one).  Please see
-> Documentation/SubmittingPatches section 13 for the difference.
-> 
-> Jose, please review and if possible runtime test these proposed changes?
+-----
+static inline int try_module_get(struct module *module){
+  int ret = 1;   <--- error case when !module
+    if (module) {
+         unsigned int cpu = get_cpu();
+         if (likely(module_is_live(module)))
+                local_inc(&module->ref[cpu].count);
+         else
+                ret = 0;   <--- error case
+         put_cpu();
+  }
+  return ret;   <----
+}
+----
 
-Agree with all the changes and they worked as expected on my system. 
+What I understand about the code flow is:
+-- module live would return the flag stating that this module can be reference
+and is NOT being removed currently.
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> - use `#ifdef foo' instead of `#if defined(foo)'
-> 
-> - CONFIG_JBD_DEBUG depends on CONFIG_DEBUG_FS so we don't need to duplicate
->   that logic in the .c file ifdefs
-> 
-> - Make journal_enable_debug __read_mostly just for the heck of it
-> 
-> - Make jbd_debugfs_dir and jbd_debug static
-> 
-> - debugfs_remove(NULL) is legal: remove unneeded tests
-> 
-> - jbd_create_debugfs_entry is a better name than create_jbd_debugfs_entry
-> 
-> - ditto remove_jbd_debugfs_entry
-> 
-> - C functions are preferred over macros
-> 
-> Cc: "Jose R. Santos" <jrs@us.ibm.com>
-> Cc: <linux-ext4@vger.kernel.org>
-> Cc: Jan Kara <jack@suse.cz>
-> Cc: Jose R. Santos <jrs@us.ibm.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+1. In case the module pointer passed is invalid (NULL) this function would
+return 1 (error case)
+2. In case the module pointer is OK, and module is currently not being removed,
+reference count would be incremented and 1 returned (non error case)
+3. In case the module pointer is OK, and module reference count can NOT be
+increased, 0 would be returned (error case).
 
-Acked-by: Jose R. Santos <jrs@us.ibm.com>
+As you can observe from above points, 0 and 1 are returned for error cases. I am
+a little confused and wondering if there is something which I am missing in this
+code??.
 
--JRS
+Can anyone help me out with this? Any help would be highly appreciated.
+
+Regards
+Shreyansh
+
