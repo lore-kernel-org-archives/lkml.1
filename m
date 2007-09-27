@@ -1,48 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbXI0Rii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbXI0Row@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbXI0Rii (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 13:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXI0Rib
+	id S1757198AbXI0Row (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 13:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbXI0Roo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 13:38:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53656 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbXI0Ria (ORCPT
+	Thu, 27 Sep 2007 13:44:44 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:37201 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753728AbXI0Ron (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 13:38:30 -0400
-Message-ID: <46FBEA85.4020300@zytor.com>
-Date: Thu, 27 Sep 2007 10:38:13 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-CC: device <device@lanana.org>
-Subject: Re: Add /dev/oldmem to devices.txt documenation.
-References: <20070927155109.GA21668@redhat.com>
-In-Reply-To: <20070927155109.GA21668@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 27 Sep 2007 13:44:43 -0400
+Date: Thu, 27 Sep 2007 10:40:05 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: vatsa@linux.vnet.ibm.com
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       dmitry.adamushko@gmail.com, efault@gmx.de, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [PATCH -mm] Hook up group scheduler with control groups
+Message-Id: <20070927104005.2ed0b81d.randy.dunlap@oracle.com>
+In-Reply-To: <20070927150624.GG4415@linux.vnet.ibm.com>
+References: <20070927150624.GG4415@linux.vnet.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> Signed-off-by: Dave Jones <davej@redhat.com>
+On Thu, 27 Sep 2007 20:36:24 +0530 Srivatsa Vaddagiri wrote:
+
+> Andrew,
+> 	This is a resend of the patch I had sent earlier at:
+> 	
+> http://marc.info/?l=linux-kernel&m=119065506607858
 > 
-> diff --git a/Documentation/devices.txt b/Documentation/devices.txt
-> index 8de132a..6c46730 100644
-> --- a/Documentation/devices.txt
-> +++ b/Documentation/devices.txt
-> @@ -94,6 +94,8 @@ Your cooperation is appreciated.
->  		  9 = /dev/urandom	Faster, less secure random number gen.
->  		 10 = /dev/aio		Asynchronous I/O notification interface
->  		 11 = /dev/kmsg		Writes to this come out as printk's
-> +		 12 = /dev/oldmem	Used by crashdump kernels to access
-> +					the memory of the kernel that crashed.
+> This patch enables group cpu scheduler feature to work with control
+> groups.
+> 
+> Could you include this in -mm for folks to test it?
+
+Hi  :)
+
+Uh, a few of my previous comments weren't fixed... (below)
+
+
+> --
+> 
+> Enable "cgroup" (formerly containers) based fair group scheduling.
+> This will let administrator create arbitrary groups of tasks (using
+> "cgroup" pseudo filesystem) and control their cpu bandwidth usage.
+> 
+> Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> 
+> ---
+>  include/linux/cgroup_subsys.h |    6 ++
+>  init/Kconfig                  |   24 +++++---
+>  kernel/sched.c                |  122 ++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 145 insertions(+), 7 deletions(-)
+> 
+
+> Index: current/init/Kconfig
+> ===================================================================
+> --- current.orig/init/Kconfig
+> +++ current/init/Kconfig
+> @@ -319,6 +319,13 @@ config CPUSETS
 >  
->    1 block	RAM disk
->  		  0 = /dev/ram0		First RAM disk
+>  	  Say N if unsure.
+>  
+> +config RESOURCE_COUNTERS
+> +	bool "Resource counters"
+> +	help
+> +	  This option enables controller independent resource accounting
+> +          infrastructure that works with cgroups
 
-This should have been sent to device@lanana.org as well.
+Use tab + 2 spaces consistently for help text indentation.
+End that sentence with a ".".
 
-	-hpa
+> +	depends on CGROUPS
+> +
+>  config FAIR_GROUP_SCHED
+>  	bool "Fair group CPU scheduler"
+>  	default y
+
+
+
+---
+~Randy
+Phaedrus says that Quality is about caring.
