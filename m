@@ -1,63 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbXI0WOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760146AbXI0WOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759548AbXI0WOg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 18:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbXI0WO2
+	id S1760146AbXI0WOs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 18:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759151AbXI0WOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 18:14:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56774 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757106AbXI0WO1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 18:14:27 -0400
-Date: Thu, 27 Sep 2007 15:13:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: apw@shadowen.org, vagabon.xyz@gmail.com, linux-kernel@vger.kernel.org,
-       kamalesh@linux.vnet.ibm.com
-Subject: Re: 2.6.23-rc8-mm1 -- powerpc link failure
-Message-Id: <20070927151317.67cac358.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0709271408170.7567@jikos.suse.cz>
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
-	<20070925134653.GB8447@shadowen.org>
-	<Pine.LNX.4.64.0709251715530.7567@jikos.suse.cz>
-	<20070927120308.GJ2213@shadowen.org>
-	<Pine.LNX.4.64.0709271408170.7567@jikos.suse.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 27 Sep 2007 18:14:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56734 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758914AbXI0WOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 18:14:33 -0400
+Date: Thu, 27 Sep 2007 18:13:25 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] kswapd should only wait on IO if there is IO
+Message-ID: <20070927181325.21aae460@bree.surriel.com>
+In-Reply-To: <20070927144702.a9124c7a.akpm@linux-foundation.org>
+References: <20070927170816.055548fd@bree.surriel.com>
+	<20070927144702.a9124c7a.akpm@linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 14:13:21 +0200 (CEST)
-Jiri Kosina <jkosina@suse.cz> wrote:
+On Thu, 27 Sep 2007 14:47:02 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> i386 and x86_64: randomize brk()
+> On Thu, 27 Sep 2007 17:08:16 -0400
+> Rik van Riel <riel@redhat.com> wrote:
 > 
-> ...
->
-> --- a/arch/x86_64/ia32/ia32_binfmt.c
-> +++ b/arch/x86_64/ia32/ia32_binfmt.c
-> @@ -262,6 +262,7 @@ static void elf32_init(struct pt_regs *);
->  #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
->  #define arch_setup_additional_pages syscall32_setup_pages
->  extern int syscall32_setup_pages(struct linux_binprm *, int exstack);
-> +extern void arch_randomize_brk(void);
->  
->  #include "../../../fs/binfmt_elf.c" 
+> > The current kswapd (and try_to_free_pages) code has an oddity where the
+> > code will wait on IO, even if there is no IO in flight.  This problem is
+> > notable especially when the system scans through many unfreeable pages,
+> > causing unnecessary stalls in the VM.
+> > 
+> 
+> What effect did this change have?
 
-Is this sinful extern-decl-in-C acually needed?
+Kswapd was no longer sitting in "D" state as often and pages got
+freed more promptly.  The test was done on a RHEL kernel with
+this change though - I guess I should redo it with a current upstream
+kernel.
+
+> > diff -up linux-2.6.22.x86_64/mm/vmscan.c.wait linux-2.6.22.x86_64/mm/vmscan.c
+> > --- linux-2.6.22.x86_64/mm/vmscan.c.wait	2007-09-25 11:33:30.000000000 -0400
+> > +++ linux-2.6.22.x86_64/mm/vmscan.c	2007-09-25 21:27:08.000000000 -0400
+> > @@ -68,6 +68,8 @@ struct scan_control {
+> >  	int all_unreclaimable;
+> >  
+> >  	int order;
+> > +
+> > +	int nr_io_pages;
+> >  };
+> >  
+> >  #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+> > @@ -489,8 +491,10 @@ static unsigned long shrink_page_list(st
+> >  			 */
+> >  			if (sync_writeback == PAGEOUT_IO_SYNC && may_enter_fs)
+> >  				wait_on_page_writeback(page);
+> > -			else
+> > +			else {
+> > +				sc->nr_io_pages++;
+> >  				goto keep_locked;
+> > +			}
+> >  		}
+> >  
+> >  		referenced = page_referenced(page, 1);
+> > @@ -541,8 +545,10 @@ static unsigned long shrink_page_list(st
+> >  			case PAGE_ACTIVATE:
+> >  				goto activate_locked;
+> >  			case PAGE_SUCCESS:
+> > -				if (PageWriteback(page) || PageDirty(page))
+> > +				if (PageWriteback(page) || PageDirty(page)) {
+> > +					sc->nr_io_pages++;
+> >  					goto keep;
+> > +				}
+> >  				/*
+> >  				 * A synchronous write - probably a ramdisk.  Go
+> >  				 * ahead and try to reclaim the page.
+> > @@ -1201,6 +1207,7 @@ unsigned long try_to_free_pages(struct z
+> >  
+> >  	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
+> >  		sc.nr_scanned = 0;
+> > +		sc.nr_io_pages = 0;
+> >  		if (!priority)
+> >  			disable_swap_token();
+> >  		nr_reclaimed += shrink_zones(priority, zones, &sc);
+> > @@ -1229,7 +1236,8 @@ unsigned long try_to_free_pages(struct z
+> >  		}
+> >  
+> >  		/* Take a nap, wait for some writeback to complete */
+> > -		if (sc.nr_scanned && priority < DEF_PRIORITY - 2)
+> > +		if (sc.nr_scanned && priority < DEF_PRIORITY - 2 &&
+> > +				sc.nr_io_pages > sc.swap_cluster_max)
+> 
+> The comparison with swap_cluster_max is unobvious, and merits a
+> comment.  What is the thinking here?  
+
+If the number of pages undergoing IO is really small, waiting
+for them may be a waste of time.
+
+Maybe my thinking is wrong, not sure...
+
+> Also, we now have this:
+> 
+> 		if (total_scanned > sc.swap_cluster_max +
+> 					sc.swap_cluster_max / 2) {
+> 			wakeup_pdflush(laptop_mode ? 0 : total_scanned);
+> 			sc.may_writepage = 1;
+> 		}
+> 
+> 		/* Take a nap, wait for some writeback to complete */
+> 		if (sc.nr_scanned && priority < DEF_PRIORITY - 2 && 
+>					sc.nr_io_pages > sc.swap_cluster_max)
+> 			congestion_wait(WRITE, HZ/10);
+> 
+> 
+> So in the case where total_scanned has not yet reached
+> swap_cluster_max, this process isn't initiating writeout and it isn't
+> sleeping, either.  Nor is it incrementing nr_io_pages.
+
+Actually, nr_io_pages is also incremented when we run into pages that
+are already PageWriteback - even if we did not start the IO ourselves.
+
+> In the range (swap_cluster_max < nr_io_pages < 1.5*swap_cluster_max) this
+> process still isn't incrementing nr_io_pages, but it _is_ running
+> congestion_wait().
+
+It is incrementing sc.nr_io_pages and will wait on IO to complete if
+the amount of pages in flight to disk that it scanned over is larger
+than the number of pages that it is trying to free.
+
+> Once nr_io_pages exceeds 1.5*swap_cluster_max, this process is both
+> initiating IO and is throttling on writeback completion events.
+> 
+> This all seems a bit weird and arbitrary - what is the reason for
+> throttling-but-not-writing in that 1.0->1.5 window?
+
+Good question.  Note that the throttling-but-not-writing window in
+the current code is 0.0->1.5, so this patch does reduce the throttling
+window compared to the current code.
+
+What is the reason that the current code does IO throttling even if
+there is no IO at all in flight?
+
+> If there _is_ a reason and it's all been carefully thought out and
+> designed, then can we please capture a description of that design in the
+> changelog or in the code?
+
+I'll add a description for the sc.nr_io_pages > sc.swap_cluster_max
+test.
+
+> Also, I wonder about what this change will do to the dynamic behaviour of
+> GFP_NOFS direct-reclaimers.  Previously they would throttle if they
+> encounter dirty pages which they can't write out.  Hopefully someone else
+> (kswapd or a __GFP_FS direct-reclaimer) will write some of those pages
+> and this caller will be woken when that writeout completes and will go off
+> and scoop them off the tail of the LRU.
+> 
+> But after this change, such a GFP_NOFS caller will, afacit, burn its way
+> through potentially the entire inactive list and will then declare oom. 
+
+Nope, sc.nr_io_pages will also be incremented when the code runs into
+pages that are already PageWriteback.
+
  
-> index b4fbe47..5a1adf9 100644
-> --- a/include/asm-x86_64/elf.h
-> +++ b/include/asm-x86_64/elf.h
-> @@ -177,4 +177,6 @@ do if (vdso_enabled) {						\
->  
->  #endif
->  
-> +extern void arch_randomize_brk(void);
-> +
->  #endif
-
-Because we already have a declaration in the correct place?
+-- 
+"Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it." - Brian W. Kernighan
