@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbXI1OMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbXI1OMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759198AbXI1OMK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 10:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbXI1OLq
+	id S1759478AbXI1OMa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 10:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758914AbXI1OL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 10:11:46 -0400
-Received: from rtr.ca ([76.10.145.34]:3472 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755332AbXI1OLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 10:11:45 -0400
-Message-ID: <46FD0BA2.6030600@rtr.ca>
-Date: Fri, 28 Sep 2007 10:11:46 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 28 Sep 2007 10:11:59 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:31995 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758746AbXI1OL5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 10:11:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=Lu27SQutq10uOqFdTpe5vANmq97wu90a1QH/iHW9fbjzBd6A3MU2LP6fxag41KxXzUKOiqmLM3xtGXT1uJQtJBgGcU1gtAH86xO+K3ZihofhtDdxrJQLzmt2sTNm+jhoNAO0Hr9Jwf5QcfEvBxY2HcKv5yrEfJekoWfdWL1OPGM=  ;
+X-YMail-OSG: ZE4sQM4VM1nGHMJXj5Z1oFuz2rsBmHz6SkYyRsqztVSOhdNu
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net
+Subject: Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL
+Date: Fri, 28 Sep 2007 07:40:39 +1000
+User-Agent: KMail/1.9.5
+Cc: Andreas Herrmann <aherrman@arcor.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org
+References: <20070918080537.GA14882@devil> <20070919233110.18a057ac.akpm@linux-foundation.org>
+In-Reply-To: <20070919233110.18a057ac.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       simon.derr@bull.net
-Subject: Re: [PATCH] disable non-boot CPUs before poweroff
-References: <46FC20B7.4000606@rtr.ca> <200709281455.29069.rjw@sisk.pl> <46FD001A.3070309@rtr.ca> <200709281544.30497.rjw@sisk.pl> <46FD05B8.2040302@rtr.ca> <46FD0724.5060009@rtr.ca>
-In-Reply-To: <46FD0724.5060009@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200709280740.40163.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> 
-> We need to disable all CPUs other than the boot CPU (usually 0)
-> before attempting to power-off modern SMP machines.
-> This seems to fix the hang-on-poweroff issue
-> that one of my SMP boxes exhibits.  More testing required.
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> ---
-> 
-> --- linux/kernel/sys.c.orig    2007-09-13 09:49:11.000000000 -0400
-> +++ linux/kernel/sys.c    2007-09-28 09:48:54.000000000 -0400
-> @@ -32,6 +32,7 @@
-> #include <linux/getcpu.h>
-> #include <linux/task_io_accounting_ops.h>
-> #include <linux/seccomp.h>
-> +#include <linux/cpu.h>
-> 
-> #include <linux/compat.h>
-> #include <linux/syscalls.h>
-> @@ -879,6 +880,7 @@
->     if (pm_power_off_prepare)
->         pm_power_off_prepare();
->     sysdev_shutdown();
-> +    disable_nonboot_cpus();
->     printk(KERN_EMERG "Power down.\n");
->     machine_power_off();
-> }
+On Thursday 20 September 2007 16:31, Andrew Morton wrote:
 
-Okay, verified now.  Prior to this patch, *both* CPUs were still up and running
-when machine_power_off() got called, and there was no guarantee that CPU0 was
-the one calling machine_power_off().   BUG.
+> I struggled for five minutes trying to work out how to make CONFIG_SYSCTL
+> go away and gave up in disgust.
+>
+> God I hate select.
 
-The above patch guarantees that only the single boot CPU is running
-and calling machine_power_off().
-
-Hopefully this buries the SMP-power-off bogeyman for good!
-
-Cheers
+IMO a better implementation would result in a notification / confirmation of
+turning on new items, and the ability to deselect options which will also
+confirm to deselect dependants. Like most other systems that have similar
+problem to solve.
