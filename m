@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbXI0QFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbXI0QJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757506AbXI0QFT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 12:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXI0QFF
+	id S1757480AbXI0QJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 12:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXI0QJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 12:05:05 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:58040 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754596AbXI0QFD (ORCPT
+	Thu, 27 Sep 2007 12:09:22 -0400
+Received: from SOKENS04e.snapon.com ([217.33.151.229]:39117 "EHLO
+	sokens04.snapon.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751722AbXI0QJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 12:05:03 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 27 Sep 2007 12:03:33 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Dave Jones <davej@redhat.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: correct kernel parameter in documentation.
-In-Reply-To: <20070927155013.GA20219@redhat.com>
-Message-ID: <Pine.LNX.4.64.0709271202210.13117@localhost.localdomain>
-References: <20070927155013.GA20219@redhat.com>
+	Thu, 27 Sep 2007 12:09:21 -0400
+Message-ID: <00cd01c80120$975e4ca0$7502a8c0@snaponglobal.com>
+From: "Marco Tralli" <marco.tralli@snapon.com>
+To: "Jordan Crouse" <jordan.crouse@amd.com>,
+       "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Cc: <linux-kernel@vger.kernel.org>
+References: <00ab01c80114$e659d600$7502a8c0@snaponglobal.com> <200709271730.14555.Rafal.Wysocki@fuw.edu.pl> <20070927152243.GF30917@cosmic.amd.com>
+Subject: Re: kernel 2.6.23-rc6 hangs on Geode GX1
+Date: Thu, 27 Sep 2007 18:05:31 +0200
+Organization: SNAPON
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1807
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1896
+X-OriginalArrivalTime: 27 Sep 2007 16:09:12.0068 (UTC) FILETIME=[BE242440:01C80120]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007, Dave Jones wrote:
-
-> 'noacpi' isn't a standalone parameter, give it its prefix.
+> On 27/09/07 17:30 +0200, R. J. Wysocki wrote:
+> > On Thursday, 27 September 2007 16:44, Marco Tralli wrote:
+> > > Hello all,
+> > >
+> > > I have random hangs on kernel boot or after few minutes on a NatSemi
+Geode
+> > > GX1 based PC-104 (from Advantech) using kernel 2.6.23-rc6. The system
+locks,
+> > > no way to use SysRq key, no usefull logs.
+> >
+> > Please see: http://bugzilla.kernel.org/show_bug.cgi?id=9086
 >
-> Signed-off-by: Dave Jones <davej@redhat.com>
+> Thats a different bug, I believe.  The symptoms are different.  Plus, that
+> was a more modern LX processor, while this is a GX1 which doesn't share
+> any code with the LX BIOS, so it would be a huge coincidence if they were
+> affected by the same problem.
 >
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 4d175c7..a87bc58 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -863,6 +863,10 @@ and is between 256 and 4096 characters. It is defined in the file
->  	lasi=		[HW,SCSI] PARISC LASI driver for the 53c700 chip
->  			Format: addr:<io>,irq:<irq>
->
-> +	libata.noacpi	[LIBATA] Disables use of ACPI in libata suspend/resume
-> +			when set.
-> +			Format: <int>
-> +
 
-if you're going to add that libata-related parm to the kernel parms
-file, wouldn't it make sense for consistency to add the other
-available boot-time parms from libata-core.c as well?  it seems
-counter-productive to document only a subset of them from the same
-source file.
 
-rday
+The same 2.6.23-rc6 kernel does not hang on Geode LX based PC-104 from
+Advantech
 
-p.s.  as i think i've mentioned before, i'd prefer to see that entire
-kernel-parameters.txt file reorganized, where the basic boot time
-parms are at the top, followed by module specific parameters *after*
-that, in alphabetical order by module name.  i think that would make
-far more sense.
+I'm checking with 2.6.23-rc8-git2 and I'll let you know
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Marco
 
-http://crashcourse.ca
-========================================================================
