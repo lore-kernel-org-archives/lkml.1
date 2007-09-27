@@ -1,113 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbXI0Axx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129AbXI0B2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299AbXI0Axx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 20:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbXI0Axo
+	id S1753129AbXI0B2t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 21:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXI0B2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 20:53:44 -0400
-Received: from andromeda.dapyr.net ([206.212.254.10]:54274 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbXI0Axn (ORCPT
+	Wed, 26 Sep 2007 21:28:40 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:23978 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbXI0B2j convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 20:53:43 -0400
-From: Konrad Rzeszutek <konrad@darnok.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] Add iSCSI iBFT support.
-Date: Wed, 26 Sep 2007 20:52:43 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
-       konradr@linux.vnet.ibm.com
-References: <20070926184652.GA16369@andromeda.dapyr.net> <20070926142950.46bbfcd2.randy.dunlap@oracle.com>
-In-Reply-To: <20070926142950.46bbfcd2.randy.dunlap@oracle.com>
+	Wed, 26 Sep 2007 21:28:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=NIqnoPJZgY3O8+FnQxxNMAz9KQK3EVTIfp6vpIFRlannF9er3JAujJKdLkEWdV807oPem9Y+xqY40898Xj0yLYm7zgYpfYsxtu9J6yIv+D20tjlfhTSgrFzRD2/f6HUSccVmGhssdCc7c70JV/OnEZfFHIBT8ols6VsZhzSJZ2o=
+Message-ID: <b8bf37780709261828m6f9f7318qe753d8b32055bf@mail.gmail.com>
+Date: Wed, 26 Sep 2007 22:28:36 -0300
+From: "=?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?=" <andre.goddard@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Mike Galbraith" <efault@gmx.de>
+Subject: sched-devel feedback
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200709262052.44845.konrad@darnok.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +config ISCSI_IBFT
-> > +	tristate "iSCSI Boot Firmware Table Attributes"
-> > +	depends on X86
->
-> why only on X86?
+Hi, Ingo , Mike and Peter!
 
-PowerPC exports this data via the OpenFirmware so it already shows in 
-the /sysfs entries. I was thinking to combine those sysfs entries under this 
-code, but that is something in the future.
+    Just passing around to say that 2.6.23-rc8-sched-dev is the best
+scheduler ever to me. It's great for 3D games.
 
-In regards to all other platforms, I figured I would only make it supported 
-under platforms that have been tested. Is there anything that stops this from 
-working for example of IA64? Well no. The hardware that supports the iBFT is 
-either in the BIOS or in NICs - so the SGI or HP boxes _should_ work, however 
-I am not comfortable to make it supported unless I've tested it.
+     http://www.openarena.ws/?files is really great with this
+scheduler. I played a whole match without no slowdown, smooth playing
+all the time. I had never played it before like this, it made a huge
+difference to me. Even older CFS releases and -ck did not made it
+sooooo smooth. It was really smooth _all_ the time.
 
-> > + * drivers/firmware/iscsi_ibft.c
->
-> Don't repeat the file name.
+    The scheduler team did a really good work on this!
 
-OK. 
-> > + * This code exposes the the iSCSI Boot Format Table to userland via
-> > sysfs.
->
->                 ~~~~~~~
-> yes.
-
-Yup. 
-> > +
->
-> no blank line here.
-
-Fixed.
-> > +static ssize_t
-> > +ibft_read_binary(struct kobject *kobj, struct bin_attribute *attr, char
-> > *buf, +		 loff_t off, size_t count)
->
-> Put 'static ssize_t' on same line as function name, then put parameters
-> on following lines as needed.
-
-Fixed.
-> > +static int
-> > +ibft_mmap_binary(struct kobject *kobj, struct bin_attribute *attr,
-> > +		 struct vm_area_struct *vma)
->
-> ditto.
-Fixed.
-
-> > +	/* Need PAGE_ALING for mmap functionality. */
->
->                 PAGE_ALIGN
-
-Fixed.
-> > +	printk(KERN_INFO "BIOS iBFT unloaded.\n");
->
-> Drop the unload message.  ibft_init() is also quite noisy.
-
-Fixed.
->
-> Need blank line here... except why is this function in the header
-
-Fixed blank line.
-> file?  and why is it inline?
-
-Q: "Why is this function in the header file"
-If the find_ibft() was to be implemented in firmware/iscsi_ibft.c code the 
-firmware-driver couldn't be compiled as a module (or rather it could, but 
-when the vmlinuz was to be linked it would complain about missing symbol - 
-find_ibft). I was thinking to let the user give the choice whether they want 
-to load this firmware driver or have it built-in the kernel.
-
-Q:"Why is it inline"
-Uhh. It does not need to. I will remove the 'inline' part. 
->
-> > +	unsigned long pos;
->
-> add blank line here between data / code.
-
-Fixed.
-
-Randy,
-
-Thank you for taking time to do such thoroughly review.
+Thank you so much for this great work,
+-- 
+[]s,
+André Goddard
