@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbXI0Qw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbXI0Qwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbXI0Qw1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 12:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbXI0QwV
+	id S1757247AbXI0Qwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 12:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbXI0Qwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 12:52:21 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:36667 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753683AbXI0QwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 12:52:20 -0400
-Date: Thu, 27 Sep 2007 18:53:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc8-mm2: problems on HP nx6325
-Message-ID: <20070927165346.GA919@uranus.ravnborg.org>
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <200709271719.06937.rjw@sisk.pl> <200709271759.46018.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709271759.46018.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 27 Sep 2007 12:52:35 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:45411 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751076AbXI0Qwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 12:52:34 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 27 Sep 2007 09:52:32 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+cc: lkml <linux-kernel@vger.kernel.org>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>, geoff@gclare.org.uk
+Subject: Re: eventfd.2 man page
+In-Reply-To: <46FB9D4B.4090909@gmx.net>
+Message-ID: <Pine.LNX.4.64.0709270951000.763@alien.or.mcafeemobile.com>
+References: <46FB9D4B.4090909@gmx.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael.
-> 
-> Fix CPU hotplug breakage on HP nx6325 and similar boxes caused by a reference
-> to disable_apic_timer (labeled as __initdata) from the CPU initialization code.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  arch/x86_64/kernel/apic.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> ===================================================================
-> --- linux-2.6.23-rc8-mm2.orig/arch/x86_64/kernel/apic.c
-> +++ linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> @@ -42,7 +42,7 @@
->  
->  int apic_verbosity;
->  static int apic_calibrate_pmtmr __initdata;
-> -int disable_apic_timer __initdata;
-> +int disable_apic_timer __cpuinitdata;
->  
-This is with your configuration a reference from a .text section
-to a .init.data section as I see it.
+On Thu, 27 Sep 2007, Michael Kerrisk wrote:
 
-So this ought to have been flagged by the section mismatch
-checks in modpost.
+> Hi Davide,
+> 
+> I've slightly tweaked the eventfd.2 man page in preparation for adding it
+> to the man-pages set.  Could you please review the text below, and confirm
+> that it correctly describes intended behavior.
 
-I assume you did not see such warning??
+Looks good to me. At the time that I was tsting it, I cooked an example 
+about how to use an eventfd with KAIO:
 
-	Sam
+http://www.xmailserver.org/eventfd-aio-test.c
+
+In case you'd like to add a sketch to the man page.
+
+
+
+- Davide
+
+
