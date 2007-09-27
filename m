@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbXI0VZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbXI0V1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758308AbXI0VZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 17:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbXI0VZQ
+	id S1759084AbXI0V1c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 17:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbXI0V1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 17:25:16 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40111 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753469AbXI0VZO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 17:25:14 -0400
-Date: Thu, 27 Sep 2007 22:29:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Brett Warden" <brett.warden@gmail.com>
-Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Randy Dunlap" <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] bw-qcam: use data_reverse instead of manually poking
- the control register
-Message-ID: <20070927222934.010f1898@the-village.bc.nu>
-In-Reply-To: <a372714f0709271228r7de8a4a0p4c5d75e939513f08@mail.gmail.com>
-References: <a372714f0709261212hec0c61ofc5dd6d127352402@mail.gmail.com>
-	<2c0942db0709261243h1267140br70796c7fcfb165e3@mail.gmail.com>
-	<a372714f0709261306q714100e3t643b31d8f194de2e@mail.gmail.com>
-	<2c0942db0709261400l10ef6c3ft2d73d8b2ada4a04@mail.gmail.com>
-	<a372714f0709261443p25e99e4at39f4a09c850fb621@mail.gmail.com>
-	<a372714f0709271228r7de8a4a0p4c5d75e939513f08@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 27 Sep 2007 17:27:21 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40077 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755508AbXI0V1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 17:27:20 -0400
+Subject: Re: [RFC][PATCH] make reiserfs stop using 'struct file' for
+	internal xattr operations
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
+In-Reply-To: <20070927210423.GA6117@infradead.org>
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
+	 <46FC021F.8060109@free.fr>
+	 <20070927124833.d2691813.akpm@linux-foundation.org>
+	 <20070927202607.GA3812@infradead.org> <1190926419.7344.27.camel@localhost>
+	 <20070927210423.GA6117@infradead.org>
+Content-Type: text/plain
+Date: Thu, 27 Sep 2007 14:27:14 -0700
+Message-Id: <1190928434.7344.31.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 12:28:31 -0700
-"Brett Warden" <brett.warden@gmail.com> wrote:
-
-> Fixes use of parport_write_control() to match the newer interface that
-> requires explicit parport_data_reverse() and parport_data_forward()
-> calls. This eliminates the following error message and restores the
-> original intended behavior:
-
-Looks good
-
-> parport0 (bw-qcam): use data_reverse for this!
+On Thu, 2007-09-27 at 22:04 +0100, Christoph Hellwig wrote:
+> On Thu, Sep 27, 2007 at 01:53:39PM -0700, Dave Hansen wrote:
+> > -int reiserfs_commit_write(struct file *f, struct page *page,
+> > -			  unsigned from, unsigned to);
+> > -int reiserfs_prepare_write(struct file *f, struct page *page,
+> > -			   unsigned from, unsigned to);
+> > +int reiserfs_commit_write(struct page *page, unsigned from, unsigned to);
+> > +int reiserfs_prepare_write(struct page *page, unsigned from, unsigned to);
 > 
-> Also increases threshold in qc_detect() from 300 to 400, as my camera
-> often results in a count of approx 330. Added a kernel error message
-> to indicate detection failure.
+> I doubt this will work.  These are also used for the ->prepare_write
+> and ->commit_write aops, and the method signature definitively wants
+> a file there, even if it's zero..
 
-Likewise
+Oddly enough, I don't see those functions being used in aops:
 
-> Signed-off-by: Brett T. Warden <brett.warden@gmail.com>
+const struct address_space_operations reiserfs_address_space_operations = {
+        .writepage = reiserfs_writepage,
+        .readpage = reiserfs_readpage,
+        .readpages = reiserfs_readpages,
+        .releasepage = reiserfs_releasepage,
+        .invalidatepage = reiserfs_invalidatepage,
+        .sync_page = block_sync_page,
+        .write_begin = reiserfs_write_begin,
+        .write_end = reiserfs_write_end,
+        .bmap = reiserfs_aop_bmap,
+        .direct_IO = reiserfs_direct_IO,
+        .set_page_dirty = reiserfs_set_page_dirty,
+};
 
-Acked-by: Alan Cox <alan@redhat.com>
+Plus, reiserfs seems to compile with that patch I just sent.  Sure as
+heck surprised me.
+
+-- Dave
+
