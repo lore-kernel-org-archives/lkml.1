@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbXI0Ult@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbXI0UpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbXI0Ult (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 16:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758845AbXI0Ula
+	id S1758483AbXI0UpH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 16:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbXI0Uoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 16:41:30 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:31147 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758828AbXI0Ul3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 16:41:29 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:message-id:
-	mime-version:content-type;
-	b=qAoI4EnWgFYkpx+eiiiT8AN4VpwOdTMVH8aaTNkKEKHp5w7Nch8EZlxxbZiFshWEv
-	3TaM4lN65n+u1/UnMAfMg==
-Date: Thu, 27 Sep 2007 13:41:16 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Greg Kroah-Hartman <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org
-Subject: [patch 1/2] pci: use size stored in proc_dir_entry for proc bus
- files
-Message-ID: <alpine.DEB.0.9999.0709271322370.8767@chino.kir.corp.google.com>
+	Thu, 27 Sep 2007 16:44:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44290 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754582AbXI0Uoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 16:44:54 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Dmitry Tyschenko" <dtyschenko@gmail.com>
+Subject: Re: NO_HZ hangs up AMD MK-36
+Date: Thu, 27 Sep 2007 22:59:25 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+References: <a6a840cd0709271328p76ee6a22tf3b60678d6a2d455@mail.gmail.com>
+In-Reply-To: <a6a840cd0709271328p76ee6a22tf3b60678d6a2d455@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709272259.26412.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On pci_proc_attach_device(), the size of the PCI configuration space is
-stored in the proc_dir_entry as the size of the file.  Thus, the procfs
-interface to PCI devices should use it instead of the device directly.
+On Thursday, 27 September 2007 22:28, Dmitry Tyschenko wrote:
+> Hello,
+> 
+> I have laptop Asus X50M. Using old Debian Etch from February.
+> Kernel from 2.6.21 doesn't boot, hangs up just in 10seconds -  1minute
+> after GRUB screen.
+> I have tryed different versions of gcc (4.1.1, 4.1.2, 4.2.1) to build
+> 2.6.22.8 kernel, but no results.
+> But if I disable NO_HZ option 2.6.21 is working fine for me.
+> 
+> I think this is important problem, because some of the project, Debian
+> for example,
+>  are building kernel with this options enabled (in
+> linux-image-2.6.22-1-k7 package it is enabled),
+> and some people, like me, can not use new kernels.
+> 
+> I have attached some of my PC info, hope this can help
 
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- drivers/pci/proc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+You can use the "nohz=off" kernel command line switch.  Please check if it
+works for you.
 
-diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
---- a/drivers/pci/proc.c
-+++ b/drivers/pci/proc.c
-@@ -60,7 +60,7 @@ proc_bus_pci_read(struct file *file, char __user *buf, size_t nbytes, loff_t *pp
- 	 */
- 
- 	if (capable(CAP_SYS_ADMIN))
--		size = dev->cfg_size;
-+		size = dp->size;
- 	else if (dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
- 		size = 128;
- 	else
-@@ -133,7 +133,7 @@ proc_bus_pci_write(struct file *file, const char __user *buf, size_t nbytes, lof
- 	const struct proc_dir_entry *dp = PDE(ino);
- 	struct pci_dev *dev = dp->data;
- 	int pos = *ppos;
--	int size = dev->cfg_size;
-+	int size = dp->size;
- 	int cnt;
- 
- 	if (pos >= size)
+Greetings,
+Rafael
