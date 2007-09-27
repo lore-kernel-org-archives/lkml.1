@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbXI0SZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbXI0ScF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757190AbXI0SZZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 14:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbXI0SZL
+	id S1757127AbXI0ScF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 14:32:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXI0Sby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 14:25:11 -0400
-Received: from pat.uio.no ([129.240.10.15]:53272 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753393AbXI0SZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 14:25:09 -0400
-Subject: Re: Floating Point Issue
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: mahamuni ashish <ash_lkp@yahoo.co.in>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <109515.18343.qm@web7805.mail.in.yahoo.com>
-References: <109515.18343.qm@web7805.mail.in.yahoo.com>
-Content-Type: text/plain
-Date: Thu, 27 Sep 2007 14:25:04 -0400
-Message-Id: <1190917504.6668.52.camel@heimdal.trondhjem.org>
+	Thu, 27 Sep 2007 14:31:54 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38498 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753797AbXI0Sbw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 14:31:52 -0400
+Date: Thu, 27 Sep 2007 19:37:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: Stardom SATA HSM violation
+Message-ID: <20070927193701.6230d77f@the-village.bc.nu>
+In-Reply-To: <46FB563A.80108@gmail.com>
+References: <46CFA08E.6090604@arbores.ca>
+	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>
+	<46DBCB6C.8080206@gmail.com>
+	<20070905095327.6277d054.akpm@linux-foundation.org>
+	<46DEE617.4050004@rtr.ca>
+	<46E0A253.7060803@gmail.com>
+	<46E154DE.2060602@rtr.ca>
+	<46FB563A.80108@gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-ClamAV-Virus: No
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.073)
-X-UiO-Scanned: 9E36E17998542971FFA50A149C1B95946EF35E55
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 292 total 4154258 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-27 at 12:41 +0100, mahamuni ashish wrote:
-> I have small code....
-> 
-> #include <stdio.h>
-> #include <string.h>
-> 
-> int main()
-> {
-> float f= 1256.35;
-> char ch[4];
-> 
-> printf("\n1. f : %f",f);
-> memset(ch,'\0',strlen(ch) );
-> printf("\n2. f : %f",f);
-> return 0;
-> }
-> 
-> Expected output is
-> 1. f : 1256.35
-> 2. f : 1256.35
-> 
-> But I am getting the output
-> (on windows)
-> 1. f : 1256.35
-> 2. f : 0.000000
-> 
-> (on Linux)
-> 1. f : 1256.35
-> segmentation fault
-> 
-> why?
+> I think there have been enough cases where this draining was necessary.
+>  IIRC, ata_piix was involved in those cases, right?  If so, can you
+> please submit a patch which applies this only to affected controllers?
+> I don't feel too confident about applying this to all SFF controllers.
 
-'cos 'strlen(ch)' isn't defined until you've initialised ch. If you swap
-that line out with 'memset(ch, '\0', sizeof(ch))' then it will work.
-
-Not a kernel bug, and hence not appropriate material for this list.
-
-Trond
-
+Old IDE does it on all controllers bar a couple. So we have a very good
+knowledge of what does/doesn't work. The one that needs care in old ide
+is an ordering issue where a state machine reset done first causes the
+drain of the I/O to hang.
