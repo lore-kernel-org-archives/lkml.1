@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXI0GxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbXI0GzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbXI0GxW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 02:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbXI0GxO
+	id S1754835AbXI0GzV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 02:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbXI0GzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 02:53:14 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39536 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750703AbXI0GxN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 02:53:13 -0400
-Date: Thu, 27 Sep 2007 08:53:33 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: David Newall <david@davidnewall.com>
-Cc: Christer Weinigel <christer@weinigel.se>, Al Viro <viro@ftp.linux.org.uk>,
-       Phillip Susi <psusi@cfl.rr.com>, Bill Davidsen <davidsen@tmr.com>,
-       majkls <majkls@prepere.com>, linux-kernel@vger.kernel.org
-Subject: Re: sys_chroot+sys_fchdir Fix
-Message-ID: <20070927065333.GW6800@stusta.de>
-References: <20070921191012.15a0b51b@the-village.bc.nu> <46F9752C.5080807@cfl.rr.com> <20070926002340.GL8181@ftp.linux.org.uk> <46FA35A6.1070400@davidnewall.com> <20070926212408.6662231a@zoo.weinigel.se> <46FACCE0.2070005@davidnewall.com> <20070926215521.GU6800@stusta.de> <46FAECC5.8040103@davidnewall.com> <20070927000137.GV6800@stusta.de> <46FB50ED.5000809@davidnewall.com>
+	Thu, 27 Sep 2007 02:55:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56617 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752644AbXI0GzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 02:55:08 -0400
+Date: Thu, 27 Sep 2007 08:54:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andr? Goddard Rosa <andre.goddard@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: sched-devel feedback
+Message-ID: <20070927065447.GA28697@elte.hu>
+References: <b8bf37780709261828m6f9f7318qe753d8b32055bf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46FB50ED.5000809@davidnewall.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <b8bf37780709261828m6f9f7318qe753d8b32055bf@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 04:12:53PM +0930, David Newall wrote:
-> Adrian Bunk wrote:
->> You claimed:
->>
->> <--  snip  -->
->>
->> Look, when chroot was being designed, I think they intended that even root 
->> should be unable to get out. They went so far as to say that dot-dot 
->> wouldn't let you out; and it doesn't.
->>
->> <--  snip  -->
->>
->> You were clearly saying that whom you call "they" were the people who 
->> designed chroot. And it was you who was claiming in this statement that
->> "they" said it.
->
-> You've ignored the operative phrase, "I think".
 
-So you start a paragraph with "Look, when chroot was being designed" and 
-all the contents of this paragraph only comes from your imagination and 
-contradicts the facts...
+* Andr? Goddard Rosa <andre.goddard@gmail.com> wrote:
 
-cu
-Adrian
+> Hi, Ingo , Mike and Peter!
+> 
+>     Just passing around to say that 2.6.23-rc8-sched-dev is the best 
+> scheduler ever to me. It's great for 3D games.
 
--- 
+cool! :-)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+>      http://www.openarena.ws/?files is really great with this 
+> scheduler. I played a whole match without no slowdown, smooth playing 
+> all the time. I had never played it before like this, it made a huge 
+> difference to me. Even older CFS releases and -ck did not made it 
+> sooooo smooth. It was really smooth _all_ the time.
 
+i'm wondering, in previous schedulers, under what situations did you 
+notice smoothness problems? Was the scenario in any way deterministic, 
+or just random delays that are hard to describe?
+
+Just in case you have smoothness problems in the future, a good way of 
+measuring it objectively is to enable CONFIG_SCHED_DEBUG=y and 
+CONFIG_SCHEDSTATS=y and to monitor the se.wait_max field in the 
+/proc/PID/tasks/*/sched file[s].
+
+Every time there's some ruckle or other smoothness problem, that field's 
+value should increase. (a few milliseconds up to a few dozen 
+milliseconds is fine normally - anything above 100 msecs is probably 
+less fine.) By looking at that latency field you can compare two 
+kernels. (And by echoing 0 to the sched file you can clear these stats.) 
+
+So by saying "under .23-rc8 se.wait_max was 50 msecs while in .24-rc1 it 
+increased to 250 msecs" everyone can effectively complain to us about 
+smoothness problems :-)
+
+>     The scheduler team did a really good work on this!
+> 
+> Thank you so much for this great work,
+
+you are welcome!
+
+	Ingo
