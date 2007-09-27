@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbXI0UUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbXI0U0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757821AbXI0UUf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 16:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXI0UU0
+	id S1757456AbXI0U0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 16:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbXI0U0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 16:20:26 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:20284 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754193AbXI0UUZ convert rfc822-to-8bit (ORCPT
+	Thu, 27 Sep 2007 16:26:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37250 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753996AbXI0U0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 16:20:25 -0400
-X-IronPort-AV: E=Sophos;i="4.21,204,1188802800"; 
-   d="scan'208";a="108525658"
-X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [ofa-general] [PATCH v3] iw_cxgb3: Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
-Date: Thu, 27 Sep 2007 16:19:51 -0400
-Message-ID: <C98692FD98048C41885E0B0FACD9DFB80518755A@exnane01.hq.netapp.com>
-In-Reply-To: <000101c8013a$41b374f0$a7cc180a@amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [ofa-general] [PATCH v3] iw_cxgb3: Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
-Thread-Index: AcgBNb39CdY9HAUtQUu124X5QXdNWQAAU3bQAABRR9AAAobD0A==
-References: <20070923203649.8324.64524.stgit@dell3.ogc.int><46FBF8AF.9040700@ichips.intel.com><C98692FD98048C41885E0B0FACD9DFB805187514@exnane01.hq.netapp.com> <000101c8013a$41b374f0$a7cc180a@amr.corp.intel.com>
-From: "Kanevsky, Arkady" <Arkady.Kanevsky@netapp.com>
-To: "Sean Hefty" <sean.hefty@intel.com>,
-       "Sean Hefty" <mshefty@ichips.intel.com>,
-       "Steve Wise" <swise@opengridcomputing.com>
-Cc: <netdev@vger.kernel.org>, <rdreier@cisco.com>,
-       <linux-kernel@vger.kernel.org>, <general@lists.openfabrics.org>
-X-OriginalArrivalTime: 27 Sep 2007 20:19:54.0159 (UTC) FILETIME=[C3ED13F0:01C80143]
+	Thu, 27 Sep 2007 16:26:13 -0400
+Date: Thu, 27 Sep 2007 21:26:07 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: 2.6.23-rc8-mm2: BUG near reiserfs_xattr_set
+Message-ID: <20070927202607.GA3812@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Laurent Riffard <laurent.riffard@free.fr>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	reiserfs-devel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <46FC021F.8060109@free.fr> <20070927124833.d2691813.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927124833.d2691813.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sean,
-IB aside,
-it looks like an ULP which is capable of being both RDMA aware and RDMA
-not-aware,
-like iSER and iSCSI, NFS-RDMA and NFS, SDP and sockets, 
-will be treated as two separete ULPs.
-Each has its own IP address, since there is a different IP address for
-iWARP
-port and "regular" Ethernet port. So it falls on the users of ULPs to
-"handle" it
-via DNS or some other services.
-Is this "acceptable" to users? I doubt it.
+On Thu, Sep 27, 2007 at 12:48:33PM -0700, Andrew Morton wrote:
+> >  __fput+0x124/0x1a9
+> >  fput+0x31/0x35
+> >  reiserfs_xattr_set+0x291/0x2b0 [reiserfs]
+> >  user_set+0x4c/0x57 [reiserfs]
+> >  reiserfs_setxattr+0x81/0xf1 [reiserfs]
+> >  vfs_setxattr+0x7d/0xfa
+> >  setxattr+0xb9/0xd1
+> >  sys_lsetxattr+0x4c/0x85
+> >  sysenter_past_esp+0x57/0x85
+> > 
+> > EIP: mnt_drop_write+0x5b/0x9d
+> > 
+> 
+> Hi, Dave!
 
-Recall that ULPs are going in opposite directions by having a different
-port number for RDMA aware and RDMA unaware versions of the ULP.
-This way, ULP "connection manager" handles RDMA-ness under the covers,
-while users plug an IP address for a server to connect to.
-Thanks,
+This sure looks like a result of the reiserfs xattr code beeing
+really sucky and passing a NULL vfsmount to dentry_open.
 
-Arkady Kanevsky                       email: arkady@netapp.com
-Network Appliance Inc.               phone: 781-768-5395
-1601 Trapelo Rd. - Suite 16.        Fax: 781-895-1195
-Waltham, MA 02451                   central phone: 781-768-5300
- 
-
-> -----Original Message-----
-> From: Sean Hefty [mailto:sean.hefty@intel.com] 
-> Sent: Thursday, September 27, 2007 3:12 PM
-> To: Kanevsky, Arkady; Sean Hefty; Steve Wise
-> Cc: netdev@vger.kernel.org; rdreier@cisco.com; 
-> linux-kernel@vger.kernel.org; general@lists.openfabrics.org
-> Subject: RE: [ofa-general] [PATCH v3] iw_cxgb3: 
-> Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
-> 
-> >What is the model on how client connects, say for iSCSI, when client 
-> >and server both support, iWARP and 10GbE or 1GbE, and would like to 
-> >setup "most" performant "connection" for ULP?
-> 
-> For the "most" performance connection, the ULP would use IB, 
-> and all these problems go away.  :)
-> 
-> This proposal is for each iwarp interface to have its own IP 
-> address.  Clients would need an iwarp usable address of the 
-> server and would connect using rdma_connect().  If that call 
-> (or rdma_resolve_addr/route) fails, the client could try 
-> connecting using sockets, aoi, or some other interface.  I 
-> don't see that Steve's proposal changes anything from the 
-> client's perspective.
-> 
-> - Sean
-> _______________________________________________
-> general mailing list
-> general@lists.openfabrics.org
-> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
-> 
-> To unsubscribe, please visit 
-> http://openib.org/mailman/listinfo/openib-general
-> 
+Dave will probably find a bandaid to work around this, but the
+right fix is to stop using a file struct here entirely.  If you
+look at reiserfs_xattr_set it's not actually used at all except
+for passing it to ->prepare_write and ->commit_write which then
+don't use it at all.  All that crap should be rewritten to just
+pass the dentry around.  Note that all this should not acquire
+writer counts on the vfsmount - we have done this already
+before calling into the xattr methods.
