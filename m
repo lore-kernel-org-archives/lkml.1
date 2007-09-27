@@ -1,140 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbXI0XJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbXI0XQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760132AbXI0XJj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758819AbXI0XJ3
+	id S1759859AbXI0XQy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 19:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbXI0XQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:09:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36555 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758510AbXI0XJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:09:28 -0400
-Date: Thu, 27 Sep 2007 19:08:57 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] kswapd should only wait on IO if there is IO
-Message-ID: <20070927190857.74a04166@bree.surriel.com>
-In-Reply-To: <20070927155907.a4dce0d8.akpm@linux-foundation.org>
-References: <20070927170816.055548fd@bree.surriel.com>
-	<20070927144702.a9124c7a.akpm@linux-foundation.org>
-	<20070927181325.21aae460@bree.surriel.com>
-	<20070927152121.3f5b6830.akpm@linux-foundation.org>
-	<20070927185027.1a1b4c13@bree.surriel.com>
-	<20070927155907.a4dce0d8.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Sep 2007 19:16:46 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:35659 "EHLO
+	outbound4-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753364AbXI0XQp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 19:16:45 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Thu, 27 Sep 2007 17:15:52 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: jkeating@redhat.com, "Joerg Pommnitz" <pommnitz@yahoo.com>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <ak@suse.de>
+Subject: Re: More E820 brokenness
+Message-ID: <20070927231552.GC4755@cosmic.amd.com>
+References: <46FC2BFD.6070200@zytor.com>
+ <20070927223336.GB4755@cosmic.amd.com> <46FC32FE.9070302@zytor.com>
+MIME-Version: 1.0
+In-Reply-To: <46FC32FE.9070302@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 27 Sep 2007 23:15:22.0234 (UTC)
+ FILETIME=[4725D5A0:01C8015C]
+X-WSS-ID: 6AE2E6002ZC502789-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 15:59:07 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On 27/09/07 15:47 -0700, H. Peter Anvin wrote:
+> Jordan Crouse wrote:
+> > 
+> > Breaks on the Geode - original behavior.
+> > 
+> > I think that having boot_prams.e820_entries != 0 makes the kernel
+> > assume the e820 data is correct.
+> > 
+> 
+> Okay, now I'm utterly baffled how 2.6.22 ever worked on this Geode,
+> because this, to the best of my reading, mimics the 2.6.22 behavior
+> exactly.  DID IT REALLY, and/or did you make any kind of configuration
+> changes?
 
-> And lost the changelog ;)
+I copied in a 2.6.22 kernel to see that it really did work, and it did.
+But here's the crazy part - I did a dmesg, and it looks like it
+*is* using e820 data, and it looks complete (I see the entire map - 
+including the ACPI and reserved blocks way up high).
 
-Good point.
+So apparently it was the 2.6.22 code that was buggy, but reading it,
+I don't immediately see how. 
 
-The current kswapd (and try_to_free_pages) code has an oddity where the
-code will wait on IO, even if there is no IO in flight.  This problem is
-notable especially when the system scans through many unfreeable pages,
-causing unnecessary stalls in the VM.
+Jordan
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
 
-Additionally, tasks without __GFP_FS or __GFP_IO in the direct reclaim
-path will sleep if a significant number of pages are encountered that
-should be written out.  This gives kswapd a chance to write out those
-pages, while the direct reclaim task sleeps.
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
-
-diff -up linux-2.6.22/mm/vmscan.c.wait linux-2.6.22/mm/vmscan.c
---- linux-2.6.22/mm/vmscan.c.wait	2007-09-27 18:45:57.000000000 -0400
-+++ linux-2.6.22/mm/vmscan.c	2007-09-27 18:48:43.000000000 -0400
-@@ -68,6 +68,13 @@ struct scan_control {
- 	int all_unreclaimable;
- 
- 	int order;
-+
-+	/*
-+	 * Pages that have (or should have) IO pending.  If we run into
-+	 * a lot of these, we're better off waiting a little for IO to
-+	 * finish rather than scanning more pages in the VM.
-+	 */
-+	int nr_io_pages;
- };
- 
- #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
-@@ -489,8 +496,10 @@ static unsigned long shrink_page_list(st
- 			 */
- 			if (sync_writeback == PAGEOUT_IO_SYNC && may_enter_fs)
- 				wait_on_page_writeback(page);
--			else
-+			else {
-+				sc->nr_io_pages++;
- 				goto keep_locked;
-+			}
- 		}
- 
- 		referenced = page_referenced(page, 1);
-@@ -529,8 +538,10 @@ static unsigned long shrink_page_list(st
- 		if (PageDirty(page)) {
- 			if (sc->order <= PAGE_ALLOC_COSTLY_ORDER && referenced)
- 				goto keep_locked;
--			if (!may_enter_fs)
-+			if (!may_enter_fs) {
-+				sc->nr_io_pages++;
- 				goto keep_locked;
-+			}
- 			if (!sc->may_writepage)
- 				goto keep_locked;
- 
-@@ -541,8 +552,10 @@ static unsigned long shrink_page_list(st
- 			case PAGE_ACTIVATE:
- 				goto activate_locked;
- 			case PAGE_SUCCESS:
--				if (PageWriteback(page) || PageDirty(page))
-+				if (PageWriteback(page) || PageDirty(page)) {
-+					sc->nr_io_pages++;
- 					goto keep;
-+				}
- 				/*
- 				 * A synchronous write - probably a ramdisk.  Go
- 				 * ahead and try to reclaim the page.
-@@ -1201,6 +1214,7 @@ unsigned long try_to_free_pages(struct z
- 
- 	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
- 		sc.nr_scanned = 0;
-+		sc.nr_io_pages = 0;
- 		if (!priority)
- 			disable_swap_token();
- 		nr_reclaimed += shrink_zones(priority, zones, &sc);
-@@ -1229,7 +1243,8 @@ unsigned long try_to_free_pages(struct z
- 		}
- 
- 		/* Take a nap, wait for some writeback to complete */
--		if (sc.nr_scanned && priority < DEF_PRIORITY - 2)
-+		if (sc.nr_scanned && priority < DEF_PRIORITY - 2 &&
-+				sc.nr_io_pages > sc.swap_cluster_max)
- 			congestion_wait(WRITE, HZ/10);
- 	}
- 	/* top priority shrink_caches still had more to do? don't OOM, then */
-@@ -1315,6 +1330,7 @@ loop_again:
- 		if (!priority)
- 			disable_swap_token();
- 
-+		sc.nr_io_pages = 0;
- 		all_zones_ok = 1;
- 
- 		/*
-@@ -1398,7 +1414,8 @@ loop_again:
- 		 * OK, kswapd is getting into trouble.  Take a nap, then take
- 		 * another pass across the zones.
- 		 */
--		if (total_scanned && priority < DEF_PRIORITY - 2)
-+		if (total_scanned && priority < DEF_PRIORITY - 2 &&
-+					sc.nr_io_pages > sc.swap_cluster_max)
- 			congestion_wait(WRITE, HZ/10);
- 
- 		/*
