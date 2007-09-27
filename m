@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbXI0AU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbXI0AdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbXI0AU0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 20:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbXI0AUN
+	id S1753399AbXI0AdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 20:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXI0AdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 20:20:13 -0400
-Received: from NEUROSIS.MIT.EDU ([18.95.3.133]:44917 "EHLO neurosis.jim.sh"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751855AbXI0AUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 20:20:12 -0400
-X-Greylist: delayed 1902 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Sep 2007 20:20:12 EDT
-Date: Wed, 26 Sep 2007 19:48:14 -0400
-From: Jim Paris <jim@jtan.com>
-To: AndrewL733 <AndrewL733@aol.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       samson yeung <fragmede@onepatchdown.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, bbermack@alum.mit.edu,
-       Justin Mazzola Paluska <jmp@mit.edu>
-Subject: Re: NMI error and Intel S5000PSL Motherboards
-Message-ID: <20070926234814.GA27743@jim.sh>
-References: <c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com> <20070926135229.67edd4eb.rdunlap@xenotime.net> <c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com> <46FA3092.70108@aol.com> <20070926121655.55334682@the-village.bc.nu> <46FA3092.70108@aol.com> <20070925215819.c993e2d8.rdunlap@xenotime.net> <46FA3092.70108@aol.com> <20070925195946.cef5ae9d.rdunlap@xenotime.net> <46FA3092.70108@aol.com>
+	Wed, 26 Sep 2007 20:33:09 -0400
+Received: from andromeda.dapyr.net ([206.212.254.10]:53734 "EHLO
+	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbXI0AdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 20:33:08 -0400
+From: Konrad Rzeszutek <konrad@darnok.org>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Add iSCSI iBFT support.
+Date: Wed, 26 Sep 2007 20:08:45 -0400
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
+       konradr@linux.vnet.ibm.com
+References: <20070926184652.GA16369@andromeda.dapyr.net> <20070926211057.GA3050@kroah.com>
+In-Reply-To: <20070926211057.GA3050@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070926135229.67edd4eb.rdunlap@xenotime.net> <c038f5910709261207k740ad130k151a9b0c8d8e48e0@mail.gmail.com> <20070926121655.55334682@the-village.bc.nu> <20070925215819.c993e2d8.rdunlap@xenotime.net> <20070925195946.cef5ae9d.rdunlap@xenotime.net> <46FA3092.70108@aol.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200709262008.50023.konrad@darnok.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wednesday 26 September 2007 17:10:57 Greg KH wrote:
+> On Wed, Sep 26, 2007 at 02:46:52PM -0400, Konrad Rzeszutek wrote:
+> > This patch adds a /sysfs/firmware/ibft/table binary blob which exports
+> > the iSCSI Boot Firmware Table (iBFT) structure.
+>
+> Please don't do that.  Binary files are for things that are
+> "pass-through" only, not anything that the kernel knows the structure
+> of, or cares about (like PCI config space, or firmware blobs for
+> devices.)
+>
+> Just export the individual fields of this table as individual files
+> please.
 
-> We have about 100 servers based on Intel S5000PSL-SATA motherboards. 
-> They have been running for anywhere between 1 and 10 months. For the 
-> past few months, after updating them all to the 2.6.20.15 kernel 
-> (because of a bug in the 2.6.18 kernel), we are seeing some strange NMI 
-> errors. For example:
-> 
-> Aug 29 09:02:10 master kernel: Uhhuh. NMI received for unknown reason 30.
-> Aug 29 09:02:10 master kernel: Do you have a strange power saving mode enabled?
-> Aug 29 09:02:10 master kernel: Dazed and confused, but trying to continue
+My goal was to do that in the next version of this patch. My first step was
+to get the fundamental work reviewed (and hopefully accepted) and then build 
+on top of that.
 
-I'm also working with Andrew and Samson.  It seems that the cause of
-the problem is CONFIG_PCIEAER, which was introduced after 2.6.18 and
-defaults to y.
+The exploiter of this binary file (/sys/firmware/ibft/table) is the 
+iscsi-initiator-utils package and it has a library that parses the binary 
+blob data. The thought was to get this first working (ie, 
+iscsi-initiator-utils finds /sys/firmware/ibft/table, parses it and work) and 
+then work to have the iscsi-initiator-support individual sysfs entries.
 
-With CONFIG_PCIEAER=n, scanpci works fine with no errors.  This is the
-workaround that they'll likely use for now.
+Or do you think I should skip the fundamental step and work on the next
+version of this patch that exports the data as individual data and post that
+one instead?
 
-With CONFIG_PCIEAER=y, scanpci always triggers the NMI error.  The
-option aerdriver.forceload=1 has no effect.
+>
+> thanks,
+>
+> greg k-h
 
-The related dmesg output at boot is:
 
-  Evaluate _OSC Set fails. Status = 0x0005
-  Evaluate _OSC Set fails. Status = 0x0005
-  aer_init: AER service init fails - Run ACPI _OSC fails
-  aer: probe of 0000:00:02.0:pcie01 failed with error 2
-  aer_init: AER service init fails - No ACPI _OSC support
-  aer: probe of 0000:00:03.0:pcie01 failed with error 1
-  Evaluate _OSC Set fails. Status = 0x0005
-  Evaluate _OSC Set fails. Status = 0x0005
-  aer_init: AER service init fails - Run ACPI _OSC fails
-  aer: probe of 0000:00:04.0:pcie01 failed with error 2
-  Evaluate _OSC Set fails. Status = 0x0005
-  Evaluate _OSC Set fails. Status = 0x0005
-  aer_init: AER service init fails - Run ACPI _OSC fails
-  aer: probe of 0000:00:05.0:pcie01 failed with error 2
-  Evaluate _OSC Set fails. Status = 0x0005
-  Evaluate _OSC Set fails. Status = 0x0005
-  aer_init: AER service init fails - Run ACPI _OSC fails
-  aer: probe of 0000:00:06.0:pcie01 failed with error 2
-  aer_init: AER service init fails - No ACPI _OSC support
-  aer: probe of 0000:00:07.0:pcie01 failed with error 1
-
-Full dmesg, lspci, and ACPI DSDT are available here:
-  http://jim.sh/~jim/tmp/nmi/
-
--jim
