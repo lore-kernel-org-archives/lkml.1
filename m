@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbXI0ONn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbXI0O2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758199AbXI0ONn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 10:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756639AbXI0ONa
+	id S1756479AbXI0O2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 10:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbXI0O2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 10:13:30 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48028 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755165AbXI0ON3 (ORCPT
+	Thu, 27 Sep 2007 10:28:23 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43746 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753828AbXI0O2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 10:13:29 -0400
-Date: Thu, 27 Sep 2007 15:19:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file
- without options
-Message-ID: <20070927151921.29b19abb@the-village.bc.nu>
-In-Reply-To: <20070927070118.2bd4792e@laptopd505.fenrus.org>
-References: <20070927142919.10b62f9b@the-village.bc.nu>
-	<20070927070118.2bd4792e@laptopd505.fenrus.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Sep 2007 10:28:22 -0400
+Date: Thu, 27 Sep 2007 10:28:00 -0400
+Message-Id: <200709271428.l8RES0t8002300@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: roel <12o3l@tiscali.nl>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       viro@ftp.linux.org.uk, hch@infradead.org
+Subject: Re: [PATCH 13/25] Unionfs: add un/likely conditionals on dir ops 
+In-reply-to: Your message of "Wed, 26 Sep 2007 23:40:34 +0200."
+             <46FAD1D2.8030306@tiscali.nl> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 07:01:18 -0700
-Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Thu, 27 Sep 2007 14:29:19 +0100
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+In message <46FAD1D2.8030306@tiscali.nl>, roel writes:
+> Erez Zadok wrote:
 > 
-> > The early LFS work that Linux uses favours EFBIG in various places.
-> > SuSv3 specifically uses EOVERFLOW for this as noted by Michael (Bug
-> > 7253)
-> isn't this an ABI change?
+> > @@ -194,7 +194,7 @@ int check_empty(struct dentry *dentry, struct unionfs_dir_state **namelist)
+> >  
+> >  	BUG_ON(!S_ISDIR(dentry->d_inode->i_mode));
+> >  
+> > -	if ((err = unionfs_partial_lookup(dentry)))
+> > +	if (unlikely((err = unionfs_partial_lookup(dentry))))
+> >  		goto out;
+> >  
+> >  	bstart = dbstart(dentry);
+> 
+> Is it bad to leave this assignment within the unlikely()?
 
-Its a change of a specific error return from the wrong error to the right
-one, nothing more. Fixing the returned error gives us correct behaviour
-according to the standards and other systems.
+I don't know.  Anyone?  Will un/likely "break" in the above form?
 
-Alan
+Actually, it looks like assignments within conditionals are just prohibited
+(even if you use double parentheses to shut gcc up :-).  It's not mentioned
+in the CodingStyle, but it is in scripts/checkpatch.pl.  So I'll have to
+take out all those assignments out of the conditionals anyway.  Good.  It
+makes code more readable (and besides, most modern compilers will optimize
+it just the same).
+
+Cheers,
+Erez.
