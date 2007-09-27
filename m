@@ -1,115 +1,519 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbXI0RC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbXI0RF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758145AbXI0RC2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 13:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbXI0RCU
+	id S1757577AbXI0RF5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 13:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbXI0RFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 13:02:20 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:35344 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756720AbXI0RCT (ORCPT
+	Thu, 27 Sep 2007 13:05:49 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:55943 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753753AbXI0RFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 13:02:19 -0400
-Date: Thu, 27 Sep 2007 13:01:26 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH] UML - Correctly handle skb allocation failures
-Message-ID: <20070927170126.GA6542@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Thu, 27 Sep 2007 13:05:48 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 27 Sep 2007 10:05:45 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+cc: lkml <linux-kernel@vger.kernel.org>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>, geoff@gclare.org.uk,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: Revised signalfd man-page
+In-Reply-To: <46FB9FB9.8080201@gmx.net>
+Message-ID: <Pine.LNX.4.64.0709271000420.763@alien.or.mcafeemobile.com>
+References: <46FB9FB9.8080201@gmx.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle memory allocation failures when reading packets.
+On Thu, 27 Sep 2007, Michael Kerrisk wrote:
 
-We have to read something from the host, even if we can't allocate any
-memory.  If we don't, the host side of the device may fill up and stop
-delivering interrupts because no new packets can be queued.
+> .\" Copyright (C) 2007 Michael Kerrisk <mtk.manpages@gmail.com>
+> .\" starting from a version by Davide Libenzi <davidel@xmailserver.org>
+> .\"
+> .\" This program is free software; you can redistribute it and/or modify
+> .\" it under the terms of the GNU General Public License as published by
+> .\" the Free Software Foundation; either version 2 of the License, or
+> .\" (at your option) any later version.
+> .\"
+> .\" This program is distributed in the hope that it will be useful,
+> .\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+> .\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> .\" GNU General Public License for more details.
+> .\"
+> .\" You should have received a copy of the GNU General Public License
+> .\" along with this program; if not, write to the Free Software
+> .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+> .\" MA  02111-1307  USA
+> .\"
+> .TH SIGNALFD 2 2007-09-27 Linux "Linux Programmer's Manual"
+> .SH NAME
+> signalfd \- create a file descriptor for accepting signals
+> .SH SYNOPSIS
+> .\" FIXME . This header file may well change
+> .\" FIXME . Probably _GNU_SOURCE will be required
+> .\" FIXME . May require: Link with \fI\-lrt\f
+> .B #include <sys/signalfd.h>
+> .sp
+> .BI "int signalfd(int " fd ", const sigset_t *" mask );
+> .\" Almost certainly the glibc wrapper will hide this argument:
+> .\" ", size_t " sizemask
+> .SH DESCRIPTION
+> .BR signalfd (2)
+> creates a file descriptor that can be used to accept signals
+> targeted at the caller.
+> This provides an alternative to the use of a signal handler or
+> .BR sigwaitinfo (2),
+> and has the advantage that the file descriptor may be monitored by
+> .BR select (2),
+> .BR poll (2),
+> and
+> .BR epoll (7).
+> The
+> .I mask
+> argument specifies the set of signals that the caller
+> wishes to accept via the file descriptor.
+> This argument is a signal set whose contents can be initialized
+> using the macros described in
+> .BR sigsetops (3).
+> Normally, the set of signals to be received via the
+> file descriptor should be blocked using
+> .BR sigprocmask (2),
+> to prevent the signals being handled according to their default
+> dispositions.
+> It is not possible to receive
+> .B SIGKILL
+> or
+> .B SIGSTOP
+> signals via a signalfd file descriptor;
+> these signals are silently ignored if specified in
+> .IR mask .
+> 
+> If the
+> .I fd
+> argument is \-1,
+> then the call creates a new file descriptor and associates the
+> signal set specified in
+> .I mask
+> with that descriptor.
+> If
+> .I fd
+> is not \-1,
+> then it must specify a valid existing signalfd file descriptor, and
+> .I mask
+> is used to replace the signal set associated with that descriptor.
+> 
+> .BR signalfd (2)
+> returns a file descriptor that supports the following operations:
+> .TP
+> .BR read (2)
+> If one or more of the signals specified in
+> .I mask
+> is pending for the process, then the buffer supplied to
+> .BR read (2)
+> is used to return one or more
+> .I signalfd_siginfo
+> structures (see below) that describe the signals.
+> The
+> .BR read (2)
+> returns information for as many signals as are pending and will
+> fit in the supplied buffer.
+> The buffer must be at least
+> .I "sizeof(struct signalfd_siginfo)"
+> bytes.
+> The return value of the
+> .BR read (2)
+> is the total number of bytes read.
+> .IP
+> As a consequence of the
+> .BR read (2),
+> the signals are consumed,
+> so that they are no longer pending for the process
+> (i.e., will not be caught by signal handlers,
+> and cannot be accepted using
+> .BR sigwaitinfo (2)).
+> .IP
+> If none of the signals in
+> .I mask
+> is pending for the process, then the
+> .BR read (2)
+> either blocks until one of the signals in
+> .I mask
+> is generated for the process,
+> or fails with the error
+> .B EAGAIN
+> if the file descriptor has been made non-blocking
+> (via the use of the
+> .BR fcntl (2)
+> .B F_SETFL
+> operation to set the
+> .B O_NONBLOCK
+> flag).
+> 
+> .\" FIXME Davide, what does the following mean?  How (in userspace
+> .\" terms) does a sighand structure become orphaned?
+> The
+> .BR read (2)
+> call can also return 0,
+> in case the sighand structure to which the signalfd was attached,
+> has been orphaned.
 
-A single sk_buff is allocated whenever an MTU is seen which is larger
-than any seen earlier.  This is used to read packets if there is a
-memory allocation failure.
+You can remove the five lines above, in virtue of the fact that Linus 
+merged my simplification patch.
 
-The large MTU check is done from eth_configure, which is called when a
-interface is added to the system.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/drivers/net_kern.c |   46 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
 
-Index: linux-2.6.20/arch/um/drivers/net_kern.c
-===================================================================
---- linux-2.6.20.orig/arch/um/drivers/net_kern.c	2007-09-27 12:04:34.000000000 -0400
-+++ linux-2.6.20/arch/um/drivers/net_kern.c	2007-09-27 12:57:42.000000000 -0400
-@@ -34,6 +34,45 @@ static inline void set_ether_mac(struct 
- static DEFINE_SPINLOCK(opened_lock);
- static LIST_HEAD(opened);
- 
-+/*
-+ * The drop_skb is used when we can't allocate an skb.  The
-+ * packet is read into drop_skb in order to get the data off the
-+ * connection to the host.
-+ * It is reallocated whenever a maximum packet size is seen which is
-+ * larger than any seen before.  update_drop_skb is called from
-+ * eth_configure when a new interface is added.
-+ */
-+static DEFINE_SPINLOCK(drop_lock);
-+static struct sk_buff *drop_skb;
-+static int drop_max;
-+
-+static int update_drop_skb(int max)
-+{
-+	struct sk_buff *new;
-+	int err = 0;
-+
-+	spin_lock(&drop_lock);
-+
-+	if (max <= drop_max)
-+		goto out;
-+
-+	err = -ENOMEM;
-+	new = dev_alloc_skb(max);
-+	if (new == NULL)
-+		goto out;
-+
-+	skb_put(new, max);
-+
-+	kfree_skb(drop_skb);
-+	drop_skb = new;
-+	drop_max = max;
-+	err = 0;
-+out:
-+	spin_unlock(&drop_lock);
-+
-+	return err;
-+}
-+
- static int uml_net_rx(struct net_device *dev)
- {
- 	struct uml_net_private *lp = dev->priv;
-@@ -43,6 +82,9 @@ static int uml_net_rx(struct net_device 
- 	/* If we can't allocate memory, try again next round. */
- 	skb = dev_alloc_skb(lp->max_packet);
- 	if (skb == NULL) {
-+		drop_skb->dev = dev;
-+		/* Read a packet into drop_skb and don't do anything with it. */
-+		(*lp->read)(lp->fd, drop_skb, lp);
- 		lp->stats.rx_dropped++;
- 		return 0;
- 	}
-@@ -447,6 +489,10 @@ static void eth_configure(int n, void *i
- 	dev->watchdog_timeo = (HZ >> 1);
- 	dev->irq = UM_ETH_IRQ;
- 
-+	err = update_drop_skb(lp->max_packet);
-+	if (err)
-+		goto out_undo_user_init;
-+
- 	rtnl_lock();
- 	err = register_netdevice(dev);
- 	rtnl_unlock();
+
+> .TP
+> .BR poll "(2), " select "(2) (and similar)"
+> The file descriptor is readable
+> (the
+> .BR select (2)
+> .I readfds
+> argument; the
+> .BR poll (2)
+> .B POLLIN
+> flag)
+> if one or more of the signals in
+> .I mask
+> is pending for the process.
+> .IP
+> The signalfd file descriptor also supports the other file-descriptor
+> multiplexing APIs:
+> .BR pselect (2),
+> .BR ppoll (2),
+> and
+> .BR epoll (7).
+> .TP
+> .BR close (2)
+> When the file descriptor is no longer required it should be closed.
+> When all file descriptors associated with the same signalfd object
+> have been closed, the resources for object are freed by the kernel.
+> .SS The signalfd_siginfo structure
+> The format of the
+> .I signalfd_siginfo
+> structure(s) returned by
+> .BR read (2)s
+> from a signalfd file descriptor is as follows:
+> .in +0.5i
+> .nf
+> 
+> .\" FIXME Davide, a question: why rename these fields to be
+> .\" different from their siginfo_t counterparts?  At the very least,
+> .\" it would have been nicer to use the same names with prefixes
+> .\" such as (say) "fdsi_" (thus, e.g., fdsi_signo); that would have
+> .\" made grepping both kernel and userland source code easier
+> .\" (e.g, to find instances of "si_signo" in a siginfo_t or a
+> .\" signalfd_siginfo structure), and also would have avoided
+> .\" weirdnesses like trimming "errno" down to err.
+> .\"
+
+That is fine for me. I'd like ssi_* (for Signalfd SigInfo). Ok?
+
+
+
+
+> struct signalfd_siginfo {  /* Analog in siginfo_t */
+>     uint32_t  signo;       /* si_signo */
+>     int32_t   err;         /* si_errno */
+>     int32_t   code;        /* si_code */
+>     uint32_t  pid;         /* si_pid */
+>     uint32_t  uid;         /* si_uid */
+>     int32_t   fd;          /* si_fd */
+>     uint32_t  tid;         /* si_tid */
+>     uint32_t  band;        /* si_band */
+>     uint32_t  overrun;     /* si_overrun */
+>     uint32_t  trapno;      /* si_trapno */
+> .\" trapno is unused on most (all?) arches?
+>     int32_t   status;      /* si_status */
+>     int32_t   svint;       /* si_int */
+>     uint64_t  svptr;       /* si_ptr */
+>     uint64_t  utime;       /* si_utime */
+>     uint64_t  stime;       /* si_stime */
+>     uint64_t  addr;        /* si_addr */
+>     uint28_t  pad[\fIX\fP];  /* Pad size to 128 bytes (allow space
+>                           additional fields in the future) */
+> };
+> 
+> .fi
+> .in
+> As indicated in the comments, each of the fields in this structure
+> is analogous to a similarly named field in the
+> .I siginfo_t
+> structure.
+> The
+> .I siginfo_t
+> structure is described in
+> .BR sigaction (2).
+> Not all fields in the returned
+> .I signalfd_siginfo
+> structure will be valid for a specific signal;
+> the set of valid fields can be determined from the value returned in the
+> .I code
+> field.
+> This field is the analog of the
+> .I siginfo_t
+> .I si_code
+> field; see
+> .BR sigaction (2)
+> for details.
+> .SS fork(2) semantics
+> After a
+> .BR fork (2),
+> the child inherits a copy of the signalfd file descriptor.
+> The file descriptor refers to the same underlying
+> file object as the corresponding descriptor in the parent,
+> and
+> .BR read (2)s
+> in the child will return information about signals generated
+> for the parent
+> (the process that created the object using
+> .BR signalfd (2)).
+> .SS execve(2) semantics
+> [TO BE COMPLETED]
+> .\" FIXME
+> .\" Davide, what are the intended semantics after an execve()?
+> .\" As far as I can work out, after an execve() the file descriptor
+> .\" is still available, but reads from it always return 0, even if:
+> .\"
+> .\" a) there were signals pending before the execve().
+> .\"    However, sigpending() shows the signal as pending,
+> .\"    and the signal can be accepted using sigwaitinfo().
+> .\"
+> .\" b) we generate the signal after the exec.
+> .\"
+> .\" Is this intended behavior (the "orphaned sighand" condition
+> .\" described above?)?  Is it a bug?
+> .\"
+> .SS Thread semantics
+> [TO BE COMPLETED]
+> .\" FIXME Davide, a signal can be directed to the process as
+> .\" a whole, or to a particular thread.  What are the intended
+> .\" semantics for signalfd()?  If a thread calls signalfd(),
+> .\" does the resulting file descriptor return just those
+> .\" signals directed to [the thread and the process as a whole],
+> .\" or will it also receive signals that are targeted at
+> .\" other threads in the process?
+> .SH "RETURN VALUE"
+> On success,
+> .BR signalfd ()
+> returns a signalfd file descriptor;
+> this is either a new file descriptor (if
+> .I fd
+> was \-1), or
+> .I fd
+> if
+> .I fd
+> was a valid signalfd file descriptor.
+> On error, \-1 is returned and
+> .I errno
+> is set to indicate the error.
+> .SH ERRORS
+> .TP
+> .B EBADF
+> The
+> .I fd
+> file descriptor is not a valid file descriptor.
+> .TP
+> .B EINVAL
+> .I fd
+> is not a valid signalfd file descriptor.
+> .\" or the
+> .\" .I sizemask
+> .\" argument is not equal to
+> .\" .IR sizeof(sigset_t) ;
+> .TP
+> .B EMFILE
+> The per-process limit of open file descriptors has been reached.
+> .TP
+> .B ENFILE
+> The system-wide limit on the total number of open files has been
+> reached.
+> .TP
+> .B ENODEV
+> Could not mount (internal) anonymous i-node device.
+> .TP
+> .B ENOMEM
+> There was insufficient memory to create a new signalfd file descriptor.
+> .SH VERSIONS
+> .BR signalfd (2)
+> is available on Linux since kernel 2.6.22.
+> .\" FIXME . check later to see when glibc support is provided
+> As at September 2007 (glibc 2.6), the details of the glibc interface
+> have not been finalized, so that, for example,
+> the eventual header file may be different from that shown above.
+> .\" FIXME The wrapper will almost certainly hide the sizemask
+> .\" argument, just as with pselect() and ppoll().
+> .SH CONFORMING TO
+> .BR signalfd (2)
+> is Linux specific.
+> .SH NOTES
+> The underlying Linux system call requires a third argument,
+> .IR "size_t sizemask" ,
+> which specifies the size of the
+> .I mask
+> argument.
+> The glibc
+> .BR signalfd ()
+> wrapper function provides the required value for this argument.
+> 
+> .\" FIXME Davide, are all of the details in the following
+> .\" paragraph correct?
+> A process can create multiple signalfd file descriptors.
+> This makes it possible to accept different signals
+> on different file descriptors.
+
+Yes.
+
+
+
+
+> (This may be useful if monitoring the file descriptors using
+> .BR select (2),
+> .BR poll (2),
+> or
+> .BR epoll (7):
+> the arrival of different signals will make different descriptors ready.)
+> If a signal appears in the
+> .I mask
+> of more than one of the file descriptors, then occurrences
+> of that signal can be read (once) from any one of the descriptors.
+> .SH EXAMPLE
+> The program below accepts the signals
+> .B SIGINT
+> and
+> .B SIGQUIT
+> via a signalfd file descriptor.
+> The program terminates after accepting a
+> .B SIGQUIT
+> signal.
+> The following shell session demonstrates the use of the program:
+> .in +0.5i
+> .nf
+> 
+> $ ./signalfd_demo
+> ^C                    # Control\-C generates SIGINT
+> Got SIGINT
+> ^C
+> Got SIGINT
+> ^\\                    # Control\-\\ generates SIGQUIT
+> Got SIGQUIT
+> $
+> .fi
+> .in
+> .nf
+> 
+> .\" FIXME . Check later what header file glibc uses for signalfd
+> .\" FIXME . Probably glibc will require _GNU_SOURCE to be set
+> .\"
+> .\" The commented out code here is what we currently need until
+> .\" the required stuff is in glibc
+> .\"
+> .\" #define _GNU_SOURCE
+> .\" #include <sys/syscall.h>
+> .\" #include <unistd.h>
+> .\" #include <stdint.h>
+> .\" #include <signal.h>
+> .\" #if defined(__i386__)
+> .\" #define __NR_eventfd 323
+> .\" #endif
+> .\"
+> .\" struct signalfd_siginfo {
+> .\"    uint32_t signo;     /* si_signo */
+> .\"    int32_t  err;       /* si_errno */
+> .\"    int32_t  code;      /* si_code */
+> .\"    uint32_t pid;       /* si_pid */
+> .\"    uint32_t uid;       /* si_uid */
+> .\"    int32_t  fd;        /* si_fd */
+> .\"    uint32_t tid;       /* si_fd */
+> .\"    uint32_t band;      /* si_band */
+> .\"    uint32_t overrun;   /* si_overrun */
+> .\"    uint32_t trapno;    /* si_trapno */
+> .\"    int32_t  status;    /* si_status */
+> .\"    int32_t  svint;     /* si_int */
+> .\"    uint64_t svptr;     /* si_ptr */
+> .\"    uint64_t utime;     /* si_utime */
+> .\"    uint64_t stime;     /* si_stime */
+> .\"    uint64_t addr;      /* si_addr */
+> .\"    uint8_t  __pad[48];
+> .\"};
+> .\"
+> .\"static int
+> .\"signalfd(int fd, sigset_t const *mask)
+> .\"{
+> .\"#define SIZEOF_SIG (_NSIG / 8)
+> .\"#define SIZEOF_SIGSET (SIZEOF_SIG > sizeof(sigset_t) ? \
+> .\"                       sizeof(sigset_t): SIZEOF_SIG)
+> .\"    return syscall(__NR_signalfd, fd, mask, SIZEOF_SIGSET);
+> .\"}
+> .\"
+> #include <sys/signalfd.h>       /* May yet change for glibc */
+> #include <signal.h>
+> #include <unistd.h>
+> #include <stdlib.h>
+> #include <stdio.h>
+> 
+> #define die(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
+> 
+> int
+> main(int argc, char *argv[])
+> {
+>     sigset_t mask;
+>     int sfd;
+>     struct signalfd_siginfo fdsi;
+>     ssize_t s;
+> 
+>     sigemptyset(&mask);
+>     sigaddset(&mask, SIGINT);
+>     sigaddset(&mask, SIGQUIT);
+> 
+>     /* Block signals so that they aren't handled
+>        according to their default dispositions */
+> 
+>     if (sigprocmask(SIG_BLOCK, &mask, NULL) == \-1)
+>         die("sigprocmask");
+> 
+>     sfd = signalfd(\-1, &mask);
+>     if (sfd == \-1)
+>         die("signalfd");
+> 
+>     for (;;) {
+>         s = read(sfd, &fdsi, sizeof(struct signalfd_siginfo));
+>         if (s != sizeof(struct signalfd_siginfo))
+>             die("read");
+> 
+>         if (fdsi.signo == SIGINT) {
+>             printf("Got SIGINT\\n");
+>         } else if (fdsi.signo == SIGQUIT) {
+>             printf("Got SIGQUIT\\n");
+>             exit(EXIT_SUCCESS);
+>         } else {
+>             printf("Read unexpected signal\\n");
+>         }
+>     }
+> }
+> .fi
+> .SH "SEE ALSO"
+> .BR eventfd (2),
+> .BR poll (2),
+> .BR read (2),
+> .BR select (2),
+> .BR signalfd (2),
+> .BR sigaction (2),
+> .BR sigprocmask (2),
+> .BR sigwaitinfo (2),
+> .BR timerfd (2),
+> .BR sigsetops (3),
+> .BR epoll (7),
+> .BR signal (7)
+> .\" FIXME add SEE ALSO from signal.7, signal.2, sigwaitinfo.2,
+> .\" sigaction.2 to this page
+> 
+
+
+- Davide
+
+
