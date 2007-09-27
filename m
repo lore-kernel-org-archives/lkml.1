@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbXI0QfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbXI0Qgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757629AbXI0QfS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 12:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbXI0QfH
+	id S1758425AbXI0Qgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 12:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbXI0Qgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 12:35:07 -0400
-Received: from SOKENS04e.snapon.com ([217.33.151.229]:40604 "EHLO
-	sokens04.snapon.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752491AbXI0QfF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 12:35:05 -0400
-Message-ID: <00e101c80124$32ef67a0$7502a8c0@snaponglobal.com>
-From: "Marco Tralli" <marco.tralli@snapon.com>
-To: "Juergen Beisert" <juergen127@kreuzholzen.de>,
-       <linux-kernel@vger.kernel.org>
-Cc: "Jordan Crouse" <jordan.crouse@amd.com>
-References: <00ab01c80114$e659d600$7502a8c0@snaponglobal.com> <200709271813.26103.juergen127@kreuzholzen.de>
-Subject: Re: kernel 2.6.23-rc6 hangs on Geode GX1
-Date: Thu, 27 Sep 2007 18:33:45 +0200
-Organization: SNAPON
+	Thu, 27 Sep 2007 12:36:37 -0400
+Received: from neon.samage.net ([85.17.153.66]:49972 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753683AbXI0Qgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 12:36:36 -0400
+Message-ID: <39129.81.207.0.53.1190910941.squirrel@secure.samage.net>
+In-Reply-To: <200709270900.36602.arnd@arndb.de>
+References: <46F1645D.9050406@am.sony.com>
+    <200709201538.43093.rob@landley.net>
+    <200709270900.36602.arnd@arndb.de>
+Date: Thu, 27 Sep 2007 18:35:41 +0200 (CEST)
+Subject: Re: [Announce] Linux-tiny project revival
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Cc: "Rob Landley" <rob@landley.net>,
+       "Michael Opdenacker" <michael@free-electrons.com>,
+       linux-tiny@selenic.com,
+       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
+       "linux kernel" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1807
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1896
-X-OriginalArrivalTime: 27 Sep 2007 16:35:01.0711 (UTC) FILETIME=[59CCE5F0:01C80124]
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: 0ccaee305be983877c9e38c09cbf8ec4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Juergen,
-
-> It runs stable on 5 different GX1 systems.
+On Thu, September 27, 2007 09:00, Arnd Bergmann wrote:
+> Assuming that we want to go down that road, I think you can do better with
+> more evil macro magic, by using something along the lines of
 >
-> But I do not use a standard BIOS. I'm using LinuxBIOS instead. But I'm
-also using
-> these patches.
+> #define KERN_NOTICE "<5>",
 >
-
-set_cx86_inc was one of performance trick called by geode_configure
-I didn't find any documentation about "incrementor margin" before.
-
-But since I'm running on 300MHz GX1 the default kernel is now broken for me!
-
-
-> --- linux-2.6.22.orig/arch/i386/kernel/cpu/cyrix.c
-> +++ linux-2.6.22/arch/i386/kernel/cpu/cyrix.c
-> @@ -169,7 +169,7 @@ static void __cpuinit set_cx86_inc(void)
->   setCx86(CX86_PCR1, getCx86(CX86_PCR1) | 0x02);
->   /* PCR0 -- Performance Control */
->   /* Incrementor Margin 10 */
-> - setCx86(CX86_PCR0, getCx86(CX86_PCR0) | 0x04);
-> + setCx86(CX86_PCR0, getCx86(CX86_PCR0) | 0x05); /* 300MHz CPU */
->   setCx86(CX86_CCR3, ccr3); /* disable MAPEN */
->  }
+> #define PRINTK_CONTINUED "",
 >
+>  #define printk(level, str, ...) \
+>    do { \
+>      if (sizeof(level) == 1) /* continued printk */\
+> 	actual_printk(str, __VA_ARGS__); \
+>      else if ((level[1] - '0') < CONFIG_PRINTK_DOICARE) \
+>        actual_printk(level str, __VA_ARGS__); \
+>    } while(0);
+>
+> Then you don't have to change every single printk in the kernel, but
+> only those that don't currently come with a log level. More importantly,
+> you can do the conversion without a flag day, by spreading (an empty)
+> PRINTK_CONTINUED in places that do need a printk without a log level.
 
-I will try your patch
+The problem is, how do you know whether to print a continued printk or not?
+It depends on the loglevel of the first printk.
 
-But again, if those tricks are so system dependent  I suggest to kernel
-people to let disable it in default configuration.
+So besides compile-time parsing of the source code, replacing printk with
+loglevel specific alternatives (one way or the other) seems the only option.
 
+Greetings,
 
-Marco
+Indan
+
 
