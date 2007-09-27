@@ -1,155 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbXI0OLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbXI0OLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757780AbXI0OLb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 10:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756313AbXI0OJt
+	id S1757925AbXI0OLp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 10:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbXI0OJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 27 Sep 2007 10:09:49 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36784 "EHLO mx1.suse.de"
+Received: from ns2.suse.de ([195.135.220.15]:55084 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755883AbXI0OJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755858AbXI0OJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 27 Sep 2007 10:09:44 -0400
-Message-Id: <20070927141227.363563934@X40.localnet>
+Message-Id: <20070927141228.602149616@X40.localnet>
 References: <20070927141200.820970144@X40.localnet>
 User-Agent: quilt/0.46-62.1
-Date: Thu, 27 Sep 2007 16:12:01 +0200
+Date: Thu, 27 Sep 2007 16:12:07 +0200
 From: jblunck@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, hch@lst.de, agruen@suse.de, tiwai@suse.de
-Subject: [patch 01/10] Dont touch fs_struct in drivers
-Content-Disposition: inline; filename=dont-touch-current-fs.diff
+Subject: [patch 07/10] Use path_put() in a few places instead of {mnt,d}put()
+Content-Disposition: inline; filename=nameidata-path-4.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sound drivers and the pnpbios core test for current->root != NULL. This
-test seems to be unnecessary since we always have rootfs mounted before
-initializing the drivers.
+Use path_put() in a few places instead of {mnt,d}put()
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 ---
- drivers/pnp/pnpbios/core.c     |    2 --
- sound/core/seq/seq_clientmgr.c |    4 ++--
- sound/core/seq/seq_device.c    |    3 ---
- sound/core/sound.c             |    4 ----
- sound/core/timer.c             |    2 --
- sound/ppc/daca.c               |    5 ++---
- sound/ppc/tumbler.c            |    5 ++---
- 7 files changed, 6 insertions(+), 19 deletions(-)
+ fs/afs/mntpt.c |    3 +--
+ fs/namei.c     |   15 +++++----------
+ 2 files changed, 6 insertions(+), 12 deletions(-)
 
-Index: b/drivers/pnp/pnpbios/core.c
+Index: b/fs/afs/mntpt.c
 ===================================================================
---- a/drivers/pnp/pnpbios/core.c
-+++ b/drivers/pnp/pnpbios/core.c
-@@ -105,8 +105,6 @@ static int pnp_dock_event(int dock, stru
- 	char *argv[3], **envp, *buf, *scratch;
- 	int i = 0, value;
- 
--	if (!current->fs->root)
--		return -EAGAIN;
- 	if (!(envp = kcalloc(20, sizeof(char *), GFP_KERNEL)))
- 		return -ENOMEM;
- 	if (!(buf = kzalloc(256, GFP_KERNEL))) {
-Index: b/sound/core/seq/seq_clientmgr.c
+--- a/fs/afs/mntpt.c
++++ b/fs/afs/mntpt.c
+@@ -235,8 +235,7 @@ static void *afs_mntpt_follow_link(struc
+ 	err = do_add_mount(newmnt, nd, MNT_SHRINKABLE, &afs_vfsmounts);
+ 	switch (err) {
+ 	case 0:
+-		dput(nd->path.dentry);
+-		mntput(nd->path.mnt);
++		path_put(&nd->path);
+ 		nd->path.mnt = newmnt;
+ 		nd->path.dentry = dget(newmnt->mnt_root);
+ 		schedule_delayed_work(&afs_mntpt_expiry_timer,
+Index: b/fs/namei.c
 ===================================================================
---- a/sound/core/seq/seq_clientmgr.c
-+++ b/sound/core/seq/seq_clientmgr.c
-@@ -152,13 +152,13 @@ struct snd_seq_client *snd_seq_client_us
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -610,8 +610,7 @@ static __always_inline int __do_follow_l
+ 		if (dentry->d_inode->i_op->put_link)
+ 			dentry->d_inode->i_op->put_link(dentry, nd, cookie);
  	}
- 	spin_unlock_irqrestore(&clients_lock, flags);
- #ifdef CONFIG_KMOD
--	if (!in_interrupt() && current->fs->root) {
-+	if (!in_interrupt()) {
- 		static char client_requested[SNDRV_SEQ_GLOBAL_CLIENTS];
- 		static char card_requested[SNDRV_CARDS];
- 		if (clientid < SNDRV_SEQ_GLOBAL_CLIENTS) {
- 			int idx;
- 			
--			if (! client_requested[clientid] && current->fs->root) {
-+			if (!client_requested[clientid]) {
- 				client_requested[clientid] = 1;
- 				for (idx = 0; idx < 15; idx++) {
- 					if (seq_client_load[idx] < 0)
-Index: b/sound/core/seq/seq_device.c
-===================================================================
---- a/sound/core/seq/seq_device.c
-+++ b/sound/core/seq/seq_device.c
-@@ -150,9 +150,6 @@ void snd_seq_device_load_drivers(void)
- 	if (snd_seq_in_init)
- 		return;
+-	dput(dentry);
+-	mntput(path->mnt);
++	path_put(path);
  
--	if (! current->fs->root)
--		return;
--
- 	mutex_lock(&ops_mutex);
- 	list_for_each_entry(ops, &opslist, list) {
- 		if (! (ops->driver & DRIVER_LOADED) &&
-Index: b/sound/core/sound.c
-===================================================================
---- a/sound/core/sound.c
-+++ b/sound/core/sound.c
-@@ -72,8 +72,6 @@ static DEFINE_MUTEX(sound_mutex);
-  */
- void snd_request_card(int card)
- {
--	if (! current->fs->root)
--		return;
- 	if (snd_card_locked(card))
- 		return;
- 	if (card < 0 || card >= cards_limit)
-@@ -87,8 +85,6 @@ static void snd_request_other(int minor)
- {
- 	char *str;
+ 	return error;
+ }
+@@ -1018,8 +1017,7 @@ static int fastcall link_path_walk(const
+ 		result = __link_path_walk(name, nd);
+ 	}
  
--	if (! current->fs->root)
--		return;
- 	switch (minor) {
- 	case SNDRV_MINOR_SEQUENCER:	str = "snd-seq";	break;
- 	case SNDRV_MINOR_TIMER:		str = "snd-timer";	break;
-Index: b/sound/core/timer.c
-===================================================================
---- a/sound/core/timer.c
-+++ b/sound/core/timer.c
-@@ -148,8 +148,6 @@ static struct snd_timer *snd_timer_find(
+-	dput(save.path.dentry);
+-	mntput(save.path.mnt);
++	path_put(&save.path);
  
- static void snd_timer_request(struct snd_timer_id *tid)
- {
--	if (! current->fs->root)
--		return;
- 	switch (tid->dev_class) {
- 	case SNDRV_TIMER_CLASS_GLOBAL:
- 		if (tid->device < timer_limit)
-Index: b/sound/ppc/daca.c
-===================================================================
---- a/sound/ppc/daca.c
-+++ b/sound/ppc/daca.c
-@@ -254,9 +254,8 @@ int __init snd_pmac_daca_init(struct snd
- 	struct pmac_daca *mix;
+ 	return result;
+ }
+@@ -1041,8 +1039,7 @@ static int __emul_lookup_dentry(const ch
  
- #ifdef CONFIG_KMOD
--	if (current->fs->root)
--		request_module("i2c-powermac");
--#endif /* CONFIG_KMOD */	
-+	request_module("i2c-powermac");
-+#endif /* CONFIG_KMOD */
- 
- 	mix = kzalloc(sizeof(*mix), GFP_KERNEL);
- 	if (! mix)
-Index: b/sound/ppc/tumbler.c
-===================================================================
---- a/sound/ppc/tumbler.c
-+++ b/sound/ppc/tumbler.c
-@@ -1327,9 +1327,8 @@ int __init snd_pmac_tumbler_init(struct 
- 	char *chipname;
- 
- #ifdef CONFIG_KMOD
--	if (current->fs->root)
--		request_module("i2c-powermac");
--#endif /* CONFIG_KMOD */	
-+	request_module("i2c-powermac");
-+#endif /* CONFIG_KMOD */
- 
- 	mix = kzalloc(sizeof(*mix), GFP_KERNEL);
- 	if (! mix)
+ 	if (!nd->path.dentry->d_inode ||
+ 	    S_ISDIR(nd->path.dentry->d_inode->i_mode)) {
+-		struct dentry *old_dentry = nd->path.dentry;
+-		struct vfsmount *old_mnt = nd->path.mnt;
++		struct path old_path = nd->path;
+ 		struct qstr last = nd->last;
+ 		int last_type = nd->last_type;
+ 		struct fs_struct *fs = current->fs;
+@@ -1058,14 +1055,12 @@ static int __emul_lookup_dentry(const ch
+ 		read_unlock(&fs->lock);
+ 		if (path_walk(name, nd) == 0) {
+ 			if (nd->path.dentry->d_inode) {
+-				dput(old_dentry);
+-				mntput(old_mnt);
++				path_put(&old_path);
+ 				return 1;
+ 			}
+ 			path_put(&nd->path);
+ 		}
+-		nd->path.dentry = old_dentry;
+-		nd->path.mnt = old_mnt;
++		nd->path = old_path;
+ 		nd->last = last;
+ 		nd->last_type = last_type;
+ 	}
 
 -- 
 
