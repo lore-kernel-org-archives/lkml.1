@@ -1,104 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbXI0Cag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbXI0Cxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438AbXI0Cag (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Sep 2007 22:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbXI0Ca2
+	id S1753046AbXI0Cxl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Sep 2007 22:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbXI0Cxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Sep 2007 22:30:28 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:58809 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750715AbXI0Ca1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Sep 2007 22:30:27 -0400
-Date: Wed, 26 Sep 2007 19:30:24 -0700
-From: sukadev@us.ibm.com
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 1/5] The config option itself
-Message-ID: <20070927023024.GA24004@us.ibm.com>
-References: <46FA7D4D.8040808@openvz.org> <46FA7E20.80207@openvz.org> <20070926163432.GA23435@sergelap.austin.ibm.com> <20070926170621.GB23435@sergelap.austin.ibm.com>
+	Wed, 26 Sep 2007 22:53:33 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55643 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbXI0Cxc (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Sep 2007 22:53:32 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: mgross@linux.intel.com
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] QoS params patch
+In-Reply-To: Your message of "Wed, 26 Sep 2007 17:40:20 PDT."
+             <20070927004020.GB29906@linux.intel.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070926223712.GA22029@linux.intel.com> <20070926224026.GA23218@linux.intel.com> <20070926164159.3b43479b.randy.dunlap@oracle.com>
+            <20070927004020.GB29906@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070926170621.GB23435@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Content-Type: multipart/signed; boundary="==_Exmh_1190861583_20625P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Sep 2007 22:53:03 -0400
+Message-ID: <22087.1190861583@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn [serue@us.ibm.com] wrote:
-| Quoting Serge E. Hallyn (serue@us.ibm.com):
-| > Quoting Pavel Emelyanov (xemul@openvz.org):
-| > > The option is called NAMESPACES. It can be selectable only
-| > > if EMBEDDED is chosen (this was Eric's requisition). When
-| > > the EMBEDDED is off namespaces will be on automatically.
-| > > 
-| > > One more option (NAMESPACES_EXPERIMENTAL) was added by 
-| > > Serge's request to move there all the namespaces that are 
-| > > not finished yet. Currently only the user and the network
-| > > namespaces are such.
-| > > 
-| > > Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-| > > 
-| > > ---
-| > > 
-| > > diff --git a/init/Kconfig b/init/Kconfig
-| > > index 684ccfb..05a71d7 100644
-| > > --- a/init/Kconfig
-| > > +++ b/init/Kconfig
-| > > @@ -369,6 +360,23 @@ config RELAY
-| > > 
-| > >  	  If unsure, say N.
-| > > 
-| > > +config NAMESPACES
-| > > +	bool "The namespaces support" if EMBEDDED
-| > > +	default !EMBEDDED
-| > > +	help
-| > > +	  Provides the way to make tasks work with different objects using
-| > > +	  the same id. For example same IPC id may refer to different objects
-| > > +	  or same user id or pid may refer to different tasks when used in
-| > > +	  different namespaces.
-| > > +
-| > > +config NAMESPACES_EXPERIMENTAL
-| > > +	bool "Add the experimantal namespaces support" if EMBEDDED
-| > 
-| > Hi Pavel,
-| > 
-| > Overall this patchset looks good.
-| > 
-| > However the NAMESPACES_EXPERIMENTAL option should not have the
-| > 'if EMBEDDED', right?  This is about EXPERIMENTAL, not about
-| > EMBEDDED, unlike the plain NAMESPACES option.
-| > 
-| > -serge
-| 
-| Actually that doesn't seem to work either.  Even though
-| SECURITY_NAMESPACES=y, the config system seems to infer that
-| since NAMESPACES is not user-selectable, NAMESPACES_EXPERIMENTAL
-| shouldn't be either.  So we end up with NAMESPACES_EXPERIMENTAL
-| being on and not un-selectable if !EMBEDDED.
+--==_Exmh_1190861583_20625P
+Content-Type: text/plain; charset=us-ascii
 
-Yes. Given that NAMESPACES depends on EMBEDDED, NAMESPACES_EXPERIMENTAL
-can simply depend on NAMESPACES and EXPERIMENTAL with a default of N.
+On Wed, 26 Sep 2007 17:40:20 PDT, Mark Gross said:
+(others here are probably better at spotting leaks and races than I am,
+so I'm skipping those and picking other nits. ;)
 
-BTW, does the position of 'config NAMESPACES' in init/Kconfig file
-matter ?  If it is dependent on EMBEDDED, should it not come later
-in the file, after 'config EMBEDDED' ?
+> --- linux-2.6.23-rc8/kernel/Makefile	2007-09-26 13:54:54.000000000 -0700
+> +++ linux-2.6.23-rc8-qos/kernel/Makefile	2007-09-26 14:06:38.000000000 -
+0700
+> @@ -9,7 +9,7 @@
+>  	    rcupdate.o extable.o params.o posix-timers.o \
+>  	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+>  	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o \
+> -	    utsname.o
+> +	    utsname.o qos_params.o
 
-| 
-| > > +	depends on NAMESPACES && EXPERIMENTAL
-| > > +	default !EMBEDDED
-| > > +	help
-| > > +	  Also include the support for the namespaces that are not fnished
-| > > +	  or well developed yet
-| > > +
-| > >  config BLK_DEV_INITRD
-| > >  	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
-| > >  	depends on BROKEN || !FRV
-| _______________________________________________
-| Containers mailing list
-| Containers@lists.linux-foundation.org
-| https://lists.linux-foundation.org/mailman/listinfo/containers
+So I don't get a choice in the matter if I will be dragging this thing
+around in my kernel, even if I have no intention of using the functionality?
+
+> + * This QoS design is best effort based.  Dependents register their QoS needs.
+> + * Watchers register to keep track of the current QoS needs of the system.
+> + *
+> + * There are 3 basic classes of QoS parameter: latency, timeout, throughput
+> + * each have defined units:
+> + * latency: usec
+> + * timeout: usec <-- currently not used.
+> + * throughput: kbs (kilo byte / sec)
+
+It's unclear whether these are registering a differing QoS request for each
+process/container/whatever that asks for one, or if they're global across the
+system.  Also, even though it's "best effort", it would be good to document
+what the failure mode is if we get conflicting requests, or an overcommit
+situation - do new requests get refused, or allowed and ignored, or allowed
+and only sometimes fulfilled.  For instance, assume a gigabit ethernet,
+and 3 processes ask for 400 mbits/sec each - who wins, who gets part of what
+they asked for, and who loses and gets starved?
+
+> + * User mode requirements on a QOS parameter register themselves to the
+> + * subsystem by opening the device node /dev/... and writing there request to
+> + * the node.  As long as the process holds a file handle open to the node the
+
+/dev?  What /dev entry do you use for a network interface?  Should this
+be a configfs creature instead, or maybe something else?
+
+> +/* static helper functions */
+> +static s32 max_compare(s32 v1, s32 v2)
+
+Blech.  Is it time for the yearly stamp-out-reinvention-of-max() already?
+The use of pointer functions is interesting, but I have to wonder if there's
+not a better way...
+
+> +#define PID_NAME_LEN sizeof("process_1234567890")
+> +static char name[PID_NAME_LEN];
+
+And then you just pass a pointer to this and kstrdup() it.  Why not kmalloc()
+the space initially and just 'dep->name = name;' and be done with it?
+
+General nit - why qos_power_*, when none of the supported QoS parameters
+seem to be power-related?
+
+--==_Exmh_1190861583_20625P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG+xsPcC3lWbTT17ARAm99AKCI9ho8QW3aS3is+4yl5EBqk6XUOQCg938b
+C4qS3b6jAm1mE95snX8ANVQ=
+=JNhG
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1190861583_20625P--
