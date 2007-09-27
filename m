@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbXI0SAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbXI0SEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758048AbXI0SAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 14:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbXI0SAN
+	id S1757605AbXI0SEz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 14:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbXI0SEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 14:00:13 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:26161 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756115AbXI0SAL (ORCPT
+	Thu, 27 Sep 2007 14:04:46 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:39658 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbXI0SEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 14:00:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=nhE80ysZT4F121chuzsZ2s6lnupdP4XTwO2B37dUYXUBDwnpTGg1LP4z/5e1xGLI0j4ZCPimfuxQ+GU1+a3HyzN7WhTkU449FBWT3/sYgaPUMyqf2NJVC1IirLjCB0mv13z33lpOh1P9JCizDjMUy3IV8dVU0pcj7SLwEVhXF08=
-Message-ID: <43e72e890709271100n39f16c18x723dc7a85d418666@mail.gmail.com>
-Date: Thu, 27 Sep 2007 14:00:09 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: linux-wireless <linux-wireless@vger.kernel.org>
-Subject: New 'Changes-licensed-under' tag introduced for Linux-wireless
-Cc: "linux kernel" <linux-kernel@vger.kernel.org>
+	Thu, 27 Sep 2007 14:04:45 -0400
+Date: Thu, 27 Sep 2007 10:59:17 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file
+	without options
+Message-ID: <20070927175917.GB8339@kroah.com>
+References: <20070927142919.10b62f9b@the-village.bc.nu> <20070927070118.2bd4792e@laptopd505.fenrus.org> <20070927151921.29b19abb@the-village.bc.nu> <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu> <20070927155902.GA6450@thunk.org> <20070927102343.1a113ccc.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070927102343.1a113ccc.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Our guidelines for patches [1] for Linux-wireless has been updated.
-One section asks Linux-wireless developers to subscribe to the patch
-guideline wiki page (section 2) and another which introduces the new
-'Changes-licensed-under' (section 10).
+On Thu, Sep 27, 2007 at 10:23:43AM -0700, Andrew Morton wrote:
+> On Thu, 27 Sep 2007 11:59:02 -0400 Theodore Tso <tytso@mit.edu> wrote:
+> 
+> > On Thu, Sep 27, 2007 at 04:19:12PM +0100, Alan Cox wrote:
+> > > There are real things to worry about - sysfs, sysfs, sysfs, ... and all
+> > > the other crap which is continually breaking stuff, not spec compliance
+> > > corrections that don't break things but move us into compliance with the
+> > > standard
+> > 
+> > I've got to agree with Alan, the sysfs/udev breakages that we've done
+> > are far more significant
 
-Here I'll cover the new 'Changes-licensed-under' tag but please refer
-to the link and subscribe to the page for the complete details and for
-further changes.
+I'm sorry, have I missed a breakage lately?  I don't know of one in over
+a year that has not been fixed.  Do you?
 
---
+> > , and the fact that we continue to expose internal data structures
+> > via sysfs is a gaping open pit is far more likely to cause any kind
+> > of problems than changing an error return.
 
-Based on the new guidelines posted by the SFLC on ''Maintaining
-Permissive-Licensed Files in a GPL-Licensed Project: Guidelines for
-Developers'' [2], specifically section 5, we are introducing a new tag
-for use with patches which deal with files licensed under permissive
-licenses (BSD, ISC) on Linux wireless in our larger GPL project, the
-Linux kernel. The tag is Changes-licensed-under and can be used by
-developers to clarify the intended license for their patch on
-permissive licensed files. It is clear that not all changes qualify a
-patch author for Copyright but a lot of patches do qualify an author
-for copyright. If you want crystal clear details of what constitutes
-as a copyrightable change, at least within the US and the EU, you can
-refer to SFLC's ''Originality Requirements under U.S. and E.U.
-Copyright Law'' [3].
+Come on now, I'm _very_ tired of this kind of discussion.  Please go
+read the documentation on how to _use_ sysfs from userspace in such a
+way that you can properly access these data structures so that no
+breakage occurs.
 
-Although some developers have a practice of implying their patches for
-a permissive licensed file abides by the respective permissive license
-of the file being patched, and although some changes are obviously not
-copyrightable, we would like to ''err on the side of caution'', take
-the advice from SFLC, and introduce Changes-licensed-under in order to
-help the BSD family reap benefits of our contributions to permissive
-licensed files.
+And if you want to propose some other kind of alternative to exporting
+this kind of _needed_ information to userspace, in a simple and
+easy-to-use manner, please do so.  Until then, stop complaining
+unnecessarily.
 
-The Changes-licensed-under tag should be put before the Signed-off-by
-tag. Since this tag is used to cover changes under permissive licenses
-example of possible licenses are 3-Clause-BSD, and ISC. If you are
-making changes to multiple permissive licensed files then please
-specify which license covers what files.
+> Funny you should mention that.  I was staring in astonishment at the
+> pending sysfs patch pile last night.  Forty syfs patches and twenty-odd
+> patches against driver core and the kobject layer.
 
---
+And _none_ of them change any userspace interaction.  Well, ok, the
+block one can, if the CONFIG_SYSFS_DEPRECATED is disabled, but that's
+not going into 2.6.24 as I stated in my status report.
 
-For examples of using this tag please refer to the guidelines.
+> That's a huge amount of churn for a core piece of kernel infrastructure
+> which has been there for four or five years.  Not a good sign.  I mean,
+> it's not as if, say, the CPU scheduler guys keep on rewriting all their
+> junk.
 
-[1] http://linuxwireless.org/en/developers/SubmittingPatches
-[2] http://www.softwarefreedom.org/resources/2007/gpl-non-gpl-collaboration.html
-[3] http://www.softwarefreedom.org/resources/2007/originality-requirements.html
+The sysfs changes are almost all due to the need for the
+containers/vserver/whatever people to be able to see different views of
+sysfs depending on the user/container.  That is a radical change that
+was never designed for in the beginning.  The other changes that Tejun
+has made have actually cleaned up the code and made it simpler to use
+and more robust and fixed bugs.
 
-  Luis
+Same thing goes for the driver core changes.  We are cleaning things up,
+fixing bugs that have been found when the driver core has been used in
+ways that we never originally anticipated.  We are also trying to make
+it easier to use, and simpler overall, as the original design was quite
+half-hazard at best in numerous places (kset/subsystem/ktype anyone?)
+
+So these aren't being done just because we like to break things, we are
+trying to make things better, and fix real bugs here.
+
+thanks,
+
+greg k-h
