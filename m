@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760374AbXI0XZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760643AbXI0XZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760374AbXI0XZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbXI0XZP
+	id S1760643AbXI0XZl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 19:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759473AbXI0XZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:25:15 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:51053 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754108AbXI0XZN (ORCPT
+	Thu, 27 Sep 2007 19:25:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51721 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759365AbXI0XZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:25:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=sCseJfM0CxrItT0i5pKM2pRQWY/13ITIXfLvQzUkYWU99McOGXka9WB2pUoYnrRY7HZIi+LA8oeH1YZtw21VCdSTZC8HHbQ08H//HGGmld6dlR3wjsq9LwS5LvpwyZkF//xMTJ3rPK5njcsTeIuLSETbUqJFEKbkUTb9kzuiE5c=
-Message-ID: <46FC1104.8080105@gmail.com>
-Date: Thu, 27 Sep 2007 13:22:28 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 27 Sep 2007 19:25:19 -0400
+Date: Thu, 27 Sep 2007 16:11:10 -0700
+From: Greg KH <greg@kroah.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file
+	without options
+Message-ID: <20070927231110.GB869@kroah.com>
+References: <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu> <20070927155902.GA6450@thunk.org> <20070927102343.1a113ccc.akpm@linux-foundation.org> <20070927175917.GB8339@kroah.com> <20070927183742.GA23734@thunk.org> <20070927213445.GA7857@kroah.com> <0A83B4BA-9D5E-4003-AE58-8ED0B4E1243C@mac.com>
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
-References: <64bb37e0709261326h4890a07fx60c7d6772e4e63c4@mail.gmail.com>	 <46FB3793.9060607@gmail.com> <46FB3843.2030708@gmail.com>	 <64bb37e0709262314x1b0100d8lfe34327db6b9bec8@mail.gmail.com>	 <46FB4CB3.3090004@garzik.org> <64bb37e0709271034h72b5eb9fy3aa7980cbc483f4f@mail.gmail.com>
-In-Reply-To: <64bb37e0709271034h72b5eb9fy3aa7980cbc483f4f@mail.gmail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0A83B4BA-9D5E-4003-AE58-8ED0B4E1243C@mac.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Torsten Kaiser wrote:
-> Known good is for me 2.6.23-rc3-mm1, the first known bad is 2.6.23-rc4-mm1.
-> I will try to look at the diff between these revisions some more, but
-> the change in sata_sil24.c looked like a perfect match for the
-> symptoms I was seeing.
+On Thu, Sep 27, 2007 at 06:27:48PM -0400, Kyle Moffett wrote:
+> On Sep 27, 2007, at 17:34:45, Greg KH wrote:
+>> On Thu, Sep 27, 2007 at 02:37:42PM -0400, Theodore Tso wrote:
+>>> That fact that sysfs is all laid out in a directory, but for which some 
+>>> directories/symlinks are OK to use, and some are NOT OK to use --- is why 
+>>> I call the sysfs interface "an open pit".
+>>
+>> And because of the original design mistakes, we have only been able to 
+>> change things for the better in a slow manner.  We have had userspace 
+>> programs fixed up for _years_ before we are able to make the corresponding 
+>> changes in the kernel, so as to not break the distros that are slow to 
+>> upgrade packages and kernels (like Debian.)
+>
+> Hey!  No poking fingers at Debian here; it's been *MUCH* improved lately.  
 
-I think the first thing to do here is to verify 2.6.23-rc3-mm1 still
-works fine and my previous debug patch is pretty much meaningless if
-address initialization failure isn't the cause.
+Heh, sorry, but Debian in the past had a lot of problems in this area.
+It's good to know that this is no longer a issue :)
 
-Thanks.
+thanks,
 
--- 
-tejun
-
+greg k-h
