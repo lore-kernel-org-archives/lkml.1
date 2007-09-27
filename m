@@ -1,51 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbXI0XeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760367AbXI0XeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760194AbXI0XeL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759036AbXI0Xd6
+	id S1760367AbXI0XeZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 19:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760169AbXI0XeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:33:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:20020 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757652AbXI0Xd5 (ORCPT
+	Thu, 27 Sep 2007 19:34:10 -0400
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:40008 "EHLO
+	outbound1-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760028AbXI0XeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:33:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=MG5DEo3eDurEPmwmeSPmcK48AYDgegtPpX6zJ8PgI+BT65Zdgcd448O6aMh9CJ83FaobKmXSYtYSFs9YFq7vsKHP8U59p9aR4E9g5YNiP0ur2PZDHPqeb8nwhQ0ZFTZpTv9xHQjPfiRZmP5jQ2/NMrAWj8ly24Ek5GyQ+Rdcy0o=
-Message-ID: <46FC3D7D.90009@gmail.com>
-Date: Thu, 27 Sep 2007 16:32:13 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 27 Sep 2007 19:34:08 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Thu, 27 Sep 2007 17:34:08 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: jkeating@redhat.com, "Joerg Pommnitz" <pommnitz@yahoo.com>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <ak@suse.de>
+Subject: Re: More E820 brokenness
+Message-ID: <20070927233408.GD4755@cosmic.amd.com>
+References: <46FC2BFD.6070200@zytor.com>
+ <20070927223336.GB4755@cosmic.amd.com> <46FC32FE.9070302@zytor.com>
+ <20070927231552.GC4755@cosmic.amd.com> <46FC3C5A.2010902@zytor.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
-       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: Stardom SATA HSM violation
-References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com>	<20070905095327.6277d054.akpm@linux-foundation.org>	<46DEE617.4050004@rtr.ca>	<46E0A253.7060803@gmail.com>	<46E154DE.2060602@rtr.ca>	<46FB563A.80108@gmail.com> <20070927193701.6230d77f@the-village.bc.nu>
-In-Reply-To: <20070927193701.6230d77f@the-village.bc.nu>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <46FC3C5A.2010902@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 27 Sep 2007 23:33:38.0656 (UTC)
+ FILETIME=[D4AA8E00:01C8015E]
+X-WSS-ID: 6AE2E2692ZC503912-02-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> I think there have been enough cases where this draining was necessary.
->>  IIRC, ata_piix was involved in those cases, right?  If so, can you
->> please submit a patch which applies this only to affected controllers?
->> I don't feel too confident about applying this to all SFF controllers.
+On 27/09/07 16:27 -0700, H. Peter Anvin wrote:
+> Jordan Crouse wrote:
+> > On 27/09/07 15:47 -0700, H. Peter Anvin wrote:
+> >> Jordan Crouse wrote:
+> >>> Breaks on the Geode - original behavior.
+> >>>
+> >>> I think that having boot_prams.e820_entries != 0 makes the kernel
+> >>> assume the e820 data is correct.
+> >>>
+> >> Okay, now I'm utterly baffled how 2.6.22 ever worked on this Geode,
+> >> because this, to the best of my reading, mimics the 2.6.22 behavior
+> >> exactly.  DID IT REALLY, and/or did you make any kind of configuration
+> >> changes?
+> > 
+> > I copied in a 2.6.22 kernel to see that it really did work, and it did.
+> > But here's the crazy part - I did a dmesg, and it looks like it
+> > *is* using e820 data, and it looks complete (I see the entire map - 
+> > including the ACPI and reserved blocks way up high).
+> > 
+> > So apparently it was the 2.6.22 code that was buggy, but reading it,
+> > I don't immediately see how. 
+> > 
 > 
-> Old IDE does it on all controllers bar a couple. So we have a very good
-> knowledge of what does/doesn't work. The one that needs care in old ide
-> is an ordering issue where a state machine reset done first causes the
-> drain of the I/O to hang.
+> Oh bugger, looks like this one might be genuinely my fault after all.
+> The ID check in the new code is buggy.
+> 
+> Can you please test this revised patch out (against current -git)?
 
-Hmmm... So, do we apply draining to all PATA?  Or is ata_piix SATA
-affected too?
+> 	-hpa
+> 
+> 
+> 
+
+> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
+> index bccaa1c..84939b7 100644
+> --- a/arch/i386/boot/memory.c
+> +++ b/arch/i386/boot/memory.c
+> @@ -34,17 +34,7 @@ static int detect_memory_e820(void)
+>  		      "=m" (*desc)
+>  		    : "D" (desc), "a" (0xe820));
+>  
+> -		/* Some BIOSes stop returning SMAP in the middle of
+> -		   the search loop.  We don't know exactly how the BIOS
+> -		   screwed up the map at that point, we might have a
+> -		   partial map, the full map, or complete garbage, so
+> -		   just return failure. */
+> -		if (id != SMAP) {
+> -			count = 0;
+> -			break;
+> -		}
+> -
+> -		if (err)
+> +		if (id != SMAP || err)
+>  			break;
+>  
+>  		count++;
+
+
+That looks the same as the previous patch you sent?
+
+Jordan
 
 -- 
-tejun
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
+
