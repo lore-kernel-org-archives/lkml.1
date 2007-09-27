@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760268AbXI0WRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbXI0WSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760268AbXI0WRf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 18:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbXI0WR0
+	id S1758762AbXI0WSA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 18:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758664AbXI0WRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 18:17:26 -0400
-Received: from styx.suse.cz ([82.119.242.94]:35836 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757326AbXI0WRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 18:17:25 -0400
-Date: Fri, 28 Sep 2007 00:17:16 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: apw@shadowen.org, vagabon.xyz@gmail.com, linux-kernel@vger.kernel.org,
-       kamalesh@linux.vnet.ibm.com
-Subject: Re: 2.6.23-rc8-mm1 -- powerpc link failure
-In-Reply-To: <20070927151317.67cac358.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0709280015260.7567@jikos.suse.cz>
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org>
- <20070925134653.GB8447@shadowen.org> <Pine.LNX.4.64.0709251715530.7567@jikos.suse.cz>
- <20070927120308.GJ2213@shadowen.org> <Pine.LNX.4.64.0709271408170.7567@jikos.suse.cz>
- <20070927151317.67cac358.akpm@linux-foundation.org>
+	Thu, 27 Sep 2007 18:17:50 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39080 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758497AbXI0WRt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 18:17:49 -0400
+Message-ID: <46FC2BFD.6070200@zytor.com>
+Date: Thu, 27 Sep 2007 15:17:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: jkeating@redhat.com, Joerg Pommnitz <pommnitz@yahoo.com>,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Chuck Ebbert <cebbert@redhat.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: More E820 brokenness
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------050404080908040209060500"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007, Andrew Morton wrote:
+This is a multi-part message in MIME format.
+--------------050404080908040209060500
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-> > +extern void arch_randomize_brk(void);
-> >  #include "../../../fs/binfmt_elf.c" 
-> Is this sinful extern-decl-in-C acually needed?
+As luck would have it, it's not just an obscure Geode system which has a
+broken E820 implementation.  Today I received a bug report about a Dell
+system (XPS M1330) with broken E820.
 
-Some time passed since I have written the patch, but I remember that this 
-was needed, otherwise under some circumstances the build failed, but I 
-don't remember details ... I will try to look at it more in a while.
+Unfortunately, the workaround for the Geode breaks this system, because
+x86-64 doesn't fall back to the e801/88 information like the i386 kernel
+does.
 
-But it definitely was needed to work with that horrible 
-include-huge-c-file-from-another-one.
+I wonder if the relevant people could test out this patch to see how it
+works on their respective system.  This patch reverts to 2.6.23-rc8
+behaviour of simply truncating the map, but still makes e801/88 info
+available to the kernel; this hopefully should match 2.6.22 behaviour.
 
-Thanks,
+I want to emphasize that this is seriously broken.  Using a partial e820
+map could have disastrous results, since the kernel will have partial
+memory map information and not know about reserved areas, etc.  Part of
+me feels that the right thing to do is what the current git kernel does
+-- either fall back to e801, or stop and error.
 
--- 
-Jiri Kosina
-SUSE Labs
+(Andi: I would particularly appreciate your opinion on this issue.)
+
+	-hpa
+
+--------------050404080908040209060500
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="diff"
+
+ZGlmZiAtLWdpdCBhL2FyY2gvaTM4Ni9ib290L21lbW9yeS5jIGIvYXJjaC9pMzg2L2Jvb3Qv
+bWVtb3J5LmMKaW5kZXggYmNjYWExYy4uODQ5MzliNyAxMDA2NDQKLS0tIGEvYXJjaC9pMzg2
+L2Jvb3QvbWVtb3J5LmMKKysrIGIvYXJjaC9pMzg2L2Jvb3QvbWVtb3J5LmMKQEAgLTM0LDE3
+ICszNCw3IEBAIHN0YXRpYyBpbnQgZGV0ZWN0X21lbW9yeV9lODIwKHZvaWQpCiAJCSAgICAg
+ICI9bSIgKCpkZXNjKQogCQkgICAgOiAiRCIgKGRlc2MpLCAiYSIgKDB4ZTgyMCkpOwogCi0J
+CS8qIFNvbWUgQklPU2VzIHN0b3AgcmV0dXJuaW5nIFNNQVAgaW4gdGhlIG1pZGRsZSBvZgot
+CQkgICB0aGUgc2VhcmNoIGxvb3AuICBXZSBkb24ndCBrbm93IGV4YWN0bHkgaG93IHRoZSBC
+SU9TCi0JCSAgIHNjcmV3ZWQgdXAgdGhlIG1hcCBhdCB0aGF0IHBvaW50LCB3ZSBtaWdodCBo
+YXZlIGEKLQkJICAgcGFydGlhbCBtYXAsIHRoZSBmdWxsIG1hcCwgb3IgY29tcGxldGUgZ2Fy
+YmFnZSwgc28KLQkJICAganVzdCByZXR1cm4gZmFpbHVyZS4gKi8KLQkJaWYgKGlkICE9IFNN
+QVApIHsKLQkJCWNvdW50ID0gMDsKLQkJCWJyZWFrOwotCQl9Ci0KLQkJaWYgKGVycikKKwkJ
+aWYgKGlkICE9IFNNQVAgfHwgZXJyKQogCQkJYnJlYWs7CiAKIAkJY291bnQrKzsK
+--------------050404080908040209060500--
