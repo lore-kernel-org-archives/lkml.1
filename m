@@ -1,93 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbXI0Nbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbXI0Nme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbXI0Nbw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 09:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbXI0Nbp
+	id S1756230AbXI0Nme (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 09:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbXI0Nm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 09:31:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38693 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754221AbXI0Nbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 09:31:44 -0400
-Date: Thu, 27 Sep 2007 15:31:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: David Schwartz <davids@webmaster.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Michlmayr <tbm@cyrius.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Network slowdown due to CFS
-Message-ID: <20070927133123.GA6901@elte.hu>
-References: <20070926133138.GA23187@elte.hu> <20070927093002.GA2431@ff.dom.local> <20070927094603.GA32469@elte.hu> <20070927122746.GB2431@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070927122746.GB2431@ff.dom.local>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 27 Sep 2007 09:42:26 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:55501 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755164AbXI0NmZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 09:42:25 -0400
+From: "Jose R. Santos" <jrs@us.ibm.com>
+Date: Thu, 27 Sep 2007 08:39:06 -0500
+Subject: [PATCH] JBD2: debug code cleanup.
+To: akpm@linux-foundation.org
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-Id: <20070927133906.11422.12001.stgit@toolssf2>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.10
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jose R. Santos <jrs@us.ibm.com>
 
-* Jarek Poplawski <jarkao2@o2.pl> wrote:
+JBD2: debug code cleanup.
 
-> On Thu, Sep 27, 2007 at 11:46:03AM +0200, Ingo Molnar wrote:
-[...]
-> > What you missed is that there is no such thing as "predictable yield 
-> > behavior" for anything but SCHED_FIFO/RR tasks (for which tasks CFS does 
-> > keep the behavior). Please read this thread on lkml for a more detailed 
-> > background:
-> > 
-> >    CFS: some bad numbers with Java/database threading [FIXED]
-> > 
-> >    http://lkml.org/lkml/2007/9/19/357
-> >    http://lkml.org/lkml/2007/9/19/328
-> > 
-> > in short: the yield implementation was tied to the O(1) scheduler, so 
-> > the only way to have the exact same behavior would be to have the exact 
-> > same core scheduler again. If what you said was true we would not be 
-> > able to change the scheduler, ever. For something as vaguely defined of 
-> > an API as yield, there's just no way to have a different core scheduler 
-> > and still behave the same way.
-> > 
-> > So _generally_ i'd agree with you that normally we want to be bug for 
-> > bug compatible, but in this specific (iperf) case there's just no point 
-> > in preserving behavior that papers over this _clearly_ broken user-space 
-> > app/thread locking (for which now two fixes exist already, plus a third 
-> > fix is the twiddling of that sysctl).
-> > 
-> 
-> OK, but let's forget about fixing iperf. Probably I got this wrong, 
-> but I've thought this "bad" iperf patch was tested on a few nixes and 
-> linux was the most different one. The main point is: even if there is 
-> no standard here, it should be a common interest to try to not differ 
-> too much at least. So, it's not about exactness, but 50% (63 -> 95) 
-> change in linux own 'definition' after upgrading seems to be a lot. 
-> So, IMHO, maybe some 'compatibility' test could be prepared to compare 
-> a few different ideas on this yield and some average value could be a 
-> kind of at least linux' own standard, which should be emulated within 
-> some limits by next kernels?
+Mostly stolen from akpm's JBD cleanup patch.
 
-you repeat your point of "emulating yield", and i can only repeat my 
-point that you should please read this:
+- use `#ifdef foo' instead of `#if defined(foo)'
 
-    http://lkml.org/lkml/2007/9/19/357
+- Make journal_enable_debug __read_mostly just for the heck of it
 
-because, once you read that, i think you'll agree with me that what you 
-say is simply not possible in a sane way at this stage. We went through 
-a number of yield implementations already and each will change behavior 
-for _some_ category of apps. So right now we offer two implementations, 
-and the default was chosen empirically to minimize the amount of 
-complaints. (but it's not possible to eliminate them altogether, for the 
-reasons outlined above - hence the switch.)
+- Make jbd_debugfs_dir and jbd_debug static
 
-	Ingo
+- debugfs_remove(NULL) is legal: remove unneeded tests
+
+- remove unnecessary empty loops
+
+Signed-off-by: Jose R. Santos <jrs@us.ibm.com>
+--
+
+ fs/jbd2/journal.c |   20 ++++++--------------
+ 1 files changed, 6 insertions(+), 14 deletions(-)
+
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index f37324a..9a7187f 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -1953,16 +1953,14 @@ void jbd2_journal_put_journal_head(struct journal_head *jh)
+ /*
+  * debugfs tunables
+  */
+-#if defined(CONFIG_JBD2_DEBUG)
+-u8 jbd2_journal_enable_debug;
++#ifdef CONFIG_JBD2_DEBUG
++u8 jbd2_journal_enable_debug __read_mostly;
+ EXPORT_SYMBOL(jbd2_journal_enable_debug);
+-#endif
+-
+-#if defined(CONFIG_JBD2_DEBUG) && defined(CONFIG_DEBUG_FS)
+ 
+ #define JBD2_DEBUG_NAME "jbd2-debug"
+ 
+-struct dentry *jbd2_debugfs_dir, *jbd2_debug;
++static struct dentry *jbd2_debugfs_dir;
++static struct dentry *jbd2_debug;
+ 
+ static void __init jbd2_create_debugfs_entry(void)
+ {
+@@ -1975,24 +1973,18 @@ static void __init jbd2_create_debugfs_entry(void)
+ 
+ static void __exit jbd2_remove_debugfs_entry(void)
+ {
+-	if (jbd2_debug)
+-		debugfs_remove(jbd2_debug);
+-	if (jbd2_debugfs_dir)
+-		debugfs_remove(jbd2_debugfs_dir);
++	debugfs_remove(jbd2_debug);
++	debugfs_remove(jbd2_debugfs_dir);
+ }
+ 
+ #else
+ 
+ static void __init jbd2_create_debugfs_entry(void)
+ {
+-	do {
+-	} while (0);
+ }
+ 
+ static void __exit jbd2_remove_debugfs_entry(void)
+ {
+-	do {
+-	} while (0);
+ }
+ 
+ #endif
