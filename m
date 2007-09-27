@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbXI0TaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbXI0TeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759463AbXI0TaK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 15:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757686AbXI0T35
+	id S1758932AbXI0TeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 15:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756910AbXI0TeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 15:29:57 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:44154 "EHLO pasmtpB.tele.dk"
+	Thu, 27 Sep 2007 15:34:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44079 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757627AbXI0T34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 15:29:56 -0400
-Date: Thu, 27 Sep 2007 21:31:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, Andy Whitcroft <apw@shadowen.org>,
-       Franck Bui-Huu <vagabon.xyz@gmail.com>, linux-kernel@vger.kernel.org,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.23-rc8-mm1 -- powerpc link failure
-Message-ID: <20070927193123.GC1847@uranus.ravnborg.org>
-References: <20070925014625.3cd5f896.akpm@linux-foundation.org> <20070925134653.GB8447@shadowen.org> <Pine.LNX.4.64.0709251715530.7567@jikos.suse.cz> <20070927120308.GJ2213@shadowen.org> <Pine.LNX.4.64.0709271408170.7567@jikos.suse.cz> <20070927101342.92422296.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753009AbXI0TeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 15:34:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: 2.6.23-rc8-mm2: problems on HP nx6325
+Date: Thu, 27 Sep 2007 21:48:59 +0200
+User-Agent: KMail/1.9.5
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <20070927103351.33c93289.randy.dunlap@oracle.com> <20070927191938.GB1847@uranus.ravnborg.org>
+In-Reply-To: <20070927191938.GB1847@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070927101342.92422296.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200709272149.00195.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 10:13:42AM -0700, Andrew Morton wrote:
-> On Thu, 27 Sep 2007 14:13:21 +0200 (CEST) Jiri Kosina <jkosina@suse.cz> wrote:
+On Thursday, 27 September 2007 21:19, Sam Ravnborg wrote:
+> On Thu, Sep 27, 2007 at 10:33:51AM -0700, Randy Dunlap wrote:
+> > On Thu, 27 Sep 2007 18:53:46 +0200 Sam Ravnborg wrote:
+> > 
+> > > Hi Rafael.
+> > > > 
+> > > > Fix CPU hotplug breakage on HP nx6325 and similar boxes caused by a reference
+> > > > to disable_apic_timer (labeled as __initdata) from the CPU initialization code.
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > ---
+> > > >  arch/x86_64/kernel/apic.c |    2 +-
+> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > 
+> > > > Index: linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
+> > > > ===================================================================
+> > > > --- linux-2.6.23-rc8-mm2.orig/arch/x86_64/kernel/apic.c
+> > > > +++ linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
+> > > > @@ -42,7 +42,7 @@
+> > > >  
+> > > >  int apic_verbosity;
+> > > >  static int apic_calibrate_pmtmr __initdata;
+> > > > -int disable_apic_timer __initdata;
+> > > > +int disable_apic_timer __cpuinitdata;
+> > > >  
+> > > This is with your configuration a reference from a .text section
+> > > to a .init.data section as I see it.
+> > > 
+> > > So this ought to have been flagged by the section mismatch
+> > > checks in modpost.
+> > > 
+> > > I assume you did not see such warning??
+> > 
+> > I did:
+
+But I didn't.  I'm not sure why.
+
+> > WARNING: vmlinux.o(.text+0x7778): Section mismatch: reference to .init.data:disable_apic_timer (between 'identify_cpu' and 'IRQ0x20_interrupt')
 > 
-> > On Thu, 27 Sep 2007, Andy Whitcroft wrote:
-> > 
-> > > Ok, this problem seems to still persist in 2.6.23-rc8-mm2.  It seems we 
-> > > have three options from here:
-> > > 1) update the compiler support list to exclude these compilers, or
-> > > 2) back this change out, or
-> > > 3) switch to the version not using __weak.
-> > > The latter seems to be the least intrusive change.  As no-one closer to 
-> > > the problem is stepping up to make the decision I will propose we go 
-> > > with the third option here.
-> > 
-> > Andrew,
-> > 
-> > if you agree with Andy that we should support compilers that don't work 
-> > with __weak, please drop i386-and-x86_64-randomize-brk.patch and replace 
-> > it with the one below instead (this has been already posted at 
-> > http://lkml.org/lkml/2007/8/31/113). Thanks.
-> > 
-> 
-> We have quite a few instances of __weak in there.  What is special about
-> this one?
+> Thanks. I look forward to the day I can make them errors so people
+> cannot ignore them.
+> That said a lot of individuals has done a very good job getting
+> rid of section mismatch warnings all over the kernel.
 
-The bug we trigger is an ld bug - not a compiler bug.
-What happens is that we have the same function defined weak twice.
-In fs/ we include binfmt_elf.o in the build because
-CONFIG_BINFMT_ELF is set.
-And in arch/powerpc/kernel/binfmt_elf32.c:
-we do an: #include "../../../fs/binfmt_elf.c"
+Yes.
 
-Without actually trying it out I assume we trigger the ld bug
-because we define the same weak function twice.
-
-And this is a non-typical situation.
-
-	Sam
+Greetings,
+Rafael
