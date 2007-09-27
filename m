@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760820AbXI0Xgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbXI0XmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760820AbXI0Xgq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759519AbXI0Xgi
+	id S1760265AbXI0XmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 19:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbXI0XmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:36:38 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48683 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759532AbXI0Xgh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:36:37 -0400
-Message-ID: <46FC3E7C.7060600@zytor.com>
-Date: Thu, 27 Sep 2007 16:36:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 27 Sep 2007 19:42:08 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:25048 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756246AbXI0XmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 19:42:05 -0400
+Date: Fri, 28 Sep 2007 01:41:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file without options
+Message-ID: <20070927234158.GB10154@kernel.dk>
+References: <20070927142919.10b62f9b@the-village.bc.nu> <20070927070118.2bd4792e@laptopd505.fenrus.org> <20070927151921.29b19abb@the-village.bc.nu> <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu> <20070927155902.GA6450@thunk.org>
 MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: jkeating@redhat.com, Joerg Pommnitz <pommnitz@yahoo.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: More E820 brokenness
-References: <46FC2BFD.6070200@zytor.com> <20070927223336.GB4755@cosmic.amd.com> <46FC32FE.9070302@zytor.com> <20070927231552.GC4755@cosmic.amd.com> <46FC3C5A.2010902@zytor.com> <20070927233408.GD4755@cosmic.amd.com>
-In-Reply-To: <20070927233408.GD4755@cosmic.amd.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------030001050308070701080203"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927155902.GA6450@thunk.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030001050308070701080203
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Jordan Crouse wrote:
->>>
->> Oh bugger, looks like this one might be genuinely my fault after all.
->> The ID check in the new code is buggy.
->>
->> Can you please test this revised patch out (against current -git)?
+On Thu, Sep 27 2007, Theodore Tso wrote:
+> On Thu, Sep 27, 2007 at 04:19:12PM +0100, Alan Cox wrote:
+> > > Well it's not my call, just seems like a really bad idea to change the
+> > > error value. You can't claim full coverage for such testing anyway, it's
+> > > one of those things that people will complain about two releases later
+> > > saying it broke app foo.
+> > 
+> > Strange since we've spent years changing error values and getting them
+> > right in the past. 
 > 
-> 
-> That looks the same as the previous patch you sent?
-> 
+> I doubt there any apps which are going to specifically check for EFBIG
+> and do soemthing different if they get EOVERFLOW instead.  If it was
+> something like EAGAIN or EPERM, I'd be more concerned, but EFBIG
+> vs. EOVERFLOW?  C'mon!
 
-Sorry, this is the right one...
+It's not checking EFBIG vs EOVERFLOW, it's checking one and not the
+other. But I digress, not trying to NAK the patch, just voicing my
+opinion on the matter. It's not something you can easily test and claim
+good app coverage, though.
 
-	-hpa
+-- 
+Jens Axboe
 
---------------030001050308070701080203
-Content-Type: text/x-patch;
- name="smap.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="smap.patch"
-
-diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-index bccaa1c..2f37568 100644
---- a/arch/i386/boot/memory.c
-+++ b/arch/i386/boot/memory.c
-@@ -28,11 +28,10 @@ static int detect_memory_e820(void)
- 
- 	do {
- 		size = sizeof(struct e820entry);
--		id = SMAP;
- 		asm("int $0x15; setc %0"
--		    : "=am" (err), "+b" (next), "+d" (id), "+c" (size),
-+		    : "=dm" (err), "+b" (next), "=a" (id), "+c" (size),
- 		      "=m" (*desc)
--		    : "D" (desc), "a" (0xe820));
-+		    : "D" (desc), "d" (SMAP), "a" (0xe820));
- 
- 		/* Some BIOSes stop returning SMAP in the middle of
- 		   the search loop.  We don't know exactly how the BIOS
-
---------------030001050308070701080203--
