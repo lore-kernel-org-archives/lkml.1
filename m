@@ -1,117 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbXI0MW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbXI0MZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbXI0MW0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 08:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbXI0MWS
+	id S1756234AbXI0MZV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 08:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbXI0MZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 08:22:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57281 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752909AbXI0MWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 08:22:16 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX1/fmhNxAgDfeiIyNlHzb9JpMMZ5M8lDSSY4UCH7KI
-	FYJnXdlDk28Noa
-Message-ID: <46FB9FE2.7090201@gmx.net>
-Date: Thu, 27 Sep 2007 14:19:46 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Thu, 27 Sep 2007 08:25:08 -0400
+Received: from h90-m1.hosting90.cz ([81.0.225.70]:33139 "EHLO
+	h90-m1.hosting90.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbXI0MZH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 08:25:07 -0400
+Message-ID: <46FBA124.2000803@prepere.com>
+Date: Thu, 27 Sep 2007 14:25:08 +0200
+From: Miloslav Semler <majkls@prepere.com>
+User-Agent: IceDove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Ulrich Drepper <drepper@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
-       geoff@gclare.org.uk, Christoph Hellwig <hch@lst.de>
-Subject: signalfd_siginfo field names -- revisited
-Content-Type: text/plain; charset=ISO-8859-1
+To: Adrian Bunk <bunk@kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] sysfs: backport of sysfs_readdir fix from 2.6.22.y to 2.6.16.y
+ (CVE-2007-3104)
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Davide,
+This patch solves CVE-2007-3104  - sysfs_readdir oops.
+More can be found here: 
+http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=commit;h=dc351252b33f8fede396d6173dba117bcb933607 
 
-(We started discussing this quite a while back, and you then seemed
-positively disposed to my idea below, but then holidays intervened, so I'm
-resending this slightly revised version of my earlier mail.)
 
-The signalfd_siginfo structure is defined as:
-
-struct signalfd_siginfo {  /* Analog in siginfo_t */
-    uint32_t  signo;       /* si_signo */
-    int32_t   err;         /* si_errno */
-    int32_t   code;        /* si_code */
-    uint32_t  pid;         /* si_pid */
-    uint32_t  uid;         /* si_uid */
-    int32_t   fd;          /* si_fd */
-    uint32_t  tid;         /* si_tid */
-    uint32_t  band;        /* si_band */
-    uint32_t  overrun;     /* si_overrun */
-    uint32_t  trapno;      /* si_trapno */
-    int32_t   status;      /* si_status */
-    int32_t   svint;       /* si_int */
-    uint64_t  svptr;       /* si_ptr */
-    uint64_t  utime;       /* si_utime */
-    uint64_t  stime;       /* si_stime */
-    uint64_t  addr;        /* si_addr */
-    uint28_t  pad[X];  /* Pad size to 128 bytes (allow space
-                          additional fields in the future) */
+Signed-off-by: Miloslav Semler
+---
+diff -uprN linux-2.6.16.53/fs/sysfs/dir.c 
+linux-2.6.16.53-new/fs/sysfs/dir.c
+--- linux-2.6.16.53/fs/sysfs/dir.c      2007-07-25 23:05:45.000000000 +0200
++++ linux-2.6.16.53-new/fs/sysfs/dir.c  2007-09-23 18:18:09.000000000 +0200
+@@ -29,6 +29,14 @@ static struct dentry_operations sysfs_de
+       .d_iput         = sysfs_d_iput,
 };
 
-I think these field names are a little unfortunate -- e.g., si_errno --> err.
++static unsigned int sysfs_inode_counter;
++ino_t sysfs_get_inum(void)
++{
++       if (unlikely(sysfs_inode_counter < 3))
++               sysfs_inode_counter = 3;
++       return sysfs_inode_counter++;
++}
++
+/*
+ * Allocates a new sysfs_dirent and links it to the parent sysfs_dirent
+ */
+@@ -40,8 +48,10 @@ static struct sysfs_dirent * sysfs_new_d
+       sd = kmem_cache_alloc(sysfs_dir_cachep, GFP_KERNEL);
+       if (!sd)
+               return NULL;
++
 
-The reason they're unfortunate is that it makes it difficult to grep source
-code for related fields -- e.g., I might be interested in the "errno"
-fields that appear both in siginfo_t structures and in signalfd_siginfo
-structures, but these renamings make it very difficult to grep for
-instances in both of these structures.
+       memset(sd, 0, sizeof(*sd));
++       sd->s_ino = sysfs_get_inum();
+       atomic_set(&sd->s_count, 1);
+       INIT_LIST_HEAD(&sd->s_children);
+       list_add(&sd->s_sibling, &parent_sd->s_children);
+@@ -385,7 +395,7 @@ static int sysfs_readdir(struct file * f
 
-At the moment, this problem only affects kernel source code, but of course
-if the kernel definition is carried through to glibc, then userland
-programs will similarly be difficult to grep for fields that are related.
+       switch (i) {
+               case 0:
+-                       ino = dentry->d_inode->i_ino;
++                        ino = parent_sd->s_ino;
+                       if (filldir(dirent, ".", 1, i, ino, DT_DIR) < 0)
+                               break;
+                       filp->f_pos++;
+@@ -415,10 +425,7 @@ static int sysfs_readdir(struct file * f
 
-I think it would be better if the fields in the signalfd_siginfo
-structure were named as follows:
+                               name = sysfs_get_name(next);
+                               len = strlen(name);
+-                               if (next->s_dentry)
+-                                       ino = 
+next->s_dentry->d_inode->i_ino;
+-                               else
+-                                       ino = iunique(sysfs_sb, 2);
++                                ino = next->s_ino;
 
-struct signalfd_siginfo {
-    uint32_t  fdsi_signo;
-    int32_t   fdsi_errno;
-    int32_t   fdsi_code;
-    uint32_t  fdsi_pid;
-    uint32_t  fdsi_uid;
-    int32_t   fdsi_fd;
-    uint32_t  fdsi_tid;
-    uint32_t  fdsi_band;
-    uint32_t  fdsi_overrun;
-    uint32_t  fdsi_trapno;
-    int32_t   fdsi_status;
-    int32_t   fdsi_int;
-    uint64_t  fdsi_ptr;
-    uint64_t  fdsi_utime;
-    uint64_t  fdsi_stime;
-    uint64_t  fdsi_addr;
-    uint28_t  pad[];
+                               if (filldir(dirent, name, len, 
+filp->f_pos, ino,
+                                                dt_type(next)) < 0)
+diff -uprN linux-2.6.16.53/fs/sysfs/inode.c 
+linux-2.6.16.53-new/fs/sysfs/inode.c
+--- linux-2.6.16.53/fs/sysfs/inode.c    2007-07-25 23:05:45.000000000 +0200
++++ linux-2.6.16.53-new/fs/sysfs/inode.c        2007-09-23 
+18:18:09.000000000 +0200
+@@ -119,6 +119,7 @@ struct inode * sysfs_new_inode(mode_t mo
+               inode->i_mapping->a_ops = &sysfs_aops;
+               inode->i_mapping->backing_dev_info = 
+&sysfs_backing_dev_info;
+               inode->i_op = &sysfs_inode_operations;
++                inode->i_ino = sd->s_ino;
+
+               if (sd->s_iattr) {
+                       /* sysfs_dirent has non-default attributes
+diff -uprN linux-2.6.16.53/fs/sysfs/mount.c 
+linux-2.6.16.53-new/fs/sysfs/mount.c
+--- linux-2.6.16.53/fs/sysfs/mount.c    2007-07-25 23:05:45.000000000 +0200
++++ linux-2.6.16.53-new/fs/sysfs/mount.c        2007-09-23 
+18:18:09.000000000 +0200
+@@ -29,6 +29,7 @@ static struct sysfs_dirent sysfs_root =
+       .s_element      = NULL,
+       .s_type         = SYSFS_ROOT,
+       .s_iattr        = NULL,
++        .s_ino          = 1,
 };
 
-Then one could grep for "si_errno" and find instances in both structures.
-
-(I realize that one could paper over this issue by just making the change
-in glibc, but of course it would be better to have the kernel and glibc
-definitions be consistent.)
-
-Making this change would of course not break anything in terms of
-ABI compatibility.
-
-What do you think about making this change?
-
-Cheers,
-
-Michael
-
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
-
+static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+diff -uprN linux-2.6.16.53/include/linux/sysfs.h 
+linux-2.6.16.53-new/include/linux/sysfs.h
+--- linux-2.6.16.53/include/linux/sysfs.h       2007-07-25 
+23:05:45.000000000 +0200
++++ linux-2.6.16.53-new/include/linux/sysfs.h   2007-09-23 
+18:18:09.000000000 +0200
+@@ -72,6 +72,7 @@ struct sysfs_dirent {
+       void                    * s_element;
+       int                     s_type;
+       umode_t                 s_mode;
++        ino_t                   s_ino;
+       struct dentry           * s_dentry;
+       struct iattr            * s_iattr;
+};
