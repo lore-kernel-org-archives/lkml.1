@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbXI0P7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbXI0QFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758546AbXI0P7h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbXI0P71
+	id S1757506AbXI0QFT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 12:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXI0QFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:59:27 -0400
-Received: from THUNK.ORG ([69.25.196.29]:50656 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754109AbXI0P70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:59:26 -0400
-Date: Thu, 27 Sep 2007 11:59:02 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Arjan van de Ven <arjan@infradead.org>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file without options
-Message-ID: <20070927155902.GA6450@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Arjan van de Ven <arjan@infradead.org>, akpm@osdl.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20070927142919.10b62f9b@the-village.bc.nu> <20070927070118.2bd4792e@laptopd505.fenrus.org> <20070927151921.29b19abb@the-village.bc.nu> <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu>
+	Thu, 27 Sep 2007 12:05:05 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:58040 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754596AbXI0QFD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 12:05:03 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 27 Sep 2007 12:03:33 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Dave Jones <davej@redhat.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: correct kernel parameter in documentation.
+In-Reply-To: <20070927155013.GA20219@redhat.com>
+Message-ID: <Pine.LNX.4.64.0709271202210.13117@localhost.localdomain>
+References: <20070927155013.GA20219@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070927161912.2f08aff6@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 04:19:12PM +0100, Alan Cox wrote:
-> > Well it's not my call, just seems like a really bad idea to change the
-> > error value. You can't claim full coverage for such testing anyway, it's
-> > one of those things that people will complain about two releases later
-> > saying it broke app foo.
-> 
-> Strange since we've spent years changing error values and getting them
-> right in the past. 
+On Thu, 27 Sep 2007, Dave Jones wrote:
 
-I doubt there any apps which are going to specifically check for EFBIG
-and do soemthing different if they get EOVERFLOW instead.  If it was
-something like EAGAIN or EPERM, I'd be more concerned, but EFBIG
-vs. EOVERFLOW?  C'mon!
+> 'noacpi' isn't a standalone parameter, give it its prefix.
+>
+> Signed-off-by: Dave Jones <davej@redhat.com>
+>
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 4d175c7..a87bc58 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -863,6 +863,10 @@ and is between 256 and 4096 characters. It is defined in the file
+>  	lasi=		[HW,SCSI] PARISC LASI driver for the 53c700 chip
+>  			Format: addr:<io>,irq:<irq>
+>
+> +	libata.noacpi	[LIBATA] Disables use of ACPI in libata suspend/resume
+> +			when set.
+> +			Format: <int>
+> +
 
-> There are real things to worry about - sysfs, sysfs, sysfs, ... and all
-> the other crap which is continually breaking stuff, not spec compliance
-> corrections that don't break things but move us into compliance with the
-> standard
+if you're going to add that libata-related parm to the kernel parms
+file, wouldn't it make sense for consistency to add the other
+available boot-time parms from libata-core.c as well?  it seems
+counter-productive to document only a subset of them from the same
+source file.
 
-I've got to agree with Alan, the sysfs/udev breakages that we've done
-are far more significant, and the fact that we continue to expose
-internal data structures via sysfs is a gaping open pit is far more
-likely to cause any kind of problems than changing an error return.
+rday
 
-       	  	    	    	     	  - Ted
+p.s.  as i think i've mentioned before, i'd prefer to see that entire
+kernel-parameters.txt file reorganized, where the basic boot time
+parms are at the top, followed by module specific parameters *after*
+that, in alphabetical order by module name.  i think that would make
+far more sense.
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
