@@ -1,51 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbXI0UpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbXI0Ur6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758483AbXI0UpH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 16:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbXI0Uoz
+	id S1758602AbXI0Ur6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 16:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbXI0Urt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 16:44:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44290 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754582AbXI0Uoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 16:44:54 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Dmitry Tyschenko" <dtyschenko@gmail.com>
-Subject: Re: NO_HZ hangs up AMD MK-36
-Date: Thu, 27 Sep 2007 22:59:25 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-References: <a6a840cd0709271328p76ee6a22tf3b60678d6a2d455@mail.gmail.com>
-In-Reply-To: <a6a840cd0709271328p76ee6a22tf3b60678d6a2d455@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 27 Sep 2007 16:47:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49179 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753477AbXI0Urs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 16:47:48 -0400
+Date: Thu, 27 Sep 2007 13:47:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: nickpiggin@yahoo.com.au, hirofumi@mail.parknet.co.jp,
+       galak@kernel.crashing.org, zaitcev@redhat.com, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] writeback: remove unnecessary wait in
+ throttle_vm_writeout()
+Message-Id: <20070927134726.ac39b55f.akpm@linux-foundation.org>
+In-Reply-To: <390857819.00313@ustc.edu.cn>
+References: <390857819.00313@ustc.edu.cn>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709272259.26412.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 September 2007 22:28, Dmitry Tyschenko wrote:
-> Hello,
-> 
-> I have laptop Asus X50M. Using old Debian Etch from February.
-> Kernel from 2.6.21 doesn't boot, hangs up just in 10seconds -  1minute
-> after GRUB screen.
-> I have tryed different versions of gcc (4.1.1, 4.1.2, 4.2.1) to build
-> 2.6.22.8 kernel, but no results.
-> But if I disable NO_HZ option 2.6.21 is working fine for me.
-> 
-> I think this is important problem, because some of the project, Debian
-> for example,
->  are building kernel with this options enabled (in
-> linux-image-2.6.22-1-k7 package it is enabled),
-> and some people, like me, can not use new kernels.
-> 
-> I have attached some of my PC info, hope this can help
+On Thu, 27 Sep 2007 09:50:16 +0800
+Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
-You can use the "nohz=off" kernel command line switch.  Please check if it
-works for you.
+> We don't want to introduce pointless delays in throttle_vm_writeout()
+> when the writeback limits are not yet exceeded, do we?
+> 
+> Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+> Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Pete Zaitcev <zaitcev@redhat.com>
+> Cc: Greg KH <greg@kroah.com>
+> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> ---
+>  mm/page-writeback.c |   18 ++++++++----------
+>  1 file changed, 8 insertions(+), 10 deletions(-)
+> 
+> --- linux-2.6.23-rc8-mm1.orig/mm/page-writeback.c
+> +++ linux-2.6.23-rc8-mm1/mm/page-writeback.c
+> @@ -507,16 +507,6 @@ void throttle_vm_writeout(gfp_t gfp_mask
+>  	long background_thresh;
+>  	long dirty_thresh;
+>  
+> -	if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
+> -		/*
+> -		 * The caller might hold locks which can prevent IO completion
+> -		 * or progress in the filesystem.  So we cannot just sit here
+> -		 * waiting for IO to complete.
+> -		 */
+> -		congestion_wait(WRITE, HZ/10);
+> -		return;
+> -	}
+> -
+>          for ( ; ; ) {
+>  		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+>  
+> @@ -530,6 +520,14 @@ void throttle_vm_writeout(gfp_t gfp_mask
+>  			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+>                          	break;
+>                  congestion_wait(WRITE, HZ/10);
+> +
+> +		/*
+> +		 * The caller might hold locks which can prevent IO completion
+> +		 * or progress in the filesystem.  So we cannot just sit here
+> +		 * waiting for IO to complete.
+> +		 */
+> +		if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO))
+> +			break;
+>          }
+>  }
+>  
 
-Greetings,
-Rafael
+This is a pretty major bugfix.
+
+GFP_NOIO and GFP_NOFS callers should have been spending really large
+amounts of time stuck in that sleep.
+
+I wonder why nobody noticed this happening.  Either a) it turns out that
+kswapd is doing a good job and such callers don't do direct reclaim much or
+b) nobody is doing any in-depth kernel instrumentation.
+
+Now, how _would_ one notice this problem?  We don't have very good tools,
+really.  Booting with "profile=sleep" and looking at the profile data would
+be one way.  Repeatedly doing sysrq-T is another.  Perhaps the new
+lockstat-via-lockdep code would allow this to be observed in some fashion,
+dunno.
+
+Anyway, this patch has the potential to significantly alter the dynamics of
+the VM behaviour under particular workloads.  It might turn up other
+stuff...
+
