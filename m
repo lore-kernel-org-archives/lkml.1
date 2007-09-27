@@ -1,73 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759610AbXI0TfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXI0TjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759610AbXI0TfK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 15:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757619AbXI0Te4
+	id S1759505AbXI0TjO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 15:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627AbXI0Ti7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 15:34:56 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35910 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757615AbXI0Tey (ORCPT
+	Thu, 27 Sep 2007 15:38:59 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:43916 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757581AbXI0Ti6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 15:34:54 -0400
-Date: Thu, 27 Sep 2007 22:34:53 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: "Majumder, Rajib" <rajib.majumder@credit-suisse.com>
-cc: "'netdev@vger.kernel.org'" <netdev@vger.kernel.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
-Subject: Re: TCP Spike
-In-Reply-To: <F444CAE5E62A714C9F45AA292785BED3223F7283@esng11p33001.sg.csfb.com>
-Message-ID: <Pine.LNX.4.64.0709271827170.5141@kivilampi-30.cs.helsinki.fi>
-References: <F444CAE5E62A714C9F45AA292785BED3223F7283@esng11p33001.sg.csfb.com>
-Mime-Version: 1.0
+	Thu, 27 Sep 2007 15:38:58 -0400
+Date: Fri, 28 Sep 2007 01:05:12 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, dmitry.adamushko@gmail.com, efault@gmx.de,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [PATCH -mm] Hook up group scheduler with control groups
+Message-ID: <20070927193512.GD5715@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20070927150624.GG4415@linux.vnet.ibm.com> <20070927104005.2ed0b81d.randy.dunlap@oracle.com> <20070927180415.GC5715@linux.vnet.ibm.com> <20070927120033.45915a61.randy.dunlap@oracle.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070927120033.45915a61.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007, Majumder, Rajib wrote:
-
-> We have observed 40ms latency spikes in TCP connections in "burst" type of traffic.
-> This affects regular TCP sockets.
-
-Are segments being sent full-sized, or is there perhaps some Nagle 
-component in it as well? I.e., are the applications using TCP_NODELAY?
-
-> We observed this issue in kernels of 2.4.21 and kernel 2.6.5.  
+On Thu, Sep 27, 2007 at 12:00:33PM -0700, Randy Dunlap wrote:
+> On Thu, 27 Sep 2007 23:34:15 +0530 Dhaval Giani wrote:
+> > 
+> > 
+> > +config RESOURCE_COUNTERS
+> > +	bool "Resource counters"
+> > +	help
+> > +	  This option enables controller independent resource accounting
 > 
-> Aparently, this seems to be fixed in 2.6.19.  
->
-> Can someone throw some light on this? 
+> Above line is tab + 2 spaces (i.e., correct).
+> 
+> > +          infrastructure that works with cgroups.
+> 
+> Above line indent is 10 spaces (i.e., not correct).
+> 
 
-I think somebody, probably Alexey, enabled sending of ACK on every 2nd 
-segment. Previously small segment senders playing with Nagle were 
-complaining every now and then about performance because two small 
-segments did not generate ACKs but one had to accumulate, IIRC, half MSS 
-worth of data before ACK was sent. Could this be related to your case?
+Ah! Thanks for the explanation. Corrected patch follows.
 
-...In case you're having too much time, you can always try bisecting it
-which finds out the causing commit... :-)
+Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-> Is this a congestion control/avoidance issue?
+---
+ include/linux/cgroup_subsys.h |    6 ++
+ init/Kconfig                  |   24 +++++---
+ kernel/sched.c                |  122 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 145 insertions(+), 7 deletions(-)
 
-Congestion control is basically ACK clocked math for cwnd, ssthresh, etc.
-state, which then results in permission to send new segments out etc. 
-(except for RTO part of course, which I'll ignore in the next statement). 
-Any delay gaps to sent packet after ACK receival, which triggered the 
-state changing math, isn't there due to congestion control but due to 
-other factors! 40ms is much below MIN_RTO (200ms), so it shouldn't be due 
-to RTO either... Note that also delayed ACKs are exception to the general 
-rule.
-
-Congestion control is controlled like your CPU is. In your CPU there's 
-this whatever GHz clock which determines when the state changing events 
-take place, state changes don't just happen arbitarily but are _clocked_ 
-(ACK _clocked_ in case of congestion control). Of course there will be 
-some propagation delay after the change to put in effect all the state 
-changes that are result of what occurred at clock edge (and this delay 
-assimilating to processing delay in the context of congestion control).
-
+Index: current/include/linux/cgroup_subsys.h
+===================================================================
+--- current.orig/include/linux/cgroup_subsys.h
++++ current/include/linux/cgroup_subsys.h
+@@ -36,3 +36,9 @@ SUBSYS(mem_cgroup)
+ #endif
+ 
+ /* */
++
++#ifdef CONFIG_FAIR_CGROUP_SCHED
++SUBSYS(cpu_cgroup)
++#endif
++
++/* */
+Index: current/init/Kconfig
+===================================================================
+--- current.orig/init/Kconfig
++++ current/init/Kconfig
+@@ -319,6 +319,13 @@ config CPUSETS
+ 
+ 	  Say N if unsure.
+ 
++config RESOURCE_COUNTERS
++	bool "Resource counters"
++	help
++	  This option enables controller independent resource accounting
++	  infrastructure that works with cgroups.
++	depends on CGROUPS
++
+ config FAIR_GROUP_SCHED
+ 	bool "Fair group CPU scheduler"
+ 	default y
+@@ -338,14 +345,17 @@ config FAIR_USER_SCHED
+ 	  This option will choose userid as the basis for grouping
+ 	  tasks, thus providing equal CPU bandwidth to each user.
+ 
+-endchoice
++config FAIR_CGROUP_SCHED
++	bool "Control groups"
++ 	depends on CGROUPS
++ 	help
++	  This option allows you to create arbitrary task groups
++	  using the "cgroup" pseudo filesystem and control
++	  the cpu bandwidth allocated to each such task group.
++	  Refer to Documentation/cgroups.txt for more information
++	  on "cgroup" pseudo filesystem.
+ 
+-config RESOURCE_COUNTERS
+-	bool "Resource counters"
+-	help
+-	  This option enables controller independent resource accounting
+-          infrastructure that works with cgroups
+-	depends on CGROUPS
++endchoice
+ 
+ config SYSFS_DEPRECATED
+ 	bool "Create deprecated sysfs files"
+Index: current/kernel/sched.c
+===================================================================
+--- current.orig/kernel/sched.c
++++ current/kernel/sched.c
+@@ -177,10 +177,16 @@ struct rt_prio_array {
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 
++#include <linux/cgroup.h>
++
+ struct cfs_rq;
+ 
+ /* task group related information */
+ struct task_grp {
++#ifdef CONFIG_FAIR_CGROUP_SCHED
++	struct cgroup_subsys_state css;
++#endif
++
+ 	/* schedulable entities of this group on each cpu */
+ 	struct sched_entity **se;
+ 	/* runqueue "owned" by this group on each cpu */
+@@ -219,6 +225,9 @@ static inline struct task_grp *task_grp(
+ 
+ #ifdef CONFIG_FAIR_USER_SCHED
+ 	tg = p->user->tg;
++#elif CONFIG_FAIR_CGROUP_SCHED
++	tg = container_of(task_subsys_state(p, cpu_cgroup_subsys_id),
++				struct task_grp, css);
+ #else
+ 	tg  = &init_task_grp;
+ #endif
+@@ -6958,3 +6967,116 @@ int sched_group_set_shares(struct task_g
+ }
+ 
+ #endif 	/* CONFIG_FAIR_GROUP_SCHED */
++
++#ifdef CONFIG_FAIR_CGROUP_SCHED
++
++/* return corresponding task_grp object of a cgroup */
++static inline struct task_grp *cgroup_tg(struct cgroup *cont)
++{
++	return container_of(cgroup_subsys_state(cont, cpu_cgroup_subsys_id),
++					 struct task_grp, css);
++}
++
++static struct cgroup_subsys_state *
++cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	struct task_grp *tg;
++
++	if (!cont->parent) {
++		/* This is early initialization for the top cgroup */
++		init_task_grp.css.cgroup = cont;
++		return &init_task_grp.css;
++	}
++
++	/* we support only 1-level deep hierarchical scheduler atm */
++	if (cont->parent->parent)
++		return ERR_PTR(-EINVAL);
++
++	tg = sched_create_group();
++	if (IS_ERR(tg))
++		return ERR_PTR(-ENOMEM);
++
++	/* Bind the cgroup to task_grp object we just created */
++	tg->css.cgroup = cont;
++
++	return &tg->css;
++}
++
++static void cpu_cgroup_destroy(struct cgroup_subsys *ss,
++					struct cgroup *cont)
++{
++	struct task_grp *tg = cgroup_tg(cont);
++
++	sched_destroy_group(tg);
++}
++
++static int cpu_cgroup_can_attach(struct cgroup_subsys *ss,
++			     struct cgroup *cont, struct task_struct *tsk)
++{
++	/* We don't support RT-tasks being in separate groups */
++	if (tsk->sched_class != &fair_sched_class)
++		return -EINVAL;
++
++	return 0;
++}
++
++static void
++cpu_cgroup_attach(struct cgroup_subsys *ss, struct cgroup *cont,
++			struct cgroup *old_cont, struct task_struct *tsk)
++{
++	sched_move_task(tsk);
++}
++
++static ssize_t cpu_shares_write(struct cgroup *cont, struct cftype *cftype,
++				struct file *file, const char __user *userbuf,
++				size_t nbytes, loff_t *ppos)
++{
++	unsigned long shareval;
++	struct task_grp *tg = cgroup_tg(cont);
++	char buffer[2*sizeof(unsigned long) + 1];
++	int rc;
++
++	if (nbytes > 2*sizeof(unsigned long))	/* safety check */
++		return -E2BIG;
++
++	if (copy_from_user(buffer, userbuf, nbytes))
++		return -EFAULT;
++
++	buffer[nbytes] = 0;	/* nul-terminate */
++	shareval = simple_strtoul(buffer, NULL, 10);
++
++	rc = sched_group_set_shares(tg, shareval);
++
++	return (rc < 0 ? rc : nbytes);
++}
++
++static u64 cpu_shares_read_uint(struct cgroup *cont, struct cftype *cft)
++{
++	struct task_grp *tg = cgroup_tg(cont);
++
++	return (u64) tg->shares;
++}
++
++static struct cftype cpu_shares = {
++	.name = "shares",
++	.read_uint = cpu_shares_read_uint,
++	.write = cpu_shares_write,
++};
++
++static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	return cgroup_add_file(cont, ss, &cpu_shares);
++}
++
++struct cgroup_subsys cpu_cgroup_subsys = {
++	.name 	    	= "cpu",
++	.create	    	= cpu_cgroup_create,
++	.destroy    	= cpu_cgroup_destroy,
++	.can_attach 	= cpu_cgroup_can_attach,
++	.attach     	= cpu_cgroup_attach,
++	.populate   	= cpu_cgroup_populate,
++	.subsys_id  	= cpu_cgroup_subsys_id,
++	.early_init	= 1,
++};
++
++#endif	/* CONFIG_FAIR_CGROUP_SCHED */
 
 -- 
- i.
+regards,
+Dhaval
