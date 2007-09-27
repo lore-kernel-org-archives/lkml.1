@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760795AbXI0Xy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbXI0Xyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760795AbXI0Xy2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760042AbXI0XyP
+	id S1761069AbXI0Xyn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 19:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760857AbXI0Xyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:54:15 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:29519 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760368AbXI0XyK (ORCPT
+	Thu, 27 Sep 2007 19:54:31 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:10416 "EHLO
+	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760803AbXI0Xy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:54:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Co9MswrhVZoq+9c9t42sqWZIzYrF/zXGDSfxg8+aom4cciH3mRDKdlGWgWRioXbxbCIdzJ6zfNBwBLtG9aPsamtRqm9KZil3xDhg+FFDI3aRwXlrGm8ibPGth3Shra08U4kBbMX68Gvn2EM1DAqeYEL1gDycn93o5PNRp4hdL3M=
-Message-ID: <46FC423C.2050206@gmail.com>
-Date: Thu, 27 Sep 2007 16:52:28 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 27 Sep 2007 19:54:29 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Thu, 27 Sep 2007 17:54:27 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: jkeating@redhat.com, "Joerg Pommnitz" <pommnitz@yahoo.com>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <ak@suse.de>
+Subject: Re: More E820 brokenness
+Message-ID: <20070927235427.GA18900@cosmic.amd.com>
+References: <46FC2BFD.6070200@zytor.com>
+ <20070927223336.GB4755@cosmic.amd.com> <46FC32FE.9070302@zytor.com>
+ <20070927231552.GC4755@cosmic.amd.com> <46FC3C5A.2010902@zytor.com>
+ <20070927233408.GD4755@cosmic.amd.com> <46FC3E7C.7060600@zytor.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Stardom SATA HSM violation
-References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com>	<20070905095327.6277d054.akpm@linux-foundation.org>	<46DEE617.4050004@rtr.ca>	<46E0A253.7060803@gmail.com>	<46E154DE.2060602@rtr.ca>	<46FB563A.80108@gmail.com> <20070927193701.6230d77f@the-village.bc.nu> <46FC3D7D.90009@gmail.com> <46FC3FDD.5060201@pobox.com>
-In-Reply-To: <46FC3FDD.5060201@pobox.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <46FC3E7C.7060600@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 27 Sep 2007 23:53:56.0637 (UTC)
+ FILETIME=[AAA3B4D0:01C80161]
+X-WSS-ID: 6AE29D142ZC505111-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Tejun Heo wrote:
->> Alan Cox wrote:
->>>> I think there have been enough cases where this draining was necessary.
->>>>  IIRC, ata_piix was involved in those cases, right?  If so, can you
->>>> please submit a patch which applies this only to affected controllers?
->>>> I don't feel too confident about applying this to all SFF controllers.
->>> Old IDE does it on all controllers bar a couple. So we have a very good
->>> knowledge of what does/doesn't work. The one that needs care in old ide
->>> is an ordering issue where a state machine reset done first causes the
->>> drain of the I/O to hang.
->>
->> Hmmm... So, do we apply draining to all PATA?  Or is ata_piix SATA
->> affected too?
+On 27/09/07 16:36 -0700, H. Peter Anvin wrote:
+> Jordan Crouse wrote:
+> >>>
+> >> Oh bugger, looks like this one might be genuinely my fault after all.
+> >> The ID check in the new code is buggy.
+> >>
+> >> Can you please test this revised patch out (against current -git)?
+> > 
+> > 
+> > That looks the same as the previous patch you sent?
+> > 
 > 
-> I would think all SFF controllers, since a lot of first gen SATA are
-> really bridged solutions.  If they are flagging DRQ, I say oblige them :)
+> Sorry, this is the right one...
+> 
+> 	-hpa
 
-Alright, then the posted patch should be good enough.  Mark, can you be
-bothered to regenerate the patch and post it one more time (again)?  It
-seems we all agree the update is needed.
+> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
+> index bccaa1c..2f37568 100644
+> --- a/arch/i386/boot/memory.c
+> +++ b/arch/i386/boot/memory.c
+> @@ -28,11 +28,10 @@ static int detect_memory_e820(void)
+>  
+>  	do {
+>  		size = sizeof(struct e820entry);
+> -		id = SMAP;
+>  		asm("int $0x15; setc %0"
+> -		    : "=am" (err), "+b" (next), "+d" (id), "+c" (size),
+> +		    : "=dm" (err), "+b" (next), "=a" (id), "+c" (size),
+>  		      "=m" (*desc)
+> -		    : "D" (desc), "a" (0xe820));
+> +		    : "D" (desc), "d" (SMAP), "a" (0xe820));
+>  
+>  		/* Some BIOSes stop returning SMAP in the middle of
+>  		   the search loop.  We don't know exactly how the BIOS
 
-Thanks a lot.
+Worked, but that just raises more questions.  Why didn't more x86 boxes
+break or, alternatively, why did a new version of the BIOS fix the problem? 
+I guess we shouldn't look a gift horse in the mouth. Or something.
+
+Thanks very much for your help.
+
+Jordan
 
 -- 
-tejun
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
+
