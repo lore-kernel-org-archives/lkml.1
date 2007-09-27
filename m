@@ -1,92 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759851AbXI0Tjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbXI0Tkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759851AbXI0Tjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 15:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbXI0Tjg
+	id S1759928AbXI0Tkh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 15:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758247AbXI0Tk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 15:39:36 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:61274 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754182AbXI0Tjf (ORCPT
+	Thu, 27 Sep 2007 15:40:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:41421 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755736AbXI0Tk2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 15:39:35 -0400
-Date: Thu, 27 Sep 2007 12:37:15 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc8-mm2: problems on HP nx6325
-Message-Id: <20070927123715.ebc22761.randy.dunlap@oracle.com>
-In-Reply-To: <200709272149.00195.rjw@sisk.pl>
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
-	<20070927103351.33c93289.randy.dunlap@oracle.com>
-	<20070927191938.GB1847@uranus.ravnborg.org>
-	<200709272149.00195.rjw@sisk.pl>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 27 Sep 2007 15:40:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=PkMFoP7OY2Zmqy9SecHudHANjCcMiBSrDMj4hKj+NnvLwbkFRVKrkaQgF52meaYz+hXE0EgAqWD9Nm+J7sS6RINkOK6YJ3FjRX9TD0YZq2/tHupA6JUC5cQfGQgyozas2UWgZduTe/R/CmK2ZRkeEPIpMfb5FlMQQ1+e+t7cioc=
+Date: Thu, 27 Sep 2007 23:40:21 +0400
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, rientjes@google.com, andrea@suse.de,
+       clameter@sgi.com
+Subject: Re: + oom-prevent-including-schedh-in-header-file.patch added to -mm tree
+Message-ID: <20070927194021.GB1748@martell.zuzino.mipt.ru>
+References: <200709262010.l8QKAxd0001730@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709262010.l8QKAxd0001730@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 21:48:59 +0200 Rafael J. Wysocki wrote:
-
-> On Thursday, 27 September 2007 21:19, Sam Ravnborg wrote:
-> > On Thu, Sep 27, 2007 at 10:33:51AM -0700, Randy Dunlap wrote:
-> > > On Thu, 27 Sep 2007 18:53:46 +0200 Sam Ravnborg wrote:
-> > > 
-> > > > Hi Rafael.
-> > > > > 
-> > > > > Fix CPU hotplug breakage on HP nx6325 and similar boxes caused by a reference
-> > > > > to disable_apic_timer (labeled as __initdata) from the CPU initialization code.
-> > > > > 
-> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > ---
-> > > > >  arch/x86_64/kernel/apic.c |    2 +-
-> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > 
-> > > > > Index: linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> > > > > ===================================================================
-> > > > > --- linux-2.6.23-rc8-mm2.orig/arch/x86_64/kernel/apic.c
-> > > > > +++ linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> > > > > @@ -42,7 +42,7 @@
-> > > > >  
-> > > > >  int apic_verbosity;
-> > > > >  static int apic_calibrate_pmtmr __initdata;
-> > > > > -int disable_apic_timer __initdata;
-> > > > > +int disable_apic_timer __cpuinitdata;
-> > > > >  
-> > > > This is with your configuration a reference from a .text section
-> > > > to a .init.data section as I see it.
-> > > > 
-> > > > So this ought to have been flagged by the section mismatch
-> > > > checks in modpost.
-> > > > 
-> > > > I assume you did not see such warning??
-> > > 
-> > > I did:
+> It's not necessary to include all of linux/sched.h in linux/oom.h.  Instead,
+> simply include prototypes for the relevant structs and include linux/types.h
+> for gfp_t.
 > 
-> But I didn't.  I'm not sure why.
+> Cc: Andrea Arcangeli <andrea@suse.de>
+> Cc: Christoph Lameter <clameter@sgi.com>
+> Cc: Alexey Dobriyan <adobriyan@gmail.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-I did only on one build machine (multiple times).  I tried
-to reproduce it on another machine and could not.  I blame
-different build tools.
+OK.
 
-> > > WARNING: vmlinux.o(.text+0x7778): Section mismatch: reference to .init.data:disable_apic_timer (between 'identify_cpu' and 'IRQ0x20_interrupt')
-> > 
-> > Thanks. I look forward to the day I can make them errors so people
-> > cannot ignore them.
-> > That said a lot of individuals has done a very good job getting
-> > rid of section mismatch warnings all over the kernel.
-> 
-> Yes.
-
-
----
-~Randy
-Phaedrus says that Quality is about caring.
+> --- a/include/linux/oom.h~oom-prevent-including-schedh-in-header-file
+> +++ a/include/linux/oom.h
+> @@ -1,8 +1,6 @@
+>  #ifndef __INCLUDE_LINUX_OOM_H
+>  #define __INCLUDE_LINUX_OOM_H
+>  
+> -#include <linux/sched.h>
+> -
+>  /* /proc/<pid>/oom_adj set to -17 protects from the oom-killer */
+>  #define OOM_DISABLE (-17)
+>  /* inclusive */
+> @@ -11,6 +9,11 @@
+>  
+>  #ifdef __KERNEL__
+>  
+> +#include <linux/types.h>
+> +
+> +struct zonelist;
+> +struct notifier_block;
