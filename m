@@ -1,111 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbXI0Pcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbXI0Pgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbXI0Pcp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbXI0Pcg
+	id S1757310AbXI0Pgn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbXI0Pgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:32:36 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:51423 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756618AbXI0Pcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:32:35 -0400
-Date: Thu, 27 Sep 2007 11:32:33 -0400
-To: nfs@lists.sourceforge.net, nfsv4@linux-nfs.org
-Cc: linux-kernel@vger.kernel.org
-Subject: NFS server development update
-Message-ID: <20070927153233.GE2522@fieldses.org>
+	Thu, 27 Sep 2007 11:36:36 -0400
+Received: from mga07.intel.com ([143.182.124.22]:57258 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754412AbXI0Pgf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 11:36:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,204,1188802800"; 
+   d="scan'208";a="287888905"
+Date: Thu, 27 Sep 2007 08:36:12 -0700
+From: Mark Gross <mgross@linux.intel.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] QoS params patch
+Message-ID: <20070927153612.GE25718@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20070926223712.GA22029@linux.intel.com> <20070926224026.GA23218@linux.intel.com> <20070926164159.3b43479b.randy.dunlap@oracle.com> <20070927004020.GB29906@linux.intel.com> <22087.1190861583@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <22087.1190861583@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These days Neil Brown and I are maintaining the NFS server together, and
-I'm currently (as of the last few weeks) tracking the to-be-submitted
-patches.
+On Wed, Sep 26, 2007 at 10:53:03PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 26 Sep 2007 17:40:20 PDT, Mark Gross said:
+> (others here are probably better at spotting leaks and races than I am,
+> so I'm skipping those and picking other nits. ;)
+> 
+> > --- linux-2.6.23-rc8/kernel/Makefile	2007-09-26 13:54:54.000000000 -0700
+> > +++ linux-2.6.23-rc8-qos/kernel/Makefile	2007-09-26 14:06:38.000000000 -
+> 0700
+> > @@ -9,7 +9,7 @@
+> >  	    rcupdate.o extable.o params.o posix-timers.o \
+> >  	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+> >  	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o \
+> > -	    utsname.o
+> > +	    utsname.o qos_params.o
+> 
+> So I don't get a choice in the matter if I will be dragging this thing
+> around in my kernel, even if I have no intention of using the functionality?
 
-I have limited time and am not expert on all of the relevant code, so I
-depend on your help!  I'm still experimenting a bit with the process
-(suggestions welcomed), but most of the following should be obvious to
-anyone who's been working on the kernel for a while.
+nope.
 
-I keep all the pending NFS and sunrpc server patches that I believe are
-done in the "nfs-server-stable" branch here[1]:
+> 
+> > + * This QoS design is best effort based.  Dependents register their QoS needs.
+> > + * Watchers register to keep track of the current QoS needs of the system.
+> > + *
+> > + * There are 3 basic classes of QoS parameter: latency, timeout, throughput
+> > + * each have defined units:
+> > + * latency: usec
+> > + * timeout: usec <-- currently not used.
+> > + * throughput: kbs (kilo byte / sec)
+> 
+> It's unclear whether these are registering a differing QoS request for each
+> process/container/whatever that asks for one, or if they're global across the
+> system.  Also, even though it's "best effort", it would be good to document
+> what the failure mode is if we get conflicting requests, or an overcommit
+> situation - do new requests get refused, or allowed and ignored, or allowed
+> and only sometimes fulfilled.  For instance, assume a gigabit ethernet,
+> and 3 processes ask for 400 mbits/sec each - who wins, who gets part of what
+> they asked for, and who loses and gets starved?
 
-	git://linux-nfs.org/~bfields/linux.git nfs-server-stable
+There are no overcommit failure modes.  These QoS parameters are for
+constraining aggressive power management throttling from breaking things
+thereby enabling better power management solutions.
 
-I also include nfs-server-stable in the "for-mm" branch, which is
-normally included in Andrew's -mm kernels automatically, and which may
-sometimes also contain other works-in-progress.
+The QoS values are system wide parameters, not per process or driver.
+So the code takes the max or min depending on what class of parameter is
+in question.  So if you have multiple applications asking for network
+throughput of 400Mbs the current code will let the nic driver find out
+that it shouldn't throttle itself to the point where it can provide
+400Mbs to any one.
 
-I'll try to submit urgent[2] patches to upstream immediately.  All the
-other patches in nfs-server-stable will be submitted in one batch just
-after each new kernel release (that's about once every two months).
+You raise a perspective I overlooked.  For each of the parameter classes
+I had been thinking of computing some extrema out of the set of
+requests.  However; for throughput it may make more sense to sum up a
+collative value.
 
-If you want patches included, email them to me, one patch per message,
-in the format described in[3]
+I'm not sure which way would make more sense.
 
-	http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+--mgross
 
-and also cc: nfs@lists.sourceforge.net, Neil Brown <neilb@suse.de>, and
-anyone you consider particularly qualified to review your work.  Also,
-please state clearly that you're asking me to apply your patches;
-otherwise I may just assume you're asking people for early feedback on
-work in progress (which is also encouraged, of course).  If you get no
-response and your work doesn't show up in my git tree, I may have
-forgotten; please remind me.  If I ignore something urgent, please try
-Neil, Andrew, lkml, and/or Linus as necessary.
-
-If you're fixing a mistake in a patch I already have, I'd usually prefer
-an incremental patch as opposed to a complete replacement.
-
-If you have large changes you'd like included in the next kernel, try to
-submit them well in advance of the release of the current kernel.  (For
-example, with 2.6.23 about to be released, it may already be too late
-for major changes to be included in 2.6.24.)
-
-I'll follow up with a summary of the patches I currently have.
-
---b.
-
-Notes:
-
-[1] My suggestion for how to access my git tree:
-	1. Install git version 1.5.0 or later
-	2. If you haven't already, get Linus's tree with:
-		git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-		cd linux-2.6.git
-	3. Tell git about my tree with:
-		git remote add bfields git://linux-nfs.org/~bfields/linux.git
-		git fetch bfields
-	4. View current server patches with:
-		gitk origin..bfields/nfs-server-stable
-	4. Update as necessary using:
-		git fetch bfields
-
-[2] A patch will be more likely to be treated as "urgent" if it is
-obviously correct and if it fixes a severe problem (for example, one
-that corrupts data or compromises security).  As a release approaches,
-and the time remaining to test new patches decreases, the standard for
-such patches will become harder to meet.
-
-[3] If you're new to the process, the contents of
-
-	http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
-
-and Documentation/SubmittingPatches are useful, but possibly also
-overwhelming.  The important points are:
-
-	- Each patch should make one set of logically related changes
-	  and come with a comment that explains what the patch does and
-	  why.
-	- No patch should introduce a regression: after applying the
-	  first n patches of a series (for any n), the kernel should
-	  still compile and run.  It's not OK to introduce a bug in
-	  one patch and then fix it in some later patch; instead, you
-	  need to figure out how to reorder your changes.
-
-Our goal is to improve the kernel through a long series of small,
-incremental, easy to understand, and individually testable changes.
+> 
+> > + * User mode requirements on a QOS parameter register themselves to the
+> > + * subsystem by opening the device node /dev/... and writing there request to
+> > + * the node.  As long as the process holds a file handle open to the node the
+> 
+> /dev?  What /dev entry do you use for a network interface?  Should this
+> be a configfs creature instead, or maybe something else?
+> 
+> > +/* static helper functions */
+> > +static s32 max_compare(s32 v1, s32 v2)
+> 
+> Blech.  Is it time for the yearly stamp-out-reinvention-of-max() already?
+> The use of pointer functions is interesting, but I have to wonder if there's
+> not a better way...
+> 
+> > +#define PID_NAME_LEN sizeof("process_1234567890")
+> > +static char name[PID_NAME_LEN];
+> 
+> And then you just pass a pointer to this and kstrdup() it.  Why not kmalloc()
+> the space initially and just 'dep->name = name;' and be done with it?
+> 
+> General nit - why qos_power_*, when none of the supported QoS parameters
+> seem to be power-related?
