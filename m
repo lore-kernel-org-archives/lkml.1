@@ -1,292 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbXI0Les@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbXI0Llt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752908AbXI0Les (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 07:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXI0Lel
+	id S1754185AbXI0Llt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 07:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbXI0Lll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 07:34:41 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38721 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbXI0Lek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 07:34:40 -0400
-Date: Thu, 27 Sep 2007 13:35:06 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] strip generated symbols from *.ko
-Message-ID: <20070927113506.GC30567@uranus.ravnborg.org>
-References: <46F154E3.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Sep 2007 07:41:41 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:51053 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbXI0Llk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 07:41:40 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/5] ibmebus: Add device creation and bus probing based on of_device
+Date: Thu, 27 Sep 2007 13:27:04 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Paul Mackerras <pmac@au1.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+References: <200709261143.24735.fenkes@de.ibm.com> <200709261145.22278.fenkes@de.ibm.com>
+In-Reply-To: <200709261145.22278.fenkes@de.ibm.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46F154E3.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200709271327.05793.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19cf8YdIF+U7cvGsnXzKP10Ww3mladhCNnsRSl
+ E6CFgEXG7r8iMH1vgsuBOp37pt1r5AIR5lD520Y6AVsdwFJrzB
+ 68IE5tQn3mB2VIphXm2rg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(private reply)
+On Wednesday 26 September 2007, Joachim Fenkes wrote:
+> The devtree root is now searched for devices matching a built-in whitelist
+> during boot, so these devices appear on the bus from the beginning. It is
+> still possible to manually add/remove devices to/from the bus by using the
+> probe/remove sysfs interface. Also, when a device driver registers itself,
+> the devtree is matched against its matchlist.
+> 
+> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 
-Being occupied by non-linux stuff lately but will review your patches soon.
-non-linux stuff includes too little sleep because my baby girl having
-yet another new teeth and it hurst...
-
-I hope to go over it during the weekend so Ican include it in next merge window.
-
-	Sam
-
-On Wed, Sep 19, 2007 at 03:57:07PM +0100, Jan Beulich wrote:
-> This patch changes the way __crc_ symbols are being resolved from
-> using ld to do so to using the assembler, thus allowing these symbols
-> to be marked local (the linker creates then as global ones) and hence
-> allow stripping (for modules) or ignoring (for vmlinux) them. While at
-> this, also strip other generated symbols during module installation.
-> 
-> One potentially debatable point is the handling of the flags passeed
-> to gcc when translating the intermediate assembly file into an object:
-> passing $(c_flags) unchanged doesn't work as gcc passes --gdwarf2 to
-> gas whenever is sees any -g* option, even for -g0, and despite the
-> fact that the compiler would have already produced all necessary debug
-> info in the C->assembly translation phase. I took the approach of just
-> filtering out all -g* options, but an alternative to such negative
-> filtering might be to have a positive filter which might, in the ideal
-> case allow just all the -Wa,* options to pass through.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
-> ---
->  Makefile                    |   15 ++++++------
->  scripts/Makefile.build      |   51 +++++++++++++++++++++++++++-----------------
->  scripts/Makefile.modinst    |    2 -
->  scripts/genksyms/genksyms.c |   23 ++++++++++++++-----
->  scripts/mksysmap            |    6 +----
->  scripts/strip-syms.lst      |   19 ++++++++++++++++
->  6 files changed, 78 insertions(+), 38 deletions(-)
-> 
-> --- 2.6.23-rc6-strip.orig/Makefile
-> +++ 2.6.23-rc6-strip/Makefile
-> @@ -542,19 +542,18 @@ MODLIB	= $(INSTALL_MOD_PATH)/lib/modules
->  export MODLIB
->  
->  #
-> -#  INSTALL_MOD_STRIP, if defined, will cause modules to be
-> -#  stripped after they are installed.  If INSTALL_MOD_STRIP is '1', then
-> -#  the default option --strip-debug will be used.  Otherwise,
-> -#  INSTALL_MOD_STRIP will used as the options to the strip command.
-> -
-> +# INSTALL_MOD_STRIP, if defined, will cause modules to be stripped while
-> +# they get installed.  If INSTALL_MOD_STRIP is '1', then the default
-> +# options (see below) will be used.  Otherwise, INSTALL_MOD_STRIP will
-> +# be used as the option(s) to the objcopy command.
->  ifdef INSTALL_MOD_STRIP
->  ifeq ($(INSTALL_MOD_STRIP),1)
-> -mod_strip_cmd = $(STRIP) --strip-debug
-> +mod_strip_cmd = $(OBJCOPY) --strip-debug --strip-symbols $(srctree)/scripts/strip-syms.lst --wildcard
->  else
-> -mod_strip_cmd = $(STRIP) $(INSTALL_MOD_STRIP)
-> +mod_strip_cmd = $(OBJCOPY) $(INSTALL_MOD_STRIP)
->  endif # INSTALL_MOD_STRIP=1
->  else
-> -mod_strip_cmd = true
-> +mod_strip_cmd = false
->  endif # INSTALL_MOD_STRIP
->  export mod_strip_cmd
->  
-> --- 2.6.23-rc6-strip.orig/scripts/Makefile.build
-> +++ 2.6.23-rc6-strip/scripts/Makefile.build
-> @@ -176,30 +176,38 @@ cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $
->  
->  else
->  # When module versioning is enabled the following steps are executed:
-> -# o compile a .tmp_<file>.o from <file>.c
-> -# o if .tmp_<file>.o doesn't contain a __ksymtab version, i.e. does
-> -#   not export symbols, we just rename .tmp_<file>.o to <file>.o and
-> +# o compile a .tmp_<file>.s from <file>.c
-> +# o if .tmp_<file>.s doesn't contain a __ksymtab version, i.e. does
-> +#   not export symbols, we just assemble .tmp_<file>.s to <file>.o and
->  #   are done.
->  # o otherwise, we calculate symbol versions using the good old
->  #   genksyms on the preprocessed source and postprocess them in a way
-> -#   that they are usable as a linker script
-> -# o generate <file>.o from .tmp_<file>.o using the linker to
-> -#   replace the unresolved symbols __crc_exported_symbol with
-> -#   the actual value of the checksum generated by genksyms
-> +#   that they are usable as assembly source
-> +# o assemble <file>.o from .tmp_<file>.s forcing inclusion of directives
-> +#   defining the actual values of __crc_*, followed by objcopy-ing them
-> +#   to force these symbols to be local to permit stripping them later.
->  
-> -cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
-> +cmd_cc_o_c = $(CC) $(c_flags) -S -o $(@D)/.tmp_$(@F:.o=.s) $<
->  cmd_modversions =							\
-> -	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
-> -		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
-> -		| $(GENKSYMS) $(if $(KBUILD_SYMTYPES),			\
-> -			      -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH)	\
-> -		> $(@D)/.tmp_$(@F:.o=.ver);				\
-> -									\
-> -		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
-> -			-T $(@D)/.tmp_$(@F:.o=.ver);			\
-> -		rm -f $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.ver);	\
-> +	if grep -q __ksymtab $(@D)/.tmp_$(@F:.o=.s); then		\
-> +		if $(CPP) -D__GENKSYMS__ $(c_flags) $<			\
-> +		   | $(GENKSYMS) -A $(if $(KBUILD_SYMTYPES),		\
-> +				 -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH) \
-> +		   > $(@D)/.tmp_$(@F:.o=.v)				\
-> +		   && $(CC) $(filter-out -g%,$(c_flags)) -c		\
-> +			    -Wa,$(@D)/.tmp_$(@F:.o=.v)			\
-> +			    -o $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.s)	\
-> +		   && $(OBJCOPY) -L '__crc_*' -L '___crc_*' -w		\
-> +				 $(@D)/.tmp_$(@F) $@;			\
-> +		then							\
-> +			: ;						\
-> +		else							\
-> +			rm -f $@; exit 1;				\
-> +		fi;							\
->  	else								\
-> -		mv -f $(@D)/.tmp_$(@F) $@;				\
-> +		rm -f $(@D)/.tmp_$(@F:.o=.v);				\
-> +		$(CC) $(filter-out -g%,$(c_flags)) -c			\
-> +		      -o $@ $(@D)/.tmp_$(@F:.o=.s);			\
->  	fi;
->  endif
->  
-> @@ -209,7 +217,12 @@ define rule_cc_o_c
->  	$(cmd_modversions)						  \
->  	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
->  	                                              $(dot-target).tmp;  \
-> -	rm -f $(depfile);						  \
-> +	if [ -r $(@D)/.tmp_$(@F:.o=.v) ]; then				  \
-> +		echo >> $(dot-target).tmp;				  \
-> +		echo '$@: $(GENKSYMS)' >> $(dot-target).tmp;		  \
-> +		echo '$(GENKSYMS):: ;' >> $(dot-target).tmp;		  \
-> +	fi;								  \
-> +	rm -f $(depfile) $(@D)/.tmp_$(@F:.o=.?);			  \
->  	mv -f $(dot-target).tmp $(dot-target).cmd
->  endef
->  
-> --- 2.6.23-rc6-strip.orig/scripts/Makefile.modinst
-> +++ 2.6.23-rc6-strip/scripts/Makefile.modinst
-> @@ -17,7 +17,7 @@ __modinst: $(modules)
->  	@:
->  
->  quiet_cmd_modules_install = INSTALL $@
-> -      cmd_modules_install = mkdir -p $(2); cp $@ $(2) ; $(mod_strip_cmd) $(2)/$(notdir $@)
-> +      cmd_modules_install = mkdir -p $(2); $(mod_strip_cmd) $@ $(2)/$(notdir $@) || cp $@ $(2)
->  
->  # Modules built outside the kernel source tree go into extra by default
->  INSTALL_MOD_DIR ?= extra
-> --- 2.6.23-rc6-strip.orig/scripts/genksyms/genksyms.c
-> +++ 2.6.23-rc6-strip/scripts/genksyms/genksyms.c
-> @@ -42,7 +42,7 @@ static FILE *debugfile;
->  int cur_line = 1;
->  char *cur_filename;
->  
-> -static int flag_debug, flag_dump_defs, flag_dump_types, flag_warnings;
-> +static int flag_debug, flag_dump_defs, flag_dump_types, flag_warnings, flag_asm;
->  static const char *arch = "";
->  static const char *mod_prefix = "";
->  
-> @@ -415,8 +415,11 @@ void export_symbol(const char *name)
->  		if (flag_dump_defs)
->  			fputs(">\n", debugfile);
->  
-> -		/* Used as a linker script. */
-> -		printf("%s__crc_%s = 0x%08lx ;\n", mod_prefix, name, crc);
-> +		/* Used as inline assembly or a linker script. */
-> +		printf(flag_asm
-> +		       ? ".equiv %s__crc_%s, 0x%08lx\n"
-> +		       : "%s__crc_%s = 0x%08lx ;\n",
-> +		       mod_prefix, name, crc);
->  	}
->  }
->  
-> @@ -440,8 +443,10 @@ void error_with_pos(const char *fmt, ...
->  
->  static void genksyms_usage(void)
->  {
-> -	fputs("Usage:\n" "genksyms [-dDwqhV] > /path/to/.tmp_obj.ver\n" "\n"
-> +	fputs("Usage:\n" "genksyms [-aAdDwqhV] > /path/to/.tmp_obj.ver\n" "\n"
->  #ifdef __GNU_LIBRARY__
-> +	      "  -a, --arch            Specify target architecture\n"
-> +	      "  -A, --asm             Generate inline assembly rather than linker script\n"
->  	      "  -d, --debug           Increment the debug level (repeatable)\n"
->  	      "  -D, --dump            Dump expanded symbol defs (for debugging only)\n"
->  	      "  -w, --warnings        Enable warnings\n"
-> @@ -449,6 +454,8 @@ static void genksyms_usage(void)
->  	      "  -h, --help            Print this message\n"
->  	      "  -V, --version         Print the release version\n"
->  #else				/* __GNU_LIBRARY__ */
-> +	      "  -a                    Specify target architecture\n"
-> +	      "  -A                    Generate inline assembly rather than linker script\n"
->  	      "  -d                    Increment the debug level (repeatable)\n"
->  	      "  -D                    Dump expanded symbol defs (for debugging only)\n"
->  	      "  -w                    Enable warnings\n"
-> @@ -467,6 +474,7 @@ int main(int argc, char **argv)
->  #ifdef __GNU_LIBRARY__
->  	struct option long_opts[] = {
->  		{"arch", 1, 0, 'a'},
-> +		{"asm", 0, 0, 'A'},
->  		{"debug", 0, 0, 'd'},
->  		{"warnings", 0, 0, 'w'},
->  		{"quiet", 0, 0, 'q'},
-> @@ -477,10 +485,10 @@ int main(int argc, char **argv)
->  		{0, 0, 0, 0}
->  	};
->  
-> -	while ((o = getopt_long(argc, argv, "a:dwqVDT:k:p:",
-> +	while ((o = getopt_long(argc, argv, "a:dwqVADT:k:p:",
->  				&long_opts[0], NULL)) != EOF)
->  #else				/* __GNU_LIBRARY__ */
-> -	while ((o = getopt(argc, argv, "a:dwqVDT:k:p:")) != EOF)
-> +	while ((o = getopt(argc, argv, "a:dwqVADT:k:p:")) != EOF)
->  #endif				/* __GNU_LIBRARY__ */
->  		switch (o) {
->  		case 'a':
-> @@ -498,6 +506,9 @@ int main(int argc, char **argv)
->  		case 'V':
->  			fputs("genksyms version 2.5.60\n", stderr);
->  			break;
-> +		case 'A':
-> +			flag_asm = 1;
-> +			break;
->  		case 'D':
->  			flag_dump_defs = 1;
->  			break;
-> --- 2.6.23-rc6-strip.orig/scripts/mksysmap
-> +++ 2.6.23-rc6-strip/scripts/mksysmap
-> @@ -36,9 +36,7 @@
->  
->  # readprofile starts reading symbols when _stext is found, and
->  # continue until it finds a symbol which is not either of 'T', 't',
-> -# 'W' or 'w'. __crc_ are 'A' and placed in the middle
-> -# so we just ignore them to let readprofile continue to work.
-> -# (At least sparc64 has __crc_ in the middle).
-> +# 'W' or 'w'.
->  
-> -$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
-> +$NM -n $1 | grep -v '\( [aUw] \)\|\( \$[adt]\)' > $2
->  
-> --- /dev/null
-> +++ 2.6.23-rc6-strip/scripts/strip-syms.lst
-> @@ -0,0 +1,19 @@
-> +<*>
-> +*.h
-> +__compound_literal[$.][0-9]*
-> +__crc_[a-zA-Z_]*
-> +__exitcall_[a-zA-Z_]*
-> +__func__[$.][0-9]*
-> +__FUNCTION__[$.][0-9]*
-> +gcc[0-9]_compiled[$.]
-> +__initcall_[a-zA-Z_]*
-> +__kcrctab_[a-zA-Z_]*
-> +__kstrtab_[a-zA-Z_]*
-> +__ksymtab_[a-zA-Z_]*
-> +__mod_[a-zA-Z_]*[0-9]
-> +__module_depends
-> +__param_[a-zA-Z_]*
-> +__pci_fixup_[A-Z]*
-> +__PRETTY_FUNCTION__[$.][0-9]*
-> +__setup_[a-zA-Z_]*
-> +____versions
-> 
-> 
+Acked-by: Arnd Bergmann <arnd@arndb.de>
