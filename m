@@ -1,79 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbXI0VH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbXI0VJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759084AbXI0VH1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 17:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbXI0VHS
+	id S1757821AbXI0VJF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 17:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbXI0VIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 17:07:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44371 "EHLO ogre.sisk.pl"
+	Thu, 27 Sep 2007 17:08:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46703 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755513AbXI0VHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 17:07:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Dmitry Tyschenko" <dtyschenko@gmail.com>
-Subject: Re: NO_HZ hangs up AMD MK-36
-Date: Thu, 27 Sep 2007 23:21:51 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>
-References: <a6a840cd0709271328p76ee6a22tf3b60678d6a2d455@mail.gmail.com> <200709272259.26412.rjw@sisk.pl> <a6a840cd0709271401r56d5bebes8e361994ecc5746a@mail.gmail.com>
-In-Reply-To: <a6a840cd0709271401r56d5bebes8e361994ecc5746a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1755892AbXI0VIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 17:08:54 -0400
+Date: Thu, 27 Sep 2007 17:08:16 -0400
+From: Rik van Riel <riel@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org
+Subject: [PATCH] kswapd should only wait on IO if there is IO
+Message-ID: <20070927170816.055548fd@bree.surriel.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709272321.52514.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please don't top post.
+The current kswapd (and try_to_free_pages) code has an oddity where the
+code will wait on IO, even if there is no IO in flight.  This problem is
+notable especially when the system scans through many unfreeable pages,
+causing unnecessary stalls in the VM.
 
-On Thursday, 27 September 2007 23:01, Dmitry Tyschenko wrote:
-> Sorry, I am newbie in linux. Hope you was talking about:
-> /boot/vmlinuz-2.6.22-1-k7 root=/dev/sda5 ro nohz=off
+Signed-off-by: Rik van Riel <riel@surriel.com>
 
-Yes.
+diff -up linux-2.6.22.x86_64/mm/vmscan.c.wait linux-2.6.22.x86_64/mm/vmscan.c
+--- linux-2.6.22.x86_64/mm/vmscan.c.wait	2007-09-25 11:33:30.000000000 -0400
++++ linux-2.6.22.x86_64/mm/vmscan.c	2007-09-25 21:27:08.000000000 -0400
+@@ -68,6 +68,8 @@ struct scan_control {
+ 	int all_unreclaimable;
+ 
+ 	int order;
++
++	int nr_io_pages;
+ };
+ 
+ #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+@@ -489,8 +491,10 @@ static unsigned long shrink_page_list(st
+ 			 */
+ 			if (sync_writeback == PAGEOUT_IO_SYNC && may_enter_fs)
+ 				wait_on_page_writeback(page);
+-			else
++			else {
++				sc->nr_io_pages++;
+ 				goto keep_locked;
++			}
+ 		}
+ 
+ 		referenced = page_referenced(page, 1);
+@@ -541,8 +545,10 @@ static unsigned long shrink_page_list(st
+ 			case PAGE_ACTIVATE:
+ 				goto activate_locked;
+ 			case PAGE_SUCCESS:
+-				if (PageWriteback(page) || PageDirty(page))
++				if (PageWriteback(page) || PageDirty(page)) {
++					sc->nr_io_pages++;
+ 					goto keep;
++				}
+ 				/*
+ 				 * A synchronous write - probably a ramdisk.  Go
+ 				 * ahead and try to reclaim the page.
+@@ -1201,6 +1207,7 @@ unsigned long try_to_free_pages(struct z
+ 
+ 	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
+ 		sc.nr_scanned = 0;
++		sc.nr_io_pages = 0;
+ 		if (!priority)
+ 			disable_swap_token();
+ 		nr_reclaimed += shrink_zones(priority, zones, &sc);
+@@ -1229,7 +1236,8 @@ unsigned long try_to_free_pages(struct z
+ 		}
+ 
+ 		/* Take a nap, wait for some writeback to complete */
+-		if (sc.nr_scanned && priority < DEF_PRIORITY - 2)
++		if (sc.nr_scanned && priority < DEF_PRIORITY - 2 &&
++				sc.nr_io_pages > sc.swap_cluster_max)
+ 			congestion_wait(WRITE, HZ/10);
+ 	}
+ 	/* top priority shrink_caches still had more to do? don't OOM, then */
+@@ -1315,6 +1323,7 @@ loop_again:
+ 		if (!priority)
+ 			disable_swap_token();
+ 
++		sc.nr_io_pages = 0;
+ 		all_zones_ok = 1;
+ 
+ 		/*
+@@ -1398,7 +1407,8 @@ loop_again:
+ 		 * OK, kswapd is getting into trouble.  Take a nap, then take
+ 		 * another pass across the zones.
+ 		 */
+-		if (total_scanned && priority < DEF_PRIORITY - 2)
++		if (total_scanned && priority < DEF_PRIORITY - 2 &&
++					sc.nr_io_pages > sc.swap_cluster_max)
+ 			congestion_wait(WRITE, HZ/10);
+ 
+ 		/*
 
-> But it doesn't help for Debians 2.6.22-1 (I don't have another
-> prebuiled) still same problems.
-
-So, you need to explicitly unset NO_HZ in the kernel coniguration to make
-things work.
-
-Well, in that case please wait until the 2.6.23 kernel is out and test it.
-There will be some important fixes related to NO_HZ in it.
-
-Greetings,
-Rafael
-
-
-> 2007/9/27, Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Thursday, 27 September 2007 22:28, Dmitry Tyschenko wrote:
-> > > Hello,
-> > >
-> > > I have laptop Asus X50M. Using old Debian Etch from February.
-> > > Kernel from 2.6.21 doesn't boot, hangs up just in 10seconds -  1minute
-> > > after GRUB screen.
-> > > I have tryed different versions of gcc (4.1.1, 4.1.2, 4.2.1) to build
-> > > 2.6.22.8 kernel, but no results.
-> > > But if I disable NO_HZ option 2.6.21 is working fine for me.
-> > >
-> > > I think this is important problem, because some of the project, Debian
-> > > for example,
-> > >  are building kernel with this options enabled (in
-> > > linux-image-2.6.22-1-k7 package it is enabled),
-> > > and some people, like me, can not use new kernels.
-> > >
-> > > I have attached some of my PC info, hope this can help
-> >
-> > You can use the "nohz=off" kernel command line switch.  Please check if it
-> > works for you.
-> >
-> > Greetings,
-> > Rafael
-> >
-> 
-> 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
