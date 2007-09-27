@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbXI0ScF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbXI0Sgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757127AbXI0ScF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 14:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXI0Sby
+	id S1757352AbXI0Sgw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 14:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXI0Sgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 14:31:54 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38498 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753797AbXI0Sbw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 14:31:52 -0400
-Date: Thu, 27 Sep 2007 19:37:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
-       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: Stardom SATA HSM violation
-Message-ID: <20070927193701.6230d77f@the-village.bc.nu>
-In-Reply-To: <46FB563A.80108@gmail.com>
-References: <46CFA08E.6090604@arbores.ca>
-	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>
-	<46DBCB6C.8080206@gmail.com>
-	<20070905095327.6277d054.akpm@linux-foundation.org>
-	<46DEE617.4050004@rtr.ca>
-	<46E0A253.7060803@gmail.com>
-	<46E154DE.2060602@rtr.ca>
-	<46FB563A.80108@gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Sep 2007 14:36:44 -0400
+Received: from mga02.intel.com ([134.134.136.20]:55075 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754612AbXI0Sgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 14:36:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,204,1188802800"; 
+   d="scan'208";a="234313222"
+Message-ID: <46FBF830.9000704@intel.com>
+Date: Thu, 27 Sep 2007 11:36:32 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070911)
+MIME-Version: 1.0
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+CC: Jesse Barnes <jesse.barnes@intel.com>, Greg KH <greg@kroah.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>,
+       Matthew Wilcox <matthew@wil.cx>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PCI: Fix boot-time hang on G31/G33 PC
+References: <20070826015556.GC14130@parisc-linux.org> <200709261455.56165.jesse.barnes@intel.com> <20070926215648.GA24505@kroah.com> <200709261520.40859.jesse.barnes@intel.com> <20070927183129.A17565@jurassic.park.msu.ru>
+In-Reply-To: <20070927183129.A17565@jurassic.park.msu.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Sep 2007 18:36:42.0679 (UTC) FILETIME=[59843470:01C80135]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think there have been enough cases where this draining was necessary.
->  IIRC, ata_piix was involved in those cases, right?  If so, can you
-> please submit a patch which applies this only to affected controllers?
-> I don't feel too confident about applying this to all SFF controllers.
+Ivan Kokshaysky wrote:
+> On Wed, Sep 26, 2007 at 03:20:40PM -0700, Jesse Barnes wrote:
+>> Ivan, your concern is about disabling things like interrupt controllers 
+>> and power management chips during probe right?  You're right that doing 
+>> that could cause problems if we get and interrupt or PMU event at just 
+>> the wrong time, but that could just as easily happen if decode was 
+>> still enabled but the BAR had a bogus address programmed (as it would 
+>> during probing).
+> 
+> Yes, nobody is arguing that moving the BAR around is unsafe, but generally
+> it's the less of two evils.
+> 
+> The major problem here is that with IO and MEM bits cleared in the command
+> register you disable *all* address decoders on the device, not just ranges
+> that have respective BARs. At least this behaviour is required by PCI spec.
+> Examples:
+> - legacy VGA IO and memory (no corresponding BARs);
+> - base/limit registers of P2P bridge;
+> - PMU and SMBus registers (sort of normal BARs, but hidden elsewhere
+>   in the config space);
+> - IDE legacy mode registers;
+> - IO-APIC registers (typically sort of read-only BAR).
+> 
+> For all of these address ranges our current BAR probe is effectively
+> a no-op, but disable/re-enable clearly isn't.
+> 
+>> Ultimately, I don't care much one way or another as long as we can get 
+>> the desktop platforms fixed somehow.  I think disabling decode is the 
+>> most correct way of doing this, but I'm open to other solutions (this 
+>> is the only patch I've seen though that's been tested to solve the 
+>> problem).
+> 
+> There are two other solutions: one is to disable decode selectively,
+> only on devices or systems where it's necessary and known to be safe.
+> I've posted a patch which introduces "disable_while_probe" pci_dev field
+> for that purpose.
+> Another one is to delay mmconfig probe until after the PCI probe is done,
+> as Matthew suggested, and Robert confirmed that it's feasible.
 
-Old IDE does it on all controllers bar a couple. So we have a very good
-knowledge of what does/doesn't work. The one that needs care in old ide
-is an ordering issue where a state machine reset done first causes the
-drain of the I/O to hang.
+
+for everyone who's using this quirk or has the same boot issue: I just confirmed
+that the new dg33tl bios update v0287 (released 9/20) fixes the boot issue for my
+systems. I encourage everyone to update their BIOS image and see if this works.
+
+Cheers,
+
+Auke
