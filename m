@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbXI0PLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbXI0PO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbXI0PLY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXI0PLQ
+	id S1757302AbXI0PO1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbXI0POT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:11:16 -0400
-Received: from SOKENS03e.snapon.com ([217.33.151.228]:37607 "EHLO
-	sokens03.snapon.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752790AbXI0PLQ (ORCPT
+	Thu, 27 Sep 2007 11:14:19 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48929 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754758AbXI0POS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:11:16 -0400
-X-Greylist: delayed 1543 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Sep 2007 11:11:15 EDT
-Message-ID: <00ab01c80114$e659d600$7502a8c0@snaponglobal.com>
-From: "Marco Tralli" <marco.tralli@snapon.com>
-To: "Jordan Crouse" <jordan.crouse@amd.com>, <linux-kernel@vger.kernel.org>
-Subject: kernel 2.6.23-rc6 hangs on Geode GX1
-Date: Thu, 27 Sep 2007 16:44:22 +0200
-Organization: SNAPON
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Thu, 27 Sep 2007 11:14:18 -0400
+Date: Thu, 27 Sep 2007 16:19:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file 
+ without options
+Message-ID: <20070927161912.2f08aff6@the-village.bc.nu>
+In-Reply-To: <20070927150853.GA10154@kernel.dk>
+References: <20070927142919.10b62f9b@the-village.bc.nu>
+	<20070927070118.2bd4792e@laptopd505.fenrus.org>
+	<20070927151921.29b19abb@the-village.bc.nu>
+	<20070927143548.GT5243@kernel.dk>
+	<20070927154432.302ec5a7@the-village.bc.nu>
+	<20070927150853.GA10154@kernel.dk>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1807
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1896
-X-OriginalArrivalTime: 27 Sep 2007 14:45:30.0157 (UTC) FILETIME=[0CD955D0:01C80115]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+> Well it's not my call, just seems like a really bad idea to change the
+> error value. You can't claim full coverage for such testing anyway, it's
+> one of those things that people will complain about two releases later
+> saying it broke app foo.
 
-I have random hangs on kernel boot or after few minutes on a NatSemi Geode
-GX1 based PC-104 (from Advantech) using kernel 2.6.23-rc6. The system locks,
-no way to use SysRq key, no usefull logs.
+Strange since we've spent years changing error values and getting them
+right in the past. 
 
-No problems using kernel 2.6.21 series that I was using before with same
-config options.
+There are real things to worry about - sysfs, sysfs, sysfs, ... and all
+the other crap which is continually breaking stuff, not spec compliance
+corrections that don't break things but move us into compliance with the
+standard
 
-I found that commenting out "geode_configure" call in
-arch/i386/kernel/cpu/cyrix.c the problem is fixed.
-
-I guess recent changes to cyrix.c that replace macros setCx86/getCx86 with
-inlined functions have now "activate" performance tricks in geode_configure
-code that previously were "inactive" due to wrong macro espansion. So not
-only "Suspend on Halt" function is enabled but also less or not documented
-geode tricks (incrementor margin, fast fpu, write-back) now broken on some
-GX1/GXm platform (maybe because of BIOS?)
-
-I can further investigate on what exact geode_configure part cause my hangs,
-but I suggest to make a config options to explicity enable Geode performance
-tricks only if requested (maybe using CONFIG_MGEODEGX1) .
-
-Regards
-Marco Tralli
-Snap-on Equipment
-
-
-processor : 0
-vendor_id : CyrixInstead
-cpu family : 5
-model  : 9
-model name : Geode(TM) Integrated Processor by National Semi
-stepping : 2
-cpu MHz  : 299.239
-cache size : 16 KB
-fdiv_bug : no
-hlt_bug  : no
-f00f_bug : no
-coma_bug : no
-fpu  : yes
-fpu_exception : yes
-cpuid level : 2
-wp  : yes
-flags  : fpu tsc msr cx8 cmov mmx cxmmx
-bogomips : 596.37
-
+Alan
