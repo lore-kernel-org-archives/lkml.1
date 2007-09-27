@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbXI0NNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbXI0NXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbXI0NNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 09:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbXI0NNN
+	id S1755966AbXI0NXm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 09:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXI0NXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 09:13:13 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:47784 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbXI0NNN (ORCPT
+	Thu, 27 Sep 2007 09:23:33 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41370 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752599AbXI0NXc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 09:13:13 -0400
-Date: Thu, 27 Sep 2007 15:13:10 +0200
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ext2-devel@lists.sourceforge.net,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kernel Oops in ext3 code
-Message-ID: <20070927131310.GD6093@gamma.logic.tuwien.ac.at>
-References: <20070927103122.GB27783@gamma.logic.tuwien.ac.at> <200709271425.06470.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709271425.06470.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+	Thu, 27 Sep 2007 09:23:32 -0400
+Date: Thu, 27 Sep 2007 14:29:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] fs: Correct SuS compliance for open of large file without
+ options
+Message-ID: <20070927142919.10b62f9b@the-village.bc.nu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Do, 27 Sep 2007, Rafael J. Wysocki wrote:
-> Does it happen with 2.6.22?
+The early LFS work that Linux uses favours EFBIG in various places. SuSv3
+specifically uses EOVERFLOW for this as noted by Michael (Bug 7253)
 
-Hard to say. It didn't happen as long as I used -22, but it didn't
-happen for a long time (since I run -rc6), and it is not reproducible.
+--
 
-What I did at this time is a:
-	tar -cjf foo.tar.bz2 a-big-dir-with-more-than-800Mb
-I retried it again with -rc6 and it succeeded. So hard to say.
+[EOVERFLOW]
+    The named file is a regular file and the size of the file cannot be
+represented correctly in an object of type off_t. We should therefore
+transition to the proper error return code
 
-Best wishes
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-Norbert
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.23rc8-mm1/fs/gfs2/ops_file.c linux-2.6.23rc8-mm1/fs/gfs2/ops_file.c
+--- linux.vanilla-2.6.23rc8-mm1/fs/gfs2/ops_file.c	2007-09-26 16:46:54.000000000 +0100
++++ linux-2.6.23rc8-mm1/fs/gfs2/ops_file.c	2007-09-27 13:45:48.000000000 +0100
+@@ -406,7 +406,7 @@
+ 
+ 		if (!(file->f_flags & O_LARGEFILE) &&
+ 		    ip->i_di.di_size > MAX_NON_LFS) {
+-			error = -EFBIG;
++			error = -EOVERFLOW;
+ 			goto fail_gunlock;
+ 		}
+ 
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.23rc8-mm1/fs/ntfs/file.c linux-2.6.23rc8-mm1/fs/ntfs/file.c
+--- linux.vanilla-2.6.23rc8-mm1/fs/ntfs/file.c	2007-09-26 16:46:55.000000000 +0100
++++ linux-2.6.23rc8-mm1/fs/ntfs/file.c	2007-09-27 13:47:35.000000000 +0100
+@@ -61,7 +61,7 @@
+ {
+ 	if (sizeof(unsigned long) < 8) {
+ 		if (i_size_read(vi) > MAX_LFS_FILESIZE)
+-			return -EFBIG;
++			return -EOVERFLOW;
+ 	}
+ 	return generic_file_open(vi, filp);
+ }
+diff -u --new-file --exclude-from /usr/src/exclude --recursive linux.vanilla-2.6.23rc8-mm1/fs/open.c linux-2.6.23rc8-mm1/fs/open.c
+--- linux.vanilla-2.6.23rc8-mm1/fs/open.c	2007-09-26 16:46:55.000000000 +0100
++++ linux-2.6.23rc8-mm1/fs/open.c	2007-09-27 13:45:10.000000000 +0100
+@@ -1210,7 +1210,7 @@
+ int generic_file_open(struct inode * inode, struct file * filp)
+ {
+ 	if (!(filp->f_flags & O_LARGEFILE) && i_size_read(inode) > MAX_NON_LFS)
+-		return -EFBIG;
++		return -EOVERFLOW;
+ 	return 0;
+ }
+ 
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-ALDCLUNE (n.)
-One who collects ten-year-old telephone directories.
-			--- Douglas Adams, The Meaning of Liff
