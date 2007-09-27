@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbXI0Pp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbXI0Ppk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757152AbXI0Pp1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbXI0PpQ
+	id S1758624AbXI0Ppk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbXI0PpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:45:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43536 "EHLO ogre.sisk.pl"
+	Thu, 27 Sep 2007 11:45:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43539 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754412AbXI0PpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:45:14 -0400
+	id S1756615AbXI0PpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 11:45:18 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents)
-Date: Thu, 27 Sep 2007 17:58:15 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc8-mm2: problems on HP nx6325
+Date: Thu, 27 Sep 2007 17:59:45 +0200
 User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <200709231257.12213.rjw@sisk.pl> <200709270130.51870.rjw@sisk.pl> <1190848909.23376.78.camel@chaos>
-In-Reply-To: <1190848909.23376.78.camel@chaos>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <200709271719.06937.rjw@sisk.pl>
+In-Reply-To: <200709271719.06937.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709271758.16138.rjw@sisk.pl>
+Message-Id: <200709271759.46018.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 September 2007 01:21, Thomas Gleixner wrote:
-> On Thu, 2007-09-27 at 01:30 +0200, Rafael J. Wysocki wrote:
-> > > > Tested for a couple of times with each kernel, the results seem to be
-> > > > reproducible 100% of the time.
-> > > 
-> > > Thanks for going through this debug marathon.
+On Thursday, 27 September 2007 17:19, Rafael J. Wysocki wrote:
+> On Thursday, 27 September 2007 11:22, Andrew Morton wrote:
 > > 
-> > No big deal.  I'm glad that you've found what's up.
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/
 > > 
-> > Well, we still have the "CPU hotplug during suspend w/ the hrt patch" problem
-> > to debug ... ;-)
+> > 
+> > - The scheduler devel tree has been restored
+> > 
+> > - The driver tree is presently busted, so I reverted it to the 2..23-rc8-mm1
+> >   version.
+> > 
+> > - It's now a nearly-32MB diff.
 > 
-> Yeah. Knowing the actual line of code where it breaks might be helpful.
+> On HP nx6325:
+> 
+> 1) The audio is back (thanks for reverting x86_64-mm-cpa-einval.patch)
+> 
+> 2) CPU hotplug is busted (onlining of CPU1 kills the kernel), probably due to
+>    the same issue that I'm having with the -hrt version of 2.6.23-rc8 (we're
+>    debugging it right now)
 
-Instead, I have a fix (appended, against 2.6.23-rc8-mm2). :-)
-
-Next, I'm going to enable NO_HZ and HIGH_RES_TIMERS and see what happens. ;-)
-
-Greetings,
-Rafael
+This one is fixed by the following patch:
 
 ---
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Fix CPU hotplug breakage on HP nx6325 and similar boxes caused by the reference
+Fix CPU hotplug breakage on HP nx6325 and similar boxes caused by a reference
 to disable_apic_timer (labeled as __initdata) from the CPU initialization code.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
