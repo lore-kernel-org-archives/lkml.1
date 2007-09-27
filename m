@@ -1,35 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbXI0PWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbXI0P0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758343AbXI0PWJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbXI0PV4
+	id S1757524AbXI0P0j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXI0P0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:21:56 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:50331 "EHLO smtp2.it.da.ut.ee"
+	Thu, 27 Sep 2007 11:26:31 -0400
+Received: from mail.fuw.edu.pl ([193.0.80.14]:33942 "EHLO mail.fuw.edu.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752790AbXI0PVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:21:55 -0400
-Date: Thu, 27 Sep 2007 18:21:52 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc8: Known regressions from 2.6.22
-In-Reply-To: <200709271408.06148.rjw@sisk.pl>
-Message-ID: <Pine.SOC.4.64.0709271821100.10218@math.ut.ee>
-References: <20070927061902.84E0013CFD@rhn.tartu-labor> <200709271408.06148.rjw@sisk.pl>
+	id S1754753AbXI0P0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 11:26:31 -0400
+X-Greylist: delayed 627 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Sep 2007 11:26:30 EDT
+From: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Organization: FUW
+To: "Marco Tralli" <marco.tralli@snapon.com>
+Subject: Re: kernel 2.6.23-rc6 hangs on Geode GX1
+Date: Thu, 27 Sep 2007 17:30:14 +0200
+User-Agent: KMail/1.9.5
+Cc: "Jordan Crouse" <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org
+References: <00ab01c80114$e659d600$7502a8c0@snaponglobal.com>
+In-Reply-To: <00ab01c80114$e659d600$7502a8c0@snaponglobal.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709271730.14555.Rafal.Wysocki@fuw.edu.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > http://lkml.org/lkml/2007/9/22/64
+On Thursday, 27 September 2007 16:44, Marco Tralli wrote:
+> Hello all,
 > 
-> Created: http://bugzilla.kernel.org/show_bug.cgi?id=9087
-> 
-> Please add a summary of your observations to this bug entry.
+> I have random hangs on kernel boot or after few minutes on a NatSemi Geode
+> GX1 based PC-104 (from Advantech) using kernel 2.6.23-rc6. The system locks,
+> no way to use SysRq key, no usefull logs.
 
-Added; However, it's assigned to serial devices, while imput devices 
-should be more appropriate for PS2 mouse?
+Please see: http://bugzilla.kernel.org/show_bug.cgi?id=9086
 
--- 
-Meelis Roos (mroos@linux.ee)
+Greetings,
+Rafael
