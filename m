@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758818AbXI0Ver@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbXI0VgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758818AbXI0Ver (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 17:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbXI0Vek
+	id S1759277AbXI0VgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 17:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbXI0VgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 17:34:40 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:22194 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756029AbXI0Vej (ORCPT
+	Thu, 27 Sep 2007 17:36:12 -0400
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:52308 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754133AbXI0VgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 17:34:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=P3TXAWJVpD+J38Cxr5ZJ0J3QCbGcxcgBN25Cn9uvpV+uZ3USLS0sddY4h6VC76sBFn/Wa9Y95uksmBvatZDC6Ekt4wTC9M2g9/qsm6/UD/RtWmqt+VVmwIzW2LgjwNTTjqso1hSklc7DnG/7TUr7ZNO9n12O4MEmbXo47qg9XgQ=
-Message-ID: <a6a840cd0709271434j2e637f04pcf6e2c44f162a9fe@mail.gmail.com>
-Date: Fri, 28 Sep 2007 00:34:39 +0300
-From: "Dmitry Tyschenko" <dtyschenko@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: NO_HZ hangs up AMD MK-36
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <1190927397.23376.147.camel@chaos>
+	Thu, 27 Sep 2007 17:36:11 -0400
+Message-ID: <46FC2245.50907@tiscali.nl>
+Date: Thu, 27 Sep 2007 23:36:05 +0200
+From: roel <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] spin_lock_unlocked cleanups
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a6a840cd0709271328p76ee6a22tf3b60678d6a2d455@mail.gmail.com>
-	 <200709272259.26412.rjw@sisk.pl>
-	 <a6a840cd0709271401r56d5bebes8e361994ecc5746a@mail.gmail.com>
-	 <1190927397.23376.147.camel@chaos>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/9/28, Thomas Gleixner <tglx@linutronix.de>:
-> On Fri, 2007-09-28 at 00:01 +0300, Dmitry Tyschenko wrote:
-> > Sorry, I am newbie in linux. Hope you was talking about:
-> > /boot/vmlinuz-2.6.22-1-k7 root=/dev/sda5 ro nohz=off
->
-> Yes.
->
-> > But it doesn't help for Debians 2.6.22-1 (I don't have another
-> > prebuiled) still same problems.
->
-> Can you please add: nolapic_timer instead ?
->
-> Thanks,
->
->         tglx
+Replace some SPIN_LOCK_UNLOCKED with DEFINE_SPINLOCK
 
-It works with nolapic_timer!
-Thank you!
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/mips/pci/ops-pmcmsp.c b/arch/mips/pci/ops-pmcmsp.c
+index 09fa007..059eade 100644
+--- a/arch/mips/pci/ops-pmcmsp.c
++++ b/arch/mips/pci/ops-pmcmsp.c
+@@ -206,7 +206,7 @@ static void pci_proc_init(void)
+ }
+ #endif /* CONFIG_PROC_FS && PCI_COUNTERS */
+ 
+-spinlock_t bpci_lock = SPIN_LOCK_UNLOCKED;
++DEFINE_SPINLOCK(bpci_lock);
+ 
+ /*****************************************************************************
+  *
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index d5fd390..cd2766e 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -34,7 +34,7 @@
+ #include <asm/mmu.h>
+ #include <asm/spu.h>
+ 
+-static spinlock_t slice_convert_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(slice_convert_lock);
+ 
+ 
+ #ifdef DEBUG
+diff --git a/drivers/char/watchdog/bfin_wdt.c b/drivers/char/watchdog/bfin_wdt.c
+index 309d279..31dc7a6 100644
+--- a/drivers/char/watchdog/bfin_wdt.c
++++ b/drivers/char/watchdog/bfin_wdt.c
+@@ -71,7 +71,7 @@ static int nowayout = WATCHDOG_NOWAYOUT;
+ static struct watchdog_info bfin_wdt_info;
+ static unsigned long open_check;
+ static char expect_close;
+-static spinlock_t bfin_wdt_spinlock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(bfin_wdt_spinlock);
+ 
+ /**
+  *	bfin_wdt_keepalive - Keep the Userspace Watchdog Alive
+diff --git a/drivers/ieee1394/ieee1394_core.c b/drivers/ieee1394/ieee1394_core.c
+index 98fd985..36c747b 100644
+--- a/drivers/ieee1394/ieee1394_core.c
++++ b/drivers/ieee1394/ieee1394_core.c
+@@ -488,7 +488,7 @@ void hpsb_selfid_complete(struct hpsb_host *host, int phyid, int isroot)
+ 	highlevel_host_reset(host);
+ }
+ 
+-static spinlock_t pending_packets_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(pending_packets_lock);
+ 
+ /**
+  * hpsb_packet_sent - notify core of sending a packet
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 83e76b3..94fd78f 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -15,9 +15,9 @@
+ #include "sysfs.h"
+ 
+ DEFINE_MUTEX(sysfs_mutex);
+-spinlock_t sysfs_assoc_lock = SPIN_LOCK_UNLOCKED;
++DEFINE_SPINLOCK(sysfs_assoc_lock);
+ 
+-static spinlock_t sysfs_ino_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(sysfs_ino_lock);
+ static DEFINE_IDA(sysfs_ino_ida);
+ 
+ /**
