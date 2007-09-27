@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbXI0NAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbXI0NNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbXI0NAi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 09:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXI0NAa
+	id S1755573AbXI0NNV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 09:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbXI0NNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 09:00:30 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:55306 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbXI0NAa (ORCPT
+	Thu, 27 Sep 2007 09:13:13 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:47784 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753427AbXI0NNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 09:00:30 -0400
-Message-ID: <46FBA95E.3090207@tiscali.nl>
-Date: Thu, 27 Sep 2007 15:00:14 +0200
-From: roel <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 27 Sep 2007 09:13:13 -0400
+Date: Thu, 27 Sep 2007 15:13:10 +0200
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ext2-devel@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kernel Oops in ext3 code
+Message-ID: <20070927131310.GD6093@gamma.logic.tuwien.ac.at>
+References: <20070927103122.GB27783@gamma.logic.tuwien.ac.at> <200709271425.06470.rjw@sisk.pl>
 MIME-Version: 1.0
-To: mgross@linux.intel.com
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] QoS params patch
-References: <20070926223712.GA22029@linux.intel.com> <20070926224026.GA23218@linux.intel.com> <20070926164159.3b43479b.randy.dunlap@oracle.com> <20070927004020.GB29906@linux.intel.com>
-In-Reply-To: <20070927004020.GB29906@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709271425.06470.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Gross wrote:
-> On Wed, Sep 26, 2007 at 04:41:59PM -0700, Randy Dunlap wrote:
->> On Wed, 26 Sep 2007 15:40:26 -0700 Mark Gross wrote:
->>
->>> The following is the qos_param patch that implements a genralization of
->>> latency.c.
->>>
->> Just some general comments (as on irc):
->>
->> - use 'diffstat -p1 -w70' to summarize each patch
->> - use checkpatch.pl to check for coding style and other buglets
-> 
-> done
-> 
->> - has no API docs  :(
-> not done yet.
->>
->>
->>
->>> +/* assumes qos_lock is held */
->>> +static void update_target(int i)
->> I'd prefer a better arg name than 'i'.
-> 
-> I do too, but i in this case is an Index.
+On Do, 27 Sep 2007, Rafael J. Wysocki wrote:
+> Does it happen with 2.6.22?
 
-I think in many cases you could use a pointer to qos_array[i] instead of 
-passing this index 'i' as a function argument.
+Hard to say. It didn't happen as long as I used -22, but it didn't
+happen for a long time (since I run -rc6), and it is not reproducible.
 
-Roel
+What I did at this time is a:
+	tar -cjf foo.tar.bz2 a-big-dir-with-more-than-800Mb
+I retried it again with -rc6 and it succeeded. So hard to say.
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+ALDCLUNE (n.)
+One who collects ten-year-old telephone directories.
+			--- Douglas Adams, The Meaning of Liff
