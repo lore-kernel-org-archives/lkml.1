@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760664AbXI0X3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbXI0XeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760664AbXI0X3Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbXI0X27
+	id S1760194AbXI0XeL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 19:34:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759036AbXI0Xd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:28:59 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:59854 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759285AbXI0X27 (ORCPT
+	Thu, 27 Sep 2007 19:33:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:20020 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757652AbXI0Xd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:28:59 -0400
-Date: Thu, 27 Sep 2007 17:28:57 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file without options
-Message-ID: <20070927232857.GA12049@parisc-linux.org>
-References: <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu> <20070927155902.GA6450@thunk.org> <20070927102343.1a113ccc.akpm@linux-foundation.org> <20070927175917.GB8339@kroah.com> <20070927183742.GA23734@thunk.org> <20070927213445.GA7857@kroah.com> <20070927231927.GE8688@thunk.org>
+	Thu, 27 Sep 2007 19:33:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=MG5DEo3eDurEPmwmeSPmcK48AYDgegtPpX6zJ8PgI+BT65Zdgcd448O6aMh9CJ83FaobKmXSYtYSFs9YFq7vsKHP8U59p9aR4E9g5YNiP0ur2PZDHPqeb8nwhQ0ZFTZpTv9xHQjPfiRZmP5jQ2/NMrAWj8ly24Ek5GyQ+Rdcy0o=
+Message-ID: <46FC3D7D.90009@gmail.com>
+Date: Thu, 27 Sep 2007 16:32:13 -0700
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070927231927.GE8688@thunk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Mark Lord <liml@rtr.ca>, Andrew Morton <akpm@linux-foundation.org>,
+       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: Stardom SATA HSM violation
+References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com>	<20070905095327.6277d054.akpm@linux-foundation.org>	<46DEE617.4050004@rtr.ca>	<46E0A253.7060803@gmail.com>	<46E154DE.2060602@rtr.ca>	<46FB563A.80108@gmail.com> <20070927193701.6230d77f@the-village.bc.nu>
+In-Reply-To: <20070927193701.6230d77f@the-village.bc.nu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 07:19:27PM -0400, Theodore Tso wrote:
-> Would you accept a patch which causes the deprecated sysfs
-> files/directories to disappear, even if CONFIG_SYS_DEPRECATED is
-> defined, via a boot-time parameter?
+Alan Cox wrote:
+>> I think there have been enough cases where this draining was necessary.
+>>  IIRC, ata_piix was involved in those cases, right?  If so, can you
+>> please submit a patch which applies this only to affected controllers?
+>> I don't feel too confident about applying this to all SFF controllers.
+> 
+> Old IDE does it on all controllers bar a couple. So we have a very good
+> knowledge of what does/doesn't work. The one that needs care in old ide
+> is an ordering issue where a state machine reset done first causes the
+> drain of the I/O to hang.
 
-How about a mount option?  That way people can test without a reboot:
-
-mount -o remount,deprecated={yes,no} /sys
+Hmmm... So, do we apply draining to all PATA?  Or is ata_piix SATA
+affected too?
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+tejun
