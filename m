@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbXI0Vz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759544AbXI0WAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759917AbXI0Vz1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 17:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757492AbXI0VzN
+	id S1759544AbXI0WAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 18:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbXI0WAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 17:55:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49485 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755659AbXI0VzK (ORCPT
+	Thu, 27 Sep 2007 18:00:31 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:44536 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755210AbXI0WAa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 17:55:10 -0400
-Date: Thu, 27 Sep 2007 14:54:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: haveblue@us.ibm.com, hch@infradead.org, laurent.riffard@free.fr,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       reiserfs-devel@vger.kernel.org
-Subject: Re: [RFC][PATCH] make reiserfs stop using 'struct file' for
- internal xattr operations
-Message-Id: <20070927145423.32ae6d1c.akpm@linux-foundation.org>
-In-Reply-To: <20070927145125.1346901f.akpm@linux-foundation.org>
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
-	<46FC021F.8060109@free.fr>
-	<20070927124833.d2691813.akpm@linux-foundation.org>
-	<20070927202607.GA3812@infradead.org>
-	<1190926419.7344.27.camel@localhost>
-	<20070927210423.GA6117@infradead.org>
-	<1190928434.7344.31.camel@localhost>
-	<20070927145125.1346901f.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Sep 2007 18:00:30 -0400
+Date: Thu, 27 Sep 2007 17:00:22 -0500
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
+Message-ID: <20070927220022.GC18686@austin.ibm.com>
+References: <20070420204114.GL31947@austin.ibm.com> <20070420204720.GM31947@austin.ibm.com> <20070926150216.GH3899@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070926150216.GH3899@parisc-linux.org>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 14:51:25 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > Plus, reiserfs seems to compile with that patch I just sent.  Sure as
-> > heck surprised me.
-> > 
+On Wed, Sep 26, 2007 at 09:02:16AM -0600, Matthew Wilcox wrote:
+> On Fri, Apr 20, 2007 at 03:47:20PM -0500, Linas Vepstas wrote:
+> > Implement the so-called "first failure data capture" (FFDC) for the
+> > symbios PCI error recovery.  After a PCI error event is reported,
+> > the driver requests that MMIO be enabled. Once enabled, it 
+> > then reads and dumps assorted status registers, and concludes
+> > by requesting the usual reset sequence.
 > 
-> That'll be because reiserfs-convert-to-new-aops.patch witched reiserfs over
-> to ->write_begin() and ->write_end().
+> > +	/* Request that MMIO be enabled, so register dump can be taken. */
+> > +	return PCI_ERS_RESULT_CAN_RECOVER;
+> > +}
+> 
+> I'm a little concerned by the mention of MMIO.  It's entirely possible
+> for the sym2 driver to be using ioports to access the card rather than
+> MMIO.  Is it simply that it can't on the platform you test on?
 
-Actually, we should rename reiserfs_prepare_write and reiserfs_commit_write
-to something else to reduce confusion.  Probably lots of other filesystems
-would benefit from the same change, post-Nick's-stuff.
+The comment is misleading. I've been in the bad habit of calling
+it "mmio" whenever its not DMA.
+
+The habit is because there are two distinct enable bits in the 
+pci-host bridge during error recovery: one to enable mmio/ioports, 
+and the other to enable DMA. If the adapter has gone crazy, I don't 
+want to enable DMA, so that it doesn't scribble to bad places. But, 
+by enabling mmio/ioports, perhaps it can be finessed back into a 
+semi-sane state, e.g. sane enough to perform a dump of its internal
+state.
+
+--linas
