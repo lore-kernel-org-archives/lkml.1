@@ -1,137 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbXI0PcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbXI0Pcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbXI0PcO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbXI0Pb7
+	id S1758612AbXI0Pcp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbXI0Pcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:31:59 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:34393 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754728AbXI0Pb6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:31:58 -0400
-Date: Thu, 27 Sep 2007 10:30:41 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: ecryptfs-kmem_cache-objects-for-multiple-keys-init-exit-functions.patch
-Message-ID: <20070927153041.GM11833@halcrow.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <20070803114249.8b7de061.akpm@linux-foundation.org>
+	Thu, 27 Sep 2007 11:32:36 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:51423 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756618AbXI0Pcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 11:32:35 -0400
+Date: Thu, 27 Sep 2007 11:32:33 -0400
+To: nfs@lists.sourceforge.net, nfsv4@linux-nfs.org
+Cc: linux-kernel@vger.kernel.org
+Subject: NFS server development update
+Message-ID: <20070927153233.GE2522@fieldses.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070803114249.8b7de061.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 11:42:49AM -0700, Andrew Morton wrote:
-> ecryptfs_init() should be converted to the usual `goto out_foo' unwinding
-> so we don't need N duplicated copies of the error recovery code.
-> 
-> 	if (foo())
-> 		goto out;
-> 	if (bar())
-> 		goto out_foo;
-> 	if (zot())
-> 		goto out_bar;
-> 	...
-> out_bar:
-> 	undo_bar();
-> out_foo:
-> 	undo_foo();
-> out:
-> 	return err;
+These days Neil Brown and I are maintaining the NFS server together, and
+I'm currently (as of the last few weeks) tracking the to-be-submitted
+patches.
 
-The error paths and the module exit code need work. sysfs
-unregistration is not the right place to tear down the crypto
-subsystem, and the code to undo subsystem initializations on various
-error paths is unnecessarily duplicated. This patch addresses those
-issues.
+I have limited time and am not expert on all of the relevant code, so I
+depend on your help!  I'm still experimenting a bit with the process
+(suggestions welcomed), but most of the following should be obvious to
+anyone who's been working on the kernel for a while.
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
-diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-index 92b1e6c..f944d94 100644
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -858,13 +858,6 @@ out:
- 
- static void do_sysfs_unregistration(void)
- {
--	int rc;
--
--	rc = ecryptfs_destroy_crypto();
--	if (rc) {
--		printk(KERN_ERR "Failure whilst attempting to destroy crypto; "
--		       "rc = [%d]\n", rc);
--	}
- 	sysfs_remove_file(&ecryptfs_subsys.kobj,
- 			  &sysfs_attr_version.attr);
- 	sysfs_remove_file(&ecryptfs_subsys.kobj,
-@@ -895,43 +888,49 @@ static int __init ecryptfs_init(void)
- 	rc = register_filesystem(&ecryptfs_fs_type);
- 	if (rc) {
- 		printk(KERN_ERR "Failed to register filesystem\n");
--		ecryptfs_free_kmem_caches();
--		goto out;
-+		goto out_free_kmem_caches;
- 	}
- 	kobj_set_kset_s(&ecryptfs_subsys, fs_subsys);
- 	rc = do_sysfs_registration();
- 	if (rc) {
- 		printk(KERN_ERR "sysfs registration failed\n");
--		unregister_filesystem(&ecryptfs_fs_type);
--		ecryptfs_free_kmem_caches();
--		goto out;
-+		goto out_unregister_filesystem;
- 	}
- 	rc = ecryptfs_init_messaging(ecryptfs_transport);
- 	if (rc) {
- 		ecryptfs_printk(KERN_ERR, "Failure occured while attempting to "
- 				"initialize the eCryptfs netlink socket\n");
--		do_sysfs_unregistration();
--		unregister_filesystem(&ecryptfs_fs_type);
--		ecryptfs_free_kmem_caches();
--		goto out;
-+		goto out_do_sysfs_unregistration;
- 	}
- 	rc = ecryptfs_init_crypto();
- 	if (rc) {
- 		printk(KERN_ERR "Failure whilst attempting to init crypto; "
- 		       "rc = [%d]\n", rc);
--		do_sysfs_unregistration();
--		unregister_filesystem(&ecryptfs_fs_type);
--		ecryptfs_free_kmem_caches();
--		goto out;
-+		goto out_release_messaging;
- 	}
-+	goto out;
-+out_release_messaging:
-+	ecryptfs_release_messaging(ecryptfs_transport);
-+out_do_sysfs_unregistration:
-+	do_sysfs_unregistration();
-+out_unregister_filesystem:
-+	unregister_filesystem(&ecryptfs_fs_type);
-+out_free_kmem_caches:
-+	ecryptfs_free_kmem_caches();
- out:
- 	return rc;
- }
- 
- static void __exit ecryptfs_exit(void)
- {
--	do_sysfs_unregistration();
-+	int rc;
-+
-+	rc = ecryptfs_destroy_crypto();
-+	if (rc)
-+		printk(KERN_ERR "Failure whilst attempting to destroy crypto; "
-+		       "rc = [%d]\n", rc);
- 	ecryptfs_release_messaging(ecryptfs_transport);
-+	do_sysfs_unregistration();
- 	unregister_filesystem(&ecryptfs_fs_type);
- 	ecryptfs_free_kmem_caches();
- }
+I keep all the pending NFS and sunrpc server patches that I believe are
+done in the "nfs-server-stable" branch here[1]:
 
+	git://linux-nfs.org/~bfields/linux.git nfs-server-stable
+
+I also include nfs-server-stable in the "for-mm" branch, which is
+normally included in Andrew's -mm kernels automatically, and which may
+sometimes also contain other works-in-progress.
+
+I'll try to submit urgent[2] patches to upstream immediately.  All the
+other patches in nfs-server-stable will be submitted in one batch just
+after each new kernel release (that's about once every two months).
+
+If you want patches included, email them to me, one patch per message,
+in the format described in[3]
+
+	http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+
+and also cc: nfs@lists.sourceforge.net, Neil Brown <neilb@suse.de>, and
+anyone you consider particularly qualified to review your work.  Also,
+please state clearly that you're asking me to apply your patches;
+otherwise I may just assume you're asking people for early feedback on
+work in progress (which is also encouraged, of course).  If you get no
+response and your work doesn't show up in my git tree, I may have
+forgotten; please remind me.  If I ignore something urgent, please try
+Neil, Andrew, lkml, and/or Linus as necessary.
+
+If you're fixing a mistake in a patch I already have, I'd usually prefer
+an incremental patch as opposed to a complete replacement.
+
+If you have large changes you'd like included in the next kernel, try to
+submit them well in advance of the release of the current kernel.  (For
+example, with 2.6.23 about to be released, it may already be too late
+for major changes to be included in 2.6.24.)
+
+I'll follow up with a summary of the patches I currently have.
+
+--b.
+
+Notes:
+
+[1] My suggestion for how to access my git tree:
+	1. Install git version 1.5.0 or later
+	2. If you haven't already, get Linus's tree with:
+		git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+		cd linux-2.6.git
+	3. Tell git about my tree with:
+		git remote add bfields git://linux-nfs.org/~bfields/linux.git
+		git fetch bfields
+	4. View current server patches with:
+		gitk origin..bfields/nfs-server-stable
+	4. Update as necessary using:
+		git fetch bfields
+
+[2] A patch will be more likely to be treated as "urgent" if it is
+obviously correct and if it fixes a severe problem (for example, one
+that corrupts data or compromises security).  As a release approaches,
+and the time remaining to test new patches decreases, the standard for
+such patches will become harder to meet.
+
+[3] If you're new to the process, the contents of
+
+	http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+
+and Documentation/SubmittingPatches are useful, but possibly also
+overwhelming.  The important points are:
+
+	- Each patch should make one set of logically related changes
+	  and come with a comment that explains what the patch does and
+	  why.
+	- No patch should introduce a regression: after applying the
+	  first n patches of a series (for any n), the kernel should
+	  still compile and run.  It's not OK to introduce a bug in
+	  one patch and then fix it in some later patch; instead, you
+	  need to figure out how to reorder your changes.
+
+Our goal is to improve the kernel through a long series of small,
+incremental, easy to understand, and individually testable changes.
