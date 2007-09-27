@@ -1,88 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759052AbXI0Swy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbXI0SxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759052AbXI0Swy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 14:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbXI0SwV
+	id S1759261AbXI0SxN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 14:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbXI0SwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 27 Sep 2007 14:52:21 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:51533 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756881AbXI0SwT (ORCPT
+Received: from x35.xmailserver.org ([64.71.152.41]:38403 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756890AbXI0SwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 14:52:19 -0400
-Subject: [RFC][PATCH 2/5] move mnt_want_write() into open_namei_create()
-To: linux-kernel@vger.kernel.org
-Cc: miklos@szeredi.hu, hch@infradead.org, Dave Hansen <haveblue@us.ibm.com>
-From: Dave Hansen <haveblue@us.ibm.com>
-Date: Thu, 27 Sep 2007 11:52:11 -0700
-References: <20070927185210.FD980C90@kernel>
-In-Reply-To: <20070927185210.FD980C90@kernel>
-Message-Id: <20070927185211.2E05E6A5@kernel>
+	Thu, 27 Sep 2007 14:52:20 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 27 Sep 2007 11:52:18 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] anon-inodes use open coded atomic_inc for the shared inode
+Message-ID: <Pine.LNX.4.64.0709271147300.763@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Since we know the shared inode count is always >0, we can avoid igrab() 
+and use an open coded atomic_inc().
 
-In a moment, we're going to make may_open() stop doing
-the mnt_want/drop_write() pair.  Doing this first makes
-the next patch simpler.
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+- Davide
+
 
 ---
+ fs/anon_inodes.c |   25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
 
- lxc-dave/fs/namei.c |   28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
-
-diff -puN fs/namei.c~move-mnt_want_write-into-open_namei_create fs/namei.c
---- lxc/fs/namei.c~move-mnt_want_write-into-open_namei_create	2007-09-27 11:51:32.000000000 -0700
-+++ lxc-dave/fs/namei.c	2007-09-27 11:51:32.000000000 -0700
-@@ -1686,6 +1686,19 @@ static int open_namei_create(struct name
- 	int error;
- 	struct dentry *dir = nd->dentry;
+Index: linux-2.6.mod/fs/anon_inodes.c
+===================================================================
+--- linux-2.6.mod.orig/fs/anon_inodes.c	2007-09-27 11:26:57.000000000 -0700
++++ linux-2.6.mod/fs/anon_inodes.c	2007-09-27 11:51:42.000000000 -0700
+@@ -76,7 +76,6 @@
+ {
+ 	struct qstr this;
+ 	struct dentry *dentry;
+-	struct inode *inode;
+ 	struct file *file;
+ 	int error, fd;
  
-+	/*
-+	 * This ensures that the mnt stays writable
-+	 * over the vfs_create() call to may_open(),
-+	 * which takes a more persistent
-+	 * mnt_want_write().
-+	 */
-+	error = mnt_want_write(nd->mnt);
-+	if (error) {
-+		mutex_unlock(&dir->d_inode->i_mutex);
-+		dput(nd->dentry);
-+		return error;
-+	}
+@@ -86,15 +85,9 @@
+ 	if (!file)
+ 		return -ENFILE;
+ 
+-	inode = igrab(anon_inode_inode);
+-	if (IS_ERR(inode)) {
+-		error = PTR_ERR(inode);
+-		goto err_put_filp;
+-	}
+-
+ 	error = get_unused_fd();
+ 	if (error < 0)
+-		goto err_iput;
++		goto err_put_filp;
+ 	fd = error;
+ 
+ 	/*
+@@ -108,14 +101,22 @@
+ 	dentry = d_alloc(anon_inode_mnt->mnt_sb->s_root, &this);
+ 	if (!dentry)
+ 		goto err_put_unused_fd;
 +
- 	if (!IS_POSIXACL(dir->d_inode))
- 		mode &= ~current->fs->umask;
- 	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
-@@ -1693,9 +1706,16 @@ static int open_namei_create(struct name
- 	dput(nd->dentry);
- 	nd->dentry = path->dentry;
- 	if (error)
--		return error;
-+		goto out;
- 	/* Don't check for write permission, don't truncate */
--	return may_open(nd, 0, flag & ~O_TRUNC);
-+	error = may_open(nd, 0, flag & ~O_TRUNC);
-+out:
 +	/*
-+	 * if needed, may_open() has taken a write
-+	 * on the mnt for us, so we can release ours.
++	 * We know the anon_inode inode count is always greater than zero,
++	 * so we can avoid doing an igrab() and we can use an open-coded
++	 * atomic_inc().
 +	 */
-+	mnt_drop_write(nd->mnt);
-+	return error;
- }
++	atomic_inc(&anon_inode_inode->i_count);
++
+ 	dentry->d_op = &anon_inodefs_dentry_operations;
+ 	/* Do not publish this dentry inside the global dentry hash table */
+ 	dentry->d_flags &= ~DCACHE_UNHASHED;
+-	d_instantiate(dentry, inode);
++	d_instantiate(dentry, anon_inode_inode);
  
- /*
-@@ -1778,11 +1798,7 @@ do_last:
+ 	file->f_path.mnt = mntget(anon_inode_mnt);
+ 	file->f_path.dentry = dentry;
+-	file->f_mapping = inode->i_mapping;
++	file->f_mapping = anon_inode_inode->i_mapping;
  
- 	/* Negative dentry, just create the file */
- 	if (!path.dentry->d_inode) {
--		error = mnt_want_write(nd->mnt);
--		if (error)
--			goto exit_mutex_unlock;
- 		error = open_namei_create(nd, &path, flag, mode);
--		mnt_drop_write(nd->mnt);
- 		if (error)
- 			goto exit;
- 		return 0;
-_
+ 	file->f_pos = 0;
+ 	file->f_flags = O_RDWR;
+@@ -127,14 +128,12 @@
+ 	fd_install(fd, file);
+ 
+ 	*pfd = fd;
+-	*pinode = inode;
++	*pinode = anon_inode_inode;
+ 	*pfile = file;
+ 	return 0;
+ 
+ err_put_unused_fd:
+ 	put_unused_fd(fd);
+-err_iput:
+-	iput(inode);
+ err_put_filp:
+ 	put_filp(file);
+ 	return error;
