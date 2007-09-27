@@ -1,71 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbXI0ETy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbXI0Eb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbXI0ETy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 00:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbXI0ETm
+	id S1753405AbXI0Eb1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 00:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXI0EbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 00:19:42 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:12399 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbXI0ETk (ORCPT
+	Thu, 27 Sep 2007 00:31:19 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:15167 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbXI0EbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 00:19:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=uZ4F+OcLt87G+H5krbawDxxui+4Sr7cQul9ocqGSBCJ6oVZ9j7fn1yo65LXG6wL7MrH4/0EMqIHauLnmbzy9QPvo4Sx8TJEHnrEB1sBKUsw38Evf0S5SxggxuFcHZCtDoVLpvKZBblUEfkoBSR7N1s+MEgMs9aTnQYEzIa7qktg=
-Message-ID: <46FB01D3.2020002@gmail.com>
-Date: Thu, 27 Sep 2007 10:05:23 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: "Berck E. Nash" <flyboy@gmail.com>
-CC: Bernd Schmidt <bernds_cb1@t-online.de>, Jeff Garzik <jeff@garzik.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc7-mm1 AHCI ATA errors -- won't boot
-References: <46F7FBCB.4030803@gmail.com> <46F9E2CB.9000002@garzik.org> <46FA2E84.90708@t-online.de> <46FA6B29.3030807@gmail.com>
-In-Reply-To: <46FA6B29.3030807@gmail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 27 Sep 2007 00:31:18 -0400
+Date: Wed, 26 Sep 2007 21:29:21 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Konrad Rzeszutek <konrad@darnok.org>
+Cc: linux-kernel@vger.kernel.org, pjones@redhat.com, konradr@redhat.com,
+       konradr@linux.vnet.ibm.com
+Subject: Re: [PATCH] Add iSCSI iBFT support.
+Message-Id: <20070926212921.33e2e58d.randy.dunlap@oracle.com>
+In-Reply-To: <200709262052.44845.konrad@darnok.org>
+References: <20070926184652.GA16369@andromeda.dapyr.net>
+	<20070926142950.46bbfcd2.randy.dunlap@oracle.com>
+	<200709262052.44845.konrad@darnok.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Berck E. Nash wrote:
-> Bernd Schmidt wrote:
->> One of these appears in my system as well (ASUS P5W-DH Deluxe
->> mainboard).  Here's the hdparm output:
+On Wed, 26 Sep 2007 20:52:43 -0400 Konrad Rzeszutek wrote:
+
+> > > +config ISCSI_IBFT
+> > > +	tristate "iSCSI Boot Firmware Table Attributes"
+> > > +	depends on X86
+> >
+> > why only on X86?
 > 
-> Yup, same mainboard here.
+> PowerPC exports this data via the OpenFirmware so it already shows in 
+> the /sysfs entries. I was thinking to combine those sysfs entries under this 
+> code, but that is something in the future.
 > 
->> Since about 2.6.17 or 2.6.18, it has been causing long delays while
->> booting:
->> ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->> ata2.00: qc timeout (cmd 0xec)
->> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x5)
->> ata2: port is slow to respond, please be patient (Status 0x80)
->> ata2: COMRESET failed (errno=-16)
->> ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->> ata2.00: ATA-6: Config  Disk, RGL10364, max UDMA/133
->> ata2.00: 640 sectors, multi 1: LBA
->> ata2.00: configured for UDMA/133
+> In regards to all other platforms, I figured I would only make it supported 
+> under platforms that have been tested. Is there anything that stops this from 
+> working for example of IA64? Well no. The hardware that supports the iBFT is 
+> either in the BIOS or in NICs - so the SGI or HP boxes _should_ work, however 
+> I am not comfortable to make it supported unless I've tested it.
+
+That's not how Linux development works.  You (we) have a huge
+test lab around the world.  You practice "release early, release
+often" and get testing/feedback on it.  Maybe even patches.  :)
+
+
+> > Need blank line here... except why is this function in the header
 > 
-> And yup, same problem with the painful boot delays since 2.6.18.  Tejun
-> indicated that a fix would get merged with 2.6.23, but that didn't
-> happen.  Here's hoping something makes it into .24!
+> Fixed blank line.
+> > file?  and why is it inline?
+> 
+> Q: "Why is this function in the header file"
+> If the find_ibft() was to be implemented in firmware/iscsi_ibft.c code the 
+> firmware-driver couldn't be compiled as a module (or rather it could, but 
+> when the vmlinuz was to be linked it would complain about missing symbol - 
+> find_ibft). I was thinking to let the user give the choice whether they want 
+> to load this firmware driver or have it built-in the kernel.
+> 
+> Q:"Why is it inline"
+> Uhh. It does not need to. I will remove the 'inline' part. 
 
-Yeah, it is the sil4726 virtual device which is really crappy as an ATA
-device.  About the fix, I thought PMP support would fix it but the
-controller on P5W-DH doesn't support PMP.  It can only talk to the
-virtual device or the device attached to the first port depending on how
-the PMP chip is configured.  It seems we'll have to blacklist the
-mainboard and skip or use modified reset sequence on the affected port,
-so that's why the fix was delayed.  I'm currently on the road but I'll
-look into it when I get back (next week).
+But we strongly prefer not to have non-inline C code in header files,
+[and the function does not need to be inline]
+so find_ibft() needs a home in some source file/code that won't be built
+as a loadable module, right?  And preferably not duplicated (i386 &
+x86_64 versions; but we should see a merged x86/ arch soon, so it
+sounds).  Would ia64 have its own version of find_ibft() or use this
+same code?
 
-Thanks.
+I think that for now you can put find_ibft() in both setup.c files
+and the merged x86/ arch tree can eliminate one of them.
 
--- 
-tejun
+On looking back at the patch, why aren't the ibft_phys and find_ibft()
+parts of both setup.c patches surrounded by #ifdef CONFIG_ISCSI_IBFT &
+#endif ?
 
+
+---
+~Randy
+Phaedrus says that Quality is about caring.
