@@ -1,41 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbXI0OBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbXI0OJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbXI0OBm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 10:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbXI0OBe
+	id S1756917AbXI0OJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 10:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbXI0OJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 10:01:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35722 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754230AbXI0OBd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 10:01:33 -0400
-Date: Thu, 27 Sep 2007 07:01:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file
- without options
-Message-ID: <20070927070118.2bd4792e@laptopd505.fenrus.org>
-In-Reply-To: <20070927142919.10b62f9b@the-village.bc.nu>
-References: <20070927142919.10b62f9b@the-village.bc.nu>
-Organization: Intel
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 27 Sep 2007 10:09:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55076 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755254AbXI0OJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 10:09:44 -0400
+Message-Id: <20070927141227.762624002@X40.localnet>
+References: <20070927141200.820970144@X40.localnet>
+User-Agent: quilt/0.46-62.1
+Date: Thu, 27 Sep 2007 16:12:03 +0200
+From: jblunck@suse.de
+To: linux-kernel@vger.kernel.org
+Cc: viro@zeniv.linux.org.uk, hch@lst.de, agruen@suse.de, tiwai@suse.de
+Subject: [patch 03/10] Remove path_release_on_umount()
+Content-Disposition: inline; filename=remove-path_release_on_umount.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 14:29:19 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+path_release_on_umount() should only be called from sys_umount(). I merged the
+function into sys_umount() instead of having in in namei.c.
 
-> The early LFS work that Linux uses favours EFBIG in various places.
-> SuSv3 specifically uses EOVERFLOW for this as noted by Michael (Bug
-> 7253)
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+---
+ fs/namei.c            |   10 ----------
+ fs/namespace.c        |    4 +++-
+ include/linux/namei.h |    1 -
+ 3 files changed, 3 insertions(+), 12 deletions(-)
 
+Index: b/fs/namei.c
+===================================================================
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -353,16 +353,6 @@ void path_release(struct nameidata *nd)
+ 	mntput(nd->mnt);
+ }
+ 
+-/*
+- * umount() mustn't call path_release()/mntput() as that would clear
+- * mnt_expiry_mark
+- */
+-void path_release_on_umount(struct nameidata *nd)
+-{
+-	dput(nd->dentry);
+-	mntput_no_expire(nd->mnt);
+-}
+-
+ /**
+  * release_open_intent - free up open intent resources
+  * @nd: pointer to nameidata
+Index: b/fs/namespace.c
+===================================================================
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -648,7 +648,9 @@ asmlinkage long sys_umount(char __user *
+ 
+ 	retval = do_umount(nd.mnt, flags);
+ dput_and_out:
+-	path_release_on_umount(&nd);
++	/* we mustn't call path_put() as that would clear mnt_expiry_mark */
++	dput(nd.dentry);
++	mntput_no_expire(nd.mnt);
+ out:
+ 	return retval;
+ }
+Index: b/include/linux/namei.h
+===================================================================
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -72,7 +72,6 @@ extern int FASTCALL(path_lookup(const ch
+ extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
+ 			   const char *, unsigned int, struct nameidata *);
+ extern void path_release(struct nameidata *);
+-extern void path_release_on_umount(struct nameidata *);
+ 
+ extern int __user_path_lookup_open(const char __user *, unsigned lookup_flags, struct nameidata *nd, int open_flags);
+ extern int path_lookup_open(int dfd, const char *name, unsigned lookup_flags, struct nameidata *, int open_flags);
 
-isn't this an ABI change?
-What's the gain for doing this ABI change?
+-- 
+
