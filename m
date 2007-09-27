@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758147AbXI0Ptg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbXI0Puc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758147AbXI0Ptg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbXI0Pt3
+	id S1758703AbXI0Puc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbXI0PuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:49:29 -0400
-Received: from www.osadl.org ([213.239.205.134]:49987 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755563AbXI0Pt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:49:28 -0400
-Subject: Re: 2.6.23-rc8-mm2: problems on HP nx6325
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <200709271759.46018.rjw@sisk.pl>
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
-	 <200709271719.06937.rjw@sisk.pl>  <200709271759.46018.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 27 Sep 2007 17:49:26 +0200
-Message-Id: <1190908166.23376.115.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Sep 2007 11:50:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36848 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753147AbXI0PuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 11:50:22 -0400
+Date: Thu, 27 Sep 2007 11:50:13 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: linux-ide@vger.kernel.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: correct kernel parameter in documentation.
+Message-ID: <20070927155013.GA20219@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	linux-ide@vger.kernel.org,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-27 at 17:59 +0200, Rafael J. Wysocki wrote:
-> > 2) CPU hotplug is busted (onlining of CPU1 kills the kernel), probably due to
-> >    the same issue that I'm having with the -hrt version of 2.6.23-rc8 (we're
-> >    debugging it right now)
-> 
-> This one is fixed by the following patch:
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Fix CPU hotplug breakage on HP nx6325 and similar boxes caused by a reference
-> to disable_apic_timer (labeled as __initdata) from the CPU initialization code.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+'noacpi' isn't a standalone parameter, give it its prefix.
 
-Doh, I knew I blew it.
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-Good catch, thanks,
-
-	tglx
-
-> ---
->  arch/x86_64/kernel/apic.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> ===================================================================
-> --- linux-2.6.23-rc8-mm2.orig/arch/x86_64/kernel/apic.c
-> +++ linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> @@ -42,7 +42,7 @@
->  
->  int apic_verbosity;
->  static int apic_calibrate_pmtmr __initdata;
-> -int disable_apic_timer __initdata;
-> +int disable_apic_timer __cpuinitdata;
->  
->  /* Local APIC timer works in C2? */
->  int local_apic_timer_c2_ok;
-
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 4d175c7..a87bc58 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -863,6 +863,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	lasi=		[HW,SCSI] PARISC LASI driver for the 53c700 chip
+ 			Format: addr:<io>,irq:<irq>
+ 
++	libata.noacpi	[LIBATA] Disables use of ACPI in libata suspend/resume
++			when set.
++			Format: <int>
++
+ 	load_ramdisk=	[RAM] List of ramdisks to load from floppy
+ 			See Documentation/ramdisk.txt.
+ 
+@@ -1079,10 +1083,6 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			emulation library even if a 387 maths coprocessor
+ 			is present.
+ 
+-	noacpi		[LIBATA] Disables use of ACPI in libata suspend/resume
+-			when set.
+-			Format: <int>
+-
+ 	noaliencache	[MM, NUMA, SLAB] Disables the allocation of alien
+ 			caches in the slab allocator.  Saves per-node memory,
+ 			but will impact performance.
+-- 
+http://www.codemonkey.org.uk
