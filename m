@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbXI0OAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbXI0OBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbXI0OAh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 10:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746AbXI0OAa
+	id S1757079AbXI0OBm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 10:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbXI0OBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 10:00:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35711 "EHLO
+	Thu, 27 Sep 2007 10:01:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35722 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755628AbXI0OA3 (ORCPT
+	with ESMTP id S1754230AbXI0OBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 10:00:29 -0400
-Date: Thu, 27 Sep 2007 15:00:07 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: Re: lockdep wierdness...
-Message-ID: <20070927140007.GA17543@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Trond Myklebust <Trond.Myklebust@netapp.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-References: <1190671658.6700.31.camel@heimdal.trondhjem.org> <20070925021359.GB11809@goodmis.org> <1190901067.31636.6.camel@twins>
+	Thu, 27 Sep 2007 10:01:33 -0400
+Date: Thu, 27 Sep 2007 07:01:18 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file
+ without options
+Message-ID: <20070927070118.2bd4792e@laptopd505.fenrus.org>
+In-Reply-To: <20070927142919.10b62f9b@the-village.bc.nu>
+References: <20070927142919.10b62f9b@the-village.bc.nu>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1190901067.31636.6.camel@twins>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 03:51:07PM +0200, Peter Zijlstra wrote:
-> Christoph,
-> 
-> does Steve's story make sense? 
+On Thu, 27 Sep 2007 14:29:19 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Yes.
+> The early LFS work that Linux uses favours EFBIG in various places.
+> SuSv3 specifically uses EOVERFLOW for this as noted by Michael (Bug
+> 7253)
 
-> All that would need to be done is add an extra lock_class_key to
-> file_system_type for i_mutex_dir_key, and extend alloc_inode to say
-> something like:
-> 
->   if (dir)
->     lockdep_set_class(&inode->i_mutex, &sb->s_type->i_mutex_dir_key);
->   else
->     lockdep_set_class(&inode->i_mutex, &sb->s_type->i_mutex_key);
 
-Unfortunately we don't know what type of inode we have when calling
-alloc_inode.  We only know it after reading in the inode from disk,
-aka in unlock_new_inode.  Then again there is no reason to use
-i_mutex before unlock_new_inode returns, so maybe we could defer
-initializing it until unlock_new_inode.  I'm pretty sure we'll have
-to fix a few filesystems that take i_mutex before that despite not
-needing it, e.g. through i_size_write, though.
+isn't this an ABI change?
+What's the gain for doing this ABI change?
