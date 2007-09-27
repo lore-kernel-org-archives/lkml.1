@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbXI0IU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbXI0IZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbXI0IU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 04:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXI0IUN
+	id S1754366AbXI0IZB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 04:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbXI0IYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 04:20:13 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:50383 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbXI0IUL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 04:20:11 -0400
-Message-ID: <46FB67A3.8070508@linux.vnet.ibm.com>
-Date: Thu, 27 Sep 2007 13:49:47 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Andreas Schwab <schwab@suse.de>, Maxim Uvarov <muvarov@ru.mvista.com>,
-       LKML <linux-kernel@vger.kernel.org>, balbir@in.ibm.com,
-       jlan@engr.sgi.com
-Subject: Re: [PATCH] Since we have counters in __u64 format we have to print
- them with %llu macros.
-References: <20070926143918.6749.53939.stgit@localhost.localdomain> <je641x64rw.fsf@sykes.suse.de> <46FA46F6.6000707@linux.vnet.ibm.com> <46FAA373.9010607@zytor.com>
-In-Reply-To: <46FAA373.9010607@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Sep 2007 04:24:53 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54668 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752956AbXI0IYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 04:24:52 -0400
+Date: Thu, 27 Sep 2007 10:26:20 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Henry Nestler <Henry.Ne@Arcor.de>
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>
+Subject: Re: kbuild: LDFLAGS_MODULE unusable for external module builds (2.6.23-rc2)
+Message-ID: <20070927082620.GA29452@uranus.ravnborg.org>
+References: <46F8D9B8.3090806@Arcor.de> <20070925192250.GA14689@uranus.ravnborg.org> <46FA2CC0.2000204@Arcor.de> <20070926110130.GA20950@uranus.ravnborg.org> <46FA4313.1060201@Arcor.de> <46FB6820.2090708@Arcor.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46FB6820.2090708@Arcor.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Balbir Singh wrote:
->> Andreas Schwab wrote:
->>> Maxim Uvarov <muvarov@ru.mvista.com> writes:
->>>
->>>> diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
->>>> index cbee3a2..73924df 100644
->>>> --- a/Documentation/accounting/getdelays.c
->>>> +++ b/Documentation/accounting/getdelays.c
->>>> @@ -208,7 +208,7 @@ void print_delayacct(struct taskstats *t)
->>>>  void task_context_switch_counts(struct taskstats *t)
->>>>  {
->>>>  	printf("\n\nTask   %15s%15s\n"
->>>> -	       "       %15lu%15lu\n",
->>>> +	       "       %15llu%15llu\n",
->>>>  	       "voluntary", "nonvoluntary",
->>>>  	       t->nvcsw, t->nivcsw);
->>> __u64 is not always long long.
->> What is the maximum size of long long across all architectures?
->> How does one format __u64 for printing?
->>
-> 
-> In user space, use the macro PRIu64 (or PRIx64 etc) from <inttypes.h>.
-> 
-> 	-hpa
+Hi Henry.
 
-Thanks, I'll look into it
+Snipped a very detaild an good example...
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Thanks for your comprehensive feedback on this topic.
+> 
+> Idea for future:
+> An 'APPEND_LDFLAGS' would be nice to append flags behind the last .o
+> object. Than can be close the group with --end-group.
+> 
+> Exactly linker call would be with grouping only archives, and the group
+> block behind the last object, for example:
+> ld -m elf_i386 -r -o module.o file1.o --start-group A/lib.a B/lib.a
+> --end-group
+> 
+> But remember: We can very good live with EXTRA_LDFLAGS, it's usable in
+> all 2.6 kernels.
+
+As there is no dire need for it now I will not add EXTRA_APPEND_LDFLAGS.
+But I will keep your suggestion in mind should it be useful to solve the
+hackish use in the vdso Makefile's.
+
+Thanks for your feedback and do not hesistate to ask if you run into
+additional troubles in the future.
+
+	Sam
