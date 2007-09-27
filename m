@@ -1,108 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbXI0P6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbXI0P7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758047AbXI0P6h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 11:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbXI0P6a
+	id S1758546AbXI0P7h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 11:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbXI0P71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 11:58:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56654 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbXI0P63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 11:58:29 -0400
-Subject: Re: lockdep wierdness...
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>
-In-Reply-To: <20070927140007.GA17543@infradead.org>
-References: <1190671658.6700.31.camel@heimdal.trondhjem.org>
-	 <20070925021359.GB11809@goodmis.org> <1190901067.31636.6.camel@twins>
-	 <20070927140007.GA17543@infradead.org>
-Content-Type: text/plain
-Date: Thu, 27 Sep 2007 17:58:20 +0200
-Message-Id: <1190908700.31636.9.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Sep 2007 11:59:27 -0400
+Received: from THUNK.ORG ([69.25.196.29]:50656 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754109AbXI0P70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 11:59:26 -0400
+Date: Thu, 27 Sep 2007 11:59:02 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Arjan van de Ven <arjan@infradead.org>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file without options
+Message-ID: <20070927155902.GA6450@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Arjan van de Ven <arjan@infradead.org>, akpm@osdl.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070927142919.10b62f9b@the-village.bc.nu> <20070927070118.2bd4792e@laptopd505.fenrus.org> <20070927151921.29b19abb@the-village.bc.nu> <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927161912.2f08aff6@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-27 at 15:00 +0100, Christoph Hellwig wrote:
-> On Thu, Sep 27, 2007 at 03:51:07PM +0200, Peter Zijlstra wrote:
-> > Christoph,
-> > 
-> > does Steve's story make sense? 
+On Thu, Sep 27, 2007 at 04:19:12PM +0100, Alan Cox wrote:
+> > Well it's not my call, just seems like a really bad idea to change the
+> > error value. You can't claim full coverage for such testing anyway, it's
+> > one of those things that people will complain about two releases later
+> > saying it broke app foo.
 > 
-> Yes.
-> 
-> > All that would need to be done is add an extra lock_class_key to
-> > file_system_type for i_mutex_dir_key, and extend alloc_inode to say
-> > something like:
-> > 
-> >   if (dir)
-> >     lockdep_set_class(&inode->i_mutex, &sb->s_type->i_mutex_dir_key);
-> >   else
-> >     lockdep_set_class(&inode->i_mutex, &sb->s_type->i_mutex_key);
-> 
-> Unfortunately we don't know what type of inode we have when calling
-> alloc_inode.  We only know it after reading in the inode from disk,
-> aka in unlock_new_inode.  Then again there is no reason to use
-> i_mutex before unlock_new_inode returns, so maybe we could defer
-> initializing it until unlock_new_inode.  I'm pretty sure we'll have
-> to fix a few filesystems that take i_mutex before that despite not
-> needing it, e.g. through i_size_write, though.
+> Strange since we've spent years changing error values and getting them
+> right in the past. 
 
-How about this:
+I doubt there any apps which are going to specifically check for EFBIG
+and do soemthing different if they get EOVERFLOW instead.  If it was
+something like EAGAIN or EPERM, I'd be more concerned, but EFBIG
+vs. EOVERFLOW?  C'mon!
 
----
-Make a distinction between file and dir usage of i_mutex.
+> There are real things to worry about - sysfs, sysfs, sysfs, ... and all
+> the other crap which is continually breaking stuff, not spec compliance
+> corrections that don't break things but move us into compliance with the
+> standard
 
-The inode should be complete and unused at unlock_new_inode(), re-init
-i_mutex depending on its type.
+I've got to agree with Alan, the sysfs/udev breakages that we've done
+are far more significant, and the fact that we continue to expose
+internal data structures via sysfs is a gaping open pit is far more
+likely to cause any kind of problems than changing an error return.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/inode.c         |   12 ++++++++++++
- include/linux/fs.h |    1 +
- 2 files changed, 13 insertions(+)
-
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c
-+++ linux-2.6/fs/inode.c
-@@ -576,6 +576,18 @@ EXPORT_SYMBOL(new_inode);
- 
- void unlock_new_inode(struct inode *inode)
- {
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	struct file_system_type *type = inode->i_sb->s_type;
-+	/*
-+	 * ensure nobody is actually holding i_mutex
-+	 */
-+	mutex_destroy(&inode->i_mutex);
-+	mutex_init(&inode->i_mutex);
-+	if (inode->i_mode & S_IFDIR)
-+		lockdep_set_class(&inode->i_mutex, &type->i_mutex_dir_key);
-+	else
-+		lockdep_set_class(&inode->i_mutex, &type->i_mutex_key);
-+#endif
- 	/*
- 	 * This is special!  We do not need the spinlock
- 	 * when clearing I_LOCK, because we're guaranteed
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -1426,6 +1426,7 @@ struct file_system_type {
- 
- 	struct lock_class_key i_lock_key;
- 	struct lock_class_key i_mutex_key;
-+	struct lock_class_key i_mutex_dir_key;
- 	struct lock_class_key i_alloc_sem_key;
- };
- 
-
-
+       	  	    	    	     	  - Ted
