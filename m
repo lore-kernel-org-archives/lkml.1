@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbXI0Qgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbXI0Qjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758425AbXI0Qgo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 12:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbXI0Qgh
+	id S1758479AbXI0Qjp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 12:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbXI0Qjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 12:36:37 -0400
-Received: from neon.samage.net ([85.17.153.66]:49972 "EHLO neon.samage.net"
+	Thu, 27 Sep 2007 12:39:36 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:52295 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753683AbXI0Qgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 12:36:36 -0400
-Message-ID: <39129.81.207.0.53.1190910941.squirrel@secure.samage.net>
-In-Reply-To: <200709270900.36602.arnd@arndb.de>
-References: <46F1645D.9050406@am.sony.com>
-    <200709201538.43093.rob@landley.net>
-    <200709270900.36602.arnd@arndb.de>
-Date: Thu, 27 Sep 2007 18:35:41 +0200 (CEST)
-Subject: Re: [Announce] Linux-tiny project revival
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Cc: "Rob Landley" <rob@landley.net>,
-       "Michael Opdenacker" <michael@free-electrons.com>,
-       linux-tiny@selenic.com,
-       "CE Linux Developers List" <celinux-dev@tree.celinuxforum.org>,
-       "linux kernel" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.8
-MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 0ccaee305be983877c9e38c09cbf8ec4
+	id S1753753AbXI0Qjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 12:39:35 -0400
+Date: Fri, 28 Sep 2007 01:38:27 +0900
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp
+Subject: [PATCH] x86-64: pci-gart iommu sg chaining zeroes wrong sg.
+From: FUJITA Tomonori <tomof@acm.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070928013550M.tomof@acm.org>
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, September 27, 2007 09:00, Arnd Bergmann wrote:
-> Assuming that we want to go down that road, I think you can do better with
-> more evil macro magic, by using something along the lines of
->
-> #define KERN_NOTICE "<5>",
->
-> #define PRINTK_CONTINUED "",
->
->  #define printk(level, str, ...) \
->    do { \
->      if (sizeof(level) == 1) /* continued printk */\
-> 	actual_printk(str, __VA_ARGS__); \
->      else if ((level[1] - '0') < CONFIG_PRINTK_DOICARE) \
->        actual_printk(level str, __VA_ARGS__); \
->    } while(0);
->
-> Then you don't have to change every single printk in the kernel, but
-> only those that don't currently come with a log level. More importantly,
-> you can do the conversion without a flag day, by spreading (an empty)
-> PRINTK_CONTINUED in places that do need a printk without a log level.
+This patch is for Jens' block tree (sg chaining branch).
 
-The problem is, how do you know whether to print a continued printk or not?
-It depends on the loglevel of the first printk.
+I don't have the hardware but this looks like a bug.
 
-So besides compile-time parsing of the source code, replacing printk with
-loglevel specific alternatives (one way or the other) seems the only option.
+---
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] x86-64: pci-gart iommu sg chaining zeroes a wrong sg's dma_length
 
-Greetings,
+Needs to zero the end of the list.
 
-Indan
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86_64/kernel/pci-gart.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
+diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
+index 27b7db4..a4151a7 100644
+--- a/arch/x86_64/kernel/pci-gart.c
++++ b/arch/x86_64/kernel/pci-gart.c
+@@ -425,9 +425,10 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+ 	if (dma_map_cont(start_sg, i - start, sgmap, pages, need) < 0)
+ 		goto error;
+ 	out++;
++	sgmap = sg_next(sgmap);
+ 	flush_gart();
+ 	if (out < nents)
+-		ps->dma_length = 0;
++		sgmap->dma_length = 0;
+ 	return out;
+ 
+ error:
+-- 
+1.5.2.4
 
