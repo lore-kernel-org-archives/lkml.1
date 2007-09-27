@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758231AbXI0Rfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbXI0Rii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758231AbXI0Rfp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 13:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbXI0Rfi
+	id S1757500AbXI0Rii (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 13:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXI0Rib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 13:35:38 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:32639 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbXI0Rfh (ORCPT
+	Thu, 27 Sep 2007 13:38:31 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53656 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751829AbXI0Ria (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 13:35:37 -0400
-Date: Thu, 27 Sep 2007 10:33:51 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc8-mm2: problems on HP nx6325
-Message-Id: <20070927103351.33c93289.randy.dunlap@oracle.com>
-In-Reply-To: <20070927165346.GA919@uranus.ravnborg.org>
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
-	<200709271719.06937.rjw@sisk.pl>
-	<200709271759.46018.rjw@sisk.pl>
-	<20070927165346.GA919@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Sep 2007 13:38:30 -0400
+Message-ID: <46FBEA85.4020300@zytor.com>
+Date: Thu, 27 Sep 2007 10:38:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+CC: device <device@lanana.org>
+Subject: Re: Add /dev/oldmem to devices.txt documenation.
+References: <20070927155109.GA21668@redhat.com>
+In-Reply-To: <20070927155109.GA21668@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2007 18:53:46 +0200 Sam Ravnborg wrote:
-
-> Hi Rafael.
-> > 
-> > Fix CPU hotplug breakage on HP nx6325 and similar boxes caused by a reference
-> > to disable_apic_timer (labeled as __initdata) from the CPU initialization code.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  arch/x86_64/kernel/apic.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> > ===================================================================
-> > --- linux-2.6.23-rc8-mm2.orig/arch/x86_64/kernel/apic.c
-> > +++ linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> > @@ -42,7 +42,7 @@
-> >  
-> >  int apic_verbosity;
-> >  static int apic_calibrate_pmtmr __initdata;
-> > -int disable_apic_timer __initdata;
-> > +int disable_apic_timer __cpuinitdata;
-> >  
-> This is with your configuration a reference from a .text section
-> to a .init.data section as I see it.
+Dave Jones wrote:
+> Signed-off-by: Dave Jones <davej@redhat.com>
 > 
-> So this ought to have been flagged by the section mismatch
-> checks in modpost.
-> 
-> I assume you did not see such warning??
+> diff --git a/Documentation/devices.txt b/Documentation/devices.txt
+> index 8de132a..6c46730 100644
+> --- a/Documentation/devices.txt
+> +++ b/Documentation/devices.txt
+> @@ -94,6 +94,8 @@ Your cooperation is appreciated.
+>  		  9 = /dev/urandom	Faster, less secure random number gen.
+>  		 10 = /dev/aio		Asynchronous I/O notification interface
+>  		 11 = /dev/kmsg		Writes to this come out as printk's
+> +		 12 = /dev/oldmem	Used by crashdump kernels to access
+> +					the memory of the kernel that crashed.
+>  
+>    1 block	RAM disk
+>  		  0 = /dev/ram0		First RAM disk
 
-I did:
+This should have been sent to device@lanana.org as well.
 
-WARNING: vmlinux.o(.text+0x7778): Section mismatch: reference to .init.data:disable_apic_timer (between 'identify_cpu' and 'IRQ0x20_interrupt')
-
----
-~Randy
-Phaedrus says that Quality is about caring.
+	-hpa
