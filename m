@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbXI1VO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbXI1VPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbXI1VO5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 17:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbXI1VOs
+	id S1755995AbXI1VPd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 17:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXI1VP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 17:14:48 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41153 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751397AbXI1VOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 17:14:46 -0400
-Date: Fri, 28 Sep 2007 22:14:44 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Christoph Hellwig <hch@lst.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-Message-ID: <20070928211444.GC30404@skynet.ie>
-References: <20070919033605.785839297@sgi.com> <20070919033643.763818012@sgi.com> <200709280742.38262.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com> <1191002119.18147.80.camel@lappy> <Pine.LNX.4.64.0709281114250.5149@schroedinger.engr.sgi.com> <1191003950.18147.85.camel@lappy> <Pine.LNX.4.64.0709281133570.5397@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709281133570.5397@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Fri, 28 Sep 2007 17:15:26 -0400
+Received: from bay0-omc3-s31.bay0.hotmail.com ([65.54.246.231]:37949 "EHLO
+	bay0-omc3-s31.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751797AbXI1VPZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 17:15:25 -0400
+X-Originating-IP: [69.156.110.168]
+X-Originating-Email: [seanlkml@sympatico.ca]
+Message-ID: <BAYC1-PASMTP03BE3FCD597E8017F583D1AEB20@CEZ.ICE>
+Date: Fri, 28 Sep 2007 17:15:23 -0400
+From: Sean <seanlkml@sympatico.ca>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, roel <12o3l@tiscali.nl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] spin_lock_unlocked cleanups
+In-Reply-To: <1190970369.18681.17.camel@chaos>
+References: <46FC2245.50907@tiscali.nl>
+	<1190967450.18681.10.camel@chaos>
+	<20070928012656.0bae3991.akpm@linux-foundation.org>
+	<1190968358.18681.14.camel@chaos>
+	<20070928085632.GC12086@shadowen.org>
+	<1190970369.18681.17.camel@chaos>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Sep 2007 21:15:24.0730 (UTC) FILETIME=[AF83A1A0:01C80214]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (28/09/07 11:41), Christoph Lameter didst pronounce:
-> On Fri, 28 Sep 2007, Peter Zijlstra wrote:
-> 
-> > memory got massively fragemented, as anti-frag gets easily defeated.
-> > setting min_free_kbytes to 12M does seem to solve it - it forces 2 max
-> > order blocks to stay available, so we don't mix types. however 12M on
-> > 128M is rather a lot.
-> 
-> Yes, strict ordering would be much better. On NUMA it may be possible to 
-> completely forbid merging.
+On Fri, 28 Sep 2007 11:06:09 +0200
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-The forbidding of merging is trivial and the code is isolated to one function
-__rmqueue_fallback(). We don't do it because the decision at development
-time was that it was better to allow fragmentation than take a reclaim step
-for example[1] and slow things up. This is based on my initial assumption
-of anti-frag being mainly of interest to hugepages which are happy to wait
-long periods during startup or fail.
+> > The problem with git-commit is who's repo to add the hook to.  I did
+> > attempt to do this by picking up each of linus' main releases and then
+> > using the git blame engine to attribute each "failure" to a particular
+> > commit.  The plan then would be to send a nasty-gram to the committer
+> > about violations there-in.
 
-> We can fall back to other nodes if necessary. 
-> 12M is not much on a NUMA system.
-> 
-> But this shows that (unsurprisingly) we may have issues on systems with a 
-> small amounts of memory and we may not want to use higher orders on such 
-> systems.
-> 
+Wouldn't it be easier to pass each commit through checkpatch and
+email the committer if there is a problem?  Each commit can be viewed
+as a standalone patch afterall; what does blame add?
 
-This is another option if you want to use a higher order for SLUB by
-default. Use order-0 unless you are sure there is enough memory. At boot
-if there is loads of memory, set the higher order and up min_free_kbytes on
-each node to reduce mixing[2]. We can test with Peters uber-hostile
-case to see if it works[3].
+> The question is, whether we can convince the git developers to integrate
+> it. When a commit happens and checkpatch.pl is in scripts/, then run the
+> patch through it before doing the actual commit.
 
-> The case you got may be good to use as a testcase for the virtual 
-> fallback. Hmmmm...
+Definitely the way to go.  I'm pretty sure the Git guys would agree to
+distribute checkpatch.pl along with the existing pre-commit hook.  So
+at least enabling checkpatch would be trivial for those convinced to
+use it.
 
-For sure.
-
-> Maybe it is possible to allocate the stack as a virtual 
-> compound page. Got some script/code to produce that problem?
-> 
-
-[1] It might be tunnel vision but I still keep hugepages in mind as the
-    principal user of anti-frag. Andy used to have patches that force evicted
-    pages of the "foreign" type when mixing occured so the end result was
-    no mixing. We never fully completed them because it was too costly
-    for hugepages.
-
-[2] This would require the identification of mixed blocks to be a
-    statistic available in mainline. Right now, it's only available in -mm
-    when PAGE_OWNER is set
-
-[3] The definition of working in this case being that order-0
-    allocations fail which he has produced
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Sean
