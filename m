@@ -1,94 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbXI1D4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbXI1EVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758667AbXI1D4r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 23:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbXI1D4h
+	id S1757160AbXI1EVc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 00:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbXI1EVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 23:56:37 -0400
-Received: from rtr.ca ([76.10.145.34]:4451 "EHLO mail.rtr.ca"
+	Fri, 28 Sep 2007 00:21:22 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:50501 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752506AbXI1D4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 23:56:36 -0400
-Message-ID: <46FC7B72.2030103@rtr.ca>
-Date: Thu, 27 Sep 2007 23:56:34 -0400
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1753330AbXI1EVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 00:21:20 -0400
+Date: Fri, 28 Sep 2007 00:21:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] net driver fixes
+Message-ID: <20070928042119.GA15161@havoc.gtf.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: [PATCH] libata drain fifo on stuck DRQ HSM violation
-References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com>	<20070905095327.6277d054.akpm@linux-foundation.org>	<46DEE617.4050004@rtr.ca>	<46E0A253.7060803@gmail.com>	<46E154DE.2060602@rtr.ca>	<46FB563A.80108@gmail.com> <20070927193701.6230d77f@the-village.bc.nu> <46FC3D7D.90009@gmail.com> <46FC3FDD.5060201@pobox.com> <46FC423C.2050206@gmail.com>
-In-Reply-To: <46FC423C.2050206@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Jeff Garzik wrote:
->> Tejun Heo wrote:
->>> Alan Cox wrote:
->>>>> I think there have been enough cases where this draining was necessary.
->>>>>  IIRC, ata_piix was involved in those cases, right?  If so, can you
->>>>> please submit a patch which applies this only to affected controllers?
->>>>> I don't feel too confident about applying this to all SFF controllers.
->>>> Old IDE does it on all controllers bar a couple. So we have a very good
->>>> knowledge of what does/doesn't work. The one that needs care in old ide
->>>> is an ordering issue where a state machine reset done first causes the
->>>> drain of the I/O to hang.
->>> Hmmm... So, do we apply draining to all PATA?  Or is ata_piix SATA
->>> affected too?
->> I would think all SFF controllers, since a lot of first gen SATA are
->> really bridged solutions.  If they are flagging DRQ, I say oblige them :)
-> 
-> Alright, then the posted patch should be good enough.  Mark, can you be
-> bothered to regenerate the patch and post it one more time (again)?  It
-> seems we all agree the update is needed.
 
-I think this original patch still applies cleanly on at least 2.6.23-rc7.
+And an e1000 id patch.
 
-Drain up to 512 words from host/bridge FIFO on stuck DRQ HSM violation,
-rather than just getting stuck there forever.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
 
-Signed-Off-By:  Mark Lord <mlord@pobox.com>
----
+to receive the following updates:
 
---- old/drivers/ata/libata-sff.c	2007-04-26 12:02:46.000000000 -0400
-+++ linux/drivers/ata/libata-sff.c	2007-04-29 08:29:27.000000000 -0400
-@@ -413,6 +413,24 @@
- 	ap->ops->irq_on(ap);
+ drivers/net/e1000/e1000_ethtool.c |    1 +
+ drivers/net/e1000/e1000_hw.c      |    1 +
+ drivers/net/e1000/e1000_hw.h      |    1 +
+ drivers/net/e1000/e1000_main.c    |    2 +
+ drivers/net/sky2.c                |   53 +++++++++++++++++++++++++++----------
+ 5 files changed, 44 insertions(+), 14 deletions(-)
+
+Auke Kok (1):
+      e1000: Add device IDs of blade version of the 82571 quad port
+
+Stephen Hemminger (3):
+      sky2: sky2 FE+ receive status workaround
+      sky2: FE+ vlan workaround
+      sky2: fix transmit state on resume
+
+diff --git a/drivers/net/e1000/e1000_ethtool.c b/drivers/net/e1000/e1000_ethtool.c
+index 4c3785c..9ecc3ad 100644
+--- a/drivers/net/e1000/e1000_ethtool.c
++++ b/drivers/net/e1000/e1000_ethtool.c
+@@ -1726,6 +1726,7 @@ static int e1000_wol_exclusion(struct e1000_adapter *adapter, struct ethtool_wol
+ 	case E1000_DEV_ID_82571EB_QUAD_COPPER:
+ 	case E1000_DEV_ID_82571EB_QUAD_FIBER:
+ 	case E1000_DEV_ID_82571EB_QUAD_COPPER_LOWPROFILE:
++	case E1000_DEV_ID_82571PT_QUAD_COPPER:
+ 	case E1000_DEV_ID_82546GB_QUAD_COPPER_KSP3:
+ 		/* quad port adapters only support WoL on port A */
+ 		if (!adapter->quad_port_a) {
+diff --git a/drivers/net/e1000/e1000_hw.c b/drivers/net/e1000/e1000_hw.c
+index ba120f7..8604adb 100644
+--- a/drivers/net/e1000/e1000_hw.c
++++ b/drivers/net/e1000/e1000_hw.c
+@@ -387,6 +387,7 @@ e1000_set_mac_type(struct e1000_hw *hw)
+ 	case E1000_DEV_ID_82571EB_SERDES_DUAL:
+ 	case E1000_DEV_ID_82571EB_SERDES_QUAD:
+ 	case E1000_DEV_ID_82571EB_QUAD_COPPER:
++	case E1000_DEV_ID_82571PT_QUAD_COPPER:
+ 	case E1000_DEV_ID_82571EB_QUAD_FIBER:
+ 	case E1000_DEV_ID_82571EB_QUAD_COPPER_LOWPROFILE:
+ 		hw->mac_type = e1000_82571;
+diff --git a/drivers/net/e1000/e1000_hw.h b/drivers/net/e1000/e1000_hw.h
+index fe87146..07f0ea7 100644
+--- a/drivers/net/e1000/e1000_hw.h
++++ b/drivers/net/e1000/e1000_hw.h
+@@ -475,6 +475,7 @@ int32_t e1000_check_phy_reset_block(struct e1000_hw *hw);
+ #define E1000_DEV_ID_82571EB_FIBER       0x105F
+ #define E1000_DEV_ID_82571EB_SERDES      0x1060
+ #define E1000_DEV_ID_82571EB_QUAD_COPPER 0x10A4
++#define E1000_DEV_ID_82571PT_QUAD_COPPER 0x10D5
+ #define E1000_DEV_ID_82571EB_QUAD_FIBER  0x10A5
+ #define E1000_DEV_ID_82571EB_QUAD_COPPER_LOWPROFILE  0x10BC
+ #define E1000_DEV_ID_82571EB_SERDES_DUAL 0x10D9
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+index 4a22595..e7c8951 100644
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -108,6 +108,7 @@ static struct pci_device_id e1000_pci_tbl[] = {
+ 	INTEL_E1000_ETHERNET_DEVICE(0x10BC),
+ 	INTEL_E1000_ETHERNET_DEVICE(0x10C4),
+ 	INTEL_E1000_ETHERNET_DEVICE(0x10C5),
++	INTEL_E1000_ETHERNET_DEVICE(0x10D5),
+ 	INTEL_E1000_ETHERNET_DEVICE(0x10D9),
+ 	INTEL_E1000_ETHERNET_DEVICE(0x10DA),
+ 	/* required last entry */
+@@ -1101,6 +1102,7 @@ e1000_probe(struct pci_dev *pdev,
+ 	case E1000_DEV_ID_82571EB_QUAD_COPPER:
+ 	case E1000_DEV_ID_82571EB_QUAD_FIBER:
+ 	case E1000_DEV_ID_82571EB_QUAD_COPPER_LOWPROFILE:
++	case E1000_DEV_ID_82571PT_QUAD_COPPER:
+ 		/* if quad port adapter, disable WoL on all but port A */
+ 		if (global_quad_port_a != 0)
+ 			adapter->eeprom_wol = 0;
+diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+index 0792031..162489b 100644
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -910,6 +910,20 @@ static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2)
+ 	return le;
  }
  
-+static void ata_drain_fifo (struct ata_port *ap, struct ata_queued_cmd *qc)
++static void tx_init(struct sky2_port *sky2)
 +{
-+	u8 stat = ata_chk_status(ap);
-+	/*
-+	 * Try to clear stuck DRQ if necessary.
-+	 */
-+	if ((stat & ATA_DRQ) && (!qc || qc->dma_dir != DMA_TO_DEVICE)) {
-+		unsigned int i, limit = 512;
-+		printk("Draining up to %u words from data FIFO.\n", limit);
-+		for (i = 0; i < limit ; ++i) {
-+			ioread16(ap->ioaddr.data_addr);
-+			if (!(ata_chk_status(ap) & ATA_DRQ))
-+				break;
-+		}
-+		printk("Drained %u/%u words.\n", i, limit);
-+	}
++	struct sky2_tx_le *le;
++
++	sky2->tx_prod = sky2->tx_cons = 0;
++	sky2->tx_tcpsum = 0;
++	sky2->tx_last_mss = 0;
++
++	le = get_tx_le(sky2);
++	le->addr = 0;
++	le->opcode = OP_ADDR64 | HW_OWNER;
++	sky2->tx_addr64 = 0;
 +}
 +
- /**
-  *	ata_bmdma_drive_eh - Perform EH with given methods for BMDMA controller
-  *	@ap: port to handle error for
-@@ -469,7 +487,7 @@
- 	}
+ static inline struct tx_ring_info *tx_le_re(struct sky2_port *sky2,
+ 					    struct sky2_tx_le *le)
+ {
+@@ -1320,7 +1334,8 @@ static int sky2_up(struct net_device *dev)
+ 				GFP_KERNEL);
+ 	if (!sky2->tx_ring)
+ 		goto err_out;
+-	sky2->tx_prod = sky2->tx_cons = 0;
++
++	tx_init(sky2);
  
- 	ata_altstatus(ap);
--	ata_chk_status(ap);
-+	ata_drain_fifo(ap, qc);
- 	ap->ops->irq_clear(ap);
+ 	sky2->rx_le = pci_alloc_consistent(hw->pdev, RX_LE_BYTES,
+ 					   &sky2->rx_le_map);
+@@ -2148,6 +2163,18 @@ static struct sk_buff *sky2_receive(struct net_device *dev,
+ 	sky2->rx_next = (sky2->rx_next + 1) % sky2->rx_pending;
+ 	prefetch(sky2->rx_ring + sky2->rx_next);
  
- 	spin_unlock_irqrestore(ap->lock, flags);
++	if (length < ETH_ZLEN || length > sky2->rx_data_size)
++		goto len_error;
++
++	/* This chip has hardware problems that generates bogus status.
++	 * So do only marginal checking and expect higher level protocols
++	 * to handle crap frames.
++	 */
++	if (sky2->hw->chip_id == CHIP_ID_YUKON_FE_P &&
++	    sky2->hw->chip_rev == CHIP_REV_YU_FE2_A0 &&
++	    length != count)
++		goto okay;
++
+ 	if (status & GMR_FS_ANY_ERR)
+ 		goto error;
+ 
+@@ -2156,8 +2183,9 @@ static struct sk_buff *sky2_receive(struct net_device *dev,
+ 
+ 	/* if length reported by DMA does not match PHY, packet was truncated */
+ 	if (length != count)
+-		goto len_mismatch;
++		goto len_error;
+ 
++okay:
+ 	if (length < copybreak)
+ 		skb = receive_copy(sky2, re, length);
+ 	else
+@@ -2167,13 +2195,13 @@ resubmit:
+ 
+ 	return skb;
+ 
+-len_mismatch:
++len_error:
+ 	/* Truncation of overlength packets
+ 	   causes PHY length to not match MAC length */
+ 	++sky2->net_stats.rx_length_errors;
+ 	if (netif_msg_rx_err(sky2) && net_ratelimit())
+-		pr_info(PFX "%s: rx length mismatch: length %d status %#x\n",
+-			dev->name, length, status);
++		pr_info(PFX "%s: rx length error: status %#x length %d\n",
++			dev->name, status, length);
+ 	goto resubmit;
+ 
+ error:
+@@ -3934,13 +3962,6 @@ static __devinit struct net_device *sky2_init_netdev(struct sky2_hw *hw,
+ 	sky2->hw = hw;
+ 	sky2->msg_enable = netif_msg_init(debug, default_msg);
+ 
+-	/* This chip has hardware problems that generates
+-	 * bogus PHY receive status so by default shut up the message.
+-	 */
+-	if (hw->chip_id == CHIP_ID_YUKON_FE_P &&
+-	    hw->chip_rev == CHIP_REV_YU_FE2_A0)
+-		sky2->msg_enable &= ~NETIF_MSG_RX_ERR;
+-
+ 	/* Auto speed and flow control */
+ 	sky2->autoneg = AUTONEG_ENABLE;
+ 	sky2->flow_mode = FC_BOTH;
+@@ -3964,8 +3985,12 @@ static __devinit struct net_device *sky2_init_netdev(struct sky2_hw *hw,
+ 		dev->features |= NETIF_F_HIGHDMA;
+ 
+ #ifdef SKY2_VLAN_TAG_USED
+-	dev->features |= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
+-	dev->vlan_rx_register = sky2_vlan_rx_register;
++	/* The workaround for FE+ status conflicts with VLAN tag detection. */
++	if (!(sky2->hw->chip_id == CHIP_ID_YUKON_FE_P &&
++	      sky2->hw->chip_rev == CHIP_REV_YU_FE2_A0)) {
++		dev->features |= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
++		dev->vlan_rx_register = sky2_vlan_rx_register;
++	}
+ #endif
+ 
+ 	/* read the mac address */
