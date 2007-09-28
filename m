@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbXI1RxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbXI1RyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735AbXI1RxA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 13:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXI1Rww
+	id S1755240AbXI1RyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 13:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXI1RyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 13:52:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56040 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753128AbXI1Rww (ORCPT
+	Fri, 28 Sep 2007 13:54:10 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33867 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbXI1RyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 13:52:52 -0400
-Date: Fri, 28 Sep 2007 10:46:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.10
-Message-Id: <20070928104642.0f3a4573.akpm@linux-foundation.org>
-In-Reply-To: <20070928132138.GG18163@shadowen.org>
-References: <bf97f66cfc0696c8574921d53eaafcb7@pinky>
-	<20070928084003.GA18882@elte.hu>
-	<20070928020132.f6c6f528.akpm@linux-foundation.org>
-	<20070928092235.GA31180@shadowen.org>
-	<20070928093902.GA28455@elte.hu>
-	<20070928100024.GB18163@shadowen.org>
-	<20070928104935.GA606@elte.hu>
-	<20070928132138.GG18163@shadowen.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Sep 2007 13:54:09 -0400
+Date: Fri, 28 Sep 2007 10:53:58 -0700
+Message-Id: <200709281753.l8SHrwRe019689@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jkeating@redhat.com, cebbert@redhat.com, jordan.crouse@amd.com,
+       pommnitz@yahoo.com
+Subject: [GIT PULL] Correct the SMAP check in the e820 probe (fixed)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007 14:21:38 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+Hi Linus,
 
-> On Fri, Sep 28, 2007 at 12:49:35PM +0200, Ingo Molnar wrote:
-> > 
-> > * Andy Whitcroft <apw@shadowen.org> wrote:
-> > 
-> > > On Fri, Sep 28, 2007 at 11:39:02AM +0200, Ingo Molnar wrote:
-> > >
->
-> [bunfight]
->
+Please pull:
 
-oy, knock it off.
+  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
 
-> Anyhow.  I have already added a --check/--no-check option which controls
+Thanks for catching the obvious thinko.
 
--strict?
+H. Peter Anvin (1):
+      [x86 setup] Correct the SMAP check for INT 0x15, AX=0xe820
 
-> the more subjective tests which will be in the next release; though its
-> likely the option name will be something more useful by then.
-> 
-> The only question is whether this should default to on.  You are voting
-> off.  I personally think on.
-> 
-> Andrew?  Randy?  Joel?
-> 
+ arch/i386/boot/memory.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-off, I'd say.  That way people are more likely to use it.  Or, more
-accurately, will have less excuses to not use it.
+[Log messages and full diffs follow]
 
+commit 4ee5b10abeb2b5581be10d3022694cd19084e9b0
+Author: H. Peter Anvin <hpa@zytor.com>
+Date:   Thu Sep 27 17:17:12 2007 -0700
+
+    [x86 setup] Correct the SMAP check for INT 0x15, AX=0xe820
+    
+    The e820 probe code was checking %edx, not %eax, for the SMAP
+    signature on return.  This worked on *almost* all systems, since %edx
+    still contained SMAP from the call on entry, but on a handful of
+    systems it failed -- plus, we would have missed real mismatches.
+    
+    The error output is "=d" to make sure gcc knows %edx is clobbered
+    here.
+    
+    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+
+diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
+index bccaa1c..3783539 100644
+--- a/arch/i386/boot/memory.c
++++ b/arch/i386/boot/memory.c
+@@ -28,11 +28,14 @@ static int detect_memory_e820(void)
+ 
+ 	do {
+ 		size = sizeof(struct e820entry);
+-		id = SMAP;
++
++		/* Important: %edx is clobbered by some BIOSes,
++		   so it must be either used for the error output
++		   or explicitly marked clobbered. */
+ 		asm("int $0x15; setc %0"
+-		    : "=am" (err), "+b" (next), "+d" (id), "+c" (size),
++		    : "=d" (err), "+b" (next), "=a" (id), "+c" (size),
+ 		      "=m" (*desc)
+-		    : "D" (desc), "a" (0xe820));
++		    : "D" (desc), "d" (SMAP), "a" (0xe820));
+ 
+ 		/* Some BIOSes stop returning SMAP in the middle of
+ 		   the search loop.  We don't know exactly how the BIOS
