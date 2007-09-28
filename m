@@ -1,65 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbXI1IBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbXI1IC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755014AbXI1IBv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 04:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921AbXI1IBf
+	id S1757312AbXI1IC1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 04:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbXI1IBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 04:01:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51060 "EHLO mx1.redhat.com"
+	Fri, 28 Sep 2007 04:01:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51061 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756802AbXI1IBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756738AbXI1IBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 28 Sep 2007 04:01:34 -0400
-Message-Id: <20070928080042.020756000@chello.nl>
+Message-Id: <20070928080041.661518000@chello.nl>
 References: <20070928074200.436463000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 28 Sep 2007 09:42:06 +0200
+Date: Fri, 28 Sep 2007 09:42:04 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
 Cc: Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        akpm@linux-foundation.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 06/12] mm: remove raw SetPageLocked() usage
-Content-Disposition: inline; filename=lock_page.patch
+Subject: [PATCH 04/12] lockdep: annotate journal_start()
+Content-Disposition: inline; filename=jbd-lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the last few SetPageLocked() instances.
+On Fri, 2007-07-13 at 02:05 -0700, Andrew Morton wrote:
 
-use trylock_page() instead of SetPageLocked() because we hold tree_lock
-so we cannot suffer the might_sleep(). Also at least add_to_page_cache() can
-be handed a locked page.
+> Except lockdep doesn't know about journal_start(), which has ranking
+> requirements similar to a semaphore.  
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- mm/filemap.c    |    2 +-
- mm/swap_state.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ fs/jbd/transaction.c |    9 +++++++++
+ include/linux/jbd.h  |    5 +++++
+ 2 files changed, 14 insertions(+)
 
-Index: linux-2.6/mm/filemap.c
+Index: linux-2.6/fs/jbd/transaction.c
 ===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -445,7 +445,7 @@ int add_to_page_cache(struct page *page,
- 		error = radix_tree_insert(&mapping->page_tree, offset, page);
- 		if (!error) {
- 			page_cache_get(page);
--			SetPageLocked(page);
-+			trylock_page(page);
- 			page->mapping = mapping;
- 			page->index = offset;
- 			mapping->nrpages++;
-Index: linux-2.6/mm/swap_state.c
+--- linux-2.6.orig/fs/jbd/transaction.c
++++ linux-2.6/fs/jbd/transaction.c
+@@ -233,6 +233,8 @@ out:
+ 	return ret;
+ }
+ 
++static struct lock_class_key jbd_handle_key;
++
+ /* Allocate a new handle.  This should probably be in a slab... */
+ static handle_t *new_handle(int nblocks)
+ {
+@@ -243,6 +245,8 @@ static handle_t *new_handle(int nblocks)
+ 	handle->h_buffer_credits = nblocks;
+ 	handle->h_ref = 1;
+ 
++	lockdep_init_map(&handle->h_lockdep_map, "jbd_handle", &jbd_handle_key, 0);
++
+ 	return handle;
+ }
+ 
+@@ -286,6 +290,9 @@ handle_t *journal_start(journal_t *journ
+ 		current->journal_info = NULL;
+ 		handle = ERR_PTR(err);
+ 	}
++
++	lock_acquire(&handle->h_lockdep_map, 0, 0, 0, 2, _THIS_IP_);
++
+ 	return handle;
+ }
+ 
+@@ -1411,6 +1418,8 @@ int journal_stop(handle_t *handle)
+ 		spin_unlock(&journal->j_state_lock);
+ 	}
+ 
++	lock_release(&handle->h_lockdep_map, 1, _THIS_IP_);
++
+ 	jbd_free_handle(handle);
+ 	return err;
+ }
+Index: linux-2.6/include/linux/jbd.h
 ===================================================================
---- linux-2.6.orig/mm/swap_state.c
-+++ linux-2.6/mm/swap_state.c
-@@ -83,7 +83,7 @@ static int __add_to_swap_cache(struct pa
- 						entry.val, page);
- 		if (!error) {
- 			page_cache_get(page);
--			SetPageLocked(page);
-+			trylock_page(page);
- 			SetPageSwapCache(page);
- 			set_page_private(page, entry.val);
- 			total_swapcache_pages++;
+--- linux-2.6.orig/include/linux/jbd.h
++++ linux-2.6/include/linux/jbd.h
+@@ -30,6 +30,7 @@
+ #include <linux/bit_spinlock.h>
+ #include <linux/mutex.h>
+ #include <linux/timer.h>
++#include <linux/lockdep.h>
+ 
+ #include <asm/semaphore.h>
+ #endif
+@@ -396,6 +397,10 @@ struct handle_s
+ 	unsigned int	h_sync:		1;	/* sync-on-close */
+ 	unsigned int	h_jdata:	1;	/* force data journaling */
+ 	unsigned int	h_aborted:	1;	/* fatal error on handle */
++
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++	struct lockdep_map	h_lockdep_map;
++#endif
+ };
+ 
+ 
 
 --
 
