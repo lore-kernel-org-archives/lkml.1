@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbXI1QhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbXI1Qlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbXI1QhE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 12:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbXI1Qgw
+	id S1753497AbXI1Qlg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 12:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbXI1Ql3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 12:36:52 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:44626 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750933AbXI1Qgv (ORCPT
+	Fri, 28 Sep 2007 12:41:29 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:54811 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751520AbXI1Ql2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 12:36:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Q8H41o0su6S1tmd+wQdQy5Y/u776boh3ybUWanycGklN8e1WSY2apCu/WrpO5ftKQwoxTviGUn2ihUldNjWVyU2rSWXVk4fn4eHj6K+ZXXtYYnyOFmidXypjzS6d3U+H9S6w1eANS7JndyXKRRPHBg9xau+2djZKY1EUgEeRRAI=  ;
-X-YMail-OSG: hy77dkUVM1lza4zz5h0iMA8kN8KmAEkIUfMmCUaP6YB5Itbux_ESh1Zc3dE897GDEntKteifgA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL
-Date: Fri, 28 Sep 2007 10:05:33 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net,
-       Andreas Herrmann <aherrman@arcor.de>,
-       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org
-References: <20070918080537.GA14882@devil> <200709280740.40163.nickpiggin@yahoo.com.au> <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org>
+	Fri, 28 Sep 2007 12:41:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=e9Cu2fCW5PMR0vHkuYB0btSRcUpynxPMRakc2qaMW00Bm+xQskOvWQH++JkW8vHGFhTS+ZU0Ue1lXx4dgV+s20a4f/nrebG2nmMkqJPv5amKFhvAhqIoaUlVtAF4sKHKhT24Sksf97dgKPYwjPRI729tssaeJJThuD7Sq5JfsB4=
+Message-ID: <19f34abd0709280941o3183d39cn5b29d90636ef1035@mail.gmail.com>
+Date: Fri, 28 Sep 2007 18:41:27 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rob Landley" <rob@landley.net>
+Subject: Re: [RFC] New kernel-message logging API (take 2)
+Cc: LKML <linux-kernel@vger.kernel.org>, "Kyle Moffett" <mrmacman_g4@mac.com>,
+       "Michael Holzheu" <holzheu@linux.vnet.ibm.com>,
+       "Joe Perches" <joe@perches.com>,
+       "Dick Streefland" <dick.streefland@altium.nl>,
+       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Arnd Bergmann" <arnd@arndb.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Emil Medve" <Emilian.Medve@freescale.com>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "linux@horizon.com" <linux@horizon.com>
+In-Reply-To: <200709281130.26124.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709281005.34001.nickpiggin@yahoo.com.au>
+References: <19f34abd0709271418l471cf7b9gf24161190772fac@mail.gmail.com>
+	 <19f34abd0709280511h3f31681bh54c6af287a48c02f@mail.gmail.com>
+	 <200709281130.26124.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 September 2007 00:34, Linus Torvalds wrote:
-> On Fri, 28 Sep 2007, Nick Piggin wrote:
-> > > God I hate select.
-> >
-> > IMO a better implementation would result in a notification / confirmation
-> > of turning on new items, and the ability to deselect options which will
-> > also confirm to deselect dependants. Like most other systems that have
-> > similar problem to solve.
+On 9/28/07, Rob Landley <rob@landley.net> wrote:
+> On Friday 28 September 2007 7:11:03 am Vegard Nossum wrote:
+> > wrong. We can, however, use KBUILD_MODNAME as a default value for
+> > KPRINT_DRIVER, like:
+> > static const char *KPRINT_DRIVER = KBUILD_MODNAME;
+> > which would pre-process to something like:
+> > static const char *KPRINT_DRIVER = "bcm43xx";
 >
-> Actually, the *really* nice thing to do would be to just add the reason
-> something got enabled into the ".config" file.
->
-> IOW, wouldn't it be nice if the .config file just said
->
-> 	...
-> 	CONFIG_ACPI=y		# selected by X86_64_ACPI_NUMA
-> 	CONFIG_ACPI_PROCFS=y	# user choice
-> 	...
->
-> etc, since the config process actually does know these things?
+> Which has been known to result in the string getting written out to the .o
+> file even if it's never used, just in case something tries to take its
+> address.  This is not the same as a #define.
 
-Sure, that would probably be pretty trivial to implement too, and
-would solve most problems for kernel devs.
+Logic tells me that an unused static variable should never go into the
+.o. If something tries to take its address, it's no longer unused.
 
-At a level up from that, I think ease of use could be improved with
-a package manager-type chained-selection/deselection feature in
-the config tools.
-
-Not that I'm volunteering to implement either ;)
-
+> > This value can still be overridden using #define KPRINT_DRIVER "new
+> > name".
 >
-> That way, there's always a fairly straightforward way to see why some
-> configuration is the way it is (and the .config file is not only useful
-> for "make oldconfig", it's also what normally gets passed around for bug
-> reports, and is part of distro kernel packages etc, so it would seem to be
-> the right place, no?)
->
-> 		Linus
+> Not with -D on the command line though.  Your #define would have to come after
+> the declaration or else the declaration turns into 'char *"fred" = "george";'
+> and you have a syntax error.  Again, not synonymous with a #define...
+
+Yeah, that's exactly what my e-mail was about. The macros
+KPRINT_SUBSYSTEM and KPRINT_DRIVER are not defined on the command
+line, but in each source file that wants this prefix, after the
+variables with the same names have been declared in kprint.h. This is
+intentional; they can be overridden with a define, otherwise, they'll
+default to static-const string variables.
+
+Vegard
