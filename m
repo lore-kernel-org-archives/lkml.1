@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbXI1O2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761301AbXI1O3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761308AbXI1O2N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 10:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbXI1O16
+	id S1761301AbXI1O3N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 10:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbXI1O26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 10:27:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38775 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750878AbXI1O15 (ORCPT
+	Fri, 28 Sep 2007 10:28:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:12243 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755089AbXI1O25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 10:27:57 -0400
-Date: Fri, 28 Sep 2007 07:27:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jkeating@redhat.com, cebbert@redhat.com, jordan.crouse@amd.com,
-       pommnitz@yahoo.com
-Subject: Re: [GIT PULL] Correct the SMAP check in the e820 probe
-In-Reply-To: <200709280856.l8S8uvS5002291@tazenda.hos.anvin.org>
-Message-ID: <alpine.LFD.0.999.0709280719010.3579@woody.linux-foundation.org>
-References: <200709280856.l8S8uvS5002291@tazenda.hos.anvin.org>
+	Fri, 28 Sep 2007 10:28:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EVzWMmnxXBD43pW6sSOFGe+4ANMrNWcmQjz5bOZS9s7IgpsyRmEGNZzk7Wz78iEHlhsaB5xVjETHNhnSWz8VHX8sUe49c4cE0HruIWqgPNwMiL7VOd5Zuz0vCMWWf9794Ox2BMGmTtwjCssStu6BZYcBwKJ5v/tS9WOVcbTFxak=
+Message-ID: <46FD0F3F.8000902@gmail.com>
+Date: Fri, 28 Sep 2007 07:27:11 -0700
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: ebiederm@xmission.com, greg@kroah.com, stern@rowland.harvard.edu,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH 4/4] sysfs: make suicidal nodes just do it directly
+References: <11902731752407-git-send-email-htejun@gmail.com>	<11902731751771-git-send-email-htejun@gmail.com> <20070928155448.3dedd801@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070928155448.3dedd801@gondolin.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 28 Sep 2007, H. Peter Anvin wrote:
->
->     [x86 setup] Correct the SMAP check for INT 0x15, AX=0xe820
->     
->     The e820 probe code was checking %edx, not %eax, for the SMAP
->     signature on return.  This worked on *almost* all systems, since %edx
->     still contained SMAP from the call on entry, but on a handful of
->     systems it failed -- plus, we would have missed real mismatches.
->     
->     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cornelia Huck wrote:
+> On Thu, 20 Sep 2007 16:26:15 +0900,
+> Tejun Heo <htejun@gmail.com> wrote:
 > 
-> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-> index bccaa1c..2f37568 100644
-> --- a/arch/i386/boot/memory.c
-> +++ b/arch/i386/boot/memory.c
-> @@ -28,11 +28,10 @@ static int detect_memory_e820(void)
->  
->  	do {
->  		size = sizeof(struct e820entry);
-> -		id = SMAP;
->  		asm("int $0x15; setc %0"
-> -		    : "=am" (err), "+b" (next), "+d" (id), "+c" (size),
-> +		    : "=dm" (err), "+b" (next), "=a" (id), "+c" (size),
->  		      "=m" (*desc)
-> -		    : "D" (desc), "a" (0xe820));
-> +		    : "D" (desc), "d" (SMAP), "a" (0xe820));
+>> Sysfs now allows direct suicide.  Make suicidial sysfs nodes to use
+>> it and remove now unncessary callback mechanism.
+>>
+>> Signed-off-by: Tejun Heo <htejun@gmail.com>
+>> ---
+>>  drivers/base/core.c         |   33 ----------------------
+>>  drivers/s390/cio/ccwgroup.c |   25 +++-------------
+>>  drivers/scsi/scsi_sysfs.c   |   13 +--------
+>>  fs/sysfs/file.c             |   63 -------------------------------------------
+>>  include/linux/device.h      |    6 ----
+>>  include/linux/sysfs.h       |    9 ------
+>>  6 files changed, 6 insertions(+), 143 deletions(-)
+> 
+> ccwgroup was implicitly relying on a held reference, fix that.
+> 
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Hmm. If I read this correctly, I don't think this can be right.
+Thanks.  Will incorporate into the next series.
 
-Why? You don't mark %edx as possibly corrupted by the asm any more.
-
-The "=dm" means that quite often (probably effectively always), gcc will 
-allocate %edx to be the output register for %0, but at least in theory, it 
-could easily decide that it's going to put %0 in memory, and in that case, 
-it may well decide that %edx is not modified by the asm statement. Which 
-may or may not be true - I'd bet that there are BIOSes out there that *do* 
-modify it.
-
-So what happens then? If gcc decides that %edx isn't modified by the asm, 
-it will assume that it still contains the value it had on entry, which is 
-the "SMAP" value, and then it might decide to do the
-
-	if (id != SMAP) {
-
-check as a 
-
-	cmpl %edx,%eax
-
-since the "id" return is in %eax, and the compiler decides that it may be 
-cheaper to re-use the register that already contains the constant, than to 
-use a (longer) compare instruction with an explicit constant.
-
-IOW, I think you need to either (a) _force_ gcc to use %edx for the "err" 
-return, avoiding this issue, or (b) mark edx clobbered (which in turn 
-means that you need to remove it from the output constraint for "err"). I 
-suspect (a) is simpler/more straightforward.
-
-I haven't pulled this, so maybe you can just amend the commit in-place, 
-and we can avoid?
-
-			Linus
+-- 
+tejun
