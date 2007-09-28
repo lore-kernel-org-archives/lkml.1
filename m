@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbXI1Rc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbXI1Rdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbXI1Rc0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 13:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbXI1RcT
+	id S1755603AbXI1Rdi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 13:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbXI1Rd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 13:32:19 -0400
-Received: from mga05.intel.com ([192.55.52.89]:50522 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751201AbXI1RcT (ORCPT
+	Fri, 28 Sep 2007 13:33:29 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55390 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753401AbXI1Rd2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 13:32:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.21,210,1188802800"; 
-   d="scan'208";a="327926898"
-Date: Fri, 28 Sep 2007 10:31:55 -0700
-From: Mark Gross <mgross@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, roel <12o3l@tiscali.nl>,
-       lkml <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] spin_lock_unlocked cleanups
-Message-ID: <20070928173155.GD3219@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <46FC2245.50907@tiscali.nl> <1190967450.18681.10.camel@chaos> <20070928012656.0bae3991.akpm@linux-foundation.org>
+	Fri, 28 Sep 2007 13:33:28 -0400
+Date: Fri, 28 Sep 2007 10:33:26 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
+In-Reply-To: <200709280742.38262.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
+References: <20070919033605.785839297@sgi.com> <20070919033643.763818012@sgi.com>
+ <200709280742.38262.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070928012656.0bae3991.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 28, 2007 at 01:26:56AM -0700, Andrew Morton wrote:
-> On Fri, 28 Sep 2007 10:17:30 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+On Fri, 28 Sep 2007, Nick Piggin wrote:
+
+> On Wednesday 19 September 2007 13:36, Christoph Lameter wrote:
+> > SLAB_VFALLBACK can be specified for selected slab caches. If fallback is
+> > available then the conservative settings for higher order allocations are
+> > overridden. We then request an order that can accomodate at mininum
+> > 100 objects. The size of an individual slab allocation is allowed to reach
+> > up to 256k (order 6 on i386, order 4 on IA64).
 > 
-> > can we please add this to checkpatch.pl ? 
-> > 
-> > > -spinlock_t bpci_lock = SPIN_LOCK_UNLOCKED;
-> > > +DEFINE_SPINLOCK(bpci_lock);
-> 
-> That check is already in checkpatch.  Problem is that hardly anyone
-> runs the thing.
-> 
-> I think we're ready to wire checkpatch up to a email robot which monitors
-> the mailing lists and sends people nastygrams.  I bet that'll be popular ;)
+> How come SLUB wants such a big amount of objects? I thought the
+> unqueued nature of it made it better than slab because it minimised
+> the amount of cache hot memory lying around in slabs...
 
-One could make check patch create a signature hashing a check patch key
-and the patch one could put in the post like a signed-off-by: thing.
+The more objects in a page the more the fast path runs. The more the fast 
+path runs the lower the cache footprint and the faster the overall 
+allocations etc.
 
-checkpatch-sig : 2f818bcf0c2333a461affc4a170814f23adf2e08
+SLAB can be configured for large queues holdings lots of objects. 
+SLUB can only reach the same through large pages because it does not 
+have queues. One could add the ability to manage pools of cpu slabs but 
+that would be adding yet another layer to compensate for the problem of 
+the small pages. Reliable large page allocations means that we can get rid 
+of these layers and the many workarounds that we have in place right now.
 
-this puts the burden on the sender to run the thing.
+The unqueued nature of SLUB reduces memory requirements and in general the 
+more efficient code paths of SLUB offset the advantage that SLAB can reach 
+by being able to put more objects onto its queues. SLAB necessarily 
+introduces complexity and cache line use through the need to manage those 
+queues.
 
---mgross
+> vmalloc is incredibly slow and unscalable at the moment. I'm still working
+> on making it more scalable and faster -- hopefully to a point where it would
+> actually be usable for this... but you still get moved off large TLBs, and
+> also have to inevitably do tlb flushing.
+
+Again I have not seen any fallbacks to vmalloc in my testing. What we are 
+doing here is mainly to address your theoretical cases that we so far have 
+never seen to be a problem and increase the reliability of allocations of
+page orders larger than 3 to a usable level. So far I have so far not 
+dared to enable orders larger than 3 by default.
+
+AFAICT The performance of vmalloc is not really relevant. If this would 
+become an issue then it would be possible to reduce the orders used to 
+avoid fallbacks.
+
+> Or do you have SLUB at a point where performance is comparable to SLAB,
+> and this is just a possible idea for more performance?
+
+AFAICT SLUBs performance is superior to SLAB in most cases and it was like 
+that from the beginning. I am still concerned about several corner cases 
+though (I think most of them are going to be addressed by the per cpu 
+patches in mm). Having a comparable or larger amount of per cpu objects as 
+SLAB is something that also could address some of these concerns and could 
+increase performance much further.
