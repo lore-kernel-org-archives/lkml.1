@@ -1,215 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbXI1EVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbXI1Eiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbXI1EVc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 00:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbXI1EVW
+	id S1757521AbXI1Eiq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 00:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbXI1Eii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 00:21:22 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:50501 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753330AbXI1EVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 00:21:20 -0400
-Date: Fri, 28 Sep 2007 00:21:19 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] net driver fixes
-Message-ID: <20070928042119.GA15161@havoc.gtf.org>
+	Fri, 28 Sep 2007 00:38:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55557 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753330AbXI1Eii (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 00:38:38 -0400
+Date: Thu, 27 Sep 2007 21:41:11 -0700
+From: Greg KH <greg@kroah.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: tapio.laxstrom@iptime.fi, linux-kernel@vger.kernel.org
+Subject: Re: drivers/usb/misc/emi*.c have the biggest data objects in the
+	whole tree
+Message-ID: <20070928044111.GB24458@kroah.com>
+References: <200709141135.35239.vda.linux@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <200709141135.35239.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 14, 2007 at 11:35:34AM +0100, Denys Vlasenko wrote:
+> Hi Tapio,
+> 
+> You are the author of these files. Are you still maintaining them?
+> If not, do you know who is the current maintainer?
+> 
+> These two object files hold the biggest data objects in the whole Linux kernel
+> after lockdep:
+> 
+>    text    data     bss     dec     hex filename
+>    1258  160516       0  161774   277ee ./drivers/usb/misc/emi26.o
+>    1504  209296       0  210800   33770 ./drivers/usb/misc/emi62.o
+> 
+> Basically, these are big arrays of the following structures:
+> 
+> typedef struct _INTEL_HEX_RECORD
+> {
+>         __u32   length;
+>         __u32   address;
+>         __u32   type;
+>         __u8    data[MAX_INTEL_HEX_RECORD_LENGTH];
+> } INTEL_HEX_RECORD;
+> 
+> I suggest the following optimizations:
+> 
+> Change structure to
+> 
+> typedef struct _INTEL_HEX_RECORD
+> {
+>         __u8   type;
+>         __u8   length;
+>         __u16   address;
+>         __u8    data[MAX_INTEL_HEX_RECORD_LENGTH];
+> } INTEL_HEX_RECORD __attribute__((__packed__));
 
-And an e1000 id patch.
+Only if you redo the whole firmware image too :)
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
+What is this really hurting?  It's only relevant if you load the
+specific module, if you have this device type.  It's a firmware blob,
+nothing really interesting at all.
 
-to receive the following updates:
+thanks,
 
- drivers/net/e1000/e1000_ethtool.c |    1 +
- drivers/net/e1000/e1000_hw.c      |    1 +
- drivers/net/e1000/e1000_hw.h      |    1 +
- drivers/net/e1000/e1000_main.c    |    2 +
- drivers/net/sky2.c                |   53 +++++++++++++++++++++++++++----------
- 5 files changed, 44 insertions(+), 14 deletions(-)
-
-Auke Kok (1):
-      e1000: Add device IDs of blade version of the 82571 quad port
-
-Stephen Hemminger (3):
-      sky2: sky2 FE+ receive status workaround
-      sky2: FE+ vlan workaround
-      sky2: fix transmit state on resume
-
-diff --git a/drivers/net/e1000/e1000_ethtool.c b/drivers/net/e1000/e1000_ethtool.c
-index 4c3785c..9ecc3ad 100644
---- a/drivers/net/e1000/e1000_ethtool.c
-+++ b/drivers/net/e1000/e1000_ethtool.c
-@@ -1726,6 +1726,7 @@ static int e1000_wol_exclusion(struct e1000_adapter *adapter, struct ethtool_wol
- 	case E1000_DEV_ID_82571EB_QUAD_COPPER:
- 	case E1000_DEV_ID_82571EB_QUAD_FIBER:
- 	case E1000_DEV_ID_82571EB_QUAD_COPPER_LOWPROFILE:
-+	case E1000_DEV_ID_82571PT_QUAD_COPPER:
- 	case E1000_DEV_ID_82546GB_QUAD_COPPER_KSP3:
- 		/* quad port adapters only support WoL on port A */
- 		if (!adapter->quad_port_a) {
-diff --git a/drivers/net/e1000/e1000_hw.c b/drivers/net/e1000/e1000_hw.c
-index ba120f7..8604adb 100644
---- a/drivers/net/e1000/e1000_hw.c
-+++ b/drivers/net/e1000/e1000_hw.c
-@@ -387,6 +387,7 @@ e1000_set_mac_type(struct e1000_hw *hw)
- 	case E1000_DEV_ID_82571EB_SERDES_DUAL:
- 	case E1000_DEV_ID_82571EB_SERDES_QUAD:
- 	case E1000_DEV_ID_82571EB_QUAD_COPPER:
-+	case E1000_DEV_ID_82571PT_QUAD_COPPER:
- 	case E1000_DEV_ID_82571EB_QUAD_FIBER:
- 	case E1000_DEV_ID_82571EB_QUAD_COPPER_LOWPROFILE:
- 		hw->mac_type = e1000_82571;
-diff --git a/drivers/net/e1000/e1000_hw.h b/drivers/net/e1000/e1000_hw.h
-index fe87146..07f0ea7 100644
---- a/drivers/net/e1000/e1000_hw.h
-+++ b/drivers/net/e1000/e1000_hw.h
-@@ -475,6 +475,7 @@ int32_t e1000_check_phy_reset_block(struct e1000_hw *hw);
- #define E1000_DEV_ID_82571EB_FIBER       0x105F
- #define E1000_DEV_ID_82571EB_SERDES      0x1060
- #define E1000_DEV_ID_82571EB_QUAD_COPPER 0x10A4
-+#define E1000_DEV_ID_82571PT_QUAD_COPPER 0x10D5
- #define E1000_DEV_ID_82571EB_QUAD_FIBER  0x10A5
- #define E1000_DEV_ID_82571EB_QUAD_COPPER_LOWPROFILE  0x10BC
- #define E1000_DEV_ID_82571EB_SERDES_DUAL 0x10D9
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index 4a22595..e7c8951 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -108,6 +108,7 @@ static struct pci_device_id e1000_pci_tbl[] = {
- 	INTEL_E1000_ETHERNET_DEVICE(0x10BC),
- 	INTEL_E1000_ETHERNET_DEVICE(0x10C4),
- 	INTEL_E1000_ETHERNET_DEVICE(0x10C5),
-+	INTEL_E1000_ETHERNET_DEVICE(0x10D5),
- 	INTEL_E1000_ETHERNET_DEVICE(0x10D9),
- 	INTEL_E1000_ETHERNET_DEVICE(0x10DA),
- 	/* required last entry */
-@@ -1101,6 +1102,7 @@ e1000_probe(struct pci_dev *pdev,
- 	case E1000_DEV_ID_82571EB_QUAD_COPPER:
- 	case E1000_DEV_ID_82571EB_QUAD_FIBER:
- 	case E1000_DEV_ID_82571EB_QUAD_COPPER_LOWPROFILE:
-+	case E1000_DEV_ID_82571PT_QUAD_COPPER:
- 		/* if quad port adapter, disable WoL on all but port A */
- 		if (global_quad_port_a != 0)
- 			adapter->eeprom_wol = 0;
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index 0792031..162489b 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -910,6 +910,20 @@ static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2)
- 	return le;
- }
- 
-+static void tx_init(struct sky2_port *sky2)
-+{
-+	struct sky2_tx_le *le;
-+
-+	sky2->tx_prod = sky2->tx_cons = 0;
-+	sky2->tx_tcpsum = 0;
-+	sky2->tx_last_mss = 0;
-+
-+	le = get_tx_le(sky2);
-+	le->addr = 0;
-+	le->opcode = OP_ADDR64 | HW_OWNER;
-+	sky2->tx_addr64 = 0;
-+}
-+
- static inline struct tx_ring_info *tx_le_re(struct sky2_port *sky2,
- 					    struct sky2_tx_le *le)
- {
-@@ -1320,7 +1334,8 @@ static int sky2_up(struct net_device *dev)
- 				GFP_KERNEL);
- 	if (!sky2->tx_ring)
- 		goto err_out;
--	sky2->tx_prod = sky2->tx_cons = 0;
-+
-+	tx_init(sky2);
- 
- 	sky2->rx_le = pci_alloc_consistent(hw->pdev, RX_LE_BYTES,
- 					   &sky2->rx_le_map);
-@@ -2148,6 +2163,18 @@ static struct sk_buff *sky2_receive(struct net_device *dev,
- 	sky2->rx_next = (sky2->rx_next + 1) % sky2->rx_pending;
- 	prefetch(sky2->rx_ring + sky2->rx_next);
- 
-+	if (length < ETH_ZLEN || length > sky2->rx_data_size)
-+		goto len_error;
-+
-+	/* This chip has hardware problems that generates bogus status.
-+	 * So do only marginal checking and expect higher level protocols
-+	 * to handle crap frames.
-+	 */
-+	if (sky2->hw->chip_id == CHIP_ID_YUKON_FE_P &&
-+	    sky2->hw->chip_rev == CHIP_REV_YU_FE2_A0 &&
-+	    length != count)
-+		goto okay;
-+
- 	if (status & GMR_FS_ANY_ERR)
- 		goto error;
- 
-@@ -2156,8 +2183,9 @@ static struct sk_buff *sky2_receive(struct net_device *dev,
- 
- 	/* if length reported by DMA does not match PHY, packet was truncated */
- 	if (length != count)
--		goto len_mismatch;
-+		goto len_error;
- 
-+okay:
- 	if (length < copybreak)
- 		skb = receive_copy(sky2, re, length);
- 	else
-@@ -2167,13 +2195,13 @@ resubmit:
- 
- 	return skb;
- 
--len_mismatch:
-+len_error:
- 	/* Truncation of overlength packets
- 	   causes PHY length to not match MAC length */
- 	++sky2->net_stats.rx_length_errors;
- 	if (netif_msg_rx_err(sky2) && net_ratelimit())
--		pr_info(PFX "%s: rx length mismatch: length %d status %#x\n",
--			dev->name, length, status);
-+		pr_info(PFX "%s: rx length error: status %#x length %d\n",
-+			dev->name, status, length);
- 	goto resubmit;
- 
- error:
-@@ -3934,13 +3962,6 @@ static __devinit struct net_device *sky2_init_netdev(struct sky2_hw *hw,
- 	sky2->hw = hw;
- 	sky2->msg_enable = netif_msg_init(debug, default_msg);
- 
--	/* This chip has hardware problems that generates
--	 * bogus PHY receive status so by default shut up the message.
--	 */
--	if (hw->chip_id == CHIP_ID_YUKON_FE_P &&
--	    hw->chip_rev == CHIP_REV_YU_FE2_A0)
--		sky2->msg_enable &= ~NETIF_MSG_RX_ERR;
--
- 	/* Auto speed and flow control */
- 	sky2->autoneg = AUTONEG_ENABLE;
- 	sky2->flow_mode = FC_BOTH;
-@@ -3964,8 +3985,12 @@ static __devinit struct net_device *sky2_init_netdev(struct sky2_hw *hw,
- 		dev->features |= NETIF_F_HIGHDMA;
- 
- #ifdef SKY2_VLAN_TAG_USED
--	dev->features |= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
--	dev->vlan_rx_register = sky2_vlan_rx_register;
-+	/* The workaround for FE+ status conflicts with VLAN tag detection. */
-+	if (!(sky2->hw->chip_id == CHIP_ID_YUKON_FE_P &&
-+	      sky2->hw->chip_rev == CHIP_REV_YU_FE2_A0)) {
-+		dev->features |= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
-+		dev->vlan_rx_register = sky2_vlan_rx_register;
-+	}
- #endif
- 
- 	/* read the mac address */
+greg k-h
