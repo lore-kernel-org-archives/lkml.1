@@ -1,113 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbXI1Psm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbXI1Pua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759956AbXI1Psm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 11:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbXI1Psf
+	id S1759984AbXI1Pua (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 11:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbXI1PuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 11:48:35 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33145 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751493AbXI1Pse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 11:48:34 -0400
-Date: Fri, 28 Sep 2007 17:48:32 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch] x86: improved memory barrier implementation
-Message-ID: <20070928154832.GB12538@wotan.suse.de>
+	Fri, 28 Sep 2007 11:50:23 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:21471 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754650AbXI1PuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 11:50:21 -0400
+X-IronPort-AV: i="4.21,210,1188792000"; 
+   d="scan'208"; a="52704557:sNHT31345972"
+Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin
+	relocations
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Andrew Morton <akpm@linux-foundation.org>,
+       David McCullough <David_Mccullough@securecomputing.com>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Paul Mundt <lethal@linux-sh.org>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com,
+       Bernd Schmidt <bernd.schmidt@analog.com>,
+       Greg Ungerer <gerg@snapgear.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, ysato@users.sourceforge.jp,
+       miles@lsi.nec.co.jp, linux-m32r@ml.linux-m32r.org
+In-Reply-To: <20070921033216.GA11139@securecomputing.com>
+References: <1190102965.4406.9.camel@roc-desktop>
+	 <20070920142543.GA3268@linux-sh.org>
+	 <20070920150314.GA27079@securecomputing.com>
+	 <200709202144.16301.rgetz@blackfin.uclinux.org>
+	 <20070921033216.GA11139@securecomputing.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Fri, 28 Sep 2007 23:46:46 +0800
+Message-Id: <1190994406.6145.11.camel@roc-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 28 Sep 2007 15:50:17.0443 (UTC) FILETIME=[4443DB30:01C801E7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to latest memory ordering specification documents from Intel and
-AMD, both manufacturers are committed to in-order loads from cacheable memory
-for the x86 architecture. Hence, smp_rmb() may be a simple barrier.
+Andrew, could you please add this patch to -mm.
+As we discussed here, it should be OK for us.
 
-Also according to those documents, and according to existing practice in Linux
-(eg. spin_unlock doesn't enforce ordering), stores to cacheable memory are
-visible in program order too. Hence, smp_wmb() may be a simple barrier.
-
-http://developer.intel.com/products/processor/manuals/318147.pdf
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/24593.pdf
-
-Whether or not this noticably helps performance anywhere is not known. My
-primary motivation for this is to have a canonical barrier implementation for
-x86 architecture.
-
-There is some controversy about whether this is valid in the presence of
-string operations or non-temporal stores etc. which may use different memory
-ordering rules. However, those would be _already_ broken by non-ordering
-spinlocks and, as such, those operations must carry their own ordering code
-so they appear to execute in-order (though many places don't seem to, eg. rep
-stosb in copy*user*).
-
-The only alternative is to assume a weak memory model, and add the required
-barriers to spin_unlock -- something that has been explicitly avoided, but
-_may_ be a better way to go? However, unless my logic is broken, it is nonsense
-to have our barrier primitives assuming a weakly ordered model but our
-spinlocks to assume strongly ordered (weird bugs in simple spinlocked code, but
-complex lockless code works fine?!).
-
-The complaint that broken old ppros get more broken seems to be bogus as well:
-wmb on i386 never catered to the old ppro to start with. The errata seem to
-indicate that lockless code is going to be broken by definition regardless of
-anything we do, short of adding a lock prefix to all potentially concurrent
-memory operations. As a bandaid to reduce the chance of a bug, it may be
-valid to do a dummy lock op here -- the public docs are too vague to really
-know -- however that is a separate patch and completely independent of this
-one.
-
-So: rather than a vague nack, I'd really like to either have a hole shown
-in my logic, or a counter proposal for a plan to "unconstrain" the exotic
-memory ops like rep stos / nt operations, and actually have spinlocks and
-mbs do the required barriers.
-
-Buggy ppros: I have no interest in, given the vague errata and apparently
-unfixable problems with lockless code; anybody is welcome to try adding
-whatever they like to help them work, but again please don't confuse that
-with having anything to do with this patch...
-
-Winchip: can any of these CPUs with ooostores do SMP? If not, then smp_wmb
-can also be a simple barrier on i386 too.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-
----
-Index: linux-2.6/include/asm-i386/system.h
-===================================================================
---- linux-2.6.orig/include/asm-i386/system.h
-+++ linux-2.6/include/asm-i386/system.h
-@@ -281,12 +281,12 @@ static inline unsigned long get_limit(un
-    but make it already an possibility. */
- #define wmb() alternative("lock; addl $0,0(%%esp)", "sfence", X86_FEATURE_XMM)
- #else
--#define wmb()	__asm__ __volatile__ ("": : :"memory")
-+#define wmb() barrier()
- #endif
- 
- #ifdef CONFIG_SMP
- #define smp_mb()	mb()
--#define smp_rmb()	rmb()
-+#define smp_rmb()	barrier()
- #define smp_wmb()	wmb()
- #define smp_read_barrier_depends()	read_barrier_depends()
- #define set_mb(var, value) do { (void) xchg(&var, value); } while (0)
-Index: linux-2.6/include/asm-x86_64/system.h
-===================================================================
---- linux-2.6.orig/include/asm-x86_64/system.h
-+++ linux-2.6/include/asm-x86_64/system.h
-@@ -141,8 +141,8 @@ static inline void write_cr8(unsigned lo
- 
- #ifdef CONFIG_SMP
- #define smp_mb()	mb()
--#define smp_rmb()	rmb()
--#define smp_wmb()	wmb()
-+#define smp_rmb()	barrier()
-+#define smp_wmb()	barrier()
- #define smp_read_barrier_depends()	do {} while(0)
- #else
- #define smp_mb()	barrier()
+Thanks,
+- Bryan Wu
+On Fri, 2007-09-21 at 11:32 +0800, David McCullough wrote:
+> 
+> Jivin Robin Getz lays it down ... 
+> > On Thu 20 Sep 2007 11:03, David McCullough pondered: 
+> > > I would say that (a) is definately not the case.  I am sure the BF
+> guys 
+> > > will say they have been banging us on the head with changes for a
+> long 
+> > > time and getting no where as we considered the changes to severe
+> or out 
+> > > of line. 
+> > 
+> > I don't think we have been "banging heads" with you (unless that is
+> your 
+> > feeling?) - how about "working together, but diverting to satisfy
+> different 
+> > needs" :)
+> 
+> No head banging feelings here,  but I would understand if you guys
+> felt 
+> that way occasionally ;-)  I obviously forgot the happy face on that 
+> statement.  It was meant as a good thing.
+> 
+> > I think that we have had more issues in the uClinux-dist (userspace
+> and build 
+> > environment), but for kernel code, we have moved from some
+> non-standard 
+> > (stupid) things we were doing early on to what we have today - which
+> is as 
+> > common/standard with other archs as we can be. 
+> > 
+> > Although this is slightly off topic - on the uClinux distribution
+> side - most 
+> > of our changes are based on requirements/desires from being able to
+> support 
+> > fdpic elf and flat formats, and to attempt to make things easier for
+> end 
+> > users/us to use/maintain. Where we do make changes - we always send
+> the patch 
+> > upstream and have the conversation with you (not everyone else does
+> this), 
+> > and some/most times rework things so they are more acceptable to
+> you. We 
+> > don't always come to an agreement - but we always have the
+> discussion, and 
+> > are willing to move if we can make things better that still meets
+> both our 
+> > needs/desires. 
+> > 
+> > > This particular patch was trivial in comparison to others I've
+> seen, 
+> > 
+> > That is what we thought. 
+> > 
+> > > it fixed all the existing arches (not something that is always
+> done) and 
+> > > seemed a reasonable start to finally get the BF guys up and
+> running. 
+> > > Still, happy to make it better of course ;-) 
+> > 
+> > As always - we are more than happy to explore/review alternative
+> patches if 
+> > people want to write/sumbit them.
+> 
+> Cheers, 
+> Davidm
+> 
+> -- 
+> David McCullough,  david_mccullough@securecomputing.com,   Ph:+61
+> 734352815 
+> Secure Computing - SnapGear  http://www.uCdot.org
+> http://www.cyberguard.com
+> 
