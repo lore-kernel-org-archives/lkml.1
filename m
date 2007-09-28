@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbXI1IET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbXI1IEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbXI1IET (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 04:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757836AbXI1IBu
+	id S1759711AbXI1IEn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 04:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbXI1IBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 04:01:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51096 "EHLO mx1.redhat.com"
+	Fri, 28 Sep 2007 04:01:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51095 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757622AbXI1IBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757625AbXI1IBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 28 Sep 2007 04:01:46 -0400
-Message-Id: <20070928080041.186579000@chello.nl>
+Message-Id: <20070928080040.893443000@chello.nl>
 References: <20070928074200.436463000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 28 Sep 2007 09:42:02 +0200
+Date: Fri, 28 Sep 2007 09:42:01 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
 Cc: Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        akpm@linux-foundation.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 02/12] lockdep: i386: connect the sysexit hook
-Content-Disposition: inline; filename=lockdep-i386-sys_exit.patch
+Subject: [PATCH 01/12] lockdep: syscall exit check
+Content-Disposition: inline; filename=lockdep-sys_exit.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Run the lockdep_sys_exit hook after all other C code on the syscall
-return path.
+Provide a check to validate that we do not hold any locks when switching
+back to user-space.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/i386/kernel/entry.S    |    3 +++
- include/asm-i386/irqflags.h |   13 +++++++++++++
- 2 files changed, 16 insertions(+)
+ include/linux/lockdep.h |    2 ++
+ kernel/lockdep.c        |   16 ++++++++++++++++
+ 2 files changed, 18 insertions(+)
 
-Index: linux-2.6/arch/i386/kernel/entry.S
+Index: linux-2.6/include/linux/lockdep.h
 ===================================================================
---- linux-2.6.orig/arch/i386/kernel/entry.S
-+++ linux-2.6/arch/i386/kernel/entry.S
-@@ -338,6 +338,7 @@ sysenter_past_esp:
- 	jae syscall_badsys
- 	call *sys_call_table(,%eax,4)
- 	movl %eax,PT_EAX(%esp)
-+	LOCKDEP_SYS_EXIT
- 	DISABLE_INTERRUPTS(CLBR_ANY)
- 	TRACE_IRQS_OFF
- 	movl TI_flags(%ebp), %ecx
-@@ -376,6 +377,7 @@ ENTRY(system_call)
- syscall_call:
- 	call *sys_call_table(,%eax,4)
- 	movl %eax,PT_EAX(%esp)		# store the return value
-+	LOCKDEP_SYS_EXIT
- syscall_exit:
- 	DISABLE_INTERRUPTS(CLBR_ANY)	# make sure we don't miss an interrupt
- 					# setting need_resched or sigpending
-@@ -532,6 +534,7 @@ syscall_exit_work:
- 	movl %esp, %eax
- 	movl $1, %edx
- 	call do_syscall_trace
-+	LOCKDEP_SYS_EXIT
- 	jmp resume_userspace
- END(syscall_exit_work)
- 	CFI_ENDPROC
-Index: linux-2.6/include/asm-i386/irqflags.h
-===================================================================
---- linux-2.6.orig/include/asm-i386/irqflags.h
-+++ linux-2.6/include/asm-i386/irqflags.h
-@@ -160,4 +160,17 @@ static inline int raw_irqs_disabled(void
- # define TRACE_IRQS_OFF
- #endif
+--- linux-2.6.orig/include/linux/lockdep.h
++++ linux-2.6/include/linux/lockdep.h
+@@ -238,6 +238,7 @@ extern void lockdep_info(void);
+ extern void lockdep_reset(void);
+ extern void lockdep_reset_lock(struct lockdep_map *lock);
+ extern void lockdep_free_key_range(void *start, unsigned long size);
++extern void lockdep_sys_exit(void);
  
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+# define LOCKDEP_SYS_EXIT			\
-+	pushl %eax;				\
-+	pushl %ecx;				\
-+	pushl %edx;				\
-+	call lockdep_sys_exit;			\
-+	popl %edx;				\
-+	popl %ecx;				\
-+	popl %eax;
-+#else
-+# define LOCKDEP_SYS_EXIT
-+#endif
+ extern void lockdep_off(void);
+ extern void lockdep_on(void);
+@@ -317,6 +318,7 @@ static inline void lockdep_on(void)
+ # define INIT_LOCKDEP
+ # define lockdep_reset()		do { debug_locks = 1; } while (0)
+ # define lockdep_free_key_range(start, size)	do { } while (0)
++# define lockdep_sys_exit() 			do { } while (0)
+ /*
+  * The class key takes no space if lockdep is disabled:
+  */
+Index: linux-2.6/kernel/lockdep.c
+===================================================================
+--- linux-2.6.orig/kernel/lockdep.c
++++ linux-2.6/kernel/lockdep.c
+@@ -3199,3 +3199,19 @@ void debug_show_held_locks(struct task_s
+ }
+ 
+ EXPORT_SYMBOL_GPL(debug_show_held_locks);
 +
- #endif
++void lockdep_sys_exit(void)
++{
++	struct task_struct *curr = current;
++
++	if (unlikely(curr->lockdep_depth)) {
++		if (!debug_locks_off())
++			return;
++		printk("\n========================================\n");
++		printk(  "[ BUG: lock held at syscall exit time! ]\n");
++		printk(  "----------------------------------------\n");
++		printk("%s/%d is leaving the kernel with locks still held!\n",
++				curr->comm, curr->pid);
++		lockdep_print_held_locks(curr);
++	}
++}
 
 --
 
