@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbXI1U1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbXI1U2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbXI1U1V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXI1U1M
+	id S1756706AbXI1U2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbXI1U2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:27:12 -0400
-Received: from rtr.ca ([76.10.145.34]:4050 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbXI1U1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:27:11 -0400
-Message-ID: <46FD639D.9030301@rtr.ca>
-Date: Fri, 28 Sep 2007 16:27:09 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 28 Sep 2007 16:28:04 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:46397 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754208AbXI1U2D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:28:03 -0400
+Date: Fri, 28 Sep 2007 22:27:59 +0200
+To: Mingming Cao <cmm@us.ibm.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Badari Pulavarty <pbadari@gmail.com>, ext4 <linux-ext4@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kernel Oops in ext3 code
+Message-ID: <20070928202759.GH16498@gamma.logic.tuwien.ac.at>
+References: <1190991464.10145.0.camel@dyn9047017100.beaverton.ibm.com> <20070928150031.GF27873@gamma.logic.tuwien.ac.at> <1191002449.3815.9.camel@localhost.localdomain> <46FD4EE3.8030705@linux.vnet.ibm.com> <20070927103122.GB27783@gamma.logic.tuwien.ac.at> <1190927903.3872.12.camel@localhost.localdomain> <20070928045456.GM23215@gamma.logic.tuwien.ac.at> <1190991464.10145.0.camel@dyn9047017100.beaverton.ibm.com> <20070928150031.GF27873@gamma.logic.tuwien.ac.at> <1191002449.3815.9.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 0/2] suspend/resume regression fixes
-References: <20070922220347.586903979@linutronix.de> <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46FD4EE3.8030705@linux.vnet.ibm.com> <1191002449.3815.9.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sat, 22 Sep 2007, Thomas Gleixner wrote:
->> My final enlightment was, when I removed the ACPI processor module,
->> which controls the lower idle C-states, right before resume; this
->> worked fine all the time even without all the workaround hacks.
->>
->> I really hope that this two patches finally set an end to the "jinxed
->> VAIO heisenbug series", which started when we removed the periodic
->> tick with the clockevents/dyntick patches.
-> 
-> Ok, so the patches look fine, but I somehow have this slight feeling that 
-> you gave up a bit too soon on the "*why* does this happen?" question.
+Hi all,
 
-On a closely related note:  I just now submitted a patch to fix SMP-poweroff,
-by having it do disable_nonboot_cpus before doing poweroff.
+On Fr, 28 Sep 2007, Mingming Cao wrote:
+> i_block_alloc_info, it should be 0x14(20 bytes)...Are you running a
+> vanilla 2.6.23-rc6?
 
-Which has led me to thinking..
-..are similar precautions perhaps necessary for *all* ACPI BIOS calls?
+Well yes, I add one patch for reducing the usb device resetting time,
+but this was definitely not the problem, no usb device was attached.
 
-Because one never knows what the other CPUs are doing at the same time,
-and what the side effects may be on the ACPI BIOS functions.
+> from the cache, so racing is not a issue there. Possible random memory
+> corruption?
 
-And also, I wonder if at a minimum we should be guaranteeing ACPI BIOS calls
-only ever happen from CPU#0 (or the "boot" CPU)?   Or do we do that already?
+Could be could be. I would say since it is such a strange thing and
+nobody has an idea we leave it for now, random memory corruption sounds
+nice. If it occurs I can come back.
 
--ml
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+in the space-time continuum.'
+is he? Is he?'
+                 --- Arthur failing in his first lesson of galactic physics
+                 --- in four years.
+                 --- Douglas Adams, The Hitchhikers Guide to the Galaxy
