@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbXI1OvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbXI1OxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757848AbXI1OvA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 10:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbXI1Ouw
+	id S1758719AbXI1OxD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 10:53:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXI1Owy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 10:50:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47000 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752188AbXI1Ouw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 10:50:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: [PATCH] disable non-boot CPUs before poweroff
-Date: Fri, 28 Sep 2007 17:05:17 +0200
-User-Agent: KMail/1.9.5
-Cc: Len Brown <lenb@kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       simon.derr@bull.net
-References: <46FC20B7.4000606@rtr.ca> <46FD05B8.2040302@rtr.ca> <46FD0724.5060009@rtr.ca>
-In-Reply-To: <46FD0724.5060009@rtr.ca>
+	Fri, 28 Sep 2007 10:52:54 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:38928 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646AbXI1Owy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 10:52:54 -0400
+Date: Fri, 28 Sep 2007 15:52:25 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Franck Bui-Huu <fbuihuu@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Break ELF_PLATFORM and stack pointer randomization
+	dependency
+Message-ID: <20070928145225.GA29567@linux-mips.org>
+References: <46FCDEA3.20205@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709281705.18304.rjw@sisk.pl>
+In-Reply-To: <46FCDEA3.20205@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 28 September 2007 15:52, Mark Lord wrote:
+On Fri, Sep 28, 2007 at 12:59:47PM +0200, Franck Bui-Huu wrote:
+
+> Currently arch_align_stack() is used by fs/binfmt_elf.c to randomize
+> stack pointer inside a page. But this happens only if ELF_PLATFORM
+> symbol is defined.
 > 
-> We need to disable all CPUs other than the boot CPU (usually 0)
-> before attempting to power-off modern SMP machines.
-> This seems to fix the hang-on-poweroff issue
-> that one of my SMP boxes exhibits.  More testing required.
+> ELF_PLATFORM is normally set if the architecture wants ld.so to load
+> implementation specific libraries for optimization. And currently a
+> lot of architectures just yield this symbol to NULL.
 > 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
+> This is the case for MIPS architecture where ELF_PLATFORM is NULL but
+> arch_align_stack() has been redefined to do stack inside page
+> randomization. So in this case no randomization is actually done.
+> 
+> This patch breaks this dependency which seems to be useless and allows
+> platforms such MIPS to do the randomization.
+> 
+> Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
 > ---
 > 
-> --- linux/kernel/sys.c.orig	2007-09-13 09:49:11.000000000 -0400
-> +++ linux/kernel/sys.c	2007-09-28 09:48:54.000000000 -0400
-> @@ -32,6 +32,7 @@
->  #include <linux/getcpu.h>
->  #include <linux/task_io_accounting_ops.h>
->  #include <linux/seccomp.h>
-> +#include <linux/cpu.h>
->  
->  #include <linux/compat.h>
->  #include <linux/syscalls.h>
-> @@ -879,6 +880,7 @@
->  	if (pm_power_off_prepare)
->  		pm_power_off_prepare();
->  	sysdev_shutdown();
-> +	disable_nonboot_cpus();
+> 	Andrew,
+> 
+>    I tried several times to poke people on the list to understand why
+>    this dependency exists at all, but unfortunately got no answers.
+> 
+>    So I'm submitting this patch to at least have some feedbacks. An
+>    easier solution would be to define ELF_PLATFORM to a dummy string
+>    for MIPS but it sounds very hackish.
 
-Before sysdev_shutdown(), please.
+Probably this was introduced a long time ago, so it's only recorded in
+tglx's history git tree:
 
-sysdev_shutdown() may touch things that belong to CPU0.
+commit ccc875c1d2fe18b50020d501f1005ef46fc55fed
+Author: Arjan van de Ven <arjan@infradead.org>
+Date:   Fri Mar 4 17:25:13 2005 -0800
 
->  	printk(KERN_EMERG "Power down.\n");
->  	machine_power_off();
->  }
+    [PATCH] Randomisation: stack randomisation
+    
+    The patch below replaces the existing 8Kb randomisation of the userspace sta
+    pointer (which is currently only done for Hyperthreaded P-IVs) with a more
+    general randomisation over a 64Kb range.  64Kb is not a lot, but it's a star
+    and once the dust settles we can increase this value to a more agressive
+    value.
+    
+    Signed-off-by: Arjan van de Ven <arjan@infradead.org>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Andrew Morton <akpm@osdl.org>
+    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
 
-Greetings,
-Rafael
+http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commitdiff;h=ccc875c1d2fe18b50020d501f1005ef46fc55fed
+
+  Ralf
