@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbXI1DZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbXI1Ddy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758245AbXI1DZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 23:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbXI1DZb
+	id S1758112AbXI1Ddy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 23:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbXI1Ddq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 23:25:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60369 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754106AbXI1DZa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 23:25:30 -0400
-Date: Thu, 27 Sep 2007 20:22:28 -0700
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file
-	without options
-Message-ID: <20070928032228.GB23543@kroah.com>
-References: <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu> <20070927155902.GA6450@thunk.org> <20070927102343.1a113ccc.akpm@linux-foundation.org> <20070927175917.GB8339@kroah.com> <20070927183742.GA23734@thunk.org> <20070927213445.GA7857@kroah.com> <20070927231927.GE8688@thunk.org> <20070927232857.GA12049@parisc-linux.org>
+	Thu, 27 Sep 2007 23:33:46 -0400
+Received: from colo.lackof.org ([198.49.126.79]:41097 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755347AbXI1Ddp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 23:33:45 -0400
+Date: Thu, 27 Sep 2007 21:33:26 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: akepner@sgi.com
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       RolandDreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [3/4] dma: document dma_flags_set_dmabarrier()
+Message-ID: <20070928033326.GB14312@colo.lackof.org>
+References: <20070928011302.GP30013@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070927232857.GA12049@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20070928011302.GP30013@sgi.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 05:28:57PM -0600, Matthew Wilcox wrote:
-> On Thu, Sep 27, 2007 at 07:19:27PM -0400, Theodore Tso wrote:
-> > Would you accept a patch which causes the deprecated sysfs
-> > files/directories to disappear, even if CONFIG_SYS_DEPRECATED is
-> > defined, via a boot-time parameter?
+On Thu, Sep 27, 2007 at 06:13:02PM -0700, akepner@sgi.com wrote:
 > 
-> How about a mount option?  That way people can test without a reboot:
+> Document dma_flags_set_dmabarrier().
 > 
-> mount -o remount,deprecated={yes,no} /sys
+> Signed-off-by: Arthur Kepner <akepner@sgi.com>
 
-Unfortunatly, due to the way sysfs and kobjects are built up, this is
-pretty impossible to do.
+This looks really good!
 
-sorry,
+thanks,
+grant
 
-greg k-h
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
+
+> 
+> ---
+>  DMA-API.txt |   26 ++++++++++++++++++++++++++
+>  1 files changed, 26 insertions(+)
+> 
+> diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+> index cc7a8c3..5fc0bba 100644
+> --- a/Documentation/DMA-API.txt
+> +++ b/Documentation/DMA-API.txt
+> @@ -544,3 +544,29 @@ size is the size (and should be a page-sized multiple).
+>  The return value will be either a pointer to the processor virtual
+>  address of the memory, or an error (via PTR_ERR()) if any part of the
+>  region is occupied.
+> +
+> +int 
+> +dma_flags_set_dmabarrier(int dir)
+> +
+> +Amend dir (one of the enum dma_data_direction values), with a 
+> +platform-specific "dmabarrier" attribute.  The dmabarrier attribute 
+> +forces a flush of all in-flight DMA when the associated memory 
+> +region is written to (see example below.)
+> +
+> +This provides a mechanism to enforce ordering of DMA on platforms that 
+> +permit DMA to be reordered between device and host memory (within a 
+> +NUMA interconnect).  On other platforms this is a nop.
+> +
+> +The dmabarrier would be set when the memory region is mapped for DMA, 
+> +e.g.:
+> +
+> +	int count, flags = dma_flags_set_dmabarrier(DMA_BIDIRECTIONAL);
+> +	....
+> +	count = dma_map_sg(dev, sglist, nents, flags);
+> +
+> +As an example of a situation where this would be useful, suppose that 
+> +the device does a DMA write to indicate that data is ready and 
+> +available in memory.  The DMA of the "completion indication" could 
+> +race with data DMA.  Using a dmabarrier on the memory used for 
+> +completion indications would prevent the race.
+> +
