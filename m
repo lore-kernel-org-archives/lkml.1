@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761506AbXI1OdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762031AbXI1Odc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761506AbXI1OdM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 10:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759364AbXI1Oct
+	id S1762031AbXI1Odc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 10:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759408AbXI1OdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 10:32:49 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:49778 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761761AbXI1Ocs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 10:32:48 -0400
-Message-Id: <20070928143159.638289605@polymtl.ca>
-References: <20070928142845.795281397@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Fri, 28 Sep 2007 10:28:48 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [patch 3/5] Add samples subdir
-Content-Disposition: inline; filename=add-samples-subdir.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 28 Sep 2007 14:32:00 +0000
+	Fri, 28 Sep 2007 10:33:20 -0400
+Received: from www.osadl.org ([213.239.205.134]:53411 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761932AbXI1OdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 10:33:18 -0400
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.23-rc8-mm2: Fix a compile problem in macb.c
+Date: Fri, 28 Sep 2007 16:33:15 +0200
+User-Agent: KMail/1.9.5
+Organization: Linutronix
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Andrew Victor <andrew@sanpeople.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709281633.15608.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Compiling macb.c fails because the type of parameter 2 of macb_poll()
+was changed from int* to int. Furthermore, a local variable was removed
+but was still used inside the function. This patch fixes it.
 
-Begin infrastructure for kernel code samples in the samples/ directory.
-Add its Kconfig and Kbuild files.
-Source its Kconfig file in all arch/ Kconfigs.
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
-Changelog:
-- Move menu to Kernel Hacking
-- Don't build with the kernel image
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- Makefile          |    3 +++
- lib/Kconfig.debug |    2 ++
- samples/Kconfig   |   11 +++++++++++
- 3 files changed, 16 insertions(+)
-
-Index: linux-2.6-lttng/Makefile
+Index: linux-2.6.23-rc/drivers/net/macb.c
 ===================================================================
---- linux-2.6-lttng.orig/Makefile	2007-09-28 09:24:09.000000000 -0400
-+++ linux-2.6-lttng/Makefile	2007-09-28 09:27:28.000000000 -0400
-@@ -772,6 +772,9 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) 
- ifdef CONFIG_HEADERS_CHECK
- 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
- endif
-+ifdef CONFIG_SAMPLES
-+	$(Q)$(MAKE) $(build)=samples
-+endif
- 	$(call vmlinux-modpost)
- 	$(call if_changed_rule,vmlinux__)
- 	$(Q)rm -f .old_version
-Index: linux-2.6-lttng/samples/Kconfig
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/samples/Kconfig	2007-09-28 09:27:28.000000000 -0400
-@@ -0,0 +1,11 @@
-+# samples/Kconfig
-+
-+menuconfig SAMPLES
-+	bool "Sample kernel code"
-+	help
-+	  You can build and test sample kernel code here.
-+
-+if SAMPLES
-+
-+
-+endif # SAMPLES
-Index: linux-2.6-lttng/lib/Kconfig.debug
-===================================================================
---- linux-2.6-lttng.orig/lib/Kconfig.debug	2007-09-28 09:25:47.000000000 -0400
-+++ linux-2.6-lttng/lib/Kconfig.debug	2007-09-28 09:27:28.000000000 -0400
-@@ -558,3 +558,5 @@ config FAULT_INJECTION_STACKTRACE_FILTER
- 	  Provide stacktrace filter for fault-injection capabilities
+--- linux-2.6.23-rc.orig/drivers/net/macb.c	2007-09-27 12:55:21.000000000 +0200
++++ linux-2.6.23-rc/drivers/net/macb.c	2007-09-27 13:00:28.000000000 +0200
+@@ -492,7 +492,7 @@
+ 	}
  
- source "lib/Kconfig.kgdb"
-+
-+source "samples/Kconfig"
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ 	dev_dbg(&bp->pdev->dev, "poll: status = %08lx, budget = %d\n",
+-		(unsigned long)status, *budget);
++		(unsigned long)status, budget);
+ 
+ 	if (!(status & MACB_BIT(REC))) {
+ 		dev_warn(&bp->pdev->dev,
+@@ -503,7 +503,7 @@
+ 	}
+ 
+ 	work_done = macb_rx(bp, budget);
+-	if (work_done < orig_budget)
++	if (work_done < budget)
+ 		netif_rx_complete(dev, napi);
+ 
+ 	/*
