@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbXI1KDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbXI1KI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759482AbXI1KDs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 06:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbXI1KDj
+	id S1759320AbXI1KI4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 06:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbXI1KIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 06:03:39 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:49052 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754330AbXI1KDh (ORCPT
+	Fri, 28 Sep 2007 06:08:47 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33557 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751637AbXI1KIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 06:03:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=cu3F7NZvc1FeIZ/1d2wrZKlwRWGGcp1/5dN7VXW8x/KXtibyW/M8KULaoBJSVqJx8roh78PJy6M+1NkPA/HgL/r4Z2Z7J9kBE/30d/0HIJoWE/w9lzlsJKE+5EozBAt9YFnlY2WIBWNQj3ZWw2uib6yOwuBHoMCHZPndApLr0hI=
-Message-ID: <46FCD114.5060001@gmail.com>
-Date: Fri, 28 Sep 2007 03:01:56 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mark Lord <liml@rtr.ca>, Jeff Garzik <jgarzik@pobox.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, michal.k.k.piotrowski@gmail.com,
-       bryan@arbores.ca, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] libata drain fifo on stuck DRQ HSM violation
-References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com>	<20070905095327.6277d054.akpm@linux-foundation.org>	<46DEE617.4050004@rtr.ca>	<46E0A253.7060803@gmail.com>	<46E154DE.2060602@rtr.ca>	<46FB563A.80108@gmail.com>	<20070927193701.6230d77f@the-village.bc.nu>	<46FC3D7D.90009@gmail.com>	<46FC3FDD.5060201@pobox.com>	<46FC423C.2050206@gmail.com>	<46FC7B72.2030103@rtr.ca>	<46FCCDEC.20200@gmail.com> <20070928025644.7ee4af0c.akpm@linux-foundation.org>
-In-Reply-To: <20070928025644.7ee4af0c.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 28 Sep 2007 06:08:46 -0400
+Date: Fri, 28 Sep 2007 11:14:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, greg@kroah.com, akpm@osdl.org
+Subject: Re: [PATCH][resend] PCI: fix IDE legacy mode resources
+Message-ID: <20070928111408.119f0631@the-village.bc.nu>
+In-Reply-To: <20070928084840.GA5542@derision.cyrius.com>
+References: <20070824115559.06250ec0.yoichi_yuasa@tripeaks.co.jp>
+	<20070824161442.GB15305@kroah.com>
+	<20070824173713.2bc20bac@the-village.bc.nu>
+	<20070928084840.GA5542@derision.cyrius.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Nacked-by: scripts/checkpatch.pl
+On Fri, 28 Sep 2007 10:48:41 +0200
+Martin Michlmayr <tbm@cyrius.com> wrote:
 
-Mark, it seems you'll have to get ACK from this dude first.  :-)
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> [2007-08-24 17:37]:
+> > >>     PCI: Unable to reserve I/O region #1:8@f00001f0 for device 0000:00:09.1
+> > > > In some architectures, PCI bus regions have the offset from PCI resources.
+> > > > For this reason, pci_setup_device() should set PCI bus regions to dev->resource[]. 
+> > > 
+> > > I thought this patch was rejected in the past as it broke other
+> > > machines.
+> > 
+> > News to me.
+> > 
+> > Ths one looks sane and is different to the one Andrew has been fiddling
+> > with to stop broken X servers from crashing.
+> 
+> Can this patch be added now or does there have to be more discussion?
+> I need this patch for IDE and PATA to work on my MIPS Cobalt.
+> Yoichi's original patch and explanation can be found at
+> http://lkml.org/lkml/2007/8/23/411
 
--- 
-tejun
+I've no idea why it hasn't been applied unless nobody is quite sure who
+owns it. As a PCI fix I guess Greg does (and drop it into -mm for
+testing) ?
+
