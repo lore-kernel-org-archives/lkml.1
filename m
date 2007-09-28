@@ -1,164 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbXI1JpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbXI1Jpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758931AbXI1JpH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 05:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbXI1Jo4
+	id S1760377AbXI1Jpa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 05:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759222AbXI1JpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 05:44:56 -0400
-Received: from bizon.gios.gov.pl ([212.244.124.8]:60701 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753659AbXI1Jo4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 05:44:56 -0400
-Date: Fri, 28 Sep 2007 11:44:43 +0200 (CEST)
-From: Krzysztof Oledzki <olel@ans.pl>
-X-X-Sender: olel@bizon.gios.gov.pl
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Strange system hangs
-In-Reply-To: <1190971035.31636.35.camel@twins>
-Message-ID: <Pine.LNX.4.64.0709281141550.17152@bizon.gios.gov.pl>
-References: <Pine.LNX.4.64.0709281005340.17152@bizon.gios.gov.pl>
- <1190971035.31636.35.camel@twins>
+	Fri, 28 Sep 2007 05:45:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46297 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758950AbXI1JpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 05:45:08 -0400
+Date: Fri, 28 Sep 2007 11:44:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.10
+Message-ID: <20070928094446.GB28455@elte.hu>
+References: <bf97f66cfc0696c8574921d53eaafcb7@pinky> <20070928084003.GA18882@elte.hu> <20070928020132.f6c6f528.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-1970747244-1190972683=:17152"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070928020132.f6c6f528.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----187430788-1970747244-1190972683=:17152
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> On Fri, 28 Sep 2007 10:40:03 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > i ran it over kernel/sched.c and there are many bogus warnings that i 
+> > reported to you earlier:
+> > 
+> >   WARNING: multiple assignments should be avoided
+> >   #2319:
+> >   +       max_load = this_load = total_load = total_pwr = 0;
+> 
+> That warning is non-bogus, although this is one of the bogosities 
+> which I personally don't bother fixing or making a fuss about.
+> 
+> But I do think it detracts from the readability of the code, and from 
+> patches which later alter that code.  A bit.
 
+well, the two variants is:
 
-On Fri, 28 Sep 2007, Peter Zijlstra wrote:
+	max_load = this_load = total_load = total_pwr = 0;
 
-> On Fri, 2007-09-28 at 10:42 +0200, Krzysztof Oledzki wrote:
->> Hello,
->>
->> I am experiencing weird system hangs. Once about 2-5 weeks system freeze=
-s
->> and stops accepting remote connections, so it is no longer possible to
->> connect to most important services: smtp (postfix), www (squid) or even
->> ssh. Such connection is accepted but then it hangs.
->>
->> What is strange, that previously established ssh session is usable. It i=
-s
->> possible to work on such system until you do something stupid like "less
->> /var/log/all.log".
->
-> So it takes weeks to reproduce this?
+	max_load = 0;
+	this_load = 0;
+	total_load = 0;
+	total_pwr = 0;
 
-Unfortunately, yes. :(
+and the first one is more readable and more compact. (as long as the 
+conceptual 'type' of the variables is the same - which it is in this 
+case.)
 
->>                           free                        sibling
->>    task             PC    stack   pid father child younger older
->> syslogd       D F5C83C60     0  2162      1 (NOTLB)
->>         f5c83c74 00000082 00000002 f5c83c60 f5c83c5c 00000000 00000000 7=
-8538d20
->>         00000009 00000001 f7f6a070 f7cb8030 82c47e5f 0001cfed 00000a43 f=
-7f6a17c
->>         7a016980 f705dc80 78404217 7812c708 00000000 00000213 f5c83c84 1=
-e7a64bb
->> Call Trace:
->>   [<78404217>] _spin_unlock_irqrestore+0xf/0x23
->>   [<7812c708>] __mod_timer+0x92/0x9c
->>   [<78402b34>] schedule_timeout+0x70/0x8d
->>   [<7812c521>] process_timeout+0x0/0x5
->>   [<78402548>] io_schedule_timeout+0x1e/0x28
->>   [<7814d41e>] congestion_wait+0x50/0x64
->>   [<78134abc>] autoremove_wake_function+0x0/0x35
->>   [<781493e7>] balance_dirty_pages_ratelimited_nr+0x16e/0x1dc
->>   [<78145bd0>] generic_file_buffered_write+0x4ee/0x605
->>   [<783c55a1>] unix_dgram_recvmsg+0x1b4/0x1c8
->>   [<78128c8e>] current_fs_time+0x41/0x46
->>   [<78146167>] __generic_file_aio_write_nolock+0x480/0x4df
->>   [<7814621b>] generic_file_aio_write+0x55/0xb3
->>   [<78194b28>] ext3_file_write+0x24/0x8f
->>   [<7815f34f>] do_sync_readv_writev+0xc1/0xfe
->>   [<78134abc>] autoremove_wake_function+0x0/0x35
->>   [<784041ae>] _spin_unlock+0xd/0x21
->>   [<781a8c38>] log_wait_commit+0xc3/0xe3
->>   [<7814448b>] find_get_pages_tag+0x76/0x80
->>   [<7815f204>] rw_copy_check_uvector+0x50/0xaa
->>   [<7815f9d4>] do_readv_writev+0x99/0x164
->>   [<78194b04>] ext3_file_write+0x0/0x8f
->>   [<7815fadc>] vfs_writev+0x3d/0x48
->>   [<7815feb5>] sys_writev+0x41/0x67
->>   [<78103d6a>] sysenter_past_esp+0x5f/0x85
->>   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> This trace puzzles me, what is: unix_dgram_recvmsg doing there.
-> Also, it has two invocations of: ext3_file_write
-> do you have a stacked filesystem of sorts, ext3 on loopback on ext3?
+anyway, this is something where reasonable people might disagree, and a 
+tool should not force it one way or another. And this is the second time 
+i raised this very example and Andy ignored my feedback and failed to 
+notice the structural problem behind it (that a tool should only warn by 
+default if it is _sure_ that there is a problem - otherwise the tool 
+cannot be used for effective [i.e. automated] quality control), so i'm 
+raising this point again, in a slightly more irritated tone ;-)
 
-No, no loopback:
-
-# mount
-/dev/md0 on / type ext3 (rw)
-proc on /proc type proc (rw)
-sysfs on /sys type sysfs (rw,nosuid,nodev,noexec)
-devpts on /dev/pts type devpts (rw,nosuid,noexec)
-/dev/mapper/VolGrp0-usr on /usr type ext3 (rw,nodev,data=3Djournal)
-/dev/mapper/VolGrp0-var on /var type ext3 (rw,nodev,data=3Djournal)
-/dev/mapper/VolGrp0-squid_spool on /var/cache/squid/cd0 type ext3 (rw,nosui=
-d,nodev,noatime,data=3Dwriteback)
-/dev/mapper/VolGrp0-squid_spool2 on /var/cache/squid/cd1 type ext3 (rw,nosu=
-id,nodev,noatime,data=3Dwriteback)
-/dev/mapper/VolGrp0-news_spool on /var/spool/news type ext3 (rw,nosuid,node=
-v,noatime)
-shm on /dev/shm type tmpfs (rw,noexec,nosuid,nodev)
-usbfs on /proc/bus/usb type usbfs (rw,noexec,nosuid,devmode=3D0664,devgid=
-=3D85)
-owl:/usr/gentoo-nfs on /usr/gentoo-nfs type nfs (ro,nosuid,nodev,noatime,bg=
-,intr,tcp,addr=3D192.168.129.26)
-
-Nothing more.
-
->> freshclam     D 00000282     0  2866      1 (NOTLB)
->>         f36e3cc4 00000082 00000009 00000282 7a0173c0 00000002 00000000 0=
-000007b
->>         00000009 00000001 f7cb8030 f7c72030 82c4884d 0001cfed 000009ee f=
-7cb813c
->>         7a016980 f66c0b80 78404217 7812c708 00000000 00000213 f36e3cd4 1=
-e7a64bb
->> Call Trace:
->>   [<78404217>] _spin_unlock_irqrestore+0xf/0x23
->>   [<7812c708>] __mod_timer+0x92/0x9c
->>   [<78402b34>] schedule_timeout+0x70/0x8d
->>   [<7812c521>] process_timeout+0x0/0x5
->>   [<78402548>] io_schedule_timeout+0x1e/0x28
->>   [<7814d41e>] congestion_wait+0x50/0x64
->>   [<78134abc>] autoremove_wake_function+0x0/0x35
->>   [<781493e7>] balance_dirty_pages_ratelimited_nr+0x16e/0x1dc
->>   [<78145bd0>] generic_file_buffered_write+0x4ee/0x605
->>   [<7819cdb4>] __ext3_journal_stop+0x19/0x34
->>   [<7840408f>] _spin_lock+0xd/0x5a
->>   [<78176f3d>] __mark_inode_dirty+0xdd/0x16f
->>   [<78128c8e>] current_fs_time+0x41/0x46
->>   [<78146167>] __generic_file_aio_write_nolock+0x480/0x4df
->>   [<7814621b>] generic_file_aio_write+0x55/0xb3
->>   [<78103159>] setup_sigcontext+0x105/0x189
->>   [<78194b28>] ext3_file_write+0x24/0x8f
->>   [<7815f453>] do_sync_write+0xc7/0x10a
->>   [<78134abc>] autoremove_wake_function+0x0/0x35
->>   [<781085d2>] convert_fxsr_from_user+0x15/0xd5
->>   [<7815f38c>] do_sync_write+0x0/0x10a
->>   [<7815fbb6>] vfs_write+0x8a/0x10c
->>   [<78160123>] sys_write+0x41/0x67
->>   [<78103d6a>] sysenter_past_esp+0x5f/0x85
->>   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> single write, no networking, also stuck in balance_dirty_pages().
-
-Exactly. Strange, isn't it?
-
-Thanks.
-
-Best regards,
-
- =09=09=09=09Krzysztof Ol=EAdzki
----187430788-1970747244-1190972683=:17152--
+	Ingo
