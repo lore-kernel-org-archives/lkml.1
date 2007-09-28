@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761518AbXI1Of1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761681AbXI1OgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761518AbXI1Of1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 10:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbXI1OfP
+	id S1761681AbXI1OgS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 10:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbXI1OgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 10:35:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37262 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754257AbXI1OfN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 10:35:13 -0400
-Date: Fri, 28 Sep 2007 07:34:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       kbuild-devel@lists.sourceforge.net,
-       Andreas Herrmann <aherrman@arcor.de>,
-       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL
-In-Reply-To: <200709280740.40163.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org>
-References: <20070918080537.GA14882@devil> <20070919233110.18a057ac.akpm@linux-foundation.org>
- <200709280740.40163.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 28 Sep 2007 10:36:08 -0400
+Received: from ns2.tasking.nl ([195.193.207.10]:32504 "EHLO ns2.tasking.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756092AbXI1OgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 10:36:07 -0400
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+X-Newsreader: knews 1.0b.1
+Reply-To: dick.streefland@altium.nl (Dick Streefland)
+Organization: Altium BV
+X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
+References: <46F1645D.9050406@am.sony.com> <200709201538.43093.rob@landley.net> <200709270900.36602.arnd@arndb.de> <200709270900.36602.arnd@arndb.de> <200709271906.48601.rob@landley.net>
+From: dick.streefland@altium.nl (Dick Streefland)
+Subject: Re: [Announce] Linux-tiny project revival
+Content-Type: text/plain; charset=us-ascii
+NNTP-Posting-Host: 172.17.1.66
+Message-ID: <9b4.46fd1153.78517@altium.nl>
+Date: Fri, 28 Sep 2007 14:36:03 -0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rob Landley <rob@landley.net> wrote:
+| The "change every printk in the kernel" suggestion came from me trying to 
+| figure out how to get the printk() calls below a certain log level to 
+| optimize out and not take up space in the binary.
+| 
+| The above doesn't address the original cause of the thread, as far as I can 
+| tell.
 
+It does, provided you change the macro definition to:
 
-On Fri, 28 Sep 2007, Nick Piggin wrote:
-> >
-> > God I hate select.
-> 
-> IMO a better implementation would result in a notification / confirmation of
-> turning on new items, and the ability to deselect options which will also
-> confirm to deselect dependants. Like most other systems that have similar
-> problem to solve.
+#define _printk(level, str, ...) \
+   do { \
+     if (sizeof(level) == 1) /* continued printk */\
+      actual_printk(str, __VA_ARGS__); \
+     else if ((level[1] - '0') < CONFIG_PRINTK_DOICARE) \
+       actual_printk(level str, __VA_ARGS__); \
+   } while(0);
+#define printk(level_str, ...)	_printk(level_str, __VA_ARGS__)
 
-Actually, the *really* nice thing to do would be to just add the reason 
-something got enabled into the ".config" file.
+Gcc will do constant folding on the string subscripts, and remove the
+code and the string constants for calls above the desired level.
 
-IOW, wouldn't it be nice if the .config file just said
+This is basically the same as I proposed in my earlier message [*],
+but with the disadvantage that you need to modify all printk() calls
+without an explicit level and add the ugly comma to the KERN_* macros.
+Just compile the code in my message with -O and -S and you will see
+that the KERN_NOTICE call and the corresponding string literal are
+optimized away.
 
-	...
-	CONFIG_ACPI=y		# selected by X86_64_ACPI_NUMA
-	CONFIG_ACPI_PROCFS=y	# user choice
-	...
+[*] http://lkml.org/lkml/2007/9/21/151
 
-etc, since the config process actually does know these things?
+-- 
+Dick Streefland                      ////                      Altium BV
+dick.streefland@altium.nl           (@ @)          http://www.altium.com
+--------------------------------oOO--(_)--OOo---------------------------
 
-That way, there's always a fairly straightforward way to see why some 
-configuration is the way it is (and the .config file is not only useful 
-for "make oldconfig", it's also what normally gets passed around for bug 
-reports, and is part of distro kernel packages etc, so it would seem to be 
-the right place, no?)
-
-		Linus
