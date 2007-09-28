@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759014AbXI1OOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759894AbXI1OOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759014AbXI1OOR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 10:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbXI1OOA
+	id S1759894AbXI1OOo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 10:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbXI1OOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 10:14:00 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:42314 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755242AbXI1ON7 (ORCPT
+	Fri, 28 Sep 2007 10:14:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:33997 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755317AbXI1OOf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 10:13:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=OK0i4ixBOt1q3P71VG+OV/riC7KE6Nc441OynrsJqHyzjpmn94ZXSLCDyrvjgSSQMekrbcEeWxgSke0laDVcmSXU9J4/I7bDGAjjDDsJFZhgYTWa7DcI+P6XmLARZ0E2ubMFuKZTU4xO/gwNFjZE+vedQ6gZRyl2sI6clLPOKEU=  ;
-X-YMail-OSG: 0X.C4IcVM1mNoslz5pSJLO4zsvY.uws392fQ9QpynS0tYlfmWkM0xlR7Entqk3TUTDdjP8wLYw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-Date: Fri, 28 Sep 2007 07:42:37 +1000
-User-Agent: KMail/1.9.5
-Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
-References: <20070919033605.785839297@sgi.com> <20070919033643.763818012@sgi.com>
-In-Reply-To: <20070919033643.763818012@sgi.com>
+	Fri, 28 Sep 2007 10:14:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qjicXENooXmUHI0lc+ql7h9Pp29DCj18C201mpzWS7dQzpyXT5Fkr2qZlccGGzpCFc6DE9gKYif//0yset+yf/DLMO3l/W+cL0kstWf2VcvvGLySxqJRQRas43FU04PXqfc6C95r2NJFdlqzsMjOAXB1h0bF+Fid0nKQWMbigXs=
+Message-ID: <cfd9edbf0709280714u7a03ec16pfe3cb7328dbab7ad@mail.gmail.com>
+Date: Fri, 28 Sep 2007 16:14:32 +0200
+From: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: Out of memory management in embedded systems
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0709281000300.9062@chaos.analogic.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709280742.38262.nickpiggin@yahoo.com.au>
+References: <cfd9edbf0709280555n51afa8aft5040331ae9c227fd@mail.gmail.com>
+	 <Pine.LNX.4.61.0709280857520.8940@chaos.analogic.com>
+	 <cfd9edbf0709280630x7396e49fi523e1d58aab9458a@mail.gmail.com>
+	 <Pine.LNX.4.61.0709281000300.9062@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 September 2007 13:36, Christoph Lameter wrote:
-> SLAB_VFALLBACK can be specified for selected slab caches. If fallback is
-> available then the conservative settings for higher order allocations are
-> overridden. We then request an order that can accomodate at mininum
-> 100 objects. The size of an individual slab allocation is allowed to reach
-> up to 256k (order 6 on i386, order 4 on IA64).
+On 9/28/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+>
+> On Fri, 28 Sep 2007, [iso-8859-1] Daniel Spång wrote:
+>
+> > On 9/28/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+> >>
+> >> But an embedded system contains all the software that will
+> >> ever be executed on that system! If it is properly designed,
+> >> it can never run out of memory because everything it will
+> >> ever do is known at design time.
+> >
+> > Not if its input is not known beforehand. Take a browser in a mobile
+> > phone as an example, it does not know at design time how big the web
+> > pages are. On the other hand we want to use as much memory as
+> > possible, for cache etc., a method that involves the kernel would
+> > simplify this and avoids setting manual limits.
+> >
+> > Daniel
+> >
+>
+> Any networked appliance can (will) throw data away if there are
+> no resources available.
+>
+> The length of a web-page is not relevent, nor is the length
+> of any external data. Your example will buffer whatever it
+> can and not read anything more from the external source until
+> it has resources available unless it is broken.
 
-How come SLUB wants such a big amount of objects? I thought the
-unqueued nature of it made it better than slab because it minimised
-the amount of cache hot memory lying around in slabs...
-
-vmalloc is incredibly slow and unscalable at the moment. I'm still working
-on making it more scalable and faster -- hopefully to a point where it would
-actually be usable for this... but you still get moved off large TLBs, and
-also have to inevitably do tlb flushing.
-
-Or do you have SLUB at a point where performance is comparable to SLAB,
-and this is just a possible idea for more performance?
+And how do you determine when no resources are availabe? We are using
+overcommit here so malloc() will always return non null.
