@@ -1,187 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbXI1MGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbXI1MIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbXI1MGA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 08:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXI1MFx
+	id S1755989AbXI1MIV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 08:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbXI1MIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 08:05:53 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:45403 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752208AbXI1MFw (ORCPT
+	Fri, 28 Sep 2007 08:08:14 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59065 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506AbXI1MIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 08:05:52 -0400
-Message-ID: <46FCEDEF.8000308@linux.vnet.ibm.com>
-Date: Fri, 28 Sep 2007 17:35:03 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Fri, 28 Sep 2007 08:08:13 -0400
+Message-ID: <46FCEE9A.5050806@bull.net>
+Date: Fri, 28 Sep 2007 14:07:54 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, bfields@fieldses.org,
-       neilb@suse.de, nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [NFS] [BUG] 2.6.23-rc5 kernel BUG at fs/nfs/nfs4xdr.c:945
-References: <46E121B8.4080105@linux.vnet.ibm.com> <6bffcb0e0709071656o6881fa17y61818a9733293a4c@mail.gmail.com> <1189289549.13713.4.camel@localhost.localdomain> <46E54156.8060706@linux.vnet.ibm.com> <1190223091.6734.2.camel@heimdal.trondhjem.org> <46F80991.6010001@linux.vnet.ibm.com> <1190669172.6700.20.camel@heimdal.trondhjem.org>
-In-Reply-To: <1190669172.6700.20.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: WARNING: at arch/x86_64/kernel/smp.c:397 smp_call_function_mask()
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>	<390947257.08622@ustc.edu.cn>	<46FCC0B8.7090403@bull.net>	<20070928020950.bdcad2c2.akpm@linux-foundation.org>	<46FCC6F5.2030109@bull.net> <20070928023422.77be1e71.akpm@linux-foundation.org>
+In-Reply-To: <20070928023422.77be1e71.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 28/09/2007 14:14:12,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 28/09/2007 14:14:13,
+	Serialize complete at 28/09/2007 14:14:13
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig47766A870C88F051C8EA561C"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Tue, 2007-09-25 at 00:31 +0530, Kamalesh Babulal wrote:
->>> I'm mystified. I'm quite unable to reproduce this on my own setup: the
->>> ENAMETOOLONG error reporting mechanism prevents me from even getting
->>> near the above bug.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig47766A870C88F051C8EA561C
+Content-Type: multipart/mixed;
+ boundary="------------080006050504030805060306"
+
+This is a multi-part message in MIME format.
+--------------080006050504030805060306
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Andrew Morton wrote:
+> On Fri, 28 Sep 2007 11:18:45 +0200 Laurent Vivier <Laurent.Vivier@bull.=
+net> wrote:
+>=20
+>> Andrew Morton wrote:
+>>> On Fri, 28 Sep 2007 10:52:08 +0200 Laurent Vivier <Laurent.Vivier@bul=
+l.net> wrote:
+>>>> Andi, is this correct ?
+>>>> Andrew, should I send a patch implementing this change ?
+>>> umm, I think all the smp_call_function fucntions are deadlocky if cal=
+led
+>>> with local interrupts disabled, regardless of whether the calling CPU=
+ is in
+>>> the mask.
 >>>
->>> Could you add a little printk into the 'encode_lookup' routine on line
->>> 944 of fs/nfs/nfs4xdr.c to display the value of 'len'?
->>>
->>> Cheers
->>>   Trond
->> Hi Trond,
+>>> If CPU A is sending a cross-cpu call to CPU B and CPU B is sending a
+>>> cross-cpu call to CPU A, and they both have local interrupts disabled=
+=2E..
+>> OK, so there are two errors:
 >>
->> Sorry, for replying so late, i have included the printk as you have requested.
->>
->> len passed on encode_lookup [811]RESERVE_SPACE(819) failed in function encode_lookup
-> 
-> OK. That is definitely wrong! We shouldn't be allowing anything > 255
-> according to <limits.h>.
-> 
-> Looks like that code in fs/nfs/client.c has been wrong since its
-> inception in 2.6.18. Not only for NFSv4, but for NFSv2 and v3 too. We
-> only caught it 'cos v4 has more stringent tests...
-> 
-> Take two on the patch attached...
-> 
-> Trond
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> Subject:
-> No Subject
-> From:
-> Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date:
-> Sun, 9 Sep 2007 00:10:51 +0200
-> 
-> 
-> It doesn't look as if the NFS file name limit is being initialised correctly
-> in the struct nfs_server. Make sure that we limit whatever is being set in
-> nfs_probe_fsinfo() and nfs_init_server().
-> 
-> Also ensure that readdirplus and nfs4_path_walk respect our file name
-> limits.
-> 
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
-> 
->  fs/nfs/client.c  |   29 +++++++++++++++++++----------
->  fs/nfs/dir.c     |    2 ++
->  fs/nfs/getroot.c |    3 +++
->  3 files changed, 24 insertions(+), 10 deletions(-)
-> 
-> diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-> index a49f9fe..a204484 100644
-> --- a/fs/nfs/client.c
-> +++ b/fs/nfs/client.c
-> @@ -588,16 +588,6 @@ static int nfs_init_server(struct nfs_server *server, const struct nfs_mount_dat
->  	server->namelen  = data->namlen;
->  	/* Create a client RPC handle for the NFSv3 ACL management interface */
->  	nfs_init_server_aclclient(server);
-> -	if (clp->cl_nfsversion == 3) {
-> -		if (server->namelen == 0 || server->namelen > NFS3_MAXNAMLEN)
-> -			server->namelen = NFS3_MAXNAMLEN;
-> -		if (!(data->flags & NFS_MOUNT_NORDIRPLUS))
-> -			server->caps |= NFS_CAP_READDIRPLUS;
-> -	} else {
-> -		if (server->namelen == 0 || server->namelen > NFS2_MAXNAMLEN)
-> -			server->namelen = NFS2_MAXNAMLEN;
-> -	}
-> -
->  	dprintk("<-- nfs_init_server() = 0 [new %p]\n", clp);
->  	return 0;
-> 
-> @@ -794,6 +784,16 @@ struct nfs_server *nfs_create_server(const struct nfs_mount_data *data,
->  	error = nfs_probe_fsinfo(server, mntfh, &fattr);
->  	if (error < 0)
->  		goto error;
-> +	if (server->nfs_client->rpc_ops->version == 3) {
-> +		if (server->namelen == 0 || server->namelen > NFS3_MAXNAMLEN)
-> +			server->namelen = NFS3_MAXNAMLEN;
-> +		if (!(data->flags & NFS_MOUNT_NORDIRPLUS))
-> +			server->caps |= NFS_CAP_READDIRPLUS;
-> +	} else {
-> +		if (server->namelen == 0 || server->namelen > NFS2_MAXNAMLEN)
-> +			server->namelen = NFS2_MAXNAMLEN;
-> +	}
-> +
->  	if (!(fattr.valid & NFS_ATTR_FATTR)) {
->  		error = server->nfs_client->rpc_ops->getattr(server, mntfh, &fattr);
->  		if (error < 0) {
-> @@ -984,6 +984,9 @@ struct nfs_server *nfs4_create_server(const struct nfs4_mount_data *data,
->  	if (error < 0)
->  		goto error;
-> 
-> +	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
-> +		server->namelen = NFS4_MAXNAMLEN;
-> +
->  	BUG_ON(!server->nfs_client);
->  	BUG_ON(!server->nfs_client->rpc_ops);
->  	BUG_ON(!server->nfs_client->rpc_ops->file_inode_ops);
-> @@ -1056,6 +1059,9 @@ struct nfs_server *nfs4_create_referral_server(struct nfs_clone_mount *data,
->  	if (error < 0)
->  		goto error;
-> 
-> +	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
-> +		server->namelen = NFS4_MAXNAMLEN;
-> +
->  	dprintk("Referral FSID: %llx:%llx\n",
->  		(unsigned long long) server->fsid.major,
->  		(unsigned long long) server->fsid.minor);
-> @@ -1115,6 +1121,9 @@ struct nfs_server *nfs_clone_server(struct nfs_server *source,
->  	if (error < 0)
->  		goto out_free_server;
-> 
-> +	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
-> +		server->namelen = NFS4_MAXNAMLEN;
-> +
->  	dprintk("Cloned FSID: %llx:%llx\n",
->  		(unsigned long long) server->fsid.major,
->  		(unsigned long long) server->fsid.minor);
-> diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-> index ea97408..e4a04d1 100644
-> --- a/fs/nfs/dir.c
-> +++ b/fs/nfs/dir.c
-> @@ -1162,6 +1162,8 @@ static struct dentry *nfs_readdir_lookup(nfs_readdir_descriptor_t *desc)
->  	}
->  	if (!desc->plus || !(entry->fattr->valid & NFS_ATTR_FATTR))
->  		return NULL;
-> +	if (name.len > NFS_SERVER(dir)->namelen)
-> +		return NULL;
->  	/* Note: caller is already holding the dir->i_mutex! */
->  	dentry = d_alloc(parent, &name);
->  	if (dentry == NULL)
-> diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
-> index d1cbf0a..522e5ad 100644
-> --- a/fs/nfs/getroot.c
-> +++ b/fs/nfs/getroot.c
-> @@ -175,6 +175,9 @@ next_component:
->  		path++;
->  	name.len = path - (const char *) name.name;
-> 
-> +	if (name.len > NFS4_MAXNAMLEN)
-> +		return -ENAMETOOLONG;
-> +
->  eat_dot_dir:
->  	while (*path == '/')
->  		path++;
+>> 1- one I introduce myself (without any help from anyone) where
+>> smp_call_function() calls all online CPUs instead of calling all CPUs =
+except itself.
+>=20
+> I'd be pretty surprised if one was able to write a bug like that.  You =
+mean
+> the CPU sends an IPI to itself and then loops around until it has servi=
+ced
+> that IPI?  And this works?  Wow.
 
-Hi Trond,
+In fact, it works because __smp_call_function_mask() makes :
 
-Thanks, your patch fixes the bug.
+ cpus_and(mask, mask, allbutself);
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+So it removes current cpu from the mask. BTW, I don't have to modify
+smp_call_function(): it is correct as it is written (except from a semant=
+ic
+point of view... do we care about semantic ?).
+
+> And on_each_cpu() can call the handler function twice?
+>=20
+> hm
+>=20
+>> 2- one in global_flush_tlb() which calls smp_call_function() with irqs=
+ disabled.
+>=20
+> That would be a big bug, and surely we would already have picked it up.=
+
+>=20
+> <looks>
+>=20
+> argh, mainline's x86_64 smp_call_function() doesn't do the check.  We'v=
+e
+> had *heaps* of bugs in i386 where people were running smp_call_foo() un=
+der
+> local_irq_disable().  I wonder how many there are in x86_64?
+>=20
+>> I think I should at least correct #1 ?
+>=20
+> I think we should correct all bugs ;)
+>=20
+
+We don't live in a perfect world... ;-)
+
+Moreover, I'm not able to reproduce #2 ...
+
+Fengguang could you send me your .config and your qemu command line param=
+eters ?
+
+Laurent
+
+PS: if semantic is important, you can apply attached patch...
+--=20
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
+
+--------------080006050504030805060306
+Content-Type: application/mbox;
+ name="0001-smp_call_function-call-function-on-all-CPUs.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename*0="0001-smp_call_function-call-function-on-all-CPUs.patch"
+
+QWNjb3JkaW5nIGNvbW1lbnQgb2Ygc21wX2NhbGxfZnVuY3Rpb24oKSwgCnNtcF9jYWxsX2Z1
+bmN0aW9uKCkgInJ1biBhIGZ1bmN0aW9uIG9uIGFsbCBvdGhlciBDUFVzLiIsCm5vdCBvbiBh
+bGwgb25saW5lIENQVXMuCgpTaWduZWQtb2ZmLWJ5OiBMYXVyZW50IFZpdmllciA8TGF1cmVu
+dC5WaXZpZXJAYnVsbC5uZXQ+Ci0tLQogc21wLmMgfCAgICA3ICsrKysrKy0KIDEgZmlsZSBj
+aGFuZ2VkLCA2IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKCmRpZmYgLS1naXQgYS9h
+cmNoL3g4Nl82NC9rZXJuZWwvc21wLmMgYi9hcmNoL3g4Nl82NC9rZXJuZWwvc21wLmMKLS0t
+IGEvYXJjaC94ODZfNjQva2VybmVsL3NtcC5jCisrKyBiL2FyY2gveDg2XzY0L2tlcm5lbC9z
+bXAuYwpAQCAtNDU5LDcgKzQ1OSwxMiBAQCBFWFBPUlRfU1lNQk9MKHNtcF9jYWxsX2Z1bmN0
+aW9uX3NpbmdsZSk7CiBpbnQgc21wX2NhbGxfZnVuY3Rpb24gKHZvaWQgKCpmdW5jKSAodm9p
+ZCAqaW5mbyksIHZvaWQgKmluZm8sIGludCBub25hdG9taWMsCiAJCQlpbnQgd2FpdCkKIHsK
+LQlyZXR1cm4gc21wX2NhbGxfZnVuY3Rpb25fbWFzayhjcHVfb25saW5lX21hcCwgZnVuYywg
+aW5mbywgd2FpdCk7CisJY3B1bWFza190IGFsbGJ1dHNlbGY7CisKKwlhbGxidXRzZWxmID0g
+Y3B1X29ubGluZV9tYXA7CisJY3B1X2NsZWFyKHNtcF9wcm9jZXNzb3JfaWQoKSwgYWxsYnV0
+c2VsZik7CisKKwlyZXR1cm4gc21wX2NhbGxfZnVuY3Rpb25fbWFzayhhbGxidXRzZWxmLCBm
+dW5jLCBpbmZvLCB3YWl0KTsKIH0KIEVYUE9SVF9TWU1CT0woc21wX2NhbGxfZnVuY3Rpb24p
+OwogCg==
+--------------080006050504030805060306--
+
+--------------enig47766A870C88F051C8EA561C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
+
+iD8DBQFG/O6d9Kffa9pFVzwRAqq6AJ41al1A3j1r/XAXARBGoQkAFmBAHgCfbYUp
+FOtH4JqOuz5k3gie3LQzbN8=
+=ZYsE
+-----END PGP SIGNATURE-----
+
+--------------enig47766A870C88F051C8EA561C--
