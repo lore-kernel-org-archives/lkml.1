@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbXI1SxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbXI1Sxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbXI1SxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 14:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXI1SxG
+	id S1757994AbXI1Sxp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 14:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXI1Sxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 14:53:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47470 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752290AbXI1SxD (ORCPT
+	Fri, 28 Sep 2007 14:53:37 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:48267 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752425AbXI1Sxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 14:53:03 -0400
-Subject: Re: A unresponsive file system can hang all I/O in the system on
-	linux-2.6.23-rc6 (dirty_thresh problem?)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Fri, 28 Sep 2007 14:53:37 -0400
+Date: Fri, 28 Sep 2007 19:53:35 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chakri n <chakriin5@gmail.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net
-In-Reply-To: <20070928114930.2c201324.akpm@linux-foundation.org>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	 <20070927235034.ae7bd73d.akpm@linux-foundation.org>
-	 <1190998853.6702.17.camel@heimdal.trondhjem.org>
-	 <20070928114930.2c201324.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 28 Sep 2007 20:48:59 +0200
-Message-Id: <1191005339.18147.89.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: [PATCH] hugetlb: Fix clear_user_highpage arguments
+Message-ID: <20070928185335.GA10976@linux-mips.org>
+References: <20070928163545.GA5933@linux-mips.org> <20070928114526.3398c462.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070928114526.3398c462.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 28, 2007 at 11:45:26AM -0700, Andrew Morton wrote:
 
-On Fri, 2007-09-28 at 11:49 -0700, Andrew Morton wrote:
+> 
+> > The virtual address space argument of clear_user_highpage is supposed to
+> > be the virtual address where the page being cleared will eventually be
+> > mapped. This allows architectures with virtually indexed caches a few
+> > clever tricks.  That sort of trick falls over in painful ways if the
+> > virtual address argument is wrong.
+> 
+> yeah, but only if you're using a weird CPU architecture ;)
 
-> Do you know where the stalls are occurring?  throttle_vm_writeout(), or via
-> direct calls to congestion_wait() from page_alloc.c and vmscan.c?  (running
-> sysrq-w five or ten times will probably be enough to determine this)
+I guess once I convinced your employer that weird CPU architectures
+deliver more punch for the watt they stop being so weird ;-)
 
-would it make sense to instrument congestion_wait() callsites with
-vmstats?
+> > 
+> > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> > index 84c795e..eab8c42 100644
+> > --- a/mm/hugetlb.c
+> > +++ b/mm/hugetlb.c
+> > @@ -42,7 +42,7 @@ static void clear_huge_page(struct page *page, unsigned long addr)
+> >  	might_sleep();
+> >  	for (i = 0; i < (HPAGE_SIZE/PAGE_SIZE); i++) {
+> >  		cond_resched();
+> > -		clear_user_highpage(page + i, addr);
+> > +		clear_user_highpage(page + i, addr + i * PAGE_SIZE);
+> >  	}
+> >  }
+> >  
+> 
+> I'll add this to the 2.6.23 queue.  Is it needed in 2.6.22.x?
 
+It's totally theoretical atm, MIPS doesn't support hugetlb and I'm not
+even working on it.  I just happened to spot the issue.
+
+  Ralf
