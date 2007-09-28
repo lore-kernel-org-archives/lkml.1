@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbXI1Jrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760870AbXI1JtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbXI1Jrw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 05:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbXI1Jrm
+	id S1760870AbXI1JtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 05:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbXI1JtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 05:47:42 -0400
-Received: from el-out-1112.google.com ([209.85.162.181]:8422 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755220AbXI1Jrk (ORCPT
+	Fri, 28 Sep 2007 05:49:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50750 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755362AbXI1JtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 05:47:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=HlxT7HpcZMjLpBNF/xcxu6n/sxH62la2MJmeK6KqLNvS4GoOmE3YlCvt4X+/DJgIpwxxVLMO5n1crjpiF9Y5mApLexmqsmowDPd0cEb6hMBEIMSZZkci6hBXrOOcGXhHO1vbyJqrJNdG3XshHdnZ0BSEATmHQ2u6CAONMQs3J68=
-Message-ID: <46FCCD57.2020507@gmail.com>
-Date: Fri, 28 Sep 2007 02:45:59 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: solari@df.uba.ar, hgsolari@gmail.com
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: Serial ATA does not find partitions (Hitachi HD, new? ATI controller)
- where old SATA works
-References: <46FC4384.7080607@df.uba.ar>
-In-Reply-To: <46FC4384.7080607@df.uba.ar>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 28 Sep 2007 05:49:09 -0400
+Date: Fri, 28 Sep 2007 02:49:01 -0700
+From: Paul Jackson <pj@sgi.com>
+To: travis@sgi.com
+Cc: akpm@linux-foundation.org, ak@suse.de, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH 08/10] ia64: Convert cpu_sibling_map to a per_cpu data
+ array (v3)
+Message-Id: <20070928024901.24ab6c99.pj@sgi.com>
+In-Reply-To: <20070912015647.214306428@sgi.com>
+References: <20070912015644.927677070@sgi.com>
+	<20070912015647.214306428@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[restoring LKML and cc'ing linux-ide and linux-acpi]
+Mike,
 
-Hernan Gustavo Solari wrote:
->     I am replying directly to you since, finding that most of the
-> material in the kernel list is well beyond my understanding, I cancelled
-> my subscription.
-> 
->     You can forward as much of my replies to the list as you think it suits
+I think there is a bug either in this ia64 patch, or in the related
+generic arch patch: Convert cpu_sibling_map to be a per cpu variable
+(v3).
 
-You don't have to be subscribed to the list.  Just keep them cc'd.
+It dies early in boot on me, on the SGI internal 8 processor IA64
+system that you and I know as 'margin'.  The death is a hard hang, due
+to a corrupt stack, due to a bogus cpu index.
 
->> Can you set up netconsole and collect the kernel log from the failing
->> boot and post it here?
-> 
-> Let me first update you on the issue. I installed the kernel 2.6.22.8
-> when it was the latest stable release (today stable release is 2.6.22.9)
-> Trying to reproduce the problem with this kernel I get a crash but
-> different from that in the 2.6.22 kernel.
-> 
-> The kernel is compiled as it comes, with AMD64 generic option set and
-> the small systems option set by me.
-> 
-> With acpi=off it runs.
-> With acpi=on crashes after lines
-> aer: probe of 0000:00:04.0:pcie01 failed with error 2
-> aer: probe of 0000:00:05.0:pcie01 failed with error 2
-> aer: probe of 0000:00:06.0:pcie01 failed with error 2
-> aer: probe of 0000:00:07.0:pcie01 failed with error 2
-> 
-> With acpi=ht runs and complaints saying
-> aerinit_init: AER service init fails - No ACPI _05C support
-> aer: probe of 0000:00:04.0:pcie01 failed with error 1
-> and the same message for the other probes.
-> 
-> The next line is:
-> Real Time clock driver v1.12ac
-> Linux agpgart interface v0.102 (c) Dave Jones
-> Serial: 8250/16550 driver ....
-> 
-> 
-> I have filled a ticket with respect to the ACPI problems, much of them
-> can be avoided disabling part of the ACPI system.
-> 
-> Options: I can compile the 2.6.22 kernel to get the reported problem
->      or try to debug the problem in 2.6.22.8 or something else it
->       fits the kernel-team.
-> 
-> With respect to netconsole, the kernel parameter would be
-> netconsole=[src-port]@[src-ip]/[<dev>],[tgt-port]@<tgt-ip>/[tgt-macaddr]
-> According to
-> http://www.mjmwired.net/kernel/Documentation/networking/netconsole.txt
-> and based on kernel 2.6.22.1
-> 
-> and I cannot figure out what is [tgt-macaddr] "ethernet MAC address for
-> logging agent (broadcast)"
-> is it Internet Hardware address? (here
-> Ethernet  HWaddr 00:0E:A6:5F:13:B2 ) or something else I cannot imagine?
+I haven't tracked it down all the way, but have gotten this far.  If I add
+the following patch, I get a panic on the BUG_ON if I have these two patches
+in 2.6.23-rc8-mm1, but it boots just fine if I don't have these two patches.
 
-Yes, correct, ethernet hardware address.  Things surrounded by brackets
-are optional, BTW.
+It seems that the "cpu_sibling_map[cpu]" cpumask_t is empty (all zero
+bits) with your two patches applied, but has some non-zero bits
+otherwise, which leads to 'group' being NR_CPUS instead of a useful CPU
+number.  Unfortunately, I have no idea why the "cpu_sibling_map[cpu]"
+cpumask_t is empty -- good luck on that part.
 
-> PS: using netconsole may take me a few days since I do not have a
-> network at home, I have to find the network at work available.
+The patch that catches this bug earlier is this:
 
-I see.  If you have access to a second machine, you can connect the two
-directly.
+--- 2.6.23-rc8-mm1.orig/kernel/sched.c	2007-09-28 01:42:20.144561024 -0700
++++ 2.6.23-rc8-mm1/kernel/sched.c	2007-09-28 02:27:14.239075497 -0700
+@@ -5905,6 +5905,7 @@ static int cpu_to_phys_group(int cpu, co
+ #else
+ 	group = cpu;
+ #endif
++	BUG_ON(group == NR_CPUS);
+ 	if (sg)
+ 		*sg = &per_cpu(sched_group_phys, group);
+ 	return group;
 
-Thanks.
 
 -- 
-tejun
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
