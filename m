@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbXI1UdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbXI1Udq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbXI1UdM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbXI1Ucf
+	id S1757548AbXI1Udq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbXI1Udf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:32:35 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:33381 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754620AbXI1Ucc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:32:32 -0400
-Date: Fri, 28 Sep 2007 13:32:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: bo yang <bo.yang@lsi.com>
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, Sumant.patro@lsi.com
-Subject: Re: PATCH [2/8] scsi: megaraid_sas - add module param fast_load
-Message-Id: <20070928133218.e3f07a60.randy.dunlap@oracle.com>
-In-Reply-To: <1190820130.5955.7.camel@dhcp-75-534.se.lsil.com>
-References: <1190820130.5955.7.camel@dhcp-75-534.se.lsil.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 28 Sep 2007 16:33:35 -0400
+Received: from www.osadl.org ([213.239.205.134]:50845 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755252AbXI1Ude (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:33:34 -0400
+Subject: Re: [patch 0/2] suspend/resume regression fixes
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <46FD639D.9030301@rtr.ca>
+References: <20070922220347.586903979@linutronix.de>
+	 <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org>
+	 <46FD639D.9030301@rtr.ca>
+Content-Type: text/plain
+Date: Fri, 28 Sep 2007 22:33:30 +0200
+Message-Id: <1191011610.18681.94.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 (2.12.0-3.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Sep 2007 11:22:10 -0400 bo yang wrote:
-
-> Driver will skip physical devices scan for the first time if the fast_load is set. This is to reduce time for loading driver.
+On Fri, 2007-09-28 at 16:27 -0400, Mark Lord wrote:
+> Linus Torvalds wrote:
+> > 
+> > On Sat, 22 Sep 2007, Thomas Gleixner wrote:
+> >> My final enlightment was, when I removed the ACPI processor module,
+> >> which controls the lower idle C-states, right before resume; this
+> >> worked fine all the time even without all the workaround hacks.
+> >>
+> >> I really hope that this two patches finally set an end to the "jinxed
+> >> VAIO heisenbug series", which started when we removed the periodic
+> >> tick with the clockevents/dyntick patches.
+> > 
+> > Ok, so the patches look fine, but I somehow have this slight feeling that 
+> > you gave up a bit too soon on the "*why* does this happen?" question.
 > 
-> Signed-off-by: Bo Yang <bo.yang@lsi.com>
+> On a closely related note:  I just now submitted a patch to fix SMP-poweroff,
+> by having it do disable_nonboot_cpus before doing poweroff.
 > 
-> ---
->  drivers/scsi/megaraid/megaraid_sas.c |   69 +++++++++++++++++++------
->  1 files changed, 55 insertions(+), 14 deletions(-)
+> Which has led me to thinking..
+> ..are similar precautions perhaps necessary for *all* ACPI BIOS calls?
 > 
-> diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
-> --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 16:19:18.321402040 -0400
-> +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 16:20:52.915021624 -0400
-> @@ -46,6 +46,22 @@
->  #include <scsi/scsi_host.h>
->  #include "megaraid_sas.h"
->  
-> +/*
-> + * Module parameters
-> + */
-> +
-> +/*
-> + * Fast driver load option, skip scanning for physical devices during
-> + * load.  This would result in physical devices being skipped during
-> + * driver load time. These can be later added though,
-> + * using /proc/scsi/scsi
-> + */
-> +static unsigned int fast_load;
-> +module_param_named(fast_load, fast_load, int, 0);
-> +MODULE_PARM_DESC(fast_load,
-> +	"megasas: Faster loading of the driver, skips physical devices! \
-> +	 (default = 0)");
+> Because one never knows what the other CPUs are doing at the same time,
+> and what the side effects may be on the ACPI BIOS functions.
+> 
+> And also, I wonder if at a minimum we should be guaranteeing ACPI BIOS calls
+> only ever happen from CPU#0 (or the "boot" CPU)?   Or do we do that already?
 
-The continuation line begins with an unwanted tab that is inside the
-"string".  How about like this?  (untested)
+The ACPI calls are serialized in the kernel, AFAICT. But the fragile
+situations (suspend, resume, shutdown, reboot) are probably those, where
+some BIOS implementation expect that certain things are not called or
+not active.
+
+	tglx
 
 
-MODULE_PARM_DESC(fast_load,
-	"megasas: Faster loading of the driver, skips physical devices! "\
-	"(default = 0)");
-
-
-> +
->  MODULE_LICENSE("GPL");
->  MODULE_VERSION(MEGASAS_VERSION);
->  MODULE_AUTHOR("megaraidlinux@lsi.com");
-
-
----
-~Randy
-Phaedrus says that Quality is about caring.
