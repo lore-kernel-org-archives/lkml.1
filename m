@@ -1,305 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbXI1Uem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbXI1Ugc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757257AbXI1Uem (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbXI1Ued
+	id S1756191AbXI1Ugc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbXI1UgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:34:33 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:52714 "EHLO mail0.lsil.com"
+	Fri, 28 Sep 2007 16:36:23 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:3779 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751647AbXI1Uea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:34:30 -0400
-Subject: [PATCH 7/8] scsi: megaraid_sas - support for poll_mode_io (reduced
-	interrupt)
-From: bo yang <bo.yang@lsi.com>
-To: linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       Bo.yang@lsi.com, Sumant.patro@lsi.com
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Sep 2007 11:51:47 -0400
-Message-Id: <1190821907.5955.30.camel@dhcp-75-534.se.lsil.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-X-OriginalArrivalTime: 28 Sep 2007 20:34:12.0927 (UTC) FILETIME=[EE346CF0:01C8020E]
+	id S1752157AbXI1UgW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:36:22 -0400
+X-IronPort-AV: E=Sophos;i="4.21,210,1188802800"; 
+   d="scan'208";a="108918575"
+X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [ofa-general] [PATCH v3] iw_cxgb3: Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
+Date: Fri, 28 Sep 2007 16:36:18 -0400
+Message-ID: <C98692FD98048C41885E0B0FACD9DFB805187762@exnane01.hq.netapp.com>
+In-Reply-To: <46FD5A2F.7010409@opengridcomputing.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] [PATCH v3] iw_cxgb3: Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
+Thread-Index: AcgCCGbCPKm2rdGhQMKYUlsxJL7N9gABjGgg
+References: <20070923203649.8324.64524.stgit@dell3.ogc.int><46FBF8AF.9040700@ichips.intel.com><C98692FD98048C41885E0B0FACD9DFB805187514@exnane01.hq.netapp.com> <000101c8013a$41b374f0$a7cc180a@amr.corp.intel.com> <C98692FD98048C41885E0B0FACD9DFB80518755A@exnane01.hq.netapp.com> <46FD5A2F.7010409@opengridcomputing.com>
+From: "Kanevsky, Arkady" <Arkady.Kanevsky@netapp.com>
+To: "Steve Wise" <swise@opengridcomputing.com>
+Cc: "Sean Hefty" <sean.hefty@intel.com>,
+       "Sean Hefty" <mshefty@ichips.intel.com>, <netdev@vger.kernel.org>,
+       <rdreier@cisco.com>, <linux-kernel@vger.kernel.org>,
+       <general@lists.openfabrics.org>
+X-OriginalArrivalTime: 28 Sep 2007 20:36:20.0652 (UTC) FILETIME=[3A55B6C0:01C8020F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added module parameter "poll_mode_io" to support for "polling" (reduced interrupt operation). 
-        In this mode, IO completion interrupts are delayed. At the end of initiating IOs, 
-        the driver schedules for cmd completion if there are pending cmds. 
-        A timer-based interrupt has also been added to prevent IO completion from 
-        being delayed indefinitely in the case that no new IOs are initiated.  
-Some formatting issues in resume, suspend comment block also corrected
+Exactly,
+it forces the burden on administrator.
+And one will be forced to try one mount for iWARP and it does not
+work issue another one TCP or UDP if it fails.
+Yack!
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+And server will need to listen on different IP address and simple
+* will not work since it will need to listen in two different domains.
 
----
- drivers/scsi/megaraid/megaraid_sas.c |  152 ++++++++++++++++++++++++-
- drivers/scsi/megaraid/megaraid_sas.h |    3
- 2 files changed, 149 insertions(+), 6 deletions(-)
+Had we run this proposal by administrators?
+Thanks,
 
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 21:32:23.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 21:43:52.000000000 -0700
-@@ -79,6 +79,14 @@ module_param_named(cmd_per_lun, cmd_per_
- MODULE_PARM_DESC(cmd_per_lun,
- 	"Maximum number of commands per logical unit (default=128)");
+Arkady Kanevsky                       email: arkady@netapp.com
+Network Appliance Inc.               phone: 781-768-5395
+1601 Trapelo Rd. - Suite 16.        Fax: 781-895-1195
+Waltham, MA 02451                   central phone: 781-768-5300
  
-+/*
-+ * poll_mode_io:1- schedule complete completion from q cmd
-+ */
-+static unsigned int poll_mode_io;
-+module_param_named(poll_mode_io, poll_mode_io, int, 0);
-+MODULE_PARM_DESC(poll_mode_io,
-+	"Complete cmds from IO path, (default=0)");
-+
- MODULE_LICENSE("GPL");
- MODULE_VERSION(MEGASAS_VERSION);
- MODULE_AUTHOR("megaraidlinux@lsi.com");
-@@ -892,6 +900,12 @@ megasas_queue_command(struct scsi_cmnd *
- 	atomic_inc(&instance->fw_outstanding);
- 
- 	instance->instancet->fire_cmd(cmd->frame_phys_addr ,cmd->frame_count-1,instance->reg_set);
-+	/*
-+	 * Check if we have pend cmds to be completed
-+	 */
-+	if (poll_mode_io && atomic_read(&instance->fw_outstanding))
-+		tasklet_schedule(&instance->isr_tasklet);
-+
- 
- 	return 0;
- 
-@@ -1947,6 +1961,47 @@ fail_fw_init:
- }
- 
- /**
-+ * megasas_start_timer - Initializes a timer object
-+ * @instance:		Adapter soft state
-+ * @timer:		timer object to be initialized
-+ * @fn:			timer function
-+ * @interval:		time interval between timer function call
-+ */
-+static inline void
-+megasas_start_timer(struct megasas_instance *instance,
-+			struct timer_list *timer,
-+			void *fn, unsigned long interval)
-+{
-+	init_timer(timer);
-+	timer->expires = jiffies + interval;
-+	timer->data = (unsigned long)instance;
-+	timer->function = fn;
-+	add_timer(timer);
-+}
-+
-+/**
-+ * megasas_io_completion_timer - Timer fn
-+ * @instance_addr:	Address of adapter soft state
-+ *
-+ * Schedules tasklet for cmd completion
-+ * if poll_mode_io is set
-+ */
-+static void
-+megasas_io_completion_timer(unsigned long instance_addr)
-+{
-+	struct megasas_instance *instance =
-+			(struct megasas_instance *)instance_addr;
-+
-+	if (atomic_read(&instance->fw_outstanding))
-+		tasklet_schedule(&instance->isr_tasklet);
-+
-+	/* Restart timer */
-+	if (poll_mode_io)
-+		mod_timer(&instance->io_completion_timer,
-+			jiffies + MEGASAS_COMPLETION_TIMER_INTERVAL);
-+}
-+
-+/**
-  * megasas_init_mfi -	Initializes the FW
-  * @instance:		Adapter soft state
-  *
-@@ -2073,8 +2128,14 @@ static int megasas_init_mfi(struct megas
- 	* Setup tasklet for cmd completion
- 	*/
- 
--        tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
--                        (unsigned long)instance);
-+	tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
-+		(unsigned long)instance);
-+
-+	/* Initialize the cmd completion timer */
-+	if (poll_mode_io)
-+		megasas_start_timer(instance, &instance->io_completion_timer,
-+				megasas_io_completion_timer,
-+				MEGASAS_COMPLETION_TIMER_INTERVAL);
- 	return 0;
- 
-       fail_fw_init:
-@@ -2705,8 +2766,8 @@ static void megasas_shutdown_controller(
- }
- 
- /**
-- * megasas_suspend -    driver suspend entry point
-- * @pdev:               PCI device structure
-+ * megasas_suspend -	driver suspend entry point
-+ * @pdev:		PCI device structure
-  * @state:		PCI power state to suspend routine
-  */
- static int __devinit
-@@ -2718,6 +2779,9 @@ megasas_suspend(struct pci_dev *pdev, pm
- 	instance = pci_get_drvdata(pdev);
- 	host = instance->host;
- 
-+	if (poll_mode_io)
-+		del_timer_sync(&instance->io_completion_timer);
-+
- 	megasas_flush_cache(instance);
- 	megasas_shutdown_controller(instance, MR_DCMD_HIBERNATE_SHUTDOWN);
- 	tasklet_kill(&instance->isr_tasklet);
-@@ -2804,6 +2868,11 @@ megasas_resume(struct pci_dev *pdev)
- 	if (megasas_start_aen(instance))
- 		printk(KERN_ERR "megasas: Start AEN failed\n");
- 
-+	/* Initialize the cmd completion timer */
-+	if (poll_mode_io)
-+		megasas_start_timer(instance, &instance->io_completion_timer,
-+				megasas_io_completion_timer,
-+				MEGASAS_COMPLETION_TIMER_INTERVAL);
- 	return 0;
- 
- fail_irq:
-@@ -2842,6 +2911,9 @@ static void megasas_detach_one(struct pc
- 	instance = pci_get_drvdata(pdev);
- 	host = instance->host;
- 
-+	if (poll_mode_io)
-+		del_timer_sync(&instance->io_completion_timer);
-+
- 	sysfs_remove_bin_file(&host->shost_classdev.kobj,
- 				&sysfs_max_sectors_attr);
- 	scsi_remove_host(instance->host);
-@@ -3303,7 +3375,7 @@ static DRIVER_ATTR(release_date, S_IRUGO
- static ssize_t
- megasas_sysfs_show_dbg_lvl(struct device_driver *dd, char *buf)
- {
--	return sprintf(buf,"%u",megasas_dbg_lvl);
-+	return sprintf(buf, "%u\n", megasas_dbg_lvl);
- }
- 
- static ssize_t
-@@ -3318,7 +3390,65 @@ megasas_sysfs_set_dbg_lvl(struct device_
- }
- 
- static DRIVER_ATTR(dbg_lvl, S_IRUGO|S_IWUGO, megasas_sysfs_show_dbg_lvl,
--		   megasas_sysfs_set_dbg_lvl);
-+		megasas_sysfs_set_dbg_lvl);
-+
-+static ssize_t
-+megasas_sysfs_show_poll_mode_io(struct device_driver *dd, char *buf)
-+{
-+	return sprintf(buf, "%u\n", poll_mode_io);
-+}
-+
-+static ssize_t
-+megasas_sysfs_set_poll_mode_io(struct device_driver *dd,
-+				const char *buf, size_t count)
-+{
-+	int retval = count;
-+	int tmp = poll_mode_io;
-+	int i;
-+	struct megasas_instance *instance;
-+
-+	if (sscanf(buf, "%u", &poll_mode_io) < 1) {
-+		printk(KERN_ERR "megasas: could not set poll_mode_io\n");
-+		retval = -EINVAL;
-+	}
-+
-+	/*
-+	 * Check if poll_mode_io is already set or is same as previous value
-+	 */
-+	if ((tmp && poll_mode_io) || (tmp == poll_mode_io))
-+		goto out;
-+
-+	if (poll_mode_io) {
-+		/*
-+		 * Start timers for all adapters
-+		 */
-+		for (i = 0; i < megasas_mgmt_info.max_index; i++) {
-+			instance = megasas_mgmt_info.instance[i];
-+			if (instance) {
-+				megasas_start_timer(instance,
-+					&instance->io_completion_timer,
-+					megasas_io_completion_timer,
-+					MEGASAS_COMPLETION_TIMER_INTERVAL);
-+			}
-+		}
-+	} else {
-+		/*
-+		 * Delete timers for all adapters
-+		 */
-+		for (i = 0; i < megasas_mgmt_info.max_index; i++) {
-+			instance = megasas_mgmt_info.instance[i];
-+			if (instance)
-+				del_timer_sync(&instance->io_completion_timer);
-+		}
-+	}
-+
-+out:
-+	return retval;
-+}
-+
-+static DRIVER_ATTR(poll_mode_io, S_IRUGO|S_IWUGO,
-+		megasas_sysfs_show_poll_mode_io,
-+		megasas_sysfs_set_poll_mode_io);
- 
- /**
-  * megasas_init - Driver load entry point
-@@ -3369,8 +3499,16 @@ static int __init megasas_init(void)
- 				  &driver_attr_dbg_lvl);
- 	if (rval)
- 		goto err_dcf_dbg_lvl;
-+	rval = driver_create_file(&megasas_pci_driver.driver,
-+				  &driver_attr_poll_mode_io);
-+	if (rval)
-+		goto err_dcf_poll_mode_io;
- 
- 	return rval;
-+
-+err_dcf_poll_mode_io:
-+	driver_remove_file(&megasas_pci_driver.driver,
-+			   &driver_attr_dbg_lvl);
- err_dcf_dbg_lvl:
- 	driver_remove_file(&megasas_pci_driver.driver,
- 			   &driver_attr_release_date);
-@@ -3389,6 +3527,8 @@ err_pcidrv:
- static void __exit megasas_exit(void)
- {
- 	driver_remove_file(&megasas_pci_driver.driver,
-+			   &driver_attr_poll_mode_io);
-+	driver_remove_file(&megasas_pci_driver.driver,
- 			   &driver_attr_dbg_lvl);
- 	driver_remove_file(&megasas_pci_driver.driver,
- 			   &driver_attr_release_date);
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-09-27 05:08:55.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-09-27 22:35:32.000000000 -0700
-@@ -573,6 +573,7 @@ struct megasas_ctrl_info {
- 
- #define MFI_OB_INTR_STATUS_MASK			0x00000002
- #define MFI_POLL_TIMEOUT_SECS			60
-+#define MEGASAS_COMPLETION_TIMER_INTERVAL      (HZ/10)
- 
- #define MFI_REPLY_1078_MESSAGE_INTERRUPT	0x80000000
- 
-@@ -1113,6 +1114,8 @@ struct megasas_instance {
- 
- 	u8 flag;
- 	unsigned long last_time;
-+
-+	struct timer_list io_completion_timer;
- };
- 
- #define MEGASAS_IS_LOGICAL(scp)						\
 
-
-
+> -----Original Message-----
+> From: Steve Wise [mailto:swise@opengridcomputing.com] 
+> Sent: Friday, September 28, 2007 3:47 PM
+> To: Kanevsky, Arkady
+> Cc: Sean Hefty; Sean Hefty; netdev@vger.kernel.org; 
+> rdreier@cisco.com; linux-kernel@vger.kernel.org; 
+> general@lists.openfabrics.org
+> Subject: Re: [ofa-general] [PATCH v3] iw_cxgb3: 
+> Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
+> 
+> 
+> 
+> Kanevsky, Arkady wrote:
+> > Sean,
+> > IB aside,
+> > it looks like an ULP which is capable of being both RDMA aware and 
+> > RDMA not-aware, like iSER and iSCSI, NFS-RDMA and NFS, SDP and 
+> > sockets, will be treated as two separete ULPs.
+> > Each has its own IP address, since there is a different IP 
+> address for 
+> > iWARP port and "regular" Ethernet port. So it falls on the users of 
+> > ULPs to "handle" it via DNS or some other services.
+> > Is this "acceptable" to users? I doubt it.
+> > 
+> > Recall that ULPs are going in opposite directions by having a 
+> > different port number for RDMA aware and RDMA unaware 
+> versions of the ULP.
+> > This way, ULP "connection manager" handles RDMA-ness under 
+> the covers, 
+> > while users plug an IP address for a server to connect to.
+> > Thanks,
+> 
+> Arkady, I'm confused about how this proposed design changes 
+> the behavior of the ULPs that run on TCP and iWARP.  I don't 
+> see much difference from the point of view of the ULPs.
+> 
+> The NFS-RDMA server, for example, will not need to change 
+> since it binds to address 0.0.0.0 which will translate into a 
+> bind/listen on the specific iwarp address for each iwarp 
+> device on the rdma side, and address 0.0.0.0 for the TCP side.
+> 
+> Am I missing your point?
+> 
+> The real pain, IMO, with this solution is that it FORCES the 
+> admins to use 2 subnets when 1 is sufficient if the net 
+> maintainers would unify the port space...
+> 
+> Steve.
+> 
+> 
+> 
+> > 
+> > Arkady Kanevsky                       email: arkady@netapp.com
+> > Network Appliance Inc.               phone: 781-768-5395
+> > 1601 Trapelo Rd. - Suite 16.        Fax: 781-895-1195
+> > Waltham, MA 02451                   central phone: 781-768-5300
+> >  
+> > 
+> >> -----Original Message-----
+> >> From: Sean Hefty [mailto:sean.hefty@intel.com]
+> >> Sent: Thursday, September 27, 2007 3:12 PM
+> >> To: Kanevsky, Arkady; Sean Hefty; Steve Wise
+> >> Cc: netdev@vger.kernel.org; rdreier@cisco.com; 
+> >> linux-kernel@vger.kernel.org; general@lists.openfabrics.org
+> >> Subject: RE: [ofa-general] [PATCH v3] iw_cxgb3: 
+> >> Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
+> >>
+> >>> What is the model on how client connects, say for iSCSI, 
+> when client 
+> >>> and server both support, iWARP and 10GbE or 1GbE, and 
+> would like to 
+> >>> setup "most" performant "connection" for ULP?
+> >> For the "most" performance connection, the ULP would use 
+> IB, and all 
+> >> these problems go away.  :)
+> >>
+> >> This proposal is for each iwarp interface to have its own 
+> IP address.  
+> >> Clients would need an iwarp usable address of the server and would 
+> >> connect using rdma_connect().  If that call (or 
+> >> rdma_resolve_addr/route) fails, the client could try 
+> connecting using 
+> >> sockets, aoi, or some other interface.  I don't see that Steve's 
+> >> proposal changes anything from the client's perspective.
+> >>
+> >> - Sean
+> >> _______________________________________________
+> >> general mailing list
+> >> general@lists.openfabrics.org
+> >> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+> >>
+> >> To unsubscribe, please visit
+> >> http://openib.org/mailman/listinfo/openib-general
+> >>
+> 
