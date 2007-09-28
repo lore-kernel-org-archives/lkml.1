@@ -1,67 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbXI1UbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbXI1Ucl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbXI1UbW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXI1UbP
+	id S1757048AbXI1Ucl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbXI1Ucb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:31:15 -0400
-Received: from ara.aytolacoruna.es ([212.51.63.12]:38445 "EHLO
-	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751534AbXI1UbP (ORCPT
+	Fri, 28 Sep 2007 16:32:31 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33372 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbXI1Uca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:31:15 -0400
-X-Greylist: delayed 1635 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Sep 2007 16:31:15 EDT
-Date: Fri, 28 Sep 2007 22:03:52 +0200
-From: Santiago Garcia Mantinan <manty@manty.net>
-To: linux-kernel@vger.kernel.org
-Subject: vga text console not working on 2.6.23-rc8
-Message-ID: <20070928200352.GA2312@pul.manty.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 28 Sep 2007 16:32:30 -0400
+Date: Fri, 28 Sep 2007 13:31:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bo yang <bo.yang@lsi.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, Bo.yang@lsi.com, Sumant.patro@lsi.com
+Subject: Re: [PATCH 3/8] scsi: megaraid_sas - add module param max_sectors,
+ cmd_per_lun
+Message-Id: <20070928133156.ce2db688.randy.dunlap@oracle.com>
+In-Reply-To: <1190820470.5955.12.camel@dhcp-75-534.se.lsil.com>
+References: <1190820470.5955.12.camel@dhcp-75-534.se.lsil.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 26 Sep 2007 11:27:50 -0400 bo yang wrote:
 
-I have just compiled a 2.6.23-rc8 using the config from my 2.6.22 as a basis
-and I came out with a not working (almost black) vga text console.
+> Adding module parameters to configure max sectors per request & # of cmds per lun.
+> 
+> Signed-off-by: Bo Yang <bo.yang@lsi.com>
+> 
+> ---
+>  drivers/scsi/megaraid/megaraid_sas.c |   94 ++++++++++++++++++++++++-
+>  drivers/scsi/megaraid/megaraid_sas.h |    2
+>  2 files changed, 94 insertions(+), 2 deletions(-)
+> 
+> diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+> --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 13:30:36.000000000 -0700
+> +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 20:37:11.000000000 -0700
 
-This is what I'm getting on my logs:
+> @@ -2301,6 +2318,31 @@ static int megasas_start_aen(struct mega
+>  				    class_locale.word);
+>  }
+>  
+> +static ssize_t
+> +sysfs_max_sectors_read(struct kobject *kobj,
+> +			struct bin_attribute *bin_attr,
+> +			char *buf, loff_t off, size_t count)
+> +{
+> +	struct Scsi_Host *host = class_to_shost(container_of(kobj,
+> +					struct class_device, kobj));
+> +	struct megasas_instance *instance =
+> +				(struct megasas_instance *)host->hostdata;
+> +
+> +	count = sprintf(buf, "%u\n", instance->max_sectors_per_req);
+> +
+> +	return count+1;
 
-Console: colour dummy device 80x25
-console [tty0] enabled
+What's the +1 for?
 
-Instead of the old:
+> +}
+> +
+> +static struct bin_attribute sysfs_max_sectors_attr = {
+> +	.attr = {
+> +		.name = "max_sectors",
+> +		.mode = S_IRUSR|S_IRGRP|S_IROTH,
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.size = 7,
+> +	.read = sysfs_max_sectors_read,
+> +};
+> +
+>  /**
+>   * megasas_io_attach -	Attaches this driver to SCSI mid-layer
+>   * @instance:		Adapter soft state
+> @@ -2308,17 +2350,48 @@ static int megasas_start_aen(struct mega
+>  static int megasas_io_attach(struct megasas_instance *instance)
+>  {
+>  	struct Scsi_Host *host = instance->host;
+> +	int error;
+>  
+>  	/*
+> -	 * Export parameters required by SCSI mid-layer
+> +	 * Export host parameters required by SCSI
+> +	 * mid-layer
+>  	 */
+>  	host->irq = instance->pdev->irq;
+>  	host->unique_id = instance->unique_id;
+>  	host->can_queue = instance->max_fw_cmds - MEGASAS_INT_CMDS;
+>  	host->this_id = instance->init_id;
+>  	host->sg_tablesize = instance->max_num_sge;
+> +
+> +	/*
+> +	 * Check if the module parameter value for max_sectors can be used
+> +	 */
+> +	if (max_sectors && max_sectors <= instance->max_sectors_per_req)
+> +		instance->max_sectors_per_req = max_sectors;
+> +	else {
+> +		if (max_sectors)
+> +			printk(KERN_INFO
+> +				"megasas: max_sectors should be > 0 and"
 
-Console: colour VGA+ 80x25
+Need a space after "and" above or before "<=" below here.
 
-The options related to the console on my config are these:
+> +				"<= %d\n",
+> +				instance->max_sectors_per_req);
+> +	}
+> +
+>  	host->max_sectors = instance->max_sectors_per_req;
+> -	host->cmd_per_lun = 128;
+> +
+> +	/*
+> +	 * Check if the module parameter value for cmd_per_lun can be used
+> +	 */
+> +	instance->cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
+> +	if (cmd_per_lun && cmd_per_lun <= MEGASAS_DEFAULT_CMD_PER_LUN)
+> +		instance->cmd_per_lun = cmd_per_lun;
+> +	else
+> +		printk(KERN_INFO "megasas: cmd_per_lun should be > 0 and"
 
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_VIDEO_SELECT=y
-CONFIG_DUMMY_CONSOLE=y
+Same comment as above.
 
-The machine is a AMD x64 X2 Athlon with a NForce 4 chipset, vga is a ATI
-radeon and I have also set:
+> +			"<= %d\n", MEGASAS_DEFAULT_CMD_PER_LUN);
+> +
+> +	host->cmd_per_lun = instance->cmd_per_lun;
+> +
+> +	printk(KERN_DEBUG "megasas: max_sectors : 0x%x, cmd_per_lun : 0x%x\n",
+> +			instance->max_sectors_per_req, instance->cmd_per_lun);
+> +
+>  	host->max_channel = MEGASAS_MAX_CHANNELS - 1;
+>  	host->max_id = MEGASAS_MAX_DEV_PER_CHANNEL;
+>  	host->max_lun = MEGASAS_MAX_LUN;
 
-CONFIG_DRM=m
-CONFIG_DRM_RADEON=m
-
-I have tried with and without CONFIG_VIDEO_SELECT and
-CONFIG_VIDEO_OUTPUT_CONTROL with the same results. BTW: when X starts the
-display is Ok.
-
-If you want me to do any tests or need more info just tell me.
-
-Regards...
--- 
-Manty/BestiaTester -> http://manty.net
+---
+~Randy
+Phaedrus says that Quality is about caring.
