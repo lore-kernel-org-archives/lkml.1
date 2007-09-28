@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbXI1TXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbXI1TXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbXI1TXR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 15:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXI1TXI
+	id S1752951AbXI1TXg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 15:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbXI1TX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 15:23:08 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38276 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750863AbXI1TXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 15:23:07 -0400
-Date: Fri, 28 Sep 2007 21:24:34 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Milton Miller <miltonm@bga.com>
-Cc: Kai Germaschewski <kai@germaschewski.name>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH Kbuild] Call only one make with all targets for O=
-Message-ID: <20070928192434.GA10769@uranus.ravnborg.org>
-References: <kbuild-8-00.miltonm@bga.com>
+	Fri, 28 Sep 2007 15:23:28 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48304 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751120AbXI1TX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 15:23:27 -0400
+Date: Fri, 28 Sep 2007 12:23:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] hugetlb: Fix clear_user_highpage arguments
+Message-Id: <20070928122318.57b99a0a.akpm@linux-foundation.org>
+In-Reply-To: <20070928185335.GA10976@linux-mips.org>
+References: <20070928163545.GA5933@linux-mips.org>
+	<20070928114526.3398c462.akpm@linux-foundation.org>
+	<20070928185335.GA10976@linux-mips.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <kbuild-8-00.miltonm@bga.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 21, 2007 at 06:09:02PM -0500, Milton Miller wrote:
-> Change the invocations of make in the output directory Makefile and the
-> main Makefile for seperate object trees to pass all goals to one $(MAKE)
-> via a new phony target "sub-make" and the existing target _all.
+On Fri, 28 Sep 2007 19:53:35 +0100 Ralf Baechle <ralf@linux-mips.org> wrote:
+
+> On Fri, Sep 28, 2007 at 11:45:26AM -0700, Andrew Morton wrote:
 > 
-> When compiling with seperate object directories, a seperate make is called
-> in the context of another directory (from the output directory the main
-> Makefile is called, the Makefile is then restarted with current directory
-> set to the object tree).  Before this patch, when multiple make command
-> goals are specified, each target results in a seperate make invocation.
-> With make -j, these invocations may run in parallel, resulting in multiple
-> commands running in the same directory clobbering each others results.
+> > 
+> > > The virtual address space argument of clear_user_highpage is supposed to
+> > > be the virtual address where the page being cleared will eventually be
+> > > mapped. This allows architectures with virtually indexed caches a few
+> > > clever tricks.  That sort of trick falls over in painful ways if the
+> > > virtual address argument is wrong.
+> > 
+> > yeah, but only if you're using a weird CPU architecture ;)
 > 
-> I did not try to address make -j for mixed dot-config and no-dot-config
-> targets.  Because the order does matter, a solution was not obvious.
-> Perhaps a simple check for MAKEFLAGS having -j and refusing to run would
-> be approprate.
+> I guess once I convinced your employer that weird CPU architectures
+> deliver more punch for the watt they stop being so weird ;-)
 
-Applied to kbuild.git.
+<wonders what you've gone and done this time>
 
-This was a nice one to get ruined out.
-Thanks Milton,
+> > > 
+> > > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> > > index 84c795e..eab8c42 100644
+> > > --- a/mm/hugetlb.c
+> > > +++ b/mm/hugetlb.c
+> > > @@ -42,7 +42,7 @@ static void clear_huge_page(struct page *page, unsigned long addr)
+> > >  	might_sleep();
+> > >  	for (i = 0; i < (HPAGE_SIZE/PAGE_SIZE); i++) {
+> > >  		cond_resched();
+> > > -		clear_user_highpage(page + i, addr);
+> > > +		clear_user_highpage(page + i, addr + i * PAGE_SIZE);
+> > >  	}
+> > >  }
+> > >  
+> > 
+> > I'll add this to the 2.6.23 queue.  Is it needed in 2.6.22.x?
+> 
+> It's totally theoretical atm, MIPS doesn't support hugetlb and I'm not
+> even working on it.  I just happened to spot the issue.
 
-	Sam
+sparc64 might care about this bug.
+
+Anyway, I'll plop it in 2.6.23.
