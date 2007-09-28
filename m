@@ -1,99 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbXI1GTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760175AbXI1GUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757622AbXI1GTs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 02:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbXI1GTl
+	id S1760175AbXI1GUX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 02:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbXI1GUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 02:19:41 -0400
-Received: from web51401.mail.re2.yahoo.com ([206.190.38.180]:29871 "HELO
-	web51401.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754258AbXI1GTk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 02:19:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Lg71oU6NcKziy0zU+UE8r59qKB0qzPs2yDxgy5klaqtyOiu4aYeg6l/HZSao2KIe6Xt3c0CBK+5ZwwylG2zU167KsJyb37HCYczDAV36C/Xd3vZttEjARThZwuUDmGUjmXTBM91ac8gVIgufzqibnLMUlAqmU8vRaRGbVpdFiGo=;
-X-YMail-OSG: ITIXLmgVM1k.Lzk45jCUo4hFF4oVZHJdmTqSjtnO1ts8PFTyOgGAY3r_D5wIDhNA3cXREsIyyWpLx4AyOrR2_lEmvU1H86fCKXVWuhHcF8.dgF8LJMbqaj9emTkaPOZcp3jO8uDwJbM5r6gUosgwaIZToA--
-X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
-Date: Thu, 27 Sep 2007 23:19:39 -0700 (PDT)
-From: Joerg Pommnitz <pommnitz@yahoo.com>
-Subject: AW: More E820 brokenness
-To: Jordan Crouse <jordan.crouse@amd.com>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: jkeating@redhat.com, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
+	Fri, 28 Sep 2007 02:20:07 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56103 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758703AbXI1GUE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 02:20:04 -0400
+Message-Id: <200709280619.AA09134@fukuchi.jp.fujitsu.com>
+From: Masao Fukuchi <fukuchi.masao@jp.fujitsu.com>
+Date: Fri, 28 Sep 2007 15:19:54 +0900
+To: Eric.Moore@lsi.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: [PATCH] PCI legacy I/O port free driver - Making fusion MPT driver
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <125549.77407.qm@web51401.mail.re2.yahoo.com>
+X-Mailer: AL-Mail32 Version 1.13
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
-I won't be able to test anything before next Tuesday, but I'm with
-Jordan on this one. Have a look at the dmsg output I sent you some
-time ago (http://article.gmane.org/gmane.linux.kernel/584681).
+Hi,
 
-This was as plain from Linus' tree as you get it (git bisect, make defconfig, make)
-and I see:
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000001e7b0000 (usable)
- BIOS-e820: 000000001e7b0000 - 000000001e7bffc0 (ACPI data)
- BIOS-e820: 000000001e7bffc0 - 000000001e7c0000 (ACPI NVS)
- BIOS-e820: 0000000040400000 - 0000000040440004 (reserved)
- BIOS-e820: 00000000f0000000 - 0000000100000000 (reserved) --  
-Kind regards
+This patch makes Fusion MPT driver legacy I/O port free.
+
+The latest kernel has interface for PCI device drivers to tell the
+kernel which resource the driver want to use.
+
+I've made a patch which makes Fusion MPT driver legacy I/O port
+free by using PCI core changes.
+Fusion MPT driver basically doesn't use PCI legacy I/O port.
+But some PCI card/controller still use PCI legacy I/O port for
+download boot operation.
+So, this driver assigns I/O port at download boot operation.
+
+Thanks,
+Masao Fukuchi
+
+Signed-off-by: Masao Fukuchi <fukuchi.masao@jp.fujitsu.com>
+
+diff -uarpN linux-2.6.23-rc5.org/drivers/message/fusion/mptbase.c linux-2.6.23-
+rc5.new/drivers/message/fusion/mptbase.c
+--- linux-2.6.23-rc5.org/drivers/message/fusion/mptbase.c	2007-09-01 15:08:24.000000000 +
+0900
++++ linux-2.6.23-rc5.new/drivers/message/fusion/mptbase.c	2007-09-27 14:38:23.000000000 +
+0900
+@@ -1404,6 +1404,7 @@ mpt_attach(struct pci_dev *pdev, const s
+ 	u8		 revision;
+ 	u8		 pcixcmd;
+ 	static int	 mpt_ids = 0;
++	int		 bars;
+ #ifdef CONFIG_PROC_FS
+ 	struct proc_dir_entry *dent, *ent;
+ #endif
+@@ -1418,7 +1419,10 @@ mpt_attach(struct pci_dev *pdev, const s
+ 	if (mpt_debug_level)
+ 		printk(KERN_INFO MYNAM ": mpt_debug_level=%xh\n", mpt_debug_level);
  
-       Joerg
+-	if (pci_enable_device(pdev))
++	bars = pci_select_bars(pdev, IORESOURCE_MEM);
++	if (pci_enable_device_bars(pdev, bars))
++		return r;
++	if (pci_request_selected_regions(pdev, bars, "mpt"))
+ 		return r;
  
-
-
------ Ursprüngliche Mail ----
-Von: Jordan Crouse <jordan.crouse@amd.com>
-An: H. Peter Anvin <hpa@zytor.com>
-CC: jkeating@redhat.com; Joerg Pommnitz <pommnitz@yahoo.com>; Chuck Ebbert <cebbert@redhat.com>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Andi Kleen <ak@suse.de>
-Gesendet: Freitag, den 28. September 2007, 01:15:52 Uhr
-Betreff: Re: More E820 brokenness
-
-On 27/09/07 15:47 -0700, H. Peter Anvin wrote:
-> Jordan Crouse wrote:
-> > 
-> > Breaks on the Geode - original behavior.
-> > 
-> > I think that having boot_prams.e820_entries != 0 makes the kernel
-> > assume the e820 data is correct.
-> > 
-> 
-> Okay, now I'm utterly baffled how 2.6.22 ever worked on this Geode,
-> because this, to the best of my reading, mimics the 2.6.22 behavior
-> exactly.  DID IT REALLY, and/or did you make any kind of configuration
-> changes?
-
-I copied in a 2.6.22 kernel to see that it really did work, and it did.
-But here's the crazy part - I did a dmesg, and it looks like it
-*is* using e820 data, and it looks complete (I see the entire map - 
-including the ACPI and reserved blocks way up high).
-
-So apparently it was the 2.6.22 code that was buggy, but reading it,
-I don't immediately see how. 
-
-Jordan
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
-
-
-
-
-
-
-
-      __________________________________  
-Yahoo! Clever: Sie haben Fragen? Yahoo! Nutzer antworten Ihnen. www.yahoo.de/clever
-
+ 	dinitprintk(ioc, printk(KERN_WARNING MYNAM ": mpt_adapter_install\n"));
+@@ -1751,6 +1755,7 @@ mpt_resume(struct pci_dev *pdev)
+ 	u32 device_state = pdev->current_state;
+ 	int recovery_state;
+ 	int err;
++	int bars;
+ 
+ 	printk(MYIOC_s_INFO_FMT
+ 	"pci-resume: pdev=0x%p, slot=%s, Previous operating state [D%d]\n",
+@@ -1758,7 +1763,8 @@ mpt_resume(struct pci_dev *pdev)
+ 
+ 	pci_set_power_state(pdev, 0);
+ 	pci_restore_state(pdev);
+-	err = pci_enable_device(pdev);
++	bars = pci_select_bars(pdev, IORESOURCE_MEM);
++	err = pci_enable_device_bars(pdev, bars);
+ 	if (err)
+ 		return err;
+ 
+@@ -2838,6 +2844,7 @@ SendIocInit(MPT_ADAPTER *ioc, int sleepF
+ 	int			 r;
+ 	int			 count;
+ 	int			 cntdn;
++	int			 bars;
+ 
+ 	memset(&ioc_init, 0, sizeof(ioc_init));
+ 	memset(&init_reply, 0, sizeof(init_reply));
+@@ -2849,9 +2856,17 @@ SendIocInit(MPT_ADAPTER *ioc, int sleepF
+ 	 * then this pointer is not NULL. Skip the upload a second time.
+ 	 * Set this flag if cached_fw set for either IOC.
+ 	 */
+-	if (ioc->facts.Flags & MPI_IOCFACTS_FLAGS_FW_DOWNLOAD_BOOT)
++	if (ioc->facts.Flags & MPI_IOCFACTS_FLAGS_FW_DOWNLOAD_BOOT) {
+ 		ioc->upload_fw = 1;
+-	else
++		/* re-enable with io */
++		pci_disable_device(ioc->pcidev);
++		bars = pci_select_bars(ioc->pcidev, IORESOURCE_MEM | IORESOURCE_IO);
++		if (pci_enable_device_bars(ioc->pcidev, bars))
++			return -ENODEV;
++		bars = pci_select_bars(ioc->pcidev, IORESOURCE_IO);
++		if (pci_request_selected_regions(ioc->pcidev, bars, "mpt"))
++			return -ENODEV;
++	} else
+ 		ioc->upload_fw = 0;
+ 	ddlprintk(ioc, printk(MYIOC_s_DEBUG_FMT "upload_fw %d facts.Flags=%x\n",
+ 		   ioc->name, ioc->upload_fw, ioc->facts.Flags));
