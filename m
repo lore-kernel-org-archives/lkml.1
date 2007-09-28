@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbXI1DQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbXI1DW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757248AbXI1DQQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 23:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbXI1DQD
+	id S1757542AbXI1DW1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 23:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXI1DWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 23:16:03 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59498 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754575AbXI1DQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 23:16:01 -0400
-Subject: Re: iwl4965 and driver merging policy
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       tomas.winkler@intel.com
-In-Reply-To: <20070928023055.GI7991@tuxdriver.com>
-References: <1190943567.6158.50.camel@pasglop>
-	 <20070928023055.GI7991@tuxdriver.com>
-Content-Type: text/plain
-Date: Fri, 28 Sep 2007 13:15:23 +1000
-Message-Id: <1190949323.6158.66.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Sep 2007 23:22:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42561 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754725AbXI1DWR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 23:22:17 -0400
+Date: Thu, 27 Sep 2007 20:21:35 -0700
+From: Greg KH <greg@kroah.com>
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH] fs: Correct SuS compliance for open of large file
+	without options
+Message-ID: <20070928032135.GA23543@kroah.com>
+References: <20070927143548.GT5243@kernel.dk> <20070927154432.302ec5a7@the-village.bc.nu> <20070927150853.GA10154@kernel.dk> <20070927161912.2f08aff6@the-village.bc.nu> <20070927155902.GA6450@thunk.org> <20070927102343.1a113ccc.akpm@linux-foundation.org> <20070927175917.GB8339@kroah.com> <20070927183742.GA23734@thunk.org> <20070927213445.GA7857@kroah.com> <20070927231927.GE8688@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927231927.GE8688@thunk.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2007-09-27 at 22:30 -0400, John W. Linville wrote:
-> > It doesn't seem to pull any depedency nor affect any other external
-> > piece of code unless I'm missing something, so it's a perfect
-> example of
-> > what we've been discussing back then: there is just no point not
-> merging
-> > it at any time right ? :-)
+On Thu, Sep 27, 2007 at 07:19:27PM -0400, Theodore Tso wrote:
+> On Thu, Sep 27, 2007 at 02:34:45PM -0700, Greg KH wrote:
+> > Ok, how then should I advertise this better?  What can we do better to
+> > help userspace programmers out in this regard?
 > 
-> It is queued for 2.6.24.  I'm not even sure it was originally posted
-> in time for the 2.6.23 merge window, but even if it was there was
-> a lot of opposition to merging it until fairly recently.  In fact,
-> I'm sure there are still some wireless developers that are less than
-> happy about merging it now.
+> Would you accept a patch which causes the deprecated sysfs
+> files/directories to disappear, even if CONFIG_SYS_DEPRECATED is
+> defined, via a boot-time parameter?
+
+As discussed in the kernel summit talk about this very topic, Kay is
+working on a patch to do just that :)
+
+> Many people and distros are
+> likely to keep CONFIG_SYS_DEPRECATED defined just our of paranoia that
+> things might break.  Doing a quick google, I note that Fedora has been
+> going back and forth of turning it off, watching things break, and
+> then turning it back on.  The latest time, the changelog said:
 > 
-> Anyway, coming soon to a kernel near you...
+> * Fri Jan 26 23:00:00 2007 Bill Nottingham <notting{%}redhat{*}com>
+> 
+>     - turn on CONFIG_SYSFS_DEPRECATED so that things actually work. *sigh*
+> 
+> (and I've checked, Fedora's CVS still has CONFIG_SYSFS_DEPRECATED
+> defined; it's not just Debian at fault here.)
 
-Allright, thanks. I was mostly trying to figure out where we standed
-with this whole idea that driver additions were not necessarily
-constrainted by the merge window (which I think is fair to do) and this
-looked like a good example to pick since it affects my new laptop :-)
+That's odd, SuSE and Gentoo have been working for quite some time just
+fine with that option disabled :)
 
-Out of curiosity, what's the main source of opposition ? Since it's
-being shipped by distro or built out of tree by most users -anyway-, I
-think it's pretty clear that we'd be better off having it merged asap
-rather than trying to figure out what random version was included by
-users/distros and try to support it, in addition to wider exposure & all
-the yadada of being upstream in the first place.
+thanks,
 
-Ben.
-
+greg k-h
