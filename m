@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbXI1Vtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbXI1V5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbXI1Vtu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 17:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbXI1Vtn
+	id S1755965AbXI1V5x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 17:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbXI1V5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 17:49:43 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:38205 "EHLO
+	Fri, 28 Sep 2007 17:57:46 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:40236 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753355AbXI1Vtm (ORCPT
+	with ESMTP id S1751397AbXI1V5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 17:49:42 -0400
-Date: Fri, 28 Sep 2007 14:48:53 -0700
+	Fri, 28 Sep 2007 17:57:45 -0400
+Date: Fri, 28 Sep 2007 14:56:27 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Maarten Bressers <mbres@gentoo.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix compiler warnings for 2.6.23-rc8 on x86_64
-Message-Id: <20070928144853.01d4f247.randy.dunlap@oracle.com>
-In-Reply-To: <20070928205630.38562652FE@smtp.gentoo.org>
-References: <20070928205630.38562652FE@smtp.gentoo.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Jonathan Campbell <jon@nerdgrounds.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Patches for tiny 386 kernels, again. Linux kernel  
+ 2.6.22.7
+Message-Id: <20070928145627.4bf99b0f.randy.dunlap@oracle.com>
+In-Reply-To: <46FD7104.9070609@tmr.com>
+References: <46F77A85.6020202@nerdgrounds.com>
+	<20070924104940.50a52cf3.randy.dunlap@oracle.com>
+	<46FD7104.9070609@tmr.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -30,57 +33,38 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007 20:56:30 +0000 (UTC) Maarten Bressers wrote:
+On Fri, 28 Sep 2007 17:24:20 -0400 Bill Davidsen wrote:
 
-> This (trivial) patch fixes two compiler warnings for 2.6.23-rc8 on x86_64,
-> use of deprecated function pci_find_device() and a section mismatch.
-> Build log and .config file included.
+> Randy Dunlap wrote:
 > 
-> Signed-off by: Maarten Bressers <mbres@gentoo.org>
+> > This seems reasonable, so I tried to use it.  Here are the results
+> > and comments and meta-comments.
+> > 
+> > 
+> > 1.  Please forcibly wrap text lines in mail body at around column 70-72.
+> > 
+> > 2.  Put patches inline in the mail body, not as attachments.
+> > 
+> I'll offer this suggestion, knowing it may piss you off, given the 
+> difficulty of preserving whitespace on *many* mailers without using 
+> attachments, and given that attachments can be saved easily without 
+> prying them out of the message, why don't you (one person) switch to a 
+> capable mail agent, if only for patches, instead of trying to teach many 
+> people to jump through hoops to avoid whitespace issues?
 
-Please include the text from section mismatch warnings in the patch
-description.
+Is "you" referring to me?  You didn't piss me off.
+I don't even understand what you are talking about.
 
-> diff --git a/arch/x86_64/kernel/smpboot.c b/arch/x86_64/kernel/smpboot.c
-> index 32f5078..7c872df 100644
-> --- a/arch/x86_64/kernel/smpboot.c
-> +++ b/arch/x86_64/kernel/smpboot.c
-> @@ -532,7 +532,7 @@ struct create_idle {
->  	int cpu;
->  };
->  
-> -void do_fork_idle(struct work_struct *work)
-> +static void __cpuinit do_fork_idle(struct work_struct *work)
->  {
->  	struct create_idle *c_idle =
->  		container_of(work, struct create_idle, work);
-> diff --git a/drivers/pci/search.c b/drivers/pci/search.c
-> index c6e79d0..0eb7e9e 100644
-> --- a/drivers/pci/search.c
-> +++ b/drivers/pci/search.c
-> @@ -96,7 +96,7 @@ pci_find_slot(unsigned int bus, unsigned int devfn)
->  {
->  	struct pci_dev *dev = NULL;
->  
-> -	while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
-> +	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
->  		if (dev->bus->number == bus && dev->devfn == devfn)
->  			return dev;
->  	}
-> @@ -434,8 +434,6 @@ int pci_dev_present(const struct pci_device_id *ids)
->  EXPORT_SYMBOL(pci_dev_present);
->  EXPORT_SYMBOL(pci_find_present);
->  
-> -EXPORT_SYMBOL(pci_find_device);
-> -EXPORT_SYMBOL(pci_find_slot);
+BTW, lots of us have capable mail clients.
 
-There are still about 30 and 14 respetively users of pci_find_devic()
-and pci_find_slot() in 2.6.23-rc8.  Will you be fixing them?
+> Not criticizing, just seems easier for everybody for you to avoid 
+> teaching people things they don't find useful elsewhere, or getting 
+> discouraged and not bothering.
 
+(again, if "you" are referring to me:)  I generally try to help
+people.  Another option is just to give them no feedback and drop
+their patches.  I think that's not useful or helpful at all.
 
->  /* For boot time work */
->  EXPORT_SYMBOL(pci_find_bus);
->  EXPORT_SYMBOL(pci_find_next_bus);
 
 ---
 ~Randy
