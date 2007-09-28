@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbXI1RqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbXI1RxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbXI1RqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 13:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXI1RqN
+	id S1754735AbXI1RxA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 13:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbXI1Rww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 13:46:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47377 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751598AbXI1RqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 13:46:12 -0400
-Message-ID: <46FD3DE1.9000807@redhat.com>
-Date: Fri, 28 Sep 2007 13:46:09 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Sergey Popov <faijeya@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: General slowness with using 64Gb HIGHMEM option on 32-bit kernel
-References: <dd4eba420709281015w50bd6b0fj21f72756a962a26b@mail.gmail.com>
-In-Reply-To: <dd4eba420709281015w50bd6b0fj21f72756a962a26b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 28 Sep 2007 13:52:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56040 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753128AbXI1Rww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 13:52:52 -0400
+Date: Fri, 28 Sep 2007 10:46:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.10
+Message-Id: <20070928104642.0f3a4573.akpm@linux-foundation.org>
+In-Reply-To: <20070928132138.GG18163@shadowen.org>
+References: <bf97f66cfc0696c8574921d53eaafcb7@pinky>
+	<20070928084003.GA18882@elte.hu>
+	<20070928020132.f6c6f528.akpm@linux-foundation.org>
+	<20070928092235.GA31180@shadowen.org>
+	<20070928093902.GA28455@elte.hu>
+	<20070928100024.GB18163@shadowen.org>
+	<20070928104935.GA606@elte.hu>
+	<20070928132138.GG18163@shadowen.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/28/2007 01:15 PM, Sergey Popov wrote:
-> Short description: after recompiling 32-bit kernel with 64Gb highmem
-> support and rebooting into it, OS started working very much slower
-> then before.
-> 
-> Specifications: Intel Core 2 Duo E6600@2,4Ghz on Intel i965Q-based
-> motherboard. 6Gb of DDR2 RAM, 2x1Gb+2x2Gb, dual-channel.
-> Vector Linux 5.8 (Slackware Linux 11-based), 2.6.20.3 kernel.
-> 
-> Long description: after recompiling 32-bit 2.6.20.3 kernel with 64Gb
-> highmem option and rebooting into it, booting process froze on udevd.
-> After booting up from CD and disabling rc.udev, system started, but
-> it's work after rc.M script sarted was 5-10 times slower then usual.
-> top showed, that processes are taking much more CPU% time then usual.
-> I tried downloading the newest stable kernel - 2.6.22.9 - hoping, that
-> it would solve the problem. I downloaded it, booted from CD, and
-> compiled it with 64Gb highmem support. I felt some speed improvement,
-> but if on 2.6.20.3 machine performed like P166, now it is working like
-> P2-350.
-> I've found a similar problem, described on lkml -
-> http://lkml.org/lkml/2007/5/30/5 . But, unfortunately, it is x86_64
-> related and contains no clues for me.
-> 
-> Moving to 64-bit distro is rather unpleasant - as there is an option
-> in 32-bit kernel, it should work ;) .
-> 
-> What tests should I run to help investigate this problem?
+On Fri, 28 Sep 2007 14:21:38 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
 
-Boot with option "mem=3900M".
+> On Fri, Sep 28, 2007 at 12:49:35PM +0200, Ingo Molnar wrote:
+> > 
+> > * Andy Whitcroft <apw@shadowen.org> wrote:
+> > 
+> > > On Fri, Sep 28, 2007 at 11:39:02AM +0200, Ingo Molnar wrote:
+> > >
+>
+> [bunfight]
+>
+
+oy, knock it off.
+
+> Anyhow.  I have already added a --check/--no-check option which controls
+
+-strict?
+
+> the more subjective tests which will be in the next release; though its
+> likely the option name will be something more useful by then.
+> 
+> The only question is whether this should default to on.  You are voting
+> off.  I personally think on.
+> 
+> Andrew?  Randy?  Joel?
+> 
+
+off, I'd say.  That way people are more likely to use it.  Or, more
+accurately, will have less excuses to not use it.
+
