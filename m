@@ -1,89 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbXI1SNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbXI1SN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756125AbXI1SNp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 14:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbXI1SNf
+	id S1756683AbXI1SN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 14:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbXI1SNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 14:13:35 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:47239 "EHLO
+	Fri, 28 Sep 2007 14:13:40 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:47315 "EHLO
 	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753401AbXI1SNf (ORCPT
+	with ESMTP id S1754768AbXI1SNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 14:13:35 -0400
-Subject: [RFC][PATCH 2/8] move mnt_want_write() into open_namei_create()
+	Fri, 28 Sep 2007 14:13:38 -0400
+Subject: [RFC][PATCH 5/8] make open_namei() return a filp
 To: linux-kernel@vger.kernel.org
 Cc: hch@infradead.org, miklos@szeredi.hu, Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 28 Sep 2007 11:13:31 -0700
+Date: Fri, 28 Sep 2007 11:13:35 -0700
 References: <20070928181330.27B367AC@kernel>
 In-Reply-To: <20070928181330.27B367AC@kernel>
-Message-Id: <20070928181331.E9388A9C@kernel>
+Message-Id: <20070928181335.DEA42AF6@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-In a moment, we're going to make may_open() stop doing
-the mnt_want/drop_write() pair.  Doing this first makes
-the next patch simpler.
+If open_namei() succeeds, there is potentially a mnt_want_write()
+that needs to get balanced.  If the caller doesn't create a
+'struct file' and eventually __fput() it, or manually drop the
+write count on an error, we have a bug.
+
+Forcing open_namei() to return a filp fixes this.  Any caller
+getting a 'struct file' back must consider that filp instantiated
+and fput() it normally.  The callers no longer have to worry about
+ever manually releasing a mnt write count.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/namei.c |   28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
+ lxc-dave/fs/namei.c         |   16 ++++++++--------
+ lxc-dave/fs/open.c          |    7 +------
+ lxc-dave/include/linux/fs.h |    2 +-
+ 3 files changed, 10 insertions(+), 15 deletions(-)
 
-diff -puN fs/namei.c~move-mnt_want_write-into-open_namei_create fs/namei.c
---- lxc/fs/namei.c~move-mnt_want_write-into-open_namei_create	2007-09-28 11:03:19.000000000 -0700
-+++ lxc-dave/fs/namei.c	2007-09-28 11:03:19.000000000 -0700
-@@ -1686,6 +1686,19 @@ static int open_namei_create(struct name
- 	int error;
- 	struct dentry *dir = nd->dentry;
+diff -puN fs/namei.c~make-open_namei-return-a-filp fs/namei.c
+--- lxc/fs/namei.c~make-open_namei-return-a-filp	2007-09-28 11:03:22.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-09-28 11:03:22.000000000 -0700
+@@ -1750,8 +1750,8 @@ static inline int sys_open_flags_to_name
+  * system call.  See sys_open_flags_to_namei_flags().
+  * SMP-safe
+  */
+-int open_namei(int dfd, const char *pathname, int sys_open_flag,
+-		int mode, struct nameidata *nd)
++struct file *open_namei(int dfd, const char *pathname, int sys_open_flag,
++			int mode, struct nameidata *nd)
+ {
+ 	int acc_mode, error;
+ 	struct path path;
+@@ -1777,7 +1777,7 @@ int open_namei(int dfd, const char *path
+ 		error = path_lookup_open(dfd, pathname, lookup_flags(flag),
+ 					 nd, flag);
+ 		if (error)
+-			return error;
++			return ERR_PTR(error);
+ 		goto ok;
+ 	}
  
-+	/*
-+	 * This ensures that the mnt stays writable
-+	 * over the vfs_create() call to may_open(),
-+	 * which takes a more persistent
-+	 * mnt_want_write().
-+	 */
-+	error = mnt_want_write(nd->mnt);
-+	if (error) {
-+		mutex_unlock(&dir->d_inode->i_mutex);
-+		dput(nd->dentry);
-+		return error;
-+	}
-+
- 	if (!IS_POSIXACL(dir->d_inode))
- 		mode &= ~current->fs->umask;
- 	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
-@@ -1693,9 +1706,16 @@ static int open_namei_create(struct name
- 	dput(nd->dentry);
- 	nd->dentry = path->dentry;
+@@ -1786,7 +1786,7 @@ int open_namei(int dfd, const char *path
+ 	 */
+ 	error = path_lookup_create(dfd,pathname,LOOKUP_PARENT,nd,flag,mode);
  	if (error)
 -		return error;
-+		goto out;
- 	/* Don't check for write permission, don't truncate */
--	return may_open(nd, 0, flag & ~O_TRUNC);
-+	error = may_open(nd, 0, flag & ~O_TRUNC);
-+out:
-+	/*
-+	 * if needed, may_open() has taken a write
-+	 * on the mnt for us, so we can release ours.
-+	 */
-+	mnt_drop_write(nd->mnt);
-+	return error;
- }
++		return ERR_PTR(error);
  
- /*
-@@ -1778,11 +1798,7 @@ do_last:
- 
- 	/* Negative dentry, just create the file */
- 	if (!path.dentry->d_inode) {
--		error = mnt_want_write(nd->mnt);
--		if (error)
--			goto exit_mutex_unlock;
- 		error = open_namei_create(nd, &path, flag, mode);
--		mnt_drop_write(nd->mnt);
+ 	/*
+ 	 * We have the parent and last component. First of all, check
+@@ -1820,7 +1820,7 @@ do_last:
+ 		error = __open_namei_create(nd, &path, flag, mode);
  		if (error)
  			goto exit;
- 		return 0;
+-		return 0;
++		return nameidata_to_filp(nd, sys_open_flag);
+ 	}
+ 
+ 	/*
+@@ -1864,7 +1864,7 @@ ok:
+ 			mnt_drop_write(nd->mnt);
+ 		goto exit;
+ 	}
+-	return 0;
++	return nameidata_to_filp(nd, sys_open_flag);
+ 
+ exit_mutex_unlock:
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+@@ -1874,7 +1874,7 @@ exit:
+ 	if (!IS_ERR(nd->intent.open.file))
+ 		release_open_intent(nd);
+ 	path_release(nd);
+-	return error;
++	return ERR_PTR(error);
+ 
+ do_link:
+ 	error = -ELOOP;
+@@ -1901,7 +1901,7 @@ do_link:
+ 		 * with "intent.open".
+ 		 */
+ 		release_open_intent(nd);
+-		return error;
++		return ERR_PTR(error);
+ 	}
+ 	nd->flags &= ~LOOKUP_PARENT;
+ 	if (nd->last_type == LAST_BIND)
+diff -puN fs/open.c~make-open_namei-return-a-filp fs/open.c
+--- lxc/fs/open.c~make-open_namei-return-a-filp	2007-09-28 11:03:22.000000000 -0700
++++ lxc-dave/fs/open.c	2007-09-28 11:03:22.000000000 -0700
+@@ -843,14 +843,9 @@ cleanup_file:
+ static struct file *do_filp_open(int dfd, const char *filename, int flags,
+ 				 int mode)
+ {
+-	int error;
+ 	struct nameidata nd;
+ 
+-	error = open_namei(dfd, filename, flags, mode, &nd);
+-	if (!error)
+-		return nameidata_to_filp(&nd, flags);
+-
+-	return ERR_PTR(error);
++	return open_namei(dfd, filename, flags, mode, &nd);
+ }
+ 
+ struct file *filp_open(const char *filename, int flags, int mode)
+diff -puN include/linux/fs.h~make-open_namei-return-a-filp include/linux/fs.h
+--- lxc/include/linux/fs.h~make-open_namei-return-a-filp	2007-09-28 11:03:22.000000000 -0700
++++ lxc-dave/include/linux/fs.h	2007-09-28 11:03:22.000000000 -0700
+@@ -1721,7 +1721,7 @@ extern struct file *create_read_pipe(str
+ extern struct file *create_write_pipe(void);
+ extern void free_write_pipe(struct file *);
+ 
+-extern int open_namei(int dfd, const char *, int, int, struct nameidata *);
++extern struct file *open_namei(int dfd, const char *, int, int, struct nameidata *);
+ extern int may_open(struct nameidata *, int, int);
+ 
+ extern int kernel_read(struct file *, unsigned long, char *, unsigned long);
 _
