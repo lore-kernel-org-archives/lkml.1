@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbXI2Mp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbXI2MvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758608AbXI2Mp5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 08:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbXI2MpX
+	id S1758142AbXI2MvB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 08:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbXI2Mux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 08:45:23 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:46252 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751817AbXI2MpV (ORCPT
+	Sat, 29 Sep 2007 08:50:53 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:44480 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752761AbXI2Muw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 08:45:21 -0400
+	Sat, 29 Sep 2007 08:50:52 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=P4svNlGyDbLM85ewRCUHtKW15blFIAQbUnv5AmDmSdeUXz5iWT/7/fwmq/ArnyKPryTNqI3MnAYgo1sNVBZ3hf07h459crq5yRKiuTxkZqty1iApr1MnOPcHF7UOBXknAMNS7gdEowZusghY7i8rCGHz11hhOoGncGsfdnuAOKM=  ;
-X-YMail-OSG: FIC6MqEVM1kQ.mTBrRU.Vpcceu3SMQIMShti_ewqcNDFDGXEJGmbT4lKAlV_vS5aoNKLficpyA--
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Ljmn1t/wnCpU8UAzGd/uSrExsJHSEyIOXIjchUh4+ZE2ZZfWgaDtw9ssHDHSAV1ontny39TM66gcQsC+WHTFqTI9SyLwls0rMAeSa/+U+7h4FdGillp8WMD2NxVzmn5oAp5JHYDuvcDWtPqmrFxfOO6Lr0O4hZL/giu8Vh5x90s=  ;
+X-YMail-OSG: Dq2q8yAVM1l8mOWPFJX4i5gvWM6ITw0HBuQ_ALAIC8L2tUs7TUb_bpTmo1t5PD5pBV5JfcdkFw--
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Krzysztof Oledzki <olel@ans.pl>
-Subject: Re: Strange system hangs
-Date: Sat, 29 Sep 2007 06:14:02 +1000
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
+Date: Sat, 29 Sep 2007 06:19:33 +1000
 User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0709281005340.17152@bizon.gios.gov.pl>
-In-Reply-To: <Pine.LNX.4.64.0709281005340.17152@bizon.gios.gov.pl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@sgi.com>, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <20070919033605.785839297@sgi.com> <1191057242.18147.110.camel@lappy> <20070929022750.5d57d49e.akpm@linux-foundation.org>
+In-Reply-To: <20070929022750.5d57d49e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200709290614.02918.nickpiggin@yahoo.com.au>
+Content-Disposition: inline
+Message-Id: <200709290619.33918.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 September 2007 18:42, Krzysztof Oledzki wrote:
-> Hello,
+On Saturday 29 September 2007 19:27, Andrew Morton wrote:
+> On Sat, 29 Sep 2007 11:14:02 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> 
+wrote:
+> > > oom-killings, or page allocation failures?  The latter, one hopes.
+> >
+> > Linux version 2.6.23-rc4-mm1-dirty (root@dyad) (gcc version 4.1.2 (Ubuntu
+> > 4.1.2-0ubuntu4)) #27 Tue Sep 18 15:40:35 CEST 2007
+> >
+> > ...
+> >
+> >
+> > mm_tester invoked oom-killer: gfp_mask=0x40d0, order=2, oomkilladj=0
+> > Call Trace:
+> > 611b3878:  [<6002dd28>] printk_ratelimit+0x15/0x17
+> > 611b3888:  [<60052ed4>] out_of_memory+0x80/0x100
+> > 611b38c8:  [<60054b0c>] __alloc_pages+0x1ed/0x280
+> > 611b3948:  [<6006c608>] allocate_slab+0x5b/0xb0
+> > 611b3968:  [<6006c705>] new_slab+0x7e/0x183
+> > 611b39a8:  [<6006cbae>] __slab_alloc+0xc9/0x14b
+> > 611b39b0:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+> > 611b39b8:  [<600980f2>] do_mpage_readpage+0x3b3/0x472
+> > 611b39e0:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+> > 611b39f8:  [<6006cc81>] kmem_cache_alloc+0x51/0x98
+> > 611b3a38:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+> > 611b3a58:  [<6004f8e2>] add_to_page_cache+0x22/0xf7
+> > 611b3a98:  [<6004f9c6>] add_to_page_cache_lru+0xf/0x24
+> > 611b3ab8:  [<6009821e>] mpage_readpages+0x6d/0x109
+> > 611b3ac0:  [<600d59f0>] ext3_get_block+0x0/0xf2
+> > 611b3b08:  [<6005483d>] get_page_from_freelist+0x8d/0xc1
+> > 611b3b88:  [<600d6937>] ext3_readpages+0x18/0x1a
+> > 611b3b98:  [<60056f00>] read_pages+0x37/0x9b
+> > 611b3bd8:  [<60057064>] __do_page_cache_readahead+0x100/0x157
+> > 611b3c48:  [<60057196>] do_page_cache_readahead+0x52/0x5f
+> > 611b3c78:  [<60050ab4>] filemap_fault+0x145/0x278
+> > 611b3ca8:  [<60022b61>] run_syscall_stub+0xd1/0xdd
+> > 611b3ce8:  [<6005eae3>] __do_fault+0x7e/0x3ca
+> > 611b3d68:  [<6005ee60>] do_linear_fault+0x31/0x33
+> > 611b3d88:  [<6005f149>] handle_mm_fault+0x14e/0x246
+> > 611b3da8:  [<60120a7b>] __up_read+0x73/0x7b
+> > 611b3de8:  [<60013177>] handle_page_fault+0x11f/0x23b
+> > 611b3e48:  [<60013419>] segv+0xac/0x297
+> > 611b3f28:  [<60013367>] segv_handler+0x68/0x6e
+> > 611b3f48:  [<600232ad>] get_skas_faultinfo+0x9c/0xa1
+> > 611b3f68:  [<60023853>] userspace+0x13a/0x19d
+> > 611b3fc8:  [<60010d58>] fork_handler+0x86/0x8d
 >
-> I am experiencing weird system hangs. Once about 2-5 weeks system freezes
-> and stops accepting remote connections, so it is no longer possible to
-> connect to most important services: smtp (postfix), www (squid) or even
-> ssh. Such connection is accepted but then it hangs.
+> OK, that's different.  Someone broke the vm - order-2 GFP_KERNEL
+> allocations aren't supposed to fail.
 >
-> What is strange, that previously established ssh session is usable. It is
-> possible to work on such system until you do something stupid like "less
-> /var/log/all.log". Using strace I found that process blocks on:
+> I'm suspecting that did_some_progress thing.
 
-Is this a regression? If so, what's the most recent kernel that didn't show
-the problem?
-
-The symptoms could be consistent with some place doing a
-balance_dirty_pages while holding a lock that is required for IO, but I can't
-see a smoking gun (you've got contention on i_mutex, but that should be
-OK).
-
-Can you see if there is any memory under writeback that isn't being
-completed (sysrq+M), also a list the locks held after the hang might be
-helpful (compile in lockdep and sysrq+D)
-
-Is anything currently running? (sysrq+P and even a full sysrq+T task list
-could be useful).
-
-Are any IO errors occurring at all?
-
-Thanks,
-Nick
+The allocation didn't fail -- it invoked the OOM killer because the kernel
+ran out of unfragmented memory. Probably because higher order
+allocations are the new vogue in -mm at the moment ;)
