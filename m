@@ -1,115 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbXI1JRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760802AbXI1JTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbXI1JRh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 05:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758344AbXI1JRU
+	id S1760802AbXI1JTO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 05:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbXI1JTC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 05:17:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53633 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758045AbXI1JRT (ORCPT
+	Fri, 28 Sep 2007 05:19:02 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55084 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756135AbXI1JTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 05:17:19 -0400
-Subject: Re: Strange system hangs
-From: Peter Zijlstra <peterz@infradead.org>
-To: Krzysztof Oledzki <olel@ans.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0709281005340.17152@bizon.gios.gov.pl>
-References: <Pine.LNX.4.64.0709281005340.17152@bizon.gios.gov.pl>
-Content-Type: text/plain
-Date: Fri, 28 Sep 2007 11:17:15 +0200
-Message-Id: <1190971035.31636.35.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Sep 2007 05:19:00 -0400
+Message-ID: <46FCC6F5.2030109@bull.net>
+Date: Fri, 28 Sep 2007 11:18:45 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: WARNING: at arch/x86_64/kernel/smp.c:397 smp_call_function_mask()
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>	<390947257.08622@ustc.edu.cn>	<46FCC0B8.7090403@bull.net> <20070928020950.bdcad2c2.akpm@linux-foundation.org>
+In-Reply-To: <20070928020950.bdcad2c2.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 28/09/2007 11:25:01,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 28/09/2007 11:25:03,
+	Serialize complete at 28/09/2007 11:25:03
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC67004127B7512C637AC6E57"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-28 at 10:42 +0200, Krzysztof Oledzki wrote:
-> Hello,
-> 
-> I am experiencing weird system hangs. Once about 2-5 weeks system freezes 
-> and stops accepting remote connections, so it is no longer possible to 
-> connect to most important services: smtp (postfix), www (squid) or even 
-> ssh. Such connection is accepted but then it hangs.
-> 
-> What is strange, that previously established ssh session is usable. It is 
-> possible to work on such system until you do something stupid like "less 
-> /var/log/all.log".
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC67004127B7512C637AC6E57
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-So it takes weeks to reproduce this?
+Andrew Morton wrote:
+> On Fri, 28 Sep 2007 10:52:08 +0200 Laurent Vivier <Laurent.Vivier@bull.=
+net> wrote:
+>=20
+>> Fengguang Wu wrote:
+>>> On Thu, Sep 27, 2007 at 02:22:20AM -0700, Andrew Morton wrote:
+>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23=
+-rc8/2.6.23-rc8-mm2/
+>>> =20
+>>> Laurent,
+>>>
+>>> It triggered a WARNING on first run in qemu:
+>> Thank you to report it.
+>>
+>>> [    0.310000] WARNING: at arch/x86_64/kernel/smp.c:397 smp_call_func=
+tion_mask()
+>>> [    0.310000]
+>>> [    0.310000] Call Trace:
+>>> [    0.310000]  [<ffffffff8100dbde>] dump_trace+0x3ee/0x4a0
+>>> [    0.310000]  [<ffffffff8100dcd3>] show_trace+0x43/0x70
+>>> [    0.310000]  [<ffffffff8100dd15>] dump_stack+0x15/0x20
+>>> [    0.310000]  [<ffffffff8101cd44>] smp_call_function_mask+0x94/0xa0=
+
+>>> [    0.310000]  [<ffffffff8101cd69>] smp_call_function+0x19/0x20
+>>> [    0.310000]  [<ffffffff8104277f>] on_each_cpu+0x1f/0x50
+>>> [    0.310000]  [<ffffffff81026eac>] global_flush_tlb+0x8c/0x110
+>>> [    0.310000]  [<ffffffff81025c85>] free_init_pages+0xe5/0xf0
+>>> [    0.310000]  [<ffffffff81549b5e>] alternative_instructions+0x7e/0x=
+150
+>>> [    0.310000]  [<ffffffff8154a2ea>] check_bugs+0x1a/0x20
+>>> [    0.310000]  [<ffffffff81540c4a>] start_kernel+0x2da/0x380
+>>> [    0.310000]  [<ffffffff81540132>] _sinittext+0x132/0x140
+>>
+>> the reason is the WARN_ON():
+>>
+>> 390 int smp_call_function_mask(cpumask_t mask,
+>> 391                            void (*func)(void *), void *info,
+>> 392                            int wait)
+>> 393 {
+>> 394         int ret;
+>> 395
+>> 396         /* Can deadlock when called with interrupts disabled */
+>> 397         WARN_ON(irqs_disabled());
+>> 398
+>> 399         spin_lock(&call_lock);
+>> 400         ret =3D __smp_call_function_mask(mask, func, info, wait);
+>> 401         spin_unlock(&call_lock);
+>> 402         return ret;
+>> 403 }
+>>
+>> The patch I sent to Andi didn't include this WARN_ON() and it's why I =
+didn't
+>> find this issue. (see http://lkml.org/lkml/2007/8/24/101)
+>>
+>> smp_call_function_mask() is called by smp_call_function() which calls =
+a function
+>> on all CPU except current.
+>> The comment of smp_call_function() specifies:
+>> ...
+>>  * You must not call this function with disabled interrupts or from a
+>>  * hardware interrupt handler or from a bottom half handler.
+>>  * Actually there are a few legal cases, like panic.
+>>  */
+>>
+>> So this WARN_ON() is correct, and the caller (global_flush_tlb()) does=
+n't follow
+>> this rule.
+>>
+>> I guess this WARN_ON() is only needed when we have current CPU in prov=
+ided mask.
+>> So I think we should change:
+>>
+>> int smp_call_function (void (*func) (void *info), void *info, int nona=
+tomic,
+>>                         int wait)
+>> {
+>>         return smp_call_function_mask(cpu_online_map, func, info, wait=
+);
+>> }
+>> ("cpu_online_map" is a bad choice, comment also specifies: "run a func=
+tion on
+>> all other CPU")
+>>
+>> to
+>>
+>> int smp_call_function (void (*func) (void *info), void *info, int nona=
+tomic,
+>>                         int wait)
+>> {
+>>         int ret;
+>> 	cpumask_t allbutself;
+>>
+>> 	allbutself =3D cpu_online_map;
+>> 	cpu_clear(smp_processor_id(), allbutself);
+>>
+>>         spin_lock(&call_lock);
+>>         ret =3D __smp_call_function_mask(allbutself, func, info, wait)=
+;
+>>         spin_unlock(&call_lock);
+>>         return ret;
+>> }
+>> (which is smp_call_function_mask() without the WARN_ON() and without c=
+urrent cpu
+>> in the mask)
+>>
+>> Andi, is this correct ?
+>> Andrew, should I send a patch implementing this change ?
+>=20
+> umm, I think all the smp_call_function fucntions are deadlocky if calle=
+d
+> with local interrupts disabled, regardless of whether the calling CPU i=
+s in
+> the mask.
+>=20
+> If CPU A is sending a cross-cpu call to CPU B and CPU B is sending a
+> cross-cpu call to CPU A, and they both have local interrupts disabled..=
+=2E
+
+OK, so there are two errors:
+
+1- one I introduce myself (without any help from anyone) where
+smp_call_function() calls all online CPUs instead of calling all CPUs exc=
+ept itself.
+
+2- one in global_flush_tlb() which calls smp_call_function() with irqs di=
+sabled.
+
+I think I should at least correct #1 ?
+
+Laurent
+--=20
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
 
 
->                           free                        sibling
->    task             PC    stack   pid father child younger older
-> syslogd       D F5C83C60     0  2162      1 (NOTLB)
->         f5c83c74 00000082 00000002 f5c83c60 f5c83c5c 00000000 00000000 78538d20
->         00000009 00000001 f7f6a070 f7cb8030 82c47e5f 0001cfed 00000a43 f7f6a17c
->         7a016980 f705dc80 78404217 7812c708 00000000 00000213 f5c83c84 1e7a64bb
-> Call Trace:
->   [<78404217>] _spin_unlock_irqrestore+0xf/0x23
->   [<7812c708>] __mod_timer+0x92/0x9c
->   [<78402b34>] schedule_timeout+0x70/0x8d
->   [<7812c521>] process_timeout+0x0/0x5
->   [<78402548>] io_schedule_timeout+0x1e/0x28
->   [<7814d41e>] congestion_wait+0x50/0x64
->   [<78134abc>] autoremove_wake_function+0x0/0x35
->   [<781493e7>] balance_dirty_pages_ratelimited_nr+0x16e/0x1dc
->   [<78145bd0>] generic_file_buffered_write+0x4ee/0x605
->   [<783c55a1>] unix_dgram_recvmsg+0x1b4/0x1c8
->   [<78128c8e>] current_fs_time+0x41/0x46
->   [<78146167>] __generic_file_aio_write_nolock+0x480/0x4df
->   [<7814621b>] generic_file_aio_write+0x55/0xb3
->   [<78194b28>] ext3_file_write+0x24/0x8f
->   [<7815f34f>] do_sync_readv_writev+0xc1/0xfe
->   [<78134abc>] autoremove_wake_function+0x0/0x35
->   [<784041ae>] _spin_unlock+0xd/0x21
->   [<781a8c38>] log_wait_commit+0xc3/0xe3
->   [<7814448b>] find_get_pages_tag+0x76/0x80
->   [<7815f204>] rw_copy_check_uvector+0x50/0xaa
->   [<7815f9d4>] do_readv_writev+0x99/0x164
->   [<78194b04>] ext3_file_write+0x0/0x8f
->   [<7815fadc>] vfs_writev+0x3d/0x48
->   [<7815feb5>] sys_writev+0x41/0x67
->   [<78103d6a>] sysenter_past_esp+0x5f/0x85
->   =======================
+--------------enigC67004127B7512C637AC6E57
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-This trace puzzles me, what is: unix_dgram_recvmsg doing there.
-Also, it has two invocations of: ext3_file_write
-do you have a stacked filesystem of sorts, ext3 on loopback on ext3?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
 
+iD8DBQFG/Mb49Kffa9pFVzwRAl3gAJ4tLIR8z9RhQAwqNrs8va303O7wHACeIJv1
+XU6aaCsnLqje6r4RD1hFVKY=
+=oa4y
+-----END PGP SIGNATURE-----
 
-
-> freshclam     D 00000282     0  2866      1 (NOTLB)
->         f36e3cc4 00000082 00000009 00000282 7a0173c0 00000002 00000000 0000007b
->         00000009 00000001 f7cb8030 f7c72030 82c4884d 0001cfed 000009ee f7cb813c
->         7a016980 f66c0b80 78404217 7812c708 00000000 00000213 f36e3cd4 1e7a64bb
-> Call Trace:
->   [<78404217>] _spin_unlock_irqrestore+0xf/0x23
->   [<7812c708>] __mod_timer+0x92/0x9c
->   [<78402b34>] schedule_timeout+0x70/0x8d
->   [<7812c521>] process_timeout+0x0/0x5
->   [<78402548>] io_schedule_timeout+0x1e/0x28
->   [<7814d41e>] congestion_wait+0x50/0x64
->   [<78134abc>] autoremove_wake_function+0x0/0x35
->   [<781493e7>] balance_dirty_pages_ratelimited_nr+0x16e/0x1dc
->   [<78145bd0>] generic_file_buffered_write+0x4ee/0x605
->   [<7819cdb4>] __ext3_journal_stop+0x19/0x34
->   [<7840408f>] _spin_lock+0xd/0x5a
->   [<78176f3d>] __mark_inode_dirty+0xdd/0x16f
->   [<78128c8e>] current_fs_time+0x41/0x46
->   [<78146167>] __generic_file_aio_write_nolock+0x480/0x4df
->   [<7814621b>] generic_file_aio_write+0x55/0xb3
->   [<78103159>] setup_sigcontext+0x105/0x189
->   [<78194b28>] ext3_file_write+0x24/0x8f
->   [<7815f453>] do_sync_write+0xc7/0x10a
->   [<78134abc>] autoremove_wake_function+0x0/0x35
->   [<781085d2>] convert_fxsr_from_user+0x15/0xd5
->   [<7815f38c>] do_sync_write+0x0/0x10a
->   [<7815fbb6>] vfs_write+0x8a/0x10c
->   [<78160123>] sys_write+0x41/0x67
->   [<78103d6a>] sysenter_past_esp+0x5f/0x85
->   =======================
-
-single write, no networking, also stuck in balance_dirty_pages().
-
+--------------enigC67004127B7512C637AC6E57--
