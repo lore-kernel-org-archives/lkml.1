@@ -1,152 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbXI1Ugc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbXI1Ui7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756191AbXI1Ugc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbXI1UgX
+	id S1756688AbXI1Ui7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbXI1Uiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:36:23 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:3779 "EHLO mx2.netapp.com"
+	Fri, 28 Sep 2007 16:38:51 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56196 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752157AbXI1UgW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:36:22 -0400
-X-IronPort-AV: E=Sophos;i="4.21,210,1188802800"; 
-   d="scan'208";a="108918575"
-X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
-Content-class: urn:content-classes:message
+	id S1752867AbXI1Uiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:38:51 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 09/10] Use struct path in fs_struct
+Date: Fri, 28 Sep 2007 22:39:48 +0200
+User-Agent: KMail/1.9.5
+Cc: jblunck@suse.de, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       tiwai@suse.de
+References: <20070927141200.820970144@X40.localnet> <20070927141229.008500593@X40.localnet> <20070928184214.GI14269@lst.de>
+In-Reply-To: <20070928184214.GI14269@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [ofa-general] [PATCH v3] iw_cxgb3: Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
-Date: Fri, 28 Sep 2007 16:36:18 -0400
-Message-ID: <C98692FD98048C41885E0B0FACD9DFB805187762@exnane01.hq.netapp.com>
-In-Reply-To: <46FD5A2F.7010409@opengridcomputing.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [ofa-general] [PATCH v3] iw_cxgb3: Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
-Thread-Index: AcgCCGbCPKm2rdGhQMKYUlsxJL7N9gABjGgg
-References: <20070923203649.8324.64524.stgit@dell3.ogc.int><46FBF8AF.9040700@ichips.intel.com><C98692FD98048C41885E0B0FACD9DFB805187514@exnane01.hq.netapp.com> <000101c8013a$41b374f0$a7cc180a@amr.corp.intel.com> <C98692FD98048C41885E0B0FACD9DFB80518755A@exnane01.hq.netapp.com> <46FD5A2F.7010409@opengridcomputing.com>
-From: "Kanevsky, Arkady" <Arkady.Kanevsky@netapp.com>
-To: "Steve Wise" <swise@opengridcomputing.com>
-Cc: "Sean Hefty" <sean.hefty@intel.com>,
-       "Sean Hefty" <mshefty@ichips.intel.com>, <netdev@vger.kernel.org>,
-       <rdreier@cisco.com>, <linux-kernel@vger.kernel.org>,
-       <general@lists.openfabrics.org>
-X-OriginalArrivalTime: 28 Sep 2007 20:36:20.0652 (UTC) FILETIME=[3A55B6C0:01C8020F]
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709282239.49088.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Exactly,
-it forces the burden on administrator.
-And one will be forced to try one mount for iWARP and it does not
-work issue another one TCP or UDP if it fails.
-Yack!
+On Friday 28 September 2007 20:42, Christoph Hellwig wrote:
+> __d_path should probably switch to taking a struct path * aswell.
 
-And server will need to listen on different IP address and simple
-* will not work since it will need to listen in two different domains.
+Indeed, it now easily can. Here we go...
 
-Had we run this proposal by administrators?
-Thanks,
 
-Arkady Kanevsky                       email: arkady@netapp.com
-Network Appliance Inc.               phone: 781-768-5395
-1601 Trapelo Rd. - Suite 16.        Fax: 781-895-1195
-Waltham, MA 02451                   central phone: 781-768-5300
+One less parameter to __d_path
+
+All callers to __d_path pass the dentry and vfsmount of a struct
+path to __d_path. Pass the struct path directly, instead.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+
+Index: linux-2.6/fs/dcache.c
+===================================================================
+--- linux-2.6.orig/fs/dcache.c
++++ linux-2.6/fs/dcache.c
+@@ -1781,9 +1781,8 @@ shouldnt_be_hashed:
+  *
+  * "buflen" should be positive. Caller holds the dcache_lock.
+  */
+-static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
+-			struct dentry *root, struct vfsmount *rootmnt,
+-			char *buffer, int buflen)
++static char * __d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
++		       struct path *root, char *buffer, int buflen)
+ {
+ 	char * end = buffer+buflen;
+ 	char * retval;
+@@ -1808,7 +1807,7 @@ static char * __d_path( struct dentry *d
+ 	for (;;) {
+ 		struct dentry * parent;
  
-
-> -----Original Message-----
-> From: Steve Wise [mailto:swise@opengridcomputing.com] 
-> Sent: Friday, September 28, 2007 3:47 PM
-> To: Kanevsky, Arkady
-> Cc: Sean Hefty; Sean Hefty; netdev@vger.kernel.org; 
-> rdreier@cisco.com; linux-kernel@vger.kernel.org; 
-> general@lists.openfabrics.org
-> Subject: Re: [ofa-general] [PATCH v3] iw_cxgb3: 
-> Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
-> 
-> 
-> 
-> Kanevsky, Arkady wrote:
-> > Sean,
-> > IB aside,
-> > it looks like an ULP which is capable of being both RDMA aware and 
-> > RDMA not-aware, like iSER and iSCSI, NFS-RDMA and NFS, SDP and 
-> > sockets, will be treated as two separete ULPs.
-> > Each has its own IP address, since there is a different IP 
-> address for 
-> > iWARP port and "regular" Ethernet port. So it falls on the users of 
-> > ULPs to "handle" it via DNS or some other services.
-> > Is this "acceptable" to users? I doubt it.
-> > 
-> > Recall that ULPs are going in opposite directions by having a 
-> > different port number for RDMA aware and RDMA unaware 
-> versions of the ULP.
-> > This way, ULP "connection manager" handles RDMA-ness under 
-> the covers, 
-> > while users plug an IP address for a server to connect to.
-> > Thanks,
-> 
-> Arkady, I'm confused about how this proposed design changes 
-> the behavior of the ULPs that run on TCP and iWARP.  I don't 
-> see much difference from the point of view of the ULPs.
-> 
-> The NFS-RDMA server, for example, will not need to change 
-> since it binds to address 0.0.0.0 which will translate into a 
-> bind/listen on the specific iwarp address for each iwarp 
-> device on the rdma side, and address 0.0.0.0 for the TCP side.
-> 
-> Am I missing your point?
-> 
-> The real pain, IMO, with this solution is that it FORCES the 
-> admins to use 2 subnets when 1 is sufficient if the net 
-> maintainers would unify the port space...
-> 
-> Steve.
-> 
-> 
-> 
-> > 
-> > Arkady Kanevsky                       email: arkady@netapp.com
-> > Network Appliance Inc.               phone: 781-768-5395
-> > 1601 Trapelo Rd. - Suite 16.        Fax: 781-895-1195
-> > Waltham, MA 02451                   central phone: 781-768-5300
-> >  
-> > 
-> >> -----Original Message-----
-> >> From: Sean Hefty [mailto:sean.hefty@intel.com]
-> >> Sent: Thursday, September 27, 2007 3:12 PM
-> >> To: Kanevsky, Arkady; Sean Hefty; Steve Wise
-> >> Cc: netdev@vger.kernel.org; rdreier@cisco.com; 
-> >> linux-kernel@vger.kernel.org; general@lists.openfabrics.org
-> >> Subject: RE: [ofa-general] [PATCH v3] iw_cxgb3: 
-> >> Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
-> >>
-> >>> What is the model on how client connects, say for iSCSI, 
-> when client 
-> >>> and server both support, iWARP and 10GbE or 1GbE, and 
-> would like to 
-> >>> setup "most" performant "connection" for ULP?
-> >> For the "most" performance connection, the ULP would use 
-> IB, and all 
-> >> these problems go away.  :)
-> >>
-> >> This proposal is for each iwarp interface to have its own 
-> IP address.  
-> >> Clients would need an iwarp usable address of the server and would 
-> >> connect using rdma_connect().  If that call (or 
-> >> rdma_resolve_addr/route) fails, the client could try 
-> connecting using 
-> >> sockets, aoi, or some other interface.  I don't see that Steve's 
-> >> proposal changes anything from the client's perspective.
-> >>
-> >> - Sean
-> >> _______________________________________________
-> >> general mailing list
-> >> general@lists.openfabrics.org
-> >> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
-> >>
-> >> To unsubscribe, please visit
-> >> http://openib.org/mailman/listinfo/openib-general
-> >>
-> 
+-		if (dentry == root && vfsmnt == rootmnt)
++		if (dentry == root->dentry && vfsmnt == root->mnt)
+ 			break;
+ 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+ 			/* Global root? */
+@@ -1870,7 +1869,7 @@ char * d_path(struct dentry *dentry, str
+ 	root = *path_get(&current->fs->root);
+ 	read_unlock(&current->fs->lock);
+ 	spin_lock(&dcache_lock);
+-	res = __d_path(dentry, vfsmnt, root.dentry, root.mnt, buf, buflen);
++	res = __d_path(dentry, vfsmnt, &root, buf, buflen);
+ 	spin_unlock(&dcache_lock);
+ 	path_put(&root);
+ 	return res;
+@@ -1936,8 +1935,7 @@ asmlinkage long sys_getcwd(char __user *
+ 		unsigned long len;
+ 		char * cwd;
+ 
+-		cwd = __d_path(pwd.dentry, pwd.mnt, root.dentry, root.mnt,
+-			       page, PAGE_SIZE);
++		cwd = __d_path(pwd.dentry, pwd.mnt, &root, page, PAGE_SIZE);
+ 		spin_unlock(&dcache_lock);
+ 
+ 		error = PTR_ERR(cwd);
