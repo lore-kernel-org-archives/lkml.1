@@ -1,195 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbXI1Va1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbXI1VbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755725AbXI1Va1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 17:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXI1VaU
+	id S1756731AbXI1VbA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 17:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbXI1Vaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 17:30:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41619
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753939AbXI1VaS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 17:30:18 -0400
-Date: Fri, 28 Sep 2007 14:30:18 -0700 (PDT)
-Message-Id: <20070928.143018.40816172.davem@davemloft.net>
-To: pl@dlh.net
-Cc: sparclinux@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: PATCH: tcp rfc 2385 security/bugfix for sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070928.142015.82358847.davem@davemloft.net>
-References: <23966.84.62.25.8.1191012145.squirrel@cs1.dlh.net>
-	<20070928.142015.82358847.davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 28 Sep 2007 17:30:52 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:56865 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbXI1Vau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 17:30:50 -0400
+Message-ID: <46FD727C.3090008@linux.vnet.ibm.com>
+Date: Fri, 28 Sep 2007 16:30:36 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: bo yang <bo.yang@lsi.com>
+CC: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, Sumant.patro@lsi.com
+Subject: Re: [PATCH 3/8] scsi: megaraid_sas - add module param max_sectors,
+ cmd_per_lun
+References: <1190820470.5955.12.camel@dhcp-75-534.se.lsil.com>
+In-Reply-To: <1190820470.5955.12.camel@dhcp-75-534.se.lsil.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Fri, 28 Sep 2007 14:20:15 -0700 (PDT)
+bo yang wrote:
 
-> Thanks for finding this bug.
-> 
-> > --- linux.old/include/net/tcp.h 2007-09-28 21:43:26.000000000 +0200 +++
-> > linux/include/net/tcp.h     2007-09-28 21:45:35.000000000 +0200 @@ -1055,6
-> > +1055,7 @@ static inline void clear_all_retrans_hin
-> 
-> I'll have to apply this patch by hand because your email client
-> completely corrupted the patch.
+> +static ssize_t
+> +sysfs_max_sectors_read(struct kobject *kobj,
+> +			struct bin_attribute *bin_attr,
+> +			char *buf, loff_t off, size_t count)
+> +{
+> +	struct Scsi_Host *host = class_to_shost(container_of(kobj,
+> +					struct class_device, kobj));
+> +	struct megasas_instance *instance =
+> +				(struct megasas_instance *)host->hostdata;
+> +
+> +	count = sprintf(buf, "%u\n", instance->max_sectors_per_req);
+> +
+> +	return count+1;
+> +}
+> +
+> +static struct bin_attribute sysfs_max_sectors_attr = {
+> +	.attr = {
+> +		.name = "max_sectors",
+> +		.mode = S_IRUSR|S_IRGRP|S_IROTH,
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.size = 7,
+> +	.read = sysfs_max_sectors_read,
+> +};
 
-Actually, I think I'm going to put in a slightly different
-fix.
+Why is this implemented as a binary sysfs attribute? Also, can you use
+the existing shost_attrs infrastructure that's in the scsi_host_template
+like megaraid_mbox uses?
 
-If tcp4_md5sig_key and tcp6_md5sig_key have to begin with exacytly
-tcp_md5sig_key's only two members, we should fully tell this
-explicitly to the compiler and remove those ugly casts.
 
-The casts are the real bug.
+> +
+> +	/*
+> +	 * Check if the module parameter value for max_sectors can be used
+> +	 */
+> +	if (max_sectors && max_sectors <= instance->max_sectors_per_req)
+> +		instance->max_sectors_per_req = max_sectors;
+> +	else {
+> +		if (max_sectors)
+> +			printk(KERN_INFO
+> +				"megasas: max_sectors should be > 0 and"
+> +				"<= %d\n",
+> +				instance->max_sectors_per_req);
+> +	}
 
-Here is the patch I will use after some testing:
+Could be simplified to an else if, which would remove one indent level...
 
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 185c7ec..54053de 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -1059,14 +1059,12 @@ struct tcp_md5sig_key {
- };
- 
- struct tcp4_md5sig_key {
--	u8			*key;
--	u16			keylen;
-+	struct tcp_md5sig_key	base;
- 	__be32			addr;
- };
- 
- struct tcp6_md5sig_key {
--	u8			*key;
--	u16			keylen;
-+	struct tcp_md5sig_key	base;
- #if 0
- 	u32			scope_id;	/* XXX */
- #endif
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index 9c94627..e089a97 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -833,8 +833,7 @@ static struct tcp_md5sig_key *
- 		return NULL;
- 	for (i = 0; i < tp->md5sig_info->entries4; i++) {
- 		if (tp->md5sig_info->keys4[i].addr == addr)
--			return (struct tcp_md5sig_key *)
--						&tp->md5sig_info->keys4[i];
-+			return &tp->md5sig_info->keys4[i].base;
- 	}
- 	return NULL;
- }
-@@ -865,9 +864,9 @@ int tcp_v4_md5_do_add(struct sock *sk, __be32 addr,
- 	key = (struct tcp4_md5sig_key *)tcp_v4_md5_do_lookup(sk, addr);
- 	if (key) {
- 		/* Pre-existing entry - just update that one. */
--		kfree(key->key);
--		key->key = newkey;
--		key->keylen = newkeylen;
-+		kfree(key->base.key);
-+		key->base.key = newkey;
-+		key->base.keylen = newkeylen;
- 	} else {
- 		struct tcp_md5sig_info *md5sig;
- 
-@@ -906,9 +905,9 @@ int tcp_v4_md5_do_add(struct sock *sk, __be32 addr,
- 			md5sig->alloced4++;
- 		}
- 		md5sig->entries4++;
--		md5sig->keys4[md5sig->entries4 - 1].addr   = addr;
--		md5sig->keys4[md5sig->entries4 - 1].key    = newkey;
--		md5sig->keys4[md5sig->entries4 - 1].keylen = newkeylen;
-+		md5sig->keys4[md5sig->entries4 - 1].addr        = addr;
-+		md5sig->keys4[md5sig->entries4 - 1].base.key    = newkey;
-+		md5sig->keys4[md5sig->entries4 - 1].base.keylen = newkeylen;
- 	}
- 	return 0;
- }
-@@ -930,7 +929,7 @@ int tcp_v4_md5_do_del(struct sock *sk, __be32 addr)
- 	for (i = 0; i < tp->md5sig_info->entries4; i++) {
- 		if (tp->md5sig_info->keys4[i].addr == addr) {
- 			/* Free the key */
--			kfree(tp->md5sig_info->keys4[i].key);
-+			kfree(tp->md5sig_info->keys4[i].base.key);
- 			tp->md5sig_info->entries4--;
- 
- 			if (tp->md5sig_info->entries4 == 0) {
-@@ -964,7 +963,7 @@ static void tcp_v4_clear_md5_list(struct sock *sk)
- 	if (tp->md5sig_info->entries4) {
- 		int i;
- 		for (i = 0; i < tp->md5sig_info->entries4; i++)
--			kfree(tp->md5sig_info->keys4[i].key);
-+			kfree(tp->md5sig_info->keys4[i].base.key);
- 		tp->md5sig_info->entries4 = 0;
- 		tcp_free_md5sig_pool();
- 	}
-diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
-index 0f7defb..3e06799 100644
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -539,7 +539,7 @@ static struct tcp_md5sig_key *tcp_v6_md5_do_lookup(struct sock *sk,
- 
- 	for (i = 0; i < tp->md5sig_info->entries6; i++) {
- 		if (ipv6_addr_cmp(&tp->md5sig_info->keys6[i].addr, addr) == 0)
--			return (struct tcp_md5sig_key *)&tp->md5sig_info->keys6[i];
-+			return &tp->md5sig_info->keys6[i].base;
- 	}
- 	return NULL;
- }
-@@ -567,9 +567,9 @@ static int tcp_v6_md5_do_add(struct sock *sk, struct in6_addr *peer,
- 	key = (struct tcp6_md5sig_key*) tcp_v6_md5_do_lookup(sk, peer);
- 	if (key) {
- 		/* modify existing entry - just update that one */
--		kfree(key->key);
--		key->key = newkey;
--		key->keylen = newkeylen;
-+		kfree(key->base.key);
-+		key->base.key = newkey;
-+		key->base.keylen = newkeylen;
- 	} else {
- 		/* reallocate new list if current one is full. */
- 		if (!tp->md5sig_info) {
-@@ -603,8 +603,8 @@ static int tcp_v6_md5_do_add(struct sock *sk, struct in6_addr *peer,
- 
- 		ipv6_addr_copy(&tp->md5sig_info->keys6[tp->md5sig_info->entries6].addr,
- 			       peer);
--		tp->md5sig_info->keys6[tp->md5sig_info->entries6].key = newkey;
--		tp->md5sig_info->keys6[tp->md5sig_info->entries6].keylen = newkeylen;
-+		tp->md5sig_info->keys6[tp->md5sig_info->entries6].base.key = newkey;
-+		tp->md5sig_info->keys6[tp->md5sig_info->entries6].base.keylen = newkeylen;
- 
- 		tp->md5sig_info->entries6++;
- 	}
-@@ -626,7 +626,7 @@ static int tcp_v6_md5_do_del(struct sock *sk, struct in6_addr *peer)
- 	for (i = 0; i < tp->md5sig_info->entries6; i++) {
- 		if (ipv6_addr_cmp(&tp->md5sig_info->keys6[i].addr, peer) == 0) {
- 			/* Free the key */
--			kfree(tp->md5sig_info->keys6[i].key);
-+			kfree(tp->md5sig_info->keys6[i].base.key);
- 			tp->md5sig_info->entries6--;
- 
- 			if (tp->md5sig_info->entries6 == 0) {
-@@ -657,7 +657,7 @@ static void tcp_v6_clear_md5_list (struct sock *sk)
- 
- 	if (tp->md5sig_info->entries6) {
- 		for (i = 0; i < tp->md5sig_info->entries6; i++)
--			kfree(tp->md5sig_info->keys6[i].key);
-+			kfree(tp->md5sig_info->keys6[i].base.key);
- 		tp->md5sig_info->entries6 = 0;
- 		tcp_free_md5sig_pool();
- 	}
-@@ -668,7 +668,7 @@ static void tcp_v6_clear_md5_list (struct sock *sk)
- 
- 	if (tp->md5sig_info->entries4) {
- 		for (i = 0; i < tp->md5sig_info->entries4; i++)
--			kfree(tp->md5sig_info->keys4[i].key);
-+			kfree(tp->md5sig_info->keys4[i].base.key);
- 		tp->md5sig_info->entries4 = 0;
- 		tcp_free_md5sig_pool();
- 	}
+-Brian
+
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
