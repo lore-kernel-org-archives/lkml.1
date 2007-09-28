@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbXI1Pcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759852AbXI1PdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759220AbXI1Pcn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 11:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXI1Pcf
+	id S1759852AbXI1PdU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 11:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbXI1PdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 11:32:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44993 "EHLO mx1.redhat.com"
+	Fri, 28 Sep 2007 11:33:04 -0400
+Received: from waste.org ([66.93.16.53]:59270 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753772AbXI1Pce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 11:32:34 -0400
-Date: Fri, 28 Sep 2007 11:32:20 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Add missing profile=kvm option to
-	Documentation/kernel-parameters.txt
-Message-ID: <20070928153220.GA26969@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>
+	id S1753872AbXI1PdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 11:33:03 -0400
+Date: Fri, 28 Sep 2007 10:32:53 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc8: cannot make netconsole work
+Message-ID: <20070928153253.GV19691@waste.org>
+References: <200709281327.59317.arvidjaar@mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <200709281327.59317.arvidjaar@mail.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Whilst looking up what profile=sleep did, I noticed that we missed
-adding docs for the most recent addition to the profiler.
+On Fri, Sep 28, 2007 at 01:27:55PM +0400, Andrey Borzenkov wrote:
+> I finally decided to try netconsole in attempt to get some more information 
+> why my system does not resume (but that is different story). But I cannot 
+> make it work - it does load but I see no traffic flowing ever. This is 
+> notebook with e100 driver and it works just fine for normal traffic. 
+> netconsole is currently compiled as module, loading it I get:
+> 
+> sudo modprobe netconsole netconsole=@/eth0,@/ 
+> 
+> [ 2395.838094] netconsole: local port 6665
+> [ 2395.838126] netconsole: interface eth0
+> [ 2395.838132] netconsole: remote port 6666
+> [ 2395.838140] netconsole: remote IP 0.0.0.0
+> [ 2395.838150] netconsole: remote ethernet address ff:ff:ff:ff:ff:ff
+> [ 2395.838175] netconsole: local IP 192.168.1.8
+> [ 2395.843798] console [netcon0] enabled
+> [ 2395.844722] netconsole: network logging started
+> 
+> but I cannot see any packet flowing via eth0 not can I catch anything on 
+> remote side using netcat. This does not work when I add explicitly source and 
+> target addresses either:
+> 
+> pts/0}% sudo modprobe netconsole netconsole=@192.168.1.8/eth0,@192.168.1.5/
+> {pts/0}% dmesg | tail
+> [ 2427.128947] device eth0 left promiscuous mode
+> [ 2427.129005] audit(1190970818.972:5): dev=eth0 prom=0 old_prom=256 
+> auid=4294967295
+> [ 2541.831721] netconsole: local port 6665
+> [ 2541.831756] netconsole: local IP 192.168.1.8
+> [ 2541.831763] netconsole: interface eth0
+> [ 2541.831769] netconsole: remote port 6666
+> [ 2541.831776] netconsole: remote IP 192.168.1.5
+> [ 2541.831787] netconsole: remote ethernet address ff:ff:ff:ff:ff:ff
+> [ 2541.838832] console [netcon0] enabled
+> [ 2541.839964] netconsole: network logging started
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+What is your console log level set to? If the messages don't come out
+on the local console, they won't get sent out the network either.
+Fedora at least defaults to hiding most messages. Adding 'debug' to
+your kernel command line will change that.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 4d175c7..c0bb53e 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1396,6 +1396,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Param: <number> - step/bucket size as a power of 2 for
- 				statistical time based profiling.
- 			Param: "sleep" - profile D-state sleeping (millisecs)
-+			Param: "kvm" - profile VM exits.
- 
- 	processor.max_cstate=	[HW,ACPI]
- 			Limit processor to maximum C-state
 -- 
-http://www.codemonkey.org.uk
+Mathematics is the supreme nostalgia of our time.
