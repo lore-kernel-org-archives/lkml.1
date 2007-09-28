@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbXI1Nf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbXI1NiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbXI1Nf4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 09:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbXI1Nft
+	id S1757618AbXI1NiH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 09:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXI1Nhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 09:35:49 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:12970 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753883AbXI1Nft (ORCPT
+	Fri, 28 Sep 2007 09:37:55 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:5429 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbXI1Nhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 09:35:49 -0400
-Subject: Re: A unresponsive file system can hang all I/O in the system on
-	linux-2.6.23-rc6 (dirty_thresh problem?)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net,
-       Chakri n <chakriin5@gmail.com>
-In-Reply-To: <10659.1190986132@lwn.net>
-References: <10659.1190986132@lwn.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-B7gWPg0qNtyVIOP7F/5Z"
-Date: Fri, 28 Sep 2007 15:35:42 +0200
-Message-Id: <1190986542.13204.10.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 28 Sep 2007 09:37:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=H+zGQ0rh1Uz7bZm/Uy68DHbspg6HNAOD0o0AVSWYmKcXvsbn37dmS1pTHQOEiEA22sS5QV/2rIUZ7RDtS3AH1HzT690UGkI9yJXEgds0dpIFB6vopTzRSlVzheSAxRbddZcayxknuenAQlHKzW4jeb75cMzdbTL0DDPPzk+3g8Y=
+Message-ID: <84144f020709280637w2290aec5gf3e8f90b08f53cc8@mail.gmail.com>
+Date: Fri, 28 Sep 2007 16:37:49 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.10
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Joel Schopp" <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070928132138.GG18163@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <bf97f66cfc0696c8574921d53eaafcb7@pinky>
+	 <20070928084003.GA18882@elte.hu>
+	 <20070928020132.f6c6f528.akpm@linux-foundation.org>
+	 <20070928092235.GA31180@shadowen.org> <20070928093902.GA28455@elte.hu>
+	 <20070928100024.GB18163@shadowen.org> <20070928104935.GA606@elte.hu>
+	 <20070928132138.GG18163@shadowen.org>
+X-Google-Sender-Auth: 6a50f39d4cd805fc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andy,
 
---=-B7gWPg0qNtyVIOP7F/5Z
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On 9/28/07, Andy Whitcroft <apw@shadowen.org> wrote:
+> That is unfair.  Every time we discuss it I state that I disagree that
+> hiding mostly useful tests is a good thing.  I would love the tests to
+> be 100% accurate, but if I removed all the tests that can false positive
+> I would literally have none.  There is a balance to be struck and we
+> have significantly different ideas on where the balance is.
 
-On Fri, 2007-09-28 at 07:28 -0600, Jonathan Corbet wrote:
-> Andrew wrote:
-> > It's unrelated to the actual value of dirty_thresh: if the machine fill=
-s up
-> > with dirty (or unstable) NFS pages then eventually new writers will blo=
-ck
-> > until that condition clears.
-> >=20
-> > 2.4 doesn't have this problem at low levels of dirty data because 2.4
-> > VFS/MM doesn't account for NFS pages at all.
->=20
-> Is it really NFS-related?  I was trying to back up my 2.6.23-rc8 system
-> to an external USB drive the other day when something flaked and the
-> drive fell off the bus.  That, too, was sufficient to wedge the entire
-> system, even though the only thing which needed the dead drive was one
-> rsync process.  It's kind of a bummer to have to hit the reset button
-> after the failure of (what should be) a non-critical piece of hardware.
->=20
-> Not that I have a fix to propose...:)
-
-the per bdi work in -mm should make the system not drop dead.
-
-Still, would a remove,re-insert of the usb media end up with the same
-bdi? That is, would it recognise as the same and resume the transfer.
-
-Anyway, it would be grand (and dangerous) if we could provide for a
-button that would just kill off all outstanding pages against a dead
-device.
-
---=-B7gWPg0qNtyVIOP7F/5Z
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBG/QMuXA2jU0ANEf4RAvYTAJ4rvKoTju2OD6MnSAG5wpprY/YnlwCeM0x2
-8txLQE3YX+G6kU1onUvcGsk=
-=TMEF
------END PGP SIGNATURE-----
-
---=-B7gWPg0qNtyVIOP7F/5Z--
-
+Are you disagreeing with the numbers Ingo posted? 25,000 false
+positives for the kernel is beyond silly... Existing conventions
+should matter a lot and the default configuration for a static code
+checker should really be 100%. So why not hide the potentially useful
+warnings under -Wtoo-strict or similar command line option?
