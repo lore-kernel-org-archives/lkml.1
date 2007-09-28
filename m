@@ -1,81 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbXI1PQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbXI1PRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbXI1PQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 11:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbXI1PQa
+	id S1759163AbXI1PRH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 11:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbXI1PQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 11:16:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41717 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbXI1PQ3 convert rfc822-to-8bit (ORCPT
+	Fri, 28 Sep 2007 11:16:55 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:4120 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758206AbXI1PQy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 11:16:29 -0400
-Date: Fri, 28 Sep 2007 11:15:46 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Daniel =?UTF-8?B?U3DDpW5n?= <daniel.spang@gmail.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: Out of memory management in embedded systems
-Message-ID: <20070928111546.0c290e57@bree.surriel.com>
-In-Reply-To: <20070928163634.d7fc8909.dada1@cosmosbay.com>
-References: <cfd9edbf0709280555n51afa8aft5040331ae9c227fd@mail.gmail.com>
-	<Pine.LNX.4.61.0709280857520.8940@chaos.analogic.com>
-	<cfd9edbf0709280630x7396e49fi523e1d58aab9458a@mail.gmail.com>
-	<Pine.LNX.4.61.0709281000300.9062@chaos.analogic.com>
-	<20070928101711.504eb198@bree.surriel.com>
-	<20070928163634.d7fc8909.dada1@cosmosbay.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 28 Sep 2007 11:16:54 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 28 Sep 2007 15:16:52.0770 (UTC) FILETIME=[99630820:01C801E2]
+Content-class: urn:content-classes:message
+Subject: Re: Out of memory management in embedded systems
+Date: Fri, 28 Sep 2007 11:16:52 -0400
+Message-ID: <Pine.LNX.4.61.0709281105340.9420@chaos.analogic.com>
+In-Reply-To: <cfd9edbf0709280714u7a03ec16pfe3cb7328dbab7ad@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Out of memory management in embedded systems
+Thread-Index: AcgB4plqzDNuYqEyR4yqf92KXI2ITQ==
+References: <cfd9edbf0709280555n51afa8aft5040331ae9c227fd@mail.gmail.com> <Pine.LNX.4.61.0709280857520.8940@chaos.analogic.com> <cfd9edbf0709280630x7396e49fi523e1d58aab9458a@mail.gmail.com> <Pine.LNX.4.61.0709281000300.9062@chaos.analogic.com> <cfd9edbf0709280714u7a03ec16pfe3cb7328dbab7ad@mail.gmail.com>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: =?iso-8859-1?Q?Daniel_Sp=E5ng?= <daniel.spang@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007 16:36:34 +0200
-Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-> On Fri, 28 Sep 2007 10:17:11 -0400
-> Rik van Riel <riel@redhat.com> wrote:
-> 
-> > On Fri, 28 Sep 2007 10:04:23 -0400
-> > "linux-os \(Dick Johnson\)" <linux-os@analogic.com> wrote:
-> > > On Fri, 28 Sep 2007, [iso-8859-1] Daniel SpÃ¥ng wrote:
-> > > 
-> > > > On 9/28/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
-> > > >>
-> > > >> On Fri, 28 Sep 2007, [iso-8859-1] Daniel SpÃ¥ng wrote:
-> > 
-> > > >>> Some kind of notification to the application that the available memory
-> > > >>> is scarce and let the application free up some memory (e.g., by
-> > > >>> flushing caches), could be used to improve the situation 
-> > 
-> > > Any networked appliance can (will) throw data away if there are
-> > > no resources available.
-> > 
-> > That is exactly what Daniel proposed in his first email.
-> > 
-> > I think his idea makes sense.
-> 
-> IBM AIX uses SIGDANGER, that kernel can raise in OOM conditions to warn
-> processes that are willing to handle this signal (default action for the
->  SIGDANGER signal is to ignore the signal)
+On Fri, 28 Sep 2007, [iso-8859-1] Daniel Spång wrote:
 
-I suspect that SIGDANGER is not the right approach, because glibc
-memory arenas cannot be manipulated from inside a signal handler.
+> On 9/28/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+>>
+>> On Fri, 28 Sep 2007, [iso-8859-1] Daniel Spång wrote:
+>>
+>>> On 9/28/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+>>>>
+>>>> But an embedded system contains all the software that will
+>>>> ever be executed on that system! If it is properly designed,
+>>>> it can never run out of memory because everything it will
+>>>> ever do is known at design time.
+>>>
+>>> Not if its input is not known beforehand. Take a browser in a mobile
+>>> phone as an example, it does not know at design time how big the web
+>>> pages are. On the other hand we want to use as much memory as
+>>> possible, for cache etc., a method that involves the kernel would
+>>> simplify this and avoids setting manual limits.
+>>>
+>>> Daniel
+>>>
+>>
+>> Any networked appliance can (will) throw data away if there are
+>> no resources available.
+>>
+>> The length of a web-page is not relevent, nor is the length
+>> of any external data. Your example will buffer whatever it
+>> can and not read anything more from the external source until
+>> it has resources available unless it is broken.
+>
+> And how do you determine when no resources are availabe? We are using
+> overcommit here so malloc() will always return non null.
+>
 
-Also, "nearly OOM" is not the only such signal we would want to
-send to userspace programs. It would also be useful to inform
-userspace programs when we are about to start swapping something
-out, so userspace can discard cached data instead of having to
-wait for disk IO in the future.
+A networked appliance using embedded software is not your daddy's
+Chevrolet. Any task that is permanent needs to allocate all its
+resources when it starts. That's how it knows how much there are,
+and incidentally, it doesn't do it blindly. The system designer
+must know how much memory is available in the system and how much
+is allocated to the kernel.
 
-A unix signal cannot encapsulate two different messages, while
-something like a "/dev/lowmem" device can simply be added into
-the program's main poll() loop and give many different messages.
+The fact that you can give a fictitious value to malloc() is not
+relevant. If you don't provide resources for malloc(), like
+(ultimately) a swap file, then you can't assume that it can do
+any design work for you.
 
--- 
-"Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it." - Brian W. Kernighan
+An embedded system is NOT an ordinary system that happens to
+boot from flash. An embedded system requires intelligent design.
+
+It is important to understand how a virtual memory system
+operates. The basics are that the kernel only "knows" that
+a new page needs to be allocated when it encounters a trap
+called a "page fault." If you don't have any memory resources
+to free up (read no swap file to write a seldom-used task's
+working set), then you are screwed --pure and simple. So,
+if you don't provide any resources to actually use virtual
+memory, then you need to make certain that virtual memory
+and physical memory are, for all practical purposes, the same.
+
+With embedded servers, it's usually very easy to limit the
+number of connections allowed, therefore the amount of
+dynamic resources that must be provided. With clients
+it should be equally easy, but generic software won't
+work because, for instance, Mozilla doesn't keep track
+of the number of "windows" you have up and the number
+of connections you have. HOWEVER, remember that malloc()
+is a library call. You can substitute your own using
+LD_PRELOAD, they keeps track of everything if you must
+use generic software.
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
