@@ -1,335 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbXI1V60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbXI1WKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbXI1V60 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 17:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbXI1V6R
+	id S1756095AbXI1WKc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 18:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbXI1WKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 17:58:17 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36452 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751297AbXI1V6Q (ORCPT
+	Fri, 28 Sep 2007 18:10:25 -0400
+Received: from mga03.intel.com ([143.182.124.21]:60906 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751567AbXI1WKY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 17:58:16 -0400
-Message-ID: <46FD78EA.9000502@linux.vnet.ibm.com>
-Date: Fri, 28 Sep 2007 16:58:02 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Fri, 28 Sep 2007 18:10:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.21,211,1188802800"; 
+   d="scan'208";a="235279240"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: bo yang <bo.yang@lsi.com>
-CC: linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, Sumant.patro@lsi.com
-Subject: Re: [PATCH 7/8] scsi: megaraid_sas - support for poll_mode_io (reduced
- interrupt)
-References: <1190821907.5955.30.camel@dhcp-75-534.se.lsil.com>
-In-Reply-To: <1190821907.5955.30.camel@dhcp-75-534.se.lsil.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2.6.23-rc4][reRESEND] i2c-i801: SMBus patch for Intel Tolapai
+Date: Fri, 28 Sep 2007 15:09:16 -0700
+Message-ID: <39B20DF628532344BC7A2692CB6AEE0701CF2CA9@orsmsx420.amr.corp.intel.com>
+In-Reply-To: <20070831175045.37938669@hyperion.delvare>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.23-rc4][reRESEND] i2c-i801: SMBus patch for Intel Tolapai
+Thread-Index: Acfr5o3MZUabQFNeTF6FCNXNzjhtzQWNWiEQ
+References: <200708302042.59104.jason.d.gaston@intel.com> <20070831175045.37938669@hyperion.delvare>
+From: "Gaston, Jason D" <jason.d.gaston@intel.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Cc: <linux-kernel@vger.kernel.org>, <gregkh@suse.de>, <i2c@lm-sensors.org>
+X-OriginalArrivalTime: 28 Sep 2007 22:09:17.0540 (UTC) FILETIME=[366B4A40:01C8021C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bo yang wrote:
-> Added module parameter "poll_mode_io" to support for "polling" (reduced interrupt operation). 
->         In this mode, IO completion interrupts are delayed. At the end of initiating IOs, 
->         the driver schedules for cmd completion if there are pending cmds. 
->         A timer-based interrupt has also been added to prevent IO completion from 
->         being delayed indefinitely in the case that no new IOs are initiated.  
+>-----Original Message-----
+>From: Jean Delvare [mailto:khali@linux-fr.org]
+>Sent: Friday, August 31, 2007 8:51 AM
+>To: Gaston, Jason D
+>Cc: linux-kernel@vger.kernel.org; gregkh@suse.de; i2c@lm-sensors.org
+>Subject: Re: [PATCH 2.6.23-rc4][reRESEND] i2c-i801: SMBus patch for
+Intel
+>Tolapai
+>
+>Hi Jason,
+>
+>On Thu, 30 Aug 2007 20:42:58 -0700, Jason Gaston wrote:
+>> Resend with uppercase define.
+>>
+>> This updated patch adds the Intel Tolapai SMBus Controller DID's.
+>> This patch relies on the Tolapai patch to pci_ids.h
+>>
+>> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+>>
+>> --- linux-2.6.23-rc4/drivers/i2c/busses/i2c-i801.c.orig
+2007-08-27
+>18:32:35.000000000 -0700
+>> +++ linux-2.6.23-rc4/drivers/i2c/busses/i2c-i801.c	2007-08-30
+>20:25:10.000000000 -0700
+>> @@ -34,6 +34,7 @@
+>>      ESB2		269B
+>>      ICH8		283E
+>>      ICH9		2930
+>> +    Tolapai		5032
+>>      This driver supports several versions of Intel's I/O Controller
+Hubs
+>(ICH).
+>>      For SMBus support, they are similar to the PIIX4 and are part
+>>      of Intel's '810' and other chipsets.
+>> @@ -543,6 +544,7 @@
+>>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ESB2_17)
+},
+>>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH8_5) },
+>>  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_6) },
+>> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1)
+},
+>>  	{ 0, }
+>>  };
+>>
+>> @@ -563,6 +565,7 @@
+>>  	case PCI_DEVICE_ID_INTEL_ESB2_17:
+>>  	case PCI_DEVICE_ID_INTEL_ICH8_5:
+>>  	case PCI_DEVICE_ID_INTEL_ICH9_6:
+>> +	case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
+>>  		isich4 = 1;
+>>  		break;
+>>  	default:
+>
+>Applied together with the Documentation patch (no need for a separate
+>patch). Note that I will have to wait for Greg to pick the pci_ids.h
+>patch before I can push this one.
+>
+>--
+>Jean Delvare
 
-I'm not sure what to think of this patch, but it seems like most of the code to
-do something like this might be better off in scsi core so that other LLDDs can
-also make use of it.
+Jean,
 
-What is the problem that you are trying to solve with this patch? Are you
-trying to do something like NAPI where you are getting too many interrupts
-so this is a performance problem, or is this to work around some hardware
-problem of interrupts not working properly in certain configurations?
+The pci_ids.h file is updated in 2.6.23-rc8.  Can you push this
+i2c-i801.c patch?
 
-Incidentally, there was a discussion on a similar topic on linux-ide today:
+Thanks,
 
-http://marc.info/?l=linux-ide&m=119099381329307&w=2
-
-
--Brian
-
-> Some formatting issues in resume, suspend comment block also corrected
-> 
-> Signed-off-by: Bo Yang <bo.yang@lsi.com>
-> 
-> ---
->  drivers/scsi/megaraid/megaraid_sas.c |  152 ++++++++++++++++++++++++-
->  drivers/scsi/megaraid/megaraid_sas.h |    3
->  2 files changed, 149 insertions(+), 6 deletions(-)
-> 
-> diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
-> --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 21:32:23.000000000 -0700
-> +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 21:43:52.000000000 -0700
-> @@ -79,6 +79,14 @@ module_param_named(cmd_per_lun, cmd_per_
->  MODULE_PARM_DESC(cmd_per_lun,
->  	"Maximum number of commands per logical unit (default=128)");
-> 
-> +/*
-> + * poll_mode_io:1- schedule complete completion from q cmd
-> + */
-> +static unsigned int poll_mode_io;
-> +module_param_named(poll_mode_io, poll_mode_io, int, 0);
-> +MODULE_PARM_DESC(poll_mode_io,
-> +	"Complete cmds from IO path, (default=0)");
-> +
->  MODULE_LICENSE("GPL");
->  MODULE_VERSION(MEGASAS_VERSION);
->  MODULE_AUTHOR("megaraidlinux@lsi.com");
-> @@ -892,6 +900,12 @@ megasas_queue_command(struct scsi_cmnd *
->  	atomic_inc(&instance->fw_outstanding);
-> 
->  	instance->instancet->fire_cmd(cmd->frame_phys_addr ,cmd->frame_count-1,instance->reg_set);
-> +	/*
-> +	 * Check if we have pend cmds to be completed
-> +	 */
-> +	if (poll_mode_io && atomic_read(&instance->fw_outstanding))
-> +		tasklet_schedule(&instance->isr_tasklet);
-> +
-> 
->  	return 0;
-> 
-> @@ -1947,6 +1961,47 @@ fail_fw_init:
->  }
-> 
->  /**
-> + * megasas_start_timer - Initializes a timer object
-> + * @instance:		Adapter soft state
-> + * @timer:		timer object to be initialized
-> + * @fn:			timer function
-> + * @interval:		time interval between timer function call
-> + */
-> +static inline void
-> +megasas_start_timer(struct megasas_instance *instance,
-> +			struct timer_list *timer,
-> +			void *fn, unsigned long interval)
-> +{
-> +	init_timer(timer);
-> +	timer->expires = jiffies + interval;
-> +	timer->data = (unsigned long)instance;
-> +	timer->function = fn;
-> +	add_timer(timer);
-> +}
-> +
-> +/**
-> + * megasas_io_completion_timer - Timer fn
-> + * @instance_addr:	Address of adapter soft state
-> + *
-> + * Schedules tasklet for cmd completion
-> + * if poll_mode_io is set
-> + */
-> +static void
-> +megasas_io_completion_timer(unsigned long instance_addr)
-> +{
-> +	struct megasas_instance *instance =
-> +			(struct megasas_instance *)instance_addr;
-> +
-> +	if (atomic_read(&instance->fw_outstanding))
-> +		tasklet_schedule(&instance->isr_tasklet);
-> +
-> +	/* Restart timer */
-> +	if (poll_mode_io)
-> +		mod_timer(&instance->io_completion_timer,
-> +			jiffies + MEGASAS_COMPLETION_TIMER_INTERVAL);
-> +}
-> +
-> +/**
->   * megasas_init_mfi -	Initializes the FW
->   * @instance:		Adapter soft state
->   *
-> @@ -2073,8 +2128,14 @@ static int megasas_init_mfi(struct megas
->  	* Setup tasklet for cmd completion
->  	*/
-> 
-> -        tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
-> -                        (unsigned long)instance);
-> +	tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
-> +		(unsigned long)instance);
-> +
-> +	/* Initialize the cmd completion timer */
-> +	if (poll_mode_io)
-> +		megasas_start_timer(instance, &instance->io_completion_timer,
-> +				megasas_io_completion_timer,
-> +				MEGASAS_COMPLETION_TIMER_INTERVAL);
->  	return 0;
-> 
->        fail_fw_init:
-> @@ -2705,8 +2766,8 @@ static void megasas_shutdown_controller(
->  }
-> 
->  /**
-> - * megasas_suspend -    driver suspend entry point
-> - * @pdev:               PCI device structure
-> + * megasas_suspend -	driver suspend entry point
-> + * @pdev:		PCI device structure
->   * @state:		PCI power state to suspend routine
->   */
->  static int __devinit
-> @@ -2718,6 +2779,9 @@ megasas_suspend(struct pci_dev *pdev, pm
->  	instance = pci_get_drvdata(pdev);
->  	host = instance->host;
-> 
-> +	if (poll_mode_io)
-> +		del_timer_sync(&instance->io_completion_timer);
-> +
->  	megasas_flush_cache(instance);
->  	megasas_shutdown_controller(instance, MR_DCMD_HIBERNATE_SHUTDOWN);
->  	tasklet_kill(&instance->isr_tasklet);
-> @@ -2804,6 +2868,11 @@ megasas_resume(struct pci_dev *pdev)
->  	if (megasas_start_aen(instance))
->  		printk(KERN_ERR "megasas: Start AEN failed\n");
-> 
-> +	/* Initialize the cmd completion timer */
-> +	if (poll_mode_io)
-> +		megasas_start_timer(instance, &instance->io_completion_timer,
-> +				megasas_io_completion_timer,
-> +				MEGASAS_COMPLETION_TIMER_INTERVAL);
->  	return 0;
-> 
->  fail_irq:
-> @@ -2842,6 +2911,9 @@ static void megasas_detach_one(struct pc
->  	instance = pci_get_drvdata(pdev);
->  	host = instance->host;
-> 
-> +	if (poll_mode_io)
-> +		del_timer_sync(&instance->io_completion_timer);
-> +
->  	sysfs_remove_bin_file(&host->shost_classdev.kobj,
->  				&sysfs_max_sectors_attr);
->  	scsi_remove_host(instance->host);
-> @@ -3303,7 +3375,7 @@ static DRIVER_ATTR(release_date, S_IRUGO
->  static ssize_t
->  megasas_sysfs_show_dbg_lvl(struct device_driver *dd, char *buf)
->  {
-> -	return sprintf(buf,"%u",megasas_dbg_lvl);
-> +	return sprintf(buf, "%u\n", megasas_dbg_lvl);
->  }
-> 
->  static ssize_t
-> @@ -3318,7 +3390,65 @@ megasas_sysfs_set_dbg_lvl(struct device_
->  }
-> 
->  static DRIVER_ATTR(dbg_lvl, S_IRUGO|S_IWUGO, megasas_sysfs_show_dbg_lvl,
-> -		   megasas_sysfs_set_dbg_lvl);
-> +		megasas_sysfs_set_dbg_lvl);
-> +
-> +static ssize_t
-> +megasas_sysfs_show_poll_mode_io(struct device_driver *dd, char *buf)
-> +{
-> +	return sprintf(buf, "%u\n", poll_mode_io);
-> +}
-> +
-> +static ssize_t
-> +megasas_sysfs_set_poll_mode_io(struct device_driver *dd,
-> +				const char *buf, size_t count)
-> +{
-> +	int retval = count;
-> +	int tmp = poll_mode_io;
-> +	int i;
-> +	struct megasas_instance *instance;
-> +
-> +	if (sscanf(buf, "%u", &poll_mode_io) < 1) {
-> +		printk(KERN_ERR "megasas: could not set poll_mode_io\n");
-> +		retval = -EINVAL;
-> +	}
-> +
-> +	/*
-> +	 * Check if poll_mode_io is already set or is same as previous value
-> +	 */
-> +	if ((tmp && poll_mode_io) || (tmp == poll_mode_io))
-> +		goto out;
-> +
-> +	if (poll_mode_io) {
-> +		/*
-> +		 * Start timers for all adapters
-> +		 */
-> +		for (i = 0; i < megasas_mgmt_info.max_index; i++) {
-> +			instance = megasas_mgmt_info.instance[i];
-> +			if (instance) {
-> +				megasas_start_timer(instance,
-> +					&instance->io_completion_timer,
-> +					megasas_io_completion_timer,
-> +					MEGASAS_COMPLETION_TIMER_INTERVAL);
-> +			}
-> +		}
-> +	} else {
-> +		/*
-> +		 * Delete timers for all adapters
-> +		 */
-> +		for (i = 0; i < megasas_mgmt_info.max_index; i++) {
-> +			instance = megasas_mgmt_info.instance[i];
-> +			if (instance)
-> +				del_timer_sync(&instance->io_completion_timer);
-> +		}
-> +	}
-> +
-> +out:
-> +	return retval;
-> +}
-> +
-> +static DRIVER_ATTR(poll_mode_io, S_IRUGO|S_IWUGO,
-> +		megasas_sysfs_show_poll_mode_io,
-> +		megasas_sysfs_set_poll_mode_io);
-> 
->  /**
->   * megasas_init - Driver load entry point
-> @@ -3369,8 +3499,16 @@ static int __init megasas_init(void)
->  				  &driver_attr_dbg_lvl);
->  	if (rval)
->  		goto err_dcf_dbg_lvl;
-> +	rval = driver_create_file(&megasas_pci_driver.driver,
-> +				  &driver_attr_poll_mode_io);
-> +	if (rval)
-> +		goto err_dcf_poll_mode_io;
-> 
->  	return rval;
-> +
-> +err_dcf_poll_mode_io:
-> +	driver_remove_file(&megasas_pci_driver.driver,
-> +			   &driver_attr_dbg_lvl);
->  err_dcf_dbg_lvl:
->  	driver_remove_file(&megasas_pci_driver.driver,
->  			   &driver_attr_release_date);
-> @@ -3389,6 +3527,8 @@ err_pcidrv:
->  static void __exit megasas_exit(void)
->  {
->  	driver_remove_file(&megasas_pci_driver.driver,
-> +			   &driver_attr_poll_mode_io);
-> +	driver_remove_file(&megasas_pci_driver.driver,
->  			   &driver_attr_dbg_lvl);
->  	driver_remove_file(&megasas_pci_driver.driver,
->  			   &driver_attr_release_date);
-> diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
-> --- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-09-27 05:08:55.000000000 -0700
-> +++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-09-27 22:35:32.000000000 -0700
-> @@ -573,6 +573,7 @@ struct megasas_ctrl_info {
-> 
->  #define MFI_OB_INTR_STATUS_MASK			0x00000002
->  #define MFI_POLL_TIMEOUT_SECS			60
-> +#define MEGASAS_COMPLETION_TIMER_INTERVAL      (HZ/10)
-> 
->  #define MFI_REPLY_1078_MESSAGE_INTERRUPT	0x80000000
-> 
-> @@ -1113,6 +1114,8 @@ struct megasas_instance {
-> 
->  	u8 flag;
->  	unsigned long last_time;
-> +
-> +	struct timer_list io_completion_timer;
->  };
-> 
->  #define MEGASAS_IS_LOGICAL(scp)						\
-> 
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+Jason
