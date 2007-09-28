@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759975AbXI1OpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbXI1OvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759975AbXI1OpZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 10:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXI1OpM
+	id S1757848AbXI1OvA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 10:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbXI1Ouw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 10:45:12 -0400
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:59467 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbXI1OpK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 10:45:10 -0400
-Message-ID: <46FD1372.70608@tiscali.nl>
-Date: Fri, 28 Sep 2007 16:45:06 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 28 Sep 2007 10:50:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47000 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752188AbXI1Ouw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 10:50:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: [PATCH] disable non-boot CPUs before poweroff
+Date: Fri, 28 Sep 2007 17:05:17 +0200
+User-Agent: KMail/1.9.5
+Cc: Len Brown <lenb@kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       simon.derr@bull.net
+References: <46FC20B7.4000606@rtr.ca> <46FD05B8.2040302@rtr.ca> <46FD0724.5060009@rtr.ca>
+In-Reply-To: <46FD0724.5060009@rtr.ca>
 MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] use array_size macro
-References: <46FCDBE9.8030406@tiscali.nl> <46FCDDDF.8020500@tiscali.nl> <20070928131514.GA5209@c2.user-mode-linux.org>
-In-Reply-To: <20070928131514.GA5209@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709281705.18304.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> On Fri, Sep 28, 2007 at 12:56:31PM +0200, Roel Kluin wrote:
->> arch/um/kernel/tt/ptproxy/ptrace.c      |   12 ++++++------
+On Friday, 28 September 2007 15:52, Mark Lord wrote:
 > 
-> I don't know what you're diffing against, but this file is history in
->  -mm, and will be gone in mainline after 2.6.23.
+> We need to disable all CPUs other than the boot CPU (usually 0)
+> before attempting to power-off modern SMP machines.
+> This seems to fix the hang-on-poweroff issue
+> that one of my SMP boxes exhibits.  More testing required.
 > 
-> Jeff
+> Signed-off-by: Mark Lord <mlord@pobox.com>
+> ---
 > 
-Thanks for noting me. I usually pull the masters branch, so my previously submitted
-patches are against that. Apparently I have to apply the -mm patchset before sending
-patches. Is there a git branch to pull from for that?
+> --- linux/kernel/sys.c.orig	2007-09-13 09:49:11.000000000 -0400
+> +++ linux/kernel/sys.c	2007-09-28 09:48:54.000000000 -0400
+> @@ -32,6 +32,7 @@
+>  #include <linux/getcpu.h>
+>  #include <linux/task_io_accounting_ops.h>
+>  #include <linux/seccomp.h>
+> +#include <linux/cpu.h>
+>  
+>  #include <linux/compat.h>
+>  #include <linux/syscalls.h>
+> @@ -879,6 +880,7 @@
+>  	if (pm_power_off_prepare)
+>  		pm_power_off_prepare();
+>  	sysdev_shutdown();
+> +	disable_nonboot_cpus();
 
-Roel
+Before sysdev_shutdown(), please.
+
+sysdev_shutdown() may touch things that belong to CPU0.
+
+>  	printk(KERN_EMERG "Power down.\n");
+>  	machine_power_off();
+>  }
+
+Greetings,
+Rafael
