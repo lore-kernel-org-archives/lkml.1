@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbXI1VU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbXI1VZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbXI1VU2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 17:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbXI1VUR
+	id S1755263AbXI1VZk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 17:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbXI1VZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 17:20:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59388
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753147AbXI1VUQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 17:20:16 -0400
-Date: Fri, 28 Sep 2007 14:20:15 -0700 (PDT)
-Message-Id: <20070928.142015.82358847.davem@davemloft.net>
-To: pl@dlh.net
-Cc: sparclinux@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: PATCH: tcp rfc 2385 security/bugfix for sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <23966.84.62.25.8.1191012145.squirrel@cs1.dlh.net>
-References: <23966.84.62.25.8.1191012145.squirrel@cs1.dlh.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 28 Sep 2007 17:25:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48373 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752468AbXI1VZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 17:25:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: [patch 0/2] suspend/resume regression fixes
+Date: Fri, 28 Sep 2007 23:40:22 +0200
+User-Agent: KMail/1.9.5
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+References: <20070922220347.586903979@linutronix.de> <1191011610.18681.94.camel@chaos> <46FD6F83.8070801@rtr.ca>
+In-Reply-To: <46FD6F83.8070801@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709282340.23730.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Peter Lieven" <pl@dlh.net>
-Date: Fri, 28 Sep 2007 22:42:25 +0200 (CEST)
-
-> TCP MD5 signatures on sparc64 (big-endian) completely fail on current
-> kernel releases in interoperability with Cisco/Foundry or other
-> little-endian linux systems.
+On Friday, 28 September 2007 23:17, Mark Lord wrote:
+> Thomas Gleixner wrote:
+> > On Fri, 2007-09-28 at 16:27 -0400, Mark Lord wrote:
+> ..
+> >> On a closely related note:  I just now submitted a patch to fix SMP-poweroff,
+> >> by having it do disable_nonboot_cpus before doing poweroff.
+> >>
+> >> Which has led me to thinking..
+> >> ..are similar precautions perhaps necessary for *all* ACPI BIOS calls?
+> >>
+> >> Because one never knows what the other CPUs are doing at the same time,
+> >> and what the side effects may be on the ACPI BIOS functions.
+> >>
+> >> And also, I wonder if at a minimum we should be guaranteeing ACPI BIOS calls
+> >> only ever happen from CPU#0 (or the "boot" CPU)?   Or do we do that already?
+> > 
+> > The ACPI calls are serialized in the kernel, AFAICT. But the fragile
+> > situations (suspend, resume, shutdown, reboot) are probably those, where
+> > some BIOS implementation expect that certain things are not called or
+> > not active.
 > 
-> The root cause is a cast in the return statement of tcp_v4_md5_do_lookup,
-> where a tcp4_md5sig_key is casted onto tcp_md5sig_key without proper
-> conversion. On little-endian systems the upper 8 bits are cut of which
-> yields the expected behaviour. However, on big-endian systems (like
-> sparc64) only the most significant 8 bits are preserved. Since
-> TCP_MD5SIG_MAXKEYLEN is 80, this always yields 0.
+> Mmm.. *do* we actually do this for reboot?  I don't see it there.
+> And how about for kexec?
 > 
-> In the calculation of the md5 signature afterwards the key is therefore
-> not appended to the tcp segment which could result in a security problem
-> since only the presence of a md5 signature is checked, and the key itself
-> doesn't matter.
+> I'm probably just missing seeing it.  Right?
 
-Thanks for finding this bug.
+Nope.
 
-> --- linux.old/include/net/tcp.h 2007-09-28 21:43:26.000000000 +0200 +++
-> linux/include/net/tcp.h     2007-09-28 21:45:35.000000000 +0200 @@ -1055,6
-> +1055,7 @@ static inline void clear_all_retrans_hin
+Till now, only hibernation and suspend disabled the nonboot CPUs before
+invoking the platform firmware.
 
-I'll have to apply this patch by hand because your email client
-completely corrupted the patch.
-
-> Signed-off-by: Peter Lieven <pl@dlh.net>
-> Signed-off-by: Matthias M. Dellweg <2500@gmx.de>
-
-Thanks again.
+Greetings,
+Rafael
