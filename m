@@ -1,44 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbXI1Glo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbXI1Guy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757231AbXI1Glo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 02:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760106AbXI1Glf
+	id S1760106AbXI1Guy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 02:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbXI1Guq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 02:41:35 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:39136 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758333AbXI1Gle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 02:41:34 -0400
-Date: Fri, 28 Sep 2007 15:41:13 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mgross@linux.intel.com, linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] QoS params patch
-Message-ID: <20070928064113.GA32532@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>, mgross@linux.intel.com,
-	linux-pm <linux-pm@lists.linux-foundation.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <20070926223712.GA22029@linux.intel.com> <20070926224026.GA23218@linux.intel.com> <20070927232501.79f9f4bd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070927232501.79f9f4bd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 28 Sep 2007 02:50:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34066 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754703AbXI1Guq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 02:50:46 -0400
+Date: Thu, 27 Sep 2007 23:50:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Chakri n" <chakriin5@gmail.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: A unresponsive file system can hang all I/O in the system on
+ linux-2.6.23-rc6 (dirty_thresh problem?)
+Message-Id: <20070927235034.ae7bd73d.akpm@linux-foundation.org>
+In-Reply-To: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
+References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 27, 2007 at 11:25:01PM -0700, Andrew Morton wrote:
-> On Wed, 26 Sep 2007 15:40:26 -0700 Mark Gross <mgross@linux.intel.com> wrote:
-> > +int qos_add_requirement(int qos, char *name, s32 value);
-> > +int qos_update_requirement(int qos, char *name, s32 new_value);
-> > +void qos_remove_requirement(int qos, char *name);
-> 
-> It's a bit rude stealing the entire "qos" namespace like this - there are
-> many different forms of QoS, some already in-kernel.
-> 
-> s/qos/pm_qos/g ?
+On Thu, 27 Sep 2007 23:32:36 -0700 "Chakri n" <chakriin5@gmail.com> wrote:
 
-lat_qos or something might be more suitable.. it's a latency property, not
-a power management one (even if pm ends up being the primary user of it).
+> Hi,
+> 
+> In my testing, a unresponsive file system can hang all I/O in the system.
+> This is not seen in 2.4.
+> 
+> I started 20 threads doing I/O on a NFS share. They are just doing 4K
+> writes in a loop.
+> 
+> Now I stop NFS server hosting the NFS share and start a
+> "dd" process to write a file on local EXT3 file system.
+> 
+> # dd if=/dev/zero of=/tmp/x count=1000
+> 
+> This process never progresses.
+
+yup.
+
+> There is plenty of HIGH MEMORY available in the system, but this
+> process never progresses.
+> 
+> ...
+> 
+> The problem seems to be in balance_dirty_pages, which calculates
+> dirty_thresh based on only ZONE_NORMAL. The same scenario works fine
+> in 2.4. The dd processes finishes in no time.
+> NFS file systems can go offline, due to multiple reasons, a failed
+> switch, filer etc, but that should not effect other file systems in
+> the machine.
+> Can this behavior be fenced?, can the buffer cache be tuned so that
+> other processes do not see the effect?
+
+It's unrelated to the actual value of dirty_thresh: if the machine fills up
+with dirty (or unstable) NFS pages then eventually new writers will block
+until that condition clears.
+
+2.4 doesn't have this problem at low levels of dirty data because 2.4
+VFS/MM doesn't account for NFS pages at all.
+
+I'm not sure what we can do about this from a design perspective, really. 
+We have data floating about in memory which we're not allowed to discard
+and if we allow it to increase without bound it will eventually either
+wedge userspace _anyway_ or it will take the machine down, resulting in
+data loss.
+
+What it would be nice to do would be to write that data to local disk if
+poss, then reclaim it.  Perhaps David Howells' fscache code can do that (or
+could be tweaked to do so).
+
+If you really want to fill all memory with pages whic are dirty against a
+dead NFS server then you can manually increase
+/proc/sys/vm/dirty_background_ratio and dirty_ratio - that should give you
+the 2.4 behaviour.
+
+
+<thinks>
+
+Actually we perhaps could address this at the VFS level in another way. 
+Processes which are writing to the dead NFS server will eventually block in
+balance_dirty_pages() once they've exceeded the memory limits and will
+remain blocked until the server wakes up - that's the behaviour we want.
+
+What we _don't_ want to happen is for other processes which are writing to
+other, non-dead devices to get collaterally blocked.  We have patches which
+might fix that queued for 2.6.24.  Peter?
