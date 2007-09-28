@@ -1,120 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbXI1VEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbXI1VFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbXI1VEB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 17:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbXI1VDy
+	id S1756289AbXI1VFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 17:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbXI1VFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 17:03:54 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:48923 "EHLO atlrel9.hp.com"
+	Fri, 28 Sep 2007 17:05:30 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:36590 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752814AbXI1VDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 17:03:53 -0400
-Subject: Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Mel Gorman <mel@skynet.ie>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, rientjes@google.com, kamezawa.hiroyu@jp.fujitsu.com,
-       clameter@sgi.com
-In-Reply-To: <20070928182825.GA9779@skynet.ie>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie>
-	 <20070928142506.16783.99266.sendpatchset@skynet.skynet.ie>
-	 <1190993823.5513.10.camel@localhost>  <20070928182825.GA9779@skynet.ie>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 28 Sep 2007 17:03:48 -0400
-Message-Id: <1191013429.5513.45.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1752124AbXI1VF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 17:05:29 -0400
+Date: Fri, 28 Sep 2007 22:05:27 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Christoph Hellwig <hch@lst.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
+Message-ID: <20070928210527.GB30404@skynet.ie>
+References: <20070919033605.785839297@sgi.com> <20070919033643.763818012@sgi.com> <200709280742.38262.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-28 at 19:28 +0100, Mel Gorman wrote:
-> On (28/09/07 11:37), Lee Schermerhorn didst pronounce:
-> > Still need to fix 'nodes_intersect' -> 'nodes_intersects'.  See below.
-> > 
-<snip>
-> > > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc8-mm2-020_zoneid_zonelist/kernel/cpuset.c linux-2.6.23-rc8-mm2-030_filter_nodemask/kernel/cpuset.c
-> > > --- linux-2.6.23-rc8-mm2-020_zoneid_zonelist/kernel/cpuset.c	2007-09-28 15:49:39.000000000 +0100
-> > > +++ linux-2.6.23-rc8-mm2-030_filter_nodemask/kernel/cpuset.c	2007-09-28 15:49:57.000000000 +0100
-> > > @@ -1516,22 +1516,14 @@ nodemask_t cpuset_mems_allowed(struct ta
-> > >  }
-> > >  
-> > >  /**
-> > > - * cpuset_zonelist_valid_mems_allowed - check zonelist vs. curremt mems_allowed
-> > > - * @zl: the zonelist to be checked
-> > > + * cpuset_nodemask_valid_mems_allowed - check nodemask vs. curremt mems_allowed
-> > > + * @nodemask: the nodemask to be checked
-> > >   *
-> > > - * Are any of the nodes on zonelist zl allowed in current->mems_allowed?
-> > > + * Are any of the nodes in the nodemask allowed in current->mems_allowed?
-> > >   */
-> > > -int cpuset_zonelist_valid_mems_allowed(struct zonelist *zl)
-> > > +int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
-> > >  {
-> > > -	int i;
-> > > -
-> > > -	for (i = 0; zl->_zonerefs[i].zone; i++) {
-> > > -		int nid = zonelist_node_idx(zl->_zonerefs[i]);
-> > > -
-> > > -		if (node_isset(nid, current->mems_allowed))
-> > > -			return 1;
-> > > -	}
-> > > -	return 0;
-> > > +	return nodes_intersect(nodemask, current->mems_allowed);
-> >                  ^^^^^^^^^^^^^^^ -- should be nodes_intersects, I think.
+On (28/09/07 10:33), Christoph Lameter didst pronounce:
+> On Fri, 28 Sep 2007, Nick Piggin wrote:
 > 
-> Crap, you're right, I missed the warning about implicit declarations. I
-> apologise. This is the corrected version
+> > On Wednesday 19 September 2007 13:36, Christoph Lameter wrote:
+> > > SLAB_VFALLBACK can be specified for selected slab caches. If fallback is
+> > > available then the conservative settings for higher order allocations are
+> > > overridden. We then request an order that can accomodate at mininum
+> > > 100 objects. The size of an individual slab allocation is allowed to reach
+> > > up to 256k (order 6 on i386, order 4 on IA64).
+> > 
+> > How come SLUB wants such a big amount of objects? I thought the
+> > unqueued nature of it made it better than slab because it minimised
+> > the amount of cache hot memory lying around in slabs...
+> 
+> The more objects in a page the more the fast path runs. The more the fast 
+> path runs the lower the cache footprint and the faster the overall 
+> allocations etc.
+> 
+> SLAB can be configured for large queues holdings lots of objects. 
+> SLUB can only reach the same through large pages because it does not 
+> have queues.
 
-Mel:  
+Large pages, flood gates etc. Be wary.
 
-When I'm rebasing a patch series, I use a little script [shell function,
-actually] to make just the sources modified by each patch, before moving
-on to the next.  That way, I have fewer log messages to look at, and
-warnings and such jump out so I can fix them while I'm at the patch that
-causes them.  That's how I caught this one.  Here's the script, in case
-you're interested:
+SLUB has to run 100% reliable or things go whoops. SLUB regularly depends on
+atomic allocations and cannot take the necessary steps to get the contiguous
+pages if it gets into trouble. This means that something like lumpy reclaim
+cannot help you in it's current state.
 
---------------------------
+We currently do not take the per-emptive steps with kswapd to ensure the
+high-order pages are free. We also don't do something like have users that
+can sleep keep the watermarks high. I had considered the possibility but
+didn't have the justification for the complexity.
 
-#qm - quilt make -- attempt to compile all .c's in patch
-# Note:  some files might not compile if they wouldn't build in 
-# the current config.
-qm()
-{
-#	__in_ktree qm || return
+Minimally, SLUB by default should continue to use order-0 pages. Peter has
+managed to bust order-1 pages with mem=128MB. Admittedly, it was a really
+hostile workload but the point remains. It was artifically worked around
+with min_free_kbytes (value set based on pageblock_order, could also have
+been artifically worked around by dropping pageblock_order) and he eventually
+caused order-0 failures so the workload is pretty damn hostile to everything.
 
-	make silentoldconfig; # in case patch changes a Kconfig*
+> One could add the ability to manage pools of cpu slabs but 
+> that would be adding yet another layer to compensate for the problem of 
+> the small pages.
 
-	quilt files | \
-	while read file xxx
-	do
-		ftype=${file##*.}
-		if [[ "$ftype" != "c" ]]
-		then
-			# echo "Skipping $file" >&2
-			continue
-		fi
-		f=${file%.*}
-		echo "make $f.o" >&2
-		make $f.o
-	done
-}
+A compromise may be to have per-cpu lists for higher-order pages in the page
+allocator itself as they can be easily drained unlike the SLAB queues. The
+thing to watch for would be excessive IPI calls which would offset any
+performance gained by SLUB using larger pages.
 
----------------------------
+> Reliable large page allocations means that we can get rid 
+> of these layers and the many workarounds that we have in place right now.
+> 
 
-This is part of a larger set of quilt wrappers that, being basically
-lazy, I use to reduce typing.   I've commented out one dependency on
-other parts of the "environment".  To use this, I build an unpatched
-kernel before starting the rebase, so that the .config and all of the
-pieces are in place for the incremental makes.  
+They are not reliable yet, particularly for atomic allocs.
 
-Works for me...
+> The unqueued nature of SLUB reduces memory requirements and in general the 
+> more efficient code paths of SLUB offset the advantage that SLAB can reach 
+> by being able to put more objects onto its queues. SLAB necessarily 
+> introduces complexity and cache line use through the need to manage those 
+> queues.
+> 
+> > vmalloc is incredibly slow and unscalable at the moment. I'm still working
+> > on making it more scalable and faster -- hopefully to a point where it would
+> > actually be usable for this... but you still get moved off large TLBs, and
+> > also have to inevitably do tlb flushing.
+> 
+> Again I have not seen any fallbacks to vmalloc in my testing. What we are 
+> doing here is mainly to address your theoretical cases that we so far have 
+> never seen to be a problem and increase the reliability of allocations of
+> page orders larger than 3 to a usable level. So far I have so far not 
+> dared to enable orders larger than 3 by default.
+> 
+> AFAICT The performance of vmalloc is not really relevant. If this would 
+> become an issue then it would be possible to reduce the orders used to 
+> avoid fallbacks.
+> 
 
-Later,
-Lee
+If we're falling back to vmalloc ever, there is a danger that the
+problem is postponed until vmalloc space is consumed. More an issue for
+32 bit.
 
+> > Or do you have SLUB at a point where performance is comparable to SLAB,
+> > and this is just a possible idea for more performance?
+> 
+> AFAICT SLUBs performance is superior to SLAB in most cases and it was like 
+> that from the beginning. I am still concerned about several corner cases 
+> though (I think most of them are going to be addressed by the per cpu 
+> patches in mm). Having a comparable or larger amount of per cpu objects as 
+> SLAB is something that also could address some of these concerns and could 
+> increase performance much further.
+> 
 
-
-
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
