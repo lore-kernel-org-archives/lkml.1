@@ -1,127 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbXI1IkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbXI1Iks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760188AbXI1IkU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 04:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbXI1IkH
+	id S1757579AbXI1Iks (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 04:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755620AbXI1Ikk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 04:40:07 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:59311 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753179AbXI1IkF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 04:40:05 -0400
-Subject: Re: A unresponsive file system can hang all I/O in the system on
-	linux-2.6.23-rc6 (dirty_thresh problem?)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Chakri n <chakriin5@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net
-In-Reply-To: <92cbf19b0709280127yba48b60wfe58e532944894ca@mail.gmail.com>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	 <20070927235034.ae7bd73d.akpm@linux-foundation.org>
-	 <1190962752.31636.15.camel@twins>
-	 <92cbf19b0709280127yba48b60wfe58e532944894ca@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-98CyLSruF/tUWguf6VGj"
-Date: Fri, 28 Sep 2007 10:40:00 +0200
-Message-Id: <1190968800.31636.26.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 28 Sep 2007 04:40:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43772 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751837AbXI1Ikj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 04:40:39 -0400
+Date: Fri, 28 Sep 2007 10:40:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.10
+Message-ID: <20070928084003.GA18882@elte.hu>
+References: <bf97f66cfc0696c8574921d53eaafcb7@pinky>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bf97f66cfc0696c8574921d53eaafcb7@pinky>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-98CyLSruF/tUWguf6VGj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Andy Whitcroft <apw@shadowen.org> wrote:
 
-[ please don't top-post! ]
+> This version brings a number of new checks, and a number of bug fixes.  
 
-On Fri, 2007-09-28 at 01:27 -0700, Chakri n wrote:
+your checkpatch patch itself produces 22 warnings ...
 
-> On 9/27/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > On Thu, 2007-09-27 at 23:50 -0700, Andrew Morton wrote:
-> >
-> > > What we _don't_ want to happen is for other processes which are writi=
-ng to
-> > > other, non-dead devices to get collaterally blocked.  We have patches=
- which
-> > > might fix that queued for 2.6.24.  Peter?
-> >
-> > Nasty problem, don't do that :-)
-> >
-> > But yeah, with per BDI dirty limits we get stuck at whatever ratio that
-> > NFS server/mount (?) has - which could be 100%. Other processes will
-> > then work almost synchronously against their BDIs but it should work.
-> >
-> > [ They will lower the NFS-BDI's ratio, but some fancy clipping code wil=
-l
-> >   limit the other BDIs their dirty limit to not exceed the total limit.
-> >   And with all these NFS pages stuck, that will still be nothing. ]
-> >
-> Thanks.
->=20
-> The BDI dirty limits sounds like a good idea.
->=20
-> Is there already a patch for this, which I could try?
+i ran it over kernel/sched.c and there are many bogus warnings that i 
+reported to you earlier:
 
-v2.6.23-rc8-mm2
+  WARNING: multiple assignments should be avoided
+  #2319:
+  +       max_load = this_load = total_load = total_pwr = 0;
 
-> I believe it works like this,
->=20
-> Each BDI, will have a limit. If the dirty_thresh exceeds the limit,
-> all the I/O on the block device will be synchronous.
->=20
-> so, if I have sda & a NFS mount, the dirty limit can be different for
-> each of them.
->=20
-> I can set dirty limit for
->  -  sda to be 90% and
->  -  NFS mount to be 50%.
->=20
-> So, if the dirty limit is greater than 50%, NFS does synchronously,
-> but sda can work asynchronously, till dirty limit reaches 90%.
+and new bogus ones:
 
-Not quite, the system determines the limit itself in an adaptive
-fashion.
+  ERROR: need consistent spacing around '*' (ctx:WxV)
+  #5287:
+  +               mode_t mode, proc_handler *proc_handler)
 
-  bdi_limit =3D total_limit * p_bdi
+  ERROR: need consistent spacing around '*' (ctx:WxV)
+  #5328:
+  +static ctl_table *sd_alloc_ctl_cpu_table(int cpu)
 
-Where p is a faction [0,1], and is determined by the relative writeout
-speed of the current BDI vs all other BDIs.
+  ERROR: need space before that '*' (ctx:VxV)
+  #209:
+  +# define INIT_TASK_GRP_LOAD    2*NICE_0_LOAD
 
-So if you were to have 3 BDIs (sda, sdb and 1 nfs mount), and sda is
-idle, and the nfs mount gets twice as much traffic as sdb, the ratios
-will look like:
+why did you ignore my feedback? Ever since v8 the quality of 
+checkpatch.pl has been getting worse and worse as there are way too many 
+false positives. I'm still stuck on v8 for my own use, v9 and v10 is 
+unusable.
 
- p_sda: 0
- p_sdb: 1/3
- p_nfs: 2/3
+	Ingo
 
-Once the traffic exceeds the write speed of the device we build up a
-backlog and stuff gets throttled, so these proportions converge to the
-relative write speed of the BDIs when saturated with data.
+--------------->
+WARNING: line over 80 characters
+#174: FILE: scripts/checkpatch.pl:572:
++		     $line =~ /^.\s*(?:$Storage\s+)?($Ident)\b\s*\**\s*$Ident\s*(?:;|=)/)) {
 
-So what can happen in your case is that the NFS mount is the only one
-with traffic is will get a fraction of 1. If it then disconnects like in
-your case, it will still have all of the dirty limit pinned for NFS.
+WARNING: line over 80 characters
+#186: FILE: scripts/checkpatch.pl:584:
++						(?:\s*\*+\s*const|\s*\*+|(?:\s*\[\s*\])+)?
 
-However other devices will at that moment try to maintain a limit of 0,
-which ends up being similar to a sync mount.
+WARNING: line over 80 characters
+#200: FILE: scripts/checkpatch.pl:612:
++				ERROR("switch and case should be at the same indent\n$hereline$err");
 
-So they'll not get stuck, but they will be slow.
+WARNING: line over 80 characters
+#208: FILE: scripts/checkpatch.pl:619:
++			my ($level, @ctx) = ctx_statement_level($linenr, $realcnt, 0);
 
---=-98CyLSruF/tUWguf6VGj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+WARNING: line over 80 characters
+#213: FILE: scripts/checkpatch.pl:624:
++			# Skip over any removed lines in the context following statement.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+WARNING: line over 80 characters
+#221: FILE: scripts/checkpatch.pl:635:
++			if ($level == 0 && $ctx =~ /\)\s*\;\s*$/ && defined $lines[$ctx_ln - 1]) {
 
-iD8DBQBG/L3gXA2jU0ANEf4RAv6QAJ0WZr7ulCPKZjhmsRzkD7+cMz8UPACePVGF
-6RB+u9eyKXyOfSXonT0FiEo=
-=6rv/
------END PGP SIGNATURE-----
+WARNING: line over 80 characters
+#222: FILE: scripts/checkpatch.pl:636:
++				my ($nlength, $nindent) = line_stats($lines[$ctx_ln - 1]);
 
---=-98CyLSruF/tUWguf6VGj--
+WARNING: line over 80 characters
+#224: FILE: scripts/checkpatch.pl:638:
++					WARN("Trailing semicolon indicates no statements, indent implies otherwise\n" .
 
+WARNING: line over 80 characters
+#225: FILE: scripts/checkpatch.pl:639:
++						"$here\n$ctx\n$lines[$ctx_ln - 1]");
+
+WARNING: line over 80 characters
+#245: FILE: scripts/checkpatch.pl:722:
++		} elsif ($line =~ m{$NonptrType(\*+)(?:\s+(?:$Attribute|$Sparse))?\s+[A-Za-z\d_]+}) {
+
+WARNING: line over 80 characters
+#250: FILE: scripts/checkpatch.pl:726:
++		} elsif ($line =~ m{$NonptrType\s+(\*+)(?!\s+(?:$Attribute|$Sparse))\s+[A-Za-z\d_]+}) {
+
+WARNING: line over 80 characters
+#288: FILE: scripts/checkpatch.pl:842:
++						^.\#\s*define\s+$Ident\s*(?:\([^\)]*\))?|
+
+WARNING: line over 80 characters
+#313: FILE: scripts/checkpatch.pl:867:
++						my $before = ctx_expr_before($unary_ctx);
+
+WARNING: line over 80 characters
+#314: FILE: scripts/checkpatch.pl:868:
++						if ($before =~ /(?:for|if|while)\s*$/) {
+
+WARNING: line over 80 characters
+#320: FILE: scripts/checkpatch.pl:874:
++					if ($op eq '*' && $unary_ctx =~ /$UnaryDefine$/) {
+
+WARNING: line over 80 characters
+#326: FILE: scripts/checkpatch.pl:880:
++				#	print "UNARY: <$is_unary $a:$op:$c> <$ca:$op:$cc> <$unary_ctx>\n";
+
+WARNING: line over 80 characters
+#338: FILE: scripts/checkpatch.pl:905:
++				# '*' as part of a type definition -- reported already.
+
+WARNING: line over 80 characters
+#346: FILE: scripts/checkpatch.pl:913:
++				         ($is_unary && ($op eq '*' || $op eq '-' || $op eq '&'))) {
+
+WARNING: line over 80 characters
+#347: FILE: scripts/checkpatch.pl:914:
++					if ($ctx !~ /[WEB]x./ && $ca !~ /(?:\)|!|~|\*|-|\&|\||\+\+|\-\-|\{)$/) {
+
+WARNING: line over 80 characters
+#387: FILE: scripts/checkpatch.pl:932:
++					 $op eq '&' or $op eq '^' or $op eq '|' or
+
+WARNING: line over 80 characters
+#432: FILE: scripts/checkpatch.pl:1160:
++			ERROR("Use of $1 is deprecated: see Documentation/spinlocks.txt\n" . $herecurr);
+
+WARNING: line over 80 characters
+#456: FILE: scripts/checkpatch.pl:1230:
++			WARN("unnecessary cast may hide bugs, see http://c-faq.com/malloc/mallocnocast.html\n" . $herecurr);
+
+Your patch has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
