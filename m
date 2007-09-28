@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbXI1PWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbXI1PYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbXI1PWR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 11:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbXI1PWG
+	id S1758690AbXI1PYS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 11:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbXI1PYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 11:22:06 -0400
-Received: from gamma.unitedhosting.co.uk ([72.249.26.4]:59391 "EHLO
+	Fri, 28 Sep 2007 11:24:07 -0400
+Received: from gamma.unitedhosting.co.uk ([72.249.26.4]:59456 "EHLO
 	gamma.unitedhosting.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbXI1PWF (ORCPT
+	with ESMTP id S1754650AbXI1PYG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 11:22:05 -0400
-X-Greylist: delayed 454 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Sep 2007 11:22:05 EDT
-Message-ID: <46FD19A9.1060102@aol.com>
-Date: Fri, 28 Sep 2007 11:11:37 -0400
+	Fri, 28 Sep 2007 11:24:06 -0400
+Message-ID: <46FD1A2F.9050801@aol.com>
+Date: Fri, 28 Sep 2007 11:13:51 -0400
 From: AndrewL733 <AndrewL733@aol.com>
 User-Agent: Thunderbird 1.5.0.13 (Macintosh/20070809)
 MIME-Version: 1.0
@@ -56,12 +55,19 @@ rdunlap@xenotime.net wrote:
 >>     
 >
 > Glad that you found it.
->   
+>
 >   
 >> With CONFIG_PCIEAER=y, scanpci always triggers the NMI error.  The
 >> option aerdriver.forceload=1 has no effect.
 >>     
-
+>
+> The 'forceload' option only forces the driver to load even when the
+> ACPI hardware initialization routine fails.
+>
+> It would be nice to be able to disable PCIEAER at boot time though.
+> Shouldn't be difficult.
+>
+>   
 So, looking for some closure here, what do we think is the "root cause"? 
 Is it:
 
@@ -81,14 +87,8 @@ motherboard should know not to enable -- maybe a note is warranted so
 that when configuring the kernel, people with S5000PSL motherboards 
 might not make the same mistake???).
 
->
-> The 'forceload' option only forces the driver to load even when the
-> ACPI hardware initialization routine fails.
->
-> It would be nice to be able to disable PCIEAER at boot time though.
-> Shouldn't be difficult.
->
->
+
+
 >   
 >> The related dmesg output at boot is:
 >>
