@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbXI1Jdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbXI1JfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760035AbXI1Jdc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 05:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbXI1JdZ
+	id S1760874AbXI1JfV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 05:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbXI1JfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 05:33:25 -0400
-Received: from sargon.lncsa.com ([212.99.8.251]:58234 "EHLO sargon.lncsa.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751803AbXI1JdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 05:33:24 -0400
-Message-ID: <46FCC2BE.7020509@lncsa.com>
-Date: Fri, 28 Sep 2007 11:00:46 +0200
-From: Laurent CARON <lcaron@lncsa.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: drbd-user@linbit.com
-Subject: Crash on 2.6.22
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 28 Sep 2007 05:35:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35452 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753630AbXI1JfH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 05:35:07 -0400
+Date: Fri, 28 Sep 2007 02:34:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: WARNING: at arch/x86_64/kernel/smp.c:397
+ smp_call_function_mask()
+Message-Id: <20070928023422.77be1e71.akpm@linux-foundation.org>
+In-Reply-To: <46FCC6F5.2030109@bull.net>
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
+	<390947257.08622@ustc.edu.cn>
+	<46FCC0B8.7090403@bull.net>
+	<20070928020950.bdcad2c2.akpm@linux-foundation.org>
+	<46FCC6F5.2030109@bull.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 28 Sep 2007 11:18:45 +0200 Laurent Vivier <Laurent.Vivier@bull.net> wrote:
 
-I did experience a quite strange problem (at least for me) on the first
-node of our 2 node cluster.
+> Andrew Morton wrote:
+> > On Fri, 28 Sep 2007 10:52:08 +0200 Laurent Vivier <Laurent.Vivier@bull.net> wrote:
+> >>
+> >> Andi, is this correct ?
+> >> Andrew, should I send a patch implementing this change ?
+> > 
+> > umm, I think all the smp_call_function fucntions are deadlocky if called
+> > with local interrupts disabled, regardless of whether the calling CPU is in
+> > the mask.
+> > 
+> > If CPU A is sending a cross-cpu call to CPU B and CPU B is sending a
+> > cross-cpu call to CPU A, and they both have local interrupts disabled...
+> 
+> OK, so there are two errors:
+> 
+> 1- one I introduce myself (without any help from anyone) where
+> smp_call_function() calls all online CPUs instead of calling all CPUs except itself.
 
-This is basically an imap/smtp/http proxy server.
+I'd be pretty surprised if one was able to write a bug like that.  You mean
+the CPU sends an IPI to itself and then loops around until it has serviced
+that IPI?  And this works?  Wow.
 
-One of the imapd processes started to use a lot of cpu, memory... this
-morning.
+And on_each_cpu() can call the handler function twice?
 
-Oomkiller showed up and killed slapd, imapd, amavisd....
+hm
 
-I then restarted those processes manually, and it went fine.
+> 2- one in global_flush_tlb() which calls smp_call_function() with irqs disabled.
 
-A few moments later i got the following messages on my ssh terminal:
+That would be a big bug, and surely we would already have picked it up.
 
-kernel: Bad page state in process 'swapper'
-kernel: Bad page state in process 'swapper'
-kernel: page:c1032a40 flags:0x40000400 mapping:00000000 mapcount:0 count:0
-kernel: page:c1032a40 flags:0x40000400 mapping:00000000 mapcount:0 count:0
-kernel: Trying to fix it up, but a reboot is needed
-kernel: Trying to fix it up, but a reboot is needed
-kernel: Backtrace:
-kernel: Backtrace:
-kernel: Bad page state in process 'swapper'
-kernel: Bad page state in process 'swapper'
-kernel: page:c1032a40 flags:0x40000400 mapping:00000000 mapcount:0 count:0
-kernel: page:c1032a40 flags:0x40000400 mapping:00000000 mapcount:0 count:0
-kernel: Trying to fix it up, but a reboot is needed
-kernel: Trying to fix it up, but a reboot is needed
-kernel: Backtrace:
-kernel: Backtrace:
+<looks>
 
+argh, mainline's x86_64 smp_call_function() doesn't do the check.  We've
+had *heaps* of bugs in i386 where people were running smp_call_foo() under
+local_irq_disable().  I wonder how many there are in x86_64?
 
-The machine then completely locked, and did reboot (thanks to the watchdog).
+> I think I should at least correct #1 ?
 
-This server is a HP DL380G5 with 12Gb memory, 8 SAS Disks, .... a quite
-standard box.
-
-
-The $HOME directories are stored on a drbd (version: 0.7.24
-(api:79/proto:74)) partition (with an XFS filesystem).
-
-The only 'non standard' thing I did use is a swap file instead of a swap
-partition.
-
-$ free             total       used       free     shared    buffers
- cached
-Mem:      12471932    7420364    5051568          0       3984    6680868
--/+ buffers/cache:     735512   11736420
-Swap:       393208          0     393208
-
-
-$ grep swap /etc/fstab
-/var/tmp/swapfile swap    swap    defaults    0   0
-
-
-Might this be the (or one of the) cause of this problem ?
-
-.config is available here: http://zenon.apartia.fr/stuff/config-2.6.22
-
-Thanks
-
-Laurent
+I think we should correct all bugs ;)
