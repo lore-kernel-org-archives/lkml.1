@@ -1,45 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbXI1Jui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbXI1Jw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761465AbXI1Jui (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 05:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759550AbXI1JuP
+	id S1761313AbXI1Jw3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 05:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbXI1JwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 05:50:15 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:23663 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758143AbXI1JuM (ORCPT
+	Fri, 28 Sep 2007 05:52:21 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2045 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753238AbXI1JwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 05:50:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Z0TLsrjYuvJxre6r+w16rT0xTmAKTrfTow1kRHkOBrvD5ePDfO/dEAmyfFDOTQd4GVjXok9pry0EXtn9DkGxCwnf5qiy9W4y9YUPmnIYsL82Gjdc6wFyQqcqnoO2zUlauilKGL8tpQuOAmJB3wiXZKqEun13fPv4BstOnHtMEns=
-Message-ID: <46FCCDEC.20200@gmail.com>
-Date: Fri, 28 Sep 2007 02:48:28 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 28 Sep 2007 05:52:20 -0400
+Date: Fri, 28 Sep 2007 10:52:07 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.10
+Message-ID: <20070928095207.GA18163@shadowen.org>
+References: <bf97f66cfc0696c8574921d53eaafcb7@pinky> <20070928084003.GA18882@elte.hu>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] libata drain fifo on stuck DRQ HSM violation
-References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com>	<20070905095327.6277d054.akpm@linux-foundation.org>	<46DEE617.4050004@rtr.ca>	<46E0A253.7060803@gmail.com>	<46E154DE.2060602@rtr.ca>	<46FB563A.80108@gmail.com> <20070927193701.6230d77f@the-village.bc.nu> <46FC3D7D.90009@gmail.com> <46FC3FDD.5060201@pobox.com> <46FC423C.2050206@gmail.com> <46FC7B72.2030103@rtr.ca>
-In-Reply-To: <46FC7B72.2030103@rtr.ca>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070928084003.GA18882@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Drain up to 512 words from host/bridge FIFO on stuck DRQ HSM violation,
-> rather than just getting stuck there forever.
+On Fri, Sep 28, 2007 at 10:40:03AM +0200, Ingo Molnar wrote:
 > 
-> Signed-Off-By:  Mark Lord <mlord@pobox.com>
+> * Andy Whitcroft <apw@shadowen.org> wrote:
+> 
+> > This version brings a number of new checks, and a number of bug fixes.  
+> 
+> your checkpatch patch itself produces 22 warnings ...
+> 
+> i ran it over kernel/sched.c and there are many bogus warnings that i 
+> reported to you earlier:
+> 
+>   WARNING: multiple assignments should be avoided
+>   #2319:
+>   +       max_load = this_load = total_load = total_pwr = 0;
+> 
+> and new bogus ones:
+> 
+>   ERROR: need consistent spacing around '*' (ctx:WxV)
+>   #5287:
+>   +               mode_t mode, proc_handler *proc_handler)
+> 
+>   ERROR: need consistent spacing around '*' (ctx:WxV)
+>   #5328:
+>   +static ctl_table *sd_alloc_ctl_cpu_table(int cpu)
+> 
+>   ERROR: need space before that '*' (ctx:VxV)
+>   #209:
+>   +# define INIT_TASK_GRP_LOAD    2*NICE_0_LOAD
+> 
+> why did you ignore my feedback? Ever since v8 the quality of 
+> checkpatch.pl has been getting worse and worse as there are way too many 
+> false positives. I'm still stuck on v8 for my own use, v9 and v10 is 
+> unusable.
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+I think if you read your incoming email you will see nothing of the sort.
+I have discussed this with you and in public.  The multiple assignment
+check you dissagree with and we have softened it in direct response to that
+dislike.  However, the main proponent of this existing wanted that check.
+Therefore it has stayed.  The other false positives you report are real.
+Some are fixed in my development version, others are not.  They come
+from the fact that I was asked for better checks on '*' and the like in
+its binary mode.  To get that I had to actually start telling unary and
+binary uses of the same operator appart.  That is hard in the face of
+typedef'd types.  I am working to make it better.
 
--- 
-tejun
+However, the key here is that it will never be 100%, not without
+becoming a try C parser.  The output is a _guide_ if you don't like its
+output ignore the reports you dislike.  I for one send out patches with
+style violations where I deem that the code is better that way.
+
+-apw
