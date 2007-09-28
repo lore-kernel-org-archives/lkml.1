@@ -1,434 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbXI1Tpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbXI1TrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbXI1Tpl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 15:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbXI1Tpd
+	id S1756014AbXI1TrJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 15:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXI1Tq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 15:45:33 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:49758 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468AbXI1Tpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 15:45:31 -0400
-Subject: [PATCH 1/8] scsi: megaraid_sas - add hibernation support
-From: bo yang <bo.yang@lsi.com>
-To: linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       Yang@milmhbs0.lsil.com, Bo@milmhbs0.lsil.com, Patro@milmhbs0.lsil.com,
-       Sumant@milmhbs0.lsil.com
-Content-Type: text/plain
+	Fri, 28 Sep 2007 15:46:56 -0400
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:36103 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752802AbXI1Tqz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 15:46:55 -0400
+Message-ID: <46FD5A2F.7010409@opengridcomputing.com>
+Date: Fri, 28 Sep 2007 14:46:55 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: "Kanevsky, Arkady" <Arkady.Kanevsky@netapp.com>
+CC: Sean Hefty <sean.hefty@intel.com>, Sean Hefty <mshefty@ichips.intel.com>,
+       netdev@vger.kernel.org, rdreier@cisco.com, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH v3] iw_cxgb3: Support"iwarp-only"interfacesto
+ avoid 4-tuple conflicts.
+References: <20070923203649.8324.64524.stgit@dell3.ogc.int><46FBF8AF.9040700@ichips.intel.com><C98692FD98048C41885E0B0FACD9DFB805187514@exnane01.hq.netapp.com> <000101c8013a$41b374f0$a7cc180a@amr.corp.intel.com> <C98692FD98048C41885E0B0FACD9DFB80518755A@exnane01.hq.netapp.com>
+In-Reply-To: <C98692FD98048C41885E0B0FACD9DFB80518755A@exnane01.hq.netapp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Sep 2007 11:02:47 -0400
-Message-Id: <1190818967.5955.2.camel@dhcp-75-534.se.lsil.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-X-OriginalArrivalTime: 28 Sep 2007 19:45:13.0842 (UTC) FILETIME=[165FA520:01C80208]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding hibernation support. suspend, resume routine implemented.
-
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
-
----
- drivers/scsi/megaraid/megaraid_sas.c |  302 +++++++++++++++++++------
- drivers/scsi/megaraid/megaraid_sas.h |    1
- 2 files changed, 233 insertions(+), 70 deletions(-)
-
-diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 11:23:54.000000000 -0400
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 16:17:14.954156712 -0400
-@@ -1802,6 +1802,81 @@ static void megasas_complete_cmd_dpc(uns
- }
- 
- /**
-+ * megasas_issue_init_mfi -	Initializes the FW
-+ * @instance:		Adapter soft state
-+ *
-+ * Issues the INIT MFI cmd
-+ */
-+static int
-+megasas_issue_init_mfi(struct megasas_instance *instance)
-+{
-+	u32 context;
-+
-+	struct megasas_cmd *cmd;
-+
-+	struct megasas_init_frame *init_frame;
-+	struct megasas_init_queue_info *initq_info;
-+	dma_addr_t init_frame_h;
-+	dma_addr_t initq_info_h;
-+
-+	/*
-+	 * Prepare a init frame. Note the init frame points to queue info
-+	 * structure. Each frame has SGL allocated after first 64 bytes. For
-+	 * this frame - since we don't need any SGL - we use SGL's space as
-+	 * queue info structure
-+	 *
-+	 * We will not get a NULL command below. We just created the pool.
-+	 */
-+	cmd = megasas_get_cmd(instance);
-+
-+	init_frame = (struct megasas_init_frame *)cmd->frame;
-+	initq_info = (struct megasas_init_queue_info *)
-+		((unsigned long)init_frame + 64);
-+
-+	init_frame_h = cmd->frame_phys_addr;
-+	initq_info_h = init_frame_h + 64;
-+
-+	context = init_frame->context;
-+	memset(init_frame, 0, MEGAMFI_FRAME_SIZE);
-+	memset(initq_info, 0, sizeof(struct megasas_init_queue_info));
-+	init_frame->context = context;
-+
-+	initq_info->reply_queue_entries = instance->max_fw_cmds + 1;
-+	initq_info->reply_queue_start_phys_addr_lo = instance->reply_queue_h;
-+
-+	initq_info->producer_index_phys_addr_lo = instance->producer_h;
-+	initq_info->consumer_index_phys_addr_lo = instance->consumer_h;
-+
-+	init_frame->cmd = MFI_CMD_INIT;
-+	init_frame->cmd_status = 0xFF;
-+	init_frame->queue_info_new_phys_addr_lo = initq_info_h;
-+
-+	init_frame->data_xfer_len = sizeof(struct megasas_init_queue_info);
-+
-+	/*
-+	 * disable the intr before firing the init frame to FW
-+	 */
-+	instance->instancet->disable_intr(instance->reg_set);
-+
-+	/*
-+	 * Issue the init frame in polled mode
-+	 */
-+
-+	if (megasas_issue_polled(instance, cmd)) {
-+		printk(KERN_ERR "megasas: Failed to init firmware\n");
-+		megasas_return_cmd(instance, cmd);
-+		goto fail_fw_init;
-+	}
-+
-+	megasas_return_cmd(instance, cmd);
-+
-+	return 0;
-+
-+fail_fw_init:
-+	return -EINVAL;
-+}
-+
-+/**
-  * megasas_init_mfi -	Initializes the FW
-  * @instance:		Adapter soft state
-  *
-@@ -1814,15 +1889,7 @@ static int megasas_init_mfi(struct megas
- 	u32 max_sectors_1;
- 	u32 max_sectors_2;
- 	struct megasas_register_set __iomem *reg_set;
--
--	struct megasas_cmd *cmd;
- 	struct megasas_ctrl_info *ctrl_info;
--
--	struct megasas_init_frame *init_frame;
--	struct megasas_init_queue_info *initq_info;
--	dma_addr_t init_frame_h;
--	dma_addr_t initq_info_h;
--
- 	/*
- 	 * Map the message registers
- 	 */
-@@ -1899,52 +1966,8 @@ static int megasas_init_mfi(struct megas
- 		goto fail_reply_queue;
- 	}
- 
--	/*
--	 * Prepare a init frame. Note the init frame points to queue info
--	 * structure. Each frame has SGL allocated after first 64 bytes. For
--	 * this frame - since we don't need any SGL - we use SGL's space as
--	 * queue info structure
--	 *
--	 * We will not get a NULL command below. We just created the pool.
--	 */
--	cmd = megasas_get_cmd(instance);
--
--	init_frame = (struct megasas_init_frame *)cmd->frame;
--	initq_info = (struct megasas_init_queue_info *)
--	    ((unsigned long)init_frame + 64);
--
--	init_frame_h = cmd->frame_phys_addr;
--	initq_info_h = init_frame_h + 64;
--
--	memset(init_frame, 0, MEGAMFI_FRAME_SIZE);
--	memset(initq_info, 0, sizeof(struct megasas_init_queue_info));
--
--	initq_info->reply_queue_entries = instance->max_fw_cmds + 1;
--	initq_info->reply_queue_start_phys_addr_lo = instance->reply_queue_h;
--
--	initq_info->producer_index_phys_addr_lo = instance->producer_h;
--	initq_info->consumer_index_phys_addr_lo = instance->consumer_h;
--
--	init_frame->cmd = MFI_CMD_INIT;
--	init_frame->cmd_status = 0xFF;
--	init_frame->queue_info_new_phys_addr_lo = initq_info_h;
--
--	init_frame->data_xfer_len = sizeof(struct megasas_init_queue_info);
--
--	/*
--	 * disable the intr before firing the init frame to FW
--	 */
--	instance->instancet->disable_intr(instance->reg_set);
--
--	/*
--	 * Issue the init frame in polled mode
--	 */
--	if (megasas_issue_polled(instance, cmd)) {
--		printk(KERN_DEBUG "megasas: Failed to init firmware\n");
-+	if (megasas_issue_init_mfi(instance))
- 		goto fail_fw_init;
--	}
--
--	megasas_return_cmd(instance, cmd);
- 
- 	ctrl_info = kmalloc(sizeof(struct megasas_ctrl_info), GFP_KERNEL);
- 
-@@ -1980,7 +2003,6 @@ static int megasas_init_mfi(struct megas
- 	return 0;
- 
-       fail_fw_init:
--	megasas_return_cmd(instance, cmd);
- 
- 	pci_free_consistent(instance->pdev, reply_q_sz,
- 			    instance->reply_queue, instance->reply_queue_h);
-@@ -2262,6 +2284,28 @@ static int megasas_io_attach(struct mega
- 	return 0;
- }
- 
-+static int
-+megasas_set_dma_mask(struct pci_dev *pdev)
-+{
-+	/*
-+	 * All our contollers are capable of performing 64-bit DMA
-+	 */
-+	if (IS_DMA64) {
-+		if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) != 0) {
-+
-+			if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
-+				goto fail_set_dma_mask;
-+		}
-+	} else {
-+		if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
-+			goto fail_set_dma_mask;
-+	}
-+	return 0;
-+
-+fail_set_dma_mask:
-+	return 1;
-+}
-+
- /**
-  * megasas_probe_one -	PCI hotplug entry point
-  * @pdev:		PCI device structure
-@@ -2295,19 +2339,8 @@ megasas_probe_one(struct pci_dev *pdev, 
- 
- 	pci_set_master(pdev);
- 
--	/*
--	 * All our contollers are capable of performing 64-bit DMA
--	 */
--	if (IS_DMA64) {
--		if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) != 0) {
--
--			if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
--				goto fail_set_dma_mask;
--		}
--	} else {
--		if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0)
--			goto fail_set_dma_mask;
--	}
-+	if (megasas_set_dma_mask(pdev))
-+		goto fail_set_dma_mask;
- 
- 	host = scsi_host_alloc(&megasas_template,
- 			       sizeof(struct megasas_instance));
-@@ -2489,8 +2522,10 @@ static void megasas_flush_cache(struct m
- /**
-  * megasas_shutdown_controller -	Instructs FW to shutdown the controller
-  * @instance:				Adapter soft state
-+ * @opcode:				Shutdown/Hibernate
-  */
--static void megasas_shutdown_controller(struct megasas_instance *instance)
-+static void megasas_shutdown_controller(struct megasas_instance *instance,
-+					u32 opcode)
- {
- 	struct megasas_cmd *cmd;
- 	struct megasas_dcmd_frame *dcmd;
-@@ -2513,7 +2548,7 @@ static void megasas_shutdown_controller(
- 	dcmd->flags = MFI_FRAME_DIR_NONE;
- 	dcmd->timeout = 0;
- 	dcmd->data_xfer_len = 0;
--	dcmd->opcode = MR_DCMD_CTRL_SHUTDOWN;
-+	dcmd->opcode = opcode;
- 
- 	megasas_issue_blocked_cmd(instance, cmd);
- 
-@@ -2523,6 +2558,131 @@ static void megasas_shutdown_controller(
- }
- 
- /**
-+ * megasas_suspend -    driver suspend entry point
-+ * @pdev:               PCI device structure
-+ * @state:		PCI power state to suspend routine
-+ */
-+static int __devinit
-+megasas_suspend(struct pci_dev *pdev, pm_message_t state)
-+{
-+	struct Scsi_Host *host;
-+	struct megasas_instance *instance;
-+
-+	instance = pci_get_drvdata(pdev);
-+	host = instance->host;
-+
-+	megasas_flush_cache(instance);
-+	megasas_shutdown_controller(instance, MR_DCMD_HIBERNATE_SHUTDOWN);
-+	tasklet_kill(&instance->isr_tasklet);
-+
-+	pci_set_drvdata(instance->pdev, instance);
-+	instance->instancet->disable_intr(instance->reg_set);
-+	free_irq(instance->pdev->irq, instance);
-+
-+	pci_save_state(pdev);
-+	pci_disable_device(pdev);
-+
-+	pci_set_power_state(pdev, pci_choose_state(pdev, state));
-+
-+	return 0;
-+}
-+
-+/**
-+ * megasas_resume-      driver resume entry point
-+ * @pdev:               PCI device structure
-+ */
-+static int __devinit
-+megasas_resume(struct pci_dev *pdev)
-+{
-+	int rval;
-+	struct Scsi_Host *host;
-+	struct megasas_instance *instance;
-+
-+	instance = pci_get_drvdata(pdev);
-+	host = instance->host;
-+	pci_set_power_state(pdev, PCI_D0);
-+	pci_enable_wake(pdev, PCI_D0, 0);
-+	pci_restore_state(pdev);
-+
-+	/*
-+	 * PCI prepping: enable device set bus mastering and dma mask
-+	 */
-+	rval = pci_enable_device(pdev);
-+
-+	if (rval) {
-+		printk(KERN_ERR "megasas: Enable device failed\n");
-+		return rval;
-+	}
-+
-+	pci_set_master(pdev);
-+
-+	if (megasas_set_dma_mask(pdev))
-+		goto fail_set_dma_mask;
-+
-+	/*
-+	 * Initialize MFI Firmware
-+	 */
-+
-+	*instance->producer = 0;
-+	*instance->consumer = 0;
-+
-+	atomic_set(&instance->fw_outstanding, 0);
-+
-+	/*
-+	 * We expect the FW state to be READY
-+	 */
-+	if (megasas_transition_to_ready(instance))
-+		goto fail_ready_state;
-+
-+	if (megasas_issue_init_mfi(instance))
-+		goto fail_init_mfi;
-+
-+	tasklet_init(&instance->isr_tasklet, megasas_complete_cmd_dpc,
-+			(unsigned long)instance);
-+
-+	/*
-+	 * Register IRQ
-+	 */
-+	if (request_irq(pdev->irq, megasas_isr, IRQF_SHARED,
-+		"megasas", instance)) {
-+		printk(KERN_ERR "megasas: Failed to register IRQ\n");
-+		goto fail_irq;
-+	}
-+
-+	instance->instancet->enable_intr(instance->reg_set);
-+
-+	/*
-+	 * Initiate AEN (Asynchronous Event Notification)
-+	 */
-+	if (megasas_start_aen(instance))
-+		printk(KERN_ERR "megasas: Start AEN failed\n");
-+
-+	return 0;
-+
-+fail_irq:
-+fail_init_mfi:
-+	if (instance->evt_detail)
-+		pci_free_consistent(pdev, sizeof(struct megasas_evt_detail),
-+				instance->evt_detail,
-+				instance->evt_detail_h);
-+
-+	if (instance->producer)
-+		pci_free_consistent(pdev, sizeof(u32), instance->producer,
-+				instance->producer_h);
-+	if (instance->consumer)
-+		pci_free_consistent(pdev, sizeof(u32), instance->consumer,
-+				instance->consumer_h);
-+	scsi_host_put(host);
-+
-+fail_set_dma_mask:
-+fail_ready_state:
-+
-+	pci_disable_device(pdev);
-+
-+	return -ENODEV;
-+}
-+
-+/**
-  * megasas_detach_one -	PCI hot"un"plug entry point
-  * @pdev:		PCI device structure
-  */
-@@ -2537,7 +2697,7 @@ static void megasas_detach_one(struct pc
- 
- 	scsi_remove_host(instance->host);
- 	megasas_flush_cache(instance);
--	megasas_shutdown_controller(instance);
-+	megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
- 	tasklet_kill(&instance->isr_tasklet);
- 
- 	/*
-@@ -2976,6 +3136,8 @@ static struct pci_driver megasas_pci_dri
- 	.id_table = megasas_pci_table,
- 	.probe = megasas_probe_one,
- 	.remove = __devexit_p(megasas_detach_one),
-+	.suspend = megasas_suspend,
-+	.resume = megasas_resume,
- 	.shutdown = megasas_shutdown,
- };
- 
-diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 11:07:31.000000000 -0400
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 11:07:26.000000000 -0400
-@@ -117,6 +117,7 @@
- #define MR_FLUSH_DISK_CACHE			0x02
- 
- #define MR_DCMD_CTRL_SHUTDOWN			0x01050000
-+#define MR_DCMD_HIBERNATE_SHUTDOWN		0x01060000
- #define MR_ENABLE_DRIVE_SPINDOWN		0x01
- 
- #define MR_DCMD_CTRL_EVENT_GET_INFO		0x01040100
 
 
+Kanevsky, Arkady wrote:
+> Sean,
+> IB aside,
+> it looks like an ULP which is capable of being both RDMA aware and RDMA
+> not-aware,
+> like iSER and iSCSI, NFS-RDMA and NFS, SDP and sockets, 
+> will be treated as two separete ULPs.
+> Each has its own IP address, since there is a different IP address for
+> iWARP
+> port and "regular" Ethernet port. So it falls on the users of ULPs to
+> "handle" it
+> via DNS or some other services.
+> Is this "acceptable" to users? I doubt it.
+> 
+> Recall that ULPs are going in opposite directions by having a different
+> port number for RDMA aware and RDMA unaware versions of the ULP.
+> This way, ULP "connection manager" handles RDMA-ness under the covers,
+> while users plug an IP address for a server to connect to.
+> Thanks,
+
+Arkady, I'm confused about how this proposed design changes the behavior 
+of the ULPs that run on TCP and iWARP.  I don't see much difference from 
+the point of view of the ULPs.
+
+The NFS-RDMA server, for example, will not need to change since it binds 
+to address 0.0.0.0 which will translate into a bind/listen on the 
+specific iwarp address for each iwarp device on the rdma side, and 
+address 0.0.0.0 for the TCP side.
+
+Am I missing your point?
+
+The real pain, IMO, with this solution is that it FORCES the admins to 
+use 2 subnets when 1 is sufficient if the net maintainers would unify 
+the port space...
+
+Steve.
+
+
+
+> 
+> Arkady Kanevsky                       email: arkady@netapp.com
+> Network Appliance Inc.               phone: 781-768-5395
+> 1601 Trapelo Rd. - Suite 16.        Fax: 781-895-1195
+> Waltham, MA 02451                   central phone: 781-768-5300
+>  
+> 
+>> -----Original Message-----
+>> From: Sean Hefty [mailto:sean.hefty@intel.com] 
+>> Sent: Thursday, September 27, 2007 3:12 PM
+>> To: Kanevsky, Arkady; Sean Hefty; Steve Wise
+>> Cc: netdev@vger.kernel.org; rdreier@cisco.com; 
+>> linux-kernel@vger.kernel.org; general@lists.openfabrics.org
+>> Subject: RE: [ofa-general] [PATCH v3] iw_cxgb3: 
+>> Support"iwarp-only"interfacesto avoid 4-tuple conflicts.
+>>
+>>> What is the model on how client connects, say for iSCSI, when client 
+>>> and server both support, iWARP and 10GbE or 1GbE, and would like to 
+>>> setup "most" performant "connection" for ULP?
+>> For the "most" performance connection, the ULP would use IB, 
+>> and all these problems go away.  :)
+>>
+>> This proposal is for each iwarp interface to have its own IP 
+>> address.  Clients would need an iwarp usable address of the 
+>> server and would connect using rdma_connect().  If that call 
+>> (or rdma_resolve_addr/route) fails, the client could try 
+>> connecting using sockets, aoi, or some other interface.  I 
+>> don't see that Steve's proposal changes anything from the 
+>> client's perspective.
+>>
+>> - Sean
+>> _______________________________________________
+>> general mailing list
+>> general@lists.openfabrics.org
+>> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+>>
+>> To unsubscribe, please visit 
+>> http://openib.org/mailman/listinfo/openib-general
+>>
