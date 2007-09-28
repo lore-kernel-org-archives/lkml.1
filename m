@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbXI1Svv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbXI1SxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbXI1Svv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 14:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbXI1Svo
+	id S1756598AbXI1SxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 14:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXI1SxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 14:51:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37507 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752226AbXI1Svo (ORCPT
+	Fri, 28 Sep 2007 14:53:06 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47470 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752290AbXI1SxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 14:51:44 -0400
-Date: Fri, 28 Sep 2007 11:51:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mgross@linux.intel.com
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] QoS params patch
-Message-Id: <20070928115141.c5a7c9da.akpm@linux-foundation.org>
-In-Reply-To: <20070928171921.GA3219@linux.intel.com>
-References: <20070926223712.GA22029@linux.intel.com>
-	<20070926224026.GA23218@linux.intel.com>
-	<20070927232501.79f9f4bd.akpm@linux-foundation.org>
-	<20070928171921.GA3219@linux.intel.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 28 Sep 2007 14:53:03 -0400
+Subject: Re: A unresponsive file system can hang all I/O in the system on
+	linux-2.6.23-rc6 (dirty_thresh problem?)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Chakri n <chakriin5@gmail.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net
+In-Reply-To: <20070928114930.2c201324.akpm@linux-foundation.org>
+References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
+	 <20070927235034.ae7bd73d.akpm@linux-foundation.org>
+	 <1190998853.6702.17.camel@heimdal.trondhjem.org>
+	 <20070928114930.2c201324.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 28 Sep 2007 20:48:59 +0200
+Message-Id: <1191005339.18147.89.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.11.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007 10:19:21 -0700 Mark Gross <mgross@linux.intel.com> wrote:
 
-> On Thu, Sep 27, 2007 at 11:25:01PM -0700, Andrew Morton wrote:
-> > On Wed, 26 Sep 2007 15:40:26 -0700 Mark Gross <mgross@linux.intel.com> wrote:
-> > 
-> > > +#define QOS_RESERVED 0
-> > > +#define QOS_CPU_DMA_LATENCY 1
-> > > +#define QOS_NETWORK_LATENCY 2
-> > > +#define QOS_NETWORK_THROUGHPUT 3
-> > > +
-> > > +#define QOS_NUM_CLASSES 4
-> > > +#define QOS_DEFAULT_VALUE -1
-> > > +
-> > > +int qos_add_requirement(int qos, char *name, s32 value);
-> > > +int qos_update_requirement(int qos, char *name, s32 new_value);
-> > > +void qos_remove_requirement(int qos, char *name);
-> > 
-> > It's a bit rude stealing the entire "qos" namespace like this - there are
-> > many different forms of QoS, some already in-kernel.
-> > 
-> > s/qos/pm_qos/g ?
-> 
-> I suppose it is a bit inconiderate.  I could grow to like pm_qos,
-> performance_throttling_constraint_hint_infrastructure is a bit too
-> wordy. 
-> 
-> I suppose I should use qospm as thats the way it was put up on that
-> lesswatts.org web page. 
-> 
-> Would qospm be good enough?
-> 
+On Fri, 2007-09-28 at 11:49 -0700, Andrew Morton wrote:
 
-Don't think it matters a lot, but kernel naming tends to be big-endian (ie:
-we have net_ratelimit, not ratelimit_net), so the major part (pm) would
-come first under that scheme.
+> Do you know where the stalls are occurring?  throttle_vm_writeout(), or via
+> direct calls to congestion_wait() from page_alloc.c and vmscan.c?  (running
+> sysrq-w five or ten times will probably be enough to determine this)
+
+would it make sense to instrument congestion_wait() callsites with
+vmstats?
 
