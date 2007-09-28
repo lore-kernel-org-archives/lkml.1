@@ -1,127 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXI1Xd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbXI1XgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbXI1Xd1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 19:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbXI1XdV
+	id S1756415AbXI1XgQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 19:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbXI1XgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 19:33:21 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:61117 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754832AbXI1XdU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 19:33:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qnr4vFGyXW/LixyrK9I451ylCMATxJh3xWCIriPAFSEnOoMXy8zSZ+GElgar96WhjDU+BGkdpmx4KR54upk7YayW1JfW5+DL8v72m4slPHXrRcwD183UaTGo4Qy1sDIJ8mErVnhDFFMhSU8OO1LAzE17bdYbINupOryogvEMn+8=
-Message-ID: <92cbf19b0709281633ib4cfbdet5edc19381beeece3@mail.gmail.com>
-Date: Fri, 28 Sep 2007 16:33:18 -0700
-From: "Chakri n" <chakriin5@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: A unresponsive file system can hang all I/O in the system on linux-2.6.23-rc6 (dirty_thresh problem?)
-Cc: "Trond Myklebust" <trond.myklebust@fys.uio.no>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net, a.p.zijlstra@chello.nl
-In-Reply-To: <92cbf19b0709281436i41247863t6cbc919c33e972a3@mail.gmail.com>
+	Fri, 28 Sep 2007 19:36:06 -0400
+Received: from gw.goop.org ([64.81.55.164]:52857 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751598AbXI1XgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 19:36:04 -0400
+Message-ID: <46FD8FE1.4090507@goop.org>
+Date: Fri, 28 Sep 2007 16:36:01 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+CC: Andi Kleen <ak@suse.de>, Zachary Amsden <zach@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@qumranet.com>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH RFC] paravirt_ops: refactor struct paravirt_ops into smaller
+ pv_*_ops
+References: <46FD4388.6000106@goop.org> <97D612E30E1F88419025B06CB4CF1BE10396C957@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <97D612E30E1F88419025B06CB4CF1BE10396C957@scsmsx412.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	 <1190998853.6702.17.camel@heimdal.trondhjem.org>
-	 <20070928114930.2c201324.akpm@linux-foundation.org>
-	 <1191006971.6702.25.camel@heimdal.trondhjem.org>
-	 <20070928122628.965137f2.akpm@linux-foundation.org>
-	 <1191009148.6702.46.camel@heimdal.trondhjem.org>
-	 <20070928131012.4a03c53e.akpm@linux-foundation.org>
-	 <1191011538.6702.59.camel@heimdal.trondhjem.org>
-	 <20070928134326.e3bb63b1.akpm@linux-foundation.org>
-	 <92cbf19b0709281436i41247863t6cbc919c33e972a3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No change in behavior even in case of low memory systems. I confirmed
-it running on 1Gig machine.
+Nakajima, Jun wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> This patch refactors the paravirt_ops structure into groups of
+>> functionally related ops:
+>>
+>> pv_info - random info, rather than function entrypoints
+>> pv_init_ops - functions used at boot time (some for module_init too)
+>> pv_misc_ops - lazy mode, which didn't fit well anywhere else
+>> pv_time_ops - time-related functions
+>> pv_cpu_ops - various privileged instruction ops
+>> pv_irq_ops - operations for managing interrupt state
+>> pv_apic_ops - APIC operations
+>> pv_mmu_ops - operations for managing pagetables
+>>
+>>     
+>
+> Good. These make sense to me.
+>
+>   
+>> +	.pv_irq_ops = {
+>> +		 .init_IRQ = native_init_IRQ,
+>> +		 .save_fl = native_save_fl,
+>> +		 .restore_fl = native_restore_fl,
+>> +		 .irq_disable = native_irq_disable,
+>> +		 .irq_enable = native_irq_enable,
+>> +		 .safe_halt = native_safe_halt,
+>> +		 .halt = native_halt,
+>> +	 },
+>>     
+>
+> I think the halt stuff should be moved to pv_cpu_ops?
+>   
+You mean halt's alternate "shutdown vcpu" meaning if you call it with
+interrupts disabled?  Yeah, I'd be happy to have an explicit op for
+that, rather than making it a secondary overloaded meaning.  And use
+"safe_halt" for all uses of "wait for next interrupt".
 
-Thanks
---Chakri
+>> +	.pv_misc_ops = {
+>> +		 .set_lazy_mode = paravirt_nop,
+>> +	 },
+>>     
+>
+> Or you can split it to pv_cpu_ops and pv_mmu_ops, assuming that they
+> don't need to interact with each other in terms of the lazy handling.
+>   
 
-On 9/28/07, Chakri n <chakriin5@gmail.com> wrote:
-> Here is a the snapshot of vmstats when the problem happened. I believe
-> this could help a little.
->
-> crash> kmem -V
->        NR_FREE_PAGES: 680853
->          NR_INACTIVE: 95380
->            NR_ACTIVE: 26891
->        NR_ANON_PAGES: 2507
->       NR_FILE_MAPPED: 1832
->        NR_FILE_PAGES: 119779
->        NR_FILE_DIRTY: 0
->         NR_WRITEBACK: 18272
->  NR_SLAB_RECLAIMABLE: 1305
-> NR_SLAB_UNRECLAIMABLE: 2085
->         NR_PAGETABLE: 123
->      NR_UNSTABLE_NFS: 0
->            NR_BOUNCE: 0
->      NR_VMSCAN_WRITE: 0
->
-> In my testing, I always saw the processes are waiting in
-> balance_dirty_pages_ratelimited(), never in throttle_vm_writeout()
-> path.
->
-> But this could be because I have about 4Gig of memory in the system
-> and plenty of mem is still available around.
->
-> I will rerun the test limiting memory to 1024MB and lets see if it
-> takes in any different path.
->
-> Thanks
-> --Chakri
->
->
-> On 9/28/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Fri, 28 Sep 2007 16:32:18 -0400
-> > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> >
-> > > On Fri, 2007-09-28 at 13:10 -0700, Andrew Morton wrote:
-> > > > On Fri, 28 Sep 2007 15:52:28 -0400
-> > > > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > >
-> > > > > On Fri, 2007-09-28 at 12:26 -0700, Andrew Morton wrote:
-> > > > > > On Fri, 28 Sep 2007 15:16:11 -0400 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > > > > > Looking back, they were getting caught up in
-> > > > > > > balance_dirty_pages_ratelimited() and friends. See the attached
-> > > > > > > example...
-> > > > > >
-> > > > > > that one is nfs-on-loopback, which is a special case, isn't it?
-> > > > >
-> > > > > I'm not sure that the hang that is illustrated here is so special. It is
-> > > > > an example of a bog-standard ext3 write, that ends up calling the NFS
-> > > > > client, which is hanging. The fact that it happens to be hanging on the
-> > > > > nfsd process is more or less irrelevant here: the same thing could
-> > > > > happen to any other process in the case where we have an NFS server that
-> > > > > is down.
-> > > >
-> > > > hm, so ext3 got stuck in nfs via __alloc_pages direct reclaim?
-> > > >
-> > > > We should be able to fix that by marking the backing device as
-> > > > write-congested.  That'll have small race windows, but it should be a 99.9%
-> > > > fix?
-> > >
-> > > No. The problem would rather appear to be that we're doing
-> > > per-backing_dev writeback (if I read sync_sb_inodes() correctly), but
-> > > we're measuring variables which are global to the VM. The backing device
-> > > that we are selecting may not be writing out any dirty pages, in which
-> > > case, we're just spinning in balance_dirty_pages_ratelimited().
-> >
-> > OK, so it's unrelated to page reclaim.
-> >
-> > > Should we therefore perhaps be looking at adding per-backing_dev stats
-> > > too?
-> >
-> > That's what mm-per-device-dirty-threshold.patch and friends are doing.
-> > Whether it works adequately is not really known at this time.
-> > Unfortunately kernel developers don't test -mm much.
-> >
->
+You mean have separate lazy_mmu and lazy_cpu (lazy_context_switch) ops? 
+Possible, but they're still exclusive.  (I think VMI, at least, assumes
+that you can't have lazy_mmu and lazy_cpu active at the same time, and
+its nice to enforce this in the interface.)
+
+But having a whole misc structure for this interface is pretty warty, I
+admit.
+
+    J
+
