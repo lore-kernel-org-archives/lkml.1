@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXI1TuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbXI1TvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbXI1TuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 15:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbXI1TuL
+	id S1756563AbXI1TvU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 15:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXI1TvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 15:50:11 -0400
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:29460 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbXI1TuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 15:50:09 -0400
-X-IronPort-AV: E=Sophos;i="4.21,210,1188802800"; 
-   d="scan'208";a="20701901"
-To: akepner@sgi.com
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [4/4] mthca: allow setting "dmabarrier" on user-allocated memory
-X-Message-Flag: Warning: May contain useful information
-References: <20070928011353.GQ30013@sgi.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 28 Sep 2007 12:50:00 -0700
-In-Reply-To: <20070928011353.GQ30013@sgi.com> (akepner@sgi.com's message of "Thu, 27 Sep 2007 18:13:53 -0700")
-Message-ID: <ada3awyo9hz.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Fri, 28 Sep 2007 15:51:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46410 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752726AbXI1TvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 15:51:08 -0400
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>, hirofumi@mail.parknet.co.jp,
+       galak@kernel.crashing.org, zaitcev@redhat.com, greg@kroah.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, mbligh@google.com
+Subject: Re: [PATCH] writeback: remove unnecessary wait in throttle_vm_writeout()
+References: <390857819.00313@ustc.edu.cn> <20070928080202.GA10293@elte.hu>
+	<20070928162347.GA11024@Krystal>
+	<200709281010.28086.nickpiggin@yahoo.com.au>
+	<20070928175756.GA16066@Krystal>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Fri, 28 Sep 2007 15:50:14 -0400
+In-Reply-To: <20070928175756.GA16066@Krystal> (Mathieu Desnoyers's message of "Fri, 28 Sep 2007 13:57:56 -0400")
+Message-ID: <y0mabr6vabt.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Sep 2007 19:50:02.0109 (UTC) FILETIME=[C231B2D0:01C80208]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for not mentioning this earlier, but this patch should really be
-two (or more) patches: one to add dmabarrier support to the core user
-memory stuff in drivers/infiniband, and a second one to add support to
-mthca (and more patches to add support to mlx4, cxgb3, etc, etc).
 
- > + * @dmabarrier: set "dmabarrier" attribute on this memory, if necessary 
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
 
-Nit: just delete the "if necessary" since I don't think it makes
-things clearer (and actually doesn't make much sense in this context)
+>> [...]
+>> > I totally agree with Ingo here. Having a basic instrumentation that is
+>> > enabled by default will help to identify code paths causing unexpected
+>> > delays in the kernel. [...]
+>
+>> It is. See: CONFIG_VM_EVENT_COUNTERS and all the other vm specific
+>> crap littered in /proc/ (buddyinfo, zoneinfo, meminfo, etc).  [...]
 
-Other than that this look fine to me, and I'm ready to merge it once
-the necessary core DMA stuff is settled.
+> Isn't the actual instrumentation present in the VM subsystem
+> consisting mostly of event counters ? This kind of profiling
+> provides limited help in following specific delays in the
+> kernel. [...]
 
- - R.
+These existing VM events/counters could be a good target for a second
+worked-out example (after blktrace) of reimplementation using generic
+markers.
+
+- FChE
