@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbXI0Xyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbXI1AJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761069AbXI0Xyn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Sep 2007 19:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760857AbXI0Xyb
+	id S1760259AbXI1AJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Sep 2007 20:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759411AbXI1AJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Sep 2007 19:54:31 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:10416 "EHLO
-	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760803AbXI0Xy3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Sep 2007 19:54:29 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
-Date: Thu, 27 Sep 2007 17:54:27 -0600
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: jkeating@redhat.com, "Joerg Pommnitz" <pommnitz@yahoo.com>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <ak@suse.de>
-Subject: Re: More E820 brokenness
-Message-ID: <20070927235427.GA18900@cosmic.amd.com>
-References: <46FC2BFD.6070200@zytor.com>
- <20070927223336.GB4755@cosmic.amd.com> <46FC32FE.9070302@zytor.com>
- <20070927231552.GC4755@cosmic.amd.com> <46FC3C5A.2010902@zytor.com>
- <20070927233408.GD4755@cosmic.amd.com> <46FC3E7C.7060600@zytor.com>
+	Thu, 27 Sep 2007 20:09:09 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:58435 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755757AbXI1AJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Sep 2007 20:09:08 -0400
+Date: Fri, 28 Sep 2007 09:08:47 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mark Gross <mgross@linux.intel.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] QoS params patch update.
+Message-ID: <20070928000847.GA30814@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mark Gross <mgross@linux.intel.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	linux-pm <linux-pm@lists.linux-foundation.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <20070926223712.GA22029@linux.intel.com> <20070926224026.GA23218@linux.intel.com> <20070927022440.GB25873@linux-sh.org> <20070926210515.6725e745.randy.dunlap@oracle.com> <20070927201739.GA2831@linux.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <46FC3E7C.7060600@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 27 Sep 2007 23:53:56.0637 (UTC)
- FILETIME=[AAA3B4D0:01C80161]
-X-WSS-ID: 6AE29D142ZC505111-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070927201739.GA2831@linux.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27/09/07 16:36 -0700, H. Peter Anvin wrote:
-> Jordan Crouse wrote:
-> >>>
-> >> Oh bugger, looks like this one might be genuinely my fault after all.
-> >> The ID check in the new code is buggy.
-> >>
-> >> Can you please test this revised patch out (against current -git)?
-> > 
-> > 
-> > That looks the same as the previous patch you sent?
-> > 
+On Thu, Sep 27, 2007 at 01:17:39PM -0700, Mark Gross wrote:
+> Updated qos PM parameter patch:
+> Note: the replacing of latency.c with this is a separate patch.
 > 
-> Sorry, this is the right one...
+> this patch attempts to address the issues raised so far.
 > 
-> 	-hpa
+[snip]
 
-> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-> index bccaa1c..2f37568 100644
-> --- a/arch/i386/boot/memory.c
-> +++ b/arch/i386/boot/memory.c
-> @@ -28,11 +28,10 @@ static int detect_memory_e820(void)
->  
->  	do {
->  		size = sizeof(struct e820entry);
-> -		id = SMAP;
->  		asm("int $0x15; setc %0"
-> -		    : "=am" (err), "+b" (next), "+d" (id), "+c" (size),
-> +		    : "=dm" (err), "+b" (next), "=a" (id), "+c" (size),
->  		      "=m" (*desc)
-> -		    : "D" (desc), "a" (0xe820));
-> +		    : "D" (desc), "d" (SMAP), "a" (0xe820));
->  
->  		/* Some BIOSes stop returning SMAP in the middle of
->  		   the search loop.  We don't know exactly how the BIOS
+> +static int register_new_qos_misc(struct qos_object *qos)
+> +{
+> +	int ret;
+> +
+> +	qos->qos_power_miscdev.minor = MISC_DYNAMIC_MINOR;
+> +	qos->qos_power_miscdev.name = qos->name;
+> +	qos->qos_power_miscdev.fops = &qos_power_fops;
+> +
+> +	ret = misc_register(&qos->qos_power_miscdev);
+> +
+> +	return ret;
+> +}
+> +
+Minor nit, ret is a pointless variable here, you can just return
+misc_register directly.
 
-Worked, but that just raises more questions.  Why didn't more x86 boxes
-break or, alternatively, why did a new version of the BIOS fix the problem? 
-I guess we shouldn't look a gift horse in the mouth. Or something.
-
-Thanks very much for your help.
-
-Jordan
-
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
-
+Other than that, this looks much better!
