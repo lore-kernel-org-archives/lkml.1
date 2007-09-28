@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbXI1SiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbXI1SjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbXI1SiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 14:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbXI1SiQ
+	id S1757647AbXI1SjY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 14:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbXI1SjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 14:38:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55853 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752172AbXI1SiP (ORCPT
+	Fri, 28 Sep 2007 14:39:16 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:48674 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752544AbXI1SjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 14:38:15 -0400
-Date: Fri, 28 Sep 2007 11:38:10 -0700
-From: Paul Jackson <pj@sgi.com>
-To: mel@skynet.ie (Mel Gorman)
-Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Subject: Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
-Message-Id: <20070928113810.9a5cbaf2.pj@sgi.com>
-In-Reply-To: <20070928182825.GA9779@skynet.ie>
-References: <20070928142326.16783.98817.sendpatchset@skynet.skynet.ie>
-	<20070928142506.16783.99266.sendpatchset@skynet.skynet.ie>
-	<1190993823.5513.10.camel@localhost>
-	<20070928182825.GA9779@skynet.ie>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Fri, 28 Sep 2007 14:39:15 -0400
+Subject: Re: [PATCH RFC] paravirt_ops: refactor struct paravirt_ops into
+	smaller pv_*_ops
+From: Zachary Amsden <zach@vmware.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       Avi Kivity <avi@qumranet.com>,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <46FD4388.6000106@goop.org>
+References: <46FD4388.6000106@goop.org>
+Content-Type: text/plain
+Date: Fri, 28 Sep 2007 11:39:36 -0700
+Message-Id: <1191004776.18310.16.camel@bodhitayantram.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel replied to Lee:
-> > > +	return nodes_intersect(nodemask, current->mems_allowed);
-> >                  ^^^^^^^^^^^^^^^ -- should be nodes_intersects, I think.
+On Fri, 2007-09-28 at 11:10 -0700, Jeremy Fitzhardinge wrote:
+> This patch refactors the paravirt_ops structure into groups of
+> functionally related ops:
 > 
-> Crap, you're right, I missed the warning about implicit declarations. I
-> apologise. This is the corrected version
+> pv_info - random info, rather than function entrypoints
+> pv_init_ops - functions used at boot time (some for module_init too)
+> pv_misc_ops - lazy mode, which didn't fit well anywhere else
+> pv_time_ops - time-related functions
+> pv_cpu_ops - various privileged instruction ops
+> pv_irq_ops - operations for managing interrupt state
+> pv_apic_ops - APIC operations
+> pv_mmu_ops - operations for managing pagetables
+> 
+> There are several motivations for this:
+> 
+> 1. Some of these ops will be general to all x86, and some will be
+>    i386/x86-64 specific.  This makes it easier to share common stuff
+>    while allowing separate implementations where needed.
+> 
+> 2. At the moment we must export all of paravirt_ops, but modules only
+>    need selected parts of it.  This allows us to export on a case by case
+>    basis (and also choose which export license we want to apply).
 
-I found myself making that same error, saying 'nodes_intersect' instead
-of 'nodes_intersects' the other day.  And I might be the one who invented
-that name ;).
+We shouldn't need to export pv_init_ops.  It is debatable whether
+CR2/CR3 should be part of CPU or MMU ops.  Also, can we drop write_cr2?
+It isn't used anywhere, so the only reason to keep it is symmetry.
+Which was a fine argument when it was an inline, but now it just adds
+unused junk to the code.
 
-This would probably be too noisey and too little gain to do on the
-Linux kernel, but if this was just a little private project of my own,
-I'd be running a script over the whole thing, modifying all 30 or so
-instances of bitmap_intersects, cpus_intersects and nodes_intersects so
-as to remove the final 's' character.
+> This still needs to be reconciled with the x86 merge and glommer's
+> paravirt_ops unification work.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Those issues aside, this looks great.  I'll give it a whirl today.
+
+Zach
+
