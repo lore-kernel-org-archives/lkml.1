@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbXI1Jw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbXI1J5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761313AbXI1Jw3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 05:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbXI1JwV
+	id S1759482AbXI1J5Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 05:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbXI1J5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 05:52:21 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2045 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753238AbXI1JwU (ORCPT
+	Fri, 28 Sep 2007 05:57:16 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:4225 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756746AbXI1J5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 05:52:20 -0400
-Date: Fri, 28 Sep 2007 10:52:07 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.10
-Message-ID: <20070928095207.GA18163@shadowen.org>
-References: <bf97f66cfc0696c8574921d53eaafcb7@pinky> <20070928084003.GA18882@elte.hu>
+	Fri, 28 Sep 2007 05:57:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=HBC7+ICkE9ySbrMmiGEynb+aKQ+7qy1WFLZv97V/F/ucGpdX3zBaizOKFQ8PL+R+Ac46K92S3pdHD2p3xBKnUp7x5SmV0VzWatkqJeXB284iUqJGOcMVpKTOfQi3EqBq6rKk/GLMRWnUaaGfdjEpSnlV82PCsi0Eep2hJ54yk7o=
+Message-ID: <46FCCF94.9060400@gmail.com>
+Date: Fri, 28 Sep 2007 02:55:32 -0700
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070928084003.GA18882@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+To: Paul Rolland <rol@as2917.net>
+CC: David Newall <david@davidnewall.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>, rol@witbe.net
+Subject: Re: 2.6.23-rc7 - _random_ IRQ23 : nobody cared
+References: <20070924083336.7a08fd61@tux.DEF.witbe.net>	<46F7C933.4080003@davidnewall.com>	<20070925090057.5778aa2a@tux.DEF.witbe.net>	<46FAFF7A.5070208@gmail.com> <20070927080551.424e90b9@tux.DEF.witbe.net>
+In-Reply-To: <20070927080551.424e90b9@tux.DEF.witbe.net>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 28, 2007 at 10:40:03AM +0200, Ingo Molnar wrote:
+Paul Rolland wrote:
+>> Can you change driver load order such that the driver for the modem is
+>> loaded first?
 > 
-> * Andy Whitcroft <apw@shadowen.org> wrote:
-> 
-> > This version brings a number of new checks, and a number of bug fixes.  
-> 
-> your checkpatch patch itself produces 22 warnings ...
-> 
-> i ran it over kernel/sched.c and there are many bogus warnings that i 
-> reported to you earlier:
-> 
->   WARNING: multiple assignments should be avoided
->   #2319:
->   +       max_load = this_load = total_load = total_pwr = 0;
-> 
-> and new bogus ones:
-> 
->   ERROR: need consistent spacing around '*' (ctx:WxV)
->   #5287:
->   +               mode_t mode, proc_handler *proc_handler)
-> 
->   ERROR: need consistent spacing around '*' (ctx:WxV)
->   #5328:
->   +static ctl_table *sd_alloc_ctl_cpu_table(int cpu)
-> 
->   ERROR: need space before that '*' (ctx:VxV)
->   #209:
->   +# define INIT_TASK_GRP_LOAD    2*NICE_0_LOAD
-> 
-> why did you ignore my feedback? Ever since v8 the quality of 
-> checkpatch.pl has been getting worse and worse as there are way too many 
-> false positives. I'm still stuck on v8 for my own use, v9 and v10 is 
-> unusable.
+> As I said, it's not possible, because :
+>  - the modem driver is an out-kernel one, so I have to wait the end of the
+>    boot process so that it can be loaded,
+>  - libata on IRQ23 is the one taking care of my disks, and I suspect it 
+>    quite hard to install a modem driver before having the disk driver
+>    installed.
 
-I think if you read your incoming email you will see nothing of the sort.
-I have discussed this with you and in public.  The multiple assignment
-check you dissagree with and we have softened it in direct response to that
-dislike.  However, the main proponent of this existing wanted that check.
-Therefore it has stayed.  The other false positives you report are real.
-Some are fixed in my development version, others are not.  They come
-from the fact that I was asked for better checks on '*' and the like in
-its binary mode.  To get that I had to actually start telling unary and
-binary uses of the same operator appart.  That is hard in the face of
-typedef'd types.  I am working to make it better.
+You can do both by...
 
-However, the key here is that it will never be 100%, not without
-becoming a try C parser.  The output is a _guide_ if you don't like its
-output ignore the reports you dislike.  I for one send out patches with
-style violations where I deem that the code is better that way.
+1. Build the modem driver into the kernel.  char drivers are linked in
+before ATA ones, so it will attach first.
 
--apw
+2. Using a custom initrd with emergency shell.  initrd is loaded by BIOS
+so no driver is involved.  I don't actually know how to do this tho.
+
+3. Put in an extra disk controller and boot from it with both drivers
+compiled as module.
+
+-- 
+tejun
