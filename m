@@ -1,168 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbXI1Xj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbXI1Xke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756431AbXI1Xj6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 19:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbXI1Xjw
+	id S1757265AbXI1Xke (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 19:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbXI1Xk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 19:39:52 -0400
-Received: from mail.zelnet.ru ([80.92.97.13]:45306 "EHLO mail.zelnet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753635AbXI1Xjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 19:39:51 -0400
-X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Sep 2007 19:39:50 EDT
-Message-ID: <46FD8298.5020804@namesys.com>
-Date: Sat, 29 Sep 2007 02:39:20 +0400
-From: Edward Shishkin <edward@namesys.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Dave Hansen <haveblue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       reiserfs-devel <reiserfs-devel@vger.kernel.org>,
-       hch <hch@infradead.org>
-Subject: Re: 2.6.23-rc8-mm2 NULL dereference in __mnt_is_readonly in	ftruncate
-References: <1190930060.7667.5.camel@localhost>	 <20070928013024.c7522542.akpm@linux-foundation.org> <1190996517.7344.79.camel@localhost>
-In-Reply-To: <1190996517.7344.79.camel@localhost>
-X-Enigmail-Version: 0.86.0.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Sep 2007 19:40:28 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:35305 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754458AbXI1Xk1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 19:40:27 -0400
+Date: Fri, 28 Sep 2007 17:40:23 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: General slowness with using 64Gb HIGHMEM option on 32-bit kernel
+In-reply-to: <fa.mssrRT/qBOVwvrr2k/d2or6ggOo@ifi.uio.no>
+To: Sergey Popov <faijeya@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <46FD90E7.6090009@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.mssrRT/qBOVwvrr2k/d2or6ggOo@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
+Sergey Popov wrote:
+> Short description: after recompiling 32-bit kernel with 64Gb highmem
+> support and rebooting into it, OS started working very much slower
+> then before.
+> 
+> Specifications: Intel Core 2 Duo E6600@2,4Ghz on Intel i965Q-based
+> motherboard. 6Gb of DDR2 RAM, 2x1Gb+2x2Gb, dual-channel.
+> Vector Linux 5.8 (Slackware Linux 11-based), 2.6.20.3 kernel.
+> 
+> Long description: after recompiling 32-bit 2.6.20.3 kernel with 64Gb
+> highmem option and rebooting into it, booting process froze on udevd.
+> After booting up from CD and disabling rc.udev, system started, but
+> it's work after rc.M script sarted was 5-10 times slower then usual.
+> top showed, that processes are taking much more CPU% time then usual.
+> I tried downloading the newest stable kernel - 2.6.22.9 - hoping, that
+> it would solve the problem. I downloaded it, booted from CD, and
+> compiled it with 64Gb highmem support. I felt some speed improvement,
+> but if on 2.6.20.3 machine performed like P166, now it is working like
+> P2-350.
+> I've found a similar problem, described on lkml -
+> http://lkml.org/lkml/2007/5/30/5 . But, unfortunately, it is x86_64
+> related and contains no clues for me.
+> 
+> Moving to 64-bit distro is rather unpleasant - as there is an option
+> in 32-bit kernel, it should work ;) .
+> 
+> What tests should I run to help investigate this problem?
 
->On Fri, 2007-09-28 at 01:30 -0700, Andrew Morton wrote:
->  
->
->>On Thu, 27 Sep 2007 15:54:20 -0600 Zan Lynx <zlynx@acm.org> wrote:
->>    
->>
->>>Near the end of my boot sequence, there is a kernel error.  I am not
->>>sure exactly what user-space is doing to make this happen, but I know
->>>that a simple shell and some filesystem operations do not cause it.
->>>
->>>This error also occurred in 2.6.23-rc8-mm1 but I didn't have time to
->>>post it and hoped it would just go away.  I never tested 2.6.23-rc7-mm*,
->>>and the error did not happen in rc6-mm1.
->>>
->>>console [netcon0] enabled
->>>netconsole: network logging started
->>>eth0: no IPv6 routers present
->>>Unable to handle kernel NULL pointer dereference at 0000000000000053 RIP: 
->>> [<ffffffff802c96c0>] __mnt_is_readonly+0x0/0x20
->>>PGD 0 
->>>Oops: 0000 [1] SMP 
->>>last sysfs file: /block/sr0/size
->>>CPU 0 
->>>Modules linked in: netconsole configfs sg ipv6 evdev usbhid hid usb_storage libusual psmouse serio_raw ssb video output ehci_hcd ohci_hcd usbcore snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd snd_page_alloc
->>>Pid: 7291, comm: smbd Not tainted 2.6.23-rc8-mm2 #1
->>>RIP: 0010:[<ffffffff802c96c0>]  [<ffffffff802c96c0>] __mnt_is_readonly+0x0/0x20
->>>RSP: 0018:ffff8100068b1b60  EFLAGS: 00010296
->>>RAX: ffff810007108000 RBX: ffff81000261d8c0 RCX: ffffffff8093aca0
->>>RDX: 0000000000000004 RSI: ffffffff8092e950 RDI: 0000000000000003
->>>RBP: 0000000000000003 R08: 0000000000000003 R09: ffffffff8061f7cd
->>>R10: 00000000b256aacb R11: 0000000000000000 R12: 00000000ffffffe2
->>>R13: ffff8100068b1bd8 R14: ffff8100068b1ee8 R15: ffff81000655a910
->>>FS:  00007f6f0930c6f0(0000) GS:ffffffff806ce000(0000) knlGS:0000000000000000
->>>CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->>>CR2: 0000000000000053 CR3: 0000000007cb2000 CR4: 00000000000006e0
->>>DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->>>DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->>>Process smbd (pid: 7291, threadinfo ffff8100068b0000, task ffff810007108000)
->>>last branch before last exception/interrupt
->>> from  [<ffffffff802cc37a>] mnt_want_write+0x3a/0x90
->>> to  [<ffffffff802c96c0>] __mnt_is_readonly+0x0/0x20
->>>Stack:  ffffffff802cc37f ffff8100078cd9a0 ffff8100068b1bd8 ffff8100078cd9a0
->>> ffffffff802c82bc ffff8100078cd780 0000000000000000 ffff8100078cd9a0
->>> ffff8100068b1bd8 ffff8100068b1ee8 0000000000003000 0000000000000000
->>>Call Trace:
->>> [<ffffffff802cc37f>] mnt_want_write+0x3f/0x90
->>> [<ffffffff802c82bc>] file_update_time+0x2c/0xe0
->>> [<ffffffff803506a8>] truncate_file_body+0x148/0x3f0
->>> [<ffffffff802647a3>] __lock_acquire+0x583/0x1180
->>> [<ffffffff80537f17>] _spin_unlock+0x17/0x20
->>> [<ffffffff80363822>] store_black_box+0x82/0x90
->>> [<ffffffff8034a845>] safe_link_add+0x75/0xd0
->>> [<ffffffff803521f7>] setattr_unix_file+0x207/0x220
->>> [<ffffffff80538274>] _spin_unlock_irq+0x24/0x30
->>> [<ffffffff805377f1>] __down_write_nested+0xa1/0xc0
->>> [<ffffffff802c8857>] notify_change+0xf7/0x2c0
->>> [<ffffffff802b051e>] do_truncate+0x5e/0x80
->>> [<ffffffff802b0659>] sys_ftruncate+0x119/0x130
->>> [<ffffffff8020c39e>] system_call+0x7e/0x83
->>>      
->>>
->>But you oopsed in a different place, via resier4.  I don't know if Dave
->>considers that part of his mandate - he could reasonably ask the reiser4
->>guys to help fix things up.
->>    
->>
->
->First of all, thanks a bunch for the report.  It really helps.
->
->This could probably be considered a reiser4 bug, excited by the r/o bind
->mount changes.  See how that pointer is 0x...053?  That's a weird offset
->for a structure that should be mostly word-aligned.  
->
->I think that's because reiser4 stack-allocates a 'struct file', and then
->only initializes parts of it, *not* including the vfsmount.  The test in
->file_update_time() is for f->f_vfsmnt == NULL, and I think we had
->something like 0x1 in there.
->
->I think that stack allocation is a pretty nasty trick for a structure
->that's supposed to be pretty persistent and dynamically allocated, and
->is certainly something that needs to get fixed up in a proper way.
->  
->
+Make sure your BIOS is up to date. If so, post your dmesg output and the 
+contents of /proc/mtrr. There are a number of Intel boards which 
+have/had BIOS bugs where the BIOS didn't set up the MTRRs to mark all 
+RAM as write-back. This results in the last bit of memory being 
+uncacheable and causes a major performance drop.
 
-agreed.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
->This works around the problem for now, but this could potentially cause
->more bugs any time we add some member to 'struct file' and depend on its
->state being sane anywhere in the VFS.  If there's a list anywhere of
->merge-stopper reiser4 bugs around, this should probably go in there. 
->
->  
->
-
-will be fixed.
-
->In general, I think reiser4 also lets the 'struct file' get way too deep
->into its internals.  For instance, I would expect reiser4_write_extent()
->to take a plain inode, not a 'struct file'.
->  
->
-
-This uses struct file's private data for so-called hints (speedup 
-technique).
-Why not plain inode? I think because this is remains of removed
-file-as-directory stuff.
-
->Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
->
->---
->
-> lxc-dave/fs/reiser4/plugin/file/file.c |    1 +
-> 1 file changed, 1 insertion(+)
->
->diff -puN fs/reiser4/plugin/file/file.c~reiser4-need-to-initialize-file-f_mnt fs/reiser4/plugin/file/file.c
->--- lxc/fs/reiser4/plugin/file/file.c~reiser4-need-to-initialize-file-f_mnt	2007-09-28 09:10:51.000000000 -0700
->+++ lxc-dave/fs/reiser4/plugin/file/file.c	2007-09-28 09:11:20.000000000 -0700
->@@ -581,6 +581,7 @@ static int truncate_file_body(struct ino
-> 		file.private_data = NULL;
-> 		file.f_pos = new_size;
-> 		file.private_data = NULL;
->+		file.f_vfsmnt = NULL;
-> 		uf_info = unix_file_inode_data(inode);
-> 		result = find_file_state(inode, uf_info);
-> 		if (result)
->_
->
->
->  
->
-
-Many thanks,
-Edward.
