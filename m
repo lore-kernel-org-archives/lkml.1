@@ -1,194 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbXI1U3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbXI1UbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbXI1U3Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbXI1U27
+	id S1756665AbXI1UbW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXI1UbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:28:59 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:52372 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753671AbXI1U26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:28:58 -0400
-Subject: [PATCH 6/8] scsi: megaraid_sas - call cmd completion from reset
-From: bo yang <bo.yang@lsi.com>
-To: linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       Bo.yang@lsi.com, Sumant.patro@lsi.com
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Sep 2007 11:46:22 -0400
-Message-Id: <1190821582.5955.25.camel@dhcp-75-534.se.lsil.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-X-OriginalArrivalTime: 28 Sep 2007 20:28:48.0417 (UTC) FILETIME=[2CC82110:01C8020E]
+	Fri, 28 Sep 2007 16:31:15 -0400
+Received: from ara.aytolacoruna.es ([212.51.63.12]:38445 "EHLO
+	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751534AbXI1UbP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:31:15 -0400
+X-Greylist: delayed 1635 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Sep 2007 16:31:15 EDT
+Date: Fri, 28 Sep 2007 22:03:52 +0200
+From: Santiago Garcia Mantinan <manty@manty.net>
+To: linux-kernel@vger.kernel.org
+Subject: vga text console not working on 2.6.23-rc8
+Message-ID: <20070928200352.GA2312@pul.manty.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Driver will call cmd completion routine from Reset path without waiting for cmd completion from isr context.
+Hi!
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+I have just compiled a 2.6.23-rc8 using the config from my 2.6.22 as a basis
+and I came out with a not working (almost black) vga text console.
 
----
- drivers/scsi/megaraid/megaraid_sas.c |  107 ++++++++++++-------------
- drivers/scsi/megaraid/megaraid_sas.h |    2
- 2 files changed, 55 insertions(+), 54 deletions(-)
+This is what I'm getting on my logs:
 
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 05:48:10.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 21:31:34.000000000 -0700
-@@ -109,6 +109,10 @@ static DEFINE_MUTEX(megasas_async_queue_
- 
- static u32 megasas_dbg_lvl;
- 
-+static void
-+megasas_complete_cmd(struct megasas_instance *instance, struct megasas_cmd *cmd,
-+		     u8 alt_status);
-+
- /**
-  * megasas_get_cmd -	Get a command from the free pool
-  * @instance:		Adapter soft state
-@@ -919,6 +923,49 @@ static int megasas_slave_configure(struc
- }
- 
- /**
-+ * megasas_complete_cmd_dpc	 -	Returns FW's controller structure
-+ * @instance_addr:			Address of adapter soft state
-+ *
-+ * Tasklet to complete cmds
-+ */
-+static void megasas_complete_cmd_dpc(unsigned long instance_addr)
-+{
-+	u32 producer;
-+	u32 consumer;
-+	u32 context;
-+	struct megasas_cmd *cmd;
-+	struct megasas_instance *instance =
-+				(struct megasas_instance *)instance_addr;
-+	unsigned long flags;
-+
-+	/* If we have already declared adapter dead, donot complete cmds */
-+	if (instance->hw_crit_error)
-+		return;
-+
-+	spin_lock_irqsave(&instance->completion_lock, flags);
-+
-+	producer = *instance->producer;
-+	consumer = *instance->consumer;
-+
-+	while (consumer != producer) {
-+		context = instance->reply_queue[consumer];
-+
-+		cmd = instance->cmd_list[context];
-+
-+		megasas_complete_cmd(instance, cmd, DID_OK);
-+
-+		consumer++;
-+		if (consumer == (instance->max_fw_cmds + 1)) {
-+			consumer = 0;
-+		}
-+	}
-+
-+	*instance->consumer = producer;
-+
-+	spin_unlock_irqrestore(&instance->completion_lock, flags);
-+}
-+
-+/**
-  * megasas_wait_for_outstanding -	Wait for all outstanding cmds
-  * @instance:				Adapter soft state
-  *
-@@ -941,6 +988,11 @@ static int megasas_wait_for_outstanding(
- 		if (!(i % MEGASAS_RESET_NOTICE_INTERVAL)) {
- 			printk(KERN_NOTICE "megasas: [%2d]waiting for %d "
- 			       "commands to complete\n",i,outstanding);
-+			/*
-+			 * Call cmd completion routine. Cmd to be
-+			 * be completed directly without depending on isr.
-+			 */
-+			megasas_complete_cmd_dpc((unsigned long)instance);
- 		}
- 
- 		msleep(1000);
-@@ -1820,60 +1872,6 @@ megasas_get_ctrl_info(struct megasas_ins
- }
- 
- /**
-- * megasas_complete_cmd_dpc	 -	Returns FW's controller structure
-- * @instance_addr:			Address of adapter soft state
-- *
-- * Tasklet to complete cmds
-- */
--static void megasas_complete_cmd_dpc(unsigned long instance_addr)
--{
--	u32 producer;
--	u32 consumer;
--	u32 context;
--	struct megasas_cmd *cmd;
--	struct megasas_instance *instance = (struct megasas_instance *)instance_addr;
--	unsigned long flags;
--
--	/* If we have already declared adapter dead, donot complete cmds */
--	if (instance->hw_crit_error)
--		return;
--
--	producer = *instance->producer;
--	consumer = *instance->consumer;
--
--	while (consumer != producer) {
--		context = instance->reply_queue[consumer];
--
--		cmd = instance->cmd_list[context];
--
--		megasas_complete_cmd(instance, cmd, DID_OK);
--
--		consumer++;
--		if (consumer == (instance->max_fw_cmds + 1)) {
--			consumer = 0;
--		}
--	}
--
--	*instance->consumer = producer;
--
--	/*
--	 * Check if we can restore can_queue
--	 */
--	if (instance->flag & MEGASAS_FW_BUSY
--		&& time_after(jiffies, instance->last_time + 5 * HZ)
--		&& atomic_read(&instance->fw_outstanding) < 17) {
--
--		spin_lock_irqsave(instance->host->host_lock, flags);
--		instance->flag &= ~MEGASAS_FW_BUSY;
--		instance->host->can_queue =
--				instance->max_fw_cmds - MEGASAS_INT_CMDS;
--
--		spin_unlock_irqrestore(instance->host->host_lock, flags);
--	}
--
--}
--
--/**
-  * megasas_issue_init_mfi -	Initializes the FW
-  * @instance:		Adapter soft state
-  *
-@@ -2537,6 +2535,7 @@ megasas_probe_one(struct pci_dev *pdev, 
- 	init_waitqueue_head(&instance->abort_cmd_wait_q);
- 
- 	spin_lock_init(&instance->cmd_pool_lock);
-+	spin_lock_init(&instance->completion_lock);
- 
- 	sema_init(&instance->aen_mutex, 1);
- 	sema_init(&instance->ioctl_sem, MEGASAS_INT_CMDS);
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 15:15:26.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-09-27 04:58:15.000000000 -0700
-@@ -1086,6 +1086,8 @@ struct megasas_instance {
- 	struct megasas_cmd **cmd_list;
- 	struct list_head cmd_pool;
- 	spinlock_t cmd_pool_lock;
-+	/* used to synch producer, consumer ptrs in dpc */
-+	spinlock_t completion_lock;
- 	struct dma_pool *frame_dma_pool;
- 	struct dma_pool *sense_dma_pool;
- 
+Console: colour dummy device 80x25
+console [tty0] enabled
 
+Instead of the old:
 
+Console: colour VGA+ 80x25
+
+The options related to the console on my config are these:
+
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_VGA_CONSOLE=y
+CONFIG_VIDEO_SELECT=y
+CONFIG_DUMMY_CONSOLE=y
+
+The machine is a AMD x64 X2 Athlon with a NForce 4 chipset, vga is a ATI
+radeon and I have also set:
+
+CONFIG_DRM=m
+CONFIG_DRM_RADEON=m
+
+I have tried with and without CONFIG_VIDEO_SELECT and
+CONFIG_VIDEO_OUTPUT_CONTROL with the same results. BTW: when X starts the
+display is Ok.
+
+If you want me to do any tests or need more info just tell me.
+
+Regards...
+-- 
+Manty/BestiaTester -> http://manty.net
