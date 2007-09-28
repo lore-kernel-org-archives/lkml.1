@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760870AbXI1JtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761276AbXI1JuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760870AbXI1JtU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 05:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbXI1JtK
+	id S1761276AbXI1JuV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 05:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbXI1JuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 05:49:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50750 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755362AbXI1JtJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 05:49:09 -0400
-Date: Fri, 28 Sep 2007 02:49:01 -0700
-From: Paul Jackson <pj@sgi.com>
-To: travis@sgi.com
-Cc: akpm@linux-foundation.org, ak@suse.de, clameter@sgi.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH 08/10] ia64: Convert cpu_sibling_map to a per_cpu data
- array (v3)
-Message-Id: <20070928024901.24ab6c99.pj@sgi.com>
-In-Reply-To: <20070912015647.214306428@sgi.com>
-References: <20070912015644.927677070@sgi.com>
-	<20070912015647.214306428@sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Sep 2007 05:50:07 -0400
+Received: from sargon.lncsa.com ([212.99.8.251]:56136 "EHLO sargon.lncsa.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751803AbXI1JuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 05:50:06 -0400
+Message-ID: <46FCC87A.3060004@lncsa.com>
+Date: Fri, 28 Sep 2007 11:25:14 +0200
+From: Laurent CARON <lcaron@lncsa.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+MIME-Version: 1.0
+To: Stefan Seifert <nine@detonation.org>
+CC: Hannes Dorbath <light@theendofthetunnel.de>, linux-kernel@vger.kernel.org,
+       drbd-user@linbit.com, Lars Ellenberg <lars.ellenberg@linbit.com>
+Subject: Re: [DRBD-user] Crash on 2.6.22
+References: <46FCC2BE.7020509@lncsa.com> <46FCC3E4.7030908@theendofthetunnel.de> <46FCC7A2.8090506@detonation.org>
+In-Reply-To: <46FCC7A2.8090506@detonation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike,
+Stefan Seifert wrote:
+> The deadlock also occures with 0.7.x. A patch for that is floating around.
 
-I think there is a bug either in this ia64 patch, or in the related
-generic arch patch: Convert cpu_sibling_map to be a per cpu variable
-(v3).
+Here is a transcript from a mail I sent to Lars Ellenberg
 
-It dies early in boot on me, on the SGI internal 8 processor IA64
-system that you and I know as 'margin'.  The death is a hard hang, due
-to a corrupt stack, due to a bogus cpu index.
+It should 'normally' be fixed.
 
-I haven't tracked it down all the way, but have gotten this far.  If I add
-the following patch, I get a panic on the BUG_ON if I have these two patches
-in 2.6.23-rc8-mm1, but it boots just fine if I don't have these two patches.
+Am I wrong ?
 
-It seems that the "cpu_sibling_map[cpu]" cpumask_t is empty (all zero
-bits) with your two patches applied, but has some non-zero bits
-otherwise, which leads to 'group' being NR_CPUS instead of a useful CPU
-number.  Unfortunately, I have no idea why the "cpu_sibling_map[cpu]"
-cpumask_t is empty -- good luck on that part.
-
-The patch that catches this bug earlier is this:
-
---- 2.6.23-rc8-mm1.orig/kernel/sched.c	2007-09-28 01:42:20.144561024 -0700
-+++ 2.6.23-rc8-mm1/kernel/sched.c	2007-09-28 02:27:14.239075497 -0700
-@@ -5905,6 +5905,7 @@ static int cpu_to_phys_group(int cpu, co
- #else
- 	group = cpu;
- #endif
-+	BUG_ON(group == NR_CPUS);
- 	if (sg)
- 		*sg = &per_cpu(sched_group_phys, group);
- 	return group;
+Thanks
 
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+
+On Sun, Sep 16, 2007 at 05:34:01PM +0200, Laurent CARON wrote:
+> > Lars Ellenberg a écrit :
+>> > >On Fri, Sep 14, 2007 at 12:33:01AM +0200, Laurent CARON wrote:
+>>> > >>Hi,
+>>> > >>
+>>> > >>After reading the thread about XFS, drbd 8.0.5 and 2.6.22+
+kernels (XFS
+>>> > >>filesystem locks on mounting with 0.8.0.5), i wonder if the same
+applies
+>>> > >>to using 0.7.24 and 2.6.22+.
+>> > >
+>> > >basically, yes.
+>> > >so either don't use 0.7 with the kernels showing this behaviour,
+>> > >or wait for some maintenance release,
+>> > >or patch it yourself.
+> >
+> >
+> > You said that this is fixed in the latest 8.x SVN.
+
+it is fixed in 8.0.6
+
+> > It is fixed in the latest 0.7.x SVN too ?
+
+now, since you are so pushy today  :)
+I just checked in something (r3062),
+which should do the job, but is untested by me so far.
+please test and report back.
