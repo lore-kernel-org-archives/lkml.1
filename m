@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbXI2Mpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbXI2Mp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758420AbXI2Mpp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 08:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbXI2MpO
+	id S1758608AbXI2Mp5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 08:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbXI2MpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 08:45:14 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:32908 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758142AbXI2MpM (ORCPT
+	Sat, 29 Sep 2007 08:45:23 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:46252 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751817AbXI2MpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 08:45:12 -0400
+	Sat, 29 Sep 2007 08:45:21 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=o5f44/TPHq9a4iPGRHOHF8SXtg3rp4+GqWqV5R7aDe4OKXNUUZURG3RArv5wX429I4H24vx56CzZx3ZmZoIzG8kTMNCtqcUQNp9sndZqRBb5XhNGWGEWygu7NR9ZelcYXirOD/jCBOxZYUcAbRDrGSWq9dmhMfvdzyUh/GkvISM=  ;
-X-YMail-OSG: lgE0V0UVM1liNxBtGvUEeD87qYAPF91ZHW5g4jBmL_CsmYhSW9d6hPvPuw3us1Ck8M9WxkxJUg--
+  b=P4svNlGyDbLM85ewRCUHtKW15blFIAQbUnv5AmDmSdeUXz5iWT/7/fwmq/ArnyKPryTNqI3MnAYgo1sNVBZ3hf07h459crq5yRKiuTxkZqty1iApr1MnOPcHF7UOBXknAMNS7gdEowZusghY7i8rCGHz11hhOoGncGsfdnuAOKM=  ;
+X-YMail-OSG: FIC6MqEVM1kQ.mTBrRU.Vpcceu3SMQIMShti_ewqcNDFDGXEJGmbT4lKAlV_vS5aoNKLficpyA--
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH] mm: couple rcu and memory reclaim
-Date: Sat, 29 Sep 2007 06:13:51 +1000
+To: Krzysztof Oledzki <olel@ans.pl>
+Subject: Re: Strange system hangs
+Date: Sat, 29 Sep 2007 06:14:02 +1000
 User-Agent: KMail/1.9.5
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>
-References: <20070924104517.7d8126ae@twins>
-In-Reply-To: <20070924104517.7d8126ae@twins>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0709281005340.17152@bizon.gios.gov.pl>
+In-Reply-To: <Pine.LNX.4.64.0709281005340.17152@bizon.gios.gov.pl>
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200709290613.51790.nickpiggin@yahoo.com.au>
+Message-Id: <200709290614.02918.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 24 September 2007 18:45, Peter Zijlstra wrote:
-> Just an idea I had, it seems like a good idea to wait for RCU callbacks
-> in reclaim so that we won't get all of memory stuck there.
+On Friday 28 September 2007 18:42, Krzysztof Oledzki wrote:
+> Hello,
+>
+> I am experiencing weird system hangs. Once about 2-5 weeks system freezes
+> and stops accepting remote connections, so it is no longer possible to
+> connect to most important services: smtp (postfix), www (squid) or even
+> ssh. Such connection is accepted but then it hangs.
+>
+> What is strange, that previously established ssh session is usable. It is
+> possible to work on such system until you do something stupid like "less
+> /var/log/all.log". Using strace I found that process blocks on:
 
-I think it would be much too aggressive (_especially_ with preemptible
-RCU, I would have thought?). And not just for the case of adding a lot
-of idle time while other CPUs are busy not being preempted -- also
-that if you have lots of CPUs reclaiming and asking to synchronize_rcu,
-then you could have global RCU state getting ping-ponged.
+Is this a regression? If so, what's the most recent kernel that didn't show
+the problem?
 
+The symptoms could be consistent with some place doing a
+balance_dirty_pages while holding a lock that is required for IO, but I can't
+see a smoking gun (you've got contention on i_mutex, but that should be
+OK).
 
-> If this location is too aggressive we might stick it next to
-> disable_swap_token().
+Can you see if there is any memory under writeback that isn't being
+completed (sysrq+M), also a list the locks held after the hang might be
+helpful (compile in lockdep and sysrq+D)
 
-I don't see a really good reason to add this kind of wait here. I mean,
-we have to wait for RCU anyway, so we may as well scan what we can
-until then?
+Is anything currently running? (sysrq+P and even a full sysrq+T task list
+could be useful).
 
-Putting it in a slowpath at some point when we think we're heading for
-OOM I think would be a bit better.
+Are any IO errors occurring at all?
+
+Thanks,
+Nick
