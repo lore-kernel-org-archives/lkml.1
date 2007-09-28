@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbXI1NaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbXI1Nai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbXI1NaT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 09:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbXI1NaG
+	id S1757993AbXI1Nai (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 09:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbXI1NaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 09:30:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46720 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750743AbXI1NaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 09:30:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: Problems with SMP & ACPI powering off
-Date: Fri, 28 Sep 2007 15:44:29 +0200
-User-Agent: KMail/1.9.5
-Cc: Len Brown <lenb@kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       simon.derr@bull.net
-References: <46FC20B7.4000606@rtr.ca> <200709281455.29069.rjw@sisk.pl> <46FD001A.3070309@rtr.ca>
-In-Reply-To: <46FD001A.3070309@rtr.ca>
+	Fri, 28 Sep 2007 09:30:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:7795 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755210AbXI1NaO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 09:30:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K5n4mG5H0TbNd6DuRnbSAvfU3Zi0x+s31msZzumOTQLSwgxSNw1j2kWalcxud1rfmAXYeb4K3lpLxPJDR3E2tC6d73KfLu3QrkQIa0fRQ54i6/GDfyCc6wokb1pIK/c7BHnJ9d38EK8IKyM+AHUlD/Ey24b1ZJTCeqBNFUp55V4=
+Message-ID: <cfd9edbf0709280630x7396e49fi523e1d58aab9458a@mail.gmail.com>
+Date: Fri, 28 Sep 2007 15:30:08 +0200
+From: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: Out of memory management in embedded systems
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0709280857520.8940@chaos.analogic.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200709281544.30497.rjw@sisk.pl>
+References: <cfd9edbf0709280555n51afa8aft5040331ae9c227fd@mail.gmail.com>
+	 <Pine.LNX.4.61.0709280857520.8940@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 28 September 2007 15:22, Mark Lord wrote:
-> Rafael J. Wysocki wrote:
-> > On Friday, 28 September 2007 06:57, Len Brown wrote:
-> >> On Thursday 27 September 2007 18:00, Rafael J. Wysocki wrote:
-> >>> On Thursday, 27 September 2007 23:29, Mark Lord wrote:
-> >>>> Question:  do we disable all CPUs except 0 when doing ACPI power off?
-> >>> No, but we should.
-> >> We used to.
-> >> It is absolutely mandatory -- else it confuses the BIOS on some boards
-> >> b/c it isn't expecting SMM to get entered from other than cpu0.
-> > 
-> > Can we use the CPU hotplug for that, like in the suspend/hibernation case?
-> 
-> Well, so far it's working:  about ten poweroffs since I patched it,
-> and no issues with any of them.  Prior to that, it seemed like about
-> one in five poweroffs wouldn't (power off).
-> 
-> It'll take a lot more testing to confirm, though.
-> 
-> What can I call to determine if more than one CPU is enabled, anyway?
-> 
-> Here's the hack I'm using here, very situation (2 cores) specific,
-> and it still has some printk's leftover with a sleep so I have time
-> to read them before the lights go out.  :)
+On 9/28/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+>
+> On Fri, 28 Sep 2007, [iso-8859-1] Daniel Spång wrote:
+>
+> > Applications with dynamic input and dynamic memory usage have some
+> > issues with the current overcommitting kernel. A high memory usage
+> > situation eventually results in that a process is killed by the OOM
+> > killer. This is especially evident in swapless embedded systems with
+> > limited memory and no swap available.
+> >
+> > Some kind of notification to the application that the available memory
+> > is scarce and let the application free up some memory (e.g., by
+> > flushing caches), could be used to improve the situation and avoid the
+> > OOM killer. I am currently not aware of any general solution to this
+> > problem, but I have found some approaches that might (or might not)
+> > work:
+> >
+> > o Turn off overcommit. Results in a waste of memory.
+> >
+> > o Nokia uses a lowmem security module to signal on predetermined
+> > thresholds. Currently available in the -omap tree. But this requires
+> > manual tuning of the thresholds.
+> > http://www.linuxjournal.com/article/8502
+> >
+> > o Using madvise() with MADV_FREE to get the kernel to free mmaped
+> > memory, typically application caches, when the kernel needs the
+> > memory.
+> >
+> > o A OOM handler that the application registers with the kernel, and
+> > that the kernel executes before the OOM-killer steps in.
+> >
+> > Does it exist any other solutions to this problem?
+> >
+> > Daniel
+> > -
+>
+> But an embedded system contains all the software that will
+> ever be executed on that system! If it is properly designed,
+> it can never run out of memory because everything it will
+> ever do is known at design time.
 
-Well, we have disable_nonboot_cpus() that we use for suspend and that is
-supposed to be general.
+Not if its input is not known beforehand. Take a browser in a mobile
+phone as an example, it does not know at design time how big the web
+pages are. On the other hand we want to use as much memory as
+possible, for cache etc., a method that involves the kernel would
+simplify this and avoids setting manual limits.
 
-The question is when to call it.
-
-Greetings,
-Rafael
+Daniel
