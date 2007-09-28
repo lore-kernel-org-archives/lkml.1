@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbXI1SWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbXI1SYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756950AbXI1SWf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 14:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXI1SW2
+	id S1756956AbXI1SYO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 14:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbXI1SX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 14:22:28 -0400
-Received: from mail.trixing.net ([87.230.125.58]:56493 "EHLO mail.trixing.net"
+	Fri, 28 Sep 2007 14:23:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56664 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751636AbXI1SW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 14:22:28 -0400
-Message-ID: <46FD4650.60009@l4x.org>
-Date: Fri, 28 Sep 2007 20:22:08 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	id S1752624AbXI1SX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 14:23:58 -0400
+Message-ID: <46FD46B4.9050401@redhat.com>
+Date: Fri, 28 Sep 2007 11:23:48 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-To: Ken Schmidt <kenneth.schmidt@pnl.gov>
-CC: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-References: <20070928101601.0ccc1b74.kenneth.schmidt@pnl.gov>
-In-Reply-To: <20070928101601.0ccc1b74.kenneth.schmidt@pnl.gov>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.195
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: [patch 01/02] vfs: variant symlinks
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: F_DUPFD_CLOEXEC implementation
+References: <200709281734.l8SHYTmd027235@devserv.devel.redhat.com> <Pine.LNX.4.64.0709281113390.22521@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0709281113390.22521@alien.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ken Schmidt wrote:
-> Variant symlinks add the ability to embed variables in to the
-> contents of symbolic links so their targets can change based on
-> outside sources (user environment, uts, filesystems, etc.)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Could you elaborate why this is needed and what part cannot
-be solved in userspace (linkfarm on tmpfs or intelligent
-scripts)?
+Davide Libenzi wrote:
+> I think new system calls would have been a cleaner way to accomplish this. 
+> The "small pill at a time" may have better chance to go in, but will 
+> likely result in an uglier userspace interface.
 
-Thanks,
+We'd need this call anyway since neither dup nor dup2 provides the
+functionality of F_DUPFD (but F_DUPFD can be used to implement dup).
 
-Jan
+For dup2() I will wait until we have a sys_indirect implementation.
+I'll try to get this soon.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFG/Ua02ijCOnn/RHQRAgOQAKCfQ9H4VYau6nVGuVXyJ7IfBXK+QgCfYQxv
+k4esG379v8VBceFIECDybk0=
+=dvhX
+-----END PGP SIGNATURE-----
