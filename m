@@ -1,83 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbXI1Rdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbXI1RfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbXI1Rdi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 13:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbXI1Rd3
+	id S1755590AbXI1RfS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 13:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbXI1RfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 13:33:29 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55390 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753401AbXI1Rd2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 13:33:28 -0400
-Date: Fri, 28 Sep 2007 10:33:26 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
-In-Reply-To: <200709280742.38262.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
-References: <20070919033605.785839297@sgi.com> <20070919033643.763818012@sgi.com>
- <200709280742.38262.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 28 Sep 2007 13:35:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45104 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbXI1RfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 13:35:04 -0400
+Date: Fri, 28 Sep 2007 13:34:29 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200709281734.l8SHYTmd027235@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: F_DUPFD_CLOEXEC implementation
+Cc: akpm@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007, Nick Piggin wrote:
+One more small change to extend the availability of creation of
+file descriptors with FD_CLOEXEC set.  Adding a new command to
+fcntl() requires no new system call and the overall impact on
+code size if minimal.
 
-> On Wednesday 19 September 2007 13:36, Christoph Lameter wrote:
-> > SLAB_VFALLBACK can be specified for selected slab caches. If fallback is
-> > available then the conservative settings for higher order allocations are
-> > overridden. We then request an order that can accomodate at mininum
-> > 100 objects. The size of an individual slab allocation is allowed to reach
-> > up to 256k (order 6 on i386, order 4 on IA64).
-> 
-> How come SLUB wants such a big amount of objects? I thought the
-> unqueued nature of it made it better than slab because it minimised
-> the amount of cache hot memory lying around in slabs...
+If this patch gets accepted we will also add this change to the
+next revision of the POSIX spec.
 
-The more objects in a page the more the fast path runs. The more the fast 
-path runs the lower the cache footprint and the faster the overall 
-allocations etc.
+To test the patch, use the following little program.  Adjust the
+value of F_DUPFD_CLOEXEC appropriately.
 
-SLAB can be configured for large queues holdings lots of objects. 
-SLUB can only reach the same through large pages because it does not 
-have queues. One could add the ability to manage pools of cpu slabs but 
-that would be adding yet another layer to compensate for the problem of 
-the small pages. Reliable large page allocations means that we can get rid 
-of these layers and the many workarounds that we have in place right now.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-The unqueued nature of SLUB reduces memory requirements and in general the 
-more efficient code paths of SLUB offset the advantage that SLAB can reach 
-by being able to put more objects onto its queues. SLAB necessarily 
-introduces complexity and cache line use through the need to manage those 
-queues.
+#ifndef F_DUPFD_CLOEXEC
+# define F_DUPFD_CLOEXEC 12
+#endif
 
-> vmalloc is incredibly slow and unscalable at the moment. I'm still working
-> on making it more scalable and faster -- hopefully to a point where it would
-> actually be usable for this... but you still get moved off large TLBs, and
-> also have to inevitably do tlb flushing.
+int
+main (int argc, char *argv[])
+{
+  if  (argc > 1)
+    {
+      if (fcntl (3, F_GETFD) == 0)
+	{
+	  puts ("descriptor not closed");
+	  exit (1);
+	}
+      if (errno != EBADF)
+	{
+	  puts ("error not EBADF");
+	  exit (1);
+	}
 
-Again I have not seen any fallbacks to vmalloc in my testing. What we are 
-doing here is mainly to address your theoretical cases that we so far have 
-never seen to be a problem and increase the reliability of allocations of
-page orders larger than 3 to a usable level. So far I have so far not 
-dared to enable orders larger than 3 by default.
+      exit (0);
+    }
+  int fd = fcntl (STDOUT_FILENO, F_DUPFD_CLOEXEC, 0);
+  if (fd == -1 && errno == EINVAL)
+    {
+      puts ("F_DUPFD_CLOEXEC not supported");
+      return 0;
+    }
+  if (fd != 3)
+    {
+      puts ("program called with descriptors other than 0,1,2");
+      return 1;
+    }
 
-AFAICT The performance of vmalloc is not really relevant. If this would 
-become an issue then it would be possible to reduce the orders used to 
-avoid fallbacks.
+  execl ("/proc/self/exe", "/proc/self/exe", "1", NULL);
+  puts ("execl failed");
+  return 1;
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-> Or do you have SLUB at a point where performance is comparable to SLAB,
-> and this is just a possible idea for more performance?
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-AFAICT SLUBs performance is superior to SLAB in most cases and it was like 
-that from the beginning. I am still concerned about several corner cases 
-though (I think most of them are going to be addressed by the per cpu 
-patches in mm). Having a comparable or larger amount of per cpu objects as 
-SLAB is something that also could address some of these concerns and could 
-increase performance much further.
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index 78b2ff0..c9db73f 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -110,7 +110,7 @@ out:
+ 	return error;
+ }
+ 
+-static int dupfd(struct file *file, unsigned int start)
++static int dupfd(struct file *file, unsigned int start, int cloexec)
+ {
+ 	struct files_struct * files = current->files;
+ 	struct fdtable *fdt;
+@@ -122,7 +122,10 @@ static int dupfd(struct file *file, unsigned int start)
+ 		/* locate_fd() may have expanded fdtable, load the ptr */
+ 		fdt = files_fdtable(files);
+ 		FD_SET(fd, fdt->open_fds);
+-		FD_CLR(fd, fdt->close_on_exec);
++		if (cloexec)
++			FD_SET(fd, fdt->close_on_exec);
++		else
++			FD_CLR(fd, fdt->close_on_exec);
+ 		spin_unlock(&files->file_lock);
+ 		fd_install(fd, file);
+ 	} else {
+@@ -195,7 +198,7 @@ asmlinkage long sys_dup(unsigned int fildes)
+ 	struct file * file = fget(fildes);
+ 
+ 	if (file)
+-		ret = dupfd(file, 0);
++		ret = dupfd(file, 0, 0);
+ 	return ret;
+ }
+ 
+@@ -319,8 +322,9 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
+ 
+ 	switch (cmd) {
+ 	case F_DUPFD:
++	case F_DUPFD_CLOEXEC:
+ 		get_file(filp);
+-		err = dupfd(filp, arg);
++		err = dupfd(filp, arg, cmd == F_DUPFD_CLOEXEC);
+ 		break;
+ 	case F_GETFD:
+ 		err = get_close_on_exec(fd) ? FD_CLOEXEC : 0;
+diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
+index b847741..b01408a 100644
+--- a/include/asm-generic/fcntl.h
++++ b/include/asm-generic/fcntl.h
+@@ -73,6 +73,9 @@
+ #define F_SETSIG	10	/* for sockets. */
+ #define F_GETSIG	11	/* for sockets. */
+ #endif
++#ifndef F_DUPFD_CLOEXEC
++#define F_DUPFD_CLOEXEC	12
++#endif
+ 
+ /* for F_[GET|SET]FL */
+ #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
