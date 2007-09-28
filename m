@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbXI1Pkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbXI1PnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759198AbXI1Pkj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 11:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbXI1Pka
+	id S1759163AbXI1PnV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 11:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbXI1PnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 11:40:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42040 "EHLO mx3.mail.elte.hu"
+	Fri, 28 Sep 2007 11:43:07 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42675 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752765AbXI1Pk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 11:40:29 -0400
-Date: Fri, 28 Sep 2007 17:40:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: Add missing profile=kvm option to
-	Documentation/kernel-parameters.txt
-Message-ID: <20070928154012.GA18631@elte.hu>
-References: <20070928153220.GA26969@redhat.com>
+	id S1752765AbXI1PnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 11:43:04 -0400
+Message-ID: <46FD20F0.3050909@fr.ibm.com>
+Date: Fri, 28 Sep 2007 17:42:40 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070928153220.GA26969@redhat.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0019]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>
+Subject: Re: 2.6.23-rc8-mm2 - tcp_fastretrans_alert() WARNING
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
+In-Reply-To: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello ! 
 
-* Dave Jones <davej@redhat.com> wrote:
+Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/
 
-> Whilst looking up what profile=sleep did, I noticed that we missed 
-> adding docs for the most recent addition to the profiler.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
+I just found that warning in my logs. It seems that it's been 
+happening since rc7-mm1 at least. 
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Thanks !
 
-	Ingo
+C.
+
+WARNING: at /home/legoater/linux/2.6.23-rc8-mm2/net/ipv4/tcp_input.c:2314 tcp_fastretrans_alert()
+
+Call Trace:
+ <IRQ>  [<ffffffff8040fdc3>] tcp_ack+0xcd6/0x1894
+ [<ffffffff80411c79>] tcp_data_queue+0x5be/0xae7
+ [<ffffffff80412b54>] tcp_rcv_established+0x61f/0x6df
+ [<ffffffff80254146>] __lock_acquire+0x8a1/0xf1b
+ [<ffffffff80419cfd>] tcp_v4_do_rcv+0x3e/0x394
+ [<ffffffff8041a66f>] tcp_v4_rcv+0x61c/0x9a9
+ [<ffffffff803ff1e3>] ip_local_deliver+0x1da/0x2a4
+ [<ffffffff803ffb4e>] ip_rcv+0x583/0x5c9
+ [<ffffffff8046d33f>] packet_rcv_spkt+0x19a/0x1a8
+ [<ffffffff803e081c>] netif_receive_skb+0x2cf/0x2f5
+ [<ffffffff88042505>] :tg3:tg3_poll+0x65d/0x8a4
+ [<ffffffff803e09e8>] net_rx_action+0xb8/0x191
+ [<ffffffff8023a927>] __do_softirq+0x5f/0xe0
+ [<ffffffff8020c98c>] call_softirq+0x1c/0x28
+ [<ffffffff8020e9c3>] do_softirq+0x3b/0xb8
+ [<ffffffff8023aa1e>] irq_exit+0x4e/0x50
+ [<ffffffff8020e7df>] do_IRQ+0xbd/0xd7
+ [<ffffffff80209cb9>] mwait_idle+0x0/0x4d
+ [<ffffffff8020bce6>] ret_from_intr+0x0/0xf
+ <EOI>  [<ffffffff80209cfc>] mwait_idle+0x43/0x4d
+ [<ffffffff802099fb>] enter_idle+0x22/0x24
+ [<ffffffff80209c4f>] cpu_idle+0x9d/0xc0
+ [<ffffffff80476a91>] rest_init+0x55/0x57
+ [<ffffffff80630815>] start_kernel+0x2d6/0x2e2
+ [<ffffffff80630134>] _sinittext+0x134/0x13b
