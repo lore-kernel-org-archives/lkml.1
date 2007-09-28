@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbXI1XPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbXI1XQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbXI1XPW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 19:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbXI1XPL
+	id S1756605AbXI1XQS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 19:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbXI1XQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 19:15:11 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:61176 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753954AbXI1XPJ (ORCPT
+	Fri, 28 Sep 2007 19:16:12 -0400
+Received: from outbound-mail-28.bluehost.com ([69.89.17.198]:33873 "HELO
+	outbound-mail-28.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754234AbXI1XQL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 19:15:09 -0400
-Message-ID: <46FD8907.6000304@oracle.com>
-Date: Fri, 28 Sep 2007 16:06:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Fri, 28 Sep 2007 19:16:11 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] i915: make vbl interrupts work properly on i965g/gm
+Date: Fri, 28 Sep 2007 16:14:11 -0700
+User-Agent: KMail/1.9.7
+Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0709280248480.10526@skynet.skynet.ie> <200709281307.56037.jbarnes@virtuousgeek.org> <ada1wcimnsy.fsf@cisco.com>
+In-Reply-To: <ada1wcimnsy.fsf@cisco.com>
 MIME-Version: 1.0
-To: Maarten Bressers <mbres@gentoo.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: On Fri, 28 Sep 2007 14:48:53 -0700
-References: <20070928224945.3E6D36519C@smtp.gentoo.org>
-In-Reply-To: <20070928224945.3E6D36519C@smtp.gentoo.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200709281614.12244.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - box128.bluehost.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - virtuousgeek.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maarten Bressers wrote:
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
->> On Fri, 28 Sep 2007 20:56:30 +0000 (UTC) Maarten Bressers wrote:
->>
->>> This (trivial) patch fixes two compiler warnings for 2.6.23-rc8 on x86_64,
->>> use of deprecated function pci_find_device() and a section mismatch.
->>> Build log and .config file included.
+On Friday, September 28, 2007 3:23 pm Roland Dreier wrote:
+>  > I don't have a 945 to test with, but Dave might...
+>
+> Actually I'm not looking for testing (I can test fine on my own
+> laptop :) I was just hoping someone with docs could tell me "MSI is
+> documented to be broken on 945GM" or "Oh yeah, 945GM requires you to
+> set SECRET_MSI_ENABLE_BIT in register FOO before it generates MSIs."
+>
+> As I said, it's not a big deal but I'd sort of like to know whether
+> my MSI enable hack at least has a chance at working before I try too
+> hard to get it working.
 
->>> diff --git a/drivers/pci/search.c b/drivers/pci/search.c
->>> index c6e79d0..0eb7e9e 100644
->>> --- a/drivers/pci/search.c
->>> +++ b/drivers/pci/search.c
->>> @@ -96,7 +96,7 @@ pci_find_slot(unsigned int bus, unsigned int devfn)
->>>  {
->>>  	struct pci_dev *dev = NULL;
->>>  
->>> -	while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
->>> +	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
->>>  		if (dev->bus->number == bus && dev->devfn == devfn)
->>>  			return dev;
->>>  	}
->>> @@ -434,8 +434,6 @@ int pci_dev_present(const struct pci_device_id *ids)
->>>  EXPORT_SYMBOL(pci_dev_present);
->>>  EXPORT_SYMBOL(pci_find_present);
->>>  
->>> -EXPORT_SYMBOL(pci_find_device);
->>> -EXPORT_SYMBOL(pci_find_slot);
->> There are still about 30 and 14 respetively users of pci_find_devic()
->> and pci_find_slot() in 2.6.23-rc8.  Will you be fixing them?
->>
-> I'm attaching a patch here that I think will clean up all uses of 
-> pci_find_device(), except one in drivers/net/skfp/drvfbi.c:1248. I'm not 
-> sure what to make of that one, do you have any suggestions?
-> 
-> Is this patch what you had in mind, Randy? Any comments are appreciated.
+I don't see anything in the docs (either public or private) that would 
+indicate that MSI is broken on those chips, so I'd expect it to work...
 
-It's more than a simple s/pci_find_device/pci_get_device/g patch.
-
-pci_find_device() didn't use any reference counting, but pci_get_device()
-does.  Then when the resource use is finished, it must be released
-properly.
-
->>>  /* For boot time work */
->>>  EXPORT_SYMBOL(pci_find_bus);
->>>  EXPORT_SYMBOL(pci_find_next_bus);
->> ---
-
--- 
-~Randy
-Phaedrus says that Quality is about caring.
+Jesse
 
