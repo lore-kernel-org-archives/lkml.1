@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbXI1NiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbXI1Nia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757618AbXI1NiH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 09:38:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXI1Nhz
+	id S1758434AbXI1Nia (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 09:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbXI1NiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 09:37:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:5429 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbXI1Nhy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 09:37:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=H+zGQ0rh1Uz7bZm/Uy68DHbspg6HNAOD0o0AVSWYmKcXvsbn37dmS1pTHQOEiEA22sS5QV/2rIUZ7RDtS3AH1HzT690UGkI9yJXEgds0dpIFB6vopTzRSlVzheSAxRbddZcayxknuenAQlHKzW4jeb75cMzdbTL0DDPPzk+3g8Y=
-Message-ID: <84144f020709280637w2290aec5gf3e8f90b08f53cc8@mail.gmail.com>
-Date: Fri, 28 Sep 2007 16:37:49 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: [PATCH] update checkpatch.pl to version 0.10
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Joel Schopp" <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070928132138.GG18163@shadowen.org>
+	Fri, 28 Sep 2007 09:38:20 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4698 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751762AbXI1NiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 09:38:19 -0400
+Date: Fri, 28 Sep 2007 09:28:47 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       tomas.winkler@intel.com
+Subject: Re: iwl4965 and driver merging policy
+Message-ID: <20070928132847.GA4989@tuxdriver.com>
+References: <1190943567.6158.50.camel@pasglop> <20070928023055.GI7991@tuxdriver.com> <1190949323.6158.66.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <bf97f66cfc0696c8574921d53eaafcb7@pinky>
-	 <20070928084003.GA18882@elte.hu>
-	 <20070928020132.f6c6f528.akpm@linux-foundation.org>
-	 <20070928092235.GA31180@shadowen.org> <20070928093902.GA28455@elte.hu>
-	 <20070928100024.GB18163@shadowen.org> <20070928104935.GA606@elte.hu>
-	 <20070928132138.GG18163@shadowen.org>
-X-Google-Sender-Auth: 6a50f39d4cd805fc
+In-Reply-To: <1190949323.6158.66.camel@pasglop>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andy,
+On Fri, Sep 28, 2007 at 01:15:23PM +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2007-09-27 at 22:30 -0400, John W. Linville wrote:
 
-On 9/28/07, Andy Whitcroft <apw@shadowen.org> wrote:
-> That is unfair.  Every time we discuss it I state that I disagree that
-> hiding mostly useful tests is a good thing.  I would love the tests to
-> be 100% accurate, but if I removed all the tests that can false positive
-> I would literally have none.  There is a balance to be struck and we
-> have significantly different ideas on where the balance is.
+> > I'm sure there are still some wireless developers that are less than
+> > happy about merging it now.
 
-Are you disagreeing with the numbers Ingo posted? 25,000 false
-positives for the kernel is beyond silly... Existing conventions
-should matter a lot and the default configuration for a static code
-checker should really be 100%. So why not hide the potentially useful
-warnings under -Wtoo-strict or similar command line option?
+> Out of curiosity, what's the main source of opposition ? Since it's
+> being shipped by distro or built out of tree by most users -anyway-, I
+> think it's pretty clear that we'd be better off having it merged asap
+> rather than trying to figure out what random version was included by
+> users/distros and try to support it, in addition to wider exposure & all
+> the yadada of being upstream in the first place.
+
+There have been a lot of spats about how functionality has been
+partitioned between the driver and the firmware, issues with how the
+driver tries to do things that either ought to be in mac80211 or not
+done at all, and some random complaints about ugliness like '#include
+"../../../net/mac80211/blah.h"', etc.  There is still plenty of work
+to be done on this driver, but as you point out we are better-off
+with it in the kernel than with it out.
+
+Thanks,
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
