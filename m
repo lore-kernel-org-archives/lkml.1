@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761104AbXI1G7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbXI1HDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761104AbXI1G7X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 02:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbXI1G7Q
+	id S1760183AbXI1HDR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 03:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756923AbXI1HDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 02:59:16 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:52164 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757340AbXI1G7Q (ORCPT
+	Fri, 28 Sep 2007 03:03:05 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39331 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756784AbXI1HDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 02:59:16 -0400
-Subject: Re: A unresponsive file system can hang all I/O in the system on
-	linux-2.6.23-rc6 (dirty_thresh problem?)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chakri n <chakriin5@gmail.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net
-In-Reply-To: <20070927235034.ae7bd73d.akpm@linux-foundation.org>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	 <20070927235034.ae7bd73d.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-B1Ooclvwi4GWFafBgg8h"
-Date: Fri, 28 Sep 2007 08:59:12 +0200
-Message-Id: <1190962752.31636.15.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 28 Sep 2007 03:03:04 -0400
+Message-ID: <46FCA87F.3000605@bull.net>
+Date: Fri, 28 Sep 2007 09:08:47 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: akpm@linux-foundation.org, adobriyan@sw.ru, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm1 1/2] fixing idr_find() locking
+References: <20070927143354.663489000@bull.net> <20070927143458.674281000@bull.net> <20070928063144.GB1767@ff.dom.local>
+In-Reply-To: <20070928063144.GB1767@ff.dom.local>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 28/09/2007 09:09:02,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 28/09/2007 09:09:08,
+	Serialize complete at 28/09/2007 09:09:08
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jarek Poplawski wrote:
+> On Thu, Sep 27, 2007 at 04:33:55PM +0200, Nadia.Derbey@bull.net wrote:
+> 
+>>[PATCH 01/02]
+>>
+>>
+>>This is a patch that fixes the way idr_find() used to be called in ipc_lock():
+>>in all the paths that don't imply an update of the ipcs idr, it was called
+>>without the idr tree being locked.
+>>
+>>The changes are:
+>>  . in ipc_ids, the mutex has been changed into a reader/writer semaphore.
+>>  . ipc_lock() now takes the mutex as a reader during the idr_find().
+>>  . a new routine ipc_lock_down() has been defined: it doesn't take the
+>>    mutex, assuming that it is being held by the caller. This is the routine
+>>    that is now called in all the update paths.
+>>
+>>
+>>Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+> 
+> 
+> Acked-by: Jarek Poplawski <jarkao2@o2.pl>
+> 
+> PS: there is one big mistake around To/Cc ordering, so I doubt Andrew
+> will ever sign this...
+> 
+> 
 
---=-B1Ooclvwi4GWFafBgg8h
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Jarek,
 
-On Thu, 2007-09-27 at 23:50 -0700, Andrew Morton wrote:
+I thought that since you were the one who pointed out the issue I had to 
+put you as the receiver.
+Next time I'll also add Andrew in the To list.
+Sorry for that.
 
-> What we _don't_ want to happen is for other processes which are writing t=
-o
-> other, non-dead devices to get collaterally blocked.  We have patches whi=
-ch
-> might fix that queued for 2.6.24.  Peter?
-
-Nasty problem, don't do that :-)
-
-But yeah, with per BDI dirty limits we get stuck at whatever ratio that
-NFS server/mount (?) has - which could be 100%. Other processes will
-then work almost synchronously against their BDIs but it should work.
-
-[ They will lower the NFS-BDI's ratio, but some fancy clipping code will
-  limit the other BDIs their dirty limit to not exceed the total limit.
-  And with all these NFS pages stuck, that will still be nothing. ]
-
-
-
---=-B1Ooclvwi4GWFafBgg8h
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBG/KZAXA2jU0ANEf4RAjISAJ9TSkJmNAVhOu/vmw1bCp3sJRQ79QCeOjWE
-ulcriUmObG9ScdbPLab3h9I=
-=Lkx1
------END PGP SIGNATURE-----
-
---=-B1Ooclvwi4GWFafBgg8h--
+Regards,
+Nadia
 
