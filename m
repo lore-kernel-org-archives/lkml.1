@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbXI1T2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbXI1T3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940AbXI1T2B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 15:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbXI1T1y
+	id S1755362AbXI1T3V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 15:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbXI1T3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 15:27:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49812 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751397AbXI1T1y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 15:27:54 -0400
-Date: Fri, 28 Sep 2007 12:26:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Chakri n <chakriin5@gmail.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: A unresponsive file system can hang all I/O in the system on
- linux-2.6.23-rc6 (dirty_thresh problem?)
-Message-Id: <20070928122628.965137f2.akpm@linux-foundation.org>
-In-Reply-To: <1191006971.6702.25.camel@heimdal.trondhjem.org>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	<20070927235034.ae7bd73d.akpm@linux-foundation.org>
-	<1190998853.6702.17.camel@heimdal.trondhjem.org>
-	<20070928114930.2c201324.akpm@linux-foundation.org>
-	<1191006971.6702.25.camel@heimdal.trondhjem.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 28 Sep 2007 15:29:14 -0400
+Received: from mail.tmr.com ([64.65.253.246]:33565 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751547AbXI1T3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 15:29:13 -0400
+Message-ID: <46FD5707.9040807@tmr.com>
+Date: Fri, 28 Sep 2007 15:33:27 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Peter Fordham <peter.fordham@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: fpu IO port reservation (arch/i386)
+References: <a71b7b480709210622l23481221pd09302a827b55eb@mail.gmail.com>	<Pine.LNX.4.64N.0709211440380.2724@blysk.ds.pg.gda.pl> <p73y7f07zuz.fsf@bingen.suse.de>
+In-Reply-To: <p73y7f07zuz.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007 15:16:11 -0400 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-
-> On Fri, 2007-09-28 at 11:49 -0700, Andrew Morton wrote:
-> > On Fri, 28 Sep 2007 13:00:53 -0400 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > Do these patches also cause the memory reclaimers to steer clear of
-> > > devices that are congested (and stop waiting on a congested device if
-> > > they see that it remains congested for a long period of time)? Most of
-> > > the collateral blocking I see tends to happen in memory allocation...
-> > > 
-> > 
-> > No, they don't attempt to do that, but I suspect they put in place
-> > infrastructure which could be used to improve direct-reclaimer latency.  In
-> > the throttle_vm_writeout() path, at least.
-> > 
-> > Do you know where the stalls are occurring?  throttle_vm_writeout(), or via
-> > direct calls to congestion_wait() from page_alloc.c and vmscan.c?  (running
-> > sysrq-w five or ten times will probably be enough to determine this)
+Andi Kleen wrote:
+> "Maciej W. Rozycki" <macro@linux-mips.org> writes:
 > 
-> Looking back, they were getting caught up in
-> balance_dirty_pages_ratelimited() and friends. See the attached
-> example...
+>> Hi Peter,
+>>
+>>> Does anybody know why we reserve this range of IO ports for 'fpu'?
+>>> AFAIK from all the IO maps I can find on the internet for various x86
+>>> chipsets only 0x00f0 is actaully ever used.
+>>  There are two ports used: 0xf0 is the busy latch reset and 0xf1 is the 
+>> coprocessor reset.  They are legacy ports resulting from the interesting 
+>> way the FPU has been wired by IBM in their PC design. 
+> 
+> Was it really needed on 386s? I didn't think there was a IBM 386 PC.
 
-that one is nfs-on-loopback, which is a special case, isn't it?
+There were 386 PC clones for sure, and they almost certainly needed it 
+and still do. IBM was doing the MCA thing at that time and it was a 
+wonderful time for the clone makers.
+> 
+>> None of them is 
+>> used by Linux for i486 and newer systems, which can support the FPU in its 
+>> native configuration.
+> 
+> I can remove it from x86-64 at least. 
+> 
+AFAIK you are just right, I'm pretty sure there will be systems needing 
+it for 386 and 486, and maybe the old Pentium systems as well. A lot of 
+system vendors wanted it so software for the old systems would still work.
 
-NFS on loopback used to hang, but then we fixed it.  It looks like we
-broke it again sometime in the intervening four years or so.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
