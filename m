@@ -1,61 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbXI1QZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbXI1Q21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbXI1QZU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 12:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbXI1QYt
+	id S1757863AbXI1Q21 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 12:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXI1Q2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 12:24:49 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:34122 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753438AbXI1QYs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 12:24:48 -0400
-Date: Fri, 28 Sep 2007 12:24:46 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/5] Add samples subdir
-Message-ID: <20070928162446.GA13051@Krystal>
-References: <20070928142845.795281397@polymtl.ca> <20070928143159.638289605@polymtl.ca> <46FD21F8.9030202@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 28 Sep 2007 12:28:19 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:47943 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751071AbXI1Q2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 12:28:18 -0400
+X-IronPort-AV: E=Sophos;i="4.21,210,1188802800"; 
+   d="scan'208";a="108848467"
+Subject: NFS: Fix an Oops in encode_lookup()
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <46FD21F8.9030202@oracle.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:24:35 up 60 days, 16:43,  4 users,  load average: 0.28, 0.26, 0.33
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Organization: Network Appliance Inc
+Date: Fri, 28 Sep 2007 12:27:41 -0400
+Message-Id: <1190996861.6702.7.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 28 Sep 2007 16:27:44.0018 (UTC) FILETIME=[7F53FF20:01C801EC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Randy Dunlap (randy.dunlap@oracle.com) wrote:
-> Mathieu Desnoyers wrote:
-> >From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >
-> >Begin infrastructure for kernel code samples in the samples/ directory.
-> >Add its Kconfig and Kbuild files.
-> >Source its Kconfig file in all arch/ Kconfigs.
-> >
-> >Changelog:
-> >- Move menu to Kernel Hacking
-> >- Don't build with the kernel image
-> >
-> >Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> I think that this one is S-O-B by both of us.
-> 
+It doesn't look as if the NFS file name limit is being initialised correctly
+in the struct nfs_server. Make sure that we limit whatever is being set in
+nfs_probe_fsinfo() and nfs_init_server().
 
-Yes, thanks,
+Also ensure that readdirplus and nfs4_path_walk respect our file name
+limits.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-> -- 
-> ~Randy
-> Phaedrus says that Quality is about caring.
+ fs/nfs/client.c  |   29 +++++++++++++++++++----------
+ fs/nfs/dir.c     |    2 ++
+ fs/nfs/getroot.c |    3 +++
+ 3 files changed, 24 insertions(+), 10 deletions(-)
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index a49f9fe..a204484 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -588,16 +588,6 @@ static int nfs_init_server(struct nfs_server *server, const struct nfs_mount_dat
+ 	server->namelen  = data->namlen;
+ 	/* Create a client RPC handle for the NFSv3 ACL management interface */
+ 	nfs_init_server_aclclient(server);
+-	if (clp->cl_nfsversion == 3) {
+-		if (server->namelen == 0 || server->namelen > NFS3_MAXNAMLEN)
+-			server->namelen = NFS3_MAXNAMLEN;
+-		if (!(data->flags & NFS_MOUNT_NORDIRPLUS))
+-			server->caps |= NFS_CAP_READDIRPLUS;
+-	} else {
+-		if (server->namelen == 0 || server->namelen > NFS2_MAXNAMLEN)
+-			server->namelen = NFS2_MAXNAMLEN;
+-	}
+-
+ 	dprintk("<-- nfs_init_server() = 0 [new %p]\n", clp);
+ 	return 0;
+ 
+@@ -794,6 +784,16 @@ struct nfs_server *nfs_create_server(const struct nfs_mount_data *data,
+ 	error = nfs_probe_fsinfo(server, mntfh, &fattr);
+ 	if (error < 0)
+ 		goto error;
++	if (server->nfs_client->rpc_ops->version == 3) {
++		if (server->namelen == 0 || server->namelen > NFS3_MAXNAMLEN)
++			server->namelen = NFS3_MAXNAMLEN;
++		if (!(data->flags & NFS_MOUNT_NORDIRPLUS))
++			server->caps |= NFS_CAP_READDIRPLUS;
++	} else {
++		if (server->namelen == 0 || server->namelen > NFS2_MAXNAMLEN)
++			server->namelen = NFS2_MAXNAMLEN;
++	}
++
+ 	if (!(fattr.valid & NFS_ATTR_FATTR)) {
+ 		error = server->nfs_client->rpc_ops->getattr(server, mntfh, &fattr);
+ 		if (error < 0) {
+@@ -984,6 +984,9 @@ struct nfs_server *nfs4_create_server(const struct nfs4_mount_data *data,
+ 	if (error < 0)
+ 		goto error;
+ 
++	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
++		server->namelen = NFS4_MAXNAMLEN;
++
+ 	BUG_ON(!server->nfs_client);
+ 	BUG_ON(!server->nfs_client->rpc_ops);
+ 	BUG_ON(!server->nfs_client->rpc_ops->file_inode_ops);
+@@ -1056,6 +1059,9 @@ struct nfs_server *nfs4_create_referral_server(struct nfs_clone_mount *data,
+ 	if (error < 0)
+ 		goto error;
+ 
++	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
++		server->namelen = NFS4_MAXNAMLEN;
++
+ 	dprintk("Referral FSID: %llx:%llx\n",
+ 		(unsigned long long) server->fsid.major,
+ 		(unsigned long long) server->fsid.minor);
+@@ -1115,6 +1121,9 @@ struct nfs_server *nfs_clone_server(struct nfs_server *source,
+ 	if (error < 0)
+ 		goto out_free_server;
+ 
++	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
++		server->namelen = NFS4_MAXNAMLEN;
++
+ 	dprintk("Cloned FSID: %llx:%llx\n",
+ 		(unsigned long long) server->fsid.major,
+ 		(unsigned long long) server->fsid.minor);
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index ea97408..e4a04d1 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1162,6 +1162,8 @@ static struct dentry *nfs_readdir_lookup(nfs_readdir_descriptor_t *desc)
+ 	}
+ 	if (!desc->plus || !(entry->fattr->valid & NFS_ATTR_FATTR))
+ 		return NULL;
++	if (name.len > NFS_SERVER(dir)->namelen)
++		return NULL;
+ 	/* Note: caller is already holding the dir->i_mutex! */
+ 	dentry = d_alloc(parent, &name);
+ 	if (dentry == NULL)
+diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
+index d1cbf0a..522e5ad 100644
+--- a/fs/nfs/getroot.c
++++ b/fs/nfs/getroot.c
+@@ -175,6 +175,9 @@ next_component:
+ 		path++;
+ 	name.len = path - (const char *) name.name;
+ 
++	if (name.len > NFS4_MAXNAMLEN)
++		return -ENAMETOOLONG;
++
+ eat_dot_dir:
+ 	while (*path == '/')
+ 		path++;
