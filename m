@@ -1,91 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbXI1P73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbXI1QBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbXI1P73 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 11:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXI1P7W
+	id S1757878AbXI1QBs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 12:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXI1QBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 11:59:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52309 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751670AbXI1P7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 11:59:21 -0400
-Message-ID: <46FD24D3.1030008@redhat.com>
-Date: Fri, 28 Sep 2007 11:59:15 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jkeating@redhat.com, jordan.crouse@amd.com, pommnitz@yahoo.com
-Subject: Re: [GIT PULL] Correct the SMAP check in the e820 probe
-References: <200709280856.l8S8uvS5002291@tazenda.hos.anvin.org> <alpine.LFD.0.999.0709280719010.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709280719010.3579@woody.linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 28 Sep 2007 12:01:41 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:45774 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751341AbXI1QBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 12:01:41 -0400
+Date: Fri, 28 Sep 2007 17:07:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [patch] x86: improved memory barrier implementation
+Message-ID: <20070928170719.2f617a7a@the-village.bc.nu>
+In-Reply-To: <20070928154832.GB12538@wotan.suse.de>
+References: <20070928154832.GB12538@wotan.suse.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/28/2007 10:27 AM, Linus Torvalds wrote:
-> 
-> On Fri, 28 Sep 2007, H. Peter Anvin wrote:
->>     [x86 setup] Correct the SMAP check for INT 0x15, AX=0xe820
->>     
->>     The e820 probe code was checking %edx, not %eax, for the SMAP
->>     signature on return.  This worked on *almost* all systems, since %edx
->>     still contained SMAP from the call on entry, but on a handful of
->>     systems it failed -- plus, we would have missed real mismatches.
->>     
->>     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
->>
->> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
->> index bccaa1c..2f37568 100644
->> --- a/arch/i386/boot/memory.c
->> +++ b/arch/i386/boot/memory.c
->> @@ -28,11 +28,10 @@ static int detect_memory_e820(void)
->>  
->>  	do {
->>  		size = sizeof(struct e820entry);
->> -		id = SMAP;
->>  		asm("int $0x15; setc %0"
->> -		    : "=am" (err), "+b" (next), "+d" (id), "+c" (size),
->> +		    : "=dm" (err), "+b" (next), "=a" (id), "+c" (size),
->>  		      "=m" (*desc)
->> -		    : "D" (desc), "a" (0xe820));
->> +		    : "D" (desc), "d" (SMAP), "a" (0xe820));
-> 
-> Hmm. If I read this correctly, I don't think this can be right.
-> 
-> Why? You don't mark %edx as possibly corrupted by the asm any more.
-> 
-> The "=dm" means that quite often (probably effectively always), gcc will 
-> allocate %edx to be the output register for %0, but at least in theory, it 
-> could easily decide that it's going to put %0 in memory, and in that case, 
-> it may well decide that %edx is not modified by the asm statement. Which 
-> may or may not be true - I'd bet that there are BIOSes out there that *do* 
-> modify it.
-> 
-> So what happens then? If gcc decides that %edx isn't modified by the asm, 
-> it will assume that it still contains the value it had on entry, which is 
-> the "SMAP" value, and then it might decide to do the
-> 
-> 	if (id != SMAP) {
-> 
-> check as a 
-> 
-> 	cmpl %edx,%eax
-> 
-> since the "id" return is in %eax, and the compiler decides that it may be 
-> cheaper to re-use the register that already contains the constant, than to 
-> use a (longer) compare instruction with an explicit constant.
-> 
-> IOW, I think you need to either (a) _force_ gcc to use %edx for the "err" 
-> return, avoiding this issue, or (b) mark edx clobbered (which in turn 
-> means that you need to remove it from the output constraint for "err"). I 
-> suspect (a) is simpler/more straightforward.
-> 
+> The only alternative is to assume a weak memory model, and add the required
+> barriers to spin_unlock -- something that has been explicitly avoided, but
 
-Patch with option (a) applied [output 0 changed to: "=d" (err)] tested and
-works on the Dell XPS M1330 that was broken by the previous e820 change.
+We have the barriers in spin_unlock already for Pentium Pro and IDT
+Winchip systems. The Winchip explicitly supports out of order store (and
+was about 10-20% faster with it set this way), the PPro has some annoying
+little store ordering bugs which is why we xchgb out of spin_unlock in
+those cases.
 
+> The complaint that broken old ppros get more broken seems to be bogus as well:
+> wmb on i386 never catered to the old ppro to start with. The errata seem to
+
+There are only a couple of awkward cases with the PPro and we carefully
+work around them. The other half of the work is the flush_write_buffers.
+
+> Buggy ppros: I have no interest in, given the vague errata and apparently
+> unfixable problems with lockless code; anybody is welcome to try adding
+> whatever they like to help them work, but again please don't confuse that
+> with having anything to do with this patch...
+
+PPro was fixed, made to work and brutally tested on quad PPro. There are
+cases that wouldn't work (PPro + AGP which never happens) and there are
+cases that need specific handling (PPro + Voodoo card and some other 3D
+bits) which are handled currently in the X server. The rest is fine.
+
+> Winchip: can any of these CPUs with ooostores do SMP? If not, then smp_wmb
+> can also be a simple barrier on i386 too.
+
+The IDT Winchip can do SMP apparently. Nobody has ever seen an SMP
+winchip board so I don't think it matters and even if one existed we
+wouldn't support it anyway
+
+However 
+- You've not shown the patch has any performance gain
+- You've probably broken Pentium Pro
+- and for modern processors its still not remotely clear your patch is
+correct because of NT stores.
+
+So NAK
+
+Alan
