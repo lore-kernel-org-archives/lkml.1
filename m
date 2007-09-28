@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760421AbXI1IG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbXI1IHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760421AbXI1IG4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 04:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbXI1ICI
+	id S1760275AbXI1IHg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 04:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbXI1ICc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 04:02:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51136 "EHLO mx1.redhat.com"
+	Fri, 28 Sep 2007 04:02:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51212 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755278AbXI1ICE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 04:02:04 -0400
-Message-Id: <20070928080042.298523000@chello.nl>
-References: <20070928074200.436463000@chello.nl>
+	id S1757565AbXI1IC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 04:02:29 -0400
+Message-Id: <20070928074200.436463000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 28 Sep 2007 09:42:08 +0200
+Date: Fri, 28 Sep 2007 09:42:00 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
 Cc: Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        akpm@linux-foundation.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 08/12] lockdep: increase MAX_LOCK_DEPTH
-Content-Disposition: inline; filename=lockdep-depth.patch
+Subject: [PATCH 00/12] various lockdep patches
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-we can easily hold PAGE_VEC (and more in places) page locks.
+The first 3 patches provide a new lockdep check, it verifies we don't hold any
+locks when returning to userspace.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/sched.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+	lockdep-sys_exit.patch
+	lockdep-i386-sys_exit.patch
+	lockdep-x86_64-sys_exit.patch
 
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1246,7 +1246,7 @@ struct task_struct {
- 	int softirq_context;
- #endif
- #ifdef CONFIG_LOCKDEP
--# define MAX_LOCK_DEPTH 30UL
-+# define MAX_LOCK_DEPTH 48UL
- 	u64 curr_chain_key;
- 	int lockdep_depth;
- 	struct held_lock held_locks[MAX_LOCK_DEPTH];
+Could the various arch maintainers that have support for lockdep help out
+with placing this hook?
 
---
+A journal_start annotation:
+
+	jbd-lock.patch
+
+Up until this point stuff should be safe to merge (assuming there are no
+objections and bugs.. :-)
+
+The rest of the series annotates lock_page():
+
+  rework lock_page() API:
+	trylock_page.patch
+	lock_page.patch
+	lockdep-page_lock-hooks.patch
+
+  actuall lockdep annotation:
+	lockdep-depth.patch
+	lockdep-fs-page.patch
+	lockdep-page-async.patch
+	set_page_mapping.patch
+	lockdep-lock_page.patch
+
+Part of that is re-working the lock_page() API a bit. It introduces 
+trylock_page(), and removes all the raw *PageLock() usage.
+
+I've compile and boot tested this series on x86_64 (with and without lockdep).
+And it completes an LTP run with lockdep enabled.
+
+Andrew, can we start by pusing the lock_page() API rework into -mm?
+
+ [ this series is against -linus, but if you're willing I'll do some 
+   patches against -mm ]
+
 
