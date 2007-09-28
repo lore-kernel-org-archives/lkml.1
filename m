@@ -1,122 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbXI1Pua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbXI1Puq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759984AbXI1Pua (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 11:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbXI1PuX
+	id S1760746AbXI1Puq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 11:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbXI1Pug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 11:50:23 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:21471 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754650AbXI1PuV (ORCPT
+	Fri, 28 Sep 2007 11:50:36 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:51158 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760155AbXI1Puf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 11:50:21 -0400
-X-IronPort-AV: i="4.21,210,1188792000"; 
-   d="scan'208"; a="52704557:sNHT31345972"
-Subject: Re: [PATCH] binfmt_flat: minimum support for theBlackfin
-	relocations
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Andrew Morton <akpm@linux-foundation.org>,
-       David McCullough <David_Mccullough@securecomputing.com>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Paul Mundt <lethal@linux-sh.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       uclinux-dist-devel@blackfin.uclinux.org, bryan.wu@analog.com,
-       Bernd Schmidt <bernd.schmidt@analog.com>,
-       Greg Ungerer <gerg@snapgear.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, ysato@users.sourceforge.jp,
-       miles@lsi.nec.co.jp, linux-m32r@ml.linux-m32r.org
-In-Reply-To: <20070921033216.GA11139@securecomputing.com>
-References: <1190102965.4406.9.camel@roc-desktop>
-	 <20070920142543.GA3268@linux-sh.org>
-	 <20070920150314.GA27079@securecomputing.com>
-	 <200709202144.16301.rgetz@blackfin.uclinux.org>
-	 <20070921033216.GA11139@securecomputing.com>
-Content-Type: text/plain
+	Fri, 28 Sep 2007 11:50:35 -0400
+Message-ID: <46FD22B7.2030402@austin.ibm.com>
+Date: Fri, 28 Sep 2007 10:50:15 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.10
+References: <bf97f66cfc0696c8574921d53eaafcb7@pinky> <20070928084003.GA18882@elte.hu> <20070928020132.f6c6f528.akpm@linux-foundation.org> <20070928092235.GA31180@shadowen.org> <20070928093902.GA28455@elte.hu> <20070928100024.GB18163@shadowen.org> <20070928104935.GA606@elte.hu> <20070928132138.GG18163@shadowen.org>
+In-Reply-To: <20070928132138.GG18163@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Ltd.
-Date: Fri, 28 Sep 2007 23:46:46 +0800
-Message-Id: <1190994406.6145.11.camel@roc-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 28 Sep 2007 15:50:17.0443 (UTC) FILETIME=[4443DB30:01C801E7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, could you please add this patch to -mm.
-As we discussed here, it should be OK for us.
+> The only question is whether this should default to on.  You are voting
+> off.  I personally think on.
+> 
+> Andrew?  Randy?  Joel?
 
-Thanks,
-- Bryan Wu
-On Fri, 2007-09-21 at 11:32 +0800, David McCullough wrote:
-> 
-> Jivin Robin Getz lays it down ... 
-> > On Thu 20 Sep 2007 11:03, David McCullough pondered: 
-> > > I would say that (a) is definately not the case.  I am sure the BF
-> guys 
-> > > will say they have been banging us on the head with changes for a
-> long 
-> > > time and getting no where as we considered the changes to severe
-> or out 
-> > > of line. 
-> > 
-> > I don't think we have been "banging heads" with you (unless that is
-> your 
-> > feeling?) - how about "working together, but diverting to satisfy
-> different 
-> > needs" :)
-> 
-> No head banging feelings here,  but I would understand if you guys
-> felt 
-> that way occasionally ;-)  I obviously forgot the happy face on that 
-> statement.  It was meant as a good thing.
-> 
-> > I think that we have had more issues in the uClinux-dist (userspace
-> and build 
-> > environment), but for kernel code, we have moved from some
-> non-standard 
-> > (stupid) things we were doing early on to what we have today - which
-> is as 
-> > common/standard with other archs as we can be. 
-> > 
-> > Although this is slightly off topic - on the uClinux distribution
-> side - most 
-> > of our changes are based on requirements/desires from being able to
-> support 
-> > fdpic elf and flat formats, and to attempt to make things easier for
-> end 
-> > users/us to use/maintain. Where we do make changes - we always send
-> the patch 
-> > upstream and have the conversation with you (not everyone else does
-> this), 
-> > and some/most times rework things so they are more acceptable to
-> you. We 
-> > don't always come to an agreement - but we always have the
-> discussion, and 
-> > are willing to move if we can make things better that still meets
-> both our 
-> > needs/desires. 
-> > 
-> > > This particular patch was trivial in comparison to others I've
-> seen, 
-> > 
-> > That is what we thought. 
-> > 
-> > > it fixed all the existing arches (not something that is always
-> done) and 
-> > > seemed a reasonable start to finally get the BF guys up and
-> running. 
-> > > Still, happy to make it better of course ;-) 
-> > 
-> > As always - we are more than happy to explore/review alternative
-> patches if 
-> > people want to write/sumbit them.
-> 
-> Cheers, 
-> Davidm
-> 
-> -- 
-> David McCullough,  david_mccullough@securecomputing.com,   Ph:+61
-> 734352815 
-> Secure Computing - SnapGear  http://www.uCdot.org
-> http://www.cyberguard.com
-> 
+The main audience of this is new contributors, who should have more verbose 
+output, including nitpicky things like multiple assignments per line.  The 
+default should target them.  More advanced users can certainly use a flag 
+that says "give me only the real errors".
+
+It might be a good idea to have three levels.
+--really-errors
+--really-picky
+--really-experimental
+
+Only with better names.  --really-picky would be default, but would only 
+include tests that have a very very high ratio of hits to false positives, 
+but would still call out things like multiple assignments per line. 
+--really-errors we could call the Igno level.  --really-experimental would 
+call out all issues, even on checks that generate a fair number of false 
+positives.
+
+-Joel
+
