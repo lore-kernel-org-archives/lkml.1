@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbXI1SYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbXI1S10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756956AbXI1SYO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 14:24:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbXI1SX7
+	id S1755988AbXI1S10 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 14:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbXI1S1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 14:23:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56664 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752624AbXI1SX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 14:23:58 -0400
-Message-ID: <46FD46B4.9050401@redhat.com>
-Date: Fri, 28 Sep 2007 11:23:48 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: F_DUPFD_CLOEXEC implementation
-References: <200709281734.l8SHYTmd027235@devserv.devel.redhat.com> <Pine.LNX.4.64.0709281113390.22521@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0709281113390.22521@alien.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Fri, 28 Sep 2007 14:27:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36036 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752624AbXI1S1S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 14:27:18 -0400
+Date: Fri, 28 Sep 2007 11:26:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] UML - Fix locking in skb alloction failure fix
+Message-Id: <20070928112634.0bef9525.akpm@linux-foundation.org>
+In-Reply-To: <20070928154314.GA7185@c2.user-mode-linux.org>
+References: <20070928154314.GA7185@c2.user-mode-linux.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Fri, 28 Sep 2007 11:43:14 -0400 Jeff Dike <jdike@addtoit.com> wrote:
 
-Davide Libenzi wrote:
-> I think new system calls would have been a cleaner way to accomplish this. 
-> The "small pill at a time" may have better chance to go in, but will 
-> likely result in an uglier userspace interface.
+> Add _irqsave/_irqrestore to the locking in update_drop_skb to keep
+> uml_net_rx out while the drop skb is being messed with.
+> 
+> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+> ---
+>  arch/um/drivers/net_kern.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.22/arch/um/drivers/net_kern.c
+> ===================================================================
+> --- linux-2.6.22.orig/arch/um/drivers/net_kern.c	2007-09-28 11:10:19.000000000 -0400
+> +++ linux-2.6.22/arch/um/drivers/net_kern.c	2007-09-28 11:13:58.000000000 -0400
+> @@ -49,9 +49,10 @@ static int drop_max;
+>  static int update_drop_skb(int max)
+>  {
+>  	struct sk_buff *new;
+> +	unsigned long flags;
+>  	int err = 0;
+>  
+> -	spin_lock(&drop_lock);
+> +	spin_lock_irqsave(&drop_lock, flags);
+>  
+>  	if (max <= drop_max)
+>  		goto out;
+> @@ -68,7 +69,7 @@ static int update_drop_skb(int max)
+>  	drop_max = max;
+>  	err = 0;
+>  out:
+> -	spin_unlock(&drop_lock);
+> +	spin_unlock_irqrestore(&drop_lock, flags);
+>  
+>  	return err;
+>  }
 
-We'd need this call anyway since neither dup nor dup2 provides the
-functionality of F_DUPFD (but F_DUPFD can be used to implement dup).
-
-For dup2() I will wait until we have a sys_indirect implementation.
-I'll try to get this soon.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFG/Ua02ijCOnn/RHQRAgOQAKCfQ9H4VYau6nVGuVXyJ7IfBXK+QgCfYQxv
-k4esG379v8VBceFIECDybk0=
-=dvhX
------END PGP SIGNATURE-----
+Doesn't this assume that the arch is only ever uniprocessor, which I don't think is
+true on i386 UML??
