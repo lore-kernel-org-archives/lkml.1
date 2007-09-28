@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXI2Mp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbXI2Mpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbXI2Mp3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 08:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbXI2Moy
+	id S1758420AbXI2Mpp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 08:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbXI2MpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 08:44:54 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35497 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754744AbXI2Mow (ORCPT
+	Sat, 29 Sep 2007 08:45:14 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:32908 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758142AbXI2MpM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 08:44:52 -0400
-Date: Sat, 29 Sep 2007 15:44:49 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Cedric Le Goater <clg@fr.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: 2.6.23-rc8-mm2 - tcp_fastretrans_alert() WARNING
-In-Reply-To: <Pine.LNX.4.64.0709282143020.6013@kivilampi-30.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0709291532200.6776@kivilampi-30.cs.helsinki.fi>
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
- <46FD20F0.3050909@fr.ibm.com> <Pine.LNX.4.64.0709282143020.6013@kivilampi-30.cs.helsinki.fi>
+	Sat, 29 Sep 2007 08:45:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=o5f44/TPHq9a4iPGRHOHF8SXtg3rp4+GqWqV5R7aDe4OKXNUUZURG3RArv5wX429I4H24vx56CzZx3ZmZoIzG8kTMNCtqcUQNp9sndZqRBb5XhNGWGEWygu7NR9ZelcYXirOD/jCBOxZYUcAbRDrGSWq9dmhMfvdzyUh/GkvISM=  ;
+X-YMail-OSG: lgE0V0UVM1liNxBtGvUEeD87qYAPF91ZHW5g4jBmL_CsmYhSW9d6hPvPuw3us1Ck8M9WxkxJUg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC][PATCH] mm: couple rcu and memory reclaim
+Date: Sat, 29 Sep 2007 06:13:51 +1000
+User-Agent: KMail/1.9.5
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>
+References: <20070924104517.7d8126ae@twins>
+In-Reply-To: <20070924104517.7d8126ae@twins>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-957210457-1191069889=:6776"
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709290613.51790.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Monday 24 September 2007 18:45, Peter Zijlstra wrote:
+> Just an idea I had, it seems like a good idea to wait for RCU callbacks
+> in reclaim so that we won't get all of memory stuck there.
 
----696243703-957210457-1191069889=:6776
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 28 Sep 2007, Ilpo Järvinen wrote:
-> On Fri, 28 Sep 2007, Cedric Le Goater wrote:
->
-> > I just found that warning in my logs. It seems that it's been 
-> > happening since rc7-mm1 at least. 
-> > 
-> > WARNING: at /home/legoater/linux/2.6.23-rc8-mm2/net/ipv4/tcp_input.c:2314 tcp_fastretrans_alert()
-> >
-> > Call Trace:
-> >  <IRQ>  [<ffffffff8040fdc3>] tcp_ack+0xcd6/0x1894
-> > ...snip...
-> 
-> ...Thanks for the report, I'll have look what could still break 
-> fackets_out...
-
-I think this one is now clear to me, tcp_fragment/collapse adjusts 
-fackets_out (incorrectly) also for reno flow when there were some dupACKs 
-that made sacked_out != 0. Could you please try if patch below proves all 
-them to be of non-SACK origin... In case that's true, it's rather 
-harmless, I'll send a fix on Monday or so (this would anyway be needed)... 
-If you find out that them occur with SACK enabled flow, that would be
-more interesting and requires more digging...
-
--- 
- i.
+I think it would be much too aggressive (_especially_ with preemptible
+RCU, I would have thought?). And not just for the case of adding a lot
+of idle time while other CPUs are busy not being preempted -- also
+that if you have lots of CPUs reclaiming and asking to synchronize_rcu,
+then you could have global RCU state getting ping-ponged.
 
 
+> If this location is too aggressive we might stick it next to
+> disable_swap_token().
 
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 2286361..e642779 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -2311,8 +2311,10 @@ tcp_fastretrans_alert(struct sock *sk, int pkts_acked, int flag)
- 	if (!tp->packets_out)
- 		tp->sacked_out = 0;
- 
--	if (WARN_ON(!tp->sacked_out && tp->fackets_out))
-+	if (WARN_ON(!tp->sacked_out && tp->fackets_out)) {
-+		printk(KERN_ERR "TCP %d\n", tcp_is_reno(tp));
- 		tp->fackets_out = 0;
-+	}
- 
- 	/* Now state machine starts.
- 	 * A. ECE, hence prohibit cwnd undoing, the reduction is required. */
----696243703-957210457-1191069889=:6776--
+I don't see a really good reason to add this kind of wait here. I mean,
+we have to wait for RCU anyway, so we may as well scan what we can
+until then?
+
+Putting it in a slowpath at some point when we think we're heading for
+OOM I think would be a bit better.
