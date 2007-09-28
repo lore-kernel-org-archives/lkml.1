@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbXI1RDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbXI1REV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888AbXI1RDy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 13:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXI1RDq
+	id S1755320AbXI1REV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 13:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXI1RED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 13:03:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46621 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbXI1RDp (ORCPT
+	Fri, 28 Sep 2007 13:04:03 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35859 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbXI1REA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 13:03:45 -0400
-Message-ID: <46FD33DF.2010605@zytor.com>
-Date: Fri, 28 Sep 2007 10:03:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 28 Sep 2007 13:04:00 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Linux Containers <containers@lists.osdl.org>
+Subject: Re: /proc/net/ bad hard links count [Was: 2.6.23-rc8-mm2]
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
+	<46FD2C10.8050105@gmail.com>
+Date: Fri, 28 Sep 2007 11:03:26 -0600
+In-Reply-To: <46FD2C10.8050105@gmail.com> (Jiri Slaby's message of "Fri, 28
+	Sep 2007 18:30:08 +0200")
+Message-ID: <m1tzpebu3l.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jkeating@redhat.com, cebbert@redhat.com, jordan.crouse@amd.com,
-       pommnitz@yahoo.com
-Subject: Re: [GIT PULL] Correct the SMAP check in the e820 probe
-References: <200709280856.l8S8uvS5002291@tazenda.hos.anvin.org> <alpine.LFD.0.999.0709280719010.3579@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709280719010.3579@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> Hmm. If I read this correctly, I don't think this can be right.
-> 
-> Why? You don't mark %edx as possibly corrupted by the asm any more.
-> 
-> The "=dm" means that quite often (probably effectively always), gcc will 
-> allocate %edx to be the output register for %0, but at least in theory, it 
-> could easily decide that it's going to put %0 in memory, and in that case, 
-> it may well decide that %edx is not modified by the asm statement. Which 
-> may or may not be true - I'd bet that there are BIOSes out there that *do* 
-> modify it.
-> 
+Jiri Slaby <jirislaby@gmail.com> writes:
 
-Yes indeed.
+> On 09/27/2007 11:22 AM, Andrew Morton wrote:
+>>
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/
 
-> 
-> IOW, I think you need to either (a) _force_ gcc to use %edx for the "err" 
-> return, avoiding this issue, or (b) mark edx clobbered (which in turn 
-> means that you need to remove it from the output constraint for "err"). I 
-> suspect (a) is simpler/more straightforward.
-> 
-> I haven't pulled this, so maybe you can just amend the commit in-place, 
-> and we can avoid?
-> 
+Yep.
 
-Will do.
+> # find /proc >/dev/null
+> find: WARNING: Hard link count is wrong for /proc/net: this may be a bug in your
+> filesystem driver.  Automatically turning on find's -noleaf option.  Earlier
+> results may have failed to include directories that should have been searched.
+> # stat net
+>   File: `net'
+>   Size: 0               Blocks: 0          IO Block: 1024   directory
+> Device: 3h/3d   Inode: 4026531864  Links: 2
+> Access: (0555/dr-xr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+> Access: 2007-09-28 18:21:24.651209759 +0200
+> Modify: 2007-09-28 18:21:24.651209759 +0200
+> Change: 2007-09-28 18:21:24.651209759 +0200
+> # stat net/
+>   File: `net/'
+>   Size: 0               Blocks: 0          IO Block: 1024   directory
+> Device: 3h/3d   Inode: 4026531909  Links: 4
+> Access: (0555/dr-xr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+> Access: 2007-09-28 18:26:48.813048220 +0200
+> Modify: 2007-09-28 18:26:48.813048220 +0200
+> Change: 2007-09-28 18:26:48.813048220 +0200
+>
+> hmm, this is some kind of weirdness :)
 
-	-hpa
+Yes.
+
+I can explain it. For the network namespace stuff we need special handling
+of /proc/net so that depending on the network namespace we are resolving
+against you see a different behavior.  So you actually are observing
+two different directories, one being a magic invisible symlink to the
+other.
+
+Currently I am resolving against current (which has a number of
+limitations) and the weird ugly effect you are current seeing.
+
+So it looks like I need to either make /proc/net a symlink to
+/proc/self/net or make the network namespace something that we capture
+at mount time of /proc.
+
+This was my don't get hung up on this implementation detail version.
+Thanks for pointing out it has user visible problems.  I will see
+what I can do to resolve this.
+
+Eric
