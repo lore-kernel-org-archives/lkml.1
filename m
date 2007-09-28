@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbXI1Tx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbXI1UCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711AbXI1Tx3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 15:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXI1TxX
+	id S1754903AbXI1UCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbXI1UCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 15:53:23 -0400
-Received: from rtr.ca ([76.10.145.34]:3586 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752269AbXI1TxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 15:53:22 -0400
-Message-ID: <46FD5BAF.8040304@rtr.ca>
-Date: Fri, 28 Sep 2007 15:53:19 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 28 Sep 2007 16:02:06 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:60173 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbXI1UCE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:02:04 -0400
+X-IronPort-AV: E=Sophos;i="4.21,210,1188802800"; 
+   d="scan'208";a="529439665"
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i915: make vbl interrupts work properly on i965g/gm
+X-Message-Flag: Warning: May contain useful information
+References: <Pine.LNX.4.64.0709280248480.10526@skynet.skynet.ie>
+	<200709271909.23040.jbarnes@virtuousgeek.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 28 Sep 2007 13:02:02 -0700
+In-Reply-To: <200709271909.23040.jbarnes@virtuousgeek.org> (Jesse Barnes's message of "Thu, 27 Sep 2007 19:09:22 -0700")
+Message-ID: <adave9umudh.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, simon.derr@bull.net,
-       Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] (repost) Fix SMP poweroff hangs
-References: <46FC20B7.4000606@rtr.ca> <200709281455.29069.rjw@sisk.pl>	 <46FD001A.3070309@rtr.ca> <200709281544.30497.rjw@sisk.pl>	 <46FD05B8.2040302@rtr.ca>  <46FD0724.5060009@rtr.ca> <1190991316.18681.38.camel@chaos>
-In-Reply-To: <1190991316.18681.38.camel@chaos>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Sep 2007 20:02:02.0532 (UTC) FILETIME=[6F998640:01C8020A]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> ..
->> @@ -879,6 +880,7 @@
->>  	if (pm_power_off_prepare)
->>  		pm_power_off_prepare();
->>  	sysdev_shutdown();
->> +	disable_nonboot_cpus();
-> 
-> Before sysdev_shutdown(), please.
-> 
-> sysdev_shutdown() may touch things that belong to CPU0.
+Sorry to hijack this thread, but I have a question about i915
+interrupts (945GM specifically) that I haven't gotten an answer to
+yet, and this thread reminded me of it so I thought I'd ask again:
+I hacked the kernel drm stuff on my laptop with 945GM graphics to do
+pci_enable_msi() on the graphics device, and I don't see any
+interrupts occur.
 
-Thanks.  Here is the revised patch.
+So can someone with access to details of the 945GM tell me if MSI
+interrupts should work, and if so if there's some internal registers
+that need to be poked to enable it (beyond what pci_enable_msi()
+does).
 
-* * *
+It's not super-urgent-- I just like using shiny things like MSI, and I
+already have ahci, iwl3945 and e1000 working with MSI on my laptop, so
+the graphics are the only thing left with an MSI capability that's not
+working.
 
-We need to disable all CPUs other than the boot CPU (usually 0)
-before attempting to power-off modern SMP machines.
-This fixes the hang-on-poweroff issue on my MythTV SMP box,
-and also on Thomas Gleixner's new toybox.
-
-Signed-off-by: Mark Lord <mlord@pobox.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
----
-
---- linux/kernel/sys.c.orig	2007-09-13 09:49:11.000000000 -0400
-+++ linux/kernel/sys.c	2007-09-28 15:48:54.000000000 -0400
-@@ -32,6 +32,7 @@
- #include <linux/getcpu.h>
- #include <linux/task_io_accounting_ops.h>
- #include <linux/seccomp.h>
-+#include <linux/cpu.h>
- 
- #include <linux/compat.h>
- #include <linux/syscalls.h>
-@@ -878,6 +879,7 @@
- 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
- 	if (pm_power_off_prepare)
- 		pm_power_off_prepare();
-+	disable_nonboot_cpus();
- 	sysdev_shutdown();
- 	printk(KERN_EMERG "Power down.\n");
- 	machine_power_off();
+Thanks!
+  Roland
