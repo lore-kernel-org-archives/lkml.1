@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbXI1REV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbXI1RMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbXI1REV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 13:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXI1RED
+	id S1753900AbXI1RMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 13:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbXI1RMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 13:04:03 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35859 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbXI1REA (ORCPT
+	Fri, 28 Sep 2007 13:12:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45325 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751201AbXI1RMa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 13:04:00 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Linux Containers <containers@lists.osdl.org>
-Subject: Re: /proc/net/ bad hard links count [Was: 2.6.23-rc8-mm2]
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
-	<46FD2C10.8050105@gmail.com>
-Date: Fri, 28 Sep 2007 11:03:26 -0600
-In-Reply-To: <46FD2C10.8050105@gmail.com> (Jiri Slaby's message of "Fri, 28
-	Sep 2007 18:30:08 +0200")
-Message-ID: <m1tzpebu3l.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 28 Sep 2007 13:12:30 -0400
+Date: Fri, 28 Sep 2007 10:11:23 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Herrmann <aherrman@arcor.de>,
+       Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 9p: fix compile error if !CONFIG_SYSCTL
+Message-ID: <20070928101123.4c5bb8a6@laptopd505.fenrus.org>
+In-Reply-To: <200709281005.34001.nickpiggin@yahoo.com.au>
+References: <20070918080537.GA14882@devil>
+	<200709280740.40163.nickpiggin@yahoo.com.au>
+	<alpine.LFD.0.999.0709280728170.3579@woody.linux-foundation.org>
+	<200709281005.34001.nickpiggin@yahoo.com.au>
+Organization: Intel
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
+On Fri, 28 Sep 2007 10:05:33 +1000
+> Sure, that would probably be pretty trivial to implement too, and
+> would solve most problems for kernel devs.
+> 
+> At a level up from that, I think ease of use could be improved with
+> a package manager-type chained-selection/deselection feature in
+> the config tools.
+> 
+only if you make it Aunt-Tilly friendly
 
-> On 09/27/2007 11:22 AM, Andrew Morton wrote:
->>
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/
-
-Yep.
-
-> # find /proc >/dev/null
-> find: WARNING: Hard link count is wrong for /proc/net: this may be a bug in your
-> filesystem driver.  Automatically turning on find's -noleaf option.  Earlier
-> results may have failed to include directories that should have been searched.
-> # stat net
->   File: `net'
->   Size: 0               Blocks: 0          IO Block: 1024   directory
-> Device: 3h/3d   Inode: 4026531864  Links: 2
-> Access: (0555/dr-xr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
-> Access: 2007-09-28 18:21:24.651209759 +0200
-> Modify: 2007-09-28 18:21:24.651209759 +0200
-> Change: 2007-09-28 18:21:24.651209759 +0200
-> # stat net/
->   File: `net/'
->   Size: 0               Blocks: 0          IO Block: 1024   directory
-> Device: 3h/3d   Inode: 4026531909  Links: 4
-> Access: (0555/dr-xr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
-> Access: 2007-09-28 18:26:48.813048220 +0200
-> Modify: 2007-09-28 18:26:48.813048220 +0200
-> Change: 2007-09-28 18:26:48.813048220 +0200
->
-> hmm, this is some kind of weirdness :)
-
-Yes.
-
-I can explain it. For the network namespace stuff we need special handling
-of /proc/net so that depending on the network namespace we are resolving
-against you see a different behavior.  So you actually are observing
-two different directories, one being a magic invisible symlink to the
-other.
-
-Currently I am resolving against current (which has a number of
-limitations) and the weird ugly effect you are current seeing.
-
-So it looks like I need to either make /proc/net a symlink to
-/proc/self/net or make the network namespace something that we capture
-at mount time of /proc.
-
-This was my don't get hung up on this implementation detail version.
-Thanks for pointing out it has user visible problems.  I will see
-what I can do to resolve this.
-
-Eric
+/me runs like hell
