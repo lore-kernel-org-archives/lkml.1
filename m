@@ -1,202 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbXI1UKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbXI1UMC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbXI1UKk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 16:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbXI1UK3
+	id S1755927AbXI1UMC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 16:12:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbXI1ULy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 16:10:29 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:51257 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752518AbXI1UK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 16:10:27 -0400
-Subject: [PATCH 3/8] scsi: megaraid_sas - add module param max_sectors,
-	cmd_per_lun
-From: bo yang <bo.yang@lsi.com>
-To: linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       Bo.yang@lsi.com, Sumant.patro@lsi.com
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Sep 2007 11:27:50 -0400
-Message-Id: <1190820470.5955.12.camel@dhcp-75-534.se.lsil.com>
+	Fri, 28 Sep 2007 16:11:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36160 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751120AbXI1ULx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 16:11:53 -0400
+Date: Fri, 28 Sep 2007 13:10:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: chakriin5@gmail.com, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
+       a.p.zijlstra@chello.nl
+Subject: Re: A unresponsive file system can hang all I/O in the system on
+ linux-2.6.23-rc6 (dirty_thresh problem?)
+Message-Id: <20070928131012.4a03c53e.akpm@linux-foundation.org>
+In-Reply-To: <1191009148.6702.46.camel@heimdal.trondhjem.org>
+References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
+	<20070927235034.ae7bd73d.akpm@linux-foundation.org>
+	<1190998853.6702.17.camel@heimdal.trondhjem.org>
+	<20070928114930.2c201324.akpm@linux-foundation.org>
+	<1191006971.6702.25.camel@heimdal.trondhjem.org>
+	<20070928122628.965137f2.akpm@linux-foundation.org>
+	<1191009148.6702.46.camel@heimdal.trondhjem.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-X-OriginalArrivalTime: 28 Sep 2007 20:10:16.0095 (UTC) FILETIME=[95C942F0:01C8020B]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding module parameters to configure max sectors per request & # of cmds per lun.
+On Fri, 28 Sep 2007 15:52:28 -0400
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+> On Fri, 2007-09-28 at 12:26 -0700, Andrew Morton wrote:
+> > On Fri, 28 Sep 2007 15:16:11 -0400 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > > Looking back, they were getting caught up in
+> > > balance_dirty_pages_ratelimited() and friends. See the attached
+> > > example...
+> > 
+> > that one is nfs-on-loopback, which is a special case, isn't it?
+> 
+> I'm not sure that the hang that is illustrated here is so special. It is
+> an example of a bog-standard ext3 write, that ends up calling the NFS
+> client, which is hanging. The fact that it happens to be hanging on the
+> nfsd process is more or less irrelevant here: the same thing could
+> happen to any other process in the case where we have an NFS server that
+> is down.
 
----
- drivers/scsi/megaraid/megaraid_sas.c |   94 ++++++++++++++++++++++++-
- drivers/scsi/megaraid/megaraid_sas.h |    2
- 2 files changed, 94 insertions(+), 2 deletions(-)
+hm, so ext3 got stuck in nfs via __alloc_pages direct reclaim?
 
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-09-26 13:30:36.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-09-27 20:37:11.000000000 -0700
-@@ -62,6 +62,23 @@ MODULE_PARM_DESC(fast_load,
- 	"megasas: Faster loading of the driver, skips physical devices! \
- 	 (default = 0)");
- 
-+/*
-+ * Number of sectors per IO command will be set in megasas_init_mfi
-+ * if user does not provide
-+ */
-+static unsigned int max_sectors;
-+module_param_named(max_sectors, max_sectors, int, 0);
-+MODULE_PARM_DESC(max_sectors,
-+	"Maximum number of sectors per IO command");
-+
-+/*
-+ * Number of cmds per logical unit
-+ */
-+static unsigned int cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
-+module_param_named(cmd_per_lun, cmd_per_lun, int, 0);
-+MODULE_PARM_DESC(cmd_per_lun,
-+	"Maximum number of commands per logical unit (default=128)");
-+
- MODULE_LICENSE("GPL");
- MODULE_VERSION(MEGASAS_VERSION);
- MODULE_AUTHOR("megaraidlinux@lsi.com");
-@@ -2301,6 +2318,31 @@ static int megasas_start_aen(struct mega
- 				    class_locale.word);
- }
- 
-+static ssize_t
-+sysfs_max_sectors_read(struct kobject *kobj,
-+			struct bin_attribute *bin_attr,
-+			char *buf, loff_t off, size_t count)
-+{
-+	struct Scsi_Host *host = class_to_shost(container_of(kobj,
-+					struct class_device, kobj));
-+	struct megasas_instance *instance =
-+				(struct megasas_instance *)host->hostdata;
-+
-+	count = sprintf(buf, "%u\n", instance->max_sectors_per_req);
-+
-+	return count+1;
-+}
-+
-+static struct bin_attribute sysfs_max_sectors_attr = {
-+	.attr = {
-+		.name = "max_sectors",
-+		.mode = S_IRUSR|S_IRGRP|S_IROTH,
-+		.owner = THIS_MODULE,
-+	},
-+	.size = 7,
-+	.read = sysfs_max_sectors_read,
-+};
-+
- /**
-  * megasas_io_attach -	Attaches this driver to SCSI mid-layer
-  * @instance:		Adapter soft state
-@@ -2308,17 +2350,48 @@ static int megasas_start_aen(struct mega
- static int megasas_io_attach(struct megasas_instance *instance)
- {
- 	struct Scsi_Host *host = instance->host;
-+	int error;
- 
- 	/*
--	 * Export parameters required by SCSI mid-layer
-+	 * Export host parameters required by SCSI
-+	 * mid-layer
- 	 */
- 	host->irq = instance->pdev->irq;
- 	host->unique_id = instance->unique_id;
- 	host->can_queue = instance->max_fw_cmds - MEGASAS_INT_CMDS;
- 	host->this_id = instance->init_id;
- 	host->sg_tablesize = instance->max_num_sge;
-+
-+	/*
-+	 * Check if the module parameter value for max_sectors can be used
-+	 */
-+	if (max_sectors && max_sectors <= instance->max_sectors_per_req)
-+		instance->max_sectors_per_req = max_sectors;
-+	else {
-+		if (max_sectors)
-+			printk(KERN_INFO
-+				"megasas: max_sectors should be > 0 and"
-+				"<= %d\n",
-+				instance->max_sectors_per_req);
-+	}
-+
- 	host->max_sectors = instance->max_sectors_per_req;
--	host->cmd_per_lun = 128;
-+
-+	/*
-+	 * Check if the module parameter value for cmd_per_lun can be used
-+	 */
-+	instance->cmd_per_lun = MEGASAS_DEFAULT_CMD_PER_LUN;
-+	if (cmd_per_lun && cmd_per_lun <= MEGASAS_DEFAULT_CMD_PER_LUN)
-+		instance->cmd_per_lun = cmd_per_lun;
-+	else
-+		printk(KERN_INFO "megasas: cmd_per_lun should be > 0 and"
-+			"<= %d\n", MEGASAS_DEFAULT_CMD_PER_LUN);
-+
-+	host->cmd_per_lun = instance->cmd_per_lun;
-+
-+	printk(KERN_DEBUG "megasas: max_sectors : 0x%x, cmd_per_lun : 0x%x\n",
-+			instance->max_sectors_per_req, instance->cmd_per_lun);
-+
- 	host->max_channel = MEGASAS_MAX_CHANNELS - 1;
- 	host->max_id = MEGASAS_MAX_DEV_PER_CHANNEL;
- 	host->max_lun = MEGASAS_MAX_LUN;
-@@ -2333,10 +2406,25 @@ static int megasas_io_attach(struct mega
- 	}
- 
- 	/*
-+	 * Create sysfs entries for module paramaters
-+	 */
-+	error = sysfs_create_bin_file(&instance->host->shost_classdev.kobj,
-+			&sysfs_max_sectors_attr);
-+	if (error) {
-+		printk(KERN_INFO "megasas: Error in creating the sysfs entry"
-+				" max_sectors.\n");
-+		goto out_remove_host;
-+	}
-+
-+	/*
- 	 * Trigger SCSI to scan our drives
- 	 */
- 	scsi_scan_host(host);
- 	return 0;
-+
-+out_remove_host:
-+	scsi_remove_host(host);
-+	return error;
- }
- 
- static int
-@@ -2750,6 +2838,8 @@ static void megasas_detach_one(struct pc
- 	instance = pci_get_drvdata(pdev);
- 	host = instance->host;
- 
-+	sysfs_remove_bin_file(&host->shost_classdev.kobj,
-+				&sysfs_max_sectors_attr);
- 	scsi_remove_host(instance->host);
- 	megasas_flush_cache(instance);
- 	megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
-diff -uprN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 13:27:59.000000000 -0700
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.h	2007-09-26 13:27:31.000000000 -0700
-@@ -537,6 +537,7 @@ struct megasas_ctrl_info {
- #define MEGASAS_DEFAULT_INIT_ID			-1
- #define MEGASAS_MAX_LUN				8
- #define MEGASAS_MAX_LD				64
-+#define MEGASAS_DEFAULT_CMD_PER_LUN		128
- 
- #define MEGASAS_DBG_LVL				1
- 
-@@ -1080,6 +1081,7 @@ struct megasas_instance {
- 	u16 max_num_sge;
- 	u16 max_fw_cmds;
- 	u32 max_sectors_per_req;
-+	u32 cmd_per_lun;
- 
- 	struct megasas_cmd **cmd_list;
- 	struct list_head cmd_pool;
-
+We should be able to fix that by marking the backing device as
+write-congested.  That'll have small race windows, but it should be a 99.9%
+fix?
 
