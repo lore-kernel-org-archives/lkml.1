@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbXI1OA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXI1ODI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbXI1OA2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 10:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbXI1OAU
+	id S1758157AbXI1ODI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 10:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbXI1OC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 10:00:20 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:50431 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752204AbXI1OAT (ORCPT
+	Fri, 28 Sep 2007 10:02:56 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2270 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbXI1OCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 10:00:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KHdgdiuxAv4Xsf7JEl4juYbUCr7at2lHsBCntERse7ePMPXs83r7IHe+FR/xOFePUwh5XJeFvxPVO00F+J86TtNboV0U2ghI5k2UZVguZE+W2VXQCC3o4j4H0dAoGDVnI68yEPPiJIJzIgNqp1UiTRXlFjVJ6Heu8FNuRmNvS1M=
-Message-ID: <653402b90709280700m19b071bcg5ad4fc13179bfba2@mail.gmail.com>
-Date: Fri, 28 Sep 2007 16:00:16 +0200
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [RFC] New kernel-message logging API (take 2)
-Cc: LKML <linux-kernel@vger.kernel.org>, "Kyle Moffett" <mrmacman_g4@mac.com>,
-       "Michael Holzheu" <holzheu@linux.vnet.ibm.com>,
-       "Joe Perches" <joe@perches.com>, "Rob Landley" <rob@landley.net>,
-       "Dick Streefland" <dick.streefland@altium.nl>,
-       "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       "Jesse Barnes" <jesse.barnes@intel.com>,
-       "Arnd Bergmann" <arnd@arndb.de>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Emil Medve" <Emilian.Medve@freescale.com>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       "linux@horizon.com" <linux@horizon.com>
-In-Reply-To: <19f34abd0709280655g3dfb6b32vb4d1bf46757c845a@mail.gmail.com>
+	Fri, 28 Sep 2007 10:02:55 -0400
+Date: Fri, 28 Sep 2007 15:02:43 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.10
+Message-ID: <20070928140243.GO18163@shadowen.org>
+References: <bf97f66cfc0696c8574921d53eaafcb7@pinky> <20070928084003.GA18882@elte.hu> <20070928020132.f6c6f528.akpm@linux-foundation.org> <20070928092235.GA31180@shadowen.org> <20070928093902.GA28455@elte.hu> <20070928100024.GB18163@shadowen.org> <20070928104935.GA606@elte.hu> <20070928132138.GG18163@shadowen.org> <84144f020709280637w2290aec5gf3e8f90b08f53cc8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <19f34abd0709271418l471cf7b9gf24161190772fac@mail.gmail.com>
-	 <19f34abd0709280511h3f31681bh54c6af287a48c02f@mail.gmail.com>
-	 <653402b90709280630t4168abc4rd114aaa5747adc09@mail.gmail.com>
-	 <19f34abd0709280655g3dfb6b32vb4d1bf46757c845a@mail.gmail.com>
+In-Reply-To: <84144f020709280637w2290aec5gf3e8f90b08f53cc8@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/28/07, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On 9/28/07, Miguel Ojeda <maxextreme@gmail.com> wrote:
-> > On 9/28/07, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> > > reason we can't use KBUILD_MODNAME is that this is defined on the
-> > > command line. The declaration inside the header would thus be horribly
-> > > wrong. We can, however, use KBUILD_MODNAME as a default value for
-> > > KPRINT_DRIVER, like:
-> > > static const char *KPRINT_DRIVER = KBUILD_MODNAME;
-> > > which would pre-process to something like:
-> > > static const char *KPRINT_DRIVER = "bcm43xx";
-> > >
-> > > This value can still be overridden using #define KPRINT_DRIVER "new
-> > > name". In this case, it is possible that the original KPRINT_DRIVER
-> > > symbol can cause an "unused variable"-warning. I guess this is fixable
-> > > with the gcc "unused" variable attribute.
-> >
-> > Yep, then, in a year or two, we will be able to delete such attribute.
->
-> Actually, no, since it will throw a warning only if a source file
-> #defines KPRINT_SUBSYSTEM (i.e. overrides the constant variable
-> (oxymoron!) with the same name). What you're hoping is that some time
-> in the future, EVERY source file will come equipped with these
-> definitions, and yes, at that point, the entire declaration can be
-> removed, BUT I think that's... well. Yes.
+On Fri, Sep 28, 2007 at 04:37:49PM +0300, Pekka Enberg wrote:
+> Hi Andy,
+> 
+> On 9/28/07, Andy Whitcroft <apw@shadowen.org> wrote:
+> > That is unfair.  Every time we discuss it I state that I disagree that
+> > hiding mostly useful tests is a good thing.  I would love the tests to
+> > be 100% accurate, but if I removed all the tests that can false positive
+> > I would literally have none.  There is a balance to be struck and we
+> > have significantly different ideas on where the balance is.
+> 
+> Are you disagreeing with the numbers Ingo posted? 25,000 false
+> positives for the kernel is beyond silly... Existing conventions
+> should matter a lot and the default configuration for a static code
+> checker should really be 100%. So why not hide the potentially useful
+> warnings under -Wtoo-strict or similar command line option?
 
-Yes, that was my point. Far far far away, but possible, and if this
-RFC ever meets the real kernel, then bringing every source file to the
-API should be a objective. A good project for kernel janitors, for
-example.
+I have not run across the whole kernel to find out, his estimation is
+likely high as his sample (mm/sched.c) includes a particular construct
+(multiple assignment) which is reported and overly common in that
+piece of code.  If I take mm/signal.c (also big) I get 1/1000 files,
+and those two are easily fixed.  I should note it shows some 62 actual
+real violations in that file.
 
->
-> > Will there be a team to change main subsystems/drivers to the new API?
->
-> No. First of all, this is a specification draft; there is no code yet.
-> Also, very possibly, this is such a violent change that nobody really
-> wants to use it anyway. But we can hope. ;-)
+I do receive automated checks of every patch posted to lkml and I work
+to remove the false positives from them.  The false positive ratio is
+very low in those reports and it those which drive my development effort.
 
-Sure, this is speculation. :)
+checkpatch is a work in progress and likely will be for many years to
+come.
 
->
-> Vegard
->
+I have propose we 'gate' those subjective tests, and have asked for
+input on that thread on the default for those tests.
 
-
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+-apw
