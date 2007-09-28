@@ -1,49 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbXI1SMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbXI1SNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbXI1SMA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 14:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXI1SLx
+	id S1756125AbXI1SNp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 14:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbXI1SNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 14:11:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52191 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753785AbXI1SLw (ORCPT
+	Fri, 28 Sep 2007 14:13:35 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:47239 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753401AbXI1SNf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 14:11:52 -0400
-Date: Fri, 28 Sep 2007 11:11:07 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: jbeulich@novell.com (Jan Beulich), bridge@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Module use count must be updated as bridges are
- created/destroyed
-Message-ID: <20070928111107.57519b67@freepuppy.rosehill>
-In-Reply-To: <E1Ib8Xj-0006Kl-00@gondolin.me.apana.org.au>
-References: <46FBE2DD.76E4.0078.0@novell.com>
-	<E1Ib8Xj-0006Kl-00@gondolin.me.apana.org.au>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Sep 2007 14:13:35 -0400
+Subject: [RFC][PATCH 2/8] move mnt_want_write() into open_namei_create()
+To: linux-kernel@vger.kernel.org
+Cc: hch@infradead.org, miklos@szeredi.hu, Dave Hansen <haveblue@us.ibm.com>
+From: Dave Hansen <haveblue@us.ibm.com>
+Date: Fri, 28 Sep 2007 11:13:31 -0700
+References: <20070928181330.27B367AC@kernel>
+In-Reply-To: <20070928181330.27B367AC@kernel>
+Message-Id: <20070928181331.E9388A9C@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Sep 2007 13:37:39 +0800
-Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-> Jan Beulich <jbeulich@novell.com> wrote:
-> >
-> > So we have an unsolvable problem here then, unless infrastructure gets added
-> > that allows a module to declare itself as not-implicit-unload-safe, forcing
-> > modprobe -r to keep its hands off it. Ugly.
-> 
-> Yes I've always wanted to have a separate count that indicates
-> a module is in use but does not prevent its immediate removal.
-> 
-> Cheers,
+In a moment, we're going to make may_open() stop doing
+the mnt_want/drop_write() pair.  Doing this first makes
+the next patch simpler.
 
-It is only the nested removal problem.
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+---
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+ lxc-dave/fs/namei.c |   28 ++++++++++++++++++++++------
+ 1 file changed, 22 insertions(+), 6 deletions(-)
+
+diff -puN fs/namei.c~move-mnt_want_write-into-open_namei_create fs/namei.c
+--- lxc/fs/namei.c~move-mnt_want_write-into-open_namei_create	2007-09-28 11:03:19.000000000 -0700
++++ lxc-dave/fs/namei.c	2007-09-28 11:03:19.000000000 -0700
+@@ -1686,6 +1686,19 @@ static int open_namei_create(struct name
+ 	int error;
+ 	struct dentry *dir = nd->dentry;
+ 
++	/*
++	 * This ensures that the mnt stays writable
++	 * over the vfs_create() call to may_open(),
++	 * which takes a more persistent
++	 * mnt_want_write().
++	 */
++	error = mnt_want_write(nd->mnt);
++	if (error) {
++		mutex_unlock(&dir->d_inode->i_mutex);
++		dput(nd->dentry);
++		return error;
++	}
++
+ 	if (!IS_POSIXACL(dir->d_inode))
+ 		mode &= ~current->fs->umask;
+ 	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
+@@ -1693,9 +1706,16 @@ static int open_namei_create(struct name
+ 	dput(nd->dentry);
+ 	nd->dentry = path->dentry;
+ 	if (error)
+-		return error;
++		goto out;
+ 	/* Don't check for write permission, don't truncate */
+-	return may_open(nd, 0, flag & ~O_TRUNC);
++	error = may_open(nd, 0, flag & ~O_TRUNC);
++out:
++	/*
++	 * if needed, may_open() has taken a write
++	 * on the mnt for us, so we can release ours.
++	 */
++	mnt_drop_write(nd->mnt);
++	return error;
+ }
+ 
+ /*
+@@ -1778,11 +1798,7 @@ do_last:
+ 
+ 	/* Negative dentry, just create the file */
+ 	if (!path.dentry->d_inode) {
+-		error = mnt_want_write(nd->mnt);
+-		if (error)
+-			goto exit_mutex_unlock;
+ 		error = open_namei_create(nd, &path, flag, mode);
+-		mnt_drop_write(nd->mnt);
+ 		if (error)
+ 			goto exit;
+ 		return 0;
+_
