@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbXI1Les@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbXI1LqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754663AbXI1Les (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 07:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbXI1Lel
+	id S1754118AbXI1LqR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 07:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXI1LqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 07:34:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:9871 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbXI1Lek (ORCPT
+	Fri, 28 Sep 2007 07:46:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:21881 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbXI1LqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 07:34:40 -0400
+	Fri, 28 Sep 2007 07:46:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=ms+tum3vgDKQpmK3RIix2uUeD/+uMf64ja9xKvciFGIbiH4CbAd3gKMMuoiChVqvOtb1zOh++RvGtIsftBjT67aw+Yfa4x2BbFedRLsuPg7+LdVC1VbEeHBY1YaRQJkhJ362CGHqWlVz9ms7akKJc07aFWmtb9M0Iay4eFsu5Kg=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: drivers/usb/misc/emi*.c have the biggest data objects in the whole tree
-Date: Fri, 28 Sep 2007 12:34:29 +0100
-User-Agent: KMail/1.9.1
-Cc: tapio.laxstrom@iptime.fi, linux-kernel@vger.kernel.org
-References: <200709141135.35239.vda.linux@googlemail.com> <20070928044111.GB24458@kroah.com>
-In-Reply-To: <20070928044111.GB24458@kroah.com>
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=azX16uTvwiOD1S65kPTLzJDhWmDrKWjERNdXgl94TpzIzvQD+hJHAOL+a70yNIROkDlhrVmP0Oo4mmCKXm6z3Ar04Lyu2+fuW8GI9/rHUByQRI6UQPu3GGtgeUml4L0tb12ZKiyDexf2g3Crx+cAXtkY1H7hR7sIed7v4iDR/eA=
+Message-ID: <19f34abd0709280446l47584141m4f89fe4d2eb6926d@mail.gmail.com>
+Date: Fri, 28 Sep 2007 13:46:00 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Subject: Re: [RFC] New kernel-message logging API (take 2)
+Cc: LKML <linux-kernel@vger.kernel.org>, "Kyle Moffett" <mrmacman_g4@mac.com>,
+       "Michael Holzheu" <holzheu@linux.vnet.ibm.com>,
+       "Joe Perches" <joe@perches.com>, "Rob Landley" <rob@landley.net>,
+       "Dick Streefland" <dick.streefland@altium.nl>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Arnd Bergmann" <arnd@arndb.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Emil Medve" <Emilian.Medve@freescale.com>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "linux@horizon.com" <linux@horizon.com>
+In-Reply-To: <Pine.LNX.4.64.0709280922230.32185@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709281234.29646.vda.linux@googlemail.com>
+References: <19f34abd0709271418l471cf7b9gf24161190772fac@mail.gmail.com>
+	 <Pine.LNX.4.64.0709280922230.32185@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 September 2007 05:41, Greg KH wrote:
-> On Fri, Sep 14, 2007 at 11:35:34AM +0100, Denys Vlasenko wrote:
-> > Hi Tapio,
-> > 
-> > You are the author of these files. Are you still maintaining them?
-> > If not, do you know who is the current maintainer?
-> > 
-> > These two object files hold the biggest data objects in the whole Linux kernel
-> > after lockdep:
-> > 
-> >    text    data     bss     dec     hex filename
-> >    1258  160516       0  161774   277ee ./drivers/usb/misc/emi26.o
-> >    1504  209296       0  210800   33770 ./drivers/usb/misc/emi62.o
-> > 
-> > Basically, these are big arrays of the following structures:
-> > 
-> > typedef struct _INTEL_HEX_RECORD
-> > {
-> >         __u32   length;
-> >         __u32   address;
-> >         __u32   type;
-> >         __u8    data[MAX_INTEL_HEX_RECORD_LENGTH];
-> > } INTEL_HEX_RECORD;
-> > 
-> > I suggest the following optimizations:
-> > 
-> > Change structure to
-> > 
-> > typedef struct _INTEL_HEX_RECORD
-> > {
-> >         __u8   type;
-> >         __u8   length;
-> >         __u16   address;
-> >         __u8    data[MAX_INTEL_HEX_RECORD_LENGTH];
-> > } INTEL_HEX_RECORD __attribute__((__packed__));
-> 
-> Only if you redo the whole firmware image too :)
+> If-blocks spanning macros are really dangerous!
+>
+> E.g. an Ethernet driver may want to do:
+>
+>         kprint_block(&block, "MAC ");
+>         for (i = 0; i < 6; i++) {
+>                 card->mac[i] = obtain_mac_byte_from_hw(i);
+>                 kprint_block(&block, "%02x", card->mac[i]);
+>         }
+>
+> This looks (and should be) innocent, but the actual MAC addres retrieval
+> would never be executed if loglevel <= CONFIG_KPRINT_LOGLEVEL_MAX.
 
-I did. It wasn't hard.
+Yup. Okay, so it's definitely NOT an option.
 
-> What is this really hurting?  It's only relevant if you load the
-> specific module
+> Can't you store the loglevel in the kprint_block and check it in all
+> successive kprint_*() macros? If gcc knows it's constant, it can optimize
+> the non-wanted code away. As other fields in struct kprint_block cannot be
+> constant (they store internal state), you have to split it like:
+>
+>     struct kprint_block {
+>             int loglevel;
+>             struct real_kprint_block real;  /* internal state */
+>     }
+>
+> and pass &block.real() instead of &block to all successive internal functions.
+> I haven't tried this, so let's hope gcc is actually smart enough...
 
-By this logic, no space wastage in modules is worth fixing.
---
-vda
+It isn't, apparently. Or not with my test, anyway. Either way, it's
+probably better not to make those assumptions about or rely too much
+on the smartness of the compiler (we don't have *any* guarantees).
+
+The best solution for now is probably to pass the log-level into each
+line, as Dick Streefland suggested, though it would lead to a hairier
+syntax, or just skip the whole interface for now, as Jan Engelhardt
+suggested. Thanks.
+
+Vegard
