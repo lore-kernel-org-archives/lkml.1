@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbXI1HDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbXI1HQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbXI1HDR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 03:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756923AbXI1HDF
+	id S1760318AbXI1HQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 03:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbXI1HQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 03:03:05 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39331 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756784AbXI1HDE (ORCPT
+	Fri, 28 Sep 2007 03:16:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55985 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753127AbXI1HQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 03:03:04 -0400
-Message-ID: <46FCA87F.3000605@bull.net>
-Date: Fri, 28 Sep 2007 09:08:47 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: akpm@linux-foundation.org, adobriyan@sw.ru, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm1 1/2] fixing idr_find() locking
-References: <20070927143354.663489000@bull.net> <20070927143458.674281000@bull.net> <20070928063144.GB1767@ff.dom.local>
-In-Reply-To: <20070928063144.GB1767@ff.dom.local>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 28/09/2007 09:09:02,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 28/09/2007 09:09:08,
-	Serialize complete at 28/09/2007 09:09:08
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 28 Sep 2007 03:16:46 -0400
+Date: Fri, 28 Sep 2007 08:16:35 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Hansen <haveblue@us.ibm.com>, hch@infradead.org,
+       laurent.riffard@free.fr, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org
+Subject: Re: [RFC][PATCH] make reiserfs stop using 'struct file' for internal xattr operations
+Message-ID: <20070928071635.GA28841@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Dave Hansen <haveblue@us.ibm.com>, laurent.riffard@free.fr,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	reiserfs-devel@vger.kernel.org
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <46FC021F.8060109@free.fr> <20070927124833.d2691813.akpm@linux-foundation.org> <20070927202607.GA3812@infradead.org> <1190926419.7344.27.camel@localhost> <20070927210423.GA6117@infradead.org> <1190928434.7344.31.camel@localhost> <20070927145125.1346901f.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070927145125.1346901f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
-> On Thu, Sep 27, 2007 at 04:33:55PM +0200, Nadia.Derbey@bull.net wrote:
-> 
->>[PATCH 01/02]
->>
->>
->>This is a patch that fixes the way idr_find() used to be called in ipc_lock():
->>in all the paths that don't imply an update of the ipcs idr, it was called
->>without the idr tree being locked.
->>
->>The changes are:
->>  . in ipc_ids, the mutex has been changed into a reader/writer semaphore.
->>  . ipc_lock() now takes the mutex as a reader during the idr_find().
->>  . a new routine ipc_lock_down() has been defined: it doesn't take the
->>    mutex, assuming that it is being held by the caller. This is the routine
->>    that is now called in all the update paths.
->>
->>
->>Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-> 
-> 
-> Acked-by: Jarek Poplawski <jarkao2@o2.pl>
-> 
-> PS: there is one big mistake around To/Cc ordering, so I doubt Andrew
-> will ever sign this...
-> 
-> 
+On Thu, Sep 27, 2007 at 02:51:25PM -0700, Andrew Morton wrote:
+> That'll be because reiserfs-convert-to-new-aops.patch witched reiserfs over
+> to ->write_begin() and ->write_end().
 
-Jarek,
+Yeah, I was looking at mainline.
 
-I thought that since you were the one who pointed out the issue I had to 
-put you as the receiver.
-Next time I'll also add Andrew in the To list.
-Sorry for that.
+> So your stuff becomes dependent on Nick's stuff, and Nick's stuff is still
+> failing on NFS, I think.
 
-Regards,
-Nadia
+I'd rather avoid the paramater removal for now, that makes it less
+entangle, and it's an unrelated cleanup anyway.
+
+Btw, there's more abuse of this sort in reiserfs.  Various other places
+in xattr.c call dentry_open directly without the vfsmount aswell.  And
+handling of an external journal uses filp_open which is similarly stupid,
+it should use open_bdev_excl like xfs or the generic code to open the
+main filesystem blockdevice.
 
