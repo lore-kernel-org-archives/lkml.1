@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbXI1MST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbXI1MWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbXI1MST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 08:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbXI1MSJ
+	id S1754717AbXI1MWM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 08:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbXI1MV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 08:18:09 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:33814 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751862AbXI1MSI (ORCPT
+	Fri, 28 Sep 2007 08:21:58 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:38188 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbXI1MV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 08:18:08 -0400
-Message-ID: <46FCF0F5.9030004@wpkg.org>
-Date: Fri, 28 Sep 2007 14:17:57 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Fri, 28 Sep 2007 08:21:57 -0400
+Date: Fri, 28 Sep 2007 14:21:54 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 01/12] lockdep: syscall exit check
+Message-ID: <20070928122154.GD25726@osiris.boeblingen.de.ibm.com>
+References: <20070928074200.436463000@chello.nl> <20070928080040.893443000@chello.nl> <20070928120331.GC25726@osiris.boeblingen.de.ibm.com> <1190981651.13204.6.camel@twins>
 MIME-Version: 1.0
-To: Miguel <mc354@tid.es>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: software unplug and plug USB
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1190981651.13204.6.camel@twins>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm using a huawei E220 modem and occasionally it doesn't work and I
-> must unplug and plug it again, run the scripts connection to make it
-> works again.
-> how can I unplug an plug an USB modem via software?
+On Fri, Sep 28, 2007 at 02:14:11PM +0200, Peter Zijlstra wrote:
+> On Fri, 2007-09-28 at 14:03 +0200, Heiko Carstens wrote:
+> > > +void lockdep_sys_exit(void)
+> > > +{
+> > > +	struct task_struct *curr = current;
+> > > +
+> > > +	if (unlikely(curr->lockdep_depth)) {
+> > > +		if (!debug_locks_off())
+> > > +			return;
+> > > +		printk("\n========================================\n");
+> > > +		printk(  "[ BUG: lock held at syscall exit time! ]\n");
+> > > +		printk(  "----------------------------------------\n");
+> > > +		printk("%s/%d is leaving the kernel with locks still held!\n",
+> > > +				curr->comm, curr->pid);
+> > > +		lockdep_print_held_locks(curr);
+> > > +	}
+> > > +}
+> > 
+> > By the way, the s390 patch I just posted also checks if we hold any locks
+> > when returning from interrupt context to user space. Maybe the above text
+> > could be changed to "lock held when returning to user space" ?
+> 
+> Good idea, I'll look at doing the same for i386/x86_64. Traps (page
+> faults) would also make sense I guess.
 
-If the modem doesn't have any other power sources than USB, just 
-removing the modem's and USB modules, and the modprobing them again 
-should help.
-
-Just take care if you have it connected to the PC with a USB keyboard ;)
-
-
--- 
-Tomasz Chmielewski
-http://blog.wpkg.org
-
+Yes, traps and syscalls have the same exit path on s390. So we do that
+alreasy as well.
