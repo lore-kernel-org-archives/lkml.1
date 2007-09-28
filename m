@@ -1,160 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbXI1Xqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbXI1XtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbXI1Xqs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 19:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756104AbXI1Xqf
+	id S1756871AbXI1XtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 19:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXI1XtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 19:46:35 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:52929 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755817AbXI1Xqc (ORCPT
+	Fri, 28 Sep 2007 19:49:14 -0400
+Received: from mailout02.sul.t-online.de ([194.25.134.17]:36523 "EHLO
+	mailout02.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754274AbXI1XtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 19:46:32 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: linux-arch@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>
-Subject: [PATCH] Generic compat_sys_fallocate
-Date: Fri, 28 Sep 2007 18:33:52 -0400
-Message-Id: <1191018832-18069-2-git-send-email-kyle@mcmartin.ca>
-X-Mailer: git-send-email 1.5.3.2
-In-Reply-To: <1191018832-18069-1-git-send-email-kyle@mcmartin.ca>
-References: <1191018832-18069-1-git-send-email-kyle@mcmartin.ca>
+	Fri, 28 Sep 2007 19:49:13 -0400
+Message-ID: <46FD92CF.70708@t-online.de>
+Date: Sat, 29 Sep 2007 01:48:31 +0200
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070810)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: bryan.wu@analog.com, davidm@snapgear.com, gerg@snapgear.com,
+       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH] binfmt_flat: minimum support for the Blackfin relocations
+References: <1190102965.4406.9.camel@roc-desktop> <20070928160826.1483b9ba.akpm@linux-foundation.org>
+In-Reply-To: <20070928160826.1483b9ba.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ID: SUDMEOZGZhYuq0jl7aGKQB3CSMzKEmnggBcOweEEkJ9zUYCtK4fJgMI7UA7CJXxQjp
+X-TOI-MSGID: 22b83251-f79f-4618-9c15-e160ff9ba5ed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Basically everyone is using the same sys32_fallocate. Delete a whole bunch of
-archdep code and move the compat wrapper to fs/compat.c
+Andrew Morton wrote:
+>>  	if (rev > OLD_FLAT_VERSION) {
+>> +		unsigned long persistent = 0;
+> 
+> `persistent' here only has meaning inside the next nesting level, so should
+> be moved down into that scope for readability reasons.
 
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
----
- arch/mips/kernel/linux32.c        |    7 -------
- arch/mips/kernel/scall64-o32.S    |    2 +-
- arch/powerpc/kernel/sys_ppc32.c   |    7 -------
- arch/sparc64/kernel/sys_sparc32.c |    6 ------
- arch/x86_64/ia32/ia32entry.S      |    2 +-
- arch/x86_64/ia32/sys_ia32.c       |    7 -------
- fs/compat.c                       |   10 ++++++++++
- include/linux/compat.h            |    2 ++
- 8 files changed, 14 insertions(+), 29 deletions(-)
+See below.
 
-diff --git a/arch/mips/kernel/linux32.c b/arch/mips/kernel/linux32.c
-index 135d9a5..c37568d 100644
---- a/arch/mips/kernel/linux32.c
-+++ b/arch/mips/kernel/linux32.c
-@@ -566,13 +566,6 @@ asmlinkage long sys32_fadvise64_64(int fd, int __pad,
- 			flags);
- }
- 
--asmlinkage long sys32_fallocate(int fd, int mode, unsigned offset_a2,
--	unsigned offset_a3, unsigned len_a4, unsigned len_a5)
--{
--	return sys_fallocate(fd, mode, merge_64(offset_a2, offset_a3),
--	                     merge_64(len_a4, len_a5));
--}
--
- save_static_function(sys32_clone);
- static int noinline __used
- _sys32_clone(nabi_no_regargs struct pt_regs regs)
-diff --git a/arch/mips/kernel/scall64-o32.S b/arch/mips/kernel/scall64-o32.S
-index b3ed731..bb724cc 100644
---- a/arch/mips/kernel/scall64-o32.S
-+++ b/arch/mips/kernel/scall64-o32.S
-@@ -525,5 +525,5 @@ sys_call_table:
- 	PTR	compat_sys_signalfd
- 	PTR	compat_sys_timerfd
- 	PTR	sys_eventfd
--	PTR	sys_fallocate			/* 4320 */
-+	PTR	compat_sys_fallocate		/* 4320 */
- 	.size	sys_call_table,.-sys_call_table
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index bd85b5f..b42cbf1 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -773,13 +773,6 @@ asmlinkage int compat_sys_truncate64(const char __user * path, u32 reg4,
- 	return sys_truncate(path, (high << 32) | low);
- }
- 
--asmlinkage long compat_sys_fallocate(int fd, int mode, u32 offhi, u32 offlo,
--				     u32 lenhi, u32 lenlo)
--{
--	return sys_fallocate(fd, mode, ((loff_t)offhi << 32) | offlo,
--			     ((loff_t)lenhi << 32) | lenlo);
--}
--
- asmlinkage int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long high,
- 				 unsigned long low)
- {
-diff --git a/arch/sparc64/kernel/sys_sparc32.c b/arch/sparc64/kernel/sys_sparc32.c
-index e8dce90..5d60883 100644
---- a/arch/sparc64/kernel/sys_sparc32.c
-+++ b/arch/sparc64/kernel/sys_sparc32.c
-@@ -1028,9 +1028,3 @@ long compat_sync_file_range(int fd, unsigned long off_high, unsigned long off_lo
- 				   flags);
- }
- 
--asmlinkage long compat_sys_fallocate(int fd, int mode, u32 offhi, u32 offlo,
--				     u32 lenhi, u32 lenlo)
--{
--	return sys_fallocate(fd, mode, ((loff_t)offhi << 32) | offlo,
--			     ((loff_t)lenhi << 32) | lenlo);
--}
-diff --git a/arch/x86_64/ia32/ia32entry.S b/arch/x86_64/ia32/ia32entry.S
-index 18b2318..28d8fff 100644
---- a/arch/x86_64/ia32/ia32entry.S
-+++ b/arch/x86_64/ia32/ia32entry.S
-@@ -732,5 +732,5 @@ ia32_sys_call_table:
- 	.quad compat_sys_signalfd
- 	.quad compat_sys_timerfd
- 	.quad sys_eventfd
--	.quad sys32_fallocate
-+	.quad compat_sys_fallocate
- ia32_syscall_end:
-diff --git a/arch/x86_64/ia32/sys_ia32.c b/arch/x86_64/ia32/sys_ia32.c
-index bee96d6..ca8deac 100644
---- a/arch/x86_64/ia32/sys_ia32.c
-+++ b/arch/x86_64/ia32/sys_ia32.c
-@@ -880,10 +880,3 @@ asmlinkage long sys32_fadvise64(int fd, unsigned offset_lo, unsigned offset_hi,
- 				len, advice);
- }
- 
--asmlinkage long sys32_fallocate(int fd, int mode, unsigned offset_lo,
--				unsigned offset_hi, unsigned len_lo,
--				unsigned len_hi)
--{
--	return sys_fallocate(fd, mode, ((u64)offset_hi << 32) | offset_lo,
--			     ((u64)len_hi << 32) | len_lo);
--}
-diff --git a/fs/compat.c b/fs/compat.c
-index 15078ce..9093915 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -2226,3 +2226,13 @@ asmlinkage long compat_sys_timerfd(int ufd, int clockid, int flags,
- }
- 
- #endif /* CONFIG_TIMERFD */
-+
-+asmlinkage long compat_sys_fallocate(int fd, int mode,
-+				     u32 offset_lo, u32 offset_hi,
-+				     u32 len_lo, u32 len_hi)
-+{
-+	u64 offset = compat_merge64(offset_lo, offset_hi);
-+	u64 len = compat_merge64(len_lo, len_hi);
-+
-+	return sys_fallocate(fd, mode, offset, len);
-+}
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index 07bcc3c..49401a9 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -266,6 +266,8 @@ asmlinkage long compat_sys_signalfd(int ufd,
-                                 compat_size_t sigsetsize);
- asmlinkage long compat_sys_timerfd(int ufd, int clockid, int flags,
- 				const struct compat_itimerspec __user *utmr);
-+asmlinkage long compat_sys_fallocate(int fd, int mode, u32 offset_lo,
-+				u32 offset_hi, u32 len_lo, u32 len_hi);
- 
- static inline u64 compat_merge64(u32 left, u32 right)
- {
+>> +			if (flat_set_persistent (relval, &persistent))
+>> +				continue;
+> 
+> If this correct?  flat_set_persistent() returns zero if it didn't write
+> anything to `persistent'.  It seems strange that in the case where
+> flat_set_persistent() _does_ write something to `persistent', we just throw
+> it away by doing `continue'.
+> 
+> Either that, or I've misread the code and you really did mean to put
+> `persistent' in the outer scope, and its value is supposed to propagate
+> over into the next iteration of the loop.  If so, that's all a bit too
+> tricky for it to be implemented with zero code comments, dontcha think?
+
+The latter.  We need to be able to use more data than we can fit into a 
+single reloc, so we store a value with one reloc and reuse it with the 
+next.  There'd be no point in having this function otherwise since you 
+could perform whatever needs to be done in flat_get_relocate_addr.
+
+This seemed fairly obvious at the time... when you're familiar with the 
+flat format, the loop isn't all that hard to understand.  I'll add 
+comments in the next version.
+
+
+Bernd
 -- 
-1.5.3.2
-
+This footer brought to you by insane German lawmakers.
+Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
+Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
