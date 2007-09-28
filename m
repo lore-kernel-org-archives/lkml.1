@@ -1,100 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbXI1IBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbXI1IBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbXI1IBc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 04:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbXI1IBX
+	id S1755014AbXI1IBv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 04:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921AbXI1IBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 04:01:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51026 "EHLO mx1.redhat.com"
+	Fri, 28 Sep 2007 04:01:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51060 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754325AbXI1IBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 04:01:22 -0400
-Message-Id: <20070928080041.408922000@chello.nl>
+	id S1756802AbXI1IBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 04:01:34 -0400
+Message-Id: <20070928080042.020756000@chello.nl>
 References: <20070928074200.436463000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 28 Sep 2007 09:42:03 +0200
+Date: Fri, 28 Sep 2007 09:42:06 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
 Cc: Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        akpm@linux-foundation.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 03/12] lockdep: x86_64: connect the sysexit hook
-Content-Disposition: inline; filename=lockdep-x86_64-sys_exit.patch
+Subject: [PATCH 06/12] mm: remove raw SetPageLocked() usage
+Content-Disposition: inline; filename=lock_page.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Run the lockdep_sys_exit hook after all other C code on the syscall
-return path.
+Remove the last few SetPageLocked() instances.
+
+use trylock_page() instead of SetPageLocked() because we hold tree_lock
+so we cannot suffer the might_sleep(). Also at least add_to_page_cache() can
+be handed a locked page.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/x86_64/kernel/entry.S    |    3 +++
- arch/x86_64/lib/thunk.S       |    4 ++++
- include/asm-x86_64/irqflags.h |    9 +++++++++
- 3 files changed, 16 insertions(+)
+ mm/filemap.c    |    2 +-
+ mm/swap_state.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/arch/x86_64/kernel/entry.S
+Index: linux-2.6/mm/filemap.c
 ===================================================================
---- linux-2.6.orig/arch/x86_64/kernel/entry.S
-+++ linux-2.6/arch/x86_64/kernel/entry.S
-@@ -164,6 +164,7 @@ ENTRY(ret_from_fork)
- 	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT),threadinfo_flags(%rcx)
- 	jnz rff_trace
- rff_action:	
-+	LOCKDEP_SYS_EXIT
- 	RESTORE_REST
- 	testl $3,CS-ARGOFFSET(%rsp)	# from kernel_thread?
- 	je   int_ret_from_sys_call
-@@ -326,6 +327,7 @@ tracesys:			 
-  */
- 	.globl int_ret_from_sys_call
- int_ret_from_sys_call:
-+	LOCKDEP_SYS_EXIT_REST
- 	cli
- 	TRACE_IRQS_OFF
- 	testl $3,CS-ARGOFFSET(%rsp)
-@@ -382,6 +384,7 @@ int_signal:
- 	call do_notify_resume
- 1:	movl $_TIF_NEED_RESCHED,%edi	
- int_restore_rest:
-+	LOCKDEP_SYS_EXIT
- 	RESTORE_REST
- 	cli
- 	TRACE_IRQS_OFF
-Index: linux-2.6/arch/x86_64/lib/thunk.S
+--- linux-2.6.orig/mm/filemap.c
++++ linux-2.6/mm/filemap.c
+@@ -445,7 +445,7 @@ int add_to_page_cache(struct page *page,
+ 		error = radix_tree_insert(&mapping->page_tree, offset, page);
+ 		if (!error) {
+ 			page_cache_get(page);
+-			SetPageLocked(page);
++			trylock_page(page);
+ 			page->mapping = mapping;
+ 			page->index = offset;
+ 			mapping->nrpages++;
+Index: linux-2.6/mm/swap_state.c
 ===================================================================
---- linux-2.6.orig/arch/x86_64/lib/thunk.S
-+++ linux-2.6/arch/x86_64/lib/thunk.S
-@@ -50,6 +50,10 @@
- 	thunk trace_hardirqs_on_thunk,trace_hardirqs_on
- 	thunk trace_hardirqs_off_thunk,trace_hardirqs_off
- #endif
-+
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	thunk lockdep_sys_exit_thunk,lockdep_sys_exit
-+#endif
- 	
- 	/* SAVE_ARGS below is used only for the .cfi directives it contains. */
- 	CFI_STARTPROC
-Index: linux-2.6/include/asm-x86_64/irqflags.h
-===================================================================
---- linux-2.6.orig/include/asm-x86_64/irqflags.h
-+++ linux-2.6/include/asm-x86_64/irqflags.h
-@@ -137,6 +137,15 @@ static inline void halt(void)
- #  define TRACE_IRQS_ON
- #  define TRACE_IRQS_OFF
- # endif
-+# ifdef CONFIG_DEBUG_LOCK_ALLOC
-+#  define LOCKDEP_SYS_EXIT	call lockdep_sys_exit_thunk
-+#  define LOCKDEP_SYS_EXIT_REST	SAVE_REST; \
-+				LOCKDEP_SYS_EXIT; \
-+				RESTORE_REST;
-+# else
-+#  define LOCKDEP_SYS_EXIT
-+#  define LOCKDEP_SYS_EXIT_REST
-+# endif
- #endif
- 
- #endif
+--- linux-2.6.orig/mm/swap_state.c
++++ linux-2.6/mm/swap_state.c
+@@ -83,7 +83,7 @@ static int __add_to_swap_cache(struct pa
+ 						entry.val, page);
+ 		if (!error) {
+ 			page_cache_get(page);
+-			SetPageLocked(page);
++			trylock_page(page);
+ 			SetPageSwapCache(page);
+ 			set_page_private(page, entry.val);
+ 			total_swapcache_pages++;
 
 --
 
