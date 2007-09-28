@@ -1,139 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbXI1Q21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758172AbXI1Qa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbXI1Q21 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 12:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXI1Q2T
+	id S1758172AbXI1Qa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 12:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbXI1QaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 12:28:19 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:47943 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751071AbXI1Q2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 12:28:18 -0400
-X-IronPort-AV: E=Sophos;i="4.21,210,1188802800"; 
-   d="scan'208";a="108848467"
-Subject: NFS: Fix an Oops in encode_lookup()
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Content-Type: text/plain
+	Fri, 28 Sep 2007 12:30:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:53232 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbXI1QaM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 12:30:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JvZiYco5HUMoFznhc7fVV+riJrcEME11su9xTR7Tp9kyDjyD4zBgrA/wJttuIjI46N5tYDIYWrjvJxuATos4B3ziLAsxYog0+dpwryayQdNAC+DRyPQOhsQvYjoBWne262rwQQv3xqpAuVb/eiGW7TaLDtXAwL0+pX1h53lre7o=
+Message-ID: <46FD2C10.8050105@gmail.com>
+Date: Fri, 28 Sep 2007 18:30:08 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Eric Biederman <ebiederm@xmission.com>
+Subject: /proc/net/ bad hard links count [Was: 2.6.23-rc8-mm2]
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
+In-Reply-To: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Fri, 28 Sep 2007 12:27:41 -0400
-Message-Id: <1190996861.6702.7.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 28 Sep 2007 16:27:44.0018 (UTC) FILETIME=[7F53FF20:01C801EC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It doesn't look as if the NFS file name limit is being initialised correctly
-in the struct nfs_server. Make sure that we limit whatever is being set in
-nfs_probe_fsinfo() and nfs_init_server().
+On 09/27/2007 11:22 AM, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc8/2.6.23-rc8-mm2/
 
-Also ensure that readdirplus and nfs4_path_walk respect our file name
-limits.
+# find /proc >/dev/null
+find: WARNING: Hard link count is wrong for /proc/net: this may be a bug in your
+filesystem driver.  Automatically turning on find's -noleaf option.  Earlier
+results may have failed to include directories that should have been searched.
+# stat net
+  File: `net'
+  Size: 0               Blocks: 0          IO Block: 1024   directory
+Device: 3h/3d   Inode: 4026531864  Links: 2
+Access: (0555/dr-xr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2007-09-28 18:21:24.651209759 +0200
+Modify: 2007-09-28 18:21:24.651209759 +0200
+Change: 2007-09-28 18:21:24.651209759 +0200
+# stat net/
+  File: `net/'
+  Size: 0               Blocks: 0          IO Block: 1024   directory
+Device: 3h/3d   Inode: 4026531909  Links: 4
+Access: (0555/dr-xr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2007-09-28 18:26:48.813048220 +0200
+Modify: 2007-09-28 18:26:48.813048220 +0200
+Change: 2007-09-28 18:26:48.813048220 +0200
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+hmm, this is some kind of weirdness :)
 
- fs/nfs/client.c  |   29 +++++++++++++++++++----------
- fs/nfs/dir.c     |    2 ++
- fs/nfs/getroot.c |    3 +++
- 3 files changed, 24 insertions(+), 10 deletions(-)
+regards,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
 
-diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-index a49f9fe..a204484 100644
---- a/fs/nfs/client.c
-+++ b/fs/nfs/client.c
-@@ -588,16 +588,6 @@ static int nfs_init_server(struct nfs_server *server, const struct nfs_mount_dat
- 	server->namelen  = data->namlen;
- 	/* Create a client RPC handle for the NFSv3 ACL management interface */
- 	nfs_init_server_aclclient(server);
--	if (clp->cl_nfsversion == 3) {
--		if (server->namelen == 0 || server->namelen > NFS3_MAXNAMLEN)
--			server->namelen = NFS3_MAXNAMLEN;
--		if (!(data->flags & NFS_MOUNT_NORDIRPLUS))
--			server->caps |= NFS_CAP_READDIRPLUS;
--	} else {
--		if (server->namelen == 0 || server->namelen > NFS2_MAXNAMLEN)
--			server->namelen = NFS2_MAXNAMLEN;
--	}
--
- 	dprintk("<-- nfs_init_server() = 0 [new %p]\n", clp);
- 	return 0;
- 
-@@ -794,6 +784,16 @@ struct nfs_server *nfs_create_server(const struct nfs_mount_data *data,
- 	error = nfs_probe_fsinfo(server, mntfh, &fattr);
- 	if (error < 0)
- 		goto error;
-+	if (server->nfs_client->rpc_ops->version == 3) {
-+		if (server->namelen == 0 || server->namelen > NFS3_MAXNAMLEN)
-+			server->namelen = NFS3_MAXNAMLEN;
-+		if (!(data->flags & NFS_MOUNT_NORDIRPLUS))
-+			server->caps |= NFS_CAP_READDIRPLUS;
-+	} else {
-+		if (server->namelen == 0 || server->namelen > NFS2_MAXNAMLEN)
-+			server->namelen = NFS2_MAXNAMLEN;
-+	}
-+
- 	if (!(fattr.valid & NFS_ATTR_FATTR)) {
- 		error = server->nfs_client->rpc_ops->getattr(server, mntfh, &fattr);
- 		if (error < 0) {
-@@ -984,6 +984,9 @@ struct nfs_server *nfs4_create_server(const struct nfs4_mount_data *data,
- 	if (error < 0)
- 		goto error;
- 
-+	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
-+		server->namelen = NFS4_MAXNAMLEN;
-+
- 	BUG_ON(!server->nfs_client);
- 	BUG_ON(!server->nfs_client->rpc_ops);
- 	BUG_ON(!server->nfs_client->rpc_ops->file_inode_ops);
-@@ -1056,6 +1059,9 @@ struct nfs_server *nfs4_create_referral_server(struct nfs_clone_mount *data,
- 	if (error < 0)
- 		goto error;
- 
-+	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
-+		server->namelen = NFS4_MAXNAMLEN;
-+
- 	dprintk("Referral FSID: %llx:%llx\n",
- 		(unsigned long long) server->fsid.major,
- 		(unsigned long long) server->fsid.minor);
-@@ -1115,6 +1121,9 @@ struct nfs_server *nfs_clone_server(struct nfs_server *source,
- 	if (error < 0)
- 		goto out_free_server;
- 
-+	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
-+		server->namelen = NFS4_MAXNAMLEN;
-+
- 	dprintk("Cloned FSID: %llx:%llx\n",
- 		(unsigned long long) server->fsid.major,
- 		(unsigned long long) server->fsid.minor);
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index ea97408..e4a04d1 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -1162,6 +1162,8 @@ static struct dentry *nfs_readdir_lookup(nfs_readdir_descriptor_t *desc)
- 	}
- 	if (!desc->plus || !(entry->fattr->valid & NFS_ATTR_FATTR))
- 		return NULL;
-+	if (name.len > NFS_SERVER(dir)->namelen)
-+		return NULL;
- 	/* Note: caller is already holding the dir->i_mutex! */
- 	dentry = d_alloc(parent, &name);
- 	if (dentry == NULL)
-diff --git a/fs/nfs/getroot.c b/fs/nfs/getroot.c
-index d1cbf0a..522e5ad 100644
---- a/fs/nfs/getroot.c
-+++ b/fs/nfs/getroot.c
-@@ -175,6 +175,9 @@ next_component:
- 		path++;
- 	name.len = path - (const char *) name.name;
- 
-+	if (name.len > NFS4_MAXNAMLEN)
-+		return -ENAMETOOLONG;
-+
- eat_dot_dir:
- 	while (*path == '/')
- 		path++;
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
