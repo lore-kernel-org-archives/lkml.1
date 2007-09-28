@@ -1,119 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbXI1Vgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbXI1VkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbXI1Vgw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 17:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbXI1Vgp
+	id S1756575AbXI1VkP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 17:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbXI1VkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 17:36:45 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:45607 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754097AbXI1Vgo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 17:36:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ALH3BpgP17x6AXV6KTaBZJmB+n31SkD2OD9E92Nxgqmzh/BSNWsZj923URToHjV2bNfGyLI9vfnoR5sELv89DD2v/EuyoMpmCNYI/bQyrohjC8jpuOpHwJV7p+kgvGHiHfaRnIobJYaI6vVrPs99YY5S8MfAc+/3I7oRRfZHAKw=
-Message-ID: <92cbf19b0709281436i41247863t6cbc919c33e972a3@mail.gmail.com>
-Date: Fri, 28 Sep 2007 14:36:40 -0700
-From: "Chakri n" <chakriin5@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: A unresponsive file system can hang all I/O in the system on linux-2.6.23-rc6 (dirty_thresh problem?)
-Cc: "Trond Myklebust" <trond.myklebust@fys.uio.no>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net, a.p.zijlstra@chello.nl
-In-Reply-To: <20070928134326.e3bb63b1.akpm@linux-foundation.org>
+	Fri, 28 Sep 2007 17:40:00 -0400
+Received: from zion.dlh.net ([194.126.239.225]:53197 "EHLO mail.dlh.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753182AbXI1Vj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 17:39:59 -0400
+X-Greylist: delayed 3450 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Sep 2007 17:39:59 EDT
+Message-ID: <23966.84.62.25.8.1191012145.squirrel@cs1.dlh.net>
+Date: Fri, 28 Sep 2007 22:42:25 +0200 (CEST)
+Subject: PATCH: tcp rfc 2385 security/bugfix for sparc64
+From: "Peter Lieven" <pl@dlh.net>
+To: sparclinux@vger.kernel.org, davem@davemloft.net
+Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	 <20070927235034.ae7bd73d.akpm@linux-foundation.org>
-	 <1190998853.6702.17.camel@heimdal.trondhjem.org>
-	 <20070928114930.2c201324.akpm@linux-foundation.org>
-	 <1191006971.6702.25.camel@heimdal.trondhjem.org>
-	 <20070928122628.965137f2.akpm@linux-foundation.org>
-	 <1191009148.6702.46.camel@heimdal.trondhjem.org>
-	 <20070928131012.4a03c53e.akpm@linux-foundation.org>
-	 <1191011538.6702.59.camel@heimdal.trondhjem.org>
-	 <20070928134326.e3bb63b1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+References: 
+In-Reply-To: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is a the snapshot of vmstats when the problem happened. I believe
-this could help a little.
+TCP MD5 signatures on sparc64 (big-endian) completely fail on current
+kernel releases in interoperability with Cisco/Foundry or other
+little-endian linux systems.
 
-crash> kmem -V
-       NR_FREE_PAGES: 680853
-         NR_INACTIVE: 95380
-           NR_ACTIVE: 26891
-       NR_ANON_PAGES: 2507
-      NR_FILE_MAPPED: 1832
-       NR_FILE_PAGES: 119779
-       NR_FILE_DIRTY: 0
-        NR_WRITEBACK: 18272
- NR_SLAB_RECLAIMABLE: 1305
-NR_SLAB_UNRECLAIMABLE: 2085
-        NR_PAGETABLE: 123
-     NR_UNSTABLE_NFS: 0
-           NR_BOUNCE: 0
-     NR_VMSCAN_WRITE: 0
+The root cause is a cast in the return statement of tcp_v4_md5_do_lookup,
+where a tcp4_md5sig_key is casted onto tcp_md5sig_key without proper
+conversion. On little-endian systems the upper 8 bits are cut of which
+yields the expected behaviour. However, on big-endian systems (like
+sparc64) only the most significant 8 bits are preserved. Since
+TCP_MD5SIG_MAXKEYLEN is 80, this always yields 0.
 
-In my testing, I always saw the processes are waiting in
-balance_dirty_pages_ratelimited(), never in throttle_vm_writeout()
-path.
+In the calculation of the md5 signature afterwards the key is therefore
+not appended to the tcp segment which could result in a security problem
+since only the presence of a md5 signature is checked, and the key itself
+doesn't matter.
 
-But this could be because I have about 4Gig of memory in the system
-and plenty of mem is still available around.
+--- linux.old/include/net/tcp.h 2007-09-28 21:43:26.000000000 +0200 +++
+linux/include/net/tcp.h     2007-09-28 21:45:35.000000000 +0200 @@ -1055,6
++1055,7 @@ static inline void clear_all_retrans_hin
+ struct crypto_hash;
 
-I will rerun the test limiting memory to 1024MB and lets see if it
-takes in any different path.
+ /* - key database */
++/* this should be compatible with the head of the following two structs */
+ struct tcp_md5sig_key {
+        u8                      *key;
+        u8                      keylen;
+@@ -1062,13 +1063,13 @@ struct tcp_md5sig_key {
 
-Thanks
---Chakri
+ struct tcp4_md5sig_key {
+        u8                      *key;
+-       u16                     keylen;
++       u8                      keylen;
+        __be32                  addr;
+ };
+
+ struct tcp6_md5sig_key {
+        u8                      *key;
+-       u16                     keylen;
++       u8                      keylen;
+ #if 0
+        u32                     scope_id;       /* XXX */
+ #endif
 
 
-On 9/28/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 28 Sep 2007 16:32:18 -0400
-> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
->
-> > On Fri, 2007-09-28 at 13:10 -0700, Andrew Morton wrote:
-> > > On Fri, 28 Sep 2007 15:52:28 -0400
-> > > Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > >
-> > > > On Fri, 2007-09-28 at 12:26 -0700, Andrew Morton wrote:
-> > > > > On Fri, 28 Sep 2007 15:16:11 -0400 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > > > > Looking back, they were getting caught up in
-> > > > > > balance_dirty_pages_ratelimited() and friends. See the attached
-> > > > > > example...
-> > > > >
-> > > > > that one is nfs-on-loopback, which is a special case, isn't it?
-> > > >
-> > > > I'm not sure that the hang that is illustrated here is so special. It is
-> > > > an example of a bog-standard ext3 write, that ends up calling the NFS
-> > > > client, which is hanging. The fact that it happens to be hanging on the
-> > > > nfsd process is more or less irrelevant here: the same thing could
-> > > > happen to any other process in the case where we have an NFS server that
-> > > > is down.
-> > >
-> > > hm, so ext3 got stuck in nfs via __alloc_pages direct reclaim?
-> > >
-> > > We should be able to fix that by marking the backing device as
-> > > write-congested.  That'll have small race windows, but it should be a 99.9%
-> > > fix?
-> >
-> > No. The problem would rather appear to be that we're doing
-> > per-backing_dev writeback (if I read sync_sb_inodes() correctly), but
-> > we're measuring variables which are global to the VM. The backing device
-> > that we are selecting may not be writing out any dirty pages, in which
-> > case, we're just spinning in balance_dirty_pages_ratelimited().
->
-> OK, so it's unrelated to page reclaim.
->
-> > Should we therefore perhaps be looking at adding per-backing_dev stats
-> > too?
->
-> That's what mm-per-device-dirty-threshold.patch and friends are doing.
-> Whether it works adequately is not really known at this time.
-> Unfortunately kernel developers don't test -mm much.
->
+Signed-off-by: Peter Lieven <pl@dlh.net>
+Signed-off-by: Matthias M. Dellweg <2500@gmx.de>
+
+
+
