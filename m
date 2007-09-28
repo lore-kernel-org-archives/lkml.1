@@ -1,239 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbXI1S6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbXI1S67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbXI1S6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 14:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXI1S6G
+	id S1755684AbXI1S67 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 14:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbXI1S6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 14:58:06 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:42060 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752292AbXI1S6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 14:58:03 -0400
-Date: Fri, 28 Sep 2007 11:57:59 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl, bunk@kernel.org,
-       ego@in.ibm.com, srostedt@redhat.com
-Subject: Re: [PATCH RFC 3/9] RCU: Preemptible RCU
-Message-ID: <20070928185759.GC9153@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070910183004.GA3299@linux.vnet.ibm.com> <20070910183412.GC3819@linux.vnet.ibm.com> <20070923173807.GA292@tv-sign.ru> <20070924001509.GG11123@linux.vnet.ibm.com> <20070926151351.GA328@tv-sign.ru> <20070927154652.GE16652@linux.vnet.ibm.com> <20070928144714.GA397@tv-sign.ru>
+	Fri, 28 Sep 2007 14:58:51 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:50388 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbXI1S6u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 14:58:50 -0400
+Message-ID: <46FD4EE3.8030705@linux.vnet.ibm.com>
+Date: Sat, 29 Sep 2007 00:28:43 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070928144714.GA397@tv-sign.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: cmm@us.ibm.com
+CC: Norbert Preining <preining@logic.at>, Badari Pulavarty <pbadari@gmail.com>,
+       ext4 <linux-ext4@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kernel Oops in ext3 code
+References: <20070927103122.GB27783@gamma.logic.tuwien.ac.at> <1190927903.3872.12.camel@localhost.localdomain> <20070928045456.GM23215@gamma.logic.tuwien.ac.at> <1190991464.10145.0.camel@dyn9047017100.beaverton.ibm.com> <20070928150031.GF27873@gamma.logic.tuwien.ac.at> <1191002449.3815.9.camel@localhost.localdomain>
+In-Reply-To: <1191002449.3815.9.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 28, 2007 at 06:47:14PM +0400, Oleg Nesterov wrote:
-> On 09/27, Paul E. McKenney wrote:
-> >
-> > On Wed, Sep 26, 2007 at 07:13:51PM +0400, Oleg Nesterov wrote:
-> > > 
-> > > Yes, yes, I see now. We really need this barriers, except I think
-> > > rcu_try_flip_idle() can use wmb. However, I have a bit offtopic question,
-> > > 
-> > > 	// rcu_try_flip_waitzero()
-> > > 	if (A == 0) {
-> > > 		mb();
-> > > 		B == 0;
-> > > 	}
-> > > 
-> > > Do we really need the mb() in this case? How it is possible that STORE
-> > > goes before LOAD? "Obviously", the LOAD should be completed first, no?
-> > 
-> > Suppose that A was most recently stored by a CPU that shares a store
-> > buffer with this CPU.  Then it is possible that some other CPU sees
-> > the store to B as happening before the store that "A==0" above is
-> > loading from.  This other CPU would naturally conclude that the store
-> > to B must have happened before the load from A.
-> 
-> Ah, I was confused by the comment,
-> 
-> 	smp_mb();  /* Don't call for memory barriers before we see zero. */
-> 	                                             ^^^^^^^^^^^^^^^^^^
-> So, in fact, we need this barrier to make sure that _other_ CPUs see these
-> changes in order, thanks. Of course, _we_ already saw zero.
 
-Fair point!
 
-Perhaps: "Ensure that all CPUs see their rcu_mb_flag -after- the
-rcu_flipctrs sum to zero" or some such?
+Mingming Cao wrote:
+>> BUG: unable to handle kernel paging request at virtual address 1000004b
+>>  printing eip:
+>>  c0195bd3
+>>  *pde = 00000000
+>>  Oops: 0000 [#1]
+>>  PREEMPT SMP 
+>>  Modules linked in: vboxdrv binfmt_misc fuse coretemp hwmon gspca videodev v4l2_common v4l1_compat iwl3945 mac80211 tifm_7xx1 tifm_core joydev irda crc_ccitt 8250_pnp 8250 serial_core firewire_ohci firewire_core crc_itu_t
+>>  CPU:    0
+>>  EIP:    0060:[<c0195bd3>]    Not tainted VLI
+>>  EFLAGS: 00010206   (2.6.23-rc6 #1)
+>>  EIP is at ext3_discard_reservation+0x18/0x4d
+>>  eax: dff23800   ebx: 10000033   ecx: dfc15ec0   edx: ffffffff
+>>  esi: c0007c44   edi: 10000033   ebp: dfc2bef4   esp: dfc2beac
+>>  ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+>>  Process kswapd0 (pid: 261, ti=dfc2a000 task=dfcac570 task.ti=dfc2a000)
+>>  Stack: c0007ba4 c0007c44 10000033 c019ec51 c0007c44 c0007d8c 0000002c c0171b1b 
+>>         0000002c c0007c44 c0007c4c c0171da2 c050880c 00000000 00000080 00000080 
+>>         c0171fb8 00000080 c0007e48 df9e3910 00007404 c03f5634 00000080 000000d0 
+>>  Call Trace:
+>>   [<c019ec51>] ext3_clear_inode+0x5d/0x76
+>>   [<c0171b1b>] clear_inode+0x6b/0xb9
+>>   [<c0171da2>] dispose_list+0x48/0xc9
+>>   [<c0171fb8>] shrink_icache_memory+0x195/0x1bd
+>>   [<c014f5ec>] shrink_slab+0xe2/0x159
+>>   [<c014f9a0>] kswapd+0x2d3/0x431
+>>   [<c0132520>] autoremove_wake_function+0x0/0x33
+>>   [<c014f6cd>] kswapd+0x0/0x431
+>>   [<c0132453>] kthread+0x38/0x5d
+>>   [<c013241b>] kthread+0x0/0x5d
+>>   [<c0104b73>] kernel_thread_helper+0x7/0x10
+>>   =======================
+>>  Code: 83 f8 01 19 c0 f7 d0 83 e0 08 89 42 0c 89 56 b4 5b 5e c3 57 56 89 c6 53 8b 58 b4 8b 80 a4 00 00 00 85 db 8b 80 78 01 00 00 74 30 <83> 7b 18 00 74 2a 8d b8 00 03 00 00 89 f8 e8 b8 ca 1a 00 83 7b 
+>>  EIP: [<c0195bd3>] ext3_discard_reservation+0x18/0x4d SS:ESP 0068:dfc2beac
+>>
+>>
+> On Fri, 2007-09-28 at 17:00 +0200, Norbert Preining wrote: 
+>> On Fr, 28 Sep 2007, Badari Pulavarty wrote:
+>>> objdump -DlS balloc.o 
+>> Here it is
+>>
+> 
+> Thanks
+> 
+> Looks like kernel oops at 1753(173b+0x18):
+> 
+> 0000173b <ext3_discard_reservation>:
+> ext3_discard_reservation():
+>     173b:       57                      push   %edi
+>     173c:       56                      push   %esi
+>     173d:       89 c6                   mov    %eax,%esi
+>     173f:       53                      push   %ebx
+>     1740:       8b 58 b4                mov    -0x4c(%eax),%ebx
+>     1743:       8b 80 a4 00 00 00       mov    0xa4(%eax),%eax
+>     1749:       85 db                   test   %ebx,%ebx
+>     174b:       8b 80 78 01 00 00       mov    0x178(%eax),%eax
+>     1751:       74 30                   je     1783
+> <ext3_discard_reservation+0x48>
+>     1753:       83 7b 18 00             cmpl   $0x0,0x18(%ebx)
+> 
+> ==========================> Kernel oops here, ebx=10000033, match bad
+> page location 1000004b(=10000033+0x18)
+> 
+> 
+>     1757:       74 2a                   je     1783
+> <ext3_discard_reservation+0x48>
+>     1759:       8d b8 00 03 00 00       lea    0x300(%eax),%edi
+>     175f:       89 f8                   mov    %edi,%eax
+>     1761:       e8 fc ff ff ff          call   1762
+> <ext3_discard_reservation+0x27>
+>     1766:       83 7b 18 00             cmpl   $0x0,0x18(%ebx)
+>     176a:       74 0d                   je     1779
+> <ext3_discard_reservation+0x3e>
+>     176c:       8b 86 a4 00 00 00       mov    0xa4(%esi),%eax
+>     1772:       89 da                   mov    %ebx,%edx
+>     1774:       e8 dc eb ff ff          call   355 <rsv_window_remove>
+>     1779:       89 f8                   mov    %edi,%eax
+>     177b:       5b                      pop    %ebx
+>     177c:       5e                      pop    %esi
+>     177d:       5f                      pop    %edi
+>     177e:       e9 fc ff ff ff          jmp    177f
+> <ext3_discard_reservation+0x44>
+>     1783:       5b                      pop    %ebx
+>     1784:       5e                      pop    %esi
+>     1785:       5f                      pop    %edi
+>     1786:       c3                      ret
+> 
+> 
+> And trying to matching to the code:
+> 
+> void ext3_discard_reservation(struct inode *inode)
+> {
+>         struct ext3_inode_info *ei = EXT3_I(inode);
+>         struct ext3_block_alloc_info *block_i = ei->i_block_alloc_info;
+>         struct ext3_reserve_window_node *rsv;
+>         spinlock_t *rsv_lock = &EXT3_SB(inode->i_sb)->s_rsv_window_lock;
+> 
+>         if (!block_i)
+>                 return;
+> 
+>         rsv = &block_i->rsv_window_node;
+>         if (!rsv_is_empty(&rsv->rsv_window)) {
+> 
+> =================================> kernel oops here
+> 
+>                 spin_lock(rsv_lock);
+>                 if (!rsv_is_empty(&rsv->rsv_window))
+>                         rsv_window_remove(inode->i_sb, rsv);
+>                 spin_unlock(rsv_lock);
+>         }
+> }
+> 
+> 
+> It seems ebx points to block_i(i_block_alloc_info), and that is bad
+> memory location, so that leads to bad paging request when try to get the
+> rsv_window structure. 
+> 
+> But it confused me why the rsv_window offset is 0x18 to
+> i_block_alloc_info, it should be 0x14(20 bytes)...Are you running a
+> vanilla 2.6.23-rc6?
+>
 
-> But in that particular case this doesn't matter, rcu_try_flip_waitzero()
-> is the only function which reads the "non-local" per_cpu(rcu_flipctr), so
-> it doesn't really need the barrier? (besides, it is always called under
-> fliplock).
 
-The final rcu_read_unlock() that zeroed the sum was -not- under fliplock,
-so we cannot necessarily rely on locking to trivialize all of this.
+That is 0x14 + 4 
 
-> > In more detail, suppose that CPU 0 and 1 share a store buffer, and
-> > that CPU 2 and 3 share a second store buffer.  This happens naturally
-> > if CPUs 0 and 1 are really just different hardware threads within a
-> > single core.
-> > 
-> > So, suppose the cacheline for A is initially owned by CPUs 2 and 3,
-> > and that the cacheline for B is initially owned by CPUs 0 and 1.
-> > Then consider the following sequence of events:
-> > 
-> > o	CPU 0 stores zero to A.  This is a cache miss, so the new value
-> > 	for A is placed in CPU 0's and 1's store buffer.
-> > 
-> > o	CPU 1 executes the above code, first loading A.  It sees
-> > 	the value of A==0 in the store buffer, and therefore
-> > 	stores zero to B, which hits in the cache.  (I am assuming
-> > 	that we left out the mb() above).
-> > 
-> > o	CPU 2 loads from B, which misses the cache, and gets the
-> > 	value that CPU 1 stored.  Suppose it checks the value,
-> > 	and based on this check, loads A.  The old value of A might
-> > 	still be in cache, which would lead CPU 2 to conclude that
-> > 	the store to B by CPU 1 must have happened before the store
-> > 	to A by CPU 0.
-> > 
-> > Memory barriers would prevent this confusion.
-> 
-> Thanks a lot!!! This fills another gap in my understanding.
 
-Glad it helped!  ;-)
+(gdb) offset ext3_reserve_window_node rsv_window
+$7 = (struct ext3_reserve_window *) 0x14
+(gdb) offset ext3_reserve_window _rsv_end
+$8 = (ext3_fsblk_t *) 0x4
 
-> OK, the last (I promise :) off-topic question. When CPU 0 and 1 share a
-> store buffer, the situation is simple, we can replace "CPU 0 stores" with
-> "CPU 1 stores". But what if CPU 0 is equally "far" from CPUs 1 and 2?
-> 
-> Suppose that CPU 1 does
-> 
-> 	wmb();
-> 	B = 0
-> 
-> Can we assume that CPU 2 doing
-> 
-> 	if (B == 0) {
-> 		rmb();
-> 
-> must see all invalidations from CPU 0 which were seen by CPU 1 before wmb() ?
 
-Yes.  CPU 2 saw something following CPU 1's wmb(), so any of CPU 2's
-reads following its rmb() must therefore see all of CPU 1's stores
-preceding the wmb().
+-aneesh
 
-> > > > > If this is possible, can't we move the code doing "s/rcu_flipped/rcu_flip_seen/"
-> > > > > from __rcu_advance_callbacks() to rcu_check_mb() to unify the "acks" ?
-> > > > 
-> > > > I believe that we cannot safely do this.  The rcu_flipped-to-rcu_flip_seen
-> > > > transition has to be synchronized to the moving of the callbacks --
-> > > > either that or we need more GP_STAGES.
-> > > 
-> > > Hmm. Still can't understand.
-> > 
-> > Callbacks would be able to be injected into a grace period after it
-> > started.
-> 
-> Yes, but this is _exactly_ what the current code does in the scenario below,
-> 
-> > Or are you arguing that as long as interrupts remain disabled between
-> > the two events, no harm done?
-> 
-> no,
-> 
-> > > Suppose that we are doing call_rcu(), and __rcu_advance_callbacks() sees
-> > > rdp->completed == rcu_ctrlblk.completed but rcu_flip_flag = rcu_flipped
-> > > (say, another CPU does rcu_try_flip_idle() in between).
-> > > 
-> > > We ack the flip, call_rcu() enables irqs, the timer interrupt calls
-> > > __rcu_advance_callbacks() again and moves the callbacks.
-> > > 
-> > > So, it is still possible that "move callbacks" and "ack the flip" happen
-> > > out of order. But why this is bad?
-> 
-> Look, what happens is
-> 
-> 	// call_rcu()
-> 	rcu_flip_flag = rcu_flipped
-> 	insert the new callback
-> 	// timer irq
-> 	move the callbacks (the new one goes to wait[0])
-> 
-> But I still can't understand why this is bad,
-> 
-> > > This can't "speedup" the moving of our callbacks from next to done lists.
-> > > Yes, RCU state machine can switch to the next state/stage, but this looks
-> > > safe to me.
-> 
-> Before this callback will be flushed, we need 2 rdp->completed != rcu_ctrlblk.completed
-> further events, we can't miss rcu_read_lock() section, no?
-> 
-> > > Help!
-> 
-> Please :)
 
-Quite possibly my paranoia -- need to think about this some more.
 
-Guess I need to expand the code-level portion of the document to cover
-the grace-period side.  That would force me either to get my explanation
-into shape or admit that you are correct, as the case might be.  ;-)
-
-> > > 	if (rcu_ctrlblk.completed == rdp->completed)
-> > > 		rcu_try_flip();
-> > > 
-> > > Could you clarify the check above? Afaics this is just optimization,
-> > > technically it is correct to rcu_try_flip() at any time, even if ->completed
-> > > are not synchronized. Most probably in that case rcu_try_flip_waitack() will
-> > > fail, but nothing bad can happen, yes?
-> > 
-> > >From a conceptual viewpoint, if this CPU hasn't caught up with the
-> > last grace-period stage, it has no business trying to push forward to
-> > the next stage.  So this might (or might not) happen to work with this
-> > particular implementation, it needs to stay as is.  We need this code
-> > to be robust enough to optimize the grace-period latencies, right?
-> 
-> Yes, yes. I just wanted to be sure I didn't miss some other subtle reason.
-> 
-> > > 	void synchronize_sched(void)
-> > > 	{
-> > > 		struct migration_req req;
-> > > 
-> > > 		req->task = NULL;
-> > > 		init_completion(&req.done);
-> > > 
-> > > 		for_each_online_cpu(cpu) {
-> > > 			struct rq *rq = cpu_rq(cpu);
-> > > 			int online;
-> > > 
-> > > 			spin_lock_irq(&rq->lock);
-> > > 			online = cpu_online(cpu); // HOTPLUG_CPU
-> > > 			if (online) {
-> > > 				list_add(&req->list, &rq->migration_queue);
-> > > 				req.done.done = 0;
-> > > 			}
-> > > 			spin_unlock_irq(&rq->lock);
-> > > 
-> > > 			if (online) {
-> > > 				wake_up_process(rq->migration_thread);
-> > > 				wait_for_completion(&req.done);
-> > > 			}
-> > > 		}
-> > > 	}
-> > > 
-> > 
-> > I need to think about your approach above.  It looks like you are
-> > leveraging the migration tasks, but I am concerned about concurrent
-> > hotplug events.
-> 
-> I hope this is OK, note that migration_call(CPU_DEAD) flushes ->migration_queue,
-> if we take rq->lock after that we must see !cpu_online(cpu). CPU_UP event is not
-> interesting for us, we can miss it.
-> 
-> Hmm... but wake_up_process() should be moved under spin_lock().
-
-The other approach would be to simply have a separate thread for this
-purpose.  Batching would amortize the overhead (a single trip around the
-CPUs could satisfy an arbitrarily large number of synchronize_sched()
-requests).
-
-						Thanx, Paul
