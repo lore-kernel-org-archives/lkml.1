@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbXI1VQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbXI1VSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbXI1VQl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 17:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXI1VQe
+	id S1756215AbXI1VSJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 17:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbXI1VR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 17:16:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48337 "EHLO ogre.sisk.pl"
+	Fri, 28 Sep 2007 17:17:57 -0400
+Received: from rtr.ca ([76.10.145.34]:4325 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751567AbXI1VQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 17:16:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc8-mm2: problems on HP nx6325
-Date: Fri, 28 Sep 2007 23:31:05 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org> <200709271759.46018.rjw@sisk.pl> <1190908166.23376.115.camel@chaos>
-In-Reply-To: <1190908166.23376.115.camel@chaos>
+	id S1752802AbXI1VR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 17:17:56 -0400
+Message-ID: <46FD6F83.8070801@rtr.ca>
+Date: Fri, 28 Sep 2007 17:17:55 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch 0/2] suspend/resume regression fixes
+References: <20070922220347.586903979@linutronix.de>	 <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org>	 <46FD639D.9030301@rtr.ca> <1191011610.18681.94.camel@chaos>
+In-Reply-To: <1191011610.18681.94.camel@chaos>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709282331.06203.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 27 September 2007 17:49, Thomas Gleixner wrote:
-> On Thu, 2007-09-27 at 17:59 +0200, Rafael J. Wysocki wrote:
-> > > 2) CPU hotplug is busted (onlining of CPU1 kills the kernel), probably due to
-> > >    the same issue that I'm having with the -hrt version of 2.6.23-rc8 (we're
-> > >    debugging it right now)
-> > 
-> > This one is fixed by the following patch:
-> > 
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Fix CPU hotplug breakage on HP nx6325 and similar boxes caused by a reference
-> > to disable_apic_timer (labeled as __initdata) from the CPU initialization code.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Thomas Gleixner wrote:
+> On Fri, 2007-09-28 at 16:27 -0400, Mark Lord wrote:
+..
+>> On a closely related note:  I just now submitted a patch to fix SMP-poweroff,
+>> by having it do disable_nonboot_cpus before doing poweroff.
+>>
+>> Which has led me to thinking..
+>> ..are similar precautions perhaps necessary for *all* ACPI BIOS calls?
+>>
+>> Because one never knows what the other CPUs are doing at the same time,
+>> and what the side effects may be on the ACPI BIOS functions.
+>>
+>> And also, I wonder if at a minimum we should be guaranteeing ACPI BIOS calls
+>> only ever happen from CPU#0 (or the "boot" CPU)?   Or do we do that already?
 > 
-> Doh, I knew I blew it.
-> 
-> Good catch, thanks,
+> The ACPI calls are serialized in the kernel, AFAICT. But the fragile
+> situations (suspend, resume, shutdown, reboot) are probably those, where
+> some BIOS implementation expect that certain things are not called or
+> not active.
 
-Some good news from here. :-)
+Mmm.. *do* we actually do this for reboot?  I don't see it there.
+And how about for kexec?
 
-WIth the patch below applied 2.6.23-rc8-mm2 works fine on the nx6325 _with_ NO_HZ
-and HIGH_RES_TIMERS set.  Suspend and hibernation work as well, happy me.
+I'm probably just missing seeing it.  Right?
 
-NO_HZ and HIGH_RES_TIMERS also work on this box with the hrt patch plus the
-C1E-related fix on top of 2.6.23-rc8.
-
-Does it make sense to test CPU_IDLE too at this point?
-
-Greetings,
-Rafael
-
-
-> > ---
-> >  arch/x86_64/kernel/apic.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> > ===================================================================
-> > --- linux-2.6.23-rc8-mm2.orig/arch/x86_64/kernel/apic.c
-> > +++ linux-2.6.23-rc8-mm2/arch/x86_64/kernel/apic.c
-> > @@ -42,7 +42,7 @@
-> >  
-> >  int apic_verbosity;
-> >  static int apic_calibrate_pmtmr __initdata;
-> > -int disable_apic_timer __initdata;
-> > +int disable_apic_timer __cpuinitdata;
-> >  
-> >  /* Local APIC timer works in C2? */
-> >  int local_apic_timer_c2_ok;
-> 
-> 
-> 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Cheers
