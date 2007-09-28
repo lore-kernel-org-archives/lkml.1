@@ -1,52 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbXI1Puq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbXI1P73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760746AbXI1Puq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 11:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbXI1Pug
+	id S1757019AbXI1P73 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 11:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXI1P7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 11:50:36 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:51158 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760155AbXI1Puf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 11:50:35 -0400
-Message-ID: <46FD22B7.2030402@austin.ibm.com>
-Date: Fri, 28 Sep 2007 10:50:15 -0500
-From: Joel Schopp <jschopp@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 28 Sep 2007 11:59:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52309 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751670AbXI1P7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 11:59:21 -0400
+Message-ID: <46FD24D3.1030008@redhat.com>
+Date: Fri, 28 Sep 2007 11:59:15 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.10
-References: <bf97f66cfc0696c8574921d53eaafcb7@pinky> <20070928084003.GA18882@elte.hu> <20070928020132.f6c6f528.akpm@linux-foundation.org> <20070928092235.GA31180@shadowen.org> <20070928093902.GA28455@elte.hu> <20070928100024.GB18163@shadowen.org> <20070928104935.GA606@elte.hu> <20070928132138.GG18163@shadowen.org>
-In-Reply-To: <20070928132138.GG18163@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jkeating@redhat.com, jordan.crouse@amd.com, pommnitz@yahoo.com
+Subject: Re: [GIT PULL] Correct the SMAP check in the e820 probe
+References: <200709280856.l8S8uvS5002291@tazenda.hos.anvin.org> <alpine.LFD.0.999.0709280719010.3579@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0709280719010.3579@woody.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The only question is whether this should default to on.  You are voting
-> off.  I personally think on.
+On 09/28/2007 10:27 AM, Linus Torvalds wrote:
 > 
-> Andrew?  Randy?  Joel?
+> On Fri, 28 Sep 2007, H. Peter Anvin wrote:
+>>     [x86 setup] Correct the SMAP check for INT 0x15, AX=0xe820
+>>     
+>>     The e820 probe code was checking %edx, not %eax, for the SMAP
+>>     signature on return.  This worked on *almost* all systems, since %edx
+>>     still contained SMAP from the call on entry, but on a handful of
+>>     systems it failed -- plus, we would have missed real mismatches.
+>>     
+>>     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+>>
+>> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
+>> index bccaa1c..2f37568 100644
+>> --- a/arch/i386/boot/memory.c
+>> +++ b/arch/i386/boot/memory.c
+>> @@ -28,11 +28,10 @@ static int detect_memory_e820(void)
+>>  
+>>  	do {
+>>  		size = sizeof(struct e820entry);
+>> -		id = SMAP;
+>>  		asm("int $0x15; setc %0"
+>> -		    : "=am" (err), "+b" (next), "+d" (id), "+c" (size),
+>> +		    : "=dm" (err), "+b" (next), "=a" (id), "+c" (size),
+>>  		      "=m" (*desc)
+>> -		    : "D" (desc), "a" (0xe820));
+>> +		    : "D" (desc), "d" (SMAP), "a" (0xe820));
+> 
+> Hmm. If I read this correctly, I don't think this can be right.
+> 
+> Why? You don't mark %edx as possibly corrupted by the asm any more.
+> 
+> The "=dm" means that quite often (probably effectively always), gcc will 
+> allocate %edx to be the output register for %0, but at least in theory, it 
+> could easily decide that it's going to put %0 in memory, and in that case, 
+> it may well decide that %edx is not modified by the asm statement. Which 
+> may or may not be true - I'd bet that there are BIOSes out there that *do* 
+> modify it.
+> 
+> So what happens then? If gcc decides that %edx isn't modified by the asm, 
+> it will assume that it still contains the value it had on entry, which is 
+> the "SMAP" value, and then it might decide to do the
+> 
+> 	if (id != SMAP) {
+> 
+> check as a 
+> 
+> 	cmpl %edx,%eax
+> 
+> since the "id" return is in %eax, and the compiler decides that it may be 
+> cheaper to re-use the register that already contains the constant, than to 
+> use a (longer) compare instruction with an explicit constant.
+> 
+> IOW, I think you need to either (a) _force_ gcc to use %edx for the "err" 
+> return, avoiding this issue, or (b) mark edx clobbered (which in turn 
+> means that you need to remove it from the output constraint for "err"). I 
+> suspect (a) is simpler/more straightforward.
+> 
 
-The main audience of this is new contributors, who should have more verbose 
-output, including nitpicky things like multiple assignments per line.  The 
-default should target them.  More advanced users can certainly use a flag 
-that says "give me only the real errors".
-
-It might be a good idea to have three levels.
---really-errors
---really-picky
---really-experimental
-
-Only with better names.  --really-picky would be default, but would only 
-include tests that have a very very high ratio of hits to false positives, 
-but would still call out things like multiple assignments per line. 
---really-errors we could call the Igno level.  --really-experimental would 
-call out all issues, even on checks that generate a fair number of false 
-positives.
-
--Joel
+Patch with option (a) applied [output 0 changed to: "=d" (err)] tested and
+works on the Dell XPS M1330 that was broken by the previous e820 change.
 
