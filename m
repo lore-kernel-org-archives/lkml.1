@@ -1,107 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757470AbXI2OKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbXI2Omu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757470AbXI2OKO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 10:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbXI2OKA
+	id S1757117AbXI2Omu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 10:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXI2Omm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 10:10:00 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:44408 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075AbXI2OJ7 (ORCPT
+	Sat, 29 Sep 2007 10:42:42 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:44550 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbXI2Oml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 10:09:59 -0400
-Message-ID: <46FE5C98.1030507@aitel.hist.no>
-Date: Sat, 29 Sep 2007 16:09:28 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Sat, 29 Sep 2007 10:42:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=B1my+ZLHD0nYJSyjIWDEebFb91e0C557HgJkqlFZefWd0V3pLsVjmwWLQvtth6A7STQI0VNkCi+NcKAYPFMkT9vVJX64axETQYEagNzGvOHc5bCcHI4/jp/GU5v7vtJAYELgGooxnCYhKowhi1jMiijwCiAFmM+J7kt9ApHPEZY=
+Date: Sat, 29 Sep 2007 09:43:16 -0500
+From: Shawn Bohrer <shawn.bohrer@gmail.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>, Adrian Bunk <bunk@kernel.org>,
+       roel <12o3l@tiscali.nl>
+Subject: Re: [PATCH 1/3] CodingStyle updates
+Message-ID: <20070929144316.GA5642@mediacenter.austin.rr.com>
+References: <11910151223214-git-send-email-ezk@cs.sunysb.edu> <11910151223447-git-send-email-ezk@cs.sunysb.edu>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: x86-64 sporadic hang in  2.6.23rc7 and 2.6.22
-References: <46F8273B.8030904@aitel.hist.no> <1190669351.4035.254.camel@chaos>
-In-Reply-To: <1190669351.4035.254.camel@chaos>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11910151223447-git-send-email-ezk@cs.sunysb.edu>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Mon, 2007-09-24 at 23:08 +0200, Helge Hafting wrote:
->   
->> The two kernels mentioned hangs occationally.
->> Typically when I compile something and pass the time
->> by surfing the web.
->>
->> A few minutes and then I notice that the mouse (and everything else in X)
->> stops.  kbd LEDs does not react to numlock/capslock.
->> The only thing that still works is sysrq+B
->> So far this has happened while running X, so no messages.
->>
->> I have gone back to 2.6.22rc4, which seems to work.
->>
->> This is a single opteron, although on a dual-slot board.
->>     
->
-> Can you switch to serial console, so we can get some information out of
-> that box? Sysrq-B is working, so we can get info from other sysrq
-> functions as well.
->   
-I didn't need the serial - it crashes during console work too.
-I think a "make clean" was in progress at the time. There must be work 
-going on
-in order to crash.
+On Fri, Sep 28, 2007 at 05:32:00PM -0400, Erez Zadok wrote:
+> 1. Updates chapter 13 (printing kernel messages) to expand on the use of
+>    pr_debug()/pr_info(), what to avoid, and how to hook your debug code with
+>    kernel.h.
+> 
+> 2. New chapter 19, branch prediction optimizations, discusses the whole
+>    un/likely issue.
+> 
+> Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>
+> Cc: Kyle Moffett <mrmacman_g4@mac.com>
+> Cc: Jan Engelhardt <jengelh@computergmbh.de>
+> Cc: Adrian Bunk <bunk@kernel.org>
+> Cc: roel <12o3l@tiscali.nl>
+> 
+> Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+> ---
+>  Documentation/CodingStyle |   88 +++++++++++++++++++++++++++++++++++++++++++-
+>  1 files changed, 86 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+> index 7f1730f..00b29e4 100644
+> --- a/Documentation/CodingStyle
+> +++ b/Documentation/CodingStyle
+> @@ -643,8 +643,26 @@ Printing numbers in parentheses (%d) adds no value and should be avoided.
+>  There are a number of driver model diagnostic macros in <linux/device.h>
+>  which you should use to make sure messages are matched to the right device
+>  and driver, and are tagged with the right level:  dev_err(), dev_warn(),
+> -dev_info(), and so forth.  For messages that aren't associated with a
+> -particular device, <linux/kernel.h> defines pr_debug() and pr_info().
+> +dev_info(), and so forth.
+> +
+> +A number of people often like to define their own debugging printf's,
+> +wrapping printk's in #ifdef's that get turned on only when subsystem
+> +debugging is compiled in (e.g., dprintk, Dprintk, DPRINTK, etc.).  Please
+> +don't reinvent the wheel but use existing mechanisms.  For messages that
+> +aren't associated with a particular device, <linux/kernel.h> defines
+> +pr_debug() and pr_info(); the latter two translate to printk(KERN_DEBUG) and
 
-This time 2.6.22rc4 died on me with a general protection fault
+The latter two?  Since there are only two presented I think there is no
+reason to say "latter".
 
-I got two reports, the first one scrolled partially off screen but
-the whole trace was there:
+> +printk(KERN_INFO), respectively.  However, to get pr_debug() to actually
+> +emit the message, you'll need to turn on DEBUG in your code, which can be
+> +done as follows in your subsystem Makefile:
+> +
+> +ifeq ($(CONFIG_WHATEVER_DEBUG),y)
+> +EXTRA_CFLAGS += -DDEBUG
+> +endif
+> +
+> +In this way, you can create a Kconfig parameter to turn on debugging at
+> +compile time, which will also turn on DEBUG, to enable pr_debug() to emit
+> +actual messages; conversely, when CONFIG_WHATEVER_DEBUG is off, DEBUG is
+> +off, and pr_debug() will display nothing.
+>  
+>  Coming up with good debugging messages can be quite a challenge; and once
+>  you have them, they can be a huge help for remote troubleshooting.  Such
+> @@ -779,6 +797,69 @@ includes markers for indentation and mode configuration.  People may use their
+>  own custom mode, or may have some other magic method for making indentation
+>  work correctly.
+>  
+> +		Chapter 19: branch prediction optimizations
+> +
+> +The kernel includes macros called likely() and unlikely(), which can be used
+> +as hints to the compiler to optimize branch prediction.  They operate by
+> +asking gcc to shuffle the code around so that the more favorable outcome
+> +executes linearly, avoiding a JMP instruction; this can improve cache
+> +pipeline efficiency.  For technical details how these macros work, see the
+> +References section at the end of this document.
+> +
+> +An example use of this as as follows:
 
-shrink_dcache_memory
-shrink_slab
-kswapd
-autoremove_wake_function
-thread_return
-trace_hardirqs_on
-kswapd
-kswapd
-kthtread
-child_rip
-restore_args
-kthread
-child_rip
+                          ^^^^^^
 
-Then I got:
-spinlock lockup on cpu #0, kswapd 0/212
-_raw_spin_lock
-shrink_dcache_parent
-shrink_dcache_parent
-proc_flush_task
-release_task
-do_exit
-die
-error_exit
-prune_dcache
-[From here on, it continues exactly like the first report:]
-shrink_dcache_memory
-shrink_slab
-kswapd
-autoremove_wake_function
-thread_return
-trace_hardirqs_on
-kswapd
-kswapd
-kthtread
-child_rip
-restore_args
-kthread
-child_rip
+> +
+> +	ptr = kmalloc(size, GFP_KERNEL);
+> +	if (unlikely(!ptr))
+> +		...
+> +
+> +or
+> +	err = some_function(...);
+> +	if (likely(!err))
+> +		...
 
-
-sysrq P says:
-cpu 0
-pid 212 comm: kswapd0  not tainted 2.6.22-rc4 #18
-RIP: __delay
-
-I took a picture of the screen, in case the register dumps are interesting.
-Wonder what this is - dcache trouble? swap trouble?
-Helge Hafting
+--
+Shawn
