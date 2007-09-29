@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbXI2Os1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbXI2OxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbXI2Os1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 10:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbXI2OsT
+	id S1757922AbXI2OxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 10:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbXI2OxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 10:48:19 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52703 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753878AbXI2OsT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 10:48:19 -0400
-Subject: Re: A unresponsive file system can hang all I/O in the system on
-	linux-2.6.23-rc6 (dirty_thresh problem?)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Chakri n <chakriin5@gmail.com>, Krzysztof Oledzki <olel@ans.pl>,
-       akpm@linux-foundation.org,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <391068925.28146@ustc.edu.cn>
-References: <92cbf19b0709272332s25684643odaade0e98cb3a1f4@mail.gmail.com>
-	 <391063897.19256@ustc.edu.cn> <1191066481.18147.115.camel@lappy>
-	 <391068925.28146@ustc.edu.cn>
-Content-Type: text/plain
-Date: Sat, 29 Sep 2007 16:43:55 +0200
-Message-Id: <1191077035.18147.118.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Sep 2007 10:53:05 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34959 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753967AbXI2OxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 10:53:04 -0400
+Date: Sat, 29 Sep 2007 07:56:46 -0700
+From: Greg KH <gregkh@suse.de>
+To: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] module: return error when mod_sysfs_init() failed
+Message-ID: <20070929145646.GB3075@suse.de>
+References: <20070929100653.GA4121@APFDCB5C>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070929100653.GA4121@APFDCB5C>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2007-09-29 at 20:28 +0800, Fengguang Wu wrote:
-> On Sat, Sep 29, 2007 at 01:48:01PM +0200, Peter Zijlstra wrote:
-
-> > On the patch itself, not sure if it would have been enough. As soon as
-> > there is a single dirty inode on the list one would get caught in the
-> > same problem as before.
+On Sat, Sep 29, 2007 at 07:06:53PM +0900, Akinobu Mita wrote:
+> load_module() returns zero when mod_sysfs_init() fails,
+> then the module loading will succeed accidentally.
 > 
-> That should not be a problem.  Normally the few new dirty inodes will
-> be all cleaned in one go and there are no more dirty inodes left(at
-> least for a moment). Hmm, I guess the new 'break' should be moved
-> immediately after writeback_inodes()...
+> This patch makes load_module() return error correctly in that case.
 > 
-> > That is, if NFS_dirty+NFS_unstable+NFS_writeback > dirty_limit this
-> > break won't fix it.
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 > 
-> In fact this patch exactly targets at this condition.
-> When NFS* < dirty_limit, Chakri won't see the lockup at all.
-> The problem was, there are only two 'break's in the loop, and neither
-> one evaluates to true for his dd command.
+> ---
+>  kernel/module.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: 2.6-git/kernel/module.c
+> ===================================================================
+> --- 2.6-git.orig/kernel/module.c
+> +++ 2.6-git/kernel/module.c
+> @@ -1782,7 +1782,8 @@ static struct module *load_module(void _
+>  	module_unload_init(mod);
+>  
+>  	/* Initialize kobject, so we can reference it. */
+> -	if (mod_sysfs_init(mod) != 0)
+> +	err = mod_sysfs_init(mod);
+> +	if (err)
+>  		goto cleanup;
 
-Yeah indeed, when put in the loop, after writeback_inodes() it makes
-sense.
+I must be still asleep this morning, but I think this patch does the
+exact same thing as the original code does, right?  Otherwise, this
+code would always be failing.
 
-No idea what I was thinking, must be one of those days... :-/
+Or do I just need to go get my morning coffee to wake up and see the
+problem here?
 
+thanks,
 
-
+greg k-h
