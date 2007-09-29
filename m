@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbXI2Wa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbXI2Wjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbXI2Wa1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 18:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbXI2WaQ
+	id S1757379AbXI2Wjw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 18:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbXI2Wjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 18:30:16 -0400
-Received: from smtp123.sbc.mail.re3.yahoo.com ([66.196.96.96]:29329 "HELO
-	smtp123.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753861AbXI2WaP (ORCPT
+	Sat, 29 Sep 2007 18:39:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59665 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752270AbXI2Wjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 18:30:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=TGJE/IJ79xXCjwMxxI22kkJFAIdLMpPpf1vXpuAQx2yOI5O5I56m2rZbHzrOwGJ07e2RGWKkWyrlifIOyxUdwYAhM9vnReJsbzAbFl12FODNXSPcxMmkyBQHk/tAEK6JWUA+LlgDrmTAA74JXJ3uo1ffFDjurnocc/A8ipg0rNs=  ;
-X-YMail-OSG: 1JM8sq8VM1lOkqCZQRIM1_flMBkp7CiaTk.P04wPij2iPgrZCMwxMxw6bUoE7_SsZvimnVzbK565m7bisHiO5jZiAqC_QMqZIUEJ8geFO8C.P9oyMjKSnaFBzEvXdaFlEvL7EpcOTIBivI0-
-Date: Sat, 29 Sep 2007 15:30:15 -0700
-From: David Brownell <david-b@pacbell.net>
-To: randy.dunlap@oracle.com
-Subject: Re: [PATCH] CodingStyle: Printing numbers in parentheses is fine
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       khali@linux-fr.org, akpm@linux-foundation.org
-References: <20070929122530.5c45f743@hyperion.delvare>
- <20070929035156.cd6fe860.akpm@linux-foundation.org>
- <20070929112928.56a04641.randy.dunlap@oracle.com>
- <20070929185306.183D72399D7@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20070929131317.6a8609dc.randy.dunlap@oracle.com>
-In-Reply-To: <20070929131317.6a8609dc.randy.dunlap@oracle.com>
+	Sat, 29 Sep 2007 18:39:44 -0400
+Message-ID: <46FED429.9050200@zytor.com>
+Date: Sat, 29 Sep 2007 15:39:37 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: regression in 2.6.23-rc8 - power off failed
+References: <20070929005453.GA4475@erig.dyndns.org> <46FDC0EB.3070003@zytor.com> <20070929082233.GA3447@erig.dyndns.org> <46FE0D29.4090706@zytor.com> <20070929093553.GA4451@erig.dyndns.org> <20070929180721.GA8371@erig.dyndns.org>
+In-Reply-To: <20070929180721.GA8371@erig.dyndns.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070929223015.7F052236A50@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Let's kill it, please.  (i.e., ACK)
-> > 
-> > But ... why?  What value could needless parens provide?
->
-> Who says that needless parens could provide value?
+Wolfgang Erig wrote:
+> Hi Peter,
+> 
+> On Sat, Sep 29, 2007 at 11:35:53AM +0200, Wolfgang Erig wrote:
+>> I start again with a fresh tree and better controlled experiments.
+> 
+> now the result of bisection seems to be consistent.
+> 
+> The last good commit is
+> f2d98ae63dc64dedb00499289e13a50677f771f9 Linker script for the new x86 setup code
+> 
+> The first bad commit (no power off) is
+> 4fd06960f120e02e9abc802a09f9511c400042a5 Use the new x86 setup code for i386
+> 
+> Now I try the things written in
+> http://marc.info/?i=46FD802D.2030804@zytor.com
+> 
 
-Jean, which is why he submitted the patch.
-You, implicitly, by acking a patch saying those parens are bad.
-But not me ... I don't think this patch is merge-worthy.
+OK, that makes more sense.  I'll look at this on Monday.
 
-
-> > "Yet Another Subtle And Hard To Fix Source Of Bloat" is
-> > not a plus.
->
-> ISTM that we agree.
-
-Evidently not, since removing it would promote such bloat.
-Explicitly removing disapproval is a form of approval...
-
-
-> > I'd kind of think a change like this should have some
-> > positive motivation.
->
-> "Me, I agree that numbers in parens don't usually make sense for
-> kernel messages."
->
-> It's too trivial to be included in CodingStyle.
-
-So the reason to remove that guideline, and thereby encourage
-proliferation of needless parens, is ... that some OTHER way
-to get rid of them is working?
-
-I would agree that line could be improved to say that messages
-should not be needlessly large.  Excess parens are one example;
-wordiness is another (including printing 8 bit fields as 0x%08x),
-and I'm sure there are more.
-
+	-hpa
