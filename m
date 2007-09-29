@@ -1,116 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbXI2QAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbXI2QHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758120AbXI2QAR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 12:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbXI2QAE
+	id S1758113AbXI2QHr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 12:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbXI2QHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 12:00:04 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:8729 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbXI2QAC (ORCPT
+	Sat, 29 Sep 2007 12:07:39 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45713 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754580AbXI2QHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 12:00:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FeHjBpxlC9AfhlgbGPuROQqsVdbUWbN7Rro8uYUdVQUT3dTyaHyeejqDa//eppiHvi67cD98L84MrmsQtDSAe3Do+9vFlTo15DnYczjay35OHUlbrfGmaEQzYmZnYX/4d2lZBBJLleetkuJGgD2CdOz6KfvnHiUpe1ze0oHXCIc=
-Message-ID: <7b69d1470709290859s4dfcb6x8827dd20a4e55b34@mail.gmail.com>
-Date: Sat, 29 Sep 2007 10:59:57 -0500
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Erez Zadok" <ezk@cs.sunysb.edu>
-Subject: Re: [PATCH 1/3] CodingStyle updates
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Kyle Moffett" <mrmacman_g4@mac.com>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Adrian Bunk" <bunk@kernel.org>, roel <12o3l@tiscali.nl>
-In-Reply-To: <11910151223447-git-send-email-ezk@cs.sunysb.edu>
+	Sat, 29 Sep 2007 12:07:37 -0400
+Date: Sat, 29 Sep 2007 09:07:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [patch] x86: improved memory barrier implementation
+In-Reply-To: <20070929131708.GD14159@wotan.suse.de>
+Message-ID: <alpine.LFD.0.999.0709290843120.3579@woody.linux-foundation.org>
+References: <20070928154832.GB12538@wotan.suse.de> <20070928170719.2f617a7a@the-village.bc.nu>
+ <alpine.LFD.0.999.0709280911100.3579@woody.linux-foundation.org>
+ <20070929131708.GD14159@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11910151223214-git-send-email-ezk@cs.sunysb.edu>
-	 <11910151223447-git-send-email-ezk@cs.sunysb.edu>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A couple of comments interspersed...
-
-On 9/28/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
-...
->  There are a number of driver model diagnostic macros in <linux/device.h>
->  which you should use to make sure messages are matched to the right device
----
-
-I think this "which" is non-restrictive, so it should have a comma
-after it (I realize that's not part of your patch). It's also possible
-to read it as restrictive, in which case "that" would be preferable.
-
----
->  and driver, and are tagged with the right level:  dev_err(), dev_warn(),
-> -dev_info(), and so forth.  For messages that aren't associated with a
-> -particular device, <linux/kernel.h> defines pr_debug() and pr_info().
-> +dev_info(), and so forth.
-> +
-> +A number of people often like to define their own debugging printf's,
----
-
-"A number of people often like to..." is awkward. How about
-"Developers sometimes..." or "Too many people..."
-
----
-> +wrapping printk's in #ifdef's that get turned on only when subsystem
-
-> +               Chapter 19: branch prediction optimizations
-> +
-> +The kernel includes macros called likely() and unlikely(), which can be used
----
-
-You might say "The kernel provides the macros likely()..."
-
----
-> +as hints to the compiler to optimize branch prediction.  They operate by
-...
-> +A good example of this is the above kmalloc(GFP_KERNEL) call.  The chances
-> +of kmalloc() returning NULL are rather small, because even if it doesn't
-> +have memory to return to you at the moment, with GFP_KERNEL/__GFP_WAIT
-> +passed, kmalloc() will wait and suspend your thread, while it goes off to
----
-
-The commas after "passed" and "thread" is unnecessary.
-
----
-> +find some free memory (purging caches, flushing buffers, etc.).  In other
-> +words, kmalloc() tries very hard to give you the memory you asked for by the
-> +time it return.
----
-
-"...by the time it return." should be "...by the time it returns."
-
----
-> +
-> +Consider the next, bad example.  Suppose you're developing a file system
-> +which performs logically different actions on different types of entities:
----
-
-This "which" is restrictive; it would be preferable to use "that" instead.
-
----
-> +files, directories, symlinks, devices, etc. and you use this code:
-> +
-...
-> +be penalized heavily for going [sic] down the wrong path...  Therefore, you
-> +should consider also whether a seemingly-rare condition is indeed rare ALL
----
-
-The hyphen isn't necessary when the first word of the compount
-adjective is an adverb ending in "-ly", so, just "seemingly rare"; or
-switch to "apparently rare".
-
----
-> +the time.
-...
 
 
--- 
-scott preece
+On Sat, 29 Sep 2007, Nick Piggin wrote:
+> > 
+> > The non-temporal stores should be basically considered to be "IO", not any 
+> > normal memory operation.
+> 
+> Maybe you're thinking of uncached / WC? Non-temporal stores to cacheable
+> RAM apparently can go out of order too, and they are being used in the kernel
+> for some things.
+
+I'm really saying that people to a first approximation should think "NT is 
+an IO (DMA) thing". Whether cached or not. Exactly because they do not 
+honor the normal memory ordering.
+
+It may be worth noting that "clflush" falls under that heading too - even 
+if all the actual *writes* were done with totally normal writes, if 
+anybody does a clflush instruction, that breaks the ordering, and that 
+turns it to "DMA ordering" again - ie we're not talking about the normal 
+SMP ordering rules at all.
+
+So all the spinlocks and all the smp_*mb() barriers have never really done 
+*anything* for those things (in particular, "smp_wmb()" has *always* 
+ignored them on i386!)
+
+> Likewise for rep stos, apparently.
+
+No. As far as I can tell, the fast string operations are unordered 
+*within*themselves*, but not wrt the operations around it.
+
+In other words, you cannot depend on the ordering of stores *in* the 
+memcpy() or memset() when it is implemented by "rep movs/stos" - but that 
+is 100% equivalent to the fact that you cannot depend on the ordering even 
+when it isn't - since the "memcpy()" library routine might be copying 
+memory backwards for all you know!
+
+The Intel memory ordering paper doesn't talk about the fast string 
+instructions (except to say that the rules it *does* speak about do not 
+hold), but the regular IA manuals do say (for example):
+
+   "Code dependent upon sequential store ordering should not use the 
+    string operations for the entire data structure to be stored. Data and 
+    semaphores should be separated. Order dependent code should use a 
+    discrete semaphore uniquely stored to after any string operations to 
+    allow correctly ordered data to be seen by all processors."
+
+and note how it says you should just store to the semaphore. If you think 
+about it, that semahore will be involving all the memory ordering 
+requirements that we *already* depend on, so if a semaphore is sufficient 
+to order the fast string instruction, then by definition using a spinlock 
+around them must be the same thing!
+
+In other words, by Intels architecture manual, fast string instructions 
+cannot escape a "semaphore" - but that means that they cannot escape a 
+spinlock either (since the two are exactly the same wrt memory ordering 
+rules! In other words, whenever the Intel docs say "semaphore", think 
+"mutual exclusion lock", not necessarily the kernel kind of "sleeping 
+semaphore").
+
+But it might be good to have that explicitly mentioned in the IA memory 
+ordering thing, so I'll ask the Intel people about that. However, I'd say 
+that given our *current* documentation, string instructions may be 
+*internally* out-of-order, but they would not escape a lock.
+
+> But this means they are already at odds with spin_unlock, unless they 
+> are enclosed with mfences everywhere they are used (of which I think 
+> most are not). So this is an existing bug in the kernel.
+
+See above. I do not believe that it's an existing bug, but the basic point 
+that the change to "smp_rmb()" doesn't change our existing rules is true.
+
+			Linus
