@@ -1,86 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbXI2KMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbXI2KTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757787AbXI2KMT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 06:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXI2KMG
+	id S1757341AbXI2KTo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 06:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbXI2KTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 06:12:06 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:28132 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbXI2KME (ORCPT
+	Sat, 29 Sep 2007 06:19:36 -0400
+Received: from smtp-106-saturday.nerim.net ([62.4.16.106]:54736 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752588AbXI2KTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 06:12:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
-        b=OL1EkPZ/ECU4KsA0NptE5jRaoZIJ6vzf/kyNx5LjCnC6uF/v5NH7/bFVHtL+ZzEkNrgnDdd6nHRqBJKKJmvhx4SUFJkLvwihbHIbZwwBBdbKBk9FtlqoeISAxenVi1t1x1jSGorXsOzLzj0wjTmAkB5uruopy3/98Dg/TvPgMhI=
-Date: Sat, 29 Sep 2007 19:09:12 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: xfs@oss.sgi.com, Tim Shimmin <xfs-masters@oss.sgi.com>,
-       Christoph Hellwig <hch@lst.de>
-Subject: [PATCH] update sb->s_frozen when freezing read-only mounted device, too
-Message-ID: <20070929100912.GB4121@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-	Tim Shimmin <xfs-masters@oss.sgi.com>,
-	Christoph Hellwig <hch@lst.de>
+	Sat, 29 Sep 2007 06:19:36 -0400
+Date: Sat, 29 Sep 2007 12:19:32 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Gaston, Jason D" <jason.d.gaston@intel.com>
+Cc: <linux-kernel@vger.kernel.org>, <gregkh@suse.de>, <i2c@lm-sensors.org>
+Subject: Re: [PATCH 2.6.23-rc4][reRESEND] i2c-i801: SMBus patch for Intel
+ Tolapai
+Message-ID: <20070929121932.50c7bfda@hyperion.delvare>
+In-Reply-To: <39B20DF628532344BC7A2692CB6AEE0701CF2CA9@orsmsx420.amr.corp.intel.com>
+References: <200708302042.59104.jason.d.gaston@intel.com>
+	<20070831175045.37938669@hyperion.delvare>
+	<39B20DF628532344BC7A2692CB6AEE0701CF2CA9@orsmsx420.amr.corp.intel.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-freeze_bdev() with the device which is mounted as read only
-does not change sb->s_frozen from SB_UNFROZEN to SB_FREEZE_TRANS.
+Hi Jason,
 
-Because of this behavior, xfs_freeze can break read-only XFS filesystem.
+On Fri, 28 Sep 2007 15:09:16 -0700, Gaston, Jason D wrote:
+> The pci_ids.h file is updated in 2.6.23-rc8.  Can you push this
+> i2c-i801.c patch?
 
-Because xfs_thaw does nothing for the filesystem whose sb->s_frozen is
-SB_UNFROZEN. So freezed readonly XFS filesystem will never be unfreezed.
-Then we cannot do any unmount/remount operations for that filesystem.
+This patch has been in -mm since 2.6.23-rc7-mm1. It will go into Linus'
+tree shortly after 2.6.23 is released. This is not a bug fix, so I
+can't push it into 2.6.23.
 
-This patch updates sb->s_frozen when freeze_bdev() is called for read-only
-mounted device, too.
-
-Cc:  Tim Shimmin <xfs-masters@oss.sgi.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-
----
- fs/buffer.c |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
-
-Index: 2.6-git/fs/buffer.c
-===================================================================
---- 2.6-git.orig/fs/buffer.c
-+++ 2.6-git/fs/buffer.c
-@@ -190,19 +190,22 @@ struct super_block *freeze_bdev(struct b
- 
- 	down(&bdev->bd_mount_sem);
- 	sb = get_super(bdev);
--	if (sb && !(sb->s_flags & MS_RDONLY)) {
-+	if (sb) {
- 		sb->s_frozen = SB_FREEZE_WRITE;
- 		smp_wmb();
- 
--		__fsync_super(sb);
-+		if (!(sb->s_flags & MS_RDONLY))
-+			__fsync_super(sb);
- 
- 		sb->s_frozen = SB_FREEZE_TRANS;
- 		smp_wmb();
- 
--		sync_blockdev(sb->s_bdev);
-+		if (!(sb->s_flags & MS_RDONLY)) {
-+			sync_blockdev(sb->s_bdev);
- 
--		if (sb->s_op->write_super_lockfs)
--			sb->s_op->write_super_lockfs(sb);
-+			if (sb->s_op->write_super_lockfs)
-+				sb->s_op->write_super_lockfs(sb);
-+		}
- 	}
- 
- 	sync_blockdev(bdev);
+-- 
+Jean Delvare
