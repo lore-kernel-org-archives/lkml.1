@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbXI2TxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbXI2T4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757495AbXI2TxQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 15:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXI2TxE
+	id S1757884AbXI2T4v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 15:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbXI2T4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 15:53:04 -0400
-Received: from smtp.nokia.com ([131.228.20.170]:30595 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753472AbXI2TxD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 15:53:03 -0400
-X-Greylist: delayed 2455 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Sep 2007 15:53:03 EDT
-Message-ID: <46FEA332.9090904@yandex.ru>
-Date: Sat, 29 Sep 2007 22:10:42 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Sat, 29 Sep 2007 15:56:45 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:57976 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751397AbXI2T4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 15:56:44 -0400
+Date: Sat, 29 Sep 2007 15:56:38 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 0/3 coding standards documentation/code updates
+Message-ID: <20070929195638.GA12011@fieldses.org>
+References: <11910151223214-git-send-email-ezk@cs.sunysb.edu> <alpine.LFD.0.999.0709291116180.3579@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Write-back from inside FS - need suggestions
-References: <46FCC686.3050009@yandex.ru>        <46FE2167.8000800@yandex.ru> <20070929033939.6ee65e19.akpm@linux-foundation.org>
-In-Reply-To: <20070929033939.6ee65e19.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 29 Sep 2007 19:10:43.0207 (UTC) FILETIME=[6E979170:01C802CC]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0709291116180.3579@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I'd have thought that a suitable wrapper around a suitably-modified
-> sync_sb_inodes() would be appropriate for both filesystems?
+On Sat, Sep 29, 2007 at 11:18:05AM -0700, Linus Torvalds wrote:
+> I'm not very happy with this.
+> 
+> "CodingStyle" should be about the big issues, not about details. Yes, 
+> we've messed that up over the years, but let's not continue that.
+> 
+> In other words, I'd suggest *removing* lines from CodingStyle, not adding 
+> them. The file has already gone from a "good general principles" to "lots 
+> of stupid details". Let's not make it worse.
 
-Ok, I've modified sync_inodes_sb() so that I can pass it my own wbc,
-where I set wcb->nr_to_write = 20. It gives me _exactly_ what I want.
-It just flushes a bit more then 20 pages and returns. I use
-WB_SYNC_ALL. Great!
+It'd be nice to split the current CodingStyle into two documents:
 
-Now I would like to understand why it works :-) To my surprise, it
-does not deadlock! I call it from ->prepare_write where I'm holding
-i_mutex, and it works just fine. It calls ->writepage() without trying
-to lock i_mutex! This looks like some witchcraft for me.
+	- A shorter CodingStyle that gives the spirit of the style
+	  (short functions, minimal nesting, logic as straightforward as
+	  possible, etc.), and addresses the most commonly repeated
+	  mistakes, without so much detail that people's eyes glaze
+	  over.  You want to be able to recommend it to your students
+	  (or whoever) in reasonable confidence that they'll actually
+	  read it and have fun (leave the jokes in!).  Currently I'm
+	  suspicious that it's becoming something that everybody
+	  recommends but noone bothers to sit down and read anymore
+	  unless they're working on it.
 
-This means that if I'm in the middle of an operation or ino #X, I own
-its i_mutex, but not I_LOCK, I can be preempted and ->writepage can
-be called for a dirty page belonging to this inode #X? I haven't seen
-this in practice and I do not believe this may happen. Why?
+	- A CodingStyleReference that's just a long dry list of rules,
+	  organized to make it easy to look up an individual rule when
+	  needed.  That'd also take the pressure of CodingStyle to
+	  accept every new detail.
 
-Could you or someone please give me a hint what exactly
-inode->i_flags & I_LOCK protects? What is its relationship to i_mutex?
+It'd be a start just to revert CodingStyle to its original content and
+move the rest to CodingStyleReference.  But someone would want to skim
+through the CodingStyle history for any legimate corrections that we
+want to keep.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+--b.
