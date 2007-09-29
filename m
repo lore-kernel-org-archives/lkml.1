@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbXI2M4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbXI2NRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbXI2M4u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 08:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbXI2M4n
+	id S1757544AbXI2NRS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 09:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXI2NRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 08:56:43 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:31485 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755913AbXI2M4m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 08:56:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Absm+ZtuU62lv5Ah+nvgyi65XOjVqni/bDBILbbH6FyVhajnv0FR6/glv94Y6j/0HZAIFBNbLaqWUKI2Z2+ghBqgUlhWRV5Txv9MixEHPfYYvvVV9fV7pxWIQMDOTVOsPhN7kcqkBuicMkvyFVFndYUu0X1dc5gqyXuBdEIvVHY=  ;
-X-YMail-OSG: 0I2_y6QVM1mvDwq.ZApUcfQ1HS6POmyCQ2y0mb.pj3sqj02gmcU8PxMNU0mX8RrZDtcsUAasbA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] writeback: remove unnecessary wait in throttle_vm_writeout()
-Date: Sat, 29 Sep 2007 06:25:22 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Fengguang Wu <wfg@mail.ustc.edu.cn>, hirofumi@mail.parknet.co.jp,
-       galak@kernel.crashing.org, zaitcev@redhat.com, greg@kroah.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, mbligh@google.com
-References: <390857819.00313@ustc.edu.cn> <200709281010.28086.nickpiggin@yahoo.com.au> <20070928175756.GA16066@Krystal>
-In-Reply-To: <20070928175756.GA16066@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Sep 2007 09:17:11 -0400
+Received: from ns1.suse.de ([195.135.220.2]:35957 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752583AbXI2NRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 09:17:09 -0400
+Date: Sat, 29 Sep 2007 15:17:08 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [patch] x86: improved memory barrier implementation
+Message-ID: <20070929131708.GD14159@wotan.suse.de>
+References: <20070928154832.GB12538@wotan.suse.de> <20070928170719.2f617a7a@the-village.bc.nu> <alpine.LFD.0.999.0709280911100.3579@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709290625.23043.nickpiggin@yahoo.com.au>
+In-Reply-To: <alpine.LFD.0.999.0709280911100.3579@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 September 2007 03:57, Mathieu Desnoyers wrote:
+On Fri, Sep 28, 2007 at 09:15:06AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 28 Sep 2007, Alan Cox wrote:
+> > 
+> > However 
+> > - You've not shown the patch has any performance gain
+> 
+> It would be nice to see this.
 
-> Isn't the actual instrumentation present in the VM subsystem consisting
-> mostly of event counters ? This kind of profiling provides limited help in
-> following specific delays in the kernel. Martin Bligh's paper "Linux
-> Kernel Debugging on Google-sized clusters", presented at OLS2007,
-> discusses instrumentation that had to be added to the VM subsystem in
-> order to find a race condition in the OOM killer by gathering a trace of
-> the problematic behavior. Gathering a full trace (timestamps and events)
-> seems to be better suited to this kind of timing-related problem.
+Actually, in a userspace test I have (which actually does enough
+work to trigger out of order operations on my core2 but is otherwise
+pretty trivial), lfence takes 13 cycles, sfence takes 40 (neither of
+which actually solve the problem of load vs store ordering, but at
+least they might be operating on a slightly utilised memory subsystem
+rather than the stupidest possible microbenchmark).
 
-AFAIK, nobody is nacking patches that add more generally useful
-instrumentation to the vm.
+The dummy lock op takes around 75 cycles (of course, the core2 would
+always use the fences, but older CPUs will not and will be worse at the
+lock op too, probably).
 
-You'll obviously always get problems that you need specialised
-information to solve. Those kinds of corner cases are probably a
-good idea for dynamic instrumentation I guess.
+I suppose these could take significantly longer if there are uncached
+memory operations and such (I wasn't doing any significant amount
+of IO) -- I can't be sure, though.
+
+So it isn't much, but it could be helpful. If the code is important enough
+to go without locks and instead use complex barriers, it might easily be
+worth saving this kind of cycles on.
+
+
+> > - You've probably broken Pentium Pro
+> 
+> Probably not a big deal, but yeah, we should have that broken-ppro option.
+
+Will add, I'll ask Alan to specify what he'd like to see there.
+
+
+> > - and for modern processors its still not remotely clear your patch is
+> > correct because of NT stores.
+> 
+> This one I disagree with. The *old* code doesn't honor NT stores *either*. 
+> 
+> The fact is, if you use NT stores and then depend on ordering, it has 
+> nothing what-so-ever to do with spinlocks or smp_[rw]mb. You need to use 
+> the DMA barriers (ie the non-smp ones).
+> 
+> The non-temporal stores should be basically considered to be "IO", not any 
+> normal memory operation.
+
+Maybe you're thinking of uncached / WC? Non-temporal stores to cacheable
+RAM apparently can go out of order too, and they are being used in the kernel
+for some things. Likewise for rep stos, apparently. But this means they are
+already at odds with spin_unlock, unless they are enclosed with mfences 
+everywhere they are used (of which I think most are not). So this is an
+existing bug in the kernel.
+
+So again the question comes up -- do we promote these kinds of stores
+to be regular x86 citizens, keep the strong memory barriers as they are, and
+eat 40 cycles with an sfence before each spin_unlock store; or do we fix the
+few users of non-temporal stores and continue with the model we've always
+had where stores are in-order? Or I guess the implicit option is to do nothing
+until some poor bastard has the pleasure of having to debug some problem.
+
+Anyway, just keep in mind that this patch is not making any changes
+which are not already fundamentally broken. Sure, it might happen to
+cause more actual individual cases to break, but if they just happened
+to be using real locking instead of explicit barriers, they would be
+broken anyway, right? (IOW, any new breakage is already conceptually
+broken, even if OK in practice due to the overstrictness of our current
+barriers).
