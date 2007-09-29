@@ -1,174 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbXI2JQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbXI2JSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbXI2JQh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 05:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbXI2JQ3
+	id S1757031AbXI2JSy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 05:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbXI2JSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 05:16:29 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:50720 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbXI2JQ1 (ORCPT
+	Sat, 29 Sep 2007 05:18:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47301 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754554AbXI2JSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 05:16:27 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Out of memory management in embedded systems
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Daniel =?ISO-8859-1?Q?Sp=E5ng?= <daniel.spang@gmail.com>,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Sat, 29 Sep 2007 11:15:59 +0200
-References: <98nC1-6aM-9@gated-at.bofh.it> <98nVg-6QQ-21@gated-at.bofh.it> <98oeB-7gA-9@gated-at.bofh.it> <98oHC-8ai-5@gated-at.bofh.it> <98oRk-8mt-21@gated-at.bofh.it> <98pNu-1pp-17@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1IbYQZ-0000eu-Gp@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+F381q4YJinr/RChY5jFq3XEZjWTPWy2xIi3n
- 6JuHNlLWUJjeYA05OA3fN/R5HEVuvnfBq6eRU5f7/T4odbT5ru
- t1OyWE1xcT3v3dxcpsh6Q==
+	Sat, 29 Sep 2007 05:18:42 -0400
+Subject: Re: [15/17] SLUB: Support virtual fallback via SLAB_VFALLBACK
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20070929020141.e7684eb8.akpm@linux-foundation.org>
+References: <20070919033605.785839297@sgi.com>
+	 <20070919033643.763818012@sgi.com>
+	 <200709280742.38262.nickpiggin@yahoo.com.au>
+	 <Pine.LNX.4.64.0709281014060.4713@schroedinger.engr.sgi.com>
+	 <1191002119.18147.80.camel@lappy>
+	 <Pine.LNX.4.64.0709281114250.5149@schroedinger.engr.sgi.com>
+	 <1191003950.18147.85.camel@lappy>
+	 <20070929011311.8b51dedb.akpm@linux-foundation.org>
+	 <1191055632.18147.101.camel@lappy> <1191056021.18147.104.camel@lappy>
+	 <20070929020141.e7684eb8.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 29 Sep 2007 11:14:02 +0200
+Message-Id: <1191057242.18147.110.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
-> On Fri, 28 Sep 2007, [iso-8859-1] Daniel SpÂng wrote:
->> On 9/28/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
->>> On Fri, 28 Sep 2007, [iso-8859-1] Daniel SpÂng wrote:
->>>> On 9/28/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
 
->>>>> But an embedded system contains all the software that will
->>>>> ever be executed on that system! If it is properly designed,
->>>>> it can never run out of memory because everything it will
->>>>> ever do is known at design time.
->>>>
->>>> Not if its input is not known beforehand. Take a browser in a mobile
->>>> phone as an example, it does not know at design time how big the web
->>>> pages are. On the other hand we want to use as much memory as
->>>> possible, for cache etc., a method that involves the kernel would
->>>> simplify this and avoids setting manual limits.
-
->>> Any networked appliance can (will) throw data away if there are
->>> no resources available.
->>>
->>> The length of a web-page is not relevent, nor is the length
->>> of any external data. Your example will buffer whatever it
->>> can and not read anything more from the external source until
->>> it has resources available unless it is broken.
-
-And reload the web page whenever the suser scrolls up.
-
->> And how do you determine when no resources are availabe? We are using
->> overcommit here so malloc() will always return non null.
-
-> A networked appliance using embedded software is not your daddy's
-> Chevrolet. Any task that is permanent needs to allocate all its
-> resources when it starts. That's how it knows how much there are,
-> and incidentally, it doesn't do it blindly. The system designer
-> must know how much memory is available in the system and how much
-> is allocated to the kernel.
-
-So if I design a mobile phone and want the user to be able to listen to
-music and to browse the web and use the camera, I must
-
-- allocate the web cache on start
-- allocate the mp3 cache on start
-- allocate the video/photo buffer on start
-- leave enough RAM for other applications
-- waste much of the memory most of the time
-- reduce the capabilities of the camera in order to reduce used memory
-  (e.g. reduce the video resolution to match the slow flash speed instead
-   of allowing short high-res clips or reduce the number of pictures for
-   automatic sequences)
-- costly reload parts of web pages that could have been stored in 
-  the currently unused RAM
-- increase the realtime constraints of the mp3 player in order to
-  conserve memory, making the music stutter while performing
-  other operations.
-
-instead of just telling the system "Hey' I'm the web browswer, I need
-2 MB of RAM to work correctly, 4 MB to show a nice performance and
-if you ask me nicely, I'll release memory", because nobody could possibly
-want this feature?
-
-IMO, even desktop systems would perform better having this feature.
-Imagine no more GIMP images pushing out X's mouse driver ...
-
-> The fact that you can give a fictitious value to malloc() is not
-> relevant. If you don't provide resources for malloc(), like
-> (ultimately) a swap file, then you can't assume that it can do
-> any design work for you.
+On Sat, 2007-09-29 at 02:01 -0700, Andrew Morton wrote:
+> On Sat, 29 Sep 2007 10:53:41 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> An embedded system is NOT an ordinary system that happens to
-> boot from flash. An embedded system requires intelligent design.
-
-Yeah, you should know all apllications your users will put on their phones!
-
-Maybe you can do this for industry embedded single-task systems, but
-multi-purpose systems will benefit from 
-
-> It is important to understand how a virtual memory system
-> operates. The basics are that the kernel only "knows" that
-> a new page needs to be allocated when it encounters a trap
-> called a "page fault." If you don't have any memory resources
-> to free up (read no swap file to write a seldom-used task's
-> working set), then you are screwed --pure and simple. So,
-> if you don't provide any resources to actually use virtual
-> memory, then you need to make certain that virtual memory
-> and physical memory are, for all practical purposes, the same.
-
-The system should notify the applications before reaching that point,
-e.g. when the cache is reduced below a theresold.
-
-> With embedded servers, it's usually very easy to limit the
-> number of connections allowed, therefore the amount of
-> dynamic resources that must be provided.
-
-And it's easy to limit the size and number of images on web pages
-that need to be cached.
-
-> With clients
-> it should be equally easy, but generic software won't
-> work because,
-
-... it will ignore the signal.
-
-> for instance, Mozilla doesn't keep track
-> of the number of "windows" you have up and the number
-> of connections you have.
-
-about:config network.http.max-connections
-
-> HOWEVER, remember that malloc()
-> is a library call. You can substitute your own using
-> LD_PRELOAD, they keeps track of everything if you must
-> use generic software.
-
-Knowing one's memory usage - possibly not counting stack, code and data,
-is only half of the trick. You need to know the current memory pressure,
-too.
+> > 
+> > On Sat, 2007-09-29 at 10:47 +0200, Peter Zijlstra wrote:
+> > 
+> > > Ah, right, that was the detail... all this lumpy reclaim is useless for
+> > > atomic allocations. And with SLUB using higher order pages, atomic !0
+> > > order allocations will be very very common.
+> > > 
+> > > One I can remember was:
+> > > 
+> > >   add_to_page_cache()
+> > >     radix_tree_insert()
+> > >       radix_tree_node_alloc()
+> > >         kmem_cache_alloc()
+> > > 
+> > > which is an atomic callsite.
+> > > 
+> > > Which leaves us in a situation where we can load pages, because there is
+> > > free memory, but can't manage to allocate memory to track them.. 
+> > 
+> > Ah, I found a boot log of one of these sessions, its also full of
+> > order-2 OOMs.. :-/
+> 
+> oom-killings, or page allocation failures?  The latter, one hopes.
 
 
-Imagine mozilla asks if it may use the whole lotta 4 GB RAM for it's memory
-cache, and it may. The user is stupid enough to download an 2,3 GB ISO, save
-it, burn it, deletes the file, finds out the disc was damaged and reloads
-it - not from the net, but from the RAM cache. User is happy.
+Linux version 2.6.23-rc4-mm1-dirty (root@dyad) (gcc version 4.1.2 (Ubuntu 4.1.2-0ubuntu4)) #27 Tue Sep 18 15:40:35 CEST 2007
 
-Now the user starts a game, the game would need 2 GB of RAM, and either
-mozilla or the game is killed. User is unhappy. But if the system does
-not kill one of them, but nicely asks mozilla to free 2 GB of RAM, the
-user will not be able to reload the ISO from RAM, but being able to still
-use the browser while pausing the game, he won't care.
+...
 
 
-I'm not arguing on how this should be implemented, but if and why it should
-be implemented. Maybe it's as simple as having a signal each second if the
-cache is below x MB, maybe you'll want a memory manager helper application
-in userspace. Maybe you want both options ... or something completely
-different. But without kernel support, it won't work as well as it could.
--- 
-Funny quotes:
-39. Ever wonder about those people who spend $2.00 apiece on those little
-    bottles of Evian water? Try spelling Evian backwards: NAIVE
-Friﬂ, Spammer: sw@ouZI.7eggert.dyndns.org LajGqWfh@pp.7eggert.dyndns.org
+mm_tester invoked oom-killer: gfp_mask=0x40d0, order=2, oomkilladj=0
+Call Trace:
+611b3878:  [<6002dd28>] printk_ratelimit+0x15/0x17
+611b3888:  [<60052ed4>] out_of_memory+0x80/0x100
+611b38c8:  [<60054b0c>] __alloc_pages+0x1ed/0x280
+611b3948:  [<6006c608>] allocate_slab+0x5b/0xb0
+611b3968:  [<6006c705>] new_slab+0x7e/0x183
+611b39a8:  [<6006cbae>] __slab_alloc+0xc9/0x14b
+611b39b0:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+611b39b8:  [<600980f2>] do_mpage_readpage+0x3b3/0x472
+611b39e0:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+611b39f8:  [<6006cc81>] kmem_cache_alloc+0x51/0x98
+611b3a38:  [<6011f89f>] radix_tree_preload+0x70/0xbf
+611b3a58:  [<6004f8e2>] add_to_page_cache+0x22/0xf7
+611b3a98:  [<6004f9c6>] add_to_page_cache_lru+0xf/0x24
+611b3ab8:  [<6009821e>] mpage_readpages+0x6d/0x109
+611b3ac0:  [<600d59f0>] ext3_get_block+0x0/0xf2
+611b3b08:  [<6005483d>] get_page_from_freelist+0x8d/0xc1
+611b3b88:  [<600d6937>] ext3_readpages+0x18/0x1a
+611b3b98:  [<60056f00>] read_pages+0x37/0x9b
+611b3bd8:  [<60057064>] __do_page_cache_readahead+0x100/0x157
+611b3c48:  [<60057196>] do_page_cache_readahead+0x52/0x5f
+611b3c78:  [<60050ab4>] filemap_fault+0x145/0x278
+611b3ca8:  [<60022b61>] run_syscall_stub+0xd1/0xdd
+611b3ce8:  [<6005eae3>] __do_fault+0x7e/0x3ca
+611b3d68:  [<6005ee60>] do_linear_fault+0x31/0x33
+611b3d88:  [<6005f149>] handle_mm_fault+0x14e/0x246
+611b3da8:  [<60120a7b>] __up_read+0x73/0x7b
+611b3de8:  [<60013177>] handle_page_fault+0x11f/0x23b
+611b3e48:  [<60013419>] segv+0xac/0x297
+611b3f28:  [<60013367>] segv_handler+0x68/0x6e
+611b3f48:  [<600232ad>] get_skas_faultinfo+0x9c/0xa1
+611b3f68:  [<60023853>] userspace+0x13a/0x19d
+611b3fc8:  [<60010d58>] fork_handler+0x86/0x8d
+
+Mem-info:
+Normal per-cpu:
+CPU    0: Hot: hi:   42, btch:   7 usd:   0   Cold: hi:   14, btch:   3 usd:   0
+Active:11 inactive:9 dirty:0 writeback:1 unstable:0
+ free:19533 slab:10587 mapped:0 pagetables:260 bounce:0
+Normal free:78132kB min:4096kB low:5120kB high:6144kB active:44kB inactive:36kB present:129280kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0
+Normal: 7503*4kB 5977*8kB 19*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 78132kB
+Swap cache: add 1192822, delete 1192790, find 491441/626861, race 0+1
+Free swap  = 455300kB
+Total swap = 524280kB
+Free swap:       455300kB
+32768 pages of RAM
+0 pages of HIGHMEM
+1948 reserved pages
+11 pages shared
+32 pages swap cached
+Out of memory: kill process 2647 (portmap) score 2233 or a child
+Killed process 2647 (portmap)
+
+
