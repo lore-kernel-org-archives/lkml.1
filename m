@@ -1,73 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbXI2RHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbXI2RI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758120AbXI2RHy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 13:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbXI2RHs
+	id S1758524AbXI2RI6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 13:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758329AbXI2RIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 13:07:48 -0400
-Received: from main.gmane.org ([80.91.229.2]:40244 "EHLO ciao.gmane.org"
+	Sat, 29 Sep 2007 13:08:48 -0400
+Received: from lucidpixels.com ([75.144.35.66]:48990 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754705AbXI2RHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 13:07:47 -0400
-X-Injected-Via-Gmane: http://gmane.org/
+	id S1755058AbXI2RIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 13:08:47 -0400
+Date: Sat, 29 Sep 2007 13:08:45 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
 To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: [patch 0/2] suspend/resume regression fixes
-Date: Sat, 29 Sep 2007 13:12:57 -0400
-Message-ID: <46FE8799.3090108@tmr.com>
-References: <20070922220347.586903979@linutronix.de> <alpine.LFD.0.999.0709221546250.16478@woody.linux-foundation.org> <46FD639D.9030301@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-X-Gmane-NNTP-Posting-Host: pool-70-109-100-63.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <46FD639D.9030301@rtr.ca>
+cc: linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Bonnie++ with 1024k stripe SW/RAID5 causes kernel to goto D-state
+Message-ID: <Pine.LNX.4.64.0709291306320.4569@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Linus Torvalds wrote:
->>
->> On Sat, 22 Sep 2007, Thomas Gleixner wrote:
->>> My final enlightment was, when I removed the ACPI processor module,
->>> which controls the lower idle C-states, right before resume; this
->>> worked fine all the time even without all the workaround hacks.
->>>
->>> I really hope that this two patches finally set an end to the "jinxed
->>> VAIO heisenbug series", which started when we removed the periodic
->>> tick with the clockevents/dyntick patches.
->>
->> Ok, so the patches look fine, but I somehow have this slight feeling 
->> that you gave up a bit too soon on the "*why* does this happen?" 
->> question.
-> 
-> On a closely related note:  I just now submitted a patch to fix 
-> SMP-poweroff,
-> by having it do disable_nonboot_cpus before doing poweroff.
-> 
-> Which has led me to thinking..
-> ..are similar precautions perhaps necessary for *all* ACPI BIOS calls?
-> 
-> Because one never knows what the other CPUs are doing at the same time,
-> and what the side effects may be on the ACPI BIOS functions.
-> 
-> And also, I wonder if at a minimum we should be guaranteeing ACPI BIOS 
-> calls
-> only ever happen from CPU#0 (or the "boot" CPU)?   Or do we do that 
-> already?
-> 
-Boot CPU, and AFAIK suspend is the only place which does it.
+Kernel: 2.6.23-rc8 (older kernels do this as well)
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+When running the following command:
+/usr/bin/time /usr/sbin/bonnie++ -d /x/test -s 16384 -m p34 -n 16:100000:16:64
 
+It hangs unless I increase various parameters md/raid such as the 
+stripe_cache_size etc..
+
+# ps auxww | grep D
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root       276  0.0  0.0      0     0 ?        D    12:14   0:00 [pdflush]
+root       277  0.0  0.0      0     0 ?        D    12:14   0:00 [pdflush]
+root      1639  0.0  0.0      0     0 ?        D<   12:14   0:00 [xfsbufd]
+root      1767  0.0  0.0   8100   420 ?        Ds   12:14   0:00 
+root      2895  0.0  0.0   5916   632 ?        Ds   12:15   0:00 /sbin/syslogd -r
+
+See the bottom for more details.
+
+Is this normal?  Does md only work without tuning up to a certain stripe 
+size? I use a RAID 5 with 1024k stripe which works fine with many 
+optimizations, but if I just boot the system and run bonnie++ on it 
+without applying the optimizations, it will hang in d-state.  When I run 
+the optimizations, then it exits out of D-state, pretty weird?
+
+(again, without this, bonnie++ will hang in d-state.. until this is run)
+
+Optimization script:
+
+#!/bin/bash
+
+# source profile
+. /etc/profile
+
+# Tell user what's going on.
+echo "Optimizing RAID Arrays..."
+
+# Define DISKS.
+cd /sys/block
+DISKS=$(/bin/ls -1d sd[a-z])
+
+# This step must come first.
+# See: http://www.3ware.com/KB/article.aspx?id=11050
+echo "Setting max_sectors_kb to 128 KiB"
+for i in $DISKS
+do
+   echo "Setting /dev/$i to 128 KiB..."
+   echo 128 > /sys/block/"$i"/queue/max_sectors_kb
+done
+
+# This step comes next.
+echo "Setting nr_requests to 512 KiB"
+for i in $DISKS
+do
+   echo "Setting /dev/$i to 512K KiB"
+   echo 512 > /sys/block/"$i"/queue/nr_requests
+done
+
+# Set read-ahead.
+echo "Setting read-ahead to 64 MiB for /dev/md3"
+blockdev --setra 65536 /dev/md3
+
+# Set stripe-cache_size for RAID5.
+echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+echo 16384 > /sys/block/md3/md/stripe_cache_size
+
+# Set minimum and maximum raid rebuild speed to 30MB/s.
+echo "Setting minimum and maximum resync speed to 30 MiB/s..."
+echo 30000 > /sys/block/md0/md/sync_speed_min
+echo 30000 > /sys/block/md0/md/sync_speed_max
+echo 30000 > /sys/block/md1/md/sync_speed_min
+echo 30000 > /sys/block/md1/md/sync_speed_max
+echo 30000 > /sys/block/md2/md/sync_speed_min
+echo 30000 > /sys/block/md2/md/sync_speed_max
+echo 30000 > /sys/block/md3/md/sync_speed_min
+echo 30000 > /sys/block/md3/md/sync_speed_max
+
+# Disable NCQ on all disks.
+echo "Disabling NCQ on all disks..."
+for i in $DISKS
+do
+   echo "Disabling NCQ on $i"
+   echo 1 > /sys/block/"$i"/device/queue_depth
+done
+
+--
+
+Once this runs, everything works fine again.
+
+--
+
+# mdadm -D /dev/md3
+/dev/md3:
+         Version : 00.90.03
+   Creation Time : Wed Aug 22 10:38:53 2007
+      Raid Level : raid5
+      Array Size : 1318680576 (1257.59 GiB 1350.33 GB)
+   Used Dev Size : 146520064 (139.73 GiB 150.04 GB)
+    Raid Devices : 10
+   Total Devices : 10
+Preferred Minor : 3
+     Persistence : Superblock is persistent
+
+     Update Time : Sat Sep 29 13:05:15 2007
+           State : active, resyncing
+  Active Devices : 10
+Working Devices : 10
+  Failed Devices : 0
+   Spare Devices : 0
+
+          Layout : left-symmetric
+      Chunk Size : 1024K
+
+  Rebuild Status : 8% complete
+
+            UUID : e37a12d1:1b0b989a:083fb634:68e9eb49 (local to host p34.internal.lan)
+          Events : 0.4211
+
+     Number   Major   Minor   RaidDevice State
+        0       8       33        0      active sync   /dev/sdc1
+        1       8       49        1      active sync   /dev/sdd1
+        2       8       65        2      active sync   /dev/sde1
+        3       8       81        3      active sync   /dev/sdf1
+        4       8       97        4      active sync   /dev/sdg1
+        5       8      113        5      active sync   /dev/sdh1
+        6       8      129        6      active sync   /dev/sdi1
+        7       8      145        7      active sync   /dev/sdj1
+        8       8      161        8      active sync   /dev/sdk1
+        9       8      177        9      active sync   /dev/sdl1
+
+--
+
+NOTE: This bug is reproducible every time:
+
+Example:
+
+$ /usr/bin/time /usr/sbin/bonnie++ -d /x/test -s 16384 -m p34 -n 
+16:100000:16:64
+Writing with putc()...
+
+It writes for 4-5 minutes and then...... SILENCE + D-STATE, I was too late 
+this time :(
+
+$ ps auxww | grep D
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root       276  1.2  0.0      0     0 ?        D    12:50   0:03 [pdflush]
+root      2901  0.0  0.0   5916   632 ?        Ds   12:50   0:00 /sbin/syslogd -
+r
+user       4571 48.0  0.0  11644  1084 pts/1    D+   12:51   1:55 /usr/sbin/bonn
+ie++ -d /x/test -s 16384 -m p34 -n 16:100000:16:64
+root      4612  1.0  0.0      0     0 ?        D    12:52   0:01 [pdflush]
+root      4624  5.0  0.0  40964  7436 ?        D    12:55   0:00 /usr/bin/perl -
+w /app/rrd-cputemp/bin/rrd_cputemp.pl
+root      4684  0.0  0.0  31968  1416 ?        D    12:55   0:00 /usr/bin/rateup
+  /var/www/monitor/mrtg/ eth0 1191084902 -Z u 265975 843609 125000000 c #00cc00 #
+0000ff #006600 #ff00ff k 1000 i /var/www/monitor/mrtg/eth0-day.png -125000000 -1
+25000000 400 100 1 1 1 300 0 4 1 %Y-%m-%d %H:%M 0 i /var/www/monitor/mrtg/eth0-w
+eek.png -125000000 -125000000 400 100 1 1 1 1800 0 4 1 %Y-%m-%d %H:%M 0 i /var/w
+ww/monitor/mrtg/eth0-month.png -125000000 -125000000 400 100 1 1 1 7200 0 4 1 %Y
+-%m-%d %H:%M 0
+root      4686  0.0  0.0   4420   932 ?        D    12:55   0:00 /usr/sbin/hddte
+mp -n /dev/sdf
+user       4688  0.0  0.0   4232   800 pts/5    S+   12:55   0:00 grep --color D
+$
+
+If you are not logged as root already, it is sometimes too late to su to root
+and run the optimizations:
+
+$ su -
+Password: 
+<hang forever>
+
+Justin.
