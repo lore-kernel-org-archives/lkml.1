@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbXI2V5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbXI2V7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756815AbXI2V5y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 17:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbXI2V5r
+	id S1757200AbXI2V7s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 17:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXI2V7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 17:57:47 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:46825 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216AbXI2V5q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 17:57:46 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 29 Sep 2007 17:56:08 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 0/3 coding standards documentation/code updates
-In-Reply-To: <alpine.LFD.0.999.0709291116180.3579@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0709291753510.7068@localhost.localdomain>
-References: <11910151223214-git-send-email-ezk@cs.sunysb.edu>
- <alpine.LFD.0.999.0709291116180.3579@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sat, 29 Sep 2007 17:59:41 -0400
+Received: from pat.uio.no ([129.240.10.15]:38704 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752270AbXI2V7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 17:59:41 -0400
+Subject: Re: FW: [patch 01/02] vfs: variant symlinks
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "Schmidt, Kenneth P" <kenneth.schmidt@pnl.gov>
+Cc: Jan Dittmer <jdi@l4x.org>, Al Viro <viro@ftp.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <C323F837.4E04%kenneth.schmidt@pnl.gov>
+References: <C323F837.4E04%kenneth.schmidt@pnl.gov>
+Content-Type: text/plain
+Date: Sat, 29 Sep 2007 17:59:25 -0400
+Message-Id: <1191103165.6655.8.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-ClamAV-Virus: No
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.120)
+X-UiO-Scanned: B1F777BA3480AA04993EB8C65EF7EC871C09EE1D
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 232 total 4189043 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Sep 2007, Linus Torvalds wrote:
+On Sat, 2007-09-29 at 12:40 -0700, Schmidt, Kenneth P wrote:
 
->
->
-> On Fri, 28 Sep 2007, Erez Zadok wrote:
-> >
-> >  Documentation/CodingStyle         |   88 +++++++++++++++++++++++++++++++++++++-
->
-> I'm not very happy with this.
->
-> "CodingStyle" should be about the big issues, not about details.
-> Yes, we've messed that up over the years, but let's not continue
-> that.
->
-> In other words, I'd suggest *removing* lines from CodingStyle, not
-> adding them. The file has already gone from a "good general
-> principles" to "lots of stupid details". Let's not make it worse.
+> The best example of how this can be useful is to allow a heterogeneous
+> environment which uses a common filesystem. For example, both x86_64 and
+> power systems could mount a root nfs share and execute with a common set of
+> configurations and data, but the binary directories (bin and lib) could
+> point to architecture specific directories.
 
-here's a radical idea -- what about splitting the content across two
-documents?  you know ... perhaps "coding style aesthetics" versus
-"coding distinctions" or something like that.
+That would hardly be a portable NFS environment. Boot a Solaris, or
+older Linux kernel, and watch your applications barf...
 
-oh, wait ...
+This sort of stuff belongs in the automounter, not the kernel.
 
-http://lkml.org/lkml/2007/1/1/18
+Trond
 
-:-)
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
