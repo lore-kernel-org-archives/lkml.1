@@ -1,76 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbXI2PWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbXI2PYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbXI2PWL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 11:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXI2PV6
+	id S1758056AbXI2PYq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 11:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbXI2PYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 11:21:58 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:34660 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbXI2PV5 (ORCPT
+	Sat, 29 Sep 2007 11:24:39 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:50946 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754420AbXI2PYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 11:21:57 -0400
-Message-ID: <46FE6D8F.70808@davidnewall.com>
-Date: Sun, 30 Sep 2007 00:51:51 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Sat, 29 Sep 2007 11:24:39 -0400
+Message-ID: <46FE6E17.6070109@suse.de>
+Date: Sat, 29 Sep 2007 19:24:07 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Chroot bug take 3
+To: Mark Lord <lkml@rtr.ca>
+CC: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: regression in 2.6.23-rc8 - power off failed
+References: <20070929005453.GA4475@erig.dyndns.org> <46FDC0EB.3070003@zytor.com> <20070929082233.GA3447@erig.dyndns.org> <46FE0D29.4090706@zytor.com> <20070929093553.GA4451@erig.dyndns.org> <46FE47C7.6070901@rtr.ca>
+In-Reply-To: <46FE47C7.6070901@rtr.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/.
+Mark Lord wrote:
+> Wolfgang Erig wrote:
+>> On Sat, Sep 29, 2007 at 01:30:33AM -0700, H. Peter Anvin wrote:
+>>> Wolfgang Erig wrote:
+>>>> Both are bad.
+>>>> Two different systems and two different bisections.
+>>>> I sent the last step of each.
+>>>>>> $ git bisect good Bisecting: 0 revisions left to test after this 
+>>>>>> [626073132b381684c4983e0d911e9aceb32e2cbc] Assembly header and 
+>>>>>> main routine for new x86 setup code 
+>>>>> OK, so which one is the bad one?
+>>>> This problem (no power off) persists after pull some minutes ago.
+>>>> Sorry for the confusion.
+>>>>
+>>> I believe there must have been something wrong here (possibly
+>>> inconsistent experiments?)  This checkin has *zero code changes* from
+>>> the previous one (and next one) -- the kernel should have been binarily
+>>> identical to the previous one.  The code introduced in this checkin
+>>> doesn't even get compiled until two checkins later,
+>>> 4fd06960f120e02e9abc802a09f9511c400042a5.
+>>
+>> I have done two bisections simultanously and it was late at night.
+>> I start again with a fresh tree and better controlled experiments.
+> 
+> If this is an SMP system, then you could just be getting random results,
+> depending upon which CPU is attempting the poweroff.
+> 
+> I have a newish patch in Andrew's tree now to fix SMP poweroff
+> (has been broken forever), reproduced here below in case you missed it.
+> 
+> * * *
+> We need to disable all CPUs other than the boot CPU (usually 0)
+> before attempting to power-off modern SMP machines.
+> This fixes the hang-on-poweroff issue on my MythTV SMP box,
+> and also on Thomas Gleixner's new toybox.
+> 
+> Signed-off-by: Mark Lord <mlord@pobox.com>
+> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+> 
+> --- linux/kernel/sys.c.orig    2007-09-13 09:49:11.000000000 -0400
+> +++ linux/kernel/sys.c    2007-09-28 15:48:54.000000000 -0400
+> @@ -32,6 +32,7 @@
+> #include <linux/getcpu.h>
+> #include <linux/task_io_accounting_ops.h>
+> #include <linux/seccomp.h>
+> +#include <linux/cpu.h>
+> 
+> #include <linux/compat.h>
+> #include <linux/syscalls.h>
+> @@ -878,6 +879,7 @@
+>     kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+>     if (pm_power_off_prepare)
+>         pm_power_off_prepare();
+> +    disable_nonboot_cpus();
+>     sysdev_shutdown();
+>     printk(KERN_EMERG "Power down.\n");
+>     machine_power_off();
 
-I hope I haven't crossed the line between determined and annoying.  I 
-thought we were done, but now I find meat still on this bone.
+-static void
+-acpi_power_off (void)
+-{
+-       printk("%s called\n",__FUNCTION__);
+-       /* Some SMP machines only can poweroff in boot CPU */
+-       set_cpus_allowed(current, cpumask_of_cpu(0));
+ACPI in kernel 2.6.12 did disable non-boot cpus too in powe_off.
+Later only comment was left for some reason...
+Regards,
+Alex. 
 
-Posit a normal process having some filesystem root, and a current 
-working directory (pwd) lying within that root subtree.  When chroot is 
-performed, pwd is left unchanged.  This means it can (and often will) 
-lie outside of the new root.
 
-How much of the filesystem lying outside of root should a process be 
-allowed to access?  Currently it is the complete filesystem.
-
-It is perfectly reasonable for a process to execute chroot multiple 
-times, each time pruning off access to further parts of the filesystem.  
-What is *not reasonable* is chroot unavoidably returning access which 
-previously had been dropped.  Similarly, performing fchdir on a 
-directory opened prior to chroot should not grant access to more of the 
-filesystem than was accessible when the directory was opened.
-
-Although chroot can result in pwd lying outside of the new root, is must 
-still lie within some root.  A new quantity, openfdroot, will be 
-recorded by chroot, to be used as the limit when walking dotdot outside 
-of the current root.
-
-The initial value for openfdroot is the complete filesystem.  After 
-completing each chroot, as well as chdir, fchdir and close, openfdroot 
-will be set to root iff all open directories and pwd lie within that 
-root; otherwise it remains unchanged.
-
-In an ideal world a separate openfdroot would be recorded for each open 
-directory, and another for pwd, however this is extreme.  A single value 
-permits chroot to perform its fundamental promise, namely to prune the root
-
-The following might replace the last two paragraphs in chroot(2)'s 
-description:
-
-    This call does not change the current working directory.  After the
-    call, '.' can be outside of path, thus files, accessible to the
-    process before the call, remain accessible (via relative pathnames)
-    afterwards.  This access is intrinsicly dropped by changing
-    directory to within the new root.
-
-    This call does not close open file descriptors, and such descriptors
-    may allow access to files outside the chroot tree.  A successful
-    open(2) on a directory outside of path yields a descriptor that can
-    subsequently be passed to fchdir(2) to escape the new root.  This
-    will only provide access to as much of the filesystem as was
-    accessable when the directory was opened.  Closing all such files
-    (and changing directory to within path) drops this access.
-
-Would there be any point in working up a patch?
