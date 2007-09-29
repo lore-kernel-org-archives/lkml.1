@@ -1,40 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbXI2CPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbXI2Cre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757474AbXI2CPh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 22:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbXI2CP0
+	id S1756186AbXI2Cre (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 22:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXI2CrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 22:15:26 -0400
-Received: from zeratul.whoi.edu ([128.128.76.62]:56259 "EHLO mx1.whoi.edu"
+	Fri, 28 Sep 2007 22:47:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48644 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752685AbXI2CPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 22:15:25 -0400
-Date: Fri, 28 Sep 2007 22:15:18 -0400 (EDT)
-From: Benjamin Carr <bcarr@whoi.edu>
-X-X-Sender: benc@puck.litech.org
-To: Joshua Baker-LePain <jlb17@duke.edu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Eric Sandeen <sandeen@sandeen.net>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Truncated Filesystem
-In-Reply-To: <alpine.LRH.0.9999.0709282145490.22882@hogwarts.egr.duke.edu>
-Message-ID: <Pine.LNX.4.58.0709282214540.14057@puck.litech.org>
-References: <Pine.LNX.4.58.0709281734490.14057@puck.litech.org>
- <Pine.LNX.4.64.0709281821390.12203@p34.internal.lan> <46FD9006.6050807@sandeen.net>
- <46FD959E.5030009@zytor.com> <Pine.LNX.4.58.0709282048440.14057@puck.litech.org>
- <alpine.LRH.0.9999.0709282145490.22882@hogwarts.egr.duke.edu>
+	id S1752322AbXI2CrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 22:47:24 -0400
+Message-ID: <46FDBCB4.9090802@pobox.com>
+Date: Fri, 28 Sep 2007 22:47:16 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ayaz Abdulla <aabdulla@nvidia.com>
+CC: Manfred Spraul <manfred@colorfullife.com>, nedev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: MSI interrupts and disable_irq
+References: <46FC15A9.1070803@nvidia.com>
+In-Reply-To: <46FC15A9.1070803@nvidia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> What kind of partition table is it?  MS-DOS partition tables have a 2 TB
-> >> limit.
-> Issue number one -- don't use fdisk, as it doesn't support devices that 
-> big.  Use parted instead:
+Ayaz Abdulla wrote:
+> I am trying to track down a forcedeth driver issue described by bug 9047 
+> in bugzilla (2.6.23-rc7-git1 forcedeth w/ MCP55 oops under heavy load). 
+> I added a patch to synchronize the timer handlers so that one handler 
+> doesn't accidently enable the IRQ while another timer handler is running 
+> (see attachment 'Add timer lock' in bug report) and for other processing 
+> protection.
+> 
+> However, the system still had an Oops. So I added a lock around the 
+> nv_rx_process_optimized() and the Oops has not happened (see attachment 
+> 'New patch for locking' in bug report). This would imply a 
+> synchronization issue. However, the only callers of that function are 
+> the IRQ handler and the timer handlers (in non-NAPI case). The timer 
+> handlers  use disable_irq so that the IRQ handler does not contend with 
+> them. It looks as if disable_irq is not working properly.
+> 
+> This issue repros only with MSI interrupt and not legacy INTx 
+> interrupts. Any ideas?
 
-climate:~ benc$ sudo parted /dev/sdc check 1
-Warning: Partition 1 is 2005GB, but the file system is 13TB.              
+(added linux-kernel to CC, since I think it's more of a general kernel 
+issue)
 
-Yeah, that is a problem.
+To be brutally frank, I always thought this disable_irq() mess was a 
+hack both ugly and fragile.  This disable_irq() work that appeared in a 
+couple net drivers was correct at the time, so I didn't feel I had the 
+justification to reject it, but it still gave me a bad feeling.
+
+I think the scenario you outline is an illustration of the approach's 
+fragility:  disable_irq() is a heavy hammer that originated with INTx, 
+and it relies on a chip-specific disable method (kernel/irq/manage.c) 
+that practically guarantees behavior will vary across MSI/INTx/etc.
+
+Practices like forcedeth's unique locking work for a time, but it should 
+be a warning sign any time you stray from the normal spin_lock_irqsave() 
+method of synchronization.
+
+Based on your report, it is certainly possible that there is a problem 
+with MSI's desc->chip->disable() method...  but I would actually 
+recommend working around the problem by making the forcedeth locking 
+more standardized by removing all those disable_irq() hacks.
+
+Using spinlocks like other net drivers (note: avoid NETIF_F_LLTX 
+drivers) has a high probability of both fixing your current problem, and 
+giving forcedeth a more stable foundation for the long term.  In my 
+humble opinion :)
+
+	Jeff
+
 
