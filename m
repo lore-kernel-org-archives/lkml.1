@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbXI2SFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbXI2SHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbXI2SFZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 14:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbXI2SFP
+	id S1758149AbXI2SHd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 14:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXI2SH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 14:05:15 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44975 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756203AbXI2SFO (ORCPT
+	Sat, 29 Sep 2007 14:07:26 -0400
+Received: from mail-in-04.arcor-online.net ([151.189.21.44]:59473 "EHLO
+	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754213AbXI2SHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 14:05:14 -0400
-Date: Sat, 29 Sep 2007 18:59:40 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Dave Jones <davej@redhat.com>, Greg.Chandler@wellsfargo.com,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org,
-       dan.j.williams@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more} ARM/StrongARM
-Message-ID: <20070929175940.GA14500@flint.arm.linux.org.uk>
-References: <1E7A4807A136DF45AD33DB341D93C3BD1F0C19@msgswbmnmsp46.wellsfargo.com> <20070925073132.GA29127@flint.arm.linux.org.uk> <20070925143651.GA2769@redhat.com> <20070926205314.GB25747@redhat.com>
-Mime-Version: 1.0
+	Sat, 29 Sep 2007 14:07:25 -0400
+Date: Sat, 29 Sep 2007 20:07:21 +0200
+From: Wolfgang Erig <Wolfgang.Erig@gmx.de>
+To: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: regression in 2.6.23-rc8 - power off failed
+Message-ID: <20070929180721.GA8371@erig.dyndns.org>
+Mail-Followup-To: "H. Peter Anvin" <hpa@zytor.com>,
+	linux-kernel@vger.kernel.org,
+	Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <20070929005453.GA4475@erig.dyndns.org> <46FDC0EB.3070003@zytor.com> <20070929082233.GA3447@erig.dyndns.org> <46FE0D29.4090706@zytor.com> <20070929093553.GA4451@erig.dyndns.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070926205314.GB25747@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070929093553.GA4451@erig.dyndns.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 26, 2007 at 04:53:14PM -0400, Dave Jones wrote:
-> Following up on this from yesterday, Linus please revert the above cset.
-> It doesn't seem to be necessary (it was added to fix a miscompile in
-> 'make allnoconfig' which doesn't seem to be repeatable with it reverted)
-> and actively breaks the ARM SA1100 framebuffer driver.
-> 
-> (If you'd prefer a patch reverting it, I'll send one, but I'm
->  hoping that git-revert will just dtrt).
+Hi Peter,
 
-Dave,
+On Sat, Sep 29, 2007 at 11:35:53AM +0200, Wolfgang Erig wrote:
+>
+> I start again with a fresh tree and better controlled experiments.
 
-Thanks for checking this out on x86, and getting it reverted.
+now the result of bisection seems to be consistent.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+The last good commit is
+f2d98ae63dc64dedb00499289e13a50677f771f9 Linker script for the new x86 setup code
+
+The first bad commit (no power off) is
+4fd06960f120e02e9abc802a09f9511c400042a5 Use the new x86 setup code for i386
+
+Now I try the things written in
+http://marc.info/?i=46FD802D.2030804@zytor.com
+
+Wolfgang
