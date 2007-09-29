@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbXI2PGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbXI2PWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757849AbXI2PGZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 11:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbXI2PGR
+	id S1757462AbXI2PWL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 11:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXI2PV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 11:06:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45959 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753878AbXI2PGQ (ORCPT
+	Sat, 29 Sep 2007 11:21:58 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:34660 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753130AbXI2PV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 11:06:16 -0400
-Subject: Re: [PATCH 05/12] mm: trylock_page
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org
-In-Reply-To: <200709281311.37616.nickpiggin@yahoo.com.au>
-References: <20070928074200.436463000@chello.nl>
-	 <20070928080041.891125000@chello.nl>
-	 <200709281311.37616.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Sat, 29 Sep 2007 17:01:34 +0200
-Message-Id: <1191078095.18147.126.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 
+	Sat, 29 Sep 2007 11:21:57 -0400
+Message-ID: <46FE6D8F.70808@davidnewall.com>
+Date: Sun, 30 Sep 2007 00:51:51 +0930
+From: David Newall <david@davidnewall.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Chroot bug take 3
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+/.
 
-On Fri, 2007-09-28 at 13:11 +1000, Nick Piggin wrote:
-> On Friday 28 September 2007 17:42, Peter Zijlstra wrote:
-> > Replace raw TestSetPageLocked() usage with trylock_page()
-> 
-> I have such a thing queued too, for the lock bitops patches for when 2.6.24
-> opens, Andrew promises me :).
-> 
-> I guess they should be identical, except I don't like doing trylock_page in
-> place of SetPageLocked, for memory ordering performance and aesthetic
-> reasons... I've got an init_page_locked (or set_page_locked... I can't
-> remember, the patch is at home).
+I hope I haven't crossed the line between determined and annoying.  I 
+thought we were done, but now I find meat still on this bone.
 
-Sure, that might work, or we could just make it so that add_to_*_cache
-is never passed an unlocked page. But sure...
+Posit a normal process having some filesystem root, and a current 
+working directory (pwd) lying within that root subtree.  When chroot is 
+performed, pwd is left unchanged.  This means it can (and often will) 
+lie outside of the new root.
 
-> Fine idea to lockdep the page lock, anyway. Does it show up any of the
-> buffered write deadlock possibilities? :)
+How much of the filesystem lying outside of root should a process be 
+allowed to access?  Currently it is the complete filesystem.
 
-Not yet, it might just be that the concessions done to annotate this
-type of lock were too severe.
+It is perfectly reasonable for a process to execute chroot multiple 
+times, each time pruning off access to further parts of the filesystem.  
+What is *not reasonable* is chroot unavoidably returning access which 
+previously had been dropped.  Similarly, performing fchdir on a 
+directory opened prior to chroot should not grant access to more of the 
+filesystem than was accessible when the directory was opened.
 
-What I basically did was treat all the page locks as a single recursive
-lock.
+Although chroot can result in pwd lying outside of the new root, is must 
+still lie within some root.  A new quantity, openfdroot, will be 
+recorded by chroot, to be used as the limit when walking dotdot outside 
+of the current root.
 
-> buffer lock is another notable bit-mutex that might be converted (I have
-> the patch to do the similar nice !tas->trylock conversion for that too). I
-> think it is used widely enough by tricky code that it would be useful to
-> annotate as well.
+The initial value for openfdroot is the complete filesystem.  After 
+completing each chroot, as well as chdir, fchdir and close, openfdroot 
+will be set to root iff all open directories and pwd lie within that 
+root; otherwise it remains unchanged.
 
-Not at all familiar with that lock, but yeah, we could have a look at
-doing that too.
+In an ideal world a separate openfdroot would be recorded for each open 
+directory, and another for pwd, however this is extreme.  A single value 
+permits chroot to perform its fundamental promise, namely to prune the root
 
-> Unfortunately we can't convert bit_spinlock.h easily, I guess?
+The following might replace the last two paragraphs in chroot(2)'s 
+description:
 
-Yeah, the space constraints make that rather hard. Each of these locks
-needs some form of external meta-data.
+    This call does not change the current working directory.  After the
+    call, '.' can be outside of path, thus files, accessible to the
+    process before the call, remain accessible (via relative pathnames)
+    afterwards.  This access is intrinsicly dropped by changing
+    directory to within the new root.
 
-For the page lock I used one lock instance per file system type.
+    This call does not close open file descriptors, and such descriptors
+    may allow access to files outside the chroot tree.  A successful
+    open(2) on a directory outside of path yields a descriptor that can
+    subsequently be passed to fchdir(2) to escape the new root.  This
+    will only provide access to as much of the filesystem as was
+    accessable when the directory was opened.  Closing all such files
+    (and changing directory to within path) drops this access.
 
+Would there be any point in working up a patch?
