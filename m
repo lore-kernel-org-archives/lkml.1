@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbXI2RTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXI2R1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113AbXI2RTS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 13:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbXI2RTJ
+	id S1757545AbXI2R1j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 13:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXI2R1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 13:19:09 -0400
-Received: from smtp112.sbc.mail.re2.yahoo.com ([68.142.229.93]:47082 "HELO
-	smtp112.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753489AbXI2RTI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 13:19:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=BK8kSj5dXe8VjiUaI8DHDbRKR/wyZ9zuPdlSrQE3nyk+Au23E7oCTgSdGF5IFEkW6eDS7DWGWuy1eCXfUIzqSGhvKOoBKcLWpjlKccl156AygRGv2VNTlPJQsnF2sdthvKOgbwnHFSeEKF9Xz4AfhFOHAvNGHRO33mXejvxWT3g=  ;
-X-YMail-OSG: aML.4YgVM1m8H_oqKEJ2.aCBbiEF2WzJuRUhwZSxW49dDzO7ev2c7x06K_duJ4Q3x2_BLa.NEha1zQh6_SFxdQsvgyERKqjrxLDGaEXZzKUkbkbvDsivBUHCFsiJzm2TdP71uaAuiFnIXRc-
-Date: Sat, 29 Sep 2007 10:19:09 -0700
-From: David Brownell <david-b@pacbell.net>
-To: khali@linux-fr.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] CodingStyle: Printing numbers in parentheses is fine
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20070929122530.5c45f743@hyperion.delvare>
- <20070929035156.cd6fe860.akpm@linux-foundation.org>
-In-Reply-To: <20070929035156.cd6fe860.akpm@linux-foundation.org>
+	Sat, 29 Sep 2007 13:27:32 -0400
+Received: from cantor.suse.de ([195.135.220.2]:59218 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751273AbXI2R1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 13:27:31 -0400
+Date: Sat, 29 Sep 2007 10:17:22 -0700
+From: Greg KH <gregkh@suse.de>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] module: return error when mod_sysfs_init() failed
+Message-ID: <20070929171722.GA18041@suse.de>
+References: <20070929100653.GA4121@APFDCB5C> <20070929145646.GB3075@suse.de> <961aa3350709290837m2d9d6668gd68b7cb8ac11e4d4@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070929171909.B8275239982@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <961aa3350709290837m2d9d6668gd68b7cb8ac11e4d4@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > -Printing numbers in parentheses (%d) adds no value and should be avoided.
->
-> I wonder how that got there.
+On Sun, Sep 30, 2007 at 12:37:10AM +0900, Akinobu Mita wrote:
+> 2007/9/29, Greg KH <gregkh@suse.de>:
+> > > Index: 2.6-git/kernel/module.c
+> > > ===================================================================
+> > > --- 2.6-git.orig/kernel/module.c
+> > > +++ 2.6-git/kernel/module.c
+> > > @@ -1782,7 +1782,8 @@ static struct module *load_module(void _
+> > >       module_unload_init(mod);
+> > >
+> > >       /* Initialize kobject, so we can reference it. */
+> > > -     if (mod_sysfs_init(mod) != 0)
+> > > +     err = mod_sysfs_init(mod);
+> > > +     if (err)
+> > >               goto cleanup;
+> >
+> > I must be still asleep this morning, but I think this patch does the
+> > exact same thing as the original code does, right?  Otherwise, this
+> > code would always be failing.
+> >
+> > Or do I just need to go get my morning coffee to wake up and see the
+> > problem here?
+> 
+> Hello,
+> 
+> In the original code, the "err" is zero before goto cleanup.
+> This "err" will be the return value of load_module().
 
-Well, the only place that numbers "naturally" appear wrapped in
-parenthesis is tables of credits and debits... as a debit, sort
-of a literal "add no value" situation.  ;)
+Ah, ok, that makes sense now, thanks.  It was the error not getting
+returned, it was not the fact that we were incorrectly checking the
+return value of mod_sysfs_init.
 
-Oh, and for footnotes, in typographically challenged contexts.
+thanks for clearing this up.
 
-Me, I agree that numbers in parens don't usually make sense for
-kernel messages.
-
-- Dave
-
+greg k-h
