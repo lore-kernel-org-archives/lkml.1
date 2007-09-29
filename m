@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbXI2Cre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbXI2CuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbXI2Cre (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 22:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXI2CrZ
+	id S1756757AbXI2CuZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 22:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbXI2CuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 22:47:25 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48644 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752322AbXI2CrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 22:47:24 -0400
-Message-ID: <46FDBCB4.9090802@pobox.com>
-Date: Fri, 28 Sep 2007 22:47:16 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
+	Fri, 28 Sep 2007 22:50:13 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44501 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752322AbXI2CuL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 22:50:11 -0400
+X-Greylist: delayed 1791 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Sep 2007 22:50:11 EDT
+X-Sasl-enc: rHE5REHGZaJQgeYHUhhxj+34T/I/nLKPtEjeP6qrGoWN 1191032419
+Date: Fri, 28 Sep 2007 23:20:13 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch/backport] CFS scheduler, -v22, for v2.6.23-rc8,
+	v2.6.22.8, v2.6.21.7, v2.6.20.20
+Message-ID: <20070929022013.GA24496@khazad-dum.debian.net>
+References: <20070926111357.GA10655@elte.hu> <20070928222631.25504d68@gmail.com>
 MIME-Version: 1.0
-To: Ayaz Abdulla <aabdulla@nvidia.com>
-CC: Manfred Spraul <manfred@colorfullife.com>, nedev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: MSI interrupts and disable_irq
-References: <46FC15A9.1070803@nvidia.com>
-In-Reply-To: <46FC15A9.1070803@nvidia.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070928222631.25504d68@gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ayaz Abdulla wrote:
-> I am trying to track down a forcedeth driver issue described by bug 9047 
-> in bugzilla (2.6.23-rc7-git1 forcedeth w/ MCP55 oops under heavy load). 
-> I added a patch to synchronize the timer handlers so that one handler 
-> doesn't accidently enable the IRQ while another timer handler is running 
-> (see attachment 'Add timer lock' in bug report) and for other processing 
-> protection.
+On Fri, 28 Sep 2007, Alejandro Riveira Fernández wrote:
+>  I feel it better than 20.5 but the later is more stable. Let me explain.
 > 
-> However, the system still had an Oops. So I added a lock around the 
-> nv_rx_process_optimized() and the Oops has not happened (see attachment 
-> 'New patch for locking' in bug report). This would imply a 
-> synchronization issue. However, the only callers of that function are 
-> the IRQ handler and the timer handlers (in non-NAPI case). The timer 
-> handlers  use disable_irq so that the IRQ handler does not contend with 
-> them. It looks as if disable_irq is not working properly.
-> 
-> This issue repros only with MSI interrupt and not legacy INTx 
-> interrupts. Any ideas?
+>  I patched a 2.6.22.9 kernel with both versions 22 and 20.5[1]. With the 22
+>  version if i lock the screen (run screensaver) or i try to run a wine program
+>  i experience a hard lock up no keyboard or mouse and i have to reboot the
+>  machine (i can not try to access it via ssh because i do not have a second
+>  machine).
 
-(added linux-kernel to CC, since I think it's more of a general kernel 
-issue)
+I have seen that twice with v20.5 under 2.6.22.7/.8. Didn't see it yet with
+v22.  xterm would get pissed if I tried to "secure keyboard", so something
+stole the keyboard focus and wouldn't give it back to xorg.  Maybe a locking
+bug in xorg somewhere?
 
-To be brutally frank, I always thought this disable_irq() mess was a 
-hack both ugly and fragile.  This disable_irq() work that appeared in a 
-couple net drivers was correct at the time, so I didn't feel I had the 
-justification to reject it, but it still gave me a bad feeling.
+Anyway, my kernel is NOT tainted, so rest assured that at least this one is
+not nVidia's fault.
 
-I think the scenario you outline is an illustration of the approach's 
-fragility:  disable_irq() is a heavy hammer that originated with INTx, 
-and it relies on a chip-specific disable method (kernel/irq/manage.c) 
-that practically guarantees behavior will vary across MSI/INTx/etc.
+BTW, v20.5 in 2.6.21.7 would sometimes cause dmcrypt to oops when first
+mounting a LUKS volume if there was some non-extra-light disk activity going
+on.  Probably something missing in the backport to 2.6.21...
 
-Practices like forcedeth's unique locking work for a time, but it should 
-be a warning sign any time you stray from the normal spin_lock_irqsave() 
-method of synchronization.
+Sorry, days down here have been very busy, so I didn't have time to send a
+proper bug report.
 
-Based on your report, it is certainly possible that there is a problem 
-with MSI's desc->chip->disable() method...  but I would actually 
-recommend working around the problem by making the forcedeth locking 
-more standardized by removing all those disable_irq() hacks.
-
-Using spinlocks like other net drivers (note: avoid NETIF_F_LLTX 
-drivers) has a high probability of both fixing your current problem, and 
-giving forcedeth a more stable foundation for the long term.  In my 
-humble opinion :)
-
-	Jeff
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
