@@ -1,34 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbXI2AC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbXI2AEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbXI2AC6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 20:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbXI2ACv
+	id S1757123AbXI2AEy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 20:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbXI2AEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 20:02:51 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:45313 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752364AbXI2ACu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 20:02:50 -0400
-Date: Fri, 28 Sep 2007 20:02:47 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [COMPAT] Add compat_merge64 helper
-Message-ID: <20070929000247.GE25346@fattire.cabal.ca>
-References: <1191018832-18069-1-git-send-email-kyle@mcmartin.ca> <200709290138.24562.arnd@arndb.de> <20070929000131.GD25346@fattire.cabal.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070929000131.GD25346@fattire.cabal.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 28 Sep 2007 20:04:48 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:47699 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755214AbXI2AEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 20:04:48 -0400
+From: Maarten Bressers <mbres@gentoo.org>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix compiler warnings for 2.6.23-rc8 on x86_64
+Message-Id: <20070929000447.ACC7A65737@smtp.gentoo.org>
+Date: Sat, 29 Sep 2007 00:04:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 28, 2007 at 08:01:31PM -0400, Kyle McMartin wrote:
-> I checked powerpc, sparc, and mips, which are (besides parisc) the only
-> 64-bit with 32-bit userspace big endian architectures that I could think
-> of offhand. A quick grep shows sh64 too... Paul?
-> 
+On Fri, 28 Sep 2007 15:49:26 -0700
+Greg KH <greg@kroah.com> wrote:
 
-Ah, no CONFIG_COMPAT on sh64 anyways.
+> On Fri, Sep 28, 2007 at 08:56:30PM +0000, Maarten Bressers wrote:
+> > This (trivial) patch fixes two compiler warnings for 2.6.23-rc8 on x86_64,
+> > use of deprecated function pci_find_device() and a section mismatch.
+> > Build log and .config file included.
+> > 
+> > Signed-off by: Maarten Bressers <mbres@gentoo.org>
+> > 
+> > 
+> > diff --git a/drivers/pci/search.c b/drivers/pci/search.c
+> > index c6e79d0..0eb7e9e 100644
+> > --- a/drivers/pci/search.c
+> > +++ b/drivers/pci/search.c
+> > @@ -96,7 +96,7 @@ pci_find_slot(unsigned int bus, unsigned int devfn)
+> >  {
+> >  	struct pci_dev *dev = NULL;
+> >  
+> > -	while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+> > +	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+> >  		if (dev->bus->number == bus && dev->devfn == devfn)
+> >  			return dev;
+> >  	}
+> 
+> This is not a trivial patch, it changes the behavior of the code and is
+> buggy.
+> 
+> Please read the documentationfor pci_get_device() on how to use it
+> properly.  It can not be used in pci_find_slot() as the reference
+> counting will be all wrong.  You need to just work to get rid of
+> pci_find_slot() and then remove the whole function to get rid of the
+> warning :)
+> 
+> > -EXPORT_SYMBOL(pci_find_device);
+> > -EXPORT_SYMBOL(pci_find_slot);
+> 
+> What about the modules that want to use these functions?  Are they all
+> now gone?  If so, just drop the whole function.
+> 
+> thanks,
+> 
+> greg k-h
+
+Greg, thank you for your reply. It seems I'm out of my league here, I 
+just thought I could quickly fix two compiler warnings, obviously this 
+is not the case. I've read the documentation, but I don't think I'll be 
+able to fix this. Sorry for the noise.
+
+Randy, please ignore the other patch I sent you, it's obviously wrong.
+
