@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbXI2UPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbXI2USm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758424AbXI2UPx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 16:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757244AbXI2UPl
+	id S1758038AbXI2USm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 16:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbXI2USg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 16:15:41 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:19493 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756838AbXI2UPj (ORCPT
+	Sat, 29 Sep 2007 16:18:36 -0400
+Received: from smtprelay08.ispgateway.de ([80.67.29.8]:40415 "EHLO
+	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbXI2USg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 16:15:39 -0400
-Date: Sat, 29 Sep 2007 13:13:17 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, khali@linux-fr.org
-Subject: Re: [PATCH] CodingStyle: Printing numbers in parentheses is fine
-Message-Id: <20070929131317.6a8609dc.randy.dunlap@oracle.com>
-In-Reply-To: <20070929185306.183D72399D7@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <20070929122530.5c45f743@hyperion.delvare>
-	<20070929035156.cd6fe860.akpm@linux-foundation.org>
-	<20070929112928.56a04641.randy.dunlap@oracle.com>
-	<20070929185306.183D72399D7@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 29 Sep 2007 16:18:36 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: [OT] kbuild syntax extension for ccflags and asflags (was: [PATCH 1/3] CodingStyle updates)
+Date: Sat, 29 Sep 2007 22:21:24 +0200
+User-Agent: KMail/1.9.6
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Erez Zadok <ezk@cs.sunysb.edu>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>, Adrian Bunk <bunk@kernel.org>,
+       roel <12o3l@tiscali.nl>
+References: <11910151223214-git-send-email-ezk@cs.sunysb.edu> <20070929110129.307cbd9f.randy.dunlap@oracle.com> <20070929182909.GA19943@uranus.ravnborg.org>
+In-Reply-To: <20070929182909.GA19943@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200709292221.27534.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 Sep 2007 11:53:06 -0700 David Brownell wrote:
+Hi Sam,
 
-> > From randy.dunlap@oracle.com  Sat Sep 29 11:40:17 2007
-> >
-> > Let's kill it, please.  (i.e., ACK)
+On Saturday 29 September 2007, Sam Ravnborg wrote:
+> Lately I have considered extending the kbuild syntax a bit.
 > 
-> But ... why?  What value could needless parens provide?
+> Introducing
+> ccflags-y
+> asflags-y
+> 
+> [with same functionality as the EXTRA_CFLAGS, EXTRA_AFLAGS]
+> would allow us to do:
+> 
+> ccflags-$(CONFIG_WHATEVER_DEBUG) := -DDEBUG
 
-Who says that needless parens could provide value?
+Please do!
 
-> "Yet Another Subtle And Hard To Fix Source Of Bloat" is
-> not a plus.
+That is very useful for testing and developing new modules.
+I learnt a lot from you in this regard and used that kind
+of syntax to the extreme in some other non-kernel project
+of mine. There it included also ccflags, asflags and so on.
 
-ISTM that we agree.
+I further split that into -debug-y and -optimize-y flags,
+but that was just for my own convenience.
 
-> I'd kind of think a change like this should have some
-> positive motivation.
 
-"Me, I agree that numbers in parens don't usually make sense for
-kernel messages."
+Best Regards
 
-It's too trivial to be included in CodingStyle.
+Ingo Oeser
 
----
-~Randy
