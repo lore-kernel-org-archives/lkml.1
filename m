@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbXI2AZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbXI2Acz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbXI2AZl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 20:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbXI2AZd
+	id S1756447AbXI2Acz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 20:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbXI2Acr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 20:25:33 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38891
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752310AbXI2AZc (ORCPT
+	Fri, 28 Sep 2007 20:32:47 -0400
+Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:34935 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752310AbXI2Acq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 20:25:32 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Remove nonstandard line break from Documentation/powerpc/00-INDEX
-Date: Fri, 28 Sep 2007 19:25:28 -0500
-User-Agent: KMail/1.9.6
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+	Fri, 28 Sep 2007 20:32:46 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.23-rc8-mm2] System hangs (loops?) during boot
+Date: Sat, 29 Sep 2007 02:32:44 +0200
+User-Agent: KMail/1.9.7
+References: <200709282225.21530.elendil@planet.nl>
+In-Reply-To: <200709282225.21530.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709281925.28532.rob@landley.net>
+Message-Id: <200709290232.44573.elendil@planet.nl>
+X-OriginalArrivalTime: 29 Sep 2007 00:32:44.0993 (UTC) FILETIME=[40DC6310:01C80230]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+On Friday 28 September 2007, Frans Pop wrote:
+> My Toshiba Satellite A40 (i386, P4 Mobile) hangs during boot after:
+> Marking TSC unstable due to: possible TSC halt in C2.
+> Time: acpi_pm clocksource has been installed.
 
-Remove nonstandard line break from Documentation/powerpc/00-INDEX
+A few new boot attempts show the problem is more likely at:
+Probing IDE interface ide0...
 
-Signed-off-by: Rob Landley <rob@landley.net>
----
+> It may not actually hang, but rather end up in a loop as after some time
+> the fan goes wild.
 
-This is the only instance of a newline in a 00-INDEX file description, and
-it confuses my 00-INDEX > index.html converter.
+Unfortunately I have no serial port and this seems too early for netconsole, 
+so cannot catch a boot log.
 
- Documentation/powerpc/00-INDEX |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff -r dc28e4e17791 Documentation/powerpc/00-INDEX
---- a/Documentation/powerpc/00-INDEX	Wed Sep 26 15:52:17 2007 -0700
-+++ b/Documentation/powerpc/00-INDEX	Fri Sep 28 19:21:20 2007 -0500
-@@ -6,8 +6,7 @@ 00-INDEX
- 00-INDEX
- 	- this file
- cpu_features.txt
--	- info on how we support a variety of CPUs with minimal compile-time
--	options.
-+	- info on how we support a variety of CPUs with minimal compile-time options.
- eeh-pci-error-recovery.txt
- 	- info on PCI Bus EEH Error Recovery
- hvcs.txt
-
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+> Any suggestions where to look before I do a bisect?
