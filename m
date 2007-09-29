@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbXI2AA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbXI2ABn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbXI2AA5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 20:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbXI2AAu
+	id S1757321AbXI2ABn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 20:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXI2ABg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 20:00:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44943 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbXI2AAt (ORCPT
+	Fri, 28 Sep 2007 20:01:36 -0400
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:40157 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755011AbXI2ABe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 20:00:49 -0400
-Message-ID: <46FD959E.5030009@zytor.com>
-Date: Fri, 28 Sep 2007 17:00:30 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 28 Sep 2007 20:01:34 -0400
+Date: Fri, 28 Sep 2007 20:01:31 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [COMPAT] Add compat_merge64 helper
+Message-ID: <20070929000131.GD25346@fattire.cabal.ca>
+References: <1191018832-18069-1-git-send-email-kyle@mcmartin.ca> <200709290138.24562.arnd@arndb.de>
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: Justin Piszcz <jpiszcz@lucidpixels.com>, Benjamin Carr <bcarr@whoi.edu>,
-       xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: Truncated Filesystem
-References: <Pine.LNX.4.58.0709281734490.14057@puck.litech.org> <Pine.LNX.4.64.0709281821390.12203@p34.internal.lan> <46FD9006.6050807@sandeen.net>
-In-Reply-To: <46FD9006.6050807@sandeen.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709290138.24562.arnd@arndb.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Justin Piszcz wrote:
->> Including LKML on this one as it may be a partition size limit?  Sdc1 is 
->> not 11TB.
->>
->> Justin.
-> 
-> Yup saw the same thing:
-> 
-> (1957867653*1024)/1024/1024/1024/1024 = 1.82T
-> 
-> I'm afraid you don't have a truncated filesystem, you have a truncated
-> block device.  I'm afraid this is not an xfs problem... you need to
-> figure out what happened to sdc1 (for example, why doesn't it extend to
-> the end of sdc?)
+On Sat, Sep 29, 2007 at 01:38:23AM +0200, Arnd Bergmann wrote:
+> 1. Byte order matches the order in which 64 bit arguments are split
+>    in system call conventions on all platforms.
+
+I checked powerpc, sparc, and mips, which are (besides parisc) the only
+64-bit with 32-bit userspace big endian architectures that I could think
+of offhand. A quick grep shows sh64 too... Paul?
+
+> 2. Every user of compat_merge64() includes asm/byteorder.h
 > 
 
-What kind of partition table is it?  MS-DOS partition tables have a 2 TB
-limit.
+*nod* Good point.
 
-	-hpa
+> Both should be easy to prove, but I'm not convinced until someone
+> actually does it.
+> 
+
+Cheers,
+	Kyle
