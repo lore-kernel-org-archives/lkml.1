@@ -1,150 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbXI2Djv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbXI2EQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbXI2Djv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 23:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbXI2Djo
+	id S1753439AbXI2EQB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 00:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbXI2EPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 23:39:44 -0400
-Received: from ns2.mountaincable.net ([24.215.0.12]:56149 "EHLO
-	ns2.mountaincable.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754608AbXI2Djn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 23:39:43 -0400
-X-Greylist: delayed 1974 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Sep 2007 23:39:42 EDT
-Subject: Re: [PATCH] Input: Support for a less exclusive grab.
-From: Ryan Lortie <desrt@desrt.ca>
-To: "Zephaniah E. Hull" <warp@aehallh.com>
-Cc: linux-kernel@vger.kernel.org, Vojtech Pavlik <vojtech@suse.cz>
-In-Reply-To: <20070703164555.GA20370@aehallh.com>
-References: <20070609084800.GR6362@aehallh.com>
-	 <200706120120.00494.dtor@insightbb.com> <20070612052316.GX6362@aehallh.com>
-	 <200706120135.06428.dtor@insightbb.com> <20070612054031.GY6362@aehallh.com>
-	 <20070702152044.GA24665@suse.cz>  <20070703164555.GA20370@aehallh.com>
-Content-Type: text/plain
-Date: Fri, 28 Sep 2007 23:05:47 -0400
-Message-Id: <1191035147.7025.28.camel@moonpix.desrt.ca>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Sep 2007 00:15:53 -0400
+Received: from avenger.chmurka.net ([62.121.68.209]:50989 "EHLO chmurka.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750817AbXI2EPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 00:15:52 -0400
+X-Greylist: delayed 1992 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Sep 2007 00:15:52 EDT
+Date: Sat, 29 Sep 2007 05:42:37 +0200 (CEST)
+From: Adam Wysocki <gophi-lkml@chmurka.net>
+To: linux-kernel@vger.kernel.org
+cc: drzeus-list@drzeus.cx, giometti@enneenne.com
+Subject: [sdhci] mmc0: unrecognised SCR structure version 1
+Message-ID: <Pine.LNX.4.64.0709290538240.5571@news.chmurka.net>
+X-Tree: ;>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-03-07 at 12:45 -0400, Zephaniah E. Hull wrote:
-> We just want a more flexible approach then what we are already using[0].
-> 
-> I'll see about writing something up when I get back to my computers[1]
-> and have things set back up[2].
-> 
-> Zephaniah E. Hull.
-> 
-> 0: EVIOCGRAB.
-> 1: The night of the 10th.
-> 2: It could be a few days after I get back.
+[CCd to possibly interested Pierre Ossman and Rodolfo Giometti]
 
-Hello.
+Hi there,
 
-I have been working on a more flexible system for blocking the delivery
-of input events to other agents in the system.
+First, sorry for my poor english - I am not a native.
 
-My approach is basically summed up as follows:
+I know there have been a thread about this problem few months ago, but as 
+far as I see it did not led to any results: 
+http://groups.google.com/group/linux.kernel/browse_thread/thread/19116cafe8a20b5/4a28c3b15bb999df
 
-  - split the current purpose of input_handle into two parts
+I have the same problem, as described there, with Kingston 2GB SD card. My 
+card reader is embedded into Fujitsu-Siemens AMILO Pro V3505 notebook and 
+Linux sees it as:
 
-    - input_handle continues to exist as a mechanism for tracking which
-      handlers are currently interested in a particular device
+[gophi@amilo ~]$ sudo lspci -vvvs 0a:06.2
+0a:06.2 Generic system peripheral [0805]: ENE Technology Inc ENE PCI Secure Digital Card Reader Controller (rev 01) (prog-if 01)
+        Subsystem: Fujitsu Siemens Computer GmbH Unknown device 10c1
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (8000ns min, 18000ns max), Cache Line Size: 64 bytes
+        Interrupt: pin B routed to IRQ 22
+        Region 0: Memory at d4101400 (32-bit, non-prefetchable) [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-    - a new input_client now exists as a mechanism for tracking
-      tracking who is interested in having events delivered from a
-      particular device.
+This is the one to which the sdhci driver attached, as regards to sysfs:
 
-    As an example, for evdev, one input_handle will exist per event
-    device in /dev/input and one input_client will exist per open().
+[gophi@amilo /sys/bus/pci/drivers/sdhci]$ ls -l
+razem 0
+lrwxrwxrwx 1 root root    0 2007-09-29 05:03 0000:0a:06.2 -> ../../../../devices/pci0000:00/0000:00:1e.0/0000:0a:06.2
+--w------- 1 root root 4096 2007-09-29 05:03 bind
+lrwxrwxrwx 1 root root    0 2007-09-29 05:03 module -> ../../../../module/sdhci
+--w------- 1 root root 4096 2007-09-29 05:03 new_id
+--w------- 1 root root 4096 2007-09-29 05:03 unbind
 
-  - cause input events to be delivered to 'clients' (ie: first argument
-    is an input_client instead of input_handle)
+I also have some other devices in system relevant to the card reader - Memory 
+Stick reader and one "unknown device":
 
-  - add a concept of 'priority'
+[gophi@amilo ~]$ sudo lspci -vvvs 0a:06.4
+0a:06.4 FLASH memory: ENE Technology Inc Unknown device 0551 (rev 01)
+        Subsystem: Fujitsu Siemens Computer GmbH Unknown device 10c1
+        Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (8000ns min, 18000ns max), Cache Line Size: 64 bytes
+        Interrupt: pin B routed to IRQ 255
+        Region 0: Memory at d4101100 (32-bit, non-prefetchable) [disabled] [size=256]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-    - the new input_client structure has a priority field
+Kernel version:
 
-    - the list of input_client's per device is kept sorted by this field
+[gophi@amilo ~]$ uname -a
+Linux amilo 2.6.22.7-amilo #5 SMP PREEMPT Wed Sep 26 16:35:47 CEST 2007 i686 GNU/Linux
 
-  - add the ability for the handler 'event' function to block further
-    event propagation.  This is done by making the handler return 'int'
-    instead of 'void'.  0: continue normally.  1: stop.
+I have posted some debugging messages from sdhci here (ca. 44 kB): 
+http://www.chmurka.net/r/mmc-debug.txt 
 
-  - add "set priority" ioctl to evdev
+PCMCIA (ide-cs) card reader does not see this card neither, but does not spit 
+any error messages - just that the card is not seen in /proc/partitions:
 
-  - add "set requested keys" ioctl to evdev.
+pccard: PCMCIA card inserted into slot 0
+cs: memory probe 0x0c0000-0x0fffff: excluding 0xc0000-0xcffff 0xdc000-0xfffff
+cs: memory probe 0x50000000-0x53ffffff: excluding 0x50000000-0x53ffffff
+cs: memory probe 0x60000000-0x60ffffff: clean.
+cs: memory probe 0xa0000000-0xa0ffffff: clean.
+cs: memory probe 0xd4100000-0xd41fffff: excluding 0xd4100000-0xd410ffff
+pcmcia: registering new device pcmcia0.0
+Probing IDE interface ide1...
+hdc: Memory Card Adapter II, CFA DISK drive
+ide1 at 0x3100-0x3107,0x310e on irq 18
+ide-cs: hdc: Vpp = 0.0
 
-    This causes delivery of only certain keycodes to this particular
-    open().  I have no particular interest in doing this sort of masking
-    for other (non-key) events but maybe it makes sense.
+On the other side, my Canon A610 camera sees and handles this card properly. 
+Also does the usb-storage reader:
 
-  - add "set filter" ioctl to evdev.
+Initializing USB Mass Storage driver...
+scsi4 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 2
+usb-storage: waiting for device to settle before scanning
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+usb-storage: device scan complete
+scsi 4:0:0:0: Direct-Access     Generic  USB SD Reader    1.00 PQ: 0 ANSI: 0
+scsi 4:0:0:1: Direct-Access     Generic  USB CF Reader    1.01 PQ: 0 ANSI: 0
+scsi 4:0:0:2: Direct-Access     Generic  USB SM Reader    1.02 PQ: 0 ANSI: 0
+scsi 4:0:0:3: Direct-Access     Generic  USB MS Reader    1.03 PQ: 0 ANSI: 0
+sd 4:0:0:0: [sdb] 4022272 512-byte hardware sectors (2059 MB)
+sd 4:0:0:0: [sdb] Write Protect is off
+sd 4:0:0:0: [sdb] Mode Sense: 03 00 00 00
+sd 4:0:0:0: [sdb] Assuming drive cache: write through
+sd 4:0:0:0: [sdb] 4022272 512-byte hardware sectors (2059 MB)
+sd 4:0:0:0: [sdb] Write Protect is off
+sd 4:0:0:0: [sdb] Mode Sense: 03 00 00 00
+sd 4:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 4:0:0:0: [sdb] Attached SCSI removable disk
+sd 4:0:0:1: [sdc] Attached SCSI removable disk
+sd 4:0:0:2: [sdd] Attached SCSI removable disk
+sd 4:0:0:3: [sde] Attached SCSI removable disk
 
-    This causes any "requested keys" to be consumed and not further
-    delivered (ie: the event handler for this client will return 1).
+Any ideas or suggestions?
 
-  - also, as a small style issue: I made what I believe to be a
-    simplification to the switch() statement in the evdev ioctl code.
-    Whether this is actually a simplification or not is a matter of
-    opinion. :)
+Thanks in advance.
 
-  - port the non-evdev handlers (including rfkill) to the new
-    handler/client interface in the most trivial way possible: open the
-    input_client in the places where the old code used to call open with
-    the input_handler.
-
-The motivation is to allow arbitrary things in user-space to have a rich
-support over blocking (possibly a select set of) key events from being
-delivered to anything below a certain 'priority'.
-
-I believe this will solve the problem of X wanting to block key delivery
-to the VT module while still allowing the events to go through to rfkill
-(which presumably will be given a higher priority).
-
-This will also allow hal's "multimedia key" reporting code to be
-improved in two ways: first, it can block the multimedia keys from being
-delivered to X (and causing weird ^[[29~ things to appear in my
-terminals) and second, it results in hal only waking up when an
-"interesting key" is pressed (currently it wakes up on every single
-keypress).
-
-I have written a patch.  It is "over 40kb" so I don't include it
-directly here.  It is available in its full form (or broken up) at this
-url:
-
-http://desrt.mcmaster.ca/code/input-patch/
-
-This patch is not being proposed for inclusion in its current state.  In
-addition to the many problems that I'm sure I don't even realise, here
-are some that I would specifically like feedback on:
-
-  - how should we decide what gets what priority level?
-
-  - is it appropriate to have INPUT_PRIORITY_HIGH/LOW/SYSTEM/DEBUG, etc.
-    macros in input.h?
-
-  - why did the old code call flush() on the device before closing when
-    disconnecting?  It seems particularly silly now that with my patch
-    it will be called n times (one for each client)
-
-  - how are switches supposed to be indented?  the "checkpatch" script
-    in the kernel complained about my style despite following what was
-    already in that file.
-
-  - I haven't tested on big endian or "compat" systems at all.  As far
-    as I know, the relevant code doesn't even compile.  Help here is
-    appreciated (I don't have such a machine!).
-
-  - there is small thread-safety issue with how I handle EVIOCSRKEYS on
-    defined(CONFIG_COMPAT) && defined(__BIG_ENDIAN).  If events are
-    delivered after the copy_from_user but before the word-swapping then
-    events may be inappropriately dropped or delivered.  Do we care?
-
-Ultimately, I'd very much like this to make it into 2.6.24 and I'm
-willing to make the necessary changes to see that it happens.
-
-Cheers
-
+-- 
+[[:pl:user:gophi]]
