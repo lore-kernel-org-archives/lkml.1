@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbXI2Me2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbXI2MgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757421AbXI2Me2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 08:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbXI2MeU
+	id S1757953AbXI2MgW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 08:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbXI2MgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 08:34:20 -0400
-Received: from rtr.ca ([76.10.145.34]:4619 "EHLO mail.rtr.ca"
+	Sat, 29 Sep 2007 08:36:15 -0400
+Received: from mail.suse.de ([195.135.220.2]:60904 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761AbXI2MeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 08:34:19 -0400
-Message-ID: <46FE464A.4020808@rtr.ca>
-Date: Sat, 29 Sep 2007 08:34:18 -0400
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1754697AbXI2MgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 08:36:15 -0400
+Date: Sat, 29 Sep 2007 14:36:13 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, hch@lst.de,
+       tiwai@suse.de
+Subject: Re: [patch] Combine path_put and path_put_conditional
+Message-ID: <20070929123613.GU5696@hasse.suse.de>
+References: <20070927141200.820970144@X40.localnet> <200709282243.51243.agruen@suse.de>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] libata drain fifo on stuck DRQ HSM violation
-References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com>	<20070905095327.6277d054.akpm@linux-foundation.org>	<46DEE617.4050004@rtr.ca>	<46E0A253.7060803@gmail.com>	<46E154DE.2060602@rtr.ca>	<46FB563A.80108@gmail.com>	<20070927193701.6230d77f@the-village.bc.nu>	<46FC3D7D.90009@gmail.com>	<46FC3FDD.5060201@pobox.com>	<46FC423C.2050206@gmail.com>	<46FC7B72.2030103@rtr.ca>	<20070928112735.264733ad@the-village.bc.nu>	<46FDA4F3.7050205@pobox.com> <20070929072831.2df5f5ed@the-village.bc.nu>
-In-Reply-To: <20070929072831.2df5f5ed@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709282243.51243.agruen@suse.de>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>> Why 512 words ?
->> Though I have queued Mark's patch to be applied, my gut feeling would 
->> lean towards a single DRQ block, rather than 512.
-> 
-> Why not just work from the old IDE code.
->>
->>>>  	ata_altstatus(ap);
->>>> -	ata_chk_status(ap);
->>>> +	ata_drain_fifo(ap, qc);
->>> ap->ops->cleanup();
->>>
->>> might be wiser
->> If someone needs that, they can override the error handler with their 
->> own.  No need for a new op.
-> 
-> PDC202xx needs
+On Fri, Sep 28, Andreas Gruenbacher wrote:
 
-Alan, you're the expert there (my condolences!).
-Can you generate a fix for the PDC202xx to go with this?
+> The name path_put_conditional (formerly, dput_path) is a little unclear.
+> Replace (path_put_conditional + path_put) with path_walk_put_both,
+> "put a pair of paths after a path_walk" (see the kerneldoc).
 
-Cheers
+Hmm, I don't know. To put both the nd and path is at the moment only used in
+some error paths. I have another series of patches pending which is using
+path_put_conditional outside of error paths. So please don't remove
+it. Besides that the naming completely hides that the conditional release of
+the vfsmount reference. Besides that I would name it path_put_both() just to
+make it more "beautiful" wrt the other path_put*() functions.
+
+> @@ -996,8 +1006,8 @@ return_reval:
+>  return_base:
+>  		return 0;
+>  out_dput:
+> -		path_put_conditional(&next, nd);
+> -		break;
+> +		path_walk_put_both(&next, &nd->path);
+> +		goto return_err;
+>  	}
+>  	path_put(&nd->path);
+>  return_err:
+> @@ -1777,11 +1787,15 @@ ok:
+>  	return 0;
+>  
+>  exit_dput:
+> -	path_put_conditional(&path, nd);
+> +	path_walk_put_both(&path, &nd->path);
+> +	goto exit_intent;
+> +
+>  exit:
+> +	path_put(&nd->path);
+> +
+> +exit_intent:
+>  	if (!IS_ERR(nd->intent.open.file))
+>  		release_open_intent(nd);
+> -	path_put(&nd->path);
+>  	return error;
+>  
+>  do_link:
+
+IMHO introducing another label just to use it here isn't worth the change.
