@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbXI2S1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbXI2Sag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757164AbXI2S1v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 14:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXI2S1n
+	id S1757435AbXI2Sag (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 14:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXI2Sa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 14:27:43 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46081 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbXI2S1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 14:27:42 -0400
-Date: Sat, 29 Sep 2007 20:29:09 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>, Adrian Bunk <bunk@kernel.org>,
-       roel <12o3l@tiscali.nl>
-Subject: Re: [PATCH 1/3] CodingStyle updates
-Message-ID: <20070929182909.GA19943@uranus.ravnborg.org>
-References: <11910151223214-git-send-email-ezk@cs.sunysb.edu> <11910151223447-git-send-email-ezk@cs.sunysb.edu> <20070929110129.307cbd9f.randy.dunlap@oracle.com>
+	Sat, 29 Sep 2007 14:30:29 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:64975 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755081AbXI2Sa2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 14:30:28 -0400
+Date: Sat, 29 Sep 2007 11:29:28 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] CodingStyle: Printing numbers in parentheses is fine
+Message-Id: <20070929112928.56a04641.randy.dunlap@oracle.com>
+In-Reply-To: <20070929035156.cd6fe860.akpm@linux-foundation.org>
+References: <20070929122530.5c45f743@hyperion.delvare>
+	<20070929035156.cd6fe860.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070929110129.307cbd9f.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 29, 2007 at 11:01:29AM -0700, Randy Dunlap wrote:
-> On Fri, 28 Sep 2007 17:32:00 -0400 Erez Zadok wrote:
+On Sat, 29 Sep 2007 03:51:56 -0700 Andrew Morton wrote:
+
+> On Sat, 29 Sep 2007 12:25:30 +0200 Jean Delvare <khali@linux-fr.org> wrote:
 > 
-> > 1. Updates chapter 13 (printing kernel messages) to expand on the use of
-> >    pr_debug()/pr_info(), what to avoid, and how to hook your debug code with
-> >    kernel.h.
+> > Remove a not particularly relevant rule from CodingStyle.
+> > Sometimes, printing numbers in parentheses doesn't add value, but in
+> > some (most?) cases it makes the message easier to read. As a matter of
+> > fact, this practice is widely used in the kernel:
 > > 
-> > Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+> > linux-2.6.23-rc8$ quilt grep -I '(%l*[du])' | wc -l
+> > 3166
+> > linux-2.6.23-rc8$
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
 > > ---
-> >  Documentation/CodingStyle |   88 +++++++++++++++++++++++++++++++++++++++++++-
-> >  1 files changed, 86 insertions(+), 2 deletions(-)
+> >  Documentation/CodingStyle |    2 --
+> >  1 file changed, 2 deletions(-)
 > > 
-> > diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-> > index 7f1730f..00b29e4 100644
-> > --- a/Documentation/CodingStyle
-> > +++ b/Documentation/CodingStyle
-> > @@ -643,8 +643,26 @@ Printing numbers in parentheses (%d) adds no value and should be avoided.
+> > --- linux-2.6.23-rc8.orig/Documentation/CodingStyle	2007-07-23 16:44:32.000000000 +0200
+> > +++ linux-2.6.23-rc8/Documentation/CodingStyle	2007-09-28 23:53:23.000000000 +0200
+> > @@ -638,8 +638,6 @@ concise, clear, and unambiguous.
+> >  
+> >  Kernel messages do not have to be terminated with a period.
+> >  
+> > -Printing numbers in parentheses (%d) adds no value and should be avoided.
+> > -
 > >  There are a number of driver model diagnostic macros in <linux/device.h>
 > >  which you should use to make sure messages are matched to the right device
 > >  and driver, and are tagged with the right level:  dev_err(), dev_warn(),
-> > -dev_info(), and so forth.  For messages that aren't associated with a
-> > -particular device, <linux/kernel.h> defines pr_debug() and pr_info().
-> > +dev_info(), and so forth.
-> > +
-> > +A number of people often like to define their own debugging printf's,
-> > +wrapping printk's in #ifdef's that get turned on only when subsystem
-> > +debugging is compiled in (e.g., dprintk, Dprintk, DPRINTK, etc.).  Please
-> > +don't reinvent the wheel but use existing mechanisms.  For messages that
-> > +aren't associated with a particular device, <linux/kernel.h> defines
-> > +pr_debug() and pr_info(); the latter two translate to printk(KERN_DEBUG) and
-> > +printk(KERN_INFO), respectively.  However, to get pr_debug() to actually
-> > +emit the message, you'll need to turn on DEBUG in your code, which can be
-> > +done as follows in your subsystem Makefile:
-> > +
-> > +ifeq ($(CONFIG_WHATEVER_DEBUG),y)
-> > +EXTRA_CFLAGS += -DDEBUG
-> > +endif
-The abvoe hurst my eyes each time I see it.
-Lately I have considered extending the kbuild syntax a bit.
+> 
+> I wonder how that got there.
 
-Introducing
-ccflags-y
-asflags-y
+http://linux.bkbits.net:8080/linux-2.6/?PAGE=cset&REV=4034429a6JsOCMNXT3tTPAX1kX40bg
 
-[with same functionality as the EXTRA_CFLAGS, EXTRA_AFLAGS]
-would allow us to do:
+Let's kill it, please.  (i.e., ACK)
 
-ccflags-$(CONFIG_WHATEVER_DEBUG) := -DDEBUG
-
-Much nicer IMHO.
-
-	Sam
+---
+~Randy
