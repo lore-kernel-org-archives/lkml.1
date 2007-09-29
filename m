@@ -1,55 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbXI2AIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbXI2AJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbXI2AIQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 20:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbXI2AIA
+	id S1757514AbXI2AJp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 20:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbXI2AJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 20:08:00 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:57267 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbXI2AH7 convert rfc822-to-8bit (ORCPT
+	Fri, 28 Sep 2007 20:09:39 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:31981 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755560AbXI2AJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 20:07:59 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: [COMPAT] Add compat_merge64 helper
-Date: Sat, 29 Sep 2007 01:52:12 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1191018832-18069-1-git-send-email-kyle@mcmartin.ca> <200709290138.24562.arnd@arndb.de> <20070929000131.GD25346@fattire.cabal.ca>
-In-Reply-To: <20070929000131.GD25346@fattire.cabal.ca>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200709290152.12842.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/03vR28nA3vbJpeFhuRICNZc09agX9qOJmStJ
- 4/U5bLiWJOkaGyJWc5Ntf2MxpYWtBBrrhEeB8EhYSmzgXEUevb
- WTWVY/x9dWSaGs56stDmQ==
+	Fri, 28 Sep 2007 20:09:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Yrmq+FOnqoNh+3QXX3ZkwSaYozngEMAmTRv3WExBAM8D1ZkgY9HN4Ke/MGM/u170n++m2JZ5DkKv0//Q6IqwCKq1vzRwt3sSldJERMl3EG5gP46pJIOQPhhHPulpzARaqr1ORIIwySkpGJFWnO3zI3LKgpJswrvs97STJvevTUw=
+Subject: Re: [PATCH 2/2] [VIDEO FRAMEBUFFER] Blackfin BF54x framebuffer
+	device driver for a SHARP LQ043T1DG01 TFT LCD
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: bryan.wu@analog.com
+Cc: linux-fbdev-devel@lists.sourceforge.net,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       uclinux-dist-devel@blackfin.uclinux.org
+In-Reply-To: <1190778219.18676.13.camel@roc-laptop>
+References: <1190778219.18676.13.camel@roc-laptop>
+Content-Type: text/plain
+Date: Sat, 29 Sep 2007 08:09:30 +0800
+Message-Id: <1191024570.5273.4.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 September 2007, Kyle McMartin wrote:
+On Wed, 2007-09-26 at 11:43 +0800, Bryan Wu wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
+> Date: Wed, 26 Sep 2007 11:33:01 +0800
+> Subject: [PATCH 2/2] [VIDEO FRAMEBUFFER] Blackfin BF54x framebuffer device driver for a SHARP LQ043T1DG01 TFT LCD
 > 
-> On Sat, Sep 29, 2007 at 01:38:23AM +0200, Arnd Bergmann wrote:
-> > 1. Byte order matches the order in which 64 bit arguments are split
-> >    in system call conventions on all platforms.
+> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> ---
+>  drivers/video/Kconfig                         |    9 +
+>  drivers/video/Makefile                        |    1 +
+>  drivers/video/bf54x-lq043.c                   |  786 +++++++++++++++++++++++++
+>  include/asm-blackfin/mach-bf548/bf54x-lq043.h |   30 +
+>  4 files changed, 826 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/video/bf54x-lq043.c
+>  create mode 100644 include/asm-blackfin/mach-bf548/bf54x-lq043.h
 > 
-> I checked powerpc, sparc, and mips, which are (besides parisc) the only
-> 64-bit with 32-bit userspace big endian architectures that I could think
-> of offhand. A quick grep shows sh64 too... Paul?
-> 
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 5216c11..41fae00 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -535,6 +535,15 @@ config FB_VGA16
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called vga16fb.
+>  
+> +config FB_BF54X_LQ043
+> +	tristate "SHARP LQ043 TFT LCD (BF548 EZKIT)"
+> +	depends on FB && (BF54x)
+> +	select FB_CFB_FILLRECT
+> +	select FB_CFB_COPYAREA
+> +	select FB_CFB_IMAGEBLIT
+> +	help
+> +	 This is the framebuffer device driver for a SHARP LQ043T1DG01 TFT LCD
+> +
+>  config FB_STI
+>  	tristate "HP STI frame buffer device support"
+>  	depends on FB && PARISC
+> diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+> index 06eec7b..359e560 100644
+> --- a/drivers/video/Makefile
+> +++ b/drivers/video/Makefile
+> @@ -122,6 +122,7 @@ obj-$(CONFIG_FB_OF)               += offb.o
+>  
+>  # the test framebuffer is last
+>  obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+> +obj-$(CONFIG_FB_BF54X_LQ043)	  += bf54x-lq043.o
 
-s390 is big-endian as well, and while it does have really weird C calling
-conventions for 64 bit arguments in 32 bit mode, these do not affect the
-system call ABI, so we should be fine here.
+It's standard that we suffix all framebuffer drivers with an 'fb'. I'm
+making it so in my tree.
 
-ia64 and x86_64 are obviously little-endian, and I double-checked that they
-work with this logic.
+Also, you shouldn't place your driver after vfb, that's why there's a
+comment that the test framebuffer is last. If someone accidentally
+enables vfb, he/she will get a blank screen. So I'm moving it under the
+platform driver section. 
 
-	Arnd <><
+Tony
+
+
+
