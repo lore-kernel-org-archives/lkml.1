@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbXI2JWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbXI2JYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbXI2JWb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 05:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbXI2JWR
+	id S1757593AbXI2JYg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 05:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbXI2JYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 05:22:17 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3058 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755885AbXI2JWQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 05:22:16 -0400
-Date: Sat, 29 Sep 2007 10:22:03 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.10
-Message-ID: <20070929092203.GB13737@shadowen.org>
-References: <bf97f66cfc0696c8574921d53eaafcb7@pinky> <20070928084003.GA18882@elte.hu> <20070928020132.f6c6f528.akpm@linux-foundation.org> <20070928092235.GA31180@shadowen.org> <20070928093902.GA28455@elte.hu> <20070928100024.GB18163@shadowen.org> <20070928104935.GA606@elte.hu> <20070928132138.GG18163@shadowen.org> <20070928104642.0f3a4573.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Sat, 29 Sep 2007 05:24:30 -0400
+Received: from verein.lst.de ([213.95.11.210]:35872 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754954AbXI2JY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 05:24:29 -0400
+Date: Sat, 29 Sep 2007 11:24:26 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Christoph Hellwig <hch@lst.de>, jblunck@suse.de,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, tiwai@suse.de
+Subject: Re: [patch 09/10] Use struct path in fs_struct
+Message-ID: <20070929092426.GA25343@lst.de>
+References: <20070927141200.820970144@X40.localnet> <20070927141229.008500593@X40.localnet> <20070928184214.GI14269@lst.de> <200709282239.49088.agruen@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070928104642.0f3a4573.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+In-Reply-To: <200709282239.49088.agruen@suse.de>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 28, 2007 at 10:46:42AM -0700, Andrew Morton wrote:
-> On Fri, 28 Sep 2007 14:21:38 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+On Fri, Sep 28, 2007 at 10:39:48PM +0200, Andreas Gruenbacher wrote:
+> On Friday 28 September 2007 20:42, Christoph Hellwig wrote:
+> > __d_path should probably switch to taking a struct path * aswell.
 > 
-> > On Fri, Sep 28, 2007 at 12:49:35PM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Andy Whitcroft <apw@shadowen.org> wrote:
-> > > 
-> > > > On Fri, Sep 28, 2007 at 11:39:02AM +0200, Ingo Molnar wrote:
-> > > >
-> >
-> > [bunfight]
-> >
+> Indeed, it now easily can. Here we go...
 > 
-> oy, knock it off.
-
-Really not trying to have a bunfight, honest.
-
-> > Anyhow.  I have already added a --check/--no-check option which controls
 > 
-> -strict?
+> One less parameter to __d_path
 > 
-> > the more subjective tests which will be in the next release; though its
-> > likely the option name will be something more useful by then.
-> > 
-> > The only question is whether this should default to on.  You are voting
-> > off.  I personally think on.
-> > 
-> > Andrew?  Randy?  Joel?
-> > 
-> 
-> off, I'd say.  That way people are more likely to use it.  Or, more
-> accurately, will have less excuses to not use it.
+> All callers to __d_path pass the dentry and vfsmount of a struct
+> path to __d_path. Pass the struct path directly, instead.
 
-Ok, then I think thats 2 for on and 3 for off.  So off it is.
+Looks good.  If you have some sparse time left the dentry and vfsmnt
+arguments of __d_path and d_path should probably be switched over
+to a struct path aswell.  For about half of the callers that works
+out easily because they have a struct file, and some need some
+reshuffling (e.g. /proc/ symlink code or the dcookies that want to
+store a struct path aswell)
 
-I was tending towards --subjective for the tests which are err more
-subjective.  --strict is good too.  Perhaps I'll put both of those in as
-aliases.
-
-I will also review the tests which are warnings and checks (subjective)
-and see if any are now miss-categorised.
-
--apw
