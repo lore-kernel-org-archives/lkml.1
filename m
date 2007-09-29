@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbXI2JCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbXI2JLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755AbXI2JCc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 05:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbXI2JCL
+	id S1756530AbXI2JLf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 05:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXI2JL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 05:02:11 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50476 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757098AbXI2JCJ (ORCPT
+	Sat, 29 Sep 2007 05:11:28 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:35327 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753196AbXI2JL1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 05:02:09 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 29 Sep 2007 11:01:51 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] firewire: adopt read cycle timer ABI from raw1394
-To: =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
-       Pieter Palmers <pieterp@joow.be>
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.9b780b2f580f1733@s5r6.in-berlin.de>
-Message-ID: <tkrat.4aa1f1b5ce7df936@s5r6.in-berlin.de>
-References: <tkrat.9b780b2f580f1733@s5r6.in-berlin.de>
+	Sat, 29 Sep 2007 05:11:27 -0400
+Date: Sat, 29 Sep 2007 11:11:24 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Generic compat_sys_fallocate
+In-Reply-To: <1191018832-18069-2-git-send-email-kyle@mcmartin.ca>
+Message-ID: <Pine.LNX.4.64.0709291109320.10965@anakin>
+References: <1191018832-18069-1-git-send-email-kyle@mcmartin.ca>
+ <1191018832-18069-2-git-send-email-kyle@mcmartin.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This duplicates the read cycle timer feature of raw1394 (added in Linux
-> 2.6.21) in firewire-core's userspace ABI.
+On Fri, 28 Sep 2007, Kyle McMartin wrote:
+> --- a/fs/compat.c
+> +++ b/fs/compat.c
+> @@ -2226,3 +2226,13 @@ asmlinkage long compat_sys_timerfd(int ufd, int clockid, int flags,
+>  }
+>  
+>  #endif /* CONFIG_TIMERFD */
+> +
+> +asmlinkage long compat_sys_fallocate(int fd, int mode,
+> +				     u32 offset_lo, u32 offset_hi,
+> +				     u32 len_lo, u32 len_hi)
+> +{
+> +	u64 offset = compat_merge64(offset_lo, offset_hi);
+> +	u64 len = compat_merge64(len_lo, len_hi);
+> +
+> +	return sys_fallocate(fd, mode, offset, len);
+> +}
 
-Kristian and Pieter, does this simple duplication of the ioctl make
-sense on its own?  AFAIU rawiso's iso packet buffers look different from
-fw-cdevs's. It seems to me as if rawiso always put the cycle into a user
-buffer for each iso packet received...
+To avoid confusion, you may want to rename the *_{lo,hi} parameters to
+e.g. *_{l,r}, as they don't actually mean the low and high part anymore.
 
-raw1394.h::struct raw1394_iso_packet_info {
-	__u32 offset;
-	__u16 len;
-	__u16 cycle;   /* recv only */
-	__u8  channel; /* recv only */
-	__u8  tag;
-	__u8  sy;
-};
+Gr{oetje,eeting}s,
 
-raw1394.c::raw1394_iso_recv_packets()
+						Geert
 
-	/* copy the packet_infos out */
-	for (i = 0; i < upackets.n_packets; i++) {
-		if (__copy_to_user(&upackets.infos[i],
-				   &fi->iso_handle->infos[packet],
-				   sizeof(struct raw1394_iso_packet_info)))
-			return -EFAULT;
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-		packet = (packet + 1) % fi->iso_handle->buf_packets;
-	}
-
-...while the Juju ABI returns the cycle only for those packets whose
-fw_cdev_iso_packet.control had the FW_CDEV_ISO_INTERRUPT flag set.
-The cycle is then written out in the fw_cdev_event_iso_interrupt event
-which happens when this particular packet was received.  Right?
-
-Pieter, do applications like yours need the cycle counter only for a few
-predetermined packets or for each and every packet?
--- 
-Stefan Richter
--=====-=-=== =--= ===-=
-http://arcgraph.de/sr/
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
