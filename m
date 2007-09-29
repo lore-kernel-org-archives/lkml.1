@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbXI2GJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbXI2GJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbXI2GJp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 02:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbXI2GJf
+	id S1757867AbXI2GJz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 02:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbXI2GJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 02:09:35 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:53453 "EHLO havoc.gtf.org"
+	Sat, 29 Sep 2007 02:09:39 -0400
+Received: from gw.goop.org ([64.81.55.164]:58727 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753150AbXI2GJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 02:09:34 -0400
-Date: Sat, 29 Sep 2007 02:09:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patch] net driver fix
-Message-ID: <20070929060933.GA18950@havoc.gtf.org>
+	id S1754145AbXI2GJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 02:09:37 -0400
+Message-ID: <46FDEC1F.7080809@goop.org>
+Date: Fri, 28 Sep 2007 23:09:35 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: William Cattey <wdc@MIT.EDU>
+CC: Andi Kleen <andi@firstfloor.org>, Chuck Anderson <cra@WPI.EDU>,
+       linux-kernel@vger.kernel.org
+Subject: Re: vm86.c audit_syscall_exit() call trashes registers
+References: <20070814183119.GC17694@angus.ind.WPI.EDU> <p73r6m5n90l.fsf@bingen.suse.de> <78642229-39DD-4956-9385-5A3F960BFEEF@mit.edu> <20070814212858.GB23308@one.firstfloor.org> <07759638-DE7C-4341-A642-D611A897614F@MIT.EDU> <20070814214622.GE23308@one.firstfloor.org> <6655DD8B-D9C6-495D-9E22-2FDF6B375C9D@MIT.EDU> <20070814221927.GH23308@one.firstfloor.org> <9D5ACA40-5F33-4F49-8255-D51F554889E7@MIT.EDU> <46FDA325.8000602@goop.org> <7CB783C7-8EC7-4AA3-B825-B23595373229@MIT.EDU> <46FDEB6D.6000403@goop.org>
+In-Reply-To: <46FDEB6D.6000403@goop.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> @@ -306,19 +334,18 @@ static void do_sys_vm86(struct kernel_vm
+>         tsk->thread.screen_bitmap = info->screen_bitmap;
+>         if (info->flags & VM86_SCREEN_BITMAP)
+>                 mark_screen_rdonly(tsk->mm);
+>         __asm__ __volatile__("xorl %eax,%eax; movl %eax,%fs; movl %eax,%gs\n\t");
+>   
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
+Oh, this line is also clearly bogus, since it clobbers %eax without
+telling the compiler.  The minimal change would be something like:
 
-to receive the following updates:
+	asm volatile("mov %0, %%fs; mov %0, %%gs" : : "r" (0));
 
- drivers/net/mv643xx_eth.c |    2 +-
- drivers/net/mv643xx_eth.h |    4 +++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Dale Farnsworth (1):
-      mv643xx_eth: Check ETH_INT_CAUSE_STATE bit
-
-diff --git a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
-index 456d1e1..34288fe 100644
---- a/drivers/net/mv643xx_eth.c
-+++ b/drivers/net/mv643xx_eth.c
-@@ -534,7 +534,7 @@ static irqreturn_t mv643xx_eth_int_handler(int irq, void *dev_id)
- 	}
- 
- 	/* PHY status changed */
--	if (eth_int_cause_ext & ETH_INT_CAUSE_PHY) {
-+	if (eth_int_cause_ext & (ETH_INT_CAUSE_PHY | ETH_INT_CAUSE_STATE)) {
- 		struct ethtool_cmd cmd;
- 
- 		if (mii_link_ok(&mp->mii)) {
-diff --git a/drivers/net/mv643xx_eth.h b/drivers/net/mv643xx_eth.h
-index 82f8c0c..565b966 100644
---- a/drivers/net/mv643xx_eth.h
-+++ b/drivers/net/mv643xx_eth.h
-@@ -64,7 +64,9 @@
- #define ETH_INT_CAUSE_TX_ERROR	(ETH_TX_QUEUES_ENABLED << 8)
- #define ETH_INT_CAUSE_TX	(ETH_INT_CAUSE_TX_DONE | ETH_INT_CAUSE_TX_ERROR)
- #define ETH_INT_CAUSE_PHY	0x00010000
--#define ETH_INT_UNMASK_ALL_EXT	(ETH_INT_CAUSE_TX | ETH_INT_CAUSE_PHY)
-+#define ETH_INT_CAUSE_STATE	0x00100000
-+#define ETH_INT_UNMASK_ALL_EXT	(ETH_INT_CAUSE_TX | ETH_INT_CAUSE_PHY | \
-+					ETH_INT_CAUSE_STATE)
- 
- #define ETH_INT_MASK_ALL	0x00000000
- #define ETH_INT_MASK_ALL_EXT	0x00000000
+    J
