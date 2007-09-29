@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbXI2Tsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbXI2TxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758106AbXI2Tsc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 15:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbXI2TsW
+	id S1757495AbXI2TxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 15:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXI2TxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 15:48:22 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41850 "EHLO posidon.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757601AbXI2TsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 15:48:20 -0400
-Message-ID: <46FEAC02.5030801@tmr.com>
-Date: Sat, 29 Sep 2007 15:48:18 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+	Sat, 29 Sep 2007 15:53:04 -0400
+Received: from smtp.nokia.com ([131.228.20.170]:30595 "EHLO
+	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753472AbXI2TxD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 15:53:03 -0400
+X-Greylist: delayed 2455 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Sep 2007 15:53:03 EDT
+Message-ID: <46FEA332.9090904@yandex.ru>
+Date: Sat, 29 Sep 2007 22:10:42 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: [FYI] 2.6.23-rc8-git3 misc observations
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Write-back from inside FS - need suggestions
+References: <46FCC686.3050009@yandex.ru>        <46FE2167.8000800@yandex.ru> <20070929033939.6ee65e19.akpm@linux-foundation.org>
+In-Reply-To: <20070929033939.6ee65e19.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 29 Sep 2007 19:10:43.0207 (UTC) FILETIME=[6E979170:01C802CC]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Running FC6 (updated this am) the temp sensors GNOME applet works with 
-the kernel.org kernel, not the FC6 kernel. This has been true for a 
-while, and I've stopped chasing it, I don't really care right now, since 
-the sensors command works fine and that's what my daemon checks.
+Andrew Morton wrote:
+> I'd have thought that a suitable wrapper around a suitably-modified
+> sync_sb_inodes() would be appropriate for both filesystems?
 
-Using 2.6.23-rc8 (no git) the NIC came up at 100Mbit instead of gigE 
-once, not reproducible. Just in case this kicks off a bunch of "mee too" 
-replies. lspci info follows text.
+Ok, I've modified sync_inodes_sb() so that I can pass it my own wbc,
+where I set wcb->nr_to_write = 20. It gives me _exactly_ what I want.
+It just flushes a bit more then 20 pages and returns. I use
+WB_SYNC_ALL. Great!
 
-Boot times: I occasionally boot repeatedly for various tests, these are 
-the fastest of three (or more) boots of a given kernel, ID is what uname 
-gives.
+Now I would like to understand why it works :-) To my surprise, it
+does not deadlock! I call it from ->prepare_write where I'm holding
+i_mutex, and it works just fine. It calls ->writepage() without trying
+to lock i_mutex! This looks like some witchcraft for me.
 
-2.6.21-sd046                    55.29
-2.6.21-cfs-v6                   55.93
-2.6.20-1.2944.fc6               64.71
-2.6.23-rc8-git3                 65.06
-2.6.22.7-57.fc6                 69.02
+This means that if I'm in the middle of an operation or ino #X, I own
+its i_mutex, but not I_LOCK, I can be preempted and ->writepage can
+be called for a dirty page belonging to this inode #X? I haven't seen
+this in practice and I do not believe this may happen. Why?
 
-
-lspci:
-
-02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet 
-Controller
-        Subsystem: ASUSTeK Computer Inc. Unknown device 81c2
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
-ParErr- Stepping- SERR- FastB2B-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PER
-R-
-        Latency: 0, Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 223
-        Region 0: Memory at cffe0000 (32-bit, non-prefetchable) [size=128K]
-        Region 2: I/O ports at d800 [size=32]
-        Capabilities: [c8] Power Management version 2
-                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA 
-PME(D0+,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-        Capabilities: [d0] Message Signalled Interrupts: 64bit+ 
-Queue=0/0 Enable+
-                Address: 00000000fee0200c  Data: 41d1
-        Capabilities: [e0] Express Endpoint IRQ 0
-                Device: Supported: MaxPayload 256 bytes, PhantFunc 0, 
-ExtTag-
-                Device: Latency L0s <512ns, L1 <64us
-                Device: AtnBtn- AtnInd- PwrInd-
-                Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
-                Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
-                Link: Supported Speed 2.5Gb/s, Width x1, ASPM unknown, 
-Port 0
-                Link: Latency L0s <128ns, L1 <64us
-                Link: ASPM Disabled RCB 64 bytes CommClk+ ExtSynch-
-                Link: Speed 2.5Gb/s, Width x1
-        Capabilities: [100] Advanced Error Reporting
-        Capabilities: [140] Device Serial Number De-LE-TE-D
+Could you or someone please give me a hint what exactly
+inode->i_flags & I_LOCK protects? What is its relationship to i_mutex?
 
 -- 
-Bill Davidsen
-  He was a full-time professional cat, not some moonlighting
-ferret or weasel. He knew about these things.
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
