@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475AbXI2Iax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbXI2IbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753475AbXI2Iax (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 04:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbXI2Iaq
+	id S1756712AbXI2IbX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 04:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbXI2IbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 04:30:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44687 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbXI2Iap (ORCPT
+	Sat, 29 Sep 2007 04:31:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42035 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754542AbXI2IbL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 04:30:45 -0400
-Message-ID: <46FE0D29.4090706@zytor.com>
-Date: Sat, 29 Sep 2007 01:30:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: regression in 2.6.23-rc8 - power off failed
-References: <20070929005453.GA4475@erig.dyndns.org> <46FDC0EB.3070003@zytor.com> <20070929082233.GA3447@erig.dyndns.org>
-In-Reply-To: <20070929082233.GA3447@erig.dyndns.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 29 Sep 2007 04:31:11 -0400
+Date: Sat, 29 Sep 2007 01:31:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Laurent Riffard <laurent.riffard@free.fr>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc[68]-mm: network hangs
+Message-Id: <20070929013106.4f84320d.akpm@linux-foundation.org>
+In-Reply-To: <46FD5A82.9070505@free.fr>
+References: <46FD5A82.9070505@free.fr>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wolfgang Erig wrote:
-> Both are bad.
-> Two different systems and two different bisections.
-> I sent the last step of each.
+On Fri, 28 Sep 2007 21:48:18 +0200 Laurent Riffard <laurent.riffard@free.fr> wrote:
 
->>> $ git bisect good 
->>> Bisecting: 0 revisions left to test after this 
->>> [626073132b381684c4983e0d911e9aceb32e2cbc] Assembly header and main routine for new x86 setup code 
->> OK, so which one is the bad one?
+> Hi,
 > 
-> This problem (no power off) persists after pull some minutes ago.
-> Sorry for the confusion.
+> >From time to time, I experience some complete network hangs:
+> 
+> Suddenly, all network connections become unresponsive. Even "ping
+> 127.0.0.1" doesn't work. SysRq-w does not show any blocked processus.
+> 
+> When such hang happen, I have to reboot (shutdown does work).
+> 
+> This is not easily reproducible: it happens several minutes after 
+> boot (could be 45 minutes or 2 hours). I do not use heavy networking 
+> apps (like P2P). My typical usage is a Gnome desktop with  browser, 
+> mailer, IM, video or audio streaming. 
+> 
+> I have a single PC connected to a DSL router via ethernet (so no LAN 
+> with NFS or CIFS).
+> 
+> This happens with 2.6.23-rc8-mm2 and 2.6.23-rc6-mm1. I can't remember 
+> when I first see this problem. Maybe 2 months ago.
+> 
+> I attached the output of "strace ping 127.0.0.1". How can I collect 
+> some more data when this problem happens ?
 > 
 
-I believe there must have been something wrong here (possibly
-inconsistent experiments?)  This checkin has *zero code changes* from
-the previous one (and next one) -- the kernel should have been binarily
-identical to the previous one.  The code introduced in this checkin
-doesn't even get compiled until two checkins later,
-4fd06960f120e02e9abc802a09f9511c400042a5.
+I have a second report of this from Uwe Bugla (who has been banished from
+all vger lists for various naughtinesses).
 
-	-hpa
+Similar story - after a few hours his network router (which is using ppp in
+some fashion) craps out and dhcp queries all time out.
+
+I'd be suspecting a ppp bug in net-2.6.24.
