@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbXI2BQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbXI2BRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757730AbXI2BQo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 21:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbXI2BQh
+	id S1758146AbXI2BRB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 21:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756108AbXI2BQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 21:16:37 -0400
-Received: from zeratul.whoi.edu ([128.128.76.62]:55091 "EHLO mx1.whoi.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752908AbXI2BQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 21:16:36 -0400
-Date: Fri, 28 Sep 2007 20:49:12 -0400 (EDT)
-From: Benjamin Carr <bcarr@whoi.edu>
-X-X-Sender: benc@puck.litech.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Eric Sandeen <sandeen@sandeen.net>,
+	Fri, 28 Sep 2007 21:16:52 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37584 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753943AbXI2BQv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Sep 2007 21:16:51 -0400
+Message-ID: <46FDA778.1070500@zytor.com>
+Date: Fri, 28 Sep 2007 18:16:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Benjamin Carr <bcarr@whoi.edu>
+CC: Eric Sandeen <sandeen@sandeen.net>,
        Justin Piszcz <jpiszcz@lucidpixels.com>, xfs@oss.sgi.com,
        linux-kernel@vger.kernel.org
 Subject: Re: Truncated Filesystem
-In-Reply-To: <46FD959E.5030009@zytor.com>
-Message-ID: <Pine.LNX.4.58.0709282048440.14057@puck.litech.org>
-References: <Pine.LNX.4.58.0709281734490.14057@puck.litech.org>
- <Pine.LNX.4.64.0709281821390.12203@p34.internal.lan> <46FD9006.6050807@sandeen.net>
- <46FD959E.5030009@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.4.58.0709281734490.14057@puck.litech.org> <Pine.LNX.4.64.0709281821390.12203@p34.internal.lan> <46FD9006.6050807@sandeen.net> <46FD959E.5030009@zytor.com> <Pine.LNX.4.58.0709282048440.14057@puck.litech.org> <46FDA35A.8040504@zytor.com> <Pine.LNX.4.58.0709282105590.14057@puck.litech.org>
+In-Reply-To: <Pine.LNX.4.58.0709282105590.14057@puck.litech.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What kind of partition table is it?  MS-DOS partition tables have a 2 TB
-> limit.
+Benjamin Carr wrote:
+>>> sudo fdisk -l /dev/sdc1
+>>                 ^^^^^^^^^ Uh...
+> 
+> yeah, long day:
+> 
+> Disk /dev/sdc: 12999.9 GB, 12999988871168 bytes
+> 255 heads, 63 sectors/track, 1580491 cylinders
+> Units = cylinders of 16065 * 512 = 8225280 bytes
+> 
+>    Device Boot      Start         End      Blocks   Id  System
+> /dev/sdc1               1      243744  1957867653+  83  Linux
+> 
 
-Hadn't thought of that, doesn't look good.
--Ben
+Looks like an MS-DOS partition table, indeed.
 
-sudo fdisk -l /dev/sdc1
-benc's password:
-
-Disk /dev/sdc1: 2004.8 GB, 2004856477184 bytes
-255 heads, 63 sectors/track, 243743 cylinders
-Units = cylinders of 16065 * 512 = 8225280 bytes
-
-Disk /dev/sdc1 doesn't contain a valid partition table
-
+	-hpa
