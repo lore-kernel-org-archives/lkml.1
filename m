@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbXI2AT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbXI2AZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbXI2AT6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Sep 2007 20:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXI2ATv
+	id S1756846AbXI2AZl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Sep 2007 20:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbXI2AZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Sep 2007 20:19:51 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:58833
+	Fri, 28 Sep 2007 20:25:33 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38891
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752748AbXI2ATv (ORCPT
+	by vger.kernel.org with ESMTP id S1752310AbXI2AZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Sep 2007 20:19:51 -0400
+	Fri, 28 Sep 2007 20:25:32 -0400
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH]: Documentation/vm/00-INDEX
-Date: Fri, 28 Sep 2007 19:19:47 -0500
+Subject: [PATCH] Remove nonstandard line break from Documentation/powerpc/00-INDEX
+Date: Fri, 28 Sep 2007 19:25:28 -0500
 User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709281919.47595.rob@landley.net>
+Message-Id: <200709281925.28532.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rob Landley <rob@landley.net>
 
-Add a 00-INDEX file for Documentation/vm
+Remove nonstandard line break from Documentation/powerpc/00-INDEX
 
 Signed-off-by: Rob Landley <rob@landley.net>
 ---
 
- Documentation/vm/00-INDEX |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+This is the only instance of a newline in a 00-INDEX file description, and
+it confuses my 00-INDEX > index.html converter.
 
---- /dev/null	2007-04-23 10:59:00.000000000 -0500
-+++ kdocs/Documentation/vm/00-INDEX	2007-09-28 19:15:48.000000000 -0500
-@@ -0,0 +1,20 @@
-+00-INDEX
-+	- This file
-+balance
-+	- Zone balancing (making sure each memory zone has enough free pages).
-+hugetlbpage.txt
-+	- Using huge memory pages to speed up applications with large data sets.
-+locking
-+	- How locking and synchronization is done in the Linux vm code.
-+numa
-+	- Intro to Non-Uniform Memory Access systems running Linux.
-+numa_memory_policy.txt
-+	- Controlling which NUMA nodes a process allocates memory from.
-+overcommit-accounting
-+	- Whether it's ok to allocate more virtual memory than physical + swap.
-+page_migration
-+	- Moving a running process's memory to a different NUMA node.
-+slabinfo.c
-+	- Tool to get reports about slabs
-+slub.txt
-+	- Short users guide for SLUB
+ Documentation/powerpc/00-INDEX |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff -r dc28e4e17791 Documentation/powerpc/00-INDEX
+--- a/Documentation/powerpc/00-INDEX	Wed Sep 26 15:52:17 2007 -0700
++++ b/Documentation/powerpc/00-INDEX	Fri Sep 28 19:21:20 2007 -0500
+@@ -6,8 +6,7 @@ 00-INDEX
+ 00-INDEX
+ 	- this file
+ cpu_features.txt
+-	- info on how we support a variety of CPUs with minimal compile-time
+-	options.
++	- info on how we support a variety of CPUs with minimal compile-time options.
+ eeh-pci-error-recovery.txt
+ 	- info on PCI Bus EEH Error Recovery
+ hvcs.txt
 
 -- 
 "One of my most productive days was throwing away 1000 lines of code."
