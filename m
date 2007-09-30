@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbXI3XmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbXI3Xp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbXI3XmN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 19:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXI3Xl7
+	id S1753497AbXI3Xp4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 19:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbXI3Xpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 19:41:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42871
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751823AbXI3Xl6 (ORCPT
+	Sun, 30 Sep 2007 19:45:49 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:13564 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbXI3Xps (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 19:41:58 -0400
-Date: Sun, 30 Sep 2007 16:41:58 -0700 (PDT)
-Message-Id: <20070930.164158.41661438.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: schwidefsky@de.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, drepper@redhat.com,
-       torvalds@linux-foundation.org, tglx@linutronix.de
-Subject: Re: [PATCH] robust futex thread exit race
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070930195538.GA13881@elte.hu>
-References: <20070930171121.GA10025@elte.hu>
-	<1191173530.19010.6.camel@localhost>
-	<20070930195538.GA13881@elte.hu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 30 Sep 2007 19:45:48 -0400
+Date: Sun, 30 Sep 2007 17:45:41 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] blacklist NCQ on Seagate Barracuda ST380817AS
+In-reply-to: <fa.ernzRd7lGBTxTXHl/DtyMhz/rPk@ifi.uio.no>
+To: Paolo Ornati <ornati@fastwebnet.it>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <47003525.7040407@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.ernzRd7lGBTxTXHl/DtyMhz/rPk@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sun, 30 Sep 2007 21:55:38 +0200
-
+Paolo Ornati wrote:
+> Hi, I think you forgot to blacklist this one  :)
 > 
-> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> --
+> Seagate Barracuda ST380817AS has troubles with NCQ. For example,
+> unpacking a tarball on an XFS filesystem gives this:
 > 
-> > On Sun, 2007-09-30 at 19:11 +0200, Ingo Molnar wrote:
-> > > > > > good catch! A quick preliminary review of your patch indicates it's 
-> > > > > > fine - and it might be v2.6.23 material.
-> > > > > 
-> > > > > there's a symmetric bug in kernel/compat_futex.c too.
-> > > > 
-> > > > True. I'll update the patch and send it again with the Acked-bys.
-> > > 
-> > > thanks! Logistics-wise: given that v2.6.22 has this same bug too, it's 
-> > > not a .23 regression per se and could in theory be merged after the 
-> > > 2.6.23 release too, into 2.6.23.1.
-> > 
-> > Here we go. Tested with current git and latest glibc tst-robust8 on 
-> > s390-64, native and compat.
+> ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd 61/40:00:29:a3:98/00:00:00:00:00/40 tag 0 cdb 0x0 data 32768 out
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
 > 
-> excellent! This patch too looks good to me. I booted and tested it on 
-> x86 too (32-bit-native, 64-bit-native and 32-bit-compat-on-64-bit.)
+> More info here:
+> http://lkml.org/lkml/2007/1/21/76
+>     
+> Blacklist it!
+>     
+> Signed-off-by: Paolo Ornati <ornati@fastwebnet.it>
+> 
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index 772be09..be289d0 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -3781,6 +3781,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
+>  	{ "Maxtor 7B250S0",	"BANC1B70",	ATA_HORKAGE_NONCQ, },
+>  	{ "Maxtor 7B300S0",	"BANC1B70",	ATA_HORKAGE_NONCQ },
+>  	{ "Maxtor 7V300F0",	"VA111630",	ATA_HORKAGE_NONCQ },
+> +	{ "ST380817AS",		"3.42",		ATA_HORKAGE_NONCQ },
+>  	{ "HITACHI HDS7250SASUN500G 0621KTAWSD", "K2AOAJ0AHITACHI",
+>  	 ATA_HORKAGE_NONCQ },
+>  	/* NCQ hard hangs device under heavier load, needs hard power cycle */
+> 
+> 
 
-I would personally prefer it if this patch got scheduled into
-2.6.23, it is a bug fix and it might even account for some of
-the futex weirdness we're still seeing on sparc64.
+Are you sure this isn't just a bum drive? Looking at the SMART listing 
+that was posted, looks like it's had some uncorrectable sector read 
+errors in the event log..
 
-I'll toss this patch to some folks seeing those issues for testing.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-But even if it doesn't fix their bug, it still belongs in 2.6.23 and
-there is no reason to delay this fix.
