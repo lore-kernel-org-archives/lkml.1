@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbXI3BRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbXI3B0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903AbXI3BRa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 21:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXI3BRX
+	id S1755228AbXI3B0Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 21:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXI3B0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 21:17:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:22456 "EHLO
+	Sat, 29 Sep 2007 21:26:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:41256 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbXI3BRW (ORCPT
+	with ESMTP id S1751814AbXI3B0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 21:17:22 -0400
+	Sat, 29 Sep 2007 21:26:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=mj+jhnVrKPH2nqFwDqD+jj9wrFtwx5Hk4K7ClPDMyk4WbaqPS+wMSACzL9cBOVl0vkrW2OvamFXy+pr9fp8hnwqFqowMnoIWDowll8eWk53jGCZKevwx+5BKY37hySdgcrrpZiadyH2auosUPY2FcwHZ29KlAprKzudSWFnroOo=
-Subject: Re: [PATCH] make unicode default
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Bill Nottingham <notting@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0709291034100.22032@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0709291034100.22032@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Sun, 30 Sep 2007 09:17:11 +0800
-Message-Id: <1191115031.10537.1.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=KVDV95q7Gq2vbpOsOl5Y0wEtWBXNOyVgNwG4HwIr2NrzbMhPXl2is9G0Wo2r9Dvpb0K1RIkmpCZc6NYOyS172M1r0eXR9B9lDpOgkM5L+ePTEY9vIzb2GEO1B1JSRV8PVaK7cHlPg1QSSVpmSvwGv42QQkD0ujV/Xk6683Jo/Js=
+Message-ID: <75b66ecd0709291826j64c45bcdoc957411f0fb25689@mail.gmail.com>
+Date: Sat, 29 Sep 2007 21:26:15 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Florian Schmidt" <mista.tapas@gmx.net>
+Subject: Re: getting FUSD compiled with current kernels
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200709291823.35868.mista.tapas@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200709291823.35868.mista.tapas@gmx.net>
+X-Google-Sender-Auth: 06c2a70a113a7dde
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-29 at 10:36 +0200, Jan Engelhardt wrote:
-> Make the vt return to the system default when it is reset.
-> Also make UTF-8 the system default.
+On 9/29/07, Florian Schmidt <mista.tapas@gmx.net> wrote:
+> My goal is to hack up oss2jack [3] to use ALSA pcm devices.. And a later goal
+> is to create a virtual ALSA soundcard [which would multiplex access to a real
+> non hw-mixing capable soundcard] to finally end the dmix software mixing woes
+> linux users have to endure for the last years :)
 
-It's about time we do, so this is fine with me.
+What problems with ALSA's userspace mixing are you trying to solve?
 
-Tony
-
-
+Lee
