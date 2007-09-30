@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbXI3RkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbXI3Rkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625AbXI3RkR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 13:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbXI3RkE
+	id S1758888AbXI3Rkh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 13:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbXI3RkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 13:40:04 -0400
-Received: from mx2.suse.de ([195.135.220.15]:46274 "EHLO mx2.suse.de"
+	Sun, 30 Sep 2007 13:40:15 -0400
+Received: from rtr.ca ([76.10.145.34]:3359 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755617AbXI3RkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 13:40:01 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Joshua Brindle <method@manicmethod.com>
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-Date: Sun, 30 Sep 2007 19:39:57 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       torvalds@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Paul Moore <paul.moore@hp.com>
-References: <46FEEBD4.5050401@schaufler-ca.com> <200709301042.26473.ak@suse.de> <46FFDCEF.20404@manicmethod.com>
-In-Reply-To: <46FFDCEF.20404@manicmethod.com>
+	id S1758274AbXI3RkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 13:40:14 -0400
+Message-ID: <46FFDF7D.7080605@rtr.ca>
+Date: Sun, 30 Sep 2007 13:40:13 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 0/3 coding standards documentation/code updates
+References: <200709300401.l8U41AhY024890@agora.fsl.cs.sunysb.edu>
+In-Reply-To: <200709300401.l8U41AhY024890@agora.fsl.cs.sunysb.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709301939.57542.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Erez Zadok wrote:
+> In message <alpine.LFD.0.999.0709291748160.3579@woody.linux-foundation.org>, Linus Torvalds writes:
+>>
+>> On Sat, 29 Sep 2007, Erez Zadok wrote:
+>>> Would you prefer if CodingStyle was reorganized or even split into (1)
+>>> general principles and (2) details?  Perhaps we need a CodingStylePrinciples
+>>> and a CodingStyleDetails?
+>> I'm certainly ok with the split into two files.
+>>
+>> What I'm not ok with is really important stuff (indentation), and then 
+>> mixing in silly rules ("parenthesis are bad in printk's"?)
+>>
+>> 		Linus
+> 
+> OK, looking at CodingStyle, I see two kinds of chapters.  The first is stuff
+> that's more generic to C, and the other is more specific to Linux and how
+> one codes in the linux kernel.  So I propose the following:
+> 
+> 1. we create a new file called CodingSuggestions
+> 
+> 2. we keep in CodingStyle the following chapters
+> 
+>    Chapter 1: Indentation
+>    Chapter 2: Breaking long lines and strings
+>    Chapter 3: Placing Braces and Spaces
+>    Chapter 4: Naming
+>    Chapter 5: Typedefs
+>    Chapter 6: Functions
+>    Chapter 7: Centralized exiting of functions
+>    Chapter 8: Commenting
+>    Chapter 9: You've made a mess of it
+> 
+>    Note: I'd suggest we rename the title of ch9 to "Custom Editor
+>    Programming/Indentation Modes" or something more descriptive.
+> 
+>    Chapter 10: Kconfig configuration files
+>    Chapter 11: Data structures
+>    Chapter 12: Macros, Enums and RTL
+>    Chapter 15: The inline disease
+>    Chapter 16: Function return values and names
+>    Chapter 18: Editor modelines and other cruft
+> 
+> 3. move the following chapters to CodingSuggestions:
+> 
+>    Chapter 13: Printing kernel messages
+>    Note: ch13 is the one which mentions the don't put parentheses around %d.
+> 
+>    Chapter 14: Allocating memory
+>    Chapter 17: Don't re-invent the kernel macros
+>    Chapter 19: branch prediction optimizations (the un/likely debacle)
 
-> CIPSO is supported on SELinux as well.
+Super.  And then, in the spirit of Linus's request,
+we can submit another patch that simply removes that second file
+completely from the kernel source tree!
 
-That's no reason to extend that design mistake.
-
-> It certainly has uses where IPSec  
-> is excessive. One example is someone I talked to recently that basically 
-> has a set of blade systems connected with a high speed backplane that 
-> looks like a network interface. CIPSO is useful in this case because 
-> they can't afford the overhead of IPSec but need to transfer the level 
-> of the connection to the other machines. The backplane is a trusted 
-> network and that isn't a dangerous assumption in this case.
-
-If one of the boxes gets broken in all are compromised this way? 
-
-> CIPSO also lets systems like SELinux and SMACK talk to other trusted 
-> systems (eg., trusted solaris) in a way they understand. 
-
-Perhaps, but is the result secure? I have severe doubts.
-
-> I don't  
-> regularly support CIPSO as I believe IPSec labeling is more useful in 
-> more situations but that doesn't mean CIPSO is never useful.
-
-Security that isn't secure is not really useful. You might as well not
-bother.
-
--Andi
-
+Yay!  The suits actually lose for once!
+(okay, so I can fantasize if I want to).
