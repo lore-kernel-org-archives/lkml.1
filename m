@@ -1,66 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbXI3RqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbXI3RtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbXI3RqS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 13:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbXI3RqI
+	id S1758267AbXI3RtI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 13:49:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbXI3Rs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 13:46:08 -0400
-Received: from exchange.columbia.tresys.com ([216.250.243.126]:22447 "HELO
-	exchange.columbia.tresys.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755914AbXI3RqG (ORCPT
+	Sun, 30 Sep 2007 13:48:56 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:44937 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755914AbXI3Rs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 13:46:06 -0400
-X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Sep 2007 13:46:06 EDT
-Message-ID: <46FFDCEF.20404@manicmethod.com>
-Date: Sun, 30 Sep 2007 13:29:19 -0400
-From: Joshua Brindle <method@manicmethod.com>
+	Sun, 30 Sep 2007 13:48:56 -0400
+Message-ID: <46FFE17C.9020202@cosmosbay.com>
+Date: Sun, 30 Sep 2007 19:48:44 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, casey@schaufler-ca.com,
-       torvalds@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Paul Moore <paul.moore@hp.com>
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access
- Control Kernel
-References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org> <200709301042.26473.ak@suse.de>
-In-Reply-To: <200709301042.26473.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Sep 2007 17:29:47.0867 (UTC) FILETIME=[7FBDC2B0:01C80387]
+To: Denys <nuclearcat@nuclearcat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+References: <20070930144443.M52139@visp.net.lb>
+In-Reply-To: <20070930144443.M52139@visp.net.lb>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 30 Sep 2007 19:48:51 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> - hm, netlabels.  Who might be a suitable person to review that code?
->>   Seems that Paul Moore is the man.  Maybe he'd be interested in taking a
->>   look over it (please?)
->>     
->
-> I personally consider these IP options it uses to be pretty useless. Who could 
-> ever use that without cryptographic authentication? Clearly when they 
-> were designed in the original IP spec long ago the designers didn't understand
-> network security very well because the whole field was at its infancy. And 
-> CIPSO doesn't solve any of these fundamental issues.
->
-> It assumes a trusted network which is a very dangerous assumption.  I don't 
-> think that was in the original patch I looked at, I surely would have 
-> objected to it.
->
-> Perhaps take the network part out? I guess SMACK would be useful
-> locally even without questionable network support.
->   
+Denys a écrit :
+> I've moved recently one of my proxies(squid and some compressing application) 
+> from 2.6.21 to 2.6.22, and notice huge performance drop. I think this is 
+> important, cause it can cause serious regression on some other workloads like 
+> busy web-servers and etc.
+> 
+> After some analysis of different options i can bring more exact numbers:
+> 
+> 2.6.21 able to process 500-550 requests/second and 15-20 Mbit/s of traffic, 
+> and working great without any slowdown or instability.
+> 
+> 2.6.22 able to process only 250-300 requests and 8-10 Mbit/s of traffic, ssh 
+> and console is "freezing" (there is delay even for typing characters).
+> 
+> Both proxies is on identical hardware(Sun Fire X4100), configuration(small 
+> system, LFS-like, on USB flash), different only kernel.
+> 
+> I tried to disable/enable various options and optimisations - it doesn't 
+> change anything, till i reach SLUB/SLAB option.
+> 
+> I've loaded proxy configuration to gentoo PC with 2.6.22 (then upgraded it to 
+> 2.6.23-rc8), and having same effect.
+> Additionally, when load reaching maximum i can notice whole system slowdown, 
+> for example ssh and scp takes much more time to run, even i do nice -n -5 for 
+> them.
+> 
+> But even choosing 2.6.23-rc8+SLAB i noticed same "freezing" of ssh (and sure 
+> it slowdown other kind of network performance), but much less comparing with 
+> SLUB. On top i am seeing ksoftirqd taking almost 100% (sometimes ksoftirqd/0, 
+> sometimes ksoftirqd/1).
+> 
+> I tried also different tricks with scheduler (/proc/sys/kernel/sched*), but 
+> it's also didn't help.
+> 
+> When it freezes it looks like:
+>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>     7 root      15  -5     0    0    0 R   64  0.0   2:47.48 ksoftirqd/1
+>  5819 root      20   0  134m 130m  596 R   57  3.3   4:36.78 globax
+>  5911 squid     20   0 1138m 1.1g 2124 R   26 28.9   2:24.87 squid
+>    10 root      15  -5     0    0    0 S    1  0.0   0:01.86 events/1
+>  6130 root      20   0  3960 2416 1592 S    0  0.1   0:08.02 oprofiled
+> 
+> 
+> Oprofile results:
+> 
+> 
+> Thats oprofile with 2.6.23-rc8 - SLUB
+> 
+> 73918    21.5521  check_bytes
+> 38361    11.1848  acpi_pm_read
+> 14077     4.1044  init_object
+> 13632     3.9747  ip_send_reply
+> 8486      2.4742  __slab_alloc
+> 7199      2.0990  nf_iterate
+> 6718      1.9588  page_address
+> 6716      1.9582  tcp_v4_rcv
+> 6425      1.8733  __slab_free
+> 5604      1.6339  on_freelist
+> 
+> 
+> Thats oprofile with 2.6.23-rc8 - SLAB
+> 
+> CPU: AMD64 processors, speed 2592.64 MHz (estimated)
+> Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
+> mask of 0x00 (No unit mask) count 100000
+> samples  %        symbol name
+> 138991   14.0627  acpi_pm_read
+> 52401     5.3018  tcp_v4_rcv
+> 48466     4.9037  nf_iterate
+> 38043     3.8491  __slab_alloc
+> 34155     3.4557  ip_send_reply
+> 20963     2.1210  ip_rcv
+> 19475     1.9704  csum_partial
+> 19084     1.9309  kfree
+> 17434     1.7639  ip_output
+> 17278     1.7481  netif_receive_skb
+> 15248     1.5428  nf_hook_slow
+> 
+> My .config is at http://www.nuclearcat.com/.config (there is SPARSEMEM 
+> enabled, it doesn't make any noticeable difference)
+> 
+> Please CC me on reply, i am not in list.
+> 
 
-CIPSO is supported on SELinux as well. It certainly has uses where IPSec 
-is excessive. One example is someone I talked to recently that basically 
-has a set of blade systems connected with a high speed backplane that 
-looks like a network interface. CIPSO is useful in this case because 
-they can't afford the overhead of IPSec but need to transfer the level 
-of the connection to the other machines. The backplane is a trusted 
-network and that isn't a dangerous assumption in this case.
+Could you try with SLUB but disabling CONFIG_SLUB_DEBUG ?
 
-CIPSO also lets systems like SELinux and SMACK talk to other trusted 
-systems (eg., trusted solaris) in a way they understand. I don't 
-regularly support CIPSO as I believe IPSec labeling is more useful in 
-more situations but that doesn't mean CIPSO is never useful.
 
