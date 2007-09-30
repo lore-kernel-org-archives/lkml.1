@@ -1,118 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbXI3PCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbXI3PDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757852AbXI3PCc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 11:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbXI3PCY
+	id S1758075AbXI3PDo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 11:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbXI3PDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 11:02:24 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:21650 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754802AbXI3PCX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 11:02:23 -0400
-Subject: [PATCH] robust futex thread exit race
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: mingo@elte.hu
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sun, 30 Sep 2007 17:02:19 +0200
-Message-Id: <1191164539.4047.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sun, 30 Sep 2007 11:03:37 -0400
+Received: from ns.suse.de ([195.135.220.2]:60809 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755030AbXI3PDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 11:03:36 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [REGRESSION from 2.6.23-rc8] (was: Re: 2.6.23-rc4-mm1 and -rc6-mm1: boot failure on HP nx6325, related to clockevents)
+Date: Sun, 30 Sep 2007 17:03:32 +0200
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <200709231257.12213.rjw@sisk.pl> <200709301158.17823.ak@suse.de> <alpine.LFD.0.9999.0709301542410.3142@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0709301542410.3142@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709301703.32388.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-I finally found the bug that causes tst-robust8 from the glibc to fail
-on s390x. Turned out to be a common code problem with the processing of
-the robust futex list. The patch below fixes the bug for me.
+On Sunday 30 September 2007 16:06:59 Thomas Gleixner wrote:
+> On Sun, 30 Sep 2007, Andi Kleen wrote:
+> 
+> >>> OK, this explains 2) and 3). I just looked into the code and the logic
+> >>> vs. noapictimer on SMP is completely broken.
+> >
+> > noapictimer really doesn't make any sense on non SMP imho with the old
+> > timer architecture. That is why I never bothered to implement it.
+> > It's purely a UP hack.
+> 
+> It does not matter whether it makes sense to you or not. It is a command 
+> line option which bricks systems. 
 
--- 
-blue skies,
-  Martin.
+A lot of command line options do that -- if not they would be usually
+default or automatically used by the kernel.
 
-"Reality continues to ruin my life." - Calvin.
+> There is neither an explanation in  
+> Dokumentation/kernel-parameters.txt nor a check in the code, which 
+> disables this completely.
 
---
-Subject: [PATCH] robust futex thread exit race
-
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-Calling handle_futex_death in exit_robust_list for the different
-robust mutexes of a thread basically frees the mutex. Another
-thread might grab the lock immediately which updates the next
-pointer of the mutex. fetch_robust_entry over the next pointer
-might therefore branch into the robust mutex list of a different
-thread. This can cause two problems: 1) some mutexes held by
-the dead thread are not getting freed and 2) some mutexs held by
-a different thread are freed.
-The next point need to be read before calling handle_futex_death.
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
-diff -urpN linux-2.6/kernel/futex.c linux-2.6-patched/kernel/futex.c
---- linux-2.6/kernel/futex.c	2007-08-23 11:14:33.000000000 +0200
-+++ linux-2.6-patched/kernel/futex.c	2007-09-30 16:31:57.000000000 +0200
-@@ -1943,9 +1943,10 @@ static inline int fetch_robust_entry(str
- void exit_robust_list(struct task_struct *curr)
- {
- 	struct robust_list_head __user *head = curr->robust_list;
--	struct robust_list __user *entry, *pending;
--	unsigned int limit = ROBUST_LIST_LIMIT, pi, pip;
-+	struct robust_list __user *entry, *next_entry, *pending;
-+	unsigned int limit = ROBUST_LIST_LIMIT, pi, next_pi, pip;
- 	unsigned long futex_offset;
-+	int rc;
+Fair enough. I can add a warning in the Documentation.
  
- 	/*
- 	 * Fetch the list head (which was registered earlier, via
-@@ -1965,12 +1966,13 @@ void exit_robust_list(struct task_struct
- 	if (fetch_robust_entry(&pending, &head->list_op_pending, &pip))
- 		return;
- 
--	if (pending)
--		handle_futex_death((void __user *)pending + futex_offset,
--				   curr, pip);
--
- 	while (entry != &head->list) {
- 		/*
-+		 * Fetch the next entry in the list before calling
-+		 * handle_futex_death:
-+		 */
-+		rc = fetch_robust_entry(&next_entry, &entry->next, &next_pi);
-+		/*
- 		 * A pending lock might already be on the list, so
- 		 * don't process it twice:
- 		 */
-@@ -1978,11 +1980,10 @@ void exit_robust_list(struct task_struct
- 			if (handle_futex_death((void __user *)entry + futex_offset,
- 						curr, pi))
- 				return;
--		/*
--		 * Fetch the next entry in the list:
--		 */
--		if (fetch_robust_entry(&entry, &entry->next, &pi))
-+		if (rc)
- 			return;
-+		entry = next_entry;
-+		pi = next_pi;
- 		/*
- 		 * Avoid excessively long or circular lists:
- 		 */
-@@ -1991,6 +1992,10 @@ void exit_robust_list(struct task_struct
- 
- 		cond_resched();
- 	}
-+
-+	if (pending)
-+		handle_futex_death((void __user *)pending + futex_offset,
-+				   curr, pip);
- }
- 
- long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
+> It makes a lot of sense even with the existing architecture. Trouble 
+> shooting a box, where the local apic timer does not work correctly is not 
+> an UP only requirement.
 
+It should not be needed with current systems as far as I know
+(see my previous mail) 
 
+> I understand the code quite well. I'm just surprised from time to time by 
+> interesting hacks in the so clean x8664 tree.
+
+No hack in this area as far as I know.
+ 
+> > [1]  Or let's call it "I trust all my time to the CPU" and no more southrbridge
+> > aka put all eggs in one basket. Given the trends in CPU power saving that
+> > is a quite dangerous strategy.
+> 
+> No, it's not dangerous. 
+
+It definitely caused a lot of problems in the single socket multi core world;
+but yes you probably worked around all of them that I'm aware of currently.
+What I just objected to was that you complained that the current x86-64
+time code -- which works much more conservatively and thus needs less workarounds --
+doesn't have all of them. You basically tried to apply the special debugging strategies
+for clockevents to the old code and then complained that they don't work.
+
+> We spent quite some time to make the clock events  
+> layer flexible enough to handle the current problems and the design allows 
+> to add more infrastructure when necessary.
+
+Grand words for relatively simple changes. Anyways as far as I know
+even for hypothetical future C2+ capable multi socket systems the current
+x86-64 time code should work -- it should automatically select broadcasting.
+The only thing it relies on that if there are no multi socket C1E systems
+with broken APIC timers. Since that could be only future CPUs anyways
+and I haven't seen any indication that of the upcomming CPUs will have
+such broken C1.
+
+> The maybe new (mis)features of  
+> upcoming CPUs need to be addressed with or without clock events and they 
+> need to be done careful and not by random hacks.
+
+Not sure what random hacks you refer to.
+
+-Andi
