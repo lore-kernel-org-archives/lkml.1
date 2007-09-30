@@ -1,137 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751806AbXI3Sjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbXI3SqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751806AbXI3Sjy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 14:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXI3Sjr
+	id S1752021AbXI3SqQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 14:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbXI3SqC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 14:39:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:20312 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbXI3Sjp (ORCPT
+	Sun, 30 Sep 2007 14:46:02 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:36683 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbXI3SqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 14:39:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RKdoDP2B7vd4m63E9ZyKvGlHx0ZvfG9hRs9sLPmw74Tb4dNDCFxA67Uc7HIirfwHqxYRiHWyWRSwUNe7ikQLpuM780gHc69eYLMeeFdfE5cCTaMrABSO8NY1KiDto21GlkpfoZE0c1oXoGxAXukchm9aKe/B+9o9xSTVdY3+dxg=
-Message-ID: <64bb37e0709301139h456a82d6u98630a4d1503eaf@mail.gmail.com>
-Date: Sun, 30 Sep 2007 20:39:44 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: sata_sil24 broken since 2.6.23-rc4-mm1
-Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <46FFDF64.1080005@gmail.com>
+	Sun, 30 Sep 2007 14:46:00 -0400
+From: "Denys" <nuclearcat@nuclearcat.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21 -> 2.6.22 & 2.6.23-rc8 performance regression
+Date: Sun, 30 Sep 2007 21:45:47 +0300
+Message-Id: <20070930184547.M90508@nuclearcat.com>
+In-Reply-To: <46FFE17C.9020202@cosmosbay.com>
+References: <20070930144443.M52139@visp.net.lb> <46FFE17C.9020202@cosmosbay.com>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <64bb37e0709261326h4890a07fx60c7d6772e4e63c4@mail.gmail.com>
-	 <64bb37e0709262314x1b0100d8lfe34327db6b9bec8@mail.gmail.com>
-	 <46FB4CB3.3090004@garzik.org>
-	 <64bb37e0709271034h72b5eb9fy3aa7980cbc483f4f@mail.gmail.com>
-	 <46FC1104.8080105@gmail.com>
-	 <64bb37e0709272236g7da8f370lc7f737e908725e88@mail.gmail.com>
-	 <64bb37e0709292300t39028029n2375899d7ba1e8ce@mail.gmail.com>
-	 <46FFB412.20202@gmail.com>
-	 <64bb37e0709300919w3e9db6aci4c0b9df43407fff3@mail.gmail.com>
-	 <46FFDF64.1080005@gmail.com>
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/30/07, Tejun Heo <htejun@gmail.com> wrote:
-> Torsten Kaiser wrote:
-> > What I find kind of interessing is, that while I got three different
-> > error codes the cmd part of the output was always the same.
->
-> That's NCQ write command.  You'll be using it a lot if you're rebuilding
-> md5.
+Hi
 
-It's not rebuilding the RAID at that point.
-If one drive fails, I reboot into a "safe" kernel, fix the RAID and
-that way try the next boot with a clean RAID again.
+pi ~ # zcat /proc/config.gz |grep SLUB
+# CONFIG_SLUB_DEBUG is not set
+CONFIG_SLUB=y
 
-The error happens when the RAID is initialized, might be the first
-write into the superblock to mark it dirty/inuse that triggers the
-error.
 
-> It seems like something is going wrong with request DMA or sg
-> mapping.  Maybe some change in block/*.[hc]?
+21:27:20     CPU   %user   %nice    %sys %iowait    %irq   %soft  %steal
+   %idle    intr/s
+21:27:21     all    5.53   21.61    8.54    0.00    0.50    5.03    0.00   
+58.79   7147.52
+21:27:22     all    6.40   15.76    8.87    0.00    0.49   20.20    0.00   
+48.28   6327.00
+21:27:23     all    6.53   20.60   12.06    0.00    0.00   52.76    0.00    
+8.04    456.44
+21:27:24     all    7.00   17.50   10.50    0.00    0.00   53.00    0.00   
+12.00    439.00
+21:27:25     all    7.50   18.00   12.50    0.50    0.50   52.50    0.00    
+8.50    464.00
+21:27:26     all    6.64   16.11   11.37    0.00    0.00   58.77    0.00    
+7.11    401.90
+21:27:27     all    0.00    0.40    0.40    0.00    0.00   99.20    0.00    
+0.00    325.20
+21:27:28     all    0.00    0.50    0.00    0.00    0.00   99.50    0.00    
+0.00    453.47
+21:27:29     all    0.00    0.00    0.00    0.00    0.00  100.00    0.00    
+0.00    495.10
+21:27:30     all    0.00    0.50    0.00    0.00    0.00   99.50    0.00    
+0.00    625.74
+21:27:31     all    0.00    0.00    0.00    0.00    0.00  100.00    0.00    
+0.00    600.97
+21:27:32     all    0.00    0.00    0.00    0.00    0.00  100.00    0.00    
+0.00    604.95
 
-The sg-chaining-patch stands out, but I have no conclusive proof that
-it really is the cause.
-As noted in this thread, a long time I thought that rc7 with the
-sg-chaining-patch was safe, but one time it also showed the error.
+64 bytes from 127.0.0.1: icmp_seq=15 ttl=64 time=0.031 ms
+64 bytes from 127.0.0.1: icmp_seq=16 ttl=64 time=229 ms
+64 bytes from 127.0.0.1: icmp_seq=17 ttl=64 time=253 ms
+64 bytes from 127.0.0.1: icmp_seq=18 ttl=64 time=257 ms
+64 bytes from 127.0.0.1: icmp_seq=19 ttl=64 time=279 ms
+64 bytes from 127.0.0.1: icmp_seq=20 ttl=64 time=246 ms
+64 bytes from 127.0.0.1: icmp_seq=21 ttl=64 time=246 ms
+64 bytes from 127.0.0.1: icmp_seq=22 ttl=64 time=234 ms
+64 bytes from 127.0.0.1: icmp_seq=23 ttl=64 time=235 ms
 
-> > It's not just 2.6.23-rc4-mm1. All -mm's after rc4 are broken for me.
-> > Confirmed breakage on -rc4-mm1, -rc6-mm1 and -rc8-mm1. I'm just
-> > narrowing on rc4-mm1 because that was the first version to break.
+Problem remains. It is another server.
+
+
+On Sun, 30 Sep 2007 19:48:44 +0200, Eric Dumazet wrote
+
+> > I've moved recently one of my proxies(squid and some compressing 
+application) 
+> > from 2.6.21 to 2.6.22, and notice huge performance drop. I think this is 
+> > important, cause it can cause serious regression on some other workloads 
+like 
+> > busy web-servers and etc.
+> > 
+> > After some analysis of different options i can bring more exact numbers:
+> > 
+> > 2.6.21 able to process 500-550 requests/second and 15-20 Mbit/s of 
+traffic, 
+> > and working great without any slowdown or instability.
+> > 
+> > 2.6.22 able to process only 250-300 requests and 8-10 Mbit/s of traffic, 
+ssh 
+> > and console is "freezing" (there is delay even for typing characters).
+> > 
+> > Both proxies is on identical hardware(Sun Fire X4100), 
+configuration(small 
+> > system, LFS-like, on USB flash), different only kernel.
+> > 
+> > I tried to disable/enable various options and optimisations - it doesn't 
+> > change anything, till i reach SLUB/SLAB option.
+> > 
+> > I've loaded proxy configuration to gentoo PC with 2.6.22 (then upgraded 
+it to 
+> > 2.6.23-rc8), and having same effect.
+> > Additionally, when load reaching maximum i can notice whole system 
+slowdown, 
+> > for example ssh and scp takes much more time to run, even i do nice -n -5 
+for 
+> > them.
+> > 
+> > But even choosing 2.6.23-rc8+SLAB i noticed same "freezing" of ssh (and 
+sure 
+> > it slowdown other kind of network performance), but much less comparing 
+with 
+> > SLUB. On top i am seeing ksoftirqd taking almost 100% (sometimes 
+ksoftirqd/0, 
+> > sometimes ksoftirqd/1).
+> > 
+> > I tried also different tricks with scheduler (/proc/sys/kernel/sched*), 
+but 
+> > it's also didn't help.
+> > 
+> > When it freezes it looks like:
+> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> >     7 root      15  -5     0    0    0 R   64  0.0   2:47.48 ksoftirqd/1
+> >  5819 root      20   0  134m 130m  596 R   57  3.3   4:36.78 globax
+> >  5911 squid     20   0 1138m 1.1g 2124 R   26 28.9   2:24.87 squid
+> >    10 root      15  -5     0    0    0 S    1  0.0   0:01.86 events/1
+> >  6130 root      20   0  3960 2416 1592 S    0  0.1   0:08.02 oprofiled
+> > 
+> > 
+> > Oprofile results:
+> > 
+> > 
+> > Thats oprofile with 2.6.23-rc8 - SLUB
+> > 
+> > 73918    21.5521  check_bytes
+> > 38361    11.1848  acpi_pm_read
+> > 14077     4.1044  init_object
+> > 13632     3.9747  ip_send_reply
+> > 8486      2.4742  __slab_alloc
+> > 7199      2.0990  nf_iterate
+> > 6718      1.9588  page_address
+> > 6716      1.9582  tcp_v4_rcv
+> > 6425      1.8733  __slab_free
+> > 5604      1.6339  on_freelist
+> > 
+> > 
+> > Thats oprofile with 2.6.23-rc8 - SLAB
+> > 
+> > CPU: AMD64 processors, speed 2592.64 MHz (estimated)
+> > Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a 
+unit 
+> > mask of 0x00 (No unit mask) count 100000
+> > samples  %        symbol name
+> > 138991   14.0627  acpi_pm_read
+> > 52401     5.3018  tcp_v4_rcv
+> > 48466     4.9037  nf_iterate
+> > 38043     3.8491  __slab_alloc
+> > 34155     3.4557  ip_send_reply
+> > 20963     2.1210  ip_rcv
+> > 19475     1.9704  csum_partial
+> > 19084     1.9309  kfree
+> > 17434     1.7639  ip_output
+> > 17278     1.7481  netif_receive_skb
+> > 15248     1.5428  nf_hook_slow
+> > 
+> > My .config is at http://www.nuclearcat.com/.config (there is SPARSEMEM 
+> > enabled, it doesn't make any noticeable difference)
+> > 
+> > Please CC me on reply, i am not in list.
 > >
-> > I'm currently trying to bisect 2.6.23-rc4-mm1. Here is the current status:
->
-> Have you tested 2.6.23-rc4 without mm patches?  It could be something
-> introduced between -rc3 and 4.
+> 
+> Could you try with SLUB but disabling CONFIG_SLUB_DEBUG ?
 
-Not directly, but I have 4 good boots with one part of the mm-patches.
-So I would tend to say that mainline 2.6.23-rc4 does not have this
-bug.
 
-> > [the 2.6.23-rc4-mm1 series-file has 2013 lines]
-> > Up to (incl.) x86_64-convert-to-clockevents.patch (line 747): 2 good boots
-> > Up to (incl.) x86_64-cleanup-struct-irqaction-initializers-patch
-> > (line779): 2 good boots
-> > Up to (incl.) slub-optimize-cacheline-use-for-zeroing.patch (line
-> > 1045): 1 failed
-> > Up to (incl.) fix-discrepancy-between-vdso-based... (line1461): 1 good, 1 failed
-> >
-> > Next try: up to patch fs-remove-some-aop_truncated_page.patch
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
-Looks more like this is OK too.
-
-> > That means from the patches added to the rc4 variant of the mm-kernel
-> > the following are remaining:
-[snip]
-> > memoryless-nodes-add-n_cpu-node-state-move-setup-of-n_cpu-node-state-mask.patch
-> > memoryless-nodes-fixup-uses-of-node_online_map-in-generic-code-fix.patch
-> > memoryless-nodes-fixup-uses-of-node_online_map-in-generic-code-fix-2.patch
-> > update-n_high_memory-node-state-for-memory-hotadd.patch
-> > slub-avoid-page-struct-cacheline-bouncing-due-to-remote-frees-to-cpu-slab.patch
-> > slub-do-not-use-page-mapping.patch
-> > slub-move-page-offset-to-kmem_cache_cpu-offset.patch
-> > slub-avoid-touching-page-struct-when-freeing-to-per-cpu-slab.patch
-> > slub-place-kmem_cache_cpu-structures-in-a-numa-aware-way.patch
-> > slub-optimize-cacheline-use-for-zeroing.patch
-> >
-> > But due to the unreliable nature of the bug, I can't be to sure about that.
->
-> Yeah, that's what I'm worried about.  Bisection is extremely difficult
-> if errors are intermittent and takes long time to reproduce.
-
-Yes...
-
-As for the remaining patches:
-memoryless-nodes-*
-Don't think so: I do have a NUMA system, but both nodes have memory.
-flush-cache-before-*
-Don't think so: No ia64 system, unchanged from rc3
-# grouping pages by mobility patches
-... no idee, but seem unchanged
-maps2.*
-Don't think that related...
-remaining slub-* patches
-Might be...
-
-As for you printk:
->From two goot boots, I had not had any failures with it:
-First one:
-Sep 30 19:24:53 treogen [    3.810000] XXX sil24 cb=ffff810037ef0000
-cb_dma=37ef0000
-Sep 30 19:24:53 treogen [    3.820000] XXX sil24 cb=ffff810037f00000
-cb_dma=37f00000
-Second:
-Sep 30 20:06:22 treogen [    3.820000] XXX sil24 cb=ffff810037f00000
-cb_dma=37f00000
-Sep 30 20:06:22 treogen [    3.830000] XXX sil24 cb=ffff810037f10000
-cb_dma=37f10000
-
-Torsten
