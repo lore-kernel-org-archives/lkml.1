@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbXI3RTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758450AbXI3RVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758413AbXI3RTq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 13:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbXI3RTj
+	id S1758450AbXI3RVy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 13:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756910AbXI3RVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 13:19:39 -0400
-Received: from web36605.mail.mud.yahoo.com ([209.191.85.22]:47457 "HELO
-	web36605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755866AbXI3RTi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 13:19:38 -0400
-X-YMail-OSG: 2_7KHT4VM1mGiOYKJTgHcQg4Se.dXRMS7Sl7AyYbs4v2pVhP_LtHoUn0ivddXMo48YBwMeTS3wmOrat4IRj56QCWWUh28.RSd0GLME0Wkov0fwKP8vE-
-X-RocketYMMF: rancidfat
-Date: Sun, 30 Sep 2007 10:19:36 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
-To: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: casey@schaufler-ca.com, torvalds@linux-foundation.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, James Morris <jmorris@namei.org>,
-       Paul Moore <paul.moore@hp.com>
-In-Reply-To: <20070930095310.GA18642@infradead.org>
+	Sun, 30 Sep 2007 13:21:47 -0400
+Received: from rtr.ca ([76.10.145.34]:4716 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756898AbXI3RVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 13:21:46 -0400
+Message-ID: <46FFDB29.9040400@rtr.ca>
+Date: Sun, 30 Sep 2007 13:21:45 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <863863.71085.qm@web36605.mail.mud.yahoo.com>
+To: Santiago Garcia Mantinan <manty@manty.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] (repost) Fix SMP poweroff hangs
+References: <46FC20B7.4000606@rtr.ca> <200709281455.29069.rjw@sisk.pl> <46FD001A.3070309@rtr.ca> <200709281544.30497.rjw@sisk.pl> <46FD05B8.2040302@rtr.ca> <46FD0724.5060009@rtr.ca> <1190991316.18681.38.camel@chaos> <46FD5BAF.8040304@rtr.ca> <20070930090032.GA2405@pul.manty.net>
+In-Reply-To: <20070930090032.GA2405@pul.manty.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Sun, Sep 30, 2007 at 01:16:18AM -0700, Andrew Morton wrote:
-> > reviewed the August thread from your version 1 submission and the message I
-> > take away is that the code has been well-received and looks good when
-> > considered on its own merits, but selinux could probably be configured to
-> > do something sufficiently similar.
-> > 
-> > I'd have trouble declaring that "but" to be a reason to not merge smack.
-> > I'm more thinking "let's merge it and see if people use it".
+Santiago Garcia Mantinan wrote:
+> Doesn't fix for me!
 > 
-> I'm not sure this was discussed on the list, but as long as Casey doesn't
-> get rid of the magic symlinks (smackfs_follow_link), there's a clear NACK
-> from the VFS perspective.
+> I have an Athlon x2 running on a Asus A8N-E mobo which has an NForce 4
+> chipset, I thought this patch would fix poweroff for me too, but it doesn't.
+> 
+> I'm seing this on 2.6.23-rc8 with and without your patch, here is what I get
+> on the console:
+> 
+> Shutdown: hdd
+> Shutdown: hda
+> System halted.
+> 
+> Nothing else pops up.
 
-OK, this is news to me. What's the objection?
+I'd say your problem is more of a distro issue,
+in that the method you are using to shutdown
+is not actually requesting "poweroff".
 
-> Otherwise the code looks pretty well written, alhough a run through
-> checkpath.pl to fix the lose end might help.  Oh, and please to compile-time
-> initializations for the spinlocks and mutex currently initializes in
-> smack_init.  Also the -Inet/netlabel looks rather odd, please work with
-> the netlabel maintainer to move the required files to the include/
-> hierachy.
+That last mess above ("System halted.") comes from kernel_halt(),
+rather than the expected message ("Power down.") from kernel_power_off().
 
-Paul and I discussed this earlier, and will again.
+So, try using the "poweroff" command instead of "halt",
+or try using "halt -p".  If neither of those work,
+then edit /etc/init.d/halt and hardcode the "-p" parameter
+inside there onto the "halt" command line(s).
 
-Thank you.
+I had to do that frequently back in the Redhat/Fedora days.
+I'm sure they have a nice GUI for it somewhere,
+but at the time it was simpler to just edit the script.
 
-
-Casey Schaufler
-casey@schaufler-ca.com
+Cheers
