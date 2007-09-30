@@ -1,41 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbXI3B0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbXI3B2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbXI3B0Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 21:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXI3B0Q
+	id S1756053AbXI3B2A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 21:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXI3B1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 21:26:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:41256 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbXI3B0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 21:26:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=KVDV95q7Gq2vbpOsOl5Y0wEtWBXNOyVgNwG4HwIr2NrzbMhPXl2is9G0Wo2r9Dvpb0K1RIkmpCZc6NYOyS172M1r0eXR9B9lDpOgkM5L+ePTEY9vIzb2GEO1B1JSRV8PVaK7cHlPg1QSSVpmSvwGv42QQkD0ujV/Xk6683Jo/Js=
-Message-ID: <75b66ecd0709291826j64c45bcdoc957411f0fb25689@mail.gmail.com>
-Date: Sat, 29 Sep 2007 21:26:15 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Florian Schmidt" <mista.tapas@gmx.net>
-Subject: Re: getting FUSD compiled with current kernels
+	Sat, 29 Sep 2007 21:27:51 -0400
+Received: from rune.pobox.com ([208.210.124.79]:41947 "EHLO rune.pobox.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751815AbXI3B1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 21:27:50 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200709291823.35868.mista.tapas@gmx.net>
+Subject: [ANNOUNCE] GIT 1.5.3.3
+References: <7vir66pjhs.fsf@gitster.siamese.dyndns.org>
+Date: Sat, 29 Sep 2007 18:27:38 -0700
+In-Reply-To: <7vir66pjhs.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
+	message of "Wed, 19 Sep 2007 12:01:35 -0700")
+Message-ID: <7vve9thrhx.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200709291823.35868.mista.tapas@gmx.net>
-X-Google-Sender-Auth: 06c2a70a113a7dde
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/29/07, Florian Schmidt <mista.tapas@gmx.net> wrote:
-> My goal is to hack up oss2jack [3] to use ALSA pcm devices.. And a later goal
-> is to create a virtual ALSA soundcard [which would multiplex access to a real
-> non hw-mixing capable soundcard] to finally end the dmix software mixing woes
-> linux users have to endure for the last years :)
+The latest maintenance release GIT 1.5.3.3 is available at the
+usual places:
 
-What problems with ALSA's userspace mixing are you trying to solve?
+  http://www.kernel.org/pub/software/scm/git/
 
-Lee
+  git-1.5.3.3.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.3.3.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.3.3.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.3.3-1.$arch.rpm	(RPM)
+
+GIT v1.5.3.3 Release Notes
+==========================
+
+Fixes since v1.5.3.2
+--------------------
+
+ * git-quiltimport did not like it when a patch described in the
+   series file does not exist.
+
+ * p4 importer missed executable bit in some cases.
+
+ * The default shell on some FreeBSD did not execute the
+   argument parsing code correctly and made git unusable.
+
+ * git-svn incorrectly spawned pager even when the user user
+   explicitly asked not to.
+
+ * sample post-receive hook overquoted the envelope sender
+   value.
+
+ * git-am got confused when the patch contained a change that is
+   only about type and not contents.
+
+ * git-mergetool did not show our and their version of the
+   conflicted file when started from a subdirectory of the
+   project.
+
+ * git-mergetool did not pass correct options when invoking diff3.
+
+ * git-log sometimes invoked underlying "diff" machinery
+   unnecessarily.
+
+----------------------------------------------------------------
+
+Changes since v1.5.3.2 are as follows:
+
+Carlos Rica (1):
+      Move make_cache_entry() from merge-recursive.c into read-cache.c
+
+Dan Nicholson (1):
+      quiltimport: Skip non-existent patches
+
+David Brown (1):
+      Detect exec bit in more cases.
+
+David Kastrup (1):
+      Supplant the "while case ... break ;; esac" idiom
+
+Eric Wong (1):
+      git-svn: don't attempt to spawn pager if we don't want one
+
+Glenn Rempe (1):
+      Fixed minor typo in t/t9001-send-email.sh test command line.
+
+J. Bruce Fields (1):
+      user-manual: don't assume refs are stored under .git/refs
+
+Jakub Narebski (2):
+      gitweb: Remove parse_from_to_diffinfo code from git_patchset_body
+      gitweb: No difftree output for trivial merge
+
+Jim Meyering (2):
+      unexpected Make output (e.g. from --debug) causes build failure
+      Do not over-quote the -f envelopesender value.
+
+Johannes Schindelin (1):
+      apply: get rid of --index-info in favor of --build-fake-ancestor
+
+Johannes Sixt (2):
+      gitattributes.txt: Remove a duplicated paragraph about 'ident' and 'crlf' interaction.
+      gitattributes.txt: Be more to the point in the filter driver description.
+
+Junio C Hamano (3):
+      Documentation/git-lost-found.txt: drop unnecessarily duplicated name.
+      Mergetool generating blank files (1.5.3)
+      GIT 1.5.3.3
+
+Linus Torvalds (1):
+      Fix revision log diff setup, avoid unnecessary diff generation
+
+Matt Kraai (2):
+      Move the paragraph specifying where the .idx and .pack files should be
+      Conjugate "search" correctly in the git-prune-packed man page.
+
+Michael Smith (1):
+      user-manual: Explain what submodules are good for.
+
+Miklos Vajna (2):
+      User Manual: add a chapter for submodules
+      git-bundle: fix commandline examples in the manpage
+
+Randy Dunlap (1):
+      core-tutorial: correct URL
+
+Shawn Bohrer (1):
+      Fix spelling of overridden in documentation
+
+Theodore Ts'o (2):
+      mergetool: fix emerge when running in a subdirectory
+      mergetool: Fix typo in options passed to kdiff3
+
+
