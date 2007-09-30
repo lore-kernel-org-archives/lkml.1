@@ -1,95 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbXI3HNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbXI3HVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754947AbXI3HNv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 03:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbXI3HNm
+	id S1755404AbXI3HVW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 03:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbXI3HVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 03:13:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:46618 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbXI3HNk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 03:13:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=uSEfUjPYfZVrzbkPMeNXSc6HG1WxlbrsShHyh0W0kZJcUKJbhT9b3ZZhWufpGjhAvS/dO3UFNStj1ONNffkD8KOfB1ycGVg4oU6E5aUWe/9C2iFdPuYBmM65+JN2IIZfYTc28bBlbQjSeFHXaZ3nlAe5N98ZYa+3+mTOXXXSeQM=
-Message-ID: <e5bfff550709300013t3475b1a9td483cbb373140213@mail.gmail.com>
-Date: Sun, 30 Sep 2007 09:13:39 +0200
-From: "Marco Costalba" <mcostalba@gmail.com>
-To: Git <git@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] qgit-2.0
+	Sun, 30 Sep 2007 03:21:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45370 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753401AbXI3HVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 03:21:14 -0400
+Date: Sun, 30 Sep 2007 09:20:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Luebbe <jluebbe@lasnet.de>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] fix console change race exposed by CFS
+Message-ID: <20070930072056.GA18108@elte.hu>
+References: <1191084471.24185.11.camel@polaris>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1191084471.24185.11.camel@polaris>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the final qgit-2.0
 
-With qgit you will be able to browse revision histories, view patch content
-and changed files, graphically following different development branches.
+* Jan Luebbe <jluebbe@lasnet.de> wrote:
 
+> From: Jan Lübbe <jluebbe@lasnet.de>
+> 
+> The new behaviour of CFS exposes a race which occurs if a switch is
+> requested when vt_mode.mode is VT_PROCESS.
+> 
+> The process with vc->vt_pid is signaled before vc->vt_newvt is set. This
+> causes the switch to fail when triggered by the monitoing process
+> because the target is still -1.
+> 
+> Signed-off-by: Jan Lübbe <jluebbe@lasnet.de>
 
-IMPORTANT NOTE
-git 1.5.3 or better is required, Qt 4.3 or better is required.
+nifty! I'm wondering what the symptoms of this bug were - how did you 
+notice it? Also, i'm wondering how you managed to debug this - looks 
+quite hard to trigger this race, right?
 
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-FEATURES
-
- - View revisions, diffs, files history, files annotation, archive tree.
-
- - Commit changes visually cherry picking modified files.
-
- - Apply or format patch series from selected commits, drag and
-   drop commits between two instances of qgit.
-
- - Associate commands sequences, scripts and anything else executable
-   to a custom action. Actions can be run from menu and corresponding
-   output is grabbed by a terminal window.
-
-  - qgit implements a GUI for the most common StGIT commands like push/pop
-   and apply/format patches. You can also create new patches or refresh
-   current top one using the same semantics of git commit, i.e. cherry
-   picking single modified files.
-
-
-NEW IN THIS RELEASE
-
-This is the final public release of the shining new qgit 2.0 based on
-the shining new Qt 4.3 libraries.
-
-All the features of the stable series have been ported. In addition this
-new release sports a better GUI both on visually side and on usability side.
-
-Annotation code is much improved in speed and in power, as example
-now follows file renames, try it on any git tree file to see a real example.
-
-A new and much improved repository browsing experience is now possible,
-in particular you don't need to switch to patch tab to view diff
-content anymore. Patch information, together with patch description,
-is shown in bottom left pane.
-
-Finally, qgit works natively under Windows due to Qt 4.3 libraries.
-
-
-The detailed list of changes is very long and interested people can
-read from public qgit repository.
-
-Although there are a lot of new features code is considered stable due
-to have been very long in 'rc' state.
-
-
-You can download the tarball from
-http://sourceforge.net/projects/qgit
-
-or clone the public git repository at
-git://git.kernel.org/pub/scm/qgit/qgit4.git
-
-
-Please, check the shipped README for detailed build and install information.
-
-
-Have fun
-Marco
+	Ingo
