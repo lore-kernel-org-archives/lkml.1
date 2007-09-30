@@ -1,113 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbXI3DQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbXI3DTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbXI3DQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Sep 2007 23:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXI3DQv
+	id S1756972AbXI3DTw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Sep 2007 23:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXI3DTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Sep 2007 23:16:51 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53138 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751899AbXI3DQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Sep 2007 23:16:50 -0400
-Date: Sat, 29 Sep 2007 20:16:47 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [rfc][patch] i386: remove comment about barriers
-Message-ID: <20070930031647.GG9119@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070929132848.GA21169@wotan.suse.de>
+	Sat, 29 Sep 2007 23:19:45 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:39644
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751273AbXI3DTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Sep 2007 23:19:45 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Add missing entries to top level Documentation/00-INDEX
+Date: Sat, 29 Sep 2007 22:19:41 -0500
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070929132848.GA21169@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200709292219.41891.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 29, 2007 at 03:28:48PM +0200, Nick Piggin wrote:
-> Hi,
-> 
-> OK this was going to be a quick patch, but after sleeping on it, I think
-> it deserves a better analysis... I can prove the comment is incorrect with a
-> test program, but I'm not as sure about my thinking that leads me to call it
-> also misleading.
-> 
-> The comment being removed by this patch is incorrect and misleading (I think). 
-> 
-> 1. load  ...
-> 2. store 1 -> X
-> 3. wmb
-> 4. rmb
-> 5. load  a <- Y
-> 6. store ...
-> 
-> 4 will only ensure ordering of 1 with 5.
-> 3 will only ensure ordering of 2 with 6.
-> 
-> Further, a CPU with strictly in-order stores will still only provide that
-> 2 and 6 are ordered (effectively, it is the same as a weakly ordered CPU
-> with wmb after every store).
-> 
-> In all cases, 5 may still be executed before 2 is visible to other CPUs!
+From: Rob Landley <rob@landley.net>
 
-Yes, even on x86.
+Add missing entries to Documentation/00-INDEX
 
-> The additional piece of the puzzle that mb() provides is the store/load
-> ordering, which fundamentally cannot be achieved with any combination of rmb()s
-> and wmb()s.
+Signed-off-by: Rob Landley <rob@landley.net>
+---
 
-True.
+ Documentation/00-INDEX |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-> This can be an unexpected result if one expected any sort of global ordering
-> guarantee to barriers (eg. that the barriers themselves are sequentially
-> consistent with other types of barriers).  However sfence or lfence barriers
-> need only provide an ordering partial ordering of meomry operations -- Consider
-> that wmb may be implemented as nothing more than inserting a special barrier
-> entry in the store queue, or, in the case of x86, it can be a noop as the store
-> queue is in order. And an rmb may be implemented as a directive to prevent
-> subsequent loads only so long as their are no previous outstanding loads (while
-> there could be stores still in store queues).
-> 
-> I can actually see the occasional load/store being reordered around lfence on
-> my core2. That doesn't prove my above assertions, but it does show the comment
-> is wrong (unless my program is -- can send it out by request).
-> 
-> So:
-> mb() and smp_mb() always have and always will require a full mfence or lock
-> prefixed instruction on x86. And we should remove this comment.
+diff -r dc28e4e17791 Documentation/00-INDEX
+--- a/Documentation/00-INDEX	Wed Sep 26 15:52:17 2007 -0700
++++ b/Documentation/00-INDEX	Sat Sep 29 14:07:39 2007 -0500
+@@ -22,6 +21,8 @@ CodingStyle
+ 	- how the boss likes the C code in the kernel to look.
+ DMA-API.txt
+ 	- DMA API, pci_ API & extensions for non-consistent memory machines.
++DMA-ISA-LPC.txt
++	- How to do DMA with ISA (and LPC) devices.
+ DMA-mapping.txt
+ 	- info for PCI drivers using DMA portably across all platforms.
+ DocBook/
+@@ -50,6 +51,8 @@ README.cycladesZ
+ 	- info on Cyclades-Z firmware loading.
+ SAK.txt
+ 	- info on Secure Attention Keys.
++SM501.txt
++	- Silicon Motion SM501 multimedia companion chip
+ SecurityBugs
+ 	- procedure for reporting security bugs found in the kernel.
+ SubmitChecklist
+@@ -248,6 +251,8 @@ md.txt
+ 	- info on boot arguments for the multiple devices driver.
+ memory-barriers.txt
+ 	- info on Linux kernel memory barriers.
++memory-hotplug.txt
++	- Hotpluggable memory support, how to use and current status.
+ memory.txt
+ 	- info on typical Linux memory problems.
+ mips/
+@@ -298,6 +303,8 @@ pm.txt
+ 	- info on Linux power management support.
+ pnp.txt
+ 	- Linux Plug and Play documentation.
++power_supply_class.txt
++	- Tells userspace about battery, UPS, AC or DC power supply properties
+ power/
+ 	- directory with info on Linux PCI power management.
+ powerpc/
+@@ -334,8 +341,12 @@ sched-coding.txt
+ 	- reference for various scheduler-related methods in the O(1) scheduler.
+ sched-design.txt
+ 	- goals, design and implementation of the Linux O(1) scheduler.
++sched-design-CFS.txt
++	- goals, design and implementation of the Complete Fair Scheduler.
+ sched-domains.txt
+ 	- information on scheduling domains.
++sched-nice-design.txt
++	- How and why the scheduler's nice levels are implemented.
+ sched-stats.txt
+ 	- information on schedstats (Linux Scheduler Statistics).
+ scsi/
+@@ -380,6 +391,8 @@ stallion.txt
+ 	- info on using the Stallion multiport serial driver.
+ svga.txt
+ 	- short guide on selecting video modes at boot via VGA BIOS.
++sysfs-rules.txt
++	- How not to use sysfs.
+ sx.txt
+ 	- info on the Specialix SX/SI multiport serial driver.
+ sysctl/
+@@ -410,6 +423,8 @@ video4linux/
+ 	- directory with info regarding video/TV/radio cards and linux.
+ vm/
+ 	- directory with info on the Linux vm code.
++volatile-considered-harmful.txt
++	- Why the "volatile" type class should not be used
+ voyager.txt
+ 	- guide to running Linux on the Voyager architecture.
+ w1/
 
-Yes, because x86 allows loads to be executed before earlier stores,
-so load-store ordering must be explicitly enforced.
-
-> [ This is true for x86's sfence/lfence, but raises a question about Linux's
-> memory barriers. Does anybody expect that a sequence of smp_wmb and smp_rmb
-> would ever provide a full smp_mb barrier? I've always assumed no, but I
-> don't know if it is actually documented? ]
-
-Anyone that does expect this needs to adjust their expectations.  ;-)
-
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> 
-> ---
-> Index: linux-2.6/include/asm-i386/system.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-i386/system.h
-> +++ linux-2.6/include/asm-i386/system.h
-> @@ -214,11 +214,6 @@ static inline unsigned long get_limit(un
->   */
->   
-> 
-> -/* 
-> - * Actually only lfence would be needed for mb() because all stores done 
-> - * by the kernel should be already ordered. But keep a full barrier for now. 
-> - */
-> -
->  #define mb() alternative("lock; addl $0,0(%%esp)", "mfence", X86_FEATURE_XMM2)
->  #define rmb() alternative("lock; addl $0,0(%%esp)", "lfence", X86_FEATURE_XMM2)
-> 
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
