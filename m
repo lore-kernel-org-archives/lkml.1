@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbXI3U3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbXI3UbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752871AbXI3U3A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 16:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXI3U2w
+	id S1753217AbXI3UbR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 16:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbXI3UbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 16:28:52 -0400
-Received: from lazybastard.de ([212.112.238.170]:41775 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751840AbXI3U2v (ORCPT
+	Sun, 30 Sep 2007 16:31:06 -0400
+Received: from ccerelrim04.cce.hp.com ([161.114.21.25]:4443 "EHLO
+	ccerelrim04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbXI3UbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 16:28:51 -0400
-Date: Sun, 30 Sep 2007 22:24:29 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+	Sun, 30 Sep 2007 16:31:05 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett Packard
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Artem Bityutskiy <dedekind@yandex.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Write-back from inside FS - need suggestions
-Message-ID: <20070930202429.GA30514@lazybastard.org>
-References: <46FCC686.3050009@yandex.ru> <46FE2167.8000800@yandex.ru> <20070929033939.6ee65e19.akpm@linux-foundation.org> <46FEA332.9090904@yandex.ru> <20070929130011.c3a11139.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Subject: Re: [PATCH] Version 3 (2.6.23-rc8) Smack: Simplified Mandatory Access Control Kernel
+Date: Sun, 30 Sep 2007 16:30:47 -0400
+User-Agent: KMail/1.9.7
+Cc: casey@schaufler-ca.com, torvalds@linux-foundation.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, James Morris <jmorris@namei.org>
+References: <46FEEBD4.5050401@schaufler-ca.com> <20070930011618.ccb8351b.akpm@linux-foundation.org>
+In-Reply-To: <20070930011618.ccb8351b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070929130011.c3a11139.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200709301630.48443.paul.moore@hp.com>
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.9.30.130338
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 29 September 2007 13:00:11 -0700, Andrew Morton wrote:
-> 
-> err, it's basically an open-coded mutex via which one thread can get
-> exclusive access to some parts of an inode's internals.  Perhaps it could
-> literally be replaced with a mutex.  Exactly what I_LOCK protects has not
-> been documented afaik.  That would need to be reverse engineered :(
+On Sunday 30 September 2007 4:16:18 am Andrew Morton wrote:
+> - hm, netlabels.  Who might be a suitable person to review that code?
+>   Seems that Paul Moore is the man.  Maybe he'd be interested in taking a
+>   look over it (please?)
 
-I believe you actually have some documentation in your tree.  At least
-the behaviour after my I_SYNC patch has been documented with that patch.
+Yep, I've been tracking Casey's work on this since the first patch and sending 
+comments when appropriate.  I'm going to take a look at the latest rev of the 
+patch and if anything looks awry I'll be sure to let Casey know.
 
-Jörn
+The only real wart that still remains from the original patch is the code in 
+smk_cipso_doi() which has a nice comment at the top saying that Paul and 
+Casey need to work out an appropriate interface between NetLabel and SMACK.  
+We punted on it before because SMACK's future was still a bit uncertain and 
+SELinux has no need for an interface like this at present.  Now that SMACK 
+looks to be queued up for 2.6.24 it's time to revisit this discussion.
 
 -- 
-"Error protection by error detection and correction."
--- from a university class
+paul moore
+linux security @ hp
