@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbXI3VZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbXI3Vci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbXI3VZl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Sep 2007 17:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbXI3VZb
+	id S1753179AbXI3Vci (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Sep 2007 17:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXI3Vcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Sep 2007 17:25:31 -0400
-Received: from smtp3.neobee.net ([80.74.160.52]:45489 "EHLO smtp2.neobee.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752033AbXI3VZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Sep 2007 17:25:30 -0400
-Message-ID: <4700092C.5060805@bandin.homelinux.com>
-Date: Sun, 30 Sep 2007 22:38:04 +0200
-From: Sinisa Bandin <sinisa@bandin.homelinux.com>
-Reply-To: sinisa@bandin.homelinux.com
-User-Agent: Thunderbird 2.0.0.7pre (X11/20070927)
-MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
-       samba@lists.samba.org, submit@bugs.debian.org
-Subject: Re: [Samba] 2.6.22/realtek bug in hardware, any kernel work-around?
-References: <Pine.LNX.4.64.0709291349160.5726@p34.internal.lan> <Pine.LNX.4.64.0709291434530.8080@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0709291434530.8080@p34.internal.lan>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.2 (----)
+	Sun, 30 Sep 2007 17:32:31 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:41205 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbXI3Vca convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Sep 2007 17:32:30 -0400
+Date: Sun, 30 Sep 2007 14:30:12 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc8-git4: Known regressions from 2.6.22
+Message-Id: <20070930143012.ddff564c.randy.dunlap@oracle.com>
+In-Reply-To: <200709302305.09861.rjw@sisk.pl>
+References: <200709302305.09861.rjw@sisk.pl>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 30 Sep 2007 23:05:09 +0200 Rafael J. Wysocki wrote:
 
-Justin Piszcz wrote:
-> Package: samba
-> Version: 3.0.26a-1
->>
->> Kernel: 2.6.22
->>
->> samba 3.0.26a-1 performance < 900 KiB/s, but FTP = 30-90 MiB/s
->>
->> Let me start out by saing this is an oddball problem:
->>
->> SAMBA:
->> LINUX -> WINDOWS = < 900 KiB/s (varies between 100 - 900 KiB/s)
->> WINDOWS -> LINUX = 30-90 MiB/s (always)
->>
->> FTP:
->> Either direction, 30-90 MiB/s (always)
->>
->> I do not see any nasty errors in the logs even with verbose = 5.
->>
->> Any ideas here? I am not using any special options.
->
-> I found out that poor smb performance is related to a broken 
-> udp-perfomance of the 8169 NIC in outgoing udp.
-> But, only in Gb Mode of the 8169 NIC, with 100Mbps it is ok.
->
-I had exactly the same problem with 100Mb/s also.
+> Hi,
+> 
+> 
+> Subject:	build #301 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/net/wireless/libertas/
+> Submitter:	Toralf Förster <toralf.foerster@gmx.de>
+> References:	http://lkml.org/lkml/2007/9/11/150
+> 		http://bugzilla.kernel.org/show_bug.cgi?id=9077
+> Patch:		http://bugzilla.kernel.org/attachment.cgi?id=12963&action=view
 
-Solved by disabling onboard LAN interface and inserting (US Robotics) 
-Realtek 8139 based card (10/100 Mbps).
+I'm told that this is already patched in the net-2.6.24 git tree,
+but it should be merged for 2.6.23 IMO.
 
-Best regards,
-Sinisa Bandin
-
+---
+~Randy
